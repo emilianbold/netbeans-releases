@@ -1,0 +1,2 @@
+IsOverriddenAnnotation: type=HAS_IMPLEMENTATION, elements:[org.netbeans.modules.editor.java.TestInterface2Impl.test()]
+IsOverriddenAnnotation: type=HAS_IMPLEMENTATION, elements:[org.netbeans.modules.editor.java.TestInterface2Impl]

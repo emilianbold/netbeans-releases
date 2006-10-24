@@ -27,8 +27,9 @@ import java.util.Iterator;
 import java.util.List;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.metadata.JAXWSMetadataProvider;
-import org.netbeans.modules.j2ee.metadata.MetadataUnit;
+//retouche:
+//import org.netbeans.modules.j2ee.metadata.JAXWSMetadataProvider;
+//import org.netbeans.modules.j2ee.metadata.MetadataUnit;
 import org.netbeans.modules.schema2beans.BaseBean;
 import org.netbeans.modules.websvc.jaxwsmodel.project.metadata.JAXWSNNMergerProvider;
 import org.openide.ErrorManager;
@@ -84,19 +85,21 @@ public final class JaxWsModel {
         synchronized (initLock) {
             if(!nninitialized) {
                 if(fo != null) {
-                    try {
-                        Project project = FileOwnerQuery.getOwner(fo);
-                        MetadataUnit mu = findJAXWSMetadata(project);
-                        if(mu != null) {
-                            //init the NN listener if there is JAXWSMetadataProvider instance in the project lookup
-                            JAXWSNNMergerProvider.getDefault().initNNMerger(this, mu);
-                        }
+                    //retouche:
+//                    try {
+//                        Project project = FileOwnerQuery.getOwner(fo);
+//                        MetadataUnit mu = findJAXWSMetadata(project);
+//                        if(mu != null) {
+//                            //init the NN listener if there is JAXWSMetadataProvider instance in the project lookup
+//                            JAXWSNNMergerProvider.getDefault().initNNMerger(this, mu);
+//                        }
                         //set nninitialized to true even there is no JAXWSMetadataProvider in the project lookup
                         //so next time initNNProvider is called it will not try to find it - which cannot happen
                         nninitialized = true;
-                    }catch(IOException e) {
-                        ErrorManager.getDefault().notify(e);
-                    }
+                        //retouche:
+//                    }catch(IOException e) {
+//                        ErrorManager.getDefault().notify(e);
+//                    }
                 }
             }
         }
@@ -299,14 +302,15 @@ public final class JaxWsModel {
         } else throw new IOException("No FileObject for writing specified"); //NOI18N
     }
     
-    private static MetadataUnit findJAXWSMetadata(Project project) {
-        JAXWSMetadataProvider metadataProvider = (JAXWSMetadataProvider)project.getLookup().lookup(JAXWSMetadataProvider.class);
-        if(metadataProvider != null) {
-            return metadataProvider.getJAXWSMetadata();
-        } else {
-            return null;
-        }
-    }
+    //retouche:
+//    private static MetadataUnit findJAXWSMetadata(Project project) {
+//        JAXWSMetadataProvider metadataProvider = (JAXWSMetadataProvider)project.getLookup().lookup(JAXWSMetadataProvider.class);
+//        if(metadataProvider != null) {
+//            return metadataProvider.getJAXWSMetadata();
+//        } else {
+//            return null;
+//        }
+//    }
     
     public synchronized void addServiceListener(ServiceListener listener) {
         if (listener!=null)

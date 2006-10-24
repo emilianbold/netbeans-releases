@@ -22,10 +22,7 @@ package org.netbeans.modules.java.j2seproject.applet;
 import java.io.*;
 import java.net.*;
 import java.util.*;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.UnresolvedClass;
 import org.netbeans.modules.java.j2seproject.J2SEProjectUtil;
-import org.netbeans.modules.javacore.api.JavaModel;
 
 import org.openide.*;
 import org.openide.modules.SpecificationVersion;
@@ -41,7 +38,6 @@ import org.netbeans.api.java.platform.*;
 
 import org.openide.loaders.*;
 import org.openide.cookies.*;
-import org.openide.src.*;
 
 /** Support for execution of applets.
 *
@@ -76,7 +72,8 @@ public class AppletSupport {
         }
         try {
             DataObject classDO = DataObject.find(file);
-            return (getAppletClassName(classDO.getCookie(SourceCookie.class)) != null);
+//XXX: remove this to compile workaround                		    
+//            return (getAppletClassName(classDO.getCookie(SourceCookie.class)) != null);
         } catch (DataObjectNotFoundException ex) {
             // just ignore
         }
@@ -84,26 +81,26 @@ public class AppletSupport {
     }
     
     public static String getAppletClassName(Object obj) {
-                
-        if ((obj == null) || !(obj instanceof SourceCookie)) {
-            return null;
-        }
-        SourceCookie cookie = (SourceCookie) obj;
-        String fullName = null;
-        SourceElement source = cookie.getSource ();
-        ClassElement[] classes = source.getClasses();
-        boolean isApplet = false;
-        for (int i = 0; i < classes.length; i++) {
-            JavaClass applet = (JavaClass)JavaModel.getDefaultExtent().getType().resolve("java.applet.Applet");
-            JavaClass jApplet = (JavaClass)JavaModel.getDefaultExtent().getType().resolve("javax.swing.JApplet");
-            JavaClass javaClass = (JavaClass)JavaModel.getDefaultExtent().getType().resolve(classes[i].getName().getFullName());
-            if (!(javaClass instanceof UnresolvedClass)) {
-                if (javaClass.isSubTypeOf(applet) || (javaClass.isSubTypeOf(jApplet))) {
-                    fullName = classes[i].getName().getFullName ();
-                    return fullName;
-                }
-            }
-        }
+//XXX: remove this to compile workaround                
+//        if ((obj == null) || !(obj instanceof SourceCookie)) {
+//            return null;
+//        }
+//        SourceCookie cookie = (SourceCookie) obj;
+//        String fullName = null;
+//        SourceElement source = cookie.getSource ();
+//        ClassElement[] classes = source.getClasses();
+//        boolean isApplet = false;
+//        for (int i = 0; i < classes.length; i++) {
+//            JavaClass applet = (JavaClass)JavaModel.getDefaultExtent().getType().resolve("java.applet.Applet");
+//            JavaClass jApplet = (JavaClass)JavaModel.getDefaultExtent().getType().resolve("javax.swing.JApplet");
+//            JavaClass javaClass = (JavaClass)JavaModel.getDefaultExtent().getType().resolve(classes[i].getName().getFullName());
+//            if (!(javaClass instanceof UnresolvedClass)) {
+//                if (javaClass.isSubTypeOf(applet) || (javaClass.isSubTypeOf(jApplet))) {
+//                    fullName = classes[i].getName().getFullName ();
+//                    return fullName;
+//                }
+//            }
+//        }
         return null;
     }
     

@@ -34,8 +34,6 @@ import org.netbeans.editor.ext.FormatLayer;
 import org.netbeans.editor.ext.FormatSupport;
 import org.netbeans.editor.ext.ExtFormatSupport;
 import org.netbeans.editor.ext.FormatWriter;
-import org.netbeans.lib.editor.util.CharSequenceUtilities;
-import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 
 /**
 * Java indentation services are located here
@@ -66,7 +64,7 @@ public class JavaFormatter extends ExtFormatter {
                 try {
                     int fnw = Utilities.getRowFirstNonWhite(doc, dotPos);
                     if (fnw >= 0 && fnw + 4 == dotPos
-                        && CharSequenceUtilities.textEquals("else", DocumentUtilities.getText(doc, fnw, 4)) // NOI18N
+                        && "else".equals(doc.getText(fnw, 4)) // NOI18N
                     ) {
                         ret = new int[] { fnw, fnw + 4 };
                     }
@@ -77,12 +75,12 @@ public class JavaFormatter extends ExtFormatter {
                 try {
                     int fnw = Utilities.getRowFirstNonWhite(doc, dotPos);
                     if (fnw >= 0 && fnw + 4 <= doc.getLength()
-                        && CharSequenceUtilities.textEquals("case", DocumentUtilities.getText(doc, fnw, 4)) // NOI18N
+                        && "case".equals(doc.getText(fnw, 4)) // NOI18N
                     ) {
                         ret = new int[] { fnw, fnw + 4 };
                     } else {
                         if (fnw >= 0 & fnw + 7 <= doc.getLength()
-                            && CharSequenceUtilities.textEquals("default", DocumentUtilities.getText(doc, fnw, 7)) // NOI18N
+                            && "default".equals(doc.getText(fnw, 7)) // NOI18N
                         ) {
                             ret = new int[] {fnw, fnw + 7 };
                         }

@@ -24,14 +24,6 @@ Microsystems, Inc. All Rights Reserved.
             <code-name-base>org.netbeans.modules.java.j2seproject</code-name-base>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>javax.jmi.reflect</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.apache.tools.ant.module</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -49,20 +41,20 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.api.mdr</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.api.progress</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.8</specification-version>
+                    </run-dependency>
+                </dependency>
+<!--            <dependency>
+                    <code-name-base>org.netbeans.api.mdr</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -73,23 +65,23 @@ Microsystems, Inc. All Rights Reserved.
                         <release-version>2</release-version>
                         <specification-version>1.16</specification-version>
                     </run-dependency>
-                </dependency>
+                </dependency>  -->
                 <dependency>
                     <code-name-base>org.netbeans.modules.ant.browsetask</code-name-base>
                     <run-dependency/>
                 </dependency>
-                <dependency>
+<!--            <dependency>
                     <code-name-base>org.netbeans.modules.debugger.jpda.ant</code-name-base>
                     <run-dependency/>
-                </dependency>
-                <dependency>
+                </dependency> -->
+<!--                <dependency>
                     <code-name-base>org.netbeans.modules.j2ee.metadata</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>1.0</specification-version>
                     </run-dependency>
-                </dependency>
+                </dependency>-->
                 <dependency>
                     <code-name-base>org.netbeans.modules.j2ee.persistenceapi</code-name-base>
                     <build-prerequisite/>
@@ -115,28 +107,28 @@ Microsystems, Inc. All Rights Reserved.
                         <release-version>1</release-version>
                     </run-dependency>
                 </dependency>
-                <dependency>
+<!--                <dependency>
                     <code-name-base>org.netbeans.modules.javacore</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
                     </run-dependency>
-                </dependency>
-                <dependency>
+                </dependency> -->
+<!--                <dependency>
                     <code-name-base>org.netbeans.modules.jmiutils</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
                     </run-dependency>
-                </dependency>
+                </dependency> -->
                 <dependency>
                     <code-name-base>org.netbeans.modules.junit</code-name-base>
                     <run-dependency>
                         <release-version>2</release-version>
                     </run-dependency>
-                </dependency>
+                </dependency> 
                 <dependency>
                     <code-name-base>org.netbeans.modules.project.ant</code-name-base>
                     <build-prerequisite/>
@@ -267,12 +259,12 @@ Microsystems, Inc. All Rights Reserved.
                         <specification-version>6.2</specification-version>
                     </run-dependency>
                 </dependency>
-                <dependency>
+<!--                <dependency>
                     <code-name-base>org.openide.src</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency/>
-                </dependency>
+                </dependency> -->
                 <dependency>
                     <code-name-base>org.openide.util</code-name-base>
                     <build-prerequisite/>
@@ -396,18 +388,18 @@ Microsystems, Inc. All Rights Reserved.
                        <code-name-base>org.openide.util</code-name-base>
                        <compile-dependency/>
                    </test-dependency>
-                   <test-dependency>
+<!--                   <test-dependency>
                        <code-name-base>org.openide.src</code-name-base>
                        <compile-dependency/>
-                   </test-dependency>
+                   </test-dependency>-->
                    <test-dependency>
                        <code-name-base>org.openide.filesystems</code-name-base>
                        <compile-dependency/>
                    </test-dependency>
-                   <test-dependency>
+<!--                   <test-dependency>
                        <code-name-base>org.netbeans.modules.java</code-name-base>
                        <compile-dependency/>
-                   </test-dependency>
+                   </test-dependency>-->
                 </test-type>
             </test-dependencies>
             <public-packages/>

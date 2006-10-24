@@ -31,9 +31,10 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.jmi.javamodel.Resource;
-import org.netbeans.modules.javacore.api.JavaModel;
-import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
+//retouche:
+//import org.netbeans.jmi.javamodel.Resource;
+//import org.netbeans.modules.javacore.api.JavaModel;
+//import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -198,12 +199,13 @@ public class JellyTestCaseWizardIterator implements TemplateWizard.Iterator {
             return;
         }
         // set package name
-        JavaMetamodel.getDefaultRepository().beginTrans(true);
-        try {
-            Resource res = JavaModel.getResource(createdDO.getPrimaryFile());
-            res.setPackageName(packageNameFromPanel);
-        } finally {
-            JavaMetamodel.getDefaultRepository().endTrans();
-        }
+//retouche:
+//        JavaMetamodel.getDefaultRepository().beginTrans(true);
+//        try {
+//            Resource res = JavaModel.getResource(createdDO.getPrimaryFile());
+//            res.setPackageName(packageNameFromPanel);
+//        } finally {
+//            JavaMetamodel.getDefaultRepository().endTrans();
+//        }
     }
 }

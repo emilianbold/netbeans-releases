@@ -32,14 +32,9 @@ import javax.swing.JPanel;
 import org.netbeans.modules.i18n.HelpStringCustomEditor;
 import org.netbeans.modules.i18n.I18nUtil;
 
-import org.openide.cookies.SourceCookie;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.loaders.DataObject;
-import org.openide.src.ClassElement;
-import org.openide.src.FieldElement;
-import org.openide.src.Identifier;
-import org.openide.src.SourceElement;
 
 
 /**
@@ -86,41 +81,41 @@ public class JavaReplacePanel extends JPanel {
 
     /** Updates modifier components according to identifier changes. */
     private void updateModifiers() {
-        FieldElement field = getFieldElement(identifierTextField.getText());
-
-        int modifiers;
-        
-        if(field != null) {
-            modifiers = field.getModifiers();
-            enableModifiers(false);
-            fieldTextField.setText(field.toString());
-        } else {
-            modifiers = Modifier.PRIVATE | Modifier.STATIC | Modifier.FINAL;
-            enableModifiers(true);
-            fieldTextField.setText(""); // NOI18N
-        }
-        
-        javaI18nSupport.setModifiers(modifiers);
-
-        if(identifierTextField.getText().length() != 0) {
-            if(Modifier.isPrivate(modifiers))
-                privateRadio.setSelected(true);
-            else if(Modifier.isProtected(modifiers))
-                protectedRadio.setSelected(true);
-            else if(Modifier.isPublic(modifiers))
-                publicRadio.setSelected(true);
-            else
-                defaultRadio.setSelected(true);
-
-            staticCheck.setSelected(Modifier.isStatic(modifiers));
-            finalCheck.setSelected(Modifier.isFinal(modifiers));
-            transientCheck.setSelected(Modifier.isTransient(modifiers));
-        } else { 
-            // default set of modifiers
-            privateRadio.setSelected(true);
-            staticCheck.setSelected(true);
-            finalCheck.setSelected(true);
-        }
+//        FieldElement field = getFieldElement(identifierTextField.getText());
+//
+//        int modifiers;
+//        
+//        if(field != null) {
+//            modifiers = field.getModifiers();
+//            enableModifiers(false);
+//            fieldTextField.setText(field.toString());
+//        } else {
+//            modifiers = Modifier.PRIVATE | Modifier.STATIC | Modifier.FINAL;
+//            enableModifiers(true);
+//            fieldTextField.setText(""); // NOI18N
+//        }
+//        
+//        javaI18nSupport.setModifiers(modifiers);
+//
+//        if(identifierTextField.getText().length() != 0) {
+//            if(Modifier.isPrivate(modifiers))
+//                privateRadio.setSelected(true);
+//            else if(Modifier.isProtected(modifiers))
+//                protectedRadio.setSelected(true);
+//            else if(Modifier.isPublic(modifiers))
+//                publicRadio.setSelected(true);
+//            else
+//                defaultRadio.setSelected(true);
+//
+//            staticCheck.setSelected(Modifier.isStatic(modifiers));
+//            finalCheck.setSelected(Modifier.isFinal(modifiers));
+//            transientCheck.setSelected(Modifier.isTransient(modifiers));
+//        } else { 
+//            // default set of modifiers
+//            privateRadio.setSelected(true);
+//            staticCheck.setSelected(true);
+//            finalCheck.setSelected(true);
+//        }
     }
 
     
@@ -598,32 +593,32 @@ public class JavaReplacePanel extends JPanel {
 
     /** Helper method to find <code>FieldElement</code> in <code>sourceDataObject</code> 
      * document for specified string. */
-    private FieldElement getFieldElement(String identifier) {
-        DataObject sourceDataObject = javaI18nSupport.getSourceDataObject();
-        if(sourceDataObject == null)
-            return null;
-        
-        SourceElement sourceElem = ((SourceCookie)sourceDataObject.getCookie(SourceCookie.class)).getSource();
-        ClassElement sourceClass = sourceElem.getClass(Identifier.create(sourceDataObject.getName()));
-
-        if(sourceClass == null) {
-            ClassElement[] classes = sourceElem.getClasses();
-
-            // Find source class.
-            for(int i=0; i<classes.length; i++) {
-                int modifs = classes[i].getModifiers();
-                if(classes[i].isClass() && Modifier.isPublic(modifs)) {
-                    sourceClass = classes[i];
-                    break;
-                }
-            }
-        }
-        
-        if(sourceClass == null)
-            return null;
-        
-        return sourceClass.getField(Identifier.create(identifier));
-    }
+//    private FieldElement getFieldElement(String identifier) {
+//        DataObject sourceDataObject = javaI18nSupport.getSourceDataObject();
+//        if(sourceDataObject == null)
+//            return null;
+//        
+//        SourceElement sourceElem = ((SourceCookie)sourceDataObject.getCookie(SourceCookie.class)).getSource();
+//        ClassElement sourceClass = sourceElem.getClass(Identifier.create(sourceDataObject.getName()));
+//
+//        if(sourceClass == null) {
+//            ClassElement[] classes = sourceElem.getClasses();
+//
+//            // Find source class.
+//            for(int i=0; i<classes.length; i++) {
+//                int modifs = classes[i].getModifiers();
+//                if(classes[i].isClass() && Modifier.isPublic(modifs)) {
+//                    sourceClass = classes[i];
+//                    break;
+//                }
+//            }
+//        }
+//        
+//        if(sourceClass == null)
+//            return null;
+//        
+//        return sourceClass.getField(Identifier.create(identifier));
+//    }
 
     /** Helper method. Enables/disables modifiers components. */
     private void enableModifiers(boolean enable) {

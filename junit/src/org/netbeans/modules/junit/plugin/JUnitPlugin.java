@@ -20,10 +20,11 @@
 package org.netbeans.modules.junit.plugin;
 
 import java.util.Map;
-import org.netbeans.jmi.javamodel.Feature;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.Method;
-import org.netbeans.modules.javacore.api.JavaModel;
+//XXX: retouche
+//import org.netbeans.jmi.javamodel.Feature;
+//import org.netbeans.jmi.javamodel.JavaClass;
+//import org.netbeans.jmi.javamodel.Method;
+//import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.modules.junit.JUnitPluginTrampoline;
 import org.openide.filesystems.FileObject;
 
@@ -166,11 +167,12 @@ public abstract class JUnitPlugin {
          * holds specification of a Java file
          */
         private final FileObject fileObject;
-        /**
-         * holds specification of a Java element within the Java file;
-         * may be {@code null}
-         */
-        private final Feature javaElement;
+//XXX: retouche
+//        /**
+//         * holds specification of a Java element within the Java file;
+//         * may be {@code null}
+//         */
+//        private final Feature javaElement;
         /**
          * Creates a new instance.
          *
@@ -188,24 +190,27 @@ public abstract class JUnitPlugin {
          * @see  Method
          * @see  JavaClass
          */
-        public Location(FileObject fileObject, Feature javaElement) {
+//XXX: retouche
+        public Location(FileObject fileObject/*XXX: retouche, Feature javaElement*/) {
             if (fileObject == null) {
                throw new IllegalArgumentException("fileObject is null");//NOI18N
             }
-            if (javaElement != null) {
-                if (!(javaElement instanceof JavaClass)
-                        && !(javaElement instanceof Method)) {
-                    throw new IllegalArgumentException(
-               "The Java element is neither JavaClass nor JavaElement");//NOI18N
-                }
-                if (JavaModel.getFileObject(javaElement.getResource())
-                        != fileObject) {
-                    throw new IllegalArgumentException(
-          "The Java element is not contained in the given FileObject.");//NOI18N
-                }
-            }
+//XXX: retouche
+//            if (javaElement != null) {
+//                if (!(javaElement instanceof JavaClass)
+//                        && !(javaElement instanceof Method)) {
+//                    throw new IllegalArgumentException(
+//               "The Java element is neither JavaClass nor JavaElement");//NOI18N
+//                }
+//                if (JavaModel.getFileObject(javaElement.getResource())
+//                        != fileObject) {
+//                    throw new IllegalArgumentException(
+//          "The Java element is not contained in the given FileObject.");//NOI18N
+//                }
+//            }
             this.fileObject = fileObject;
-            this.javaElement = javaElement;
+//XXX: retouche
+//            this.javaElement = javaElement;
         }
         
         /**
@@ -217,15 +222,16 @@ public abstract class JUnitPlugin {
             return fileObject;
         }
         
-        /**
-         * Returns the Java element.
-         *
-         * @return  {@link Method} or {@link JavaClass} held in this instance,
-         *          or {@code null} if no Java element is specified
-         */
-        public Feature getJavaElement() {
-            return javaElement;
-        }
+//XXX: retouche
+//        /**
+//         * Returns the Java element.
+//         *
+//         * @return  {@link Method} or {@link JavaClass} held in this instance,
+//         *          or {@code null} if no Java element is specified
+//         */
+//        public Feature getJavaElement() {
+//            return javaElement;
+//        }
     }
     
     /**

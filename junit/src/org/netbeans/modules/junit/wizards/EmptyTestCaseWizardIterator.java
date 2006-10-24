@@ -52,8 +52,9 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.NbBundle;
-import org.netbeans.jmi.javamodel.*;
-import org.netbeans.modules.javacore.api.JavaModel;
+//XXX: retouche
+//import org.netbeans.jmi.javamodel.*;
+//import org.netbeans.modules.javacore.api.JavaModel;
 
 /**
  * @author  Marian Petras

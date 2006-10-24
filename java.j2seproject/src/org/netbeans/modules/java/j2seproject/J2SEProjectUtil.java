@@ -32,16 +32,16 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.project.Project;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.JavaModelPackage;
-import org.netbeans.jmi.javamodel.Method;
-import org.netbeans.jmi.javamodel.Parameter;
-import org.netbeans.jmi.javamodel.Resource;
-import org.netbeans.jmi.javamodel.Type;
-import org.netbeans.modules.java.j2seproject.ui.customizer.MainClassChooser;
-import org.netbeans.modules.javacore.ClassIndex;
-import org.netbeans.modules.javacore.JMManager;
-import org.netbeans.modules.javacore.api.JavaModel;
+//import org.netbeans.jmi.javamodel.JavaClass;
+//import org.netbeans.jmi.javamodel.JavaModelPackage;
+//import org.netbeans.jmi.javamodel.Method;
+//import org.netbeans.jmi.javamodel.Parameter;
+//import org.netbeans.jmi.javamodel.Resource;
+//import org.netbeans.jmi.javamodel.Type;
+//import org.netbeans.modules.java.j2seproject.ui.customizer.MainClassChooser;
+//import org.netbeans.modules.javacore.ClassIndex;
+//import org.netbeans.modules.javacore.JMManager;
+//import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -80,26 +80,29 @@ public class J2SEProjectUtil {
      */
     public static boolean hasMainMethod(FileObject fo) {
         // support for unit testing
-        if (MainClassChooser.unitTestingSupport_hasMainMethodResult != null) {
-            return MainClassChooser.unitTestingSupport_hasMainMethodResult.booleanValue ();
-        }
-        if (fo == null) {
-            // ??? maybe better should be thrown IAE
-            return false;
-        }
-        
-        boolean has = false;
-        JavaModel.getJavaRepository ().beginTrans (false);
-        
-        try {
-            JavaModel.setClassPath(fo);
-            Resource res = JavaModel.getResource (fo);
-            assert res != null : "Resource found for FileObject " + fo;
-            has = !res.getMain().isEmpty();
-        } finally {
-            JavaModel.getJavaRepository ().endTrans ();
-        }
-        return has;
+	
+//        if (MainClassChooser.unitTestingSupport_hasMainMethodResult != null) {
+//            return MainClassChooser.unitTestingSupport_hasMainMethodResult.booleanValue ();
+//        }
+//        if (fo == null) {
+//            // ??? maybe better should be thrown IAE
+//            return false;
+//        }
+//        
+//        boolean has = false;
+//        JavaModel.getJavaRepository ().beginTrans (false);
+//        
+//        try {
+//            JavaModel.setClassPath(fo);
+//            Resource res = JavaModel.getResource (fo);
+//            assert res != null : "Resource found for FileObject " + fo;
+//            has = !res.getMain().isEmpty();
+//        } finally {
+//            JavaModel.getJavaRepository ().endTrans ();
+//        }
+//        return has;
+	
+	return true;
     }
 
     /** Returns list of FQN of classes contains the main method.
@@ -121,33 +124,33 @@ public class J2SEProjectUtil {
      * @param addInto list of names of classes, e.g, [sample.project1.Hello, sample.project.app.MainApp]
      */
     private static void getMainClasses (FileObject root, List/*<String>*/ addInto) {
-        JMManager.getManager().waitScanFinished();
-        JavaModel.getJavaRepository ().beginTrans (false);
-        try {
-            JavaModelPackage mofPackage = JavaModel.getJavaExtent(root);
-            ClassIndex index = ClassIndex.getIndex (mofPackage);
-            //Resource[] res = index.findResourcesForIdentifier ("main"); // NOI18N
-            Collection col = index.findResourcesForIdent ("main"); // NOI18N
-            Object[] arr = col.toArray ();
-
-            if (arr == null) {
-                // no main classes
-                return;
-            }
-
-            for (int i = 0; i < arr.length; i++) {
-                Resource res = (Resource)arr[i];
-                Iterator mainIt=res.getMain().iterator();
-                
-                while (mainIt.hasNext()) {
-                    JavaClass jcls=(JavaClass)mainIt.next();
-                    
-                    addInto.add(jcls.getName());
-                }
-            }
-        } finally {
-            JavaModel.getJavaRepository ().endTrans (false);
-        }        
+//        JMManager.getManager().waitScanFinished();
+//        JavaModel.getJavaRepository ().beginTrans (false);
+//        try {
+//            JavaModelPackage mofPackage = JavaModel.getJavaExtent(root);
+//            ClassIndex index = ClassIndex.getIndex (mofPackage);
+//            //Resource[] res = index.findResourcesForIdentifier ("main"); // NOI18N
+//            Collection col = index.findResourcesForIdent ("main"); // NOI18N
+//            Object[] arr = col.toArray ();
+//
+//            if (arr == null) {
+//                // no main classes
+//                return;
+//            }
+//
+//            for (int i = 0; i < arr.length; i++) {
+//                Resource res = (Resource)arr[i];
+//                Iterator mainIt=res.getMain().iterator();
+//                
+//                while (mainIt.hasNext()) {
+//                    JavaClass jcls=(JavaClass)mainIt.next();
+//                    
+//                    addInto.add(jcls.getName());
+//                }
+//            }
+//        } finally {
+//            JavaModel.getJavaRepository ().endTrans (false);
+//        }        
     }
     
     /** Returns if the given class name exists under the sources root and
@@ -164,26 +167,28 @@ public class J2SEProjectUtil {
     
     public static boolean isMainClass (String className, ClassPath cp) {
         // support for unit testing
-        if (MainClassChooser.unitTestingSupport_hasMainMethodResult != null) {
-            return MainClassChooser.unitTestingSupport_hasMainMethodResult.booleanValue ();
-        }
-        JavaModel.getJavaRepository ().beginTrans (false);
-        boolean isMain = false;        
-        try {
-            Type clazz;
-            
-            JavaModel.setClassPath (cp);
-            clazz = JavaModel.getDefaultExtent().getType().resolve(className);
-            Resource res;
-            if (clazz != null && (res = clazz.getResource()) != null ) {    //UnresolvedClass.getResource() returns null
-                isMain =  res.getMain().contains(clazz);
-            }
-        } finally {
-            JavaModel.getJavaRepository ().endTrans ();
-        }
-        return isMain;
+//        if (MainClassChooser.unitTestingSupport_hasMainMethodResult != null) {
+//            return MainClassChooser.unitTestingSupport_hasMainMethodResult.booleanValue ();
+//        }
+//        JavaModel.getJavaRepository ().beginTrans (false);
+//        boolean isMain = false;        
+//        try {
+//            Type clazz;
+//            
+//            JavaModel.setClassPath (cp);
+//            clazz = JavaModel.getDefaultExtent().getType().resolve(className);
+//           Resource res;
+//            if (clazz != null && (res = clazz.getResource()) != null ) {    //UnresolvedClass.getResource() returns null
+//                isMain =  res.getMain().contains(clazz);
+//            }
+//        } finally {
+//            JavaModel.getJavaRepository ().endTrans ();
+//       }
+//        return isMain;
+        return true; 
     }
-    
+  
+  
     
     /**
      * Creates an URL of a classpath or sourcepath root

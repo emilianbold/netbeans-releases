@@ -18,30 +18,32 @@
  */
 package org.netbeans.modules.form;
 
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
+import com.sun.source.util.SourcePositions;
+import com.sun.source.util.TreePath;
+import com.sun.source.util.TreeScanner;
 import java.beans.Introspector;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Collections;
 import java.util.List;
-import org.netbeans.jmi.javamodel.Element;
-import org.netbeans.jmi.javamodel.ClassDefinition;
-import org.netbeans.jmi.javamodel.Field;
-import org.netbeans.jmi.javamodel.Method;
-import org.netbeans.jmi.javamodel.Type;
-import org.netbeans.jmi.javamodel.PrimitiveType;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
+import org.netbeans.api.editor.guards.SimpleSection;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.PrimitiveTypeKindEnum;
-import org.netbeans.jmi.javamodel.Resource;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.form.project.ClassPathUtils;
-import org.netbeans.jmi.javamodel.ParameterizedType;
-import org.netbeans.jmi.javamodel.Array;
-import org.netbeans.jmi.javamodel.PrimitiveTypeKind;
-import org.netbeans.jmi.javamodel.UnresolvedClass;
-import org.netbeans.modules.java.JavaEditor;
-import org.netbeans.modules.javacore.api.JavaModel;
 import org.openide.filesystems.FileObject;
 
-	
 /**
  *
  * Provides information about the forms java source file.
@@ -51,7 +53,7 @@ import org.openide.filesystems.FileObject;
 public class FormJavaSource {
     
     private final FormDataObject formDataObject;	
-    private List fields = null;	
+    private List<String> fields = null;	
     private static final String[] PROPERTY_PREFIXES = new String[] {"get", // NOI18N
 								    "is"}; // NOI18N
     
@@ -60,13 +62,28 @@ public class FormJavaSource {
     }    
     
     public void refresh() {
-        JavaModel.getJavaRepository().beginTrans(false);	    
-        JavaModel.setClassPath(formDataObject.getPrimaryFile());
-	try{	            	    
-            fields = getFieldNames();			    
-	} finally {	 	    
-	    JavaModel.getJavaRepository().endTrans();
-	}
+        this.fields = Collections.<String>emptyList();
+        runUserActionTask(new CancellableTask<CompilationController>() {
+            public void cancel() {
+            }
+            public void run(CompilationController controller) throws Exception {
+                controller.toPhase(JavaSource.Phase.PARSED);
+                FormJavaSource.this.fields = getFieldNames(controller);
+            }
+        });
+
+    }
+    
+    private void runUserActionTask(CancellableTask<CompilationController> task) {
+        FileObject javaFileObject = formDataObject.getPrimaryFile();		
+        JavaSource js = JavaSource.forFileObject(javaFileObject);
+        if (js != null) {
+            try {
+                js.runUserActionTask(task, true);
+            } catch (IOException ex) {
+                Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, null, ex);
+            }
+        }
     }
 
     public boolean containsField(String name, boolean refresh) {
@@ -76,22 +93,57 @@ public class FormJavaSource {
 	return fields != null && fields.contains(name);
     }	
 
+    private ClassTree findClassTree(CompilationController controller) {
+        String fileName = formDataObject.getPrimaryFile().getName();
+        
+        for (Tree t: controller.getCompilationUnit().getTypeDecls()) {
+            if (t.getKind() == Tree.Kind.CLASS &&
+                    fileName.equals(((ClassTree) t).getSimpleName().toString())) {
+                return (ClassTree) t;
+            }
+        }
+        return null;
+    }
+    
+    private List<String> findMethodsByReturnType(CompilationController controller, TypeElement celem, Class returnType) {
+        List<String> methods = new ArrayList<String>();
+        String returnTypeName = returnType.getName();
+        TypeElement returnTypeElm = controller.getElements().getTypeElement(returnTypeName);
+        for (Element el: celem.getEnclosedElements()) {
+            if (el.getKind() == ElementKind.METHOD) {
+                ExecutableElement method = (ExecutableElement) el;
+                TypeMirror methodRT = method.getReturnType();
+                if (controller.getTypes().isAssignable(returnTypeElm.asType(), methodRT)) {
+                    methods.add(method.getSimpleName().toString());
+                }
+            }
+        }
+        return methods;
+    }
     /**
      * Returns names for all methods with the specified return type
      */
     public String[] getMethodNames(final Class returnType) {
-        ChildrenFilter cf = new MethodChildrenFilter(returnType) {
-            protected String getName(Element child) {
-                return ((Method)child).getName();
-            }	    
-        };            
-        JavaModel.getJavaRepository().beginTrans(false);	    
-        JavaModel.setClassPath(formDataObject.getPrimaryFile());
-        try{	        
-            return toArray(cf.getNames());				    	        
-        } finally {
-            JavaModel.getJavaRepository().endTrans();	                 
-        }
+        final Object[] result = new Object[1];
+        
+        runUserActionTask(new CancellableTask<CompilationController>() {
+            public void cancel() {
+            }
+            public void run(CompilationController controller) throws Exception {
+                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                
+                ClassTree ct = findClassTree(controller);
+                if (ct != null) {
+                    TreePath cpath = controller.getTrees().getPath(controller.getCompilationUnit(), ct);
+                    TypeElement celem = (TypeElement) controller.getTrees().getElement(cpath);
+                    List<String> names = findMethodsByReturnType(controller, celem, returnType);
+                    result[0] = toArray(names);
+                }
+                
+            }
+        });
+        
+        return result[0] == null? new String[0]: (String[]) result[0];
     }
 
     /**
@@ -99,26 +151,18 @@ public class FormJavaSource {
      * start with the prefixes "is" and "get"
      */        
     public String[] getPropertyReadMethodNames(Class returnType) {
-        ChildrenFilter cf = new MethodChildrenFilter(returnType) {
-	    public boolean accept(Element child) {
-		Method method = (Method)child;						
-		if(FormJavaSource.extractPropertyName(method.getName()).equals("")) { // NOI18N	
-                    // seems to be no property method
-		    return false;	
-		}		    
-		return super.accept(method);
-	    }				    
-	    protected String getName(Element child) {		
-		return ((Method)child).getName();
-	    }
-	};
-        JavaModel.getJavaRepository().beginTrans(false);	    
-        JavaModel.setClassPath(formDataObject.getPrimaryFile());
-        try{	                
-            return toArray(cf.getNames());
-        } finally {
-            JavaModel.getJavaRepository().endTrans();	                 
-        }    
+        String[] names = getMethodNames(returnType);
+        List<String> result = new ArrayList<String>(names.length);
+        for (String name: names) {
+            if(!FormJavaSource.extractPropertyName(name).equals("")) { // NOI18N	
+                // seems to be property method
+                result.add(name);
+            }		    
+            
+        }
+        
+        return toArray(result);
+        
     }
     
     /**
@@ -135,57 +179,48 @@ public class FormJavaSource {
 	return "";  // NOI18N	
     }    
 
-    private List getFieldNames() {		
-        JavaEditor.SimpleSection variablesSection = 
+    private List<String> getFieldNames(final CompilationController controller) {
+        SimpleSection variablesSection = 
             formDataObject.getFormEditorSupport().getVariablesSection();	    
 
         if(variablesSection==null) {
             return null;
         }
 
-        final int genVariablesStartOffset = variablesSection.getPositionBefore().getOffset();
-        final int genVariablesEndOffset = variablesSection.getPositionAfter().getOffset();
+        final int genVariablesStartOffset = variablesSection.getStartPosition().getOffset();
+        final int genVariablesEndOffset = variablesSection.getEndPosition().getOffset();
         
-        ChildrenFilter cf = new ChildrenFilter() {		
-            protected boolean accept(Element child) {	    
-                int startOffset = child.getStartOffset();            
-                return startOffset >= genVariablesEndOffset || 
-                       startOffset <= genVariablesStartOffset;
-            }		
-            protected Class getChildType() {
-                return Field.class;
+        final SourcePositions positions = controller.getTrees().getSourcePositions();
+        
+        TreeScanner scan = new TreeScanner<Void, List<String>>() {
+            @Override
+            public Void visitClass(ClassTree node, List<String> p) {
+                long startOffset = positions.getStartPosition(controller.getCompilationUnit(), node);
+                long endOffset = positions.getEndPosition(controller.getCompilationUnit(), node);
+                if (genVariablesStartOffset > startOffset && genVariablesEndOffset < endOffset) {
+                    for (Tree tree: node.getMembers()) {
+                        if (tree.getKind() == Tree.Kind.VARIABLE) {
+                            testVariable((VariableTree) tree, p);
+                        }
+                    }
+                }
+                return null;
             }
-            protected String getName(Element child) {
-                return ((Field)child).getName();
+            
+            private void testVariable(VariableTree node, List<String> p) {
+                long startOffset = positions.getStartPosition(controller.getCompilationUnit(), node);
+                if (startOffset >= genVariablesEndOffset ||
+                        startOffset <= genVariablesStartOffset) {
+                    p.add(node.getName().toString());
+                }
             }
         };
-        return cf.getNames();	    
+        
+        List<String> fields = new ArrayList<String>();
+        scan.scan(controller.getCompilationUnit(), fields);
+        
+        return fields;
     }	
-    
-    private ClassDefinition getClassDefinition() {
-	try{	    		
-	    FileObject javaFileObject = formDataObject.getPrimaryFile();		
-	    ClassPath classPath = ClassPath.getClassPath(javaFileObject, ClassPath.SOURCE);
-	    Resource resource = JavaModel.getResource(classPath.findOwnerRoot(javaFileObject),
-				     classPath.getResourceName(javaFileObject));
-
-	    java.util.List classifiers = resource.getClassifiers();
-	    Iterator classIter = classifiers.iterator();
-
-	    while (classIter.hasNext()) {
-		ClassDefinition javaClass = (ClassDefinition)classIter.next();
-		String className = javaClass.getName();
-		int dotIndex = className.lastIndexOf('.');
-		className = (dotIndex == -1) ? className : className.substring(dotIndex+1);
-		if( className.equals(javaFileObject.getName()) ) {			
-		    return javaClass;
-		}
-	    }	
-	} catch (Exception e) {
-	    org.openide.ErrorManager.getDefault().notify(e);	    
-	}	    
-	return null;
-    }
 
     private boolean isAssignableFrom(String typeName, Class returnType) {	
 	Class clazz = getClassByName(typeName);	    
@@ -210,140 +245,12 @@ public class FormJavaSource {
     private static String[] toArray(List list) {
         return (String[])list.toArray(new String[list.size()]);
     }
-    
-    private static String getVMName(Type type) {
-	if(type instanceof Array) {
-	    return getVMName((Array) type);		
-	} else if(type instanceof ParameterizedType) {	    
-	    return getVMName((ParameterizedType) type);
-	} else {
-	    return type.getName();
-	}		
-    }
-    
-    private static String getVMName(ParameterizedType paramType) {
-	String name = paramType.getName();
-	if (!paramType.isInner()) {
-	    return name;
-	}
-
-	ClassDefinition cd = paramType.getDefinition().getDeclaringClass();
-	StringBuffer sb = new StringBuffer(name);	
-	String pkgName = getPackageName(cd);
-			
-	int index = sb.lastIndexOf(".");	// NOI18N
-	while (index > pkgName.length()) {
-	    sb.setCharAt(index, '$');
-	    index = sb.lastIndexOf(".");	// NOI18N
-	}
-	return sb.toString();
-    }
-    
-    private static String getPackageName(ClassDefinition jc) {
-        if (jc instanceof UnresolvedClass) {
-            String name = jc.getName();
-            int index = name.lastIndexOf('.');
-            return index < 0 ? "" : name.substring(0, index);	// NOI18N
-        }
-        if (jc instanceof JavaClass) {
-            Resource res = jc.getResource();
-            if (res != null) {
-                String result = res.getPackageName();
-                if (result != null) {
-                    return result;
-                }
-            }
-        }
-        return "";	// NOI18N
-    }
-    
-    private static String getVMName(Array array) {
-	Type type = array.getType();	
-	StringBuffer sb = new StringBuffer();	
-	sb.append('[');
-	if (type instanceof PrimitiveType) {
-	    sb.append(getPrimitiveCode(((PrimitiveType)type).getKind()));
-	} else {
-	    sb.append('L');
-            sb.append(getVMName(type));
-	    sb.append(';');
-	}
-	return sb.toString();
-    }
-
-    private static String getPrimitiveCode(PrimitiveTypeKind kind) {
-	if(PrimitiveTypeKindEnum.BOOLEAN.equals (kind)) {
-	    return "Z"; // NOI18N
-	} else if(PrimitiveTypeKindEnum.INT.equals (kind)) {
-	    return "I"; // NOI18N
-	} else if(PrimitiveTypeKindEnum.CHAR.equals (kind)) {
-	    return "C"; // NOI18N
-	} else if(PrimitiveTypeKindEnum.BYTE.equals (kind)) {
-	    return "B"; // NOI18N
-	} else if(PrimitiveTypeKindEnum.SHORT.equals (kind)) {
-	    return "S"; // NOI18N
-	} else if(PrimitiveTypeKindEnum.LONG.equals (kind)) {
-	    return "J"; // NOI18N
-	} else if(PrimitiveTypeKindEnum.FLOAT.equals (kind)) {
-	    return "F"; // NOI18N
-	} else if(PrimitiveTypeKindEnum.DOUBLE.equals (kind)) {
-	    return "D"; // NOI18N
-	} else return "V"; // NOI18N	
-    }
 
     public static boolean isInDefaultPackage(FormModel formModel) {
-        FormDataObject fdo = FormEditor.getFormDataObject(formModel);
-        ClassDefinition cd = new FormJavaSource(fdo).getClassDefinition();
-        String name = getPackageName(cd);
-        return "".equals(name); // NOI18N
+        FileObject fdo = FormEditor.getFormDataObject(formModel).getPrimaryFile();
+        ClassPath cp = ClassPath.getClassPath(fdo, ClassPath.SOURCE);
+        String name = cp.getResourceName(fdo);
+        return name.indexOf('/') < 0;
     }
 
-    private abstract class ChildrenFilter {		
-	public List getNames() {
-            List values = new ArrayList();            
-            ClassDefinition classDefinition = getClassDefinition();	
-            if(classDefinition==null) {
-                return values;
-            }            
-	    List children = classDefinition.getChildren();	    
-	    for (Iterator childrenIter = children.iterator(); childrenIter.hasNext();) {
-		Element child = (Element)childrenIter.next();                  
-		if(getChildType().isAssignableFrom(child.getClass()) && accept(child)) {
-                    String name = getName(child);		    
-                    values.add(name);
-		} 
-	    }		                                
-	    return values;
-	} 	    	
-	protected abstract String getName(Element child);	
-	protected abstract boolean accept(Element child);
-	protected abstract Class getChildType();
-    }
-
-    private abstract class MethodChildrenFilter extends ChildrenFilter {		
-	private final Class returnType;
-	public MethodChildrenFilter(Class returnType) {	    
-	    this.returnType = returnType;
-	}	
-	protected Class getChildType() {
-	    return Method.class;
-	}			
-	public boolean accept(Element child) {			    
-	    return acceptReturnType(((Method)child).getType());
-	}
-	protected boolean acceptReturnType(Type type) {
-	    if(returnType.isPrimitive() || type instanceof PrimitiveType) {
-		return type instanceof PrimitiveType &&		       
-		       acceptPrimitiveType((PrimitiveType)type);
-	    }
-	    String typeName = getVMName(type);
-	    return typeName!= null && !typeName.equals("") && // NOI18N		   		   
-		   isAssignableFrom(typeName, returnType); 		
-	}
-	private boolean acceptPrimitiveType(PrimitiveType type) {            
-	    return returnType.isPrimitive() && 
-                   !type.getKind().equals(PrimitiveTypeKindEnum.VOID) &&
-		   type.getKind().equals(PrimitiveTypeKindEnum.forName(returnType.getName())); 	 
-	}	        
-    }    
 }

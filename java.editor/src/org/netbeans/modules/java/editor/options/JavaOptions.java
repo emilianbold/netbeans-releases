@@ -19,11 +19,14 @@
 
 package org.netbeans.modules.java.editor.options;
 
+import java.util.Enumeration;
+import java.util.List;
 import org.netbeans.editor.ext.ExtSettingsNames;
 import org.netbeans.editor.ext.java.JavaSettingsNames;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.editor.java.JavaIndentEngine;
 import org.netbeans.modules.editor.options.OptionSupport;
+import org.openide.ServiceType;
 import org.openide.util.HelpCtx;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import java.awt.Color;
@@ -32,7 +35,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.MissingResourceException;
 import org.netbeans.editor.SettingsNames;
-import org.netbeans.editor.ext.java.JavaFastImport;
 import org.netbeans.modules.editor.options.BaseOptions;
 import org.openide.util.NbBundle;
 
@@ -248,13 +250,6 @@ public class JavaOptions extends BaseOptions {
             FAST_IMPORT_SELECTION_PROP);
     }
     
-    public boolean getFastImportPackage() {
-        return (getFastImportSelection() == JavaFastImport.IMPORT_PACKAGE);
-    }
-    public void setFastImportPackage(boolean v) {
-        if (v) setFastImportSelection(JavaFastImport.IMPORT_PACKAGE);
-    }
-
     public boolean getGotoClassCaseSensitive() {
         return getSettingBoolean(JavaSettingsNames.GOTO_CLASS_CASE_SENSITIVE);
     }

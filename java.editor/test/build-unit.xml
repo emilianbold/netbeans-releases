@@ -18,41 +18,8 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<project name="java/editor/test/unit" basedir="." default="all">
+<project name="editor/test/unit" basedir="." default="all">
 
-    <!-- Imports default default-compiler and run-unit-test executor. -->
     <import file="../../../nbbuild/templates/xtest-unit.xml"/>
 
-    <!-- ========= -->
-    <!-- Compilers -->
-    <!-- ========= -->
-
-    <!-- Pre-build openide/text tests -->
-    <target name="pre-build">
-        <!--  Cannot use
-              <ant dir="../../openide/text/test" target="buildtests" inheritall="false"/>
-              because inheritAll="false" doesn't work for all properties. -->
-        <java classname="org.apache.tools.ant.Main" classpath="${java.class.path}" fork="true">
-            <arg value="-f"/>
-            <arg value="../../../editor/test/build.xml"/>
-            <arg value="-Dxtest.testtype=${xtest.testtype}"/>
-            <arg value="-Dxtest.attribs=${xtest.attribs}"/>
-            <arg value="buildtests"/>
-        </java>
-    </target>
-    
-    <target name="default-compiler" depends="pre-build,xtest-unit.default-compiler">
-    </target>
-    
-    <!-- ========= -->
-    <!-- Executors -->
-    <!-- ========= -->
-    
-    <!-- Override if you need something special. 
-    <target name="run-unit-test" depends="init-cp">
-        <executeTests pluginname="jvm">
-            <classpath refid="test.unit.run.cp"/>
-        </executeTests>
-    </target>
-    -->
 </project>

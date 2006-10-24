@@ -21,40 +21,47 @@
 package org.netbeans.modules.form;
 
 import javax.swing.Action;
+import org.netbeans.api.java.loaders.JavaDataSupport;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.FilterNode;
+import org.openide.nodes.Node;
 
 import org.openide.util.actions.SystemAction;
-import org.netbeans.modules.java.JavaNode;
 
 /** The DataNode for Forms.
  *
  * @author Ian Formanek
  * @version 1.00, Jul 21, 1998
  */
-public class FormDataNode extends JavaNode {
+public class FormDataNode extends FilterNode {
     /** generated Serialized Version UID */
     //  static final long serialVersionUID = 1795549004166402392L;
 
     /** Icon base for form data objects. */
-    private static final String FORM_ICON_BASE = "org/netbeans/modules/form/resources/form"; // NOI18N
+    private static final String FORM_ICON_BASE = "org/netbeans/modules/form/resources/form.gif"; // NOI18N
 
     /** Constructs a new FormDataObject for specified primary file */
     public FormDataNode(FormDataObject fdo) {
-        super(fdo);
-    }
-
-    protected String getBareIconBase() {
-        return FORM_ICON_BASE;
+        this(JavaDataSupport.createJavaNode(fdo.getPrimaryFile()));
     }
     
+    private FormDataNode(Node orig) {
+        super(orig);
+        ((AbstractNode) orig).setIconBaseWithExtension(FORM_ICON_BASE);
+    }
+    
+    @Override
     public Action getPreferredAction() {
         // issue 56351
         return new javax.swing.AbstractAction() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
-                ((FormDataObject)getDataObject()).getFormEditorSupport().openFormEditor(false);
+                FormEditorSupport supp = getCookie(FormEditorSupport.class);
+                supp.openFormEditor(false);
             }
         };
     }
     
+    @Override
     public Action[] getActions(boolean context) {
         Action[] javaActions = super.getActions(context);
         Action[] formActions = new Action[javaActions.length+2];

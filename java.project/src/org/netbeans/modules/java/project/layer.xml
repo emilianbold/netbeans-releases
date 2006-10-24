@@ -120,7 +120,6 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.project.Bundle"/>
         <attr name="template" boolvalue="true"/>
         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/project/resources/Package.html"/>
-        <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.java.ui.wizard.Util.createPackageIterator"/>
       </file>        
       <file name="Enum.java" url="resources/Enum.template">
          <attr name="template" boolvalue="true"/>

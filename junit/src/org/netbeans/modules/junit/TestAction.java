@@ -29,7 +29,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.openide.cookies.SourceCookie;
+//XXX: retouche
+//import org.openide.cookies.SourceCookie;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.api.java.project.JavaProjectConstants;
 
@@ -45,7 +46,11 @@ abstract class TestAction extends CookieAction {
     
     /* protected members */
     protected Class[] cookieClasses() {
-        return new Class[] { DataFolder.class, SourceCookie.class };
+        //XXX: retouche
+        //original:
+//        return new Class[] { DataFolder.class, SourceCookie.class };
+        //to allow retouche compilation:
+        return new Class[] { DataFolder.class };
     }
 
     protected int mode() {

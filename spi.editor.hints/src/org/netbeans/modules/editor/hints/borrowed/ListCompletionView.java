@@ -19,11 +19,24 @@
 
 package org.netbeans.modules.editor.hints.borrowed;
 
-import java.awt.*;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.List;
-import javax.swing.*;
-
+import javax.swing.AbstractListModel;
+import javax.swing.BorderFactory;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JList;
+import javax.swing.ListCellRenderer;
+import javax.swing.SwingUtilities;
 import org.netbeans.editor.LocaleSupport;
+import org.netbeans.modules.editor.hints.HintsUI;
+import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.editor.hints.LazyFixList;
 import org.openide.awt.HtmlRenderer;
 
 /**
@@ -31,29 +44,42 @@ import org.openide.awt.HtmlRenderer;
 * @version 1.00
 */
 
-public class ListCompletionView extends JList {
+public class ListCompletionView extends JList implements ListCellRenderer {
 
+    private final HtmlRenderer.Renderer defaultRenderer = HtmlRenderer.createRenderer();
+    private Font font;
+    private Icon icon = new ImageIcon (org.openide.util.Utilities.loadImage("org/netbeans/modules/editor/hints/resources/suggestion.gif")); // NOI18N
+                
     public ListCompletionView() {
         setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-        setCellRenderer(new ListCellRenderer() {
-            private HtmlRenderer.Renderer defaultRenderer = HtmlRenderer.createRenderer();
-
-            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                defaultRenderer.reset();
-                Component result = defaultRenderer.getListCellRendererComponent( list, value, index, isSelected, cellHasFocus);
-                defaultRenderer.setHtml(true);
-                defaultRenderer.setParentFocused(true);
-                return result;
-            }
-        });
+        font = getFont();
+        if (font.getSize() < 15 ) {
+            font = font.deriveFont(font.getSize2D() + 1);
+        }
+        
+        setFont( font );
+        setCellRenderer( this );
+        setBorder( BorderFactory.createEmptyBorder() );
         getAccessibleContext().setAccessibleName(LocaleSupport.getString("ACSN_CompletionView"));
         getAccessibleContext().setAccessibleDescription(LocaleSupport.getString("ACSD_CompletionView"));
     }
+
+    public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) { 
+        Component c  = defaultRenderer.getListCellRendererComponent( list, value instanceof Fix ? ((Fix) value).getText() : value.toString(), index, isSelected, cellHasFocus );
+        defaultRenderer.setIcon( icon );
+        defaultRenderer.setHtml(true);
+        defaultRenderer.setParentFocused(true);
+        defaultRenderer.setRenderStyle(HtmlRenderer.STYLE_CLIP);
+        c.setBackground(list.getBackground());
+        return c;
+    }
     
-    public void setResult(List data) {
+    public void setResult(LazyFixList data) {
         if (data != null) {
-            setModel(new Model(data));
-            if (data.size() > 0) {
+            Model model = new Model(data);
+            
+            setModel(model);
+            if (model.fixes != null && !model.fixes.isEmpty()) {
                 setSelectedIndex(0);
             }
         }
@@ -61,10 +87,7 @@ public class ListCompletionView extends JList {
 
     /** Force the list to ignore the visible-row-count property */
     public Dimension getPreferredScrollableViewportSize() {
-        Dimension scrollable = super.getPreferredScrollableViewportSize();
-        Dimension preferred = getPreferredSize();
-        
-        return new Dimension(scrollable.width, preferred.height);
+        return getPreferredSize();
     }
 
     public void up() {
@@ -120,26 +143,49 @@ public class ListCompletionView extends JList {
         }
     }
 
-    static class Model extends AbstractListModel {
+    static class Model extends AbstractListModel implements PropertyChangeListener {
 
-        List data;
+        private LazyFixList data;
+        private List<Fix> fixes;
+        private boolean computed;
+        
 
         static final long serialVersionUID = 3292276783870598274L;
 
-        public Model(List data) {
+        public Model(LazyFixList data) {
             this.data = data;
+            data.addPropertyChangeListener(this);
+            update();
         }
 
-        public int getSize() {
-            return data.size();
+        private synchronized void update() {
+            computed = data.isComputed();
+            if (computed)
+                fixes = new ArrayList<Fix>(data.getFixes());
+            else
+                data.getFixes();
+        }
+        
+        public synchronized int getSize() {
+            return computed ? fixes.size() : 1;
         }
 
-        public Object getElementAt(int index) {
-            return (index >= 0 && index < data.size()) ? data.get(index) : null;
+        public synchronized Object getElementAt(int index) {
+            if (!computed) {
+                return "computing...";
+            } else {
+                return fixes.get(index);
+            }
         }
 
-        List getData() {
-            return data;
+        public void propertyChange(PropertyChangeEvent evt) {
+//            update();
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    HintsUI.getDefault().removePopups();
+                    HintsUI.getDefault().showPopup();
+                }
+            });
         }
 
     }

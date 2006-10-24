@@ -19,22 +19,32 @@
 
 package org.netbeans.modules.form.wizard;
 
-import java.util.*;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.Tree;
+import java.awt.Component;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.FocusAdapter;
 import java.io.IOException;
-import java.awt.*;
-import javax.swing.*;
-import java.awt.event.*;
-import javax.swing.event.*;
-
-import org.openide.*;
-import org.openide.loaders.*;
-import org.openide.src.*;
-import org.openide.cookies.SaveCookie;
-import org.openide.cookies.SourceCookie;
-import org.openide.util.NbBundle;
-import org.openide.filesystems.FileObject;
-
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.ResourceBundle;
+import java.util.Set;
+import javax.lang.model.element.TypeElement;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JTextField;
+import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
+import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 /**
  * Special template wizard iterator for BeanForm template - requires to
@@ -87,29 +97,44 @@ class TemplateWizardIterator implements WizardDescriptor.InstantiatingIterator {
 
     public Set instantiate() throws IOException, IllegalArgumentException {
         Set set = delegateIterator.instantiate();
+        FileObject template = (FileObject) set.iterator().next();
         
-        try {
-            FileObject template = (FileObject) set.iterator().next();
-            DataObject dobj = DataObject.find(template);
-            if (specifySuperclass) {
-                SourceCookie src = (SourceCookie) dobj.getCookie(SourceCookie.class);
-                if (src != null) {
-                    ClassElement[] classes = src.getSource().getClasses();
-                    if (classes != null && classes.length > 0) {
-                        ClassElement formClass = classes[0];
-                        String superclassName =
-                            ((SuperclassWizardPanel)superclassPanel).getSuperclassName();
-                        formClass.setSuperclass(Identifier.create(superclassName));
-                        SaveCookie savec = (SaveCookie) dobj.getCookie(SaveCookie.class);
-                        if (savec != null) {
-                            savec.save();
+        if (specifySuperclass) {
+            final String className = template.getName();
+            final String superclassName = 
+                    ((SuperclassWizardPanel) superclassPanel).getSuperclassName();
+            JavaSource js = JavaSource.forFileObject(template);
+            js.runModificationTask(new CancellableTask<WorkingCopy>() {
+                public void cancel() {
+                }
+                public void run(WorkingCopy wcopy) throws Exception {
+                    wcopy.toPhase(JavaSource.Phase.RESOLVED);
+
+                    for (Tree t: wcopy.getCompilationUnit().getTypeDecls()) {
+                        if (t.getKind() == Tree.Kind.CLASS && className.equals(((ClassTree) t).getSimpleName().toString())) {
+                            ClassTree orig = (ClassTree) t;
+                            TreeMaker maker = wcopy.getTreeMaker();
+                            TypeElement superclassElm = wcopy.getElements().getTypeElement(superclassName);
+                            ExpressionTree extendsTree = superclassElm != null
+                                    ? maker.QualIdent(superclassElm)
+                                    : maker.Identifier(superclassName);
+                            ClassTree copy = maker.Class(
+                                    orig.getModifiers(),
+                                    orig.getSimpleName(),
+                                    orig.getTypeParameters(),
+                                    extendsTree,
+                                    (List<? extends ExpressionTree>) orig.getImplementsClause(),
+                                    orig.getMembers()
+                                    );
+                            wcopy.rewrite(orig, copy);
+                            break;
                         }
                     }
                 }
-            }
-            dobj.getPrimaryFile().setAttribute("justCreatedByNewWizard", Boolean.TRUE); // NOI18N
+            }).commit();
         }
-        catch (Exception ex) {}
+        
+        template.setAttribute("justCreatedByNewWizard", Boolean.TRUE); // NOI18N
         
         return set;
     }

@@ -185,9 +185,10 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="Find.shadow">
                     <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-FindAction.instance"/>
                 </file>
-                <file name="Find Usages.shadow">
+<!--retouche:-->
+<!--                <file name="Find Usages.shadow">
                     <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-WhereUsedAction.instance"/>
-                </file>
+                </file>-->
                 <file name="Find in Projects.shadow">
                     <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-search-project-ProjectsSearchAction.instance"/>
                 </file>
@@ -246,9 +247,10 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="Project Properties.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-CustomizeProject.instance"/>
                 </file>
-                <file name="Refresh All Files.shadow">
+<!--retouche:-->
+<!--                <file name="Refresh All Files.shadow">
                     <attr name="originalFile" stringvalue="Actions/Tools/RescanAction.instance"/>
-                </file>
+                </file>-->
                 <file name="Save.shadow">
                     <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-SaveAction.instance"/>
                 </file>
@@ -256,7 +258,8 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-SaveAllAction.instance"/>
                 </file>
             </folder>
-            <folder name="Form">
+<!--retouche:-->
+<!--            <folder name="Form">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.options.editor.Bundle"/>
                 <file name="Customize Layout.shadow">
                     <attr name="originalFile" stringvalue="Actions/Form/org-netbeans-modules-form-actions-CustomizeLayoutAction.instance"/>
@@ -273,12 +276,13 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="Reload Form.shadow">
                     <attr name="originalFile" stringvalue="Actions/Form/org-netbeans-modules-form-actions-ReloadAction.instance"/>
                 </file>
-            </folder>
+            </folder>-->
             <folder name="GoTo">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.options.editor.Bundle"/>
-                <file name="Go to Class.shadow">
+<!--retouche:-->
+<!--                <file name="Go to Class.shadow">
                     <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-editor-java-JavaFastOpenAction.instance"/>
-                </file>
+                </file>-->
                 <file name="Go to Test.shadow">
                     <attr name="originalFile" stringvalue="Actions/JUnitTests/org-netbeans-modules-junit-GoToOppositeAction.instance"/>
                 </file>
@@ -341,12 +345,13 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="Help Contents.shadow">
                     <attr name="originalFile" stringvalue="Actions/Help/master-help.xml"/>
                 </file>
-                <file name="Java BluePrints Solutions Catalog.shadow">
+<!--retouche:-->
+<!--                <file name="Java BluePrints Solutions Catalog.shadow">
                     <attr name="originalFile" stringvalue="Actions/Help/Show BluePrints.instance"/>
                 </file>
                 <file name="Sun Java System Application Server Plugin Help.shadow">
                     <attr name="originalFile" stringvalue="Actions/Help/com-sun-enterprise-tools-studio-j2ee-mainpage.xml"/>
-                </file>
+                </file>-->
                 <file name="Welcome Screen.shadow">
                     <attr name="originalFile" stringvalue="Actions/Help/Show Welcome.instance"/>
                 </file>
@@ -354,15 +359,16 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="Refactor">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.options.editor.Bundle"/>
                 <file name="Rename.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-RenameAction.instance"/>
+                    <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-spi-impl-RenameAction.instance"/>
                 </file>
                 <file name="Redo.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-RedoAction.instance"/>
+                    <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-spi-impl-RedoAction.instance"/>
                 </file>
                 <file name="Undo.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-UndoAction.instance"/>
+                    <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-spi-impl-UndoAction.instance"/>
                 </file>
-                <file name="Change Method Parameters.shadow">
+<!--retouche:-->
+<!--                <file name="Change Method Parameters.shadow">
                     <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-ChangeParametersAction.instance"/>
                 </file>
                 <file name="Convert Anonymous Class to Inner.shadow">
@@ -397,7 +403,7 @@ Microsystems, Inc. All Rights Reserved.
                 </file>
                 <file name="Use Supertype Where Possible....shadow">
                     <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-UseSuperTypeAction.instance"/>
-                </file>
+                </file>-->
             </folder>
             <folder name="Run">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.options.editor.Bundle"/>
@@ -476,12 +482,13 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
             <folder name="Source">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.options.editor.Bundle"/>
-                <file name="Correct Javadoc.shadow">
+<!--retouche:-->
+<!--                <file name="Correct Javadoc.shadow">
                     <attr name="originalFile" stringvalue="Actions/Tools/Correct Javadoc Action.instance"/>
                 </file>
                 <file name="Override Methods....shadow">
                     <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-java-tools-OverrideAction.instance"/>
-                </file>
+                </file>-->
                 <file name="comment"/>
                 <file name="fix-imports"/>
                 <file name="format"/>
@@ -494,18 +501,20 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
             <folder name="Tools">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.options.editor.Bundle"/>
-                <file name="Add to Palette.shadow">
+<!--retouche:-->
+<!--                <file name="Add to Palette.shadow">
                     <attr name="originalFile" stringvalue="Actions/Form/org-netbeans-modules-form-actions-InstallToPaletteAction.instance"/>
-                </file>
+                </file>-->
                 <file name="Add to Favorites.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-favorites-Add.instance"/>
                 </file>
                 <file name="Apply Diff Patch.shadow">
                     <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-diff-PatchAction.instance"/>
                 </file>
-                <file name="Auto Comment.shadow">
+<!--retouche:-->
+<!--                <file name="Auto Comment.shadow">
                     <attr name="originalFile" stringvalue="Actions/Tools/Auto Comment Action.instance"/>
-                </file>
+                </file>-->
                 <file name="Create JUnit Tests.shadow">
                     <attr name="originalFile" stringvalue="Actions/JUnitTests/org-netbeans-modules-junit-CreateTestAction.instance"/>
                 </file>
@@ -524,9 +533,10 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="Insert Internationalized String....shadow">
                     <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-i18n-InsertI18nStringAction.instance"/>
                 </file>
-                <file name="Javadoc Index Search.shadow">
+<!--retouche:-->
+<!--                <file name="Javadoc Index Search.shadow">
                     <attr name="originalFile" stringvalue="Actions/Tools/javadoc-Search-Doc-Action.instance"/>
-                </file>
+                </file>-->
                 <file name="Module Manager.shadow">
                     <attr name="originalFile" stringvalue="Actions/System/org-netbeans-modules-autoupdate-catalog-ModuleCatalogAction.instance"/>
                 </file>
@@ -611,26 +621,28 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="Documents....shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-DocumentsAction.instance"/>
                 </file>
-                <file name="Inspector.shadow">
+<!--retouche:-->
+<!--                <file name="Inspector.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-form-actions-InspectorAction.instance"/>
-                </file>
+                </file>-->
                 <file name="Sources.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-jpda-ui-actions-SourcesViewAction.instance"/>
                 </file>
                 <file name="Properties.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-actions-GlobalPropertiesAction.instance"/>
                 </file>
-                <file name="HTTP Monitor.shadow">
+<!--retouche:-->
+<!--                <file name="HTTP Monitor.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-web-monitor-client-MonitorAction.instance"/>
-                </file>
+                </file>-->
                 <file name="Refactoring Preview.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-refactoring-ui-RefactoringPreviewOpenAction.instance"/>
+                    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-refactoring-spi-impl-RefactoringPreviewOpenAction.instance"/>
                 </file>
                 <file name="Close Window.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseWindowAction.instance"/>
                 </file>
                 <file name="Find Usages Results.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-refactoring-ui-FindUsagesOpenAction.instance"/>
+                    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-refactoring-spi-impl-FindUsagesOpenAction.instance"/>
                 </file>
                 <file name="Watches.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-WatchesViewAction.instance"/>
@@ -689,7 +701,8 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
             <folder name="XML">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.options.editor.Bundle"/>
-                <file name="SAX Document Handler Wizard....shadow">
+<!--retouche:-->
+<!--                <file name="SAX Document Handler Wizard....shadow">
                     <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDocumentHandlerAction.instance"/>
                 </file>
                 <file name="Validate XML.shadow">
@@ -700,7 +713,7 @@ Microsystems, Inc. All Rights Reserved.
                 </file>
                 <file name="Check XML.shadow">
                     <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-tools-actions-CheckAction.instance"/>
-                </file>
+                </file>-->
                 <file name="Check CSS.shadow">
                     <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-css-actions-CheckStyleAction.instance"/>
                 </file>
@@ -710,7 +723,8 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="Copy XML Style.shadow">
                     <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-css-actions-CopyStyleAction$XML.instance"/>
                 </file>
-                <file name="Generate DOM Tree Scanner....shadow">
+<!--retouche:-->
+<!--                <file name="Generate DOM Tree Scanner....shadow">
                     <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDOMScannerAction.instance"/>
                 </file>
                 <file name="Generate Documentation....shadow">
@@ -718,7 +732,7 @@ Microsystems, Inc. All Rights Reserved.
                 </file>
                 <file name="Generate DTD....shadow">
                     <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDTDAction.instance"/>
-                </file>
+                </file>-->
                 <file name="XSL Transformation....shadow">
                     <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xsl-actions-TransformAction.instance"/>
                 </file>

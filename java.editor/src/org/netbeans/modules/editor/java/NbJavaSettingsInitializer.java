@@ -23,12 +23,25 @@ import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.awt.event.InputEvent;
 import java.util.Map;
+import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Arrays;
 import javax.swing.KeyStroke;
+import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.MultiKeyBinding;
 import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsUtil;
 import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.ext.ExtSettingsNames;
+import org.openide.actions.SaveAction;
+import org.openide.actions.CutAction;
+import org.openide.actions.CopyAction;
+import org.openide.actions.PasteAction;
+import org.openide.actions.DeleteAction;
+import org.openide.actions.NewAction;
+import org.openide.actions.ToolsAction;
+import org.openide.actions.PropertiesAction;
+import org.openide.windows.TopComponent;
 import org.netbeans.editor.ext.ExtSettingsDefaults;
 import org.netbeans.editor.ext.java.JavaSettingsDefaults;
 import org.netbeans.editor.ext.java.JavaSettingsNames;
@@ -134,15 +147,21 @@ public class NbJavaSettingsInitializer extends Settings.AbstractInitializer {
                            ALT_MASK | InputEvent.SHIFT_MASK),
                        JavaKit.fixImportsAction
                    ),
-                   new MultiKeyBinding(
-                       KeyStroke.getKeyStroke(KeyEvent.VK_S,
-                           ALT_MASK | mask),
-                       JavaKit.tryCatchAction
-                       ),
+//                   new MultiKeyBinding(
+//                       KeyStroke.getKeyStroke(KeyEvent.VK_S,
+//                           ALT_MASK | mask),
+//                       JavaKit.tryCatchAction
+//                       ),
                    new MultiKeyBinding(
                        KeyStroke.getKeyStroke(KeyEvent.VK_G, ALT_MASK | (isMac ? InputEvent.SHIFT_MASK : 0)),
                        org.netbeans.editor.ext.ExtKit.gotoDeclarationAction
                    ),
+                   new MultiKeyBinding(
+                       KeyStroke.getKeyStroke(KeyEvent.VK_SPACE,
+                           mask | InputEvent.SHIFT_MASK),
+                       JavaKit.javaDocShowAction
+                   ),
+                   
                    new MultiKeyBinding(
                        KeyStroke.getKeyStroke(KeyEvent.VK_S,
                            InputEvent.SHIFT_MASK | ALT_MASK),

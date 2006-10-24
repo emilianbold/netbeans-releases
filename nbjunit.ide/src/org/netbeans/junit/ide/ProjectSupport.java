@@ -31,7 +31,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
-import org.netbeans.modules.javacore.JMManager;
+//retouche:
+//import org.netbeans.modules.javacore.JMManager;
 import org.netbeans.modules.project.ui.OpenProjectList;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -191,7 +192,14 @@ public class ProjectSupport {
     
     /** Waits until metadata scanning is finished. */
     public static boolean waitScanFinished() {
-        return ((JMManager)JMManager.getManager()).waitScanFinished();
+//retouche:
+//        return ((JMManager)JMManager.getManager()).waitScanFinished();
+//XXX:
+        try {
+            Thread.sleep(60000);
+	} catch (InterruptedException e) {}
+	
+        return true;
     }
 
     /** Listener for project open. */

@@ -31,7 +31,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.java.j2seproject.J2SEProjectUtil;
-import org.netbeans.modules.javacore.JMManager;
+//import org.netbeans.modules.javacore.JMManager;
 import org.openide.awt.Mnemonics;
 import org.openide.awt.MouseUtils;
 import org.openide.filesystems.FileObject;
@@ -116,9 +116,10 @@ public class MainClassChooser extends JPanel {
     }
     
     private Object[] getWarmupList () {        
-        return JMManager.getManager().isScanInProgress() ?
-            new Object[] {NbBundle.getMessage (MainClassChooser.class, "LBL_ChooseMainClass_SCANNING_MESSAGE")}:
-            new Object[] {NbBundle.getMessage (MainClassChooser.class, "LBL_ChooseMainClass_WARMUP_MESSAGE")}; // NOI18N
+//        return JMManager.getManager().isScanInProgress() ?
+//            new Object[] {NbBundle.getMessage (MainClassChooser.class, "LBL_ChooseMainClass_SCANNING_MESSAGE")}:
+//            new Object[] {NbBundle.getMessage (MainClassChooser.class, "LBL_ChooseMainClass_WARMUP_MESSAGE")}; // NOI18N
+          return new Object[] {NbBundle.getMessage (MainClassChooser.class, "LBL_ChooseMainClass_WARMUP_MESSAGE")};
     }
     
     private boolean isValidMainClassName (Object value) {

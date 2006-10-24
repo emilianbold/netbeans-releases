@@ -1,0 +1,813 @@
+/*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ *
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ *
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+package org.netbeans.modules.java.source.parsing;
+
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
+import java.io.Writer;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
+import java.nio.CharBuffer;
+import java.util.Comparator;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.NestingKind;
+import javax.tools.JavaFileObject;
+import org.netbeans.modules.java.ClassDataLoader;
+import org.netbeans.modules.java.JavaDataLoader;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
+
+/** Creates various kinds of file objects 
+ *
+ * XXX - Rename to JavaFileObjects
+ *
+ * @author Petr Hrebejk
+ */
+public class FileObjects {
+    
+    public static final Comparator<String> SIMPLE_NAME_STRING_COMPARATOR = new SimpleNameStringComparator();
+    public static final Comparator<JavaFileObject> SIMPLE_NAME_FILEOBJECT_COMPARATOR = new SimpleNameFileObjectComparator();
+    
+    
+    public static final String JAVA  = JavaDataLoader.JAVA_EXTENSION;
+    public static final String CLASS = ClassDataLoader.CLASS_EXTENSION;
+    public static final String JAR   = "jar";  //NOI18N
+    public static final String ZIP   = "zip";  //NOI18N
+    public static final String HTML  = "html"; //NOI18N
+    public static final String SIG   = "sig";  //NOI18N
+    public static final String RS    = "rs";   //NOI18N
+    
+    
+    /** Creates a new instance of FileObjects */
+    private FileObjects() {
+    }
+    
+    // Public methods ----------------------------------------------------------
+    
+    
+    
+    /**
+     * Creates {@link JavaFileObject} for a ZIP entry of given name
+     * @param zip a zip file
+     * @param name the name of entry, the '/' char is a separator
+     * @return {@link JavaFileObject}, never returns null
+     */
+    public static JavaFileObject zipFileObject( File zipFile, String folder, String baseName, long mtime) {
+        assert zipFile != null;                
+        return new ZipFileObject( zipFile, folder, baseName, mtime);
+    }
+    
+    public static JavaFileObject zipFileObject(ZipFile zipFile, String folder, String baseName, long mtime) {
+        assert zipFile != null;
+        return new CachedZipFileObject (zipFile, folder, baseName, mtime);
+    }
+    
+    /**
+     * Creates {@link JavaFileObject} for a regular {@link File}
+     * @param file for which the {@link JavaFileObject} should be created
+     * @pram root - the classpath root owning the file
+     * @return {@link JavaFileObject}, never returns null
+     */
+    public static JavaFileObject fileFileObject( final File file, final File root ) {
+        assert file != null;
+        assert root != null;
+        String[] pkgNamePair = getFolderAndBaseName(getRelativePath(root,file),File.separatorChar);
+        return new RegularFileObject( file, convertFolder2Package(pkgNamePair[0], File.separatorChar), pkgNamePair[1]);
+    }
+    
+    /**
+     * Creates {@link JavaFileObject} for a NetBeans {@link FileObject}
+     * Any client which needs to create {@link JavaFileObject} for java
+     * source file should use this factory method.
+     * @param {@link FileObject} for which the {@link JavaFileObject} should be created
+     * @return {@link JavaFileObject}, never returns null
+     * @exception {@link IOException} may be thrown
+     */
+    public static JavaFileObject nbFileObject (final FileObject file) throws IOException {
+        return nbFileObject (file, false);
+    }
+    
+    /**
+     * Creates {@link JavaFileObject} for a NetBeans {@link FileObject}
+     * Any client which needs to create {@link JavaFileObject} for java
+     * source file should use this factory method.
+     * @param {@link FileObject} for which the {@link JavaFileObject} should be created
+     * @param renderNow if true the snap shot of the file is taken immediately
+     * @return {@link JavaFileObject}, never returns null
+     * @exception {@link IOException} may be thrown
+     */
+    public static JavaFileObject nbFileObject (final FileObject file, boolean renderNow) throws IOException {
+        assert file != null;
+        if (!file.isValid() || file.isVirtual()) {
+            throw new InvalidFileException (file);
+        }
+        return new SourceFileObject (file, renderNow);
+    }
+    
+    /**
+     * Creates virtual {@link JavaFileObject} with given name and content.
+     * This method should be used only by tests, regular client should never
+     * use this method.
+     * @param content the content of the {@link JavaFileObject}
+     * @param name the name of the {@link JavaFileObject}
+     * @return {@link JavaFileObject}, never returns null
+     */
+    public static JavaFileObject memoryFileObject( CharSequence content, CharSequence name ) {
+        final String nameStr = name.toString();
+        if (!nameStr.equals(getBaseName(nameStr))) {
+            throw new IllegalArgumentException ("Memory is flat");      //NOI18N
+        }
+        int length = content.length();        
+        if ( length != 0 && Character.isWhitespace( content.charAt( length - 1 ) ) ) {
+            return new MemoryFileObject( nameStr, CharBuffer.wrap( content ) );
+        }
+        else {
+            return new MemoryFileObject( nameStr, (CharBuffer)CharBuffer.allocate( length + 1 ).append( content ).append( ' ' ).flip() );
+        }
+        
+    }            
+    
+    public static String stripExtension( String fileName ) {        
+        int dot = fileName.lastIndexOf(".");
+        return (dot == -1 ? fileName : fileName.substring(0, dot));
+    }    
+    
+    
+    /**
+     * Returns the name of JavaFileObject, similar to
+     * {@link java.io.File#getName}
+     */
+    public static String getName (final JavaFileObject fo, final boolean noExt) {
+        assert fo != null;
+        if (fo instanceof Base) {
+            Base baseFileObject = (Base) fo;
+            if (noExt) {
+                return baseFileObject.getName();
+            }
+            else {                
+                StringBuilder sb = new StringBuilder ();
+                sb.append (baseFileObject.getName());
+                sb.append('.'); //NOI18N
+                sb.append(baseFileObject.getExt());
+                return sb.toString();
+            }
+        }
+        try {
+            final URL url = fo.toUri().toURL();
+            String path = url.getPath();
+            int index1 = path.lastIndexOf('/');
+            int len;
+            if (noExt) {
+               final int index2 = path.lastIndexOf('.');
+               if (index2>index1) {
+                   len = index2;
+               }
+               else {
+                   len = path.length();
+               }
+            }
+            else {
+                len = path.length();
+            }
+            path = path.substring(index1+1,len);
+            return path;
+        } catch (MalformedURLException e) {
+            return null;
+        }        
+    }
+        
+    
+    /**
+     * Returns the basename name without folder path
+     *  @param file name, eg. obtained from {@link FileObjects#getPath} or {java.io.File.getPath}
+     *  @return the base name
+     *  @see #getBaseName(String,char)
+     */
+    public static String getBaseName( String fileName ) {
+        return getBaseName(fileName, File.separatorChar);
+    }
+    
+    /**
+     * Returns the basename name without folder path. You can specify
+     * the path separator since eg zip files uses '/' regardless of platform.
+     *  @param file name, eg. obtained from {@link FileObjects#getPath} or {java.io.File.getPath}
+     *  @param separator path separator
+     *  @return the base name
+     */
+    public static String getBaseName( String fileName, char separator ) {
+        return getFolderAndBaseName(fileName, separator)[1];
+    }
+    
+    
+    /**
+     *Returns the folder (package name separated by original separators)
+     *and base name.
+     * @param path
+     * @return array of 2 strings, 1st the folder 2nd the base name
+     */
+    public static String[] getFolderAndBaseName (final String fileName, final char separator) {
+        final int i = fileName.lastIndexOf( separator );
+        if ( i == -1 ) {
+            return new String[] {"",fileName};  //NOI18N
+        }
+        else {
+            return new String[] {
+                fileName.substring(0,i),
+                fileName.substring( i + 1 )
+            };
+        }
+    }
+                
+    public static String getBinaryName (final File file, final File root) {
+        assert file != null && root != null;
+        String fileName = FileObjects.getRelativePath (root, file);
+        int index = fileName.lastIndexOf('.');  //NOI18N
+        if (index > 0) {
+            fileName = fileName.substring(0,index);
+        }        
+        return fileName.replace(File.separatorChar,'.');   //NOI18N        
+    }
+    
+    public static String getSimpleName( JavaFileObject fo ) {
+        
+        String name = getName(fo,true);
+        int i = name.lastIndexOf( '$' );
+        if ( i == -1 ) {
+            return name;
+        }
+        else {
+            return name.substring( i + 1 );
+        }        
+    }
+    
+    public static String getSimpleName( String fileName ) {
+        
+        String name = getBaseName( fileName );
+        
+        int i = name.lastIndexOf( '$' );
+        if ( i == -1 ) {
+            return name;
+        }
+        else {
+            return name.substring( i + 1 );
+        }
+        
+    }
+    
+    public static String convertPackage2Folder( String packageName ) {
+        return packageName.replace( '.', '/' );
+    }    
+    
+    
+    public static String convertFolder2Package (String packageName) {
+        return convertFolder2Package (packageName, '/');    //NOI18N
+    }
+    
+    public static String convertFolder2Package( String packageName, char folderSeparator ) {
+        return packageName.replace( folderSeparator, '.' );
+    }
+    
+    
+    public static String getRelativePath (final String packageName, final String relativeName) {
+        StringBuilder relativePath = new StringBuilder ();
+        relativePath.append(packageName.replace('.','/'));
+        relativePath.append(relativeName);
+        return relativePath.toString();
+    }
+    
+    public static String[] getParentRelativePathAndName (final String className) {
+        if (className.charAt(className.length()-1) == '.') {
+            return null;
+        }
+        final int index = className.lastIndexOf('.');
+        if (index<0) {
+            return new String[] {
+                "",     //NOI18N
+                className
+            };
+        }
+        else {
+            return new String[] {
+                className.substring(0,index).replace('.','/'),      //NOI18N
+                className.substring(index+1)
+            };
+        }
+    }
+    
+    
+    public static File getRootFile (final URL url) {
+        File rootFile;
+        if ("jar".equals(url.getProtocol())) {  //NOI18N
+            rootFile = new File (URI.create(FileUtil.getArchiveFile(url).toExternalForm()));
+        }
+        else {
+            rootFile = new File (URI.create(url.toExternalForm()));
+        }
+        return rootFile;
+    }
+    
+    
+    // Private methods ---------------------------------------------------------
+    
+    // Innerclasses ------------------------------------------------------------
+    
+    public static abstract class Base implements JavaFileObject {
+
+        protected final JavaFileObject.Kind kind;
+        protected final String pkgName;
+        protected final String nameWithoutExt;
+        protected final String ext;        
+        
+        protected Base (final String pkgName, final String name) {
+            assert pkgName != null;
+            assert name != null;
+            this.pkgName = pkgName;
+            String[] res = getNameExtPair(name);
+            this.nameWithoutExt = res[0];
+            this.ext = res[1];
+            if (FileObjects.JAVA.equalsIgnoreCase(ext)) { //NOI18N
+                this.kind = Kind.SOURCE;
+            }
+            else if (FileObjects.CLASS.equalsIgnoreCase(ext) || "sig".equals(ext)) {   //NOI18N
+                this.kind = Kind.CLASS;
+            }
+            else if (FileObjects.HTML.equalsIgnoreCase(ext)) {    //NOI18N
+                this.kind = Kind.HTML;
+            }
+            else {
+                this.kind = Kind.OTHER;
+            }
+        }
+        
+        public JavaFileObject.Kind getKind() {
+            return this.kind;
+        }
+        
+        public boolean isNameCompatible (String simplename, JavaFileObject.Kind k) {
+            if (this.kind != k) {
+                return false;
+            }
+	    return nameWithoutExt.equals(simplename);
+	}        
+        
+        public NestingKind getNestingKind() {
+            return null;
+        }
+        
+        public Modifier getAccessLevel() {
+            return null;
+        }
+    
+        @Override
+        public String toString() {
+            return this.toUri().toString();
+        }
+        
+        public String getPackage () {
+            return this.pkgName;
+        }
+        
+        public String getNameWithoutExtension () {
+            return this.nameWithoutExt;
+        }
+        
+        public String getName () {
+            return this.nameWithoutExt + '.' + ext;
+        }
+        
+        public String getExt () {
+            return this.ext;
+        }        
+        
+        private static String[] getNameExtPair (String name) {
+            int index = name.lastIndexOf ('.');            
+            String namenx;
+            String ext;
+            if (index <= 0) {
+                namenx =name;
+                ext = "";   //NOI18N
+            }
+            else {
+                namenx = name.substring(0,index);
+                if (index == name.length()-1) {
+                    ext = "";
+                }
+                else {
+                    ext = name.substring(index+1);
+                }
+            }
+            return new String[] {
+              namenx,
+              ext
+            };
+        }
+    }
+    
+    public static abstract class FileBase extends Base {
+        
+        protected final File f;
+        
+        protected FileBase (final File file, final String pkgName, final String name) {
+            super (pkgName, name);
+            assert file != null;
+            assert file.equals(FileUtil.normalizeFile(file));
+            this.f = file;
+        }
+        
+        public File getFile () {
+            return this.f;
+        }
+    }
+    
+    
+    public static class InvalidFileException extends IOException {
+        
+        public InvalidFileException () {
+            super ();
+        }
+        
+        public InvalidFileException (final FileObject fo) {
+            super (NbBundle.getMessage(FileObjects.class,"FMT_InvalidFile",FileUtil.getFileDisplayName(fo)));
+        }
+    }
+    
+    
+    public static String getRelativePath (final File root, final File fo) {
+        final String rootPath = root.getAbsolutePath();
+        final String foPath = fo.getAbsolutePath();
+        assert foPath.startsWith(rootPath);
+        int index = rootPath.length();
+        if (rootPath.charAt(index-1)!=File.separatorChar) {
+            index++;
+        }            
+        int foIndex = foPath.length();
+        if (foIndex <= index) {
+            return "";  //NOI18N
+        }
+        return foPath.substring(index);
+    }           
+    
+    private static class RegularFileObject extends FileBase {
+        
+        private URI uriCache;   
+
+	public RegularFileObject(final File f, final String packageName, final String baseName) {
+            super (f, packageName, baseName);
+	}               
+
+        public InputStream openInputStream() throws IOException {
+	    return new FileInputStream(f);
+	}
+
+	public Reader openReader (boolean b) throws IOException {
+	    throw new UnsupportedOperationException();
+	}
+
+	public OutputStream openOutputStream() throws IOException {
+	    return new FileOutputStream(f);
+	}
+
+	public Writer openWriter() throws IOException {
+	    //FIX: consider using encoding here
+	    return new OutputStreamWriter(new FileOutputStream(f));
+	}
+
+	public @Override boolean isNameCompatible(String simplename, JavaFileObject.Kind kind) {
+	    boolean res = super.isNameCompatible(simplename, kind);
+            if (res) {
+                return res;
+            }
+            else if (Utilities.isWindows()) {
+                return nameWithoutExt.equalsIgnoreCase(simplename);
+            }
+            else {
+                return false;
+            }
+	} 	   
+        
+        public URI toUri () {
+            if (this.uriCache == null) {
+                this.uriCache = f.toURI();
+            }
+            return this.uriCache;
+        }
+
+        public long getLastModified() {
+	    return f.lastModified();
+	}
+
+	public boolean delete() {
+	    return f.delete();
+	}
+
+	public CharBuffer getCharContent(boolean ignoreEncodingErrors) throws IOException {
+            
+            char[] result;
+            InputStreamReader in = new InputStreamReader (new FileInputStream(this.f), encodingName);
+            try {
+                int len = (int)this.f.length();
+                result = new char [len+1];
+                int red = 0, rv;	    
+                while ((rv=in.read(result,red,len-red))>0 && (red=red+rv)<len);
+            } finally {
+                in.close();
+            }
+            result[result.length-1]='\n'; //NOI18N
+            return CharBuffer.wrap (result);            
+	}
+
+	@Override
+	public boolean equals(Object other) {
+	    if (!(other instanceof RegularFileObject))
+		return false;
+	    RegularFileObject o = (RegularFileObject) other;
+	    return f.equals(o.f);
+	}
+
+	@Override
+	public int hashCode() {
+	    return f.hashCode();
+	}
+        
+    }    
+
+    /** A subclass of FileObject representing zip entries.
+     * XXX: What happens when the archive is deleted or rebuilt?
+     */
+    private abstract static class ZipFileBase extends Base {
+        
+        protected final long mtime;
+        protected final String resName;
+        
+        public ZipFileBase (final String folderName, final String baseName, long mtime) {
+            super (convertFolder2Package(folderName),baseName);
+            this.mtime = mtime;
+            if (folderName.length() == 0) {
+                this.resName = baseName;
+            }
+            else {
+                StringBuilder resName = new StringBuilder (folderName);
+                resName.append('/');        //NOI18N
+                resName.append(baseName);
+                this.resName = resName.toString();
+            }
+        }
+        
+        public OutputStream openOutputStream() throws IOException {
+	    throw new UnsupportedOperationException();
+	}
+
+	public Reader openReader(boolean b) throws IOException {
+	    throw new UnsupportedOperationException();
+	}
+
+        public Writer openWriter() throws IOException {
+	    throw new UnsupportedOperationException();
+	}
+        
+        public long getLastModified() {
+	    return mtime;
+	}
+
+	public boolean delete() {
+	    throw new UnsupportedOperationException();
+	}
+
+	public CharBuffer getCharContent(boolean ignoreEncodingErrors) {
+	    throw new UnsupportedOperationException();
+	}
+        
+        public final URI toUri () {
+            URI  zdirURI = this.getArchiveURI();
+            return URI.create ("jar:"+zdirURI.toString()+"!/"+resName);  //NOI18N
+        }
+        
+        @Override
+	public int hashCode() {
+	    return this.resName.hashCode();
+	}                
+        
+	@Override
+	public boolean equals(Object other) {
+	    if (!(other instanceof ZipFileBase))
+		return false;
+	    ZipFileBase o = (ZipFileBase) other;
+	    return getArchiveURI().equals(o.getArchiveURI()) && resName.equals(o.resName);
+	}
+        
+        protected abstract URI getArchiveURI ();
+        
+    }
+    
+    private static class ZipFileObject extends ZipFileBase {
+	
+
+	/** The zipfile containing the entry.
+	 */
+	private final File archiveFile;
+        
+
+        ZipFileObject(final File archiveFile, final String folderName, final String baseName, long mtime) {
+            super (folderName,baseName,mtime);
+            assert archiveFile != null : "archiveFile == null";   //NOI18N
+	    this.archiveFile = archiveFile;
+            
+	}
+
+        public InputStream openInputStream() throws IOException {            
+            class ZipInputStream extends InputStream {
+
+                private ZipFile zipfile;
+                private InputStream delegate;
+
+                public ZipInputStream (ZipFile zf) throws IOException {
+                    this.zipfile = zf;
+                    this.delegate = zf.getInputStream(new ZipEntry(resName));
+                }
+
+                public int read() throws IOException {
+                    throw new java.lang.UnsupportedOperationException("Not supported yet.");
+                }
+
+                public int read(byte b[], int off, int len) throws IOException {
+                    return delegate.read(b, off, len);
+                }
+
+                public int available() throws IOException {
+                    return this.delegate.available();
+                }
+
+                public void close() throws IOException {
+                    try {
+                        this.delegate.close();
+                    } finally {
+                        this.zipfile.close();
+                    }
+                }
+
+
+            };
+            ZipFile zf = new ZipFile (archiveFile);
+            return new ZipInputStream (zf);
+	}
+        
+        public URI getArchiveURI () {
+            return this.archiveFile.toURI();
+        }
+    }
+    
+    private static class CachedZipFileObject extends ZipFileBase {
+        
+        private ZipFile zipFile;
+        
+        CachedZipFileObject(final ZipFile zipFile, final String folderName, final String baseName, long mtime) {
+            super (folderName,baseName,mtime);
+            assert zipFile != null : "archiveFile == null";   //NOI18N
+	    this.zipFile = zipFile;            
+	}
+        
+        public InputStream openInputStream() throws IOException {
+            return this.zipFile.getInputStream(new ZipEntry (this.resName));
+	}
+        
+        public URI getArchiveURI () {
+            return new File (this.zipFile.getName()).toURI();
+        }
+    }
+    
+    
+    /** Temporay FileObject for parsing input stream.
+     */    
+    private static class MemoryFileObject extends Base {
+        
+        private String fileName;
+        private CharBuffer cb;
+        
+        public MemoryFileObject( String fileName, CharBuffer cb ) {            
+            super ("",fileName);    //NOI18N
+            this.cb = cb;
+            this.fileName = fileName;
+        }                
+        
+
+        /**
+         * Get the character content of the file, if available.
+         * @param ignoreEncodingErrors if true, encoding errros will be replaced by the 
+         * default translation character; otherwise they should be reported as diagnostics.
+         * @throws UnsupportedOperationException if character access is not supported
+         */
+        public java.nio.CharBuffer getCharContent(boolean ignoreEncodingErrors) throws java.io.IOException {
+            return cb;
+        }
+
+        public boolean delete() {
+            // Do nothing
+            return false;
+        }        
+
+        public URI toUri () {
+            return URI.create (this.nameWithoutExt);
+        }
+
+        public long getLastModified() {
+            return System.currentTimeMillis(); // XXX
+        }
+
+        /**
+         * Get an InputStream for this object.
+         * 
+         * @return an InputStream for this  object.
+         * @throws UnsupportedOperationException if the byte access is not supported
+         */
+        public InputStream openInputStream() throws java.io.IOException {
+            return new ByteArrayInputStream(cb.toString().getBytes("UTF-8"));
+        }
+
+        /**
+         * Get an OutputStream for this object.
+         * 
+         * @return an OutputStream for this  object.
+         * @throws UnsupportedOperationException if byte access is not supported
+         */
+        public java.io.OutputStream openOutputStream() throws java.io.IOException {
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * Get a reader for this object.
+         * 
+         * @return a Reader for this file object.
+         * @throws UnsupportedOperationException if character access is not supported
+         * @throws IOException if an error occurs while opening the reader
+         */
+        public java.io.Reader openReader (boolean b) throws java.io.IOException {
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * Get a writer for this object.
+         * @throws UnsupportedOperationException if character access is not supported
+         * @throws IOException if an error occurs while opening the writer
+         */
+        public java.io.Writer openWriter() throws java.io.IOException {
+            throw new UnsupportedOperationException();
+        }
+        
+    }    
+    
+    private static class SimpleNameStringComparator implements Comparator<String> {
+        
+        public int compare( String o1, String o2 ) {
+            return getSimpleName( o1 ).compareTo( getSimpleName( o2 ) );
+        }
+                        
+    }
+    
+    private static class SimpleNameFileObjectComparator implements Comparator<JavaFileObject> {
+        
+        public int compare( JavaFileObject o1, JavaFileObject o2 ) {
+            
+            String n1 = getSimpleName( o1 );
+            String n2 = getSimpleName( o2 );
+                        
+            return n1.compareTo( n2 );
+        }
+                        
+    }
+    
+    static final String encodingName = new OutputStreamWriter(new ByteArrayOutputStream()).getEncoding();            
+    
+}

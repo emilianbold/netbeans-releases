@@ -21,4 +21,13 @@ Microsystems, Inc. All Rights Reserved.
 <project name="java/editor" default="netbeans" basedir=".">
     <import file="../../nbbuild/templates/projectized.xml"/>
 
+    <target name="do-test-build" depends="-build-jbrowse-tests,projectized-common.do-test-build">
+    </target>
+
+    <target name="-build-jbrowse-tests">
+        <ant dir="../../java/source/test" target="buildtests" inheritall="false" />
+        <ant dir="../../openide/text/test" target="buildtests" inheritall="false" />
+        <ant dir="../../editor" target="test-build" inheritall="false" />
+    </target>
+
 </project>

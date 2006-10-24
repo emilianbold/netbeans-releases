@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<project name="java/source/javac" default="netbeans" basedir=".">
+
+    <import file="../../../nbbuild/templates/projectized.xml"/>
+    
+    <target name="netbeans-extra" depends="release"/>
+
+    <target name="release" depends="init">
+        <mkdir dir="${cluster}/modules/ext"/>
+        <copy todir="${cluster}/modules/ext">
+            <fileset dir="../../external">
+                <include name="javac-api.jar"/>
+            </fileset>
+        </copy>
+    </target>
+
+    <target name="nbm" depends="init,netbeans,javadoc" description="Build NBM archive.">
+        <mkdir dir="build"/>
+        <makenbm file="build/${nbm}"
+                 productdir="${cluster}"
+                 module="${module.jar}"
+                 homepage="${nbm.homepage}"
+                 distribution="http://${dist.base}/${nbm}"
+                 needsrestart="${nbm.needs.restart}"
+                 releasedate="${nbm.release.date}"
+		 moduleauthor="${nbm.module.author}">
+            <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
+        </makenbm>
+    </target>
+    
+    <target name="javadoc" depends="build-init,-javadoc-init,-conditional-javadoc-warn" unless="skip.15">
+        <property name="javadoc.check.failonerror" value="false" />
+        <!-- This should become an import at some point, perhaps: -->
+        <ant dir="${nb_all}/nbbuild/javadoctools" antfile="template.xml" target="javadoc">
+            <property name="javadoc.base" location="../Jsr199"/>
+            <property name="javadoc.name" value="${code.name.base.dashes}" />
+            <property name="javadoc.packages" value="${module.javadoc.packages}"/>
+            <property name="javadoc.classpath" refid="cp"/>
+            <property name="javadoc.project" location="nbproject/project.xml"/>
+        </ant>
+        <copy file="${netbeans.javadoc.dir}/org-netbeans-libs-javacapi.zip" todir="${cluster}/docs"/>
+    </target>
+    
+    <!-- temporary targets until retouche build sync's with 5.0 -->
+    <target name="-javadoc-init"/>
+    <target name="-conditional-javadoc-warn"/>
+
+</project>

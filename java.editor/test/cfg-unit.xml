@@ -29,50 +29,18 @@ Microsystems, Inc. All Rights Reserved.
     "**/*Hid.*"
 -->
 
-<mconfig name="java editor unit test config">
+<mconfig name="java editor">
 
-    <testbag testattribs="document" executor="code" name="document_testbag">
+    <testbag testattribs="all,stable" executor="code" name="Unit Tests">
         <testset dir="unit/src">
             <patternset>
-                <include name="**/**Document**.class"/>
+                <include name="**/**Test.class"/>
             </patternset>
         </testset>
     </testbag>
     
-    <!-- 
-    <testbag testattribs="random" executor="code" name="Randomized Editor Unit Tests">
-        <testset dir="unit/src">
-            <patternset>
-                <include name="org/netbeans/modules/editor/RandomDocumentUnitTestSuite.class"/>
-            </patternset>
-        </testset>
-    </testbag>
-    -->
+    <executor name="code" antfile="build-unit.xml" target="run-unit-test"/>
     
-    <testbag testattribs="failing" executor="code" name="testbag_2">
-        <testset dir="unit/src">
-            <patternset>
-            </patternset>
-        </testset>
-    </testbag>
-    
-    <!-- If you want to use this testbag you *must* provide xtest.includes property, -->
-    <!-- (either on cmd line or in the script) to explicitly define which test       -->
-    <!-- you want to run. This will run *only* tests from unit/src folder !!!        -->
-    <testbag testattribs="empty" executor="code" name="testbag_empty">
-        <testset dir="unit/src"/>
-    </testbag>
-
-    <testbag testattribs="dev" executor="code" name="Developers' Tests">
-        <testset dir="unit/src">
-            <patternset>
-                <include name="org/netbeans/modules/editor/java/JavaSmartBracketUnitTestSuite.class"/>
-                <include name="org/netbeans/modules/editor/java/JavaFormatterUnitTestSuite.class"/>
-            </patternset>
-        </testset>
-    </testbag>
-    
-    <executor name="code" antfile="build-unit.xml" target="run-unit-test" default="true"/>
     <compiler name="unit-compiler" antfile="build-unit.xml" target="default-compiler" default="true"/>
     
 </mconfig>

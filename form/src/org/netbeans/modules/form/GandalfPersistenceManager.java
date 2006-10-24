@@ -19,10 +19,19 @@
 
 package org.netbeans.modules.form;
 
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
 import java.beans.*;
 import java.io.*;
 import java.util.*;
 import java.lang.reflect.*;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
 
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import org.openide.filesystems.FileLock;
@@ -41,9 +50,6 @@ import org.netbeans.modules.form.layoutdesign.LayoutComponent;
 import org.netbeans.modules.form.layoutdesign.support.SwingLayoutBuilder;
 
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.javacore.api.JavaModel;
-import org.netbeans.jmi.javamodel.Resource;
-import org.netbeans.jmi.javamodel.ClassDefinition;
 import org.openide.nodes.Node.Property;
 import org.openide.util.TopologicalSortException;
 import org.w3c.dom.NamedNodeMap;
@@ -300,26 +306,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
             formInfoName = null; // not available
 
         try { // try declared superclass from java source first
-            ClassPath classPath;
-            Resource resource;
-            List classifiers = Collections.EMPTY_LIST;
             if (!underTest) {
-                classPath = ClassPath.getClassPath(javaFile, ClassPath.SOURCE);
-                resource = JavaModel.getResource(classPath.findOwnerRoot(javaFile),
-                    classPath.getResourceName(javaFile));
-                classifiers = resource.getClassifiers();
-            }
-            Iterator classIter = classifiers.iterator();
-            
-            while (classIter.hasNext()) {
-                ClassDefinition javaClass = (ClassDefinition)classIter.next();
-                String className = javaClass.getName();
-                int dotIndex = className.lastIndexOf('.');
-                className = (dotIndex == -1) ? className : className.substring(dotIndex+1);
-                if (className.equals(javaFile.getName())) {
-                    declaredSuperclassName = javaClass.getSuperClass().getName();
-                    break;
-                }
+                declaredSuperclassName = getSuperClassName(javaFile);
             }
             
             Class superclass = declaredSuperclassName != null ?
@@ -452,6 +440,36 @@ public class GandalfPersistenceManager extends PersistenceManager {
         this.formModel = null;
         return formModel;
     }  
+
+    /**
+     * gets superclass if the 'extends' keyword is present
+     */
+    private static String getSuperClassName(final FileObject javaFile) throws IllegalArgumentException, IOException {
+        final String javaFileName = javaFile.getName();
+        final String[] result = new String[1];
+        JavaSource js = JavaSource.forFileObject(javaFile);
+        js.runUserActionTask(new CancellableTask<CompilationController>() {
+            public void cancel() {
+            }
+            public void run(CompilationController controller) throws Exception {
+                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                for (Tree t: controller.getCompilationUnit().getTypeDecls()) {
+                    if (t.getKind() == Tree.Kind.CLASS && javaFileName.equals(((ClassTree) t).getSimpleName().toString())) {
+                        Tree superT = ((ClassTree) t).getExtendsClause();
+                        if (superT != null) {
+                            TreePath superTPath = controller.getTrees().getPath(controller.getCompilationUnit(), superT);
+                            Element superEl = controller.getTrees().getElement(superTPath);
+                            if (superEl != null && superEl.getKind() == ElementKind.CLASS) {
+                                result[0] = ((TypeElement) superEl).getQualifiedName().toString();
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }, true);
+        return result[0];
+    }
     
     private void loadNonVisuals(org.w3c.dom.Node node) throws PersistenceException {
         org.w3c.dom.Node nonVisualsNode =

@@ -19,24 +19,39 @@
 
 package org.netbeans.modules.form;
 
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
-import java.awt.datatransfer.*;
-
-import org.openide.*;
-import org.openide.nodes.*;
+import java.util.EnumSet;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.ElementFilter;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.ClassIndex;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.modules.form.layoutdesign.LayoutComponent;
+import org.netbeans.modules.form.layoutdesign.LayoutModel;
+import org.netbeans.modules.form.project.ClassPathUtils;
+import org.netbeans.modules.form.project.ClassSource;
+import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
+import org.openide.nodes.NodeTransfer;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
-import org.openide.util.datatransfer.PasteType;
 import org.openide.util.datatransfer.ExTransferable;
-import org.openide.ErrorManager;
-import org.openide.cookies.SourceCookie;
-import org.openide.src.ClassElement;
-import org.openide.loaders.DataObject;
-
-import org.netbeans.modules.form.layoutsupport.*;
-import org.netbeans.modules.form.project.*;
-import org.netbeans.modules.form.layoutdesign.*;
+import org.openide.util.datatransfer.PasteType;
 
 /**
  * Support class for copy/cut/paste operations in form editor.
@@ -383,30 +398,53 @@ class CopySupport {
             return transferable;
         }
     }
-
-    static String getCopiedBeanClassName(Transferable t) {
-        ClassElement clsElem = (ClassElement)
-            NodeTransfer.cookie(t, NodeTransfer.COPY, ClassElement.class);
-
-        if (clsElem == null) {
-            SourceCookie source = (SourceCookie)
-                NodeTransfer.cookie(t, NodeTransfer.COPY, SourceCookie.class);
-            DataObject dobj = (DataObject)
-                NodeTransfer.cookie(t, NodeTransfer.COPY, DataObject.class);
-            if (source != null && dobj != null) {
-                ClassElement[] classes = source.getSource().getClasses();
-                for (int i=0; i < classes.length; i++) {
-                    if (classes[i].getName().getName().equals(dobj.getName())
-                        && classes[i].isDeclaredAsJavaBean())
-                    {
-                        clsElem = classes[i];
-                        break;
-                    }
+    
+    private static TypeElement findTypeElement(CompilationController controller, JavaSource js, String simpleName) {
+        ClassIndex index = js.getClasspathInfo().getClassIndex();
+        for (ElementHandle<TypeElement> handle: index.getDeclaredTypes(
+                simpleName,
+                ClassIndex.NameKind.SIMPLE_NAME,
+                EnumSet.of(ClassIndex.SearchScope.SOURCE))) {
+            return handle.resolve(controller);
+        }
+        return null;
+    }
+        
+    private static boolean isDeclaredAsJavaBean(TypeElement classElm) {
+        Set<Modifier> modifiers = classElm.getModifiers();
+        if (modifiers.contains(Modifier.PUBLIC) && !modifiers.contains(Modifier.ABSTRACT)) {
+            for (ExecutableElement constr: ElementFilter.constructorsIn(classElm.getEnclosedElements())) {
+                Set<Modifier> cmodifiers = constr.getModifiers();
+                if (cmodifiers.contains(Modifier.PUBLIC) && constr.getParameters().isEmpty()) {
+                    return true;
                 }
             }
         }
+        return false;
+    }
 
-        return clsElem != null ? clsElem.getVMName() : null;
+    static String getCopiedBeanClassName(final FileObject fo) {
+        final String[] result = new String[1];
+        final JavaSource js = JavaSource.forFileObject(fo);
+        try {
+            js.runUserActionTask(new CancellableTask<CompilationController>() {
+
+                public void cancel() {
+                }
+
+                public void run(CompilationController controller) throws Exception {
+                    controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                    TypeElement classElm = findTypeElement(controller, js, fo.getName());
+                    if (classElm != null && isDeclaredAsJavaBean(classElm)) {
+                        result[0] = controller.getElements().getBinaryName(classElm).toString();
+                    }
+                }
+            }, true);
+        } catch (IOException ex) {
+            Logger.getLogger(CopySupport.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
+        }
+        
+        return result[0];
     }
 
     static ClassSource getCopiedBeanClassSource(Transferable t) {
@@ -416,7 +454,7 @@ class CopySupport {
         if (fo == null)
             return null;
 
-        String clsName = getCopiedBeanClassName(t);
+        String clsName = getCopiedBeanClassName(fo);
         if (clsName == null)
             return null;
 

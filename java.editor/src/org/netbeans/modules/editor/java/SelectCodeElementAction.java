@@ -19,32 +19,36 @@
 
 package org.netbeans.modules.editor.java;
 
+import com.sun.source.tree.Tree;
+import com.sun.source.util.SourcePositions;
+import com.sun.source.util.TreePath;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.MissingResourceException;
-import java.util.Stack;
 import javax.swing.Action;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.text.Caret;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.mdr.MDRepository;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.editor.BaseAction;
-import org.netbeans.jmi.javamodel.Element;
-import org.netbeans.jmi.javamodel.Resource;
-import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.javacore.JMManager;
-import org.netbeans.modules.javacore.api.JavaModel;
-import org.openide.loaders.DataObject;
-import org.openide.text.PositionBounds;
+import org.openide.ErrorManager;
+import org.openide.util.NbBundle;
 
 /**
-* Java editor kit with appropriate document
-*
-* @author Miloslav Metelka
-* @version 1.00
-*/
-
-class SelectCodeElementAction extends BaseAction {
+ * Code selection according to syntax tree.
+ *
+ * TODO: javadoc selection
+ *
+ * @author Miloslav Metelka, Jan Pokorsky
+ */
+final class SelectCodeElementAction extends BaseAction {
 
     private boolean selectNext;
 
@@ -74,7 +78,7 @@ class SelectCodeElementAction extends BaseAction {
         if (name == null) return null;
         String shortDesc;
         try {
-            shortDesc = org.openide.util.NbBundle.getBundle (JavaKit.class).getString(name); // NOI18N
+            shortDesc = NbBundle.getBundle(JavaKit.class).getString(name); // NOI18N
         }catch (MissingResourceException mre){
             shortDesc = name;
         }
@@ -95,100 +99,55 @@ class SelectCodeElementAction extends BaseAction {
                     target.putClientProperty(SelectionHandler.class, handler);
                 }
                 
-                if (!selectNext) { // select previous
-                    if (!handler.isEmpty()) {
-                        handler.popSelectionInfo(); // the last pushed - want to skip this one
-                        handler.selectTop(); // select top if exists
-                    }
-
-                } else { // select next element
-                    DataObject dob = NbEditorUtilities.getDataObject(target.getDocument());
-                    if (dob != null) {
-                        JMManager manager = (JMManager)JMManager.getManager();
-                        MDRepository repository = JavaModel.getJavaRepository();
-                        repository.beginTrans(true); // write access to enforce reparsing if necessary
-                        try {
-                            //Resource resource = manager.getResource(dob.getPrimaryFile());
-                            Element elem;
-                            if (handler.isEmpty()) {
-                                // Push the initial selection (or non-selection)
-                                handler.pushSelectionInfo(
-                                    new SelectionInfo(selectionStartOffset, selectionEndOffset, null));
-                            }
-
-                            elem = handler.peekSelectionInfo().getElement();
-                            if (!(elem instanceof Resource)) {
-                                if (elem != null) {
-                                    elem = (Element)elem.refImmediateComposite();
-                                } else { // initial state
-                                    elem = manager.getElementByOffset(dob.getPrimaryFile(), selectionStartOffset);
-                                }
-
-                                if (elem != null) {
-                                    PositionBounds bounds=manager.getElementPosition(elem);
-                                    selectionStartOffset = bounds.getBegin().getOffset();
-                                    selectionEndOffset = bounds.getEnd().getOffset();
-                                    
-                                    // Additional patching of selection bounds
-                                    if (elem instanceof Resource) {
-                                        // should extend the bounds to full source (including initial comment etc.)
-                                        selectionStartOffset = 0;
-                                        selectionEndOffset = target.getDocument().getLength();
-                                    }
-
-                                    handler.pushSelectionInfo(
-                                        new SelectionInfo(selectionStartOffset, selectionEndOffset, elem));
-                                    handler.selectTop();
-
-                                }
-                            }
-                        } finally {
-                            repository.endTrans();
-                        }
-                    }
+                if (selectNext) { // select next element
+                    handler.selectNext();
+                } else { // select previous
+                    handler.selectPrevious();
                 }
             }
         }
     }
 
-    private static final class SelectionHandler implements CaretListener {
+    private static final class SelectionHandler implements CaretListener, CancellableTask<CompilationController>, Runnable {
         
         private JTextComponent target;
-
-        private Stack selectionInfoStack;
-        
+        private SelectionInfo[] selectionInfos;
+        private int selIndex = -1;
         private boolean ignoreNextCaretUpdate;
-        
+        private boolean isRunning = false; // indexes processing
+
         SelectionHandler(JTextComponent target) {
             this.target = target;
-            selectionInfoStack = new Stack();
         }
 
-        public void pushSelectionInfo(SelectionInfo selectionInfo) {
-            selectionInfoStack.push(selectionInfo);
-        }
-        
-        public SelectionInfo popSelectionInfo() {
-            return (SelectionInfo)selectionInfoStack.pop();
-        }
-        
-        public SelectionInfo peekSelectionInfo() {
-            return (SelectionInfo)selectionInfoStack.peek();
-        }
-        
-        public boolean isEmpty() {
-            return selectionInfoStack.empty();
-        }
-
-        public void selectTop() {
-            if (!selectionInfoStack.empty()) {
-                SelectionInfo top = peekSelectionInfo();
-                Caret caret = target.getCaret();
-                markIgnoreNextCaretUpdate();
-                caret.setDot(top.getStartOffset());
-                markIgnoreNextCaretUpdate();
-                caret.moveDot(top.getEndOffset());
+        public synchronized void selectNext() {
+            if (isRunning) {
+                return; // ignore
+            } else if (selectionInfos == null) {
+                JavaSource js = JavaSource.forDocument(target.getDocument());
+                try {
+                    js.runUserActionTask(this, true);
+                    isRunning = true;
+                } catch (IOException ex) {
+                    ErrorManager.getDefault().notify(ex);
+                }
+            } else {
+                run();
             }
+        }
+
+        public synchronized void selectPrevious() {
+            if (selIndex > 0) {
+                select(selectionInfos[--selIndex]);
+            }
+        }
+
+        private void select(SelectionInfo selectionInfo) {
+            Caret caret = target.getCaret();
+            markIgnoreNextCaretUpdate();
+            caret.setDot(selectionInfo.getStartOffset());
+            markIgnoreNextCaretUpdate();
+            caret.moveDot(selectionInfo.getEndOffset());
         }
         
         private void markIgnoreNextCaretUpdate() {
@@ -197,23 +156,59 @@ class SelectCodeElementAction extends BaseAction {
         
         public void caretUpdate(CaretEvent e) {
             if (!ignoreNextCaretUpdate) {
-                selectionInfoStack.clear();
+                synchronized (this) {
+                    selectionInfos = null;
+                    selIndex = -1;
+                }
             }
             ignoreNextCaretUpdate = false;
         }
+
+        public void cancel() {
+        }
+
+        public void run(CompilationController cc) {
+            try {
+                cc.toPhase(Phase.RESOLVED);
+                synchronized (this) {
+                    selectionInfos = initSelectionPath(target, cc);
+                }
+                EventQueue.invokeLater(this);
+            } catch (IOException ex) {
+                ErrorManager.getDefault().notify(ex);
+            } finally {
+                isRunning = false;
+            }
+        }
         
+        private SelectionInfo[] initSelectionPath(JTextComponent target, CompilationController ci) {
+            List<SelectionInfo> positions = new ArrayList<SelectionInfo>();
+            SourcePositions sp = ci.getTrees().getSourcePositions();
+            TreePath tp = ci.getTreeUtilities().pathFor(target.getCaretPosition());
+            for (Tree tree: tp) {
+                int startPos = (int)sp.getStartPosition(tp.getCompilationUnit(), tree);
+                int endPos = (int)sp.getEndPosition(tp.getCompilationUnit(), tree);
+                positions.add(new SelectionInfo(startPos, endPos));
+            }
+            return positions.toArray(new SelectionInfo[positions.size()]);
+        }
+
+        public synchronized void run() {
+            if (selIndex < selectionInfos.length - 1) {
+                select(selectionInfos[++selIndex]);
+            }
+        }
+
     }
     
     private static final class SelectionInfo {
         
         private int startOffset;
         private int endOffset;
-        private Element element;
         
-        SelectionInfo(int startOffset, int endOffset, Element element) {
+        SelectionInfo(int startOffset, int endOffset) {
             this.startOffset = startOffset;
             this.endOffset = endOffset;
-            this.element = element;
         }
         
         public int getStartOffset() {
@@ -222,10 +217,6 @@ class SelectCodeElementAction extends BaseAction {
         
         public int getEndOffset() {
             return endOffset;
-        }
-
-        public Element getElement() {
-            return element;
         }
         
     }

@@ -20,20 +20,20 @@
 
 package org.netbeans.modules.form;
 
-import org.openide.*;
-import org.openide.loaders.*;
-import org.openide.filesystems.*;
+import org.openide.cookies.EditCookie;
+import org.openide.cookies.OpenCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObjectExistsException;
+import org.openide.loaders.FileEntry;
+import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.Node;
-import org.openide.cookies.*;
-import org.netbeans.modules.java.JavaDataObject;
-import org.netbeans.modules.java.JavaEditor;
-import org.netbeans.modules.form.*;
+import org.openide.nodes.Node.Cookie;
 
 /** The DataObject for forms.
  *
  * @author Ian Formanek, Petr Hamernik
  */
-public class FormDataObject extends JavaDataObject {
+public class FormDataObject extends MultiDataObject {
     /** generated Serialized Version UID */
     //  static final long serialVersionUID = 7952143476761137063L;
 
@@ -64,29 +64,25 @@ public class FormDataObject extends JavaDataObject {
     {
         super(jfo, loader);
         formEntry = (FileEntry)registerEntry(ffo);
-        init();
-    }
-
-    /** Initalizes the FormDataObject after deserialization */
-    private void init() {
-        getCookieSet().add(new Class[] { OpenCookie.class, EditCookie.class},
-                           this);
     }
 
     //--------------------------------------------------------------------
     // Other methods
 
-    // CookieSet.Factory implementation
-    public Node.Cookie createCookie(Class klass) {
-        if (OpenCookie.class.equals(klass)
-            || EditCookie.class.equals(klass))
-        {
+    @Override
+    public <T extends Cookie> T getCookie(Class<T> type) {
+        T retValue;
+        
+        if (OpenCookie.class.equals(type) || EditCookie.class.equals(type)) {
             if (openEdit == null)
                 openEdit = new OpenEdit();
-            return openEdit;
+            retValue = type.cast(openEdit);
+        } else if (type.isAssignableFrom(FormEditorSupport.class)) {
+            retValue = (T) getFormEditorSupport();
+        } else {
+            retValue = super.getCookie(type);
         }
-
-        return super.createCookie(klass);
+        return retValue;
     }
 
     private class OpenEdit implements OpenCookie, EditCookie {
@@ -114,15 +110,11 @@ public class FormDataObject extends JavaDataObject {
         return !formEntry.getFile().canWrite();
     }
 
-    // from JavaDataObject
-    protected JavaEditor createJavaEditor() {
-        if (formEditor == null)
-            formEditor = new FormEditorSupport(getPrimaryEntry(), this);
+    public synchronized FormEditorSupport getFormEditorSupport() {
+        if (formEditor == null) {
+            formEditor = new FormEditorSupport(getPrimaryEntry(), this, getCookieSet());
+        }
         return formEditor;
-    }
-
-    public FormEditorSupport getFormEditorSupport() {
-        return (FormEditorSupport) getJavaEditor();
     }
 
     // PENDING remove when form_new_layout is merged to trunk
@@ -155,7 +147,6 @@ public class FormDataObject extends JavaDataObject {
     private void readObject(java.io.ObjectInputStream is)
         throws java.io.IOException, ClassNotFoundException {
         is.defaultReadObject();
-        init();
     }
 
 }

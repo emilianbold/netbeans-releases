@@ -39,10 +39,10 @@ public class MethodParamsTipPaintComponent extends JToolTip {
     private int ascent;
     private FontMetrics fontMetrics;
 
-    private List/*<List<String>>*/ params;
+    private List<List<String>> params;
     private int idx;
 
-    public MethodParamsTipPaintComponent(List params, int idx){
+    public MethodParamsTipPaintComponent(List<List<String>> params, int idx){
         super();
         this.params = params;
         this.idx = idx;
@@ -75,11 +75,10 @@ public class MethodParamsTipPaintComponent extends JToolTip {
 
         int startX = drawX;
         drawWidth = drawX;
-        int i = 0;
-        for (Iterator it = params.iterator(); it.hasNext(); i = 0) {
-            for (Iterator itt = ((List)it.next()).iterator(); itt.hasNext(); i++) {
-                String s = (String) itt.next();
-                drawString(g, s, i == idx ? getDrawFont().deriveFont(Font.BOLD) : null);
+        for (List<String> p : params) {
+            int i = 0;
+            for (String s : p) {
+                drawString(g, s, i++ == idx ? getDrawFont().deriveFont(Font.BOLD) : null);
             }
             if (drawWidth < drawX)
                 drawWidth = drawX;

@@ -1,0 +1,334 @@
+/*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ *
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ *
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+package org.netbeans.modules.editor.java;
+
+import java.net.URL;
+import java.util.Hashtable;
+import javax.swing.Action;
+import com.sun.javadoc.*;
+import org.netbeans.spi.editor.completion.CompletionDocumentation;
+import org.openide.util.NbBundle;
+
+/**
+ *
+ * @author Dusan Balek
+ */
+public class JavaCompletionDoc implements CompletionDocumentation {
+
+    private Doc doc;
+    private String content = null;
+    private Hashtable<String, Doc> links = new Hashtable<String, Doc>();
+    private int linkCounter = 0;
+
+    private static final String PARAM_TAG = "@param"; //NOI18N
+    private static final String RETURN_TAG = "@return"; //NOI18N
+    private static final String THROWS_TAG = "@throws"; //NOI18N
+    private static final String SEE_TAG = "@see"; //NOI18N
+    private static final String SINCE_TAG = "@since"; //NOI18N
+    private static final String INHERIT_DOC_TAG = "@inheritDoc"; //NOI18N
+    
+    public static final JavaCompletionDoc create(Doc doc) {
+        return new JavaCompletionDoc(doc);
+    }
+    
+    private JavaCompletionDoc(Doc doc) {
+        this.doc = doc;
+        this.content = prepareContent();
+    }
+
+    public String getText() {
+        return content;
+    }
+
+    public URL getURL() {
+        return null;
+    }
+
+    public CompletionDocumentation resolveLink(String link) {
+        Doc linkDoc = links.get(link);
+        return linkDoc != null ? JavaCompletionDoc.create(linkDoc) : null;
+    }
+
+    public Action getGotoSourceAction() {
+        return null;
+    }
+    
+    private String prepareContent() {
+        StringBuilder sb = new StringBuilder();
+        if (doc != null) {
+            if (doc instanceof ProgramElementDoc) {
+                sb.append(getContainingClassOrPacakgeHeader((ProgramElementDoc)doc));
+            }
+            if (doc.isMethod() || doc.isConstructor()) {
+                sb.append(getMethodHeader((ExecutableMemberDoc)doc));
+            } else if (doc.isField() || doc.isEnumConstant()) {
+                sb.append(getFieldHeader((FieldDoc)doc));
+            } else if (doc.isClass() || doc.isInterface()) {
+                sb.append(getClassHeader((ClassDoc)doc));
+            }
+            sb.append("<p>"); //NOI18N
+            sb.append(inlineTags(doc.inlineTags()));
+            sb.append("</p><p>"); //NOI18N
+            sb.append(getTags(doc));
+            sb.append("</p>"); //NOI18N
+        } else {
+            sb.append(NbBundle.getMessage(JavaCompletionDoc.class, "javadoc_content_not_found")); //NOI18N
+        }
+        return sb.toString();
+    }
+    
+    private String getContainingClassOrPacakgeHeader(ProgramElementDoc peDoc) {
+        StringBuilder sb = new StringBuilder();
+        ClassDoc cls = peDoc.containingClass();
+        if (cls != null) {
+            sb.append("<font size='+0'><b>"); //NOI18N
+            createLink(sb, cls, cls.qualifiedName());
+            sb.append("</b></font>"); //NOI18N)
+        } else {
+            PackageDoc pkg = peDoc.containingPackage();
+            if (pkg != null) {
+                sb.append("<font size='+0'><b>"); //NOI18N
+                createLink(sb, pkg, pkg.name());
+                sb.append("</b></font>"); //NOI18N)
+            }
+        }
+        return sb.toString();
+    }
+    
+    private String getMethodHeader(ExecutableMemberDoc mdoc) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("<pre>"); //NOI18N
+        sb.append(mdoc.modifiers());
+        int len = sb.length() - 5;
+        if (mdoc.isMethod()) {
+            if (sb.length() > 0) {
+                sb.append(' '); //NOI18N
+                len++;
+            }
+            len += appendType(sb, ((MethodDoc)mdoc).returnType(), false);
+        }
+        String name = mdoc.name();
+        len += name.length();
+        sb.append(" <b>").append(name).append("</b>("); //NOI18N
+        len++;
+        Parameter[] params = mdoc.parameters();
+        for(int i = 0; i < params.length; i++) {
+            appendType(sb, params[i].type(), i == params.length - 1 && mdoc.isVarArgs());
+            sb.append(' ').append(params[i].name()); //NOI18N
+            if (i < params.length - 1) {
+                sb.append(",\n"); //NOI18N
+                appendSpace(sb, len);
+            }
+        }
+        sb.append(')'); //NOI18N
+        Type[] exs = mdoc.thrownExceptionTypes();
+        if (exs.length > 0) {
+            sb.append("\nthrows "); //NOI18N
+            for (int i = 0; i < exs.length; i++) {
+                appendType(sb, exs[i], false);
+                if (i < exs.length - 1)
+                    sb.append(", "); //NOI18N
+            }
+        }
+        sb.append("</pre>"); //NOI18N
+        return sb.toString();
+    }
+    
+    private String getFieldHeader(FieldDoc fdoc) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("<pre>"); //NOI18N
+        sb.append(fdoc.modifiers());
+        if (sb.length() > 0)
+            sb.append(' '); //NOI18N
+        appendType(sb, fdoc.type(), false);
+        sb.append(" <b>").append(fdoc.name()).append("</b>"); //NOI18N
+        sb.append("</pre>"); //NOI18N
+        return sb.toString();
+    }
+    
+    private String getClassHeader(ClassDoc cdoc) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("<pre>"); //NOI18N
+        sb.append(cdoc.modifiers());
+        if (sb.length() > 0)
+            sb.append(' '); //NOI18N
+        if (cdoc.isOrdinaryClass())
+            sb.append("class "); //NOI18N
+        else if (cdoc.isEnum())
+            sb.append("enum "); //NOI18N
+        sb.append("<b>").append(cdoc.name()).append("</b>"); //NOI18N
+        Type supercls = cdoc.superclassType();
+        if (supercls != null) {
+            sb.append("\nextends "); //NOI18N
+            appendType(sb, supercls, false);
+        }
+        Type[] ifaces = cdoc.interfaceTypes();
+        if (ifaces.length > 0) {
+            sb.append("\nimplements "); //NOI18N
+            for (int i = 0; i < ifaces.length; i++) {
+                appendType(sb, ifaces[i], false);
+                if (i < ifaces.length - 1)
+                    sb.append(", "); //NOI18N
+            }
+        }
+        sb.append("</pre>"); //NOI18N
+        return sb.toString();
+    }
+    
+    private String getTags(Doc doc) {
+        StringBuilder see = new StringBuilder();
+        StringBuilder par = new StringBuilder();
+        StringBuilder thr = new StringBuilder();
+        StringBuilder ret = new StringBuilder();
+        String since = null;
+        for (Tag tag : doc.tags()) {
+            if (PARAM_TAG.equals(tag.kind())) {
+                par.append("<code>").append(((ParamTag)tag).parameterName()).append("</code>"); //NOI18N
+                Tag[] its = tag.inlineTags();
+                if (its.length > 0) {
+                    par.append(" - "); //NOI18N
+                    par.append(inlineTags(its));                    
+                }
+                par.append("<br>"); //NOI18N
+            } else if (THROWS_TAG.equals(tag.kind())) {
+                thr.append("<code>"); //NOI18N
+                Type exType = ((ThrowsTag)tag).exceptionType();
+                if (exType != null)
+                    createLink(thr, exType.asClassDoc(), exType.qualifiedTypeName());
+                else
+                    thr.append(((ThrowsTag)tag).exceptionName());
+                thr.append("</code>"); //NOI18N
+                Tag[] its = tag.inlineTags();
+                if (its.length > 0) {
+                    thr.append(" - "); //NOI18N
+                    thr.append(inlineTags(its));                    
+                }
+                thr.append("<br>"); //NOI18N
+            } else if (RETURN_TAG.equals(tag.kind())) {
+                ret.append(inlineTags(tag.inlineTags()));
+                ret.append("<br>"); //NOI18N
+            } else if (SEE_TAG.equals(tag.kind())) {
+                SeeTag stag = (SeeTag)tag;
+                String className = stag.referencedClassName();
+                String memberName = stag.referencedMemberName();
+                if (memberName != null) {
+                    createLink(see, stag.referencedMember(), className + "." + memberName); //NOI18N
+                    see.append("<br>"); //NOI18N
+                } else if (className != null) {
+                    createLink(see, stag.referencedClass(), className);
+                    see.append("<br>"); //NOI18N
+                }
+            } else if (SINCE_TAG.equals(tag.kind())) {
+                since = tag.text();
+            }            
+        }
+        StringBuilder sb = new StringBuilder();        
+        if (par.length() > 0) {
+            sb.append("<b>").append(NbBundle.getMessage(JavaCompletionDoc.class, "JCD-params")).append("</b><blockquote>").append(par).append("</blockquote>"); //NOI18N
+        }
+        if (ret.length() > 0) {
+            sb.append("<b>").append(NbBundle.getMessage(JavaCompletionDoc.class, "JCD-returns")).append("</b><blockquote>").append(ret).append("</blockquote>"); //NOI18N
+        }
+        if (thr.length() > 0) {
+            sb.append("<b>").append(NbBundle.getMessage(JavaCompletionDoc.class, "JCD-throws")).append("</b><blockquote>").append(thr).append("</blockquote>"); //NOI18N
+        }
+        if (see.length() > 0) {
+            sb.append("<b>").append(NbBundle.getMessage(JavaCompletionDoc.class, "JCD-see")).append("</b><blockquote>").append(see).append("</blockquote>"); //NOI18N
+        }
+        if (since != null) {
+            sb.append("<b>").append(NbBundle.getMessage(JavaCompletionDoc.class, "JCD-since")).append("</b><blockquote>").append(since).append("</blockquote>"); //NOI18N
+        }
+        return sb.toString();
+    }
+    
+    private String inlineTags(Tag[] tags) {
+        StringBuilder sb = new StringBuilder();
+        for (Tag tag : tags) {
+            if (SEE_TAG.equals(tag.kind())) {
+                SeeTag stag = (SeeTag)tag;
+                String className = stag.referencedClassName();
+                String memberName = stag.referencedMemberName();
+                if (memberName != null) {
+                    createLink(sb, stag.referencedMember(), className + "." + memberName); //NOI18N
+                } else {
+                    createLink(sb, stag.referencedClass(), className);
+                }
+            } else if (INHERIT_DOC_TAG.equals(tag.kind())) {
+                if (doc.isMethod()) {
+                    MethodDoc mdoc = ((MethodDoc)doc).overriddenMethod();
+                    if (mdoc != null)
+                        sb.append(inlineTags(mdoc.inlineTags()));
+                } else if (doc.isClass() || doc.isInterface()) {
+                    ClassDoc cdoc = ((ClassDoc)doc).superclass();
+                    if (cdoc != null)
+                        sb.append(inlineTags(cdoc.inlineTags()));
+                }
+            } else {
+                sb.append(tag.text());
+            }
+        }
+        return sb.toString();
+    }
+    
+    private void appendSpace(StringBuilder sb, int length) {
+        while (length-- >= 0)
+            sb.append(' '); //NOI18N            
+    }
+    
+    private int appendType(StringBuilder sb, Type type, boolean varArg) {
+        int len = createLink(sb, type.asClassDoc(), type.simpleTypeName());
+        ParameterizedType pt = type.asParameterizedType();
+        if (pt != null) {
+            Type[] targs = pt.typeArguments();
+            if (targs.length > 0) {
+                sb.append("&lt;"); //NOI18N
+                for (int j = 0; j < targs.length; j++) {
+                    len += appendType(sb, targs[j], false);
+                    if (j < targs.length - 1) {
+                        sb.append(", "); //NOI18N
+                        len += 2;
+                    }
+                }
+                sb.append("&gt;"); //NOI18N
+                len += 2;
+            }
+        }
+        String dim = type.dimension();        
+        if (dim.length() > 0) {
+            if (varArg)
+                dim = dim.substring(2) + "..."; //NOI18N
+            sb.append(dim);
+            len += dim.length();
+        }
+        return len;
+    }
+    
+    private int createLink(StringBuilder sb, Doc doc, String text) {
+        if (doc != null) {
+            String link = "*" + linkCounter++; //NOI18N
+            links.put(link, doc);
+            sb.append("<a href='").append(link).append("'>"); //NOI18N
+        }
+        sb.append(text);
+        if (doc != null)
+            sb.append("</a>"); //NOI18N
+        return text.length();
+    }
+}

@@ -23,9 +23,9 @@ package org.netbeans.modules.editor.hints.borrowed;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.KeyEvent;
-import java.util.List;
 
 import javax.swing.*;
+import javax.swing.BorderFactory;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.plaf.TextUI;
 import javax.swing.text.JTextComponent;
@@ -35,7 +35,8 @@ import javax.swing.text.EditorKit;
 import org.netbeans.editor.*;
 import org.netbeans.editor.ext.ExtSettingsDefaults;
 import org.netbeans.editor.ext.ExtSettingsNames;
-import org.netbeans.modules.editor.hints.spi.Hint;
+import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.editor.hints.LazyFixList;
 
 /**
 * Pane displaying the completion view and accompanying components
@@ -70,7 +71,7 @@ public class ScrollCompletionPane extends JScrollPane implements SettingsChangeL
     private Dimension maxSize;
     private Dimension scrollBarSize;
 
-    public ScrollCompletionPane(JTextComponent component, List result, String title, ListSelectionListener listener) {
+    public ScrollCompletionPane(JTextComponent component, LazyFixList fixes, String title, ListSelectionListener listener) {
         this.component = component;
         
         // Compute size of the scrollbars
@@ -80,15 +81,20 @@ public class ScrollCompletionPane extends JScrollPane implements SettingsChangeL
         scrollBarSize = super.getPreferredSize();
         scrollBarSize.width -= smallSize.width;
         scrollBarSize.height -= smallSize.height;
-        setVerticalScrollBarPolicy(VERTICAL_SCROLLBAR_AS_NEEDED);
-
+        setVerticalScrollBarPolicy(VERTICAL_SCROLLBAR_AS_NEEDED);              
+        setBorder(
+            BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(java.awt.SystemColor.controlDkShadow), 
+                BorderFactory.createEmptyBorder(4, 4, 4, 4))); 
+        setViewportBorder( null );
         Settings.addSettingsChangeListener(this);
         settingsChange(null); // initialize sizes
 
         // Add the completion view
         view = new ListCompletionView();
+        setBackground(view.getBackground());
 //        view.addListSelectionListener(listener);
-        view.setResult(result);
+        view.setResult(fixes);
         resetViewSize();
         setViewportView(view);
 
@@ -102,17 +108,17 @@ public class ScrollCompletionPane extends JScrollPane implements SettingsChangeL
         return view;
     }
 
-    public void reset(List result, String title) {
-        view.setResult(result);
+    public void reset(LazyFixList fixes, String title) {
+        view.setResult(fixes);
         resetViewSize();
         setTitle(title);
     }
 
-    public Hint getSelectedCompletionItem() {
+    public Fix getSelectedFix() {
         Object ret = view.getSelectedValue();
-        return ret instanceof Hint ? (Hint) ret : null;
+        return ret instanceof Fix ? (Fix) ret : null;
     }
-
+    
     public void settingsChange(SettingsChangeEvent evt) {
         Class kitClass = Utilities.getKitClass(component);
         if (kitClass != null) {

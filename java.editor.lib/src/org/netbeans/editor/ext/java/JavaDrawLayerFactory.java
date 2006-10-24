@@ -26,6 +26,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
 
 import org.netbeans.editor.*;
+import org.netbeans.editor.ext.ExtSyntaxSupport;
 
 /**
 * Various java-layers
@@ -77,18 +78,6 @@ public class JavaDrawLayerFactory {
                 path.getFullTokenName(JavaLayerTokenContext.METHOD));
         }
 
-        private boolean isGenericType(JavaSyntaxSupport sup, int offset) {
-            try {
-                int lastSepOffset = sup.getLastCommandSeparator(offset);
-                JCTokenProcessor tp = new JCTokenProcessor(offset);
-                tp.setJava15(true);
-                sup.tokenizeText(tp, lastSepOffset + 1, offset, true);
-                return tp.getResultExp().getExpID() == JCExpression.GENERIC_TYPE;
-            } catch (BadLocationException e) {
-                return false;
-            }
-        }
-
         private boolean isMethod(DrawContext ctx) {
             int idEndOffset = ctx.getTokenOffset() + ctx.getTokenLength();
             if (idEndOffset > resolvedEndOffset) { // beyond the resolved area
@@ -96,7 +85,7 @@ public class JavaDrawLayerFactory {
                 int endOffset = ctx.getEndOffset();
                 int bufferStartOffset = ctx.getBufferStartOffset();
                 char[] buffer = ctx.getBuffer();
-                JavaSyntaxSupport sup = (JavaSyntaxSupport) ctx.getEditorUI().getDocument().getSyntaxSupport().get(JavaSyntaxSupport.class);
+                ExtSyntaxSupport sup = (ExtSyntaxSupport) ctx.getEditorUI().getDocument().getSyntaxSupport().get(ExtSyntaxSupport.class);
                 int nwOffset = Analyzer.findFirstNonWhite(buffer,
                         idEndOffset - bufferStartOffset,
                         endOffset - idEndOffset);
@@ -109,9 +98,9 @@ public class JavaDrawLayerFactory {
                                 int off = Utilities.getFirstNonWhiteFwd(ctx.getEditorUI().getDocument(), block[1]);
                                 if (off > -1) {
                                     if (bufferStartOffset + buffer.length > off) {
-                                        resolvedValue = (buffer[off - bufferStartOffset] == '(') && isGenericType(sup, off);
+                                        resolvedValue = (buffer[off - bufferStartOffset] == '(');
                                     } else {
-                                        resolvedValue = (ctx.getEditorUI().getDocument().getChars(off, 1)[0] == '(') && isGenericType(sup, off);
+                                        resolvedValue = (ctx.getEditorUI().getDocument().getChars(off, 1)[0] == '(');
                                     }
                                 }
                             }
@@ -128,15 +117,12 @@ public class JavaDrawLayerFactory {
                             if (block != null) {
                                 off = Utilities.getFirstNonWhiteFwd(ctx.getEditorUI().getDocument(), block[1]);
                                 if (off > -1)
-                                    resolvedValue = (ctx.getEditorUI().getDocument().getChars(off, 1)[0] == '(') && isGenericType(sup, off);
+                                    resolvedValue = (ctx.getEditorUI().getDocument().getChars(off, 1)[0] == '(');
                             }
                         }
                     } catch (BadLocationException e) {
                         resolvedValue = false;
                     }
-                }
-                if (resolvedValue) {
-                    resolvedValue = !sup.isAnnotation(ctx.getTokenOffset());
                 }
             }
 

@@ -19,22 +19,33 @@
 
 package org.netbeans.modules.form.palette;
 
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
 import java.lang.ref.WeakReference;
 import java.util.jar.*;
 import java.util.*;
 import java.io.*;
-import java.lang.reflect.Modifier;
 import java.text.MessageFormat;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.ElementFilter;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.ClassIndex;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.JavaSource;
 
 import org.openide.*;
 import org.openide.nodes.Node;
 import org.openide.filesystems.*;
 import org.openide.loaders.DataObject;
-import org.openide.cookies.SourceCookie;
 
 import org.netbeans.modules.form.project.*;
-import org.netbeans.jmi.javamodel.*;
-import org.netbeans.modules.javacore.api.JavaModel;
 
 /**
  * This class provides methods for installing new items to Palete.
@@ -74,12 +85,12 @@ public final class BeanInstaller {
 
             final FileObject fo = dobj.getPrimaryFile();            
             JavaClassHandler handler = new JavaClassHandler() {
-                public void handle(JavaClass javaClass) {
+                public void handle(TypeElement javaClass) {
                     ClassSource classSource = 
-                            ClassPathUtils.getProjectClassSource(fo, javaClass.getName());
+                            ClassPathUtils.getProjectClassSource(fo, javaClass.getQualifiedName().toString());
                     if (classSource == null) {
                         // Issue 47947
-                        unableToInstall.add(javaClass.getName());
+                        unableToInstall.add(javaClass.getQualifiedName().toString());
                     } else {
                         beans.add(classSource);
                     }                
@@ -247,12 +258,10 @@ public final class BeanInstaller {
     /** Recursive method scanning folders for classes (class files) that could
      * be JavaBeans. */
     private static void scanFolderForBeans(FileObject folder, final Map beans, final String root) {
-        SourceCookie source;
-
         JavaClassHandler handler = new JavaClassHandler() {
-            public void handle(JavaClass javaClass) {
+            public void handle(TypeElement javaClass) {
                 ItemInfo ii = new ItemInfo();
-                ii.classname = javaClass.getName();
+                ii.classname = javaClass.getQualifiedName().toString();
                 ii.source = root;
                 beans.put(ii.classname, ii);                            
             }
@@ -275,35 +284,67 @@ public final class BeanInstaller {
         }
     }    
     
-    private static void scanFileObject(FileObject folder, FileObject fileObject, JavaClassHandler handler) {          
-        JavaModel.getJavaRepository().beginTrans(false);
-        JavaModel.setClassPath(fileObject);
-        try {                                                
-            Resource resource = JavaModel.getResource(folder, fileObject.getNameExt());		    		    
-            java.util.List classifiers = resource.getClassifiers();
-            Iterator classIter = classifiers.iterator();
-            while (classIter.hasNext()) {
-                Object classifier = classIter.next();
-                if(classifier instanceof JavaClass) {                            
-                    JavaClass javaClass = (JavaClass)classifier;                                                                                                                
-                    if( javaClass.getSimpleName().equals(fileObject.getName()) && 
-                        isDeclaredAsJavaBean(javaClass) ) 
-                    {			
-                        handler.handle(javaClass);
-                        break;
-                    }                                
-                } 
-            }	          
-        } finally {
-            JavaModel.getJavaRepository().endTrans();
+    private static void scanFileObject(FileObject folder, final FileObject fileObject, final JavaClassHandler handler) {          
+        final JavaSource js = JavaSource.forFileObject(fileObject);
+        try {
+            js.runUserActionTask(new CancellableTask<CompilationController>() {
+                public void cancel() {
+                }
+                public void run(CompilationController controller) throws Exception {
+                    controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                    
+                    if ("class".equals(fileObject.getExt())) { // NOI18N
+                        processClassTypeElement(
+                                js.getClasspathInfo().getClassIndex(),
+                                controller, fileObject, handler);
+                    } else {
+                        processTypeElement(controller, fileObject, handler);
+                    }
+                }
+
+            }, true);
+        } catch (IOException ex) {
+            Logger.getLogger(BeanInstaller.class.getClass().getName()).
+                    log(Level.SEVERE, fileObject.toString(), ex);
         }
-    }     
         
-    private static boolean isDeclaredAsJavaBean(JavaClass jc) {
-        int modifiers = jc.getModifiers();
-        if (Modifier.isPublic(modifiers) && !Modifier.isAbstract(modifiers)) {            
-            Constructor constructor = jc.getConstructor(NO_PARAMETERS , false);
-            return constructor != null && Modifier.isPublic(constructor.getModifiers());            
+    }     
+    
+    private static void processTypeElement(CompilationController controller, FileObject fo, JavaClassHandler handler) {
+        String fileName = fo.getName();
+        for (Tree t: controller.getCompilationUnit().getTypeDecls()) {
+            if (t.getKind() == Tree.Kind.CLASS && fileName.equals(((ClassTree) t).getSimpleName().toString())) {
+                TreePath tPath = controller.getTrees().getPath(controller.getCompilationUnit(), t);
+                TypeElement tElm = (TypeElement) controller.getTrees().getElement(tPath);
+                if (isDeclaredAsJavaBean(tElm)) {
+                    handler.handle(tElm);
+                    break;
+                }
+            }
+        }
+    }
+    private static void processClassTypeElement(ClassIndex index, CompilationController controller, FileObject classFO, JavaClassHandler handler) {
+        for (ElementHandle<TypeElement> handle: index.getDeclaredTypes(
+                classFO.getName(),
+                ClassIndex.NameKind.SIMPLE_NAME,
+                EnumSet.of(ClassIndex.SearchScope.SOURCE))) {
+            TypeElement tElm = handle.resolve(controller);
+            if (tElm != null && isDeclaredAsJavaBean(tElm)) {
+                handler.handle(tElm);
+                break;
+            }
+        }
+    }
+        
+    private static boolean isDeclaredAsJavaBean(TypeElement jc) {
+        Set<Modifier> modifiers = jc.getModifiers();
+        if (modifiers.contains(Modifier.PUBLIC) && !modifiers.contains(Modifier.ABSTRACT)) {
+            for (ExecutableElement constr: ElementFilter.constructorsIn(jc.getEnclosedElements())) {
+                Set<Modifier> cmodifiers = constr.getModifiers();
+                if (cmodifiers.contains(Modifier.PUBLIC) && constr.getParameters().isEmpty()) {
+                    return true;
+                }
+            }
         }
         return false;
     }
@@ -337,7 +378,7 @@ public final class BeanInstaller {
     }
     
     private interface JavaClassHandler {        
-        public void handle(JavaClass javaClass);        
+        public void handle(TypeElement javaClass);        
     }
     
 }

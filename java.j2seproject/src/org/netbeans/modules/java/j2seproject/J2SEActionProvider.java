@@ -45,7 +45,6 @@ import org.netbeans.modules.java.j2seproject.applet.AppletSupport;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.modules.java.j2seproject.ui.customizer.MainClassChooser;
 import org.netbeans.modules.java.j2seproject.ui.customizer.MainClassWarning;
-import org.netbeans.modules.javacore.JMManager;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -56,14 +55,11 @@ import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.MouseUtils;
-import org.openide.cookies.SourceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.src.ClassElement;
-import org.openide.src.SourceElement;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -217,12 +213,12 @@ class J2SEActionProvider implements ActionProvider {
             }            
         };
         
-        if (this.bkgScanSensitiveActions.contains(command)) {        
-            JMManager.getManager().invokeAfterScanFinished(action, NbBundle.getMessage (J2SEActionProvider.class,"ACTION_"+command)); //NOI18N
-        }
-        else {
+//        if (this.bkgScanSensitiveActions.contains(command)) {        
+//            JMManager.getManager().invokeAfterScanFinished(action, NbBundle.getMessage (J2SEActionProvider.class,"ACTION_"+command)); //NOI18N
+//        }
+//        else {
             action.run();
-        }
+//        }
     }
 
     /**
@@ -624,16 +620,18 @@ class J2SEActionProvider implements ActionProvider {
         }
         try {
             DataObject classDO = DataObject.find (classFO);
-            SourceCookie cookie = classDO.getCookie(SourceCookie.class);
-            if (cookie == null) {
-                return false;
-            }
+//XXX: remove this to compile workaround
+//            SourceCookie cookie = classDO.getCookie(SourceCookie.class);
+//            if (cookie == null) {
+//                return false;
+//            }
             // check the main class
-            for (ClassElement clazz : cookie.getSource().getClasses()) {
-                if (clazz.hasMainMethod()) {
-                    return true;
-                }
-            }
+//            for (ClassElement clazz : cookie.getSource().getClasses()) {
+//                if (clazz.hasMainMethod()) {
+//                    return true;
+//                }
+//            }
+            return true; //XXX: remove this to compile workaround
         } catch (DataObjectNotFoundException ex) {
             // can ignore it, classFO could be wrongly set
         }

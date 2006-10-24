@@ -60,7 +60,8 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 
 import org.openide.awt.Mnemonics;
-import org.openide.cookies.SourceCookie;
+//XXX: retouche
+//import org.openide.cookies.SourceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
@@ -257,7 +258,8 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
                             != null;
             return true;
         }
-        singleClass = (nodeLookup.lookup(SourceCookie.class) != null);
+//XXX: retouche
+//        singleClass = (nodeLookup.lookup(SourceCookie.class) != null);
         return !singleClass;
     }
     

@@ -28,7 +28,9 @@ import java.net.URL;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.metadata.ClassPathSupport;
+//retouche:
+//import org.netbeans.modules.j2ee.metadata.ClassPathSupport;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScopes;
 import org.netbeans.modules.j2ee.persistence.spi.PersistenceClassPathProvider;
@@ -137,7 +139,9 @@ public class J2SEPersistenceProvider implements PersistenceLocationProvider, Per
         synchronized (this) {
             if (projectSourcesClassPath == null) {
                 ClassPathProviderImpl cpProvider = (ClassPathProviderImpl)project.getLookup().lookup(ClassPathProviderImpl.class);
-                projectSourcesClassPath = ClassPathSupport.createWeakProxyClassPath(new ClassPath[] {
+                //retouche:
+                projectSourcesClassPath = ClassPathSupport.createProxyClassPath(new ClassPath[] {
+//                projectSourcesClassPath = ClassPathSupport.createWeakProxyClassPath(new ClassPath[] {
                     cpProvider.getProjectSourcesClassPath(ClassPath.SOURCE),
                     cpProvider.getProjectSourcesClassPath(ClassPath.COMPILE),
                 });

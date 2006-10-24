@@ -23,6 +23,7 @@ import java.awt.Image;
 import java.beans.*;
 import java.lang.reflect.Modifier;
 import java.util.*;
+import org.netbeans.modules.form.editors.ModifierEditor;
 
 import org.openide.util.Utilities;
 
@@ -266,7 +267,7 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
     /** Property editor for variables modifiers.
      */
     final public static class FieldModifierPropertyEditor
-        extends org.openide.explorer.propertysheet.editors.ModifierEditor
+        extends ModifierEditor
     {
         static final long serialVersionUID =7628317154007139777L;
         /** Construct new editor with mask for fields. */

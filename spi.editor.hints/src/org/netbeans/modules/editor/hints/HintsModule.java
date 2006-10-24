@@ -30,7 +30,13 @@ public final class HintsModule extends ModuleInstall {
 
     public void restored () {
         //create HintsOperator (which registers some listeners)
-        HintsOperator.getDefault();
+        HintsUI.getDefault();
+//        PersistentCache.getDefault().loadCache();
     }
 
+    public void close() {
+        super.close();
+
+//        PersistentCache.getDefault().saveCache();
+    }
 }

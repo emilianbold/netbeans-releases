@@ -31,9 +31,10 @@ Microsystems, Inc. All Rights Reserved.
             <file name="OS-Left.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-actions-PreviousViewCallbackAction.instance"/>
             </file>
-            <file name="C-R.shadow">
+<!--retouche:-->
+<!--            <file name="C-R.shadow">
                 <attr name="originalFile" stringvalue="Actions/Form/org-netbeans-modules-form-actions-ReloadAction.instance"/>
-            </file>
+            </file>-->
             <file name="D-2.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-physical-tab-action.instance"/>
             </file>
@@ -43,15 +44,17 @@ Microsystems, Inc. All Rights Reserved.
             <file name="A-LEFT.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-PreviousTabAction.instance"/>
             </file>
-            <file name="OS-O.shadow">
+<!--retouche:-->
+<!--            <file name="OS-O.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-editor-java-JavaFastOpenAction.instance"/>
-            </file>
+            </file>-->
             <file name="DO-T.shadow">
                 <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xsl-actions-TransformAction.instance"/>
             </file>
-            <file name="OS-R.shadow">
+<!--retouche:-->
+<!--            <file name="OS-R.shadow">
                 <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-RenameAction.instance"/>
-            </file>
+            </file>-->
             <file name="O-F6.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-TestProject.instance"/>
             </file>
@@ -68,7 +71,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-RunToCursorAction.instance"/>
             </file>
             <file name="O-F7.shadow">
-                <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-WhereUsedAction.instance"/>
+                <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-spi-impl-WhereUsedAction.instance"/>
             </file>
             <file name="D-F8.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
@@ -106,13 +109,15 @@ Microsystems, Inc. All Rights Reserved.
             <file name="S-F2.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/bookmark-previous.instance"/>
             </file>
-            <file name="O-S-F9.shadow">
+<!--retouche:-->
+<!--            <file name="O-S-F9.shadow">
                 <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-tools-actions-ValidateAction.instance"/>
-            </file>
-            <file name="OS-V.shadow">
+            </file>-->
+<!--retouche:-->
+<!--            <file name="OS-V.shadow">
                 <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-MoveClassAction.instance"/>
-            </file>
-            <file name="F1.shadow">
+            </file>-->
+	    <file name="F1.shadow">
                 <attr name="originalFile" stringvalue="Actions/Help/org-netbeans-modules-javahelp-HelpAction.instance"/>
             </file>
             <file name="DS-0.shadow">
@@ -151,9 +156,10 @@ Microsystems, Inc. All Rights Reserved.
             <file name="D-F5.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ContinueAction.instance"/>
             </file>
-            <file name="O-F9.shadow">
+<!--retouche:-->
+<!--            <file name="O-F9.shadow">
                 <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-tools-actions-CheckAction.instance"/>
-            </file>
+            </file>-->
             <file name="F7.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepIntoAction.instance"/>
             </file>
@@ -175,9 +181,10 @@ Microsystems, Inc. All Rights Reserved.
             <file name="S-ESCAPE.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-MaximizeWindowAction.instance"/>
             </file>
-            <file name="DO-F.shadow">
+<!--retouche:-->
+<!--            <file name="DO-F.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-refactoring-ui-FindUsagesOpenAction.instance"/>
-            </file>
+            </file>-->
             <file name="S-F6.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunSingle.instance"/>
             </file>
@@ -229,9 +236,10 @@ Microsystems, Inc. All Rights Reserved.
             <file name="S-F10.shadow">
         	    <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-PopupAction.instance"/>
         	</file>
-            <file name="D-I.shadow">
+<!--retouche:-->
+<!--            <file name="D-I.shadow">
                 <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-java-tools-OverrideAction.instance"/>
-            </file>
+            </file>-->
             <file name="SO-8.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-jpda-ui-actions-SourcesViewAction.instance"/>
             </file>
@@ -256,9 +264,10 @@ Microsystems, Inc. All Rights Reserved.
             <file name="F6.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunMainProject.instance"/>
             </file>
-            <file name="S-F1.shadow">
+<!--retouche:-->
+<!--            <file name="S-F1.shadow">
                 <attr name="originalFile" stringvalue="Actions/Tools/javadoc-Search-Doc-Action.instance"/>
-            </file>
+            </file>-->
             <file name="D-O.shadow">
                 <attr name="originalFile" stringvalue="Actions/System/org-netbeans-modules-openfile-OpenFileAction.instance"/>
             </file>
@@ -357,9 +366,10 @@ Microsystems, Inc. All Rights Reserved.
             <file name="OS-Left.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-actions-PreviousViewCallbackAction.instance"/>
             </file>
-            <file name="C-R.shadow">
+<!--retouche:-->
+<!--            <file name="C-R.shadow">
                 <attr name="originalFile" stringvalue="Actions/Form/org-netbeans-modules-form-actions-ReloadAction.instance"/>
-            </file>
+            </file>-->
             <file name="D-2.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-physical-tab-action.instance"/>
             </file>
@@ -384,15 +394,17 @@ Microsystems, Inc. All Rights Reserved.
             <file name="A-LEFT.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-PreviousTabAction.instance"/>
             </file>
-            <file name="OS-O.shadow">
+<!--retouche:-->
+<!--            <file name="OS-O.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-editor-java-JavaFastOpenAction.instance"/>
-            </file>
+            </file>-->
             <file name="DO-T.shadow">
                 <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xsl-actions-TransformAction.instance"/>
             </file>
-            <file name="OS-R.shadow">
+<!--retouche:-->
+<!--            <file name="OS-R.shadow">
                 <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-RenameAction.instance"/>
-            </file>
+            </file>-->
             <file name="O-F6.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-TestProject.instance"/>
             </file>
@@ -412,7 +424,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-RunToCursorAction.instance"/>
             </file>
             <file name="O-F7.shadow">
-                <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-WhereUsedAction.instance"/>
+                <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-spi-impl-WhereUsedAction.instance"/>
             </file>
             <file name="D-F8.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
@@ -450,12 +462,14 @@ Microsystems, Inc. All Rights Reserved.
             <file name="S-F2.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/bookmark-previous.instance"/>
             </file>
-            <file name="O-S-F9.shadow">
+<!--retouche:-->
+<!--            <file name="O-S-F9.shadow">
                 <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-tools-actions-ValidateAction.instance"/>
-            </file>
-            <file name="OS-V.shadow">
+            </file>-->
+<!--retouche:-->
+<!--            <file name="OS-V.shadow">
                 <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-MoveClassAction.instance"/>
-            </file>
+            </file>-->
             <file name="F1.shadow">
                 <attr name="originalFile" stringvalue="Actions/Help/org-netbeans-modules-javahelp-HelpAction.instance"/>
             </file>
@@ -508,9 +522,10 @@ Microsystems, Inc. All Rights Reserved.
             <file name="D-F5.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ContinueAction.instance"/>
             </file>
-            <file name="O-F9.shadow">
+<!--retouche:-->
+<!--            <file name="O-F9.shadow">
                 <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-tools-actions-CheckAction.instance"/>
-            </file>
+            </file>-->
             <file name="F7.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepIntoAction.instance"/>
             </file>
@@ -538,9 +553,10 @@ Microsystems, Inc. All Rights Reserved.
             <file name="D-S.shadow">
                 <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-SaveAction.instance"/>
             </file>
-            <file name="DO-F.shadow">
+<!--retouche:-->
+<!--            <file name="DO-F.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-refactoring-ui-FindUsagesOpenAction.instance"/>
-            </file>
+            </file>-->
             <file name="S-F6.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunSingle.instance"/>
             </file>
@@ -595,9 +611,10 @@ Microsystems, Inc. All Rights Reserved.
             <file name="S-F10.shadow">
                 <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-PopupAction.instance"/>
             </file>
-            <file name="C-Q.shadow">
+<!--retouche:-->
+<!--            <file name="C-Q.shadow">
                 <attr name="originalFile" stringvalue="Actions/Build/Set Request Parameters.instance"/>
-            </file>
+            </file>-->
             <file name="D-X.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CutAction.instance"/>
             </file>
@@ -607,9 +624,10 @@ Microsystems, Inc. All Rights Reserved.
             <file name="S-DELETE.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CutAction.instance"/>
             </file>
-            <file name="D-I.shadow">
+<!--retouche:-->
+<!--            <file name="D-I.shadow">
                 <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-java-tools-OverrideAction.instance"/>
-            </file>
+            </file>-->
             <file name="SO-8.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-jpda-ui-actions-SourcesViewAction.instance"/>
             </file>
@@ -634,9 +652,10 @@ Microsystems, Inc. All Rights Reserved.
             <file name="F6.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunMainProject.instance"/>
             </file>
-            <file name="S-F1.shadow">
+<!--retouche:-->
+<!--            <file name="S-F1.shadow">
                 <attr name="originalFile" stringvalue="Actions/Tools/javadoc-Search-Doc-Action.instance"/>
-            </file>
+            </file>-->
             <file name="D-O.shadow">
                 <attr name="originalFile" stringvalue="Actions/System/org-netbeans-modules-openfile-OpenFileAction.instance"/>
             </file>
@@ -648,9 +667,10 @@ Microsystems, Inc. All Rights Reserved.
             </file>
         </folder>
         <folder name="Eclipse">
-            <file name="DO-F.shadow">
+<!--retouche:-->
+<!--            <file name="DO-F.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-refactoring-ui-FindUsagesOpenAction.instance"/>
-            </file>
+            </file>-->
             <file name="A-RIGHT.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-NextTabAction.instance"/>
             </file>
@@ -705,18 +725,20 @@ Microsystems, Inc. All Rights Reserved.
             <file name="C-F4.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseWindowAction.instance"/>
             </file>
-            <file name="AS-V.shadow">
+<!--retouche:-->
+<!--            <file name="AS-V.shadow">
                 <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-MoveClassAction.instance"/>
-            </file>
+            </file>-->
             <file name="C-M.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-MaximizeWindowAction.instance"/>
             </file>
             <file name="F5.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepIntoAction.instance"/>
             </file>
-            <file name="AS-Y.shadow">
+<!--retouche:-->
+<!--            <file name="AS-Y.shadow">
                 <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-RedoAction.instance"/>
-            </file>
+            </file>-->
             <file name="CS-S.shadow">
                 <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-SaveAllAction.instance"/>
             </file>
@@ -741,9 +763,10 @@ Microsystems, Inc. All Rights Reserved.
             <file name="PASTE.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-PasteAction.instance"/>
             </file>
-            <file name="AS-J.shadow">
+<!--retouche:-->
+<!--            <file name="AS-J.shadow">
                 <attr name="originalFile" stringvalue="Actions/Tools/Correct Javadoc Action.instance"/>
-            </file>
+            </file>-->
             <file name="C-F5.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-RunIntoMethodAction.instance"/>
             </file>
@@ -798,18 +821,20 @@ Microsystems, Inc. All Rights Reserved.
             <file name="C-COMMA.shadow">
                 <attr name="originalFile" stringvalue="Actions/System/org-netbeans-core-actions-JumpPrevAction.instance"/>
             </file>
-            <file name="AS-Z.shadow">
+<!--retouche:-->
+<!--            <file name="AS-Z.shadow">
                 <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-UndoAction.instance"/>
-            </file>
+            </file>-->
             <file name="C-INSERT.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CopyAction.instance"/>
             </file>
             <file name="F7.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-PopTopmostCallAction.instance"/>
             </file>
-            <file name="AS-R.shadow">
+<!--retouche:-->
+<!--            <file name="AS-R.shadow">
                 <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-RenameAction.instance"/>
-            </file>
+            </file>-->
             <file name="C-H.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-search-project-ProjectsSearchAction.instance"/>
             </file>
@@ -819,9 +844,10 @@ Microsystems, Inc. All Rights Reserved.
             <file name="C-S.shadow">
                 <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-SaveAction.instance"/>
             </file>
-            <file name="AS-M.shadow">
+<!--retouche:-->
+<!--            <file name="AS-M.shadow">
                 <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-ExtractMethodAction.instance"/>
-            </file>
+            </file>-->
             <file name="C-N.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-NewFile.instance"/>
             </file>
@@ -831,9 +857,10 @@ Microsystems, Inc. All Rights Reserved.
             <file name="F12.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-SwitchToRecentDocumentAction.instance"/>
             </file>
-            <file name="AS-C.shadow">
+<!--retouche:-->
+<!--            <file name="AS-C.shadow">
                 <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-ChangeParametersAction.instance"/>
-            </file>
+            </file>-->
         </folder>
     </folder>
     <folder name="Editors">

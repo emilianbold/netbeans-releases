@@ -39,9 +39,10 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
-import org.netbeans.modules.javacore.api.JavaModel;
-import org.netbeans.jmi.javamodel.*;
-import org.openide.src.ClassElement;
+//XXX: retouche
+//import org.netbeans.modules.javacore.api.JavaModel;
+//import org.netbeans.jmi.javamodel.*;
+//import org.openide.src.ClassElement;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -183,14 +184,15 @@ public class TestUtil {
         if (null != df)
             return df.getPrimaryFile();
         
-        ClassElement ce = (ClassElement) node.getCookie(ClassElement.class);
-        if (null != ce) {
-            // find the parent DataObject, which node belongs to
-            while (null != (node = node.getParentNode())) {
-                if (null != (dO = (DataObject) node.getCookie(DataObject.class)))
-                    return dO.getPrimaryFile();
-            }
-        }
+//XXX: retouche
+//        ClassElement ce = (ClassElement) node.getCookie(ClassElement.class);
+//        if (null != ce) {
+//            // find the parent DataObject, which node belongs to
+//            while (null != (node = node.getParentNode())) {
+//                if (null != (dO = (DataObject) node.getCookie(DataObject.class)))
+//                    return dO.getPrimaryFile();
+//            }
+//        }
         return null;
     }
 
@@ -198,29 +200,32 @@ public class TestUtil {
     
 
         
-    static boolean isClassTest(JavaClass jc) {
-        return isClassImplementingTestInterface(jc);
-    }
+//XXX: retouche
+//    static boolean isClassTest(JavaClass jc) {
+//        return isClassImplementingTestInterface(jc);
+//    }
     
-    // is JavaClass a Test class ?
-    static boolean isClassImplementingTestInterface(JavaClass cls) {        
-        
-        JavaModelPackage pkg = (JavaModelPackage)cls.refImmediatePackage();  
-        JavaClass testInterface = (JavaClass)pkg.getJavaClass().resolve("junit.framework.Test");
-        
-        return cls.isSubTypeOf(testInterface);
-    }    
+//XXX: retouche
+//    // is JavaClass a Test class ?
+//    static boolean isClassImplementingTestInterface(JavaClass cls) {        
+//        
+//        JavaModelPackage pkg = (JavaModelPackage)cls.refImmediatePackage();  
+//        JavaClass testInterface = (JavaClass)pkg.getJavaClass().resolve("junit.framework.Test");
+//        
+//        return cls.isSubTypeOf(testInterface);
+//    }    
     
         
     
     // is class an exception
 
 
-    static boolean isClassException(JavaClass cls) {
-        JavaModelPackage pkg = (JavaModelPackage)cls.refImmediatePackage();
-        ClassDefinition throwable = (ClassDefinition)pkg.getType().resolve("java.lang.Throwable");
-        return cls.isSubTypeOf(throwable);
-    }
+//XXX: retouche
+//    static boolean isClassException(JavaClass cls) {
+//        JavaModelPackage pkg = (JavaModelPackage)cls.refImmediatePackage();
+//        ClassDefinition throwable = (ClassDefinition)pkg.getType().resolve("java.lang.Throwable");
+//        return cls.isSubTypeOf(throwable);
+//    }
 
 
     /**
@@ -229,48 +234,51 @@ public class TestUtil {
      * @return Collection<JavaClass>, not null
      */ 
     static Collection getAllClassesFromFile(FileObject fo) {
-        if (fo == null) {
+//XXX: retouche
+//        if (fo == null) {
             return Collections.EMPTY_LIST;
-        }
-
-        Iterator it = JavaModel.getResource(fo).getChildren().iterator();
-        LinkedList ret = new LinkedList();
-
-        while (it.hasNext()) {
-            Element e = (Element)it.next();
-            if (e instanceof JavaClass) {
-                ret.add((JavaClass)e);
-            }
-        }
-
-        return ret;
+//XXX: retouche
+//        }
+//
+//        Iterator it = JavaModel.getResource(fo).getChildren().iterator();
+//        LinkedList ret = new LinkedList();
+//
+//        while (it.hasNext()) {
+//            Element e = (Element)it.next();
+//            if (e instanceof JavaClass) {
+//                ret.add((JavaClass)e);
+//            }
+//        }
+//
+//        return ret;
     }
 
-    /**
-     * Returns an object describing the main class of the specified
-     * file object containing java source.
-     *
-     * @param  res <code>Resource</code> examine
-     * @return  <code>JavaClass</code> with the data object's
-     *          main class; or <code>null</code> if the class was not
-     *          found (e.g. because of a broken source file)
-     */
-    static public JavaClass getMainJavaClass(Resource res) {
-        // search for the main class  
-        Iterator it = res.getChildren().iterator();
-        String resName = fileToClassName(res.getName());
-        if (resName != null) {
-            while (it.hasNext()) {
-                Element e = (Element)it.next();
-                if (e instanceof JavaClass) {
-                    if (((JavaClass)e).getName().equals(resName)) 
-                        return (JavaClass)e;
-                }
-            }
-        }
-
-        return null;
-    }    
+//XXX: retouche
+//    /**
+//     * Returns an object describing the main class of the specified
+//     * file object containing java source.
+//     *
+//     * @param  res <code>Resource</code> examine
+//     * @return  <code>JavaClass</code> with the data object's
+//     *          main class; or <code>null</code> if the class was not
+//     *          found (e.g. because of a broken source file)
+//     */
+//    static public JavaClass getMainJavaClass(Resource res) {
+//        // search for the main class  
+//        Iterator it = res.getChildren().iterator();
+//        String resName = fileToClassName(res.getName());
+//        if (resName != null) {
+//            while (it.hasNext()) {
+//                Element e = (Element)it.next();
+//                if (e instanceof JavaClass) {
+//                    if (((JavaClass)e).getName().equals(resName)) 
+//                        return (JavaClass)e;
+//                }
+//            }
+//        }
+//
+//        return null;
+//    }    
     
     /**
      * Converts filename to the fully qualified name of the main class
@@ -318,41 +326,45 @@ public class TestUtil {
                 continue;
             }
 
-            Resource rc = JavaModel.getResource(dataObject.getPrimaryFile());
-            result.add(getMainJavaClass(rc).getName());
+//XXX: retouche
+//            Resource rc = JavaModel.getResource(dataObject.getPrimaryFile());
+//            result.add(getMainJavaClass(rc).getName());
         }
         return result.isEmpty() ? Collections.EMPTY_LIST : result;
     }
 
-    public static List filterFeatures(JavaClass cls, Class type) {
-        LinkedList ret = new LinkedList();
-        Iterator it = cls.getFeatures().iterator();
+//XXX: retouche
+//    public static List filterFeatures(JavaClass cls, Class type) {
+//        LinkedList ret = new LinkedList();
+//        Iterator it = cls.getFeatures().iterator();
+//
+//        while (it.hasNext()) {
+//            Feature f = (Feature)it.next();
+//            if (type.isAssignableFrom(f.getClass())) ret.add(f);
+//        }
+//        return ret;
+//    }
 
-        while (it.hasNext()) {
-            Feature f = (Feature)it.next();
-            if (type.isAssignableFrom(f.getClass())) ret.add(f);
-        }
-        return ret;
-    }
-
-    public static Feature getFeatureByName(JavaClass src, Class cls, String name) {
-        if (!Feature.class.isAssignableFrom(cls)) throw new IllegalArgumentException("cls is not Feature");
-        
-        Iterator it = src.getFeatures().iterator();
-        while (it.hasNext()) {
-            Object o = it.next();
-            if (cls.isAssignableFrom(o.getClass())) {
-                Feature f = (Feature)o;
-                if (f.getName().equals(name)) return f;
-            }
-        }
-        return null;
-    }
+//XXX: retouche
+//    public static Feature getFeatureByName(JavaClass src, Class cls, String name) {
+//        if (!Feature.class.isAssignableFrom(cls)) throw new IllegalArgumentException("cls is not Feature");
+//        
+//        Iterator it = src.getFeatures().iterator();
+//        while (it.hasNext()) {
+//            Object o = it.next();
+//            if (cls.isAssignableFrom(o.getClass())) {
+//                Feature f = (Feature)o;
+//                if (f.getName().equals(name)) return f;
+//            }
+//        }
+//        return null;
+//    }
 
 
-    public static JavaClass getClassBySimpleName(JavaClass cls, String name) {
-        return cls.getInnerClass(name, false);
-    }
+//XXX: retouche
+//    public static JavaClass getClassBySimpleName(JavaClass cls, String name) {
+//        return cls.getInnerClass(name, false);
+//    }
 
     static public String createNewName(int i, Set usedNames) {
         String ret;
@@ -362,123 +374,131 @@ public class TestUtil {
         return ret;
     }
 
-    static public Parameter cloneParam(Parameter p, JavaModelPackage pkg, int order, Set usedNames) {
-        String name = p.getName();
-        if (name == null || name.length()==0 || usedNames.contains(name)) {
-            name = createNewName(order, usedNames);
-        } 
-        usedNames.add(name);
+//XXX: retouche
+//    static public Parameter cloneParam(Parameter p, JavaModelPackage pkg, int order, Set usedNames) {
+//        String name = p.getName();
+//        if (name == null || name.length()==0 || usedNames.contains(name)) {
+//            name = createNewName(order, usedNames);
+//        } 
+//        usedNames.add(name);
+//
+//        
+//        Parameter ret =
+//            pkg.getParameter().
+//            createParameter(name,
+//                            p.getAnnotations(), 
+//                            p.isFinal(),
+//                            null,
+//                            0,//p.getDimCount(),
+//                            p.isVarArg());
+//        ret.setType(p.getType());
+//        return ret;
+//    }
 
+//XXX: retouche
+//    public static List cloneParams(List params, JavaModelPackage pkg) {
+//        Iterator origParams = params.iterator();
+//        List newParams = new LinkedList();
+//        int o = 0; 
+//        HashSet usedNames = new HashSet(params.size()*2);
+//        while (origParams.hasNext()) {
+//            Parameter p = (Parameter)origParams.next();
+//            newParams.add(TestUtil.cloneParam(p, pkg, o++, usedNames));
+//        }
+//        return newParams;
+//    }
+
+
+//XXX: retouche
+//    /**
+//     * Gets collection of types of the parameters passed in in the
+//     * argument. The returned collection has the same size as the
+//     * input collection.
+//     * @param params List<Parameter>
+//     * @return List<Type> 
+//     */
+//    static public List getParameterTypes(List params) {
+//        List ret = new ArrayList(params.size());
+//        Iterator it = params.iterator();
+//        while (it.hasNext()) {
+//            ret.add(((Parameter)it.next()).getType());
+//        }
+//        return ret;
+//    }
+
+
+
+//XXX: retouche
+//    /**
+//     * Gets list of all features within the given class of the given
+//     * class and modifiers.
+//     * @param c the JavaClass to search
+//     * @param cls the Class to search for
+//     * @param modifiers the modifiers to search for
+//     * @param recursive if true, the search descents to superclasses
+//     *                  and interfaces
+//     * @return List of the collected Features
+//     */
+//    public static List collectFeatures(JavaClass c, Class cls, 
+//                                   int modifiers, boolean recursive) {
+//
+//        return collectFeatures(c, cls, modifiers, recursive, new LinkedList(), new HashSet());
+//    }
         
-        Parameter ret =
-            pkg.getParameter().
-            createParameter(name,
-                            p.getAnnotations(), 
-                            p.isFinal(),
-                            null,
-                            0,//p.getDimCount(),
-                            p.isVarArg());
-        ret.setType(p.getType());
-        return ret;
-    }
-
-    public static List cloneParams(List params, JavaModelPackage pkg) {
-        Iterator origParams = params.iterator();
-        List newParams = new LinkedList();
-        int o = 0; 
-        HashSet usedNames = new HashSet(params.size()*2);
-        while (origParams.hasNext()) {
-            Parameter p = (Parameter)origParams.next();
-            newParams.add(TestUtil.cloneParam(p, pkg, o++, usedNames));
-        }
-        return newParams;
-    }
-
-
-    /**
-     * Gets collection of types of the parameters passed in in the
-     * argument. The returned collection has the same size as the
-     * input collection.
-     * @param params List<Parameter>
-     * @return List<Type> 
-     */
-    static public List getParameterTypes(List params) {
-        List ret = new ArrayList(params.size());
-        Iterator it = params.iterator();
-        while (it.hasNext()) {
-            ret.add(((Parameter)it.next()).getType());
-        }
-        return ret;
-    }
 
 
 
-    /**
-     * Gets list of all features within the given class of the given
-     * class and modifiers.
-     * @param c the JavaClass to search
-     * @param cls the Class to search for
-     * @param modifiers the modifiers to search for
-     * @param recursive if true, the search descents to superclasses
-     *                  and interfaces
-     * @return List of the collected Features
-     */
-    public static List collectFeatures(JavaClass c, Class cls, 
-                                   int modifiers, boolean recursive) {
+//XXX: retouche
+//    private static List collectFeatures(JavaClass c, Class cls, 
+//                                   int modifiers, boolean recursive, 
+//                                   List list, Set visited ) 
+//    {
+//
+//	if (!visited.add(c)) return list;
+//        // this class
+//        
+//        int mo = (c.isInterface()) ? Modifier.ABSTRACT : 0;
+//        Iterator it = TestUtil.filterFeatures(c, cls).iterator();
+//        while (it.hasNext()) {
+//            Feature m = (Feature)it.next();
+//            if (((m.getModifiers() | mo) & modifiers) == modifiers) {
+//                list.add(m);
+//            }
+//        }
+//
+//        if (recursive) {
+//            // super
+//            JavaClass sup = c.getSuperClass();
+//            if (sup != null) collectFeatures(sup, cls, modifiers, recursive, list, visited);
+//
+//            // interfaces
+//            Iterator ifaces = c.getInterfaces().iterator();
+//            while (ifaces.hasNext()) collectFeatures((JavaClass)ifaces.next(), cls,
+//                                                     modifiers, recursive, list, visited);
+//        }
+//
+//        return list;
+//    }
 
-        return collectFeatures(c, cls, modifiers, recursive, new LinkedList(), new HashSet());
-    }
+//XXX: retouche
+//    public static boolean hasMainMethod(JavaClass cls) {
+//
+//        JavaModelPackage pkg = (JavaModelPackage)cls.refImmediatePackage();  
+//        return cls.getMethod("main", 
+//                             Collections.singletonList(pkg.getArray().resolveArray(TestUtil.getStringType(pkg))),
+//                             false) != null;
+//
+//    }
         
+//XXX: retouche
+//    public static Type getStringType(JavaModelPackage pkg) {
+//        return pkg.getType().resolve("java.lang.String");
+//    }
 
-
-
-    private static List collectFeatures(JavaClass c, Class cls, 
-                                   int modifiers, boolean recursive, 
-                                   List list, Set visited ) 
-    {
-
-	if (!visited.add(c)) return list;
-        // this class
-        
-        int mo = (c.isInterface()) ? Modifier.ABSTRACT : 0;
-        Iterator it = TestUtil.filterFeatures(c, cls).iterator();
-        while (it.hasNext()) {
-            Feature m = (Feature)it.next();
-            if (((m.getModifiers() | mo) & modifiers) == modifiers) {
-                list.add(m);
-            }
-        }
-
-        if (recursive) {
-            // super
-            JavaClass sup = c.getSuperClass();
-            if (sup != null) collectFeatures(sup, cls, modifiers, recursive, list, visited);
-
-            // interfaces
-            Iterator ifaces = c.getInterfaces().iterator();
-            while (ifaces.hasNext()) collectFeatures((JavaClass)ifaces.next(), cls,
-                                                     modifiers, recursive, list, visited);
-        }
-
-        return list;
-    }
-
-    public static boolean hasMainMethod(JavaClass cls) {
-
-        JavaModelPackage pkg = (JavaModelPackage)cls.refImmediatePackage();  
-        return cls.getMethod("main", 
-                             Collections.singletonList(pkg.getArray().resolveArray(TestUtil.getStringType(pkg))),
-                             false) != null;
-
-    }
-        
-    public static Type getStringType(JavaModelPackage pkg) {
-        return pkg.getType().resolve("java.lang.String");
-    }
-
-    public static TypeReference getTypeReference(JavaModelPackage pkg, String name) {
-        return pkg.getMultipartId().createMultipartId(name, null, Collections.EMPTY_LIST);
-    }
+//XXX: retouche
+//    public static TypeReference getTypeReference(JavaModelPackage pkg, String name) {
+//        return pkg.getMultipartId().createMultipartId(name, null, Collections.EMPTY_LIST);
+//    }
 
     /**
      * Finds <code>SourceGroup</code>s where a test for the given class

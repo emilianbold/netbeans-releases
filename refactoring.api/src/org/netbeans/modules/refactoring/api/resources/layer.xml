@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<filesystem>
+    <folder name="Menu">
+        <folder name="Refactoring">
+	    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.refactoring.spi.impl.Bundle"/>
+            <attr name="SafeDeleteAction.instance/LastSeparator.instance" boolvalue="true"/>
+            <file name="LastSeparator.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            </file>
+            <attr name="LastSeparator.instance/UndoAction.instance" boolvalue="true"/>
+            <file name="UndoAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.refactoring.spi.impl.UndoAction"/>
+            </file>
+            <attr name="UndoAction.instance/RedoAction.instance" boolvalue="true"/>
+            <file name="RedoAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.refactoring.spi.impl.RedoAction"/>
+            </file>
+            <file name="SafeDeleteAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.refactoring.spi.impl.SafeDeleteAction"/>
+            </file>
+            <file name="RenameAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.refactoring.spi.impl.RenameAction"/>
+            </file>
+            <!--
+            <file name="MoveAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.refactoring.spi.impl.MoveAction"/>
+            </file>
+            -->
+            
+            
+        </folder>
+        <attr name="Source/Refactoring" boolvalue="true"/>
+        <attr name="Refactoring/BuildProject" boolvalue="true"/>
+        <attr name="Refactoring/Versioning" boolvalue="true"/>
+        <attr name="Refactoring/Tools" boolvalue="true"/>
+        
+        <folder name="Edit">
+            <attr name="org-openide-actions-ReplaceAction.instance/WhereUsedAction.instance" boolvalue="true"/>            
+            <file name="WhereUsedAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.refactoring.spi.impl.WhereUsedAction"/>
+            </file>
+            <attr name="WhereUsedAction.instance/sep-before-reposearch.instance" boolvalue="true"/>
+        </folder>
+        <folder name="Window">
+            <attr name="ResultViewOpenAction.shadow/FindUsagesOpenAction.shadow" boolvalue="true"/>
+            <file name="FindUsagesOpenAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-refactoring-spi-impl-FindUsagesOpenAction.instance"/>
+            </file>
+            <attr name="FindUsagesOpenAction.shadow/org-netbeans-modules-refactoring-spi-impl-RefactoringPreviewOpenAction.instance" boolvalue="true"/>
+
+            <attr name="FindUsagesOpenAction.shadow/RefactoringPreviewOpenAction.shadow" boolvalue="true"/>
+            <file name="RefactoringPreviewOpenAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-refactoring-spi-impl-RefactoringPreviewOpenAction.instance"/>
+            </file>
+            <attr name="RefactoringPreviewOpenAction.shadow/org-netbeans-modules-tasklist-docscan-SourceTasksAction.instance" boolvalue="true"/>
+        </folder> <!-- Window -->
+    </folder>
+
+  <folder name="Actions">
+     <folder name="Refactoring">
+          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.refactoring.spi.impl.Bundle"/>
+          <file name="org-netbeans-modules-refactoring-spi-impl-WhereUsedAction.instance"/>
+          <file name="org-netbeans-modules-refactoring-spi-impl-UndoAction.instance"/>
+          <file name="org-netbeans-modules-refactoring-spi-impl-RedoAction.instance"/>
+          <file name="org-netbeans-modules-refactoring-spi-impl-SafeDeleteAction.instance"/>
+          <file name="org-netbeans-modules-refactoring-spi-impl-RenameAction.instance"/>
+          <file name="org-netbeans-modules-refactoring-spi-impl-MoveAction.instance"/>
+    </folder>
+
+  <folder name="Window">
+     <file name="org-netbeans-modules-refactoring-spi-impl-FindUsagesOpenAction.instance">
+        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/refactoring/resources/findusages.png"/> 
+     </file>
+     <file name="org-netbeans-modules-refactoring-spi-impl-RefactoringPreviewOpenAction.instance">
+        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/refactoring/resources/refactoringpreview.png"/> 
+     </file>
+   </folder> <!-- Window -->
+  </folder>
+    <folder name="Shortcuts">
+        <file name="O-F7.shadow">
+            <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-spi-impl-WhereUsedAction.instance"/>
+        </file>
+    </folder>
+
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="x-java">
+                <folder name="Popup">
+                    <file name="org-netbeans-modules-refactoring-spi-impl-WhereUsedAction.instance"/>
+                    <attr name="org-netbeans-modules-editor-NbSelectInPopupAction.instance/org-netbeans-modules-refactoring-spi-impl-WhereUsedAction.shadow" boolvalue="true"/>
+                    <attr name="org-netbeans-modules-refactoring-spi-impl-WhereUsedAction.shadow/goto-help" boolvalue="true"/>        
+                    <file name="org-netbeans-modules-refactoring-spi-impl-RSMEditorAction.instance"/>
+                    <attr name="SeparatorAfterGoToHelp.instance/org-netbeans-modules-refactoring-spi-impl-RSMEditorAction.instance" boolvalue="true"/>
+                    <attr name="org-netbeans-modules-refactoring-spi-impl-RSMEditorAction.instance/format" boolvalue="true"/>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+    
+     <folder name="Windows2">
+        <folder name="Modes">
+            <folder name="output">       <!-- "output" is defined in core/ui -->
+                <file name="find-usages.wstcref" url="find-usages.wstcref"/>
+                <file name="refactoring-preview.wstcref" url="refactoring-preview.wstcref"/>
+            </folder>
+        </folder>
+        <folder name="Components">
+            <file name="find-usages.settings" url="find-usages.settings"/>
+            <file name="find_usages.settings_hidden"/>
+            <file name="refactoring-preview.settings" url="refactoring-preview.settings"/>
+        </folder>
+    </folder>
+  <folder name="Loaders">
+    <folder name="text">
+        <folder name="x-java">
+            <folder name="Actions">
+              <attr boolvalue="true" name="DeleteAction.instance/SaveAsTemplateAction.instance"/>
+              <attr boolvalue="true" name="SaveAsTemplateAction.instance/RefactoringWhereUsed.instance"/>
+              <attr boolvalue="true" name="Separator4.instance/RefactoringWhereUsed.instance"/>
+              <file name="RefactoringWhereUsed.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.refactoring.spi.impl.WhereUsedAction"/>
+              </file>
+              <attr boolvalue="true" name="RefactoringWhereUsed.instance/RefactoringAll.instance"/>
+              <file name="RefactoringAll.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.refactoring.spi.impl.RSMJavaDOAction"/>
+              </file>
+              <attr boolvalue="true" name="RefactoringAll.instance/RefactoringSeparator-1.instance"/>
+              <file name="RefactoringSeparator-1.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+              </file>
+              <attr boolvalue="true" name="RefactoringSeparator-1.instance/ToolsAction.instance"/>
+              <file name="RenameAction.instance_hidden"/>
+            </folder>
+        </folder>
+    </folder>
+    <folder name="folder">
+        <folder name="any">
+            <folder name="Actions">
+              <attr boolvalue="true" name="DeleteAction.instance/RefactoringAll.instance"/>
+              <file name="RefactoringAll.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.refactoring.spi.impl.RSMJavaDOAction"/>
+              </file>
+              <attr boolvalue="true" name="RefactoringAll.instance/Separator3.instance"/>
+              <file name="RenameAction.instance_hidden"/>
+            </folder>
+        </folder>
+    </folder>
+  </folder> 
+    
+</filesystem>

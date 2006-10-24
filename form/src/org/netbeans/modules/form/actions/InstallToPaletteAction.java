@@ -19,11 +19,12 @@
 
 package org.netbeans.modules.form.actions;
 
-import org.openide.cookies.*;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.modules.form.palette.BeanInstaller;
+import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
-import org.openide.util.actions.CookieAction;
-import org.netbeans.modules.form.palette.BeanInstaller;
+import org.openide.util.actions.NodeAction;
 
 /**
  * InstallToPalette action - installs selected classes as beans to palette.
@@ -31,7 +32,7 @@ import org.netbeans.modules.form.palette.BeanInstaller;
  * @author   Ian Formanek
  */
 
-public class InstallToPaletteAction extends CookieAction {
+public class InstallToPaletteAction extends NodeAction {
 
     private static String name;
 
@@ -39,14 +40,6 @@ public class InstallToPaletteAction extends CookieAction {
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
     
-    protected int mode() {
-        return MODE_ALL;
-    }
-
-    protected Class[] cookieClasses() {
-        return new Class[] { SourceCookie.class };
-    }
-
     public String getName() {
         if (name == null)
             name = org.openide.util.NbBundle.getBundle(InstallToPaletteAction.class)
@@ -64,6 +57,17 @@ public class InstallToPaletteAction extends CookieAction {
 
     protected void performAction(Node[] activatedNodes) {
         BeanInstaller.installBeans(activatedNodes);
+    }
+
+    protected boolean enable(Node[] activatedNodes) {
+        for (Node n: activatedNodes) {
+            FileObject fobj = n.getLookup().lookup(FileObject.class);
+            if (fobj == null || JavaSource.forFileObject(fobj) == null) {
+                return false;
+            }
+        }
+        
+        return true;
     }
 
 }

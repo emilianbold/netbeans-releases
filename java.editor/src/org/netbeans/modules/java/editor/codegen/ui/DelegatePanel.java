@@ -1,0 +1,254 @@
+/*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ *
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ *
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+package org.netbeans.modules.java.editor.codegen.ui;
+
+import com.sun.source.tree.ClassTree;
+import com.sun.source.util.TreePath;
+import java.awt.BorderLayout;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.Types;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.modules.java.editor.codegen.DelegateData;
+import org.netbeans.modules.java.editor.codegen.GenerateData;
+import org.netbeans.modules.java.editor.codegen.GeneratorUtils;
+import org.netbeans.modules.java.editor.codegen.TypedExecutableElementWrapper;
+import org.netbeans.modules.java.editor.codegen.ui.GenerateCodePanel.JPanelWithExplorerManager;
+import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.ExplorerManager.Provider;
+import org.openide.explorer.view.BeanTreeView;
+import org.openide.nodes.Node;
+
+/**
+ *
+ * @author Jan Lahoda
+ */
+public class DelegatePanel extends javax.swing.JPanel implements GeneratePanel, PropertyChangeListener {
+    
+    private JavaSource js;
+    private CompilationInfo info;
+    private TreePath pathToTree;
+    private ClassTree clazzTree;
+    private TypeElement clazz;
+
+    private BeanTreeView fieldView;
+
+    /** Creates new form DelegatePanel */
+    public DelegatePanel() {
+        initComponents();
+
+        fieldView = new BeanTreeView();
+
+        fieldView.setRootVisible(false);
+        fieldSelect.add(fieldView, BorderLayout.CENTER);
+
+        BeanTreeView methodView = new BeanTreeView();
+
+        methodView.setRootVisible(false);
+        methodsSelect.add(methodView, BorderLayout.CENTER);
+    }
+
+    public void initialize(JavaSource js, CompilationInfo info, TreePath pathToTree, ClassTree clazzTree, TypeElement clazz) {
+        this.js = js;
+        this.info = info;
+        this.pathToTree = pathToTree;
+        this.clazzTree = clazzTree;
+        this.clazz = clazz;
+
+        Map<? extends TypeElement, ? extends List<? extends VariableElement>> class2Variables = findUsableFields(info, clazz);
+
+        ExplorerManager manager = ((Provider) fieldSelect).getExplorerManager();
+
+        manager.setRootContext(new Class2EnclosedElementsNode(class2Variables));
+        manager.addPropertyChangeListener(this);
+
+        fieldView.expandAll();
+    }
+
+    public GenerateData getData() {
+        ExplorerManager fieldManager = ((Provider) fieldSelect).getExplorerManager();
+        ExplorerManager methodsManager = ((Provider) methodsSelect).getExplorerManager();
+        
+        Node[] selectedNodes = fieldManager.getSelectedNodes();
+        
+        if (selectedNodes.length != 1) {
+            return null;
+        }
+        
+        VariableElement el = (VariableElement) selectedNodes[0].getLookup().lookup(VariableElement.class);
+        
+        if (el == null) {
+            return null;
+        }
+        
+        List<TypedExecutableElementWrapper> methods = new ArrayList<TypedExecutableElementWrapper>();
+        
+        for (Node n : methodsManager.getSelectedNodes()) {
+            TypedExecutableElementWrapper ee = (TypedExecutableElementWrapper) n.getLookup().lookup(TypedExecutableElementWrapper.class);
+            
+            if (ee != null) {
+                methods.add(ee);
+            }
+        }
+        
+        return new DelegateData(js, el, methods, pathToTree, clazzTree);
+    }
+    
+    /** This method is called from within the constructor to
+     * initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is
+     * always regenerated by the Form Editor.
+     */
+    // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
+    private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
+
+        fieldSelect = new JPanelWithExplorerManager();
+        methodsSelect = new JPanelWithExplorerManager();
+
+        setLayout(new java.awt.GridBagLayout());
+
+        fieldSelect.setLayout(new java.awt.BorderLayout());
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
+        add(fieldSelect, gridBagConstraints);
+
+        methodsSelect.setLayout(new java.awt.BorderLayout());
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
+        add(methodsSelect, gridBagConstraints);
+
+    }// </editor-fold>//GEN-END:initComponents
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        ExplorerManager fieldManager = ((Provider) fieldSelect).getExplorerManager();
+        ExplorerManager methodsManager = ((Provider) methodsSelect).getExplorerManager();
+        
+        if (evt.getSource() == fieldManager) {
+            Node[] selectedNodes = fieldManager.getSelectedNodes();
+            
+            if (selectedNodes.length != 1) {
+                methodsManager.setRootContext(Node.EMPTY);
+                return ;
+            }
+            
+            VariableElement el = (VariableElement) selectedNodes[0].getLookup().lookup(VariableElement.class);
+            
+            if (el == null) {
+                methodsManager.setRootContext(Node.EMPTY);
+                return ;
+            }
+            
+            setFillOutsMethods(el);
+        }
+    }
+
+    static Map<? extends TypeElement, ? extends List<? extends VariableElement>> findUsableFields(CompilationInfo info, TypeElement clazz) {
+        Map<TypeElement, List<? extends VariableElement>> result = new HashMap/*<? extends TypeElement, ? extends List<? extends VariableElement>>*/();
+
+        for (Entry<? extends TypeElement, ? extends List<? extends VariableElement>> entry : GeneratorUtils.findAllAccessibleFields(info, clazz).entrySet()) {
+            TypeElement current = entry.getKey();
+            List<VariableElement> variables = new ArrayList();
+
+            for (VariableElement ve : entry.getValue()) {
+                if (!ve.asType().getKind().isPrimitive())
+                    variables.add(ve);
+            }
+
+            if (!variables.isEmpty())
+                result.put(current, variables);
+        }
+
+        return result;
+    }
+
+    static List<TypedExecutableElementWrapper> getMethodProposals(CompilationInfo info, TypeElement clazz, VariableElement el) {
+        Types types = info.getTypes();
+       
+        if (el.asType().getKind() != TypeKind.DECLARED)
+            return Collections.<TypedExecutableElementWrapper>emptyList();
+        
+        DeclaredType variableType = (DeclaredType) el.asType();
+        Map<ExecutableElement, TypeElement> proposed = new HashMap<ExecutableElement, TypeElement>();
+        List<TypeElement> variableClasses = new ArrayList<TypeElement>(GeneratorUtils.getAllParents((TypeElement) variableType.asElement()));
+        List<TypedExecutableElementWrapper> result = new ArrayList<TypedExecutableElementWrapper>();
+
+        TypeMirror tm = el.asType();
+        if (tm.getKind() == TypeKind.DECLARED)
+        variableClasses.add((TypeElement) ((DeclaredType)tm).asElement());
+
+        Collections.reverse(variableClasses);
+        
+        for (TypeElement te : variableClasses) {
+            if ("java.lang.Object".contentEquals(te.getQualifiedName()))
+                continue;
+            
+            for (ExecutableElement ee : ElementFilter.methodsIn(te.getEnclosedElements())) {
+                boolean alreadyContains = false;
+
+                for (ExecutableElement ee1 : proposed.keySet()) {
+                    if (alreadyContains = info.getElements().overrides(ee1, ee, proposed.get(ee1)))
+                        break;
+                }
+
+                if (!alreadyContains && GeneratorUtils.isAccessible(clazz, ee)) {
+                    proposed.put(ee, te);
+                    result.add(new TypedExecutableElementWrapper(ee, (ExecutableType) types.asMemberOf(variableType, ee)));
+                }
+            }
+        }
+
+        return result;
+    }
+
+    private void setFillOutsMethods(VariableElement el) {
+        ExplorerManager methodsManager = ((Provider) methodsSelect).getExplorerManager();
+
+        methodsManager.setRootContext(new ClassWithEnclosedNode(null, getMethodProposals(info, clazz, el)));
+    }
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    public javax.swing.JPanel fieldSelect;
+    public javax.swing.JPanel methodsSelect;
+    // End of variables declaration//GEN-END:variables
+    
+}

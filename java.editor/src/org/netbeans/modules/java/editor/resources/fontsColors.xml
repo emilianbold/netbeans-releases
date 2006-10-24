@@ -2,17 +2,38 @@
 
 <fontscolors>
     <fontcolor name="java-annotation" foreColor="ff006f00" default="default"/>
-    <fontcolor name="java-block-comment" default="comment"/>
-    <fontcolor name="java-char-literal" default="char"/>
-    <fontcolor name="java-errors" default="error"/>
-    <fontcolor name="java-identifier" default="identifier"/>
-    <fontcolor name="java-keywords" default="keyword"/>
-    <fontcolor name="java-layer-method" default="default">
-        <font style="bold"/>
+    <fontcolor name="character" default="char"/>
+    <fontcolor name="errors" default="error"/>
+    <fontcolor name="identifier" default="identifier"/>
+    <fontcolor name="keyword" default="keyword"/>
+    <fontcolor name="literal" default="keyword" />
+    <fontcolor name="comment" default="comment"/>
+    <fontcolor name="number" default="number"/>
+    <fontcolor name="operator" default="operator"/>
+    <fontcolor name="string" default="string"/>
+    <fontcolor name="whitespace" default="whitespace"/>
+    
+    <fontcolor name="string-escape" default="string">
+        <font style="bold" />
     </fontcolor>
-    <fontcolor name="java-line-comment" default="comment"/>
-    <fontcolor name="java-numeric-literals" default="number"/>
-    <fontcolor name="java-operators" default="operator"/>
-    <fontcolor name="java-string-literal" default="string"/>
-    <fontcolor name="java-whitespace" default="whitespace"/>
+    <fontcolor name="string-escape-invalid" default="string">
+        <font style="italic" />
+    </fontcolor>
+    
+    <fontcolor name="javadoc-tag" foreColor="0000CC" default="comment">
+        <font style="bold" />
+    </fontcolor>
+    
+    <fontcolor name="html-argument" foreColor="ff007c00" default="identifier"/>
+    <fontcolor name="html-block-comment" foreColor="gray" default="comment"/>
+    <fontcolor name="html-character" foreColor="ffb20000" default="char"/>
+    <fontcolor name="html-error" foreColor="black" bgColor="pink" default="error"/>
+    <fontcolor name="html-operator" foreColor="ff007c00" default="operator"/>
+    <fontcolor name="html-sgml-comment" foreColor="gray" default="comment"/>
+    <fontcolor name="html-sgml-declaration" foreColor="ffbf9221" default="default"/>
+    <fontcolor name="html-tag" foreColor="blue" default="default"/>
+    <fontcolor name="html-text" default="default"/>
+    <fontcolor name="html-value" foreColor="ff99006b" default="default"/>
+    <fontcolor name="html-ws" default="whitespace"/>
+    
 </fontscolors>

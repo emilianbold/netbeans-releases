@@ -23,39 +23,27 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Actions">
         <folder name="Edit">
-            <file name="org-netbeans-modules-editor-java-JavaFastOpenAction.instance">
+<!--            <file name="org-netbeans-modules-editor-java-JavaFastOpenAction.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.java.JavaFastOpenAction.getInstance"/>
-            </file>
+            </file> -->
         </folder>
     </folder>
 
     <folder name="Menu">
-        <folder name="GoTo">
-            <file name="org-netbeans-modules-editor-java-JavaFastOpenAction.shadow">            
+        <folder name="Edit">
+<!--            <file name="org-netbeans-modules-editor-java-JavaFastOpenAction.shadow">            
                 <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-editor-java-JavaFastOpenAction.instance"/>            
-            </file>
-            <attr name="org-netbeans-modules-editor-java-JavaFastOpenAction.shadow/org-netbeans-modules-junit-OpenTestAction.shadow" boolvalue="true"/>   
-            <attr name="org-netbeans-modules-editor-java-JavaFastOpenAction.shadow/org-netbeans-core-windows-actions-RecentViewListAction.shadow" boolvalue="true"/>           
+            </file> -->
+
+            <attr name="org-openide-actions-GotoAction.instance/org-netbeans-modules-editor-java-JavaFastOpenAction.shadow" boolvalue="true"/>           
+
         </folder>
-        
-        <folder name="Source">
-            <file name="org-netbeans-modules-editor-java-JavaFixAllImports$MainMenuWrapper.instance"/>            
-            <attr name="org-netbeans-modules-java-tools-OverrideAction.shadow/org-netbeans-modules-editor-java-JavaFixAllImports$MainMenuWrapper.instance" boolvalue="true"/>   
-            
-            <file name="org-netbeans-modules-editor-java-JavaKit$TryCatchAction$MainMenuWrapper.instance"/>            
-            <attr name="org-netbeans-modules-editor-java-JavaFixAllImports$MainMenuWrapper.instance/org-netbeans-modules-editor-MainMenuAction$RemoveTrailingSpacesAction.instance" boolvalue="true"/>
-            <attr name="org-netbeans-modules-editor-MainMenuAction$RemoveTrailingSpacesAction.instance/org-netbeans-modules-editor-java-JavaKit$TryCatchAction$MainMenuWrapper.instance" boolvalue="true"/>   
-            <attr name="org-netbeans-modules-editor-java-JavaKit$TryCatchAction$MainMenuWrapper.instance/SeparatorBeforeReformat.instance" boolvalue="true"/>   
-        </folder>
-        
     </folder>
-    
-    
                 
     <folder name="Shortcuts">
-        <file name="OS-O.shadow">
+<!--        <file name="OS-O.shadow">
 	    <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-editor-java-JavaFastOpenAction.instance"/>
-        </file>
+        </file> -->
     </folder>
 
     <folder name="Services">
@@ -87,8 +75,9 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Editors">
         <folder name="text">
             <folder name="x-java">
-            
+
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.editor.resources.Bundle"/>
+                
                 <folder name="NetBeans">
                     <folder name="Defaults">
                         <file name="coloring.xml" url="fontsColors.xml">
@@ -104,8 +93,7 @@ Microsystems, Inc. All Rights Reserved.
                 
                 <folder name="FoldManager">
                     <file name="org-netbeans-editor-CustomFoldManager$Factory.instance"/>
-                    <attr name="org-netbeans-editor-CustomFoldManager$Factory.instance/org-netbeans-modules-editor-java-NbJavaFoldManager$Factory.instance" boolvalue="true"/>
-                    <file name="org-netbeans-modules-editor-java-NbJavaFoldManager$Factory.instance"/>
+                    <file name="org-netbeans-modules-java-editor-fold-JavaElementFoldManagerFactory.instance"/>
                 </folder>
                 
                 <file name="Settings.settings" url="JavaOptions.settings"/>
@@ -119,25 +107,9 @@ Microsystems, Inc. All Rights Reserved.
                 </file>
                 
                 <folder name="Popup">
-                    <folder name="goto">
-                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.editor.Bundle"/>
-                        <file name="goto-source"/>
-                        <file name="goto-declaration"/>
-                        <attr name="goto-source/goto-declaration" boolvalue="true"/>
-                        <file name="goto-super-implementation"/>
-                        <attr name="goto-declaration/goto-super-implementation" boolvalue="true"/>
-                        <file name="goto"/>
-                        <attr name="goto-super-implementation/goto" boolvalue="true"/>                        
-                        <file name="org-netbeans-modules-editor-java-JavaFastOpenAction.instance">
-                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.java.JavaFastOpenAction.getInstance"/>
-                        </file>
-                        <attr name="goto/org-netbeans-modules-editor-java-JavaFastOpenAction.instance" boolvalue="true"/>
-                    </folder>    
-                    <!--<file name="generate-goto-popup"/>-->
-                    
-                    <attr name="goto/org-netbeans-modules-editor-NbSelectInPopupAction.instance" boolvalue="true"/>
-                    
+                    <file name="generate-goto-popup"/>
                     <file name="goto-help"/>
+                    <attr name="generate-goto-popup/goto-help" boolvalue="true"/>
 
                     <file name="SeparatorAfterGoToHelp.instance">
 			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
@@ -147,14 +119,12 @@ Microsystems, Inc. All Rights Reserved.
                     <file name="format"/>                    
                     <attr name="SeparatorAfterGoToHelp.instance/format" boolvalue="true"/>                                        
 
-                    <file name="fix-imports"/>
                     <attr name="format/fix-imports" boolvalue="true"/>
-                    <attr name="fix-imports/SeparatorAfterFormat.instance" boolvalue="true"/>
+                    <file name="fix-imports"/>
+                    <attr name="fix-imports/generate-code" boolvalue="true"/>
+                    <file name="generate-code"/>
+                    <attr name="generate-code/SeparatorAfterFormat.instance" boolvalue="true"/>
                     
-                    <file name="try-catch"/>
-                    <attr name="fix-imports/try-catch" boolvalue="true"/>
-                    <attr name="try-catch/SeparatorAfterFormat.instance" boolvalue="true"/>
-
                     <file name="SeparatorBeforeCut.instance">
 			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     </file>
@@ -182,24 +152,49 @@ Microsystems, Inc. All Rights Reserved.
                         <file name="uncomment"/>
                     </folder>
                 </folder>
+                
                 <folder name="CompletionProviders">
                     <file name="org-netbeans-modules-editor-java-JavaCompletionProvider.instance"/>
-                    <file name="org-netbeans-modules-editor-java-ElementCreatingCompletionProvider.instance"/>                    
-                    <file name="org-netbeans-modules-editor-java-AbbreviationsCompletionProvider.instance"/>
-                    <attr name="org-netbeans-modules-editor-java-JavaCompletionProvider.instance/org-netbeans-modules-editor-java-ElementCreatingCompletionProvider.instance" boolvalue="true"/>
+                    <file name="org-netbeans-modules-editor-java-ElementCreatingJavaCompletionProvider.instance"/>
                 </folder>
+                
                 <folder name="HyperlinkProviders">
                     <file name="JavaHyperlinkProvider.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.java.editor.hyperlink.JavaHyperlinkProvider"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider"/>
                     </file>
                 </folder>
+                
+                <folder name="UpToDateStatusProvider">
+                    <file name="org-netbeans-modules-java-editor-semantic-OccurrencesMarkProviderCreator.instance">
+                    </file>
+                </folder>
+
                 <folder name="CodeTemplateProcessorFactories">
-                    <file name="org-netbeans-modules-java-editor-codetemplates-JavaCodeTemplateProcessor$Factory.instance"/>
+                    <file name="org-netbeans-modules-editor-java-JavaCodeTemplateProcessor$Factory.instance"/>
+                </folder>                
+                
+                <folder name="CodeTemplateFilterFactories">
+                    <file name="org-netbeans-modules-editor-java-JavaCodeTemplateFilter$Factory.instance"/>
+                </folder>                
+
+                <folder name="GlyphGutterActions">
+                    <file name="org-netbeans-modules-java-editor-overridden-IsOverriddenAnnotationAction.instance"/>
+                    <attr name="org-netbeans-modules-java-editor-overridden-IsOverriddenAnnotationAction.instance/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow" boolvalue="true"/>
                 </folder>
             </folder>
+
         </folder>
+
+        <folder name="AnnotationTypes">
+            <file name="org-netbeans-modules-editor-java-is_overridden.xml" url="is-overridden-annotation.xml"/>
+            <file name="org-netbeans-modules-editor-java-has_implementations.xml" url="has-implementations-annotation.xml" />
+            <file name="org-netbeans-modules-editor-java-overrides.xml" url="overrides-annotation.xml"/>
+            <file name="org-netbeans-modules-editor-java-implements.xml" url="implements-annotation.xml" />
+        </folder>
+        
     </folder>
+
     <folder name="OptionsDialog">
         <folder name="PreviewExamples">
             <folder name="text">
@@ -207,4 +202,5 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
         </folder>
     </folder>
+    
 </filesystem>

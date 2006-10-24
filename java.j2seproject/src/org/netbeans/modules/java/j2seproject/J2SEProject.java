@@ -104,7 +104,7 @@ public final class J2SEProject implements Project, AntProjectListener {
     private final GeneratedFilesHelper genFilesHelper;
     private final Lookup lookup;
     private final UpdateHelper updateHelper;
-    private MainClassUpdater mainClassUpdater;
+//    private MainClassUpdater mainClassUpdater;
     private SourceRoots sourceRoots;
     private SourceRoots testRoots;
     
@@ -427,8 +427,9 @@ public final class J2SEProject implements Project, AntProjectListener {
 
             //register updater of main.class
             //the updater is active only on the opened projects
-            mainClassUpdater = new MainClassUpdater (J2SEProject.this, eval, updateHelper,
-                    cpProvider.getProjectClassPaths(ClassPath.SOURCE)[0], J2SEProjectProperties.MAIN_CLASS);
+//XXX: to compile workaround            
+//	    mainClassUpdater = new MainClassUpdater (J2SEProject.this, eval, updateHelper,
+//                    cpProvider.getProjectClassPaths(ClassPath.SOURCE)[0], J2SEProjectProperties.MAIN_CLASS);
 
             // Make it easier to run headless builds on the same machine at least.
             ProjectManager.mutex().writeAccess(new Mutex.Action() {
@@ -465,10 +466,11 @@ public final class J2SEProject implements Project, AntProjectListener {
             GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
             GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
             GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
-            if (mainClassUpdater != null) {
-                mainClassUpdater.unregister ();
-                mainClassUpdater = null;
-            }
+//XXX: to compile workaround            
+//            if (mainClassUpdater != null) {
+//                mainClassUpdater.unregister ();
+//                mainClassUpdater = null;
+//            }
             
             if (jaxWsFo!=null) jaxWsFo.removeFileChangeListener(jaxWsListener);
         }
@@ -477,12 +479,12 @@ public final class J2SEProject implements Project, AntProjectListener {
     
     public WebServicesClientSupport getAPIWebServicesClientSupport () {
             return apiWebServicesClientSupport;
+    }    
+
+    public JAXWSClientSupport getAPIJAXWSClientSupport() {
+        return apiJaxwsClientSupport;
     }
     
-    public JAXWSClientSupport getAPIJAXWSClientSupport () {
-            return apiJaxwsClientSupport;
-    }  
-
     /**
      * Exports the main JAR as an official build product for use from other scripts.
      * The type of the artifact will be {@link AntArtifact#TYPE_JAR}.

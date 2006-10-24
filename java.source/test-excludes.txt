@@ -1,0 +1,16 @@
+**/CachingFileManagerTest*
+**/CachingZipArchiveTest*
+**/BasicPerformanceTest*
+**/CachingFolderArchiveTest*
+**/GeneratorTest*
+**/FileManagerTest*
+**/PerfJavacIntefaceGCTest*
+**/PerfResolveTest*
+**/PerfBatchCompilationTest*
+**/AnnotationOnLocVarTest*
+**/ClashingImportsTest*
+**/ImportFormatTest*
+**/LabelsTest*
+**/MemberAdditionTest*
+**/MethodBodyTextTest*
+**/UiUtilsTest*

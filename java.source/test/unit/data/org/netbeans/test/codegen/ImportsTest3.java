@@ -1,0 +1,8 @@
+package org.netbeans.test.codegen;
+
+public abstract class ImportsTest3 implements java.util.Map {
+    
+    public ImportsTest3() {
+    }
+    
+}

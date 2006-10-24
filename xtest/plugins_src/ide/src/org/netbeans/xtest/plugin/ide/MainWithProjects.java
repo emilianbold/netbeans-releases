@@ -26,7 +26,7 @@ import java.io.IOException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
-import org.netbeans.modules.javacore.JMManager;
+//import org.netbeans.modules.javacore.JMManager;
 import org.netbeans.modules.project.ui.OpenProjectList;
 import org.openide.util.Mutex;
 
@@ -99,7 +99,7 @@ public class MainWithProjects implements Main.MainWithProjectsInterface, Propert
             }
             // WAIT PROJECT OPEN - end
             // wait until metadata scanning is finished
-            ((JMManager)JMManager.getManager()).waitScanFinished();
+//            ((JMManager)JMManager.getManager()).waitScanFinished();
         } catch (Exception ex) {
             ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
         } finally {

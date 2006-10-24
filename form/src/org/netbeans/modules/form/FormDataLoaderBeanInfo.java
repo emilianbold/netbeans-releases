@@ -20,10 +20,12 @@
 
 package org.netbeans.modules.form;
 
-import java.beans.*;
 import java.awt.Image;
-
-import org.netbeans.modules.java.JavaDataLoader;
+import java.beans.BeanInfo;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.SimpleBeanInfo;
+import org.openide.loaders.MultiFileLoader;
 import org.openide.util.Utilities;
 
 /** Form data loader bean info.
@@ -32,9 +34,10 @@ import org.openide.util.Utilities;
  */
 public class FormDataLoaderBeanInfo extends SimpleBeanInfo {
 
+    @Override
     public BeanInfo[] getAdditionalBeanInfo() {
         try {
-            return new BeanInfo[] { Introspector.getBeanInfo(JavaDataLoader.class) };
+            return new BeanInfo[] { Introspector.getBeanInfo(MultiFileLoader.class) };
         } catch (IntrospectionException ie) {
             org.openide.ErrorManager.getDefault().notify(ie);
             return null;
@@ -45,6 +48,7 @@ public class FormDataLoaderBeanInfo extends SimpleBeanInfo {
     /** @param type Desired type of the icon
      * @return returns the Form loader's icon
      */
+    @Override
     public Image getIcon(final int type) {
         if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) ||
             (type == java.beans.BeanInfo.ICON_MONO_16x16)) {

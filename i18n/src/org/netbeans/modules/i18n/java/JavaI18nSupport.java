@@ -46,17 +46,10 @@ import org.netbeans.modules.i18n.regexp.ParseException;
 import org.netbeans.modules.i18n.regexp.Translator;
 import org.netbeans.modules.properties.UtilConvert; // PENDING
 
-import org.openide.cookies.SourceCookie;
 import org.openide.loaders.DataObject;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
-import org.openide.src.ClassElement;
-import org.openide.src.FieldElement;
-import org.openide.src.Identifier;
-import org.openide.src.SourceElement;
-import org.openide.src.SourceException;
-import org.openide.src.Type;
 import org.openide.text.NbDocument;
 import org.openide.util.MapFormat;
 import org.openide.util.Lookup;
@@ -242,31 +235,31 @@ public class JavaI18nSupport extends I18nSupport {
      * the object have to have <code>SourceCookie</code>
      * @see org.openide.cookies.SourceCookie */
     private void createField() {
-        // Check if we have to generate field.
-        if(!isGenerateField())
-            return;
-
-        ClassElement sourceClass = getSourceClassElement();
-
-        if(sourceClass.getField(Identifier.create(getIdentifier())) != null)
-            // Field with such identifer exsit already, do nothing.
-            return;
-        
-        try {
-            FieldElement newField = new FieldElement();
-            newField.setName(Identifier.create(getIdentifier()));
-            newField.setModifiers(getModifiers());
-            newField.setType(Type.parse("java.util.ResourceBundle")); // NOI18N
-            newField.setInitValue(getInitString());
-            
-            if(sourceClass != null)
-                // Trying to add new field.
-                sourceClass.addField(newField);
-        } catch(SourceException se) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, se);
-        } catch(NullPointerException npe) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, npe);
-        }
+//        // Check if we have to generate field.
+//        if(!isGenerateField())
+//            return;
+//
+//        ClassElement sourceClass = getSourceClassElement();
+//
+//        if(sourceClass.getField(Identifier.create(getIdentifier())) != null)
+//            // Field with such identifer exsit already, do nothing.
+//            return;
+//        
+//        try {
+//            FieldElement newField = new FieldElement();
+//            newField.setName(Identifier.create(getIdentifier()));
+//            newField.setModifiers(getModifiers());
+//            newField.setType(Type.parse("java.util.ResourceBundle")); // NOI18N
+//            newField.setInitValue(getInitString());
+//            
+//            if(sourceClass != null)
+//                // Trying to add new field.
+//                sourceClass.addField(newField);
+//        } catch(SourceException se) {
+//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, se);
+//        } catch(NullPointerException npe) {
+//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, npe);
+//        }
     }
 
     /** 
@@ -293,26 +286,26 @@ public class JavaI18nSupport extends I18nSupport {
     }
     
     /** Helper method. Finds main top-level class element for <code>sourceDataObject</code> which should be initialized. */
-    private ClassElement getSourceClassElement() {
-        SourceElement sourceElem = ((SourceCookie)sourceDataObject.getCookie(SourceCookie.class)).getSource();
-        ClassElement sourceClass = sourceElem.getClass(Identifier.create(sourceDataObject.getName()));
-        
-        if(sourceClass != null)
-            return sourceClass;
-        
-        ClassElement[] classes = sourceElem.getClasses();
-        
-        // find source class
-        for(int i=0; i<classes.length; i++) {
-            int modifs = classes[i].getModifiers();
-            if(classes[i].isClass() && Modifier.isPublic(modifs)) {
-                sourceClass = classes[i];
-                break;
-            }
-        }
-        
-        return sourceClass;
-    }
+//    private ClassElement getSourceClassElement() {
+//        SourceElement sourceElem = ((SourceCookie)sourceDataObject.getCookie(SourceCookie.class)).getSource();
+//        ClassElement sourceClass = sourceElem.getClass(Identifier.create(sourceDataObject.getName()));
+//        
+//        if(sourceClass != null)
+//            return sourceClass;
+//        
+//        ClassElement[] classes = sourceElem.getClasses();
+//        
+//        // find source class
+//        for(int i=0; i<classes.length; i++) {
+//            int modifs = classes[i].getModifiers();
+//            if(classes[i].isClass() && Modifier.isPublic(modifs)) {
+//                sourceClass = classes[i];
+//                break;
+//            }
+//        }
+//        
+//        return sourceClass;
+//    }
     
     
     /** Finder which search hard coded strings in java sources. */

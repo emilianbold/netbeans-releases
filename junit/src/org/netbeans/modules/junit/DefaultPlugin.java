@@ -33,15 +33,16 @@ import java.util.Set;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.jmi.javamodel.AnnotationType;
-import org.netbeans.jmi.javamodel.ClassDefinition;
-import org.netbeans.jmi.javamodel.Element;
-import org.netbeans.jmi.javamodel.Feature;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.Method;
-import org.netbeans.jmi.javamodel.Resource;
-import org.netbeans.modules.javacore.api.JavaModel;
-import org.netbeans.modules.junit.DefaultPlugin.CreationResults.SkippedClass;
+//XXX: retouche
+//import org.netbeans.jmi.javamodel.AnnotationType;
+//import org.netbeans.jmi.javamodel.ClassDefinition;
+//import org.netbeans.jmi.javamodel.Element;
+//import org.netbeans.jmi.javamodel.Feature;
+//import org.netbeans.jmi.javamodel.JavaClass;
+//import org.netbeans.jmi.javamodel.Method;
+//import org.netbeans.jmi.javamodel.Resource;
+//import org.netbeans.modules.javacore.api.JavaModel;
+//import org.netbeans.modules.junit.DefaultPlugin.CreationResults.SkippedClass;
 import org.netbeans.modules.junit.TestCreator.TesteableResult;
 import org.netbeans.modules.junit.plugin.JUnitPlugin;
 import org.netbeans.modules.junit.plugin.JUnitPlugin.CreateTestParam;
@@ -156,85 +157,87 @@ public final class DefaultPlugin extends JUnitPlugin {
                                     final Location sourceLocation,
                                     final List<FileObject> candidateFiles,
                                     final boolean sourceToTest) {
-        Feature element = sourceLocation.getJavaElement();
-        if (element == null) {
-            return new Location(candidateFiles.get(0), null);
-        }
-
-        assert (element instanceof Method)
-               || (element instanceof JavaClass);
-            
-        JavaClass clazz;
-        String oppoMethodName = null;
-        String baseClassName, oppoClassName;
-        String pkgName;
-
-        if (element instanceof Method) {
-            Method method = (Method) element;
-            ClassDefinition classDef = method.getDeclaringClass();
-            if (classDef instanceof JavaClass) {
-                clazz = (JavaClass) classDef;
-                String baseMethodName = method.getName();
-                oppoMethodName = sourceToTest
-                                 ? getTestMethodName(baseMethodName)
-                                 : getSourceMethodName(baseMethodName);
-            } else {
-                clazz = null;
-            }
-        } else {
-            clazz = (JavaClass) element;
-        }
-        
-        if (clazz == null) {
-            return new Location(candidateFiles.get(0), null);
-        }
-        
-        baseClassName = clazz.getName();            //PENDING - inner classes!!!
-        oppoClassName = sourceToTest
-                        ? getTestClassName(baseClassName)
-                        : getSourceClassName(baseClassName);
-        
-        if (oppoClassName == null) {
-            return new Location((FileObject) candidateFiles.get(0), null);
-        }
-        
-        FileObject foWithClass = null;
-        FileObject foWithMethod = null;
-        JavaClass theJavaClass = null;
-        Method theMethod = null;
-
-        for (FileObject fileObj : candidateFiles) {
-            Resource resource = JavaModel.getResource(fileObj);
-            assert resource != null;
-
-            JavaClass javaClass = findJavaClass(resource, oppoClassName);
-            if (javaClass != null) {
-                if (foWithClass == null) {
-                    foWithClass = fileObj;
-                    theJavaClass = javaClass;
-                }
-                if (oppoMethodName != null) {
-                    Method method = sourceToTest
-                                    ? findTestMethod(javaClass,
-                                                     oppoMethodName)
-                                    : findSourceMethod(javaClass,
-                                                       oppoMethodName);
-                    if (method != null) {
-                        theMethod = method;
-                        foWithMethod = fileObj;
-                        break;
-                    }
-                }
-            }
-        }
-        
-        if (foWithMethod != null) {
-            return new Location(foWithMethod, theMethod);
-        } else if (foWithClass != null) {
-            return new Location(foWithClass, theJavaClass);
-        } else {
-            return new Location(candidateFiles.get(0), null);
-        }
+//XXX: retouche
+//        Feature element = sourceLocation.getJavaElement();
+//        if (element == null) {
+            return new Location(candidateFiles.get(0)/*XXX: retouche , null*/);
+//XXX: retouche
+//        }
+//
+//        assert (element instanceof Method)
+//               || (element instanceof JavaClass);
+//            
+//        JavaClass clazz;
+//        String oppoMethodName = null;
+//        String baseClassName, oppoClassName;
+//        String pkgName;
+//
+//        if (element instanceof Method) {
+//            Method method = (Method) element;
+//            ClassDefinition classDef = method.getDeclaringClass();
+//            if (classDef instanceof JavaClass) {
+//                clazz = (JavaClass) classDef;
+//                String baseMethodName = method.getName();
+//                oppoMethodName = sourceToTest
+//                                 ? getTestMethodName(baseMethodName)
+//                                 : getSourceMethodName(baseMethodName);
+//            } else {
+//                clazz = null;
+//            }
+//        } else {
+//            clazz = (JavaClass) element;
+//        }
+//        
+//        if (clazz == null) {
+//            return new Location(candidateFiles.get(0), null);
+//        }
+//        
+//        baseClassName = clazz.getName();            //PENDING - inner classes!!!
+//        oppoClassName = sourceToTest
+//                        ? getTestClassName(baseClassName)
+//                        : getSourceClassName(baseClassName);
+//        
+//        if (oppoClassName == null) {
+//            return new Location((FileObject) candidateFiles.get(0), null);
+//        }
+//        
+//        FileObject foWithClass = null;
+//        FileObject foWithMethod = null;
+//        JavaClass theJavaClass = null;
+//        Method theMethod = null;
+//
+//        for (FileObject fileObj : candidateFiles) {
+//            Resource resource = JavaModel.getResource(fileObj);
+//            assert resource != null;
+//
+//            JavaClass javaClass = findJavaClass(resource, oppoClassName);
+//            if (javaClass != null) {
+//                if (foWithClass == null) {
+//                    foWithClass = fileObj;
+//                    theJavaClass = javaClass;
+//                }
+//                if (oppoMethodName != null) {
+//                    Method method = sourceToTest
+//                                    ? findTestMethod(javaClass,
+//                                                     oppoMethodName)
+//                                    : findSourceMethod(javaClass,
+//                                                       oppoMethodName);
+//                    if (method != null) {
+//                        theMethod = method;
+//                        foWithMethod = fileObj;
+//                        break;
+//                    }
+//                }
+//            }
+//        }
+//        
+//        if (foWithMethod != null) {
+//            return new Location(foWithMethod, theMethod);
+//        } else if (foWithClass != null) {
+//            return new Location(foWithClass, theJavaClass);
+//        } else {
+//            return new Location(candidateFiles.get(0), null);
+//        }
     }
     
     /**
@@ -360,71 +363,74 @@ public final class DefaultPlugin extends JUnitPlugin {
                : null;
     }
     
-    /**
-     * Finds class of the given name in the given resource.
-     *
-     * @return  the found class, or <code>null</code> if the class was not found
-     */
-    private static JavaClass findJavaClass(Resource resource,
-                                           String className) {
-        for (Iterator/*<Element>*/ i = resource.getChildren().iterator();
-                i.hasNext();
-                ) {
-            Element e = (Element) i.next();
-            if ((e instanceof JavaClass)
-                    && ((JavaClass) e).getName().equals(className)) {
-                return (JavaClass) e;
-            }
-        }
-        return null;
-    }
+//XXX: retouche
+//    /**
+//     * Finds class of the given name in the given resource.
+//     *
+//     * @return  the found class, or <code>null</code> if the class was not found
+//     */
+//    private static JavaClass findJavaClass(Resource resource,
+//                                           String className) {
+//        for (Iterator/*<Element>*/ i = resource.getChildren().iterator();
+//                i.hasNext();
+//                ) {
+//            Element e = (Element) i.next();
+//            if ((e instanceof JavaClass)
+//                    && ((JavaClass) e).getName().equals(className)) {
+//                return (JavaClass) e;
+//            }
+//        }
+//        return null;
+//    }
     
-    /**
-     * Finds a no-arg method with void return type of the given name.
-     *
-     * @param  classDef  class to find the method in
-     * @param  methodName  requested name of the method
-     * @return  found method, or <code>null</code> if not found
-     */
-    private static Method findTestMethod(ClassDefinition classDef,
-                                         String methodName) {
-        
-        Method method = classDef.getMethod(methodName,
-                                           Collections.EMPTY_LIST,
-                                           false);
-        return (method != null)
-               && Modifier.isPublic(method.getModifiers())
-               && method.getTypeName().getName().equals("void")         //NOI18N
-                      ? method
-                      : null;
-    }
+//XXX: retouche
+//    /**
+//     * Finds a no-arg method with void return type of the given name.
+//     *
+//     * @param  classDef  class to find the method in
+//     * @param  methodName  requested name of the method
+//     * @return  found method, or <code>null</code> if not found
+//     */
+//    private static Method findTestMethod(ClassDefinition classDef,
+//                                         String methodName) {
+//        
+//        Method method = classDef.getMethod(methodName,
+//                                           Collections.EMPTY_LIST,
+//                                           false);
+//        return (method != null)
+//               && Modifier.isPublic(method.getModifiers())
+//               && method.getTypeName().getName().equals("void")         //NOI18N
+//                      ? method
+//                      : null;
+//    }
     
-    /**
-     * Finds a method with of the given name.
-     *
-     * @param  classDef  class to find the method in
-     * @param  methodName  requested name of the method
-     * @return  found method, or <code>null</code> if not found
-     */
-    private static Method findSourceMethod(ClassDefinition classDef,
-                                           String methodName) {
-        List/*<Element>*/ classChildren = classDef.getChildren();
-        
-        if ((classChildren == null) || (classChildren.isEmpty())) {
-            return null;
-        }
-        
-        for (Iterator/*<Element>*/ i = classChildren.iterator(); i.hasNext();) {
-            Object o = i.next();
-            if (o instanceof Method) {
-                Method method = (Method) o;
-                if (method.getName().equals(methodName)) {
-                    return method;
-                }
-            }
-        }
-        return null;
-    }
+//XXX: retouche
+//    /**
+//     * Finds a method with of the given name.
+//     *
+//     * @param  classDef  class to find the method in
+//     * @param  methodName  requested name of the method
+//     * @return  found method, or <code>null</code> if not found
+//     */
+//    private static Method findSourceMethod(ClassDefinition classDef,
+//                                           String methodName) {
+//        List/*<Element>*/ classChildren = classDef.getChildren();
+//        
+//        if ((classChildren == null) || (classChildren.isEmpty())) {
+//            return null;
+//        }
+//        
+//        for (Iterator/*<Element>*/ i = classChildren.iterator(); i.hasNext();) {
+//            Object o = i.next();
+//            if (o instanceof Method) {
+//                Method method = (Method) o;
+//                if (method.getName().equals(methodName)) {
+//                    return method;
+//                }
+//            }
+//        }
+//        return null;
+//    }
     
     /**
      * Creates test classes for given source classes.
@@ -490,11 +496,12 @@ public final class DefaultPlugin extends JUnitPlugin {
                     DataObject testDataObj = doTestTempl.createFromTemplate(
                                             targetFolderDataObj, testClassName);
 
-                    /* fill in setup etc. according to dialog settings */
-                    FileObject foSource = testDataObj.getPrimaryFile();
-                    Resource srcRc = JavaModel.getResource(foSource);
-                    JavaClass cls = TestUtil.getMainJavaClass(srcRc);
-                    new TestCreator(params).createEmptyTest(srcRc, cls);
+//XXX: retouche
+//                    /* fill in setup etc. according to dialog settings */
+//                    FileObject foSource = testDataObj.getPrimaryFile();
+//                    Resource srcRc = JavaModel.getResource(foSource);
+//                    JavaClass cls = TestUtil.getMainJavaClass(srcRc);
+//                    new TestCreator(params).createEmptyTest(srcRc, cls);
                     
                     results.addCreated(testDataObj);
                 } catch (IOException ex) {
@@ -544,36 +551,38 @@ public final class DefaultPlugin extends JUnitPlugin {
             progress.hide();
         }
 
-        final Set<SkippedClass> skipped = results.getSkipped();
+//XXX: retouche
+//        final Set<SkippedClass> skipped = results.getSkipped();
         final Set<DataObject> created = results.getCreated();
-        if (!skipped.isEmpty()) {
-            // something was skipped
-            String message;
-            if (skipped.size() == 1) {
-                // one class? report it
-                SkippedClass skippedClass = skipped.iterator().next();
-
-                message = NbBundle.getMessage(
-                        DefaultPlugin.class,
-                        "MSG_skipped_class",                            //NOI18N
-                        skippedClass.cls.getName(),
-                        strReason(skippedClass.reason, "COMMA", "AND"));//NOI18N
-            } else {
-                // more classes, report a general error
-                // combine the results
-                TesteableResult reason = TesteableResult.OK;
-                for (SkippedClass sc : skipped) {
-                    reason = TesteableResult.combine(reason, sc.reason);
-                }
-
-                message = NbBundle.getMessage(
-                        DefaultPlugin.class,
-                        "MSG_skipped_classes",                          //NOI18N
-                        strReason(reason, "COMMA", "OR"));              //NOI18N
-            }
-            TestUtil.notifyUser(message, NotifyDescriptor.INFORMATION_MESSAGE);
-
-        }
+//XXX: retouche
+//        if (!skipped.isEmpty()) {
+//            // something was skipped
+//            String message;
+//            if (skipped.size() == 1) {
+//                // one class? report it
+//                SkippedClass skippedClass = skipped.iterator().next();
+//
+//                message = NbBundle.getMessage(
+//                        DefaultPlugin.class,
+//                        "MSG_skipped_class",                            //NOI18N
+//                        skippedClass.cls.getName(),
+//                        strReason(skippedClass.reason, "COMMA", "AND"));//NOI18N
+//            } else {
+//                // more classes, report a general error
+//                // combine the results
+//                TesteableResult reason = TesteableResult.OK;
+//                for (SkippedClass sc : skipped) {
+//                    reason = TesteableResult.combine(reason, sc.reason);
+//                }
+//
+//                message = NbBundle.getMessage(
+//                        DefaultPlugin.class,
+//                        "MSG_skipped_classes",                          //NOI18N
+//                        strReason(reason, "COMMA", "OR"));              //NOI18N
+//            }
+//            TestUtil.notifyUser(message, NotifyDescriptor.INFORMATION_MESSAGE);
+//
+//        }
         if (created.isEmpty()) {
             Mutex.EVENT.writeAccess(new Runnable() {
                 public void run() {
@@ -647,57 +656,59 @@ public final class DefaultPlugin extends JUnitPlugin {
             LinkedList parentSuite,
             ProgressIndicator progress) throws CreationError {
 
-        // find correct package name
-        FileObject fo = folder;
-        ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-        assert cp != null : "SOURCE classpath was not found for " + fo; //NOI18N
-        if (cp == null) {
-            return null;
-        }
-        String pkg = cp.getResourceName(fo, '/', false);
-        String dotPkg = pkg.replace('/', '.');
-        String fullSuiteName = (suiteName != null)
-                               ? pkg + '/' + suiteName
-                               : TestUtil.convertPackage2SuiteName(pkg);
-
-        try {
-            // find the suite class,
-            // if it exists or create one from active template
-            DataObject doTarget = getTestClass(testClassPath,
-                                               fullSuiteName,
-                                               doSuiteT);
-
-            // generate the test suite for all listed test classes
-            Collection targetClasses = TestUtil.getAllClassesFromFile(
-                                               doTarget.getPrimaryFile());
-
-            Iterator tcit = targetClasses.iterator();
-            while (tcit.hasNext()) {
-                JavaClass targetClass = (JavaClass)tcit.next();
-
-                if (progress != null) {
-                    progress.setMessage(
-                           getCreatingMsg(targetClass.getName()), false);
-                }
-
-                try {
-                    testCreator.createTestSuite(suite, dotPkg, targetClass);
-                    save(doTarget);
-                } catch (Exception e) {
-                    ErrorManager.getDefault().log(ErrorManager.ERROR,
-                                                  e.toString());
-                    return null;
-                }
-
-                // add the suite class to the list of members of the parent
-                if (null != parentSuite) {
-                    parentSuite.add(targetClass.getName());
-                }
-            }
-            return doTarget;
-        } catch (IOException ioe) {
-            throw new CreationError(ioe);
-        }
+//XXX: retouche
+        return null;
+//        // find correct package name
+//        FileObject fo = folder;
+//        ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+//        assert cp != null : "SOURCE classpath was not found for " + fo; //NOI18N
+//        if (cp == null) {
+//            return null;
+//        }
+//        String pkg = cp.getResourceName(fo, '/', false);
+//        String dotPkg = pkg.replace('/', '.');
+//        String fullSuiteName = (suiteName != null)
+//                               ? pkg + '/' + suiteName
+//                               : TestUtil.convertPackage2SuiteName(pkg);
+//
+//        try {
+//            // find the suite class,
+//            // if it exists or create one from active template
+//            DataObject doTarget = getTestClass(testClassPath,
+//                                               fullSuiteName,
+//                                               doSuiteT);
+//
+//            // generate the test suite for all listed test classes
+//            Collection targetClasses = TestUtil.getAllClassesFromFile(
+//                                               doTarget.getPrimaryFile());
+//
+//            Iterator tcit = targetClasses.iterator();
+//            while (tcit.hasNext()) {
+//                JavaClass targetClass = (JavaClass)tcit.next();
+//
+//                if (progress != null) {
+//                    progress.setMessage(
+//                           getCreatingMsg(targetClass.getName()), false);
+//                }
+//
+//                try {
+//                    testCreator.createTestSuite(suite, dotPkg, targetClass);
+//                    save(doTarget);
+//                } catch (Exception e) {
+//                    ErrorManager.getDefault().log(ErrorManager.ERROR,
+//                                                  e.toString());
+//                    return null;
+//                }
+//
+//                // add the suite class to the list of members of the parent
+//                if (null != parentSuite) {
+//                    parentSuite.add(targetClass.getName());
+//                }
+//            }
+//            return doTarget;
+//        } catch (IOException ioe) {
+//            throw new CreationError(ioe);
+//        }
     }
 
     /**
@@ -785,94 +796,95 @@ public final class DefaultPlugin extends JUnitPlugin {
             LinkedList parentSuite,
             ProgressIndicator progress,
             boolean skipNonTestable) throws CreationError {
-
-        // create tests for all classes in the source
-        Resource srcRc = JavaModel.getResource(foSource);
-        String packageName = (testClassName == null)
-                             ? srcRc.getPackageName()
-                             : null;            //will be built if necessary
-        List srcChildren = srcRc.getChildren();
-        CreationResults result = new CreationResults(srcChildren.size());
-
-        /* used only if (testClassName != null): */
-        boolean defClassProcessed = false;
-
-        Iterator scit = srcChildren.iterator();
-        while (scit.hasNext()) {
-            Element el = (Element) scit.next();
-            if (!(el instanceof JavaClass) || (el instanceof AnnotationType)) {
-                continue;
-            }
-
-            JavaClass theClass = (JavaClass) el;
-
-            TestCreator.TesteableResult testeable;
-            if (skipNonTestable && (testeable = testCreator.isClassTestable(theClass)).isFailed()) {
-                if (progress != null) {
-                    // ignoring because untestable
-                    progress.setMessage(
-                           getIgnoringMsg(theClass.getName(), testeable.toString()), false);
-                    result.addSkipped(theClass, testeable);
-                }
-                continue;
-            }
-
-            // find the test class, if it exists or create one
-            // from active template
-            try {
-                String testResourceName;
-                String srcClassNameShort = theClass.getSimpleName();
-                if (testClassName == null) {
-                    testResourceName = TestUtil.getTestClassFullName(
-                            srcClassNameShort,
-                            packageName);
-                } else if (!defClassProcessed
-                          && srcClassNameShort.equals(foSource.getName())) {
-                    /* main Java class: */
-                    testResourceName = testClassName.replace('.', '/');
-                    defClassProcessed = true;
-                } else {
-                    if (packageName == null) {
-                        packageName = packageName(testClassName);
-                    }
-                    testResourceName = TestUtil.getTestClassFullName(
-                            srcClassNameShort,
-                            packageName);
-                }
-
-                /* find or create the test class DataObject: */
-                DataObject doTarget = getTestClass(testClassPath,
-                                                   testResourceName,
-                                                   doTestT);
-
-                // generate the test of current node
-                Resource tgtRc = JavaModel.getResource(
-                        doTarget.getPrimaryFile());
-                JavaClass targetClass = TestUtil.getMainJavaClass(tgtRc);
-
-                if (targetClass != null) {
-                    if (progress != null) {
-                        progress.setMessage(
-                             getCreatingMsg(targetClass.getName()), false);
-                    }
-
-                    testCreator.createTestClass(srcRc,
-                                                theClass,
-                                                tgtRc,
-                                                targetClass);
-                    save(doTarget);
-                    result.addCreated(doTarget);
-                    // add the test class to the parent's suite
-                    if (null != parentSuite) {
-                        parentSuite.add(targetClass.getName());
-                    }
-                }
-            } catch (IOException ioe) {
-                throw new CreationError(ioe);
-            }
-        }
-
-        return result;
+//XXX: retouche
+        return new CreationResults(0);
+//        // create tests for all classes in the source
+//        Resource srcRc = JavaModel.getResource(foSource);
+//        String packageName = (testClassName == null)
+//                             ? srcRc.getPackageName()
+//                             : null;            //will be built if necessary
+//        List srcChildren = srcRc.getChildren();
+//        CreationResults result = new CreationResults(srcChildren.size());
+//
+//        /* used only if (testClassName != null): */
+//        boolean defClassProcessed = false;
+//
+//        Iterator scit = srcChildren.iterator();
+//        while (scit.hasNext()) {
+//            Element el = (Element) scit.next();
+//            if (!(el instanceof JavaClass) || (el instanceof AnnotationType)) {
+//                continue;
+//            }
+//
+//            JavaClass theClass = (JavaClass) el;
+//
+//            TestCreator.TesteableResult testeable;
+//            if (skipNonTestable && (testeable = testCreator.isClassTestable(theClass)).isFailed()) {
+//                if (progress != null) {
+//                    // ignoring because untestable
+//                    progress.setMessage(
+//                           getIgnoringMsg(theClass.getName(), testeable.toString()), false);
+//                    result.addSkipped(theClass, testeable);
+//                }
+//                continue;
+//            }
+//
+//            // find the test class, if it exists or create one
+//            // from active template
+//            try {
+//                String testResourceName;
+//                String srcClassNameShort = theClass.getSimpleName();
+//                if (testClassName == null) {
+//                    testResourceName = TestUtil.getTestClassFullName(
+//                            srcClassNameShort,
+//                            packageName);
+//                } else if (!defClassProcessed
+//                          && srcClassNameShort.equals(foSource.getName())) {
+//                    /* main Java class: */
+//                    testResourceName = testClassName.replace('.', '/');
+//                    defClassProcessed = true;
+//                } else {
+//                    if (packageName == null) {
+//                        packageName = packageName(testClassName);
+//                    }
+//                    testResourceName = TestUtil.getTestClassFullName(
+//                            srcClassNameShort,
+//                            packageName);
+//                }
+//
+//                /* find or create the test class DataObject: */
+//                DataObject doTarget = getTestClass(testClassPath,
+//                                                   testResourceName,
+//                                                   doTestT);
+//
+//                // generate the test of current node
+//                Resource tgtRc = JavaModel.getResource(
+//                        doTarget.getPrimaryFile());
+//                JavaClass targetClass = TestUtil.getMainJavaClass(tgtRc);
+//
+//                if (targetClass != null) {
+//                    if (progress != null) {
+//                        progress.setMessage(
+//                             getCreatingMsg(targetClass.getName()), false);
+//                    }
+//
+//                    testCreator.createTestClass(srcRc,
+//                                                theClass,
+//                                                tgtRc,
+//                                                targetClass);
+//                    save(doTarget);
+//                    result.addCreated(doTarget);
+//                    // add the test class to the parent's suite
+//                    if (null != parentSuite) {
+//                        parentSuite.add(targetClass.getName());
+//                    }
+//                }
+//            } catch (IOException ioe) {
+//                throw new CreationError(ioe);
+//            }
+//        }
+//
+//        return result;
 
     }
 
@@ -1044,29 +1056,32 @@ public final class DefaultPlugin extends JUnitPlugin {
     static final class CreationResults {
         static final CreationResults EMPTY = new CreationResults();
 
-        /**
-         * Class for holding skipped java class together with the reason
-         * why it was skipped.
-         */
-        static final class SkippedClass {
-            final JavaClass cls;
-            final TestCreator.TesteableResult reason;
-            SkippedClass(JavaClass cls,
-                                TestCreator.TesteableResult reason) {
-                this.cls = cls;
-                this.reason = reason;
-            }
-        }
+//XXX: retouche
+//        /**
+//         * Class for holding skipped java class together with the reason
+//         * why it was skipped.
+//         */
+//        static final class SkippedClass {
+//            final JavaClass cls;
+//            final TestCreator.TesteableResult reason;
+//            SkippedClass(JavaClass cls,
+//                                TestCreator.TesteableResult reason) {
+//                this.cls = cls;
+//                this.reason = reason;
+//            }
+//        }
 
         Set<DataObject> created; // Set< createdTest : DataObject >
-        Set<SkippedClass> skipped;
+//XXX: retouche
+//        Set<SkippedClass> skipped;
         boolean abborted = false;
 
         CreationResults() { this(20);}
 
         CreationResults(int expectedSize) {
             created = new HashSet<DataObject>(expectedSize * 2, 0.5f);
-            skipped = new HashSet<SkippedClass>(expectedSize * 2, 0.5f);
+//XXX: retouche
+//            skipped = new HashSet<SkippedClass>(expectedSize * 2, 0.5f);
         }
 
         void setAbborted() {
@@ -1090,22 +1105,23 @@ public final class DefaultPlugin extends JUnitPlugin {
             return created.add(test);
         }
 
-        /**
-         * Adds a new <code>JavaClass</code> to the collection of
-         * skipped classes.
-         * @return true if it was added, false if it was present before
-         */
-        boolean addSkipped(JavaClass c, TestCreator.TesteableResult reason) {
-            return skipped.add(new SkippedClass(c, reason));
-        }
-
-        /**
-         * Returns a set of classes that were skipped in the process.
-         * @return Set<SkippedClass>
-         */
-        Set<SkippedClass> getSkipped() {
-            return skipped;
-        }
+//XXX: retouche
+//        /**
+//         * Adds a new <code>JavaClass</code> to the collection of
+//         * skipped classes.
+//         * @return true if it was added, false if it was present before
+//         */
+//        boolean addSkipped(JavaClass c, TestCreator.TesteableResult reason) {
+//            return skipped.add(new SkippedClass(c, reason));
+//        }
+//
+//        /**
+//         * Returns a set of classes that were skipped in the process.
+//         * @return Set<SkippedClass>
+//         */
+//        Set<SkippedClass> getSkipped() {
+//            return skipped;
+//        }
 
         /**
          * Returns a set of test data objects created.
@@ -1127,7 +1143,8 @@ public final class DefaultPlugin extends JUnitPlugin {
             }
 
             this.created.addAll(rhs.created);
-            this.skipped.addAll(rhs.skipped);
+//XXX: retouche
+//            this.skipped.addAll(rhs.skipped);
         }
 
     }
