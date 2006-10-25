@@ -164,7 +164,11 @@ public class RepositoryPathNode extends AbstractNode {
     }
 
     public String getName() {        
-        return entry.getRepositoryFile().getName();
+        if(entry.getRepositoryFile().isRepositoryRoot()) {
+            return entry.getRepositoryFile().getRepositoryUrl().toString();
+        } else {
+            return entry.getRepositoryFile().getName();   
+        }        
     }
 
     public void setName(String name) {
