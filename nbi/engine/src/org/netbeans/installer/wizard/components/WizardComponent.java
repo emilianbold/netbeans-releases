@@ -20,8 +20,9 @@
  */
 package org.netbeans.installer.wizard.components;
 
+import java.util.List;
 import java.util.Properties;
-import org.netbeans.installer.wizard.*;
+import org.netbeans.installer.wizard.SubWizard;
 import org.netbeans.installer.wizard.conditions.WizardCondition;
 
 /**
@@ -29,19 +30,27 @@ import org.netbeans.installer.wizard.conditions.WizardCondition;
  * @author Kirill Sorokin
  */
 public interface WizardComponent {
-    public abstract void executeComponent(SubWizard aWizard);
+    public abstract void executeForward(SubWizard wizard);
     
-    public abstract void addChildComponent(WizardComponent aWizardComponent);
+    public abstract void executeBackward(SubWizard wizard);
+    
+    public abstract void addChild(WizardComponent component);
+    
+    public abstract void removeChild(WizardComponent component);
+    
+    public abstract List<WizardComponent> getChildren();
     
     public abstract boolean evaluateConditions();
     
     public abstract void addCondition(WizardCondition condition);
     
-    public abstract boolean isActive();
+    public abstract void removeCondition(WizardCondition condition);
     
-    public abstract boolean isForwardOnly();
+    public abstract List<WizardCondition> getConditions();
     
-    public abstract boolean isBackwardOnly();
+    public abstract boolean canExecuteForward();
+    
+    public abstract boolean canExecuteBackward();
     
     public abstract boolean isPointOfNoReturn();
     

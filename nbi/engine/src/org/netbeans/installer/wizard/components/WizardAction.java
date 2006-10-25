@@ -38,38 +38,35 @@ import org.netbeans.installer.wizard.conditions.WizardCondition;
  */
 public abstract class WizardAction implements WizardComponent {
     private SubWizard wizard;
-    private boolean   active = true;
     
-    private List<WizardCondition> wizardConditions = new ArrayList<WizardCondition>();
-    
+    private List<WizardCondition> conditions = new ArrayList<WizardCondition>();
     private Properties properties = new Properties();
     
-    public final void executeComponent(final SubWizard wizard) {
-        this.wizard = wizard;
-        this.active = true;
-        
-        if (getUI() != null) {
-            for (Object key: getProperties().keySet()) {
-                getUI().getProperties().put(key, getProperties().get(key));
-            }
-            
-            getUI().executeComponent(wizard);
-        }
-        
-        Thread workerThread = new Thread() {
-            public void run() {
-                execute();
-                wizard.next();
-            }
-        };
-        
-        workerThread.start();
+    public final void executeForward(final SubWizard wizard) {
+        executeComponent(wizard);
     }
     
-    public abstract void execute();
+    public final void executeBackward(final SubWizard wizard) {
+        executeComponent(wizard);
+    }
     
-    public boolean evaluateConditions() {
-        for (WizardCondition condition: wizardConditions) {
+    public final void addChild(WizardComponent component) {
+        throw new UnsupportedOperationException(
+                "This component does not support child components");
+    }
+    
+    public final void removeChild(WizardComponent component) {
+        throw new UnsupportedOperationException(
+                "This component does not support child components");
+    }
+    
+    public final List<WizardComponent> getChildren() {
+        throw new UnsupportedOperationException(
+                "This component does not support child components");
+    }
+    
+    public final boolean evaluateConditions() {
+        for (WizardCondition condition: conditions) {
             if (condition.evaluate() == false) {
                 return false;
             }
@@ -78,34 +75,23 @@ public abstract class WizardAction implements WizardComponent {
         return true;
     }
     
-    public void addCondition(WizardCondition condition) {
-        wizardConditions.add(condition);
+    public final void addCondition(final WizardCondition condition) {
+        conditions.add(condition);
     }
     
-    public abstract WizardPanel getUI();
-    
-    public SubWizard getWizard() {
-        return wizard;
+    public final void removeCondition(final WizardCondition condition) {
+        conditions.remove(condition);
     }
     
-    public boolean isActive() {
-        return active;
+    public final List<WizardCondition> getConditions() {
+        return conditions;
     }
     
-    public void setActive(boolean isActive) {
-        active = isActive;
-    }
-    
-    public void addChildComponent(WizardComponent aWizardComponent) {
-        throw new UnsupportedOperationException(
-                "This component does not support child components");
-    }
-    
-    public boolean isForwardOnly() {
+    public boolean canExecuteForward() {
         return true;
     }
     
-    public boolean isBackwardOnly() {
+    public boolean canExecuteBackward() {
         return false;
     }
     
@@ -113,11 +99,53 @@ public abstract class WizardAction implements WizardComponent {
         return false;
     }
     
-    public final String getProperty(String name) {
+    public final String getProperty(final String name) {
         return getProperty(name, true);
     }
     
-    public final String getProperty(String name, boolean parse) {
+    public final void setProperty(final String name, final String value) {
+        properties.setProperty(name, value);
+    }
+    
+    public final Properties getProperties() {
+        return properties;
+    }
+    
+    // abstract methods - to be overridden by subclasses ////////////////////////////
+    public abstract void execute();
+    
+    public abstract WizardPanel getUI();
+    
+    /////////////////////////////////////////////////////////////////////////////////
+    private void executeComponent(final SubWizard wizard) {
+        this.wizard = wizard;
+        
+        // first initialize and show the UI
+        WizardPanel ui = getUI();
+        if (ui != null) {
+            for (Object key: getProperties().keySet()) {
+                ui.getProperties().put(key, getProperties().get(key));
+            }
+            
+            ui.executeForward(wizard);
+        }
+        
+        // then start the action
+        Thread workerThread = new Thread() {
+            public void run() {
+                execute();
+                wizard.next();
+            }
+        };
+        workerThread.start();
+    }
+    
+    protected final SubWizard getWizard() {
+        return wizard;
+    }
+    
+    // helper methods for working with properties ///////////////////////////////////
+    protected final String getProperty(final String name, final boolean parse) {
         String value = properties.getProperty(name);
         
         if (parse) {
@@ -127,39 +155,31 @@ public abstract class WizardAction implements WizardComponent {
         }
     }
     
-    public final void setProperty(String name, String value) {
-        properties.setProperty(name, value);
-    }
-    
-    public final Properties getProperties() {
-        return properties;
-    }
-    
     // helper methods for SystemUtils and ResourceUtils /////////////////////////////
-    public String parseString(String string) {
+    protected final String parseString(final String string) {
         return systemUtils.parseString(string, getCorrectClassLoader());
     }
     
-    public File parsePath(String path) {
+    protected final File parsePath(final String path) {
         return systemUtils.parsePath(path, getCorrectClassLoader());
     }
     
-    public String getString(String baseName, String key) {
+    protected final String getString(final String baseName, final String key) {
         return resourceUtils.getString(baseName, key, getCorrectClassLoader());
     }
     
-    public String getString(String baseName, String key, Object... arguments) {
+    protected final String getString(final String baseName, final String key, final Object... arguments) {
         return resourceUtils.getString(baseName, key, getCorrectClassLoader(), arguments);
     }
     
-    public InputStream getResource(String path) {
+    protected final InputStream getResource(final String path) {
         return resourceUtils.getResource(path, getCorrectClassLoader());
     }
     
     // private stuff ////////////////////////////////////////////////////////////////
     private ClassLoader getCorrectClassLoader() {
-        if (getWizard().getProductComponent() != null) {
-            return getWizard().getProductComponent().getClassLoader();
+        if (wizard.getProductComponent() != null) {
+            return wizard.getProductComponent().getClassLoader();
         } else {
             return getClass().getClassLoader();
         }

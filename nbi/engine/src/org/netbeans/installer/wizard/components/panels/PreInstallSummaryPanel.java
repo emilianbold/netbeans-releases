@@ -57,6 +57,8 @@ public class PreInstallSummaryPanel extends DefaultWizardPanel {
         setProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY, DEFAULT_COMPONENTS_LIST_SEPARATOR);
         setProperty(DOWNLOAD_SIZE_LABEL_TEXT_PROPERTY, DEFAULT_DOWNLOAD_SIZE_LABEL_TEXT);
         setProperty(REQUIRED_DISK_SPACE_LABEL_TEXT_PROPERTY, DEFAULT_REQUIRED_DISK_SPACE_LABEL_TEXT);
+        
+        setProperty(DIALOG_TITLE_PROPERTY, DEFAULT_DIALOG_TITLE);
     }
     
     public void initialize() {
@@ -184,4 +186,6 @@ public class PreInstallSummaryPanel extends DefaultWizardPanel {
     public static final String DEFAULT_COMPONENTS_LIST_SEPARATOR = resourceUtils.getString(PreInstallSummaryPanel.class, "PreInstallSummaryPanel.default.components.list.separator");
     public static final String DEFAULT_DOWNLOAD_SIZE_LABEL_TEXT = resourceUtils.getString(PreInstallSummaryPanel.class, "PreInstallSummaryPanel.default.download.size.label.text");
     public static final String DEFAULT_REQUIRED_DISK_SPACE_LABEL_TEXT = resourceUtils.getString(PreInstallSummaryPanel.class, "PreInstallSummaryPanel.default.required.disk.space.label.text");
+    
+    public static final String DEFAULT_DIALOG_TITLE = resourceUtils.getString(PreInstallSummaryPanel.class, "PreInstallSummaryPanel.default.dialog.title");
 }

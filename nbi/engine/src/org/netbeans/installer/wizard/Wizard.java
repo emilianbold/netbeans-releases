@@ -173,7 +173,7 @@ public class Wizard extends SubWizard {
                 List<WizardComponent> childComponents =
                         loadWizardComponents(componentsNode, loader);
                 for (WizardComponent childComponent: childComponents) {
-                    component.addChildComponent(childComponent);
+                    component.addChild(childComponent);
                 }
             }
             
@@ -277,7 +277,7 @@ public class Wizard extends SubWizard {
     // constructor /////////////////////////////////////////////////////////////
     private Wizard() {
         try {
-            wizardComponents = loadWizardComponents(componentsInstanceURI);
+            components = loadWizardComponents(componentsInstanceURI);
         } catch (InitializationException e) {
             ErrorManager.getInstance().notify(ErrorLevel.CRITICAL,
                     "Failed to load wizard components", e);
@@ -312,7 +312,7 @@ public class Wizard extends SubWizard {
     
     // other ///////////////////////////////////////////////////////////////////
     public void executeAction(WizardAction action) {
-        action.executeComponent(this);
+        action.executeForward(this);
         
         executingAction = true;
         while (executingAction) {

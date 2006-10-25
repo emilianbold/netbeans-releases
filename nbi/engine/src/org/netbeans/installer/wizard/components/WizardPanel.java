@@ -40,16 +40,108 @@ import org.netbeans.installer.wizard.conditions.WizardCondition;
  * @author Kirill Sorokin
  */
 public abstract class WizardPanel extends JPanel implements WizardComponent {
+    /////////////////////////////////////////////////////////////////////////////////
+    // Instance
     private SubWizard  wizard;
-    private boolean    active      = true;
     private boolean    initialized = false;
     
-    private List<WizardCondition> wizardConditions = new ArrayList<WizardCondition>();
-    
+    private List<WizardCondition> conditions = new ArrayList<WizardCondition>();
     private Properties properties = new Properties();
     
-    public final void executeComponent(SubWizard aWizard) {
-        wizard = aWizard;
+    // WizardComponent implementation ///////////////////////////////////////////////
+    public final void executeForward(final SubWizard wizard) {
+        executeComponent(wizard);
+    }
+    
+    public final void executeBackward(final SubWizard wizard) {
+        executeComponent(wizard);
+    }
+    
+    public final void addChild(WizardComponent component) {
+        throw new UnsupportedOperationException(
+                "This component does not support child components");
+    }
+    
+    public final void removeChild(WizardComponent component) {
+        throw new UnsupportedOperationException(
+                "This component does not support child components");
+    }
+    
+    public final List<WizardComponent> getChildren() {
+        throw new UnsupportedOperationException(
+                "This component does not support child components");
+    }
+    
+    public final boolean evaluateConditions() {
+        for (WizardCondition condition: conditions) {
+            if (condition.evaluate() == false) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    
+    public final void addCondition(final WizardCondition condition) {
+        conditions.add(condition);
+    }
+    
+    public final void removeCondition(final WizardCondition condition) {
+        conditions.remove(condition);
+    }
+    
+    public final List<WizardCondition> getConditions() {
+        return conditions;
+    }
+    
+    public boolean canExecuteForward() {
+        return true;
+    }
+    
+    public boolean canExecuteBackward() {
+        return true;
+    }
+    
+    public boolean isPointOfNoReturn() {
+        return false;
+    }
+    
+    public final String getProperty(final String name) {
+        return getProperty(name, true);
+    }
+    
+    public final void setProperty(final String name, final String value) {
+        properties.setProperty(name, value);
+    }
+    
+    public final Properties getProperties() {
+        return properties;
+    }
+    
+    // abstract methods - to be overridden by subclasses ////////////////////////////
+    protected abstract void initialize();
+    
+    protected abstract void initComponents();
+    
+    protected abstract void defaultInitialize();
+    
+    protected abstract void defaultInitComponents();
+    
+    public abstract String getDialogTitle();
+    
+    public abstract void evaluateHelpButtonClick();
+    
+    public abstract void evaluateBackButtonClick();
+    
+    public abstract void evaluateNextButtonClick();
+    
+    public abstract void evaluateCancelButtonClick();
+    
+    public abstract NbiButton getDefaultButton();
+    
+    /////////////////////////////////////////////////////////////////////////////////
+    private final void executeComponent(final SubWizard wizard) {
+        this.wizard = wizard;
         
         if (!initialized) {
             defaultInitComponents();
@@ -64,90 +156,28 @@ public abstract class WizardPanel extends JPanel implements WizardComponent {
         getWizard().getFrame().setWizardPanel(this);
     }
     
-    public abstract void initialize();
-    
-    public abstract void initComponents();
-    
-    public abstract void defaultInitialize();
-    
-    public abstract void defaultInitComponents();
-    
-    public boolean evaluateConditions() {
-        for (WizardCondition condition: wizardConditions) {
-            if (condition.evaluate() == false) {
-                return false;
-            }
-        }
-        
-        return true;
-    }
-    
-    public void addCondition(WizardCondition aCondition) {
-        wizardConditions.add(aCondition);
-    }
-    
-    public abstract String getDialogTitle();
-    
-    public final NbiButton getHelpButton() {
-        return wizard.getFrame().getContentPane().getHelpButton();
-    }
-    
-    public abstract void evaluateHelpButtonClick();
-    
-    public final NbiButton getBackButton() {
-        return wizard.getFrame().getContentPane().getBackButton();
-    }
-    
-    public abstract void evaluateBackButtonClick();
-    
-    public final NbiButton getNextButton() {
-        return wizard.getFrame().getContentPane().getNextButton();
-    }
-    
-    public abstract void evaluateNextButtonClick();
-    
-    public final NbiButton getCancelButton() {
-        return wizard.getFrame().getContentPane().getCancelButton();
-    }
-    
-    public abstract void evaluateCancelButtonClick();
-    
-    public abstract NbiButton getDefaultButton();
-    
-    public final SubWizard getWizard() {
+    protected final SubWizard getWizard() {
         return wizard;
     }
     
-    public final boolean isActive() {
-        return active;
+    protected final NbiButton getHelpButton() {
+        return getWizard().getFrame().getContentPane().getHelpButton();
     }
     
-    public final void setActive(boolean isActive) {
-        active = isActive;
+    protected final NbiButton getBackButton() {
+        return wizard.getFrame().getContentPane().getBackButton();
     }
     
-    public void addChildComponent(WizardComponent aWizardComponent) {
-        throw new UnsupportedOperationException(
-                "This component does not support child components");
+    protected final NbiButton getNextButton() {
+        return wizard.getFrame().getContentPane().getNextButton();
     }
     
-    public boolean isForwardOnly() {
-        return false;
+    protected final NbiButton getCancelButton() {
+        return wizard.getFrame().getContentPane().getCancelButton();
     }
     
-    public boolean isBackwardOnly() {
-        return false;
-    }
-    
-    public boolean isPointOfNoReturn() {
-        return false;
-    }
-    
-    public final String getProperty(String name) {
-        return getProperty(name, true);
-    }
-    
-    public final String getProperty(String name, boolean parse) {
+    // helper methods for working with properties ///////////////////////////////////
+    protected final String getProperty(final String name, final boolean parse) {
         String value = properties.getProperty(name);
         
         if (parse) {
@@ -157,32 +187,24 @@ public abstract class WizardPanel extends JPanel implements WizardComponent {
         }
     }
     
-    public final void setProperty(String name, String value) {
-        properties.setProperty(name, value);
-    }
-    
-    public final Properties getProperties() {
-        return properties;
-    }
-    
     // helper methods for SystemUtils and ResourceUtils /////////////////////////////
-    public String parseString(String string) {
+    protected final String parseString(final String string) {
         return systemUtils.parseString(string, getCorrectClassLoader());
     }
     
-    public File parsePath(String path) {
+    protected final File parsePath(final String path) {
         return systemUtils.parsePath(path, getCorrectClassLoader());
     }
     
-    public String getString(String baseName, String key) {
+    protected final String getString(final String baseName, final String key) {
         return resourceUtils.getString(baseName, key, getCorrectClassLoader());
     }
     
-    public String getString(String baseName, String key, Object... arguments) {
+    protected final String getString(final String baseName, final String key, final Object... arguments) {
         return resourceUtils.getString(baseName, key, getCorrectClassLoader(), arguments);
     }
     
-    public InputStream getResource(String path) {
+    protected final InputStream getResource(final String path) {
         return resourceUtils.getResource(path, getCorrectClassLoader());
     }
     

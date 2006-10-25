@@ -97,6 +97,8 @@ public class PostInstallSummaryPanel extends TextPanel {
         setProperty(VIEW_LOG_BUTTON_TEXT_PROPERTY, DEFAULT_VIEW_LOG_BUTTON_TEXT);
         setProperty(SEND_LOG_BUTTON_TEXT_PROPERTY, DEFAULT_SEND_LOG_BUTTON_TEXT);
         setProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY, DEFAULT_COMPONENTS_LIST_SEPARATOR);
+        
+        setProperty(DIALOG_TITLE_PROPERTY, DEFAULT_DIALOG_TITLE);
     }
     
     public void initialize() {
@@ -405,4 +407,6 @@ public class PostInstallSummaryPanel extends TextPanel {
     public static final String DEFAULT_VIEW_LOG_BUTTON_TEXT = resourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.view.log.button.text");
     public static final String DEFAULT_SEND_LOG_BUTTON_TEXT = resourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.send.log.button.text");
     public static final String DEFAULT_COMPONENTS_LIST_SEPARATOR = resourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.components.list.separator");
+    
+    public static final String DEFAULT_DIALOG_TITLE = resourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.dialog.title");
 }

@@ -152,6 +152,28 @@ public class LogManager {
         log(exception);
     }
     
+    public synchronized void logEntry() {
+        StackTraceElement traceElement = new Exception().getStackTrace()[1];
+        
+        log(ErrorLevel.DEBUG, "entering -- " + 
+                (traceElement.isNativeMethod() ? "[native] " : "") + 
+                traceElement.getClassName() + "." + 
+                traceElement.getMethodName() + "():" + 
+                traceElement.getLineNumber());
+        indent();
+    }
+    
+    public synchronized void logExit() {
+        StackTraceElement traceElement = new Exception().getStackTrace()[1];
+        
+        unindent();
+        log(ErrorLevel.DEBUG, "exiting -- " + 
+                (traceElement.isNativeMethod() ? "[native] " : "") + 
+                traceElement.getClassName() + "." + 
+                traceElement.getMethodName() + "():" + 
+                traceElement.getLineNumber());
+    }
+    
     public File getLogFile() {
         return logFile;
     }

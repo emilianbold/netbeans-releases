@@ -71,12 +71,9 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
         Map<File, Version> filteredLocations = new HashMap<File, Version>();
         
         try {
-            @SuppressWarnings("unchecked")
-            Map<File, Version> foundLocations = (Map<File, Version>) System.getProperties().get(SearchForJdkAction.JDKS_LIST_PROPERTY);
-            
-            if (foundLocations != null) {
-                for (File file: foundLocations.keySet()) {
-                    Version version = foundLocations.get(file);
+            if (SearchForJdkAction.locatedJdks != null) {
+                for (File file: SearchForJdkAction.locatedJdks.keySet()) {
+                    Version version = SearchForJdkAction.locatedJdks.get(file);
                     if (version.newerOrEquals(minimumVersion) && version.olderOrEquals(maximumVersion)) {
                         filteredLocations.put(file, version);
                     }

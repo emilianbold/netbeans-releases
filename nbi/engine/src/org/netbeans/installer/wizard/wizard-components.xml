@@ -26,12 +26,6 @@ Microsystems, Inc. All Rights Reserved.
             <property name="content.type">$P{org.netbeans.installer.wizard.Bundle, WelcomePanel.content.type}</property>
         </properties>
     </component>
-    
-    <component class="org.netbeans.installer.wizard.components.panels.ComponentsSelectionPanel">
-        <properties>
-            <property name="dialog.title">$P{org.netbeans.installer.wizard.Bundle, ComponentsSelectionPanel.dialog.title}</property>
-        </properties>
-    </component>
-    
+    <component class="org.netbeans.installer.wizard.components.panels.ComponentsSelectionPanel"/>
     <component class="org.netbeans.installer.wizard.components.sequences.InstallSequence"/>
 </wizard>
