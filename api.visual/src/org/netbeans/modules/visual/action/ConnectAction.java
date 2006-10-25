@@ -77,6 +77,8 @@ public class ConnectAction extends WidgetAction.LockedAdapter {
             sourceWidget = null;
             targetWidget = null;
             startingPoint = null;
+            connectionWidget.setSourceAnchor (null);
+            connectionWidget.setTargetAnchor (null);
             interractionLayer.removeChild (connectionWidget);
             connectionWidget = null;
         }
