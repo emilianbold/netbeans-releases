@@ -24,6 +24,9 @@ package org.netbeans.modules.i18n.form;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.text.AbstractDocument;
@@ -31,6 +34,8 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.editor.guards.GuardedSection;
+import org.netbeans.api.editor.guards.GuardedSectionManager;
 
 import org.netbeans.modules.form.*;
 import org.netbeans.modules.form.RADConnectionPropertyEditor.RADConnectionDesignValue;
@@ -40,16 +45,14 @@ import org.netbeans.modules.i18n.I18nSupport;
 import org.netbeans.modules.i18n.InfoPanel;
 import org.netbeans.modules.i18n.java.JavaI18nString;
 import org.netbeans.modules.i18n.java.JavaI18nSupport;
-import org.netbeans.modules.java.JavaDataObject;
-import org.netbeans.modules.java.JavaEditor;
 
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.cookies.EditorCookie;
 import org.openide.util.NbBundle;
-import org.openide.util.Lookup;
 
 
 /** 
@@ -734,12 +737,34 @@ public class FormI18nSupport extends JavaI18nSupport {
          */
         private synchronized boolean isInGuardedSection(final Position startPos,
                                                         final Position endPos) {
-            JavaEditor javaEditor
-                    = ((JavaDataObject) sourceDataObject).getJavaEditor();
-            return !javaEditor.testOverlap(
-                        javaEditor.createBounds(startPos.getOffset(),
-                                                endPos.getOffset(),
-                                                false));
+            EditorCookie editor = (EditorCookie) sourceDataObject.getCookie(EditorCookie.class);
+            StyledDocument doc = null;
+            GuardedSectionManager guards = null;
+            if (editor != null) {
+                try {
+                    doc = editor.openDocument();
+                }
+                catch (IOException ex) {
+                    Logger.getLogger("global").log(Level.SEVERE, ex.getLocalizedMessage(), ex);
+                    return false;
+                }
+            }
+            
+            if (doc != null) {
+                guards = GuardedSectionManager.getInstance(doc);
+            }
+            
+            if (guards != null) {
+                for (Iterator it = guards.getGuardedSections().iterator(); it.hasNext();) {
+                    GuardedSection gsection = (GuardedSection) it.next();
+                    if (gsection.contains(startPos, true) ||
+                            gsection.contains(endPos, true)) {
+                        return true;
+                    }
+                }
+
+            }
+            return false;
         }
 
         DataObject getSourceDataObject() {
