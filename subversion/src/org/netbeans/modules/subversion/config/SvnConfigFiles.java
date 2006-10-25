@@ -219,9 +219,12 @@ public class SvnConfigFiles {
                     String groupName = group.getName();
                     Ini.Section serverGroups = getServerGroups(true);
                     String groupsHosts = serverGroups.get(groupName);
-                    if(!match(groupsHosts, host)) {
-                        // host not in the group yet -> add it
-                        serverGroups.put(groupName, groupsHosts + "," + host);              // NOI18N
+                    if(groupsHosts != null) {
+                        groupsHosts = groupsHosts.trim();                        
+                        if(!groupsHosts.equals("") && !match(groupsHosts, host)) {
+                            // host not in the group yet -> add it
+                            serverGroups.put(groupName, groupsHosts + "," + host);              // NOI18N
+                        }
                     }        
                 }
             } else {
@@ -235,14 +238,15 @@ public class SvnConfigFiles {
             // and if there is a global section then set this as an exception
             Ini.Section group = servers.get(GLOBAL_SECTION);
             if(group != null) {
-                String exceptions = group.get("http-proxy-exceptions");                     // NOI18N
-                if(!match(exceptions, host)) {
-                    exceptions = exceptions.trim().length() > 0 ? exceptions + ", " + host : host;
-                    group.put("http-proxy-exceptions", exceptions);
+                String exceptions = group.get("http-proxy-exceptions");                                     // NOI18N
+                if(exceptions == null || exceptions.trim().equals("")) {
+                    exceptions = host;
+                } else if(!match(exceptions, host)) {
+                    exceptions = exceptions.trim().length() > 0 ? exceptions + ", " + host : host;          // NOI18N              
                 }                
+                group.put("http-proxy-exceptions", exceptions);
             }
         }
-
         storeServers();
     }
     
@@ -409,11 +413,14 @@ public class SvnConfigFiles {
         if(groups != null) {
             for (Iterator<String> it = groups.keySet().iterator(); it.hasNext();) {
                 String key = it.next();
-                String value = groups.get(key).trim();
-
-                if(match(value, host)) {
-                    return servers.get(key);
-                }      
+                String value = groups.get(key);
+                if(value != null) {     
+                    // XXX the same pattern everywhere when calling match()
+                    value = value.trim();                    
+                    if(value != null && match(value, host)) {
+                        return servers.get(key);
+                    }      
+                }
             }
         }
         return null;
@@ -865,7 +872,7 @@ public class SvnConfigFiles {
     }
     
     /**
-     * Returns a the value for thegvien specified windows env variable
+     * Returns a the value for the given specified windows env variable
      */
     private static String getWindowsProperty(String propertyKey) {
         Process p = null;
