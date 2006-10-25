@@ -594,11 +594,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             CompilationController controller = env.getController();
             SourcePositions sourcePositions = env.getSourcePositions();
             CompilationUnitTree root = env.getRoot();
-            int startPos = (int)sourcePositions.getEndPosition(root, cls.getModifiers());
-            if (startPos < 0)
-                startPos = (int)sourcePositions.getStartPosition(root, cls);
-            else
-                startPos += 1;
+            int startPos = (int)sourcePositions.getEndPosition(root, cls.getModifiers()) + 1;
             String headerText = controller.getText().substring(startPos, offset);
             int idx = headerText.indexOf('{'); //NOI18N
             if (idx >= 0) {
@@ -693,7 +689,12 @@ public class JavaCompletionProvider implements CompletionProvider {
                 }
                 return;
             }
-            if (path.getParentPath().getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT) {
+            lastNonWhitespaceToken = findLastNonWhitespaceToken(env, (int)sourcePositions.getStartPosition(root, cls), offset);
+            if (lastNonWhitespaceToken != null && lastNonWhitespaceToken.token().id() == JavaTokenId.AT) {
+                if (Utilities.startsWith(INTERFACE_KEYWORD, env.getPrefix()))
+                    addKeyword(env, INTERFACE_KEYWORD, SPACE);
+                addTypes(env, EnumSet.of(ANNOTATION_TYPE), null, null);
+            } else if (path.getParentPath().getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT) {
                 addClassModifiers(env, cls.getModifiers().getFlags());
             } else {
                 addMemberModifiers(env, cls.getModifiers().getFlags(), false);
@@ -836,8 +837,10 @@ public class JavaCompletionProvider implements CompletionProvider {
             ModifiersTree mods = (ModifiersTree)modPath.getLeaf();
             Set<Modifier> m = EnumSet.noneOf(Modifier.class);
             TokenSequence<JavaTokenId> ts = env.getController().getTreeUtilities().tokensFor(mods, env.getSourcePositions());
+            JavaTokenId lastNonWhitespaceTokenId = null;
             while(ts.moveNext() && ts.offset() < offset) {
-                switch (ts.token().id()) {
+                lastNonWhitespaceTokenId = ts.token().id();
+                switch (lastNonWhitespaceTokenId) {
                     case PUBLIC:
                         m.add(PUBLIC);
                         break;
@@ -872,7 +875,13 @@ public class JavaCompletionProvider implements CompletionProvider {
                         m.add(VOLATILE);
                         break;
                 }                
-            };
+            };            
+            if (lastNonWhitespaceTokenId == JavaTokenId.AT) {
+                if (Utilities.startsWith(INTERFACE_KEYWORD, env.getPrefix()))
+                    addKeyword(env, INTERFACE_KEYWORD, SPACE);
+                addTypes(env, EnumSet.of(ANNOTATION_TYPE), null, null);
+                return;
+            }            
             TreePath parentPath = modPath.getParentPath();
             Tree parent = parentPath.getLeaf();
             TreePath grandParentPath = parentPath.getParentPath();
