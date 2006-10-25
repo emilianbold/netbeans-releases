@@ -280,17 +280,33 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
     }
 
     private void refreshSkipLabel() {
-        String repositoryFolder = workdirPanel.repositoryPathTextField.getText().trim();        
-        while(repositoryFolder.indexOf("//") > -1) {
-            repositoryFolder = repositoryFolder.replaceAll("//", "/");                
-        } 
+        if(workdirPanel.repositoryPathTextField.getText().trim().equals("")) { 
+            resetWorkingDirLevelCheckBox();
+            return;
+        }        
+        
+        RepositoryFile[] repositoryFiles = null;
+        try {
+            repositoryFiles = repositoryPaths.getRepositoryFiles();
+        } catch (NumberFormatException ex) {
+            // ignore
+        } catch (MalformedURLException ex) {
+            // ignore
+        }
+        
+        if(repositoryFiles == null || 
+           repositoryFiles.length >  1) 
+        { 
+            resetWorkingDirLevelCheckBox();
+            return;
+        }        
+        
+        String repositoryFolder = repositoryFiles[0].getFileUrl().getLastPathSegment().trim();                           
         if(repositoryFolder.equals("")  ||      // the skip option doesn't make sense if there is no one, 
-           repositoryFolder.equals(".") ||      // or more as one folder to be checked out
-           repositoryFolder.equals("/") ||      
-           repositoryFolder.indexOf(",") > -1)  
+           repositoryFolder.equals("."))        // or more as one folder to be checked out  
         {
-            workdirPanel.atWorkingDirLevelCheckBox.setText(NbBundle.getMessage(CheckoutStep.class, "CTL_Checkout_CheckoutContentEmpty"));
-            workdirPanel.atWorkingDirLevelCheckBox.setEnabled(false);
+            resetWorkingDirLevelCheckBox();
+            return;
         } else {                        
             workdirPanel.atWorkingDirLevelCheckBox.setText (
                     NbBundle.getMessage(CheckoutStep.class, 
@@ -299,6 +315,11 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
             );
             workdirPanel.atWorkingDirLevelCheckBox.setEnabled(true);                
         }
+    }
+    
+    private void resetWorkingDirLevelCheckBox() {
+        workdirPanel.atWorkingDirLevelCheckBox.setText(NbBundle.getMessage(CheckoutStep.class, "CTL_Checkout_CheckoutContentEmpty"));
+        workdirPanel.atWorkingDirLevelCheckBox.setEnabled(false);
     }
 }
 
