@@ -39,6 +39,8 @@ abstract class PropertyProcessor  {
         registerPropertyProcessor(new NbClassPathProcessor());//AntSettings
         registerPropertyProcessor(new HashMapProcessor());//AntSettings
         registerPropertyProcessor(new IntrospectedInfoProcessor());//AntSettings                
+        registerPropertyProcessor(new ListProcessor());//ProjectUISettings             
+        registerPropertyProcessor(new URLProcessor());//ProjectUISettings             
     }
     
 
