@@ -108,7 +108,6 @@ public final class GridGraphLayout<N,E> extends GraphLayout<N,E> {
             }
         }
 
-        // TODO - grid -> correct location
         ObjectScene scene = graph.getScene ();
         int[] xAxis = new int[gridBounds.width + 1];
         int[] yAxis = new int[gridBounds.height + 1];
