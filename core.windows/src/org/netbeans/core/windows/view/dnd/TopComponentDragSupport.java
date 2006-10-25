@@ -24,7 +24,6 @@ package org.netbeans.core.windows.view.dnd;
 
 import java.awt.AWTEvent;
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dialog;
 import java.awt.Image;
@@ -41,7 +40,6 @@ import java.util.logging.Logger;
 import javax.swing.*;
 import org.netbeans.core.windows.*;
 import org.netbeans.core.windows.view.ui.*;
-import org.netbeans.core.windows.view.ui.tabcontrol.TabbedAdapter;
 import org.openide.util.*;
 import org.openide.windows.TopComponent;
 
@@ -799,17 +797,21 @@ implements AWTEventListener, DragSourceListener {
          * if the <code>tc</code> is instance
          * of <code>TopComponent.Cloneable</code> */
         public DataFlavor[] getTransferDataFlavors() {
-            if(tc instanceof TopComponent.Cloneable) {
-                return new DataFlavor[] {
-                    new DataFlavor(MIME_TOP_COMPONENT, null),
-                    new DataFlavor(
-                        MIME_TOP_COMPONENT_CLONEABLE, null)
-                };
-            } else {
-                return new DataFlavor[] {
-                    new DataFlavor(MIME_TOP_COMPONENT, null)
-                };
+            try {
+                if(tc instanceof TopComponent.Cloneable) {
+                    return new DataFlavor[]{
+                        new DataFlavor(MIME_TOP_COMPONENT, null, TopComponent.class.getClassLoader()),
+                        new DataFlavor(MIME_TOP_COMPONENT_CLONEABLE, null, TopComponent.Cloneable.class.getClassLoader())};
+                } else {
+                    return new DataFlavor[] {
+                        new DataFlavor(MIME_TOP_COMPONENT, null, TopComponent.class.getClassLoader())
+                    };
+                }
+            } catch (ClassNotFoundException ex) {
+                Logger.getLogger(TopComponentDragSupport.class.getName()).log(
+                        Level.WARNING, ex.getMessage(), ex);
             }
+            return new DataFlavor[0];
         }
 
         /** Implements <code>Transferable</code> method.
@@ -857,11 +859,9 @@ implements AWTEventListener, DragSourceListener {
          * the top component is instance
          * of <code>TopComponent.Cloneable</code> returns the instance. */
         public Object getTransferData(DataFlavor df) {
-            if(MIME_TOP_COMPONENT_ARRAY
-            .equals(df.getMimeType())) {
+            if(MIME_TOP_COMPONENT_ARRAY.equals(df.getMimeType())) {
                 return tcArray;
             }
-
             return null;
         }
 
@@ -872,9 +872,16 @@ implements AWTEventListener, DragSourceListener {
          * if the <code>tc</code> is 
          * instance of <code>TopComponent.Cloneable</code> */
         public DataFlavor[] getTransferDataFlavors() {
-            return new DataFlavor[] {
-                new DataFlavor(MIME_TOP_COMPONENT_ARRAY, null),
-            };
+            try {
+                return new DataFlavor[]{new DataFlavor(MIME_TOP_COMPONENT_ARRAY,
+                                                       null,
+                                                       TopComponent.class.getClassLoader())};
+            }
+            catch (ClassNotFoundException ex) {
+                Logger.getLogger(TopComponentDragSupport.class.getName()).log(
+                        Level.WARNING, ex.getMessage(), ex);
+            }
+            return new DataFlavor[0];
         }
 
         /** Implements <code>Transferable</code> method.
