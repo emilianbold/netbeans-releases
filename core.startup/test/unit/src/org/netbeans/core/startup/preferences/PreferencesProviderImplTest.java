@@ -26,7 +26,7 @@ import org.netbeans.junit.NbTestCase;
  *
  * @author rmatous
  */
-public class PreferencesProviderImplTest extends NbPreferencesTest.BasicSetupTest {    
+public class PreferencesProviderImplTest extends NbPreferencesTest.TestBasicSetup {    
     public PreferencesProviderImplTest(String testName) {
         super(testName);
     }

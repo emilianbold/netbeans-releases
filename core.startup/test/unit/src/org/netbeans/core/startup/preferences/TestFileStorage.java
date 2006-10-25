@@ -27,7 +27,7 @@ import org.netbeans.junit.NbTestCase;
  *
  * @author Radek Matous
  */
-public class TestFileStorage extends NbPreferencesTest.BasicSetupTest {
+public class TestFileStorage extends NbPreferencesTest.TestBasicSetup {
     protected NbPreferences.FileStorage instance;
     
     

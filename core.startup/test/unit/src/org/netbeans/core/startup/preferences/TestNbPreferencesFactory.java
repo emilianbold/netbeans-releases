@@ -26,7 +26,7 @@ import org.netbeans.junit.NbTestCase;
 /**
  * @author Radek Matous
  */
-public class TestNbPreferencesFactory extends NbPreferencesTest.BasicSetupTest {
+public class TestNbPreferencesFactory extends NbPreferencesTest.TestBasicSetup {
     public TestNbPreferencesFactory(String testName) {
         super(testName);
     }

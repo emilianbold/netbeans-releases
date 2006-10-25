@@ -31,7 +31,7 @@ import java.util.prefs.Preferences;
  *
  * @author Radek Matous
  */
-public class TestPreferences extends NbPreferencesTest.BasicSetupTest {
+public class TestPreferences extends NbPreferencesTest.TestBasicSetup {
     public TestPreferences(String testName) {
         super(testName);
     }

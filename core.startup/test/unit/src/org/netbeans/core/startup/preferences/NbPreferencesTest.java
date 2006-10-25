@@ -44,8 +44,8 @@ public class NbPreferencesTest extends NbTestCase {
         return suite;
     }
     
-    public static class BasicSetupTest extends NbTestCase {
-        public BasicSetupTest(String testName) {
+    public static class TestBasicSetup extends NbTestCase {
+        public TestBasicSetup(String testName) {
             super(testName);                        
         }
         
