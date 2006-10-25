@@ -32,13 +32,13 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.KeyStroke;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.UiUtils;
 import org.netbeans.modules.java.editor.overridden.PopupUtil;
@@ -60,21 +60,37 @@ public class ImportClassPanel extends javax.swing.JPanel {
         this.javaSource = javaSource;
         createModel(priviledged, denied);
         initComponents();
-        jList1.setModel( model );
-        setFocusable(false);
-        setNextFocusableComponent(jList1);
-        jScrollPane1.setBackground( jList1.getBackground() );
-        setBackground( jList1.getBackground() );
-        if ( font != null ) {
-            jList1.setFont(font);
+        setBackground(jList1.getBackground());
+        
+        if ( model.size() > 0) {
+            jList1.setModel( model );
+            setFocusable(false);        
+            setNextFocusableComponent(jList1);
+            jScrollPane1.setBackground( jList1.getBackground() );
+            setBackground( jList1.getBackground() );
+            if ( font != null ) {
+                jList1.setFont(font);
+            }
+            int modelSize = jList1.getModel().getSize();
+            if ( modelSize > 0 ) {
+                jList1.setSelectedIndex(0);            
+            }
+            jList1.setVisibleRowCount( modelSize > 8 ? 8 : modelSize );
+            jList1.setCellRenderer( new Renderer( jList1 ) );
+            jList1.grabFocus();
         }
-        int modelSize = jList1.getModel().getSize();
-        if ( modelSize > 0 ) {
-            jList1.setSelectedIndex(0);            
+        else {            
+            remove( jScrollPane1 );
+            JLabel nothingFoundJL = new JLabel("<No Classes Found>");
+            if ( font != null ) {
+                nothingFoundJL.setFont(font);
+            }
+            nothingFoundJL.setBorder(javax.swing.BorderFactory.createEmptyBorder(2, 4, 4, 4));
+            nothingFoundJL.setEnabled(false);
+            nothingFoundJL.setBackground(jList1.getBackground());
+            //nothingFoundJL.setOpaque(true);
+            add( nothingFoundJL );
         }
-        jList1.setVisibleRowCount( modelSize > 8 ? 8 : modelSize );
-        jList1.setCellRenderer( new Renderer( jList1 ) );
-        jList1.grabFocus();
     }
     
     /** This method is called from within the constructor to
@@ -84,29 +100,34 @@ public class ImportClassPanel extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+
         jScrollPane1 = new javax.swing.JScrollPane();
         jList1 = new javax.swing.JList();
+        jLabel1 = new javax.swing.JLabel();
 
+        setBorder(javax.swing.BorderFactory.createLineBorder(java.awt.Color.darkGray));
         setLayout(new java.awt.BorderLayout());
 
-        setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(74, 74, 74)), javax.swing.BorderFactory.createEmptyBorder(4, 4, 4, 4)));
-        jScrollPane1.setBorder(null);
-        jList1.setBorder(null);
-        jList1.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseReleased(java.awt.event.MouseEvent evt) {
-                listMouseReleased(evt);
-            }
-        });
+        jScrollPane1.setBorder(javax.swing.BorderFactory.createEmptyBorder(2, 4, 4, 4));
+
         jList1.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 listKeyReleased(evt);
             }
         });
-
+        jList1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                listMouseReleased(evt);
+            }
+        });
         jScrollPane1.setViewportView(jList1);
 
         add(jScrollPane1, java.awt.BorderLayout.CENTER);
 
+        jLabel1.setText("Type to import:");
+        jLabel1.setBorder(javax.swing.BorderFactory.createEmptyBorder(4, 4, 4, 4));
+        jLabel1.setOpaque(true);
+        add(jLabel1, java.awt.BorderLayout.PAGE_START);
     }// </editor-fold>//GEN-END:initComponents
 
     private void listMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_listMouseReleased
@@ -123,6 +144,7 @@ public class ImportClassPanel extends javax.swing.JPanel {
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    public javax.swing.JLabel jLabel1;
     public javax.swing.JList jList1;
     public javax.swing.JScrollPane jScrollPane1;
     // End of variables declaration//GEN-END:variables
