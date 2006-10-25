@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
@@ -51,6 +52,7 @@ public class ClassMemberTest extends GeneratorTest {
         suite.addTest(new ClassMemberTest("testAddAtIndex0"));
         suite.addTest(new ClassMemberTest("testAddAtIndex2"));
         suite.addTest(new ClassMemberTest("testAddToEmpty"));
+        suite.addTest(new ClassMemberTest("testAddConstructor"));
         return suite;
     }
     
@@ -181,6 +183,77 @@ public class ClassMemberTest extends GeneratorTest {
                     if (Tree.Kind.CLASS == typeDecl.getKind()) {
                         ClassTree classTree = (ClassTree) typeDecl;
                         ClassTree copy = make.addClassMember(classTree, m(make));
+                        workingCopy.rewrite(classTree, copy);
+                    }
+                }
+            }
+            
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testAddConstructor() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    \n" +
+            "    String prefix;\n" +
+            "    \n" +
+            "    public void method() {\n" +
+            "    }\n" +
+            "    \n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    \n" +
+            "    String prefix;\n" +
+            "    \n" +
+            "    public Test(boolean prefix) {\n" +
+            "    }\n" +
+            "    \n" +
+            "    public void method() {\n" +
+            "    }\n" +
+            "    \n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // ensure that it is correct type declaration, i.e. class
+                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                        ClassTree classTree = (ClassTree) typeDecl;
+                        ModifiersTree mods = make.Modifiers(EnumSet.of(Modifier.PUBLIC));
+                        List<VariableTree> arguments = new ArrayList<VariableTree>();
+                        arguments.add(make.Variable(
+                            make.Modifiers(EnumSet.noneOf(Modifier.class)),
+                            "prefix",
+                            make.PrimitiveType(TypeKind.BOOLEAN), null)
+                        );
+                        MethodTree constructor = make.Method(
+                            mods,
+                            "<init>",
+                            null,
+                            Collections.<TypeParameterTree> emptyList(),
+                            arguments,
+                            Collections.<ExpressionTree>emptyList(),
+                            make.Block(Collections.<StatementTree>emptyList(), false),
+                            null
+                        );
+                        ClassTree copy = make.insertClassMember(classTree, 2, constructor);
                         workingCopy.rewrite(classTree, copy);
                     }
                 }

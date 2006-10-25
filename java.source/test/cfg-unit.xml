@@ -53,7 +53,7 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="unit/src">
             <patternset>
                 <!-- temporarily excluded. Filter syntetic constructors -->
-                <!--include name="org/netbeans/api/java/source/gen/ConstructorTest.class"/-->
+                <include name="org/netbeans/api/java/source/gen/ConstructorTest.class"/>
                 <include name="org/netbeans/api/java/source/gen/ConstructorRenameTest.class"/>
                 <include name="org/netbeans/api/java/source/gen/Method1Test.class"/>
                 <include name="org/netbeans/api/java/source/gen/MethodTest4.class"/>

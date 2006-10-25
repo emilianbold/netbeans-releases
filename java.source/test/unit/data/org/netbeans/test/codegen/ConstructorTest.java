@@ -30,8 +30,8 @@ public class ConstructorTest {
     public ConstructorTest(int x) {}
 
     private static final class InnerClass1 {
-
+        
         public InnerClass1(int x) {}
-
+        
     }
 }

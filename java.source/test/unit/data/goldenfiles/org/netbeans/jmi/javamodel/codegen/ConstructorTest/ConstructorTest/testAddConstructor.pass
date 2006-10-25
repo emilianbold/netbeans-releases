@@ -30,11 +30,11 @@ public class ConstructorTest {
     public ConstructorTest(int x) {}
 
     private static final class InnerClass1 {
-
+        
+        public InnerClass1(int x) {}
         
         public InnerClass1(boolean a) {
         }
-        public InnerClass1(int x) {}
-
+        
     }
 }
