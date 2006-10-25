@@ -270,7 +270,7 @@ public final class CompletionLayout {
             Dimension lastSize;
             int lastAnchorOffset = getAnchorOffset();
 
-            if (isVisible()) {
+            if (isVisible() && ((getContentComponent() == completionScrollPane)^(showShortcutHints))) {
                 lastSize = getContentComponent().getSize();
                 resetPreferredSize();
 
@@ -294,23 +294,24 @@ public final class CompletionLayout {
                         }
                     }
                 );
-            }
-            completionScrollPane.getViewport().getView().setFont(getEditorComponent().getFont());
-            
-            if (showShortcutHints) {
-                JPanel panel = new JPanel();
-                panel.setLayout(new BorderLayout());
-                panel.add(completionScrollPane, BorderLayout.CENTER);
-                JLabel label = new JLabel();
-                label.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createMatteBorder(0, 0, 0, 1, Color.white),
-                        BorderFactory.createCompoundBorder(BorderFactory.createMatteBorder(0, 1, 1, 1, Color.gray), BorderFactory.createEmptyBorder(2, 2, 2, 2))));
-                label.setFont(label.getFont().deriveFont((float)label.getFont().getSize() - 2));
-                label.setHorizontalAlignment(SwingConstants.RIGHT);
-                label.setText(NbBundle.getMessage(CompletionLayout.class, "TXT_completion_shrtcut_tips")); //NOI18N
-                panel.add(label, BorderLayout.SOUTH);
-                setContentComponent(panel);
-            } else {
-                setContentComponent(completionScrollPane);
+                
+                completionScrollPane.getViewport().getView().setFont(getEditorComponent().getFont());
+                
+                if (showShortcutHints) {
+                    JPanel panel = new JPanel();
+                    panel.setLayout(new BorderLayout());
+                    panel.add(completionScrollPane, BorderLayout.CENTER);
+                    JLabel label = new JLabel();
+                    label.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createMatteBorder(0, 0, 0, 1, Color.white),
+                            BorderFactory.createCompoundBorder(BorderFactory.createMatteBorder(0, 1, 1, 1, Color.gray), BorderFactory.createEmptyBorder(2, 2, 2, 2))));
+                    label.setFont(label.getFont().deriveFont((float)label.getFont().getSize() - 2));
+                    label.setHorizontalAlignment(SwingConstants.RIGHT);
+                    label.setText(NbBundle.getMessage(CompletionLayout.class, "TXT_completion_shrtcut_tips")); //NOI18N
+                    panel.add(label, BorderLayout.SOUTH);
+                    setContentComponent(panel);
+                } else {
+                    setContentComponent(completionScrollPane);
+                }
             }
             // Set the new data
             completionScrollPane.setData(data, title);
