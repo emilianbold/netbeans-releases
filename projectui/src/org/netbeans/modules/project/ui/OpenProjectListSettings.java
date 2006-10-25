@@ -34,25 +34,23 @@ import org.openide.util.NbCollections;
 import org.openide.util.NbPreferences;
 
 /** SystemOption to store the list of open projects
- *  XXX Should be removed later and changed either to registry
- *      or something else
  */
 public class OpenProjectListSettings {
 
     private static OpenProjectListSettings INSTANCE = new OpenProjectListSettings();
     
-    private static final String OPEN_PROJECTS_URLS = "OpenProjectsURLs"; //NOI18N
-    private static final String LAST_OPEN_PROJECT_DIR = "LastOpenProjectDir"; //NOI18N
-    private static final String OPEN_SUBPROJECTS = "OpenSubprojects"; //NOI18N
-    private static final String OPEN_AS_MAIN = "OpenAsMain"; //NOI18N
-    private static final String MAIN_PROJECT_URL = "MainProjectURL"; //NOI18N
-    private static final String RECENT_PROJECTS_URLS = "RecentProjectsURLs"; //NOI18N
     private static final String RECENT_PROJECTS_DISPLAY_NAMES = "RecentProjectsDisplayNames"; //NOI18N
     private static final String RECENT_PROJECTS_DISPLAY_ICONS = "RecentProjectsIcons"; //NOI18N
-    private static final String PROP_PROJECTS_FOLDER = "projectsFolder"; //NOI18N
-    private static final String RECENT_TEMPLATES = "recentlyUsedTemplates"; // NOI18N
-    private static final String PROP_PROJECT_CATEGORY = "lastSelectedProjectCategory"; //NOI18N
-    private static final String PROP_PROJECT_TYPE = "lastSelectedProjectType"; //NOI18N
+    private static final String LAST_OPEN_PROJECT_DIR = "lastOpenProjectDir"; //NOI18N - String
+    private static final String PROP_PROJECT_CATEGORY = "lastSelectedProjectCategory"; //NOI18N - String
+    private static final String PROP_PROJECT_TYPE = "lastSelectedProjectType"; //NOI18N - String
+    private static final String MAIN_PROJECT_URL = "mainProjectURL"; //NOI18N -URL
+    private static final String OPEN_AS_MAIN = "openAsMain"; //NOI18N - boolean
+    private static final String OPEN_PROJECTS_URLS = "openProjectsURLs"; //NOI18N - List of URLs
+    private static final String OPEN_SUBPROJECTS = "openSubprojects"; //NOI18N - boolean
+    private static final String PROP_PROJECTS_FOLDER = "projectsFolder"; //NOI18N - String
+    private static final String RECENT_PROJECTS_URLS = "recentProjectsURLs"; //NOI18N List of URLs
+    private static final String RECENT_TEMPLATES = "recentTemplates"; // NOI18N -List of Strings
     
     
     private OpenProjectListSettings() {
