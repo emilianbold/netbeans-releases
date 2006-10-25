@@ -217,7 +217,7 @@ public class ClassPathProviderImplTest extends TestBase {
         // Keep up to date w/ changes in java/javacore/nbproject/project.xml:
         expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_IDE + "/modules/org-netbeans-api-java.jar"));
         expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_IDE + "/modules/org-netbeans-modules-classfile.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_IDE + "/modules/org-netbeans-jmi-javamodel.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/extra/modules/org-netbeans-jmi-javamodel.jar"));
         expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_IDE + "/modules/javax-jmi-reflect.jar"));
         expectedRoots.add(urlForJar("mdr/external/jmi.jar"));
         expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_IDE + "/modules/javax-jmi-model.jar"));
