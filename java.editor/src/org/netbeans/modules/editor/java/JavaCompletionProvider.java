@@ -920,7 +920,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 return;
             controller.toPhase(Phase.ELEMENTS_RESOLVED);
             Element annTypeElement = controller.getTrees().getElement(new TreePath(path, ann.getAnnotationType()));
-            if (annTypeElement.getKind() == ANNOTATION_TYPE) {
+            if (annTypeElement != null && annTypeElement.getKind() == ANNOTATION_TYPE) {
                 HashSet<String> names = new HashSet<String>();
                 for(ExpressionTree arg : ann.getArguments()) {
                     if (arg.getKind() == Tree.Kind.ASSIGNMENT && sourcePositions.getEndPosition(root, arg) < offset) {

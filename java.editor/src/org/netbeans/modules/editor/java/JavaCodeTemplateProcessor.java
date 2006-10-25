@@ -500,6 +500,12 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                             scope = tu.scopeFor(caretOffset);
                             enclClass = scope.getEnclosingClass();
                             final boolean isStatic = enclClass != null ? tu.isStaticContext(scope) : false;
+                            if (enclClass == null) {
+                                CompilationUnitTree cut = treePath.getCompilationUnit();
+                                Iterator<? extends Tree> it = cut.getTypeDecls().iterator();
+                                if (it.hasNext())
+                                    enclClass = (TypeElement)cInfo.getTrees().getElement(TreePath.getPath(cut, it.next()));
+                            }
                             final Trees trees = controller.getTrees();
                             final SourcePositions sp = trees.getSourcePositions();
                             final Collection<? extends Element> illegalForwardRefs = Utilities.getForwardReferences(treePath, caretOffset, sp, trees);;
