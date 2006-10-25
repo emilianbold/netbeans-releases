@@ -136,6 +136,36 @@ public class JavaCompletionProvider implements CompletionProvider {
         private static final String VOLATILE_KEYWORD = "volatile"; //NOI18N
         private static final String WHILE_KEYWORD = "while"; //NOI18N
         
+        private static final String[] PRIM_KEYWORDS = new String[] {
+            BOOLEAN_KEYWORD, BYTE_KEYWORD, CHAR_KEYWORD, DOUBLE_KEYWORD,
+            FLOAT_KEYWORD, INT_KEYWORD, LONG_KEYWORD, SHORT_KEYWORD
+        };
+        
+        private static final String[] VALUE_KEYWORDS = new String[] {
+            FALSE_KEYWORD, NULL_KEYWORD, TRUE_KEYWORD
+        };
+
+        private static final String[] STATEMENT_KEYWORDS = new String[] {
+            FOR_KEYWORD, SWITCH_KEYWORD, SYNCHRONIZED_KEYWORD, TRY_KEYWORD,
+            VOID_KEYWORD, WHILE_KEYWORD
+        };
+        
+        private static final String[] STATEMENT_SPACE_KEYWORDS = new String[] {
+            ASSERT_KEYWORD, NEW_KEYWORD, THROW_KEYWORD
+        };
+        
+        private static final String[] BLOCK_KEYWORDS = new String[] {
+            ASSERT_KEYWORD, CLASS_KEYWORD, FINAL_KEYWORD, NEW_KEYWORD,
+            THROW_KEYWORD
+        };
+
+        private static final String[] CLASS_BODY_KEYWORDS = new String[] {
+            ABSTRACT_KEYWORD, CLASS_KEYWORD, ENUM_KEYWORD, FINAL_KEYWORD,
+            INTERFACE_KEYWORD, NATIVE_KEYWORD, PRIVATE_KEYWORD, PROTECTED_KEYWORD,
+            PUBLIC_KEYWORD, STATIC_KEYWORD, STRICT_KEYWORD, SYNCHRONIZED_KEYWORD,
+            TRANSIENT_KEYWORD, VOID_KEYWORD, VOLATILE_KEYWORD
+        };
+        
         private Collection<CompletionItem> results;
         private JToolTip toolTip;
         private CompletionDocumentation documentation;
@@ -148,36 +178,6 @@ public class JavaCompletionProvider implements CompletionProvider {
         private String filterPrefix;
         
         private Element element;
-        
-        private final String[] PRIM_KEYWORDS = new String[] {
-            BOOLEAN_KEYWORD, BYTE_KEYWORD, CHAR_KEYWORD, DOUBLE_KEYWORD,
-            FLOAT_KEYWORD, INT_KEYWORD, LONG_KEYWORD, SHORT_KEYWORD
-        };
-        
-        private final String[] VALUE_KEYWORDS = new String[] {
-            FALSE_KEYWORD, NULL_KEYWORD, TRUE_KEYWORD
-        };
-
-        private final String[] STATEMENT_KEYWORDS = new String[] {
-            FOR_KEYWORD, SWITCH_KEYWORD, SYNCHRONIZED_KEYWORD, TRY_KEYWORD,
-            VOID_KEYWORD, WHILE_KEYWORD
-        };
-        
-        private final String[] STATEMENT_SPACE_KEYWORDS = new String[] {
-            ASSERT_KEYWORD, NEW_KEYWORD, THROW_KEYWORD
-        };
-        
-        private final String[] BLOCK_KEYWORDS = new String[] {
-            ASSERT_KEYWORD, CLASS_KEYWORD, FINAL_KEYWORD, NEW_KEYWORD,
-            THROW_KEYWORD
-        };
-
-        private final String[] CLASS_BODY_KEYWORDS = new String[] {
-            ABSTRACT_KEYWORD, CLASS_KEYWORD, ENUM_KEYWORD, FINAL_KEYWORD,
-            INTERFACE_KEYWORD, NATIVE_KEYWORD, PRIVATE_KEYWORD, PROTECTED_KEYWORD,
-            PUBLIC_KEYWORD, STATIC_KEYWORD, STRICT_KEYWORD, SYNCHRONIZED_KEYWORD,
-            TRANSIENT_KEYWORD, VOID_KEYWORD, VOLATILE_KEYWORD
-        };
         
         private JavaCompletionQuery(int queryType, int caretOffset) {
             this.queryType = queryType;
@@ -1105,7 +1105,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         kinds = EnumSet.of(INTERFACE);
                     } else if (parent.getKind() == Tree.Kind.IMPORT) {
                         inImport = true;
-                        kinds = ((ImportTree)parent).isStatic() ? EnumSet.of(CLASS, ENUM, INTERFACE, FIELD, METHOD, ENUM_CONSTANT) : EnumSet.of(CLASS, ENUM, INTERFACE);
+                        kinds = ((ImportTree)parent).isStatic() ? EnumSet.of(CLASS, ENUM, INTERFACE, ANNOTATION_TYPE, FIELD, METHOD, ENUM_CONSTANT) : EnumSet.of(CLASS, ANNOTATION_TYPE, ENUM, INTERFACE);
                     } else if (parent.getKind() == Tree.Kind.NEW_CLASS && ((NewClassTree)parent).getIdentifier() == fa) {
                         kinds = EnumSet.of(CLASS, INTERFACE);
                         if (grandParent.getKind() == Tree.Kind.THROW)
@@ -2019,7 +2019,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                             results.add(JavaCompletionItem.createVariableItem((VariableElement)e, e.asType(), offset, env.getScope().getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e)));
                         break;
                     case METHOD:
-                        results.add(JavaCompletionItem.createExecutableItem((ExecutableElement)e, (ExecutableType)e.asType(), offset, env.getScope().getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e)));
+                        results.add(JavaCompletionItem.createExecutableItem((ExecutableElement)e, (ExecutableType)e.asType(), offset, env.getScope().getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e), false));
                         break;
                 }
             }
@@ -2205,7 +2205,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                             results.add(JavaCompletionItem.createVariableItem((VariableElement)e, type.getKind() == TypeKind.DECLARED ? types.asMemberOf((DeclaredType)type, e) : e.asType(), offset, typeElem != e.getEnclosingElement(), elements.isDeprecated(e)));
                         break;
                     case METHOD:
-                        results.add(JavaCompletionItem.createExecutableItem((ExecutableElement)e, (ExecutableType)(type.getKind() == TypeKind.DECLARED ? types.asMemberOf((DeclaredType)type, e) : e.asType()), offset, typeElem != e.getEnclosingElement(), elements.isDeprecated(e)));
+                        results.add(JavaCompletionItem.createExecutableItem((ExecutableElement)e, (ExecutableType)(type.getKind() == TypeKind.DECLARED ? types.asMemberOf((DeclaredType)type, e) : e.asType()), offset, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), inImport));
                         break;
                     case CLASS:
                     case ENUM:
@@ -2214,7 +2214,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         results.add(JavaCompletionItem.createTypeItem((TypeElement)e, (DeclaredType)e.asType(), offset, false, elements.isDeprecated(e)));
                         break;
                     case CONSTRUCTOR:
-                        results.add(JavaCompletionItem.createExecutableItem((ExecutableElement)e, (ExecutableType)(type.getKind() == TypeKind.DECLARED ? types.asMemberOf((DeclaredType)type, e) : e.asType()), offset, typeElem != e.getEnclosingElement(), elements.isDeprecated(e)));
+                        results.add(JavaCompletionItem.createExecutableItem((ExecutableElement)e, (ExecutableType)(type.getKind() == TypeKind.DECLARED ? types.asMemberOf((DeclaredType)type, e) : e.asType()), offset, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), inImport));
                         ctorAdded = true;
                         break;
                 }

@@ -93,10 +93,10 @@ public abstract class JavaCompletionItem implements CompletionItem {
         return new VariableItem(null, varName, substitutionOffset);
     }
 
-    public static final JavaCompletionItem createExecutableItem(ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isInherited, boolean isDeprecated) {
+    public static final JavaCompletionItem createExecutableItem(ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isInherited, boolean isDeprecated, boolean inImport) {
         switch (elem.getKind()) {
             case METHOD:
-                return new MethodItem(elem, type, substitutionOffset, isInherited, isDeprecated);
+                return new MethodItem(elem, type, substitutionOffset, isInherited, isDeprecated, inImport);
             case CONSTRUCTOR:
                 return new ConstructorItem(elem, type, substitutionOffset, isDeprecated);
             default:
@@ -773,13 +773,15 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private ExecutableType type;
         private boolean isInherited;
         private boolean isDeprecated;
+        private boolean inImport;
         
-        private MethodItem(ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isInherited, boolean isDeprecated) {
+        private MethodItem(ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isInherited, boolean isDeprecated, boolean inImport) {
             super(substitutionOffset);
             this.elem = elem;
             this.type = type;
             this.isInherited = isInherited;
             this.isDeprecated = isDeprecated;
+            this.inImport = inImport;
         }
         
         public int getSortPriority() {
@@ -924,10 +926,10 @@ public abstract class JavaCompletionItem implements CompletionItem {
             }
             List<? extends VariableElement> params = elem.getParameters();
             List<? extends TypeMirror> paramTypes = type.getParameterTypes();
-            String add = "()"; //NOI18N
+            String add = inImport ? ";" : "()"; //NOI18N
             if (toAdd != null && !add.startsWith(toAdd))
                 add += toAdd;
-            if (params.isEmpty()) {
+            if (inImport || params.isEmpty()) {
                 super.substituteText(c, offset, len, add);
             } else {                
                 BaseDocument doc = (BaseDocument)c.getDocument();
@@ -1032,7 +1034,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private boolean implement;
         
         private OverrideMethodItem(ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean implement) {
-            super(elem, type, substitutionOffset, false, false);
+            super(elem, type, substitutionOffset, false, false, false);
             this.elem = elem;
             this.type = type;
             this.implement = implement;
