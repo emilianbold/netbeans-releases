@@ -73,6 +73,8 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
     private boolean passwordExpected;        
     private boolean valid = true;
     private boolean userVisitedProxySettings;    
+    private boolean userEditedPasswordOrName;    
+    
     private List<PropertyChangeListener> listeners;
 
 
@@ -161,7 +163,12 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
                         proxyDescriptor = getProxyFromConfigFile(repository.getUrl());
                     }
                     PasswordFile passwordFile = PasswordFile.findFileForUrl(repository.getUrl());
-                    if (passwordFile != null && passwordFile.getPassword() != null && passwordExpected) {
+                    if (passwordFile != null && 
+                        passwordFile.getPassword() != null && 
+                        passwordExpected &&                         
+                        (repositoryPanel.userTextField.getText().trim().equals("") || !userEditedPasswordOrName) &&           // NOI18N
+                        (repositoryPanel.userPasswordField.getPassword().length == 0 || !userEditedPasswordOrName) )  
+                    {
                         internalDocumentChange = true;
                         repositoryPanel.userPasswordField.setText(passwordFile.getPassword());
                         repositoryPanel.userTextField.setText(passwordFile.getUsername());
@@ -386,7 +393,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         SVNUrl url = null;
         if(repository != null) {
             url = repository.getUrl();
-            if (url != null && !url.getProtocol().equals("file")) { // NOI18N
+            if (url != null && !url.getProtocol().equals("file") && !userEditedPasswordOrName) { // NOI18N
                 schedulePasswordUpdate();
             }
         }
@@ -460,6 +467,9 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
      * Visually notifies user about password length
      */
     private void schedulePasswordUpdate() {
+        if(userEditedPasswordOrName) {
+            return;
+        }
         String selectedUrlString;
         try {
             selectedUrlString = selectedUrlString();
@@ -481,10 +491,16 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
     }
 
     private void onUsernameChange() {
+        if(!internalDocumentChange) {
+            userEditedPasswordOrName = true;
+        }
         setValid(true, "");
     }
     
     private void onPasswordChange() {
+        if(!internalDocumentChange) {
+            userEditedPasswordOrName = true;
+        }
         setValid(true, "");
         cancelPasswordUpdate();
     }
