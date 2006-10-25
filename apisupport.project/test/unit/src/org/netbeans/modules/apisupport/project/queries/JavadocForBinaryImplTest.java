@@ -55,13 +55,13 @@ public class JavadocForBinaryImplTest extends TestBase {
     public void testJavadocForNetBeansOrgModules() throws Exception {
         // Have to load at least one module to get the scan going.
         ClassPath.getClassPath(nbroot.getFileObject("ant/src"), ClassPath.COMPILE);
-        File beansJar = file("nbbuild/netbeans/" + TestBase.CLUSTER_IDE + "/modules/org-netbeans-modules-beans.jar");
-        URL[] roots = JavadocForBinaryQuery.findJavadoc(Util.urlForJar(beansJar)).getRoots();
+        File classfileJar = file("nbbuild/netbeans/" + TestBase.CLUSTER_IDE + "/modules/org-netbeans-modules-classfile.jar");
+        URL[] roots = JavadocForBinaryQuery.findJavadoc(Util.urlForJar(classfileJar)).getRoots();
         URL[] expectedRoots = new URL[] {
-            Util.urlForDir(file("nbbuild/build/javadoc/org-netbeans-modules-beans")),
-            urlForJar(apisZip, "org-netbeans-modules-beans/"),
+            Util.urlForDir(file("nbbuild/build/javadoc/org-netbeans-modules-classfile")),
+            urlForJar(apisZip, "org-netbeans-modules-classfile/"),
         };
-        assertEquals("correct Javadoc roots for beans", urlSet(expectedRoots), urlSet(roots));
+        assertEquals("correct Javadoc roots for classfile", urlSet(expectedRoots), urlSet(roots));
     }
     
     public void testJavadocForExternalModules() throws Exception {
