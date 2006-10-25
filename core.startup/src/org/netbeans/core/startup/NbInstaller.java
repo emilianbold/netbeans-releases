@@ -552,13 +552,12 @@ final class NbInstaller extends ModuleInstaller {
      */
     private void checkForDeprecations(Module m) {
         if (!Boolean.valueOf((String)m.getAttribute("OpenIDE-Module-Deprecated")).booleanValue()) { // NOI18N
-            Dependency[] deps = m.getDependenciesArray();
-            for (int i = 0; i < deps.length; i++) {
-                if (deps[i].getType() == Dependency.TYPE_MODULE) {
-                    String cnb = (String)Util.parseCodeName(deps[i].getName())[0];
+            for (Dependency dep : m.getDependencies()) {
+                if (dep.getType() == Dependency.TYPE_MODULE) {
+                    String cnb = (String) Util.parseCodeName(dep.getName())[0];
                     Module o = mgr.get(cnb);
                     if (o == null) throw new IllegalStateException("No such module: " + cnb); // NOI18N
-                    if (Boolean.valueOf((String)o.getAttribute("OpenIDE-Module-Deprecated")).booleanValue()) { // NOI18N
+                    if (Boolean.parseBoolean((String) o.getAttribute("OpenIDE-Module-Deprecated"))) { // NOI18N
                         String message = (String)o.getLocalizedAttribute("OpenIDE-Module-Deprecation-Message"); // NOI18N
                         // XXX use NbEvents? I18N?
                         // For now, assume this is a developer-oriented message that need not be localized
@@ -603,7 +602,7 @@ final class NbInstaller extends ModuleInstaller {
         // forms...is that really necessary to do here, or isn't it enough to
         // do right after loading etc.? Currently these are only written when
         // a ModuleInstall has just been restored etc. which is probably fine.
-	for (Module m: modules) {
+        for (Module m : modules) {
             Class<? extends ModuleInstall> instClazz = installs.get(m);
             if (instClazz != null) {
                 try {
@@ -647,10 +646,10 @@ final class NbInstaller extends ModuleInstaller {
             if (depsFolder != null) {
                 FileObject[] kids = depsFolder.getChildren();
                 List<URL> urls = new ArrayList<URL>(Math.max(kids.length, 1));
-                for (int i = 0; i < kids.length; i++) {
-                    if (kids[i].hasExt("xml")) { // NOI18N
+                for (FileObject kid : kids) {
+                    if (kid.hasExt("xml")) { // NOI18N
                         try {
-                            urls.add(kids[i].getURL());
+                            urls.add(kid.getURL());
                         } catch (FileStateInvalidException e) {
                             Util.err.log(Level.WARNING, null, e);
                         }
@@ -680,7 +679,7 @@ final class NbInstaller extends ModuleInstaller {
     
     public String[] refineProvides (Module m) {
         if (m.getCodeNameBase ().equals ("org.openide.modules")) { // NOI18N
-            ArrayList<String> arr = new ArrayList<String> (4);
+            List<String> arr = new ArrayList<String>(4);
             
             boolean isMac = (org.openide.util.Utilities.getOperatingSystem () & org.openide.util.Utilities.OS_MAC) != 0;
             boolean isOS2 = (org.openide.util.Utilities.getOperatingSystem () & org.openide.util.Utilities.OS_OS2) != 0;
@@ -718,9 +717,8 @@ final class NbInstaller extends ModuleInstaller {
         // Cf. #19622:
         if (parent == null) {
             // Application classpath checks.
-            for (int i = 0; i < CLASSPATH_PACKAGES.length; i++) {
-                if (pkg.startsWith(CLASSPATH_PACKAGES[i]) &&
-                        !findKosher(m).contains(CLASSPATH_PACKAGES[i])) {
+            for (String cppkg : CLASSPATH_PACKAGES) {
+                if (pkg.startsWith(cppkg) && !findKosher(m).contains(cppkg)) {
                     // Undeclared use of a classpath package. Refuse it.
                     if (Util.err.isLoggable(Level.FINE)) {
                         Util.err.fine("Refusing to load classpath package " + pkg + " for " + m.getCodeNameBase() + " without a proper dependency"); // NOI18N
@@ -735,43 +733,43 @@ final class NbInstaller extends ModuleInstaller {
     private static final String[] CLASSPATH_PACKAGES = new String[] {
         // core.jar shall be inaccessible
         "org/netbeans/core/startup/",
-
-        "com/sun/tools/javac",
-        "com/sun/tools/javadoc",
-        "com/sun/javadoc",
-        "com/sun/source",
-        "javax/annotation",
-        "javax/lang/model",
-        "javax/tools"
+        // Java language infrastructure bundled with IDE; do not want clashes with JDK 6:
+        "com/sun/tools/javac/",
+        "com/sun/tools/javadoc/",
+        "com/sun/javadoc/",
+        "com/sun/source/",
+        "javax/annotation/",
+        "javax/lang/model/",
+        "javax/tools/"
     };
     
     private Set<String> findKosher(Module m) {
         Set<String> s = kosherPackages.get(m);
         if (s == null) {
             s = new HashSet<String>();
-            Dependency[] deps = m.getDependenciesArray();
-            SpecificationVersion openide = Util.getModuleDep(m.getDependencies(), "org.openide"); // NOI18N
+            Set<Dependency> deps = m.getDependencies();
+            SpecificationVersion openide = Util.getModuleDep(deps, "org.openide"); // NOI18N
             boolean pre27853 = (openide == null || openide.compareTo(new SpecificationVersion("1.3.12")) < 0); // NOI18N
-            for (int i = 0; i < deps.length; i++) {
+            for (Dependency dep : deps) {
                 // Extend this for other classpath modules:
-                if (deps[i].getType() == Dependency.TYPE_MODULE &&
-                        deps[i].getName().equals("org.netbeans.core.startup/1")) { // NOI18N
-                    // Legitimate in some cases, e.g. apisupport or autoupdate.
+                if (dep.getType() == Dependency.TYPE_MODULE &&
+                        dep.getName().equals("org.netbeans.core.startup/1")) { // NOI18N
+                    // Various modules (incl. o.n.core) dep on this as friends and need to access it.
                     s.add("org/netbeans/core/startup/"); // NOI18N
-                } else if (pre27853 && deps[i].getType() == Dependency.TYPE_MODULE) {
+                } else if (pre27853 && dep.getType() == Dependency.TYPE_MODULE) {
                     // Module dependency. If a package was kosher for A and B depends
                     // on A, we let B use it undeclared. Cf. javacvs -> vcscore & RE.
                     // But #27853: only do this for old modules.
-                    String name = deps[i].getName();
+                    String name = dep.getName();
                     int idx = name.indexOf('/');
                     if (idx != -1) {
                         name = name.substring(0, idx);
                     }
                     Module other = mgr.get(name);
-                    if (other == null) throw new IllegalStateException("Should have found dep " + deps[i] + " from " + m); // NOI18N
+                    if (other == null) throw new IllegalStateException("Should have found dep " + dep + " from " + m); // NOI18N
                     s.addAll(findKosher(other));
-                } else if (deps[i].getType() == Dependency.TYPE_PACKAGE) {
-                    String depname = deps[i].getName();
+                } else if (dep.getType() == Dependency.TYPE_PACKAGE) {
+                    String depname = dep.getName();
                     String req;
                     int idx = depname.indexOf('['); // NOI18N
                     if (idx == -1) {
@@ -788,11 +786,11 @@ final class NbInstaller extends ModuleInstaller {
                         // req = org/apache/xerces/parsers/
                         req = depname.substring(0, idx).replace('.', '/').concat("/"); // NOI18N
                     }
-                    for (int j = 0; j < CLASSPATH_PACKAGES.length; j++) {
-                        if (req.startsWith(CLASSPATH_PACKAGES[j])) {
+                    for (String cppkg : CLASSPATH_PACKAGES) {
+                        if (req.startsWith(cppkg)) {
                             // Module requested this exact package or some subpackage or
                             // a class in one of these packages; it is kosher.
-                            s.add(CLASSPATH_PACKAGES[j]);
+                            s.add(cppkg);
                         }
                     }
                 }
@@ -918,9 +916,8 @@ final class NbInstaller extends ModuleInstaller {
      * "org.netbeans.core.startup.specialResource".
      */
     private boolean isSpecialResourceFromSystemProperty(String pkg) {
-        String []prefixes = getSpecialResourcePrefixes();
-        for (int i = 0; i < prefixes.length; i++) {
-            if (pkg.startsWith(prefixes[i])) {
+        for (String prefix : getSpecialResourcePrefixes()) {
+            if (pkg.startsWith(prefix)) {
                 return true;
             }
         }
@@ -978,13 +975,12 @@ final class NbInstaller extends ModuleInstaller {
         // Code names of modules on which this module has an impl dependency
         // (so can use any package):
         Set<String> implDeps = new HashSet<String>(10);
-        Dependency[] deps = m.getDependenciesArray();
-        for (int i = 0; i < deps.length; i++) {
+        for (Dependency dep : m.getDependencies()) {
             // Remember, provide-require deps do not affect classpath!
-            if (deps[i].getType() == Dependency.TYPE_MODULE && deps[i].getComparison() == Dependency.COMPARE_IMPL) {
+            if (dep.getType() == Dependency.TYPE_MODULE && dep.getComparison() == Dependency.COMPARE_IMPL) {
                 // We can assume the impl dep has the correct version;
                 // otherwise this module could not have been enabled to begin with.
-                implDeps.add(deps[i].getName());
+                implDeps.add(dep.getName());
             }
         }
         SpecificationVersion openide = Util.getModuleDep(m.getDependencies(), "org.openide"); // NOI18N
@@ -1020,10 +1016,10 @@ final class NbInstaller extends ModuleInstaller {
                 File dir = new File(st.nextToken());
                 File[] entries = dir.listFiles();
                 if (entries != null) {
-                    for (int i = 0; i < entries.length; i++) {
-                        String name = entries[i].getName().toLowerCase(Locale.US);
+                    for (File f : entries) {
+                        String name = f.getName().toLowerCase(Locale.US);
                         if (name.endsWith(".zip") || name.endsWith(".jar")) { // NOI18N
-                            l.add(entries[i].getAbsolutePath());
+                            l.add(f.getAbsolutePath());
                         }
                     }
                 }
@@ -1044,12 +1040,12 @@ final class NbInstaller extends ModuleInstaller {
         }
         // JAR or ZIP. Check whether we can access it.
         String name = cpEntry.getName();
-        for (int j = 0; j < CLASSPATH_JARS.length; j++) {
-            if (kosher != null && name.startsWith(CLASSPATH_JARS[j][0])) {
+        for (String[] cpjar : CLASSPATH_JARS) {
+            if (kosher != null && name.startsWith(cpjar[0])) {
                 // Restricted JAR.
                 StringBuffer entry = null; // will be set if there are any packages
-                for (int k = 1; k < CLASSPATH_JARS[j].length; k++) {
-                    String pkg = CLASSPATH_JARS[j][k];
+                for (int k = 1; k < cpjar.length; k++) {
+                    String pkg = cpjar[k];
                     if (kosher.contains(pkg)) {
                         // Module is permitted to use this package.
                         if (entry == null) {
@@ -1088,10 +1084,9 @@ final class NbInstaller extends ModuleInstaller {
     private void addModuleClasspathEntries(Module m, Module orig, Set<Module> considered, Set<String> implDeps, List<String> cp, int depth) {
         // Head recursion so that baser modules are added to the front of the classpath:
         if (!considered.add(m)) return;
-        Dependency[] deps = m.getDependenciesArray();
-        for (int i = 0; i < deps.length; i++) {
-            if (deps[i].getType() == Dependency.TYPE_MODULE) {
-                String cnb = (String)Util.parseCodeName(deps[i].getName())[0];
+        for (Dependency dep : m.getDependencies()) {
+            if (dep.getType() == Dependency.TYPE_MODULE) {
+                String cnb = (String) Util.parseCodeName(dep.getName())[0];
                 Module next = mgr.get(cnb);
                 if (next == null) throw new IllegalStateException("No such module: " + cnb); // NOI18N
                 if (depth > 0) {
@@ -1175,7 +1170,7 @@ final class NbInstaller extends ModuleInstaller {
      * Each JAR file is mapped to a two-element array consisting of
      * its modification date when last read; and the manifest itself.
      */
-    private Map<File,Object[]> manifestCache = null; // Map<File,[Date,Manifest]>
+    private Map<File,/*[Date,Manifest]*/Object[]> manifestCache = null;
     
     /** If true, at least one manifest has had to be read explicitly.
      * This might be because the cache did not initially exist;
@@ -1235,18 +1230,16 @@ final class NbInstaller extends ModuleInstaller {
     /** Really save the cache.
      * @see #manifestCacheFile
      */
-    private void saveManifestCache(Map manifestCache, File manifestCacheFile) throws IOException {
+    private void saveManifestCache(Map<File,Object[]> manifestCache, File manifestCacheFile) throws IOException {
         Util.err.fine("Saving manifest cache");
         manifestCacheFile.getParentFile().mkdirs();
         OutputStream os = new FileOutputStream(manifestCacheFile);
         try {
             try {
                 os = new BufferedOutputStream(os);
-                Iterator it = manifestCache.entrySet().iterator();
-                while (it.hasNext()) {
-                    Map.Entry e = (Map.Entry)it.next();
-                    File jar = (File)e.getKey();
-                    Object[] v = (Object[])e.getValue();
+                for (Map.Entry<File,Object[]> entry : manifestCache.entrySet()) {
+                    File jar = entry.getKey();
+                    Object[] v = entry.getValue();
                     long time = ((Date)v[0]).getTime();
                     Manifest m = (Manifest)v[1];
                     os.write(jar.getAbsolutePath().getBytes("UTF-8")); // NOI18N
@@ -1351,11 +1344,9 @@ final class NbInstaller extends ModuleInstaller {
      * May be more useful to run org.netbeans.core.ValidateClassLinkageTest.
      * @param modules a list of modules, newly enabled, to check; fixed modules will be ignored
      */
-    private void preresolveClasses(List modules) {
+    private void preresolveClasses(List<Module> modules) {
         Util.err.info("Pre-resolving classes for all loaded modules...be sure you have not specified -J-Xverify:none in ide.cfg");
-        Iterator it = modules.iterator();
-        while (it.hasNext()) {
-            Module m = (Module)it.next();
+        for (Module m : modules) {
             if (m.isFixed()) continue;
             if (m.getJarFile() == null) continue;
             File jar = m.getJarFile();
