@@ -919,45 +919,47 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             if (fo == null) {
                 return;
             }
-            ClasspathInfo cpInfo = ClasspathInfo.create (fo);
+            
             assert "file".equals(root.getProtocol()) : "Unexpected protocol of URL: " + root;   //NOI18N
-            final File rootFile = FileUtil.normalizeFile(new File (URI.create(root.toExternalForm())));
-            final File fileFile = FileUtil.toFile(fo);
-            final File classCache = Index.getClassFolder (rootFile);
-            final Map <String,List<File>> resources = getAllClassFiles (classCache, FileObjects.getRelativePath(rootFile, fileFile.getParentFile()));
-            String offset = FileObjects.getRelativePath (rootFile,fileFile);
-            final int index = offset.lastIndexOf('.');  //NOI18N
-            if (index > -1) {
-                offset = offset.substring(0,index);
-            }
-            List<File> files = resources.remove (offset);
-            ClassIndexImpl uqImpl = ClassIndexManager.getDefault().createUsagesQuery(root, true);
-            assert uqImpl != null;
-            SourceAnalyser sa = uqImpl.getSourceAnalyser();
-            assert sa != null;
-            if (files != null) {
-                for (File toDelete : files) {
-                    toDelete.delete();
-                    if (toDelete.getName().endsWith(FileObjects.SIG)) {
-                        String className = FileObjects.getBinaryName (toDelete,classCache);                                                           
-                        sa.delete (className);
+            final ClassIndexImpl uqImpl = ClassIndexManager.getDefault().createUsagesQuery(root, true);
+            if (uqImpl != null) {
+                ClasspathInfo cpInfo = ClasspathInfo.create (fo);
+                final File rootFile = FileUtil.normalizeFile(new File (URI.create(root.toExternalForm())));
+                final File fileFile = FileUtil.toFile(fo);
+                final File classCache = Index.getClassFolder (rootFile);
+                final Map <String,List<File>> resources = getAllClassFiles (classCache, FileObjects.getRelativePath(rootFile, fileFile.getParentFile()));
+                String offset = FileObjects.getRelativePath (rootFile,fileFile);
+                final int index = offset.lastIndexOf('.');  //NOI18N
+                if (index > -1) {
+                    offset = offset.substring(0,index);
+                }
+                List<File> files = resources.remove (offset);                
+                SourceAnalyser sa = uqImpl.getSourceAnalyser();
+                assert sa != null;
+                if (files != null) {
+                    for (File toDelete : files) {
+                        toDelete.delete();
+                        if (toDelete.getName().endsWith(FileObjects.SIG)) {
+                            String className = FileObjects.getBinaryName (toDelete,classCache);                                                           
+                            sa.delete (className);
+                        }
                     }
                 }
+                assert fo != null;
+                String sourceLevel = SourceLevelQuery.getSourceLevel(fo);
+                final CompilerListener listener = new CompilerListener ();
+                final JavaFileManager fm = ClasspathInfoAccessor.INSTANCE.getFileManager(cpInfo);
+                JavaFileObject active = SourceFileObject.create(fo);
+                JavacTaskImpl jt = JavaSourceAccessor.INSTANCE.createJavacTask(cpInfo, listener, sourceLevel);
+                jt.setTaskListener(listener);
+                Iterable<? extends CompilationUnitTree> trees = jt.parse(new JavaFileObject[] {active});
+                jt.enter();            
+                jt.analyze ();
+                dumpClasses(listener.getEnteredTypes(), fm, com.sun.tools.javac.code.Types.instance(jt.getContext()));
+                sa.analyse (trees, jt, fm, active);
+                listener.cleanDiagnostics();
+                sa.store();
             }
-            assert fo != null;
-            String sourceLevel = SourceLevelQuery.getSourceLevel(fo);
-            final CompilerListener listener = new CompilerListener ();
-            final JavaFileManager fm = ClasspathInfoAccessor.INSTANCE.getFileManager(cpInfo);
-            JavaFileObject active = SourceFileObject.create(fo);
-            JavacTaskImpl jt = JavaSourceAccessor.INSTANCE.createJavacTask(cpInfo, listener, sourceLevel);
-            jt.setTaskListener(listener);
-            Iterable<? extends CompilationUnitTree> trees = jt.parse(new JavaFileObject[] {active});
-            jt.enter();            
-            jt.analyze ();
-            dumpClasses(listener.getEnteredTypes(), fm, com.sun.tools.javac.code.Types.instance(jt.getContext()));
-            sa.analyse (trees, jt, fm, active);
-            listener.cleanDiagnostics();
-            sa.store();
         }
         
         private void delete (final URL file, final URL root, final boolean folder) throws IOException {

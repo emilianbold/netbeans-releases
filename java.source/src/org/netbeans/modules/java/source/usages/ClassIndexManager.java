@@ -43,7 +43,7 @@ public class ClassIndexManager {
         this.lock = new ReentrantReadWriteLock (false);
     }
     
-    <T> T writeLock (final ExceptionAction<T> r) throws IOException {
+    public <T> T writeLock (final ExceptionAction<T> r) throws IOException {
         this.lock.writeLock().lock();
         try {
             return r.run();
@@ -52,7 +52,7 @@ public class ClassIndexManager {
         }
     }
     
-    <T> T readLock (final ExceptionAction<T> r) throws IOException {
+    public <T> T readLock (final ExceptionAction<T> r) throws IOException {
         this.lock.readLock().lock();
         try {
             return r.run();

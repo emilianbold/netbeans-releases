@@ -20,6 +20,7 @@
 package org.netbeans.modules.java.source;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.InstanceNotFoundException;
@@ -37,6 +38,7 @@ import org.netbeans.modules.java.source.util.LowMemoryNotifierMBeanImpl;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.ModuleInstall;
+import org.openide.util.Exceptions;
 import org.openide.windows.WindowManager;
 
 /**
@@ -83,8 +85,17 @@ public class JBrowseModule extends ModuleInstall {
     
     public @Override boolean closing () {
         final boolean ret = super.closing();
-        RepositoryUpdater.getDefault().close ();
-        ClassIndexManager.getDefault().close();
+        RepositoryUpdater.getDefault().close();
+        try {
+            ClassIndexManager.getDefault().writeLock(new ClassIndexManager.ExceptionAction<Void>() {
+                 public Void run() throws IOException {
+                     ClassIndexManager.getDefault().close();
+                     return null;
+                 }
+            });
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        };            
         if (ENABLE_MBEANS) {
             unregisterMBeans();
         }
