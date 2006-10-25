@@ -29,6 +29,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.j2ee.earproject.EarProjectGenerator;
 import org.netbeans.modules.j2ee.earproject.ModuleType;
 import org.netbeans.modules.j2ee.earproject.ui.FoldersListSettings;
@@ -42,7 +43,7 @@ import org.openide.util.NbBundle;
  * Wizard for importing a new Enterprise Application project.
  * @author Jesse Glick
  */
-public class ImportBlueprintEarWizardIterator implements WizardDescriptor.InstantiatingIterator {
+public class ImportBlueprintEarWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
     
     private static final long serialVersionUID = 1L;
     
@@ -69,6 +70,14 @@ public class ImportBlueprintEarWizardIterator implements WizardDescriptor.Instan
     }
     
     public Set<FileObject> instantiate() throws IOException {
+        assert false : "This method cannot be called if the class implements WizardDescriptor.ProgressInstantiatingIterator.";
+        return null;
+    }
+        
+    public Set<FileObject> instantiate(ProgressHandle handle) throws IOException {
+        handle.start(3);
+        handle.progress(NbBundle.getMessage(ImportBlueprintEarWizardIterator.class, "LBL_NewEarProjectWizardIterator_WizardProgress_CreatingProject"), 1);
+        
         File dirF = (File) wiz.getProperty(WizardProperties.PROJECT_DIR);
         File srcF = (File) wiz.getProperty(WizardProperties.SOURCE_ROOT);
         String name = (String) wiz.getProperty(WizardProperties.NAME);
@@ -81,18 +90,20 @@ public class ImportBlueprintEarWizardIterator implements WizardDescriptor.Instan
         Map<FileObject, ModuleType> userModules = (Map<FileObject, ModuleType>)
                 wiz.getProperty(WizardProperties.USER_MODULES);
         return testableInstantiate(platformName, sourceLevel, j2eeLevel, dirF,
-                srcF, serverInstanceID, name, userModules);
+                srcF, serverInstanceID, name, userModules, handle);
     }
     
     /** <strong>Package private for unit test only</strong>. */
     static Set<FileObject> testableInstantiate(final String platformName,
             final String sourceLevel, final String j2eeLevel, final File dirF,
             final File srcF, final String serverInstanceID, final String name,
-            final Map<FileObject, ModuleType> userModules) throws IOException {
+            final Map<FileObject, ModuleType> userModules, ProgressHandle handle) throws IOException {
         
         EarProjectGenerator.importProject(dirF, srcF, name, j2eeLevel,
                 serverInstanceID, platformName, sourceLevel, userModules);
-        
+        if (handle != null)
+            handle.progress(2);
+
         FileObject dir = FileUtil.toFileObject(FileUtil.normalizeFile(dirF));
         
         // remember last used server
@@ -101,6 +112,10 @@ public class ImportBlueprintEarWizardIterator implements WizardDescriptor.Instan
         resultSet.add(dir);
         
         NewEarProjectWizardIterator.setProjectChooserFolder(dirF);
+        
+        if (handle != null)
+            handle.progress(NbBundle.getMessage(ImportBlueprintEarWizardIterator.class, "LBL_NewEarProjectWizardIterator_WizardProgress_PreparingToOpen"), 3);
+
         // Returning set of FileObject of project diretory.
         // Project will be open and set as main
         return resultSet;

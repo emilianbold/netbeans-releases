@@ -28,6 +28,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.clientproject.api.AppClientProjectGenerator;
@@ -57,7 +58,7 @@ import org.openide.util.NbBundle;
  * Wizard to create a new Enterprise Application project.
  * @author Jesse Glick
  */
-public class NewEarProjectWizardIterator implements WizardDescriptor.InstantiatingIterator {
+public class NewEarProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
     
     private static final long serialVersionUID = 1L;
     
@@ -82,6 +83,14 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.Instantiati
     }
     
     public Set instantiate() throws IOException {
+        assert false : "This method cannot be called if the class implements WizardDescriptor.ProgressInstantiatingIterator.";
+        return null;
+    }
+        
+    public Set<FileObject> instantiate(ProgressHandle handle) throws IOException {
+        handle.start(9);
+        handle.progress(NbBundle.getMessage(NewEarProjectWizardIterator.class, "LBL_NewEarProjectWizardIterator_WizardProgress_CreatingProject"), 1);
+        
         File dirF = (File) wiz.getProperty(WizardProperties.PROJECT_DIR);
         String name = (String) wiz.getProperty(WizardProperties.NAME);
         String serverInstanceID = (String) wiz.getProperty(WizardProperties.SERVER_INSTANCE_ID);
@@ -109,15 +118,17 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.Instantiati
         // remember last used server
         FoldersListSettings.getDefault().setLastUsedServer(serverInstanceID);
         return testableInstantiate(dirF,name,j2eeLevel, serverInstanceID, warName,
-                ejbJarName, carName, mainClass, platformName, sourceLevel);
+                ejbJarName, carName, mainClass, platformName, sourceLevel, handle);
     }
     
     /** <strong>Package private for unit test only</strong>. */
     static Set<FileObject> testableInstantiate(File dirF, String name, String j2eeLevel,
             String serverInstanceID, String warName, String ejbJarName, String carName,
-            String mainClass, String platformName, String sourceLevel) throws IOException {
+            String mainClass, String platformName, String sourceLevel, ProgressHandle handle) throws IOException {
         Set<FileObject> resultSet = new LinkedHashSet<FileObject>();
         AntProjectHelper h = EarProjectGenerator.createProject(dirF, name, j2eeLevel, serverInstanceID, sourceLevel);
+        if (handle != null)
+            handle.progress(2);
         FileObject dir = FileUtil.toFileObject(FileUtil.normalizeFile(dirF));
         Project p = ProjectManager.getDefault().findProject(dir);
         EarProject earProject = (EarProject) p.getLookup().lookup(EarProject.class);
@@ -150,8 +161,12 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.Instantiati
             createData.setContextPath('/' + warName); //NOI18N
             createData.setJavaPlatformName(platformName);
             createData.setSourceLevel(sourceLevel);
+            if (handle != null)
+                handle.progress(NbBundle.getMessage(NewEarProjectWizardIterator.class, "LBL_NewEarProjectWizardIterator_WizardProgress_WAR"), 3);
             AntProjectHelper webHelper = WebProjectUtilities.createProject(createData);           
-            
+            if (handle != null)
+                handle.progress(4);
+
             FileObject webAppDirFO = FileUtil.toFileObject(FileUtil.normalizeFile(webAppDir));
             webProject = ProjectManager.getDefault().findProject(webAppDirFO);
             epp.addJ2eeSubprojects(new Project[] { webProject });
@@ -160,10 +175,15 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.Instantiati
         Project appClient = null;
         if (null != carName) {
             File carDir = new File(dirF,carName);
+            if (handle != null)
+                handle.progress(NbBundle.getMessage(NewEarProjectWizardIterator.class, "LBL_NewEarProjectWizardIterator_WizardProgress_AppClient"), 5);
             AntProjectHelper clientHelper = AppClientProjectGenerator.createProject(
                     FileUtil.normalizeFile(carDir), carName, mainClass,
                     EarProjectGenerator.checkJ2eeVersion(j2eeLevel, serverInstanceID,
                     J2eeModule.CLIENT), serverInstanceID);
+            if (handle != null)
+                handle.progress(6);
+
             if (platformName != null || sourceLevel != null) {
                 AppClientProjectGenerator.setPlatform(clientHelper, platformName, sourceLevel);
             }
@@ -175,8 +195,13 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.Instantiati
         }
         if (null != ejbJarName) {
             File ejbJarDir = new File(dirF,ejbJarName);
+            if (handle != null)
+                handle.progress(NbBundle.getMessage(NewEarProjectWizardIterator.class, "LBL_NewEarProjectWizardIterator_WizardProgress_EJB"), 7);
             AntProjectHelper ejbHelper = EjbJarProjectGenerator.createProject(FileUtil.normalizeFile(ejbJarDir),ejbJarName,
                     EarProjectGenerator.checkJ2eeVersion(j2eeLevel, serverInstanceID, J2eeModule.EJB), serverInstanceID);
+            if (handle != null)
+                handle.progress(8);
+
             if (platformName != null || sourceLevel != null) {
                 EjbJarProjectGenerator.setPlatform(ejbHelper, platformName, sourceLevel);
             }
@@ -188,6 +213,10 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.Instantiati
         }
         updateModuleURI(warName, carName, epp);
         NewEarProjectWizardIterator.setProjectChooserFolder(dirF);
+        
+        if (handle != null)
+            handle.progress(NbBundle.getMessage(NewEarProjectWizardIterator.class, "LBL_NewEarProjectWizardIterator_WizardProgress_PreparingToOpen"), 9);
+        
         return resultSet;
     }
     
