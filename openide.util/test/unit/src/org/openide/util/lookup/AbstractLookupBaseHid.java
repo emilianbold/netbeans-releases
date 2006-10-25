@@ -28,9 +28,6 @@ import java.util.*;
 import junit.framework.*;
 import org.netbeans.junit.*;
 import java.io.Serializable;
-import org.openide.util.Lookup.Item;
-import org.openide.util.Lookup.Provider;
-import org.openide.util.Lookup.Result;
 import org.openide.util.Lookup.Template;
 
 public class AbstractLookupBaseHid extends NbTestCase {

@@ -22,7 +22,6 @@ package org.openide.util.lookup;
 import java.io.Serializable;
 import org.openide.util.*;
 
-import java.lang.ref.WeakReference;
 import java.util.*;
 import junit.framework.*;
 import org.netbeans.junit.*;
