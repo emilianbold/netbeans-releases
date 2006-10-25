@@ -27,6 +27,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.FoldersListSettings;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 
@@ -49,7 +50,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
  * Wizard to create a new Web project for an existing web module.
  * @author Pavel Buzek
  */
-public class ImportEjbJarProjectWizardIterator implements WizardDescriptor.InstantiatingIterator {
+public class ImportEjbJarProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
     
     private static final long serialVersionUID = 1L;
 //    private boolean imp = true;
@@ -70,7 +71,15 @@ public class ImportEjbJarProjectWizardIterator implements WizardDescriptor.Insta
         };
     }
 
-    public Set/*<DataObject>*/ instantiate() throws IOException/*, IllegalStateException*/ {
+    public Set instantiate() throws IOException/*, IllegalStateException*/ {
+        assert false : "This method cannot be called if the class implements WizardDescriptor.ProgressInstantiatingIterator.";
+        return null;
+    }
+        
+    public Set<FileObject> instantiate(ProgressHandle handle) throws IOException {
+        handle.start(3);
+        handle.progress(NbBundle.getMessage(ImportEjbJarProjectWizardIterator.class, "LBL_NewEjbJarProjectWizardIterator_WizardProgress_CreatingProject"), 1);
+        
         Set resultSet = new HashSet ();
         File dirF = (File) wiz.getProperty(WizardProperties.PROJECT_DIR);
         if (dirF != null) {
@@ -85,6 +94,7 @@ public class ImportEjbJarProjectWizardIterator implements WizardDescriptor.Insta
         String j2eeLevel = (String) wiz.getProperty(WizardProperties.J2EE_LEVEL);
         
         AntProjectHelper h = EjbJarProjectGenerator.importProject(dirF, name, sourceFolders, testFolders, configFilesFolder, libName, j2eeLevel, serverInstanceID);
+        handle.progress(2);
         FileObject dir = FileUtil.toFileObject (dirF);
 
         Project earProject = (Project) wiz.getProperty(WizardProperties.EAR_APPLICATION);
@@ -104,7 +114,7 @@ public class ImportEjbJarProjectWizardIterator implements WizardDescriptor.Insta
         }
         
         // remember last used server
-	FoldersListSettings.getDefault().setLastUsedServer(serverInstanceID);
+        FoldersListSettings.getDefault().setLastUsedServer(serverInstanceID);
         
         // downgrade the Java platform or src level to 1.4        
         String platformName = (String)wiz.getProperty(WizardProperties.JAVA_PLATFORM);
@@ -112,7 +122,9 @@ public class ImportEjbJarProjectWizardIterator implements WizardDescriptor.Insta
         if (platformName != null || sourceLevel != null) {
             EjbJarProjectGenerator.setPlatform(h, platformName, sourceLevel);
         }
-                        
+                
+        handle.progress(NbBundle.getMessage(ImportEjbJarProjectWizardIterator.class, "LBL_NewEjbJarProjectWizardIterator_WizardProgress_PreparingToOpen"), 3);
+
         return resultSet;
     }
     
