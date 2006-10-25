@@ -284,19 +284,21 @@
             The module is used during runtime. 
             </api>
         </li>            
-        <li><api type='import' group='java' category='stable' name='MDRAPI' url='../org-netbeans-api-mdr/overview-summary.html'>
+<!--retouche:-->       
+<!--        <li><api type='import' group='java' category='stable' name='MDRAPI' url='../org-netbeans-api-mdr/overview-summary.html'>
             The module is needed for compilation. 
         
             The module is used during runtime. 
             </api>
-        </li>            
+        </li>            -->
         <li><api type='import' group='java' category='devel' name='MultiView' url='../org-netbeans-core-multiview/overview-summary.html'>
             The module is needed for compilation. 
         
             The module is used during runtime. 
             </api>
         </li>            
-        <li><api type='import' group='java' category='private' name='org.netbeans.jmi.javamodel' url='../org-netbeans-jmi-javamodel/overview-summary.html'>
+<!--retouche:-->       
+<!--        <li><api type='import' group='java' category='private' name='org.netbeans.jmi.javamodel' url='../org-netbeans-jmi-javamodel/overview-summary.html'>
             The module is needed for compilation. 
         
             The module is used during runtime. 
@@ -313,7 +315,7 @@
         
             The module is used during runtime. 
             </api>
-        </li>            
+        </li>            -->
         <li><api type='import' group='java' category='official' name='JavaPlatformAPI' url='../org-netbeans-modules-java-platform/overview-summary.html'>
             The module is needed for compilation. 
         
@@ -326,12 +328,13 @@
             The module is used during runtime. 
             </api>
         </li>            
-        <li><api type='import' group='java' category='devel' name='JavaCoreAPI' url='../org-netbeans-modules-javacore/overview-summary.html'>
+<!--retouche:-->       
+<!--        <li><api type='import' group='java' category='devel' name='JavaCoreAPI' url='../org-netbeans-modules-javacore/overview-summary.html'>
             The module is needed for compilation. 
         
             The module is used during runtime. 
             </api>
-        </li>            
+        </li>            -->
         <li><api type='import' group='java' category='official' name='ProjectAPI' url='../org-netbeans-modules-projectapi/overview-summary.html'>
             The module is needed for compilation. 
         
@@ -443,8 +446,9 @@
                 1.0
                 is required.
             </api>
-        </li>            
-        <li><api type='import' group='java' category='official' name='JavaHierarchyAPI' url='../org-openide-src/overview-summary.html'>
+        </li>     
+<!--retouche:-->       
+<!--        <li><api type='import' group='java' category='official' name='JavaHierarchyAPI' url='../org-openide-src/overview-summary.html'>
             The module is needed for compilation. 
         
             The module is used during runtime. 
@@ -453,7 +457,7 @@
                 1.0
                 is required.
             </api>
-        </li>            
+        </li>            -->
         <li><api type='import' group='java' category='official' name='WindowSystemAPI' url='../org-openide-windows/overview-summary.html'>
             The module is needed for compilation. 
         
