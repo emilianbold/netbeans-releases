@@ -40,6 +40,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
+import org.netbeans.api.progress.ProgressHandle;
 
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 import org.netbeans.modules.web.api.webmodule.WebFrameworkSupport;
@@ -53,7 +54,7 @@ import org.netbeans.modules.web.project.ui.FoldersListSettings;
  * Wizard to create a new Web project.
  * @author Jesse Glick, Radko Najman
  */
-public class NewWebProjectWizardIterator implements WizardDescriptor.InstantiatingIterator/*, TableModelListener*/ {
+public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
     
     private static final long serialVersionUID = 1L;
     
@@ -78,7 +79,16 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.Instantiati
     }
     
     public Set instantiate() throws IOException {
+        assert false : "This method cannot be called if the class implements WizardDescriptor.ProgressInstantiatingIterator.";
+        return null;
+    }
+        
+    public Set<FileObject> instantiate(ProgressHandle handle) throws IOException {
+        handle.start(4);
+        handle.progress(NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NewWebProjectWizardIterator_WizardProgress_CreatingProject"), 1);
+        
         Set resultSet = new HashSet();
+
         File dirF = (File) wiz.getProperty(WizardProperties.PROJECT_DIR);
         String servInstID = (String) wiz.getProperty(WizardProperties.SERVER_INSTANCE_ID);
         
@@ -92,6 +102,8 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.Instantiati
         createData.setJavaPlatformName((String) wiz.getProperty(WizardProperties.JAVA_PLATFORM));
         createData.setSourceLevel((String) wiz.getProperty(WizardProperties.SOURCE_LEVEL));
         AntProjectHelper h = WebProjectUtilities.createProject(createData);
+        handle.progress(2);
+        
         FileObject webRoot = h.getProjectDirectory().getFileObject("web");//NOI18N
         FileObject indexJSPFo = getIndexJSPFO(webRoot, "index"); //NOI18N
         assert indexJSPFo != null : "webRoot: " + webRoot + ", defaultJSP: index";//NOI18N
@@ -107,6 +119,7 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.Instantiati
         wiz.putProperty(WizardProperties.NAME, null); // reset project name
 
         Project earProject = (Project) wiz.getProperty(WizardProperties.EAR_APPLICATION);
+        
         WebProject createdWebProject = (WebProject) ProjectManager.getDefault().findProject(dir);
         if (earProject != null && createdWebProject != null) {
             Ear ear = Ear.getEar(earProject.getProjectDirectory());
@@ -115,8 +128,8 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.Instantiati
             }
         }
 
-	//remember last used server
-	FoldersListSettings.getDefault().setLastUsedServer(servInstID);
+        //remember last used server
+        FoldersListSettings.getDefault().setLastUsedServer(servInstID);
 	
         // save last project location
         dirF = (dirF != null) ? dirF.getParentFile() : null;
@@ -129,12 +142,16 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.Instantiati
         //add framework extensions
         List selectedFrameworks = (List) wiz.getProperty(WizardProperties.FRAMEWORKS);
         if (selectedFrameworks != null){
+            handle.progress(NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NewWebProjectWizardIterator_WizardProgress_AddingFrameworks"), 3);
             for(int i = 0; i < selectedFrameworks.size(); i++) {
                 Object o = ((WebFrameworkProvider) selectedFrameworks.get(i)).extend(createdWebProject.getAPIWebModule());
                 if (o != null && o instanceof Set)
                     resultSet.addAll((Set)o);
             }
         }
+        
+        handle.progress(NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NewWebProjectWizardIterator_WizardProgress_PreparingToOpen"), 4);
+
         // Returning set of FileObject of project diretory. 
         // Project will be open and set as main
         return resultSet;

@@ -34,6 +34,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.progress.ProgressHandle;
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -42,7 +43,6 @@ import org.openide.WizardValidationException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.TemplateWizard;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -57,13 +57,12 @@ import org.netbeans.modules.web.project.api.WebProjectUtilities;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.api.WebProjectCreateData;
 import org.netbeans.modules.web.project.ui.FoldersListSettings;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
 
 /**
  * Wizard to create a new Web project for an existing web module.
  * @author Pavel Buzek, Radko Najman
  */
-public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
+public class ImportWebProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
     
     private static final long serialVersionUID = 1L;
     private String buildfileName = GeneratedFilesHelper.BUILD_XML_PATH;
@@ -87,7 +86,17 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
         };
     }
     
-    public Set/*<DataObject>*/ instantiate(TemplateWizard wiz) throws IOException/*, IllegalStateException*/ {
+    public Set instantiate() throws IOException {
+        assert false : "This method cannot be called if the class implements WizardDescriptor.ProgressInstantiatingIterator.";
+        return null;
+    }
+        
+    public Set<FileObject> instantiate(ProgressHandle handle) throws IOException {
+        handle.start(3);
+        handle.progress(NbBundle.getMessage(ImportWebProjectWizardIterator.class, "LBL_NewWebProjectWizardIterator_WizardProgress_CreatingProject"), 1);
+        
+        Set resultSet = new HashSet();
+        
         File dirF = (File) wiz.getProperty(WizardProperties.PROJECT_DIR);
         if (dirF != null) {
             dirF = FileUtil.normalizeFile(dirF);
@@ -149,8 +158,12 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
         createData.setJavaPlatformName((String) wiz.getProperty(WizardProperties.JAVA_PLATFORM));
         createData.setSourceLevel((String) wiz.getProperty(WizardProperties.SOURCE_LEVEL));
         WebProjectUtilities.importProject(createData);       
+        handle.progress(2);
         
         FileObject dir = FileUtil.toFileObject(dirF);
+        
+        resultSet.add(dir);
+        
         Project earProject = (Project) wiz.getProperty(WizardProperties.EAR_APPLICATION);
         WebProject createdWebProject = (WebProject) ProjectManager.getDefault().findProject(dir);
         if (earProject != null && createdWebProject != null) {
@@ -171,10 +184,12 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
         }
         wiz.putProperty(WizardProperties.NAME, null); // reset project name
 
-	//remember last used server
-	FoldersListSettings.getDefault().setLastUsedServer(serverInstanceID);
+        //remember last used server
+        FoldersListSettings.getDefault().setLastUsedServer(serverInstanceID);
 
-        return Collections.singleton(DataObject.find(dir));
+        handle.progress(NbBundle.getMessage(ImportWebProjectWizardIterator.class, "LBL_NewWebProjectWizardIterator_WizardProgress_PreparingToOpen"), 3);
+        
+        return resultSet;
     }
     
     private String getBuildfile() {
@@ -187,8 +202,10 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
 
     private transient int index;
     private transient WizardDescriptor.Panel[] panels;
+    private transient WizardDescriptor wiz;
 
-    public void initialize(TemplateWizard wiz) {
+    public void initialize(WizardDescriptor wiz) {
+        this.wiz = wiz;
         index = 0;
         panels = createPanels();
         // Make sure list of steps is accurate.
@@ -211,7 +228,8 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
             }
         }
     }
-    public void uninitialize(TemplateWizard wiz) {
+    public void uninitialize(WizardDescriptor wiz) {
+        this.wiz = null;
         panels = null;
     }
     
