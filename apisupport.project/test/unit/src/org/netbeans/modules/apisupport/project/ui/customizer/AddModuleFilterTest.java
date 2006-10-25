@@ -59,7 +59,7 @@ public class AddModuleFilterTest extends TestBase {
         // JAR:
         assertMatches("boot.jar", new String[] {"org.netbeans.bootstrap"});
         // Class-Path JAR:
-        assertMatches("mof.jar", new String[] {"javax.jmi.model"});
+        assertMatches("project-ant.jar", new String[] {"org.netbeans.modules.project.ant"});
         // Display name:
         assertMatches("demo library", new String[] {"org.netbeans.examples.modules.lib"});
     }

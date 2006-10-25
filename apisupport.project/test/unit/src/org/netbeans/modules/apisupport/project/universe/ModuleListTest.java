@@ -182,9 +182,9 @@ public class ModuleListTest extends TestBase {
         assertEquals("right source location", file(suite1, "action-project"), e.getSourceLocation());
         assertTrue("same by JAR", ModuleList.getKnownEntries(e.getJarLocation()).contains(e));
         assertEquals("right codeNameBase", "org.netbeans.examples.modules.action", e.getCodeNameBase());
-        e = ml.getEntry("org.netbeans.modules.beans");
-        assertNotNull("can find nb.org sources too (beans module must be built)", e);
-        assertEquals("correct nb.org source location", file("beans"), e.getSourceLocation());
+        e = ml.getEntry("org.netbeans.modules.classfile");
+        assertNotNull("can find nb.org sources too (classfile module must be built)", e);
+        assertEquals("correct nb.org source location", file("classfile"), e.getSourceLocation());
         assertNotNull("localized name", e.getLocalizedName());
         assertNotNull("display category", e.getCategory());
         assertNotNull("short description", e.getShortDescription());
@@ -235,7 +235,7 @@ public class ModuleListTest extends TestBase {
         ml = ModuleList.getModuleList(file(standaloneSuite3, "dummy-project"));
         e = ml.getEntry("org.netbeans.examples.modules.dummy");
         assertNotNull("can find myself", e);
-        e = ml.getEntry("org.netbeans.modules.beans");
+        e = ml.getEntry("org.netbeans.modules.classfile");
         assertNotNull("found (fake) nb.org module", e);
         assertNull("...without sources", e.getSourceLocation());
         assertEquals("and with a special JAR location", file(standaloneSuite3, "nbplatform/random/modules/random.jar"), e.getJarLocation());
