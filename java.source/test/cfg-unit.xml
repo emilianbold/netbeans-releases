@@ -43,8 +43,6 @@ Microsystems, Inc. All Rights Reserved.
                 <exclude name="org/netbeans/api/java/source/gen/LabelsTest.class"/>
                 <exclude name="org/netbeans/api/java/source/gen/CompareTreeTest.class"/>
                 <exclude name="org/netbeans/api/java/source/gen/MethodCreationTest.class"/>
-                <!-- Constructor test temporarily excluded. Filter the syntetic constructors! -->
-                <exclude name="org/netbeans/api/java/source/gen/ConstructorTest.class"/>
             </patternset>
         </testset>
     </testbag>
