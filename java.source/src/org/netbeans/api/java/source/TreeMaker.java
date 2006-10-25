@@ -37,7 +37,26 @@ import org.netbeans.modules.java.builder.CommentHandlerService;
 /**
  * Factory interface for creating new com.sun.source.tree instances.  The
  * parameters for each method correspond as closely as possible to the 
- * accessor methods for each tree interface.
+ * accessor methods for each tree interface.<br>
+ *
+ * You can obtain appropriate instance of this class by getting it from working
+ * copy:
+ *
+ * <pre>
+ * CancellableTask task = new CancellableTask<WorkingCopy>() {
+ *
+ *        public void run(WorkingCopy workingCopy) throws Exception {
+ *            <b>TreeMaker make = workingCopy.getTreeMaker()</b>;
+ *            ... your modification code here
+ *        }
+ *        ...
+ *    }; 
+ * </pre>
+ *
+ * @see <a href="http://wiki.netbeans.info/wiki/view/JavaHT_Modification">How do I do modification to a source file?</a> 
+ *
+ * @author Tom Ball
+ * @author Pavel Flaska
  */
 public final class TreeMaker {
     
@@ -969,6 +988,7 @@ public final class TreeMaker {
      *
      * You can get it e.g. with this code:
      * <pre>
+     *   TreeMaker make = workingCopy.getTreeMaker();
      *   ClassTree node = ...;
      *   // create method modifiers
      *    ModifiersTree parMods = make.Modifiers(Collections.EMPTY_SET, Collections.EMPTY_LIST);
@@ -993,7 +1013,7 @@ public final class TreeMaker {
      *       null // default value - not applicable here, used by annotations
      *   );
      *   // rewrite the original class node with the new one containing newMethod
-     *   changes.rewrite(node, <b>make.addClassMember(node, newMethod)</b>);
+     *   workingCopy.rewrite(node, <b>make.addClassMember(node, newMethod)</b>);
      * </pre>
      *
      * @param   clazz    class tree containing members list.
@@ -2097,7 +2117,7 @@ public final class TreeMaker {
      * <pre>
      *   MethodTree footMet = <I>contains footMet tree</I>;
      *   MethodTree fooMethod = make.setLabel(fooMet, "fooMethod");
-     *   changes.rewrite(node, njuMethod);
+     *   workingCopy.rewrite(node, njuMethod);
      * </pre>
      *
      * This code will result to:
@@ -2115,12 +2135,126 @@ public final class TreeMaker {
      *         <tt>node</tt> does not contain any name or <tt>String</tt>.
      * @return  duplicated <tt>node</tt> with a new name
      */
-    public <N extends Tree> N setLabel(final N node, final CharSequence aLabel) 
-            throws IllegalArgumentException {
+    public <N extends Tree> N setLabel(final N node, final CharSequence aLabel) {
         return delegate.setLabel(node, aLabel);
     }
 
-
+    /**
+     * Replaces extends clause in class declaration. Consider you want to make 
+     * <code>Matricale</code> class extending class <code>Yerba</code>.
+     *
+     * You have the class available:
+     *
+     * <pre>
+     *   public class Matricale {
+     *       ...
+     *   }
+     * </pre>
+     *
+     * Running following code:
+     * <pre>
+     *   TreeMaker make = workingCopy.getTreeMaker();
+     *   ClassTree matricale = <i>contains Matricale class</i>;
+     *   ClassTree modified = make.setExtends(matricale, make.Identifier("Yerba"));
+     *   workingCopy.rewrite(matricale, modified);
+     * </pre>
+     *
+     * will result to:
+     *
+     * <pre>
+     *   public class Matricale extends Yerba {
+     *       ....
+     *   }
+     * </pre>
+     *
+     * Note: It does not apply for interface declaration. For interfaces
+     * declaration, use implements clause in <code>ClassTree</code> for
+     * changed extends clause. It is a workaround allowing to extends more
+     * interfaces.
+     *
+     * @param node     class where the extends clause will be replaced
+     * @param extendz  new extends identifier or member select.
+     * @return         node's copy with new extends clause
+     */
+    public ClassTree setExtends(final ClassTree node, final ExpressionTree extendz) {
+        ClassTree copy = Class(
+                node.getModifiers(),
+                node.getSimpleName(),
+                node.getTypeParameters(),
+                extendz,
+                (List<ExpressionTree>) node.getImplementsClause(), // bug
+                node.getMembers()
+        );
+        return copy;
+    }
+    
+    /**
+     * Replaces initializer in appropriate element. Allowed types for node
+     * are <code>MethodTree</code> and <code>VariableTree</code>. Initial
+     * value is available for variables except the parameters. Fields and
+     * local variables can be passed to the method. In addition to, annotation
+     * attribute represented by <code>MethodTree</code> is also valid value.
+     *
+     * Consider you have declaration:
+     *
+     * <pre>
+     *   public static String cedron;
+     * </pre>
+     *
+     * Running following code:
+     * <pre>
+     *   TreeMaker make = workingCopy.getTreeMaker();
+     *   VariableTree cedron = <i>contains cedron field</i>;
+     *   Literal initialValue = make.Literal("This is a cedron.");
+     *   VariableTree modified = make.setInitialValue(cedron, literal);
+     *   workingCopy.rewrite(matricale, modified);
+     * </pre>
+     *
+     * will result to:
+     *
+     * <pre>
+     *   public static String cedron = "This is a cedron.";
+     * </pre>
+     *
+     * @param node         replace the initial value in node
+     * @param initializer  new initial value
+     * @throws java.lang.IllegalArgumentException  if the user provides
+     *         illegal <code>node</code>'s kind, i.e. if the provided
+     *         <code>node</code> is neither <code>MethodTree</code> nor
+     *         <code>VariableTree</code>
+     * @return  node's copy with new initializer
+     */
+    public <N extends Tree> N setInitialValue(final N node, ExpressionTree initializer) {
+        switch (node.getKind()) {
+            case VARIABLE: {
+                VariableTree t = (VariableTree) node;
+                N clone = (N) Variable(
+                    t.getModifiers(),
+                    t.getName(),
+                    t.getType(),
+                    initializer
+                );
+                return clone;
+            }
+            case METHOD: {
+                MethodTree t = (MethodTree) node;
+                N clone = (N) Method(
+                    t.getModifiers(),
+                    t.getName(),
+                    t.getReturnType(),
+                    t.getTypeParameters(),
+                    t.getParameters(),
+                    t.getThrows(),
+                    t.getBody(),
+                    initializer
+                );
+                return clone;
+            }
+            default:
+                throw new IllegalArgumentException("Invalid kind " + node.getKind());
+        }
+    }
+    
     //comment handling:
     /**Append a comment to the list of comments attached to a given tree.
      *

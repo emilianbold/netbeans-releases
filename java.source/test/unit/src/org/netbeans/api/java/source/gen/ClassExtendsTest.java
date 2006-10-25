@@ -133,14 +133,15 @@ public class ClassExtendsTest extends GeneratorTestMDRCompat {
                     // ensure that it is correct type declaration, i.e. class
                     if (Tree.Kind.CLASS == typeDecl.getKind()) {
                         ClassTree classTree = (ClassTree) typeDecl;
-                        ClassTree copy = make.Class(
-                                classTree.getModifiers(),
-                                classTree.getSimpleName(),
-                                classTree.getTypeParameters(),
-                                make.Identifier("String"),
-                                (List<ExpressionTree>) classTree.getImplementsClause(),
-                                classTree.getMembers()
-                            );
+                        ClassTree copy = make.setExtends(classTree, make.Identifier("String"));
+//                        ClassTree copy = make.Class(
+//                                classTree.getModifiers(),
+//                                classTree.getSimpleName(),
+//                                classTree.getTypeParameters(),
+//                                make.Identifier("String"),
+//                                (List<ExpressionTree>) classTree.getImplementsClause(),
+//                                classTree.getMembers()
+//                            );
                         workingCopy.rewrite(classTree, copy);
                     }
                 }
