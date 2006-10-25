@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
@@ -44,7 +45,7 @@ import org.openide.util.NbBundle;
  * Wizard to create a new Application Client project for an existing one.
  * @author Pavel Buzek
  */
-public class ImportAppClientProjectWizardIterator implements WizardDescriptor.InstantiatingIterator {
+public class ImportAppClientProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
     
     private static final long serialVersionUID = 1L;
 //    private boolean imp = true;
@@ -63,6 +64,14 @@ public class ImportAppClientProjectWizardIterator implements WizardDescriptor.In
     }
 
     public Set<FileObject> instantiate() throws IOException/*, IllegalStateException*/ {
+        assert false : "This method cannot be called if the class implements WizardDescriptor.ProgressInstantiatingIterator.";
+        return null;
+    }
+        
+    public Set<FileObject> instantiate(ProgressHandle handle) throws IOException {
+        handle.start(3);
+        handle.progress(NbBundle.getMessage(ImportAppClientProjectWizardIterator.class, "LBL_NewAppClientProjectWizardIterator_WizardProgress_CreatingProject"), 1);
+        
         Set<FileObject> resultSet = new HashSet<FileObject>();
         File dirF = (File) wiz.getProperty(WizardProperties.PROJECT_DIR);
         if (dirF != null) {
@@ -78,6 +87,8 @@ public class ImportAppClientProjectWizardIterator implements WizardDescriptor.In
         String j2eeLevel = (String) wiz.getProperty(WizardProperties.J2EE_LEVEL);
         
         AntProjectHelper h = AppClientProjectGenerator.importProject(dirF, name, sourceFolders, testFolders, configFilesFolder, libName, j2eeLevel, serverInstanceID);
+        handle.progress(2);
+        
         FileObject dir = FileUtil.toFileObject (dirF);
 
         Project earProject = (Project) wiz.getProperty(WizardProperties.EAR_APPLICATION);
@@ -105,7 +116,9 @@ public class ImportAppClientProjectWizardIterator implements WizardDescriptor.In
         if (platformName != null || sourceLevel != null) {
             AppClientProjectGenerator.setPlatform(h, platformName, sourceLevel);
         }
-                        
+                
+        handle.progress(NbBundle.getMessage(ImportAppClientProjectWizardIterator.class, "LBL_NewAppClientProjectWizardIterator_WizardProgress_PreparingToOpen"), 3);
+        
         return resultSet;
     }
     

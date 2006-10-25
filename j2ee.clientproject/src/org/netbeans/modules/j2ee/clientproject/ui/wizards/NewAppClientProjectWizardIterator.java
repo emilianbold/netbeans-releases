@@ -28,6 +28,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
@@ -45,7 +46,7 @@ import org.openide.util.NbBundle;
 /**
  * Wizard to create a new Application Client project.
  */
-public class NewAppClientProjectWizardIterator implements WizardDescriptor.InstantiatingIterator {
+public class NewAppClientProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
     
     static final String PROP_NAME_INDEX = "nameIndex";      //NOI18N
     
@@ -69,6 +70,14 @@ public class NewAppClientProjectWizardIterator implements WizardDescriptor.Insta
     
     
     public Set<FileObject> instantiate() throws IOException {
+        assert false : "This method cannot be called if the class implements WizardDescriptor.ProgressInstantiatingIterator.";
+        return null;
+    }
+        
+    public Set<FileObject> instantiate(ProgressHandle handle) throws IOException {
+        handle.start(3);
+        handle.progress(NbBundle.getMessage(NewAppClientProjectWizardIterator.class, "LBL_NewAppClientProjectWizardIterator_WizardProgress_CreatingProject"), 1);
+        
         Set<FileObject> resultSet = new HashSet<FileObject>();
         File dirF = (File)wiz.getProperty(WizardProperties.PROJECT_DIR);
         if (dirF != null) {
@@ -81,6 +90,8 @@ public class NewAppClientProjectWizardIterator implements WizardDescriptor.Insta
         String j2eeLevel = (String) wiz.getProperty(WizardProperties.J2EE_LEVEL);
         
         AntProjectHelper h = AppClientProjectGenerator.createProject(dirF, name, mainClass, j2eeLevel, serverInstanceID);
+        handle.progress(2);
+        
         if (mainClass != null && mainClass.length() > 0) {
             try {
                 //String sourceRoot = "src"; //(String)j2seProperties.get (J2SEProjectProperties.SRC_DIR);
@@ -105,7 +116,7 @@ public class NewAppClientProjectWizardIterator implements WizardDescriptor.Insta
         }
         
         // remember last used server
-	FoldersListSettings.getDefault().setLastUsedServer(serverInstanceID);
+        FoldersListSettings.getDefault().setLastUsedServer(serverInstanceID);
         
         // downgrade the Java platform or src level to 1.4
         String platformName = (String)wiz.getProperty(WizardProperties.JAVA_PLATFORM);
@@ -124,6 +135,8 @@ public class NewAppClientProjectWizardIterator implements WizardDescriptor.Insta
         if (dirF != null && dirF.exists()) {
             ProjectChooser.setProjectsFolder(dirF);
         }
+        
+        handle.progress(NbBundle.getMessage(NewAppClientProjectWizardIterator.class, "LBL_NewAppClientProjectWizardIterator_WizardProgress_PreparingToOpen"), 3);
         
         return resultSet;
     }
