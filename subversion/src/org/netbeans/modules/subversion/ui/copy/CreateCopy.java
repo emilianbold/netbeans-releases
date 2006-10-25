@@ -18,15 +18,13 @@
  */
 package org.netbeans.modules.subversion.ui.copy;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.net.MalformedURLException;
-import javax.swing.JButton;
-import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
@@ -42,41 +40,55 @@ import org.openide.util.NbBundle;
  *
  * @author Tomas Stupka
  */
-public class CreateCopy extends CopyDialog implements DocumentListener, FocusListener {
-   
-    private CopyRepositoryPaths repositoryPaths;
+public class CreateCopy extends CopyDialog implements DocumentListener, FocusListener, ActionListener {
+
+    private final RepositoryPaths copyToRepositoryPaths;
+    private final RepositoryPaths copyFromRepositoryPaths;
+    
     private final File localeFile;
+    private final RepositoryFile repositoryFile;
+    private final boolean localChanges;
     
     /** Creates a new instance of CreateCopy */
-    public CreateCopy(RepositoryFile repositoryRoot, File localeFile, boolean localChanges) {        
+    public CreateCopy(RepositoryFile repositoryFile, File localeFile, boolean localChanges) {        
         super(new CreateCopyPanel(), NbBundle.getMessage(CreateCopy.class, "CTL_CopyDialog_Prompt", localeFile.getName()), NbBundle.getMessage(CreateCopy.class, "CTL_CopyDialog_Title")); // NOI18N
         
         this.localeFile = localeFile;        
-        final CreateCopyPanel panel = getCreateCopyPanel();        
+        this.repositoryFile = repositoryFile;
+        this.localChanges = localChanges;
         
-        panel.warningLabel.setVisible(localChanges);                              
-        panel.copyFromTextField.setText(localeFile.getAbsolutePath());                              
-        panel.switchToWarningLabel.setVisible(false);
-        if(localChanges) {
-            panel.switchToCheckBox.addItemListener(new ItemListener() {
-                public void itemStateChanged(ItemEvent arg0) {
-                    panel.switchToWarningLabel.setVisible(panel.switchToCheckBox.isSelected());
-                }
-            });
-        }
+        CreateCopyPanel panel = getCreateCopyPanel();                
+                       
+        panel.localRadioButton.addActionListener(this);        
+        panel.remoteRadioButton.addActionListener(this);        
+        panel.skipCheckBox.addActionListener(this);        
+
+        panel.copyFromLocalTextField.setText(localeFile.getAbsolutePath());
+        panel.copyFromRemoteTextField.setText(repositoryFile.getFileUrl().toString());        
+        
+        copyFromRepositoryPaths = 
+            new RepositoryPaths(
+                repositoryFile, 
+                panel.copyFromRemoteTextField,
+                null,
+                panel.copyFromRevisionTextField,
+                panel.searchButton
+            );
+        
         if(localeFile.isFile()) {
-            panel.copyFromLabel.setText(org.openide.util.NbBundle.getMessage(CreateCopy.class, "CTL_CopyForm_fromFile"));               // NOI18N
-            panel.copyToLabel.setText(org.openide.util.NbBundle.getMessage(CreateCopy.class, "CTL_CopyForm_toFile"));                   // NOI18N
+            panel.localRadioButton.setText(org.openide.util.NbBundle.getMessage(CreateCopy.class, "CTL_CopyForm_fromLocalFile"));               // NOI18N
+            panel.remoteRadioButton.setText(org.openide.util.NbBundle.getMessage(CreateCopy.class, "CTL_CopyForm_fromRemoteFile"));             // NOI18N            
+            panel.skipCheckBox.setEnabled(false);
         } else {
-            panel.copyFromLabel.setText(org.openide.util.NbBundle.getMessage(CreateCopy.class, "CTL_CopyForm_fromFolder"));             // NOI18N
-            panel.copyToLabel.setText(org.openide.util.NbBundle.getMessage(CreateCopy.class, "CTL_CopyForm_toFolder"));                 // NOI18N
+            panel.localRadioButton.setText(org.openide.util.NbBundle.getMessage(CreateCopy.class, "CTL_CopyForm_fromLocalFolder"));             // NOI18N            
+            panel.remoteRadioButton.setText(org.openide.util.NbBundle.getMessage(CreateCopy.class, "CTL_CopyForm_fromRemoteFolder"));           // NOI18N
         }        
         
-        panel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CreateCopy.class, "CTL_CopyDialog_Title"));           // NOI18N
+        panel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CreateCopy.class, "CTL_CopyDialog_Title"));                   // NOI18N
         
-        repositoryPaths = 
-            new CopyRepositoryPaths(
-                repositoryRoot, 
+        copyToRepositoryPaths = 
+            new RepositoryPaths(
+                repositoryFile, 
                 (JTextComponent) panel.urlComboBox.getEditor().getEditorComponent(),
                 panel.browseRepositoryButton,
                 null,
@@ -85,21 +97,21 @@ public class CreateCopy extends CopyDialog implements DocumentListener, FocusLis
                 
         String browserPurposeMessage = "";
         if(localeFile.isFile()) {
-            browserPurposeMessage = org.openide.util.NbBundle.getMessage(CreateCopy.class, "LBL_BrowserMessageCopyFile");               // NOI18N
+            browserPurposeMessage = org.openide.util.NbBundle.getMessage(CreateCopy.class, "LBL_BrowserMessageCopyFile");                       // NOI18N
         } else {
-            browserPurposeMessage = org.openide.util.NbBundle.getMessage(CreateCopy.class, "LBL_BrowserMessageCopyFolder");             // NOI18N
+            browserPurposeMessage = org.openide.util.NbBundle.getMessage(CreateCopy.class, "LBL_BrowserMessageCopyFolder");                     // NOI18N
         }
 
         String defaultFolderName = localeFile.isFile() ? "" : localeFile.getName();
         int browserMode = Browser.BROWSER_SINGLE_SELECTION_ONLY;
-        repositoryPaths.setupBrowserBehavior(browserPurposeMessage, browserMode, new BrowserAction[] { new CreateFolderAction(defaultFolderName)} );                
-        repositoryPaths.addPropertyChangeListener(this);
+        copyToRepositoryPaths.setupBrowserBehavior(browserPurposeMessage, browserMode, new BrowserAction[] { new CreateFolderAction(defaultFolderName)} );                
+        copyToRepositoryPaths.addPropertyChangeListener(this);
 
-        setupUrlComboBox(panel.urlComboBox, CreateCopy.class.getName());
-        
-        //repositoryPaths.setRepositoryTextField(defaultFolderName);
-                
+        setupUrlComboBox(panel.urlComboBox, CreateCopy.class.getName());                        
         panel.messageTextArea.getDocument().addDocumentListener(this);
+        ((JTextComponent) panel.urlComboBox.getEditor().getEditorComponent()).getDocument().addDocumentListener(this);
+        
+        setFromLocal();
     }       
     
     protected void validateUserInput() {                        
@@ -109,7 +121,7 @@ public class CreateCopy extends CopyDialog implements DocumentListener, FocusLis
             return;
         }        
         try {
-            RepositoryFile rf[] = repositoryPaths.getRepositoryFiles();
+            RepositoryFile rf[] = copyToRepositoryPaths.getRepositoryFiles();
             if(rf == null || rf.length == 0) {
                 getOKButton().setEnabled(false);        
                 return;
@@ -128,40 +140,88 @@ public class CreateCopy extends CopyDialog implements DocumentListener, FocusLis
         return (CreateCopyPanel) getPanel();
     }
     
-    RepositoryFile getRepositoryFile() {
+    RepositoryFile getToRepositoryFile() {
         try {
-            return repositoryPaths.getRepositoryFiles()[0];
+            return getToRepositoryFileIntern();
         } catch (MalformedURLException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); // should not happen
+        } catch (NumberFormatException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); // should not happen
         }
         return null;
+    }
+
+    private RepositoryFile getToRepositoryFileIntern() throws NumberFormatException, MalformedURLException {
+        RepositoryFile[] toRepositoryFiles = copyToRepositoryPaths.getRepositoryFiles();
+        if(toRepositoryFiles.length > 0) {
+            RepositoryFile toRepositoryFile = toRepositoryFiles[0];
+            if(skipContents()) {
+                return toRepositoryFile;                
+            } else {
+                if(isLocal()) {
+                    return toRepositoryFile.appendPath(localeFile.getName());   
+                } else {
+                    return toRepositoryFile.appendPath(repositoryFile.getFileUrl().getLastPathSegment());   
+                }             
+            }
+        } else {
+            return null;
+        }
     }
 
     String getMessage() {
         return getCreateCopyPanel().messageTextArea.getText();
     }
 
-    boolean getSwitchTo() {
+    boolean isLocal() {
+        return getCreateCopyPanel().localRadioButton.isSelected();        
+    }
+    
+    File getLocalFile() {
+        return localeFile;
+    }
+    
+    RepositoryFile getFromRepositoryFile() {
+        try {
+            return copyFromRepositoryPaths.getRepositoryFiles()[0];
+        }
+        catch (MalformedURLException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); // should not happen
+        } catch (NumberFormatException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); // should not happen
+        }
+        return null;
+    }
+    
+    boolean switchTo() {
         return getCreateCopyPanel().switchToCheckBox.isSelected();
     }
 
+    boolean skipContents() {
+        return getCreateCopyPanel().skipCheckBox.isSelected();
+    }
+    
     public void insertUpdate(DocumentEvent e) {
         validateUserInput();
+        setPreview();
     }
 
     public void removeUpdate(DocumentEvent e) {
-        validateUserInput();
+        validateUserInput();        
+        setPreview();        
     }
 
     public void changedUpdate(DocumentEvent e) {
-        validateUserInput();
+        validateUserInput();        
+        setPreview();        
     }
 
     public void focusGained(FocusEvent e) {
     }
 
     public void focusLost(FocusEvent e) {
-        validateUserInput();
+        validateUserInput();        
+        setPreview();        
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
@@ -175,35 +235,49 @@ public class CreateCopy extends CopyDialog implements DocumentListener, FocusLis
             }            
         }        
     }
-    
-    private class CopyRepositoryPaths extends RepositoryPaths  {
-        public CopyRepositoryPaths(RepositoryFile repositoryFile, 
-                                   JTextComponent repositoryPathTextField,  
-                                   JButton browseButton, 
-                                   JTextField revisionTextField, 
-                                   JButton searchRevisionButton) 
-        {        
-            super(repositoryFile, repositoryPathTextField, browseButton, revisionTextField, searchRevisionButton);
-        }
 
-//        protected void setRepositoryTextField(String url) {
-//            super.setRepositoryTextField(url + "/" + localeFile.getName());                     // NOI18N
-//        }
-//
-//        protected void setRevisionTextField(String revision) {
-//            super.setRevisionTextField(revision);
-//        }        
-//
-//        protected String getRepositoryTextField() {
-//            String url = super.getRepositoryTextField();                     
-//            int idx = url.lastIndexOf("/");                                                     // NOI18N
-//            if(idx > 0) {
-//                // skip the last segment - it's the destination folder/file
-//                return url.substring(0, idx);
-//            } else {
-//                return "";                                                                      // NOI18N    
-//            }
-//        }
-
+    public void actionPerformed(ActionEvent evt) {
+        if(evt.getSource() == getCreateCopyPanel().localRadioButton) {
+            setFromLocal();        
+            setPreview();        
+        } else if(evt.getSource() == getCreateCopyPanel().remoteRadioButton) {
+            selectFromRemote();
+            setPreview();        
+        } else if(evt.getSource() == getCreateCopyPanel().skipCheckBox) {
+            setPreview();
+        }        
     }
+    
+    private void setFromLocal() {
+        CreateCopyPanel panel = getCreateCopyPanel();
+        panel.copyFromLocalTextField.setEnabled(true);        
+        panel.copyFromRemoteTextField.setEnabled(false);
+        panel.warningLabel.setVisible(localChanges);                                              
+    }
+
+    private void selectFromRemote() {
+        CreateCopyPanel panel = getCreateCopyPanel();
+        panel.copyFromLocalTextField.setEnabled(false);        
+        panel.copyFromRemoteTextField.setEnabled(true);
+        panel.warningLabel.setVisible(false);                                              
+    }
+
+    private void setPreview() {
+        try {
+            RepositoryFile repositoryFile = getToRepositoryFileIntern();
+            if(repositoryFile!=null) {
+                getCreateCopyPanel().previewTextField.setText(repositoryFile.getFileUrl().toString());    
+            } else {
+                getCreateCopyPanel().previewTextField.setText("");              // NOI18N
+            }
+        }
+        catch (NumberFormatException ex) {
+            // wrong value -> we can't copy anything
+            getCreateCopyPanel().previewTextField.setText("");                  // NOI18N
+        } catch (MalformedURLException ex) {
+            // wrong value -> we can't copy anything
+            getCreateCopyPanel().previewTextField.setText("");                  // NOI18N
+        };                
+    }
+    
 }

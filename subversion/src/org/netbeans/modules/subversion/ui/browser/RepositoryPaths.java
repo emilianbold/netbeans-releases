@@ -87,14 +87,18 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
             this.repositoryPathTextField = repositoryPathTextField;
             repositoryPathTextField.getDocument().addDocumentListener(this);
             this.browseButton = browseButton;
-            browseButton.addActionListener(this);
+            if(browseButton != null) {
+                browseButton.addActionListener(this);   
+            }            
         }        
 
         if(revisionTextField!=null) {
             this.revisionTextField = revisionTextField;
             revisionTextField.getDocument().addDocumentListener(this);
             this.searchRevisionButton = searchRevisionButton;
-            searchRevisionButton.addActionListener(this);
+            if(searchRevisionButton != null) {
+                searchRevisionButton.addActionListener(this);   
+            }            
         }                
     }
 
@@ -118,14 +122,14 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
             return new RepositoryFile[] {rf};
         }
 
-        if(getRepositoryTextField().equals("")) { // NOI18N
+        if(getRepositoryString().equals("")) { // NOI18N
             return EMPTY_REPOSITORY_FILES;
         }
         if(revision == null) {
             // should not be possible to get here!
             return EMPTY_REPOSITORY_FILES;
         }        
-        String[] paths = getRepositoryTextField().split(","); // NOI18N
+        String[] paths = getRepositoryString().split(","); // NOI18N
         RepositoryFile[] ret = new RepositoryFile[paths.length];
         SVNUrl repositoryUrl = getRepositoryUrl();
        
@@ -247,7 +251,7 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
         if(revisionTextField == null) {
             return SVNRevision.HEAD;
         }
-        String revisionString = getRevisionTextField();
+        String revisionString = getRevisionString();
         if(revisionString.equals("") || revisionString.equals(SVNRevision.HEAD.toString())) { // NOI18N
             return SVNRevision.HEAD;    
         }
@@ -287,18 +291,18 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
             valid = false;
         }
         
-        if(browseButton!=null) {
+        if(browseButton != null) {
             browseButton.setEnabled(valid);
         }        
-        if(searchRevisionButton!=null) {
+        if(searchRevisionButton != null) {
             searchRevisionButton.setEnabled(valid);
         }
         
-        if(!acceptEmptyUrl() && repositoryPathTextField != null && getRepositoryTextField().equals("")) { // NOI18N
+        if(!acceptEmptyUrl() && repositoryPathTextField != null && getRepositoryString().equals("")) { // NOI18N
             valid = false;
         }
 
-        if(!acceptEmptyRevision() && revisionTextField != null && getRevisionTextField().equals("")) { // NOI18N
+        if(!acceptEmptyRevision() && revisionTextField != null && getRevisionString().equals("")) { // NOI18N
             valid = false;
         }
         
@@ -348,19 +352,19 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
         this.repositoryFile = repositoryFile;
     }        
 
-    protected void setRepositoryTextField(String url) {
+    public void setRepositoryTextField(String url) {
         repositoryPathTextField.setText(url);
     }
     
-    protected void setRevisionTextField(String revision) {
+    public void setRevisionTextField(String revision) {
         revisionTextField.setText(revision); 
     }
     
-    protected String getRepositoryTextField() {
+    protected String getRepositoryString() {
         return repositoryPathTextField.getText().trim();
     }
     
-    protected String getRevisionTextField() {
+    protected String getRevisionString() {
         return revisionTextField.getText().trim();
     }    
 }
