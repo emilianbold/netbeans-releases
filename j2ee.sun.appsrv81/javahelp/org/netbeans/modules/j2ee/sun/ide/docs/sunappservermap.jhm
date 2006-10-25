@@ -36,7 +36,7 @@
     <mapID target="sun-web_help"				url="configeditors/WebAppGeneral.html"  />
     <mapID target="sun-ejb-jar_help"				url="ejbconfigeditors/sunconfig.html"  />
     <mapID target="sun-application_help"			url="appconfigeditors/sunapplication.html"  />
-    <mapID target="sun-application-client_help"			url="clientconfigeditors/sunapplicationclient.html"  />
+    <mapID target="sun-application-client_help"			url="appclientconfigeditors/sun-application-client.html"  />
     
     <!-- sun-application-client.xml DD editor CSH -->
     <mapID target="AS_CFG_AppClient"	url="appclientconfigeditors/sun-application-client.html"  />
