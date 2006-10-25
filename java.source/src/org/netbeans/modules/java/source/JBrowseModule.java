@@ -47,6 +47,7 @@ public class JBrowseModule extends ModuleInstall {
     
     private static final String NB_USER_DIR = "netbeans.user";   //NOI18N
     private static final String LUCENE_LOCK_DIR = "org.apache.lucene.lockDir";  //NOI18N
+    private static final boolean ENABLE_MBEANS = Boolean.getBoolean("org.netbeans.modules.java.source.enableMBeans");  //NOI18N
     
     /** Creates a new instance of JBrowseModule */
     public JBrowseModule() {
@@ -75,8 +76,22 @@ public class JBrowseModule extends ModuleInstall {
                 ActivatedDocumentListener.register();
             }
         });
-        
-        //XXX: API contract, should be better to turn it off when it goes to release
+        if (ENABLE_MBEANS) {
+            registerMBeans();
+        }
+    }   
+    
+    public @Override boolean closing () {
+        final boolean ret = super.closing();
+        RepositoryUpdater.getDefault().close ();
+        ClassIndexManager.getDefault().close();
+        if (ENABLE_MBEANS) {
+            unregisterMBeans();
+        }
+        return ret;
+    }
+    
+    private static void registerMBeans() {
         try {
             MBeanServer mgs = ManagementFactory.getPlatformMBeanServer();
             mgs.registerMBean (new LowMemoryNotifierMBeanImpl(), new ObjectName (LowMemoryNotifierMBean.OBJECT_NAME));
@@ -92,13 +107,10 @@ public class JBrowseModule extends ModuleInstall {
         }
         catch (MBeanRegistrationException e) {
             ErrorManager.getDefault ().notify (e);
-        }        
-    }   
+        }
+    }
     
-    public @Override boolean closing () {
-        final boolean ret = super.closing();
-        RepositoryUpdater.getDefault().close ();
-        ClassIndexManager.getDefault().close();
+    private static void unregisterMBeans() {
         try {
             MBeanServer mgs = ManagementFactory.getPlatformMBeanServer();
             mgs.unregisterMBean (new ObjectName (LowMemoryNotifierMBean.OBJECT_NAME));
@@ -112,6 +124,5 @@ public class JBrowseModule extends ModuleInstall {
         catch (MBeanRegistrationException e) {
             ErrorManager.getDefault ().notify (e);
         }
-        return ret;
-    }        
+    }
 }
