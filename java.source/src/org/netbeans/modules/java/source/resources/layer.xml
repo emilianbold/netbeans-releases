@@ -129,9 +129,17 @@ Microsystems, Inc. All Rights Reserved.
         <file name="org-netbeans-modules-java-actions-GoToType.shadow">
             <attr name="originalFile" stringvalue="Actions/Navigation/org-netbeans-modules-java-actions-GoToType.instance"/>
         </file>
+       
+        <file name="SeparatorAfterCallGoToType.instance">
+            <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+        </file>
         
+        <attr name="org-netbeans-modules-java-actions-GoToType.shadow/SeparatorAfterCallGoToType.instance" boolvalue="true"/>
+        
+        
+        <!--
         <attr boolvalue="true" name="org-netbeans-modules-java-actions-GoToType.shadow/org-netbeans-modules-java-actions-GoToFile.shadow" />
-        
+       
         <file name="org-netbeans-modules-java-actions-GoToFile.shadow">
             <attr name="originalFile" stringvalue="Actions/Navigation/org-netbeans-modules-java-actions-GoToFile.instance"/>
         </file>
@@ -161,7 +169,7 @@ Microsystems, Inc. All Rights Reserved.
         </file>
         
         <attr name="SeparatorAfterCallHierarchy.instance/org-netbeans-modules-editor-MainMenuAction$GoToSourceAction.instance" boolvalue="true"/>
-            
+        !-->
                 
      </folder>               
   </folder>  
