@@ -21,16 +21,11 @@ package org.netbeans.api.java.source.gen;
 import com.sun.source.tree.*;
 import java.util.*;
 import java.io.IOException;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
-import org.netbeans.modules.java.builder.CommentHandlerService;
-import org.netbeans.jackpot.model.CommentHandler;
 import org.netbeans.jackpot.transform.Transformer;
 import org.netbeans.junit.NbTestSuite;
 import junit.textui.TestRunner;
-import javax.tools.JavaFileObject;
-import org.openide.loaders.DataObjectNotFoundException;
 
 /**
  * Tests the method generator.
