@@ -30,6 +30,9 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
 import java.awt.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.ResourceBundle;
 
 
 /** Default system-provided customizer for Windows XP LF 
@@ -72,7 +75,9 @@ public final class XPLFCustoms extends LFCustoms {
                 
                 EDITOR_ERRORSTRIPE_SCROLLBAR_INSETS, new Insets(17, 0, 17, 0),
             };
-        
+            
+        tahomaWarning();    
+            
         return result;
     }
 
@@ -157,8 +162,20 @@ public final class XPLFCustoms extends LFCustoms {
             ct++;
         }
         return result;
-    }    
+    }   
 
+    /** Prints warning of JDK bug if jdk 1.5.0 or 1.5.0_01 is used - 
+     * fonts aren't set to Tahoma, which looks bad.
+     */
+    private void tahomaWarning () {
+        String version = System.getProperty("java.version");
+        if ("1.5.0".equals(version) || version.startsWith("1.5.0_01")) {
+            Logger.getLogger(XPLFCustoms.class.getName()).log(Level.WARNING,
+                    ResourceBundle.getBundle("org.netbeans.swing.plaf.winxp.Bundle").getString("MSG_TahomaWarning"));
+        }
+    }
+    
+    
     private class XPEditorColorings extends UIBootstrapValue.Lazy {
         public XPEditorColorings (String name) {
             super (name);
