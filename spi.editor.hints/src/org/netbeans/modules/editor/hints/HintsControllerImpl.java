@@ -108,20 +108,14 @@ public final class HintsControllerImpl {
     }
     
     public static List<ErrorDescription> getErrors(FileObject file) {
-        Map<String, List<Annotation>> key2Annotations = (Map<String, List<Annotation>>) doc2Annotation.get(file);
+        AnnotationHolder annotations = doc2Annotation.get(file);
         
-        if (key2Annotations == null)
+        if (annotations == null)
             return Collections.<ErrorDescription>emptyList();
         
         List<ErrorDescription> result = new ArrayList<ErrorDescription>();
         
-        for (List<Annotation> l : key2Annotations.values()) {
-            for (Annotation a : l) {
-                result.add(((ParseErrorAnnotation) a).getDescription());
-            }
-        }
-        
-        return result;
+        return annotations.getErrors();
     }
     
     public static void setErrors(Document doc, String layer, Collection<? extends ErrorDescription> errors) {
