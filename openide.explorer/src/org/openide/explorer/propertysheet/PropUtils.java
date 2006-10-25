@@ -20,6 +20,7 @@ package org.openide.explorer.propertysheet;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import org.openide.*;
@@ -50,7 +51,6 @@ import javax.swing.plaf.basic.BasicSplitPaneDivider;
 import javax.swing.plaf.basic.BasicSplitPaneUI;
 import javax.swing.plaf.metal.*;
 
-import org.netbeans.modules.openide.explorer.PsSettings;
 import org.netbeans.modules.openide.explorer.UIException;
 
 
@@ -116,6 +116,10 @@ final class PropUtils {
     /** UIManager key for fixed row height for rows in property sheet.  If not
      *  explicitly set, row height will be derived from the target font */
     static final String KEY_ROWHEIGHT = "netbeans.ps.rowheight"; //NOI18N
+
+    private static Preferences preferences() {
+        return NbPreferences.forModule(PropUtils.class);
+    }
 
     /** Preferences key for the show description area property */
     private static final String PREF_KEY_SHOWDESCRIPTION = "showDescriptionArea"; //NOI18N
@@ -1370,30 +1374,16 @@ final class PropUtils {
         return new CleanSplitPaneUI();
     }
 
-    /*
-    private static Preferences getPreferences() {
-        return Preferences.userNodeForPackage(
-            PropertySheet.class);
-    }
-     */
-
-    //    private static boolean shouldShowDescription=true; //XXX pending registry
     static boolean shouldShowDescription() {
-        //        return shouldShowDescription; //XXX pending registry
-        //        return getPreferences().getBoolean(PREF_KEY_SHOWDESCRIPTION, true);
-        return PsSettings.getDefault().getBoolean(PREF_KEY_SHOWDESCRIPTION, true);
+        return preferences().getBoolean(PREF_KEY_SHOWDESCRIPTION, true);
     }
 
     static void saveShowDescription(boolean b) {
-        //        shouldShowDescription = b; //XXX pending registry
-        //        getPreferences().putBoolean(PREF_KEY_SHOWDESCRIPTION, b);
-        PsSettings.getDefault().putBoolean(PREF_KEY_SHOWDESCRIPTION, b);
+        preferences().putBoolean(PREF_KEY_SHOWDESCRIPTION, b);
     }
 
     static String[] getSavedClosedSetNames() {
-        //      String s = getPreferences().get(PREF_KEY_CLOSEDSETNAMES, null);
-        //        String s = savedClosedSetNames; //XXX pending registry
-        String s = PsSettings.getDefault().get(PREF_KEY_CLOSEDSETNAMES, null);
+        String s = preferences().get(PREF_KEY_CLOSEDSETNAMES, null);
 
         if (s != null) {
             StringTokenizer tok = new StringTokenizer(s, ","); //NOI18N
@@ -1411,7 +1401,6 @@ final class PropUtils {
         }
     }
 
-    //    private static String savedClosedSetNames=""; //XXX pending registry 
     static void putSavedClosedSetNames(Set s) {
         if (s.size() > 0) {
             StringBuffer sb = new StringBuffer(s.size() * 20);
@@ -1425,27 +1414,18 @@ final class PropUtils {
                 }
             }
 
-            //            savedClosedSetNames=sb.toString(); //XXX pending registry
-            //            getPreferences().put (PREF_KEY_CLOSEDSETNAMES, sb.toString());
-            PsSettings.getDefault().put(PREF_KEY_CLOSEDSETNAMES, sb.toString());
+            preferences().put(PREF_KEY_CLOSEDSETNAMES, sb.toString());
         } else {
-            //            getPreferences().put (PREF_KEY_CLOSEDSETNAMES, "");
-            //            savedClosedSetNames=""; //XXX pending registry
-            PsSettings.getDefault().put(PREF_KEY_CLOSEDSETNAMES, "");
+            preferences().put(PREF_KEY_CLOSEDSETNAMES, "");
         }
     }
 
-    //    private static int sortOrder=PropertySheet.UNSORTED;
     static void putSortOrder(int i) {
-        //        getPreferences().putInt(PREF_KEY_SORTORDER, i);
-        //        sortOrder=i;
-        PsSettings.getDefault().putInt(PREF_KEY_SORTORDER, i);
+        preferences().putInt(PREF_KEY_SORTORDER, i);
     }
 
     static int getSavedSortOrder() {
-        //        return getPreferences().getInt(PREF_KEY_SORTORDER, PropertySheet.UNSORTED);
-        //        return sortOrder;
-        return PsSettings.getDefault().getInt(PREF_KEY_SORTORDER, PropertySheet.UNSORTED);
+        return preferences().getInt(PREF_KEY_SORTORDER, PropertySheet.UNSORTED);
     }
 
     /** Fetch the margin that should come between the edge of a property sheet
