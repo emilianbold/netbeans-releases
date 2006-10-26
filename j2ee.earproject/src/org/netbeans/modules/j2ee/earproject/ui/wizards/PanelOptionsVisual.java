@@ -424,7 +424,7 @@ public class PanelOptionsVisual extends JPanel implements PropertyChangeListener
                     NbBundle.getMessage(PanelOptionsVisual.class,"TXT_WebAppProjectName"), new Object[] {newProjectName}));
             this.jTextFieldCarName.setText(MessageFormat.format(
                     NbBundle.getMessage(PanelOptionsVisual.class,"TXT_AppClientProjectName"), new Object[] {newProjectName}));
-            newProjectName = CompleteEarProjectWizardIterator.getPackageName(newProjectName);
+            newProjectName = getPackageName(newProjectName);
             if (!Utilities.isJavaIdentifier(newProjectName)) {
                 newProjectName = NbBundle.getMessage(PanelOptionsVisual.class, "TXT_PackageNameSuffix", newProjectName);
             }
@@ -657,6 +657,22 @@ public class PanelOptionsVisual extends JPanel implements PropertyChangeListener
     
     private void projectNameChanged() {
         this.panel.fireChangeEvent();
+    }
+    
+    private  String getPackageName(String displayName) {
+        StringBuffer builder = new StringBuffer();
+        boolean firstLetter = true;
+        for (int i=0; i< displayName.length(); i++) {
+            char c = displayName.charAt(i);
+            if ((!firstLetter && Character.isJavaIdentifierPart(c)) || (firstLetter && Character.isJavaIdentifierStart(c))) {
+                firstLetter = false;
+                if (Character.isUpperCase(c)) {
+                    c = Character.toLowerCase(c);
+                }
+                builder.append(c);
+            }
+        }
+        return builder.length() == 0 ? NbBundle.getMessage(PanelOptionsVisual.class,"TXT_DefaultPackageName") : builder.toString();
     }
     
     /**
