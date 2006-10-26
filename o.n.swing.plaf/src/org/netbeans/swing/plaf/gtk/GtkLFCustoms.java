@@ -106,7 +106,7 @@ public class GtkLFCustoms extends LFCustoms {
             DESKTOP_BACKGROUND, ThemeValue.functioning() ? new ThemeValue (ThemeValue.REGION_BUTTON, ThemeValue.LIGHT, Color.GRAY) : (Object) Color.GRAY,
             EXPLORER_MINISTATUSBAR_BORDER, BorderFactory.createEmptyBorder(),
 
-            TOOLBAR_UI, "org.netbeans.swing.plaf.gtk.GtkToolbarUI", //NOI18N
+            //TOOLBAR_UI, "org.netbeans.swing.plaf.gtk.GtkToolbarUI", //NOI18N
                     
             PROGRESS_CANCEL_BUTTON_ICON, UIUtils.loadImage("org/netbeans/swing/plaf/resources/cancel_task_linux_mac.png"),
             "winclassic_tab_sel_gradient", tabBg,

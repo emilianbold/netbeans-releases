@@ -654,7 +654,8 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
                    new EmptyBorder (TOP, LEFT, BOTTOM, RIGHT))
                    );  
              
-        } 
+        }
+        
         if (!"Aqua".equals(UIManager.getLookAndFeel().getID())) {
             putClientProperty("JToolBar.isRollover", Boolean.TRUE); // NOI18N
         }
@@ -684,7 +685,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
             } else if ("Windows".equals(lfid)) {
                 minheight = isXPTheme() ? (23 + 8) : (27 + 8);
             } else if ("GTK".equals(lfid)) {
-                minheight = 36 + 8;
+                minheight = 30 + 8;
             } else {
                 minheight = 28 + 8;
             }
@@ -696,7 +697,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
             } else if ("Windows".equals(lfid)) {
                 minheight = isXPTheme() ? 23 : 27;
             } else if ("GTK".equals(lfid)) {
-                minheight = 36;
+                minheight = 30;
             } else {
                 minheight = 28;
             }
@@ -720,20 +721,33 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
             /** Uses L&F's grip **/
             String lAndF = UIManager.getLookAndFeel().getName();
             //XXX should use getID() note getName() - Tim
-            JPanel dragarea = lAndF.equals("Windows") ? isXPTheme() ?
-                                    (JPanel)new ToolbarXP() : 
-                                    (JPanel) new ToolbarGrip() :
-                                    UIManager.getLookAndFeel().getID().equals("Aqua")
-                                    ? (JPanel) new ToolbarAqua() :
-                                    (JPanel)new ToolbarBump(); //NOI18N
-            if (mouseListener == null)
+            JPanel dragarea = null;
+            if (lAndF.equals("Windows")) {
+                if (isXPTheme()) {
+                    dragarea = (JPanel) new ToolbarXP();
+                } else {
+                    dragarea = (JPanel) new ToolbarGrip();
+                }
+            } else if (UIManager.getLookAndFeel().getID().equals("Aqua")) {
+                dragarea = (JPanel) new ToolbarAqua();
+            } else if (UIManager.getLookAndFeel().getID().equals("GTK")) {
+                dragarea = (JPanel) new ToolbarGtk();
+                //setFloatable(true);
+            } else {
+                //Default for Metal and uknown L&F
+                dragarea = (JPanel)new ToolbarBump();
+            }
+            if (mouseListener == null) {
                 mouseListener = new ToolbarMouseListener ();
+            }
+            
+            if (dragarea != null) {
+                dragarea.addMouseListener (mouseListener);
+                dragarea.addMouseMotionListener (mouseListener);
 
-            dragarea.addMouseListener (mouseListener);
-            dragarea.addMouseMotionListener (mouseListener);
-
-            dragarea.setName ("grip");
-            add (dragarea);
+                dragarea.setName ("grip");
+                add (dragarea);
+            }
         }
     }
 
@@ -1051,7 +1065,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
 
         /** Create new ToolbarBump. */
         public ToolbarBump () {
-            super ();
+            super();
             int width = WIDTH;
             dim = new Dimension (width, width);
             max = new Dimension (width, Integer.MAX_VALUE);
@@ -1068,12 +1082,14 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
                 for (int y = TOPGAP; y+1 < height; y+=4) {
                     g.setColor (this.getBackground ().brighter ());
                     g.drawLine (x, y, x, y);
-                    if (x+5 < size.width && y+5 < height)
+                    if (x+5 < size.width && y+5 < height) {
                         g.drawLine (x+2, y+2, x+2, y+2);
+                    }
                     g.setColor (this.getBackground ().darker ().darker ());
                     g.drawLine (x+1, y+1, x+1, y+1);
-                    if (x+5 < size.width && y+5 < height)
+                    if (x+5 < size.width && y+5 < height) {
                         g.drawLine (x+3, y+3, x+3, y+3);
+                    }
                 }
             }
         }
@@ -1093,6 +1109,68 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         }
     } // end of inner class ToolbarBump
 
+    /** Bumps for floatable toolbar GTK L&F */
+    private final class ToolbarGtk extends JPanel {
+        /** Top gap. */
+        static final int TOPGAP = 2;
+        /** Bottom gap. */
+        static final int BOTGAP = 2;
+        /** Width of bump element. */
+        static final int WIDTH = 6;
+        
+        /** Minimum size. */
+        Dimension dim;
+        /** Maximum size. */
+        Dimension max;
+
+        static final long serialVersionUID =-8819972936203315277L;
+
+        /** Create new ToolbarBump. */
+        public ToolbarGtk () {
+            super();
+            int width = WIDTH;
+            dim = new Dimension (width, width);
+            max = new Dimension (width, Integer.MAX_VALUE);
+            this.setToolTipText (Toolbar.this.getDisplayName());
+        }
+
+        /** Paint bumps to specific Graphics. */
+        public void paint (Graphics g) {
+            Dimension size = this.getSize ();
+            int height = size.height - BOTGAP;
+            g.setColor (this.getBackground ());
+
+            for (int x = 0; x+1 < size.width; x+=4) {
+                for (int y = TOPGAP; y+1 < height; y+=4) {
+                    g.setColor (this.getBackground ().brighter ());
+                    g.drawLine (x, y, x, y);
+                    if (x+5 < size.width && y+5 < height) {
+                        g.drawLine (x+2, y+2, x+2, y+2);
+                    }
+                    g.setColor (this.getBackground ().darker ().darker ());
+                    g.drawLine (x+1, y+1, x+1, y+1);
+                    if (x+5 < size.width && y+5 < height) {
+                        g.drawLine (x+3, y+3, x+3, y+3);
+                    }
+                }
+            }
+        }
+
+        /** @return minimum size */
+        public Dimension getMinimumSize () {
+            return dim;
+        }
+
+        /** @return preferred size */
+        public Dimension getPreferredSize () {
+            return this.getMinimumSize ();
+        }
+
+        public Dimension getMaximumSize () {
+            return max;
+        }
+    } // end of inner class ToolbarGtk
+    
     /** Recognizes if XP theme is set.
      * @return true if XP theme is set, false otherwise
      */
@@ -1283,7 +1361,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
    */
 
     
-    /** Grip for floatable toolbar, used for Windows L&F */
+    /** Grip for floatable toolbar, used for Windows Classic L&F */
     private final class ToolbarGrip extends JPanel {
         /** Horizontal gaps. */
         static final int HGAP = 1;
@@ -1305,7 +1383,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
 
         /** Create new ToolbarGrip for default number of grip elements. */
         public ToolbarGrip () {
-            this (1);
+            this(1);
         }
 
         /** Create new ToolbarGrip for specific number of grip elements.
