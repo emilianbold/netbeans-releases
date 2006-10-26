@@ -608,37 +608,6 @@ class J2SEActionProvider implements ActionProvider {
         return MainClassStatus.SET_BUT_INVALID;
     }
     
-    /** Checks if given file object contains the main method.
-     *
-     * @param classFO file object represents java 
-     * @return false if parameter is null or doesn't contain SourceCookie
-     * or SourceCookie doesn't contain the main method
-     */    
-    public static boolean canBeRun (FileObject classFO) {
-        if (classFO == null) {
-            return false;
-        }
-        try {
-            DataObject classDO = DataObject.find (classFO);
-//XXX: remove this to compile workaround
-//            SourceCookie cookie = classDO.getCookie(SourceCookie.class);
-//            if (cookie == null) {
-//                return false;
-//            }
-            // check the main class
-//            for (ClassElement clazz : cookie.getSource().getClasses()) {
-//                if (clazz.hasMainMethod()) {
-//                    return true;
-//                }
-//            }
-            return true; //XXX: remove this to compile workaround
-        } catch (DataObjectNotFoundException ex) {
-            // can ignore it, classFO could be wrongly set
-        }
-        return false;
-    }
-
-
     /**
      * Asks user for name of main class
      * @param mainClass current main class
