@@ -61,9 +61,9 @@ public class PasteInEditor extends org.netbeans.performance.test.utilities.Perfo
         
         // open two java files in the editor
         new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"), gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance|Main20kB.java"));
-        editorOperator1 = new EditorWindowOperator().getEditor("Main20kB.java");
+        editorOperator1 = EditorWindowOperator.getEditor("Main20kB.java");
         new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"), gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance|TestClassForCopyPaste.java"));
-        editorOperator2 = new EditorWindowOperator().getEditor("TestClassForCopyPaste.java");
+        editorOperator2 = EditorWindowOperator.getEditor("TestClassForCopyPaste.java");
     }
     
     public void prepare() {

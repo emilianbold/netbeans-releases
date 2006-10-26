@@ -32,8 +32,6 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  */
 public class EditorDownButtonPopupMenu extends org.netbeans.performance.test.utilities.PerformanceTestCase {
 
-    private static EditorWindowOperator editor;
-    
     /** Test of popup menu on Editor's 'Down Button' */
     public EditorDownButtonPopupMenu(String testName) {
         super(testName);
@@ -55,7 +53,6 @@ public class EditorDownButtonPopupMenu extends org.netbeans.performance.test.uti
     
     public void initialize(){
         gui.Utilities.open10FilesFromJEdit();
-        editor = new EditorWindowOperator();
     }
     
     public void prepare(){
@@ -63,13 +60,13 @@ public class EditorDownButtonPopupMenu extends org.netbeans.performance.test.uti
     }
     
     public ComponentOperator open(){
-        editor.btDown().clickForPopup();
-        ComponentOperator popupComponent = new ComponentOperator(editor.btDown().getContainer(ComponentSearcher.getTrueChooser("org.netbeans.core.windows.view.ui.RecentViewListDlg")));
+        EditorWindowOperator.btDown().clickForPopup();
+        ComponentOperator popupComponent = new ComponentOperator(EditorWindowOperator.btDown().getContainer(ComponentSearcher.getTrueChooser("org.netbeans.core.windows.view.ui.RecentViewListDlg")));
         return popupComponent;
   }
     
     public void shutdown(){
-        editor.closeDiscard();
+        EditorWindowOperator.closeDiscard();
     }
     
 }

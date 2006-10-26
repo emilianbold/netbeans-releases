@@ -142,7 +142,7 @@ public class Utilities {
     public static EditorOperator openJavaFile(){
         Node openFile = new Node(new ProjectsTabOperator().getProjectRootNode("jEdit"),SOURCE_PACKAGES + "|bsh|Parser.java");
         new OpenAction().performAPI(openFile);
-        return new EditorWindowOperator().getEditor("Parser.java");
+        return EditorWindowOperator.getEditor("Parser.java");
 
     }
     
@@ -152,7 +152,7 @@ public class Utilities {
     public static EditorOperator openSmallJavaFile(){
         Node openFile = new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"),SOURCE_PACKAGES + "|org.netbeans.test.performance|Main20kB.java");
         new OpenAction().performAPI(openFile);
-        return new EditorWindowOperator().getEditor("Main20kB.java");
+        return EditorWindowOperator.getEditor("Main20kB.java");
 
     }
     

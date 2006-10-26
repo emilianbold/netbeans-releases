@@ -114,7 +114,7 @@ public class TypingInEditor extends org.netbeans.performance.test.utilities.Perf
         
         // open a java file in the editor
         new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"), gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance|Main.java"));
-        editorOperator = new EditorWindowOperator().getEditor("Main.java");
+        editorOperator = EditorWindowOperator.getEditor("Main.java");
         
         //wait painting pf folds in the editor
         waitNoEvent(2000);

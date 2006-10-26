@@ -91,14 +91,13 @@ public class JavaCompletionInEditor extends org.netbeans.performance.test.utilit
     public void initialize() {
         // open a java file in the editor
         new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"), gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance|Main.java"));
-        editorOperator = new EditorWindowOperator().getEditor("Main.java");
+        editorOperator = EditorWindowOperator.getEditor("Main.java");
         turnOff();
         
         repaintManager().setRegionFilter(COMPLETION_FILTER);
         setJavaEditorCaretFilteringOn();
         
         // scroll to the place where we start
-        editorOperator.activateWindow();
         editorOperator.setCaretPositionToLine(lineNumber);
         
         // insert the initial text
@@ -118,7 +117,7 @@ public class JavaCompletionInEditor extends org.netbeans.performance.test.utilit
         */
                 
         // scroll to the place where we start
-        editorOperator.activateWindow();
+        EditorWindowOperator.getEditor("Main.java");
         editorOperator.setCaretPositionToEndOfLine(lineNumber);
         
         // wait

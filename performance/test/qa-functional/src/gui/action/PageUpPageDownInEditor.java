@@ -67,7 +67,7 @@ public class PageUpPageDownInEditor extends org.netbeans.performance.test.utilit
         
         // open a java file in the editor
         new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"), gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance|Main20kB.java"));
-        editorOperator = new EditorWindowOperator().getEditor("Main20kB.java");
+        editorOperator = EditorWindowOperator.getEditor("Main20kB.java");
     }
     
     public void prepare() {
