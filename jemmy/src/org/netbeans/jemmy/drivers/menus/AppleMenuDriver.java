@@ -125,8 +125,7 @@ public class AppleMenuDriver extends RobotDriver implements MenuDriver {
         int realIndex = 0;
         for(int i = 0; i < subElements.length; i++) {
             // do not count invisible and disabled menu items
-            if(subElements[i] instanceof JMenu && ((JMenuItem)subElements[i]).isVisible() && ((JMenuItem)subElements[i]).isEnabled()) {
-             
+            if(subElements[i] instanceof JMenuItem && ((JMenuItem)subElements[i]).isVisible() && ((JMenuItem)subElements[i]).isEnabled()) {
                 if(chooser.checkPathComponent(depth, subElements[i])) {
                     return realIndex;
                 }
