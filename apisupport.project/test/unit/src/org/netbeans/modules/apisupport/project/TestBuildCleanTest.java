@@ -44,9 +44,9 @@ public class TestBuildCleanTest extends TestBase {
         DialogDisplayerImpl.returnFromNotify(DialogDescriptor.NO_OPTION);
     }
     
-    FileObject fsbuild;
-    FileObject msfsbuild;
-    FileObject javaBuild;
+    private FileObject fsbuild;
+    private FileObject msfsbuild;
+    private FileObject loadersBuild;
     
     protected void setUp() throws Exception {
         clearWorkDir();
@@ -55,7 +55,7 @@ public class TestBuildCleanTest extends TestBase {
          
         fsbuild = nbroot.getFileObject("openide/fs/build.xml"); 
         msfsbuild = nbroot.getFileObject("openide/masterfs/build.xml"); 
-        javaBuild = nbroot.getFileObject("java/project/build.xml");
+        loadersBuild = nbroot.getFileObject("openide/loaders/build.xml");
     }
 
     protected void tearDown() throws Exception {
@@ -66,7 +66,7 @@ public class TestBuildCleanTest extends TestBase {
             runTask(fsbuild,"test-build");
         }
         if (!(new File(nbrootF,pathjava).exists())) {
-            runTask(javaBuild,"test-build-qa-functional");
+            runTask(loadersBuild,"test-build-qa-functional");
         }
         super.tearDown();
     }
@@ -87,10 +87,10 @@ public class TestBuildCleanTest extends TestBase {
         checkTest("org-openide-filesystems",CLUSTER_PLATFORM,"unit",true);
         
         // check qa-functional tests
-        runTask(javaBuild,"test-build-qa-functional");
-        checkTest("org-netbeans-modules-java-project",CLUSTER_IDE,"qa-functional",true);
-        runTask(javaBuild,"clean");
-        checkTest("org-netbeans-modules-java-project",CLUSTER_IDE,"qa-functional",false);
+        runTask(loadersBuild,"test-build-qa-functional");
+        checkTest("org-openide-loaders",CLUSTER_PLATFORM,"qa-functional",true);
+        runTask(loadersBuild,"clean");
+        checkTest("org-openide-loaders",CLUSTER_PLATFORM,"qa-functional",false);
         
     }
     public void testExternalProject() throws Exception {
