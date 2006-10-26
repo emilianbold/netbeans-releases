@@ -77,7 +77,9 @@ extends MutableTextInput<D> implements DocumentListener {
         
         if (lang == null) {
             String mimeType = (String) doc.getProperty(PROP_MIME_TYPE);
-            lang = LanguageManager.getInstance().findLanguage(mimeType);
+            if (mimeType != null) {
+                lang = LanguageManager.getInstance().findLanguage(mimeType);
+            }
         }
         
         return lang;
