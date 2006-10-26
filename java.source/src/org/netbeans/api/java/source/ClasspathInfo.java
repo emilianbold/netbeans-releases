@@ -30,6 +30,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
 import javax.tools.JavaFileManager;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.modules.java.source.classpath.CacheClassPath;
@@ -81,7 +82,16 @@ public final class ClasspathInfo {
         assert archiveProvider != null && bootCp != null && compileCp != null;
         this.cpListener = new ClassPathListener ();
         this.archiveProvider = archiveProvider;
-        this.bootClassPath = CacheClassPath.forClassPath(bootCp);
+        if (bootCp.entries().size() == 0) {
+            //Broken platform, use the default one
+            JavaPlatform defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
+            assert defaultPlatform != null;
+            this.bootClassPath = defaultPlatform.getBootstrapLibraries();
+            assert this.bootClassPath.entries().size() > 0;
+        }
+        else {
+            this.bootClassPath = CacheClassPath.forClassPath(bootCp);
+        }
         this.compileClassPath = CacheClassPath.forClassPath(compileCp);
 	this.bootClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this.cpListener,this.bootClassPath));
 	this.compileClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this.cpListener,this.compileClassPath));
@@ -98,7 +108,7 @@ public final class ClasspathInfo {
     }
     
     public String toString() {
-        return "ClasspathInfo[source=" + bootClassPath + "],[" + compileClassPath + "],[" + srcClassPath + "]";
+        return "ClasspathInfo boot:[" + bootClassPath + "],compile:[" + compileClassPath + "],src:[" + srcClassPath + "]";  //NOI18N
     }
     
     // Factory methods ---------------------------------------------------------
