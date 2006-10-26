@@ -112,14 +112,16 @@ public class TaskThreadGroupGCTest extends NbTestCase {
         assertFalse(t.toString(), t.contains(null));
         r = null;
         task = null;
+        assertGC("Collected secondary task thread too", t.get(1));
+        assertGC("Collected forked task thread too", t.get(2));
+        assertGC("Collected unstarted task thread too", t.get(3));
+        /*
         Thread main = t.get(0).get();
         if (main != null) {
             assertFalse(main.isAlive());
             main = null;
         }
-        assertGC("Collected secondary task thread too", t.get(1));
-        assertGC("Collected forked task thread too", t.get(2));
-        assertGC("Collected unstarted task thread too", t.get(3));
+         */
         assertGC("Collected task thread " + t.get(0).get(), t.get(0));
     }
 
