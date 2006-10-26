@@ -254,25 +254,35 @@ public class GlobalSourcePath {
     }
     
     private static Collection <? extends PathResourceImplementation> getSources (final FileObject[] roots, final List<URL> cacheDirs, final Map<URL, WeakValue> unknownRoots) {
-        assert roots != null;
-        List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation> (roots.length);        
-        for (FileObject root : roots) {
+        assert roots != null;        
+        URL[] urls = new URL[roots.length];
+        boolean add = true;
+        for (int i=0; i<roots.length; i++) {
             try {
-                URL url = root.getURL();
-                if ("file".equals(url.getProtocol())) {     //NOI18N
-                    if (cacheDirs != null) {
-                        cacheDirs.add (url);                        
-                    }
-                    if (unknownRoots != null) {
-                        unknownRoots.remove (url);
-                    }
-                    result.add(ClassPathSupport.createResource(url));
+                URL url = roots[i].getURL();
+                if (!"file".equals(url.getProtocol())) {     //NOI18N
+                    add = false;
+                    break;
                 }
+                urls[i] = url;
             } catch (FileStateInvalidException e) {
                 ErrorManager.getDefault().notify(e);
             }
+        }        
+        if (add) {
+            List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation> (roots.length);
+            for (int i=0; i<urls.length; i++) {
+                if (cacheDirs != null) {
+                    cacheDirs.add (urls[i]);                        
+                }
+                if (unknownRoots != null) {
+                    unknownRoots.remove (urls[i]);
+                }
+                result.add(ClassPathSupport.createResource(urls[i]));
+            }
+            return result;
         }
-        return result;
+        return Collections.<PathResourceImplementation>emptySet();
     }
        
     private class WeakValue extends WeakReference<ClassPath> implements Runnable {

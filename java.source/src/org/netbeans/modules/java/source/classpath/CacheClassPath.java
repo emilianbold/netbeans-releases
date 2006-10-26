@@ -76,6 +76,15 @@ public class CacheClassPath implements ClassPathImplementation, PropertyChangeLi
     public synchronized List<? extends PathResourceImplementation> getResources() {
         if (this.cache == null) {            
             List<ClassPath.Entry> entries = this.cp.entries();
+            boolean hasSigFiles = true;
+            if (!translate) {
+                for (ClassPath.Entry entry : entries) {
+                    if (!"file".equals(entry.getURL().getProtocol()))  {  //NOI18N
+                        hasSigFiles = false;
+                        break;
+                    }
+                }
+            }            
             this.cache = new LinkedList<PathResourceImplementation> ();
             final GlobalSourcePath gsp = GlobalSourcePath.getDefault();
             for (ClassPath.Entry entry : entries) {
@@ -84,8 +93,7 @@ public class CacheClassPath implements ClassPathImplementation, PropertyChangeLi
                 if (translate) {
                     sourceUrls = gsp.getSourceRootForBinaryRoot(url, this.cp, true);
                 }
-                else if (!"jar".equals(url.getProtocol())) {        //NOI18N
-                    //We do not compile packed sources
+                else if (hasSigFiles) {        
                     sourceUrls = new URL[] {url};
                 }
                 else {
