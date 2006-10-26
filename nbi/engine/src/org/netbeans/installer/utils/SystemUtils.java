@@ -66,7 +66,10 @@ public abstract class SystemUtils {
                     instance = new GenericSystemUtils();
                     break;
             }
-        }
+            if(instance!=null) {
+                instance.loadNativeLibrary();                
+            }
+        }        
         return instance;
     }
     
@@ -112,8 +115,9 @@ public abstract class SystemUtils {
     
     public abstract void addComponentToSystemInstallManager(ProductComponent comp);
     
-    public abstract void removeComponentFromSystemInstallManager(ProductComponent comp);
+    public abstract void removeComponentFromSystemInstallManager(ProductComponent comp);    
     
+    protected abstract void loadNativeLibrary();
     
     /** Get value of environment variable <i>name</i>.<br>
      *  If <b>scope</b> is PROCESS and <b>flag</b> is <i>true</i> then return value for the new process creating<br>

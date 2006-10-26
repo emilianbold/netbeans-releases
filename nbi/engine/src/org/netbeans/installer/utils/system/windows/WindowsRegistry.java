@@ -121,35 +121,53 @@ public class WindowsRegistry {
         return result;
     }
     private native boolean isKeyEmpty0(int registrySection, String key) ;
-    
-    /** Delete the specified key exists in the registry.
-     * Note that if the key contains subkeys then it would not be deleted.
-     * @param registrySection The section of the registry
-     * @param key The specified key
-     * @return <i>true</i> if the specified key was deleted, <i>false</i> otherwise
-     */
-    public boolean deleteKey(int registrySection, String key) {
+    private String getParentKey(String key) {
         String keyString = key;
         String parent = null;
+        if(keyString==null) {
+            return null;
+        }
+        int index = keyString.lastIndexOf("\\");
+         if(index!=-1) {
+            if(index==keyString.length()) {
+                keyString = keyString.substring(0,index - 1);
+            }
+            index = keyString.lastIndexOf("\\");
+            parent = key.substring(0,index);            
+        } else {
+            parent = null;            
+        }
+        return parent;
+    }
+    private String getChildKey(String key) {
+        String keyString = key;        
         String child = null;
         if(keyString==null) {
-            return false;
+            return null;
         }
         int index = keyString.lastIndexOf("\\");
         if(index!=-1) {
             if(index==keyString.length()) {
                 keyString = keyString.substring(0,index - 1);
             }
-            index = keyString.lastIndexOf("\\");
-            parent = key.substring(0,index);
+            index = keyString.lastIndexOf("\\");            
             child = key.substring(index + 1);
         } else {
-            parent = null;
+            
             child = key;
         }
-        
-        
-        return deleteKey(registrySection,parent,child);
+        return child;
+    }
+    /** Delete the specified key exists in the registry.
+     * Note that if the key contains subkeys then it would not be deleted.
+     * @param registrySection The section of the registry
+     * @param key The specified key
+     * @return <i>true</i> if the specified key was deleted, <i>false</i> otherwise
+     */
+    public boolean deleteKey(int registrySection, String key) {        
+        return (key == null) ? 
+            false :
+            deleteKey(registrySection,getParentKey(key),getChildKey(key));
     }
     
     /** Delete the specified key exists in the registry.
@@ -307,7 +325,18 @@ public class WindowsRegistry {
     
     /** Create the new key in the registry.
      * @param registrySection The section of the registry
-     * @param key The specified parent key
+     * @param key The specified key
+     * @return <i>true</i> if the key was successfully created,
+     * <br> <i>false</i> otherwise
+     */
+    public boolean createKey(int registrySection, String key) {
+        return (key==null) ? false :
+            createKey(registrySection,getParentKey(key),getChildKey(key));
+    }
+    /** Create the new key in the registry.
+     * @param registrySection The section of the registry
+     * @param parent key The specified parent key
+     * @param parent key The specified child key
      * @return <i>true</i> if the key was successfully created,
      * <br> <i>false</i> otherwise
      */
