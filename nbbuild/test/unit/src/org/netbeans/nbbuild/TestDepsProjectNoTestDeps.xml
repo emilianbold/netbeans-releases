@@ -21,7 +21,7 @@ Microsystems, Inc. All Rights Reserved.
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
-            <code-name-base>org.netbeans.modules.java</code-name-base>
+            <code-name-base>org.openide.loaders</code-name-base>
             <module-dependencies/>
         </data>
     </configuration>

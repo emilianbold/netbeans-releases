@@ -43,7 +43,7 @@ Microsystems, Inc. All Rights Reserved.
   <!-- unittests -->
   
         <condition property="ok-unit-dist-folder" >
-            <contains string="${unit.dist.folder}" substring="${test.dist.dir}/unit/ide8/org-netbeans-modules-java" />
+            <contains string="${unit.dist.folder}" substring="${test.dist.dir}/unit/platform7/org-openide-loaders" />
         </condition>
         <condition property="ok-unittestruntimeclasspath" >
             <and>
@@ -71,7 +71,7 @@ Microsystems, Inc. All Rights Reserved.
         
    <!-- qa-functional tests -->
         <condition property="ok-qa-dist-folder" >
-            <contains string="${qa.dist.folder}" substring="${test.dist.dir}/qa-functional/ide8/org-netbeans-modules-java" />
+            <contains string="${qa.dist.folder}" substring="${test.dist.dir}/qa-functional/platform7/org-openide-loaders" />
         </condition>
         <condition property="ok-qa-testruntimeclasspath" >
                 <contains string="${qa.runtime.cp}" substring="platform7/modules/org-openide-loaders.jar"/>
@@ -104,7 +104,7 @@ Microsystems, Inc. All Rights Reserved.
   <!-- unittests -->
   
         <condition property="ok-unit-dist-folder" >
-            <contains string="${unit.dist.folder}" substring="${test.dist.dir}/unit/ide8/org-netbeans-modules-java" />
+            <contains string="${unit.dist.folder}" substring="${test.dist.dir}/unit/platform7/org-openide-loaders" />
         </condition>
 
         <echo message="unittestfolder  : ${unit.dist.folder}" />
@@ -116,7 +116,7 @@ Microsystems, Inc. All Rights Reserved.
         
    <!-- qa-functional tests -->
         <condition property="ok-qa-dist-folder" >
-            <contains string="${qa.dist.folder}" substring="${test.dist.dir}/qa-functional/ide8/org-netbeans-modules-java" />
+            <contains string="${qa.dist.folder}" substring="${test.dist.dir}/qa-functional/platform7/org-openide-loaders" />
         </condition>
    
         <echo message="qa test folder  : ${qa.dist.folder}" />
