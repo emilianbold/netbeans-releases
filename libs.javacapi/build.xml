@@ -33,7 +33,7 @@ Microsystems, Inc. All Rights Reserved.
         </copy>
     </target>
 
-    <target name="nbm" depends="init,netbeans,javadoc" description="Build NBM archive.">
+    <target name="nbm" depends="init,netbeans" description="Build NBM archive.">
         <mkdir dir="build"/>
         <makenbm file="build/${nbm}"
                  productdir="${cluster}"
@@ -47,21 +47,4 @@ Microsystems, Inc. All Rights Reserved.
         </makenbm>
     </target>
     
-    <target name="javadoc" depends="build-init,-javadoc-init,-conditional-javadoc-warn" unless="skip.15">
-        <property name="javadoc.check.failonerror" value="false" />
-        <!-- This should become an import at some point, perhaps: -->
-        <ant dir="${nb_all}/nbbuild/javadoctools" antfile="template.xml" target="javadoc">
-            <property name="javadoc.base" location="../Jsr199"/>
-            <property name="javadoc.name" value="${code.name.base.dashes}" />
-            <property name="javadoc.packages" value="${module.javadoc.packages}"/>
-            <property name="javadoc.classpath" refid="cp"/>
-            <property name="javadoc.project" location="nbproject/project.xml"/>
-        </ant>
-        <copy file="${netbeans.javadoc.dir}/org-netbeans-libs-javacapi.zip" todir="${cluster}/docs"/>
-    </target>
-    
-    <!-- temporary targets until retouche build sync's with 5.0 -->
-    <target name="-javadoc-init"/>
-    <target name="-conditional-javadoc-warn"/>
-
 </project>
