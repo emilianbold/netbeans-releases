@@ -20,7 +20,6 @@
 package org.netbeans.api.editor.settings;
 
 import java.util.List;
-import org.netbeans.api.editor.settings.CodeTemplateDescription;
 
 /**
  * Description of the code template includes abbreviation name,
@@ -47,6 +46,10 @@ public final class CodeTemplateDescription {
      * @param description non-null description.
      * @param parametrized non-null parametrized text.
      */
+    public CodeTemplateDescription(String abbreviation, String description, String parametrizedText) {
+        this(abbreviation, description, parametrizedText, null);
+    }
+    
     public CodeTemplateDescription(String abbreviation, String description, String parametrizedText, List/*<String>*/ contexts) {
         assert (abbreviation != null);
         assert (description != null);
@@ -54,7 +57,7 @@ public final class CodeTemplateDescription {
         this.abbreviation = abbreviation;
         this.description = description;
         this.parametrizedText = parametrizedText;
-	this.contexts = contexts;
+	    this.contexts = contexts;
     }
     
     private final List/*<String>*/ contexts;    
