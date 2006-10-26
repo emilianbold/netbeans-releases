@@ -19,7 +19,7 @@
 
 package org.netbeans.spi.lexer;
 
-import org.netbeans.api.lexer.LanguageDescription;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenId;
 
 /**
@@ -46,9 +46,9 @@ public abstract class LanguageEmbedding {
      * This method is only evaluated once the list of embedded tokens
      * is being created.
      *
-     * @return non-null embedded language description.
+     * @return non-null embedded language.
      */
-    public abstract LanguageDescription<? extends TokenId> language();
+    public abstract Language<? extends TokenId> language();
 
     /**
      * Get length of the initial part of the branch token that should be skipped

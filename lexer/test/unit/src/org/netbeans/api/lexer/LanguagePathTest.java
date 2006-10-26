@@ -32,10 +32,9 @@ public class LanguagePathTest extends NbTestCase {
     }
     
     public void testMimePath() {
-        LanguageDescription<TestTokenId> jspLang = new Lang("text/x-jsp").language();
-        LanguageDescription<TestTokenId> javaLang = new Lang("text/x-java").language();
-        LanguageDescription<TestTokenId> javadocLang = new Lang("text/x-javadoc").language();
-        //LanguageDescription nullLang = new Lang(null).language();
+        Language<TestTokenId> jspLang = new Lang("text/x-jsp").language();
+        Language<TestTokenId> javaLang = new Lang("text/x-java").language();
+        Language<TestTokenId> javadocLang = new Lang("text/x-javadoc").language();
         
         LanguagePath jspPath = LanguagePath.get(jspLang);
         assertEquals("Invalid mime path for jspLang", "text/x-jsp", jspPath.mimePath());

@@ -23,7 +23,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.nio.CharBuffer;
 import org.netbeans.api.java.lexer.JavaTokenId;
-import org.netbeans.api.lexer.LanguageDescription;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.NbTestCase;
@@ -72,7 +72,7 @@ public class JavaLexerPerformanceTest extends NbTestCase {
         String text = readJComponentFile();
         ModificationTextDocument doc = new ModificationTextDocument();
         doc.insertString(0, text, null);
-        doc.putProperty(LanguageDescription.class, JavaTokenId.language());
+        doc.putProperty(Language.class, JavaTokenId.language());
         TokenHierarchy hi = TokenHierarchy.get(doc);
         TokenSequence ts = hi.tokenSequence();
         while (ts.moveNext()) { }
@@ -80,7 +80,7 @@ public class JavaLexerPerformanceTest extends NbTestCase {
         // Create the document and token hierarchy again and measure time
         doc = new ModificationTextDocument();
         doc.insertString(0, text, null);
-        doc.putProperty(LanguageDescription.class, JavaTokenId.language());
+        doc.putProperty(Language.class, JavaTokenId.language());
         hi = TokenHierarchy.get(doc);
         ts = hi.tokenSequence();
         long tm = System.currentTimeMillis();

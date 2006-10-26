@@ -21,7 +21,7 @@ package org.netbeans.lib.lexer.batch;
 
 import java.io.Reader;
 import java.util.Set;
-import org.netbeans.api.lexer.LanguageDescription;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.lib.lexer.LexerInputOperation;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.TokenId;
@@ -42,13 +42,13 @@ public final class CopyTextTokenList extends BatchTokenList {
     private final Object input;
     
     public CopyTextTokenList(Reader inputReader,
-    LanguageDescription<? extends TokenId> language, Set<? extends TokenId> skipTokenIds, InputAttributes inputAttributes) {
+    Language<? extends TokenId> language, Set<? extends TokenId> skipTokenIds, InputAttributes inputAttributes) {
         super(language, skipTokenIds, inputAttributes);
         this.input = inputReader;
     }
     
     public CopyTextTokenList(CharSequence inputText,
-    LanguageDescription<? extends TokenId> language, Set<? extends TokenId> skipTokenIds, InputAttributes inputAttributes) {
+    Language<? extends TokenId> language, Set<? extends TokenId> skipTokenIds, InputAttributes inputAttributes) {
         super(language, skipTokenIds, inputAttributes);
         this.input = inputText;
     }

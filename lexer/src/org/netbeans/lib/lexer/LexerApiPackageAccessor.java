@@ -21,7 +21,7 @@ package org.netbeans.lib.lexer;
 
 import java.util.Collection;
 import java.util.Map;
-import org.netbeans.api.lexer.LanguageDescription;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchyEvent;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -57,11 +57,11 @@ public abstract class LexerApiPackageAccessor {
         INSTANCE = accessor;
     }
     
-    public abstract <T extends TokenId> LanguageDescription<T> createLanguageDescription(
+    public abstract <T extends TokenId> Language<T> createLanguage(
     LanguageHierarchy<T> languageHierarchy);
 
     public abstract LanguageHierarchy languageHierarchy(
-    LanguageDescription languageDescription);
+    Language language);
 
     public abstract <I> TokenHierarchy<I> createTokenHierarchy(
     TokenHierarchyOperation<I> tokenHierarchyOperation);

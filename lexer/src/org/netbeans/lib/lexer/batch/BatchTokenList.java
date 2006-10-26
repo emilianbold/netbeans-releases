@@ -21,7 +21,7 @@ package org.netbeans.lib.lexer.batch;
 
 import java.util.ArrayList;
 import java.util.Set;
-import org.netbeans.api.lexer.LanguageDescription;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.lib.lexer.BranchTokenList;
 import org.netbeans.lib.lexer.LAState;
@@ -63,7 +63,7 @@ public abstract class BatchTokenList extends ArrayList<Object> implements TokenL
     private boolean inited;
     
     
-    public BatchTokenList(LanguageDescription<? extends TokenId> language,
+    public BatchTokenList(Language<? extends TokenId> language,
     Set<? extends TokenId> skipTokenIds, InputAttributes inputAttributes) {
         this.languagePath = LanguagePath.get(language);
         this.skipTokenIds = skipTokenIds;

@@ -19,7 +19,7 @@ import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.Set;
 import junit.framework.TestCase;
-import org.netbeans.api.lexer.LanguageDescription;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
 
@@ -45,7 +45,7 @@ public class SimpleLanguageTest extends TestCase {
 
     public void testTokenIds() {
         // Check that token ids are all present and correctly ordered
-        LanguageDescription<SimpleTokenId> language  = SimpleTokenId.language();
+        Language<SimpleTokenId> language  = SimpleTokenId.language();
         Set ids = language.tokenIds();
         assertEquals("Invalid ids.size()", IDS_SIZE, ids.size());
         

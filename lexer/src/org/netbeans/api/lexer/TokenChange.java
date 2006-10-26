@@ -70,21 +70,21 @@ public final class TokenChange<T extends TokenId> {
      *  satisfies the condition <code>(embedded().language() == language)</code>.
      *  Null is returned otherwise.
      */
-    public <T extends TokenId> TokenChange<T> embedded(LanguageDescription<T> language) {
+    public <T extends TokenId> TokenChange<T> embedded(Language<T> language) {
         @SuppressWarnings("unchecked")
         TokenChange<T> e = (TokenChange<T>)embedded();
         return (e != null && e.language() == language) ? e : null;
     }
 
     /**
-     * Get the language description describing token ids
+     * Get the language describing token ids
      * used by tokens contained in this token change.
      */
-    public LanguageDescription<T> language() {
+    public Language<T> language() {
         // No need to check as the token sequence should already
         // be obtained originally for the inner language
-        @SuppressWarnings("unchecked") LanguageDescription<T> l
-                = (LanguageDescription<T>)languagePath().innerLanguage();
+        @SuppressWarnings("unchecked") Language<T> l
+                = (Language<T>)languagePath().innerLanguage();
         return l;
     }
     

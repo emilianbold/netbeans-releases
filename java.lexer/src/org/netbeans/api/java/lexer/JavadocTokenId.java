@@ -22,7 +22,7 @@ package org.netbeans.api.java.lexer;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Map;
-import org.netbeans.api.lexer.LanguageDescription;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.java.lexer.JavadocLexer;
 import org.netbeans.spi.lexer.LanguageHierarchy;
@@ -58,7 +58,7 @@ public enum JavadocTokenId implements TokenId {
         return primaryCategory;
     }
 
-    private static final LanguageDescription<JavadocTokenId> language = new LanguageHierarchy<JavadocTokenId>() {
+    private static final Language<JavadocTokenId> language = new LanguageHierarchy<JavadocTokenId>() {
         protected Collection<JavadocTokenId> createTokenIds() {
             return EnumSet.allOf(JavadocTokenId.class);
         }
@@ -76,7 +76,7 @@ public enum JavadocTokenId implements TokenId {
         }
     }.language();
 
-    public static LanguageDescription<JavadocTokenId> language() {
+    public static Language<JavadocTokenId> language() {
         return language;
     }
 

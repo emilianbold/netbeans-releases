@@ -20,7 +20,7 @@
 package org.netbeans.modules.editor.java;
 
 import org.netbeans.api.java.lexer.JavaTokenId;
-import org.netbeans.api.lexer.LanguageDescription;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.editor.DrawLayer;
 import org.netbeans.editor.DrawLayerFactory;
 import org.netbeans.modules.editor.NbEditorDocument;
@@ -33,7 +33,7 @@ public class JavaDocument extends NbEditorDocument {
 
     public JavaDocument(Class kitClass) {
         super(kitClass);
-        putProperty(LanguageDescription.class, JavaTokenId.language());
+        putProperty(Language.class, JavaTokenId.language());
     }
 
     @Override

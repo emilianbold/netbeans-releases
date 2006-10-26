@@ -22,7 +22,7 @@ package org.netbeans.modules.lexer.nbbridge;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.lexer.InputAttributes;
-import org.netbeans.api.lexer.LanguageDescription;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
@@ -40,9 +40,9 @@ public final class MimeLookupLanguageProvider extends LanguageProvider {
         super();
     }
 
-    public LanguageDescription<? extends TokenId> findLanguage(String mimePath) {
+    public Language<? extends TokenId> findLanguage(String mimePath) {
         Lookup lookup = MimeLookup.getLookup(MimePath.parse(mimePath));
-        return (LanguageDescription<? extends TokenId>)lookup.lookup(LanguageDescription.class);
+        return (Language<? extends TokenId>)lookup.lookup(Language.class);
     }
 
     public LanguageEmbedding findLanguageEmbedding(LanguagePath tokenLanguage, Token token, InputAttributes inputAttributes) {

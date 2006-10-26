@@ -21,7 +21,7 @@ package org.netbeans.lib.lexer;
 
 import java.lang.ref.WeakReference;
 import javax.swing.text.PlainDocument;
-import org.netbeans.api.lexer.LanguageDescription;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -47,7 +47,7 @@ public class LanguageManagerTest extends NbTestCase {
     }
 
     public void testBasic() {
-        LanguageDescription lang = LanguageManager.getInstance().findLanguage(null);
+        Language lang = LanguageManager.getInstance().findLanguage(null);
         assertNull("There should be no language for null mime type", lang);
 
         lang = LanguageManager.getInstance().findLanguage("");
@@ -55,7 +55,7 @@ public class LanguageManagerTest extends NbTestCase {
     }
     
     public void testUnknownMimeType() {
-        LanguageDescription lang = LanguageManager.getInstance().findLanguage(MIME_TYPE_UNKNOWN);
+        Language lang = LanguageManager.getInstance().findLanguage(MIME_TYPE_UNKNOWN);
         assertNull("There should be no language for " + MIME_TYPE_UNKNOWN, lang);
     }
 
@@ -64,7 +64,7 @@ public class LanguageManagerTest extends NbTestCase {
         doc.putProperty("mimeType", MIME_TYPE_KNOWN);
         
         TokenHierarchy th = TokenHierarchy.get(doc);
-        LanguageDescription lang = th.tokenSequence().language();
+        Language lang = th.tokenSequence().language();
         assertNotNull("There should be language for " + MIME_TYPE_KNOWN, lang);
         
         assertNotNull("Invalid mime type", lang.mimeType());
@@ -72,32 +72,32 @@ public class LanguageManagerTest extends NbTestCase {
     }
     
     public void testCachingMT() {
-        LanguageDescription langA = LanguageManager.getInstance().findLanguage(MIME_TYPE_KNOWN);
+        Language langA = LanguageManager.getInstance().findLanguage(MIME_TYPE_KNOWN);
         assertNotNull("There should be language for " + MIME_TYPE_KNOWN, langA);
         
-        LanguageDescription langB = LanguageManager.getInstance().findLanguage(MIME_TYPE_KNOWN);
+        Language langB = LanguageManager.getInstance().findLanguage(MIME_TYPE_KNOWN);
         assertNotNull("There should be language for " + MIME_TYPE_KNOWN, langB);
         
-        assertSame("The LanguageDescription is not cached", langA, langB);
+        assertSame("The Language is not cached", langA, langB);
     }
     
     public void testGCedMT() {
-        LanguageDescription lang = LanguageManager.getInstance().findLanguage(MIME_TYPE_KNOWN);
+        Language lang = LanguageManager.getInstance().findLanguage(MIME_TYPE_KNOWN);
         assertNotNull("There should be language for " + MIME_TYPE_KNOWN, lang);
         
-        WeakReference<LanguageDescription> ref = new WeakReference<LanguageDescription>(lang);
+        WeakReference<Language> ref = new WeakReference<Language>(lang);
         lang = null;
         
-        assertGC("LanguageDescription has not been GCed", ref);
+        assertGC("Language has not been GCed", ref);
     }
 
     public void testCacheRefreshMT() {
-        LanguageDescription langA = LanguageManager.getInstance().findLanguage(MIME_TYPE_KNOWN);
+        Language langA = LanguageManager.getInstance().findLanguage(MIME_TYPE_KNOWN);
         assertNotNull("There should be language for " + MIME_TYPE_KNOWN, langA);
         
         SimpleLanguageProvider.fireLanguageChange();
         
-        LanguageDescription langB = LanguageManager.getInstance().findLanguage(MIME_TYPE_KNOWN);
+        Language langB = LanguageManager.getInstance().findLanguage(MIME_TYPE_KNOWN);
         assertNotNull("There should be language for " + MIME_TYPE_KNOWN, langB);
         
         assertNotSame("The cache has not been refreshed", langA, langB);
@@ -149,7 +149,7 @@ public class LanguageManagerTest extends NbTestCase {
         TokenSequence embedded = tokens.embedded();
         assertNotNull("There should be an embedded language", embedded);
         
-        WeakReference<LanguageDescription> refLang = new WeakReference<LanguageDescription>(embedded.language());
+        WeakReference<Language> refLang = new WeakReference<Language>(embedded.language());
         embedded = null;
 
         WeakReference<Token> refToken = new WeakReference<Token>(tokens.token());

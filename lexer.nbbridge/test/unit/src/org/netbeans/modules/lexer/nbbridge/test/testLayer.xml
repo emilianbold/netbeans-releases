@@ -6,13 +6,13 @@
             <folder name="x-simple-char">
                 <file name="org-netbeans-modules-lexer-nbbridge-test-simple-SimpleCharLanguage.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.lexer.nbbridge.test.simple.SimpleCharLanguage.description"/>
-                    <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.LanguageDescription"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
                 </file>
             </folder>
             <folder name="x-simple-plain">
                 <file name="org-netbeans-modules-lexer-nbbridge-test-simple-SimplePlainLanguage.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.lexer.nbbridge.test.simple.SimplePlainLanguage.description"/>
-                    <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.LanguageDescription"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
                 </file>
                 
                 <folder name="languagesEmbeddingMap">

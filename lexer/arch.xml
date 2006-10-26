@@ -144,7 +144,7 @@ class with its static methods that provide its instance for the given input sour
     with a valid offset and with the same properties as the original flyweight token.
 </p>
 
-<h3>TokenId and LanguageDescription</h3>
+<h3>TokenId and Language</h3>
 <p>
     Token is identified by its id represented by
 <a href="@org-netbeans-modules-lexer@/org/netbeans/api/lexer/TokenId.html">TokenId</a>
@@ -153,7 +153,7 @@ class with its static methods that provide its instance for the given input sour
     ) but it's not mandatory.
     <br/>
     All token ids for the given language are described by
-<a href="@org-netbeans-modules-lexer@/org/netbeans/api/lexer/LanguageDescription.html">LanguageDescription</a>.
+<a href="@org-netbeans-modules-lexer@/org/netbeans/api/lexer/Language.html">Language</a>.
     <br/>
     Each token id may belong
     to one or more token categories that allow to better operate
@@ -166,7 +166,7 @@ class with its static methods that provide its instance for the given input sour
     may provide additional categories for the token ids for the given language.
     <br/>
     Each language description has a mandatory mime-type specification
-<a href="@org-netbeans-modules-lexer@/org/netbeans/api/lexer/LanguageDescription.html#mimeType()">LanguageDescription.mimeType()</a>
+<a href="@org-netbeans-modules-lexer@/org/netbeans/api/lexer/Language.html#mimeType()">Language.mimeType()</a>
     <br/>
     Although it's a bit non-related information it brings many benefits
     because with the mime-type the language can be accompanied
@@ -176,7 +176,7 @@ class with its static methods that provide its instance for the given input sour
 <h3>LanguageHierarchy, Lexer, LexerInput and TokenFactory</h3>
 <p>
     SPI providers wishing to provide a
-<a href="@org-netbeans-modules-lexer@/org/netbeans/api/lexer/LanguageDescription.html">LanguageDescription</a>
+<a href="@org-netbeans-modules-lexer@/org/netbeans/api/lexer/Language.html">Language</a>
     first need to define its SPI counterpart
 <a href="@org-netbeans-modules-lexer@/org/netbeans/spi/lexer/LanguageHierarchy.html">LanguageHierarchy</a>.
     It mainly needs to define token ids in
@@ -216,7 +216,7 @@ class with its static methods that provide its instance for the given input sour
     method or there can be a
 <a href="@org-netbeans-modules-lexer@/org/netbeans/spi/lexer/LanguageProvider.html">LanguageProvider</a>
     registered in the default Lookup, which will create a
-<a href="@org-netbeans-modules-lexer@/org/netbeans/api/lexer/LanguageDescription.html">LanguageDescription</a>
+<a href="@org-netbeans-modules-lexer@/org/netbeans/api/lexer/Language.html">Language</a>
     for the embedded language.
     <br/>
     There is no limit on the depth of a language hierarchy and there can be as many embedded languages
@@ -479,7 +479,9 @@ Providing language description and lexer.
 Token ids should be defined as enums. For example
 <code>org.netbeans.lib.lexer.test.simple.SimpleTokenId</code> can be copied
 or the following example from
-<code>org.netbeans.modules.lexer.editorbridge.calc.lang.CalcTokenId</code>:
+<code>org.netbeans.modules.lexer.editorbridge.calc.lang.CalcTokenId</code>.
+<br/>
+The static <code>language()</code> method returns the language describing the token ids.
 <pre>
 public enum CalcTokenId implements TokenId {
 
@@ -518,16 +520,7 @@ public enum CalcTokenId implements TokenId {
         return primaryCategory;
     }
 
-}
-</pre>
-
-<br/>
-The convention is to define class called "XXXLanguage" with static method
-description() returning the corresponding language description:
-<pre>
-public final class CalcLanguage {
-
-    private static final LanguageDescription&lt;CalcTokenId&gt; desc = new LanguageHierarchy&lt;CalcTokenId&gt;() {
+    private static final Language&lt;CalcTokenId&gt; language = new LanguageHierarchy&lt;CalcTokenId&gt;() {
         protected Collection&lt;CalcTokenId&gt; createTokenIds() {
             return EnumSet.allOf(CalcTokenId.class);
         }
@@ -543,10 +536,8 @@ public final class CalcLanguage {
             return cats;
         }
 
-        public Lexer&lt;CalcTokenId&gt; createLexer(
-        LexerInput input, TokenFactory&lt;CalcTokenId&gt; tokenFactory, Object state,
-        LanguagePath languagePath, InputAttributes inputAttributes) {
-            return new CalcLexer(input, tokenFactory, state, languagePath, inputAttributes);
+        public Lexer&lt;CalcTokenId&gt; createLexer(LexerRestartInfo&lt;CalcTokenId&gt; info) {
+            return new CalcLexer(info);
         }
 
         public LanguageEmbedding embedding(
@@ -561,16 +552,13 @@ public final class CalcLanguage {
         
     }.language();
 
-    public static final LanguageDescription&lt;CalcTokenId&gt; description() {
-        return desc;
-    }
-
-    private CalcLanguage() {
-        // no instances
+    public static final Language&lt;CalcTokenId&gt; language() {
+        return language;
     }
 
 }
 </pre>
+
 Note that it is not needed to publish the underlying <code>LanguageHierarchy</code> extension.
 
 <br/>
@@ -590,11 +578,10 @@ public final class CalcLexer implements Lexer&lt;CalcTokenId&gt; {
     
     private TokenFactory&lt;CalcTokenId&gt; tokenFactory;
 
-    CalcLexer(LexerInput input, TokenFactory&lt;CalcTokenId&gt; tokenFactory, Object state,
-    LanguagePath languagePath, InputAttributes inputAttributes) {
-        this.input = input;
-        this.tokenFactory = tokenFactory;
-        assert (state == null); // passed argument always null
+    CalcLexer(LexerRestartInfo&lt;CalcTokenId&gt; info) {
+        this.input = info.input();
+        this.tokenFactory = info.tokenFactory();
+        assert (info.state() == null); // passed argument always null
     }
     
     public Token&lt;CalcTokenId&gt; nextToken() {

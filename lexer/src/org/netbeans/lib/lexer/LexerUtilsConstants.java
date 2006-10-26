@@ -19,7 +19,7 @@
 
 package org.netbeans.lib.lexer;
 
-import org.netbeans.api.lexer.LanguageDescription;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -128,7 +128,7 @@ public final class LexerUtilsConstants {
         }
     }
     
-    public static LanguageHierarchy languageHierarchy(LanguageDescription language) {
+    public static LanguageHierarchy languageHierarchy(Language language) {
         return LexerApiPackageAccessor.get().languageHierarchy(language);
     }
 
@@ -136,7 +136,7 @@ public final class LexerUtilsConstants {
         return languageHierarchy(languagePath.innerLanguage());
     }
     
-    public static LanguageOperation languageOperation(LanguageDescription language) {
+    public static LanguageOperation languageOperation(Language language) {
         return LexerSpiPackageAccessor.get().operation(languageHierarchy(language));
     }
 

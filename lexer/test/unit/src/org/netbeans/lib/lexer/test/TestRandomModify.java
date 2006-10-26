@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import javax.swing.text.Document;
-import org.netbeans.api.lexer.LanguageDescription;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
@@ -250,8 +250,8 @@ public class TestRandomModify {
         TokenHierarchy hi = TokenHierarchy.get(doc);
         TokenHierarchy snapshot = hi.createSnapshot();
         @SuppressWarnings("unchecked")
-        LanguageDescription<TokenId> language = (LanguageDescription<TokenId>)
-                doc.getProperty(LanguageDescription.class);
+        Language<TokenId> language = (Language<TokenId>)
+                doc.getProperty(Language.class);
         TokenHierarchy batchMirror = TokenHierarchy.create(doc.getText(0, doc.getLength()), language);
         snapshots.add(new SnapshotDescription(snapshot, batchMirror));
         if (isDebugOperation()) {
@@ -303,12 +303,12 @@ public class TestRandomModify {
         doc.remove(0, doc.getLength());
     }
     
-    public final LanguageDescription language() {
-        return (LanguageDescription)doc.getProperty(LanguageDescription.class);
+    public final Language language() {
+        return (Language)doc.getProperty(Language.class);
     }
     
-    public final void setLanguage(LanguageDescription language) {
-        doc.putProperty(LanguageDescription.class, language);
+    public final void setLanguage(Language language) {
+        doc.putProperty(Language.class, language);
     }
     
     public final int maxDocLength() {

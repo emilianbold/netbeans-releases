@@ -24,7 +24,7 @@ import java.util.EnumSet;
 import java.util.Map;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.InputAttributes;
-import org.netbeans.api.lexer.LanguageDescription;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
@@ -70,7 +70,7 @@ public enum JspTokenId implements TokenId {
     }
 
     // Token ids declaration
-    private static final LanguageDescription<JspTokenId> language = new LanguageHierarchy<JspTokenId>() {
+    private static final Language<JspTokenId> language = new LanguageHierarchy<JspTokenId>() {
         protected Collection<JspTokenId> createTokenIds() {
             return EnumSet.allOf(JspTokenId.class);
         }
@@ -92,7 +92,7 @@ public enum JspTokenId implements TokenId {
             switch(token.id()) {
                 case TEXT:
                     return new LanguageEmbedding() {
-                        public LanguageDescription<? extends TokenId> language() {
+                        public Language<? extends TokenId> language() {
                             return HTMLTokenId.language();
                         }
                         
@@ -128,7 +128,7 @@ public enum JspTokenId implements TokenId {
         }
     }.language();
     
-    public static LanguageDescription<JspTokenId> language() {
+    public static Language<JspTokenId> language() {
         return language;
     }
     

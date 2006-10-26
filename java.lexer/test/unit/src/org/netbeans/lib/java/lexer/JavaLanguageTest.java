@@ -24,7 +24,7 @@ import java.util.Collection;
 import java.util.Set;
 import junit.framework.TestCase;
 import org.netbeans.api.java.lexer.JavaTokenId;
-import org.netbeans.api.lexer.LanguageDescription;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
 
@@ -50,7 +50,7 @@ public class JavaLanguageTest extends TestCase {
 
     public void testTokenIds() {
         // Check that token ids are all present and correctly ordered
-        LanguageDescription language = JavaTokenId.language();
+        Language language = JavaTokenId.language();
 
         // Check token categories
         Set testCats = language.tokenCategories();

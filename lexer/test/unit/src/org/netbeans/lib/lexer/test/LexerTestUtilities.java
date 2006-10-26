@@ -23,7 +23,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import junit.framework.TestCase;
-import org.netbeans.api.lexer.LanguageDescription;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchyEvent;
 import org.netbeans.api.lexer.TokenHierarchyListener;
@@ -300,8 +300,8 @@ public class LexerTestUtilities {
     public static void incCheck(Document doc, boolean nested) {
         TokenHierarchy thInc = TokenHierarchy.get(doc);
         @SuppressWarnings("unchecked")
-        LanguageDescription<TokenId> language = (LanguageDescription<TokenId>)
-                doc.getProperty(LanguageDescription.class);
+        Language<TokenId> language = (Language<TokenId>)
+                doc.getProperty(Language.class);
         String docText = null;
         try {
             docText = doc.getText(0, doc.getLength());

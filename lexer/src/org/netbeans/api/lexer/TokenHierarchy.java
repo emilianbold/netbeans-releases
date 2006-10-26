@@ -57,7 +57,7 @@ public final class TokenHierarchy<I> { // "I" stands for mutable input source
      *
      * @param doc swing text document for which the token hiearchy should be obtained.
      * @return token hierarchy or <code>null</code> in case the token hierarchy
-     *  does not exist yet and the <code>LanguageDescription.class</code>
+     *  does not exist yet and the <code>Language.class</code>
      *  document property was not yet initialized with the valid language
      *  so the hierarchy cannot be created.
      */
@@ -70,10 +70,10 @@ public final class TokenHierarchy<I> { // "I" stands for mutable input source
      * Create token hierarchy for the given non-mutating input text (for example
      * java.lang.String).
      *
-     * @see #create(CharSequence,boolean,LanguageDescription,Set,InputAttributes)
+     * @see #create(CharSequence,boolean,Language,Set,InputAttributes)
      */
     public static TokenHierarchy<Void> create(CharSequence inputText,
-    LanguageDescription<? extends TokenId> language) {
+    Language<? extends TokenId> language) {
         return create(inputText, false, language, null, null);
     }
 
@@ -87,7 +87,7 @@ public final class TokenHierarchy<I> { // "I" stands for mutable input source
      *  <code>false</code> means that the text can change in the future
      *  and the tokens should not directly reference it. Instead copy of the necessary text
      *  from the input should be made and the original text should not be referenced.
-     * @param language language description defining how the input
+     * @param language language defining how the input
      *  will be tokenized.
      * @param skipTokenIds set containing the token ids for which the tokens
      *  should not be created in the created token hierarchy.
@@ -97,8 +97,8 @@ public final class TokenHierarchy<I> { // "I" stands for mutable input source
      *  This applies to top level of the token hierarchy only (not to embedded tokens).
      *  <br/>
      *  The provided set should be efficient enough - ideally created by e.g.
-     *  {@link LanguageDescription#tokenCategoryMembers(String)}
-     *  or {@link LanguageDescription#merge(Collection,Collection)}.
+     *  {@link Language#tokenCategoryMembers(String)}
+     *  or {@link Language#merge(Collection,Collection)}.
      *
      * @param inputAttributes additional properties related to the input
      *  that may influence token creation or lexer operation
@@ -107,7 +107,7 @@ public final class TokenHierarchy<I> { // "I" stands for mutable input source
      */
     public static <T extends TokenId> TokenHierarchy<Void> create(
     CharSequence inputText, boolean copyInputText,
-    LanguageDescription<T> language, Set<T> skipTokenIds, InputAttributes inputAttributes) {
+    Language<T> language, Set<T> skipTokenIds, InputAttributes inputAttributes) {
 
         return new TokenHierarchyOperation<Void>(inputText, copyInputText,
                 language, skipTokenIds, inputAttributes).tokenHierarchy();
@@ -117,7 +117,7 @@ public final class TokenHierarchy<I> { // "I" stands for mutable input source
      * Create token hierarchy for the given reader.
      *
      * @param inputReader input reader containing the characters to tokenize.
-     * @param language language description defining how the input
+     * @param language language defining how the input
      *  will be tokenized.
      * @param skipTokenIds set containing the token ids for which the tokens
      *  should not be created in the created token hierarchy.
@@ -127,8 +127,8 @@ public final class TokenHierarchy<I> { // "I" stands for mutable input source
      *  This applies to top level of the token hierarchy only (not to embedded tokens).
      *  <br/>
      *  The provided set should be efficient enough - ideally created by e.g.
-     *  {@link LanguageDescription#tokenCategoryMembers(String)}
-     *  or {@link LanguageDescription#merge(Collection,Collection)}.
+     *  {@link Language#tokenCategoryMembers(String)}
+     *  or {@link Language#merge(Collection,Collection)}.
      *
      * @param inputAttributes additional properties related to the input
      *  that may influence token creation or lexer operation
@@ -137,7 +137,7 @@ public final class TokenHierarchy<I> { // "I" stands for mutable input source
      */
     public static <T extends TokenId> TokenHierarchy<Void> create(
     Reader inputReader,
-    LanguageDescription<T> language, Set<T> skipTokenIds, InputAttributes inputAttributes) {
+    Language<T> language, Set<T> skipTokenIds, InputAttributes inputAttributes) {
 
         return new TokenHierarchyOperation<Void>(inputReader,
                 language, skipTokenIds, inputAttributes).tokenHierarchy();
@@ -173,7 +173,7 @@ public final class TokenHierarchy<I> { // "I" stands for mutable input source
      *  Null is returned otherwise.
      *
      */
-    public <T extends TokenId> TokenSequence<T> tokenSequence(LanguageDescription<T> language) {
+    public <T extends TokenId> TokenSequence<T> tokenSequence(Language<T> language) {
         TokenList tokenList = operation.checkedTokenList();
         @SuppressWarnings("unchecked") TokenSequence<T> ts
                 = (tokenList.languagePath().topLanguage() == language)

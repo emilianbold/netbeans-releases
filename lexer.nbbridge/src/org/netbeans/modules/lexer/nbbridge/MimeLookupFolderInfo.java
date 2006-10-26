@@ -27,7 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.lexer.LanguageDescription;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.lexer.LanguageManager;
 import org.netbeans.spi.editor.mimelookup.Class2LayerFolder;
@@ -73,11 +73,11 @@ public class MimeLookupFolderInfo implements Class2LayerFolder, InstanceProvider
                 int endSkipLength = (Integer) info[2];
                 
                 if (isMimeTypeValid(mimeType)) {
-                    LanguageDescription<? extends TokenId> language = LanguageManager.getInstance().findLanguage(mimeType);
+                    Language<? extends TokenId> language = LanguageManager.getInstance().findLanguage(mimeType);
                     if (language != null) {
                         map.put(f.getName(), new EL(language, startSkipLength, endSkipLength));
                     } else {
-                        LOG.warning("Can't find LanguageDescription for mime type '" + mimeType + "', ignoring."); //NOI18N
+                        LOG.warning("Can't find Language for mime type '" + mimeType + "', ignoring."); //NOI18N
                     }
                 } else {
                     LOG.log(Level.WARNING, "Ignoring invalid mime type '" + mimeType + "' from: " + f.getPath()); //NOI18N
@@ -138,17 +138,17 @@ public class MimeLookupFolderInfo implements Class2LayerFolder, InstanceProvider
     
     private static final class EL extends LanguageEmbedding {
         
-        private LanguageDescription<? extends TokenId> language;
+        private Language<? extends TokenId> language;
         private int startSkipLength;
         private int endSkipLength;
 
-        public EL(LanguageDescription<? extends TokenId> language, int startSkipLength, int endSkipLength) {
+        public EL(Language<? extends TokenId> language, int startSkipLength, int endSkipLength) {
             this.language = language;
             this.startSkipLength = startSkipLength;
             this.endSkipLength = endSkipLength;
         }
         
-        public LanguageDescription<? extends TokenId> language() {
+        public Language<? extends TokenId> language() {
             return language;
         }
 

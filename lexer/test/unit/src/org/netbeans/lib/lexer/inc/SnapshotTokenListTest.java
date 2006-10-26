@@ -13,7 +13,7 @@
 package org.netbeans.lib.lexer.inc;
 
 import javax.swing.text.Document;
-import org.netbeans.api.lexer.LanguageDescription;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.NbTestCase;
@@ -38,7 +38,7 @@ public class SnapshotTokenListTest extends NbTestCase {
     public void testInputAttributes() throws Exception {
         Document d = new ModificationTextDocument();
         
-        d.putProperty(LanguageDescription.class, SimpleTokenId.language());
+        d.putProperty(Language.class, SimpleTokenId.language());
         
         d.insertString(0, "ident ident /** @see X */", null);
         

@@ -13,7 +13,7 @@
 package org.netbeans.lib.lexer.test.inc;
 
 import javax.swing.text.Document;
-import org.netbeans.api.lexer.LanguageDescription;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.NbTestCase;
@@ -36,7 +36,7 @@ public class DocumentUpdateTest extends NbTestCase {
     public void testUpdate1() throws Exception {
         Document d = new ModificationTextDocument();
         
-        d.putProperty(LanguageDescription.class, SimpleTokenId.language());
+        d.putProperty(Language.class, SimpleTokenId.language());
         
         d.insertString(0, "\"\\t\\b\\t test\"", null);
         
@@ -56,7 +56,7 @@ public class DocumentUpdateTest extends NbTestCase {
     public void testUpdate2() throws Exception {
         Document d = new ModificationTextDocument();
         
-        d.putProperty(LanguageDescription.class, SimpleTokenId.language());
+        d.putProperty(Language.class, SimpleTokenId.language());
         
         d.insertString(0, "\"\\t\\b\\b\\t sfdsffffffffff\"", null);
         
@@ -76,7 +76,7 @@ public class DocumentUpdateTest extends NbTestCase {
     public void testUpdate3() throws Exception {
         Document d = new ModificationTextDocument();
         
-        d.putProperty(LanguageDescription.class, SimpleTokenId.language());
+        d.putProperty(Language.class, SimpleTokenId.language());
         
         d.insertString(0, "\"t\"", null);
         

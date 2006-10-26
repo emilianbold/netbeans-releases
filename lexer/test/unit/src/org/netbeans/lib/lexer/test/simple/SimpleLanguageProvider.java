@@ -22,7 +22,7 @@ package org.netbeans.lib.lexer.test.simple;
 import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.api.lexer.InputAttributes;
-import org.netbeans.api.lexer.LanguageDescription;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
@@ -57,7 +57,7 @@ public class SimpleLanguageProvider extends LanguageProvider {
         instance = this;
     }
 
-    public LanguageDescription<? extends TokenId> findLanguage(String mimePath) {
+    public Language<? extends TokenId> findLanguage(String mimePath) {
         if (LanguageManagerTest.MIME_TYPE_KNOWN.equals(mimePath)) {
             return new LH().language();
         } else {
@@ -71,7 +71,7 @@ public class SimpleLanguageProvider extends LanguageProvider {
                 public int endSkipLength() {
                     return 0;
                 }
-                public LanguageDescription<? extends TokenId> language() {
+                public Language<? extends TokenId> language() {
                     return SimpleCharTokenId.language();
                 }
                 public int startSkipLength() {

@@ -22,25 +22,25 @@ package org.netbeans.spi.lexer;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import org.netbeans.api.lexer.InputAttributes;
-import org.netbeans.api.lexer.LanguageDescription;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 
 /**
- * The <code>LanguageDescription</code> provider. This class is a hook into the
+ * The <code>Language</code> provider. This class is a hook into the
  * lexer framework allowing modules to provide a language resolution service.
- * Whenever a <code>LanguageDescription</code> is not explicitly known the
+ * Whenever a <code>Language</code> is not explicitly known the
  * framework tries to determine it by asking <code>LanguageProvider</code>s registered
  * in the <code>Lookup.getDefault()</code>.
  * 
- * <code>LanguageDescription</code>s might be needed for a mime type or mime path
+ * <code>Language</code>s might be needed for a mime type or mime path
  * of a <code>Document</code> used as an input source or they might be needed for
  * some tokens that contain text in an another (embedded) language. In both cases
- * a <code>LanguageDescription</code> can either be explicitely provided by setting
+ * a <code>Language</code> can either be explicitely provided by setting
  * the document's property or implementing the <code>LanguageHierarchy.embedded()</code>
  * method respectively or the framework will use <code>LanguageProvider</code>s to
- * create the appropriate <code>LanguageDescription</code>.
+ * create the appropriate <code>Language</code>.
  * 
  * @author Vita Stejskal
  */
@@ -48,32 +48,32 @@ public abstract class LanguageProvider {
     
     /**
      * The name of the property, which should be fired when the mime paths to
-     * <code>LanguageDescription</code> mapping changes.
+     * <code>Language</code> mapping changes.
      */
     public static final String PROP_LANGUAGE = "LanguageProvider.PROP_LANGUAGE"; //NOI18N
 
     /**
      * The name of the property, which should be fired when the embedded language to
-     * <code>LanguageDescription</code> mapping changes.
+     * <code>Language</code> mapping changes.
      */
     public static final String PROP_EMBEDDED_LANGUAGE = "LanguageProvider.PROP_EMBEDDED_LANGUAGE"; //NOI18N
     
     /**
-     * Finds <code>LanguageDescription</code> for a given mime path.
+     * Finds <code>Language</code> for a given mime path.
      * 
-     * <p>The lexer framework uses this method to find a <code>LanguageDescription</code>
+     * <p>The lexer framework uses this method to find a <code>Language</code>
      * for <code>Document</code>s that are used as an input source. If the document
-     * itself does not specify its <code>LanguageDescription</code> the framework
+     * itself does not specify its <code>Language</code> the framework
      * will consult registered <code>LanguageProvider</code>s to find out the
-     * <code>LanguageDescription</code> appropriate for the document's mime type.
+     * <code>Language</code> appropriate for the document's mime type.
      * 
-     * @param mimePath The mime path or mime type to get a <code>LanguageDescription</code>
+     * @param mimePath The mime path or mime type to get a <code>Language</code>
      *   for. It is allowed to pass in an empty string or <code>null</code>.
      * 
-     * @return The <code>LanguageDescription</code> registered for the given
-     * mime path or <code>null</code> if no such <code>LanguageDescription</code> exists.
+     * @return The <code>Language</code> registered for the given
+     * mime path or <code>null</code> if no such <code>Language</code> exists.
      */
-    public abstract LanguageDescription<? extends TokenId> findLanguage(String mimePath);
+    public abstract Language<? extends TokenId> findLanguage(String mimePath);
     
     /**
      * Finds <code>LanguageEmbedding</code> that will define what language is
@@ -81,8 +81,8 @@ public abstract class LanguageProvider {
      * 
      * <p>If a <code>Token</code> contains text in a different language that could
      * further be used for lexing this <code>Token</code> the framework will try
-     * to find out the <code>LanguageDescription</code> of that language by asking
-     * the <code>Token</code>'s own <code>LanguageDescription</code> first and then
+     * to find out the <code>Language</code> of that language by asking
+     * the <code>Token</code>'s own <code>Language</code> first and then
      * by consulting registered <code>LanguageProvider</code>s. The <code>LanguageProvider</code>s
      * are expected to return a <code>LanguageEmbedding</code> for tokens they
      * care about and <code>null</code> for the rest. The first non-null
@@ -91,10 +91,10 @@ public abstract class LanguageProvider {
      * 
      * @param tokenLanguage The <code>LanguagePath</code> of the token, which
      *   embedded language should be returned.
-     * @param token The <code>Token</code> to get the <code>LanguageDescription</code>
+     * @param token The <code>Token</code> to get the <code>Language</code>
      *   for.
      * @param inputAttributes The attributes that could affect the creation of
-     *   the embedded <code>LanguageDescription</code>. It may be <code>null</code>
+     *   the embedded <code>Language</code>. It may be <code>null</code>
      *   if there are no extra attributes.
      * 
      * @return The <code>LanguageEmbedding</code> for the given <code>Token</code>

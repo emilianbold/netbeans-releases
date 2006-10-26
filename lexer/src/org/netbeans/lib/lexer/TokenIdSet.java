@@ -24,7 +24,7 @@ import java.util.Iterator;
 import java.util.AbstractSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import org.netbeans.api.lexer.LanguageDescription;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenId;
 
 /**

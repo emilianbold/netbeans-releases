@@ -47,7 +47,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.api.html.lexer.HTMLTokenId;
-import org.netbeans.api.lexer.LanguageDescription;
+import org.netbeans.api.lexer.Language;
 
 import org.netbeans.editor.*;
 import org.netbeans.editor.TokenItem;
@@ -144,7 +144,7 @@ public class HTMLKit extends LexerEditorKit implements org.openide.util.HelpCtx.
             if (mimeType == null){
                 doc.putProperty("mimeType", getContentType()); //NOI18N
             }
-            doc.putProperty(LanguageDescription.class, HTMLTokenId.language());
+            doc.putProperty(Language.class, HTMLTokenId.language());
             return doc;
         } else {
             return super.createDefaultDocument();

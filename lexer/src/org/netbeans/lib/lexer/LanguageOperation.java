@@ -19,7 +19,7 @@
 
 package org.netbeans.lib.lexer;
 
-import org.netbeans.api.lexer.LanguageDescription;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
@@ -40,7 +40,7 @@ public final class LanguageOperation<T extends TokenId> {
     
     private LanguageHierarchy<T> languageHierarchy;
     
-    private LanguageDescription<T> language;
+    private Language<T> language;
     
     private Object[] tokenValidators;
     
@@ -59,18 +59,18 @@ public final class LanguageOperation<T extends TokenId> {
      *
      * @return description of the language.
      */
-    public synchronized LanguageDescription<T> language() {
+    public synchronized Language<T> language() {
         if (language == null) {
             // Cause api accessor impl to get initialized
             try {
-                Class.forName(LanguageDescription.class.getName(), true, LanguageOperation.class.getClassLoader());
+                Class.forName(Language.class.getName(), true, LanguageOperation.class.getClassLoader());
             } catch (ClassNotFoundException e) {
                 //cannot happen
             }
             
             // Both tokenIds() and tokenCategories() should impose no locks
             // so call in synchronized block
-            language = LexerApiPackageAccessor.get().createLanguageDescription(
+            language = LexerApiPackageAccessor.get().createLanguage(
                     languageHierarchy);
         }
         return language;

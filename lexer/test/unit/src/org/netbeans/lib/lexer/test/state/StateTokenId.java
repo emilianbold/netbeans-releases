@@ -15,7 +15,7 @@ package org.netbeans.lib.lexer.test.state;
 
 import java.util.Collection;
 import java.util.EnumSet;
-import org.netbeans.api.lexer.LanguageDescription;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;
@@ -38,7 +38,7 @@ public enum StateTokenId implements TokenId {
     }
     
     
-    private static final LanguageDescription<StateTokenId> lang = new LanguageHierarchy<StateTokenId>() {
+    private static final Language<StateTokenId> lang = new LanguageHierarchy<StateTokenId>() {
 
         protected String mimeType() {
             return "text/x-simple";
@@ -54,7 +54,7 @@ public enum StateTokenId implements TokenId {
         
     }.language();
     
-    public static LanguageDescription<StateTokenId> language() {
+    public static Language<StateTokenId> language() {
         return lang;
     }
         

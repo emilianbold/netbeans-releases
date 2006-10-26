@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import javax.swing.event.EventListenerList;
-import org.netbeans.api.lexer.LanguageDescription;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchyEvent;
 import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -98,7 +98,7 @@ public final class TokenHierarchyOperation<I> { // "I" stands for input
      * Constructor for reader as input.
      */
     public TokenHierarchyOperation(Reader inputReader,
-    LanguageDescription<? extends TokenId> language, Set<? extends TokenId> skipTokenIds, InputAttributes inputAttributes) {
+    Language<? extends TokenId> language, Set<? extends TokenId> skipTokenIds, InputAttributes inputAttributes) {
         this.tokenList = new CopyTextTokenList(inputReader,
                 language, skipTokenIds, inputAttributes);
         init();
@@ -108,7 +108,7 @@ public final class TokenHierarchyOperation<I> { // "I" stands for input
      * Constructor for character sequence as input.
      */
     public TokenHierarchyOperation(CharSequence inputText, boolean copyInputText,
-    LanguageDescription<? extends TokenId> language, Set<? extends TokenId> skipTokenIds, InputAttributes inputAttributes) {
+    Language<? extends TokenId> language, Set<? extends TokenId> skipTokenIds, InputAttributes inputAttributes) {
 
         this.tokenList = copyInputText
                 ? (TokenList)new CopyTextTokenList(inputText,
@@ -122,7 +122,7 @@ public final class TokenHierarchyOperation<I> { // "I" stands for input
      * Constructor for mutable input.
      */
     public TokenHierarchyOperation(MutableTextInput<I> mutableTextInput,
-    LanguageDescription<? extends TokenId> language) {
+    Language<? extends TokenId> language) {
         this.mutableTextInput = mutableTextInput;
         this.tokenList = new IncTokenList(mutableTextInput);
         init();

@@ -19,7 +19,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import junit.framework.TestCase;
-import org.netbeans.api.lexer.LanguageDescription;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
 
@@ -45,7 +45,7 @@ public class GenLanguageTest extends TestCase {
 
     public void testTokenIds() {
         // Check that token ids are all present and correctly ordered
-        LanguageDescription language  = GenLanguage.description();
+        Language language  = GenLanguage.language();
         Set ids = language.tokenIds();
         assertTrue("Invalid ids.size() - expected " + IDS_SIZE, ids.size() == IDS_SIZE);
         
@@ -173,7 +173,7 @@ public class GenLanguageTest extends TestCase {
         );
 
 
-        // Check LanguageDescription.merge()
+        // Check Language.merge()
         @SuppressWarnings("unchecked") Collection mergedIds
                 = language.merge(
                     Arrays.asList(new TokenId[] { GenLanguage.IDENTIFIER_ID }),

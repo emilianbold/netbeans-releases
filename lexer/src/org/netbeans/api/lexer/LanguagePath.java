@@ -26,10 +26,10 @@ import java.util.WeakHashMap;
 
 /**
  * Language path describes a complete embedding
- * of the language descriptions starting from the root (top-level) language
+ * of the languages starting from the root (top-level) language
  * till the most embedded language.
  * <br/>
- * Language path consists of one root language description
+ * Language path consists of one root language
  * and zero or more embedded descriptions.
  * <br/>
  * E.g. for javadoc embedded in java that is embedded in jsp
@@ -67,12 +67,12 @@ public final class LanguagePath {
     private static final LanguagePath EMPTY = new LanguagePath();
 
     /**
-     * Get language path that contains a single language description.
+     * Get language path that contains a single language.
      *
      * @param language non-null language.
      * @return non-null language path.
      */
-    public static LanguagePath get(LanguageDescription<? extends TokenId> language) {
+    public static LanguagePath get(Language<? extends TokenId> language) {
         return get(EMPTY, language);
     }
     
@@ -87,10 +87,10 @@ public final class LanguagePath {
      *
      * @param prefix non-null prefix language path determining the context in which
      *   the language is embedded.
-     * @param language non-null language description.
+     * @param language non-null language.
      * @return non-null language path.
      */
-    public static LanguagePath get(LanguagePath prefix, LanguageDescription<? extends TokenId> language) {
+    public static LanguagePath get(LanguagePath prefix, Language<? extends TokenId> language) {
         return prefix.createEmbedded(language);
     }
     
@@ -99,12 +99,12 @@ public final class LanguagePath {
      * <br>
      * The last member of the array is <code>this</code>.
      */
-    private final LanguageDescription<? extends TokenId>[] languages;
+    private final Language<? extends TokenId>[] languages;
     
     /**
      * Mapping of embedded language to a weak reference to LanguagePath.
      */
-    private Map<LanguageDescription<? extends TokenId>,Reference<LanguagePath>> language2path;
+    private Map<Language<? extends TokenId>, Reference<LanguagePath>> language2path;
     
     /**
      * Cached and interned mime-path string.
@@ -112,16 +112,16 @@ public final class LanguagePath {
     private String mimePath;
     
     
-    private LanguagePath(LanguagePath prefix, LanguageDescription<? extends TokenId> language) {
+    private LanguagePath(LanguagePath prefix, Language<? extends TokenId> language) {
         int prefixSize = prefix.size();
-        this.languages = allocateLanguageDescriptionArray(prefixSize + 1);
+        this.languages = allocateLanguageArray(prefixSize + 1);
         System.arraycopy(prefix.languages, 0, this.languages, 0, prefixSize);
         this.languages[prefixSize] = language;
     }
     
     /** Build EMPTY LanguagePath */
     private LanguagePath() {
-        this.languages = allocateLanguageDescriptionArray(0);
+        this.languages = allocateLanguageArray(0);
     }
     
     /**
@@ -134,7 +134,7 @@ public final class LanguagePath {
     }
     
     /**
-     * Get language description of this language path at the given index.
+     * Get language of this language path at the given index.
      * <br>
      * Index zero corresponds to the root language.
      *
@@ -143,13 +143,13 @@ public final class LanguagePath {
      * @throws IndexOutOfBoundsException in case the index is not within
      *   required bounds.
      */
-    public LanguageDescription<? extends TokenId> language(int index) {
+    public Language<? extends TokenId> language(int index) {
         return languages[index];
     }
 
     /**
-     * Check whether the language description of this language path
-     * at the given index is the given language description.
+     * Check whether the language of this language path
+     * at the given index is the given language.
      * <br>
      * Index zero corresponds to the root language.
      *
@@ -158,7 +158,7 @@ public final class LanguagePath {
      * @throws IndexOutOfBoundsException in case the index is not within
      *   required bounds.
      */
-    public boolean isLanguage(int index, LanguageDescription<? extends TokenId> language) {
+    public boolean isLanguage(int index, Language<? extends TokenId> language) {
         return (language(index) == language);
     }
 
@@ -169,7 +169,7 @@ public final class LanguagePath {
      *
      * @see #language(int)
      */
-    public LanguageDescription<? extends TokenId> topLanguage() {
+    public Language<? extends TokenId> topLanguage() {
         return language(0);
     }
     
@@ -177,9 +177,9 @@ public final class LanguagePath {
      * Check whether the top-level language of this language path
      * is the given language.
      *
-     * @see #isLanguage(int, LanguageDescription)
+     * @see #isLanguage(int, Language)
      */
-    public boolean isTopLanguage(LanguageDescription<? extends TokenId> language) {
+    public boolean isTopLanguage(Language<? extends TokenId> language) {
         return (topLanguage() == language);
     }
     
@@ -190,7 +190,7 @@ public final class LanguagePath {
      *
      * @see #language(int)
      */
-    public LanguageDescription<? extends TokenId> innerLanguage() {
+    public Language<? extends TokenId> innerLanguage() {
         return language(size() - 1);
     }
     
@@ -198,9 +198,9 @@ public final class LanguagePath {
      * Check whether the most inner language of this language path
      * is the given language.
      *
-     * @see #isLanguage(int, LanguageDescription)
+     * @see #isLanguage(int, Language)
      */
-    public boolean isInnerLanguage(LanguageDescription<? extends TokenId> language) {
+    public boolean isInnerLanguage(Language<? extends TokenId> language) {
         return (innerLanguage() == language);
     }
     
@@ -290,7 +290,7 @@ public final class LanguagePath {
         synchronized (languages) {
             if (mimePath == null) {
                 StringBuilder sb = new StringBuilder(15 * languages.length);
-                for (LanguageDescription<? extends TokenId> language : languages) {
+                for (Language<? extends TokenId> language : languages) {
                     if (sb.length() > 0) {
                         sb.append('/');
                     }
@@ -303,14 +303,14 @@ public final class LanguagePath {
         }
     }
     
-    private LanguagePath createEmbedded(LanguageDescription<? extends TokenId> language) {
+    private LanguagePath createEmbedded(Language<? extends TokenId> language) {
         if (language == null) {
             throw new IllegalArgumentException("language cannot be null");
         }
         // Attempt to retrieve from the cache first
         synchronized (languages) {
             if (language2path == null) {
-                language2path = new WeakHashMap<LanguageDescription<? extends TokenId>,Reference<LanguagePath>>();
+                language2path = new WeakHashMap<Language<? extends TokenId>,Reference<LanguagePath>>();
             }
             Reference<LanguagePath> lpRef = language2path.get(language);
             LanguagePath lp;
@@ -325,8 +325,8 @@ public final class LanguagePath {
     }
     
     @SuppressWarnings("unchecked")
-    private LanguageDescription<? extends TokenId>[] allocateLanguageDescriptionArray(int length) {
-        return (LanguageDescription<? extends TokenId>[])(new LanguageDescription[length]);
+    private Language<? extends TokenId>[] allocateLanguageArray(int length) {
+        return (Language<? extends TokenId>[])(new Language[length]);
     }
     
     public String toString() {

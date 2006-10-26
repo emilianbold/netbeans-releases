@@ -29,7 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.WeakHashMap;
 import org.netbeans.api.lexer.InputAttributes;
-import org.netbeans.api.lexer.LanguageDescription;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
@@ -48,7 +48,7 @@ import org.openide.util.LookupListener;
  */
 public final class LanguageManager extends LanguageProvider implements LookupListener, PropertyChangeListener {
     
-    private static final LanguageDescription<TokenId> NO_LANG = new LanguageHierarchy<TokenId>() {
+    private static final Language<TokenId> NO_LANG = new LanguageHierarchy<TokenId>() {
         protected Lexer<TokenId> createLexer(LexerRestartInfo<TokenId> info) {
             return null;
         }
@@ -64,7 +64,7 @@ public final class LanguageManager extends LanguageProvider implements LookupLis
         public int endSkipLength() {
             return 0;
         }
-        public LanguageDescription<? extends TokenId> language() {
+        public Language<? extends TokenId> language() {
             return NO_LANG;
         }
         public int startSkipLength() {
@@ -84,8 +84,8 @@ public final class LanguageManager extends LanguageProvider implements LookupLis
     private Lookup.Result<LanguageProvider> lookupResult = null;
 
     private List<LanguageProvider> providers = Collections.<LanguageProvider>emptyList();
-    private HashMap<String, WeakReference<LanguageDescription<? extends TokenId>>> langCache
-            = new HashMap<String, WeakReference<LanguageDescription<? extends TokenId>>>();
+    private HashMap<String, WeakReference<Language<? extends TokenId>>> langCache
+            = new HashMap<String, WeakReference<Language<? extends TokenId>>>();
     private WeakHashMap<Token, WeakReference<LanguageEmbedding>> tokenLangCache
             = new WeakHashMap<Token, WeakReference<LanguageEmbedding>>();
     
@@ -102,10 +102,10 @@ public final class LanguageManager extends LanguageProvider implements LookupLis
     //  LanguageProvider implementation
     // -------------------------------------------------------------------
     
-    public LanguageDescription<? extends TokenId> findLanguage(String mimePath) {
+    public Language<? extends TokenId> findLanguage(String mimePath) {
         synchronized(LOCK) {
-            WeakReference<LanguageDescription<? extends TokenId>> ref = langCache.get(mimePath);
-            LanguageDescription<? extends TokenId> lang = ref == null ? null : ref.get();
+            WeakReference<Language<? extends TokenId>> ref = langCache.get(mimePath);
+            Language<? extends TokenId> lang = ref == null ? null : ref.get();
             
             if (lang == null) {
                 for(LanguageProvider p : providers) {
@@ -118,7 +118,7 @@ public final class LanguageManager extends LanguageProvider implements LookupLis
                     lang = NO_LANG;
                 }
                 
-                langCache.put(mimePath, new WeakReference<LanguageDescription<? extends TokenId>>(lang));
+                langCache.put(mimePath, new WeakReference<Language<? extends TokenId>>(lang));
             }
             
             return lang == NO_LANG ? null : lang;

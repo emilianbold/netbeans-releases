@@ -23,7 +23,7 @@ import java.util.Collection;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
 import javax.swing.text.SimpleAttributeSet;
-import org.netbeans.api.lexer.LanguageDescription;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -55,7 +55,7 @@ public class MimeLookupLanguageProviderTest extends NbTestCase{
         TokenHierarchy th = TokenHierarchy.get(doc);
         assertNotNull("Can't find token hierarchy for a text/x-simple-char document", th);
         
-        LanguageDescription lang = th.tokenSequence().language();
+        Language lang = th.tokenSequence().language();
         assertNotNull("Can't find language for text/x-simple-char", lang);
         assertEquals("Wrong language", "text/x-simple-char", lang.mimeType());
     }
@@ -70,7 +70,7 @@ public class MimeLookupLanguageProviderTest extends NbTestCase{
         assertNotNull("Can't find token hierarchy for a text/x-simple-plain document", th);
         
         TokenSequence seq = th.tokenSequence();
-        LanguageDescription lang = seq.language();
+        Language lang = seq.language();
         assertNotNull("Can't find language for text/x-simple-plain", lang);
         assertEquals("Wrong language", "text/x-simple-plain", lang.mimeType());
         
@@ -82,7 +82,7 @@ public class MimeLookupLanguageProviderTest extends NbTestCase{
                 TokenSequence embeddedSeq = seq.embedded();
                 assertNotNull("Can't find embedded token sequence", embeddedSeq);
 
-                LanguageDescription embeddedLang = embeddedSeq.language();
+                Language embeddedLang = embeddedSeq.language();
                 assertNotNull("Can't find language of the embedded sequence", embeddedLang);
                 assertEquals("Wrong language of the embedded sequence", "text/x-simple-char", embeddedLang.mimeType());
                 

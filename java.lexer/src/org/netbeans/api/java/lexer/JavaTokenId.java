@@ -24,7 +24,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.api.lexer.InputAttributes;
-import org.netbeans.api.lexer.LanguageDescription;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
@@ -188,7 +188,7 @@ public enum JavaTokenId implements TokenId {
         return primaryCategory;
     }
 
-    private static final LanguageDescription<JavaTokenId> language = new LanguageHierarchy<JavaTokenId>() {
+    private static final Language<JavaTokenId> language = new LanguageHierarchy<JavaTokenId>() {
 
         protected String mimeType() {
             return "text/x-java";
@@ -245,7 +245,7 @@ public enum JavaTokenId implements TokenId {
             switch (token.id()) {
                 case JAVADOC_COMMENT:
                     return new LanguageEmbedding() {
-                        public LanguageDescription<? extends TokenId> language() {
+                        public Language<? extends TokenId> language() {
                             return JavadocTokenId.language();
                         }
                         
@@ -260,7 +260,7 @@ public enum JavaTokenId implements TokenId {
                 case STRING_LITERAL:
                 case STRING_LITERAL_INCOMPLETE:
                     return new LanguageEmbedding() {
-                        public LanguageDescription<? extends TokenId> language() {
+                        public Language<? extends TokenId> language() {
                             return JavaStringTokenId.language();
                         }
                         
@@ -282,7 +282,7 @@ public enum JavaTokenId implements TokenId {
 
     }.language();
 
-    public static LanguageDescription<JavaTokenId> language() {
+    public static Language<JavaTokenId> language() {
         return language;
     }
 

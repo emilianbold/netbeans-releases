@@ -16,7 +16,7 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Map;
 import org.netbeans.api.lexer.InputAttributes;
-import org.netbeans.api.lexer.LanguageDescription;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
@@ -72,7 +72,7 @@ public enum HTMLTokenId implements TokenId {
         this.primaryCategory = primaryCategory;
     }
 
-    private static final LanguageDescription<HTMLTokenId> language = new LanguageHierarchy<HTMLTokenId>() {
+    private static final Language<HTMLTokenId> language = new LanguageHierarchy<HTMLTokenId>() {
         protected Collection<HTMLTokenId> createTokenIds() {
             return EnumSet.allOf(HTMLTokenId.class);
         }
@@ -104,7 +104,7 @@ public enum HTMLTokenId implements TokenId {
      *
      * @return non-null LanguageDescription
      */
-    public static LanguageDescription<HTMLTokenId> language() {
+    public static Language<HTMLTokenId> language() {
         return language;
     }
     

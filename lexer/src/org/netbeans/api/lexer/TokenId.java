@@ -86,7 +86,7 @@ public interface TokenId {
      * </p>
      *
      * @return non-null unique name of the TokenId. The name must be unique
-     *  among other TokenId instances of the particular language description
+     *  among other TokenId instances of the particular language
      *  where it is defined. The name should consist of
      *  uppercase alphanumeric letters and underscores only.
      */

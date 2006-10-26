@@ -24,7 +24,7 @@ import java.beans.*;
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.text.*;
-import org.netbeans.api.lexer.LanguageDescription;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.DrawLayer;
@@ -238,7 +238,7 @@ public class JSPKit extends LexerEditorKit implements org.openide.util.HelpCtx.P
             if (mimeType == null){
                 doc.putProperty("mimeType", getContentType()); //NOI18N
             }
-            doc.putProperty(LanguageDescription.class, JspTokenId.language());
+            doc.putProperty(Language.class, JspTokenId.language());
             return doc;
         } else {
             return super.createDefaultDocument();

@@ -20,7 +20,7 @@
 package org.netbeans.spi.lexer;
 
 import org.netbeans.api.lexer.InputAttributes;
-import org.netbeans.api.lexer.LanguageDescription;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenId;
 
 /**
@@ -51,7 +51,7 @@ public abstract class MutableTextInput<I> {
      *  and will be returned as null upon asking until this method will return
      *  non-null value.
      */
-    protected abstract LanguageDescription<? extends TokenId> language();
+    protected abstract Language<? extends TokenId> language();
 
     /**
      * Get the character sequence provided and maintained by this input.

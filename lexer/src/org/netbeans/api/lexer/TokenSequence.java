@@ -88,14 +88,14 @@ public final class TokenSequence<T extends TokenId> {
     }
 
     /**
-     * Get the language description describing token ids
+     * Get the language describing token ids
      * used by tokens in this token sequence.
      */
-    public LanguageDescription<T> language() {
+    public Language<T> language() {
         // No need to check as the token sequence should already
         // be obtained originally for the inner language
-        @SuppressWarnings("unchecked") LanguageDescription<T> l
-                = (LanguageDescription<T>)languagePath().innerLanguage();
+        @SuppressWarnings("unchecked") Language<T> l
+                = (Language<T>)languagePath().innerLanguage();
         return l;
     }
 
@@ -231,7 +231,7 @@ public final class TokenSequence<T extends TokenId> {
      * Created embedded token sequence of the given type or return null
      * if the embedded token sequence does not exist or it has a different type.
      */
-    public <ET extends TokenId> TokenSequence<ET> embedded(LanguageDescription<ET> embeddedLanguage) {
+    public <ET extends TokenId> TokenSequence<ET> embedded(Language<ET> embeddedLanguage) {
         @SuppressWarnings("unchecked")
         TokenSequence<ET> ets = (TokenSequence<ET>)embedded();
         return (ets != null && ets.language() == embeddedLanguage) ? ets : null;

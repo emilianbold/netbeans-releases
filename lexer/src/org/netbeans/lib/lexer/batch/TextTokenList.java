@@ -20,7 +20,7 @@
 package org.netbeans.lib.lexer.batch;
 
 import java.util.Set;
-import org.netbeans.api.lexer.LanguageDescription;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.lib.lexer.LexerInputOperation;
 import org.netbeans.lib.lexer.TextLexerInputOperation;
 import org.netbeans.api.lexer.InputAttributes;
@@ -39,7 +39,7 @@ public final class TextTokenList extends BatchTokenList {
     private CharSequence inputText;
 
     public TextTokenList(CharSequence inputText,
-    LanguageDescription<? extends TokenId> language, Set<? extends TokenId> skipTokenIds, InputAttributes inputAttributes) {
+    Language<? extends TokenId> language, Set<? extends TokenId> skipTokenIds, InputAttributes inputAttributes) {
         super(language, skipTokenIds, inputAttributes);
         this.inputText = inputText;
     }

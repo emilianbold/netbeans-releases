@@ -15,7 +15,7 @@ package org.netbeans.lib.lexer.test.inc;
 
 import javax.swing.text.Document;
 import junit.framework.TestCase;
-import org.netbeans.api.lexer.LanguageDescription;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
@@ -42,7 +42,7 @@ public class TokenHierarchySnapshotTest extends TestCase {
     public void testSnapshot() throws Exception {
         Document doc = new ModificationTextDocument();
         // Assign a language to the document
-        doc.putProperty(LanguageDescription.class, SimpleTokenId.language());
+        doc.putProperty(Language.class, SimpleTokenId.language());
         TokenHierarchy hi = TokenHierarchy.get(doc);
         assertNotNull("Null token hierarchy for document", hi);
         TokenSequence ts = hi.tokenSequence();

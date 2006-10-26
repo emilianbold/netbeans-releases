@@ -19,7 +19,7 @@
 
 package org.netbeans.spi.lexer;
 
-import org.netbeans.api.lexer.LanguageDescription;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.lexer.TokenHierarchyOperation;
@@ -42,7 +42,7 @@ public final class TokenHierarchyControl<I> {
     }
     
     private void init() {
-        LanguageDescription<? extends TokenId> language = input.language();
+        Language<? extends TokenId> language = input.language();
         if (language != null) {
             this.operation = new TokenHierarchyOperation<I>(input, language);
         }

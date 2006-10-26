@@ -16,7 +16,7 @@ package org.netbeans.modules.lexer.nbbridge.test.simple;
 import java.util.Collection;
 import java.util.EnumSet;
 import org.netbeans.api.lexer.InputAttributes;
-import org.netbeans.api.lexer.LanguageDescription;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
@@ -44,7 +44,7 @@ public enum SimpleCharTokenId implements TokenId {
 
     public static final String MIME_TYPE = "text/x-simple-char";
     
-    private static final LanguageDescription<SimpleCharTokenId> language
+    private static final Language<SimpleCharTokenId> language
     = new LanguageHierarchy<SimpleCharTokenId>() {
 
         protected Collection<SimpleCharTokenId> createTokenIds() {
@@ -67,7 +67,7 @@ public enum SimpleCharTokenId implements TokenId {
         
     }.language();
 
-    public static LanguageDescription<SimpleCharTokenId> description() {
+    public static Language<SimpleCharTokenId> description() {
         return language;
     }
 

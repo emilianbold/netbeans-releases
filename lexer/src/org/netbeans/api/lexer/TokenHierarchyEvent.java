@@ -62,7 +62,7 @@ public final class TokenHierarchyEvent extends java.util.EventObject {
      *  of the token hierarchy equals to the given language.
      *  Returns null otherwise.
      */
-    public <T extends TokenId> TokenChange<T> tokenChange(LanguageDescription<T> language) {
+    public <T extends TokenId> TokenChange<T> tokenChange(Language<T> language) {
         @SuppressWarnings("unchecked")
         TokenChange<T> tc = (TokenChange<T>)tokenChange();
         return (tc != null && tc.language() == language) ? tc : null;

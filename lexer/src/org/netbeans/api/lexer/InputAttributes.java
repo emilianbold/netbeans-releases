@@ -41,7 +41,7 @@ import java.util.Map;
  * of the given path as a sub-path of the target path.
  * <br/>
  * See the "global" argument of
- * {@link #setValue(LanguageDescription,Object,Object,boolean)}.
+ * {@link #setValue(Language,Object,Object,boolean)}.
  * </p>
  *
  * <p>
@@ -99,11 +99,11 @@ public final class InputAttributes {
     
     /**
      * Assign a new value to a property for the language path constructed
-     * from the given language description.
+     * from the given language.
      *
      * @see #setValue(LanguagePath, Object, Object, boolean)
      */
-    public void setValue(LanguageDescription<? extends TokenId> language,
+    public void setValue(Language<? extends TokenId> language,
     Object attributeKey, Object attributeValue, boolean global) {
         setValue(LanguagePath.get(language), attributeKey, attributeValue, global);
     }

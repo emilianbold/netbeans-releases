@@ -22,7 +22,7 @@ package org.netbeans.spi.lexer;
 import java.util.Collection;
 import java.util.Map;
 import org.netbeans.api.lexer.InputAttributes;
-import org.netbeans.api.lexer.LanguageDescription;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
@@ -36,11 +36,11 @@ import org.netbeans.lib.lexer.TokenIdImpl;
 /**
  * Definition of a language, its lexer and its embedded languages.
  * <br/>
- * It's a mirror of {@link LanguageDescription} on SPI level containing
+ * It's a mirror of {@link Language} on SPI level containing
  * additional information necessary for the lexer infrastructure operation.
  * <br/>
  * The language hierarchies should be implemented by SPI providers
- * and their language descriptions should be given for public use
+ * and their languages should be given for public use
  * (language hierarchy classes do not need to be public though).
  * <br/>
  * A typical situation may look like this:<pre>
@@ -73,7 +73,7 @@ import org.netbeans.lib.lexer.TokenIdImpl;
  *     }
  *
  *
- *     private static final LanguageDescription&lt;MyTokenId&gt; language = new LanguageHierarchy&lt;MyTokenId&gt;() {
+ *     private static final Language&lt;MyTokenId&gt; language = new LanguageHierarchy&lt;MyTokenId&gt;() {
  *         protected String mimeType() {
  *             return "text/x-my";
  *         }
@@ -88,7 +88,7 @@ import org.netbeans.lib.lexer.TokenIdImpl;
  *
  *     }.language();
  *
- *     public static LanguageDescription&lt;MyTokenId&gt; language() {
+ *     public static Language&lt;MyTokenId&gt; language() {
  *         return language;
  *     }
  *
@@ -133,7 +133,7 @@ public abstract class LanguageHierarchy<T extends TokenId> {
      *
      * <p>
      * This method is only called once by the infrastructure
-     * (when constructing language description) so it does
+     * (when constructing language) so it does
      * not need to cache its result.
      * <br>
      * This method is called in synchronized section.
@@ -152,7 +152,7 @@ public abstract class LanguageHierarchy<T extends TokenId> {
      * information found in token ids.
      * <br>
      * This method is only called once by the infrastructure
-     * (when constructing language description) so it does
+     * (when constructing language) so it does
      * not need to cache its result.
      * <br>
      * This method is called in synchronized section.
@@ -174,28 +174,8 @@ public abstract class LanguageHierarchy<T extends TokenId> {
      * Create lexer prepared for returning tokens
      * from subsequent calls to {@link Lexer#nextToken()}.
      *
-     * @param input non-null lexer input containing the characters to be scanned.
-     *  <BR>It should be saved in an instance variable of the lexer
-     *  so that it can be used later in {@link Lexer#nextToken()}.
-     *
-     * @param tokenFactory non-null token factory through which the tokens
-     *  should be created by the lexer.
-     *
-     * @param state internal lexer's state to which the lexer should be set.
-     *  It must correspond to the value previously returned by the lexer
-     *  from {@link Lexer#state()} (of either this lexer instance
-     *  or another instance of this lexer class).
-     *  <br>
-     *  It will be <code>null</code> when restarting lexer at begining
-     *  of input (either of batch input or of a swing document).
-     *
-     * @param languagePath non-null language path at which the lexer
-     *  is being created. It may used for obtaining appropriate information
-     *  from inputAttributes.
-     *
-     * @param inputAttributes input attributes that could affect the lexing
-     *  (e.g. there might be a version of the language that the lexer should check).
-     *  It may be null if there are no extra attributes.
+     * @param info non-null lexer restart info containing the information
+     *  necessary for lexer restarting.
      */
     protected abstract Lexer<T> createLexer(LexerRestartInfo<T> info);
     
@@ -300,7 +280,7 @@ public abstract class LanguageHierarchy<T extends TokenId> {
      *
      * @return non-null description of the language.
      */
-    public final LanguageDescription<T> language() {
+    public final Language<T> language() {
         return operation.language();
     }
     
@@ -381,7 +361,7 @@ public abstract class LanguageHierarchy<T extends TokenId> {
             preprocessor.preprocessChar();
         }
 
-        public LanguageDescription<? extends TokenId> language(MutableTextInput<?> mti) {
+        public Language<? extends TokenId> language(MutableTextInput<?> mti) {
             return mti.language();
         }
 

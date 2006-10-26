@@ -23,7 +23,7 @@ import java.util.Collection;
 import java.util.Map;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.InputAttributes;
-import org.netbeans.api.lexer.LanguageDescription;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.spi.lexer.CharPreprocessor;
@@ -94,7 +94,7 @@ public abstract class LexerSpiPackageAccessor {
     
     public abstract void preprocessChar(CharPreprocessor preprocessor);
     
-    public abstract LanguageDescription<? extends TokenId> language(MutableTextInput<?> mti);
+    public abstract Language<? extends TokenId> language(MutableTextInput<?> mti);
 
     public abstract CharSequence text(MutableTextInput mti);
     

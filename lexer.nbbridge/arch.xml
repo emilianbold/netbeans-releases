@@ -48,7 +48,7 @@ Microsystems, Inc. All Rights Reserved.
  <answer id="arch-overall">
   <p>
     The lexer/nbbridge module provides the implementation of the <code>org.netbeans.spi.lexer.LanguageProvider</code>
-    interface that allows to register <code>org.netbeans.api.lexer.LanguageDescription</code>s and maps of
+    interface that allows to register <code>org.netbeans.api.lexer.Language</code>s and maps of
     embedded languages in the MimeLookup. It's basically a bridge between the netbeans-independent
     lexer module and Netbeans (MimeLookup).
     <br/>
@@ -119,36 +119,36 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
  <answer id="arch-usecases">
-  <p><usecase name="LanguageDescription for mime-type" id="lang-for-mime-type">
+  <p><usecase name="Language for mime-type" id="lang-for-mime-type">
       Basic information the lexer module needs to function properly is an implementation
-      of a language and its tokens. This information in form of <code>LanguageDescription</code>
-      is used for lexing a text input. The lexer API accepts <code>LanguageDescription</code>
+      of a language and its tokens. This information in form of <code>Language</code>
+      is used for lexing a text input. The lexer API accepts <code>Language</code>
       either explicitely or it tries to determine it from a mime type of an input document.
       <br/>
       The lexer/nbbridge module provides the implementation of the <code>org.netbeans.spi.lexer.LanguageProvider</code>
-      interface, which looks for <code>LanguageDescription</code>s in MimeLookup.
-      This allows other modules registering <code>LanguageDescription</code>s of
-      languages they implement into MimeLookup. Such a <code>LanguageDescription</code>
+      interface, which looks for <code>Language</code>s in MimeLookup.
+      This allows other modules registering <code>Language</code>s of
+      languages they implement into MimeLookup. Such a <code>Language</code>
       should be registered under a mime-type appropriate for files that are normally
       used for storing text (i.e. source code) in this language.
       <br/>
       Assuming that there is a language called 'Simple Plain Language' and files
       containing source text of this language have a mime-type of 'text/x-simple-plain'
-      the <code>org.netbeans.api.lexer.LanguageDescription</code> for this language
+      the <code>org.netbeans.api.lexer.Language</code> for this language
       could be implemented by the following class.
       <pre>
-        public final class SimplePlainLanguage {
+        public final class SimplePlainTokenId {
+        
+            ... // Token ids definition
 
-            private  static final LanguageDescription&lt;SimplePlainTokenId&gt; desc = new LanguageHierarchy&lt;SimplePlainTokenId&gt;() {
+            private  static final Language&lt;SimplePlainTokenId&gt; language = new LanguageHierarchy&lt;SimplePlainTokenId&gt;() {
 
                 protected Collection&lt;SimplePlainTokenId&gt; createTokenIds() {
                     return EnumSet.allOf(SimplePlainTokenId.class);
                 }
 
-                public Lexer&lt;SimplePlainTokenId&gt; createLexer(
-                LexerInput input, TokenFactory&lt;SimplePlainTokenId&gt; tokenFactory, Object state,
-                LanguagePath languagePath, InputAttributes inputAttributes) {
-                    return new SimplePlainLexer(input, tokenFactory, state, languagePath, inputAttributes);
+                public Lexer&lt;SimplePlainTokenId&gt; createLexer(LexerRestartInfo&lt;SimplePlainTokenId&gt; info) {
+                    return new SimplePlainLexer(info);
                 }
 
                 public LanguageEmbedding embedding(
@@ -163,18 +163,14 @@ Microsystems, Inc. All Rights Reserved.
 
             }.language();
 
-            public static LanguageDescription&lt;SimplePlainTokenId&gt; description() {
-                return desc;
-            }
-
-            private SimplePlainLanguage() {
-                // no instances
+            public static Language&lt;SimplePlainTokenId&gt; language() {
+                return language;
             }
 
         }
       </pre>
       <br/>
-      The <code>SimplePlainLanguage</code> should be registered in MimeLookup under
+      The <code>SimplePlainTokenId.language()</code> should be registered in MimeLookup under
       the 'text/x-simple-plain' mime type in order to make it available for the
       lexer module. This registration can be done using the following fragment
       of a module layer.
@@ -183,16 +179,16 @@ Microsystems, Inc. All Rights Reserved.
             &lt;folder name="Editors"&gt;
                 &lt;folder name="text"&gt;
                     &lt;folder name="x-simple-plain"&gt;
-                        &lt;file name="org-netbeans-modules-lexer-nbbridge-test-simple-SimplePlainLanguage.instance"&gt;
-                            &lt;attr name="instanceCreate" methodvalue="org.netbeans.modules.lexer.nbbridge.test.simple.SimplePlainLanguage.description"/&gt;
-                            &lt;attr name="instanceOf" stringvalue="org.netbeans.api.lexer.LanguageDescription"/&gt;
+                        &lt;file name="org-netbeans-modules-lexer-nbbridge-test-simple-SimplePlainTokenId.instance"&gt;
+                            &lt;attr name="instanceCreate" methodvalue="org.netbeans.modules.lexer.nbbridge.test.simple.SimplePlainTokenId.language()"/&gt;
+                            &lt;attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/&gt;
                         &lt;/file&gt;
                     &lt;/folder&gt;
                 &lt;/folder&gt;
             &lt;/folder&gt;
         &lt;/filesystem&gt;
       </pre>
-      This of course assumes that the <code>SimplePlainLanguage</code> class resides
+      This of course assumes that the <code>SimplePlainTokenId</code> class resides
       in the <code>org.netbeans.modules.lexer.nbbridge.test.simple</code> package.
   </usecase></p>
   
@@ -208,8 +204,8 @@ Microsystems, Inc. All Rights Reserved.
       <br/>
       The lexer API supports two ways of defining tokens that contain text in
       another language and specifying what language that is. First, an implementation
-      of <code>org.netbeans.api.lexer.LanguageDescription</code> can override
-      the <code>embedding</code> method and return <code>LanguageDescription</code>
+      of <code>org.netbeans.api.lexer.Language</code> can override
+      the <code>embedding</code> method and return <code>Language</code>
       of an embedded language for each token that contains text in an embeded language.
       This way puts the implementation of the hosting language in control of
       what tokens contain an embedded contents and what language this contnents
@@ -232,13 +228,13 @@ Microsystems, Inc. All Rights Reserved.
                     &lt;folder name="x-simple-char"&gt;
                         &lt;file name="org-netbeans-modules-lexer-nbbridge-test-simple-SimpleCharLanguage.instance"&gt;
                             &lt;attr name="instanceCreate" methodvalue="org.netbeans.modules.lexer.nbbridge.test.simple.SimpleCharLanguage.description"/&gt;
-                            &lt;attr name="instanceOf" stringvalue="org.netbeans.api.lexer.LanguageDescription"/&gt;
+                            &lt;attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/&gt;
                         &lt;/file&gt;
                     &lt;/folder&gt;
                     &lt;folder name="x-simple-plain"&gt;
                         &lt;file name="org-netbeans-modules-lexer-nbbridge-test-simple-SimplePlainLanguage.instance"&gt;
                             &lt;attr name="instanceCreate" methodvalue="org.netbeans.modules.lexer.nbbridge.test.simple.SimplePlainLanguage.description"/&gt;
-                            &lt;attr name="instanceOf" stringvalue="org.netbeans.api.lexer.LanguageDescription"/&gt;
+                            &lt;attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/&gt;
                         &lt;/file&gt;
                         &lt;folder name="languagesEmbeddingMap"&gt;
                             &lt;file name="WORD"&gt;&lt;![CDATA[text/x-simple-char]]&gt;&lt;/file&gt;
@@ -248,7 +244,7 @@ Microsystems, Inc. All Rights Reserved.
             &lt;/folder&gt;
         &lt;/filesystem&gt;
       </pre>
-      Please note that the <code>LanguageDescription</code> implementations of
+      Please note that the <code>Language</code> implementations of
       both languages are registered under their respective mime types (i.e.
       text/x-simple-plain and text/x-simple-char). The implementing classes are
       placed in the <code>org.netbeans.modules.lexer.nbbridge.test.simple</code>
@@ -283,9 +279,9 @@ Microsystems, Inc. All Rights Reserved.
  <answer id="arch-what">
   <p>
     This module allows others to register lexer services (i.e. their implementations
-    of <code>org.netbeans.api.lexer.LanguageDescription</code>) for a particular mime type or mime path. It
-    also allows to extend a token provided by some <code>org.netbeans.api.lexer.LanguageDescription</code> and
-    register a new <code>org.netbeans.api.lexer.LanguageDescription</code> for the embedded language represented
+    of <code>org.netbeans.api.lexer.Language</code>) for a particular mime type or mime path. It
+    also allows to extend a token provided by some <code>org.netbeans.api.lexer.Language</code> and
+    register a new <code>org.netbeans.api.lexer.Language</code> for the embedded language represented
     by this token.
     The registration mechanism is based on MimeLookup and the system filesystem (i.e. module layers).
   </p>
@@ -999,7 +995,7 @@ Microsystems, Inc. All Rights Reserved.
  <answer id="perf-mem">
   <p>
     Pretty much none. The module does not store or cache anything; it just provides
-    the way of finding implementations of <code>org.netbeans.api.lexer.LanguageDescription</code>.
+    the way of finding implementations of <code>org.netbeans.api.lexer.Language</code>.
   </p>
  </answer>
 

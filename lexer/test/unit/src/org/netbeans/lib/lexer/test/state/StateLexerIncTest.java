@@ -16,7 +16,7 @@ package org.netbeans.lib.lexer.test.state;
 import javax.swing.text.Document;
 import junit.framework.TestCase;
 import org.netbeans.api.lexer.InputAttributes;
-import org.netbeans.api.lexer.LanguageDescription;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
@@ -44,7 +44,7 @@ public class StateLexerIncTest extends TestCase {
         // Assign a language to the document
         InputAttributes attrs = new InputAttributes();
         doc.putProperty(InputAttributes.class, attrs);
-        doc.putProperty(LanguageDescription.class, StateTokenId.language());
+        doc.putProperty(Language.class, StateTokenId.language());
         TokenHierarchy hi = TokenHierarchy.get(doc);
         TokenSequence ts = hi.tokenSequence();
         assertFalse(ts.moveNext());

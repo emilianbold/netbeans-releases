@@ -22,7 +22,7 @@ package org.netbeans.api.java.lexer;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Map;
-import org.netbeans.api.lexer.LanguageDescription;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.java.lexer.JavaStringLexer;
 import org.netbeans.spi.lexer.LanguageHierarchy;
@@ -65,7 +65,7 @@ public enum JavaStringTokenId implements TokenId {
         return primaryCategory;
     }
 
-    private static final LanguageDescription<JavaStringTokenId> language = new LanguageHierarchy<JavaStringTokenId>() {
+    private static final Language<JavaStringTokenId> language = new LanguageHierarchy<JavaStringTokenId>() {
         protected Collection<JavaStringTokenId> createTokenIds() {
             return EnumSet.allOf(JavaStringTokenId.class);
         }
@@ -83,7 +83,7 @@ public enum JavaStringTokenId implements TokenId {
         }
     }.language();
 
-    public static LanguageDescription<JavaStringTokenId> language() {
+    public static Language<JavaStringTokenId> language() {
         return language;
     }
 
