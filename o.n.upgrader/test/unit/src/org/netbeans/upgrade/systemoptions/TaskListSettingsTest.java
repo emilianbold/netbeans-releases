@@ -32,12 +32,12 @@ public class TaskListSettingsTest extends BasicTestForImport {
     }
     
     public void testPropertyNames() throws Exception {
-        assertPropertyNames(new String[] {"Tag:<<<<<<<",
-                "Tag:@todo",
-                "Tag:FIXME",
-                "Tag:PENDING",
-                "Tag:TODO",
-                "Tag:XXX",
+        assertPropertyNames(new String[] {"Tag<<<<<<<",
+                "Tag@todo",
+                "TagFIXME",
+                "TagPENDING",
+                "TagTODO",
+                "TagXXX",
                 "skipComments",
                 "modificationTime",
                 "usabilityLimit"
@@ -58,11 +58,11 @@ public class TaskListSettingsTest extends BasicTestForImport {
     }
     
     public void testTaskTagsTypes() throws Exception {
-        assertProperty("Tag:<<<<<<<", "1");
-        assertProperty("Tag:@todo","3");
-        assertProperty("Tag:FIXME","3");
-        assertProperty("Tag:PENDING","3");
-        assertProperty("Tag:TODO","3");
-        assertProperty("Tag:XXX","3");
+        assertProperty("Tag<<<<<<<", "1");
+        assertProperty("Tag@todo","3");
+        assertProperty("TagFIXME","3");
+        assertProperty("TagPENDING","3");
+        assertProperty("TagTODO","3");
+        assertProperty("TagXXX","3");
     } 
 }
