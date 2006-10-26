@@ -20,18 +20,17 @@
 package org.netbeans.xtest.plugin.ide;
 
 import java.io.IOException;
-import java.util.Collection;
+import java.lang.reflect.Method;
 import java.util.Iterator;
 import java.util.logging.Logger;
 import junit.framework.AssertionFailedError;
 import junit.framework.Test;
 import junit.framework.TestListener;
 import junit.framework.TestResult;
-import org.netbeans.core.execution.ExecutionEngine;
+import org.netbeans.core.execution.Install;
 import org.netbeans.xtest.plugin.ide.services.XTestErrorManager;
 import org.netbeans.xtest.testrunner.JUnitTestRunner;
 import org.openide.ErrorManager;
-import org.openide.execution.ExecutorTask;
 
 /**
  * Portion of Main that needs to run with access to Execution API & impl.
@@ -39,66 +38,29 @@ import org.openide.execution.ExecutorTask;
  */
 public class MainWithExec implements Main.MainWithExecInterface {
     
-    // terminate code :-)
-    public static final int TERMINATE_CODE = 666;
-    // terminate command :-)
-    public static final String TERMINATE_NAME = "kill";
-    
-    
-    
-    private static boolean executionEngineAvailable() {
+    /* Terminates all pending tasks.
+     * It calls org.netbeans.core.execution.Install.killPendingTasks() method.
+     */
+    public void killPendingTasks() {
         try {
-            // don't know whether this is appropriate class, but
-            // it works for now
-            Class.forName("org.netbeans.core.execution.ProcessNode");
-            return true;
+            Class.forName("org.netbeans.core.execution.Install");
         } catch (ClassNotFoundException cnfe) {
-            // execution is not available
-            return false;
+            // class is not available
+            return;
+        }
+        try {
+            Method killPendingTasksMethod = Install.class.getDeclaredMethod("killPendingTasks", null);
+            killPendingTasksMethod.setAccessible(true);
+            killPendingTasksMethod.invoke(null, null);
+            // better sleep for a sec, so they can be really killed
+            Thread.sleep(2000);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
-    
-    /*
-     * terminates processes shown in the Runtime/Processes node
-     * return number of processes which the method was not able
-     * to kill, -1 if any problem was encoutered
-     * If execution engine is not available -> method does nothing
-     */
-    public int terminateProcesses() {
-        if (executionEngineAvailable()) {
-            System.out.println("Trying to terminate processes spawned by IDE");
-            // number of processes which were not terminated
-            int notTerminatedProcesses = 0;
-            // number of processes which were terminated
-            int terminatedProcesses = 0;
-            
-            ExecutionEngine engine = ExecutionEngine.getExecutionEngine();
-            Collection tasks = engine.getRunningTasks();
-            Object items[] = tasks.toArray();
-            for (int i=0; i< items.length; i++) {
-                ExecutorTask task = (ExecutorTask)items[i];
-                // do not kill anything starting with org.netbeans.xtest.
-                if (task.toString().indexOf("org.netbeans.xtest.") == -1) {
-                    Main.errMan.log(ErrorManager.USER,"XTest: Stopping task (via Execution Engine): "+task.toString());
-                    task.stop();
-                    int result = task.result();
-                    Main.errMan.log(ErrorManager.USER,"XTest: Task exited with result: "+result);
-                    terminatedProcesses++;
-                }
-            }
-            if (terminatedProcesses > 0) {
-                // better sleep for a sec, so they can be really killed
-                try {
-                    Thread.sleep(5000);
-                } catch (InterruptedException ie) {
-                    // nothing
-                }
-            }
-            return notTerminatedProcesses;
-        }
-        
-        
-        // discard all changes in modified files
+
+    /** Discards all changes in modified files. */
+    public void discardChanges() {
         Object[] dobs = org.openide.loaders.DataObject.getRegistry().getModifiedSet().toArray();
         if(dobs.length > 0) {
             Main.errMan.log(ErrorManager.USER, new java.util.Date().toString() + ": discarding changes in unsaved files:");
@@ -108,18 +70,16 @@ public class MainWithExec implements Main.MainWithExecInterface {
                 obj.setModified(false);
             }
         }
-        
-        return 0;
     }
     
     public void exit() {
-        org.openide.LifecycleManager.getDefault().exit ();
+        org.openide.LifecycleManager.getDefault().exit();
     }
     
     public void run() throws Exception {
         try {
             if("true".equals(System.getProperty("xtest.ide.error.manager")) ||
-               "true".equals(System.getProperty("xtest.ide.handler"))) {
+                    "true".equals(System.getProperty("xtest.ide.handler"))) {
                 // install xtest error manager
                 MyJUnitTestRunner testRunner = new MyJUnitTestRunner();
                 testRunner.runTests();
@@ -133,11 +93,11 @@ public class MainWithExec implements Main.MainWithExecInterface {
         }
     }
     
-    /** This class adds XTestResultListener to be able to track exceptions 
+    /** This class adds XTestResultListener to be able to track exceptions
      * caugth by XTestErrorManager.
      */
     private class MyJUnitTestRunner extends JUnitTestRunner {
-
+        
         public MyJUnitTestRunner() throws IOException {
             super(null, System.out);
             if("true".equals(System.getProperty("xtest.ide.handler"))) {
@@ -145,16 +105,16 @@ public class MainWithExec implements Main.MainWithExecInterface {
                 Logger.getLogger("").addHandler(new XTestIDEHandler());
             }
         }
-
+        
         protected void addTestListeners(TestResult testResult) {
             // [pzajac] XTestErrorListenr listener must be first
             testResult.addListener(new XTestResultListener(testResult));
             super.addTestListeners(testResult);
         }
     }
-   
+    
     /** This TestListener reports error for a exceptions from ErrorManager
-    */
+     */
     private static class XTestResultListener implements TestListener {
         
         private  TestResult result;
@@ -173,7 +133,7 @@ public class MainWithExec implements Main.MainWithExecInterface {
         
         /** A failure occurred.*/
         public void addFailure(Test test, AssertionFailedError t){};
-
+        
         /* A test ended. */
         public void endTest(Test test) {
             if(!errorInTest) {

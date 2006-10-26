@@ -221,7 +221,6 @@ public class Main extends Object {
     
     private static final String TEST_EXIT = "test.exit";
     private static final String TEST_TIMEOUT = "xtest.timeout";
-    //private static final String TEST_REDIRECT = "test.output.redirect";
     private static final String TEST_REUSE_IDE = "test.reuse.ide";
     private static final long DEFAULT_TIMEOUT = 2400000;
     
@@ -256,12 +255,6 @@ public class Main extends Object {
             return;
         }
         
-        /*
-        if (System.getProperty(TEST_REDIRECT) != null && System.getProperty(TEST_REDIRECT).equals("true")) {
-            handle.setRedirect();
-        }
-         */
-
         long testTimeout;
         
         try {
@@ -335,11 +328,13 @@ public class Main extends Object {
         if (System.getProperty(TEST_EXIT, "false").equals("true")) {
             Thread exitThread = new Thread(new Runnable() {
                 public void run() {
-                    // terminate all running processes
                     try {
-                        handle.terminateProcesses();
+                        // kill all running tasks
+                        handle.killPendingTasks();
+                        // discard changes in all modified files
+                        handle.discardChanges();
                     } catch (Exception e) {
-                        System.out.println("Exception when terminating processes started from IDE");
+                        System.out.println("Exception when killing tasks or discarding changes.");
                         e.printStackTrace();
                     }
                     // exit IDE
@@ -503,9 +498,9 @@ public class Main extends Object {
     
     public static interface MainWithExecInterface {
         void run() throws Exception;
-        int terminateProcesses();
+        void killPendingTasks();
+        void discardChanges();
         void exit();
-        //void setRedirect();
     }
 
 
