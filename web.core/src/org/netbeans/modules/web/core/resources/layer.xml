@@ -181,17 +181,17 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="x-jsp">
                 <folder name="Popup">
                     
-                    <file name="org-netbeans-modules-web-core-jsploader-EditServletAction.shadow">
+                    <!--<file name="org-netbeans-modules-web-core-jsploader-EditServletAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/System/View Servlet.instance"/>
-                    </file>
+                    </file>-->
 
                     <file name="org-netbeans-modules-project-ui-RunSingle.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.Actions.runSingle"/>
                     </file>
                     
-                    <attr name="Separator5.instance/org-netbeans-modules-project-ui-RunSingle.instance" boolvalue="true"/>
+                    <!--<attr name="Separator5.instance/org-netbeans-modules-project-ui-RunSingle.instance" boolvalue="true"/>
                     <attr name="org-netbeans-modules-project-ui-RunSingle.instance/org-netbeans-modules-web-core-jsploader-EditServletAction.shadow" boolvalue="true"/>
-                    <attr name="org-netbeans-modules-web-core-jsploader-EditServletAction.shadow/SeparatorJSP.instance" boolvalue="true"/>
+                    <attr name="org-netbeans-modules-web-core-jsploader-EditServletAction.shadow/SeparatorJSP.instance" boolvalue="true"/>-->
 
                 </folder>
             </folder>
