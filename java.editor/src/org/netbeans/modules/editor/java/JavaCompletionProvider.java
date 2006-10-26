@@ -1916,7 +1916,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                         case LOCAL_VARIABLE:
                         case EXCEPTION_PARAMETER:
                         case PARAMETER:
-                            return (method == e.getEnclosingElement() || e.getModifiers().contains(FINAL)) &&
+                            return (method == e.getEnclosingElement() || e.getModifiers().contains(FINAL) ||
+                                    (method == null && (e.getEnclosingElement().getKind() == INSTANCE_INIT ||
+                                    e.getEnclosingElement().getKind() == STATIC_INIT))) &&
                                     !illegalForwardRefs.contains(e) &&
                                     ((VariableElement)e).getConstantValue() != null;
                         case FIELD:
@@ -1992,7 +1994,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                         case EXCEPTION_PARAMETER:
                         case PARAMETER:
                             return Utilities.startsWith(e.getSimpleName().toString(), prefix) &&
-                                    (method == e.getEnclosingElement() || e.getModifiers().contains(FINAL)) &&
+                                    (method == e.getEnclosingElement() || e.getModifiers().contains(FINAL) ||
+                                    (method == null && (e.getEnclosingElement().getKind() == INSTANCE_INIT ||
+                                    e.getEnclosingElement().getKind() == STATIC_INIT))) &&
                                     !illegalForwardRefs.contains(e) &&
                                     isOfSmartType(e.asType(), finalSmartTypes, types);
                         case FIELD:
@@ -2061,7 +2065,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                         case EXCEPTION_PARAMETER:
                         case PARAMETER:
                             return Utilities.startsWith(e.getSimpleName().toString(), prefix) &&
-                                    (method == e.getEnclosingElement() || e.getModifiers().contains(FINAL)) &&
+                                    (method == e.getEnclosingElement() || e.getModifiers().contains(FINAL) ||
+                                    (method == null && (e.getEnclosingElement().getKind() == INSTANCE_INIT ||
+                                    e.getEnclosingElement().getKind() == STATIC_INIT))) &&
                                     !illegalForwardRefs.contains(e) &&
                                     isOfSmartType(e.asType(), finalSmartTypes, types);
                         case FIELD:
