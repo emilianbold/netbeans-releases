@@ -15,6 +15,11 @@
                     <type>java</type>
                     <location>src</location>
                 </source-folder>
+                <source-folder>
+                    <label>Unit Test Packages</label>
+                    <type>java</type>
+                    <location>test/unit/src</location>
+                </source-folder>
             </folders>
             <ide-actions>
                 <action name="build">
@@ -33,6 +38,10 @@
                     <source-folder style="packages">
                         <label>src</label>
                         <location>src</location>
+                    </source-folder>
+                    <source-folder style="packages">
+                        <label>Unit Test Packages</label>
+                        <location>test/unit/src</location>
                     </source-folder>
                     <source-file>
                         <location>build.xml</location>
@@ -56,10 +65,16 @@
             </view>
             <subprojects/>
         </general-data>
-        <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1">
+        <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/2">
             <compilation-unit>
                 <package-root>src</package-root>
                 <classpath mode="compile">${basecp}</classpath>
+                <source-level>1.4</source-level>
+            </compilation-unit>
+            <compilation-unit>
+                <package-root>test/unit/src</package-root>
+                <unit-tests/>
+                <classpath mode="compile">lib/junit.jar;lib/nbjunit.jar;lib/xtest.jar</classpath>
                 <source-level>1.4</source-level>
             </compilation-unit>
         </java-data>
