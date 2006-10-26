@@ -80,13 +80,13 @@ import org.openide.util.actions.SystemAction;
 public class Install extends ModuleInstall {
     
     private static final String BEANINFO_PATH
-        = "org.netbeans.core.execution.beaninfo"; // NOI18N
+            = "org.netbeans.core.execution.beaninfo"; // NOI18N
     private static final String EDITOR_PATH
-        = "org.netbeans.core.execution.beaninfo.editors"; // NOI18N
+            = "org.netbeans.core.execution.beaninfo.editors"; // NOI18N
     
     public void restored() {
         TopSecurityManager.register(SecMan.DEFAULT);
-
+        
         // Add beaninfo search path.
         String[] sp = Introspector.getBeanInfoSearchPath();
         java.util.List<String> paths = Arrays.asList(sp);
@@ -94,7 +94,7 @@ public class Install extends ModuleInstall {
             paths = new ArrayList<String>(paths);
             paths.add(BEANINFO_PATH);
             Introspector.setBeanInfoSearchPath(
-                paths.toArray(new String[0]));
+                    paths.toArray(new String[0]));
         }
         
         // Add property editor search path.
@@ -104,15 +104,15 @@ public class Install extends ModuleInstall {
             paths = new ArrayList<String>(paths);
             paths.add(EDITOR_PATH);
             PropertyEditorManager.setEditorSearchPath(
-                paths.toArray(new String[0]));
+                    paths.toArray(new String[0]));
         }
     }
     
     public void uninstalled() {
         showPendingTasks();
-
+        
         TopSecurityManager.unregister(SecMan.DEFAULT);
-
+        
         // Remove beaninfo search path.
         String[] sp = Introspector.getBeanInfoSearchPath();
         java.util.List<String> paths = Arrays.asList(sp);
@@ -120,17 +120,17 @@ public class Install extends ModuleInstall {
             paths = new ArrayList<String>(paths);
             paths.remove(BEANINFO_PATH);
             Introspector.setBeanInfoSearchPath(
-                paths.toArray(new String[0]));
+                    paths.toArray(new String[0]));
         }
         
         // Remove property editor seach path.
         sp = PropertyEditorManager.getEditorSearchPath();
-        paths = Arrays.asList(sp); 
+        paths = Arrays.asList(sp);
         if(paths.contains(EDITOR_PATH)) {
             paths = new ArrayList<String>(paths);
             paths.remove(EDITOR_PATH);
             PropertyEditorManager.setEditorSearchPath(
-                paths.toArray(new String[0]));
+                    paths.toArray(new String[0]));
         }
     }
     
@@ -143,42 +143,42 @@ public class Install extends ModuleInstall {
      * and also servers as the action listener for killing the tasks.
      */
     private static class PendingDialogCloser extends WindowAdapter implements Runnable,
-		PropertyChangeListener, ActionListener, NodeListener {
-	private Dialog[] dialogHolder;
-	private Object exitOption;
-	PendingDialogCloser(Dialog[] holder, Object exit) {
-	    dialogHolder = holder;
-	    exitOption = exit;
-	}
-	
-	public void run() {
+            PropertyChangeListener, ActionListener, NodeListener {
+        private Dialog[] dialogHolder;
+        private Object exitOption;
+        PendingDialogCloser(Dialog[] holder, Object exit) {
+            dialogHolder = holder;
+            exitOption = exit;
+        }
+        
+        public void run() {
             dialogHolder[0].setVisible(false);
-	}
-
-	// Beware: this may be called also from rootNode's prop changes
+        }
+        
+        // Beware: this may be called also from rootNode's prop changes
         // Once all pending tasks are gone, close the dialog.
         public void propertyChange(PropertyChangeEvent evt) {
             if(ExplorerManager.PROP_EXPLORED_CONTEXT.equals(evt.getPropertyName())) {
                 checkClose();
             }
-	}
-
-	// kill pending tasks and close the dialog
+        }
+        
+        // kill pending tasks and close the dialog
         public void actionPerformed(ActionEvent evt) {
             if(evt.getSource() == exitOption) {
                 killPendingTasks();
                 Mutex.EVENT.readAccess(this); // close in AWT
             }
         }
-	
+        
         public void childrenRemoved(NodeMemberEvent evt) {
             checkClose();
-	}
-	
+        }
+        
         // Dialog was opened but pending tasks could disappear inbetween.
         public void windowOpened(java.awt.event.WindowEvent evt) {
             checkClose();
-	}
+        }
         
         /** Checks if there are pending tasks and closes (in AWT)
          * the dialog if not. */
@@ -187,74 +187,77 @@ public class Install extends ModuleInstall {
                 Mutex.EVENT.readAccess(this);
             }
         }
-
-	// noop - rest of node listener
-	public void childrenAdded (NodeMemberEvent ev) {}
-	public void childrenReordered(NodeReorderEvent ev) {}
-	public void nodeDestroyed (NodeEvent ev) {}
-
+        
+        // noop - rest of node listener
+        public void childrenAdded(NodeMemberEvent ev) {}
+        public void childrenReordered(NodeReorderEvent ev) {}
+        public void nodeDestroyed(NodeEvent ev) {}
+        
     }
     
     // Remainder moved from ExitDialog:
     
     /** Shows dialog which waits for finishing of pending tasks,
-     * (currently actions only) and offers to user to leave IDE 
+     * (currently actions only) and offers to user to leave IDE
      * immediatelly interrupting those tasks.
      * @return <code>true</code> if to continue with the action
      * <code>false</code> if the action to cancel
      */
     private static boolean showPendingTasks() {
-        if(getPendingTasks().isEmpty()) {
+        // Avoid showing the tasks in the dialog when either running internal tests
+        if (Boolean.getBoolean("netbeans.full.hack") // NOI18N
+                // or there are no pending tasks.
+                || getPendingTasks().isEmpty()) {
             return true;
         }
-  
+        
         EM panel = new EM();
         
         Dialog[] dialog = new Dialog[1];
         Node root = new AbstractNode(new PendingChildren());
-
-
+        
+        
         JButton exitOption = new JButton();
         Mnemonics.setLocalizedText(exitOption, NbBundle.getMessage(Install.class, "LAB_EndTasks"));
         // No default button.
         // exitOption.setDefaultCapable(false);
         exitOption.getAccessibleContext().setAccessibleDescription(
-            NbBundle.getMessage(Install.class, "ACSD_EndTasks"));
-
-	PendingDialogCloser closer = new PendingDialogCloser(dialog, exitOption);
-
+                NbBundle.getMessage(Install.class, "ACSD_EndTasks"));
+        
+        PendingDialogCloser closer = new PendingDialogCloser(dialog, exitOption);
+        
         panel.getExplorerManager().setRootContext(root);
         // closer will autoclose the dialog if all pending tasks finish
         panel.getExplorerManager().addPropertyChangeListener(closer);
         
         DialogDescriptor dd = new DialogDescriptor(
-            panel,
-            NbBundle.getMessage(Install.class, "CTL_PendingTitle"),
-            true, // modal
-            new Object[] {
-                exitOption,
-                DialogDescriptor.CANCEL_OPTION
-            },
+                panel,
+                NbBundle.getMessage(Install.class, "CTL_PendingTitle"),
+                true, // modal
+                new Object[] {
             exitOption,
-            DialogDescriptor.DEFAULT_ALIGN,
-            null,
-	    closer
-        );
+            DialogDescriptor.CANCEL_OPTION
+        },
+                exitOption,
+                DialogDescriptor.DEFAULT_ALIGN,
+                null,
+                closer
+                );
         // #33135 - no Help button for this dialog
         dd.setHelpCtx(null);
-
+        
         if(!getPendingTasks().isEmpty()) {
             root.addNodeListener(closer);
-
+            
             dialog[0] = DialogDisplayer.getDefault().createDialog(dd);
             
             dialog[0].addWindowListener(closer);
             
             dialog[0].setVisible(true);
             dialog[0].dispose();
-
+            
             if(dd.getValue() == DialogDescriptor.CANCEL_OPTION
-            || dd.getValue() == DialogDescriptor.CLOSED_OPTION) {
+                    || dd.getValue() == DialogDescriptor.CLOSED_OPTION) {
                 return false;
             }
             
@@ -262,11 +265,11 @@ public class Install extends ModuleInstall {
         
         return true;
     }
- 
+    
     private static class EM extends JPanel implements ExplorerManager.Provider {
         private ExplorerManager manager = new ExplorerManager();
         private org.openide.util.Lookup lookup;
-
+        
         public EM() {
             manager = new ExplorerManager();
             ActionMap map = getActionMap();
@@ -274,49 +277,49 @@ public class Install extends ModuleInstall {
             map.put(DefaultEditorKit.cutAction, ExplorerUtils.actionCut(manager));
             map.put(DefaultEditorKit.pasteAction, ExplorerUtils.actionPaste(manager));
             map.put("delete", ExplorerUtils.actionDelete(manager, true)); // or false
-
-            lookup = ExplorerUtils.createLookup (manager, map);
-
+            
+            lookup = ExplorerUtils.createLookup(manager, map);
+            
             initComponent();
         }
-       
+        
         private void initComponent() {
             setLayout(new GridBagLayout());
-
+            
             GridBagConstraints cons = new GridBagConstraints();
             cons.gridx = 0;
             cons.gridy = 0;
             cons.weightx = 1.0D;
             cons.fill = GridBagConstraints.HORIZONTAL;
             cons.insets = new Insets(11, 11, 0, 12);
-
+            
             JLabel label = new JLabel();
-	    Mnemonics.setLocalizedText(label, NbBundle.getMessage(Install.class, "LAB_PendingTasks"));
-
+            Mnemonics.setLocalizedText(label, NbBundle.getMessage(Install.class, "LAB_PendingTasks"));
+            
             add(label, cons);
-
+            
             cons.gridy = 1;
             cons.weighty = 1.0D;
             cons.fill = GridBagConstraints.BOTH;
             cons.insets = new Insets(2, 11, 0, 12);
-
+            
             ListView view = new ListView();
             //#66881
             view.setBorder(UIManager.getBorder("Nb.ScrollPane.border"));
             label.setLabelFor(view);
-
+            
             add(view, cons);
-
+            
             view.getAccessibleContext().setAccessibleDescription(
-            NbBundle.getMessage(Install.class, "ACSD_PendingTasks"));
+                    NbBundle.getMessage(Install.class, "ACSD_PendingTasks"));
             getAccessibleContext().setAccessibleDescription(
-            NbBundle.getMessage(Install.class, "ACSD_PendingTitle"));
-
+                    NbBundle.getMessage(Install.class, "ACSD_PendingTitle"));
+            
             // set size requested by HIE guys
             Dimension origSize = getPreferredSize();
             setPreferredSize(new Dimension(origSize.width * 5 / 4, origSize.height));
         }
-
+        
         public ExplorerManager getExplorerManager() {
             return manager;
         }
@@ -333,30 +336,27 @@ public class Install extends ModuleInstall {
         }
     }
     
-    /** Gets pending (running) tasks. Used as keys 
+    /** Gets pending (running) tasks. Used as keys
      * for pending dialog root node children. Currently it gets pending
      * actions only. */
     static Collection getPendingTasks() {
-        
+
         ArrayList<Object> pendingTasks = new ArrayList<Object>( 10 ); // Action | ExecutorTask | InternalHandle
         // XXX no access to running actions at the moment
         //pendingTasks.addAll(CallableSystemAction.getRunningActions());
         pendingTasks.addAll(org.netbeans.core.ModuleActions.getDefaultInstance().getRunningActions());
         
-        if ( !Boolean.getBoolean( "netbeans.full.hack" ) ) { // NOI18N
-            // Avoid showing the tasks in the dialog when running internal tests
-            ExecutionEngine ee = ExecutionEngine.getExecutionEngine();
-            if (ee != null) {
-                pendingTasks.addAll(ee.getRunningTasks());
-            }
+        ExecutionEngine ee = ExecutionEngine.getExecutionEngine();
+        if (ee != null) {
+            pendingTasks.addAll(ee.getRunningTasks());
         }
         
-	pendingTasks.addAll(Arrays.asList(Controller.getDefault().getModel().getHandles()));
-	
+        pendingTasks.addAll(Arrays.asList(Controller.getDefault().getModel().getHandles()));
+        
         // [PENDING] When it'll be added another types of tasks (locks etc.)
         // add them here to the list. Then you need to create also a nodes
         // for them in PendingChildren.createNodes.
-        
+
         return pendingTasks;
     }
     
@@ -368,32 +368,32 @@ public class Install extends ModuleInstall {
         
         // [PENDING] When it'll be added another types of tasks (locks etc.)
         // kill them here.
-   }
+    }
     
-   /** Tries to kill running executions */
-   private static void killRunningExecutors() {
-       ExecutionEngine ee = ExecutionEngine.getExecutionEngine();
-       if (ee == null) {
-           return;
-       }
-       ArrayList<ExecutorTask> tasks = new ArrayList<ExecutorTask>(ee.getRunningTasks());
-       
-       for ( Iterator<ExecutorTask> it = tasks.iterator(); it.hasNext(); ) {
-           ExecutorTask et = it.next();
-           if ( !et.isFinished() ) {
-               et.stop();
-           }
-       }
-       
-   }
+    /** Tries to kill running executions */
+    private static void killRunningExecutors() {
+        ExecutionEngine ee = ExecutionEngine.getExecutionEngine();
+        if (ee == null) {
+            return;
+        }
+        ArrayList<ExecutorTask> tasks = new ArrayList<ExecutorTask>(ee.getRunningTasks());
 
+        for ( Iterator<ExecutorTask> it = tasks.iterator(); it.hasNext(); ) {
+            ExecutorTask et = it.next();
+            if ( !et.isFinished() ) {
+                et.stop();
+            }
+        }
+        
+    }
+    
     /** Children showing pending tasks. */
-    /* non private because of tests - was private before */ 
+    /* non private because of tests - was private before */
     static class PendingChildren extends Children.Keys implements ExecutionListener, ListDataListener {
-
+        
         /** Listens on changes of sources from getting the tasks from.
          * Currently on module actions only. */
-//        private PropertyChangeListener propertyListener;
+        //        private PropertyChangeListener propertyListener;
         
         
         /** Constructs new children. */
@@ -406,7 +406,7 @@ public class Install extends ModuleInstall {
                     }
                 }
             };
-
+             
             ModuleActions.getDefault().addPropertyChangeListener(
                 org.openide.util.WeakListeners.propertyChange (propertyListener, ModuleActions.getDefault())
             );
@@ -416,11 +416,11 @@ public class Install extends ModuleInstall {
             if (ee != null) {
                 ee.addExecutionListener(this);
             }
-	    Controller.getDefault().getModel().addListDataListener(this);
+            Controller.getDefault().getModel().addListDataListener(this);
         }
-
+        
         /** Implements superclass abstract method. Creates nodes from key.
-         * @return <code>PendingActionNode</code> if key is of 
+         * @return <code>PendingActionNode</code> if key is of
          * <code>Action</code> type otherwise <code>null</code> */
         protected Node[] createNodes(Object key) {
             Node n = null;
@@ -428,30 +428,28 @@ public class Install extends ModuleInstall {
                 Action action = (Action)key;
                 Icon icon = (action instanceof SystemAction) ?
                     ((SystemAction)action).getIcon() : null;
-
+                
                 String actionName = (String)action.getValue(Action.NAME);
                 if (actionName == null) actionName = ""; // NOI18N
                 actionName = org.openide.awt.Actions.cutAmpersand(actionName);
                 n = new NoActionNode(icon, actionName, NbBundle.getMessage(
-                    Install.class, "CTL_ActionInProgress", actionName));
-            }
-            else if ( key instanceof ExecutorTask) {
+                        Install.class, "CTL_ActionInProgress", actionName));
+            } else if (key instanceof ExecutorTask) {
                 n = new NoActionNode(null, key.toString(),
-                    NbBundle.getMessage(Install.class, "CTL_PendingExternalProcess2", 
-                    // getExecutionEngine() had better be non-null, since getPendingTasks gave an ExecutorTask:
-                    ExecutionEngine.getExecutionEngine().getRunningTaskName((ExecutorTask) key))
-                );
-            }
-	    else if (key instanceof InternalHandle) {
+                        NbBundle.getMessage(Install.class, "CTL_PendingExternalProcess2",
+                        // getExecutionEngine() had better be non-null, since getPendingTasks gave an ExecutorTask:
+                        ExecutionEngine.getExecutionEngine().getRunningTaskName((ExecutorTask) key))
+                        );
+            } else if (key instanceof InternalHandle) {
                 n = new NoActionNode(null, ((InternalHandle)key).getDisplayName(), null);
-	    }
+            }
             return n == null ? null : new Node[] { n };
         }
-
+        
         /** Implements superclass abstract method. */
         protected void addNotify() {
             setKeys(getPendingTasks());
-            super.addNotify();            
+            super.addNotify();
         }
         
         /** Implements superclass abstract method. */
@@ -462,7 +460,7 @@ public class Install extends ModuleInstall {
             if (ee != null) {
                 ee.removeExecutionListener(this);
             }
-	    Controller.getDefault().getModel().removeListDataListener(this);
+            Controller.getDefault().getModel().removeListDataListener(this);
         }
         
         // ExecutionListener implementation ------------------------------------
@@ -474,22 +472,22 @@ public class Install extends ModuleInstall {
         public void finishedExecution( ExecutionEvent ev ) {
             setKeys(getPendingTasks());
         }
-
-	public void intervalAdded(ListDataEvent e) {
+        
+        public void intervalAdded(ListDataEvent e) {
             setKeys(getPendingTasks());
-	}
-	
-	public void intervalRemoved(ListDataEvent e) {
+        }
+        
+        public void intervalRemoved(ListDataEvent e) {
             setKeys(getPendingTasks());
-	}
-	
-	
-	public void contentsChanged(ListDataEvent e) {
+        }
+        
+        
+        public void contentsChanged(ListDataEvent e) {
             setKeys(getPendingTasks());
-	}
+        }
         
     } //  End of class PendingChildren.
-
+    
     /** Node without any actions. */
     private static class NoActionNode extends AbstractNode {
         private Image img;
@@ -502,16 +500,16 @@ public class Install extends ModuleInstall {
             setName(name);
             if (display != null) setDisplayName(display);
         }
-
+        
         /** @return empty array of actions */
         public Action[] getActions(boolean context) {
             return new Action[0];
         }
-     
+        
         /** @return provided icon or delegate to superclass if no icon provided.
          */
         public Image getIcon(int type) {
             return img == null ? super.getIcon(type) : img;
         }
-    }    
+    }
 }
