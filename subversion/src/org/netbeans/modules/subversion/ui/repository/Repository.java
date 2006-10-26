@@ -313,12 +313,12 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
             revision = SVNRevision.HEAD;
         } else if (acceptRevision) {
             if( idx + 1 < urlString.length()) {
-                String number = ""; // NOI18N
+                String revisionString = ""; // NOI18N
                 try {
-                    number = urlString.substring(idx+1);
-                    revision = new SVNRevision.Number(Long.parseLong(number));
+                    revisionString = urlString.substring(idx+1);
+                    revision = SvnUtils.getSVNRevision(revisionString);
                 } catch (NumberFormatException ex) {
-                    setValid(false, NbBundle.getMessage(Repository.class, "MSG_Repository_WrongRevision", number)); // NOI18N
+                    setValid(false, NbBundle.getMessage(Repository.class, "MSG_Repository_WrongRevision", revisionString)); // NOI18N
                     return null;
                 }
             } else {

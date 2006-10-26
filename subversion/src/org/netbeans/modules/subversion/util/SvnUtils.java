@@ -45,6 +45,7 @@ import java.awt.Window;
 import java.awt.KeyboardFocusManager;
 import java.awt.Dialog;
 import java.awt.Frame;
+import java.text.ParseException;
 import org.netbeans.modules.subversion.client.ExceptionHandler;
 import org.tigris.subversion.svnclientadapter.*;
 import org.tigris.subversion.svnclientadapter.utils.SVNUrlUtils;
@@ -811,4 +812,13 @@ public class SvnUtils {
         }
     }
 
+    public static SVNRevision getSVNRevision(String revisionString) {
+        try {    
+            // HEAD, PREV, BASE, COMMITED, ...
+            return SVNRevision.getRevision(revisionString);
+        } catch (ParseException ex) {
+            return new SVNRevision.Number(Long.parseLong(revisionString));
+        }        
+    }
+    
 }

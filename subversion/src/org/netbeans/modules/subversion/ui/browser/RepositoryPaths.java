@@ -24,6 +24,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.MalformedURLException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -36,6 +37,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.ui.search.SvnSearch;
+import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -248,15 +250,17 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
     }
     
     public SVNRevision getRevision() {
-        if(revisionTextField == null) {
+        
+        if (revisionTextField == null) {
             return SVNRevision.HEAD;
         }
         String revisionString = getRevisionString();
-        if(revisionString.equals("") || revisionString.equals(SVNRevision.HEAD.toString())) { // NOI18N
-            return SVNRevision.HEAD;    
-        }
-        return new SVNRevision.Number(Long.parseLong(revisionString));        
-    }       
+
+        if (revisionString.equals("")) {
+            return SVNRevision.HEAD;
+        }            
+        return SvnUtils.getSVNRevision(revisionString);        
+    }           
     
     public void actionPerformed(ActionEvent e) {
         if(e.getSource() == browseButton) {

@@ -31,7 +31,6 @@ import org.netbeans.modules.subversion.client.ExceptionHandler;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.WizardStepProgressSupport;
 import org.netbeans.modules.subversion.config.ProxyDescriptor;
-import org.netbeans.modules.subversion.config.SvnConfigFiles;
 import org.netbeans.modules.subversion.ui.repository.Repository;
 import org.netbeans.modules.subversion.ui.wizards.AbstractStep;
 import org.netbeans.modules.subversion.util.SvnUtils;
