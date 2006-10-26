@@ -65,8 +65,7 @@ public class I18nOptionsTest extends BasicTestForImport {
         assertProperty("advancedWizard","true");
     }
     public void testLastResource2() throws Exception {
-        assertPropertyType("lastResource2", "java.lang.String");
-        assertProperty("lastResource2","unknown");
+        assertProperty("lastResource2","home.local/rmatous/module2/src/org/yourorghere/module2/Bundle.properties");
     }
     public void testI18nRegularExpression() throws Exception {
         assertPropertyType("i18nRegularExpression", "java.lang.String");

@@ -260,7 +260,7 @@ public final class I18nUtil {
     
     /** Gets i18n options. */
     public static I18nOptions getOptions() {
-        return (I18nOptions)SharedClassObject.findObject(I18nOptions.class, true);
+        return I18nOptions.getDefault();
     }
     
 

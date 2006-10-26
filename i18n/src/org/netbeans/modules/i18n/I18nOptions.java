@@ -21,24 +21,32 @@
 package org.netbeans.modules.i18n;
 
 
-import java.io.IOException;
+import java.io.File;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.options.SystemOption;
 import org.openide.util.HelpCtx;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.nodes.BeanNode;
+import org.openide.util.NbPreferences;
 
 /**
  * Options for i18n module.
  *
  * @author  Peter Zavadsky
  */
-public class I18nOptions extends SystemOption {
-
-    /** Generated serial version UID.  */
-    static final long serialVersionUID = -1045171977263973656L;
+public class I18nOptions {
+    private static final I18nOptions INSTANCE = new I18nOptions();
 
     /** Property name for advanced wizard. 
      * Indicates wheter I18N Wizard has to show panel with genaration field values for java sources. */
@@ -73,9 +81,15 @@ public class I18nOptions extends SystemOption {
     
     /** Provided due exeternaliazation only. 
      * Don't create this object directly use superclass <code>findObject</code> method instead. */
-    public I18nOptions() {
+    private I18nOptions() {}
+
+    public static I18nOptions getDefault() {
+        return INSTANCE;
     }
 
+    private  static Preferences getPreferences() {
+        return NbPreferences.forModule(I18nOptions.class);
+    }    
     
     /** Implements superclass abstract method. */
     public String displayName() {
@@ -85,122 +99,80 @@ public class I18nOptions extends SystemOption {
     /** Getter for init advanced wizard property. */
     public boolean isAdvancedWizard() {
         // Lazy init.
-        if(getProperty(PROP_ADVANCED_WIZARD) == null)
-            return false;
-        
-        return ((Boolean)getProperty(PROP_ADVANCED_WIZARD)).booleanValue();
+        return getPreferences().getBoolean(PROP_ADVANCED_WIZARD,false);
     }
 
     /** Setter for init advanced wizard property. */
     public void setAdvancedWizard(boolean generateField) {
         // Stores in class-wide state and fires property changes if needed:
-        putProperty(PROP_ADVANCED_WIZARD, generateField ? Boolean.TRUE : Boolean.FALSE, true);
+        getPreferences().putBoolean(PROP_ADVANCED_WIZARD,generateField);
     }
     
     /** Getter for init java code property. */
     public String getInitJavaCode() {
-        // Lazy init.
-        if(getProperty(PROP_INIT_JAVA_CODE) == null)
-            putProperty(PROP_INIT_JAVA_CODE, I18nUtil.getInitFormatItems().get(0), true);
-            
-        return (String)getProperty(PROP_INIT_JAVA_CODE);
+        return getPreferences().get(PROP_INIT_JAVA_CODE,(String)I18nUtil.getInitFormatItems().get(0));
     }
 
     /** Setter for init java code property. */
     public void setInitJavaCode(String initJavaCode) {
-        // Make sure it is sane.
-        if(initJavaCode == null)
-            return;
-        
-        // Stores in class-wide state and fires property changes if needed:
-        putProperty(PROP_INIT_JAVA_CODE, initJavaCode, true);
+        getPreferences().put(PROP_INIT_JAVA_CODE,initJavaCode);
     }    
     
     /** Getter for replace java code property. */
     public String getReplaceJavaCode() {
         // Lazy init.
-        if(getProperty(PROP_REPLACE_JAVA_CODE) == null)
-            return (String)I18nUtil.getDefaultReplaceFormat(false);
-        
-        return (String)getProperty(PROP_REPLACE_JAVA_CODE);
+        return getPreferences().get(PROP_REPLACE_JAVA_CODE,(String)I18nUtil.getDefaultReplaceFormat(false));
     }
 
     /** Setter for replace java code property. */
     public void setReplaceJavaCode(String replaceJavaCode) {
-        // Make sure it is sane.
-        if(replaceJavaCode == null)
-            return;
-        
-        // Stores in class-wide state and fires property changes if needed:
-        putProperty(PROP_REPLACE_JAVA_CODE, replaceJavaCode, true);
+        getPreferences().put(PROP_REPLACE_JAVA_CODE,replaceJavaCode);
     }    
 
     /** Getter for regular expression property. 
      * @see #PROP_REGULAR_EXPRESSION */
     public String getRegularExpression() {
-        // Lazy init.
-        if(getProperty(PROP_REGULAR_EXPRESSION) == null)
-            return (String)I18nUtil.getRegExpItems().get(0);
-        
-        return (String)getProperty(PROP_REGULAR_EXPRESSION);
+        return getPreferences().get(PROP_REGULAR_EXPRESSION,(String)I18nUtil.getRegExpItems().get(0));        
     }
 
     /** Setter for regular expression property. 
      * @see #PROP_REGULAR_EXPRESSION */
     public void setRegularExpression(String regExp) {
-        // Make sure it is sane.
-        if(regExp == null)
-            return;
-        
-        // Stores in class-wide state and fires property changes if needed:
-        putProperty(PROP_REGULAR_EXPRESSION, regExp, true);
+        getPreferences().put(PROP_REGULAR_EXPRESSION,regExp);
     }    
     
     /** Getter for i18n regular expression property. 
      * @see #PROP_I18N_REGULAR_EXPRESSION */
     public String getI18nRegularExpression() {
-        // Lazy init.
-        if(getProperty(PROP_I18N_REGULAR_EXPRESSION) == null)
-            return (String)I18nUtil.getI18nRegExpItems().get(0);
-        
-        return (String)getProperty(PROP_I18N_REGULAR_EXPRESSION);
+        return getPreferences().get(PROP_I18N_REGULAR_EXPRESSION,(String)I18nUtil.getI18nRegExpItems().get(0));        
     }
 
     /** Setter for i18n regular expression property. 
      * @see #PROP_I18N_REGULAR_EXPRESSION */
     public void setI18nRegularExpression(String regExp) {
-        // Make sure it is sane.
-        if(regExp == null)
-            return;
-        
-        // Stores in class-wide state and fires property changes if needed:
-        putProperty(PROP_I18N_REGULAR_EXPRESSION, regExp, true);
+        getPreferences().put(PROP_I18N_REGULAR_EXPRESSION,regExp);
     }    
 
     /** Getter for replace resource value property. */
     public boolean isReplaceResourceValue() {
-        // Lazy init.
-        if(getProperty(PROP_REPLACE_RESOURCE_VALUE) == null)
-            return false;
-        
-        return ((Boolean)getProperty(PROP_REPLACE_RESOURCE_VALUE)).booleanValue();
+        return getPreferences().getBoolean(PROP_REPLACE_RESOURCE_VALUE,false);        
     }
 
     /** Setter for replacve resource value property. */
     public void setReplaceResourceValue(boolean replaceResourceValue) {
-        // Stores in class-wide state and fires property changes if needed:
-        putProperty(PROP_REPLACE_RESOURCE_VALUE, replaceResourceValue ? Boolean.TRUE : Boolean.FALSE, true);
+        getPreferences().putBoolean(PROP_REPLACE_RESOURCE_VALUE,replaceResourceValue);
     }
     
     /** Getter for last resource property. */
     public DataObject getLastResource2() {
-        FileObject f = (FileObject) getProperty(PROP_LAST_RESOURCE2);
+        String path = getPreferences().get(PROP_LAST_RESOURCE2,null);
+        FileObject f = (path != null) ? findFileObject(path) : null;
         if ((f != null) && !f.isFolder() && f.isValid()) {
             try {
                 return DataObject.find(f);
             } catch (DataObjectNotFoundException e) {
                 /* The file was probably deleted or moved. */
-                putProperty(PROP_LAST_RESOURCE2, null, true);
+                getPreferences().remove(PROP_LAST_RESOURCE2);
             }
         }
         return null;
@@ -212,7 +184,7 @@ public class I18nOptions extends SystemOption {
         if(lastResource == null)
             return;
         
-        putProperty(PROP_LAST_RESOURCE2, lastResource.getPrimaryFile(), true);
+        getPreferences().put(PROP_LAST_RESOURCE2,lastResource.getPrimaryFile().getPath());
     }
     
     /** Get context help for this system option.
@@ -222,5 +194,34 @@ public class I18nOptions extends SystemOption {
         return new HelpCtx (I18nOptions.class);
     }
     
+    private static FileSystem[] getFileSystems() {
+        List retval = new ArrayList();
+        File[] all = File.listRoots();
+        for (int i = 0; i < all.length; i++) {
+            File file = all[i];
+            FileObject fo = FileUtil.toFileObject(file);
+            if (fo != null) {
+                try {
+                    retval.add(fo.getFileSystem());
+                } catch (FileStateInvalidException ex) {
+                        Logger.getLogger(I18nOptions.class.getName()).log(Level.INFO, null, ex);
+                }
+            }
+        }        
+        return (FileSystem[])retval.toArray(new FileSystem[retval.size()]);
+    }
+    
+    private static FileObject findFileObject(String path) {
+        FileObject retval = null;
+        FileSystem[] fss = getFileSystems();
+        for (int i = 0; retval == null && i < fss.length; i++) {
+            FileSystem fileSystem = fss[i];
+            retval = fileSystem.findResource(path);
+        }
+        return retval;
+    }
 
+    private static BeanNode createViewNode() throws java.beans.IntrospectionException {
+        return new BeanNode(I18nOptions.getDefault());
+    }             
 }
