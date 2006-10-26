@@ -119,17 +119,29 @@ class PSheet extends JPanel implements MouseListener {
             String tabname = null;
 
             if (comp != null) {
+                boolean success = false;
+                
+                //first try to keep the last used property group
+                tabname = manager().getLastSelectedGroupName();
+                if( tabname != null && tabname.length() > 0 ) {
+                    success = TabbedContainerBridge.getDefault().setSelectionByName(comp, tabname);
+                }
+                
+                //now try if there's a stored property group for the new node 
+                if( !success ) {
                 tabname = manager().getGroupNameForNodeName(nodeName);
-
-                if ((tabname == null) || (tabname.length() <= 0)) {
-                    tabname = PropUtils.basicPropsTabName(); // use basic tab
+                    if( tabname != null && tabname.length() > 0 ) {
+                        success = TabbedContainerBridge.getDefault().setSelectionByName(comp, tabname);
+                    }
                 }
 
-                boolean success = TabbedContainerBridge.getDefault().setSelectionByName(comp, tabname);
+                //just use default property group
+                if( !success ) {
+                    tabname = PropUtils.basicPropsTabName(); // use basic tab
+                    success = TabbedContainerBridge.getDefault().setSelectionByName(comp, tabname);
+                }
 
-                if (!success) {
-                    TabbedContainerBridge.getDefault().setSelectionByName(comp, PropUtils.basicPropsTabName());
-                } else {
+                if (success) {
                     if (selectionListener != null) {
                         ChangeEvent ce = new ChangeEvent(this);
                         selectionListener.stateChanged(ce);
