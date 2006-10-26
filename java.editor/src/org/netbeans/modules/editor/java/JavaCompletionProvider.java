@@ -467,8 +467,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                 case NEW_CLASS:
                     insideNewClass(env);
                     break;
+                case ASSERT:
                 case RETURN:
-                case THROW:
+                case THROW:                    
                     localResult(env);
                     addValueKeywords(env);
                     break;
