@@ -147,10 +147,6 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
     
     <!-- Help -->
     <folder name="Services">
-    	<file name="org-netbeans-modules-junit-JUnitSettings.settings" url="JUnitSettings.xml">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/> 
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/JUnitLogo.png"/>
-    	</file>        
         <folder name="Hidden">
             <file name="org-netbeans-modules-junit-antlibrary.instance">
                 <attr name="instanceCreate" methodvalue="org.apache.tools.ant.module.spi.AutomaticExtraClasspath.url"/>
@@ -160,20 +156,16 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
         </folder>
     </folder>
 
-
-    
-    
-    
     <folder name="UI">
     	<folder name="Services">
                 <!-- Display the system option under the "Testing" category in Options. -->
         	<folder name="Testing">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/>
                     <!-- Point to the real settings file (always on the system file system). -->
-	            <file name="org-netbeans-modules-junit-JUnitSettings.shadow">
-                        <attr name="originalFile" stringvalue="Services/org-netbeans-modules-junit-JUnitSettings.settings"/>
-	            </file>
-        	</folder>
+                    <file name="org-netbeans-modules-junit-JUnitSettingsNode.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.junit.JUnitSettings.createViewNode"/>
+                    </file>
+                </folder>
     	</folder>
     </folder>
 
