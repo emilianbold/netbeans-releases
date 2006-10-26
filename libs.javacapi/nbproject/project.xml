@@ -9,6 +9,8 @@
                 <package>com.sun.javadoc</package>
                 <package>com.sun.source.tree</package>
                 <package>com.sun.source.util</package>
+                <package>javax.annotation</package>
+                <package>javax.annotation.processing</package>
                 <package>javax.lang.model</package>
                 <package>javax.lang.model.element</package>
                 <package>javax.lang.model.type</package>
