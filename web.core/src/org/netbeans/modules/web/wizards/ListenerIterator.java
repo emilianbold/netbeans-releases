@@ -40,8 +40,8 @@ import org.openide.util.NbBundle;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.j2ee.dd.api.web.*;
 import org.openide.DialogDisplayer;
-import org.openide.src.ClassElement;
-import org.openide.src.SourceException;
+//import org.openide.src.ClassElement;
+//import org.openide.src.SourceException;
 
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.netbeans.api.project.Project;
@@ -163,23 +163,24 @@ public class ListenerIterator implements TemplateWizard.Iterator {
                 }
             }
             if (result!=null) {
-                ClassElement clazz = ClassElement.forName(className,result.getPrimaryFile());
-                if (clazz!=null) {
-                    ListenerGenerator gen = new ListenerGenerator(
-                        panel.isContextListener(),
-                        panel.isContextAttrListener(),
-                        panel.isSessionListener(),
-                        panel.isSessionAttrListener(),
-                        panel.isRequestListener(),
-                        panel.isRequestAttrListener());
-                    try {
-                        gen.generate(clazz);
-                    } catch (SourceException ex){
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,ex);
-                    }
-                }
-                SaveCookie save = (SaveCookie) result.getCookie (SaveCookie.class);
-                save.save();
+                //TODO: RETOUCHE
+//                ClassElement clazz = ClassElement.forName(className,result.getPrimaryFile());
+//                if (clazz!=null) {
+//                    ListenerGenerator gen = new ListenerGenerator(
+//                        panel.isContextListener(),
+//                        panel.isContextAttrListener(),
+//                        panel.isSessionListener(),
+//                        panel.isSessionAttrListener(),
+//                        panel.isRequestListener(),
+//                        panel.isRequestAttrListener());
+//                    try {
+//                        gen.generate(clazz);
+//                    } catch (SourceException ex){
+//                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,ex);
+//                    }
+//                }
+//                SaveCookie save = (SaveCookie) result.getCookie (SaveCookie.class);
+//                save.save();
             }
         } else {
             String mes = MessageFormat.format (

@@ -19,36 +19,36 @@
 
 package org.netbeans.modules.web.core;
 
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.modules.j2ee.common.JMIUtils;
-import org.netbeans.modules.j2ee.common.queries.spi.InjectionTargetQueryImplementation;
-import org.netbeans.modules.javacore.api.JavaModel;
+//import org.netbeans.jmi.javamodel.JavaClass;
+//import org.netbeans.modules.j2ee.common.JMIUtils;
+//import org.netbeans.modules.j2ee.common.queries.spi.InjectionTargetQueryImplementation;
+//import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 
 /**
  *
  * @author Martin Adamek
  */
-public class WebInjectionTargetQueryImplementation implements InjectionTargetQueryImplementation {
+public class WebInjectionTargetQueryImplementation /*implements InjectionTargetQueryImplementation*/ {
     
     public WebInjectionTargetQueryImplementation() {
     }
     
-    public boolean isInjectionTarget(JavaClass jc) {
-        if (jc == null) {
-            throw new NullPointerException("Passed null to WebInjectionTargetQueryImplementation.isInjectionTarget(JavaClass)"); // NOI18N
-        }
-        WebModule webModule = WebModule.getWebModule(JavaModel.getFileObject(jc.getResource()));
-        if (webModule != null &&
-                !webModule.getJ2eePlatformVersion().equals("1.3") &&
-                !webModule.getJ2eePlatformVersion().equals("1.4")) {
-            return jc.isSubTypeOf(JMIUtils.findClass("javax.servlet.Servlet"));
-        }
-        return false;
-    }
-
-    public boolean isStaticReferenceRequired(JavaClass jc) {
-        return false;
-    }
+//    public boolean isInjectionTarget(JavaClass jc) {
+//        if (jc == null) {
+//            throw new NullPointerException("Passed null to WebInjectionTargetQueryImplementation.isInjectionTarget(JavaClass)"); // NOI18N
+//        }
+//        WebModule webModule = WebModule.getWebModule(JavaModel.getFileObject(jc.getResource()));
+//        if (webModule != null &&
+//                !webModule.getJ2eePlatformVersion().equals("1.3") &&
+//                !webModule.getJ2eePlatformVersion().equals("1.4")) {
+//            return jc.isSubTypeOf(JMIUtils.findClass("javax.servlet.Servlet"));
+//        }
+//        return false;
+//    }
+//
+//    public boolean isStaticReferenceRequired(JavaClass jc) {
+//        return false;
+//    }
     
 }

@@ -51,8 +51,8 @@ import org.netbeans.modules.web.taglib.model.Taglib;
 import org.netbeans.modules.web.taglib.model.TagType;
 import org.netbeans.modules.web.taglib.model.TldAttributeType;
 
-import org.openide.src.ClassElement;
-import org.openide.src.SourceException;
+//import org.openide.src.ClassElement;
+//import org.openide.src.SourceException;
 
 /** A template wizard iterator (sequence of panels).
  * Used to fill in the second and subsequent panels in the New wizard.
@@ -115,18 +115,19 @@ public class TagHandlerIterator implements TemplateWizard.Iterator {
         Object[][] attrs = tldPanel.getAttributes();
         boolean isBodyTag = ((TagHandlerSelection)tagHandlerSelectionPanel).isBodyTagSupport();
         // writing setters to tag handler
-        if (attrs.length>0 || isBodyTag) {
-            ClassElement clazz = ClassElement.forName(tldPanel.getClassName(),dobj.getPrimaryFile());
-            boolean evaluateBody = !((TagInfoPanel)tagInfoPanel).isEmpty();
-            TagHandlerGenerator generator = new TagHandlerGenerator(clazz,attrs,isBodyTag, evaluateBody);
-            try {
-                generator.generate();
-            } catch (SourceException ex){
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,ex);
-            }
-            SaveCookie save = (SaveCookie)dobj.getCookie(SaveCookie.class);
-            if (save!=null) save.save();
-        }
+        //TODO: RETOUCHE
+//        if (attrs.length>0 || isBodyTag) {
+//            ClassElement clazz = ClassElement.forName(tldPanel.getClassName(),dobj.getPrimaryFile());
+//            boolean evaluateBody = !((TagInfoPanel)tagInfoPanel).isEmpty();
+//            TagHandlerGenerator generator = new TagHandlerGenerator(clazz,attrs,isBodyTag, evaluateBody);
+//            try {
+//                generator.generate();
+//            } catch (SourceException ex){
+//                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,ex);
+//            }
+//            SaveCookie save = (SaveCookie)dobj.getCookie(SaveCookie.class);
+//            if (save!=null) save.save();
+//        }
         // writing to TLD file
         if (tldPanel.writeToTLD()) {
             FileObject tldFo = tldPanel.getTLDFile();

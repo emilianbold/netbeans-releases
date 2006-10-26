@@ -25,12 +25,12 @@ import javax.swing.text.JTextComponent;
 import javax.swing.ImageIcon;
 
 import org.netbeans.editor.ext.CompletionQuery;
-import org.netbeans.editor.ext.java.JavaCompletionQuery;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.JavaPackage;
+//import org.netbeans.editor.ext.java.JavaCompletionQuery;
+//import org.netbeans.jmi.javamodel.JavaClass;
+//import org.netbeans.jmi.javamodel.JavaPackage;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.editor.java.JMIUtils;
-import org.netbeans.modules.editor.java.NbJMIResultItem;
+//import org.netbeans.modules.editor.java.JMIUtils;
+//import org.netbeans.modules.editor.java.NbJMIResultItem;
 import org.netbeans.modules.web.jsps.parserapi.PageInfo;
 
 import org.openide.filesystems.FileObject;
@@ -127,71 +127,71 @@ public class AttrSupports extends Object {
     }
     
     /** Support for code completing of package and class. */
-    public static class PackageClassSupport extends AttributeValueSupport.Default {
-        /** Index where to start substitution */
-        private int itemOffset;
-        /** Length of currently substituted text */
-        private int itemLength;
-        
-        public PackageClassSupport(boolean tag, String longName, String attrName) {
-            super(tag, longName, attrName);
-        }
-        
-        protected List possibleValues(JspSyntaxSupport sup, SyntaxElement.TagDirective item) {
-            return new ArrayList();
-        }
-        
-        /** Returns the complete result that contains elements from getCompletionItems.   */
-        public CompletionQuery.Result getResult(JTextComponent component, int offset,
-                JspSyntaxSupport sup, SyntaxElement.TagDirective item, String valuePart) {
-            if(valuePart.lastIndexOf(',') > 0)
-                valuePart = valuePart.substring(valuePart.lastIndexOf(',')+1).trim();
-            List res = completionResults(offset, sup, item, valuePart);
-            return new JspCompletionQuery.JspJavaCompletionResult(component, res, completionTitle(), null,
-                    itemOffset, itemLength, 0);
-        }
-        
-        /** Returns generated List of items for completion.
-         *  It sets itemLength and itemOffset variables as a side effect
-         */
-        private List completionResults(int offset, JspSyntaxSupport sup, SyntaxElement.TagDirective item, String valuePart) {
-            JMIUtils jmiutils = JMIUtils.get(sup.getDocument());
-            JspJavaSyntaxSupport jspJavaSup = new JspJavaSyntaxSupport(sup.getDocument(), sup);
-            JavaClass context = jspJavaSup.getJavaClass(0);
-            
-            jmiutils.beginTrans(false); //set proper classpath to javamodel
-            try {
-                String pkgName = "";    // NOI18N
-                JavaPackage pkg = null;
-                String clsNamePart = valuePart;
-                int lastDot = valuePart.lastIndexOf('.');
-                if (lastDot >= 0) {
-                    pkgName = valuePart.substring(0, lastDot);
-                    pkg = jmiutils.getExactPackage(pkgName);
-                    clsNamePart = (lastDot == valuePart.length())? "": valuePart.substring(lastDot+1);    // NOI18N
-                }
-                itemOffset = offset - valuePart.length() + lastDot + 1;  // works even with -1
-                itemLength = clsNamePart.length();
-                
-                List res = new ArrayList();
-                res.addAll(jmiutils.findPackages(valuePart, false, false, true)); // Find all possible packages // NOI18N
-                if (pkg != null)
-                    res.addAll(jmiutils.findClasses(pkg, clsNamePart, false, true, true, context, true, false));
-                
-                //set substitute offset
-                Iterator i = res.iterator();
-                while(i.hasNext()) {
-                    NbJMIResultItem jmiResultItem = (NbJMIResultItem)i.next();
-                    jmiResultItem.setSubstituteOffset(itemOffset);
-                }
-                
-                return res;
-            } finally {
-                jmiutils.endTrans(false);
-            }
-        }
-        
-    }
+//    public static class PackageClassSupport extends AttributeValueSupport.Default {
+//        /** Index where to start substitution */
+//        private int itemOffset;
+//        /** Length of currently substituted text */
+//        private int itemLength;
+//        
+//        public PackageClassSupport(boolean tag, String longName, String attrName) {
+//            super(tag, longName, attrName);
+//        }
+//        
+//        protected List possibleValues(JspSyntaxSupport sup, SyntaxElement.TagDirective item) {
+//            return new ArrayList();
+//        }
+//        
+//        /** Returns the complete result that contains elements from getCompletionItems.   */
+//        public CompletionQuery.Result getResult(JTextComponent component, int offset,
+//                JspSyntaxSupport sup, SyntaxElement.TagDirective item, String valuePart) {
+//            if(valuePart.lastIndexOf(',') > 0)
+//                valuePart = valuePart.substring(valuePart.lastIndexOf(',')+1).trim();
+//            List res = completionResults(offset, sup, item, valuePart);
+//            return new JspCompletionQuery.JspJavaCompletionResult(component, res, completionTitle(), null,
+//                    itemOffset, itemLength, 0);
+//        }
+//        
+//        /** Returns generated List of items for completion.
+//         *  It sets itemLength and itemOffset variables as a side effect
+//         */
+//        private List completionResults(int offset, JspSyntaxSupport sup, SyntaxElement.TagDirective item, String valuePart) {
+//            JMIUtils jmiutils = JMIUtils.get(sup.getDocument());
+//            JspJavaSyntaxSupport jspJavaSup = new JspJavaSyntaxSupport(sup.getDocument(), sup);
+//             context = jspJavaSup.getJavaClass(0);
+//            
+//            jmiutils.beginTrans(false); //set proper classpath to javamodel
+//            try {
+//                String pkgName = "";    // NOI18N
+//                JavaPackage pkg = null;
+//                String clsNamePart = valuePart;
+//                int lastDot = valuePart.lastIndexOf('.');
+//                if (lastDot >= 0) {
+//                    pkgName = valuePart.substring(0, lastDot);
+//                    pkg = jmiutils.getExactPackage(pkgName);
+//                    clsNamePart = (lastDot == valuePart.length())? "": valuePart.substring(lastDot+1);    // NOI18N
+//                }
+//                itemOffset = offset - valuePart.length() + lastDot + 1;  // works even with -1
+//                itemLength = clsNamePart.length();
+//                
+//                List res = new ArrayList();
+//                res.addAll(jmiutils.findPackages(valuePart, false, false, true)); // Find all possible packages // NOI18N
+//                if (pkg != null)
+//                    res.addAll(jmiutils.findClasses(pkg, clsNamePart, false, true, true, context, true, false));
+//                
+//                //set substitute offset
+//                Iterator i = res.iterator();
+//                while(i.hasNext()) {
+//                    NbJMIResultItem jmiResultItem = (NbJMIResultItem)i.next();
+//                    jmiResultItem.setSubstituteOffset(itemOffset);
+//                }
+//                
+//                return res;
+//            } finally {
+//                jmiutils.endTrans(false);
+//            }
+//        }
+//        
+//    }
     
     public static class GetSetPropertyName extends AttributeValueSupport.Default {
         

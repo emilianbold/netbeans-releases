@@ -24,8 +24,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.Method;
+//import org.netbeans.jmi.javamodel.JavaClass;
+//import org.netbeans.jmi.javamodel.Method;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.web.core.syntax.JspSyntaxSupport;
 import org.openide.loaders.DataObject;
@@ -114,44 +114,44 @@ public class ELImplicitObjects {
                 }
                 prop = property;
             }
-            else {
-                DataObject obj = NbEditorUtilities.getDataObject(sup.getDocument());
-                JavaClass javaClass = null;
-                if (obj != null){
-                    if (text.endsWith("request"))
-                        javaClass = JMIUtil.findClass("javax.servlet.ServletRequest", ClassPath.getClassPath(obj.getPrimaryFile(), ClassPath.COMPILE));
-                    else if (text.endsWith("response"))
-                        javaClass = JMIUtil.findClass("javax.servlet.ServletResponse", ClassPath.getClassPath(obj.getPrimaryFile(), ClassPath.COMPILE));
-                    else if (text.endsWith("session"))
-                        javaClass = JMIUtil.findClass("javax.servlet.http.HttpSession", ClassPath.getClassPath(obj.getPrimaryFile(), ClassPath.COMPILE));
-                    else if (text.endsWith("servletConfig"))
-                        javaClass = JMIUtil.findClass("javax.servlet.ServletConfig", ClassPath.getClassPath(obj.getPrimaryFile(), ClassPath.COMPILE));
-                    else if (text.endsWith("servletContext"))
-                        javaClass = JMIUtil.findClass("javax.servlet.ServletContext", ClassPath.getClassPath(obj.getPrimaryFile(), ClassPath.COMPILE));
-                }
-                if (javaClass != null)
-                    addProperties(prop = new ArrayList(), javaClass);
-            }
+//            else {
+//                DataObject obj = NbEditorUtilities.getDataObject(sup.getDocument());
+//                JavaClass javaClass = null;
+//                if (obj != null){
+//                    if (text.endsWith("request"))
+//                        javaClass = JMIUtil.findClass("javax.servlet.ServletRequest", ClassPath.getClassPath(obj.getPrimaryFile(), ClassPath.COMPILE));
+//                    else if (text.endsWith("response"))
+//                        javaClass = JMIUtil.findClass("javax.servlet.ServletResponse", ClassPath.getClassPath(obj.getPrimaryFile(), ClassPath.COMPILE));
+//                    else if (text.endsWith("session"))
+//                        javaClass = JMIUtil.findClass("javax.servlet.http.HttpSession", ClassPath.getClassPath(obj.getPrimaryFile(), ClassPath.COMPILE));
+//                    else if (text.endsWith("servletConfig"))
+//                        javaClass = JMIUtil.findClass("javax.servlet.ServletConfig", ClassPath.getClassPath(obj.getPrimaryFile(), ClassPath.COMPILE));
+//                    else if (text.endsWith("servletContext"))
+//                        javaClass = JMIUtil.findClass("javax.servlet.ServletContext", ClassPath.getClassPath(obj.getPrimaryFile(), ClassPath.COMPILE));
+//                }
+//                if (javaClass != null)
+//                    addProperties(prop = new ArrayList(), javaClass);
+//            }
             return prop;
         }
         
-        private void addProperties (List<Property> prop, JavaClass javaClass){
-            Method methods [] = JMIUtil.getMethods(javaClass);
-            for (int j = 0; j < methods.length; j++) {
-                if ((methods[j].getName().startsWith("get") || methods[j].getName().startsWith("is"))
-                        && methods[j].getParameters().size() == 0
-                        && ((methods[j].getModifiers() & Modifier.PUBLIC) != 0)) {
-                    String name = methods[j].getName();
-                    if (name.startsWith("get"))
-                        name = name.substring(3);
-                    else
-                        name = name.substring(2);
-
-                    name = name.substring(0,1).toLowerCase()+name.substring(1);
-                    prop.add(new Property(name, methods[j].getType().getName()));
-                }
-            }
-        }
+//        private void addProperties (List<Property> prop, JavaClass javaClass){
+//            Method methods [] = JMIUtil.getMethods(javaClass);
+//            for (int j = 0; j < methods.length; j++) {
+//                if ((methods[j].getName().startsWith("get") || methods[j].getName().startsWith("is"))
+//                        && methods[j].getParameters().size() == 0
+//                        && ((methods[j].getModifiers() & Modifier.PUBLIC) != 0)) {
+//                    String name = methods[j].getName();
+//                    if (name.startsWith("get"))
+//                        name = name.substring(3);
+//                    else
+//                        name = name.substring(2);
+//
+//                    name = name.substring(0,1).toLowerCase()+name.substring(1);
+//                    prop.add(new Property(name, methods[j].getType().getName()));
+//                }
+//            }
+//        }
     }
     
     private static Collection <ELImplicitObject> implicitELObjects = null;

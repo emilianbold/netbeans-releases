@@ -36,7 +36,7 @@ import org.openide.util.actions.SystemAction;
 
 import org.netbeans.modules.web.core.WebExecSupport;
 
-import org.netbeans.modules.java.Util;
+//import org.netbeans.modules.java.Util;
 
 /** The node representation of <code>JspDataObject</code> for internet files.
 *

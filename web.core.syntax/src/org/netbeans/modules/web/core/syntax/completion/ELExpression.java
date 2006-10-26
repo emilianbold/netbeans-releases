@@ -26,8 +26,8 @@ import java.util.StringTokenizer;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.editor.TokenItem;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.Method;
+//import org.netbeans.jmi.javamodel.JavaClass;
+//import org.netbeans.jmi.javamodel.Method;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.web.core.syntax.ELTokenContext;
 import org.netbeans.modules.web.core.syntax.JspSyntaxSupport;
@@ -125,10 +125,10 @@ public class ELExpression {
                     replace = "";
                     result = EL_START;
                 }
-                else 
-                   if (value != null){
-                     result = findContext(value);
-                   } 
+//                else 
+//                   if (value != null){
+//                     result = findContext(value);
+//                   } 
             }
             
         } catch (BadLocationException ex) {
@@ -139,146 +139,146 @@ public class ELExpression {
         return result;
     }
     
-    /* Returns the JavaClass of the bean which is in the expression. Returns null, when
-     *  the appropriate class is not found. 
-     */
-    public JavaClass getBean(String elExp){
-        JavaClass javaClass = null;
-        DataObject obj = NbEditorUtilities.getDataObject(sup.getDocument());
-        
-        if (elExp != null && !elExp.equals("") && obj != null){
-            if (elExp.indexOf('.')> -1){
-                String beanName = elExp.substring(0,elExp.indexOf('.'));
-                BeanData[] beans = sup.getBeanData();
-                for (int i = 0; i < beans.length; i++) {
-                    if (beans[i].getId().equals(beanName)){
-                        javaClass = JMIUtil.findClass(beans[i].getClassName(), ClassPath.getClassPath(obj.getPrimaryFile(), ClassPath.EXECUTE));
-                        break;
-                    }
-                }
-            }  
-        }
-        return javaClass;
-    }
-        
-    /* Returns list of strings in form property name1, property type1 .....
-     */
-    public List /*<String>*/ getProperties(String elExp, JavaClass bean){
-        List properties = new ArrayList();
-        JavaClass javaClass = findLastJavaClass(elExp, bean);
-        
-        if (javaClass != null && !javaClass.getName().equals("java.lang.String")){
-            Method methods [] = JMIUtil.getMethods(javaClass);
-            for (int j = 0; j < methods.length; j++) {
-                if ((methods[j].getName().startsWith("get") || methods[j].getName().startsWith("is"))
-                        && methods[j].getParameters().size() == 0
-                        && ((methods[j].getModifiers() & Modifier.PUBLIC) != 0)) {
-                    String name = methods[j].getName();
-                    if (name.startsWith("get"))
-                        name = name.substring(3);
-                    else
-                        name = name.substring(2);
-
-                    name = name.substring(0,1).toLowerCase()+name.substring(1);
-                    properties.add(name);
-                    properties.add(methods[j].getType().getName());
-                }
-            }
-        }
-        return properties;
-    }
-    
-    /*  Returns a JMI object which corresponds to the property in the source file. 
-     */
-    public Object getPropertyDeclaration (String elExp, JavaClass bean){
-        JavaClass javaClass = findLastJavaClass(elExp, bean);;
-        String property = null;
-        if (elExp.lastIndexOf('.') > -1)
-            property = elExp.substring(elExp.lastIndexOf('.')+1);
-        if (javaClass != null && property != null){
-            Method methods [] = JMIUtil.getMethods(javaClass);
-            for (int j = 0; j < methods.length; j++) {
-                if ((methods[j].getName().startsWith("get") || methods[j].getName().startsWith("is"))
-                        && methods[j].getParameters().size() == 0
-                        && ((methods[j].getModifiers() & Modifier.PUBLIC) != 0)) {
-                    String name = methods[j].getName();
-                    if (name.startsWith("get"))
-                        name = name.substring(3);
-                    else
-                        name = name.substring(2);
-                    name = name.substring(0,1).toLowerCase()+name.substring(1);
-                    if (name.equals(property)){
-                        return methods[j];
-                    }
-                }
-            }
-        }
-        return null;
-    }
-    
-    /** Return context, whether the expression is about a bean, implicit object or 
-     *  function.
-     */
-    protected int findContext(String expr){
-        int dotIndex = expr.indexOf('.');
-        int bracketIndex = expr.indexOf('[');
-        int value = EL_UNKNOWN;
-        
-        if (bracketIndex == -1 && dotIndex > -1){
-            String first = expr.substring(0, dotIndex);
-            BeanData[] beans = sup.getBeanData();
-            if (beans != null) {
-                for (int i = 0; i < beans.length; i++)
-                    if (beans[i].getId().equals(first)){
-                        value = EL_BEAN;
-                        continue;
-                    }
-            }
-            if (value == EL_UNKNOWN && ELImplicitObjects.getELImplicitObjects(first).size()>0)
-                value = EL_IMPLICIT;
-        }
-        else if (bracketIndex == -1 && dotIndex == -1)
-            value = EL_START;
-        return value;
-    }
-
-    /*  Returns the last java class which is in the expression.
-     *  Usefutl for bean.property1.property2
-     */
-    protected JavaClass findLastJavaClass(String elExp, JavaClass bean){
-        JavaClass javaClass = bean;
-        if (elExp != null && !elExp.equals("") && elExp.indexOf('.')> -1){
-            String pos = elExp.substring(elExp.indexOf('.')+1);
-            
-            //find the last known class
-            if (javaClass != null && pos != null && !pos.equals("") && pos.lastIndexOf('.') > - 1){
-                StringTokenizer st = new StringTokenizer(pos.substring(0, pos.lastIndexOf('.')), ".");
-                
-                while(st.hasMoreTokens()){
-                    String text = st.nextToken();
-                    if (javaClass != null){
-                        Method methods [] = JMIUtil.getMethods(javaClass);
-                        //reset the java class. Will be setup, if the property is found
-                        javaClass = null;
-                        for (int j = 0; j < methods.length; j++) {
-                            if (methods[j].getName().startsWith("get")) {
-                                String name = methods[j].getName().substring(3);
-                                name = name.substring(0,1).toLowerCase()+name.substring(1);
-                                if (name.equals(text)){
-                                    if (methods[j].getType() instanceof JavaClass)
-                                        javaClass = (JavaClass)methods[j].getType();
-                                    else
-                                        javaClass = null;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return javaClass;
-    }
+//    /* Returns the JavaClass of the bean which is in the expression. Returns null, when
+//     *  the appropriate class is not found. 
+//     */
+//    public JavaClass getBean(String elExp){
+//        JavaClass javaClass = null;
+//        DataObject obj = NbEditorUtilities.getDataObject(sup.getDocument());
+//        
+//        if (elExp != null && !elExp.equals("") && obj != null){
+//            if (elExp.indexOf('.')> -1){
+//                String beanName = elExp.substring(0,elExp.indexOf('.'));
+//                BeanData[] beans = sup.getBeanData();
+//                for (int i = 0; i < beans.length; i++) {
+//                    if (beans[i].getId().equals(beanName)){
+//                        javaClass = JMIUtil.findClass(beans[i].getClassName(), ClassPath.getClassPath(obj.getPrimaryFile(), ClassPath.EXECUTE));
+//                        break;
+//                    }
+//                }
+//            }  
+//        }
+//        return javaClass;
+//    }
+//        
+//    /* Returns list of strings in form property name1, property type1 .....
+//     */
+//    public List /*<String>*/ getProperties(String elExp, JavaClass bean){
+//        List properties = new ArrayList();
+//        JavaClass javaClass = findLastJavaClass(elExp, bean);
+//        
+//        if (javaClass != null && !javaClass.getName().equals("java.lang.String")){
+//            Method methods [] = JMIUtil.getMethods(javaClass);
+//            for (int j = 0; j < methods.length; j++) {
+//                if ((methods[j].getName().startsWith("get") || methods[j].getName().startsWith("is"))
+//                        && methods[j].getParameters().size() == 0
+//                        && ((methods[j].getModifiers() & Modifier.PUBLIC) != 0)) {
+//                    String name = methods[j].getName();
+//                    if (name.startsWith("get"))
+//                        name = name.substring(3);
+//                    else
+//                        name = name.substring(2);
+//
+//                    name = name.substring(0,1).toLowerCase()+name.substring(1);
+//                    properties.add(name);
+//                    properties.add(methods[j].getType().getName());
+//                }
+//            }
+//        }
+//        return properties;
+//    }
+//    
+//    /*  Returns a JMI object which corresponds to the property in the source file. 
+//     */
+//    public Object getPropertyDeclaration (String elExp, JavaClass bean){
+//        JavaClass javaClass = findLastJavaClass(elExp, bean);;
+//        String property = null;
+//        if (elExp.lastIndexOf('.') > -1)
+//            property = elExp.substring(elExp.lastIndexOf('.')+1);
+//        if (javaClass != null && property != null){
+//            Method methods [] = JMIUtil.getMethods(javaClass);
+//            for (int j = 0; j < methods.length; j++) {
+//                if ((methods[j].getName().startsWith("get") || methods[j].getName().startsWith("is"))
+//                        && methods[j].getParameters().size() == 0
+//                        && ((methods[j].getModifiers() & Modifier.PUBLIC) != 0)) {
+//                    String name = methods[j].getName();
+//                    if (name.startsWith("get"))
+//                        name = name.substring(3);
+//                    else
+//                        name = name.substring(2);
+//                    name = name.substring(0,1).toLowerCase()+name.substring(1);
+//                    if (name.equals(property)){
+//                        return methods[j];
+//                    }
+//                }
+//            }
+//        }
+//        return null;
+//    }
+//    
+//    /** Return context, whether the expression is about a bean, implicit object or 
+//     *  function.
+//     */
+//    protected int findContext(String expr){
+//        int dotIndex = expr.indexOf('.');
+//        int bracketIndex = expr.indexOf('[');
+//        int value = EL_UNKNOWN;
+//        
+//        if (bracketIndex == -1 && dotIndex > -1){
+//            String first = expr.substring(0, dotIndex);
+//            BeanData[] beans = sup.getBeanData();
+//            if (beans != null) {
+//                for (int i = 0; i < beans.length; i++)
+//                    if (beans[i].getId().equals(first)){
+//                        value = EL_BEAN;
+//                        continue;
+//                    }
+//            }
+//            if (value == EL_UNKNOWN && ELImplicitObjects.getELImplicitObjects(first).size()>0)
+//                value = EL_IMPLICIT;
+//        }
+//        else if (bracketIndex == -1 && dotIndex == -1)
+//            value = EL_START;
+//        return value;
+//    }
+//
+//    /*  Returns the last java class which is in the expression.
+//     *  Usefutl for bean.property1.property2
+//     */
+//    protected JavaClass findLastJavaClass(String elExp, JavaClass bean){
+//        JavaClass javaClass = bean;
+//        if (elExp != null && !elExp.equals("") && elExp.indexOf('.')> -1){
+//            String pos = elExp.substring(elExp.indexOf('.')+1);
+//            
+//            //find the last known class
+//            if (javaClass != null && pos != null && !pos.equals("") && pos.lastIndexOf('.') > - 1){
+//                StringTokenizer st = new StringTokenizer(pos.substring(0, pos.lastIndexOf('.')), ".");
+//                
+//                while(st.hasMoreTokens()){
+//                    String text = st.nextToken();
+//                    if (javaClass != null){
+//                        Method methods [] = JMIUtil.getMethods(javaClass);
+//                        //reset the java class. Will be setup, if the property is found
+//                        javaClass = null;
+//                        for (int j = 0; j < methods.length; j++) {
+//                            if (methods[j].getName().startsWith("get")) {
+//                                String name = methods[j].getName().substring(3);
+//                                name = name.substring(0,1).toLowerCase()+name.substring(1);
+//                                if (name.equals(text)){
+//                                    if (methods[j].getType() instanceof JavaClass)
+//                                        javaClass = (JavaClass)methods[j].getType();
+//                                    else
+//                                        javaClass = null;
+//                                    break;
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//        return javaClass;
+//    }
     
     public String getExpression() {
         return expression;

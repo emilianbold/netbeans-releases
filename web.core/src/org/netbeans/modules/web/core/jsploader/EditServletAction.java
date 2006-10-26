@@ -115,19 +115,20 @@ public class EditServletAction extends CookieAction {
         for (int i = 0; i < activatedNodes.length; i++) {
             JspDataObject jspdo = (JspDataObject)activatedNodes[i].getCookie(JspDataObject.class);
             if (jspdo != null) {
-                jspdo.refreshPlugin(true);
-                EditorCookie cook = jspdo.getServletEditor();
-                if (cook != null)
-                    cook.open ();
-                else {
-                    //show error dialog
-                    String msg = NbBundle.getMessage(EditServletAction.class, "ERR_CantEditServlet");
-                    String title = NbBundle.getMessage(EditServletAction.class, "EditServlet");
-                    NotifyDescriptor descriptor = new NotifyDescriptor(msg, title,
-                            NotifyDescriptor.DEFAULT_OPTION, NotifyDescriptor.ERROR_MESSAGE,
-                            new Object[]{NotifyDescriptor.OK_OPTION}, null);
-                    DialogDisplayer.getDefault().notify(descriptor);
-                }
+                //TODO: RETOUCHE
+//                jspdo.refreshPlugin(true);
+//                EditorCookie cook = jspdo.getServletEditor();
+//                if (cook != null)
+//                    cook.open ();
+//                else {
+//                    //show error dialog
+//                    String msg = NbBundle.getMessage(EditServletAction.class, "ERR_CantEditServlet");
+//                    String title = NbBundle.getMessage(EditServletAction.class, "EditServlet");
+//                    NotifyDescriptor descriptor = new NotifyDescriptor(msg, title,
+//                            NotifyDescriptor.DEFAULT_OPTION, NotifyDescriptor.ERROR_MESSAGE,
+//                            new Object[]{NotifyDescriptor.OK_OPTION}, null);
+//                    DialogDisplayer.getDefault().notify(descriptor);
+//                }
             }
         }
     }

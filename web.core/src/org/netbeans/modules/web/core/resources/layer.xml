@@ -140,11 +140,11 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.EditQueryStringAction"/>
       </file>
     </folder>
-    <folder name="System">
+    <!--<folder name="System">
       <file name="View Servlet.instance">
         <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.jsploader.EditServletAction"/>
       </file>
-    </folder>
+    </folder>-->
   </folder>
 
   <folder name="Services">

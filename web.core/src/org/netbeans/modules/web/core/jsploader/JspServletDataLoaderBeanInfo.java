@@ -22,7 +22,7 @@ package org.netbeans.modules.web.core.jsploader;
 import java.beans.*;
 import java.awt.Image;
 
-import org.netbeans.modules.java.JavaDataLoader;
+//import org.netbeans.modules.java.JavaDataLoader;
 import org.openide.ErrorManager;
 
 /** JSP/Servlet loader bean info.
@@ -31,13 +31,14 @@ import org.openide.ErrorManager;
 */
 public class JspServletDataLoaderBeanInfo extends SimpleBeanInfo {
 
+    //TODO: RETOUCHE
     public BeanInfo[] getAdditionalBeanInfo () {
-        try {
-            return new BeanInfo[] { Introspector.getBeanInfo (JavaDataLoader.class) };
-        } catch (IntrospectionException ie) {
-            ErrorManager.getDefault ().notify (ie);
+//        try {
+//            return new BeanInfo[] { Introspector.getBeanInfo (JavaDataLoader.class) };
+//        } catch (IntrospectionException ie) {
+//            ErrorManager.getDefault ().notify (ie);
             return null;
-        }
+//        }
     }
 
     /** @param type Desired type of the icon

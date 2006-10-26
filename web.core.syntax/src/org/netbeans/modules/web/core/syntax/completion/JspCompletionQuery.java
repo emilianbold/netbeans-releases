@@ -29,8 +29,8 @@ import javax.servlet.jsp.tagext.TagAttributeInfo;
 import org.netbeans.editor.*;
 import org.netbeans.editor.ext.*;
 import org.netbeans.editor.ext.html.HTMLCompletionQuery;
-import org.netbeans.editor.ext.java.JCExpression;
-import org.netbeans.editor.ext.java.JavaCompletionQuery;
+//import org.netbeans.editor.ext.java.JCExpression;
+//import org.netbeans.editor.ext.java.JavaCompletionQuery;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.loaders.DataObject;
 
@@ -40,8 +40,8 @@ import org.netbeans.modules.web.jsps.parserapi.PageInfo.BeanData;
 import org.openide.loaders.DataObject;
 
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.Method;
+//import org.netbeans.jmi.javamodel.JavaClass;
+//import org.netbeans.jmi.javamodel.Method;
 
 
 
@@ -386,15 +386,15 @@ public class JspCompletionQuery implements CompletionQuery {
                             fun.getParameters()));
                 }
                 break;
-            case ELExpression.EL_BEAN:
-                JavaClass bean = elExpr.getBean(elExpr.getExpression());
-                Iterator property = elExpr.getProperties(elExpr.getExpression(), bean).iterator();
-                while (property.hasNext()) {
-                    String name = (String)property.next();
-                    if (name.startsWith(elExpr.getReplace()))
-                        complItems.add(new JspCompletionItem.ELProperty(name, (String)property.next()));
-                }
-                break;
+//            case ELExpression.EL_BEAN:
+//                JavaClass bean = elExpr.getBean(elExpr.getExpression());
+//                Iterator property = elExpr.getProperties(elExpr.getExpression(), bean).iterator();
+//                while (property.hasNext()) {
+//                    String name = (String)property.next();
+//                    if (name.startsWith(elExpr.getReplace()))
+//                        complItems.add(new JspCompletionItem.ELProperty(name, (String)property.next()));
+//                }
+//                break;
             case ELExpression.EL_IMPLICIT:
                 ELImplicitObjects.ELImplicitObject implObj = ELImplicitObjects.getELImplicitObject(elExpr.getExpression());
                 if (implObj != null){
@@ -817,18 +817,18 @@ public class JspCompletionQuery implements CompletionQuery {
         }
     }
     
-    public static class JspJavaCompletionResult extends JavaCompletionQuery.JavaResult implements SubstituteOffsetProvider {
-        private int substituteOffset;
-        public JspJavaCompletionResult(JTextComponent component, List data, String title,
-                   JCExpression substituteExp, int substituteOffset,
-                   int substituteLength, int classDisplayOffset) {
-            super(component, data, title, null, substituteOffset, substituteLength, 0);
-            this.substituteOffset = substituteOffset;
-        }
-        
-        public int getSubstituteOffset() {
-            return substituteOffset;
-        }
-    }
+//    public static class JspJavaCompletionResult extends JavaCompletionQuery.JavaResult implements SubstituteOffsetProvider {
+//        private int substituteOffset;
+//        public JspJavaCompletionResult(JTextComponent component, List data, String title,
+//                   JCExpression substituteExp, int substituteOffset,
+//                   int substituteLength, int classDisplayOffset) {
+//            super(component, data, title, null, substituteOffset, substituteLength, 0);
+//            this.substituteOffset = substituteOffset;
+//        }
+//        
+//        public int getSubstituteOffset() {
+//            return substituteOffset;
+//        }
+//    }
     
 }
