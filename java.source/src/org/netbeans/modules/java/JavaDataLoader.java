@@ -47,6 +47,8 @@ public final class JavaDataLoader extends MultiFileLoader {
     /** The standard extension for Java source files. */
     public static final String JAVA_EXTENSION = "java"; // NOI18N
 
+    private static final String PACKAGE_INFO = "package-info";  //NOI18N
+    
     static final long serialVersionUID =-6286836352608877232L;
 
     /** Create the loader.
@@ -219,7 +221,7 @@ public final class JavaDataLoader extends MultiFileLoader {
         
         @Override
         public FileObject rename(String name) throws IOException {
-            if (!"package-info".equals(name) && !Utilities.isJavaIdentifier(name)) // NOI18N
+            if (!PACKAGE_INFO.equals(name) && !Utilities.isJavaIdentifier(name)) // NOI18N
                 throw new IOException(NbBundle.getMessage(JavaDataObject.class, "FMT_Not_Valid_FileName", name));
             
             FileObject fo = super.rename(name);
@@ -243,7 +245,7 @@ public final class JavaDataLoader extends MultiFileLoader {
             if (name == null) {
                 // special case: name is null (unspecified or from one-parameter createFromTemplate)
                 name = FileUtil.findFreeFileName(f, f.getName(), "java"); // NOI18N
-            } else if (!Utilities.isJavaIdentifier(name)) {
+            } else if (!PACKAGE_INFO.equals(name) && !Utilities.isJavaIdentifier(name)) {
                 throw new IOException(NbBundle.getMessage(JavaDataObject.class, "FMT_Not_Valid_FileName", name));
             }
             
