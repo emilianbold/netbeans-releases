@@ -22,7 +22,6 @@ package org.netbeans.modules.j2ee.dd.api.webservices;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
-import java.util.HashMap;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -31,11 +30,7 @@ import org.netbeans.modules.schema2beans.Common;
 import org.openide.filesystems.*;
 import org.xml.sax.*;
 import java.util.Map;
-import org.netbeans.modules.j2ee.metadata.MergedProvider;
-import org.netbeans.modules.j2ee.dd.impl.webservices.WsAnnotationListener;
 import org.netbeans.modules.j2ee.metadata.MetadataUnit;
-import org.netbeans.modules.j2ee.metadata.NNMDRListener;
-import org.netbeans.modules.schema2beans.BaseBean;
 import org.w3c.dom.Document;
 
 public final class DDProvider {
@@ -68,28 +63,7 @@ public final class DDProvider {
         if (xmlRoot != null && !xmlRoot.getVersion().equals(new BigDecimal(Webservices.VERSION_1_2))) {
             return xmlRoot;
         }
-        Webservices annotationRoot = getAnnotationDDRoot(mu);
-        if (xmlRoot instanceof WebServicesProxy) {
-            xmlRoot = ((WebServicesProxy) xmlRoot).getOriginal();
-        }
-        if (annotationRoot instanceof WebServicesProxy) {
-            annotationRoot = ((WebServicesProxy) annotationRoot).getOriginal();
-        }
-        return (Webservices) MergedProvider.getDefault().getRoot((BaseBean) annotationRoot, (BaseBean) xmlRoot);
-    }
-
-    private synchronized Webservices getAnnotationDDRoot(MetadataUnit mu) throws IOException {
-        if (mu == null) {
-            return null;
-        }
-        Webservices ws = annotationDDMap.get(mu);
-        if (ws != null) {
-            return ws;
-        }
-        ws = new org.netbeans.modules.j2ee.dd.impl.webservices.model_1_2.Webservices();
-        annotationDDMap.put(mu, ws);
-        NNMDRListener.getDefault().addAnnotationListener(new WsAnnotationListener(ws, mu.getClassPath()));
-        return ws;
+        return null;
     }
 
     /**

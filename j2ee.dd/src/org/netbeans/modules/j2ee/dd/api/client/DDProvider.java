@@ -22,36 +22,23 @@ package org.netbeans.modules.j2ee.dd.api.client;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
 import org.netbeans.modules.j2ee.dd.impl.client.ClientParseUtils;
-import org.netbeans.modules.j2ee.dd.impl.client.AppClientNNListener;
 import org.netbeans.modules.j2ee.dd.impl.client.AppClientProxy;
 import org.netbeans.modules.j2ee.dd.impl.common.DDUtils;
-import org.netbeans.modules.j2ee.metadata.MergedProvider;
 import org.netbeans.modules.j2ee.metadata.MetadataUnit;
-import org.netbeans.modules.j2ee.metadata.NNMDRListener;
 import org.netbeans.modules.schema2beans.BaseBean;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
-import org.xml.sax.Attributes;
-import org.xml.sax.EntityResolver;
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
-import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * Provides access to Deployment Descriptor root
@@ -94,28 +81,7 @@ public final class DDProvider {
         if (xmlRoot != null && !xmlRoot.getVersion().equals(new BigDecimal(AppClient.VERSION_5_0))) {
             return xmlRoot;
         }
-        AppClient annotationRoot = getAnnotationRoot(mu);
-        if (xmlRoot instanceof AppClientProxy) {
-            xmlRoot = ((AppClientProxy) xmlRoot).getOriginal();
-        }
-        if (annotationRoot instanceof AppClientProxy) {
-            annotationRoot = ((AppClientProxy) annotationRoot).getOriginal();
-        }
-        return (AppClient) MergedProvider.getDefault().getRoot((BaseBean) annotationRoot, (BaseBean) xmlRoot);
-    }
-    
-    private synchronized AppClient getAnnotationRoot(MetadataUnit mu) throws IOException {
-        if (mu == null) {
-            return null;
-        }
-        AppClient appClient = annotationDDMap.get(mu);
-        if (appClient != null) {
-            return appClient;
-        }
-        appClient = new org.netbeans.modules.j2ee.dd.impl.client.model_5_0.ApplicationClient();
-        annotationDDMap.put(mu, appClient);
-        NNMDRListener.getDefault().addAnnotationListener(new AppClientNNListener(appClient, mu.getClassPath()));
-        return appClient;
+        return null;
     }
     
     /**

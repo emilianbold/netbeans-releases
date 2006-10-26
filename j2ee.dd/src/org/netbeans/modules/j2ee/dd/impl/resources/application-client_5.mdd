@@ -253,14 +253,12 @@
                <dtd-name>service-ref_handler-chainsType</dtd-name> 
                <namespace>http://java.sun.com/xml/ns/javaee</namespace> 
                <bean-name>ServiceRefHandlerChains</bean-name> 
-               <extends>org.netbeans.modules.j2ee.metadata.ProxyBean</extends> 
                <implements>org.netbeans.modules.j2ee.dd.api.common.ServiceRefHandlerChains</implements> 
         </meta-element> 
         <meta-element>
             <dtd-name>service-ref_handler-chainType</dtd-name>
             <namespace>http://java.sun.com/xml/ns/javaee</namespace>
             <bean-name>ServiceRefHandlerChainType</bean-name>
-            <extends>org.netbeans.modules.j2ee.metadata.ProxyBean</extends> 
             <implements>org.netbeans.modules.j2ee.dd.api.common.ServiceRefHandlerChain</implements> 
         </meta-element>
         <meta-element>

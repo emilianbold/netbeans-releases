@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.j2ee.dd.api.ejb;
 
-import org.netbeans.modules.j2ee.metadata.MergedProvider;
 import org.netbeans.modules.j2ee.metadata.MetadataUnit;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -54,8 +53,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.WeakHashMap;
-import org.netbeans.modules.j2ee.dd.impl.ejb.EjbAnnotationListener;
-import org.netbeans.modules.j2ee.metadata.NNMDRListener;
 
 /**
  * Provides access to Deployment Descriptor root ({@link org.netbeans.modules.j2ee.dd.api.ejb.EjbJar} object)
@@ -95,28 +92,7 @@ public final class DDProvider {
         if (xmlRoot != null && !xmlRoot.getVersion().equals(new BigDecimal(EjbJar.VERSION_3_0))) {
             return xmlRoot;
         }
-        EjbJar annotationRoot = getAnnotationDDRoot(mu);
-        if (xmlRoot instanceof EjbJarProxy) {
-            xmlRoot = ((EjbJarProxy) xmlRoot).getOriginal();
-        }
-        if (annotationRoot instanceof EjbJarProxy) {
-            annotationRoot = ((EjbJarProxy) annotationRoot).getOriginal();
-        }
-        return (EjbJar) MergedProvider.getDefault().getRoot((BaseBean) annotationRoot, (BaseBean) xmlRoot);
-    }
-
-    private synchronized EjbJar getAnnotationDDRoot(MetadataUnit mu) throws IOException {
-        if (mu == null) {
-            return null;
-        }
-        EjbJar ejbJar = annotationDDMap.get(mu);
-        if (ejbJar != null) {
-            return ejbJar;
-        }
-        ejbJar = new org.netbeans.modules.j2ee.dd.impl.ejb.model_3_0.EjbJar();
-        annotationDDMap.put(mu, ejbJar);
-        NNMDRListener.getDefault().addAnnotationListener(new EjbAnnotationListener(ejbJar, mu.getClassPath()));
-        return ejbJar;
+        return null;
     }
 
     public List<EjbJar> getRoots() {
@@ -125,14 +101,6 @@ public final class DDProvider {
         }
     }
     
-    public boolean isScanInProgress() {
-        return NNMDRListener.getDefault().isScanInProgress();
-    }
-    
-    public void waitScanFinished() {
-        NNMDRListener.getDefault().waitScanFinished();
-    }
-
     // used in: ddapi, ddloaders, ejbfreeform
     /**
      * Returns the root of deployment descriptor bean graph for given file object.

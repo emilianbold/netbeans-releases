@@ -43,7 +43,6 @@
 		<dtd-name>interceptorsType</dtd-name>
 		<namespace>http://java.sun.com/xml/ns/javaee</namespace>
 		<bean-name>Interceptors</bean-name>
-                <extends>org.netbeans.modules.j2ee.metadata.ProxyBean</extends> 
                 <implements>org.netbeans.modules.j2ee.dd.api.ejb.Interceptors</implements> 
 	</meta-element>
 	<meta-element>
@@ -65,7 +64,6 @@
 		<namespace>http://java.sun.com/xml/ns/javaee</namespace>
 		<bean-name>Path</bean-name>
 		<wrapper-class>java.lang.String</wrapper-class>
-                <extends>org.netbeans.modules.j2ee.metadata.ProxyBean</extends> 
 	</meta-element>
 	<meta-element>
 		<dtd-name>security-roleType</dtd-name>
@@ -92,7 +90,6 @@
 		<dtd-name>interceptor-bindingType</dtd-name>
 		<namespace>http://java.sun.com/xml/ns/javaee</namespace>
 		<bean-name>InterceptorBinding</bean-name>
-                <extends>org.netbeans.modules.j2ee.metadata.ProxyBean</extends> 
                 <implements>org.netbeans.modules.j2ee.dd.api.ejb.InterceptorBinding</implements> 
 	</meta-element>
 	<meta-element>
@@ -113,7 +110,6 @@
 		<dtd-name>application-exceptionType</dtd-name>
 		<namespace>http://java.sun.com/xml/ns/javaee</namespace>
 		<bean-name>ApplicationException</bean-name>
-                <extends>org.netbeans.modules.j2ee.metadata.ProxyBean</extends> 
                 <implements>org.netbeans.modules.j2ee.dd.api.ejb.ApplicationException</implements> 
 	</meta-element>
 	<meta-element>
@@ -201,14 +197,12 @@
 		<dtd-name>named-methodType</dtd-name>
 		<namespace>http://java.sun.com/xml/ns/javaee</namespace>
 		<bean-name>NamedMethod</bean-name>
-                <extends>org.netbeans.modules.j2ee.metadata.ProxyBean</extends> 
                 <implements>org.netbeans.modules.j2ee.dd.api.ejb.NamedMethod</implements> 
 	</meta-element>
 	<meta-element>
 		<dtd-name>interceptor-orderType</dtd-name>
 		<namespace>http://java.sun.com/xml/ns/javaee</namespace>
 		<bean-name>InterceptorOrder</bean-name>
-                <extends>org.netbeans.modules.j2ee.metadata.ProxyBean</extends> 
                 <implements>org.netbeans.modules.j2ee.dd.api.ejb.InterceptorOrder</implements> 
 	</meta-element>
 	<meta-element>
@@ -274,21 +268,18 @@
 		<dtd-name>interceptorType</dtd-name>
 		<namespace>http://java.sun.com/xml/ns/javaee</namespace>
 		<bean-name>Interceptor</bean-name>
-                <extends>org.netbeans.modules.j2ee.metadata.ProxyBean</extends> 
                 <implements>org.netbeans.modules.j2ee.dd.api.ejb.Interceptor</implements> 
 	</meta-element>
 	<meta-element>
 		<dtd-name>around-invokeType</dtd-name>
 		<namespace>http://java.sun.com/xml/ns/javaee</namespace>
 		<bean-name>AroundInvoke</bean-name>
-                <extends>org.netbeans.modules.j2ee.metadata.ProxyBean</extends> 
                 <implements>org.netbeans.modules.j2ee.dd.api.ejb.AroundInvoke</implements> 
 	</meta-element>
 	<meta-element>
 		<dtd-name>lifecycle-callbackType</dtd-name>
 		<namespace>http://java.sun.com/xml/ns/javaee</namespace>
 		<bean-name>LifecycleCallback</bean-name>
-                <extends>org.netbeans.modules.j2ee.metadata.ProxyBean</extends> 
                 <implements>org.netbeans.modules.j2ee.dd.api.ejb.LifecycleCallback</implements> 
 	</meta-element>
 	<meta-element>
@@ -343,14 +334,12 @@
 		<dtd-name>persistence-context-refType</dtd-name>
 		<namespace>http://java.sun.com/xml/ns/javaee</namespace>
 		<bean-name>PersistenceContextRef</bean-name>
-                <extends>org.netbeans.modules.j2ee.metadata.ProxyBean</extends> 
                 <implements>org.netbeans.modules.j2ee.dd.api.ejb.PersistenceContextRef</implements> 
 	</meta-element>
 	<meta-element>
 		<dtd-name>persistence-unit-refType</dtd-name>
 		<namespace>http://java.sun.com/xml/ns/javaee</namespace>
 		<bean-name>PersistenceUnitRef</bean-name>
-                <extends>org.netbeans.modules.j2ee.metadata.ProxyBean</extends> 
                 <implements>org.netbeans.modules.j2ee.dd.api.ejb.PersistenceUnitRef</implements> 
 	</meta-element>
 	<meta-element>
@@ -376,7 +365,6 @@
 		<dtd-name>propertyType</dtd-name>
 		<namespace>http://java.sun.com/xml/ns/javaee</namespace>
 		<bean-name>Property</bean-name>
-                <extends>org.netbeans.modules.j2ee.metadata.ProxyBean</extends> 
                 <implements>org.netbeans.modules.j2ee.dd.api.ejb.Property</implements> 
 	</meta-element>
 	<meta-element>
@@ -446,14 +434,12 @@
 		<dtd-name>service-ref_handler-chainsType</dtd-name>
 		<namespace>http://java.sun.com/xml/ns/javaee</namespace>
 		<bean-name>ServiceRefHandlerChains</bean-name>
-                <extends>org.netbeans.modules.j2ee.metadata.ProxyBean</extends> 
                 <implements>org.netbeans.modules.j2ee.dd.api.common.ServiceRefHandlerChains</implements> 
 	</meta-element>
 	<meta-element>
 		<dtd-name>service-ref_handler-chainType</dtd-name>
 		<namespace>http://java.sun.com/xml/ns/javaee</namespace>
 		<bean-name>ServiceRefHandlerChain</bean-name>
-                <extends>org.netbeans.modules.j2ee.metadata.ProxyBean</extends> 
                 <implements>org.netbeans.modules.j2ee.dd.api.common.ServiceRefHandlerChain</implements> 
 	</meta-element>
 	<meta-element>
@@ -686,14 +672,12 @@
 		<dtd-name>init-methodType</dtd-name>
 		<namespace>http://java.sun.com/xml/ns/javaee</namespace>
 		<bean-name>InitMethod</bean-name>
-                <extends>org.netbeans.modules.j2ee.metadata.ProxyBean</extends> 
                 <implements>org.netbeans.modules.j2ee.dd.api.ejb.InitMethod</implements> 
 	</meta-element>
 	<meta-element>
 		<dtd-name>remove-methodType</dtd-name>
 		<namespace>http://java.sun.com/xml/ns/javaee</namespace>
 		<bean-name>RemoveMethod</bean-name>
-                <extends>org.netbeans.modules.j2ee.metadata.ProxyBean</extends> 
                 <implements>org.netbeans.modules.j2ee.dd.api.ejb.RemoveMethod</implements> 
 	</meta-element>
 </metaDD>

@@ -27,12 +27,8 @@
 package org.netbeans.modules.j2ee.dd.impl.common;
 
 import java.io.OutputStream;
-import org.netbeans.modules.j2ee.metadata.ProxyBean;
 import org.netbeans.modules.schema2beans.Version;
 import org.netbeans.modules.schema2beans.BaseBean;
-
-//import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
-//import org.netbeans.modules.j2ee.dd.impl.common.CommonDDAccess;
 import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
 import org.netbeans.modules.j2ee.dd.api.common.NameAlreadyUsedException;
 import org.netbeans.modules.j2ee.dd.api.common.CreateCapability;
@@ -40,7 +36,7 @@ import org.netbeans.modules.j2ee.dd.api.common.FindCapability;
 import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
 import org.openide.filesystems.FileLock;
 
-public abstract class EnclosingBean extends ProxyBean implements CommonDDBean, CreateCapability, FindCapability {
+public abstract class EnclosingBean extends BaseBean implements CommonDDBean, CreateCapability, FindCapability {
     
     private Object original = this;
     

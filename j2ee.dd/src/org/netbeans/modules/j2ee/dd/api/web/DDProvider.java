@@ -26,12 +26,8 @@ import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.j2ee.metadata.ClassPathSupport;
-import org.netbeans.modules.j2ee.metadata.MergedProvider;
 import org.netbeans.modules.j2ee.dd.impl.web.WebAppProxy;
 import org.netbeans.modules.j2ee.dd.impl.web.WebParseUtils;
 import org.netbeans.modules.j2ee.dd.impl.common.DDUtils;
@@ -42,10 +38,6 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.*;
 import org.xml.sax.*;
 import java.util.Map;
-import org.netbeans.modules.j2ee.dd.impl.web.WebNNListener;
-import org.netbeans.modules.j2ee.metadata.NNMDRListener;
-import org.netbeans.modules.schema2beans.BaseBean;
-import org.openide.util.NbBundle;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 
@@ -114,30 +106,9 @@ public final class DDProvider {
         if (xmlRoot != null && !xmlRoot.getVersion().equals(WebApp.VERSION_2_5)) {
             return xmlRoot;
         }
-        WebApp annotationRoot = getAnnotationRoot(mu);
-        if (xmlRoot instanceof WebAppProxy) {
-            xmlRoot = ((WebAppProxy) xmlRoot).getOriginal();
-        }
-        if (annotationRoot instanceof WebAppProxy) {
-            annotationRoot = ((WebAppProxy) annotationRoot).getOriginal();
-        }
-        return (WebApp) MergedProvider.getDefault().getRoot((BaseBean) annotationRoot, (BaseBean) xmlRoot);
+        return null;
     }
 
-    private synchronized WebApp getAnnotationRoot(MetadataUnit mu) throws IOException {
-        if (mu == null) {
-            return null;
-        }
-        WebApp webApp = (WebApp) annotationDDMap.get(mu);
-        if (webApp != null) {
-            return webApp;
-        }
-        webApp = new org.netbeans.modules.j2ee.dd.impl.web.model_2_5.WebApp();
-        annotationDDMap.put(mu, webApp);
-        NNMDRListener.getDefault().addAnnotationListener(new WebNNListener(webApp, mu.getClassPath()));
-        return webApp;
-    }
-    
     public WebApp getDDRoot(FileObject fo) throws java.io.IOException {
         WebAppProxy webApp = null;
         

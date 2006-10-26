@@ -21,8 +21,6 @@ package org.netbeans.modules.j2ee.api.ejbjar;
 
 import org.openide.nodes.Node;
 import org.netbeans.api.project.ant.AntArtifact;
-import org.netbeans.jmi.javamodel.Feature;
-import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
 import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
 
@@ -46,12 +44,12 @@ public interface EjbReference extends Node.Cookie {
     
     EjbLocalRef createLocalRef();
     
-    Feature generateReferenceCode(JavaClass target, EjbRef ref, boolean throwExceptions);
+    Object generateReferenceCode(Object target, EjbRef ref, boolean throwExceptions);
     
-    Feature generateReferenceCode(JavaClass target, EjbLocalRef ref, boolean throwExceptions);
+    Object generateReferenceCode(Object target, EjbLocalRef ref, boolean throwExceptions);
     
-    Feature generateServiceLocatorLookup(JavaClass target, EjbRef ref, String serviceLocatorName, boolean throwExceptions);
+    Object generateServiceLocatorLookup(Object target, EjbRef ref, String serviceLocatorName, boolean throwExceptions);
     
-    Feature generateServiceLocatorLookup(JavaClass target, EjbLocalRef ref, String serviceLocatorName, boolean throwExceptions);
+    Object generateServiceLocatorLookup(Object target, EjbLocalRef ref, String serviceLocatorName, boolean throwExceptions);
     
 }
