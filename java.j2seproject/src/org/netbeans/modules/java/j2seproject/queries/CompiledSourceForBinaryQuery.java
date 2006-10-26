@@ -21,24 +21,20 @@ package org.netbeans.modules.java.j2seproject.queries;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.HashMap;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
-
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.modules.java.j2seproject.SourceRoots;
@@ -56,7 +52,7 @@ public class CompiledSourceForBinaryQuery implements SourceForBinaryQueryImpleme
     private final PropertyEvaluator evaluator;
     private final SourceRoots sourceRoots;
     private final SourceRoots testRoots;
-    private Map/*<URL,SourceForBinaryQuery.Result>*/  cache = new HashMap ();
+    private Map<URL,SourceForBinaryQuery.Result>  cache = new HashMap<URL,SourceForBinaryQuery.Result>();
 
     public CompiledSourceForBinaryQuery(AntProjectHelper helper, PropertyEvaluator evaluator, SourceRoots srcRoots, SourceRoots testRoots) {
         this.helper = helper;
@@ -70,7 +66,7 @@ public class CompiledSourceForBinaryQuery implements SourceForBinaryQueryImpleme
             binaryRoot = FileUtil.getArchiveFile(binaryRoot);
             // XXX check whether this is really the root
         }
-        SourceForBinaryQuery.Result res = (SourceForBinaryQuery.Result) cache.get (binaryRoot);
+        SourceForBinaryQuery.Result res = cache.get(binaryRoot);
         if (res != null) {
             return res;
         }
@@ -118,7 +114,7 @@ public class CompiledSourceForBinaryQuery implements SourceForBinaryQueryImpleme
     
     private class Result implements SourceForBinaryQuery.Result, PropertyChangeListener {
 
-        private ArrayList listeners;
+        private List<ChangeListener> listeners;
         private SourceRoots sourceRoots;
 
         public Result (SourceRoots sourceRoots) {
@@ -128,7 +124,7 @@ public class CompiledSourceForBinaryQuery implements SourceForBinaryQueryImpleme
         
         public FileObject[] getRoots () {
             //todo: May need to cache the result
-            List result = new ArrayList (); 
+            List<FileObject> result = new ArrayList<FileObject>();
             result.addAll(Arrays.asList(this.sourceRoots.getRoots()));            
             try {
                 String buildDir = evaluator.getProperty(PROP_BUILD_DIR);
@@ -160,12 +156,12 @@ public class CompiledSourceForBinaryQuery implements SourceForBinaryQueryImpleme
             } catch (MalformedURLException ex) {
                 ErrorManager.getDefault ().notify (ex);
             }
-            return (FileObject[]) result.toArray(new FileObject[result.size()]);
+            return result.toArray(new FileObject[result.size()]);
         }
         
         public synchronized void addChangeListener (ChangeListener l) {
             if (this.listeners == null) {
-                this.listeners = new ArrayList();
+                this.listeners = new ArrayList<ChangeListener>();
             }
             this.listeners.add (l);
         }
@@ -184,16 +180,16 @@ public class CompiledSourceForBinaryQuery implements SourceForBinaryQueryImpleme
         }
 
         private void fireChange() {
-            Iterator it;
+            ChangeListener[] ls;
             synchronized (this) {
                 if (this.listeners == null) {
                     return;
                 }
-                it = ((ArrayList)this.listeners.clone()).iterator();
+                ls = listeners.toArray(new ChangeListener[listeners.size()]);
             }
             ChangeEvent event = new ChangeEvent(this);
-            while (it.hasNext()) {
-                ((ChangeListener)it.next()).stateChanged(event);
+            for (ChangeListener l : ls) {
+                l.stateChanged(event);
             }
         }
 

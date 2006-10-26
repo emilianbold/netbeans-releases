@@ -19,15 +19,12 @@
 
 package org.netbeans.modules.java.j2seproject.classpath;
 
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import javax.swing.Icon;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
@@ -44,7 +41,6 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
@@ -106,12 +102,12 @@ public class J2SEProjectClassPathModifier extends ProjectClassPathModifierImplem
         assert classPathRoots != null : "The classPathRoots cannot be null";      //NOI18N        
         assert classPathProperty != null;
         try {
-            return ((Boolean)ProjectManager.mutex().writeAccess(
-                    new Mutex.ExceptionAction () {
-                        public Object run() throws Exception {
+            return ProjectManager.mutex().writeAccess(
+                    new Mutex.ExceptionAction<Boolean>() {
+                        public Boolean run() throws Exception {
                             EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
                             String raw = props.getProperty(classPathProperty);                            
-                            List resources = cs.itemsList( raw );
+                            List<ClassPathSupport.Item> resources = cs.itemsList(raw);
                             boolean changed = false;
                             for (int i=0; i< classPathRoots.length; i++) {
                                 assert classPathRoots[i] != null;
@@ -140,12 +136,12 @@ public class J2SEProjectClassPathModifier extends ProjectClassPathModifierImplem
                                 props.setProperty(classPathProperty, itemRefs);
                                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
                                 ProjectManager.getDefault().saveProject(project);
-                                return Boolean.TRUE;
+                                return true;
                             }
-                            return Boolean.FALSE;
+                            return false;
                         }
                     }
-            )).booleanValue();
+            );
         } catch (Exception e) {
             if (e instanceof IOException) {
                 throw (IOException) e;
@@ -171,12 +167,12 @@ public class J2SEProjectClassPathModifier extends ProjectClassPathModifierImplem
         assert artifacts.length == artifactElements.length : "Each artifact has to have corresponding artifactElement"; //NOI18N
         assert classPathProperty != null;
         try {
-            return ((Boolean)ProjectManager.mutex().writeAccess(
-                    new Mutex.ExceptionAction () {
-                        public Object run() throws Exception {
+            return ProjectManager.mutex().writeAccess(
+                    new Mutex.ExceptionAction<Boolean>() {
+                        public Boolean run() throws Exception {
                             EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
                             String raw = props.getProperty (classPathProperty);
-                            List resources = cs.itemsList( raw );
+                            List<ClassPathSupport.Item> resources = cs.itemsList(raw);
                             boolean changed = false;
                             for (int i=0; i<artifacts.length; i++) {
                                 assert artifacts[i] != null;
@@ -197,12 +193,12 @@ public class J2SEProjectClassPathModifier extends ProjectClassPathModifierImplem
                                 props.setProperty (classPathProperty, itemRefs);
                                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
                                 ProjectManager.getDefault().saveProject(project);
-                                return Boolean.TRUE;
+                                return true;
                             }
-                            return Boolean.FALSE;
+                            return false;
                         }
                     }
-            )).booleanValue();
+            );
         } catch (Exception e) {
             if (e instanceof IOException) {
                 throw (IOException) e;
@@ -227,13 +223,13 @@ public class J2SEProjectClassPathModifier extends ProjectClassPathModifierImplem
         assert libraries != null : "Libraries cannot be null";  //NOI18N
         assert classPathProperty != null;
         try {
-            return ((Boolean)ProjectManager.mutex().writeAccess(
-                    new Mutex.ExceptionAction () {
-                        public Object run() throws IOException {
+            return ProjectManager.mutex().writeAccess(
+                    new Mutex.ExceptionAction<Boolean>() {
+                        public Boolean run() throws IOException {
                             EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
                             String raw = props.getProperty(classPathProperty);
-                            List resources = cs.itemsList( raw );
-                            List/*<ClassPathSupport.Item>*/ changed = new ArrayList/*<ClassPathSupport.Item>*/ (libraries.length);
+                            List<ClassPathSupport.Item> resources = cs.itemsList(raw);
+                            List<ClassPathSupport.Item> changed = new ArrayList<ClassPathSupport.Item>(libraries.length);
                             for (int i=0; i< libraries.length; i++) {
                                 assert libraries[i] != null;
                                 ClassPathSupport.Item item = ClassPathSupport.Item.create( libraries[i], null );
@@ -251,20 +247,20 @@ public class J2SEProjectClassPathModifier extends ProjectClassPathModifierImplem
                                 props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //PathParser may change the EditableProperties                                
                                 props.setProperty(classPathProperty, itemRefs);                                
                                 if (operation == ADD) {
-                                    for (Iterator/*<ClassPathSupport.Item>*/ it = changed.iterator(); it.hasNext();) {
-                                        String prop = cs.getLibraryReference( (ClassPathSupport.Item) it.next() );
+                                    for (ClassPathSupport.Item item : changed) {
+                                        String prop = cs.getLibraryReference(item);
                                         prop = prop.substring(2, prop.length()-1); // XXX make a PropertyUtils method for this!
                                         ClassPathSupport.relativizeLibraryClassPath(props, helper.getAntProjectHelper(), prop);
                                     }
                                 }
                                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
                                 ProjectManager.getDefault().saveProject(project);
-                                return Boolean.TRUE;
+                                return true;
                             }
-                            return Boolean.FALSE;
+                            return false;
                         }
                     }
-            )).booleanValue();
+            );
         } catch (MutexException e) {
             throw (IOException) e.getException();
         }

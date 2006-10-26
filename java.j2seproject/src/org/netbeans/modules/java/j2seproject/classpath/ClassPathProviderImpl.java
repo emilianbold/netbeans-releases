@@ -23,7 +23,6 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.Map;
 import java.util.HashMap;
-
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
@@ -58,7 +57,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     private final SourceRoots testSourceRoots;
     private final ClassPath[] cache = new ClassPath[8];
 
-    private final Map/*<String,FileObject>*/ dirCache = new HashMap();
+    private final Map<String,FileObject> dirCache = new HashMap<String,FileObject>();
 
     public ClassPathProviderImpl(AntProjectHelper helper, PropertyEvaluator evaluator, SourceRoots sourceRoots,
                                  SourceRoots testSourceRoots) {
@@ -333,4 +332,3 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     }
     
 }
-

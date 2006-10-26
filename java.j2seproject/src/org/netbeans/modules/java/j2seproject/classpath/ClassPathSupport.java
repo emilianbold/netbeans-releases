@@ -47,7 +47,7 @@ public class ClassPathSupport {
     private PropertyEvaluator evaluator;
     private ReferenceHelper referenceHelper;
     private AntProjectHelper antProjectHelper;
-    private Set /*<String>*/ wellKnownPaths;
+    private Set<String> wellKnownPaths;
     private String libraryPrefix;
     private String librarySuffix;
     private String antArtifactPrefix;
@@ -56,14 +56,14 @@ public class ClassPathSupport {
     public  ClassPathSupport( PropertyEvaluator evaluator, 
                               ReferenceHelper referenceHelper,
                               AntProjectHelper antProjectHelper,
-                              String wellKnownPaths[],
+                              String[] wellKnownPaths,
                               String libraryPrefix,
                               String librarySuffix,
                               String antArtifactPrefix ) {
         this.evaluator = evaluator;
         this.referenceHelper = referenceHelper;
         this.antProjectHelper = antProjectHelper;
-        this.wellKnownPaths = wellKnownPaths == null ? null : new HashSet( Arrays.asList( wellKnownPaths ) );
+        this.wellKnownPaths = wellKnownPaths == null ? null : new HashSet<String>(Arrays.asList(wellKnownPaths));
         this.libraryPrefix = libraryPrefix;
         this.librarySuffix = librarySuffix;
         this.antArtifactPrefix = antArtifactPrefix;
@@ -71,15 +71,15 @@ public class ClassPathSupport {
     
     /** Creates list of <CODE>Items</CODE> from given property.
      */    
-    public Iterator /*<Item>*/ itemsIterator( String propertyValue ) {
+    public Iterator<Item> itemsIterator( String propertyValue ) {
         // XXX More performance frendly impl. would retrun a lazzy iterator.
         return itemsList( propertyValue ).iterator();
     }
     
-    public List /*<Item>*/ itemsList( String propertyValue ) {    
+    public List<Item> itemsList( String propertyValue ) {    
         
         String pe[] = PropertyUtils.tokenizePath( propertyValue == null ? "": propertyValue ); // NOI18N        
-        List items = new ArrayList( pe.length );        
+        List<Item> items = new ArrayList<Item>( pe.length );        
         for( int i = 0; i < pe.length; i++ ) {
             Item item;
 
@@ -145,13 +145,13 @@ public class ClassPathSupport {
     /** Converts list of classpath items into array of Strings.
      * !! This method creates references in the project !!
      */
-    public String[] encodeToStrings( Iterator /*<Item>*/ classpath ) {
+    public String[] encodeToStrings(Iterator<Item> classpath) {
         
         ArrayList result = new ArrayList();
         
         while( classpath.hasNext() ) {
 
-            Item item = (Item)classpath.next();
+            Item item = classpath.next();
             String reference = null;
             
             switch( item.getType() ) {

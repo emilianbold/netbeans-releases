@@ -115,31 +115,31 @@ class J2SEActionProvider implements ActionProvider {
     
         
     /** Map from commands to ant targets */
-    Map/*<String,String[]>*/ commands;
+    Map<String,String[]> commands;
     
     /**Set of commands which are affected by background scanning*/
-    final Set bkgScanSensitiveActions;
+    final Set<String> bkgScanSensitiveActions;
     
     public J2SEActionProvider( J2SEProject project, UpdateHelper updateHelper ) {
         
         commands = new HashMap();
-            commands.put(COMMAND_BUILD, new String[] {"jar"}); // NOI18N
-            commands.put(COMMAND_CLEAN, new String[] {"clean"}); // NOI18N
-            commands.put(COMMAND_REBUILD, new String[] {"clean", "jar"}); // NOI18N
-            commands.put(COMMAND_COMPILE_SINGLE, new String[] {"compile-single"}); // NOI18N
-            // commands.put(COMMAND_COMPILE_TEST_SINGLE, new String[] {"compile-test-single"}); // NOI18N
-            commands.put(COMMAND_RUN, new String[] {"run"}); // NOI18N
-            commands.put(COMMAND_RUN_SINGLE, new String[] {"run-single"}); // NOI18N
-            commands.put(COMMAND_DEBUG, new String[] {"debug"}); // NOI18N
-            commands.put(COMMAND_DEBUG_SINGLE, new String[] {"debug-single"}); // NOI18N
-            commands.put(JavaProjectConstants.COMMAND_JAVADOC, new String[] {"javadoc"}); // NOI18N
-            commands.put(COMMAND_TEST, new String[] {"test"}); // NOI18N
-            commands.put(COMMAND_TEST_SINGLE, new String[] {"test-single"}); // NOI18N
-            commands.put(COMMAND_DEBUG_TEST_SINGLE, new String[] {"debug-test"}); // NOI18N
-            commands.put(JavaProjectConstants.COMMAND_DEBUG_FIX, new String[] {"debug-fix"}); // NOI18N
-            commands.put(COMMAND_DEBUG_STEP_INTO, new String[] {"debug-stepinto"}); // NOI18N
-        
-        this.bkgScanSensitiveActions = new HashSet (Arrays.asList(new String[] {
+        commands.put(COMMAND_BUILD, new String[] {"jar"}); // NOI18N
+        commands.put(COMMAND_CLEAN, new String[] {"clean"}); // NOI18N
+        commands.put(COMMAND_REBUILD, new String[] {"clean", "jar"}); // NOI18N
+        commands.put(COMMAND_COMPILE_SINGLE, new String[] {"compile-single"}); // NOI18N
+        // commands.put(COMMAND_COMPILE_TEST_SINGLE, new String[] {"compile-test-single"}); // NOI18N
+        commands.put(COMMAND_RUN, new String[] {"run"}); // NOI18N
+        commands.put(COMMAND_RUN_SINGLE, new String[] {"run-single"}); // NOI18N
+        commands.put(COMMAND_DEBUG, new String[] {"debug"}); // NOI18N
+        commands.put(COMMAND_DEBUG_SINGLE, new String[] {"debug-single"}); // NOI18N
+        commands.put(JavaProjectConstants.COMMAND_JAVADOC, new String[] {"javadoc"}); // NOI18N
+        commands.put(COMMAND_TEST, new String[] {"test"}); // NOI18N
+        commands.put(COMMAND_TEST_SINGLE, new String[] {"test-single"}); // NOI18N
+        commands.put(COMMAND_DEBUG_TEST_SINGLE, new String[] {"debug-test"}); // NOI18N
+        commands.put(JavaProjectConstants.COMMAND_DEBUG_FIX, new String[] {"debug-fix"}); // NOI18N
+        commands.put(COMMAND_DEBUG_STEP_INTO, new String[] {"debug-stepinto"}); // NOI18N
+
+        this.bkgScanSensitiveActions = new HashSet<String>(Arrays.asList(new String[] {
             COMMAND_RUN, 
             COMMAND_RUN_SINGLE, 
             COMMAND_DEBUG, 

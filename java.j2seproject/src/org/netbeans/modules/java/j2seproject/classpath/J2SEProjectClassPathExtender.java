@@ -19,29 +19,15 @@
 package org.netbeans.modules.java.j2seproject.classpath;
 
 import java.io.IOException;
-import java.io.File;
 import java.net.URI;
 import java.net.URL;
-import java.util.List;
-import org.netbeans.modules.java.j2seproject.ui.customizer.AntArtifactChooser;
-import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Mutex;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.ant.AntArtifact;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.Project;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.ReferenceHelper;
-import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.netbeans.modules.java.j2seproject.UpdateHelper;
-import org.openide.util.MutexException;
 
+@Deprecated
 public class J2SEProjectClassPathExtender implements ProjectClassPathExtender {
     
     private static final String CP_CLASS_PATH = "javac.classpath"; //NOI18N

@@ -21,8 +21,8 @@ package org.netbeans.modules.java.j2seproject;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import org.apache.tools.ant.module.api.support.ActionUtils;
@@ -37,15 +37,9 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
-import org.openide.util.Mutex;
-import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
-import org.openide.util.lookup.Lookups;
-
 
 /**
  *
@@ -67,9 +61,9 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
         }
     }
     
-    public List/*<FileObject>*/ getMetadataFiles() {
+    public List<FileObject> getMetadataFiles() {
         FileObject projectDirectory = project.getProjectDirectory();
-        List/*<FileObject>*/ files = new ArrayList();
+        List<FileObject> files = new ArrayList<FileObject>();
         
         addFile(projectDirectory, "nbproject", files); // NOI18N
         addFile(projectDirectory, "build.xml", files); // NOI18N
@@ -79,37 +73,21 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
         return files;
     }
     
-    public List/*<FileObject>*/ getDataFiles() {
-        FileObject projectDirectory = project.getProjectDirectory();
-        List/*<FileObject>*/ files = new ArrayList();
-        
-        SourceRoots src = project.getSourceRoots();
-        FileObject[] srcRoots = src.getRoots();
-        
-        for (int cntr = 0; cntr < srcRoots.length; cntr++) {
-            files.add(srcRoots[cntr]);
-        }
-        
-        SourceRoots test = project.getTestSourceRoots();
-        FileObject[] testRoots = test.getRoots();
-        
-        for (int cntr = 0; cntr < testRoots.length; cntr++) {
-            files.add(testRoots[cntr]);
-        }
-        
-        addFile(projectDirectory, "manifest.mf", files); // NOI18N
-        
+    public List<FileObject> getDataFiles() {
+        List<FileObject> files = new ArrayList<FileObject>();
+        files.addAll(Arrays.asList(project.getSourceRoots().getRoots()));
+        files.addAll(Arrays.asList(project.getTestSourceRoots().getRoots()));
+        addFile(project.getProjectDirectory(), "manifest.mf", files); // NOI18N
         return files;
     }
     
     public void notifyDeleting() throws IOException {
-        J2SEActionProvider ap = (J2SEActionProvider) project.getLookup().lookup(J2SEActionProvider.class);
+        J2SEActionProvider ap = project.getLookup().lookup(J2SEActionProvider.class);
         
         assert ap != null;
         
-        Lookup context = Lookups.fixed(new Object[0]);
         Properties p = new Properties();
-        String[] targetNames = ap.getTargetNames(ActionProvider.COMMAND_CLEAN, context, p);
+        String[] targetNames = ap.getTargetNames(ActionProvider.COMMAND_CLEAN, Lookup.EMPTY, p);
         FileObject buildXML = project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
         
         assert targetNames != null;

@@ -70,10 +70,10 @@ public final class SourceRoots {
     private final ReferenceHelper refHelper;
     private final String elementName;
     private final String newRootNameTemplate;
-    private List/*<String>*/ sourceRootProperties;
-    private List/*<String>*/ sourceRootNames;
-    private List/*<FileObject>*/ sourceRoots;
-    private List/*<URL>*/ sourceRootURLs;
+    private List<String> sourceRootProperties;
+    private List<String> sourceRootNames;
+    private List<FileObject> sourceRoots;
+    private List<URL> sourceRootURLs;
     private final PropertyChangeSupport support;
     private final ProjectMetadataListener listener;
     private final boolean isTest;
@@ -109,8 +109,8 @@ public final class SourceRoots {
      * @return an array of String
      */
     public   String[] getRootNames () {
-        return (String[]) ProjectManager.mutex().readAccess(new Mutex.Action() {
-            public Object run() {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<String[]>() {
+            public String[] run() {
                 synchronized (SourceRoots.this) {
                     if (sourceRootNames == null) {
                         readProjectMetadata();
@@ -126,8 +126,8 @@ public final class SourceRoots {
      * @return an array of String
      */
     public String[] getRootProperties () {
-        return (String[]) ProjectManager.mutex().readAccess(new Mutex.Action() {
-            public Object run() {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<String[]>() {
+            public String[] run() {
                 synchronized (SourceRoots.this) {
                     if (sourceRootProperties == null) {
                         readProjectMetadata();
@@ -143,15 +143,15 @@ public final class SourceRoots {
      * @return an array of FileObject
      */
     public FileObject[] getRoots () {
-        return (FileObject[]) ProjectManager.mutex().readAccess(new Mutex.Action () {
-                public Object run () {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<FileObject[]>() {
+                public FileObject[] run () {
                     synchronized (this) {
                         //Local caching
                         if (sourceRoots == null) {
                             String[] srcProps = getRootProperties();
-                            List/*<FileObject>*/ result = new ArrayList();
-                            for (int i = 0; i<srcProps.length; i++) {
-                                String prop = evaluator.getProperty(srcProps[i]);
+                            List<FileObject> result = new ArrayList<FileObject>();
+                            for (String p : srcProps) {
+                                String prop = evaluator.getProperty(p);
                                 if (prop != null) {
                                     FileObject f = helper.getAntProjectHelper().resolveFileObject(prop);
                                     if (f == null) {
@@ -176,13 +176,13 @@ public final class SourceRoots {
      * @return an array of URL
      */
     public URL[] getRootURLs() {
-        return (URL[]) ProjectManager.mutex().readAccess(new Mutex.Action () {
-            public Object run () {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<URL[]>() {
+            public URL[] run () {
                 synchronized (this) {
                     //Local caching
                     if (sourceRootURLs == null) {
                         String[] srcProps = getRootProperties();
-                        List/*<URL>*/ result = new ArrayList();
+                        List<URL> result = new ArrayList<URL>();
                         for (int i = 0; i<srcProps.length; i++) {
                             String prop = evaluator.getProperty(srcProps[i]);
                             if (prop != null) {
@@ -230,15 +230,15 @@ public final class SourceRoots {
      */
     public void putRoots (final URL[] roots, final String[] labels) {
         ProjectManager.mutex().writeAccess(
-                new Mutex.Action () {
-                    public Object run() {
+                new Mutex.Action<Void>() {
+                    public Void run() {
                         String[] originalProps = getRootProperties();
                         URL[] originalRoots = getRootURLs();
-                        Map oldRoots2props = new HashMap ();
+                        Map<URL,String> oldRoots2props = new HashMap<URL,String>();
                         for (int i=0; i<originalProps.length;i++) {
                             oldRoots2props.put (originalRoots[i],originalProps[i]);
                         }
-                        Map/*<URL,String>*/ newRoots2lab = new HashMap();
+                        Map<URL,String> newRoots2lab = new HashMap<URL,String>();
                         for (int i=0; i<roots.length;i++) {
                             newRoots2lab.put (roots[i],labels[i]);
                         }
@@ -253,30 +253,26 @@ public final class SourceRoots {
                             ownerElement.removeChild(root);
                         }
                         //Remove all unused root properties
-                        List newRoots = Arrays.asList(roots);
-                        Map propsToRemove = new HashMap (oldRoots2props);
+                        List<URL> newRoots = Arrays.asList(roots);
+                        Map<URL,String> propsToRemove = new HashMap<URL,String>(oldRoots2props);
                         propsToRemove.keySet().removeAll(newRoots);
                         EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                        for (Iterator it = propsToRemove.values().iterator(); it.hasNext();) {
-                            String propName = (String) it.next ();
-                            props.remove(propName);
-                        }
+                        props.keySet().removeAll(propsToRemove.values());
                         helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH,props);
                         //Add the new roots
                         Document doc = ownerElement.getOwnerDocument();
                         oldRoots2props.keySet().retainAll(newRoots);
-                        for (Iterator it = newRoots.iterator(); it.hasNext();) {
-                            URL newRoot = (URL) it.next ();
-                            String rootName = (String) oldRoots2props.get (newRoot);
+                        for (URL newRoot : newRoots) {
+                            String rootName = oldRoots2props.get(newRoot);
                             if (rootName == null) {
                                 //Root is new generate property for it
                                 props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                                 String[] names = newRoot.getPath().split("/");  //NOI18N
-                                rootName = MessageFormat.format(newRootNameTemplate,new Object[]{names[names.length-1],""});    //NOI18N
+                                rootName = MessageFormat.format(newRootNameTemplate, new Object[] {names[names.length - 1], ""}); // NOI18N
                                 int rootIndex = 1;
                                 while (props.containsKey(rootName)) {
                                     rootIndex++;
-                                    rootName = MessageFormat.format(newRootNameTemplate,new Object[]{names[names.length-1],new Integer(rootIndex)});
+                                    rootName = MessageFormat.format(newRootNameTemplate, new Object[] {names[names.length - 1], rootIndex});
                                 }
                                 File f = FileUtil.normalizeFile(new File(URI.create(newRoot.toExternalForm())));
                                 File projDir = FileUtil.toFile(helper.getAntProjectHelper().getProjectDirectory());
@@ -393,8 +389,8 @@ public final class SourceRoots {
         Element cfgEl = helper.getPrimaryConfigurationData(true);
         NodeList nl = cfgEl.getElementsByTagNameNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, elementName);
         assert nl.getLength() == 0 || nl.getLength() == 1 : "Illegal project.xml"; //NOI18N
-        List/*<String>*/ rootProps = new ArrayList ();
-        List/*<String>*/ rootNames = new ArrayList ();
+        List<String> rootProps = new ArrayList<String>();
+        List<String> rootNames = new ArrayList<String>();
         // It can be 0 in the case when the project is created by J2SEProjectGenerator and not yet customized
         if (nl.getLength()==1) {
             NodeList roots = ((Element)nl.item(0)).getElementsByTagNameNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "root");    //NOI18N

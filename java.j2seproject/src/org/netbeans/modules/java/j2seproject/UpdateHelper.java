@@ -87,8 +87,8 @@ public class UpdateHelper {
      */
     public EditableProperties getProperties (final String path) {
         //Properties are the same in both j2seproject/1 and j2seproject/2
-        return (EditableProperties) ProjectManager.mutex().readAccess(new Mutex.Action (){
-            public Object run() {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<EditableProperties>(){
+            public EditableProperties run() {
                 if (!isCurrent() && AntProjectHelper.PROJECT_PROPERTIES_PATH.equals(path)) { //Only project properties were changed
                     return getUpdatedProjectProperties ();
                 }
@@ -135,8 +135,8 @@ public class UpdateHelper {
      * @return the configuration data that is available
      */
     public Element getPrimaryConfigurationData (final boolean shared) {
-        return (Element) ProjectManager.mutex().readAccess(new Mutex.Action (){
-            public Object run() {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<Element>(){
+            public Element run() {
                 if (!shared || isCurrent()) { //Only shared props should cause update
                     return helper.getPrimaryConfigurationData(shared);
                 }

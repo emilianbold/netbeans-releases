@@ -87,8 +87,8 @@ public class J2SEProjectGenerator {
         final J2SEProject p = (J2SEProject) ProjectManager.getDefault().findProject(dirFO);
         final ReferenceHelper refHelper = p.getReferenceHelper();
         try {
-        ProjectManager.mutex().writeAccess( new Mutex.ExceptionAction () {
-            public Object run() throws Exception {
+        ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+            public Void run() throws Exception {
                 Element data = h.getPrimaryConfigurationData(true);
                 Document doc = data.getOwnerDocument();
                 NodeList nl = data.getElementsByTagNameNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"source-roots");
@@ -267,7 +267,7 @@ public class J2SEProjectGenerator {
     }
 
     private static FileObject createProjectDir (File dir) throws IOException {
-        Stack stack = new Stack ();
+        Stack<String> stack = new Stack<String>();
         while (!dir.exists()) {
             stack.push (dir.getName());
             dir = dir.getParentFile();
@@ -279,7 +279,7 @@ public class J2SEProjectGenerator {
         }
         assert dirFO != null;
         while (!stack.isEmpty()) {
-            dirFO = dirFO.createFolder((String)stack.pop());
+            dirFO = dirFO.createFolder(stack.pop());
         }        
         return dirFO;
     }   

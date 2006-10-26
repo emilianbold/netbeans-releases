@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.java.j2seproject;
 
-
 import java.io.File;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -29,9 +28,6 @@ import org.netbeans.spi.queries.SharabilityQueryImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
-
-
-
 
 /**
  * SharabilityQueryImplementation for j2seproject with multiple sources
@@ -43,7 +39,6 @@ public class J2SESharabilityQuery implements SharabilityQueryImplementation, Pro
     private final SourceRoots srcRoots;
     private final SourceRoots testRoots;
     private SharabilityQueryImplementation delegate;
-
 
     /**
      * Creates new J2SESharabilityQuery
@@ -61,7 +56,6 @@ public class J2SESharabilityQuery implements SharabilityQueryImplementation, Pro
         this.testRoots.addPropertyChangeListener(this);
     }
 
-
     /**
      * Check whether a file or directory should be shared.
      * If it is, it ought to be committed to a VCS if the user is using one.
@@ -71,17 +65,16 @@ public class J2SESharabilityQuery implements SharabilityQueryImplementation, Pro
      * @return one of {@link org.netbeans.api.queries.SharabilityQuery}'s constants
      */
     public int getSharability(final File file) {
-        Integer ret = (Integer) ProjectManager.mutex().readAccess( new Mutex.Action() {
-            public Object run() {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<Integer>() {
+            public Integer run() {
                 synchronized (J2SESharabilityQuery.this) {
                     if (delegate == null) {
                         delegate = createDelegate ();
                     }
-                    return new Integer(delegate.getSharability (file));
+                    return delegate.getSharability(file);
                 }
             }
         });
-        return ret.intValue();
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
@@ -108,6 +101,5 @@ public class J2SESharabilityQuery implements SharabilityQueryImplementation, Pro
                 "${" + J2SEProjectProperties.BUILD_DIR + "}", // NOI18N
             });
     }
-
 
 }

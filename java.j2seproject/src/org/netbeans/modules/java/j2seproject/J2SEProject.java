@@ -294,8 +294,8 @@ public final class J2SEProject implements Project, AntProjectListener {
     // Currently unused (but see #47230):
     /** Store configured project name. */
     public void setName(final String name) {
-        ProjectManager.mutex().writeAccess(new Mutex.Action() {
-            public Object run() {
+        ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
+            public Void run() {
                 Element data = helper.getPrimaryConfigurationData(true);
                 // XXX replace by XMLUtil when that has findElement, findText, etc.
                 NodeList nl = data.getElementsByTagNameNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name");
@@ -337,8 +337,8 @@ public final class J2SEProject implements Project, AntProjectListener {
         }
         
         public String getDisplayName() {
-            return (String) ProjectManager.mutex().readAccess(new Mutex.Action() {
-                public Object run() {
+            return ProjectManager.mutex().readAccess(new Mutex.Action<String>() {
+                public String run() {
                     Element data = updateHelper.getPrimaryConfigurationData(true);
                     // XXX replace by XMLUtil when that has findElement, findText, etc.
                     NodeList nl = data.getElementsByTagNameNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
@@ -432,8 +432,8 @@ public final class J2SEProject implements Project, AntProjectListener {
 //                    cpProvider.getProjectClassPaths(ClassPath.SOURCE)[0], J2SEProjectProperties.MAIN_CLASS);
 
             // Make it easier to run headless builds on the same machine at least.
-            ProjectManager.mutex().writeAccess(new Mutex.Action() {
-                public Object run() {
+            ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
+                public Void run() {
                     EditableProperties ep = updateHelper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
                     File buildProperties = new File(System.getProperty("netbeans.user"), "build.properties"); // NOI18N
                     ep.setProperty("user.properties.file", buildProperties.getAbsolutePath()); //NOI18N                    

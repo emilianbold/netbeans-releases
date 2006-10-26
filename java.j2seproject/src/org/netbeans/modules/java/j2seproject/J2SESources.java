@@ -59,7 +59,7 @@ public class J2SESources implements Sources, PropertyChangeListener, ChangeListe
      * Flag to forbid multiple invocation of {@link SourcesHelper#registerExternalRoots} 
      **/
     private boolean externalRootsRegistered;    
-    private final List/*<ChangeListener>*/ listeners = new ArrayList();
+    private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
 
     J2SESources(AntProjectHelper helper, PropertyEvaluator evaluator,
                 SourceRoots sourceRoots, SourceRoots testRoots) {
@@ -81,8 +81,8 @@ public class J2SESources implements Sources, PropertyChangeListener, ChangeListe
      * {@link J2SESources#fireChange} method.
      */
     public SourceGroup[] getSourceGroups(final String type) {
-        return (SourceGroup[]) ProjectManager.mutex().readAccess(new Mutex.Action() {
-            public Object run() {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<SourceGroup[]>() {
+            public SourceGroup[] run() {
                 Sources _delegate;
                 synchronized (J2SESources.this) {
                     if (delegate == null) {                    
@@ -154,11 +154,11 @@ public class J2SESources implements Sources, PropertyChangeListener, ChangeListe
             if (listeners.isEmpty()) {
                 return;
             }
-            _listeners = (ChangeListener[])listeners.toArray(new ChangeListener[listeners.size()]);
+            _listeners = listeners.toArray(new ChangeListener[listeners.size()]);
         }
         ChangeEvent ev = new ChangeEvent(this);
-        for (int i = 0; i < _listeners.length; i++) {
-            _listeners[i].stateChanged(ev);
+        for (ChangeListener l : _listeners) {
+            l.stateChanged(ev);
         }
     }
 
