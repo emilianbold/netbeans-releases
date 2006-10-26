@@ -37,7 +37,6 @@ class TaskTagsProcessor extends PropertyProcessor {
     }
     
     void processPropertyImpl(String propertyName, Object value) {
-        StringBuffer sb = new StringBuffer();
         if ("taskTags".equals(propertyName)) {//NOI18N
             List l = ((SerParser.ObjectWrapper)value).data;
             for (Iterator it = l.iterator(); it.hasNext();) {
@@ -45,35 +44,26 @@ class TaskTagsProcessor extends PropertyProcessor {
                 if (elem instanceof SerParser.ObjectWrapper) {
                     String clsname = Utils.prettify(((SerParser.ObjectWrapper)elem).classdesc.name);
                     if ("org.netbeans.modules.tasklist.docscan.TaskTag".equals(clsname)) {//NOI18N
-                        processTag(elem, sb);//NOI18N
-                        if (it.hasNext()) {
-                            sb.append(",");//NOI18N
-                        }
+                        processTag(elem);//NOI18N
                     }
                 }
             }
-            addProperty(propertyName,sb.toString());//NOI18N            
         }  else {
             throw new IllegalStateException();
         }
     }
     
-    private void processTag(final Object value, StringBuffer sb) {
+    private void processTag(final Object value) {
+        String tagName = null;
         List l = ((SerParser.ObjectWrapper)value).data;
         for (Iterator it = l.iterator(); it.hasNext();) {
             Object elem = (Object) it.next();
             if (elem instanceof SerParser.ObjectWrapper) {
                 String val = ((SerParser.NameValue)(((SerParser.ObjectWrapper)elem).data.get(0))).value.toString();
-                sb.append(val);
-                if (it.hasNext()) {
-                    sb.append(",");//NOI18N
-                }
-                
+                assert tagName != null;
+                addProperty(tagName, val);
             } else if (elem instanceof String) {
-                sb.append((String)elem);
-                if (it.hasNext()) {
-                    sb.append(",");//NOI18N
-                }                
+                tagName = "Tag"+(String)elem;//NOI18N
             }
         }
     }

@@ -29,9 +29,6 @@ import org.openide.filesystems.*;
  */
 public class Importer {
     private static final String DEFINITION_OF_FILES =  "systemoptionsimport";//NOI18N
-    private static final String USERROOT_PREFIX = "/Preferences";//NOI18N
-    private static final String PROPS_FILE_NAME = "prefs.properties";//NOI18N
-    
             
     private static FileObject getRootOfSystemFileSystem() {
         return Repository.getDefault().getDefaultFileSystem().getRoot();
