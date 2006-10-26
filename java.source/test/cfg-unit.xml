@@ -36,6 +36,8 @@ Microsystems, Inc. All Rights Reserved.
                 <exclude name="org/netbeans/api/java/source/gen/FieldTest2.class" />
                 <exclude name="org/netbeans/api/java/source/gen/FieldTest3.class" />
                 <exclude name="org/netbeans/api/java/source/gen/FieldTest4.class" />
+                <exclude name="org/netbeans/api/java/source/gen/Field5Test.class" />
+                <exclude name="org/netbeans/api/java/source/gen/Field6Test.class" />
                 <exclude name="org/netbeans/api/java/source/gen/GeneratorTest.class" />
                 <exclude name="org/netbeans/api/java/source/gen/MethodTest2.class" />
                 <exclude name="org/netbeans/api/java/source/gen/MethodTest3.class" />
@@ -43,6 +45,7 @@ Microsystems, Inc. All Rights Reserved.
                 <exclude name="org/netbeans/api/java/source/gen/LabelsTest.class"/>
                 <exclude name="org/netbeans/api/java/source/gen/CompareTreeTest.class"/>
                 <exclude name="org/netbeans/api/java/source/gen/MethodCreationTest.class"/>
+                <exclude name="org/netbeans/api/java/source/gen/MemberAdditionTest.class"/>
             </patternset>
         </testset>
     </testbag>
