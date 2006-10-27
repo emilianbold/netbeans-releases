@@ -74,6 +74,7 @@ public abstract class ColumnModel implements Model {
      *
      * @return ID of column this column should be installed before or 
      * <code>null</code>
+     * @deprecated Not used. See {@link #getCurrentOrderNumber}.
      */
     public String getPreviuosColumnID () {
         return null;
@@ -87,6 +88,7 @@ public abstract class ColumnModel implements Model {
      * used for sorting after that.
      *
      * @return ID of column next to this one or <code>null</code>
+     * @deprecated Not used. See {@link #getCurrentOrderNumber}.
      */
     public String getNextColumnID () {
         return null;
@@ -113,44 +115,44 @@ public abstract class ColumnModel implements Model {
     }
     
     /**
-     * True if column should be visible by default. Default implementation 
+     * True if column should be visible. Default implementation 
      * returns <code>true</code>.
      *
-     * @return <code>true</code> if column should be visible by default
+     * @return <code>true</code> if column should be visible
      */
     public boolean isVisible () {
         return true;
     }
     
     /**
-     * Set true if column is visible.
+     * Set true if column is to be visible. Default implementation does nothing.
      *
-     * @param visible set true if column is visible
+     * @param visible set true if column is to be visible
      */
     public void setVisible (boolean visible) {}
     
     /**
-     * True if column should be sorted by default.
+     * True if column is sorted.
      * Default implementation returns <code>false</code>.
      *
-     * @return <code>true</code> if column should be sorted by default
+     * @return <code>true</code> if column is sorted.
      */
     public boolean isSorted () {
         return false;
     }
     
     /**
-     * Set true if column should be sorted by default.
+     * Set true if column is to be sorted. Default implementation does nothing.
      *
-     * @param sorted set true if column should be sorted by default 
+     * @param sorted set true if column is to be sorted
      */
     public void setSorted (boolean sorted) {}
     
     /**
-     * True if column should be sorted by default in descending order.
+     * True if column should be sorted in descending order.
      * Default implementation returns <code>false</code>.
      *
-     * @return <code>true</code> if column should be sorted by default 
+     * @return <code>true</code> if column should be sorted
      *         in descending order
      */
     public boolean isSortedDescending () {
@@ -158,20 +160,17 @@ public abstract class ColumnModel implements Model {
     }
     
     /**
-     * Set true if column should be sorted by default in descending order.
+     * Set true if column is to be sorted in descending order.
+     * Default implementation does nothing.
      *
-     * @param sortedDescending set true if column should be sorted by default 
+     * @param sortedDescending set true if column is to be sorted
      *        in descending order
      */
     public void setSortedDescending (boolean sortedDescending) {}
     
     /**
      * Should return current order number of this column. Default value is 
-     * <code>-1</code>. Current order number is used when the default order
-     * defined by {@link #getPreviuosColumnID} and {@link #getNextColumnID}
-     * is changed by user. So getCurrentOrderNumber () method should return 
-     * <code>-1</code>, till the {@link #setCurrentOrderNumber} is called.
-     * And it should return newOrderNumber value after that.
+     * <code>-1</code>.
      *
      * @return current order number of this column or <code>-1</code>
      */
@@ -181,6 +180,7 @@ public abstract class ColumnModel implements Model {
     
     /**
      * Is called when current order number of this column is changed.
+     * Default implementation does nothing.
      *
      * @param newOrderNumber new order number
      */
@@ -197,6 +197,7 @@ public abstract class ColumnModel implements Model {
     
     /**
      * Is called when column width of this column is changed.
+     * Default implementation does nothing.
      *
      * @param newColumnWidth a new column width
      */
