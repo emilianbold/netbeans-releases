@@ -56,6 +56,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
     
     private String          viewType;
     private JComponent      view;
+    private List models = new ArrayList(11);
     
     // <RAVE>
     // Store the propertiesHelpID to pass to the Model object that is
@@ -70,11 +71,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         this.viewType = viewType;
         this.view = view;
         this.propertiesHelpID = propertiesHelpID;
-        DebuggerManager.getDebuggerManager ().addDebuggerListener (
-            DebuggerManager.PROP_CURRENT_ENGINE,
-            this
-        );
-        updateModel ();        
+        setUp();
     }
     // </RAVE>
     
@@ -84,6 +81,10 @@ public class ViewModelListener extends DebuggerManagerAdapter {
     ) {
         this.viewType = viewType;
         this.view = view;
+        setUp();
+    }
+    
+    void setUp() {
         DebuggerManager.getDebuggerManager ().addDebuggerListener (
             DebuggerManager.PROP_CURRENT_ENGINE,
             this
@@ -101,7 +102,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             Models.EMPTY_MODEL
         );
     }
-
+    
     public void propertyChange (PropertyChangeEvent e) {
         updateModel ();
     }
@@ -114,7 +115,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         return es;
     }
     
-    private void updateModel () {
+    private synchronized void updateModel () {
         DebuggerManager dm = DebuggerManager.getDebuggerManager ();
         DebuggerEngine e = dm.getCurrentEngine ();
         
@@ -155,7 +156,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             mm =                    dm.lookup (viewType, Model.class);
         }
         
-        List models = new ArrayList(11);
+        models.clear();
         models.add(treeModels);
         models.add(treeModelFilters);
         models.add(treeExpansionModels);

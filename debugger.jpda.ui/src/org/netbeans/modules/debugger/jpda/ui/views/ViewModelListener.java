@@ -62,6 +62,7 @@ class ViewModelListener extends DebuggerManagerAdapter {
 
     private String          viewType;
     private JComponent      view;
+    private List models = new ArrayList(11);
     
     
     ViewModelListener (
@@ -70,6 +71,10 @@ class ViewModelListener extends DebuggerManagerAdapter {
     ) {
         this.viewType = viewType;
         this.view = view;
+        setUp();
+    }
+    
+    void setUp() {
         DebuggerManager.getDebuggerManager ().addDebuggerListener (
             DebuggerManager.PROP_CURRENT_ENGINE,
             this
@@ -100,7 +105,7 @@ class ViewModelListener extends DebuggerManagerAdapter {
         return es;
     }
     
-    private void updateModel () {
+    private synchronized void updateModel () {
         DebuggerManager dm = DebuggerManager.getDebuggerManager ();
         DebuggerEngine e = dm.getCurrentEngine ();
         
@@ -141,7 +146,7 @@ class ViewModelListener extends DebuggerManagerAdapter {
             mm =                    dm.lookup (viewType, Model.class);
         }
         
-        List models = new ArrayList(11);
+        models.clear();
         models.add(treeModels);
         models.add(treeModelFilters);
         models.add(treeExpansionModels);

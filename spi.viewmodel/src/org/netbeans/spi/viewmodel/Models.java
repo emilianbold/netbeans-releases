@@ -32,6 +32,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.Vector;
+import java.util.WeakHashMap;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
@@ -64,6 +65,8 @@ import org.openide.windows.TopComponent;
  */
 public final class Models {
 
+    /** Cached default implementations of expansion models. */
+    private static WeakHashMap defaultExpansionModels = new WeakHashMap();
     /**
      * Empty model - returns default root node with no children.
      */
@@ -119,6 +122,11 @@ public final class Models {
     
     /**
      * Creates one {@link CompoundModel} from given list of models.
+     * <p>
+     * If this list does not include any instance of TreeModel or
+     * TreeExpansionModel, a default implementation of these models is created
+     * based on the instance of this list. Thus you get one implementation
+     * per provided instance of the models list.
      * 
      * @param models a list of models
      * @return {@link CompoundModel} encapsulating given list of models
@@ -129,6 +137,11 @@ public final class Models {
     
     /**
      * Creates one {@link CompoundModel} from given list of models.
+     * <p>
+     * If this list does not include any instance of TreeModel or
+     * TreeExpansionModel, a default implementation of these models is created
+     * based on the instance of this list. Thus you get one implementation
+     * per provided instance of the models list.
      * 
      * @param models a list of models
      * @param propertiesHelpID The help ID, which is set for the properties
@@ -241,6 +254,14 @@ public final class Models {
          */
         if (treeModels.isEmpty ()) {
             treeModels.add (new EmptyTreeModel ());
+        }
+        if (treeExpansionModels.isEmpty()) {
+            TreeExpansionModel tem = (TreeExpansionModel) defaultExpansionModels.get(models);
+            if (tem == null) {
+                tem = new DefaultTreeExpansionModel();
+                defaultExpansionModels.put(models, tem);
+            }
+            treeExpansionModels.add(tem);
         }
         
         return new CompoundModel (
@@ -1379,15 +1400,8 @@ public final class Models {
         }
 
         private static TreeExpansionModel[] convert (List l) {
-            int size = l.size ();
-            if (size == 0) {
-                return new TreeExpansionModel[] {
-                    new DefaultTreeExpansionModel()
-                };
-            } else {
-                TreeExpansionModel[] models = new TreeExpansionModel [size];
-                return (TreeExpansionModel[]) l.toArray (models);
-            }
+            TreeExpansionModel[] models = new TreeExpansionModel [l.size()];
+            return (TreeExpansionModel[]) l.toArray (models);
         }
 
         /**
@@ -1477,6 +1491,10 @@ public final class Models {
         
         private Set expandedNodes = new WeakSet();
         private Set collapsedNodes = new WeakSet();
+        
+        public DefaultTreeExpansionModel() {
+            System.err.println("new DefaultTreeExpansionModel()");
+        }
 
         /**
          * Defines default state (collapsed, expanded) of given node.

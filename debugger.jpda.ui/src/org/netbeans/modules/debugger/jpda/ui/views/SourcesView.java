@@ -48,8 +48,10 @@ public class SourcesView extends TopComponent implements org.openide.util.HelpCt
 
     protected void componentShowing () {
         super.componentShowing ();
-        if (viewModelListener != null)
+        if (viewModelListener != null) {
+            viewModelListener.setUp();
             return;
+        }
         if (tree == null) {
             setLayout (new BorderLayout ());
             tree = Models.createView (Models.EMPTY_MODEL);
@@ -67,7 +69,6 @@ public class SourcesView extends TopComponent implements org.openide.util.HelpCt
     protected void componentHidden () {
         super.componentHidden ();
         viewModelListener.destroy ();
-        viewModelListener = null;
     }
     
     // <RAVE>

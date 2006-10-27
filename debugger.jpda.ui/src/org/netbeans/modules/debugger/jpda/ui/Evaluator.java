@@ -455,6 +455,7 @@ public class Evaluator extends javax.swing.JPanel {
         
         private String          viewType;
         private JComponent      view;
+        private List models = new ArrayList(11);
     
     
         public EvaluatorModelListener(JComponent view) {
@@ -497,7 +498,7 @@ public class Evaluator extends javax.swing.JPanel {
             return es;
         }
     
-        public void updateModel () {
+        public synchronized void updateModel () {
             DebuggerManager dm = DebuggerManager.getDebuggerManager ();
             DebuggerEngine e = dm.getCurrentEngine ();
             
@@ -562,7 +563,7 @@ public class Evaluator extends javax.swing.JPanel {
              */
             EvaluatorModel eTreeNodeModel = new EvaluatorModel(treeNodeModel, treeNodeModel);
             
-            List models = new ArrayList(11);
+            models.clear();
             treeModels.clear();
             treeModels.add(eTreeNodeModel);
             models.add(treeModels);

@@ -127,7 +127,7 @@ ExplorerManager.Provider, PropertyChangeListener, TreeExpansionListener {
         
         // 6) update column widths & expanded nodes
         updateColumnWidths ();
-        treeTable.expandNodes (expandedPaths);
+        //treeTable.expandNodes (expandedPaths);
         // TODO: this is a workaround, we should find a better way later
         /* We must not call children here - it can take a long time...
          * the expansion is performed in TreeModelNode.TreeModelChildren.applyChildren()

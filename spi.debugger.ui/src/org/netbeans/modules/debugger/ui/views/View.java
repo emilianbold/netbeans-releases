@@ -71,8 +71,10 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
 
     protected void componentShowing () {
         super.componentShowing ();
-        if (viewModelListener != null)
-            return;
+        if (viewModelListener != null) {
+            viewModelListener.setUp();
+            return ;
+        }
         if (tree == null) {
             setLayout (new BorderLayout ());
             tree = Models.createView (Models.EMPTY_MODEL);
@@ -99,7 +101,6 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
         super.componentHidden ();
         if (viewModelListener != null) {
             viewModelListener.destroy ();
-            viewModelListener = null;
         }
     }
     
@@ -118,6 +119,13 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
         super.requestFocusInWindow ();
         if (tree == null) return false;
         return tree.requestFocusInWindow ();
+    }
+
+    public void requestActive() {
+        super.requestActive();
+        if (tree != null) {
+            tree.requestFocusInWindow ();
+        }
     }
     
     public String getName () {

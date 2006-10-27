@@ -72,7 +72,7 @@ public abstract class Breakpoint {
     public void setGroupName (String newGroupName) {
         if (groupName.equals (newGroupName)) return;
         String old = groupName;
-        groupName = newGroupName;
+        groupName = newGroupName.intern();
         firePropertyChange (PROP_GROUP_NAME, old, newGroupName);
     }
     
