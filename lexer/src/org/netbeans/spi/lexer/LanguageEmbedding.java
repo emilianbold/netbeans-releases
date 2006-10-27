@@ -41,10 +41,7 @@ import org.netbeans.api.lexer.TokenId;
 public abstract class LanguageEmbedding {
     
     /**
-     * Get the embedded language hierarchy by providing its description.
-     * <br/>
-     * This method is only evaluated once the list of embedded tokens
-     * is being created.
+     * Get the embedded language.
      *
      * @return non-null embedded language.
      */

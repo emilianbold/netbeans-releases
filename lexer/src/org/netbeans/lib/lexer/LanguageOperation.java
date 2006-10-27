@@ -55,9 +55,9 @@ public final class LanguageOperation<T extends TokenId> {
     }
     
     /**
-     * Get description of the language at this level of language hierarchy.
+     * Get language at this level of language hierarchy.
      *
-     * @return description of the language.
+     * @return non-null language.
      */
     public synchronized Language<T> language() {
         if (language == null) {

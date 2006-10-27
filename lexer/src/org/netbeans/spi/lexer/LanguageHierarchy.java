@@ -275,10 +275,10 @@ public abstract class LanguageHierarchy<T extends TokenId> {
 
 
     /**
-     * Get description of the language constructed for this language hierarchy
+     * Get language constructed for this language hierarchy
      * based on token ids and token categories provided.
      *
-     * @return non-null description of the language.
+     * @return non-null language.
      */
     public final Language<T> language() {
         return operation.language();

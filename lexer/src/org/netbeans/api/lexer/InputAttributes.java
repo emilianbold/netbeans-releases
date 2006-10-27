@@ -31,8 +31,8 @@ import java.util.Map;
  * will interpret the "assert" as an identifier:
  * <pre>
  *  InputAttributes attrs = new InputAttributes();
- *  attrs.setValue(JavaLanguage.description(), "version", "1.3", true);
- *  TokenHierarchy.create("assert", false, JavaLanguage.description(), null, attrs);
+ *  attrs.setValue(JavaTokenId.language(), "version", "1.3", true);
+ *  TokenHierarchy.create("assert", false, JavaTokenId.language(), null, attrs);
  * </pre>
  *
  * <p>
@@ -120,7 +120,7 @@ public final class InputAttributes {
      *  <br/>
      *  The following code
      *  <pre>
-     *  attrs.setValue(LanguagePath.get(JavaLanguage.description()),
+     *  attrs.setValue(LanguagePath.get(JavaTokenId.language()),
      *      "version", Integer.valueOf(5), true);
      *  </pre>
      *  sets the version 5 (it means java 1.5) to all the java code snipets

@@ -30,14 +30,14 @@ import java.util.WeakHashMap;
  * till the most embedded language.
  * <br/>
  * Language path consists of one root language
- * and zero or more embedded descriptions.
+ * and zero or more embedded languages.
  * <br/>
  * E.g. for javadoc embedded in java that is embedded in jsp
  * then the language path <code>lp</code> would return the following:<pre>
  *  lp.size() == 3
- *  lp.language(0) == JspLanguage.description()
- *  lp.language(1) == JavaLanguage.description()
- *  lp.language(2) == JavadocLanguage.description()
+ *  lp.language(0) == JspTokenId.language()
+ *  lp.language(1) == JavaTokenId.language()
+ *  lp.language(2) == JavadocTokenId.language()
  * </pre>
  *
  * <p>
