@@ -261,7 +261,7 @@ class OutputPane extends AbstractOutputPane implements ComponentListener {
             if (keyStroke.equals(stroke)) {
                 return null;
             }
-            KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, Event.CTRL_MASK);
+            stroke = KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, Event.CTRL_MASK);
             if (keyStroke.equals(stroke)) {
                 return null;
             }
