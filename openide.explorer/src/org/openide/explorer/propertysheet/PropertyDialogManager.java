@@ -35,8 +35,8 @@ import java.util.logging.Logger;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JOptionPane;
 import javax.swing.UIManager;
+import org.openide.awt.Mnemonics;
 import org.openide.util.Exceptions;
 
 
@@ -208,8 +208,10 @@ final class PropertyDialogManager implements VetoableChangeListener, ActionListe
             cancelButton.setDefaultCapable(false);
 
             if (defaultValue) {
-                JButton defaultButton = new JButton(getString("CTL_Default"));
-                defaultButton.setMnemonic(getString("CTL_DefaultMnemonic").charAt(0));
+                JButton defaultButton = new JButton();
+                String name = getString("CTL_Default");
+                Mnemonics.setLocalizedText(defaultButton, name);
+                defaultButton.setActionCommand(name);
                 defaultButton.getAccessibleContext().setAccessibleDescription(getString("ACSD_CTL_Default"));
                 defaultButton.setDefaultCapable(false);
                 defaultButton.setVerifyInputWhenFocusTarget(false);
@@ -421,7 +423,6 @@ final class PropertyDialogManager implements VetoableChangeListener, ActionListe
      */
     public void actionPerformed(ActionEvent evt) {
         String label = evt.getActionCommand();
-
         if (label.equals(getString("CTL_Cancel"))) {
             cancelled = true; // XXX shouldn't this be reset otherwise?
             cancelValue();

@@ -333,29 +333,23 @@ public class HtmlBrowser extends JPanel {
         JPanel p = new JPanel(new GridBagLayout());
         p.add(bBack = new JButton(iBack));
         bBack.setToolTipText(NbBundle.getMessage(HtmlBrowser.class, "CTL_Back"));
-        bBack.setMnemonic(NbBundle.getMessage(HtmlBrowser.class, "CTL_Back_Mnemonic").charAt(0));
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(0, 0, 0, 5);
         p.add(bForward = new JButton(iForward), gbc);
         bForward.setToolTipText(NbBundle.getMessage(HtmlBrowser.class, "CTL_Forward"));
-        bForward.setMnemonic(NbBundle.getMessage(HtmlBrowser.class, "CTL_Forward_Mnemonic").charAt(0));
         p.add(bStop = new JButton(iStop));
         bStop.setToolTipText(NbBundle.getMessage(HtmlBrowser.class, "CTL_Stop"));
-        bStop.setMnemonic(NbBundle.getMessage(HtmlBrowser.class, "CTL_Stop_Mnemonic").charAt(0));
         gbc = new GridBagConstraints();
         gbc.insets = new Insets(0, 0, 0, 5);
         p.add(bReload = new JButton(iReload), gbc);
         bReload.setToolTipText(NbBundle.getMessage(HtmlBrowser.class, "CTL_Reload"));
-        bReload.setMnemonic(NbBundle.getMessage(HtmlBrowser.class, "CTL_Reload_Mnemonic").charAt(0));
         p.add(bHome = new JButton(iHome));
         bHome.setToolTipText(NbBundle.getMessage(HtmlBrowser.class, "CTL_Home"));
-        bHome.setMnemonic(NbBundle.getMessage(HtmlBrowser.class, "CTL_Home_Mnemonic").charAt(0));
         gbc = new GridBagConstraints();
         gbc.insets = new Insets(0, 0, 0, 5);
         p.add(bHistory = new JButton(iHistory), gbc);
         bHistory.setToolTipText(NbBundle.getMessage(HtmlBrowser.class, "CTL_History"));
-        bHistory.setMnemonic(NbBundle.getMessage(HtmlBrowser.class, "CTL_History_Mnemonic").charAt(0));
 
         if (browserImpl != null) {
             bBack.setEnabled(browserImpl.isBackward());
@@ -368,8 +362,8 @@ public class HtmlBrowser extends JPanel {
         gbc.insets = new Insets(0, 0, 0, 5);
         p.add(ts, gbc);
         ts.updateUI();
-        p.add(cbLabel = new JLabel(NbBundle.getMessage(HtmlBrowser.class, "CTL_Location")));
-        cbLabel.setDisplayedMnemonic(NbBundle.getMessage(HtmlBrowser.class, "CTL_Location_Mnemonic").charAt(0));
+        p.add(cbLabel = new JLabel());
+        Mnemonics.setLocalizedText(cbLabel, NbBundle.getMessage(HtmlBrowser.class, "CTL_Location")); // NOI18N
         head.add("West", p); // NOI18N
 
         head.add("Center", cbLocation = new JComboBox()); // NOI18N

@@ -31,6 +31,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.tree.TreeSelectionModel;
 import org.openide.awt.HtmlBrowser;
+import org.openide.awt.Mnemonics;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.explorer.view.NodeTreeModel;
@@ -104,12 +105,8 @@ final class TemplateWizard1 extends javax.swing.JPanel implements DataFilter,
         // Fix of #19667 - those values will be retreived in addNotify
         putClientProperty("LAB_SelectTemplateBorder", // NOI18N
             bundle.getString("LAB_SelectTemplateBorder")); 
-        putClientProperty("LAB_SelectTemplateBorder_Mnemonic", // NOI18N
-            bundle.getString("LAB_SelectTemplateBorder_Mnemonic"));
         putClientProperty("LAB_TemplateDescriptionBorder", // NOI18N
             bundle.getString("LAB_TemplateDescriptionBorder"));
-        putClientProperty("LAB_TemplateDescriptionBorder_Mnemonic", // NOI18N
-            bundle.getString("LAB_TemplateDescriptionBorder_Mnemonic"));
         putClientProperty("ACSD_TemplatesTree", // NOI18N
             bundle.getString("ACSD_TemplatesTree"));
         putClientProperty("ACSD_TemplateWizard1", // NOI18N
@@ -130,17 +127,11 @@ final class TemplateWizard1 extends javax.swing.JPanel implements DataFilter,
     public void addNotify() {
         // overriden to set the labels later than in constructor
         // in order to fix #19667
-        templatesLabel.setText(
-            (String)getClientProperty("LAB_SelectTemplateBorder") // NOI18N
+        Mnemonics.setLocalizedText(templatesLabel, 
+                (String)getClientProperty("LAB_SelectTemplateBorder") // NOI18N
         );
-        templatesLabel.setDisplayedMnemonic(
-            ((String)getClientProperty("LAB_SelectTemplateBorder_Mnemonic")).charAt(0) // NOI18N
-        );
-        browserLabel.setText(
+        Mnemonics.setLocalizedText(browserLabel,
             (String)getClientProperty("LAB_TemplateDescriptionBorder") // NOI18N
-        );
-        browserLabel.setDisplayedMnemonic(
-            ((String)getClientProperty("LAB_TemplateDescriptionBorder_Mnemonic")).charAt(0)
         );
 
         treeView.getAccessibleContext().setAccessibleDescription(
