@@ -36,6 +36,7 @@ public class RevertModificationsPanel extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+
         jLabel2 = new javax.swing.JLabel();
         jLabel9 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
@@ -48,23 +49,19 @@ public class RevertModificationsPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(localChangesRadioButton, bundle.getString("CTL_RevertPanel_RevertLocal")); // NOI18N
         localChangesRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         localChangesRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        localChangesRadioButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_RevertPanel_RevertLocal")); // NOI18N
 
         buttonGroup.add(moreCommitsRadioButton);
         org.openide.awt.Mnemonics.setLocalizedText(moreCommitsRadioButton, bundle.getString("CTL_RevertPanel_RevertMulti")); // NOI18N
         moreCommitsRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         moreCommitsRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        moreCommitsRadioButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_RevertPanel_RevertMulti")); // NOI18N
 
         jLabel2.setLabelFor(startRevisionTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, bundle.getString("CTL_RevertPanel_StartingRevision")); // NOI18N
-        jLabel2.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_RevertPanel_StartingRevision")); // NOI18N
 
         startRevisionTextField.setEnabled(false);
 
         org.openide.awt.Mnemonics.setLocalizedText(startSearchButton, bundle.getString("CTL_RevertPanel_Search2")); // NOI18N
         startSearchButton.setEnabled(false);
-        startSearchButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_RevertPanel_Search2")); // NOI18N
 
         jLabel9.setText(bundle.getString("CTL_RevertPanel_EmptyHint")); // NOI18N
 
@@ -72,29 +69,28 @@ public class RevertModificationsPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(endSearchButton, bundle.getString("CTL_RevertPanel_Search3")); // NOI18N
         endSearchButton.setEnabled(false);
-        endSearchButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_RevertPanel_Search3")); // NOI18N
 
         jLabel3.setLabelFor(endRevisionTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, bundle.getString("CTL_RevertPanel_EndingRevision")); // NOI18N
-        jLabel3.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_RevertPanel_EndingRevision")); // NOI18N
 
         buttonGroup.add(oneCommitRadioButton);
         org.openide.awt.Mnemonics.setLocalizedText(oneCommitRadioButton, bundle.getString("CTL_RevertPanel_RevertSingle")); // NOI18N
         oneCommitRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         oneCommitRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        oneCommitRadioButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_RevertPanel_RevertSingle")); // NOI18N
 
         jLabel4.setLabelFor(oneRevisionTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel4, bundle.getString("CTL_RevertPanel_SingleRevision")); // NOI18N
-        jLabel4.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_RevertPanel_SingleRevision")); // NOI18N
 
         oneRevisionTextField.setEnabled(false);
 
         org.openide.awt.Mnemonics.setLocalizedText(oneRevisionSearchButton, bundle.getString("CTL_RevertPanel_Search1")); // NOI18N
         oneRevisionSearchButton.setEnabled(false);
-        oneRevisionSearchButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_RevertPanel_Search1")); // NOI18N
 
         jLabel10.setText(bundle.getString("CTL_RevertPanel_EmptyHint")); // NOI18N
+
+        revertNewFilesCheckBox.setText("Remove newly added files and folders");
+        revertNewFilesCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        revertNewFilesCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -129,7 +125,8 @@ public class RevertModificationsPanel extends javax.swing.JPanel {
                     .add(localChangesRadioButton)
                     .add(layout.createSequentialGroup()
                         .add(141, 141, 141)
-                        .add(jLabel9)))
+                        .add(jLabel9))
+                    .add(revertNewFilesCheckBox))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -160,8 +157,20 @@ public class RevertModificationsPanel extends javax.swing.JPanel {
                     .add(endSearchButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jLabel10)
-                .addContainerGap(16, Short.MAX_VALUE))
+                .add(22, 22, 22)
+                .add(revertNewFilesCheckBox)
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        localChangesRadioButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_RevertPanel_RevertLocal")); // NOI18N
+        moreCommitsRadioButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_RevertPanel_RevertMulti")); // NOI18N
+        jLabel2.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_RevertPanel_StartingRevision")); // NOI18N
+        startSearchButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_RevertPanel_Search2")); // NOI18N
+        endSearchButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_RevertPanel_Search3")); // NOI18N
+        jLabel3.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_RevertPanel_EndingRevision")); // NOI18N
+        oneCommitRadioButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_RevertPanel_RevertSingle")); // NOI18N
+        jLabel4.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_RevertPanel_SingleRevision")); // NOI18N
+        oneRevisionSearchButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_RevertPanel_Search1")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -178,6 +187,7 @@ public class RevertModificationsPanel extends javax.swing.JPanel {
     final javax.swing.JRadioButton oneCommitRadioButton = new javax.swing.JRadioButton();
     final javax.swing.JButton oneRevisionSearchButton = new javax.swing.JButton();
     final javax.swing.JTextField oneRevisionTextField = new javax.swing.JTextField();
+    final javax.swing.JCheckBox revertNewFilesCheckBox = new javax.swing.JCheckBox();
     final javax.swing.JTextField startRevisionTextField = new javax.swing.JTextField();
     final javax.swing.JButton startSearchButton = new javax.swing.JButton();
     // End of variables declaration//GEN-END:variables

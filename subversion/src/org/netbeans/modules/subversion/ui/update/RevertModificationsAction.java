@@ -20,6 +20,7 @@
 package org.netbeans.modules.subversion.ui.update;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 import org.netbeans.modules.subversion.*;
@@ -30,7 +31,8 @@ import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.*;
 import org.netbeans.modules.subversion.util.Context;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileStateInvalidException;
@@ -114,16 +116,14 @@ public class RevertModificationsAction extends ContextAction {
                         }
                         SVNUrl url = SvnUtils.getRepositoryUrl(files[i]);
                         revisions = recountStartRevision(client, url, revisions);
-                        client.merge(url, revisions.endRevision, url, revisions.startRevision, files[i], false, recursive);
-                        refresh(files[i], recursive, filesystems);
+                        client.merge(url, revisions.endRevision, url, revisions.startRevision, files[i], false, recursive);                        
                     }
                 } else {
                     for (int i= 0; i<files.length; i++) {
                         if(support.isCanceled()) {
                             return;
                         }
-                        client.revert(files[i], recursive);
-                        refresh(files[i], recursive, filesystems);
+                        client.revert(files[i], recursive);                        
                     }
                 }
             } catch (SVNClientException ex) {
@@ -131,20 +131,25 @@ public class RevertModificationsAction extends ContextAction {
             }
         }
 
-        for (Iterator i = filesystems.iterator(); i.hasNext();) {
-            FileSystem fileSystem = (FileSystem) i.next();
-            fileSystem.refresh(true);
+        if(support.isCanceled()) {
+            return;
         }
-    }
-    
-    private static void refresh(File file, boolean recursive, Set filesystems) {
-        if (recursive) {
-            refreshRecursively(file);
-        } else {
-            Subversion.getInstance().getStatusCache().refreshCached(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-        }
-        addFileSystem(filesystems, file);
-    }
+        
+        if(revertModifications.revertNewFiles()) {
+            File[] newfiles = Subversion.getInstance().getStatusCache().listFiles(files, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | FileInformation.STATUS_VERSIONED_ADDEDLOCALLY);
+            for (int i = 0; i < newfiles.length; i++) {                                
+                FileObject fo = FileUtil.toFileObject(newfiles[i]);                                    
+                try {
+                    if(fo != null) {
+                        fo.delete();
+                    }
+                }
+                catch (IOException ex) {
+                    ErrorManager.getDefault().notify(ex);
+                }
+            }
+        }        
+    }        
 
     /**
      * Folders that were resurrected by "Revert Delete" have not really been created because they already existed.

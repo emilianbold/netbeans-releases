@@ -87,6 +87,15 @@ public class RevertModifications implements PropertyChangeListener {
         return null;
     }      
 
+    boolean revertNewFiles() {
+        for (int i = 0; i < types.length; i++) {
+            if(types[i].isSelected()) {
+                return types[i].revertNewFiles();
+            }
+        }
+        return false;
+    }      
+    
     public boolean showDialog() {
         DialogDescriptor dialogDescriptor = new DialogDescriptor(panel, org.openide.util.NbBundle.getMessage(RevertModifications.class, "CTL_RevertDialog")); // NOI18N
         dialogDescriptor.setOptions(new Object[] {okButton, cancelButton});
@@ -139,6 +148,10 @@ public class RevertModifications implements PropertyChangeListener {
             return button.isSelected();
         }
 
+        boolean revertNewFiles() {
+            return panel.revertNewFilesCheckBox.isSelected();
+        }
+        
         public void insertUpdate(DocumentEvent e) {
             validateUserInput();
         }

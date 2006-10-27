@@ -26,6 +26,7 @@ import java.security.InvalidKeyException;
 import java.util.*;
 import javax.net.ssl.SSLKeyException;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.parser.LocalSubversionException;
 import org.netbeans.modules.subversion.client.parser.SvnWcParser;
 import org.openide.ErrorManager;
@@ -115,14 +116,17 @@ public class SvnClientInvocationHandler implements InvocationHandler {
 
         assert noRemoteCallinAWT(method, args) : "noRemoteCallinAWT(): " + method.getName(); // NOI18N
 
-        try {             
+        try {      
+            Object ret = null;        
             if(SwingUtilities.isEventDispatchThread()) {
-                return invokeMethod(method, args);    
+                ret = invokeMethod(method, args);    
             } else {
                 synchronized (semaphor) {
-                    return invokeMethod(method, args);    
+                    ret = invokeMethod(method, args);    
                 }
-            }
+            }            
+            Subversion.getInstance().getStatusCache().refreshDirtyFileSystems();
+            return ret;
         } catch (Exception e) {
             try {
                 if(handleException((SvnClient) proxy, e) ) {

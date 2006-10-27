@@ -774,15 +774,7 @@ public class FileStatusCache implements ISVNNotifyListener {
     }
 
     public void logCompleted(String message) {
-        Set<FileSystem> filesystems = getFilesystemsToRefresh();
-        FileSystem[]  filesystemsToRefresh = new FileSystem[filesystems.size()];
-        synchronized (filesystems) {
-            filesystemsToRefresh = filesystems.toArray(new FileSystem[filesystems.size()]);
-        }
-        for (int i = 0; i < filesystemsToRefresh.length; i++) {            
-            // don't call refresh() in synchronized (filesystems). It may lead to a deadlock.
-            filesystemsToRefresh[i].refresh(true);            
-        }
+        // boring ISVNNotifyListener event
     }
 
     public void onNotify(File path, SVNNodeKind kind) {
@@ -819,6 +811,19 @@ public class FileStatusCache implements ISVNNotifyListener {
         }
     }
 
+    public void refreshDirtyFileSystems() {
+        Set<FileSystem> filesystems = getFilesystemsToRefresh();
+        FileSystem[]  filesystemsToRefresh = new FileSystem[filesystems.size()];
+        synchronized (filesystems) {
+            filesystemsToRefresh = filesystems.toArray(new FileSystem[filesystems.size()]);
+            filesystems.clear();
+        }
+        for (int i = 0; i < filesystemsToRefresh.length; i++) {            
+            // don't call refresh() in synchronized (filesystems). It may lead to a deadlock.
+            filesystemsToRefresh[i].refresh(true);            
+        }        
+    }
+    
     private Set<FileSystem> getFilesystemsToRefresh() {
         if(filesystemsToRefresh == null) {
             filesystemsToRefresh = new HashSet<FileSystem>();
