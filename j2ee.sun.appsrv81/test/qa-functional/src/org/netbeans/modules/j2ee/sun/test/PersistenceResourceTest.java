@@ -31,7 +31,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
 import java.util.Vector;
-import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
@@ -43,6 +42,8 @@ import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ResourceUtils;
 import org.netbeans.modules.j2ee.sun.ide.sunresources.resourcesloader.SunResourceDataObject;
 import org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.ResourceConfigData;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.WizardConstants;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -61,7 +62,7 @@ public class PersistenceResourceTest extends NbTestCase implements WizardConstan
     }
     public void registerConnectionPool() {
         try {
-            Project    project = (Project)Util.openProject(new File(Util.WEB_PROJECT_PATH));
+            //Project    project = (Project)Util.openProject(new File(Util.WEB_PROJECT_PATH));
             ServerInstance    inst = ServerRegistry.getInstance().getServerInstance(Util._URL);
             ResourceConfigData cpdata = new ResourceConfigData();
             //connection pool setting
@@ -80,15 +81,21 @@ public class PersistenceResourceTest extends NbTestCase implements WizardConstan
             cpdata.setString(__MaxWaitTimeInMillis, "60000");
             cpdata.setString(__PoolResizeQuantity, "2");
             cpdata.setString(__IdleTimeoutInSeconds, "300");
-            cpdata.setTargetFileObject(project.getProjectDirectory());
+            //cpdata.setTargetFileObject(project.getProjectDirectory());
+            File fpf = File.createTempFile("falseProject","");
+            fpf.delete();
+            FileObject falseProject = FileUtil.createFolder(fpf);
+            falseProject.createFolder("setup");
+            cpdata.setTargetFileObject(falseProject);
             cpdata.setTargetFile("poolTest");
             ResourceUtils.saveConnPoolDatatoXml(cpdata);
-            SunResourceDataObject resourceObj = (SunResourceDataObject)SunResourceDataObject.find(project.getProjectDirectory().getFileObject("setup/poolTest.sun-resource"));
+            SunResourceDataObject resourceObj = (SunResourceDataObject)SunResourceDataObject.find(falseProject.getFileObject("setup/poolTest.sun-resource"));
             Resources res = Util.getResourcesObject(resourceObj);
             ServerInterface mejb = ((SunDeploymentManagerInterface)inst.getDeploymentManager()).getManagement();
             ResourceUtils.register(res.getJdbcConnectionPool(0), mejb, false);
             resourceObj.delete();
-            Util.closeProject(Util.WEB_PROJECT_NAME);
+            falseProject.delete();
+            //Util.closeProject(Util.WEB_PROJECT_NAME);
             Util.sleep(5000);
             String[] connPools = Util.getResourcesNames("getJdbcConnectionPool", "name", mejb);
             for(int i=0;i<connPools.length;i++) {
@@ -103,22 +110,29 @@ public class PersistenceResourceTest extends NbTestCase implements WizardConstan
     public void registerDataResource() {
         try {
             ServerInstance    inst = ServerRegistry.getInstance().getServerInstance(Util._URL);
-            Project    project = (Project)Util.openProject(new File(Util.WEB_PROJECT_PATH));
+            //Project    project = (Project)Util.openProject(new File(Util.WEB_PROJECT_PATH));
             ResourceConfigData dsdata = new ResourceConfigData();
             ResourceConfigData cpdata = new ResourceConfigData();
             //dataresource settings
             dsdata.setString(__JndiName,DATA_RESOURCE_NAME);
             dsdata.setString(__Enabled, "true");
             dsdata.setString(__JdbcObjectType, "user");
-            dsdata.setString(__PoolName,CONNECTION_POOL_NAME);dsdata.setTargetFileObject(project.getProjectDirectory());
+            dsdata.setString(__PoolName,CONNECTION_POOL_NAME);
+            //dsdata.setTargetFileObject(project.getProjectDirectory());
+            File fpf = File.createTempFile("falseProject","");
+            fpf.delete();
+            FileObject falseProject = FileUtil.createFolder(fpf);
+            falseProject.createFolder("setup");
+            dsdata.setTargetFileObject(falseProject);
             dsdata.setTargetFile("resourceTest");
             ResourceUtils.saveJDBCResourceDatatoXml(dsdata,cpdata);
-            SunResourceDataObject resourceObj = (SunResourceDataObject)SunResourceDataObject.find(project.getProjectDirectory().getFileObject("setup/resourceTest.sun-resource"));
+            SunResourceDataObject resourceObj = (SunResourceDataObject)SunResourceDataObject.find(falseProject.getFileObject("setup/resourceTest.sun-resource"));
             Resources res = Util.getResourcesObject(resourceObj);
             ServerInterface mejb = ((SunDeploymentManagerInterface)inst.getDeploymentManager()).getManagement();
             ResourceUtils.register(res.getJdbcResource(0), mejb, false);
             resourceObj.delete();
-            Util.closeProject(Util.WEB_PROJECT_NAME);
+            falseProject.delete();
+            //Util.closeProject(Util.WEB_PROJECT_NAME);
             Util.sleep(5000);
             String[] dataResources =Util.getResourcesNames("getJdbcResource","jndi-name",mejb);
             for(int i=0;i<dataResources.length;i++) {
@@ -134,7 +148,7 @@ public class PersistenceResourceTest extends NbTestCase implements WizardConstan
     public void registerPersistenceResource() {
         try {
             ServerInstance    inst = ServerRegistry.getInstance().getServerInstance(Util._URL);
-            Project    project = (Project)Util.openProject(new File(Util.WEB_PROJECT_PATH));
+            //Project    project = (Project)Util.openProject(new File(Util.WEB_PROJECT_PATH));
             ResourceConfigData dsdata = new ResourceConfigData();
             ResourceConfigData pmdata = new ResourceConfigData();
             ResourceConfigData cpdata=new ResourceConfigData();
@@ -143,15 +157,21 @@ public class PersistenceResourceTest extends NbTestCase implements WizardConstan
             pmdata.setString(__Enabled, "true");
             pmdata.setString(__FactoryClass, "com.sun.jdo.spi.persistence.support.sqlstore.impl.PersistenceManagerFactoryImpl");
             pmdata.setString(__JdbcResourceJndiName,DATA_RESOURCE_NAME);
-            pmdata.setTargetFileObject(project.getProjectDirectory());
+            //pmdata.setTargetFileObject(project.getProjectDirectory());
+               File fpf = File.createTempFile("falseProject","");
+            fpf.delete();
+            FileObject falseProject = FileUtil.createFolder(fpf);
+            falseProject.createFolder("setup");
+            pmdata.setTargetFileObject(falseProject);
             pmdata.setTargetFile("persistenceTest");
             ResourceUtils.savePMFResourceDatatoXml(pmdata,dsdata,cpdata);
-            SunResourceDataObject resourceObj = (SunResourceDataObject)SunResourceDataObject.find(project.getProjectDirectory().getFileObject("setup/persistenceTest.sun-resource"));
+            SunResourceDataObject resourceObj = (SunResourceDataObject)SunResourceDataObject.find(falseProject.getFileObject("setup/persistenceTest.sun-resource"));
             Resources res = Util.getResourcesObject(resourceObj);
             ServerInterface mejb = ((SunDeploymentManagerInterface)inst.getDeploymentManager()).getManagement();
             ResourceUtils.register(res.getPersistenceManagerFactoryResource(0), mejb, false);
             resourceObj.delete();
-            Util.closeProject(Util.WEB_PROJECT_NAME);
+            falseProject.delete();
+            //Util.closeProject(Util.WEB_PROJECT_NAME);
             Util.sleep(5000);
             String[] perResources =Util.getResourcesNames("getPersistenceManagerFactoryResource","jndi-name",mejb);
             for(int i=0;i<perResources.length;i++) {

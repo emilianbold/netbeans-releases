@@ -43,6 +43,8 @@ import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ResourceUtils;
 import org.netbeans.modules.j2ee.sun.ide.sunresources.resourcesloader.SunResourceDataObject;
 import org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.ResourceConfigData;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.WizardConstants;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -60,7 +62,8 @@ public class AdminObjectResourceTest extends NbTestCase implements WizardConstan
     
     public void registerJMSTopicResource() {
         try {
-            Project project = (Project)Util.openProject(new File(Util.EJB_PROJECT_PATH));
+            // TODO : retouche migration
+            //Project project = (Project)Util.openProject(new File(Util.EJB_PROJECT_PATH));
             ResourceConfigData jmsdata = new ResourceConfigData();
             ServerInstance inst = ServerRegistry.getInstance().getServerInstance(Util._URL);
             //JMS Resource Setting
@@ -68,15 +71,22 @@ public class AdminObjectResourceTest extends NbTestCase implements WizardConstan
             jmsdata.setString(__ResType, "javax.jms.Topic");
             jmsdata.setString(__Enabled, "true");
             jmsdata.addProperty("Name",JMS_TOPIC_RESOURCE_NAME);
-            jmsdata.setTargetFileObject(project.getProjectDirectory());
+            // TODO : retouche migration 
+            //jmsdata.setTargetFileObject(project.getProjectDirectory());
+            File fpf = File.createTempFile("falseProject","");
+            fpf.delete();
+            FileObject falseProject = FileUtil.createFolder(fpf);
+            falseProject.createFolder("setup");
+            jmsdata.setTargetFileObject(falseProject);
             jmsdata.setTargetFile("jmstResourceTest");
             ResourceUtils.saveJMSResourceDatatoXml(jmsdata);
-            SunResourceDataObject resourceObj = (SunResourceDataObject)SunResourceDataObject.find(project.getProjectDirectory().getFileObject("setup/jmstResourceTest.sun-resource"));
+            SunResourceDataObject resourceObj = (SunResourceDataObject)SunResourceDataObject.find(falseProject.getFileObject("setup/jmstResourceTest.sun-resource"));
             Resources res = Util.getResourcesObject(resourceObj);
             ServerInterface mejb = ((SunDeploymentManagerInterface)inst.getDeploymentManager()).getManagement();
             ResourceUtils.register(res.getAdminObjectResource(0), mejb, false);
             resourceObj.delete();
-            Util.closeProject(Util.EJB_PROJECT_NAME);
+            falseProject.delete();
+            //Util.closeProject(Util.EJB_PROJECT_NAME);
             Util.sleep(5000);
             String[] jmsResource=Util.getResourcesNames("getAdminObjectResource","jndi-name",mejb);
             for(int i=0;i<jmsResource.length;i++) {
@@ -90,7 +100,8 @@ public class AdminObjectResourceTest extends NbTestCase implements WizardConstan
     }
     public void registerJMSQueueResource() {
         try {
-            Project project = (Project)Util.openProject(new File(Util.EJB_PROJECT_PATH));
+            // TODO : retouche migration
+            //Project project = (Project)Util.openProject(new File(Util.EJB_PROJECT_PATH));
             ResourceConfigData jmsdata = new ResourceConfigData();
             ServerInstance inst = ServerRegistry.getInstance().getServerInstance(Util._URL);
             //JMS Resource Setting
@@ -98,15 +109,25 @@ public class AdminObjectResourceTest extends NbTestCase implements WizardConstan
             jmsdata.setString(__ResType, "javax.jms.Queue");
             jmsdata.setString(__Enabled, "true");
             jmsdata.addProperty("Name",JMS_QUEUE_RESOURCE_NAME);
-            jmsdata.setTargetFileObject(project.getProjectDirectory());
+            // TODO : retouche migration
+            //jmsdata.setTargetFileObject(project.getProjectDirectory());
+            File fpf = File.createTempFile("falseProject","");
+            fpf.delete();
+            FileObject falseProject = FileUtil.createFolder(fpf);
+            if (null == falseProject)
+                fail("falseProject is null");
+            if (null == falseProject.createFolder("setup"))
+                fail("falseProject/setup is null");
+            jmsdata.setTargetFileObject(falseProject);
             jmsdata.setTargetFile("jmsqResourceTest");
             ResourceUtils.saveJMSResourceDatatoXml(jmsdata);
-            SunResourceDataObject resourceObj = (SunResourceDataObject)SunResourceDataObject.find(project.getProjectDirectory().getFileObject("setup/jmsqResourceTest.sun-resource"));
+            SunResourceDataObject resourceObj = (SunResourceDataObject)SunResourceDataObject.find(falseProject.getFileObject("setup/jmsqResourceTest.sun-resource"));
             Resources res = Util.getResourcesObject(resourceObj);
             ServerInterface mejb = ((SunDeploymentManagerInterface)inst.getDeploymentManager()).getManagement();
             ResourceUtils.register(res.getAdminObjectResource(0), mejb, false);
             resourceObj.delete();
-            Util.closeProject(Util.EJB_PROJECT_NAME);
+            falseProject.delete();
+            //Util.closeProject(Util.EJB_PROJECT_NAME);
             Util.sleep(5000);
             String[] jmsResource=Util.getResourcesNames("getAdminObjectResource","jndi-name",mejb);
             for(int i=0;i<jmsResource.length;i++) {

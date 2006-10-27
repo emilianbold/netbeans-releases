@@ -30,7 +30,6 @@ package org.netbeans.modules.j2ee.sun.test;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
-import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
@@ -43,6 +42,8 @@ import org.netbeans.modules.j2ee.sun.ide.sunresources.resourcesloader.SunResourc
 import org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.ResourceConfigData;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.WizardConstants;
 import org.netbeans.modules.j2ee.sun.ide.editors.NameValuePair;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 /**
  *
  * @author Amanpreet Kaur
@@ -60,7 +61,7 @@ public class MailResourceTest extends NbTestCase implements WizardConstants{
     
     public void registerMailResource() {
         try {
-            Project project = (Project)Util.openProject(new File(Util.WEB_PROJECT_PATH));
+            //Project project = (Project)Util.openProject(new File(Util.WEB_PROJECT_PATH));
             ResourceConfigData mrdata = new ResourceConfigData();
             ServerInstance inst = ServerRegistry.getInstance().getServerInstance(Util._URL);
             //Java Mail Resource Setting
@@ -79,15 +80,21 @@ public class MailResourceTest extends NbTestCase implements WizardConstants{
             mrdata.setString(__Debug, "false");
             mrdata.setString(__From,MAIL_FROM);
             mrdata.setString(__Enabled,"true");
-            mrdata.setTargetFileObject(project.getProjectDirectory());
+            //mrdata.setTargetFileObject(project.getProjectDirectory());
+            File fpf = File.createTempFile("falseProject","");
+            fpf.delete();
+            FileObject falseProject = FileUtil.createFolder(fpf);
+            falseProject.createFolder("setup");
+            mrdata.setTargetFileObject(falseProject);
             mrdata.setTargetFile("mailResourceTest");
             ResourceUtils.saveMailResourceDatatoXml(mrdata);
-            SunResourceDataObject resourceObj = (SunResourceDataObject)SunResourceDataObject.find(project.getProjectDirectory().getFileObject("setup/mailResourceTest.sun-resource"));
+            SunResourceDataObject resourceObj = (SunResourceDataObject)SunResourceDataObject.find(falseProject.getFileObject("setup/mailResourceTest.sun-resource"));
             Resources res = Util.getResourcesObject(resourceObj);
             ServerInterface mejb = ((SunDeploymentManagerInterface)inst.getDeploymentManager()).getManagement();
             ResourceUtils.register(res.getMailResource(0), mejb, false);
             resourceObj.delete();
-            Util.closeProject(Util.WEB_PROJECT_NAME);
+            falseProject.delete();
+            //Util.closeProject(Util.WEB_PROJECT_NAME);
             Util.sleep(5000);
             String[] mailResource=Util.getResourcesNames("getMailResource","jndi-name",mejb);
             for(int i=0;i<mailResource.length;i++) {

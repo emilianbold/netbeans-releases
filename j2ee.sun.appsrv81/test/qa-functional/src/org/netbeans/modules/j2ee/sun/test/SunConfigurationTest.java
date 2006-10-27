@@ -210,18 +210,18 @@ public class SunConfigurationTest extends NbTestCase {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite("SunConfigurationTest");
-        suite.addTest(new AddRemoveSjsasInstanceTest("addSjsasInstance"));
-        suite.addTest(new StartStopServerTest("startServer"));
-        suite.addTest(new SunConfigurationTest("loadSunWebConfigVersion"));
-        suite.addTest(new SunConfigurationTest("loadSunEjbJarConfigVersion"));
-        suite.addTest(new SunConfigurationTest("loadSunApplicationConfigVersion"));
-        suite.addTest(new SunConfigurationTest("loadSunAppClientConfigVersion"));
-        suite.addTest(new SunConfigurationTest("changeSunWebConfigVersion"));
-        suite.addTest(new SunConfigurationTest("changeSunEjbJarConfigVersion"));
-        suite.addTest(new SunConfigurationTest("changeSunApplicationConfigVersion"));
-        suite.addTest(new SunConfigurationTest("changeSunAppClientConfigVersion"));
-        suite.addTest(new StartStopServerTest("stopServer"));
-        suite.addTest(new AddRemoveSjsasInstanceTest("removeSjsasInstance"));
+//        suite.addTest(new AddRemoveSjsasInstanceTest("addSjsasInstance"));
+//        suite.addTest(new StartStopServerTest("startServer"));
+//        suite.addTest(new SunConfigurationTest("loadSunWebConfigVersion"));
+//        suite.addTest(new SunConfigurationTest("loadSunEjbJarConfigVersion"));
+//        suite.addTest(new SunConfigurationTest("loadSunApplicationConfigVersion"));
+//        suite.addTest(new SunConfigurationTest("loadSunAppClientConfigVersion"));
+//        suite.addTest(new SunConfigurationTest("changeSunWebConfigVersion"));
+//        suite.addTest(new SunConfigurationTest("changeSunEjbJarConfigVersion"));
+//        suite.addTest(new SunConfigurationTest("changeSunApplicationConfigVersion"));
+//        suite.addTest(new SunConfigurationTest("changeSunAppClientConfigVersion"));
+//        suite.addTest(new StartStopServerTest("stopServer"));
+//        suite.addTest(new AddRemoveSjsasInstanceTest("removeSjsasInstance"));
         return suite;
     }
 }

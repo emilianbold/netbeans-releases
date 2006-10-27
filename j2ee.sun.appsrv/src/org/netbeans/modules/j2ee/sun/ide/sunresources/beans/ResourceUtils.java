@@ -1,4 +1,3 @@
-package org.netbeans.modules.j2ee.sun.ide.sunresources.beans;
 /*
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
@@ -22,6 +21,8 @@ package org.netbeans.modules.j2ee.sun.ide.sunresources.beans;
  *
  * Created on September 17, 2003, 11:54 AM
  */
+
+package org.netbeans.modules.j2ee.sun.ide.sunresources.beans;
 
 import java.io.File;
 import java.io.Writer;
@@ -709,6 +710,7 @@ public class ResourceUtils implements WizardConstants{
             
             createFile(jmsData.getTargetFileObject(), jmsData.getTargetFile(), res);
         }catch(Exception ex){
+            ex.printStackTrace();
             System.out.println("Unable to saveJMSResourceDatatoXml ");
         }
     }
@@ -1006,6 +1008,8 @@ public class ResourceUtils implements WizardConstants{
                         resourceDir = FileUtil.toFileObject (resourceLoc);
                     }
                 }
+            } else { // TODO : retouche migration -- remove when java ee projects come back
+                resourceDir = fo.getFileObject("setup");
             }
         }
         return resourceDir;

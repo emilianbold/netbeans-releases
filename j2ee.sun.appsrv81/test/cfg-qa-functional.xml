@@ -24,7 +24,7 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="dev-api" executor="ide" name="Sjsas API Validation tests">
         <testset dir="qa-functional/src">
             <patternset>
-               <include name="org/netbeans/modules/j2ee/sun/test/AddRemoveSjsasInstanceTest.class"/>
+                <include name="org/netbeans/modules/j2ee/sun/test/AddRemoveSjsasInstanceTest.class"/>
                 <include name="org/netbeans/modules/j2ee/sun/test/StartStopServerTest.class"/>
                 <include name="org/netbeans/modules/j2ee/sun/test/WebModuleTest.class"/>
                 <include name="org/netbeans/modules/j2ee/sun/test/EjbModuleTest.class"/>

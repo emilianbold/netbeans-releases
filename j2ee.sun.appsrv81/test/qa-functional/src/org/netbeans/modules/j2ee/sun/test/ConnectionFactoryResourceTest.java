@@ -28,10 +28,6 @@
 package org.netbeans.modules.j2ee.sun.test;
 
 import java.io.File;
-import java.util.Vector;
-import org.netbeans.api.db.explorer.ConnectionManager;
-import org.netbeans.api.db.explorer.DatabaseConnection;
-import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
@@ -43,6 +39,8 @@ import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ResourceUtils;
 import org.netbeans.modules.j2ee.sun.ide.sunresources.resourcesloader.SunResourceDataObject;
 import org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.ResourceConfigData;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.WizardConstants;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -58,24 +56,31 @@ public class ConnectionFactoryResourceTest extends NbTestCase implements WizardC
     
     public void registerJMSQueueResource() {
         try {
-            Project project = (Project)Util.openProject(new File(Util.EJB_PROJECT_PATH));
+            // TODO : retouche migration
+            //Project project = (Project)Util.openProject(new File(Util.EJB_PROJECT_PATH));
             ResourceConfigData jmsdata = new ResourceConfigData();
             ServerInstance inst = ServerRegistry.getInstance().getServerInstance(Util._URL);
             //JMS Resource Setting
             jmsdata.setString(__JndiName, JMS_QUEUE_RESOURCE_NAME);
             jmsdata.setString(__ResType, "javax.jms.QueueConnectionFactory");
             jmsdata.setString(__Enabled, "true");
-           
-            jmsdata.setTargetFileObject(project.getProjectDirectory());
+           // TODO :retouche migration
+            //jmsdata.setTargetFileObject(project.getProjectDirectory());
+            File fpf = File.createTempFile("falseProject","");
+            fpf.delete();
+            FileObject falseProject = FileUtil.createFolder(fpf);
+            falseProject.createFolder("setup");
+            jmsdata.setTargetFileObject(falseProject);
             jmsdata.setTargetFile("jmsqResourceTest");
             ResourceUtils.saveJMSResourceDatatoXml(jmsdata);
-            SunResourceDataObject resourceObj = (SunResourceDataObject)SunResourceDataObject.find(project.getProjectDirectory().getFileObject("setup/jmsqResourceTest.sun-resource"));
+            SunResourceDataObject resourceObj = (SunResourceDataObject)SunResourceDataObject.find(falseProject.getFileObject("setup/jmsqResourceTest.sun-resource"));
             Resources res = Util.getResourcesObject(resourceObj);
             ServerInterface mejb = ((SunDeploymentManagerInterface)inst.getDeploymentManager()).getManagement();
             ResourceUtils.register(res.getConnectorConnectionPool(0),mejb,false);
             ResourceUtils.register(res.getConnectorResource(0), mejb, false);
             resourceObj.delete();
-            Util.closeProject(Util.EJB_PROJECT_NAME);
+            falseProject.delete();
+            //Util.closeProject(Util.EJB_PROJECT_NAME);
             Util.sleep(5000);
             String[] jmsResource=Util.getResourcesNames("getConnectorResource","jndi-name",mejb);
             for(int i=0;i<jmsResource.length;i++) {
@@ -89,7 +94,8 @@ public class ConnectionFactoryResourceTest extends NbTestCase implements WizardC
     }
     public void registerJMSTopicResource() {
         try {
-            Project project = (Project)Util.openProject(new File(Util.EJB_PROJECT_PATH));
+            // TODO : retouche migration
+            //Project project = (Project)Util.openProject(new File(Util.EJB_PROJECT_PATH));
             ResourceConfigData jmsdata = new ResourceConfigData();
             ServerInstance inst = ServerRegistry.getInstance().getServerInstance(Util._URL);
             //JMS Resource Setting
@@ -97,16 +103,23 @@ public class ConnectionFactoryResourceTest extends NbTestCase implements WizardC
             jmsdata.setString(__ResType, "javax.jms.TopicConnectionFactory");
             jmsdata.setString(__Enabled, "true");
            // jmsdata.addProperty("Name",JMS_TOPIC_RESOURCE_NAME);
-            jmsdata.setTargetFileObject(project.getProjectDirectory());
+            // TODO : retouche migration 
+            //jmsdata.setTargetFileObject(project.getProjectDirectory());
+            File fpf = File.createTempFile("falseProject","");
+            fpf.delete();
+            FileObject falseProject = FileUtil.createFolder(fpf);
+            falseProject.createFolder("setup");
+            jmsdata.setTargetFileObject(falseProject);
             jmsdata.setTargetFile("jmsResourceTest");
             ResourceUtils.saveJMSResourceDatatoXml(jmsdata);
-            SunResourceDataObject resourceObj = (SunResourceDataObject)SunResourceDataObject.find(project.getProjectDirectory().getFileObject("setup/jmsResourceTest.sun-resource"));
+            SunResourceDataObject resourceObj = (SunResourceDataObject)SunResourceDataObject.find(falseProject.getFileObject("setup/jmsResourceTest.sun-resource"));
             Resources res = Util.getResourcesObject(resourceObj);
             ServerInterface mejb = ((SunDeploymentManagerInterface)inst.getDeploymentManager()).getManagement();
             ResourceUtils.register(res.getConnectorConnectionPool(0),mejb,false);
             ResourceUtils.register(res.getConnectorResource(0), mejb, false);
             resourceObj.delete();
-            Util.closeProject(Util.EJB_PROJECT_NAME);
+            falseProject.delete();
+            //Util.closeProject(Util.EJB_PROJECT_NAME);
             Util.sleep(5000);
             String[] jmsResource=Util.getResourcesNames("getConnectorResource","jndi-name",mejb);
             for(int i=0;i<jmsResource.length;i++) {

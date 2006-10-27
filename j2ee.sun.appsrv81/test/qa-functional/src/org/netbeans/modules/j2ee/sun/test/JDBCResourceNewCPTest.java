@@ -31,7 +31,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
 import java.util.Vector;
-import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
@@ -43,6 +42,8 @@ import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ResourceUtils;
 import org.netbeans.modules.j2ee.sun.ide.sunresources.resourcesloader.SunResourceDataObject;
 import org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.ResourceConfigData;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.WizardConstants;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -64,7 +65,7 @@ public class JDBCResourceNewCPTest extends NbTestCase implements WizardConstants
     public void registerDataResource() {
         try {
             ServerInstance    inst = ServerRegistry.getInstance().getServerInstance(Util._URL);
-            Project    project = (Project)Util.openProject(new File(Util.WEB_PROJECT_PATH));
+            //Project    project = (Project)Util.openProject(new File(Util.WEB_PROJECT_PATH));
             ResourceConfigData dsdata = new ResourceConfigData();
             ResourceConfigData cpdata = new ResourceConfigData();
             //connection pool settings
@@ -88,14 +89,19 @@ public class JDBCResourceNewCPTest extends NbTestCase implements WizardConstants
             dsdata.setString(__Enabled, "true");
             dsdata.setString(__JdbcObjectType, "user");
             dsdata.setString(__PoolName,CONNECTION_POOL_NAME);
-            dsdata.setTargetFileObject(project.getProjectDirectory());
+//            dsdata.setTargetFileObject(project.getProjectDirectory());
+            File fpf = File.createTempFile("falseProject","");
+            fpf.delete();
+            FileObject falseProject = FileUtil.createFolder(fpf);
+            falseProject.createFolder("setup");
+            dsdata.setTargetFileObject(falseProject);
             dsdata.setTargetFile("resourceTest");
-            cpdata.setTargetFileObject(project.getProjectDirectory());
+            cpdata.setTargetFileObject(falseProject);
             cpdata.setTargetFile("poolTest");
             ResourceUtils.saveJDBCResourceDatatoXml(dsdata,cpdata);
-            SunResourceDataObject resourceObjds = (SunResourceDataObject)SunResourceDataObject.find(project.getProjectDirectory().getFileObject("setup/resourceTest.sun-resource"));
+            SunResourceDataObject resourceObjds = (SunResourceDataObject)SunResourceDataObject.find(falseProject.getFileObject("setup/resourceTest.sun-resource"));
             Resources resds = Util.getResourcesObject(resourceObjds);
-            SunResourceDataObject resourceObjcp = (SunResourceDataObject)SunResourceDataObject.find(project.getProjectDirectory().getFileObject("setup/poolTest.sun-resource"));
+            SunResourceDataObject resourceObjcp = (SunResourceDataObject)SunResourceDataObject.find(falseProject.getFileObject("setup/poolTest.sun-resource"));
             Resources rescp = Util.getResourcesObject(resourceObjcp);
             ServerInterface mejb = ((SunDeploymentManagerInterface)inst.getDeploymentManager()).getManagement();
             ResourceUtils.register(rescp.getJdbcConnectionPool(0), mejb, false);

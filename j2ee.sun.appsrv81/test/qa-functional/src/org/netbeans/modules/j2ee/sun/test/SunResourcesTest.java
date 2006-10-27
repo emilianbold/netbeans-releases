@@ -23,7 +23,6 @@ import java.io.File;
 import java.util.Vector;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
-import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
@@ -35,6 +34,8 @@ import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ResourceUtils;
 import org.netbeans.modules.j2ee.sun.ide.sunresources.resourcesloader.SunResourceDataObject;
 import org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.ResourceConfigData;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.WizardConstants;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -51,7 +52,7 @@ public class SunResourcesTest extends NbTestCase implements WizardConstants{
     
     public void registerConnectionPool() {
         try {
-            Project project = (Project)Util.openProject(new File(Util.WEB_PROJECT_PATH));
+            //Project project = (Project)Util.openProject(new File(Util.WEB_PROJECT_PATH));
             ResourceConfigData cpdata = new ResourceConfigData();
             DatabaseConnection dbconn = ConnectionManager.getDefault().getConnections()[0];
             ServerInstance inst = ServerRegistry.getInstance().getServerInstance(Util._URL);
@@ -73,18 +74,24 @@ public class SunResourcesTest extends NbTestCase implements WizardConstants{
             cpdata.setString(__PoolResizeQuantity, "2");
             cpdata.setString(__IdleTimeoutInSeconds, "300");
             
-            cpdata.setTargetFileObject(project.getProjectDirectory());
+//            cpdata.setTargetFileObject(project.getProjectDirectory());
+            File fpf = File.createTempFile("falseProject","");
+            fpf.delete();
+            FileObject falseProject = FileUtil.createFolder(fpf);
+            falseProject.createFolder("setup");
+            cpdata.setTargetFileObject(falseProject);
             cpdata.setTargetFile("poolTest");
             
             ResourceUtils.saveConnPoolDatatoXml(cpdata);
             
-            SunResourceDataObject resourceObj = (SunResourceDataObject)SunResourceDataObject.find(project.getProjectDirectory().getFileObject("setup/poolTest.sun-resource"));
+            SunResourceDataObject resourceObj = (SunResourceDataObject)SunResourceDataObject.find(falseProject.getFileObject("setup/poolTest.sun-resource"));
             Resources res = Util.getResourcesObject(resourceObj);
             ServerInterface mejb = ((SunDeploymentManagerInterface)inst.getDeploymentManager()).getManagement();
             
             ResourceUtils.register(res.getJdbcConnectionPool(0), mejb, false);
             resourceObj.delete();
-            Util.closeProject(Util.WEB_PROJECT_NAME);
+            falseProject.delete();
+            //Util.closeProject(Util.WEB_PROJECT_NAME);
             
             Util.sleep(5000);
             
