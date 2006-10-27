@@ -31,6 +31,7 @@ import java.util.Vector;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
+import org.netbeans.spi.debugger.ui.Constants;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.ModelListener;
@@ -220,6 +221,15 @@ public class BreakpointsTreeModel implements TreeModel {
             } else {
                 m.fireTreeChanged (new ModelEvent.NodeChanged(
                         m, evt.getSource ()));
+                if (evt.getPropertyName () == Breakpoint.PROP_ENABLED) {
+                    Breakpoint bp = (Breakpoint) evt.getSource ();
+                    String groupName = bp.getGroupName();
+                    if (groupName != null) {
+                        m.fireTreeChanged(new ModelEvent.TableValueChanged(
+                            m,
+                            groupName, Constants.BREAKPOINT_ENABLED_COLUMN_ID));
+                    }
+                }
             }
         }
     }

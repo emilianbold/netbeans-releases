@@ -54,6 +54,17 @@ public class BreakpointsActionsProvider implements NodeActionsProvider {
     private static final Action ENABLE_ALL_ACTION = new AbstractAction 
         (NbBundle.getBundle (BreakpointsActionsProvider.class).getString
             ("CTL_BreakpointAction_EnableAll_Label")) {
+            public boolean isEnabled () {
+                DebuggerManager dm = DebuggerManager.getDebuggerManager ();
+                Breakpoint[] bs = dm.getBreakpoints ();
+                int i, k = bs.length;
+                for (i = 0; i < k; i++) {
+                    if (!bs[i].isEnabled()) {
+                        return true;
+                    }
+                }
+                return false;
+            }
             public void actionPerformed (ActionEvent e) {
                 DebuggerManager dm = DebuggerManager.getDebuggerManager ();
                 Breakpoint[] bs = dm.getBreakpoints ();
@@ -65,6 +76,17 @@ public class BreakpointsActionsProvider implements NodeActionsProvider {
     private static final Action DISABLE_ALL_ACTION = new AbstractAction 
         (NbBundle.getBundle (BreakpointsActionsProvider.class).getString
             ("CTL_BreakpointAction_DisableAll_Label")) {
+            public boolean isEnabled () {
+                DebuggerManager dm = DebuggerManager.getDebuggerManager ();
+                Breakpoint[] bs = dm.getBreakpoints ();
+                int i, k = bs.length;
+                for (i = 0; i < k; i++) {
+                    if (bs[i].isEnabled()) {
+                        return true;
+                    }
+                }
+                return false;
+            }
             public void actionPerformed (ActionEvent e) {
                 DebuggerManager dm = DebuggerManager.getDebuggerManager ();
                 Breakpoint[] bs = dm.getBreakpoints ();
@@ -76,6 +98,11 @@ public class BreakpointsActionsProvider implements NodeActionsProvider {
     private static final Action DELETE_ALL_ACTION = new AbstractAction 
         (NbBundle.getBundle (BreakpointsActionsProvider.class).getString
             ("CTL_BreakpointAction_DeleteAll_Label")) {
+            public boolean isEnabled () {
+                DebuggerManager dm = DebuggerManager.getDebuggerManager ();
+                Breakpoint[] bs = dm.getBreakpoints ();
+                return bs.length > 0;
+            }
             public void actionPerformed (ActionEvent e) {
                 DebuggerManager dm = DebuggerManager.getDebuggerManager ();
                 Breakpoint[] bs = dm.getBreakpoints ();
@@ -177,7 +204,18 @@ public class BreakpointsActionsProvider implements NodeActionsProvider {
             ("CTL_BreakpointAction_EnableAll_Label"),
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
-                return true;
+                String groupName = (String) node;
+                DebuggerManager dm = DebuggerManager.getDebuggerManager ();
+                Breakpoint[] bs = dm.getBreakpoints ();
+                int i, k = bs.length;
+                for (i = 0; i < k; i++) {
+                    if (bs [i].getGroupName ().equals (groupName)) {
+                        if (!bs[i].isEnabled()) {
+                            return true;
+                        }
+                    }
+                }
+                return false;
             }
             public void perform (Object[] nodes) {
                 String groupName = (String) nodes [0];
@@ -196,7 +234,18 @@ public class BreakpointsActionsProvider implements NodeActionsProvider {
             ("CTL_BreakpointAction_DisableAll_Label"),
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
-                return true;
+                String groupName = (String) node;
+                DebuggerManager dm = DebuggerManager.getDebuggerManager ();
+                Breakpoint[] bs = dm.getBreakpoints ();
+                int i, k = bs.length;
+                for (i = 0; i < k; i++) {
+                    if (bs [i].getGroupName ().equals (groupName)) {
+                        if (bs[i].isEnabled()) {
+                            return true;
+                        }
+                    }
+                }
+                return false;
             }
             public void perform (Object[] nodes) {
                 String groupName = (String) nodes [0];
