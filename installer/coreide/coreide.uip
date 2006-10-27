@@ -417,7 +417,7 @@
             <displayName>Storage Builder</displayName>
             <shareable>false</shareable>
             <activeForUninstall>true</activeForUninstall>
-            <active>true</active>
+            <active>false</active>
             <installStatus>0</installStatus>
             <replaceOption>0</replaceOption>
             <removeOption>0</removeOption>
