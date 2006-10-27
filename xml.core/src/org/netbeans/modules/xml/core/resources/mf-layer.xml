@@ -84,10 +84,9 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.core.resources.Bundle"/>
                     <attr name="helpID" stringvalue="org.netbeans.modules.xml.core.settings"/>
 
-                    <file name="org-netbeans-modules-xml-core-settings-CoreSettings.shadow">
-                        <attr name="originalFile" stringvalue="Services/org-netbeans-modules-xml-core-settings-CoreSettings.settings"/>
+                    <file name="org-netbeans-modules-xml-core-settings-CoreSettingsNode.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.xml.core.settings.CoreSettings.createViewNode"/>
                     </file>
-
                 </folder> <!-- XML -->
             </folder> <!-- Editing -->
         </folder> <!-- Settings -->
@@ -128,16 +127,6 @@ Microsystems, Inc. All Rights Reserved.
             </folder> <!-- xml -->
         </folder> <!-- text -->
     </folder>
-
-    <!-- register services with Lookup -->
-    <folder name="Services">
-
-        <!-- Settings -->
-        <file name="org-netbeans-modules-xml-core-settings-CoreSettings.settings" url="CoreSettings.xml">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.core.settings.Bundle"/>
-        </file>
-
-    </folder> <!-- Services -->          
 
     <!-- Registrations accesible with dedicated FolderLookups -->        
     <folder name="Plugins">

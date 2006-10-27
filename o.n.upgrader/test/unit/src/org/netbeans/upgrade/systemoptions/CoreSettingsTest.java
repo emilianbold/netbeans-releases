@@ -44,6 +44,6 @@ public class CoreSettingsTest extends BasicTestForImport {
     }
     public void testDefaultAction() throws Exception {
         assertPropertyType("defaultAction","java.lang.String");
-        assertProperty("defaultAction","unknown");
+        assertProperty("defaultAction","org.openide.actions.OpenAction");
     }    
 }
