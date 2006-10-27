@@ -20,29 +20,35 @@
 package org.netbeans.modules.httpserver;
 
 import java.awt.Dialog;
+import java.beans.IntrospectionException;
 import java.util.Hashtable;
 import java.util.HashSet;
-import java.util.HashMap;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Properties;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.event.EventListenerList;
 import org.openide.DialogDescriptor;
 
-import org.openide.options.SystemOption;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
 import org.openide.util.Utilities;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.nodes.BeanNode;
+import org.openide.util.NbPreferences;
 
 /** Options for http server
 *
 * @author Ales Novak, Petr Jiricka
 */
-public class HttpServerSettings extends SystemOption {
+public class HttpServerSettings {
+    private static HttpServerSettings INSTANCE = new HttpServerSettings();
+    private static  BeanNode view = null;
 
     private static final int MAX_START_RETRIES = 20;
     private static int currentRetries = 0;
@@ -64,7 +70,7 @@ public class HttpServerSettings extends SystemOption {
     /** constant for any host */
     public static final String ANYHOST = "any"; // NOI18N
 
-    public static HostProperty hostProperty = new HostProperty("", LOCALHOST);
+    public static HostProperty hostProperty = null;
     
     public static final String PROP_PORT               = "port"; // NOI18N
     public static final String PROP_HOST_PROPERTY      = "hostProperty"; // NOI18N
@@ -94,8 +100,9 @@ public class HttpServerSettings extends SystemOption {
     /** Lock for the httpserver operations */
     private static Object httpLock;
     
-    /** Used to remember the state of the running property during the deserialization */
-    static final long serialVersionUID =7387407495740535307L;
+    private  static Preferences getPreferences() {
+        return NbPreferences.forModule(HttpServerSettings.class);
+    }    
     
     /**
      * Obtains lock for httpserver synchronization
@@ -107,11 +114,11 @@ public class HttpServerSettings extends SystemOption {
         return httpLock;
     }
 
-    public HttpServerSettings() {
+    private  HttpServerSettings() {
     }
 
-    protected void initialize () {
-        super.initialize ();
+    public static HttpServerSettings getDefault() {
+        return INSTANCE;
     }
     
     /** human presentable name */
@@ -121,10 +128,6 @@ public class HttpServerSettings extends SystemOption {
 
     /** getter for running status */
     public boolean isRunning() {
-        if (isWriteExternal()) {
-            if (inited) return running;
-            else        return true;
-        }
         if (inited) {
             return running;
         }
@@ -190,9 +193,6 @@ public class HttpServerSettings extends SystemOption {
      *  No need to restart if it is called during deserialization.
      */
     private void restartIfNecessary(boolean printMessages) {
-        if (isReadExternal ()) {
-            return;
-        }
         if (running) {
             if (!printMessages)
                 setStartStopMessages(false);
@@ -220,10 +220,6 @@ public class HttpServerSettings extends SystemOption {
 
     /** setter for running status */
     public void setRunning(boolean running) {
-        if (isReadExternal()) {
-            // just for deserialization, do not start
-            return;
-        }
         inited = true;
         if (this.running == running)
             return;
@@ -238,7 +234,6 @@ public class HttpServerSettings extends SystemOption {
                 HttpServerModule.stopHTTPServer();
             }
         }
-        firePropertyChange(PROP_RUNNING, !running ? Boolean.TRUE : Boolean.FALSE, running ? Boolean.TRUE : Boolean.FALSE);
     }
 
     // NOT publicly available
@@ -264,7 +259,6 @@ public class HttpServerSettings extends SystemOption {
             this.wrapperBaseURL = newURL;
             restartIfNecessary(false);
         }
-        firePropertyChange(PROP_WRAPPER_BASEURL, oldURL, this.wrapperBaseURL);
     }
 
     /** setter for port */
@@ -277,24 +271,15 @@ public class HttpServerSettings extends SystemOption {
             return;
         }
         
-        Object old = getProperty(PROP_PORT);
-        int port = ((old == null) ? DEFAULT_PORT : ((Integer)old).intValue());
-        
         synchronized (httpLock ()) {
-            old = putProperty(PROP_PORT, new Integer(p), false);
-            if (old != null) {
-                if (p == ((Integer)old).intValue())
-                    return;
-            }
+            getPreferences().putInt(PROP_PORT,p);
             restartIfNecessary(true);
         }
-        firePropertyChange(PROP_PORT, old, new Integer(p));
     }
 
     /** getter for port */
     public int getPort() {
-        Object prop = getProperty(PROP_PORT);
-        return ((prop == null) ? DEFAULT_PORT : ((Integer)prop).intValue());
+        return getPreferences().getInt(PROP_PORT, DEFAULT_PORT);
     }
 
     public void setStartStopMessages(boolean ssm) {
@@ -307,11 +292,6 @@ public class HttpServerSettings extends SystemOption {
 
     public HelpCtx getHelpCtx () {
         return new HelpCtx (HttpServerSettings.class);
-    }
-
-    /* Access the firePropertyChange from HTTPServer (which holds the enabled prop). */
-    void firePropertyChange0 (String name, Object oldVal, Object newVal) {
-        firePropertyChange (name, oldVal, newVal);
     }
 
     /** Returns string for localhost */
@@ -507,6 +487,10 @@ public class HttpServerSettings extends SystemOption {
      * @return Value of property hostProperty.
      */
     public HttpServerSettings.HostProperty getHostProperty () {
+        if (hostProperty == null) {
+            hostProperty = new HostProperty(getPreferences().get("grantedAddresses",""), 
+                    getPreferences().get("host",LOCALHOST));
+        }
         return hostProperty;
     }
     
@@ -517,20 +501,17 @@ public class HttpServerSettings extends SystemOption {
         if (ANYHOST.equals(hostProperty.getHost ()) || LOCALHOST.equals(hostProperty.getHost ())) {
             this.hostProperty.setHost(hostProperty.getHost());
             this.hostProperty.setGrantedAddresses(hostProperty.getGrantedAddresses());
-            firePropertyChange(PROP_HOST_PROPERTY, null, hostProperty);
+            getPreferences().put("host", hostProperty.getHost());//NOI18N
+            getPreferences().put("grantedAddresses", hostProperty.getGrantedAddresses());//NOI18N
         }
     }
     
     public boolean isShowGrantAccessDialog () {
-        Boolean b = (Boolean)getProperty (PROP_SHOW_GRANT_ACCESS);
-        if (b != null) 
-            return b.booleanValue ();
-        else
-            return true;
+        return getPreferences().getBoolean(PROP_SHOW_GRANT_ACCESS, true);
     }
     
     public void setShowGrantAccessDialog (boolean show) {
-        putProperty (PROP_SHOW_GRANT_ACCESS, show ? Boolean.TRUE : Boolean.FALSE, true);
+        getPreferences().putBoolean(PROP_SHOW_GRANT_ACCESS,show);
     }
     
     /** Property value that describes set of host with granted access
@@ -559,7 +540,7 @@ public class HttpServerSettings extends SystemOption {
          * @param host New value of property host.
          */
         public void setHost (String host) {
-            this.host = host;
+            this.host = host;                        
         }
         
         /** Getter for property grantedAddresses.
@@ -573,9 +554,19 @@ public class HttpServerSettings extends SystemOption {
          * @param grantedAddresses New value of property grantedAddresses.
          */
         public void setGrantedAddresses (String grantedAddresses) {
-            this.grantedAddresses = grantedAddresses;
+            this.grantedAddresses = grantedAddresses;            
         }
         
     }
-    
+    static synchronized BeanNode createViewNode() {
+        if (view == null) {
+            try {
+                view = new BeanNode(HttpServerSettings.getDefault());
+            }
+            catch (IntrospectionException ex) {
+                Logger.getLogger(HttpServerSettings.class.getName()).log(Level.INFO, null, ex);
+            }
+        }
+        return view;
+    }                 
 }

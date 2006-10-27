@@ -49,4 +49,9 @@ public class HttpServerSettingsTest extends BasicTestForImport {
     public void testGrantedAddresses() throws Exception {
         assertProperty("grantedAddresses", "my.org,your.org");
     }    
+    
+    public void testPort() throws Exception {
+        assertProperty("port", "8083");
+    }    
+    
 }

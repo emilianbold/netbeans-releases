@@ -36,8 +36,7 @@ public class ServletExecutionTest extends NbTestCase {
     }
 
     public void testServletExecution() throws Exception {
-        HttpServerSettings settings =
-         (HttpServerSettings)HttpServerSettings.findObject (HttpServerSettings.class, true);
+        HttpServerSettings settings = HttpServerSettings.getDefault();
         log("Starting HTTP server");
         settings.setRunning(true);
         

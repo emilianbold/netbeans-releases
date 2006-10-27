@@ -106,7 +106,7 @@ public class WrapperServlet extends NbBaseServlet {
     }
 
     private String getRequestURL(HttpServletRequest request) throws UnknownHostException, MalformedURLException {
-        HttpServerSettings settings = (HttpServerSettings)SharedClassObject.findObject(HttpServerSettings.class, true);
+        HttpServerSettings settings = HttpServerSettings.getDefault();
 
         String pi = request.getPathInfo();
         if (pi.startsWith("/")) { // NOI18N

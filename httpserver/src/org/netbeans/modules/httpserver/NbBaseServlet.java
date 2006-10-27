@@ -79,7 +79,7 @@ public abstract class NbBaseServlet extends HttpServlet {
     */
     protected boolean checkAccess(HttpServletRequest request) throws IOException {
 
-        HttpServerSettings settings = (HttpServerSettings)SharedClassObject.findObject (HttpServerSettings.class);
+        HttpServerSettings settings = HttpServerSettings.getDefault();
         if (settings == null)
             return false;
 

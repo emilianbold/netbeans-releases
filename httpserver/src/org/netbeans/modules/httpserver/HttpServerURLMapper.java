@@ -169,7 +169,7 @@ public class HttpServerURLMapper extends URLMapper {
      * Obtains settings of this module
      */
     static HttpServerSettings httpserverSettings () {
-        return (HttpServerSettings)SharedClassObject.findObject (HttpServerSettings.class, true);
+        return HttpServerSettings.getDefault();
     }
     
 }

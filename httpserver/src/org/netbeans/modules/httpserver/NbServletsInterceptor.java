@@ -50,7 +50,7 @@ public class NbServletsInterceptor extends BaseInterceptor {
     }
     
     private void addNbServlets( Context ctx ) throws TomcatException {
-        HttpServerSettings op = (HttpServerSettings)SharedClassObject.findObject (HttpServerSettings.class, true);
+        HttpServerSettings op = HttpServerSettings.getDefault();
         ServletWrapper sw;
         
 	sw=addServlet( ctx, "WrapperServlet", "org.netbeans.modules.httpserver.WrapperServlet");        // NOI18N

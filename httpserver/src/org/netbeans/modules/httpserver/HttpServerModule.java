@@ -292,7 +292,7 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
      * Obtains settings of this module
      */
     static HttpServerSettings httpserverSettings () {
-        return (HttpServerSettings)SharedClassObject.findObject (HttpServerSettings.class, true);
+        return HttpServerSettings.getDefault();
     }
     
     /** Listener for change of system class loader to reinitialize context 
