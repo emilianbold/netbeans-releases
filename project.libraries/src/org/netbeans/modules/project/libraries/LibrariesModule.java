@@ -18,9 +18,6 @@
  */
 package org.netbeans.modules.project.libraries;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.Lookup;
 import org.netbeans.spi.project.libraries.LibraryProvider;
@@ -36,21 +33,7 @@ public class LibrariesModule extends ModuleInstall {
 
     public void restored() {
         super.restored();
-        final OpenProjects op = OpenProjects.getDefault();
-        if (op.getOpenProjects().length > 0) {
-            initProviders ();
-        }
-        else {
-            final PropertyChangeListener l = new PropertyChangeListener () {
-                public void propertyChange (final PropertyChangeEvent e) {
-                    if (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(e.getPropertyName())) {
-                        initProviders();
-                        op.removePropertyChangeListener(this);
-                    }
-                }
-            };
-            op.addPropertyChangeListener(l);
-        }        
+        this.initProviders();
     }
     
     private void initProviders () {
