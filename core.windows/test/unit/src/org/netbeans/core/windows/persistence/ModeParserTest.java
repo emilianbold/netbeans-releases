@@ -24,6 +24,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.netbeans.junit.NbTest;
@@ -267,6 +268,34 @@ public class ModeParserTest extends NbTestCase {
         System.out.println("ModeParserTest.testLoadMode05 FINISH");
     }
 
+        /** Test of sliding mode with pre-defined slide-in sizes
+     */
+    public void testLoadMode06 () throws Exception {
+        System.out.println("");
+        System.out.println("ModeParserTest.testLoadMode06 START");
+        
+        ModeParser modeParser = createModeParser("data/valid/Windows/Modes","mode06");
+        
+        ModeConfig modeCfg = modeParser.load();
+        
+        //Check loaded data
+        assertNotNull("Could not load data.", modeCfg);
+        
+        //Check data
+        assertEquals("Mode kind",Constants.MODE_KIND_SLIDING,modeCfg.kind);
+        assertEquals("Mode sliding side",Constants.LEFT, modeCfg.side);
+        
+        assertEquals("Active TC","output",modeCfg.selectedTopComponentID);
+        assertTrue("Permanent",modeCfg.permanent);
+        
+        Map<String,Integer> slideInSizes = modeCfg.slideInSizes;
+        assertNotNull( slideInSizes );
+        assertEquals( 2, slideInSizes.size() );
+        assertEquals( Integer.valueOf(123), slideInSizes.get( "output" ) );
+        assertEquals( Integer.valueOf(321), slideInSizes.get( "someOtherTopComponentId" ) );
+        
+        System.out.println("ModeParserTest.testLoadMode06 FINISH");
+    }
     
     /** Test of saving
      */
@@ -346,6 +375,27 @@ public class ModeParserTest extends NbTestCase {
         assertTrue("Compare configuration data",modeCfg1.equals(modeCfg2));
                 
         System.out.println("ModeParserTest.testSaveMode04 FINISH");
+    }
+    
+    
+    /** Test of saving sliding mode with predefined slide-in sizes.
+     */
+    public void testSaveMode06 () throws Exception {
+        System.out.println("");
+        System.out.println("ModeParserTest.testSaveMode06 START");
+        
+        ModeParser modeParser = createModeParser("data/valid/Windows/Modes","mode06");
+        
+        ModeConfig modeCfg1 = modeParser.load();
+        
+        modeParser.save(modeCfg1);
+        
+        ModeConfig modeCfg2 = modeParser.load();
+        
+        //Compare data
+        assertTrue("Compare configuration data",modeCfg1.equals(modeCfg2));
+                
+        System.out.println("ModeParserTest.testSaveMode06 FINISH");
     }
     
     ////////////////////////////////

@@ -26,10 +26,22 @@ import java.awt.Frame;
 import java.awt.Rectangle;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.core.windows.*;
+import org.netbeans.core.windows.Constants;
+import org.netbeans.core.windows.ModeImpl;
+import org.netbeans.core.windows.ModeStructureSnapshot;
+import org.netbeans.core.windows.SplitConstraint;
+import org.netbeans.core.windows.TopComponentGroupImpl;
+import org.netbeans.core.windows.WindowSystemSnapshot;
 import org.openide.windows.TopComponent;
 
 
@@ -233,9 +245,9 @@ final class DefaultModel implements Model {
         }
     }
 
-    public void addSlidingMode(ModeImpl mode, String side) {
+    public void addSlidingMode(ModeImpl mode, String side, Map<String,Integer> slideInSizes) {
         synchronized(LOCK_MODES) {
-            modesSubModel.addModeSliding(mode, side);
+            modesSubModel.addModeSliding(mode, side, slideInSizes);
         }
     }
     
@@ -437,6 +449,17 @@ final class DefaultModel implements Model {
         }
     }
     
+    public Map<String,Integer> getSlideInSizes(String side) {
+        synchronized(LOCK_MODES) {
+            return modesSubModel.getSlideInSizes( side );
+        }
+    }
+    
+    public void setSlideInSize(String side, TopComponent tc, int size) {
+        synchronized(LOCK_MODES) {
+            modesSubModel.setSlideInSize(side, tc, size);
+        }
+    }
     /////////////////////////////////////
     // Accessor methods <<
     /////////////////////////////////////

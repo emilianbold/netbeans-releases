@@ -112,7 +112,8 @@ final class ViewHelper {
             s.add(new ModeStructureAccessorImpl.SlidingAccessorImpl(
                 snapshot.getOriginator(),
                 snapshot,
-                snapshot.getSide()
+                snapshot.getSide(),
+                snapshot.getSlideInSizes()
             ));
         }
         

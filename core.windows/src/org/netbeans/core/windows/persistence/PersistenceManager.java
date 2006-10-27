@@ -942,6 +942,7 @@ public final class PersistenceManager implements PropertyChangeListener {
                     || ModeParser.INSTANCE_DTD_ID_1_2.equals(publicId)
                     || ModeParser.INSTANCE_DTD_ID_2_0.equals(publicId)
                     || ModeParser.INSTANCE_DTD_ID_2_1.equals(publicId)
+                    || ModeParser.INSTANCE_DTD_ID_2_2.equals(publicId)
                     || GroupParser.INSTANCE_DTD_ID_2_0.equals(publicId)
                     || TCGroupParser.INSTANCE_DTD_ID_2_0.equals(publicId)
                     || TCRefParser.INSTANCE_DTD_ID_1_0.equals(publicId)

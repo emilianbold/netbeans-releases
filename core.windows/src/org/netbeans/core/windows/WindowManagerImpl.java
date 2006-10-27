@@ -467,7 +467,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         return mode;
     }
     
-    public ModeImpl createSlidingMode(String name, boolean permanent, String side) {
+    public ModeImpl createSlidingMode(String name, boolean permanent, String side, Map<String,Integer> slideInSizes) {
         // It gets existing mode with the same name.
         ModeImpl mode = (ModeImpl)findMode(name);
         if(mode != null) {
@@ -475,7 +475,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         }
         
         mode = createModeImpl(name, Constants.MODE_KIND_SLIDING, permanent);
-        central.addSlidingMode(mode, null, side);
+        central.addSlidingMode(mode, null, side, slideInSizes);
         return mode;
     }
     
@@ -679,7 +679,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     private void addMode(ModeImpl mode, SplitConstraint[] modeConstraints) {
         if (mode.getKind() == Constants.MODE_KIND_SLIDING) {
             // TODO.. where to get the side..
-            central.addSlidingMode(mode, null, Constants.LEFT);
+            central.addSlidingMode(mode, null, Constants.LEFT, null);
         } else {
             central.addMode(mode, modeConstraints);
         }

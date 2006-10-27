@@ -1746,7 +1746,7 @@ final class Central implements ControllerHandler {
     // Sliding
     
    /** Adds mode into model and requests view (if needed). */
-    public void addSlidingMode(ModeImpl mode, ModeImpl original, String side) {
+    public void addSlidingMode(ModeImpl mode, ModeImpl original, String side, Map<String,Integer> slideInSizes) {
         ModeImpl targetMode = model.getSlidingMode(side);
         if (targetMode != null) {
             //TODO what to do here.. something there already
@@ -1755,7 +1755,7 @@ final class Central implements ControllerHandler {
             targetMode = WindowManagerImpl.getInstance().createModeImpl(
                 ModeImpl.getUnusedModeName(), Constants.MODE_KIND_SLIDING, false);
         
-        model.addSlidingMode(mode, side);
+        model.addSlidingMode(mode, side, slideInSizes);
         
         if(isVisible()) {
             viewRequestor.scheduleRequest(
@@ -1771,7 +1771,7 @@ final class Central implements ControllerHandler {
         if (targetMode == null) {
             targetMode = WindowManagerImpl.getInstance().createModeImpl(
                 ModeImpl.getUnusedModeName(), Constants.MODE_KIND_SLIDING, false);
-            model.addSlidingMode(targetMode, targetSide);
+            model.addSlidingMode(targetMode, targetSide, null);
             model.setModeBounds(targetMode, new Rectangle(tc.getBounds()));
         }
 
@@ -1802,6 +1802,11 @@ final class Central implements ControllerHandler {
     
     public void userResizedSlidingMode(ModeImpl mode, Rectangle rect) {
         model.setModeBounds(mode, new Rectangle(rect));
+        //remember user's settings for the slided-in TopComponent size
+        String side = model.getSlidingModeConstraints( mode );
+        model.setSlideInSize( side, 
+                mode.getSelectedTopComponent(), 
+                Constants.BOTTOM.equals( side ) ? rect.height : rect.width );
     }
     
     
@@ -1856,6 +1861,14 @@ final class Central implements ControllerHandler {
     
     public void setModeTopComponentPreviousMode(String tcID, ModeImpl currentSlidingMode, ModeImpl prevMode) {
         model.setModeTopComponentPreviousMode(currentSlidingMode, tcID, prevMode);
+    }
+    
+    public Map<String,Integer> getSlideInSizes( String side ) {
+        return model.getSlideInSizes( side );
+    }
+    
+    public void setSlideInSize( String side, TopComponent tc, int size ) {
+        model.setSlideInSize( side, tc, size );
     }
     
     // ControllerHandler <<

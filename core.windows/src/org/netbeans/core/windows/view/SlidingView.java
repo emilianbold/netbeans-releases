@@ -21,9 +21,13 @@
 package org.netbeans.core.windows.view;
 
 import java.awt.Rectangle;
+import java.util.Map;
+import org.netbeans.core.windows.Constants;
+import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.view.dnd.WindowDnDManager;
 import org.netbeans.core.windows.view.ui.slides.SlideBarContainer;
 import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 
 /**
@@ -36,11 +40,15 @@ public class SlidingView extends ModeView {
     /** Orientation of sliding view, means side where it is located */
     private final String side;
     private Rectangle slideBounds;
+    private Map<TopComponent,Integer> slideInSizes;
 
     public SlidingView(Controller controller, WindowDnDManager windowDnDManager, 
-                        TopComponent[] topComponents, TopComponent selectedTopComponent, String side) {
+                        TopComponent[] topComponents, 
+                        TopComponent selectedTopComponent, 
+                        String side, Map<TopComponent,Integer> slideInSizes) {
         super(controller);
         this.side = side;
+        this.slideInSizes = slideInSizes;
         // mkleint - needs to be called after side is defined.
         this.container = new SlideBarContainer(this, windowDnDManager);
         setTopComponents(topComponents, selectedTopComponent);
@@ -55,14 +63,33 @@ public class SlidingView extends ModeView {
     }
 
     public Rectangle getSlideBounds() {
-        return slideBounds;
+        Rectangle res = slideBounds;
+        res.height = 0;
+        res.width = 0;
+        
+        TopComponent tc = getSelectedTopComponent();
+        //check if the slided-in TopComponent has a custom size defined
+        if( null != tc ) {
+            Integer prevSlideSize = slideInSizes.get( tc );
+            if( null != prevSlideSize ) {
+                if( null == res )
+                    res = tc.getBounds();
+                if( Constants.BOTTOM.equals( side ) ) {
+                    res.height = prevSlideSize.intValue();
+                } else {
+                    res.width = prevSlideSize.intValue();
+                }
+            }
+        }
+        return res;
     }
 
     public void setSlideBounds(Rectangle slideBounds) {
         this.slideBounds = slideBounds;
     }
     
-    
-
+    public void setSlideInSizes(Map<TopComponent,Integer> slideInSizes) {
+        this.slideInSizes = slideInSizes;
+    }
 }
 

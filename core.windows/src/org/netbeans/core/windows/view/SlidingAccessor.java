@@ -20,6 +20,9 @@
 
 package org.netbeans.core.windows.view;
 
+import java.util.Map;
+import org.openide.windows.TopComponent;
+
 
 /**
  * Access point to data for SlidingView.
@@ -29,6 +32,8 @@ package org.netbeans.core.windows.view;
 interface SlidingAccessor extends ModeAccessor {
 
     public String getSide();
+    
+    public Map<TopComponent,Integer> getSlideInSizes();
 
 }
 

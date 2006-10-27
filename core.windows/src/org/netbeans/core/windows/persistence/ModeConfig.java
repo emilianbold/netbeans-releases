@@ -21,9 +21,11 @@
 package org.netbeans.core.windows.persistence;
 
 
+import java.awt.Rectangle;
 import org.netbeans.core.windows.SplitConstraint;
 
-import java.awt.*;
+import java.util.Iterator;
+import java.util.Map;
 
 
 /**
@@ -63,6 +65,9 @@ public class ModeConfig {
     
     /** Array of TCRefConfigs. */
     public TCRefConfig[] tcRefConfigs;
+    
+    /** TopComponent ID -> slided-in size (width or height) - applies to sliding modes only*/
+    public Map<String,Integer> slideInSizes;
     
     /** Creates a new instance of ModeConfig */
     public ModeConfig() {
@@ -132,6 +137,17 @@ public class ModeConfig {
                 return false;
             }
         }
+        if( null != slideInSizes && null != modeCfg.slideInSizes ) {
+            if( slideInSizes.size() != modeCfg.slideInSizes.size() )
+                return false;
+            for (Iterator<String> i=slideInSizes.keySet().iterator(); i.hasNext(); ) {
+                String tcId = i.next();
+                if( !slideInSizes.get(tcId).equals(modeCfg.slideInSizes.get(tcId)) )
+                    return false;
+            }
+        } else if( null != slideInSizes || null != modeCfg.slideInSizes ) {
+            return false;
+        }
         return true;
     }
     
@@ -157,6 +173,13 @@ public class ModeConfig {
         hash = 37 * hash + (permanent ? 0 : 1);
         for (int i = 0; i < tcRefConfigs.length; i++) {
             hash = 37 * hash + tcRefConfigs[i].hashCode();
+        }
+        if( null != slideInSizes ) {
+            for (Iterator<String> i=slideInSizes.keySet().iterator(); i.hasNext(); ) {
+                Object key = i.next();
+                hash = 37 * hash + key.hashCode();
+                hash = 37 * hash + slideInSizes.get(key).hashCode();
+            }
         }
         return hash;
     }

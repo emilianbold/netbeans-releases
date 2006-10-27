@@ -20,16 +20,16 @@
 package org.netbeans.core.windows.model;
 
 
-import java.util.ArrayList;
+import java.awt.Rectangle;
 import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.SplitConstraint;
 import org.netbeans.core.windows.TopComponentGroupImpl;
 import org.netbeans.core.windows.WindowSystemSnapshot;
 import org.openide.windows.TopComponent;
 
-import java.awt.*;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 
@@ -88,9 +88,11 @@ public interface Model {
     /** Removes top component group. */
     public void removeTopComponentGroup(TopComponentGroupImpl tcGroup);
     /** Adds sliding mode into specific side */ 
-    public void addSlidingMode(ModeImpl mode, String side);
+    public void addSlidingMode(ModeImpl mode, String side, Map<String,Integer> slideInSizes);
     /** Resets the model to an initial state. */
     public void reset();
+    /** Set the size (width or height of the given TopComponent when it is slided in */
+    public void setSlideInSize(String side, TopComponent tc, int size);
     // Mutators (global level) <<
     /////////////////////////////
 
@@ -135,6 +137,11 @@ public interface Model {
     public String getSlidingModeConstraints(ModeImpl mode);
     /** Gets constraints (its side) for sliding mode */
     public ModeImpl getSlidingMode(String side);
+    /** 
+     * Gets the sizes (width or height) of TopComponents in the given sliding 
+     * side, the key in the Map is TopComponent's ID 
+     */
+    public Map<String,Integer> getSlideInSizes(String side);
     
     // Accessors (global level) >>
     //////////////////////////////   

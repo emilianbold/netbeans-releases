@@ -29,6 +29,7 @@ import org.openide.windows.TopComponent;
 
 import java.awt.*;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 
@@ -274,15 +275,23 @@ final class ModeStructureAccessorImpl implements ModeStructureAccessor {
     static final class SlidingAccessorImpl extends ModeAccessorImpl implements SlidingAccessor { 
 
         private final String side;
+        private final Map<TopComponent,Integer> slideInSizes;
         
-        public SlidingAccessorImpl(ModelElement originator, ModeStructureSnapshot.ModeSnapshot snapshot, String side) {
+        public SlidingAccessorImpl(ModelElement originator, 
+                ModeStructureSnapshot.ModeSnapshot snapshot, 
+                String side, Map<TopComponent,Integer> slideInSizes) {
             super(originator, snapshot);
 
             this.side = side;
+            this.slideInSizes = slideInSizes;
         }
     
         public String getSide() {
             return side;
+        }
+        
+        public Map<TopComponent,Integer> getSlideInSizes() {
+            return slideInSizes;
         }
         
         public boolean originatorEquals(ElementAccessor o) {

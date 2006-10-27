@@ -222,6 +222,7 @@ final class ViewHierarchy {
                 SlidingView sv = (SlidingView)view;
                 sv.setTopComponents(sa.getOpenedTopComponents(), sa.getSelectedTopComponent());
                 sv.setSlideBounds(sa.getBounds());
+                sv.setSlideInSizes(sa.getSlideInSizes());
                 return sv;
             } else if(patternAccessor instanceof ModeAccessor) {
                 // It is a ModeView.
@@ -253,7 +254,8 @@ final class ViewHierarchy {
                 SlidingAccessor sa = (SlidingAccessor)patternAccessor;
                 SlidingView sv = new SlidingView(controller, windowDnDManager, 
                             sa.getOpenedTopComponents(),sa.getSelectedTopComponent(),
-                            sa.getSide());
+                            sa.getSide(),
+                            sa.getSlideInSizes());
                 sv.setSlideBounds(sa.getBounds());
                 accessor2view.put(patternAccessor, sv);
                 view2accessor.put(sv, patternAccessor);

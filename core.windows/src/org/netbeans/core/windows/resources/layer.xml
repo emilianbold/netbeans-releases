@@ -226,6 +226,9 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="DTD_Mode_Properties_2_1" url="nbres:/org/netbeans/core/windows/resources/mode-properties2_1.dtd">
                     <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Mode Properties 2.1//EN"/>
                 </file>
+                <file name="DTD_Mode_Properties_2_2" url="nbres:/org/netbeans/core/windows/resources/mode-properties2_2.dtd">
+                    <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Mode Properties 2.2//EN"/>
+                </file>
 
                 <file name="DTD_Top_Component_in_Mode_Properties_1_0" url="nbres:/org/netbeans/core/windows/resources/tc-ref1_0.dtd">
                     <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Top Component in Mode Properties 1.0//EN"/>

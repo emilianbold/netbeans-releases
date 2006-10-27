@@ -363,15 +363,21 @@ public class ModeStructureSnapshot {
     public static class SlidingModeSnapshot extends ModeSnapshot { 
 
         private final String side;
+        private final Map<TopComponent,Integer> slideInSizes;
         
-        public SlidingModeSnapshot(ModeImpl mode, String side) {
+        public SlidingModeSnapshot(ModeImpl mode, String side, Map<TopComponent,Integer> slideInSizes) {
             super(null, null, mode, 0D);
             
             this.side = side;
+            this.slideInSizes = slideInSizes;
         }
         
         public String getSide () {
             return side;
+        }
+        
+        public Map<TopComponent,Integer> getSlideInSizes() {
+            return slideInSizes;
         }
     } // end of SlidingModeSnapshot
     

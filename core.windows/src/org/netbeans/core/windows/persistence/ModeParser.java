@@ -59,6 +59,8 @@ class ModeParser {
         = "-//NetBeans//DTD Mode Properties 2.0//EN"; // NOI18N
     public static final String INSTANCE_DTD_ID_2_1
         = "-//NetBeans//DTD Mode Properties 2.1//EN"; // NOI18N
+    public static final String INSTANCE_DTD_ID_2_2
+        = "-//NetBeans//DTD Mode Properties 2.2//EN"; // NOI18N
     
     /** Name of extended attribute for order of children */
     private static final String EA_ORDER = "WinSys-TCRef-Order"; // NOI18N
@@ -1029,6 +1031,8 @@ class ModeParser {
                     handleKind(attrs);
                 } else if ("slidingSide".equals(qname)) { // NOI18N
                     handleSlidingSide(attrs);
+                } else if ("slideInSize".equals(qname)) { // NOI18N
+                    handleSlideInSize(attrs);
                 } else if ("state".equals(qname)) { // NOI18N
                     handleState(attrs);
                 } else if ("constraints".equals(qname)) { // NOI18N
@@ -1169,6 +1173,26 @@ class ModeParser {
                 + " Warning: Missing value of attribute \"side\" for sliding mode."); // NOI18N
                 modeConfig.side = Constants.LEFT;
             }
+        }      
+        
+        /** Reads element "slideInSize" */
+        private void handleSlideInSize(Attributes attrs) {
+            String tcId = attrs.getValue("tc-id");
+            String size = attrs.getValue("size");
+            if (tcId != null && size != null) {
+                try {
+                    Integer intSize = Integer.valueOf( size );
+                    if( null == modeConfig.slideInSizes )
+                        modeConfig.slideInSizes = new HashMap(5);
+                    modeConfig.slideInSizes.put( tcId, intSize );
+                    return;
+                } catch( NumberFormatException nfE ) {
+                    //fall through
+                }
+            } 
+            PersistenceManager.LOG.log(Level.WARNING,
+            "[WinSys.ModeParser.handleSlideInSize]" // NOI18N
+            + " Warning: Invalid attributes for preferred slide-in size."); // NOI18N
         }      
         
         private void handleState(Attributes attrs) throws SAXException {
@@ -1445,6 +1469,8 @@ class ModeParser {
             appendKind(mc, buff);
             if (mc.kind == Constants.MODE_KIND_SLIDING) {
                 appendSlidingSide(mc, buff);
+                if( null != mc.slideInSizes )
+                    appendSlideInSize(mc, buff);
             }
             appendState(mc, buff);
             appendConstraints(mc, buff);
@@ -1502,6 +1528,21 @@ class ModeParser {
             buff.append(mc.side);
             buff.append("\" ");
             buff.append("/>\n"); // NOI18N
+        }
+        
+        private void appendSlideInSize(ModeConfig mc, StringBuffer buff) {
+            if( null != mc.slideInSizes ) {
+                for( Iterator<String> i=mc.slideInSizes.keySet().iterator(); i.hasNext(); ) {
+                    String tcId = i.next();
+                    Integer size = mc.slideInSizes.get(tcId);
+                    
+                    buff.append("  <slideInSize tc-id=\"");
+                    buff.append(tcId);
+                    buff.append("\" size=\"");
+                    buff.append(size.intValue());
+                    buff.append("\" />\n"); // NOI18N
+                }
+            }
         }
 
         private void appendState (ModeConfig mc, StringBuffer buff) {

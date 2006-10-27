@@ -274,7 +274,8 @@ final class PersistenceHandler implements PersistenceObserver {
         
         ModeImpl mode;
         if (mc.kind == Constants.MODE_KIND_SLIDING) {
-            mode = WindowManagerImpl.getInstance().createSlidingMode(mc.name, mc.permanent, mc.side);
+            mode = WindowManagerImpl.getInstance().createSlidingMode(
+                    mc.name, mc.permanent, mc.side, mc.slideInSizes);
         } else {
              mode = WindowManagerImpl.getInstance().createMode(
                 mc.name, mc.kind, mc.state, mc.permanent, mc.constraints);
@@ -542,6 +543,9 @@ final class PersistenceHandler implements PersistenceObserver {
         }
         if (wm instanceof WindowManagerImpl) { 
             modeCfg.side = wm.getCentral().getModeSide(mode);
+            if( null != modeCfg.side ) {
+                modeCfg.slideInSizes = wm.getCentral().getSlideInSizes( modeCfg.side );
+            }
         }
         if(DEBUG) {
             debugLog("mode side=" + modeCfg.side); // NOI18N

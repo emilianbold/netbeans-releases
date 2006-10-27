@@ -19,13 +19,10 @@
 
 package org.netbeans.core.windows.model;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.ModeStructureSnapshot;
@@ -33,6 +30,8 @@ import org.netbeans.core.windows.SplitConstraint;
 
 import java.util.HashSet;
 import java.util.Set;
+import org.netbeans.core.windows.WindowManagerImpl;
+import org.openide.windows.TopComponent;
 
 
 /**
@@ -65,6 +64,9 @@ final class ModesSubModel {
     private ModeImpl activeMode;
     /** Maximized mode. */
     private ModeImpl maximizedMode;
+    // (sliding side + TopComponent ID) -> size in pixels (width or height 
+    //depending on the sliding side)
+    private final Map<String,Integer> slideInSizes = new HashMap<String,Integer>(15);
      
     
     /** Creates a new instance of ModesModel */
@@ -186,7 +188,7 @@ final class ModesSubModel {
         return result;
     }
     
-    public boolean addModeSliding(ModeImpl mode, String side) {
+    public boolean addModeSliding(ModeImpl mode, String side, Map<String,Integer> slideInSizes) {
         if(modes.contains(mode) || (mode.getKind() != Constants.MODE_KIND_SLIDING)) {
             return false;
         }
@@ -196,9 +198,49 @@ final class ModesSubModel {
         
         modes.add(mode);
         
+        if( null != slideInSizes ) {
+            for( Iterator<String> i=slideInSizes.keySet().iterator(); i.hasNext(); ) {
+                String tcId = i.next();
+                this.slideInSizes.put( side+tcId, slideInSizes.get( tcId ) );
+            }
+        }
+        
         return true;
     }
 
+    public Map<String, Integer> getSlideInSizes(String side) {
+        Map<String,Integer> res = new HashMap<String,Integer>( 5 );
+        for( Iterator<String> i=slideInSizes.keySet().iterator(); i.hasNext(); ) {
+            String key = i.next();
+            if( key.startsWith( side ) ) {
+                String tcId = key.substring( side.length() );
+                Integer size = slideInSizes.get( key );
+                res.put( tcId, size );
+            }
+        }
+        return res;
+    }
+    
+    public Map<TopComponent, Integer> getSlideInSizes(ModeImpl mode) {
+        WindowManagerImpl wm = WindowManagerImpl.getInstance();
+        TopComponent[] tcs = mode.getTopComponents();
+        Map<TopComponent,Integer> res = new HashMap<TopComponent,Integer>( tcs.length );
+        for( TopComponent tc : tcs ) {
+            String tcId = wm.findTopComponentID( tc );
+            Integer size = slideInSizes.get( mode.getSide() + tcId );
+            if( null != size ) {
+                res.put( tc, size );
+            }
+        }
+        return res;
+    }
+    
+    public void setSlideInSize(String side, TopComponent tc, int size) {
+        if( null != tc && null != side ) {
+            String tcId = WindowManagerImpl.getInstance().findTopComponentID(tc);
+            slideInSizes.put( side+tcId, new Integer(size) );
+        }
+    }
     
     public boolean removeMode(ModeImpl mode) {
         int kind = mode.getKind();
@@ -280,7 +322,8 @@ final class ModesSubModel {
                 new HashSet<ModeStructureSnapshot.SlidingModeSnapshot>();
         for (Map.Entry<ModeImpl, String> curEntry: slidingModes2Sides.entrySet()) {
             result.add(new ModeStructureSnapshot.SlidingModeSnapshot(
-                    curEntry.getKey(), curEntry.getValue()));
+                    curEntry.getKey(), curEntry.getValue(), 
+                    getSlideInSizes(curEntry.getKey())));
         }
         
         return result;
