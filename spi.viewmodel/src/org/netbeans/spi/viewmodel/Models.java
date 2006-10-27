@@ -1492,10 +1492,6 @@ public final class Models {
         private Set expandedNodes = new WeakSet();
         private Set collapsedNodes = new WeakSet();
         
-        public DefaultTreeExpansionModel() {
-            System.err.println("new DefaultTreeExpansionModel()");
-        }
-
         /**
          * Defines default state (collapsed, expanded) of given node.
          *
