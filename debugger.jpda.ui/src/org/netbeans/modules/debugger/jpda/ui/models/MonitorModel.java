@@ -80,16 +80,23 @@ NodeActionsProviderFilter, TableModel, Constants {
                 JPDAThread t = ((ThreadWithBordel) o).originalThread;
                 ObjectVariable contended = t.getContendedMonitor ();
                 ObjectVariable[] owned = t.getOwnedMonitors ();
-                int i = 0;
-                Object[] os = new Object [to - from];
+                Object cm = null;
+                Object om = null;
                 if ( (contended != null) &&
                      (from  == 0) && (to > 0)
-                ) os [i++] = new ContendedMonitor (contended);
+                ) cm = new ContendedMonitor (contended);
                 if ( (owned.length > 0) &&
                      ( ((contended != null) && (from < 2) && (to > 1)) ||
                        ((contended == null) && (from == 0) && (to > 0))
                      )
-                ) os [i++] = new OwnedMonitors (owned);
+                ) om = new OwnedMonitors (owned);
+                int i = 0;
+                if (cm != null) i++;
+                if (om != null) i++;
+                Object[] os = new Object [i];
+                i = 0;
+                if (cm != null) os[i++] = cm;
+                if (om != null) os[i++] = om;
                 return os;
             } catch (ObjectCollectedException e) {
             } catch (VMDisconnectedException e) {
