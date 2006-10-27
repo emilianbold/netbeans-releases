@@ -31,11 +31,13 @@
                     <file name="sep-3.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     </file>
+ <!--    TODO Retoche Migration
                     <attr name="sep-3.instance/org-netbeans-modules-xml-tools-actions-CheckAction.instance" boolvalue="true"/>
                     <file name="org-netbeans-modules-xml-tools-actions-CheckAction.instance"/>
                     <attr name="org-netbeans-modules-xml-tools-actions-CheckAction.instance/org-netbeans-modules-xml-tools-actions-ValidateAction.instance" boolvalue="true" />
                     <file name="org-netbeans-modules-xml-tools-actions-ValidateAction.instance"/>
                     <attr name="org-netbeans-modules-xml-tools-actions-ValidateAction.instance/sep-5.instance" boolvalue="true"/>
+                    -->
                     <file name="sep-4.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     </file> 
