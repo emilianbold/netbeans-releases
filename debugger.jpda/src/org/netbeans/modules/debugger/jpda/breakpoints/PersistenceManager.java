@@ -78,6 +78,7 @@ public class PersistenceManager implements LazyDebuggerManagerListener {
                     ErrorManager.getDefault().notify(ex);
                 }
             }
+            breakpoints[i].addPropertyChangeListener(this);
         }
         return breakpoints;
     }

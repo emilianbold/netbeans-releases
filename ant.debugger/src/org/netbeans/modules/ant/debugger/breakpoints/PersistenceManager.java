@@ -44,10 +44,14 @@ public class PersistenceManager implements LazyDebuggerManagerListener {
     public Breakpoint[] initBreakpoints () {
         Properties p = Properties.getDefault ().getProperties ("debugger").
             getProperties (DebuggerManager.PROP_BREAKPOINTS);
-        return (Breakpoint[]) p.getArray (
+        Breakpoint[] breakpoints = (Breakpoint[]) p.getArray (
             "ant", 
             new Breakpoint [0]
         );
+        for (int i = 0; i < breakpoints.length; i++) {
+            breakpoints[i].addPropertyChangeListener(this);
+        }
+        return breakpoints;
     }
     
     public void initWatches () {
