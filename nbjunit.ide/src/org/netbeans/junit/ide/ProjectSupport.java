@@ -163,8 +163,7 @@ public class ProjectSupport {
                 Mutex.EVENT.writeAccess(new Runnable() {
                     public void run() {
                         discardChanges(project);
-                        ProjectUtilities.closeAllDocuments(new Project[] {project});
-                        OpenProjectList.getDefault().close(new Project[] {project});
+                        OpenProjectList.getDefault().close(new Project[] {project}, true);
                     }
                 });
                 return true;
