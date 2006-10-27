@@ -289,6 +289,7 @@ public class Main extends Object {
                     handle.run();
                 }
                 catch (Exception ex) {
+                    ex.printStackTrace();
                     errMan.notify(ErrorManager.EXCEPTION, ex);
                 }
             }
