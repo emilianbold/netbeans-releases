@@ -64,6 +64,6 @@ public enum ActionType {
     ADD_PROPERTY_TO_WSDL,
     ADD_PROPERTY_ALIAS_TO_WSDL,
     SHOW_BPEL_MAPPER,
-    GO_TO_WSDL_SOURCE
-    ;
+    GO_TO_WSDL_SOURCE,
+    FIND_USAGES;
 }

@@ -48,6 +48,7 @@ import org.netbeans.modules.bpel.nodes.actions.AddPropertyToWsdlAction;
 import org.netbeans.modules.bpel.nodes.actions.DeleteBpelExtensibiltyWsdlRefAction;
 import org.netbeans.modules.bpel.nodes.actions.DeletePropertyAction;
 import org.netbeans.modules.bpel.nodes.actions.FindMexPeerAction;
+import org.netbeans.modules.bpel.nodes.actions.FindUsagesAction;
 import org.netbeans.modules.bpel.nodes.actions.GoToMessageExchangeContainerSourceAction;
 import org.netbeans.modules.bpel.nodes.actions.MoveDownCopyAction;
 import org.netbeans.modules.bpel.nodes.actions.MoveUpCopyAction;
@@ -217,6 +218,8 @@ public abstract class BpelNode<T>
                 , SystemAction.get(AddPropertyAliasToWsdlAction.class));
         ACTION_TYPE_MAP.put(ActionType.SHOW_BPEL_MAPPER
                 , SystemAction.get(ShowBpelMapperAction.class));
+        ACTION_TYPE_MAP.put(ActionType.FIND_USAGES,
+                  SystemAction.get(FindUsagesAction.class));
     }
     
     private Object reference;

@@ -322,6 +322,7 @@ public class VariableNode extends BpelNode<VariableDeclaration>
     protected ActionType[] getActionsArray() {
         return new ActionType[] {
             ActionType.GO_TO_SOURCE,
+            ActionType.FIND_USAGES,
             ActionType.SEPARATOR,
             ActionType.SHOW_POPERTY_EDITOR,
             ActionType.SEPARATOR,
