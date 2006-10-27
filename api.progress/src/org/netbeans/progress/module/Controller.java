@@ -20,10 +20,7 @@
 
 package org.netbeans.progress.module;
 
-import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Container;
-import java.awt.Frame;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -33,7 +30,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import org.netbeans.progress.spi.InternalHandle;

@@ -64,7 +64,6 @@ import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.progress.spi.InternalHandle;
-import org.netbeans.progress.spi.ProgressUIWorker;
 import org.netbeans.progress.spi.ProgressEvent;
 import org.netbeans.progress.module.ProgressListAction;
 import org.netbeans.progress.spi.ProgressUIWorkerWithModel;

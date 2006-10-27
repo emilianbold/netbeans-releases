@@ -20,13 +20,8 @@
 
 package org.netbeans.api.progress;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JProgressBar;
 import org.netbeans.progress.spi.InternalHandle;
 
 /**

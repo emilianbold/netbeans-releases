@@ -20,7 +20,6 @@
 package org.netbeans.modules.progress.ui;
 
 import org.netbeans.progress.spi.ExtractedProgressUIWorker;
-import org.netbeans.progress.spi.ProgressUIWorker;
 import org.netbeans.progress.spi.ProgressUIWorkerProvider;
 import org.netbeans.progress.spi.ProgressUIWorkerWithModel;
 

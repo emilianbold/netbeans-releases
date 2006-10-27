@@ -38,7 +38,6 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
-import javax.swing.UIManager;
 import javax.swing.border.Border;
 import org.netbeans.progress.spi.InternalHandle;
 

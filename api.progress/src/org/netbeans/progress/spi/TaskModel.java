@@ -22,8 +22,6 @@ package org.netbeans.progress.spi;
 
 import javax.swing.DefaultListModel;
 import javax.swing.DefaultListSelectionModel;
-import javax.swing.ListModel;
-import javax.swing.ListSelectionModel;
 import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.progress.module.*;

@@ -27,7 +27,6 @@ import javax.swing.JProgressBar;
 import javax.swing.UIManager;
 import org.netbeans.progress.spi.ExtractedProgressUIWorker;
 import org.netbeans.progress.spi.InternalHandle;
-import org.netbeans.progress.spi.ProgressUIWorker;
 import org.netbeans.progress.spi.ProgressEvent;
 
 

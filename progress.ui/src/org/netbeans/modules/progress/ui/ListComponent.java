@@ -34,7 +34,6 @@ import java.awt.event.MouseEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -65,7 +64,7 @@ public class ListComponent extends JPanel {
     private Color selectFgColor;
     private Color bgColor;
     private Color fgColor;
-    private Color dynaFgColor;
+//    private Color dynaFgColor;
     private int mainHeight;
     private int dynaHeight;
     
@@ -93,7 +92,7 @@ public class ListComponent extends JPanel {
         if (dynaFg != null) {
             dynaLabel.setForeground(dynaFg);
         }
-        dynaFgColor = dynaLabel.getForeground();
+//        dynaFgColor = dynaLabel.getForeground();
         fgColor = UIManager.getColor("nbProgressBar.popupText.foreground");
         if (fgColor != null) {
             mainLabel.setForeground(fgColor);

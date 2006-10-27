@@ -21,17 +21,11 @@
 package org.netbeans.progress.spi;
 
 import java.awt.event.ActionEvent;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JProgressBar;
-import javax.swing.SwingUtilities;
 import org.netbeans.progress.module.*;
 import org.openide.util.Cancellable;
 import org.openide.util.Lookup;
@@ -44,8 +38,6 @@ import org.openide.util.Lookup;
 public final class InternalHandle {
     
     private String displayName;
-    private boolean allowCancel;
-    private boolean allowBackground;
     private boolean customPlaced1 = false;
     private boolean customPlaced2 = false;
     private boolean customPlaced3 = false;
