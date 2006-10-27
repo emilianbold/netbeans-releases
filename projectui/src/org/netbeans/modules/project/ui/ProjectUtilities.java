@@ -96,75 +96,116 @@ public class ProjectUtilities {
             return true;
         }
         
-        public Map<Project, SortedSet<String>> close (Project[] projects) {
-            List<Project> listOfProjects = Arrays.asList (projects);
-            Set<DataObject> openFiles = new HashSet<DataObject> ();
-            Set<TopComponent> tc2close = new HashSet<TopComponent> ();
-            Map<Project, SortedSet<String>> urls4project = new HashMap<Project, SortedSet<String>> ();
-	    @SuppressWarnings("unchecked")
-            Iterator<TopComponent> openTCs = WindowManager.getDefault ().getRegistry ().getOpened ().iterator ();
-            while (openTCs.hasNext ()) {
-                TopComponent tc = openTCs.next ();
+        public Map<Project,SortedSet<String>> close(final Project[] projects,
+                                                    final boolean notifyUI) {
+            final Wrapper wr = new Wrapper();
+
+            wr.urls4project = new HashMap<Project,SortedSet<String>>();
+            if (SwingUtilities.isEventDispatchThread()) {
+                doClose(projects, notifyUI, wr);
+            } else {
+                try {
+                    SwingUtilities.invokeAndWait(new Runnable() {
+                         public void run() {
+                             doClose(projects, notifyUI, wr);
+                         }
+                     });
+                }
+                catch (Exception ex) {
+                    ERR.notify(ErrorManager.INFORMATIONAL, ex);
+                }
+            }
+            return wr.urls4project;
+        }
+
+        private void doClose(Project[] projects, boolean notifyUI, Wrapper wr) {
+            List<Project> listOfProjects = Arrays.asList(projects);
+            Set<DataObject> openFiles = new HashSet<DataObject>();
+            final Set<TopComponent> tc2close = new HashSet<TopComponent>();
+            @SuppressWarnings(value = "unchecked")
+            Iterator<TopComponent> openTCs = WindowManager.getDefault().getRegistry().getOpened().iterator();
+
+            while (openTCs.hasNext()) {
+                TopComponent tc = openTCs.next();
+
                 // #57621: check if the closed top component isn't instance of ExplorerManager.Provider e.g. Projects/Files tab, if yes then do skip this loop
                 if (tc instanceof ExplorerManager.Provider) {
                     continue;
                 }
                 // #68677: closing only documents in the editor, not eg. navigator window:
                 Mode m = WindowManager.getDefault().findMode(tc);
-                if (m == null || !CloneableEditorSupport.EDITOR_MODE.equals(m.getName())) { // NOI18N
+
+                if (m == null ||
+                    !CloneableEditorSupport.EDITOR_MODE.equals(m.getName())) {
                     continue;
                 }
-                DataObject dobj = (DataObject) tc.getLookup ().lookup (DataObject.class);
-                if (dobj != null) {
-                  FileObject fobj = dobj.getPrimaryFile ();
-                  Project owner = FileOwnerQuery.getOwner (fobj);
-                  if (listOfProjects.contains (owner)) {
-                      openFiles.add (dobj);
-                      tc2close.add (tc);
-                      if (!urls4project.containsKey (owner)) {
-                          // add project
-                          urls4project.put (owner, new TreeSet<String> ());
-                      }
-                      URL url = null;
-                      try {
-                          url = dobj.getPrimaryFile ().getURL ();
-                          urls4project.get (owner).add (url.toExternalForm ());
-                      } catch (FileStateInvalidException fsie) {
-                          assert false : "FileStateInvalidException in " + dobj.getPrimaryFile ();
-                      }
-                  }
-                }
-            }
-            
-            Iterator iter = DataObject.getRegistry().getModifiedSet().iterator();
-            while (iter.hasNext()) {
-                DataObject dobj = (DataObject) iter.next();
+                DataObject dobj = (DataObject) tc.getLookup().lookup(DataObject.class);
+
                 if (dobj != null) {
                     FileObject fobj = dobj.getPrimaryFile();
                     Project owner = FileOwnerQuery.getOwner(fobj);
-                    if (listOfProjects.contains(owner) &&
-                            !openFiles.contains(dobj)) {
-                        openFiles.add(dobj);
+
+                    if (listOfProjects.contains(owner)) {
+                        if (notifyUI) {
+                            openFiles.add(dobj);
+                            tc2close.add(tc);
+                        } else if (!dobj.isModified()) {
+                            // when not called from UI, only include TCs that arenot modified
+                            tc2close.add(tc);
+                        }
+                        if (!wr.urls4project.containsKey(owner)) {
+                            // add project
+                            wr.urls4project.put(owner, new TreeSet<String>());
+                        }
+                        URL url = null;
+
+                        try {
+                            url = dobj.getPrimaryFile().getURL();
+                            wr.urls4project.get(owner).add(url.toExternalForm());
+                        }
+                        catch (FileStateInvalidException fsie) {
+                            assert false : "FileStateInvalidException in " +
+                                           dobj.getPrimaryFile();
+                        }
                     }
                 }
             }
-            
-            if (!openFiles.isEmpty () && ExitDialog.showDialog (openFiles)) {
+            if (notifyUI) {
+                Iterator iter = DataObject.getRegistry().getModifiedSet().iterator();
+
+                while (iter.hasNext()) {
+                    DataObject dobj = (DataObject) iter.next();
+
+                    if (dobj != null) {
+                        FileObject fobj = dobj.getPrimaryFile();
+                        Project owner = FileOwnerQuery.getOwner(fobj);
+
+                        if (listOfProjects.contains(owner) &&
+                            !openFiles.contains(dobj)) {
+                            openFiles.add(dobj);
+                        }
+                    }
+                }
+            }
+            if (!notifyUI ||
+                (!openFiles.isEmpty() && ExitDialog.showDialog(openFiles))) {
                 // close documents
-                Iterator it = tc2close.iterator ();
-                while (it.hasNext ()) {
-                    ((TopComponent)it.next ()).close ();
+                Iterator it = tc2close.iterator();
+                while (it.hasNext()) {
+                    ((TopComponent) it.next()).close();
                 }
             } else {
                 // signal that close was vetoed
-                if (!openFiles.isEmpty ()) {
-                    urls4project = null;
+                if (!openFiles.isEmpty()) {
+                    wr.urls4project = null;
                 }
             }
-            
-            return urls4project;
         }
     };
+    
+    private static class Wrapper {
+        Map<Project,SortedSet<String>> urls4project;
+    }
     
     private static final ErrorManager ERR = ErrorManager.getDefault().getInstance(ProjectUtilities.class.getName());
     
@@ -382,7 +423,7 @@ public class ProjectUtilities {
      * @param p project to close
      * @return false if the user cancelled the Save/Discard/Cancel dialog, true otherwise
      */    
-    public static boolean closeAllDocuments(Project[] projects) {
+    public static boolean closeAllDocuments(Project[] projects, boolean notifyUI) {
         if (projects == null) {
             throw new IllegalArgumentException ("No projects are specified."); // NOI18N
         }
@@ -392,7 +433,7 @@ public class ProjectUtilities {
             return true;
         }
         
-        Map/*<Project, SortedSet<String>>*/ urls4project = OPEN_CLOSE_PROJECT_DOCUMENT_IMPL.close (projects);
+        Map/*<Project, SortedSet<String>>*/ urls4project = OPEN_CLOSE_PROJECT_DOCUMENT_IMPL.close (projects, notifyUI);
 
         if (urls4project != null) {
             // store project's documents
@@ -489,7 +530,7 @@ public class ProjectUtilities {
         
         // closes documents of given projects and returns mapped document's urls by project
         // it's used as base for storing documents in project private.xml
-        public Map<Project,SortedSet<String>> close(Project[] projects);
+        public Map<Project,SortedSet<String>> close(Project[] projects, boolean notifyUI);
     }
     
 }

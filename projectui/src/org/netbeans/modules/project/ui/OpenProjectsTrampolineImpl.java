@@ -50,7 +50,7 @@ public final class OpenProjectsTrampolineImpl implements OpenProjectsTrampoline,
     }
 
     public void closeAPI(Project[] projects) {
-        OpenProjectList.getDefault().close(projects);
+        OpenProjectList.getDefault().close(projects, false);
     }
 
     public void addPropertyChangeListenerAPI( PropertyChangeListener listener ) {

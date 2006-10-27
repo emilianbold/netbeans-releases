@@ -57,9 +57,7 @@ public class CloseProject extends ProjectAction implements PropertyChangeListene
     protected void actionPerformed( Lookup context ) {
         Project[] projects = ActionsUtil.getProjectsFromLookup( context, null );        
         // show all modified documents, if an user cancel it then no project is closed        
-        if (ProjectUtilities.closeAllDocuments (projects)) {
-            OpenProjectList.getDefault().close( projects );
-        }
+        OpenProjectList.getDefault().close( projects, true );
     }
     
     public void refresh( Lookup context ) {

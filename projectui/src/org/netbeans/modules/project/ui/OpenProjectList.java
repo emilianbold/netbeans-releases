@@ -327,7 +327,11 @@ public final class OpenProjectList {
         });
     }
        
-    public void close( Project projects[] ) {
+    public void close( Project projects[], boolean notifyUI ) {
+        if (!ProjectUtilities.closeAllDocuments (projects, notifyUI )) {
+            return;
+        }
+        
         boolean mainClosed = false;
         boolean someClosed = false;
         synchronized ( this ) {
