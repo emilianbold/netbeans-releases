@@ -30,6 +30,7 @@ import javax.swing.text.PlainDocument;
 import java.awt.*;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.KeyEvent;
 import org.openide.util.NbPreferences;
 
 
@@ -257,6 +258,10 @@ class OutputPane extends AbstractOutputPane implements ComponentListener {
         
         public Object get(KeyStroke keyStroke) {
             KeyStroke stroke = KeyStroke.getKeyStroke("control shift O");
+            if (keyStroke.equals(stroke)) {
+                return null;
+            }
+            KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, Event.CTRL_MASK);
             if (keyStroke.equals(stroke)) {
                 return null;
             }
