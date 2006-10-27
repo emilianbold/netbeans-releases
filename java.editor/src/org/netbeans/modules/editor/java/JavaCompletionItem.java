@@ -28,6 +28,8 @@ import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
 import javax.swing.ImageIcon;
@@ -1030,13 +1032,13 @@ public abstract class JavaCompletionItem implements CompletionItem {
     private static class OverrideMethodItem extends MethodItem {
         
         private ExecutableElement elem;
-        private ExecutableType type;
+        private ElementHandle<ExecutableElement> elemHandle;
         private boolean implement;
         
         private OverrideMethodItem(ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean implement) {
             super(elem, type, substitutionOffset, false, false, false);
             this.elem = elem;
-            this.type = type;
+            this.elemHandle = ElementHandle.create(elem);
             this.implement = implement;
         }
         
@@ -1061,8 +1063,6 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
 
         protected void substituteText(final JTextComponent c, final int offset, final int len) {
-            List<? extends VariableElement> params = elem.getParameters();
-            List<? extends TypeMirror> paramTypes = type.getParameterTypes();
             BaseDocument doc = (BaseDocument)c.getDocument();
 
             if (len > 0) {
@@ -1082,7 +1082,13 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     public void cancel() {
                     }
                     public void run(WorkingCopy copy) throws IOException {
-                        copy.toPhase(JavaSource.Phase.PARSED);
+                        copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                        ExecutableElement ee = elemHandle.resolve(copy);
+                        
+                        if (ee == null) {
+                            return;
+                        }
+                        
                         TreePath tp = copy.getTreeUtilities().pathFor(offset);
                         Tree t = tp.getLeaf();
                         if (t.getKind() == Tree.Kind.CLASS) {
@@ -1094,11 +1100,12 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                     break;
                                 }
                             }
-                            OverrideImplementMethodGenerator.generateOverrideImplement(copy, elem, tp, lastBefore, (ClassTree) t);
+                            OverrideImplementMethodGenerator.generateOverrideImplement(copy, ee, tp, lastBefore, (ClassTree) t);
                         }
                     }
                 }).commit();
             } catch (IOException ex) {
+                Logger.getLogger("global").log(Level.WARNING, null, ex);
             }
         }
 
@@ -1111,6 +1118,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
             return sb.toString();
         }
 
+        public boolean instantSubstitution(JTextComponent component) {
+            return false;//no instant substitution for override method item.
+        }
    }
 
     private static class ConstructorItem extends JavaCompletionItem {
@@ -1970,6 +1980,10 @@ public abstract class JavaCompletionItem implements CompletionItem {
             }
             sb.append(')'); //NOI18N
             return sb.toString();
+        }
+        
+        public boolean instantSubstitution(JTextComponent component) {
+            return false; //no instant substitution for create constructor item
         }
     }
 
