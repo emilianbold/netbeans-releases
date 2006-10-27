@@ -27,11 +27,11 @@ import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.Vector;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.Icon;
@@ -59,6 +59,9 @@ import org.openide.util.Utilities;
 * @author   Ian Formanek, Jaroslav Tulach
 */
 public abstract class SystemAction extends SharedClassObject implements Action, HelpCtx.Provider {
+
+    private static final Logger LOG = Logger.getLogger(SystemAction.class.getName());
+
     /** Name of property indicating whether or not the action is enabled. */
     public static final String PROP_ENABLED = "enabled"; // NOI18N
 
@@ -67,19 +70,19 @@ public abstract class SystemAction extends SharedClassObject implements Action, 
 
     /** Name of property for the action's display icon, if textual. */
     private static final String PROP_ICON_TEXTUAL = "iconTextual"; // NOI18N
-    private static ImageIcon BLANK_ICON = null;
+    private static Icon BLANK_ICON = new Icon() {
+        public void paintIcon(Component c, Graphics g, int x, int y) {}
+        public int getIconWidth() {
+            return 16;
+        }
+        public int getIconHeight() {
+            return 16;
+        }
+    };
     private static final Set<String> relativeIconResourceClasses = new HashSet<String>(200);
 
     // Matches NB 3.4 w/ openide-compat.jar; see #26491
     private static final long serialVersionUID = -8361232596876856810L;
-
-    private static ImageIcon getBlankIcon() {
-        if (BLANK_ICON == null) {
-            BLANK_ICON = new ImageIcon(Utilities.loadImage("org/openide/resources/actions/empty.gif", true)); // NOI18N
-        }
-
-        return BLANK_ICON;
-    }
 
     /** Obtain a singleton instance of the action with a specified class.
     * If there already is a instance then it is returned, otherwise
@@ -173,6 +176,7 @@ public abstract class SystemAction extends SharedClassObject implements Action, 
     /** Initialize the action.
     * The default implementation just enabled it.
     */
+    @Override
     protected void initialize() {
         putProperty(PROP_ENABLED, Boolean.TRUE);
 
@@ -182,6 +186,7 @@ public abstract class SystemAction extends SharedClassObject implements Action, 
     /** Indicate whether action state should be cleared after the last action of this class is deleted.
     * @return <code>false</code> in the default implementation
     */
+    @Override
     protected boolean clearSharedData() {
         return false;
     }
@@ -229,12 +234,10 @@ public abstract class SystemAction extends SharedClassObject implements Action, 
                             img = new ImageIcon(u);
 
                             if (relativeIconResourceClasses.add(clazz)) {
-                                Logger.getAnonymousLogger().warning(
-                                    "Deprecated relative path in " + clazz + ".iconResource (cf. #20072)"
-                                ); // NOI18N
+                                LOG.warning("Deprecated relative path in " + clazz + ".iconResource (cf. #20072)");
                             }
                         } else {
-                            throw new IllegalStateException("No such icon from " + clazz + ": " + resName); // NOI18N
+                            LOG.warning("No such icon from " + clazz + ": " + resName);
                         }
                     } else {
                         // Hopefully an absolute path, but again (#26887) might be relative.
@@ -253,42 +256,36 @@ public abstract class SystemAction extends SharedClassObject implements Action, 
                                 img = new ImageIcon(u);
 
                                 if (relativeIconResourceClasses.add(clazz)) {
-                                    Logger.getAnonymousLogger().warning(
-                                        "Deprecated relative path in " + clazz + ".iconResource (cf. #26887)"
-                                    ); // NOI18N
+                                    LOG.warning("Deprecated relative path in " + clazz + ".iconResource (cf. #26887)");
                                 }
                             } else {
                                 // Really can't find it.
-                                throw new IllegalStateException("No such icon from " + clazz + ": " + resName); // NOI18N
+                                LOG.warning("No such icon from " + clazz + ": " + resName);
                             }
                         }
                     }
 
                     putProperty(PROP_ICON, img);
                     putProperty(PROP_ICON_TEXTUAL, img);
-                } else {
-                    // No icon specified.
-                    if (createLabel) {
-                        String text = getName();
+                }
+            }
 
-                        if (text.endsWith("...")) {
-                            text = text.substring(0, text.length() - 3); // NOI18N
-                        }
-
-                        text = text.trim();
-
-                        int ampr = text.indexOf('&');
-
-                        if (ampr != -1) {
-                            text = new StringBuffer(text).deleteCharAt(ampr).toString();
-                        }
-
-                        img = new ComponentIcon(new JLabel(text));
-                        putProperty(PROP_ICON_TEXTUAL, img);
-                    } else {
-                        img = getBlankIcon();
-                        putProperty(PROP_ICON, img);
+            if (img == null) {
+                if (createLabel) {
+                    String text = getName();
+                    if (text.endsWith("...")) { // NOI18N
+                        text = text.substring(0, text.length() - 3);
                     }
+                    text = text.trim();
+                    int ampr = text.indexOf('&');
+                    if (ampr != -1) {
+                        text = new StringBuffer(text).deleteCharAt(ampr).toString();
+                    }
+                    img = new ComponentIcon(new JLabel(text));
+                    putProperty(PROP_ICON_TEXTUAL, img);
+                } else {
+                    img = BLANK_ICON;
+                    putProperty(PROP_ICON, img);
                 }
             }
 
@@ -314,10 +311,6 @@ public abstract class SystemAction extends SharedClassObject implements Action, 
         return null;
     }
 
-    //
-    // Static methods
-    // 
-
     /** Create the default toolbar representation of an array of actions.
     * Null items in the array will add a separator to the toolbar.
     *
@@ -326,17 +319,13 @@ public abstract class SystemAction extends SharedClassObject implements Action, 
     */
     public static JToolBar createToolbarPresenter(SystemAction[] actions) {
         JToolBar p = new JToolBar();
-        int i;
-        int k = actions.length;
-
-        for (i = 0; i < k; i++) {
-            if (actions[i] == null) {
+        for (SystemAction action : actions) {
+            if (action == null) {
                 p.addSeparator();
-            } else if (actions[i] instanceof Presenter.Toolbar) {
-                p.add(((Presenter.Toolbar) actions[i]).getToolbarPresenter());
+            } else if (action instanceof Presenter.Toolbar) {
+                p.add(((Presenter.Toolbar) action).getToolbarPresenter());
             }
         }
-
         return p;
     }
 
@@ -346,7 +335,7 @@ public abstract class SystemAction extends SharedClassObject implements Action, 
     * @return an array of both sets of actions in the same order
     */
     public static SystemAction[] linkActions(SystemAction[] actions1, SystemAction[] actions2) {
-        List<SystemAction> l = new Vector<SystemAction>(Arrays.asList(actions1));
+        List<SystemAction> l = new ArrayList<SystemAction>(Arrays.asList(actions1));
         l.addAll(Arrays.asList(actions2));
 
         return l.toArray(actions1);

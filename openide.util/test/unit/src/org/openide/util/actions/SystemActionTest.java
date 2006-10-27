@@ -25,8 +25,10 @@ import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.ImageObserver;
 import java.awt.image.PixelGrabber;
+import java.util.logging.Level;
 import javax.swing.Icon;
 import javax.swing.JButton;
+import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.HelpCtx;
 
@@ -39,19 +41,30 @@ public class SystemActionTest extends NbTestCase {
     public SystemActionTest(String name) {
         super(name);
     }
-    
+
+    @Override
+    protected Level logLevel() {
+        return Level.OFF;
+    }
+
     /** Test that iconResource really works.
      * @see "#26887"
      */
     public void testIcons() throws Exception {
         Image i = Toolkit.getDefaultToolkit().getImage(SystemActionTest.class.getResource("data/someicon.gif"));
         int h = imageHash("Control icon", i, 16, 16);
+        CharSequence log = Log.enable("org.openide.util", Level.WARNING);
         SystemAction a = SystemAction.get(SystemAction1.class);
         assertEquals("Absolute slash-initial iconResource works (though deprecated)", h, imageHash("icon1", icon2Image(a.getIcon()), 16, 16));
+        assertTrue(log.toString(), log.toString().contains("Initial slashes in Utilities.loadImage deprecated"));
         a = SystemAction.get(SystemAction2.class);
         assertEquals("Absolute no-slash-initial iconResource works", h, imageHash("icon2", icon2Image(a.getIcon()), 16, 16));
         a = SystemAction.get(SystemAction3.class);
-        assertEquals("Relative iconResource works", h, imageHash("icon3", icon2Image(a.getIcon()), 16, 16));
+        assertEquals("Relative iconResource works (though deprecated)", h, imageHash("icon3", icon2Image(a.getIcon()), 16, 16));
+        assertTrue(log.toString(), log.toString().contains("Deprecated relative path"));
+        a = SystemAction.get(SystemAction4.class);
+        a.getIcon();
+        assertTrue(log.toString(), log.toString().contains("No such icon"));
     }
     
     private static abstract class TestSystemAction extends SystemAction {
@@ -76,6 +89,11 @@ public class SystemActionTest extends NbTestCase {
     public static final class SystemAction3 extends TestSystemAction {
         protected String iconResource() {
             return "data/someicon.gif";
+        }
+    }
+    public static final class SystemAction4 extends TestSystemAction {
+        protected String iconResource() {
+            return "no/such/icon.gif";
         }
     }
     
