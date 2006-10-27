@@ -173,9 +173,6 @@ public abstract class XMLUtils {
         }
         private List <Node> getChildListFromRootList(List <Node> rootlist, String childname) {
             List <Node> result = new LinkedList <Node> ();
-            if(rootlist == null) {
-                return result;
-            }
             for(int i=0;i<rootlist.size();i++) {
                 Node node = rootlist.get(i);
                 if(node==null) {
@@ -190,14 +187,10 @@ public abstract class XMLUtils {
         }
         
         public List <Node> getChildList(Node root, String ... childs) {
-            
-            List <Node> resultList = null;
-            NodeList nodeList = null;
-            String name;
+            List <Node> resultList = new LinkedList <Node> ();
             if(root != null)  {
-                resultList = new LinkedList <Node> ();
-                resultList.add(root);
-                if(childs!=null) {
+                if(childs.length>0) {
+                    resultList.add(root);
                     if(childs.length==1) {
                         if(childs[0].startsWith("./")) {
                             childs [0] = childs [0].substring("./".length());
@@ -215,9 +208,6 @@ public abstract class XMLUtils {
         
         public Node getChildNode(Node root, String ... childs) throws ParseException {
             List <Node> list = getChildList(root,childs);
-            if(list == null) {
-                return null;
-            }
             if(list.size()==0) {
                 return null;
             }
