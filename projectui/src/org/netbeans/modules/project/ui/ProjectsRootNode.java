@@ -47,7 +47,6 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
 import org.openide.loaders.FolderLookup;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -107,7 +106,7 @@ public class ProjectsRootNode extends AbstractNode {
         } else {
             List<Action> actions = new ArrayList<Action>();
             DataFolder actionsFolder = DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().findResource(ACTIONS_FOLDER));
-	    for (Object o: new FolderLookup(actionsFolder).getLookup().lookupAll(Object.class)) {
+            for (Object o: new FolderLookup(actionsFolder).getLookup().lookupAll(Object.class)) {
                 if (o instanceof Action) {
                     actions.add((Action) o);
                 } else if (o instanceof JSeparator) {
