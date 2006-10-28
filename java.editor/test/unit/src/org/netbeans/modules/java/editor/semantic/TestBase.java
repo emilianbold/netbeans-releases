@@ -46,7 +46,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
-import org.netbeans.api.lexer.LanguageDescription;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.editor.highlights.HighlightComparator;
 import org.netbeans.modules.editor.highlights.spi.Highlight;
@@ -202,7 +202,7 @@ public abstract class TestBase extends NbTestCase {
         if (ec != null) {
             Document doc = ec.openDocument();
             
-            doc.putProperty(LanguageDescription.class, JavaTokenId.language());
+            doc.putProperty(Language.class, JavaTokenId.language());
             
             return doc;
         } else {

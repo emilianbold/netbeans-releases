@@ -44,7 +44,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.api.java.source.SourceUtilsTestUtil2;
-import org.netbeans.api.lexer.LanguageDescription;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.editor.completion.CompletionImpl;
 import org.netbeans.modules.editor.completion.CompletionItemComparator;
@@ -169,7 +169,7 @@ public class CompletionTestBase extends NbTestCase {
         assertNotNull(ec);
         final Document doc = ec.openDocument();
         assertNotNull(doc);
-        doc.putProperty(LanguageDescription.class, JavaTokenId.language());
+        doc.putProperty(Language.class, JavaTokenId.language());
         JEditorPane editor = new JEditorPane();
         editor.setDocument(doc);
         int textToInsertLength = textToInsert != null ? textToInsert.length() : 0;

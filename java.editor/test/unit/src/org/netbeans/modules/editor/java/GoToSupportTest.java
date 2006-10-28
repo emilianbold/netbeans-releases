@@ -28,7 +28,7 @@ import javax.swing.text.Document;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
-import org.netbeans.api.lexer.LanguageDescription;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.editor.java.GoToSupport.UiUtilsCaller;
 import org.openide.cookies.EditorCookie;
@@ -281,7 +281,7 @@ public class GoToSupportTest extends NbTestCase {
         EditorCookie ec = od.getCookie(EditorCookie.class);
         Document doc = ec.openDocument();
         
-        doc.putProperty(LanguageDescription.class, JavaTokenId.language());
+        doc.putProperty(Language.class, JavaTokenId.language());
         
         if (tooltip)
             return GoToSupport.getGoToElementTooltip(doc, offset, false);
