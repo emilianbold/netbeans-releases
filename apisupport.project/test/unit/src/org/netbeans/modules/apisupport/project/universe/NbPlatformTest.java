@@ -246,14 +246,14 @@ public class NbPlatformTest extends TestBase {
     
     public void testHarnessVersionDetection() throws Exception {
         NbPlatform p = NbPlatform.getDefaultPlatform();
-        assertEquals("5.0u2 harness detected", NbPlatform.HARNESS_VERSION_50u2, p.getHarnessVersion());
+        assertEquals("5.5u1 harness detected", NbPlatform.HARNESS_VERSION_55u1, p.getHarnessVersion());
         File testPlatform = new File(getWorkDir(), "test-platform");
         makePlatform(testPlatform);
         p = NbPlatform.getPlatformByDestDir(testPlatform);
         assertEquals("5.0 harness detected", NbPlatform.HARNESS_VERSION_50, p.getHarnessVersion());
         File defaultHarnessLocation = NbPlatform.getDefaultPlatform().getHarnessLocation();
         p = NbPlatform.addPlatform("test", testPlatform, defaultHarnessLocation, "Test");
-        assertEquals("5.0u2 harness detected", NbPlatform.HARNESS_VERSION_50u2, p.getHarnessVersion());
+        assertEquals("5.5u1 harness detected", NbPlatform.HARNESS_VERSION_55u1, p.getHarnessVersion());
         PropertyEvaluator eval = PropertyUtils.sequentialPropertyEvaluator(null, new PropertyProvider[] {PropertyUtils.globalPropertyProvider()});
         assertEquals(defaultHarnessLocation, FileUtil.normalizeFile(new File(eval.getProperty("nbplatform.test.harness.dir"))));
         NbPlatform.reset();
@@ -261,7 +261,7 @@ public class NbPlatformTest extends TestBase {
         assertNotNull(p);
         assertEquals(testPlatform, p.getDestDir());
         assertEquals(defaultHarnessLocation, p.getHarnessLocation());
-        assertEquals(NbPlatform.HARNESS_VERSION_50u2, p.getHarnessVersion());
+        assertEquals(NbPlatform.HARNESS_VERSION_55u1, p.getHarnessVersion());
     }
     
     public void testSourceRootChangeFiring() throws Exception {

@@ -75,7 +75,7 @@ public final class SuiteActions implements ActionProvider {
         actions.add(ProjectSensitiveActions.projectCommandAction("debug-jnlp", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_debug_jnlp"), null));
         actions.add(null);
         NbPlatform platform = project.getPlatform(false);
-        if (platform != null && platform.getHarnessVersion() >= NbPlatform.HARNESS_VERSION_50u2) {
+        if (platform != null && platform.getHarnessVersion() >= NbPlatform.HARNESS_VERSION_55u1) {
             actions.add(ProjectSensitiveActions.projectCommandAction("build-mac", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_mac"), null));
             actions.add(null);
         }
