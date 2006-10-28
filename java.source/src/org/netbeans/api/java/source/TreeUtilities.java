@@ -191,8 +191,15 @@ public final class TreeUtilities {
 
     public Scope scopeFor(int pos) {
         List<? extends StatementTree> stmts = null;
+        SourcePositions sourcePositions = info.getTrees().getSourcePositions();
         TreePath path = pathFor(pos);
+        CompilationUnitTree root = path.getCompilationUnit();
         switch (path.getLeaf().getKind()) {
+            case CLASS:
+                ClassTree ct = (ClassTree)path.getLeaf();
+                if (info.getText().substring((int)sourcePositions.getEndPosition(root, ct.getModifiers()), pos).indexOf('{') >= 0)
+                    path = new TreePath(path, ct.getMembers().get(0));
+                break;
             case BLOCK:
                 stmts = ((BlockTree)path.getLeaf()).getStatements();
                 break;
@@ -208,9 +215,8 @@ public final class TreeUtilities {
         }
         if (stmts != null) {
             Tree tree = null;
-            SourcePositions sourcePositions = info.getTrees().getSourcePositions();
             for (StatementTree st : stmts) {
-                if (sourcePositions.getStartPosition(path.getCompilationUnit(), st) < pos)
+                if (sourcePositions.getStartPosition(root, st) < pos)
                     tree = st;
             }
             if (tree != null)
