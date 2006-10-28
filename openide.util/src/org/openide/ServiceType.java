@@ -70,7 +70,7 @@ public abstract class ServiceType extends Object implements Serializable, HelpCt
             return Introspector.getBeanInfo(getClass()).getBeanDescriptor().getDisplayName();
         } catch (Exception e) {
             // Catching IntrospectionException, but also maybe NullPointerException...?
-            Logger.global.log(Level.WARNING, null, e);
+            Logger.getLogger(ServiceType.class.getName()).log(Level.WARNING, null, e);
 
             return getClass().getName();
         }

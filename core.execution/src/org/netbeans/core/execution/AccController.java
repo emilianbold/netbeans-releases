@@ -84,7 +84,7 @@ class AccController {
         } catch (final Exception e) {
             javax.swing.SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    Logger.global.log(Level.WARNING, null, e);
+                    Logger.getLogger(AccController.class.getName()).log(Level.WARNING, null, e);
                 }
             });
             return null;

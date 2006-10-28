@@ -240,7 +240,7 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
     public final Node getNodeDelegate () {
         if (! isValid()) {
             Exception e = new IllegalStateException("The data object " + getPrimaryFile() + " is invalid; you may not call getNodeDelegate on it any more; see #17020 and please fix your code"); // NOI18N
-            Logger.global.log(Level.WARNING, null, e);
+            Logger.getLogger(DataObject.class.getName()).log(Level.WARNING, null, e);
         }
         if (nodeDelegate == null) {
             // synchronize on something private, so only one delegate can be created

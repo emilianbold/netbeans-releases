@@ -161,11 +161,11 @@ WHILE:
                         }
                     } catch (InvocationTargetException ex) {
                         // exception thrown
-                        Logger.global.log(Level.WARNING, null, ex);
+                        Logger.getLogger(SystemOption.class.getName()).log(Level.WARNING, null, ex);
                     } catch (IllegalAccessException ex) {
-                        Logger.global.log(Level.WARNING, null, ex);
+                        Logger.getLogger(SystemOption.class.getName()).log(Level.WARNING, null, ex);
                     } catch (IntrospectionException ex) {
-                        Logger.global.log(Level.WARNING, null, ex);
+                        Logger.getLogger(SystemOption.class.getName()).log(Level.WARNING, null, ex);
                     }
                 } else {
                     putProperty(e.getKey(), (e.getValue() == NULL) ? null : e.getValue());
@@ -299,7 +299,7 @@ WHILE:
                 } catch (IntrospectionException ex) {
                     // if we cannot found any info about properties
                     // leave the hashtable empty and only read stream till null is found
-                    Logger.global.log(Level.WARNING, null, ex);
+                    Logger.getLogger(SystemOption.class.getName()).log(Level.WARNING, null, ex);
                 }
 
                 String preread = null;
@@ -350,7 +350,7 @@ WHILE:
                                 String msg = "Cannot call " + write + " for property " + getClass().getName() + "." +
                                     name; // NOI18N
                                 Exceptions.attachMessage(ex, msg);
-                                Logger.global.log(Level.WARNING, null, ex);
+                                Logger.getLogger(SystemOption.class.getName()).log(Level.WARNING, null, ex);
                             }
                         }
                     } else {

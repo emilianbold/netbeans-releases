@@ -144,7 +144,7 @@ public final class NbSheet extends TopComponent {
                     ("Incorrect settings file. Unexpected class returned." // NOI18N
                     + " Expected:" + NbSheet.class.getName() // NOI18N
                     + " Returned:" + tc.getClass().getName()); // NOI18N
-                    Logger.global.log(Level.WARNING, null, exc);
+                    Logger.getLogger(NbSheet.class.getName()).log(Level.WARNING, null, exc);
                     //Fallback to accessor reserved for window system.
                     NbSheet.getDefault();
                 }
@@ -349,7 +349,7 @@ public final class NbSheet extends TopComponent {
                 } catch (IOException ex) {
                     Exceptions.attachLocalizedMessage(ex,
                                                       NbBundle.getBundle(NbSheet.class).getString("EXC_CannotLoadNodes"));
-                    Logger.global.log(Level.WARNING, null, ex);
+                    Logger.getLogger(NbSheet.class.getName()).log(Level.WARNING, null, ex);
                     nodes = new Node[0];
                 }
             }

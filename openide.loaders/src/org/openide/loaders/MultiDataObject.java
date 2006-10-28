@@ -1113,7 +1113,7 @@ public class MultiDataObject extends DataObject {
                 MultiDataObject.this.markInvalid0 ();
             } catch (PropertyVetoException ex) {
                 // silently ignore?
-                Logger.global.log(Level.WARNING, null, ex);
+                Logger.getLogger(MultiDataObject.class.getName()).log(Level.WARNING, null, ex);
             }
         }
     }

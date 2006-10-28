@@ -463,13 +463,13 @@ public final class NodeOp extends Object {
      * @param ex exception to notify
      */
     static void exception(Throwable ex) {
-        Logger.global.log(Level.WARNING, null, ex);
+        Logger.getLogger(NodeOp.class.getName()).log(Level.WARNING, null, ex);
     }
 
     /** Notifies an exception to error manager or prints its it to stderr.
      * @param ex exception to notify
      */
     static void warning(Throwable ex) {
-        Logger.global.log(Level.WARNING, null, ex);
+        Logger.getLogger(NodeOp.class.getName()).log(Level.WARNING, null, ex);
     }
 }

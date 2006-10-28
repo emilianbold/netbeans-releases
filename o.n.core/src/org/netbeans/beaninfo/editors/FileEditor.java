@@ -427,7 +427,7 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
                 try {
                     hideShowButtons(jfc, Boolean.TRUE.equals(pce.getNewValue()));
                 } catch (Exception e) {
-                    Logger.global.log(Level.WARNING, null, e);
+                    Logger.getLogger(FileEditor.class.getName()).log(Level.WARNING, null, e);
                 }
             }
         }

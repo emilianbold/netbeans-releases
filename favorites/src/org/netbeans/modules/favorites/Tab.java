@@ -312,7 +312,7 @@ implements Runnable, ExplorerManager.Provider {
         if(DEFAULT == null) {
             TopComponent tc = WindowManager.getDefault().findTopComponent("favorites"); // NOI18N
             if(DEFAULT == null) {
-                Logger.global.log(Level.WARNING, null,
+                Logger.getLogger(Tab.class.getName()).log(Level.WARNING, null,
                                   new IllegalStateException("Can not find project component for its ID. Returned " +
                                                             tc)); // NOI18N
                 DEFAULT = new Tab();

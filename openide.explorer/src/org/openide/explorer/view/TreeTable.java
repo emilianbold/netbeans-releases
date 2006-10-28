@@ -507,7 +507,7 @@ class TreeTable extends JTable implements Runnable {
 
                         return false;
                     } catch (Exception e1) {
-                        Logger.global.log(Level.WARNING, null, e1);
+                        Logger.getLogger(TreeTable.class.getName()).log(Level.WARNING, null, e1);
 
                         return false;
                     }

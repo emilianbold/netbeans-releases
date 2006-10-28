@@ -62,7 +62,7 @@ final class DefaultSysProcess extends ExecutorTask {
             group.stop();
             group.getRunClassThread().waitForEnd();
         } catch (InterruptedException e) {
-            Logger.global.log(Level.WARNING, null, e);
+            Logger.getLogger(DefaultSysProcess.class.getName()).log(Level.WARNING, null, e);
         }
         ExecutionEngine.closeGroup(group);
         group.kill();  // force RunClass thread get out - end of exec is fired

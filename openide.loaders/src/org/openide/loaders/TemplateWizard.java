@@ -500,7 +500,7 @@ public class TemplateWizard extends WizardDescriptor {
                                                              }
                                                          }
                                                          catch (java.lang.NullPointerException npe) {
-                                                             Logger.global.log(Level.WARNING,
+                                                             Logger.getLogger(TemplateWizard.class.getName()).log(Level.WARNING,
                                                                                null,
                                                                                npe);
                                                          }
@@ -526,7 +526,7 @@ public class TemplateWizard extends WizardDescriptor {
                                                              }
                                                          }
                                                          catch (java.lang.NullPointerException npe) {
-                                                             Logger.global.log(Level.WARNING,
+                                                             Logger.getLogger(TemplateWizard.class.getName()).log(Level.WARNING,
                                                                                null,
                                                                                npe);
                                                          }
@@ -616,7 +616,7 @@ public class TemplateWizard extends WizardDescriptor {
     @Deprecated
     public static void setDescriptionAsResource (DataObject obj, String rsrc) throws IOException {
         if (rsrc != null && rsrc.startsWith ("/")) { // NOI18N
-            Logger.global.warning("auto-stripping leading slash from resource path in TemplateWizard.setDescriptionAsResource: " + rsrc);
+            Logger.getLogger(TemplateWizard.class.getName()).warning("auto-stripping leading slash from resource path in TemplateWizard.setDescriptionAsResource: " + rsrc);
             rsrc = rsrc.substring (1);
         }
         obj.getPrimaryFile ().setAttribute (EA_DESC_RESOURCE, rsrc);

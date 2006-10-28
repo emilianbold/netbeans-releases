@@ -80,7 +80,7 @@ public class ActionsTree extends JTree implements DragGestureListener, DragSourc
                     dge.getDragSource().addDragSourceListener( this );
                     dge.startDrag( dragNoDropCursor, t );
                 } catch( IOException e ) {
-                    Logger.global.log(Level.WARNING, null, e);
+                    Logger.getLogger(ActionsTree.class.getName()).log(Level.WARNING, null, e);
                 }
             }
         }

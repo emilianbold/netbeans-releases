@@ -220,6 +220,6 @@ public abstract class LoaderTransfer {
     * @param e the exception
     */
     private static void maybeReportException (Exception e) {
-        Logger.global.log(Level.WARNING, null, e);
+        Logger.getLogger(LoaderTransfer.class.getName()).log(Level.WARNING, null, e);
     }
 }

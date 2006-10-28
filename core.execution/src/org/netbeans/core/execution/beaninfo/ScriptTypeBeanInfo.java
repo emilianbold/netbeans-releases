@@ -40,7 +40,7 @@ public class ScriptTypeBeanInfo extends SimpleBeanInfo {
         try {
             return new BeanInfo[] { Introspector.getBeanInfo (org.openide.ServiceType.class) };
         } catch (IntrospectionException ie) {
-            Logger.global.log(Level.WARNING, null, ie);
+            Logger.getLogger(ScriptTypeBeanInfo.class.getName()).log(Level.WARNING, null, ie);
             return null;
         }
     }

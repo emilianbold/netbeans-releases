@@ -125,7 +125,7 @@ abstract class ExplorerDragSupport implements DragSourceListener, DragGestureLis
             }
         } catch (InvalidDnDOperationException exc) {
             // cannot start the drag, notify as informational
-            Logger.global.log(Level.WARNING, null, exc);
+            Logger.getLogger(ExplorerDragSupport.class.getName()).log(Level.WARNING, null, exc);
             exDnD.setDnDActive(false);
         } catch (IOException exc) {
             // cannot start the drag, notify user

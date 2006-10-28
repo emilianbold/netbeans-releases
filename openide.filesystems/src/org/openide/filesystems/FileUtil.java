@@ -1443,7 +1443,7 @@ public final class FileUtil extends Object {
                     in.close();
                 }
             } catch (IOException ioe) {
-                Logger.global.log(Level.INFO, null, ioe);
+                Logger.getLogger(FileUtil.class.getName()).log(Level.INFO, null, ioe);
             }
 
             if (b == null) {

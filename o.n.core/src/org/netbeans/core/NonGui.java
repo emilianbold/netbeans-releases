@@ -66,7 +66,7 @@ implements Runnable, org.netbeans.core.startup.RunLevel {
         try {
             LoaderPoolNode.load();
         } catch (IOException ioe) {
-            Logger.global.log(Level.WARNING, null, ioe);
+            Logger.getLogger(NonGui.class.getName()).log(Level.WARNING, null, ioe);
         }
         StartLog.logProgress ("LoaderPool loaded"); // NOI18N
         Splash.getInstance().increment(10);
@@ -186,7 +186,7 @@ implements Runnable, org.netbeans.core.startup.RunLevel {
                                                }
                                                windowSystem.show();
                                            } else {
-                                               Logger.global.log(Level.WARNING,
+                                               Logger.getLogger(NonGui.class.getName()).log(Level.WARNING,
                                                                  null,
                                                                  new NullPointerException("\n\n\nWindowSystem is not supplied!!!\\n\n"));
                                            }

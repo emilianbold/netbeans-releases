@@ -685,7 +685,7 @@ public class BeanNode<T> extends AbstractNode {
             Exceptions.attachMessage(e,
                                      "Bad method: " + clazz.getName() + "." +
                                      nameGetter.getName());
-            Logger.global.log(Level.WARNING, null, e);
+            Logger.getLogger(BeanNode.class.getName()).log(Level.WARNING, null, e);
 
             nameGetter = null;
 

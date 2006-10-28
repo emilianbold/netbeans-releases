@@ -334,7 +334,7 @@ public abstract class NodeAction extends CallableSystemAction implements Context
                                          "You cannot add " +
                                          getClass().getName() +
                                          " directly to a JMenu etc.; use org.openide.awt.Actions.connect instead"); // NOI18N
-                Logger.global.log(Level.WARNING, null, e);
+                Logger.getLogger(NodeAction.class.getName()).log(Level.WARNING, null, e);
             }
         }
     }

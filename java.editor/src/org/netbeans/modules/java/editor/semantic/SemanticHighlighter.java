@@ -120,7 +120,7 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
             
             return ec.getDocument();
         } catch (IOException e) {
-            Logger.global.log(Level.INFO, "SemanticHighlighter: Cannot find DataObject for file: " + FileUtil.getFileDisplayName(file), e);
+            Logger.getLogger(SemanticHighlighter.class.getName()).log(Level.INFO, "SemanticHighlighter: Cannot find DataObject for file: " + FileUtil.getFileDisplayName(file), e);
             return null;
         }
     }
@@ -131,7 +131,7 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
         Document doc = getDocument();
 
         if (doc == null) {
-            Logger.global.log(Level.INFO, "SemanticHighlighter: Cannot get document!");
+            Logger.getLogger(SemanticHighlighter.class.getName()).log(Level.INFO, "SemanticHighlighter: Cannot get document!");
             return ;
         }
 

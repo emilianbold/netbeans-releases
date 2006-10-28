@@ -150,7 +150,7 @@ public abstract class WeakListener implements java.util.EventListener {
                 ); //NOI18N
             }
         } catch (Exception ex) { // from invoke(), should not happen
-            Logger.global.log(Level.WARNING, null, ex);
+            Logger.getLogger(WeakListener.class.getName()).log(Level.WARNING, null, ex);
         }
     }
 

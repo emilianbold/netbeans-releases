@@ -177,7 +177,7 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
                     is.close();
                 }
             } catch (IOException exc) {
-                Logger.global.log(Level.WARNING, null, exc);
+                Logger.getLogger(ToolbarConfiguration.class.getName()).log(Level.WARNING, null, exc);
             }
         }
         checkToolbarRows();
@@ -1020,7 +1020,7 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
                     }
                 }
                 catch (IOException ex) {
-                    Logger.global.log(Level.WARNING, null, ex);
+                    Logger.getLogger(ToolbarConfiguration.class.getName()).log(Level.WARNING, null, ex);
                 }
             }
         });

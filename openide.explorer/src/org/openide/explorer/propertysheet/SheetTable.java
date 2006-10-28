@@ -828,7 +828,7 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
             //displaying "Error fetching property value" in the value area of
             //the propertysheet.  No point in distracting the user with a 
             //stack trace - it's not our bug.
-            Logger.global.log(Level.WARNING, null, ise);
+            Logger.getLogger(SheetTable.class.getName()).log(Level.WARNING, null, ise);
         }
 
         return false;

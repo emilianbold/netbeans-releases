@@ -319,7 +319,7 @@ public class LoaderActionsPanel extends javax.swing.JPanel implements PropertyCh
             if (! SystemAction.class.isAssignableFrom (clazz)) return null;
             return (SystemAction) inst.instanceCreate ();
         } catch (Exception e) {
-            Logger.global.log(Level.WARNING, null, e);
+            Logger.getLogger(LoaderActionsPanel.class.getName()).log(Level.WARNING, null, e);
             return null;
         }
     }
@@ -372,7 +372,7 @@ public class LoaderActionsPanel extends javax.swing.JPanel implements PropertyCh
             } catch (RuntimeException re) {
                 // May happen if actions are misconfigured, bogus icons, etc.
                 // So best to recover semigracefully.
-                Logger.global.log(Level.WARNING, null, re);
+                Logger.getLogger(LoaderActionsPanel.class.getName()).log(Level.WARNING, null, re);
             }
         } else {
             label.setText (NbBundle.getBundle(LoaderActionsPanel.class).getString("LBL_separator_rather_than_action"));

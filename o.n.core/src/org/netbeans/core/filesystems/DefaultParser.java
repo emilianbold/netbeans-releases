@@ -115,14 +115,14 @@ abstract class DefaultParser  extends DefaultHandler {
             if (!isStopException(io)) {
                 if (fo.isValid() && fo.canRead()) {
                     Exceptions.attachMessage(io, "While parsing: " + fo); // NOI18N
-                    Logger.global.log(Level.INFO, null, io);
+                    Logger.getLogger(DefaultParser.class.getName()).log(Level.INFO, null, io);
                     state = ERROR;
                 }
             }
         } catch (SAXException sex) {
             if (!isStopException(sex)) {
                 Exceptions.attachMessage(sex, "While parsing: " + fo); // NOI18N
-                Logger.global.log(Level.INFO, null, sex);
+                Logger.getLogger(DefaultParser.class.getName()).log(Level.INFO, null, sex);
                 state = ERROR;
             }
         } finally {

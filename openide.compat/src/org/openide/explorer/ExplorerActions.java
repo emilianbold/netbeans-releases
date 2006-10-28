@@ -632,7 +632,7 @@ public class ExplorerActions {
             try {
                 return copyCut ? node.clipboardCopy() : node.clipboardCut();
             } catch (java.io.IOException e) {
-                Logger.global.log(Level.WARNING, null, e);
+                Logger.getLogger(ExplorerActions.class.getName()).log(Level.WARNING, null, e);
 
                 return null;
             }

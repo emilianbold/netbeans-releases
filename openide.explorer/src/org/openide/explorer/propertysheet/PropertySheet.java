@@ -1018,7 +1018,7 @@ public class PropertySheet extends JPanel {
                 // ignore - maybe javahelp module is not installed, not so strange
             } catch (Exception ee) {
                 // potentially more serious
-                Logger.global.log(Level.WARNING, null, ee);
+                Logger.getLogger(PropertySheet.class.getName()).log(Level.WARNING, null, ee);
             }
 
             // Did not work.

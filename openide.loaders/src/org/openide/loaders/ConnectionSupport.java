@@ -106,7 +106,7 @@ public class ConnectionSupport extends Object implements ConnectionCookie {
                     //          System.out.println("  node:"+n); // NOI18N
                 } catch (IOException e) {
                     // node that cannot produce handle => remove it
-                    Logger.global.log(Level.WARNING, null, e);
+                    Logger.getLogger(ConnectionSupport.class.getName()).log(Level.WARNING, null, e);
                     it.remove ();
                     // go on
                     continue;

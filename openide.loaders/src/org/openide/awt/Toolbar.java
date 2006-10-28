@@ -232,7 +232,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
                                                                        backingFolder.delete();
                                                                    }
                                                                    catch (java.io.IOException e) {
-                                                                       Logger.global.log(Level.WARNING,
+                                                                       Logger.getLogger(Toolbar.class.getName()).log(Level.WARNING,
                                                                                          null,
                                                                                          e);
                                                                    }
@@ -1024,10 +1024,10 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
                     }
                 }
                 catch (java.io.IOException ex) {
-                    Logger.global.log(Level.WARNING, null, ex);
+                    Logger.getLogger(Toolbar.class.getName()).log(Level.WARNING, null, ex);
                 }
                 catch (java.lang.ClassNotFoundException ex) {
-                    Logger.global.log(Level.WARNING, null, ex);
+                    Logger.getLogger(Toolbar.class.getName()).log(Level.WARNING, null, ex);
                 }
                 finally {
                     cookiesToObjects.clear();

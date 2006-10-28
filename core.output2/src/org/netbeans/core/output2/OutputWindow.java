@@ -114,7 +114,7 @@ public class OutputWindow extends AbstractOutputWindow {
                     ("Incorrect settings file. Unexpected class returned." // NOI18N
                     + " Expected:" + OutputWindow.class.getName() // NOI18N
                     + " Returned:" + tc.getClass().getName()); // NOI18N
-                    Logger.global.log(Level.WARNING, null, exc);
+                    Logger.getLogger(OutputWindow.class.getName()).log(Level.WARNING, null, exc);
                     //Fallback to accessor reserved for window system.
                     OutputWindow.getDefault();
                 }

@@ -381,7 +381,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
             manager.setSelectedNodes (new Node [] { newSubfolder });
             view.invokeInplaceEditing ();
         } catch (PropertyVetoException pve) {
-            Logger.global.log(Level.WARNING, null, pve);
+            Logger.getLogger(TemplatesPanel.class.getName()).log(Level.WARNING, null, pve);
         }
         
     }//GEN-LAST:event_newFolderButtonActionPerformed
@@ -393,7 +393,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
                 nodes[i].destroy();
             }
             catch (IOException ioe) {
-                Logger.global.log(Level.WARNING, null, ioe);
+                Logger.getLogger(TemplatesPanel.class.getName()).log(Level.WARNING, null, ioe);
             }
         }
     }//GEN-LAST:event_deleteButtonActionPerformed
@@ -556,7 +556,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         try {
             sourceDO = DataObject.find (sourceFO);
         } catch (DataObjectNotFoundException donfe) {
-            Logger.global.log(Level.WARNING, null, donfe);
+            Logger.getLogger(TemplatesPanel.class.getName()).log(Level.WARNING, null, donfe);
         }
         assert sourceDO != null : "DataObject found for FileObject " + sourceFO;
         DataFolder folder = preferred == null ? DataFolder.findFolder (getTemplatesRoot ()) : preferred;
@@ -565,7 +565,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
             template = sourceDO.copy (folder);
             template.setTemplate (true);
         } catch (IOException ioe) {
-            Logger.global.log(Level.WARNING, null, ioe);
+            Logger.getLogger(TemplatesPanel.class.getName()).log(Level.WARNING, null, ioe);
         }
         return template;
     }
@@ -598,7 +598,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
             df = DataFolder.create (pref, NbBundle.getBundle(TemplatesPanel.class).getString("TXT_TemplatesPanel_NewFolderName")); // NOI18N
             assert df != null : "New subfolder found in folder " + pref;
         } catch (IOException ioe) {
-            Logger.global.log(Level.WARNING, null, ioe);
+            Logger.getLogger(TemplatesPanel.class.getName()).log(Level.WARNING, null, ioe);
         }
         
         return df;
@@ -609,7 +609,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         try {
             return source.copy (source.getFolder ());
         } catch (IOException ioe) {
-            Logger.global.log(Level.WARNING, null, ioe);
+            Logger.getLogger(TemplatesPanel.class.getName()).log(Level.WARNING, null, ioe);
         }
         return null;
     }

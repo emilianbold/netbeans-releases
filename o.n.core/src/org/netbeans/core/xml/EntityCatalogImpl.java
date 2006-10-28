@@ -129,10 +129,10 @@ public final class EntityCatalogImpl extends EntityCatalog {
                 reader.parse(src);
             } catch (SAXException ex) {
                 // ignore
-                Logger.global.log(Level.WARNING, null, ex);
+                Logger.getLogger(EntityCatalogImpl.class.getName()).log(Level.WARNING, null, ex);
             } catch (IOException ex) {
                 // ignore
-        	Logger.global.log(Level.WARNING, null, ex);
+        	Logger.getLogger(EntityCatalogImpl.class.getName()).log(Level.WARNING, null, ex);
     	    }
         }
 

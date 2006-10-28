@@ -560,7 +560,7 @@ final class TreeViewDropSupport implements DropTargetListener, Runnable {
             }
         } catch (Exception e) {
             // Pending: add annotation or remove try/catch block
-            Logger.global.log(Level.WARNING, null, e);
+            Logger.getLogger(TreeViewDropSupport.class.getName()).log(Level.WARNING, null, e);
         }
     }
 

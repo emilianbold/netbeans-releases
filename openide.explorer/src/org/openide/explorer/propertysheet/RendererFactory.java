@@ -187,7 +187,7 @@ final class RendererFactory {
             }
         } catch (Exception e) {
             result = getExceptionRenderer(e);
-            Logger.global.log(Level.WARNING, null, e);
+            Logger.getLogger(RendererFactory.class.getName()).log(Level.WARNING, null, e);
         }
 
         result.setEnabled(prop.canWrite());

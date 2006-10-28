@@ -349,7 +349,7 @@ class EditablePropertyDisplayer extends EditorPropertyDisplayer implements Prope
                     editor.setValue(getProperty().getValue());
                 } catch (Exception e) {
                     //well, we can't solve everything
-                    Logger.global.log(Level.WARNING, null, e);
+                    Logger.getLogger(EditablePropertyDisplayer.class.getName()).log(Level.WARNING, null, e);
                 }
 
                 //Now attach the env back to the property editor, so it will

@@ -45,7 +45,7 @@ final class ExternalUtil extends Object {
     /** Notifies an exception.
      */
     public static void exception(Exception ex) {
-        Logger.global.log(Level.WARNING, null, ex);
+        Logger.getLogger(ExternalUtil.class.getName()).log(Level.WARNING, null, ex);
     }
 
     /** Copies anotation.

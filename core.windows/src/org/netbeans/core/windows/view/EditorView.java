@@ -200,7 +200,7 @@ public class EditorView extends ViewElement {
                     label.setMinimumSize(new Dimension(0, 0)); // XXX To be able shrink the area.
                     add(label, BorderLayout.CENTER);
                 } else {
-                    Logger.global.log(Level.WARNING, null,
+                    Logger.getLogger(EditorView.class.getName()).log(Level.WARNING, null,
                                       new java.lang.NullPointerException("Image not found at " +
                                                                          imageSource)); // NOI18N
                 }

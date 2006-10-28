@@ -391,7 +391,7 @@ final class ProxyNode extends AbstractNode {
                 if (!o.equals(original[i].getValue(attributeName))) {
                     // Optionally log it and return null
                     if (Boolean.getBoolean("netbeans.ps.logDifferentValues")) {
-                        Logger.global.log(Level.WARNING, null,
+                        Logger.getLogger(ProxyNode.class.getName()).log(Level.WARNING, null,
                                           new DifferentValuesException("Different values in attribute " +
                                                                        attributeName +
                                                                        " for proxy property " +

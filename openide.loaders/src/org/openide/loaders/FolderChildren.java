@@ -143,7 +143,7 @@ implements PropertyChangeListener, ChangeListener {
                 return new Node[0];
             }
         } catch (DataObjectNotFoundException e) {
-            Logger.global.log(Level.INFO, null, e);
+            Logger.getLogger(FolderChildren.class.getName()).log(Level.INFO, null, e);
             return new Node[0];
         }
     }
@@ -164,7 +164,7 @@ implements PropertyChangeListener, ChangeListener {
                 task.waitFinished();
                 err.fine("getNodes(true): waitFinished"); // NOI18N
             } else {
-                Logger.global.log(Level.WARNING, null,
+                Logger.getLogger(FolderChildren.class.getName()).log(Level.WARNING, null,
                                   new java.lang.IllegalStateException("getNodes(true) called while holding the Children.MUTEX"));
             }
         }

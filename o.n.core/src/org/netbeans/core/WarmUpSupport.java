@@ -86,7 +86,7 @@ class WarmUpSupport implements Runnable {
                     }
                 }
                 catch (Exception ex) {
-                    Logger.global.log(Level.WARNING, null, ex);
+                    Logger.getLogger(WarmUpSupport.class.getName()).log(Level.WARNING, null, ex);
                 }
             }
         }

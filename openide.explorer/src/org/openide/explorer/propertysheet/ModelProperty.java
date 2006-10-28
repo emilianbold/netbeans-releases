@@ -122,7 +122,7 @@ class ModelProperty extends Property {
                     "ExPropertyModel if you only need to wrap a Node.Property " +
                     "object.  PropertyModel will be deprecated soon."
                 ); //NOI18N
-            Logger.global.log(Level.WARNING, null, uoe);
+            Logger.getLogger(ModelProperty.class.getName()).log(Level.WARNING, null, uoe);
 
             return (Property) ((ExPropertyModel) mdl).getFeatureDescriptor();
         } else if (mdl != null) {

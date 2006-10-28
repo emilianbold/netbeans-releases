@@ -488,7 +488,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                     int lastPos = ((QuietEditorPane) p).getLastPosition();
 
                     if (lastPos == -1) {
-                        Logger.global.log(Level.WARNING, null,
+                        Logger.getLogger(CloneableEditor.class.getName()).log(Level.WARNING, null,
                                           new java.lang.IllegalStateException("Pane=" +
                                                                               p +
                                                                               "was not initialized yet!"));
@@ -500,7 +500,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
 
                     // Relevant only if document is non-null?!
                     if (doc != null) {
-                        Logger.global.log(Level.WARNING, null,
+                        Logger.getLogger(CloneableEditor.class.getName()).log(Level.WARNING, null,
                                           new java.lang.IllegalStateException("Caret is null in editor pane=" +
                                                                               p +
                                                                               "\nsupport=" +

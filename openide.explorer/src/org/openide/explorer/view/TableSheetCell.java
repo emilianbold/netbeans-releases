@@ -284,9 +284,9 @@ class TableSheetCell extends AbstractCellEditor implements TableModelListener, P
                     tooltipText = tooltipValue.toString();
                 }
             } catch (IllegalAccessException eaE) {
-                Logger.global.log(Level.WARNING, null, eaE);
+                Logger.getLogger(TableSheetCell.class.getName()).log(Level.WARNING, null, eaE);
             } catch (InvocationTargetException itE) {
-                Logger.global.log(Level.WARNING, null, itE);
+                Logger.getLogger(TableSheetCell.class.getName()).log(Level.WARNING, null, itE);
             }
 
             propPanel.setToolTipText(createHtmlTooltip(tooltipText, propPanel.getFont()));

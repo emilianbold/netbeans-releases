@@ -898,7 +898,7 @@ public class XMLDataObject extends MultiDataObject {
         } catch (SAXException ex) {
             Exceptions.attachLocalizedMessage(ex,
                                               "System does not contain JAXP 1.1 compliant parser!"); // NOI18N
-            Logger.global.log(Level.WARNING, null, ex);
+            Logger.getLogger(XMLDataObject.class.getName()).log(Level.WARNING, null, ex);
         }
         
         

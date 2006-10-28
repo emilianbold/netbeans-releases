@@ -95,7 +95,7 @@ class SplitSubModel {
     public boolean addMode(ModeImpl mode, SplitConstraint[] constraints) {
         // PENDING do we support empty constraints?
         if(mode == null || constraints == null) {
-            Logger.global.log(Level.WARNING, null,
+            Logger.getLogger(SplitSubModel.class.getName()).log(Level.WARNING, null,
                               new java.lang.IllegalArgumentException("Mode=" +
                                                                      mode +
                                                                      " constraints=" +
@@ -121,7 +121,7 @@ class SplitSubModel {
     // XXX
     public boolean addModeToSide(ModeImpl mode, ModeImpl attachMode, String side) {
         if(mode == null || mode.getState() == Constants.MODE_STATE_SEPARATED) {
-            Logger.global.log(Level.WARNING, null,
+            Logger.getLogger(SplitSubModel.class.getName()).log(Level.WARNING, null,
                               new java.lang.IllegalArgumentException("Mode=" +
                                                                      mode));
             return false;
@@ -145,7 +145,7 @@ class SplitSubModel {
     // XXX
     public boolean addModeAround(ModeImpl mode, String side) {
         if(mode == null || mode.getState() == Constants.MODE_STATE_SEPARATED) {
-            Logger.global.log(Level.WARNING, null,
+            Logger.getLogger(SplitSubModel.class.getName()).log(Level.WARNING, null,
                               new java.lang.IllegalArgumentException("Mode=" +
                                                                      mode));
             return false;
@@ -167,7 +167,7 @@ class SplitSubModel {
     // XXX
     public boolean addModeAroundEditor(ModeImpl mode, String side) {
         if(mode == null || mode.getState() == Constants.MODE_STATE_SEPARATED) {
-            Logger.global.log(Level.WARNING, null,
+            Logger.getLogger(SplitSubModel.class.getName()).log(Level.WARNING, null,
                               new java.lang.IllegalArgumentException("Mode=" +
                                                                      mode));
             return false;
@@ -481,7 +481,7 @@ class SplitSubModel {
                 Node child = (Node)it.next();
 
                 if(child.getParent() != splitNode) {
-                    Logger.global.log(Level.WARNING, null,
+                    Logger.getLogger(SplitSubModel.class.getName()).log(Level.WARNING, null,
                                       new java.lang.IllegalStateException("Node->" +
                                                                           child +
                                                                           " has wrong parent->" +
@@ -853,7 +853,7 @@ class SplitSubModel {
             for(Iterator it = index2child.values().iterator(); it.hasNext(); ) {
                 Node child = (Node)it.next();
                 if(child.getParent() != this) {
-                    Logger.global.log(Level.WARNING, null,
+                    Logger.getLogger(SplitSubModel.class.getName()).log(Level.WARNING, null,
                                       new java.lang.IllegalStateException("Node " +
                                                                           child +
                                                                           " is a child in split " +

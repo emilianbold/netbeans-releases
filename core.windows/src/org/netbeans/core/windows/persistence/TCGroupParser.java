@@ -220,7 +220,7 @@ class TCGroupParser {
                         is.close();
                     }
                 } catch (IOException exc) {
-                    Logger.global.log(Level.WARNING, null, exc);
+                    Logger.getLogger(TCGroupParser.class.getName()).log(Level.WARNING, null, exc);
                 }
             }
                         
@@ -293,7 +293,7 @@ class TCGroupParser {
             // #24844. Repair the wrongly saved "null" string
             // as release number.
             if("null".equals(internalConfig.moduleCodeNameRelease)) { // NOI18N
-                Logger.global.log(Level.WARNING, null,
+                Logger.getLogger(TCGroupParser.class.getName()).log(Level.WARNING, null,
                                   new IllegalStateException("Module release code was saved as null string" +
                                                             " for module " +
                                                             internalConfig.moduleCodeNameBase +
@@ -405,7 +405,7 @@ class TCGroupParser {
                             osw.close();
                         }
                     } catch (IOException exc) {
-                        Logger.global.log(Level.WARNING, null, exc);
+                        Logger.getLogger(TCGroupParser.class.getName()).log(Level.WARNING, null, exc);
                     }
                     if (lock != null) {
                         lock.releaseLock();

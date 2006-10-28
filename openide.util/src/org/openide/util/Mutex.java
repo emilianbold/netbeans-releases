@@ -1445,7 +1445,7 @@ public final class Mutex extends Object {
 
                         return;
                     } catch (InterruptedException e) {
-                        Logger.global.log(Level.WARNING, null, e);
+                        Logger.getLogger(Mutex.class.getName()).log(Level.WARNING, null, e);
                     }
                 }
             } finally {

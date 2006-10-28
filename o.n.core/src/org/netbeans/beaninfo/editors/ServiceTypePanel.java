@@ -142,7 +142,7 @@ public class ServiceTypePanel extends org.netbeans.beaninfo.ExplorerPanel {
                                                         nodes[i]
                                                     });
         } catch (java.beans.PropertyVetoException ex) {
-            Logger.global.log(Level.WARNING, null, ex);
+            Logger.getLogger(ServiceTypePanel.class.getName()).log(Level.WARNING, null, ex);
         }
 
         firePropertyChange ();
@@ -200,11 +200,11 @@ public class ServiceTypePanel extends org.netbeans.beaninfo.ExplorerPanel {
                     services.add (service);
                 }
             } catch (java.beans.IntrospectionException ex) {
-                Logger.global.log(Level.WARNING, null, ex);
+                Logger.getLogger(ServiceTypePanel.class.getName()).log(Level.WARNING, null, ex);
             } catch (InstantiationException ex) {
-                Logger.global.log(Level.WARNING, null, ex);
+                Logger.getLogger(ServiceTypePanel.class.getName()).log(Level.WARNING, null, ex);
             } catch (IllegalAccessException ex) {
-                Logger.global.log(Level.WARNING, null, ex);
+                Logger.getLogger(ServiceTypePanel.class.getName()).log(Level.WARNING, null, ex);
             }
         }
         try {
@@ -213,7 +213,7 @@ public class ServiceTypePanel extends org.netbeans.beaninfo.ExplorerPanel {
                 services.add (none);
             }
         } catch (java.beans.IntrospectionException ex) {
-            Logger.global.log(Level.WARNING, null, ex);
+            Logger.getLogger(ServiceTypePanel.class.getName()).log(Level.WARNING, null, ex);
         }
         return l;
     }

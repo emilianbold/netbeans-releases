@@ -510,7 +510,7 @@ final class ExplorerActionsImpl {
             try {
                 return copyCut ? node.clipboardCopy() : node.clipboardCut();
             } catch (IOException e) {
-                Logger.global.log(Level.WARNING, null, e);
+                Logger.getLogger(ExplorerActionsImpl.class.getName()).log(Level.WARNING, null, e);
 
                 return null;
             }

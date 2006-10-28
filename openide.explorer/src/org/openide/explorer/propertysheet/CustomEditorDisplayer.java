@@ -218,7 +218,7 @@ final class CustomEditorDisplayer implements PropertyDisplayer_Editable {
             } catch (Exception e) {
                 //IllegalAccessException, etc.
                 //                System.err.println("  caught an exception, aborting");
-                Logger.global.log(Level.WARNING, null, e);
+                Logger.getLogger(CustomEditorDisplayer.class.getName()).log(Level.WARNING, null, e);
 
                 try {
                     if (getProperty().canRead()) {
@@ -409,7 +409,7 @@ final class CustomEditorDisplayer implements PropertyDisplayer_Editable {
             getPropertyEditor().setValue(originalValue);
         } catch (Exception e) {
             //should not happen - the value came from the property
-            Logger.global.log(Level.WARNING, null, e);
+            Logger.getLogger(CustomEditorDisplayer.class.getName()).log(Level.WARNING, null, e);
         }
     }
 

@@ -359,7 +359,7 @@ implements FileChangeListener, DataObject.Container {
             try {
                 REFRESH_TIME = Integer.parseInt(sysProp);
             } catch (NumberFormatException nfe) {
-                Logger.global.log(Level.WARNING, null, nfe);
+                Logger.getLogger(FolderList.class.getName()).log(Level.WARNING, null, nfe);
             }
         }
         if (REFRESH_TIME < 0) {
@@ -404,7 +404,7 @@ implements FileChangeListener, DataObject.Container {
                         refresh();
                     }
                 } catch (DataObjectNotFoundException ex) {
-                    Logger.global.log(Level.WARNING, null, ex);
+                    Logger.getLogger(FolderList.class.getName()).log(Level.WARNING, null, ex);
                     // file without data object => no changes
                 }
             }
@@ -639,7 +639,7 @@ implements FileChangeListener, DataObject.Container {
                     map.put(fo, ref);
                 }
                 catch (org.openide.loaders.DataObjectNotFoundException ex) {
-                    Logger.global.log(Level.WARNING, null, ex);
+                    Logger.getLogger(FolderList.class.getName()).log(Level.WARNING, null, ex);
                 }
             }
             // add if accepted

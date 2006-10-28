@@ -251,7 +251,7 @@ implements RepositoryListener {
                     root = DataObject.find(fsystem.getRoot());
                 }
                 catch (DataObjectNotFoundException e) {
-                    Logger.global.log(Level.WARNING, null, e);
+                    Logger.getLogger(DataSystem.class.getName()).log(Level.WARNING, null, e);
                     // root will remain null and will be accepted
                     // (as that seems safer than not accepting it)
                 }
@@ -283,7 +283,7 @@ implements RepositoryListener {
                         root = DataObject.find(fo);
                     }
                     catch (DataObjectNotFoundException e) {
-                        Logger.global.log(Level.WARNING, null, e);
+                        Logger.getLogger(DataSystem.class.getName()).log(Level.WARNING, null, e);
                     }
                     if ((root instanceof DataFolder) &&
                         getDS().filter.acceptDataObject(root)) {

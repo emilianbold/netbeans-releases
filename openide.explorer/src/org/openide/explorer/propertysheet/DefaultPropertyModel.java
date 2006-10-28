@@ -128,7 +128,7 @@ public @Deprecated class DefaultPropertyModel extends Object implements ExProper
                 }
             }
         } catch (Exception e) {
-            Logger.global.log(Level.WARNING, null, e);
+            Logger.getLogger(DefaultPropertyModel.class.getName()).log(Level.WARNING, null, e);
         }
     }
 
@@ -170,7 +170,7 @@ public @Deprecated class DefaultPropertyModel extends Object implements ExProper
         try {
             return (readMethod == null) ? null : readMethod.invoke(bean, new Object[] {  });
         } catch (IllegalAccessException e) {
-            Logger.global.log(Level.WARNING, null, e);
+            Logger.getLogger(DefaultPropertyModel.class.getName()).log(Level.WARNING, null, e);
             throw new InvocationTargetException(e);
         }
     }
@@ -187,7 +187,7 @@ public @Deprecated class DefaultPropertyModel extends Object implements ExProper
                 donotfire = false;
             }
         } catch (IllegalAccessException e) {
-            Logger.global.log(Level.WARNING, null, e);
+            Logger.getLogger(DefaultPropertyModel.class.getName()).log(Level.WARNING, null, e);
             throw new InvocationTargetException(e);
         }
     }

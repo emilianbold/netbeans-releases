@@ -310,7 +310,7 @@ public abstract class DocumentLine extends Line {
                 NbDocument.addAnnotation(doc, fap.getAnnotationPosition(), -1, anno);
             }
         } catch (IOException ex) {
-            Logger.global.log(Level.WARNING, null, ex);
+            Logger.getLogger(DocumentLine.class.getName()).log(Level.WARNING, null, ex);
         }
     }
 
@@ -349,7 +349,7 @@ public abstract class DocumentLine extends Line {
                 doc.render(fap);
                 annoPos = fap.getAnnotationPosition();
             } catch (IOException ex) {
-                Logger.global.log(Level.WARNING, null, ex);
+                Logger.getLogger(DocumentLine.class.getName()).log(Level.WARNING, null, ex);
             }
         }
 
@@ -406,7 +406,7 @@ public abstract class DocumentLine extends Line {
                     try {
                         retStringArray[0] = doc.getText(lineStart, lineEnd - lineStart);
                     } catch (BadLocationException ex) {
-                        Logger.global.log(Level.WARNING, null, ex);
+                        Logger.getLogger(DocumentLine.class.getName()).log(Level.WARNING, null, ex);
                         retStringArray[0] = null;
                     }
 
@@ -460,7 +460,7 @@ public abstract class DocumentLine extends Line {
         try {
             p = pos.getPosition();
         } catch (IOException ex) {
-            Logger.global.log(Level.WARNING, null, ex);
+            Logger.getLogger(DocumentLine.class.getName()).log(Level.WARNING, null, ex);
             p = null;
         }
 
@@ -683,7 +683,7 @@ public abstract class DocumentLine extends Line {
                     NbDocument.addAnnotation(doc, position.getPosition(), length, anno);
                 }
             } catch (IOException ex) {
-                Logger.global.log(Level.WARNING, null, ex);
+                Logger.getLogger(DocumentLine.class.getName()).log(Level.WARNING, null, ex);
             }
         }
 
@@ -729,7 +729,7 @@ public abstract class DocumentLine extends Line {
                                 retStringArray[0] = doc.getText(position.getOffset(), getLength());
                             }
                         } catch (BadLocationException ex) {
-                            Logger.global.log(Level.WARNING, null, ex);
+                            Logger.getLogger(DocumentLine.class.getName()).log(Level.WARNING, null, ex);
                             retStringArray[0] = null;
                         }
 
@@ -756,7 +756,7 @@ public abstract class DocumentLine extends Line {
                             NbDocument.addAnnotation(doc, position.getPosition(), getLength(), anno);
                         }
                     } catch (IOException ex) {
-                        Logger.global.log(Level.WARNING, null, ex);
+                        Logger.getLogger(DocumentLine.class.getName()).log(Level.WARNING, null, ex);
                     }
                 } else {
                     if (anno.isInDocument()) {

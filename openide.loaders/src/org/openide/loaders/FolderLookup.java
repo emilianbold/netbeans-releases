@@ -246,7 +246,7 @@ public class FolderLookup extends FolderInstance {
     
     /** Notifies the exception. Helper method. */
     private static void exception (Exception e) {
-        Logger.global.log(Level.WARNING, null, e);
+        Logger.getLogger(FolderLookup.class.getName()).log(Level.WARNING, null, e);
     }
     private static void exception(Exception e, FileObject fo) {
         Exceptions.attachMessage(e, "Bad file: " + fo); // NOI18N

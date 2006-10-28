@@ -1182,7 +1182,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
                         return new Index (DataFolder.this, this);
                     }
                 } catch (FileStateInvalidException ex) {
-                    Logger.global.log(Level.WARNING, null, ex);
+                    Logger.getLogger(DataFolder.class.getName()).log(Level.WARNING, null, ex);
                 }
             }
             return super.getCookie (clazz);
@@ -1322,7 +1322,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
                         }
                     }
                 } catch( IOException ioE ) {
-                    Logger.global.log(Level.WARNING, null, ioE);
+                    Logger.getLogger(DataFolder.class.getName()).log(Level.WARNING, null, ioE);
                 }
             }
             return result;
@@ -1339,7 +1339,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
                     return textURIListToFileList( uriList );
                 }
             } catch( UnsupportedFlavorException ex ) {
-                Logger.global.log(Level.WARNING, null, ex);
+                Logger.getLogger(DataFolder.class.getName()).log(Level.WARNING, null, ex);
             } catch( IOException ex ) {
                 // Ignore. Can be just "Owner timed out" from sun.awt.X11.XSelection.getData.
                 Logger.getLogger(DataFlavor.class.getName()).log(Level.FINE, null, ex);

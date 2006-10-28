@@ -284,7 +284,7 @@ public static final class BrowserReplacer implements java.io.Externalizable {
         }
         catch (java.lang.Exception exc) {
             // unknown exception - write log message & restore browser
-            Logger.global.log(Level.WARNING, null, exc);
+            Logger.getLogger(HtmlBrowserComponent.class.getName()).log(Level.WARNING, null, exc);
         }
         
         bComp = new HtmlBrowserComponent(statLine, toolbar);

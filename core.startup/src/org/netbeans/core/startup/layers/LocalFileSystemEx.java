@@ -129,7 +129,7 @@ public final class LocalFileSystemEx extends LocalFileSystem {
                         }
                     }
                 } else {
-                    Logger.global.log(Level.WARNING, null,
+                    Logger.getLogger(LocalFileSystemEx.class.getName()).log(Level.WARNING, null,
                                       new Throwable("Can\'t unlock file " + name +
                                                     ", it\'s lock was not found or it wasn\'t locked."));
                 }

@@ -409,7 +409,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
                     fileLock = takeLock ();
                     ERR.fine("changeFile takeLock: " + fileLock + " for " + fileObject); // NOI18N
                 } catch (IOException e) {
-                    Logger.global.log(Level.WARNING, null, e);
+                    Logger.getLogger(DataEditorSupport.class.getName()).log(Level.WARNING, null, e);
                 }
             }
             

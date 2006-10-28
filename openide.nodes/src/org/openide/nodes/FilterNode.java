@@ -578,7 +578,7 @@ public class FilterNode extends Node {
         try {
             super.destroy();
         } catch (IOException ex) {
-            Logger.global.log(Level.WARNING, null, ex);
+            Logger.getLogger(FilterNode.class.getName()).log(Level.WARNING, null, ex);
         }
     }
 

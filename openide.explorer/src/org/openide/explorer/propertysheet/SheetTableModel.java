@@ -186,9 +186,9 @@ final class SheetTableModel implements TableModel, PropertyChangeListener, Prope
                 ); //NOI18N
             }
         } catch (IllegalAccessException iae) {
-            Logger.global.log(Level.WARNING, null, iae);
+            Logger.getLogger(SheetTableModel.class.getName()).log(Level.WARNING, null, iae);
         } catch (java.lang.reflect.InvocationTargetException ite) {
-            Logger.global.log(Level.WARNING, null, ite);
+            Logger.getLogger(SheetTableModel.class.getName()).log(Level.WARNING, null, ite);
         }
     }
 

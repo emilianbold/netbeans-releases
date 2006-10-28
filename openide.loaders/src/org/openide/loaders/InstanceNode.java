@@ -231,11 +231,11 @@ final class InstanceNode extends DataNode implements Runnable {
             }
         } catch (Exception e) {
             // Problem ==>> use default icon
-            Logger.global.log(Level.WARNING, null, e);
+            Logger.getLogger(InstanceNode.class.getName()).log(Level.WARNING, null, e);
         } catch (LinkageError e) {
             // #30650 - catch also LinkageError.
             // Problem ==>> use default icon
-            Logger.global.log(Level.WARNING, null, e);
+            Logger.getLogger(InstanceNode.class.getName()).log(Level.WARNING, null, e);
         }
 
         return beanInfoIcon;
@@ -284,7 +284,7 @@ final class InstanceNode extends DataNode implements Runnable {
             return;
         }
         } catch (Exception e) {
-            Logger.global.log(Level.WARNING, null, e);
+            Logger.getLogger(InstanceNode.class.getName()).log(Level.WARNING, null, e);
             setDisplayName(getDataObject().getName());
             return;
         }
@@ -458,14 +458,14 @@ final class InstanceNode extends DataNode implements Runnable {
                 orig.put (p);
             }
         } catch (ClassNotFoundException ex) {
-            Logger.global.log(Level.WARNING, null, ex);
+            Logger.getLogger(InstanceNode.class.getName()).log(Level.WARNING, null, ex);
         } catch (IOException ex) {
-            Logger.global.log(Level.WARNING, null, ex);
+            Logger.getLogger(InstanceNode.class.getName()).log(Level.WARNING, null, ex);
         } catch (IntrospectionException ex) {
-            Logger.global.log(Level.WARNING, null, ex);
+            Logger.getLogger(InstanceNode.class.getName()).log(Level.WARNING, null, ex);
         } catch (LinkageError ex) {
             // #30650 - catch also LinkageError.
-            Logger.global.log(Level.WARNING, null, ex);
+            Logger.getLogger(InstanceNode.class.getName()).log(Level.WARNING, null, ex);
         }
     }
     

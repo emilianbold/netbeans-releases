@@ -47,7 +47,7 @@ public class DepManager implements DeploymentManager {
     }
 
     public ProgressObject distribute(Target[] targets, final File file, File file2) throws java.lang.IllegalStateException {
-        java.util.logging.Logger.global.log(java.util.logging.Level.FINEST,"Deploying " + file + " with " + file2);
+        java.util.logging.Logger.getLogger(DepManager.class.getName()).log(java.util.logging.Level.FINEST,"Deploying " + file + " with " + file2);
 
         final ProgObject po = new ProgObject(this, targets, file, file2);
         Runnable r = new Runnable() {

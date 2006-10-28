@@ -107,7 +107,7 @@ public class FileLock extends Object {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
 
         if (lockedBy != null) {
-            Logger.global.log(Level.WARNING, null,
+            Logger.getLogger(FileLock.class.getName()).log(Level.WARNING, null,
                               new Exception("Not released lock for file: " +
                                             toString() +
                                             " (traped in finalizer)").initCause(lockedBy));//NOI18N

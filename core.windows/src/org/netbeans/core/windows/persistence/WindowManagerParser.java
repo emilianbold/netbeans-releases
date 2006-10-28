@@ -404,7 +404,7 @@ public class WindowManagerParser {
             } catch (IOException exc) {
                 //If reading of one Mode fails we want to log message
                 //and continue.
-                Logger.global.log(Level.WARNING, null, exc);
+                Logger.getLogger(WindowManagerParser.class.getName()).log(Level.WARNING, null, exc);
                 continue;
             }
             boolean modeAccepted = acceptMode(modeParser, modeCfg);
@@ -526,7 +526,7 @@ public class WindowManagerParser {
             } catch (IOException exc) {
                 //If reading of one group fails we want to log message
                 //and continue.
-                Logger.global.log(Level.WARNING, null, exc);
+                Logger.getLogger(WindowManagerParser.class.getName()).log(Level.WARNING, null, exc);
                 continue;
             }
             boolean groupAccepted = acceptGroup(groupParser, groupCfg);
@@ -835,7 +835,7 @@ public class WindowManagerParser {
                         is.close();
                     }
                 } catch (IOException exc) {
-                    Logger.global.log(Level.WARNING, null, exc);
+                    Logger.getLogger(WindowManagerParser.class.getName()).log(Level.WARNING, null, exc);
                 }
             }
             
@@ -1683,7 +1683,7 @@ public class WindowManagerParser {
                             osw.close();
                         }
                     } catch (IOException exc) {
-                        Logger.global.log(Level.WARNING, null, exc);
+                        Logger.getLogger(WindowManagerParser.class.getName()).log(Level.WARNING, null, exc);
                     }
                     if (lock != null) {
                         lock.releaseLock();

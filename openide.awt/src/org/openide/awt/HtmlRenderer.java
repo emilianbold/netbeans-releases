@@ -597,7 +597,7 @@ public final class HtmlRenderer {
                 if (STRICT_HTML) {
                     throw aib;
                 } else {
-                    Logger.global.log(Level.WARNING, null, aib);
+                    Logger.getLogger(HtmlRenderer.class.getName()).log(Level.WARNING, null, aib);
 
                     return renderPlainString(s, g, x, y, w, h, f, defaultColor, style, paint);
                 }

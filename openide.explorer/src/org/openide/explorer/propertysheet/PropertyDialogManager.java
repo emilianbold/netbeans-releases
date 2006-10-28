@@ -546,7 +546,7 @@ final class PropertyDialogManager implements VetoableChangeListener, ActionListe
         } else {
             // if there is not user message don't bother user, just log an
             // exception
-            Logger.global.log(Level.INFO, null, e);
+            Logger.getLogger(PropertyDialogManager.class.getName()).log(Level.INFO, null, e);
         }
     }
 

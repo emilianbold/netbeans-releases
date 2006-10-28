@@ -151,7 +151,7 @@ public final class Services extends ServiceType.Registry implements LookupListen
                 try {
                     dobj = InstanceDataObject.create(dobj.getFolder(), dobj.getPrimaryFile().getName(), st, null);
                 } catch (IOException ex) {
-                    Logger.global.log(Level.WARNING, null, ex);
+                    Logger.getLogger(Services.class.getName()).log(Level.WARNING, null, ex);
                 }
                 services.remove(st);
             } else {
@@ -187,7 +187,7 @@ public final class Services extends ServiceType.Registry implements LookupListen
                 parent.getPrimaryFile().
                     setAttribute("OpenIDE-Folder-Order", orderAttr.toString()); // NOI18N
             } catch (IOException ex) {
-                Logger.global.log(Level.WARNING, null, ex);
+                Logger.getLogger(Services.class.getName()).log(Level.WARNING, null, ex);
             }
         }
         
@@ -196,7 +196,7 @@ public final class Services extends ServiceType.Registry implements LookupListen
             try {
                 dobj.delete();
             } catch (IOException ex) {
-                Logger.global.log(Level.WARNING, null, ex);
+                Logger.getLogger(Services.class.getName()).log(Level.WARNING, null, ex);
             }
         }
         
@@ -217,7 +217,7 @@ public final class Services extends ServiceType.Registry implements LookupListen
             
             return InstanceDataObject.create(dfTarget, null, st, null);
         } catch (Exception ex) {
-            Logger.global.log(Level.WARNING, null, ex);
+            Logger.getLogger(Services.class.getName()).log(Level.WARNING, null, ex);
             return null;
         }
     }
@@ -262,7 +262,7 @@ public final class Services extends ServiceType.Registry implements LookupListen
                 catch (DataObjectNotFoundException ex) {
                 }
                 catch (Exception ex) {
-                    Logger.global.log(Level.WARNING, null, ex);
+                    Logger.getLogger(Services.class.getName()).log(Level.WARNING, null, ex);
                 }
             }
         }
@@ -276,7 +276,7 @@ public final class Services extends ServiceType.Registry implements LookupListen
             try {
                 return clazz.isAssignableFrom(inst.instanceClass());
             } catch (Exception ex) {
-                Logger.global.log(Level.WARNING, null, ex);
+                Logger.getLogger(Services.class.getName()).log(Level.WARNING, null, ex);
                 return false;
             }
         }
@@ -309,7 +309,7 @@ public final class Services extends ServiceType.Registry implements LookupListen
             try {
                 obj = new NbMarshalledObject (s);
             } catch (IOException ex) {
-                Logger.global.log(Level.WARNING, null, ex);
+                Logger.getLogger(Services.class.getName()).log(Level.WARNING, null, ex);
                 // skip the object if it cannot be serialized
                 obj = null;
             }
@@ -338,10 +338,10 @@ public final class Services extends ServiceType.Registry implements LookupListen
                 ll.add(s);
             }
             catch (IOException ex) {
-                Logger.global.log(Level.WARNING, null, ex);
+                Logger.getLogger(Services.class.getName()).log(Level.WARNING, null, ex);
             }
             catch (ClassNotFoundException ex) {
-                Logger.global.log(Level.WARNING, null, ex);
+                Logger.getLogger(Services.class.getName()).log(Level.WARNING, null, ex);
             }
         }
 

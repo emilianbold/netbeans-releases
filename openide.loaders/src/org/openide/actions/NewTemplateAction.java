@@ -419,7 +419,7 @@ public class NewTemplateAction extends NodeAction {
             newOrder[0] = template.createShadow (folder);
             folder.setOrder (newOrder);
         } catch (IOException ioe) {
-            Logger.global.log(Level.WARNING, null, ioe);
+            Logger.getLogger(NewTemplateAction.class.getName()).log(Level.WARNING, null, ioe);
             // can't create shadow
             return false;
         }
@@ -447,7 +447,7 @@ public class NewTemplateAction extends NodeAction {
             template.delete ();
             return true;
         } catch (IOException ioe) {
-            Logger.global.log(Level.WARNING, null, ioe);
+            Logger.getLogger(NewTemplateAction.class.getName()).log(Level.WARNING, null, ioe);
             // it couldn't be deleted
             return false;
         }

@@ -291,7 +291,7 @@ public abstract class NodeTransfer extends Object {
     * @param e the exception
     */
     private static void maybeReportException(Exception e) {
-        Logger.global.log(Level.WARNING, null, e);
+        Logger.getLogger(NodeTransfer.class.getName()).log(Level.WARNING, null, e);
 
         // else do nothing
     }

@@ -184,7 +184,7 @@ public abstract class NbTopManager {
             // ignore - maybe javahelp module is not installed, not so strange
         } catch (Exception e) {
             // potentially more serious
-            Logger.global.log(Level.WARNING, null, e);
+            Logger.getLogger(NbTopManager.class.getName()).log(Level.WARNING, null, e);
         }
         // Did not work.
         Toolkit.getDefaultToolkit().beep();
@@ -272,7 +272,7 @@ public abstract class NbTopManager {
                 }
             }
             catch (IOException ex) {
-                Logger.global.log(Level.WARNING, null, ex);
+                Logger.getLogger(NbTopManager.class.getName()).log(Level.WARNING, null, ex);
                 bad.add(dobj);
             }
         }
@@ -378,7 +378,7 @@ public abstract class NbTopManager {
                         try {
                             LoaderPoolNode.store();
                         } catch (IOException ioe) {
-                            Logger.global.log(Level.WARNING, null, ioe);
+                            Logger.getLogger(NbTopManager.class.getName()).log(Level.WARNING, null, ioe);
                         }
 //#46940 -saving just once..                        
 //                        // save window system, [PENDING] remove this after the winsys will
@@ -389,7 +389,7 @@ public abstract class NbTopManager {
                         try {
                             ((MainLookup)Lookup.getDefault()).storeCache();
                         } catch (IOException ioe) {
-                            Logger.global.log(Level.WARNING, null, ioe);
+                            Logger.getLogger(NbTopManager.class.getName()).log(Level.WARNING, null, ioe);
                         }
                         SessionManager.getDefault().close();
                     } catch (ThreadDeath td) {

@@ -76,9 +76,9 @@ public class ExternalDragAndDrop {
                 res = fixed;
             }
         } catch (UnsupportedFlavorException ex) {
-            Logger.global.log(Level.INFO, null, ex);
+            Logger.getLogger(ExternalDragAndDrop.class.getName()).log(Level.INFO, null, ex);
         } catch (IOException ex) {
-            Logger.global.log(Level.INFO, null, ex);
+            Logger.getLogger(ExternalDragAndDrop.class.getName()).log(Level.INFO, null, ex);
         }
         return res;
     }

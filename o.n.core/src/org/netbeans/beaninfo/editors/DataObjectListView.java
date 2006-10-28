@@ -556,7 +556,7 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
                 try {
                     dObj.rename(dest.getName());
                 } catch (IOException exc) {
-                    Logger.global.log(Level.WARNING, null, exc);
+                    Logger.getLogger(DataObjectListView.class.getName()).log(Level.WARNING, null, exc);
                     return false;
                 }
                 return true;

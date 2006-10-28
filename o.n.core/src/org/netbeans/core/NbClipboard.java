@@ -191,7 +191,7 @@ implements LookupListener, Runnable, FlavorListener, AWTEventListener
         } catch (ThreadDeath ex) {
             throw ex;
         } catch (InterruptedException ex) {
-            Logger.global.log(Level.WARNING, null, ex);
+            Logger.getLogger(NbClipboard.class.getName()).log(Level.WARNING, null, ex);
             return null;
         } catch (Throwable ex) {
             Exceptions.printStackTrace(ex);

@@ -240,7 +240,7 @@ public abstract class WindowManager extends Object implements Serializable {
                          +" throws runtime exception from its componentDeactivated() method. Repair it!"
                     ); // NOI18N
                 ise.initCause(re);
-                Logger.global.log(Level.WARNING, null, ise);
+                Logger.getLogger(WindowManager.class.getName()).log(Level.WARNING, null, ise);
             }
         }
 
@@ -255,7 +255,7 @@ public abstract class WindowManager extends Object implements Serializable {
                          +" throws runtime exception from its componentActivated() method. Repair it!"
                     ); // NOI18N
                 ise.initCause(re);
-                Logger.global.log(Level.WARNING, null, ise);
+                Logger.getLogger(WindowManager.class.getName()).log(Level.WARNING, null, ise);
             }
         }
     }
@@ -275,7 +275,7 @@ public abstract class WindowManager extends Object implements Serializable {
                      +" throws runtime exception from its componentOpened() method. Repair it!"
                 ); // NOI18N
             ise.initCause(re);
-            Logger.global.log(Level.WARNING, null, ise);
+            Logger.getLogger(WindowManager.class.getName()).log(Level.WARNING, null, ise);
         }
     }
 
@@ -294,7 +294,7 @@ public abstract class WindowManager extends Object implements Serializable {
                      +" throws runtime exception from its componentClosed() method. Repair it!"
                 ); // NOI18N
             ise.initCause(re);
-            Logger.global.log(Level.WARNING, null, ise);
+            Logger.getLogger(WindowManager.class.getName()).log(Level.WARNING, null, ise);
         }
 
         if (tc == activeComponent) {
@@ -315,7 +315,7 @@ public abstract class WindowManager extends Object implements Serializable {
                      +" throws runtime exception from its componentShowing() method. Repair it!"
                 ); // NOI18N
             ise.initCause(re);
-            Logger.global.log(Level.WARNING, null, ise);
+            Logger.getLogger(WindowManager.class.getName()).log(Level.WARNING, null, ise);
         }
     }
 
@@ -332,7 +332,7 @@ public abstract class WindowManager extends Object implements Serializable {
                      +" throws runtime exception from its componentHidden() method. Repair it!"
                 ); // NOI18N
             ise.initCause(re);
-            Logger.global.log(Level.WARNING, null, ise);
+            Logger.getLogger(WindowManager.class.getName()).log(Level.WARNING, null, ise);
         }
     }
 

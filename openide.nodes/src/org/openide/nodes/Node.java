@@ -913,7 +913,7 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
                             " which is not included in its property sets. This is illegal. See IZ #31413 for details."
                         ); // NOI18N
                         ise.printStackTrace(new PrintWriter(w));
-                        Logger.global.warning(w.toString());
+                        Logger.getLogger(Node.class.getName()).warning(w.toString());
                     }
                 }
             }

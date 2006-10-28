@@ -372,7 +372,7 @@ public class HintsUI implements MouseListener, KeyListener, ChangeListener, AWTE
     
     boolean invokeDefaultAction() {
         if (comp == null) {
-            Logger.global.log(Level.WARNING, "HintsUI.invokeDefaultAction called, but comp == null");
+            Logger.getLogger(HintsUI.class.getName()).log(Level.WARNING, "HintsUI.invokeDefaultAction called, but comp == null");
             return false;
         }
         

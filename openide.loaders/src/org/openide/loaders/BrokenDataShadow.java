@@ -80,7 +80,7 @@ final class BrokenDataShadow extends MultiDataObject {
             try {
                 url = new URL("file",null,"/UNKNOWN"); //NOI18N
             } catch (MalformedURLException ex2) {
-                Logger.global.log(Level.WARNING, null, ex2);
+                Logger.getLogger(BrokenDataShadow.class.getName()).log(Level.WARNING, null, ex2);
             }
         }
         enqueueBrokenDataShadow(this);

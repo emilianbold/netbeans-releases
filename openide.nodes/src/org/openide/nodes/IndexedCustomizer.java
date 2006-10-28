@@ -601,7 +601,7 @@ public final class IndexedCustomizer extends JDialog implements Customizer {
                 // remember the gesture
                 this.dge = dge;
             } catch (InvalidDnDOperationException exc) {
-                Logger.global.log(Level.WARNING, null, exc);
+                Logger.getLogger(IndexedCustomizer.class.getName()).log(Level.WARNING, null, exc);
 
                 // PENDING notify user - cannot start the drag
             }

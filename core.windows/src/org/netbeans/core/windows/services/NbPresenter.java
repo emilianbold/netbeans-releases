@@ -1166,7 +1166,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
             try {
                 result = (Collection) markers.get(fm);
             } catch (Exception ex) {
-                Logger.global.log(Level.WARNING, null, ex);
+                Logger.getLogger(NbPresenter.class.getName()).log(Level.WARNING, null, ex);
             }
 
             if (result == null || result.isEmpty()) {
@@ -1177,7 +1177,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
             try {
                 dequeue.invoke(fm, new Object[] { Long.valueOf(-1), NbPresenter.this });
             } catch (Exception ex) {
-                Logger.global.log(Level.WARNING, null, ex);
+                Logger.getLogger(NbPresenter.class.getName()).log(Level.WARNING, null, ex);
             }
         }
     } // end of HackTypeAhead

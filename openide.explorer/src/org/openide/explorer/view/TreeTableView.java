@@ -1386,7 +1386,7 @@ public class TreeTableView extends BeanTreeView {
                                                  : (-res);
                         }
                         catch (Exception ex) {
-                            Logger.global.log(Level.WARNING, null, ex);
+                            Logger.getLogger(TreeTableView.class.getName()).log(Level.WARNING, null, ex);
                             return 0;
                         }
                     }

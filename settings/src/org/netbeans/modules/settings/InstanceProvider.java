@@ -317,7 +317,7 @@ implements java.beans.PropertyChangeListener, FileSystem.AtomicAction {
             if (e != null && !wasReportedProblem) {
                 wasReportedProblem = true;
                 Exceptions.attachLocalizedMessage(e, dobj.toString());
-                Logger.global.log(Level.WARNING, null, e);
+                Logger.getLogger(InstanceProvider.class.getName()).log(Level.WARNING, null, e);
             }
             return "Unknown"; // NOI18N
         }
@@ -345,7 +345,7 @@ implements java.beans.PropertyChangeListener, FileSystem.AtomicAction {
                 if (e != null && !wasReportedProblem) {
                     wasReportedProblem = true;
                     Exceptions.attachLocalizedMessage(e, dobj.toString());
-                    Logger.global.log(Level.WARNING, null, e);
+                    Logger.getLogger(InstanceProvider.class.getName()).log(Level.WARNING, null, e);
                 }
                 return false;
             } else {

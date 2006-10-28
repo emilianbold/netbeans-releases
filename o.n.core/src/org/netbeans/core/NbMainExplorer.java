@@ -334,7 +334,7 @@ public final class NbMainExplorer extends CloneableTopComponent {
                         ("Incorrect settings file. Unexpected class returned." // NOI18N
                         + " Expected:" + MainTab.class.getName() // NOI18N
                         + " Returned:" + tc.getClass().getName()); // NOI18N
-                        Logger.global.log(Level.WARNING, null, exc);
+                        Logger.getLogger(NbMainExplorer.class.getName()).log(Level.WARNING, null, exc);
                         panel = MainTab.getDefaultMainTab();
                     }
                 } else {

@@ -81,7 +81,7 @@ public class NodeRenderer extends Object implements TreeCellRenderer, ListCellRe
         IllegalStateException ise = new IllegalStateException(
                 "NodeRenderer." + "sharedInstance() is deprecated.  Create an instance of NodeRenderer" + "instead"
             );
-        Logger.global.log(Level.WARNING, null, ise);
+        Logger.getLogger(NodeRenderer.class.getName()).log(Level.WARNING, null, ise);
 
         return instance;
     }

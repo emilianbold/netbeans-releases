@@ -159,7 +159,7 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
                             subFolder.delete();
                         }
                         catch (IOException e) {
-                            Logger.global.log(Level.WARNING, null, e);
+                            Logger.getLogger(ConfigureToolbarPanel.class.getName()).log(Level.WARNING, null, e);
                         }
                     }
                 });
@@ -413,7 +413,7 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
                         }
                     }
                 } catch( Throwable e ) {
-                    Logger.global.log(Level.WARNING, null, e);
+                    Logger.getLogger(ConfigureToolbarPanel.class.getName()).log(Level.WARNING, null, e);
                 }
                 return true;
             } else {

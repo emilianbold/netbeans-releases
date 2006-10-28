@@ -122,7 +122,7 @@ public class ComputeImports {
                 TypeElement te = info.getElements().getTypeElement(typeNames.getQualifiedName());
                 
                 if (te == null) {
-                    Logger.global.log(Level.INFO, "Cannot resolve type element \"" + typeNames + "\".");
+                    Logger.getLogger(ComputeImports.class.getName()).log(Level.INFO, "Cannot resolve type element \"" + typeNames + "\".");
                     continue;
                 }
                 

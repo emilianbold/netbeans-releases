@@ -371,7 +371,7 @@ public abstract class DataLoader extends SharedClassObject {
 	    // not cause whole folder recognizer to die! Assume that
 	    // file/loader is kaput and continue.
 	    IOException ioe = new IOException (e.toString());
-            Logger.global.log(Level.WARNING, null, e);
+            Logger.getLogger(DataLoader.class.getName()).log(Level.WARNING, null, e);
 	    ioe.initCause(e);
 	    throw ioe;
 	}

@@ -181,7 +181,7 @@ class GroupParser {
                 // see #45497 - if something fails to load, remove it from local config..
                 toRemove.add(tcGroupParser);
                 deleteLocalTCGroup(tcGroupParser.getName());
-                Logger.global.log(Level.WARNING, null, exc);
+                Logger.getLogger(GroupParser.class.getName()).log(Level.WARNING, null, exc);
                 continue;
             }
             boolean tcGroupAccepted = acceptTCGroup(tcGroupParser, tcGroupCfg);
@@ -481,7 +481,7 @@ class GroupParser {
                         is.close();
                     }
                 } catch (IOException exc) {
-                    Logger.global.log(Level.WARNING, null, exc);
+                    Logger.getLogger(GroupParser.class.getName()).log(Level.WARNING, null, exc);
                 }
             }
             
@@ -553,7 +553,7 @@ class GroupParser {
             // #24844. Repair the wrongly saved "null" string
             // as release number.
             if("null".equals(internalConfig.moduleCodeNameRelease)) { // NOI18N
-                Logger.global.log(Level.WARNING, null,
+                Logger.getLogger(GroupParser.class.getName()).log(Level.WARNING, null,
                                   new IllegalStateException("Module release code was saved as null string" +
                                                             " for module " +
                                                             internalConfig.moduleCodeNameBase +
@@ -625,7 +625,7 @@ class GroupParser {
                             osw.close();
                         }
                     } catch (IOException exc) {
-                        Logger.global.log(Level.WARNING, null, exc);
+                        Logger.getLogger(GroupParser.class.getName()).log(Level.WARNING, null, exc);
                     }
                     if (lock != null) {
                         lock.releaseLock();

@@ -1081,7 +1081,7 @@ final class DefaultModel implements Model {
     /** Checks whether the mode isn't null.  */
     private static boolean validateAddingMode(ModeImpl mode) {
         if(mode == null) {
-            Logger.global.log(Level.WARNING, null,
+            Logger.getLogger(DefaultModel.class.getName()).log(Level.WARNING, null,
                               new java.lang.NullPointerException("Not allowed null mode")); // NOI18N
             return false;
         }

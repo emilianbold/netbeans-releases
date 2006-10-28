@@ -145,7 +145,7 @@ class ShortcutsFolder {
                         "{0} ignored; cannot load class {1}",
                         new Object[] {dataObject.getPrimaryFile().getPath(), ic.instanceName()});
             } catch (Exception ex) {
-                Logger.global.log(Level.WARNING, null, ex);
+                Logger.getLogger(ShortcutsFolder.class.getName()).log(Level.WARNING, null, ex);
             }
         }
     }

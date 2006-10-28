@@ -403,7 +403,7 @@ public final class MIMEResolverImpl extends XMLEnvironmentProvider implements En
                     if (rule.acceptFileObject(file)) return mime;
                 }
             } catch (IOException io) {
-                Logger.global.log(Level.WARNING, null, io);
+                Logger.getLogger(MIMEResolverImpl.class.getName()).log(Level.WARNING, null, io);
             }
             return null;
         }

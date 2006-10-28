@@ -509,10 +509,10 @@ public class IDESettings extends SystemOption {
                         }
                         // exceptions are thrown if module is uninstalled
                         catch (java.io.IOException ex) {
-                            Logger.global.log(Level.WARNING, null, ex);
+                            Logger.getLogger(IDESettings.class.getName()).log(Level.WARNING, null, ex);
                         }
                         catch (ClassNotFoundException ex) {
-                            Logger.global.log(Level.WARNING, null, ex);
+                            Logger.getLogger(IDESettings.class.getName()).log(Level.WARNING, null, ex);
                         }
                     }
                     
@@ -545,7 +545,7 @@ public class IDESettings extends SystemOption {
                 putProperty (PROP_WWWBROWSER, item.getId (), true);
             } else {
                 // strange
-                Logger.global.warning("IDESettings: Cannot find browser in lookup");// NOI18N
+                Logger.getLogger(IDESettings.class.getName()).warning("IDESettings: Cannot find browser in lookup");// NOI18N
                 putProperty (PROP_WWWBROWSER, "", true);
             }
         }

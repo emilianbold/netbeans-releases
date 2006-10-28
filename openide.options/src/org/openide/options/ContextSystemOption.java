@@ -163,9 +163,9 @@ public abstract class ContextSystemOption extends SystemOption implements BeanCo
                 try {
                     c.add(m.get());
                 } catch (Exception e) {
-                    Logger.global.log(Level.WARNING, null, e);
+                    Logger.getLogger(ContextSystemOption.class.getName()).log(Level.WARNING, null, e);
                 } catch (LinkageError e) {
-                    Logger.global.log(Level.WARNING, null, e);
+                    Logger.getLogger(ContextSystemOption.class.getName()).log(Level.WARNING, null, e);
                 }
 
                 // read next

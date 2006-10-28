@@ -300,7 +300,7 @@ public final class SerialDataNode extends DataNode {
             }
         } catch (Exception e) {
             // Problem ==>> use default icon
-            Logger.global.log(Level.WARNING, null, e);
+            Logger.getLogger(SerialDataNode.class.getName()).log(Level.WARNING, null, e);
         }
 
         return beanInfoIcon;
@@ -471,11 +471,11 @@ public final class SerialDataNode extends DataNode {
                 }                
                 
             } catch (ClassNotFoundException ex) {
-                Logger.global.log(Level.WARNING, null, ex);
+                Logger.getLogger(SerialDataNode.class.getName()).log(Level.WARNING, null, ex);
             } catch (IOException ex) {
-                Logger.global.log(Level.WARNING, null, ex);
+                Logger.getLogger(SerialDataNode.class.getName()).log(Level.WARNING, null, ex);
             } catch (IntrospectionException ex) {
-                Logger.global.log(Level.WARNING, null, ex);
+                Logger.getLogger(SerialDataNode.class.getName()).log(Level.WARNING, null, ex);
             }            
         }
 

@@ -253,10 +253,10 @@ final class XMLMIMEComponent extends DefaultParser implements MIMEComponent {
                 try {
                     parser.setProperty("http://xml.org/sax/properties/lexical-handler", this);  //NOI18N
                 } catch (SAXException sex) {
-                    Logger.global.fine(NbBundle.getMessage(XMLMIMEComponent.class, "W-003"));  //NOI18N
+                    Logger.getLogger(XMLMIMEComponent.class.getName()).fine(NbBundle.getMessage(XMLMIMEComponent.class, "W-003"));  //NOI18N
                 }
             } catch (SAXException ex) {
-                Logger.global.log(Level.WARNING, null, ex);
+                Logger.getLogger(XMLMIMEComponent.class.getName()).log(Level.WARNING, null, ex);
             }
             return parser;
         }
@@ -302,7 +302,7 @@ final class XMLMIMEComponent extends DefaultParser implements MIMEComponent {
         
         public void error(SAXParseException exception) throws SAXException {            
             // we are not validating should not occure
-            Logger.global.warning(exception.getMessage());
+            Logger.getLogger(XMLMIMEComponent.class.getName()).warning(exception.getMessage());
             this.state = ERROR;
             throw STOP;
         }

@@ -52,7 +52,7 @@ final class ConvertorResolver {
             }
             return getConvertor(fo);
         } catch (IOException ex) {
-            Logger.global.log(Level.WARNING, null, ex);
+            Logger.getLogger(ConvertorResolver.class.getName()).log(Level.WARNING, null, ex);
             return null;
         }
     }
@@ -68,7 +68,7 @@ final class ConvertorResolver {
             Object attrib = fo.getAttribute(org.netbeans.modules.settings.Env.EA_PUBLICID);
             return (attrib == null || !(attrib instanceof String))? null: (String) attrib;
         } catch (IOException ex) {
-            Logger.global.log(Level.WARNING, null, ex);
+            Logger.getLogger(ConvertorResolver.class.getName()).log(Level.WARNING, null, ex);
             return null;
         }
     }

@@ -112,7 +112,7 @@ public class BeanChildren extends Children.Keys {
 
             return new Node[] { n };
         } catch (IntrospectionException ex) {
-            Logger.global.log(Level.WARNING, null, ex);
+            Logger.getLogger(BeanChildren.class.getName()).log(Level.WARNING, null, ex);
 
             return new Node[0];
         }
@@ -227,7 +227,7 @@ public class BeanChildren extends Children.Keys {
                             // from this method, but in fact BeanContextSupport
                             // can throw IllegalStateException if either child or
                             // parent refuses the deletion. So better deal with it.
-                            Logger.global.log(Level.WARNING, null, re);
+                            Logger.getLogger(BeanChildren.class.getName()).log(Level.WARNING, null, re);
                         }
                     }
                 }

@@ -191,7 +191,7 @@ public class ModuleActions extends ActionManager
                 try {
                     arr.add (s.getInstance ());
                 } catch (Exception ex) {
-                    Logger.global.log(Level.WARNING, null, ex);
+                    Logger.getLogger(ModuleActions.class.getName()).log(Level.WARNING, null, ex);
                 }
             }
             

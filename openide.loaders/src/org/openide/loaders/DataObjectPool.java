@@ -1165,7 +1165,7 @@ implements ChangeListener {
                     } catch (DataObjectExistsException ex) {
                         // this should be no problem here
                     } catch (java.io.IOException ioe) {
-                        Logger.global.log(Level.WARNING, null, ioe);
+                        Logger.getLogger(DataObjectPool.class.getName()).log(Level.WARNING, null, ioe);
                     } catch (ConcurrentModificationException cme) {
                         // not very nice but the only way I could come up to handle this:
                         // java.util.ConcurrentModificationException

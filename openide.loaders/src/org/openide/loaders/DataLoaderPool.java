@@ -483,7 +483,7 @@ implements java.io.Serializable {
                 );
                 return DataLoader.getLoader(loaderClass);
             } catch (Exception ex) {
-                Logger.global.log(Level.WARNING, null, ex);
+                Logger.getLogger(DataLoaderPool.class.getName()).log(Level.WARNING, null, ex);
             }
         }
         return null;
@@ -698,7 +698,7 @@ private static class InstanceLoader extends UniFileLoader {
                     return null;
                 }
             } catch (FileStateInvalidException e) {
-                Logger.global.log(Level.WARNING, null, e);
+                Logger.getLogger(DataLoaderPool.class.getName()).log(Level.WARNING, null, e);
             }
         }
         return r;

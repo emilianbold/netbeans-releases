@@ -215,7 +215,7 @@ public class SplittedPanel extends JComponent implements Accessible {
         init();
 
         RuntimeException rte = new RuntimeException("SplittedPanel is deprecated.  Please use JSplitPane instead"); //NOI18N
-        Logger.global.log(Level.WARNING, null, rte);
+        Logger.getLogger(SplittedPanel.class.getName()).log(Level.WARNING, null, rte);
     }
 
     /** Initializes the SplittedPanel */

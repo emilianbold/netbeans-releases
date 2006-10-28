@@ -93,7 +93,7 @@ final class PersistenceHandler implements PersistenceObserver {
 
         // In case of persistence problem fall back to predefined settings.
         if(wmc == null) {
-            Logger.global.log(Level.WARNING, null,
+            Logger.getLogger(PersistenceHandler.class.getName()).log(Level.WARNING, null,
                               new java.lang.NullPointerException("Cannot load window system persistent data. Using internally predefined configuration")); // NOI18N
             wmc = ConfigFactory.createDefaultConfig();
         }
@@ -309,7 +309,7 @@ final class PersistenceHandler implements PersistenceObserver {
                 if (previous != null) {
                     WindowManagerImpl.getInstance().setPreviousModeForTopComponent(tcRefConfig.tc_id, mode, previous);
                 } else {
-                    Logger.global.log(Level.WARNING, null,
+                    Logger.getLogger(PersistenceHandler.class.getName()).log(Level.WARNING, null,
                                       new java.lang.NullPointerException("Cannot find previous mode named \'" +
                                                                          tcRefConfig.previousMode +
                                                                          "\'")); 
@@ -688,7 +688,7 @@ final class PersistenceHandler implements PersistenceObserver {
         if(mode != null) {
             WindowManagerImpl.getInstance().removeMode(mode);
         } else {
-            Logger.global.log(Level.WARNING, null,
+            Logger.getLogger(PersistenceHandler.class.getName()).log(Level.WARNING, null,
                               new java.lang.NullPointerException("Mode for name=" +
                                                                  modeName +
                                                                  " was not created")); // NOI18N
@@ -764,7 +764,7 @@ final class PersistenceHandler implements PersistenceObserver {
         if(group != null) {
             WindowManagerImpl.getInstance().removeTopComponentGroup(group);
         } else {
-            Logger.global.log(Level.WARNING, null,
+            Logger.getLogger(PersistenceHandler.class.getName()).log(Level.WARNING, null,
                               new java.lang.NullPointerException("Null group for name=" +
                                                                  groupName)); 
         }

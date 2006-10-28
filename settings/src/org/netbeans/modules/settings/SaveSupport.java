@@ -104,7 +104,7 @@ final class SaveSupport {
             }
             convertor = ip.getConvertor();
         } catch (IOException ex) {
-            Logger.global.log(Level.WARNING, null, ex);
+            Logger.getLogger(SaveSupport.class.getName()).log(Level.WARNING, null, ex);
         }
         return convertor;
     }
@@ -288,7 +288,7 @@ final class SaveSupport {
                 }
             } catch (Exception ex) {
                 Exceptions.attachLocalizedMessage(ex, file.toString());
-        	Logger.global.log(Level.WARNING, null, ex);
+        	Logger.getLogger(SaveSupport.class.getName()).log(Level.WARNING, null, ex);
             }
         }
         

@@ -412,7 +412,7 @@ public final class FileEntityResolver extends EntityCatalog implements Environme
                     // #25082: do not notify an exception if the file comes
                     // from other filesystem than the system filesystem
                     if (src.getFileSystem() == Repository.getDefault().getDefaultFileSystem()) {
-                        Logger.global.log(Level.WARNING, null, ex);
+                        Logger.getLogger(FileEntityResolver.class.getName()).log(Level.WARNING, null, ex);
                     }
                 } catch (org.openide.filesystems.FileStateInvalidException fie) {
                     // ignore
@@ -423,7 +423,7 @@ public final class FileEntityResolver extends EntityCatalog implements Environme
                         in.close();
                     }
                 } catch (IOException exc) {
-                    Logger.global.log(Level.WARNING, null, exc);
+                    Logger.getLogger(FileEntityResolver.class.getName()).log(Level.WARNING, null, exc);
                 }
             }
         }

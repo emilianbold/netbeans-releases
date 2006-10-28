@@ -366,7 +366,7 @@ implements AWTEventListener, DragSourceListener {
                 this
             );
         } catch(InvalidDnDOperationException idoe) {
-            Logger.global.log(Level.WARNING, null, idoe);
+            Logger.getLogger(TopComponentDragSupport.class.getName()).log(Level.WARNING, null, idoe);
             
             removeListening();
             windowDnDManager.resetDragSource();
@@ -643,7 +643,7 @@ implements AWTEventListener, DragSourceListener {
             }
         } else {
             // PENDING throw exception?
-            Logger.global.log(Level.WARNING, null,
+            Logger.getLogger(TopComponentDragSupport.class.getName()).log(Level.WARNING, null,
                               new java.lang.IllegalStateException("Invalid action type->" +
                                                                   dropAction)); // NOI18N
             return;

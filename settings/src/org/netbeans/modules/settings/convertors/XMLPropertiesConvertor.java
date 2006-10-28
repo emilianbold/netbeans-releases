@@ -155,7 +155,7 @@ public final class XMLPropertiesConvertor extends Convertor implements PropertyC
             try {
                 saver.requestSave();
             } catch (IOException ex) {
-                Logger.global.log(Level.WARNING, null, ex);
+                Logger.getLogger(XMLPropertiesConvertor.class.getName()).log(Level.WARNING, null, ex);
             }
         } else {
             saver.markDirty();

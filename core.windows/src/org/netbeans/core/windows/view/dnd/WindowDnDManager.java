@@ -704,9 +704,9 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
 
                 return new TopComponent[] {tc};
             } catch(UnsupportedFlavorException ufe) {
-                Logger.global.log(Level.WARNING, null, ufe);
+                Logger.getLogger(WindowDnDManager.class.getName()).log(Level.WARNING, null, ufe);
             } catch(IOException ioe) {
-                Logger.global.log(Level.WARNING, null, ioe);
+                Logger.getLogger(WindowDnDManager.class.getName()).log(Level.WARNING, null, ioe);
             }
         }
     
@@ -715,9 +715,9 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
             try {
                 return (TopComponent[])tr.getTransferData(df);
             } catch(UnsupportedFlavorException ufe) {
-                Logger.global.log(Level.WARNING, null, ufe);
+                Logger.getLogger(WindowDnDManager.class.getName()).log(Level.WARNING, null, ufe);
             } catch(IOException ioe) {
-                Logger.global.log(Level.WARNING, null, ioe);
+                Logger.getLogger(WindowDnDManager.class.getName()).log(Level.WARNING, null, ioe);
             }
         }
         

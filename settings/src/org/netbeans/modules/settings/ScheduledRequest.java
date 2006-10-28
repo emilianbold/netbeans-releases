@@ -84,7 +84,7 @@ public final class ScheduledRequest implements Runnable {
         try {
             if (lock == null) lock = fobj.lock();
         } catch (IOException ex) {
-            Logger.global.log(Level.WARNING, null, ex);
+            Logger.getLogger(ScheduledRequest.class.getName()).log(Level.WARNING, null, ex);
             return;
         }
         
@@ -150,7 +150,7 @@ public final class ScheduledRequest implements Runnable {
             performRequest();
         } catch (IOException ex) {
             Exceptions.attachLocalizedMessage(ex, fobj.toString());
-            Logger.global.log(Level.WARNING, null, ex);
+            Logger.getLogger(ScheduledRequest.class.getName()).log(Level.WARNING, null, ex);
         }
     }
     

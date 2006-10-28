@@ -475,7 +475,7 @@ final class XMLSettingsSupport {
                                                           getFileContent(source)); // NOI18N
                         Exceptions.attachLocalizedMessage(ex,
                                                           "Source: " + source); // NOI18N
-                        Logger.global.log(Level.WARNING, null, ex);
+                        Logger.getLogger(XMLSettingsSupport.class.getName()).log(Level.WARNING, null, ex);
                         codeNameRelease = -1;
                     }
                 }
@@ -495,7 +495,7 @@ final class XMLSettingsSupport {
                         chars2Bytes(baos, chaos.toCharArray(), 0, chaos.size());
                         serialdata = baos.toByteArray();
                     } catch (IOException ex) {
-                        Logger.global.log(Level.WARNING, null, ex);
+                        Logger.getLogger(XMLSettingsSupport.class.getName()).log(Level.WARNING, null, ex);
                     } finally {
                         chaos = null; // don't keep the info twice
                         try {

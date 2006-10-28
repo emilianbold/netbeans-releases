@@ -165,7 +165,7 @@ public final class PasteAction extends CallbackSystemAction {
             // posts the action in RP thread
             new ActionPT(t, ev.getActionCommand());
         } else {
-            Logger.global.log(Level.WARNING, null,
+            Logger.getLogger(PasteAction.class.getName()).log(Level.WARNING, null,
                               new IllegalStateException("No paste types available when performing paste action")); // NOI18N
         }
     }
@@ -286,7 +286,7 @@ public final class PasteAction extends CallbackSystemAction {
         }
 
         if (t != null) {
-            Logger.global.log(Level.WARNING, null, t);
+            Logger.getLogger(PasteAction.class.getName()).log(Level.WARNING, null, t);
         }
 
         return null;
@@ -647,9 +647,9 @@ bigloop:
             try {
                 em.setSelectedNodes(arr);
             } catch (PropertyVetoException ex) {
-                Logger.global.log(Level.WARNING, null, ex);
+                Logger.getLogger(PasteAction.class.getName()).log(Level.WARNING, null, ex);
             } catch (IllegalStateException ex) {
-                Logger.global.log(Level.WARNING, null, ex);
+                Logger.getLogger(PasteAction.class.getName()).log(Level.WARNING, null, ex);
             }
         }
 

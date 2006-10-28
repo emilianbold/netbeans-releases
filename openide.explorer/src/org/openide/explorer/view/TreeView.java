@@ -817,7 +817,7 @@ public abstract class TreeView extends JScrollPane {
                                                    }
                                                    catch (Exception e) {
                                                        // log a exception
-                                                       Logger.global.log(Level.WARNING,
+                                                       Logger.getLogger(TreeView.class.getName()).log(Level.WARNING,
                                                                          null, e);
                                                    }
                                                    finally {

@@ -297,7 +297,7 @@ class ModeParser {
             } catch (IOException exc) {
                 //If reading of one tcRef fails we want to log message
                 //and continue.
-                Logger.global.log(Level.WARNING, null, exc);
+                Logger.getLogger(ModeParser.class.getName()).log(Level.WARNING, null, exc);
                 continue;
             }
             boolean tcRefAccepted = acceptTCRef(tcRefParser, tcRefCfg);
@@ -1001,7 +1001,7 @@ class ModeParser {
                         is.close();
                     }
                 } catch (IOException exc) {
-                    Logger.global.log(Level.WARNING, null, exc);
+                    Logger.getLogger(ModeParser.class.getName()).log(Level.WARNING, null, exc);
                 }
             }
             
@@ -1099,7 +1099,7 @@ class ModeParser {
             // #24844. Repair the wrongly saved "null" string
             // as release number.
             if("null".equals(internalConfig.moduleCodeNameRelease)) { // NOI18N
-                Logger.global.log(Level.WARNING, null,
+                Logger.getLogger(ModeParser.class.getName()).log(Level.WARNING, null,
                                   new IllegalStateException("Module release code was saved as null string" +
                                                             " for module " +
                                                             internalConfig.moduleCodeNameBase +
@@ -1444,7 +1444,7 @@ class ModeParser {
                             osw.close();
                         }
                     } catch (IOException exc) {
-                        Logger.global.log(Level.WARNING, null, exc);
+                        Logger.getLogger(ModeParser.class.getName()).log(Level.WARNING, null, exc);
                     }
                     if (lock != null) {
                         lock.releaseLock();

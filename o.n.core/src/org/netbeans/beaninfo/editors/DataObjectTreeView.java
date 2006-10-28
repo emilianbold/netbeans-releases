@@ -156,9 +156,9 @@ public class DataObjectTreeView extends DataObjectPanel {
                 expPanel.getExplorerManager().setSelectedNodes
                 (new Node [] { theNode });
             } catch (PropertyVetoException pve) {
-                Logger.global.log(Level.WARNING, null, pve);
+                Logger.getLogger(DataObjectTreeView.class.getName()).log(Level.WARNING, null, pve);
             } catch (IllegalArgumentException iae) {
-                Logger.global.log(Level.WARNING, null, iae);
+                Logger.getLogger(DataObjectTreeView.class.getName()).log(Level.WARNING, null, iae);
             }
         }
         

@@ -166,7 +166,7 @@ public final class ServerRegistry implements java.io.Serializable {
     class LayerListener implements FileChangeListener {
         
         public void fileAttributeChanged(FileAttributeEvent fae) {
-            java.util.logging.Logger.global.log(java.util.logging.Level.FINEST,"Attribute changed event"); // NOI18N
+            java.util.logging.Logger.getLogger(ServerRegistry.class.getName()).log(java.util.logging.Level.FINEST,"Attribute changed event"); // NOI18N
         }
         public void fileChanged(FileEvent fe) {
         }

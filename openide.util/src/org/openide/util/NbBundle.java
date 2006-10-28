@@ -537,7 +537,7 @@ public class NbBundle extends Object {
                     }
                 } catch (IOException e) {
                     Exceptions.attachMessage(e, "While loading: " + res); // NOI18N
-                    Logger.global.log(Level.WARNING, null, e);
+                    Logger.getLogger(NbBundle.class.getName()).log(Level.WARNING, null, e);
 
                     return null;
                 }
@@ -584,9 +584,9 @@ public class NbBundle extends Object {
             } catch (ClassNotFoundException cnfe) {
                 // fine - ignore
             } catch (Exception e) {
-                Logger.global.log(Level.WARNING, null, e);
+                Logger.getLogger(NbBundle.class.getName()).log(Level.WARNING, null, e);
             } catch (LinkageError e) {
-                Logger.global.log(Level.WARNING, null, e);
+                Logger.getLogger(NbBundle.class.getName()).log(Level.WARNING, null, e);
             }
         }
 

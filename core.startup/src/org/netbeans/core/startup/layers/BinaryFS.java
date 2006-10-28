@@ -473,7 +473,7 @@ public class BinaryFS extends FileSystem {
                 }
             } catch (Exception exc) {
                 Exceptions.attachLocalizedMessage(exc, "value = " + value); //NOI18N
-                Logger.global.log(Level.WARNING, null, exc);
+                Logger.getLogger(BinaryFS.class.getName()).log(Level.WARNING, null, exc);
             }
             return null; // problem getting the value...
         }
@@ -752,7 +752,7 @@ public class BinaryFS extends FileSystem {
                         }
                     }
                 } catch (Exception e) {
-                    Logger.global.log(Level.WARNING, null, e);
+                    Logger.getLogger(BinaryFS.class.getName()).log(Level.WARNING, null, e);
                 }
             }
             return super.lastModified ();
