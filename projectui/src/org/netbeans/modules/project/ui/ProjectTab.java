@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -156,7 +157,7 @@ public class ProjectTab extends TopComponent
      */
     public static synchronized ProjectTab findDefault( String tcID ) {
 
-        ProjectTab tab = (ProjectTab)tabs.get( tcID );
+        ProjectTab tab = tabs.get(tcID);
         
         if ( tab == null ) {
             //If settings file is correctly defined call of WindowManager.findTopComponent() will
@@ -306,7 +307,22 @@ public class ProjectTab extends TopComponent
     protected void componentDeactivated() {
         ExplorerUtils.activateActions(manager, false);
     }
-    
+
+    @Override
+    public Action[] getActions() {
+        Action[] actions = super.getActions();
+        if (ID_LOGICAL.equals(id)) {
+            List<Action> allActions = new ArrayList<Action>(Arrays.asList(manager.getRootContext().getActions(false)));
+            allActions.add(null);
+            allActions.addAll(Arrays.asList(actions));
+            return allActions.toArray(new Action[allActions.size()]);
+        } else {
+            return actions;
+        }
+    }
+
+
+
     // SEARCHING NODES
     
     // Called from the SelectNodeAction
@@ -555,7 +571,7 @@ public class ProjectTab extends TopComponent
                 
                 assert p != null;
                 
-                ActionProvider ap = (ActionProvider) p.getLookup().lookup(ActionProvider.class);
+                ActionProvider ap = p.getLookup().lookup(ActionProvider.class);
                 
                 ap.invokeAction(projectAction, nodes[0].getLookup());
             } else {
@@ -573,7 +589,7 @@ public class ProjectTab extends TopComponent
                     return ;
                 }
                 
-                ActionProvider ap = (ActionProvider) p.getLookup().lookup(ActionProvider.class);
+                ActionProvider ap = p.getLookup().lookup(ActionProvider.class);
                 
                 //Fix for #60946: check whether the action is supported before asking whether it is enabled:
                 String[] sa = ap != null ? ap.getSupportedActions() : new String[0];
