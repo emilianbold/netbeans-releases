@@ -147,15 +147,6 @@ Microsystems, Inc. All Rights Reserved.
     <insert-module-all-targets/>
   </target>
   
-  <target name="all-java/storagebuilder" depends="init">
-    <antcall target="build-one-cluster-dependencies" inheritall="false">
-      <param name="one.cluster.dependencies" value="nb.cluster.platform,nb.cluster.ide"/>
-      <param name="one.cluster.name" value="this-cluster"/>
-    </antcall>
-    <echo message="Building java/storagebuilder library..."/>
-    <ant dir="../java/storagebuilder" target="jar"/>
-  </target>
-
   <target name="all-installer" description="Dummy target for build system compatibility"/>
 
   <target name="all-translatedfiles" depends="init">
