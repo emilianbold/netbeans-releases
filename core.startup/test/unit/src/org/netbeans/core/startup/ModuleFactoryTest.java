@@ -19,11 +19,10 @@ package org.netbeans.core.startup;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.StringBufferInputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -36,9 +35,8 @@ import org.netbeans.JarClassLoader;
 import org.netbeans.Module;
 import org.netbeans.ModuleFactory;
 import org.netbeans.ModuleManager;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
+import org.netbeans.junit.MockServices;
+import org.openide.util.Union2;
 
 /**
  * These tests verify that the module manager behaves basically the
@@ -46,17 +44,17 @@ import org.openide.util.lookup.ProxyLookup;
  * @author David Strupl
  */
 public class ModuleFactoryTest extends ModuleManagerTest {
-    
-    static {
-        System.setProperty("org.openide.util.Lookup", L.class.getName());
-        assertTrue(Lookup.getDefault() instanceof L);
-    }
-    
-    /** Creates a new instance of ModuleFactoryTest */
+
     public ModuleFactoryTest(String name) {
         super(name);
     }
-    
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        MockServices.setServices(MyModuleFactory.class);
+    }
+
     public static int numberOfStandard = 0;
     public static int numberOfFixed = 0;
     public static boolean testingParentClassloaders = false;
@@ -92,7 +90,7 @@ public class ModuleFactoryTest extends ModuleManagerTest {
             Module m1 = mgr.createFixed(mani1, null, l);
             Module m2 = mgr.createFixed(mani2, null, l);
             Module m3 = mgr.create(j3, null, false, false, false);
-            mgr.enable(new HashSet(Arrays.asList(new Module[] {m1, m2, m3})));
+            mgr.enable(new HashSet<Module>(Arrays.asList(m1, m2, m3)));
         } finally {
             mgr.mutexPrivileged().exitWriteAccess();
         }
@@ -111,7 +109,7 @@ public class ModuleFactoryTest extends ModuleManagerTest {
             
             File j1 = new File(jars, "simple-module.jar");
             Module m1 = mgr.create(j1, null, false, false, false);
-            mgr.enable(new HashSet(Arrays.asList(new Module[] {m1})));
+            mgr.enable(Collections.singleton(m1));
             boolean res = false;
             try {
                 m1.getClassLoader().loadClass("java.lang.String");
@@ -137,7 +135,7 @@ public class ModuleFactoryTest extends ModuleManagerTest {
             mgr.mutexPrivileged().enterWriteAccess();
             File j1 = new File(jars, "simple-module.jar");
             Module m1 = mgr.create(j1, null, false, false, false);
-            mgr.enable(new HashSet(Arrays.asList(new Module[] {m1})));
+            mgr.enable(Collections.singleton(m1));
             boolean res = false;
             try {
                 mgr.getClassLoader().loadClass("java.lang.String");
@@ -153,16 +151,6 @@ public class ModuleFactoryTest extends ModuleManagerTest {
         }
     }
     
-    public static final class L extends ProxyLookup {
-        public L() {
-            super(new Lookup[] {
-                Lookups.fixed(new Object[] {
-                    new MyModuleFactory()
-                }),
-            });
-        }
-    }
-
     public static final class MyModuleFactory extends ModuleFactory {
         public Module create(File jar, Object history, boolean reloadable, boolean autoload, boolean eager, ModuleManager mgr, Events ev) throws IOException, DuplicateException {
             if (testingDummyModule || testingParentClassloaders) {
@@ -194,38 +182,45 @@ public class ModuleFactoryTest extends ModuleManagerTest {
     private static final class DummyModule extends Module {
         public DummyModule(ModuleManager mgr, Events ev, Object history, boolean reloadable, boolean autoload, boolean eager) throws IOException {
             super(mgr, ev, history, reloadable, autoload, eager);
-            String ms = "OpenIDE-Module: boom\n\n";
-            StringBufferInputStream sbis = new StringBufferInputStream(ms);
-            manifest = new Manifest(sbis);
+            manifest = new Manifest();
+            manifest.getMainAttributes().putValue("OpenIDE-Module", "boom");
             parseManifest();
         }
-        public List getAllJars() {
-            return new ArrayList();
+        @Override
+        public List<File> getAllJars() {
+            return Collections.emptyList();
         }
+        @Override
         public void setReloadable(boolean r) {
         }
+        @Override
         public void reload() throws IOException {
         }
+        @Override
         protected void classLoaderUp(Set parents) throws IOException {
-            classloader = new JarClassLoader(getAllJars(), new ClassLoader[] { new NoOpClassLoader() } ); // new NoOpClassLoader()
+            classloader = new JarClassLoader(Collections.<Union2<File,JarFile>>emptyList(), new ClassLoader[] {new NoOpClassLoader()});
         }
+        @Override
         protected void classLoaderDown() {
         }
+        @Override
         protected void cleanup() {
         }
+        @Override
         protected void destroy() {
         }
+        @Override
         public boolean isFixed() {
             return true;
         }
+        @Override
         public Object getLocalizedAttribute(String attr) {
             return null;
         }
     }
     
     private static final class NoOpClassLoader extends ClassLoader {
-        protected Class loadClass(String name, boolean resolve) 
-	throws ClassNotFoundException {
+        protected Class loadClass(String name, boolean resolve) throws ClassNotFoundException {
             if ("java.lang.String".equals(name)) {
                 throw new ClassNotFoundException("NoOpClassLoader cannot load " + name);
             }
