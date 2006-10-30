@@ -115,6 +115,7 @@ public final class CompletionLayout {
     public boolean hideCompletion() {
         if (completionPopup.isVisible()) {
             completionPopup.hide();
+            completionPopup.completionScrollPane = null;
             visiblePopups.remove(completionPopup);
             return true;
         } else { // not visible
