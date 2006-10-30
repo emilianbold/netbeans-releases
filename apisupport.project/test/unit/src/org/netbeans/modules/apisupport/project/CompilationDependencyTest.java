@@ -92,7 +92,7 @@ public class CompilationDependencyTest extends TestBase {
                 testingProject.getModuleJarLocation().exists());
     }
     
-    public void testCompileAgaistPublicPackage() throws Exception {
+    public void testCompileAgainstPublicPackage() throws Exception {
         NbModuleProject testingProject = TestBase.generateStandaloneModule(getWorkDir(), "testing");
         testingProject.open();
         FileObject buildScript = findBuildXml(testingProject);
