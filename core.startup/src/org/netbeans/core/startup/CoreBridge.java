@@ -29,18 +29,15 @@ import org.openide.util.Lookup;
  * @author Jaroslav Tulach
  */
 public abstract class CoreBridge {
-    private static CoreBridge fake;
+
     private static boolean lookupInitialized;
 
     public static CoreBridge getDefault () {
         CoreBridge b = Lookup.getDefault().lookup(CoreBridge.class);
-        if (b == null && lookupInitialized) {
-            if (fake == null) {
-                fake = new FakeBridge();
-            }
-            b = fake;
+        if (b == null) {
+            assert lookupInitialized; // XXX does it matter?
+            b = new FakeBridge();
         }
-        assert b != null : "Cannot find org.netbeans.core. Make sure the module \"Core\" is included in your application."; // NOI18N
         return b;
     }
     
