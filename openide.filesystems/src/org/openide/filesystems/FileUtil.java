@@ -173,7 +173,7 @@ public final class FileUtil extends Object {
     }
     
     private static String getRelativePath(final File dir, final File file) {
-        Stack stack = new Stack ();                
+        Stack<String> stack = new Stack<String>();
         File tempFile = file;
         while(tempFile != null && !tempFile.equals(dir)) {
             stack.push (tempFile.getName());
@@ -182,7 +182,7 @@ public final class FileUtil extends Object {
         assert tempFile != null : file.getAbsolutePath() + "not found in " + dir.getAbsolutePath();//NOI18N
         StringBuilder retval = new StringBuilder();
         while (!stack.isEmpty()) {
-            retval.append((String)stack.pop());
+            retval.append(stack.pop());
             if (!stack.isEmpty()) {
                 retval.append("/");//NOI18N
             }
