@@ -54,7 +54,7 @@ public class ArticlesAndNews extends RSSFeedReaderPanel {
     }
 
     protected JComponent buildContent(String url, boolean showProxyButton) {
-        Settings autoUpdateSettings = ((Settings)Settings.findObject( Settings.class ));
+        Settings autoUpdateSettings = Settings.getShared();
         if( null != autoUpdateSettings ) {
             String ideId = autoUpdateSettings.getIdeIdentity();
             if( null != ideId && ideId.length() > 0 ) {
