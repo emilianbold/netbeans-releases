@@ -437,6 +437,7 @@ public class Utilities {
         keywords.add("false");
         keywords.add("null");
         keywords.add("this");
+        keywords.add("super");
     }
     
     public static boolean isKeyword(Tree tree) {
