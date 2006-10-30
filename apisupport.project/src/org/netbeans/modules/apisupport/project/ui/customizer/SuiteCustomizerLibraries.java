@@ -25,6 +25,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.text.Collator;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -617,7 +618,11 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
                     it.remove();
                 }
             }
+            s.addAll(Arrays.asList(mm.getNeededTokens()));
             return s;
+        }
+        public String toString() {
+            return getCodeNameBase();
         }
     }
     
@@ -741,7 +746,7 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
                 String tok = (String) provides.next();
                 Set/*<UniverseModule>*/ providersOf = (Set) providers.get(tok);
                 if (providersOf == null) {
-                    providersOf = new HashSet();
+                    providersOf = new TreeSet(UNIVERSE_MODULE_COMPARATOR);
                     providers.put(tok, providersOf);
                 }
                 providersOf.add(m);
@@ -760,6 +765,12 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         }
         return null;
     }
+    private static final Comparator/*<UniverseModule>*/ UNIVERSE_MODULE_COMPARATOR = new Comparator() {
+        Collator COLL = Collator.getInstance();
+        public int compare(Object o1, Object o2) {
+            return COLL.compare(((UniverseModule) o1).getDisplayName(), ((UniverseModule) o2).getDisplayName());
+        }
+    };
     
     private Set/*<UniverseModule>*/ universe;
     private /* #71791 */ synchronized void doUpdateDependencyWarnings() {

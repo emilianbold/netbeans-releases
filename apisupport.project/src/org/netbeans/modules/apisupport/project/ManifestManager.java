@@ -54,6 +54,7 @@ public final class ManifestManager {
     private String[] provTokens;
     private String provTokensString;
     private String[] requiredTokens;
+    private String[] neededTokens;
     private String localizingBundle;
     private String layer;
     private String classPath;
@@ -66,7 +67,8 @@ public final class ManifestManager {
     public static final String OPENIDE_MODULE_SPECIFICATION_VERSION = "OpenIDE-Module-Specification-Version"; // NOI18N
     public static final String OPENIDE_MODULE_IMPLEMENTATION_VERSION = "OpenIDE-Module-Implementation-Version"; // NOI18N
     public static final String OPENIDE_MODULE_PROVIDES = "OpenIDE-Module-Provides"; // NOI18N
-    public static final String OPENIDE_MODULE_REQUIRES= "OpenIDE-Module-Requires"; // NOI18N
+    public static final String OPENIDE_MODULE_REQUIRES = "OpenIDE-Module-Requires"; // NOI18N
+    public static final String OPENIDE_MODULE_NEEDS = "OpenIDE-Module-Needs"; // NOI18N
     public static final String OPENIDE_MODULE_LAYER = "OpenIDE-Module-Layer"; // NOI18N
     public static final String OPENIDE_MODULE_LOCALIZING_BUNDLE = "OpenIDE-Module-Localizing-Bundle"; // NOI18N
     public static final String OPENIDE_MODULE_PUBLIC_PACKAGES = "OpenIDE-Module-Public-Packages"; // NOI18N
@@ -81,10 +83,11 @@ public final class ManifestManager {
     private ManifestManager() {
         this.provTokens = new String[0];
         this.requiredTokens = new String[0];
+        this.neededTokens = new String[0];
     }
     
     private ManifestManager(String cnb, String releaseVersion, String specVer,
-            String implVer, String provTokensString, String requiredTokens,
+            String implVer, String provTokensString, String requiredTokens, String neededTokens,
             String locBundle, String layer, String classPath,
             PackageExport[] publicPackages, String[] friendNames,
             boolean deprecated, String moduleDependencies) {
@@ -95,6 +98,7 @@ public final class ManifestManager {
         this.provTokensString = provTokensString;
         this.provTokens = parseTokens(provTokensString); // XXX could be lazy-loaded
         this.requiredTokens = parseTokens(requiredTokens); // XXX could be lazy-loaded
+        this.neededTokens = parseTokens(neededTokens); // XXX could be lazy-loaded
         this.localizingBundle = locBundle;
         this.layer = layer;
         this.classPath = classPath;
@@ -196,6 +200,7 @@ public final class ManifestManager {
                 attr.getValue(OPENIDE_MODULE_IMPLEMENTATION_VERSION),
                 attr.getValue(OPENIDE_MODULE_PROVIDES),
                 attr.getValue(OPENIDE_MODULE_REQUIRES),
+                attr.getValue(OPENIDE_MODULE_NEEDS),
                 attr.getValue(OPENIDE_MODULE_LOCALIZING_BUNDLE),
                 attr.getValue(OPENIDE_MODULE_LAYER),
                 attr.getValue(CLASS_PATH),
@@ -302,6 +307,10 @@ public final class ManifestManager {
     
     public String[] getRequiredTokens() {
         return requiredTokens;
+    }
+    
+    public String[] getNeededTokens() {
+        return neededTokens;
     }
     
     public String getLocalizingBundle() {

@@ -76,6 +76,17 @@ public class SuiteCustomizerLibrariesTest extends NbTestCase {
         mani.getMainAttributes().putValue(ManifestManager.OPENIDE_MODULE, "bar");
         mani.getMainAttributes().putValue(ManifestManager.OPENIDE_MODULE_REQUIRES, "tok1");
         TestBase.createJar(new File(new File(new File(install, "somecluster"), "modules"), "bar.jar"), Collections.EMPTY_MAP, mani);
+        // MODULE foo2
+        mani = new Manifest();
+        mani.getMainAttributes().putValue(ManifestManager.OPENIDE_MODULE, "foo2");
+        mani.getMainAttributes().putValue(ManifestManager.OPENIDE_MODULE_PROVIDES, "tok1b");
+        contents = new HashMap();
+        TestBase.createJar(new File(new File(new File(install, "somecluster"), "modules"), "foo2.jar"), contents, mani);
+        // MODULE bar2
+        mani = new Manifest();
+        mani.getMainAttributes().putValue(ManifestManager.OPENIDE_MODULE, "bar2");
+        mani.getMainAttributes().putValue(ManifestManager.OPENIDE_MODULE_NEEDS, "tok1b");
+        TestBase.createJar(new File(new File(new File(install, "somecluster"), "modules"), "bar2.jar"), Collections.EMPTY_MAP, mani);
         // MODULE baz
         mani = new Manifest();
         mani.getMainAttributes().putValue(ManifestManager.OPENIDE_MODULE, "baz");
@@ -175,6 +186,8 @@ public class SuiteCustomizerLibrariesTest extends NbTestCase {
                 join(SuiteCustomizerLibraries.findWarning(modules, Collections.EMPTY_SET, Collections.EMPTY_SET)));
         assertEquals("[ERR_platform_only_excluded_providers, tok1, bar, somecluster, Foo Module, somecluster]",
                 join(SuiteCustomizerLibraries.findWarning(modules, bothClusters, Collections.singleton("foo"))));
+        assertEquals("[ERR_platform_only_excluded_providers, tok1b, bar2, somecluster, foo2, somecluster]",
+                join(SuiteCustomizerLibraries.findWarning(modules, bothClusters, Collections.singleton("foo2"))));
         // XXX much more could be tested; check coverage results
     }
     
