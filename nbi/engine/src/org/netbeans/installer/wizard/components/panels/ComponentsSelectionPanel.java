@@ -52,6 +52,7 @@ import org.netbeans.installer.product.ProductRegistry;
 import org.netbeans.installer.product.ProductTreeNode;
 import org.netbeans.installer.utils.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
+import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
 import org.netbeans.installer.utils.helper.swing.NbiScrollPane;
 import org.netbeans.installer.utils.helper.swing.NbiTextPane;
@@ -116,12 +117,13 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
         
         componentsTreeTable = new TreeTable(new ComponentsTreeTableModel());
         componentsTreeTable.setShowVerticalLines(false);
+        componentsTreeTable.setShowHorizontalLines(true);
         componentsTreeTable.setOpaque(false);
         componentsTreeTable.setTableHeader(null);
         componentsTreeTable.setRowHeight(componentsTreeTable.getRowHeight() + 4);
         componentsTreeTable.setIntercellSpacing(new Dimension(0, 0));
         componentsTreeTable.setTreeColumnCellRenderer(new ComponentsTreeColumnCellRenderer(componentsTreeTable));
-        componentsTreeTable.getColumnModel().getColumn(0).setPreferredWidth(400);
+        componentsTreeTable.getColumnModel().getColumn(0).setPreferredWidth(300);
         componentsTreeTable.getColumnModel().getColumn(1).setCellRenderer(new ComponentsStatusCellRenderer());
         componentsTreeTable.getColumnModel().getColumn(1).setCellEditor(new ComponentsStatusCellEditor());
         componentsTreeTable.getModel().addTableModelListener(new TableModelListener() {
