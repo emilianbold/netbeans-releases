@@ -38,21 +38,21 @@ public class PreviewPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         setName(org.openide.util.NbBundle.getMessage(PreviewPanel.class, "CTL_Import_Preview_Name")); // NOI18N
+
         tablePanel.setName(""); // NOI18N
+
         org.jdesktop.layout.GroupLayout tablePanelLayout = new org.jdesktop.layout.GroupLayout(tablePanel);
         tablePanel.setLayout(tablePanelLayout);
         tablePanelLayout.setHorizontalGroup(
             tablePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 388, Short.MAX_VALUE)
+            .add(0, 603, Short.MAX_VALUE)
         );
         tablePanelLayout.setVerticalGroup(
             tablePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 220, Short.MAX_VALUE)
+            .add(0, 189, Short.MAX_VALUE)
         );
 
         org.openide.awt.Mnemonics.setLocalizedText(tableLabel, org.openide.util.NbBundle.getMessage(PreviewPanel.class, "BK3001")); // NOI18N
-        tableLabel.getAccessibleContext().setAccessibleName("Commit Files");
-        tableLabel.getAccessibleContext().setAccessibleDescription("Commit Files");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -74,6 +74,9 @@ public class PreviewPanel extends javax.swing.JPanel {
                 .add(tablePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
         );
+
+        tableLabel.getAccessibleContext().setAccessibleName("Commit Files");
+        tableLabel.getAccessibleContext().setAccessibleDescription("Commit Files");
     }// </editor-fold>//GEN-END:initComponents
     
     
