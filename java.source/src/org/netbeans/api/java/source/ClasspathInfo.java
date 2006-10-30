@@ -45,6 +45,7 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
 
 /** Class which contains info about classpath
@@ -267,24 +268,25 @@ public final class ClasspathInfo {
     
     private class ClassPathListener implements PropertyChangeListener {	
 		
-	public void propertyChange (PropertyChangeEvent event) {
-	    if (ClassPath.PROP_ROOTS.equals(event.getPropertyName())) {
-		boolean valid;
-		synchronized (this) {
-		    // Kill FileManager
-		    fileManager = null;
-		    // Reset the root files
+        public void propertyChange (PropertyChangeEvent event) {
+            if (ClassPath.PROP_ROOTS.equals(event.getPropertyName())) {
+                synchronized (this) {
+                    // Kill FileManager
+                    fileManager = null;
+                    // Kill indexes
+                    usagesQuery = null;
+                    // Reset the root files
                     if (event.getSource() == ClasspathInfo.this.srcClassPath) {
                         try {
                             ClasspathInfo.this.outputClassPath = createOutputClassPath (ClasspathInfo.this.srcClassPath);
                         } catch (IOException ioe) {
-                            ErrorManager.getDefault().notify(ioe);
+                            Exceptions.printStackTrace(ioe);
                         }
                     }
-		}
-		fireChangeListenerStateChanged();
-	    }
-	}	
+                }
+                fireChangeListenerStateChanged();
+            }
+        }
     }
     
     private static class ClasspathInfoAccessorImpl extends ClasspathInfoAccessor {
