@@ -20,7 +20,6 @@
 package org.netbeans.modules.web.core.syntax.completion;
 
 import java.net.URL;
-import java.util.Collections;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.text.BadLocationException;
@@ -31,7 +30,6 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.CompletionQuery;
-import org.netbeans.editor.ext.ExtEditorUI;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.editor.ext.html.HTMLCompletionQuery;
 import org.netbeans.editor.ext.html.HTMLCompletionQuery.HTMLResultItem;
@@ -43,7 +41,6 @@ import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
-import org.openide.ErrorManager;
 
 
 /** JSP completion provider implementation
