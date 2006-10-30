@@ -23,9 +23,6 @@ import java.io.IOException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.modules.j2ee.common.JMIUtils;
-import org.netbeans.modules.j2ee.common.queries.api.InjectionTargetQuery;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
@@ -154,11 +151,12 @@ class WebContainerImpl extends EnterpriseReferenceContainer {
     
     private void writeDD(String referencingClassName) throws IOException {
         WebModuleImplementation jp = (WebModuleImplementation) webProject.getLookup().lookup(WebModuleImplementation.class);
-        JavaClass jc = JMIUtils.findClass(referencingClassName);
-        if (isDescriptorMandatory(jp.getJ2eePlatformVersion()) || !InjectionTargetQuery.isInjectionTarget(jc)) {
+        //TODO: RETOUCHE
+//        JavaClass jc = JMIUtils.findClass(referencingClassName);
+//        if (isDescriptorMandatory(jp.getJ2eePlatformVersion()) || !InjectionTargetQuery.isInjectionTarget(jc)) {
             FileObject fo = jp.getDeploymentDescriptor();
             getWebApp().write(fo);
-        }
+//        }
     }
     
     public String addResourceRef(ResourceRef ref, String referencingClass) throws IOException {

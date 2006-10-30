@@ -34,11 +34,9 @@ import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeAppProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.ErrorManager;
@@ -56,20 +54,15 @@ import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.modules.web.project.ui.SetExecutionUriAction;
 import org.netbeans.modules.web.project.parser.ParserWebModule;
 import org.netbeans.modules.web.project.parser.JspNameUtil;
-
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
-
-import org.netbeans.jmi.javamodel.*;
 import java.util.HashSet;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
-import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.web.api.webmodule.RequestParametersQuery;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.JspParserFactory;
@@ -761,16 +754,17 @@ class WebActionProvider implements ActionProvider {
             return false;
         }
         boolean has = false;
-        JavaModel.getJavaRepository ().beginTrans (false);
-        
-        try {
-            JavaModel.setClassPath(fo);
-            Resource res = JavaModel.getResource (fo);
-            assert res != null : "Resource found for FileObject " + fo;
-            has = !res.getMain().isEmpty();
-        } finally {
-            JavaModel.getJavaRepository ().endTrans ();
-        }
+        //TODO: RETOUCHE
+//        JavaModel.getJavaRepository ().beginTrans (false);
+//        
+//        try {
+//            JavaModel.setClassPath(fo);
+//            Resource res = JavaModel.getResource (fo);
+//            assert res != null : "Resource found for FileObject " + fo;
+//            has = !res.getMain().isEmpty();
+//        } finally {
+//            JavaModel.getJavaRepository ().endTrans ();
+//        }
         return has;
     }
     
