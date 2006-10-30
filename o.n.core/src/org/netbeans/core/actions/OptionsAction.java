@@ -562,13 +562,13 @@ public class OptionsAction extends CallableSystemAction {
             }
 
             /** Dummy placeholder property. */
-            private static final class IndicatorProperty extends PropertySupport.ReadOnly {
+            private static final class IndicatorProperty extends PropertySupport.ReadOnly<String> {
 
                 public IndicatorProperty() {
                     super("indicator", String.class, "", ""); // NOI18N
                 }
 
-                public Object getValue() {
+                public String getValue() {
                     return ""; // NOI18N
                 }
 

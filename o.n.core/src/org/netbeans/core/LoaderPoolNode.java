@@ -28,6 +28,7 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -73,7 +74,6 @@ import org.openide.util.actions.SystemAction;
 import org.openide.util.io.NbMarshalledObject;
 import org.openide.util.io.NbObjectInputStream;
 import org.openide.util.io.NbObjectOutputStream;
-import org.openide.util.io.SafeException;
 
 /** Node which represents loader pool and its content - all loaders
 * in the system. LoaderPoolNode also supports subnode reordering.<P>
@@ -716,7 +716,7 @@ public final class LoaderPoolNode extends AbstractNode {
     /***** Inner classes **************/
 
     /** Node representing one loader in Loader Pool */
-    private static class LoaderPoolItemNode extends BeanNode {
+    private static class LoaderPoolItemNode extends BeanNode<DataLoader> {
 
         /** true if a system loader */
         boolean isSystem;
@@ -803,7 +803,7 @@ public final class LoaderPoolNode extends AbstractNode {
     * Extends Index.MapChildren implementation to map nodes to loaders and to support
     * children reordering.
     */
-    private static final class LoaderChildren extends Children.Keys
+    private static final class LoaderChildren extends Children.Keys<DataLoader>
     implements ChangeListener {
         public LoaderChildren () {
             update ();
@@ -812,17 +812,14 @@ public final class LoaderPoolNode extends AbstractNode {
 
         /** Update the the nodes */
         public void update () {
-            List<DataLoader> _loaders = new LinkedList<DataLoader> ();
-            @SuppressWarnings("unchecked") Enumeration<DataLoader> e = (Enumeration<DataLoader>)getNbLoaderPool ().allLoaders ();
-            while (e.hasMoreElements ()) _loaders.add (e.nextElement ());
-            setKeys (_loaders);
+            setKeys(Collections.list(getNbLoaderPool().allLoaders()));
         }
 
         /** Creates new node for the loader.
         */
-        protected Node[] createNodes (Object loader) {
+        protected Node[] createNodes(DataLoader loader) {
             try {
-                return new Node[] { new LoaderPoolItemNode ((DataLoader)loader) };
+                return new Node[] {new LoaderPoolItemNode(loader)};
             } catch (IntrospectionException e) {
                 err.log(Level.WARNING, null, e);
                 return new Node[] { };

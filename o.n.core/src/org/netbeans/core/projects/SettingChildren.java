@@ -120,7 +120,7 @@ public final class SettingChildren extends FilterNode.Children {
     }
 
     /** Property allowing display/manipulation of setting status for one specific layer. */
-    public static class FileStateProperty extends PropertySupport {
+    public static class FileStateProperty extends PropertySupport<Integer> {
         static final int ACTION_DEFINE = 1;
         static final int ACTION_REVERT = 2;
         static final int ACTION_DELETE = 3;
@@ -142,10 +142,10 @@ public final class SettingChildren extends FilterNode.Children {
             this.layer = layer;
 
             setValue (ListImageEditor.PROP_VALUES, new Integer [] {
-                Integer.valueOf (FileStateManager.FSTATE_DEFINED),
-                Integer.valueOf (FileStateManager.FSTATE_IGNORED),
-                Integer.valueOf (FileStateManager.FSTATE_INHERITED),
-                Integer.valueOf (FileStateManager.FSTATE_UNDEFINED)
+                FileStateManager.FSTATE_DEFINED,
+                FileStateManager.FSTATE_IGNORED,
+                FileStateManager.FSTATE_INHERITED,
+                FileStateManager.FSTATE_UNDEFINED,
             });
 
             setValue (ListImageEditor.PROP_IMAGES, new Image [] {
@@ -162,24 +162,23 @@ public final class SettingChildren extends FilterNode.Children {
             
             Integer val = null;
             try {
-                val = (Integer) getValue ();
+                val = getValue();
             } catch (Exception e) {
                 // ignore it, will be handled later
             }
             
             return val != null &&
-                val.intValue () != FileStateManager.FSTATE_DEFINED &&
-                (layer != FileStateManager.LAYER_MODULES || val.intValue () != FileStateManager.FSTATE_UNDEFINED);
+                val != FileStateManager.FSTATE_DEFINED &&
+                (layer != FileStateManager.LAYER_MODULES || val != FileStateManager.FSTATE_UNDEFINED);
         }
 
-        public Object getValue () throws IllegalAccessException, InvocationTargetException {
-            FileStateManager fsm = FileStateManager.getDefault ();
-            return Integer.valueOf (fsm.getFileState (primaryFile, layer));
+        public Integer getValue() throws IllegalAccessException, InvocationTargetException {
+            return FileStateManager.getDefault().getFileState(primaryFile, layer);
         }
 
-        public void setValue (Object val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        public void setValue(Integer val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
             FileStateManager fsm = FileStateManager.getDefault ();
-            int action = ((Integer) val).intValue ();
+            int action = val;
             
             try {
                 switch (action) {
@@ -231,12 +230,12 @@ public final class SettingChildren extends FilterNode.Children {
 
             if (primaryFile != null) {
                 try {
-                    val = (Integer) getValue ();
+                    val = getValue();
                 } catch (Exception e) {
                     // ignore it, will be handled later
                 }
 
-                switch (val == null ? -1 : val.intValue()) {
+                switch (val == null ? -1 : val) {
                     case FileStateManager.FSTATE_DEFINED:
                         s = NbBundle.getMessage (SettingChildren.class, "LBL_fstate_defined");
                         break;

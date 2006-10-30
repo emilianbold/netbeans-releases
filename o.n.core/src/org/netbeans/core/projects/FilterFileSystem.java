@@ -38,15 +38,18 @@ public final class FilterFileSystem extends MultiFileSystem {
         super (new FileSystem [] { root.getFileSystem () });
         this.root = root;
         this.del = root.getFileSystem ();
-        
+        setSystemName();
+        setPropagateMasks (true);
+    }
+
+    @SuppressWarnings("deprecation")
+    private void setSystemName() {
         try {
-            setSystemName (del.getSystemName () + " : " + root.getPath()); //NOI18N
+            setSystemName(del.getSystemName() + " : " + root.getPath()); //NOI18N
         } catch (PropertyVetoException e) {
             // ther shouldn't be any listener vetoing setSystemName
             Exceptions.printStackTrace(e);
         }
-
-        setPropagateMasks (true);
     }
 
     public final FileObject getRootFileObject () {
