@@ -1,4 +1,5 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.core.startup/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/core/startup/Bundle.properties
+OpenIDE-Module-Needs: org.netbeans.core.startup.CoreBridge
 
