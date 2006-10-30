@@ -820,5 +820,56 @@ public class SvnUtils {
             return new SVNRevision.Number(Long.parseLong(revisionString));
         }        
     }
+
+    /*
+     * Returns the first pattern from the list which matches with the given value. 
+     * The patterns are interpreted as shell paterns.
+     * 
+     * @param patterns 
+     * @param value 
+     * @return the first pattern matching with the given value
+     */
+    public static List<String> getMatchinIgnoreParterns(List<String> patterns, String value, boolean onlyFirstMatch)  {        
+        List<String> ret = new ArrayList<String>();
+        for (Iterator<String> i = patterns.iterator(); i.hasNext();) {
+            try {
+                // may contain shell patterns (almost identical to RegExp)
+                String patternString  = i.next();
+                String shellPatternString = regExpToFilePatterns(patternString);                            
+                Pattern pattern =  Pattern.compile(shellPatternString);
+                if (pattern.matcher(value).matches()) {
+                    ret.add(patternString);
+                    if(onlyFirstMatch) {
+                        return ret;
+                    }
+                }
+            } catch (PatternSyntaxException e) {
+                // it's difference between shell and regexp
+                // or user error (set invalid property), rethrow?
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            }
+        }        
+        return ret;
+    }    
     
+    private static String regExpToFilePatterns(String exp) {
+        exp = exp.replaceAll("\\.", "\\\\.");   // NOI18N
+        exp = exp.replaceAll("\\*", ".*");      // NOI18N
+        exp = exp.replaceAll("\\?", ".");       // NOI18N
+        
+        exp = exp.replaceAll("\\$", "\\\\\\$"); // NOI18N
+        exp = exp.replaceAll("\\^", "\\\\^");   // NOI18N
+        exp = exp.replaceAll("\\<", "\\\\<");   // NOI18N
+        exp = exp.replaceAll("\\>", "\\\\>");   // NOI18N
+        exp = exp.replaceAll("\\[", "\\\\[");   // NOI18N
+        exp = exp.replaceAll("\\]", "\\\\]");   // NOI18N
+        exp = exp.replaceAll("\\{", "\\\\{");   // NOI18N
+        exp = exp.replaceAll("\\}", "\\\\}");   // NOI18N
+        exp = exp.replaceAll("\\(", "\\\\(");   // NOI18N
+        exp = exp.replaceAll("\\)", "\\\\)");   // NOI18N
+        exp = exp.replaceAll("\\+", "\\\\+");   // NOI18N
+        exp = exp.replaceAll("\\|", "\\\\|");   // NOI18N
+        
+        return exp;
+    }    
 }

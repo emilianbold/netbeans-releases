@@ -346,24 +346,13 @@ public class Subversion {
                     
                     List<String> patterns = client.getIgnoredPatterns(parent);
                     List<String> gignores = SvnConfigFiles.getInstance().getGlobalIgnores();
-                    for (Iterator<String> it = gignores.iterator();
-                         it.hasNext();
-                         patterns.add(it.next()));
+                    // merge global ignores and ignore patterns
+                    for (Iterator<String> it = gignores.iterator(); it.hasNext(); patterns.add(it.next()));
 
-                    for (Iterator<String> i = patterns.iterator(); i.hasNext();) {
-                        try {
-                            // property may contain shell patterns (almost identical to RegExp)
-                            String patternString = regExpToFilePatterns(i.next());                            
-                            Pattern pattern =  Pattern.compile(patternString);
-                            if (pattern.matcher(name).matches()) {
-                                return true;
-                            }
-                        } catch (PatternSyntaxException e) {
-                            // it's difference between shell and regexp
-                            // or user error (set invalid property), rethrow?
-                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                        }
+                    if(SvnUtils.getMatchinIgnoreParterns(patterns,name, true).size() > 0) {
+                        return true;
                     }
+                    
                 } catch (SVNClientException ex)  {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 }
@@ -410,27 +399,6 @@ public class Subversion {
         }
 
     }    
-
-    private String regExpToFilePatterns(String exp) {
-        exp = exp.replaceAll("\\.", "\\\\."); // NOI18N
-        exp = exp.replaceAll("\\*", ".*"); // NOI18N
-        exp = exp.replaceAll("\\?", "."); // NOI18N
-        
-        exp = exp.replaceAll("\\$", "\\\\\\$"); // NOI18N
-        exp = exp.replaceAll("\\^", "\\\\^"); // NOI18N
-        exp = exp.replaceAll("\\<", "\\\\<"); // NOI18N
-        exp = exp.replaceAll("\\>", "\\\\>"); // NOI18N
-        exp = exp.replaceAll("\\[", "\\\\["); // NOI18N
-        exp = exp.replaceAll("\\]", "\\\\]"); // NOI18N
-        exp = exp.replaceAll("\\{", "\\\\{"); // NOI18N
-        exp = exp.replaceAll("\\}", "\\\\}"); // NOI18N
-        exp = exp.replaceAll("\\(", "\\\\("); // NOI18N
-        exp = exp.replaceAll("\\)", "\\\\)"); // NOI18N
-        exp = exp.replaceAll("\\+", "\\\\+"); // NOI18N
-        exp = exp.replaceAll("\\|", "\\\\|"); // NOI18N
-        
-        return exp;
-    }
 
     /**
      * Serializes all SVN requests (moves them out of AWT).

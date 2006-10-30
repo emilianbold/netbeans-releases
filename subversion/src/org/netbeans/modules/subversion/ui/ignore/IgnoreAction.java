@@ -28,6 +28,7 @@ import org.openide.*;
 import org.openide.nodes.Node;
 
 import java.io.File;
+import java.lang.String;
 import org.tigris.subversion.svnclientadapter.*;
 
 /**
@@ -47,11 +48,11 @@ public class IgnoreAction extends ContextAction {
         switch (actionStatus) {
         case UNDEFINED:
         case IGNORING:
-            return "CTL_MenuItem_Ignore";  // NOI18N
+            return "CTL_MenuItem_Ignore";                                           // NOI18N
         case UNIGNORING:
-            return "CTL_MenuItem_Unignore"; // NOI18N
+            return "CTL_MenuItem_Unignore";                                         // NOI18N
         default:
-            throw new RuntimeException("Invalid action status: " + actionStatus); // NOI18N
+            throw new RuntimeException("Invalid action status: " + actionStatus);   // NOI18N
         }
     }
 
@@ -78,12 +79,9 @@ public class IgnoreAction extends ContextAction {
             }
             FileInformation info = cache.getStatus(files[i]);
             if (info.getStatus() == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) {
-                actionStatus = (actionStatus == -1 || actionStatus == IGNORING) ?
-                        IGNORING : UNDEFINED;
+                actionStatus = IGNORING;
             } else if (info.getStatus() == FileInformation.STATUS_NOTVERSIONED_EXCLUDED) {
-                actionStatus = ((actionStatus == -1 || actionStatus == UNIGNORING)
-                        && canBeUnignored(files[i])) ?
-                        UNIGNORING : UNDEFINED;
+                actionStatus = canBeUnignored(files[i]) ? UNIGNORING : UNDEFINED;
             } else {
                 actionStatus = UNDEFINED;
                 break;
@@ -94,54 +92,107 @@ public class IgnoreAction extends ContextAction {
     
     private boolean canBeUnignored(File file) {
         File parent = file.getParentFile();
-        try {
-            SvnClient client = Subversion.getInstance().getClient(false);
-            List patterns = client.getIgnoredPatterns(parent);
-            return patterns.contains(file.getName());
-        } catch (SVNClientException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        List<String> patterns = getIgnorePatterns(parent);
+        if(patterns == null) {
             return false;
         }
+        List<String> patternsList = getMatchingPatterns(patterns, file.getName(), true);
+        return patternsList != null && !patternsList.get(0).equals("");        
     }
 
+    private List<String> getMatchingPatterns(List<String> patterns, String value, boolean onlyFirtsMatch) {                
+        return SvnUtils.getMatchinIgnoreParterns(patterns, value, onlyFirtsMatch);        
+    }
+    
+    private List<String> getIgnorePatterns(File file) {
+        try {
+            SvnClient client = Subversion.getInstance().getClient(false);
+            return  client.getIgnoredPatterns(file);            
+        } catch (SVNClientException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            return null;
+        }        
+    }
+    
     protected boolean enable(Node[] nodes) {
         return getActionStatus(nodes) != UNDEFINED;
     }
 
     public void performContextAction(final Node[] nodes) {
 
-        final File files[] = SvnUtils.getCurrentContext(nodes).getFiles();
         final int actionStatus = getActionStatus(nodes);
-        ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this, nodes) {
-            public void perform() {
+        
+        final File files[] = SvnUtils.getCurrentContext(nodes).getRootFiles();                                        
+        final Ignore ignore;                    
+        if(actionStatus == IGNORING) {
+            String pattern = "";
+            if(files.length == 1) {
+                pattern = files[0].getName();
+            }            
+            ignore = new Ignore(org.openide.util.NbBundle.getMessage(IgnoreAction.class, getBaseName(nodes)), pattern);
+            if(!ignore.showDialog()) {
+                return;
+            }                        
+        } else {
+            ignore = null;
+        }
 
+        ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this, nodes) {
+            public void perform() {                
                 SvnClient client = Subversion.getInstance().getClient(true);               
                 for (int i = 0; i<files.length; i++) {
+                    
+                    File file = files[i];
+                    File parent = file.getParentFile();
+                            
+                    final List<String> ignoredPatterns;        
+                    boolean ignorePatterns = false;        
+                    if(actionStatus == IGNORING) {                         
+                        ignorePatterns = ignore.ignorePattern();        
+                        ignoredPatterns = new ArrayList<String>();
+                        ignoredPatterns.add(ignorePatterns ? ignore.getIgnoredPattern() : file.getName());                        
+                    } else  {
+                        List<String> patterns = getIgnorePatterns(parent);
+                        ignoredPatterns = getMatchingPatterns(patterns, file.getName(), false);
+                        for (Iterator<String> it = ignoredPatterns.iterator(); it.hasNext();) {
+                            if(!it.equals(file.getName())) {
+                                ignorePatterns = true;
+                                break;
+                            }
+                        }                                                
+                    }                       
                     if(isCanceled()) {
                         return;
                     }
-                    File file = files[i];
-                    File parent = file.getParentFile();
                     if (actionStatus == IGNORING) {
                         try {
                             ensureVersioned(parent);
-                            client.addToIgnoredPatterns(parent, file.getName());
-                            // it's not catched by cache's onNotify(), refresh explicitly
-                            Subversion.getInstance().getStatusCache().refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+                            for (Iterator<String> it = ignoredPatterns.iterator(); it.hasNext(); client.addToIgnoredPatterns(parent, it.next()));                            
                         } catch (SVNClientException ex) {
                             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                         }
                     } else if (actionStatus == UNIGNORING) {
                         try {
                             List patterns = Subversion.getInstance().getClient(true).getIgnoredPatterns(parent);
-                            patterns.remove(file.getName());
+                            for (Iterator<String> it = ignoredPatterns.iterator(); it.hasNext(); patterns.remove(it.next()));                                                        
                             client.setIgnoredPatterns(parent, patterns);
-                            Subversion.getInstance().getStatusCache().refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
                         } catch (SVNClientException ex) {
                             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                         }
                     } else {
                         throw new RuntimeException("Invalid action status: " + actionStatus); // NOI18N
+                    }
+                    
+                    // refresh all changed files
+                    if(ignorePatterns) {                        
+                        // a pattern was set/unset - we should refresh all files from the folder
+                        File[] siblingFiles = parent.listFiles();
+                        for (int j = 0; j < siblingFiles.length; j++) {
+                            Subversion.getInstance().getStatusCache().refresh(siblingFiles[j], FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+                        }
+                    } else {
+                        // it's not catched by cache's onNotify(), refresh explicitly 
+                        Subversion.getInstance().getStatusCache().refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
                     }
                 }
             }
