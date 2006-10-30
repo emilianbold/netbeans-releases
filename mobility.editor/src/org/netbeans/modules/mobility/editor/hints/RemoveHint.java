@@ -18,13 +18,9 @@
  */
 
 package org.netbeans.modules.mobility.editor.hints;
-import org.netbeans.modules.editor.hints.spi.Hint;
-import org.netbeans.modules.editor.hints.spi.ChangeInfo;
-import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.modules.mobility.editor.actions.RecommentAction;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.api.mdr.MDRepository;
 import org.openide.util.NbBundle;
 import org.openide.text.NbDocument;
 import org.openide.ErrorManager;
@@ -33,13 +29,8 @@ import javax.swing.text.StyledDocument;
 import javax.swing.text.BadLocationException;
 
 /**
- * Created by IntelliJ IDEA.
- * User: bohemius
- * Date: Aug 15, 2005
- * Time: 6:32:36 PM
- * To change this template use File | Settings | File Templates.
  */
-public class RemoveHint extends Hint {
+public class RemoveHint {//extends Hint {
     
     final protected int offset;
     final protected BaseDocument doc;
@@ -54,31 +45,31 @@ public class RemoveHint extends Hint {
         return NbBundle.getMessage(RemoveHint.class, "HintInlineRemove"); //NOI18N)
     }
     
-    public ChangeInfo implement() {
-        final MDRepository rep = JavaModel.getJavaRepository();
-        rep.beginTrans(false);
-        try {
-            NbDocument.runAtomic((StyledDocument) doc, new Runnable() {
-                public void run() {
-                    try {
-                        final int start=Utilities.getRowStart(doc,offset);
-                        
-                        final int end=Utilities.getRowEnd(doc,offset);
-                        doc.remove(start,end-start+1);
-                        
-                    } catch (BadLocationException ble) {
-                        ErrorManager.getDefault().notify(ble);
-                    }
-                    RecommentAction.actionPerformed(doc);
-                }
-            });
-        } finally {
-            rep.endTrans();
-        }
-        return null;
-    }
-    
-    public int getType() {
-        return SUGGESTION;
-    }
+//    public ChangeInfo implement() {
+//        final MDRepository rep = JavaModel.getJavaRepository();
+//        rep.beginTrans(false);
+//        try {
+//            NbDocument.runAtomic((StyledDocument) doc, new Runnable() {
+//                public void run() {
+//                    try {
+//                        final int start=Utilities.getRowStart(doc,offset);
+//                        
+//                        final int end=Utilities.getRowEnd(doc,offset);
+//                        doc.remove(start,end-start+1);
+//                        
+//                    } catch (BadLocationException ble) {
+//                        ErrorManager.getDefault().notify(ble);
+//                    }
+//                    RecommentAction.actionPerformed(doc);
+//                }
+//            });
+//        } finally {
+//            rep.endTrans();
+//        }
+//        return null;
+//    }
+//    
+//    public int getType() {
+//        return SUGGESTION;
+//    }
 }

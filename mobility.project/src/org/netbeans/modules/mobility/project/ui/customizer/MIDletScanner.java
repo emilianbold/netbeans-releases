@@ -27,7 +27,6 @@ package org.netbeans.modules.mobility.project.ui.customizer;
 import java.io.File;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -46,15 +45,9 @@ import org.netbeans.modules.mobility.cldcplatform.libraries.J2MELibraryTypeProvi
 import org.netbeans.modules.mobility.project.DefaultPropertiesDescriptor;
 import org.netbeans.modules.mobility.project.ui.customizer.VisualClassPathItem;
 import org.netbeans.spi.mobility.project.ui.customizer.support.VisualPropertySupport;
-import org.openide.cookies.SourceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.src.ClassElement;
-import org.openide.src.Identifier;
-import org.openide.src.SourceElement;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -243,35 +236,35 @@ public class MIDletScanner implements Runnable {
     
     private static ArrayList<String> getMIDletClassNames(final FileObject fo) {
         final ArrayList<String> cnames = new ArrayList<String>();
-        try {
-            final SourceCookie src = (SourceCookie)DataObject.find(fo).getCookie(SourceCookie.class);
-            if (src != null) {
-                final SourceElement sel = src.getSource();
-                if (sel != null) {
-                    final ClassElement cel[] = sel.getAllClasses();
-                    for (ClassElement celi : cel) {
-                        if (celi.isClass() && Modifier.isPublic(celi.getModifiersMask()) && parentIsMIDlet(celi, fo)) {
-                            cnames.add(celi.getName().getFullName());
-                        }
-                    }
-                }
-            }
-        } catch (DataObjectNotFoundException dnfe) {}
+//        try {
+//            final SourceCookie src = (SourceCookie)DataObject.find(fo).getCookie(SourceCookie.class);
+//            if (src != null) {
+//                final SourceElement sel = src.getSource();
+//                if (sel != null) {
+//                    final ClassElement cel[] = sel.getAllClasses();
+//                    for (ClassElement celi : cel) {
+//                        if (celi.isClass() && Modifier.isPublic(celi.getModifiersMask()) && parentIsMIDlet(celi, fo)) {
+//                            cnames.add(celi.getName().getFullName());
+//                        }
+//                    }
+//                }
+//            }
+//        } catch (DataObjectNotFoundException dnfe) {}
         return cnames;
     }
     
-    private static boolean parentIsMIDlet(ClassElement cel, final FileObject reference) {
-        while (cel != null) {
-            final Identifier id = cel.getSuperclass();
-            if (id == null) return false;
-            final String name = id.getFullName();
-            if ("java.lang.Object".equals(name)) return false; //NOI18N
-            if ("javax.microedition.midlet.MIDlet".equals(name)) return true; //NOI18N
-            // workaround for unresolved class full name
-            if ("MIDlet".equals(name)) return true; //NOI18N
-            cel = ClassElement.forName(name, reference);
-        }
-        return false;
-    }
+//    private static boolean parentIsMIDlet(ClassElement cel, final FileObject reference) {
+//        while (cel != null) {
+//            final Identifier id = cel.getSuperclass();
+//            if (id == null) return false;
+//            final String name = id.getFullName();
+//            if ("java.lang.Object".equals(name)) return false; //NOI18N
+//            if ("javax.microedition.midlet.MIDlet".equals(name)) return true; //NOI18N
+//            // workaround for unresolved class full name
+//            if ("MIDlet".equals(name)) return true; //NOI18N
+//            cel = ClassElement.forName(name, reference);
+//        }
+//        return false;
+//    }
 }
 

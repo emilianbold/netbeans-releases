@@ -28,7 +28,6 @@ import java.util.*;
 
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.modules.mobility.project.ui.customizer.J2MEProjectProperties;
-import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 import org.netbeans.spi.mobility.project.PropertyParser;
 import org.netbeans.spi.mobility.project.support.DefaultPropertyParsers;
 import org.netbeans.spi.project.ActionProvider;
@@ -235,11 +234,11 @@ public class J2MEActionProvider implements ActionProvider {
             }
         };
         
-        if (this.bkgScanSensitiveActions.contains(command)) {
-            JavaMetamodel.getManager().invokeAfterScanFinished(action, NbBundle.getMessage(J2MEActionProvider.class,"ACTION_"+command)); //NOI18N
-        } else {
+//        if (this.bkgScanSensitiveActions.contains(command)) {
+//            JavaMetamodel.getManager().invokeAfterScanFinished(action, NbBundle.getMessage(J2MEActionProvider.class,"ACTION_"+command)); //NOI18N
+//        } else {
             action.run();
-        }
+//        }
     }
     
     protected void doPrepareForDebugger(final EditableProperties ep, final Properties p, final String activeConfiguration) {

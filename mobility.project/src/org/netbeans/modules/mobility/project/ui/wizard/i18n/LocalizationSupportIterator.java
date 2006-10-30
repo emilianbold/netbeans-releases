@@ -28,7 +28,6 @@ import java.io.*;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.mobility.project.ui.wizard.*;
-import org.openide.src.*;
 import org.openide.loaders.*;
 import org.openide.*;
 import org.openide.util.Utilities;
@@ -254,7 +253,7 @@ public class LocalizationSupportIterator implements TemplateWizard.Iterator {
         if ("".equals(s)) // NOI18N
             return true;
         try {
-            Type.parse(s);
+            Utilities.isJavaIdentifier(s);
             return true;
         } catch (IllegalArgumentException ex) {
             return false;

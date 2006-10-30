@@ -24,13 +24,11 @@ import java.io.IOException;
 import java.util.*;
 import javax.swing.text.StyledDocument;
 
-import org.netbeans.api.mdr.MDRepository;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.mobility.antext.preprocessor.CommentingPreProcessor;
 import org.netbeans.modules.mobility.project.preprocessor.PPDocumentDestination;
 import org.netbeans.modules.mobility.project.preprocessor.PPDocumentSource;
@@ -143,14 +141,14 @@ public class TextSwitcher implements PropertyChangeListener {
                 identifiers.put(pch.getActiveConfiguration().getDisplayName(),null);
                 final CommentingPreProcessor cpp =new CommentingPreProcessor(ppSrc, ppDest, identifiers) ;
                 
-                final MDRepository rep = JavaModel.getJavaRepository();
-                rep.beginTrans(false);
+//                final MDRepository rep = JavaModel.getJavaRepository();
+//                rep.beginTrans(false);
                 try {
                     doc.putProperty(TextSwitcher.SKIP_DUCUMENT_CHANGES, TextSwitcher.SKIP_DUCUMENT_CHANGES);
                     NbDocument.runAtomic(doc, cpp);
                 } finally {
                     doc.putProperty(TextSwitcher.SKIP_DUCUMENT_CHANGES, null);
-                    rep.endTrans();
+//                    rep.endTrans();
                 }
                 
                 return true;

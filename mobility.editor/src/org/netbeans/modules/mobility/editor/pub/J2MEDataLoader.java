@@ -24,79 +24,84 @@
  */
 package org.netbeans.modules.mobility.editor.pub;
 
-import java.io.IOException;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.modules.java.JavaDataLoader;
-import org.netbeans.modules.javacore.JMManager;
-import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
+import org.netbeans.api.java.loaders.JavaDataSupport;
 import org.netbeans.modules.mobility.editor.J2MENode;
 import org.netbeans.modules.mobility.project.J2MEProject;
-import org.openide.ErrorManager;
-import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectExistsException;
+import org.openide.loaders.FileEntry;
 import org.openide.loaders.MultiDataObject;
+import org.openide.loaders.MultiFileLoader;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
-import org.openide.util.actions.SystemAction;
 
 /**
  *
  * @author Adam Sotona
  */
-public class J2MEDataLoader extends JavaDataLoader {
+public class J2MEDataLoader extends MultiFileLoader {
     
     /** Creates a new instance of J2MEDataLoader */
     public J2MEDataLoader() {
         super("org.netbeans.modules.mobility.editor.pub.J2MEDataObject"); // NOI18N
         
-        JMManager.ModifiedDOProvider.setModifiedDOProvider(new JMManager.ModifiedDOProvider() {
-            protected DataObject getModifiedDOImpl(final FileObject fo) {
-                if (FileOwnerQuery.getOwner(fo) instanceof J2MEProject) try {
-                    final DataObject dob = DataObject.find(fo);
-                    if (dob != null) {
-                        final EditorCookie ec = (EditorCookie)dob.getCookie(EditorCookie.class);
-                        if (ec != null) {
-                            if (ec.getDocument() != null) return dob;
-                            RequestProcessor.getDefault().post(new Runnable(){
-                                public void run() {
-                                    if (dob.isValid()) try {
-                                        ec.openDocument();
-                                        JavaMetamodel.getManager().addModified(fo);
-                                    } catch (IOException ioe) {
-                                        ErrorManager.getDefault().notify(ioe);
-                                    }
-                                }
-                            }, 5000);
-                        }
-                    }
-                } catch (Exception e) {}
-                return null;
-            }
-        });
+//        JMManager.ModifiedDOProvider.setModifiedDOProvider(new JMManager.ModifiedDOProvider() {
+//            protected DataObject getModifiedDOImpl(final FileObject fo) {
+//                if (FileOwnerQuery.getOwner(fo) instanceof J2MEProject) try {
+//                    final DataObject dob = DataObject.find(fo);
+//                    if (dob != null) {
+//                        final EditorCookie ec = (EditorCookie)dob.getCookie(EditorCookie.class);
+//                        if (ec != null) {
+//                            if (ec.getDocument() != null) return dob;
+//                            RequestProcessor.getDefault().post(new Runnable(){
+//                                public void run() {
+//                                    if (dob.isValid()) try {
+//                                        ec.openDocument();
+//                                        JavaMetamodel.getManager().addModified(fo);
+//                                    } catch (IOException ioe) {
+//                                        ErrorManager.getDefault().notify(ioe);
+//                                    }
+//                                }
+//                            }, 5000);
+//                        }
+//                    }
+//                } catch (Exception e) {}
+//                return null;
+//            }
+//        });
     }
     
     public J2MEDataLoader(String recognizedObject) {
         super(recognizedObject);
     }
     
+    @Override
     protected FileObject findPrimaryFile(FileObject fo) {
-        fo = super.findPrimaryFile(fo);
-        return J2MEProject.isJ2MEFile(fo) ? fo : null;
+        return fo.isData() && "java".equals(fo.getExt()) && J2MEProject.isJ2MEFile(fo) ? fo : null;
     }
     
     
+    @Override
     protected String defaultDisplayName() {
         return NbBundle.getMessage(J2MENode.class, "PROP_J2MELoader_Name"); //NOI18N
     }
-    
-    /** Gets default actions. Overrides superclass method. */
-    protected SystemAction[] defaultActions() {
-        return getLoader(J2MEDataLoader.class).getActions();
+
+    @Override
+    protected String actionsContext () {
+        return "Loaders/text/x-java/Actions/"; // NOI18N
     }
     
+    @Override
     protected MultiDataObject createMultiObject(final FileObject primaryFile) throws DataObjectExistsException, java.io.IOException {
         return new J2MEDataObject(primaryFile, this);
     }
+
+protected org.openide.loaders.MultiDataObject.Entry
+createPrimaryEntry(MultiDataObject obj, FileObject primaryFile) {
+        return JavaDataSupport.createJavaFileEntry(obj, primaryFile);
+  }
+
+protected org.openide.loaders.MultiDataObject.Entry
+createSecondaryEntry(MultiDataObject obj, FileObject secondaryFile) {
+        return new FileEntry.Numb(obj, secondaryFile);
+  }
 }

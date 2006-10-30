@@ -35,14 +35,9 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.mdr.MDRepository;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.editor.hints.spi.ChangeInfo;
-import org.netbeans.modules.editor.hints.spi.Hint;
-import org.netbeans.modules.java.Util;
-import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.modules.mobility.editor.actions.RecommentAction;
 import org.netbeans.modules.mobility.project.J2MEProjectUtils;
 import org.openide.ErrorManager;
@@ -56,7 +51,7 @@ import org.openide.windows.WindowManager;
  *
  * @author Adam Sotona
  */
-public class InlineIncludeHint extends Hint {
+public class InlineIncludeHint {//extends Hint {
     
     private static File LAST_DIRECTORY;
     
@@ -107,66 +102,66 @@ public class InlineIncludeHint extends Hint {
         return null;
     }
     
-    public synchronized ChangeInfo implement() {
-        if (file == null) {
-            final JFileChooser fch = new JFileChooser(LAST_DIRECTORY);
-            fch.setDialogTitle(NbBundle.getMessage(InlineIncludeHint.class, "Title_SelectFileToInclude")); //NOI18N
-            final FF ff = new FF(fileName);
-            fch.addChoosableFileFilter(ff);
-            fch.setFileFilter(ff);
-            if (JFileChooser.APPROVE_OPTION != fch.showOpenDialog(WindowManager.getDefault().getMainWindow())) return null;
-            file = fch.getSelectedFile();
-            synchronized (this)
-            {
-                LAST_DIRECTORY = file.getParentFile();
-            }
-        }
-        final String content = readFile();
-        final MDRepository rep = JavaModel.getJavaRepository();
-        rep.beginTrans(false);
-        try {
-            NbDocument.runAtomic((StyledDocument)doc, new Runnable() {
-                public void run() {
-                    try {
-                        doc.insertString(end, NbBundle.getMessage(InlineIncludeHint.class, "Comment_After_Insert", file.getAbsolutePath()), null); //NOI18N
-                        doc.insertString(end, content, null);
-                        doc.insertString(end, NbBundle.getMessage(InlineIncludeHint.class, "Comment_Before_Insert", file.getAbsolutePath()), null); //NOI18N
-                        doc.remove(start, end - start);
-                    } catch (BadLocationException ble) {
-                        ErrorManager.getDefault().notify(ble);
-                    }
-                    RecommentAction.actionPerformed(doc);
-                }
-            });
-        } finally {
-            rep.endTrans();
-        }
-        return null;
-    }
-    
-	@SuppressWarnings("deprecation")
-	private String readFile() {
-        final FileObject fo = FileUtil.toFileObject(file);
-        String encoding = (fo != null)  ? Util.getFileEncoding(fo): null;
-        if (encoding == null || encoding.length() == 0) encoding = System.getProperty("file.encoding"); //NOI18N
-        final char ch[] = new char[(int)file.length()];
-        InputStreamReader in = null;
-        try {
-            in = new InputStreamReader(new FileInputStream(file), encoding);
-            in.read(ch);
-        } catch (IOException e) {
-            ErrorManager.getDefault().notify(e);
-        } finally {
-            try {
-                if (in != null) in.close();
-            } catch (IOException ioe) {}
-        }
-        return new String(ch);
-    }
-    
-    public int getType() {
-        return ERROR;
-    }
+//    public synchronized ChangeInfo implement() {
+//        if (file == null) {
+//            final JFileChooser fch = new JFileChooser(LAST_DIRECTORY);
+//            fch.setDialogTitle(NbBundle.getMessage(InlineIncludeHint.class, "Title_SelectFileToInclude")); //NOI18N
+//            final FF ff = new FF(fileName);
+//            fch.addChoosableFileFilter(ff);
+//            fch.setFileFilter(ff);
+//            if (JFileChooser.APPROVE_OPTION != fch.showOpenDialog(WindowManager.getDefault().getMainWindow())) return null;
+//            file = fch.getSelectedFile();
+//            synchronized (this)
+//            {
+//                LAST_DIRECTORY = file.getParentFile();
+//            }
+//        }
+//        final String content = readFile();
+//        final MDRepository rep = JavaModel.getJavaRepository();
+//        rep.beginTrans(false);
+//        try {
+//            NbDocument.runAtomic((StyledDocument)doc, new Runnable() {
+//                public void run() {
+//                    try {
+//                        doc.insertString(end, NbBundle.getMessage(InlineIncludeHint.class, "Comment_After_Insert", file.getAbsolutePath()), null); //NOI18N
+//                        doc.insertString(end, content, null);
+//                        doc.insertString(end, NbBundle.getMessage(InlineIncludeHint.class, "Comment_Before_Insert", file.getAbsolutePath()), null); //NOI18N
+//                        doc.remove(start, end - start);
+//                    } catch (BadLocationException ble) {
+//                        ErrorManager.getDefault().notify(ble);
+//                    }
+//                    RecommentAction.actionPerformed(doc);
+//                }
+//            });
+//        } finally {
+//            rep.endTrans();
+//        }
+//        return null;
+//    }
+//    
+//	@SuppressWarnings("deprecation")
+//	private String readFile() {
+//        final FileObject fo = FileUtil.toFileObject(file);
+//        String encoding = (fo != null)  ? Util.getFileEncoding(fo): null;
+//        if (encoding == null || encoding.length() == 0) encoding = System.getProperty("file.encoding"); //NOI18N
+//        final char ch[] = new char[(int)file.length()];
+//        InputStreamReader in = null;
+//        try {
+//            in = new InputStreamReader(new FileInputStream(file), encoding);
+//            in.read(ch);
+//        } catch (IOException e) {
+//            ErrorManager.getDefault().notify(e);
+//        } finally {
+//            try {
+//                if (in != null) in.close();
+//            } catch (IOException ioe) {}
+//        }
+//        return new String(ch);
+//    }
+//    
+//    public int getType() {
+//        return ERROR;
+//    }
     
     public String getText() {
         findFile();

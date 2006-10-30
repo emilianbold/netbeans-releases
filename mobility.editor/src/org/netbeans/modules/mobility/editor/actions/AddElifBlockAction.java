@@ -32,11 +32,9 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.completion.Completion;
-import org.netbeans.api.mdr.MDRepository;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.mobility.antext.preprocessor.PPBlockInfo;
 import org.netbeans.mobility.antext.preprocessor.PPLine;
 import org.openide.ErrorManager;
@@ -99,34 +97,28 @@ public class AddElifBlockAction extends PreprocessorEditorContextAction {
                     e = Utilities.getRowEnd(txt, Utilities.getRowStartFromLineOffset(doc, getSelectionEndLine(txt) - 1));
                 }
                 final String text = txt.getText(s, e-s);
-                final MDRepository rep = JavaModel.getJavaRepository();
-                rep.beginTrans(false);
-                try {
-                    NbDocument.runAtomic((StyledDocument)txt.getDocument(), new Runnable() {
-                        public void run() {
-                            try {
-                                if (b.getType() == PPLine.ELSE) {
-                                    //insert new block before else
-                                    final int offs = Utilities.getRowStartFromLineOffset(doc, b.getStartLine() - 1);
-                                    doc.insertString(offs, "//#elif \n" + text + "\n", null); //NOI18N
-                                    txt.setSelectionStart(offs + 8);
-                                    txt.setSelectionEnd(offs + 8);
-                                } else {
-                                    //insert new block after the current
-                                    final int offs = Utilities.getRowEnd(txt, Utilities.getRowStartFromLineOffset(doc, b.getEndLine() - (b.hasFooter() ? 2 : 1)));
-                                    doc.insertString(offs, "\n//#elif \n" + text, null); //NOI18N
-                                    txt.setSelectionStart(offs + 9);
-                                    txt.setSelectionEnd(offs + 9);
-                                }
-                            } catch (BadLocationException ble) {
-                                ErrorManager.getDefault().notify(ble);
+                NbDocument.runAtomic((StyledDocument)txt.getDocument(), new Runnable() {
+                    public void run() {
+                        try {
+                            if (b.getType() == PPLine.ELSE) {
+                                //insert new block before else
+                                final int offs = Utilities.getRowStartFromLineOffset(doc, b.getStartLine() - 1);
+                                doc.insertString(offs, "//#elif \n" + text + "\n", null); //NOI18N
+                                txt.setSelectionStart(offs + 8);
+                                txt.setSelectionEnd(offs + 8);
+                            } else {
+                                //insert new block after the current
+                                final int offs = Utilities.getRowEnd(txt, Utilities.getRowStartFromLineOffset(doc, b.getEndLine() - (b.hasFooter() ? 2 : 1)));
+                                doc.insertString(offs, "\n//#elif \n" + text, null); //NOI18N
+                                txt.setSelectionStart(offs + 9);
+                                txt.setSelectionEnd(offs + 9);
                             }
-                            RecommentAction.actionPerformed(txt);
+                        } catch (BadLocationException ble) {
+                            ErrorManager.getDefault().notify(ble);
                         }
-                    });
-                } finally {
-                    rep.endTrans();
-                }
+                        RecommentAction.actionPerformed(txt);
+                    }
+                });
                 Completion.get().showCompletion();
             }
         } catch (BadLocationException ble) {

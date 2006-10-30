@@ -54,11 +54,6 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
-import org.openide.src.ClassElement;
-import org.openide.src.ConstructorElement;
-import org.openide.src.InitializerElement;
-import org.openide.src.MethodElement;
-import org.openide.src.Type;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -247,67 +242,67 @@ public class KdpDebugTask extends Task {
         }
     }
     
-    private static boolean isExplicitCLInitPresent(ClassElement midletClass) {
-        if (midletClass == null) {
-            return false;
-        }
-        InitializerElement[] initializers = midletClass.getInitializers();
-        if (initializers == null)
-            return false;
-        for (int i = 0; i < initializers.length; i++) {
-            InitializerElement ie = initializers[i];
-            if (ie.isStatic())
-                return true;
-        }
-        return false;
-    }
-    
-    private static boolean isExplicitInitPresent(ClassElement midletClass) {
-        if (midletClass == null) {
-            return false;
-        }
-        InitializerElement[] initializers = midletClass.getInitializers();
-        if (initializers == null)
-            return false;
-        for (int i = 0; i < initializers.length; i++) {
-            InitializerElement ie = initializers[i];
-            if (!ie.isStatic())
-                return true;
-        }
-        return false;
-    }
-    
-    private static boolean isExplicitNoArgConstructorPresent(ClassElement midletClass) {
-        if (midletClass == null) {
-            return false;
-        }
-        ConstructorElement ce = midletClass.getConstructor(new Type[] {Type.VOID});
-        if (ce == null)
-            return true;
-        return false;
-    }
-    
-    private ClassElement getMIDletClassElement(String midletClassName, Project project, Path path) {
-        ClassElement midletClass = null;
-        midletClass = ClassElement.forName(midletClassName, FileUtil.toFileObject(new File(project.getBaseDir().getAbsolutePath() + "/src")));
-        return midletClass;
-    }
-    
-    private static boolean isStartAppPresent(ClassElement midletClass) {
-        if (midletClass == null) {
-            return false;
-        }
-        MethodElement[] methods = midletClass.getMethods();
-        
-        if (methods == null)
-            return false;
-        for (int i = 0; i < methods.length; i++) {
-            MethodElement me = methods[i];
-            if (me.getName().getName().equals("startApp")) //NOI18N
-                return true;
-        }
-        return false;
-    }
+//    private static boolean isExplicitCLInitPresent(ClassElement midletClass) {
+//        if (midletClass == null) {
+//            return false;
+//        }
+//        InitializerElement[] initializers = midletClass.getInitializers();
+//        if (initializers == null)
+//            return false;
+//        for (int i = 0; i < initializers.length; i++) {
+//            InitializerElement ie = initializers[i];
+//            if (ie.isStatic())
+//                return true;
+//        }
+//        return false;
+//    }
+//    
+//    private static boolean isExplicitInitPresent(ClassElement midletClass) {
+//        if (midletClass == null) {
+//            return false;
+//        }
+//        InitializerElement[] initializers = midletClass.getInitializers();
+//        if (initializers == null)
+//            return false;
+//        for (int i = 0; i < initializers.length; i++) {
+//            InitializerElement ie = initializers[i];
+//            if (!ie.isStatic())
+//                return true;
+//        }
+//        return false;
+//    }
+//    
+//    private static boolean isExplicitNoArgConstructorPresent(ClassElement midletClass) {
+//        if (midletClass == null) {
+//            return false;
+//        }
+//        ConstructorElement ce = midletClass.getConstructor(new Type[] {Type.VOID});
+//        if (ce == null)
+//            return true;
+//        return false;
+//    }
+//    
+//    private ClassElement getMIDletClassElement(String midletClassName, Project project, Path path) {
+//        ClassElement midletClass = null;
+//        midletClass = ClassElement.forName(midletClassName, FileUtil.toFileObject(new File(project.getBaseDir().getAbsolutePath() + "/src")));
+//        return midletClass;
+//    }
+//    
+//    private static boolean isStartAppPresent(ClassElement midletClass) {
+//        if (midletClass == null) {
+//            return false;
+//        }
+//        MethodElement[] methods = midletClass.getMethods();
+//        
+//        if (methods == null)
+//            return false;
+//        for (int i = 0; i < methods.length; i++) {
+//            MethodElement me = methods[i];
+//            if (me.getName().getName().equals("startApp")) //NOI18N
+//                return true;
+//        }
+//        return false;
+//    }
     
     
     public void runDebugger(final ArrayList<String> stopMidletClasses, final int attemptCount) throws BuildException {
@@ -367,38 +362,38 @@ public class KdpDebugTask extends Task {
                                             }
                                             
                                             ClassType classType = (ClassType) event.getReferenceType();
-                                            ClassElement midletClassElement = getMIDletClassElement(event.getReferenceType().name(), getProject(), classpath);
+//                                            ClassElement midletClassElement = getMIDletClassElement(event.getReferenceType().name(), getProject(), classpath);
                                             
                                             Method entryMethod = null;
                                             
                                             
                                             //set hidden breakpoint in the startApp()
-                                            if (isStartAppPresent(midletClassElement)) {
-                                                entryMethod = classType.concreteMethodByName("startApp", "()V"); // NOI18N
-                                                if (startVerbose)
-                                                    System.out.println("entryMethod after found startApp : " + entryMethod); //NOI18N
-                                            }
-                                            
-                                            //the no-arg constructor will ALWAYS exist (either explicit or implicit) if the MIDlet is extended correctly
-                                            if (isExplicitNoArgConstructorPresent(midletClassElement)) {
-                                                entryMethod = classType.concreteMethodByName("<init>", "()V"); // NOI18N
-                                                if (startVerbose)
-                                                    System.out.println("entryMethod after <explicitNoArgConstructorPresent> : " + entryMethod); //NOI18N
-                                            }
-                                            
-                                            //try to find a initializer
-                                            if (isExplicitInitPresent(midletClassElement)) {
-                                                entryMethod = classType.concreteMethodByName("<init>", "()V"); // NOI18N
-                                                if (startVerbose)
-                                                    System.out.println("entryMethod after <explicitInitPresent> : " + entryMethod); //NOI18N
-                                            }
-                                            
-                                            //try to find a static initializer
-                                            if (isExplicitCLInitPresent(midletClassElement)) {
-                                                entryMethod = classType.concreteMethodByName("<clinit>", "()V"); // NOI18N
-                                                if (startVerbose)
-                                                    System.out.println("entryMethod after <explicitCLInitPresent> : " + entryMethod); //NOI18N
-                                            }
+//                                            if (isStartAppPresent(midletClassElement)) {
+//                                                entryMethod = classType.concreteMethodByName("startApp", "()V"); // NOI18N
+//                                                if (startVerbose)
+//                                                    System.out.println("entryMethod after found startApp : " + entryMethod); //NOI18N
+//                                            }
+//                                            
+//                                            //the no-arg constructor will ALWAYS exist (either explicit or implicit) if the MIDlet is extended correctly
+//                                            if (isExplicitNoArgConstructorPresent(midletClassElement)) {
+//                                                entryMethod = classType.concreteMethodByName("<init>", "()V"); // NOI18N
+//                                                if (startVerbose)
+//                                                    System.out.println("entryMethod after <explicitNoArgConstructorPresent> : " + entryMethod); //NOI18N
+//                                            }
+//                                            
+//                                            //try to find a initializer
+//                                            if (isExplicitInitPresent(midletClassElement)) {
+//                                                entryMethod = classType.concreteMethodByName("<init>", "()V"); // NOI18N
+//                                                if (startVerbose)
+//                                                    System.out.println("entryMethod after <explicitInitPresent> : " + entryMethod); //NOI18N
+//                                            }
+//                                            
+//                                            //try to find a static initializer
+//                                            if (isExplicitCLInitPresent(midletClassElement)) {
+//                                                entryMethod = classType.concreteMethodByName("<clinit>", "()V"); // NOI18N
+//                                                if (startVerbose)
+//                                                    System.out.println("entryMethod after <explicitCLInitPresent> : " + entryMethod); //NOI18N
+//                                            }
                                             
                                             //if unable to find any of the above
                                             if (entryMethod == null)

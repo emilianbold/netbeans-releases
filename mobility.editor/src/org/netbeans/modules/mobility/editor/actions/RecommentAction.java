@@ -33,12 +33,10 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
 import javax.swing.*;
 
-import org.netbeans.api.mdr.MDRepository;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.mobility.antext.preprocessor.CommentingPreProcessor;
 import org.netbeans.mobility.antext.preprocessor.PreprocessorException;
 import org.netbeans.modules.mobility.project.J2MEProjectUtils;
@@ -101,14 +99,11 @@ public class RecommentAction extends PreprocessorEditorContextAction {
                 identifiers.put(conf.getDisplayName(),null);
                 final CommentingPreProcessor cpp =new CommentingPreProcessor(ppSource, ppDestination, identifiers) ;
                 //note: nbr transaction is already locked here
-                final MDRepository rep = JavaModel.getJavaRepository();
-                rep.beginTrans(false);
                 try {
                     doc.putProperty(TextSwitcher.SKIP_DUCUMENT_CHANGES, TextSwitcher.SKIP_DUCUMENT_CHANGES);
                     NbDocument.runAtomic(doc,cpp); // NOI18N
                 } finally {
                     doc.putProperty(TextSwitcher.SKIP_DUCUMENT_CHANGES, null);
-                    rep.endTrans();
                 }
             } catch (PreprocessorException pe) {
                 ErrorManager.getDefault().notify(pe);

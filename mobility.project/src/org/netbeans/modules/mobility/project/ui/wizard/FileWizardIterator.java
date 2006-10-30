@@ -28,8 +28,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
 
-import org.openide.src.Type;
-
 import org.netbeans.api.java.classpath.ClassPath;
 
 import java.io.IOException;
@@ -45,6 +43,7 @@ import org.openide.WizardDescriptor;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
+import org.openide.util.Utilities;
 
 public class FileWizardIterator implements TemplateWizard.Iterator {
     private static final long serialVersionUID = -1987345825459L;
@@ -195,7 +194,7 @@ public class FileWizardIterator implements TemplateWizard.Iterator {
         if ("".equals(s)) // NOI18N
             return true;
         try {
-            Type.parse(s);
+            Utilities.isJavaIdentifier(s);
             return true;
         } catch (IllegalArgumentException ex) {
             return false;

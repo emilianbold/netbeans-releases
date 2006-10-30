@@ -33,12 +33,10 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
 
 import org.netbeans.api.editor.completion.Completion;
-import org.netbeans.api.mdr.MDRepository;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.mobility.antext.preprocessor.PPLine;
-import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.modules.mobility.project.J2MEProjectUtils;
 import org.openide.ErrorManager;
 import org.openide.text.NbDocument;
@@ -70,29 +68,23 @@ public class CreateIfElseBlockAction extends PreprocessorEditorContextAction {
 	final ActionEvent evt, final JTextComponent txt) {
         final ProjectConfigurationProvider prov = J2MEProjectUtils.getConfigProviderForDoc(txt.getDocument());
         if (prov == null) return;
-        final MDRepository rep = JavaModel.getJavaRepository();
-        rep.beginTrans(false);
-        try {
-            NbDocument.runAtomic((StyledDocument)txt.getDocument(), new Runnable() {
-                public void run() {
-                    try {
-                        final BaseDocument doc = (BaseDocument)txt.getDocument();
-                        final int s = Utilities.getRowStartFromLineOffset(doc, getSelectionStartLine(txt) - 1);
-                        final int e = Utilities.getRowEnd(txt, Utilities.getRowStartFromLineOffset(doc, getSelectionEndLine(txt) - 1));
-                        final String text = doc.getText(s, e-s);
-                        doc.insertString(e,  "\n//#else\n" + text + "\n//#endif", null); //NOI18N
-                        doc.insertString(s, "//#if \n", null); //NOI18N
-                        txt.setSelectionStart(s + 6);
-                        txt.setSelectionEnd(s + 6);
-                    } catch (BadLocationException ble) {
-                        ErrorManager.getDefault().notify(ble);
-                    }
-                    RecommentAction.actionPerformed(txt);
+        NbDocument.runAtomic((StyledDocument)txt.getDocument(), new Runnable() {
+            public void run() {
+                try {
+                    final BaseDocument doc = (BaseDocument)txt.getDocument();
+                    final int s = Utilities.getRowStartFromLineOffset(doc, getSelectionStartLine(txt) - 1);
+                    final int e = Utilities.getRowEnd(txt, Utilities.getRowStartFromLineOffset(doc, getSelectionEndLine(txt) - 1));
+                    final String text = doc.getText(s, e-s);
+                    doc.insertString(e,  "\n//#else\n" + text + "\n//#endif", null); //NOI18N
+                    doc.insertString(s, "//#if \n", null); //NOI18N
+                    txt.setSelectionStart(s + 6);
+                    txt.setSelectionEnd(s + 6);
+                } catch (BadLocationException ble) {
+                    ErrorManager.getDefault().notify(ble);
                 }
-            });
-        } finally {
-            rep.endTrans();
-        }
+                RecommentAction.actionPerformed(txt);
+            }
+        });
         Completion.get().showCompletion();
     }
 }

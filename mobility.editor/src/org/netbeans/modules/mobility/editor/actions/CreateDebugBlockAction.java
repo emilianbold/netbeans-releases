@@ -32,12 +32,10 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
 
-import org.netbeans.api.mdr.MDRepository;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.mobility.antext.preprocessor.PPLine;
-import org.netbeans.modules.javacore.api.JavaModel;
 import org.openide.ErrorManager;
 import org.openide.text.NbDocument;
 import org.openide.util.NbBundle;
@@ -68,26 +66,20 @@ public class CreateDebugBlockAction extends PreprocessorEditorContextAction {
     
     public void actionPerformed(@SuppressWarnings("unused")
 	final ActionEvent evt, final JTextComponent txt) {
-        final MDRepository rep = JavaModel.getJavaRepository();
-        rep.beginTrans(false);
-        try {
-            NbDocument.runAtomic((StyledDocument)txt.getDocument(), new Runnable() {
-                public void run() {
-                    try {
-                        final BaseDocument doc = (BaseDocument)txt.getDocument();
-                        final int s = Utilities.getRowStartFromLineOffset(doc, getSelectionStartLine(txt) - 1);
-                        final int e = Utilities.getRowEnd(txt, Utilities.getRowStartFromLineOffset(doc, getSelectionEndLine(txt) - 1));
-                        doc.insertString(e, "\n//#enddebug", null); //NOI18N
-                        doc.insertString(s, "//#mdebug\n", null); //NOI18N
-                        txt.setSelectionEnd(txt.getSelectionStart());
-                    } catch (BadLocationException ble) {
-                        ErrorManager.getDefault().notify(ble);
-                    }
-                    RecommentAction.actionPerformed(txt);
+        NbDocument.runAtomic((StyledDocument)txt.getDocument(), new Runnable() {
+            public void run() {
+                try {
+                    final BaseDocument doc = (BaseDocument)txt.getDocument();
+                    final int s = Utilities.getRowStartFromLineOffset(doc, getSelectionStartLine(txt) - 1);
+                    final int e = Utilities.getRowEnd(txt, Utilities.getRowStartFromLineOffset(doc, getSelectionEndLine(txt) - 1));
+                    doc.insertString(e, "\n//#enddebug", null); //NOI18N
+                    doc.insertString(s, "//#mdebug\n", null); //NOI18N
+                    txt.setSelectionEnd(txt.getSelectionStart());
+                } catch (BadLocationException ble) {
+                    ErrorManager.getDefault().notify(ble);
                 }
-            });
-        } finally {
-            rep.endTrans();
-        }
+                RecommentAction.actionPerformed(txt);
+            }
+        });
     }
 }

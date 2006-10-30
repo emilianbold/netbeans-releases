@@ -18,11 +18,7 @@
  */
 
 package org.netbeans.modules.mobility.editor.hints;
-import org.netbeans.modules.editor.hints.spi.Hint;
-import org.netbeans.modules.editor.hints.spi.ChangeInfo;
-import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.modules.mobility.editor.actions.RecommentAction;
-import org.netbeans.api.mdr.MDRepository;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.BaseDocument;
 import org.openide.util.NbBundle;
@@ -34,13 +30,8 @@ import javax.swing.text.StyledDocument;
 import javax.swing.text.BadLocationException;
 
 /**
- * Created by IntelliJ IDEA.
- * User: bohemius
- * Date: Aug 15, 2005
- * Time: 3:35:03 PM
- * To change this template use File | Settings | File Templates.
  */
-public class DisableHint extends Hint {
+public class DisableHint {//extends Hint {
     
     final protected Document doc;
     protected int offset;
@@ -57,27 +48,27 @@ public class DisableHint extends Hint {
         return NbBundle.getMessage(InlineIncludeHint.class, "HintInlineDisable"); //NOI18N
     }
     
-    public synchronized ChangeInfo implement() {
-        final MDRepository rep = JavaModel.getJavaRepository();
-        rep.beginTrans(false);
-        try {
-            NbDocument.runAtomic((StyledDocument) doc, new Runnable() {
-                public void run() {
-                    try {
-                        doc.insertString(offset, "/", null);
-                    } catch (BadLocationException ble) {
-                        ErrorManager.getDefault().notify(ble);
-                    }
-                    RecommentAction.actionPerformed(doc);
-                }
-            });
-        } finally {
-            rep.endTrans();
-        }
-        return null;
-    }
-    
-    public int getType() {
-        return SUGGESTION;
-    }
+//    public synchronized ChangeInfo implement() {
+//        final MDRepository rep = JavaModel.getJavaRepository();
+//        rep.beginTrans(false);
+//        try {
+//            NbDocument.runAtomic((StyledDocument) doc, new Runnable() {
+//                public void run() {
+//                    try {
+//                        doc.insertString(offset, "/", null);
+//                    } catch (BadLocationException ble) {
+//                        ErrorManager.getDefault().notify(ble);
+//                    }
+//                    RecommentAction.actionPerformed(doc);
+//                }
+//            });
+//        } finally {
+//            rep.endTrans();
+//        }
+//        return null;
+//    }
+//    
+//    public int getType() {
+//        return SUGGESTION;
+//    }
 }
