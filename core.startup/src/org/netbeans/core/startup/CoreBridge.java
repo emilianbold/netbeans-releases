@@ -40,7 +40,7 @@ public abstract class CoreBridge {
             }
             b = fake;
         }
-        assert b != null : "Bridge has to be registered"; // NOI18N
+        assert b != null : "Cannot find org.netbeans.core. Make sure the module \"Core\" is included in your application."; // NOI18N
         return b;
     }
     
