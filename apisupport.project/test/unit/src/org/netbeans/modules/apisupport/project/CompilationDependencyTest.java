@@ -132,7 +132,7 @@ public class CompilationDependencyTest extends TestBase {
             log(line);
             System.out.println(line);
         }
-        assertTrue("compilation failed for implementation dependency",
+        assertTrue("compilation failed for implementation dependency: no file " + testingProject.getModuleJarLocation(),
                 testingProject.getModuleJarLocation().exists());
     }
     

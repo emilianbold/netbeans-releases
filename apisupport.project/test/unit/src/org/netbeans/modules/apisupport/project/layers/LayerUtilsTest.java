@@ -293,7 +293,10 @@ public class LayerUtilsTest extends LayerTestBase {
         assertDisplayName(fs, "right display name for netbeans.org standard file", "Menu/RunProject", "Run");
         assertNull("not loading files from extra modules", fs.findResource("Templates/Documents/docbook-article.xml"));
         FileObject docbook = nbroot.getFileObject("contrib/docbook");
-        assertNotNull("contrib checked out", docbook);
+        if (docbook == null) {
+            System.err.println("Skipping part of testSystemFilesystemNetBeansOrgProject since contrib is not checked out");
+            return;
+        }
         p = (NbModuleProject) ProjectManager.getDefault().findProject(docbook);
         fs = LayerUtils.getEffectiveSystemFilesystem(p);
         assertDisplayName(fs, "right display name for file from extra module", "Templates/Documents/docbook-article.xml", "DocBook Article");

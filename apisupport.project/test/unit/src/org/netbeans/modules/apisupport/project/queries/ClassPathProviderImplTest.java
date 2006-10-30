@@ -382,7 +382,10 @@ public class ClassPathProviderImplTest extends TestBase {
     
     public void testQaFunctionalTestClasspath() throws Exception {
         FileObject qaftsrc = nbroot.getFileObject("performance/test/qa-functional/src");
-        assertNotNull("have performance/test/qa-functional/src", qaftsrc);
+        if (qaftsrc == null) {
+            System.err.println("Skipping testQaFunctionalTestClasspath since performance not checked out");
+            return;
+        }
         ClassPath cp = ClassPath.getClassPath(qaftsrc, ClassPath.COMPILE);
         assertNotNull("have a COMPILE classpath", cp);
         Set/*<String>*/ expectedRoots = new TreeSet();
@@ -582,7 +585,10 @@ public class ClassPathProviderImplTest extends TestBase {
     public void testBinaryOriginAbsolutePath() throws Exception {
         File jmfhome = new File(getWorkDir(), "jmfhome");
         File audioFiles = file("platform/samples/audio-files");
-        assertTrue("have 'platform' checked out", audioFiles.isDirectory());
+        if (!audioFiles.isDirectory()) {
+            System.err.println("Skipping testBinaryOriginAbsolutePath since platform not checked out");
+            return;
+        }
         File audioviewer = copyFolder(audioFiles);
         // Make it a standalone module so we can copy it:
         File pp = new File(audioviewer, "nbproject/private/private.properties".replace('/', File.separatorChar));

@@ -34,14 +34,10 @@ public class SourceLevelQueryImplTest extends TestBase {
     }
 
     public void testGetSourceLevel() {
-        String path = "java/src/org/netbeans/modules/java/JavaDataObject.java";
+        String path = "junit/src/org/netbeans/modules/junit/JUnitSettings.java";
         FileObject f = nbroot.getFileObject(path);
         assertNotNull("found " + path, f);
-        assertEquals("1.4 used for an average module", "1.4", SourceLevelQuery.getSourceLevel(f));
-        path = "contrib/aspects/adaptable/src/org/netbeans/api/adaptable/Adaptable.java";
-        f = nbroot.getFileObject(path);
-        assertNotNull("found " + path, f);
-        assertEquals("1.5 used when requested", "1.5", SourceLevelQuery.getSourceLevel(f));
+        assertEquals("1.5 used for an average module", "1.5", SourceLevelQuery.getSourceLevel(f));
     }
     
 }
