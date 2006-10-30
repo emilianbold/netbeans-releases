@@ -124,7 +124,6 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
             ElementGrip elem = (ElementGrip) ((RefactoringElement) iter.next()).getComposite();
             ElementGrip comp = elem;
             boolean isOuterRef = true;
-            
 //            //Check if this usage is an import statement & ignore it if so.
 //            boolean isUsageImport = false;
 //            Import importStmt = null;
@@ -275,6 +274,9 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
             }
             whereUsedQueries[i] = new JavaWhereUsedQuery(grips.get(i), refactoring);
             whereUsedQueries[i].setSearchInComments(refactoring.isCheckInComments());
+            if(Tree.Kind.METHOD.equals(grips.get(i).getKind())){
+                whereUsedQueries[i].setFindOverridingMethods(true);
+            }
         }
         
         Problem problemFromUsage = null;
