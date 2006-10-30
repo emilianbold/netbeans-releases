@@ -27,6 +27,7 @@ import java.awt.LayoutManager;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
+import javax.swing.BorderFactory;
 import org.netbeans.modules.palette.Category;
 import org.netbeans.modules.palette.Item;
 import org.netbeans.modules.palette.Model;
@@ -47,6 +48,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.Scrollable;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 
@@ -84,7 +86,7 @@ public class PalettePanel extends JPanel implements Scrollable {
         
         dndSupport = new DnDSupport( this );
         
-        setBackground( CategoryList.panelBackgroundColor );
+        setBackground( UIManager.getColor ("Panel.background") );
     }
     
     public static synchronized PalettePanel getDefault() {
@@ -97,9 +99,9 @@ public class PalettePanel extends JPanel implements Scrollable {
     public JScrollPane getScrollPane() {
         if( null == scrollPane ) {
             scrollPane = new JScrollPane( this );
-            scrollPane.setBorder(null);
+            scrollPane.setBorder( BorderFactory.createEmptyBorder() );
             scrollPane.addMouseListener( mouseListener() );
-            scrollPane.getViewport().setBackground( CategoryList.panelBackgroundColor );
+            scrollPane.getViewport().setBackground( UIManager.getColor ("Panel.background") );
         }
         return scrollPane;
     }
@@ -488,6 +490,12 @@ public class PalettePanel extends JPanel implements Scrollable {
     
     PaletteController getController() {
         return controller;
+    }
+
+    public void updateUI() {
+        super.updateUI();
+        if( null != model )
+            model.refresh();
     }
     
     private class PaletteLayoutManager implements LayoutManager {

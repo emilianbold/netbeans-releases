@@ -73,8 +73,6 @@ import org.openide.util.Utilities;
 
 public class CategoryList extends JList implements Autoscroll {
 
-    static final Color panelBackgroundColor = UIManager.getDefaults ().getColor ("Panel.background");
-
     private int rolloverIndex = -1;
     private boolean showNames;
 
@@ -96,7 +94,7 @@ public class CategoryList extends JList implements Autoscroll {
     CategoryList( Category category, PalettePanel palettePanel ) {
         this.category = category;
         this.palettePanel = palettePanel;
-        setBackground(panelBackgroundColor);
+        setBackground(UIManager.getColor ("Panel.background"));
         setBorder (new EmptyBorder (0, 0, 0, 0));
         setVisibleRowCount (0);
         setSelectionMode (ListSelectionModel.SINGLE_SELECTION);
@@ -141,6 +139,8 @@ public class CategoryList extends JList implements Autoscroll {
     }
 
     public void updateUI () {
+        if( null != rendererRef )
+            rendererRef.clear();
         setUI (new CategoryListUI ());
         invalidate ();
     }
