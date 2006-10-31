@@ -25,6 +25,7 @@ Microsystems, Inc. All Rights Reserved.
   <!-- ========= -->
 
     <config name="unit-nb"> <!-- was also similar to old "config-1" -->
+        <module name="openide/awt" testtypes="unit" attributes="stable"/>
         <module name="openide/fs" testtypes="unit" attributes="stable"/>
         <module name="openide/masterfs" testtypes="unit" attributes="stable"/>
         <module name="nbbuild" testtypes="unit" attributes="automated"/>
