@@ -267,7 +267,7 @@ public class JavaCompletionDoc implements CompletionDocumentation {
                 String memberName = stag.referencedMemberName();
                 if (memberName != null) {
                     createLink(sb, stag.referencedMember(), className + "." + memberName); //NOI18N
-                } else {
+                } else if (className != null) {
                     createLink(sb, stag.referencedClass(), className);
                 }
             } else if (INHERIT_DOC_TAG.equals(tag.kind())) {
