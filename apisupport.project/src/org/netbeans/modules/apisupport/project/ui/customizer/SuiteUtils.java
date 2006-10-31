@@ -85,15 +85,20 @@ public final class SuiteUtils {
                 public Object run() throws Exception {
                     Set/*NbModuleProject*/ result = new HashSet();
                     SuiteProject suite = SuiteUtils.findSuite(suiteComponent);
-                    Set/*<Project>*/ subProjects = SuiteUtils.getSubProjects(suite);
-                    PROJECTS: for (Iterator it = subProjects.iterator(); it.hasNext();) {
-                        NbModuleProject p = (NbModuleProject) it.next();
-                        ProjectXMLManager pxm = new ProjectXMLManager(p);
-                        for (Iterator depsIt = pxm.getDirectDependencies().iterator(); depsIt.hasNext();) {
-                            ModuleDependency dep = (ModuleDependency) depsIt.next();
-                            if (dep.getModuleEntry().getCodeNameBase().equals(cnb)) {
-                                result.add(p);
-                                continue PROJECTS;
+                    if (suite == null) { // #88303
+                        Util.err.log(ErrorManager.WARNING,
+                                "Cannot find suite for the given suitecomponent (" + suiteComponent + ')'); // NOI18N
+                    } else {
+                        Set/*<Project>*/ subProjects = SuiteUtils.getSubProjects(suite);
+                        PROJECTS: for (Iterator it = subProjects.iterator(); it.hasNext();) {
+                            NbModuleProject p = (NbModuleProject) it.next();
+                            ProjectXMLManager pxm = new ProjectXMLManager(p);
+                            for (Iterator depsIt = pxm.getDirectDependencies().iterator(); depsIt.hasNext();) {
+                                ModuleDependency dep = (ModuleDependency) depsIt.next();
+                                if (dep.getModuleEntry().getCodeNameBase().equals(cnb)) {
+                                    result.add(p);
+                                    continue PROJECTS;
+                                }
                             }
                         }
                     }
@@ -471,6 +476,7 @@ public final class SuiteUtils {
      * delegates to {@link SubprojectProvider#getSubprojects()}.
      */
     public static Set/*<Project>*/ getSubProjects(final Project suite) {
+        assert suite != null;
         SubprojectProvider spp = (SubprojectProvider) suite.getLookup().lookup(SubprojectProvider.class);
         return spp.getSubprojects();
     }
