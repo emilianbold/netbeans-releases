@@ -776,20 +776,20 @@ tools.jar [since 5.0u1] - set to location of tools.jar in active JDK. Useful in
 case your module needs to compile against JDK-only classes. Meaningless on Mac
 OS X.
 
-To support builds of JNLP based applications (described at 
-http://installer.netbeans.org/docs/jnlpInstaller.html) additional may be used 
-or redefined in JNLP-related targets:
+To support builds of JNLP based applications (described at
+http://installer.netbeans.org/docs/jnlpInstaller3.html) additional properties
+may be used or redefined in JNLP-related targets:
 
-jnlp.servlet.jar - must point to jnlp-servlet.jar as provided by JDK 1.5 in
+jnlp.servlet.jar - must point to jnlp-servlet.jar as provided by JDK 5 in
   the directory sample/jnlp/servlet/jnlp-servlet.jar if one wants to build 
   a packaged war file of JNLP version of your suite
 
 jnlp.dest.dir - the location where to generate the JNLP files and signed 
   jars. By default it is your ${suite.dir}/build/jnlp
 
-jnlp.master.dir - (category='private') is the location of the directory where
-  to generate pieces of master jnlp file that get's then included in its resources
-  section
+jnlp.master.dir - (category='private') location of a directory in which
+  to generate pieces of master JNLP file to be included in the resources
+  section.
 
 jnlp.signjar.alias -
 jnlp.signjar.keystore - 
