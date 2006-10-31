@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.versioning.system.cvss.util;
 
+import org.netbeans.modules.versioning.util.FlatFolder;
+
 import java.io.File;
 import java.io.Serializable;
 import java.util.*;

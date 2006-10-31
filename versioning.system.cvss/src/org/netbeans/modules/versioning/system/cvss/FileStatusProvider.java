@@ -21,21 +21,16 @@ package org.netbeans.modules.versioning.system.cvss;
 
 import org.openide.filesystems.*;
 import org.openide.util.actions.SystemAction;
-import org.netbeans.modules.versioning.util.VersioningListener;
-import org.netbeans.modules.versioning.util.VersioningEvent;
+import org.netbeans.modules.versioning.util.FlatFolder;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.CvsCommandsMenuItem;
-import org.netbeans.modules.versioning.system.cvss.util.FlatFolder;
-import org.netbeans.modules.versioning.system.cvss.settings.CvsModuleConfig;
-import org.netbeans.modules.masterfs.providers.AnnotationProvider;
-import org.netbeans.modules.masterfs.providers.InterceptionListener;
+import org.netbeans.modules.versioning.spi.VCSAnnotator;
+import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 
 import javax.swing.*;
 import java.util.*;
 import java.awt.Image;
 import java.io.File;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 
 /**
  * Contract specific for Filesystem <-> UI interaction, to be replaced later with something more
@@ -45,23 +40,30 @@ import java.beans.PropertyChangeListener;
  * 
  * @author Maros Sandor
  */
-public class FileStatusProvider extends AnnotationProvider implements VersioningListener, PropertyChangeListener {
+class FileStatusProvider extends VCSAnnotator {
 
     private static final int STATUS_BADGEABLE = FileInformation.STATUS_VERSIONED_UPTODATE | FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
 
     private static final Action[] EMPTY_ACTIONS = new Action[0];
 
-    private static FileStatusProvider instance;
     private boolean shutdown; 
 
-    public FileStatusProvider() {
-        instance = this;
+    public String annotateName(String name, VCSContext context) {
+        if (shutdown) return null;
+        return CvsVersioningSystem.getInstance().getAnnotator().annotateNameHtml(name, context, FileInformation.STATUS_VERSIONED_UPTODATE | FileInformation.STATUS_LOCAL_CHANGE | FileInformation.STATUS_NOTVERSIONED_EXCLUDED);
     }
 
-    public static FileStatusProvider getInstance() {
-        return instance;
+    public Image annotateIcon(Image icon, VCSContext context) {
+        if (shutdown) return null;
+        return CvsVersioningSystem.getInstance().getAnnotator().annotateIcon(icon, context);
     }
 
+    public Action[] getActions(VCSContext context) {
+        return new Action[] {
+            SystemAction.get(CvsCommandsMenuItem.class)
+        };
+    }
+    
     public String annotateNameHtml(String name, Set files) {
         if (shutdown) return null;
         if (isManaged(files)) {
@@ -139,54 +141,6 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
         }
     }
 
-    public InterceptionListener getInterceptionListener() {
-        return CvsVersioningSystem.getInstance().getFileSystemHandler();
-    }
-
-    public void versioningEvent(VersioningEvent event) {
-        if (event.getId() == FileStatusCache.EVENT_FILE_STATUS_CHANGED) {
-            File file = (File) event.getParams()[0];
-            fireFileStatusEvent(file);
-        }
-    }
-
-    /**
-     * Fire name change for given file and icon change
-     * for all parents.
-     */
-    public void fireFileStatusEvent(File file) {
-        Map folders = new HashMap();
-        for (File parent = file.getParentFile(); parent != null; parent = parent.getParentFile()) {
-            try {
-                FileObject fo = FileUtil.toFileObject(parent);
-                if (fo != null) {
-                    FileSystem fs = fo.getFileSystem();
-                    Set fsFolders = (Set) folders.get(fs);
-                    if (fsFolders == null) {
-                        fsFolders = new HashSet();
-                        folders.put(fs, fsFolders);
-                    }
-                    fsFolders.add(fo);
-                }
-            } catch (FileStateInvalidException e) {
-                // ignore files in invalid filesystems
-            }
-        }
-        FileObject fo = FileUtil.toFileObject(file);
-        if (fo != null) {
-            try {
-                fireFileStatusChanged(new FileStatusEvent(fo.getFileSystem(), fo, false, true));
-            } catch (FileStateInvalidException e) {
-                // ignore files in invalid filesystems
-            }
-        }
-        for (Iterator i = folders.keySet().iterator(); i.hasNext();) {
-            FileSystem fs = (FileSystem) i.next();
-            Set files = (Set) folders.get(fs);
-            fireFileStatusChanged(new FileStatusEvent(fs, files, true, false));
-        }
-    }
-
     /**
      * @return true if at least one file is managed (any parent
      * has <tt>.svn/entries</tt> and it is not explicitly marked
@@ -212,48 +166,5 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
 
     void shutdown() {
         shutdown = true;
-        CvsModuleConfig.getDefault().removePropertyChangeListener(this);        
-        refreshAllAnnotations(true, true);
-    }
-
-    void init() {
-        CvsModuleConfig.getDefault().addPropertyChangeListener(this);        
-    }
-
-    /**
-     * Called upon startup and shutdown of the module. This is required to show/remove CVS badges and other annotations.
-     */ 
-    private void refreshModifiedFiles() {
-        Map files = CvsVersioningSystem.getInstance().getStatusCache().getAllModifiedFiles();
-        for (Iterator i = files.keySet().iterator(); i.hasNext();) {
-            File file = (File) i.next();
-            fireFileStatusEvent(file);
-        }
-    }
-    
-    public void refreshAllAnnotations(boolean icon, boolean text) {
-        Set filesystems = new HashSet(1);
-        File[] allRoots = File.listRoots();
-        for (int i = 0; i < allRoots.length; i++) {
-            File root = allRoots[i];
-            FileObject fo = FileUtil.toFileObject(root);
-            if (fo != null) {
-                try {
-                    filesystems.add(fo.getFileSystem());
-                } catch (FileStateInvalidException e) {
-                    // ignore invalid filesystems
-                }
-            }
-        }
-        for (Iterator i = filesystems.iterator(); i.hasNext();) {
-            FileSystem fileSystem = (FileSystem) i.next();
-            fireFileStatusChanged(new FileStatusEvent(fileSystem, icon, text));                
-        }
-    }
-
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (CvsModuleConfig.PROP_TEXT_ANNOTATIONS_FORMAT.equals(evt.getPropertyName())) {
-            refreshAllAnnotations(false, true);
-        }
     }
 }

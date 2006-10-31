@@ -22,7 +22,6 @@ package org.netbeans.modules.subversion.ui.copy;
 import java.io.File;
 import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.FileStatusCache;
-import org.netbeans.modules.subversion.FileStatusProvider;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
@@ -111,7 +110,7 @@ public class SwitchToAction extends ContextAction {
             client.switchToUrl(root, toRepositoryFile.getFileUrl(), toRepositoryFile.getRevision(), recursive);
             // XXX this is ugly and expensive! the client should notify (onNotify()) the cache. find out why it doesn't work...
             refreshRecursively(root); // XXX the same for another implementations like this in the code.... (see SvnUtils.refreshRecursively() )
-            FileStatusProvider.getInstance().refreshAllAnnotations(false, true);
+            Subversion.getInstance().refreshAllAnnotations();
         } catch (SVNClientException ex) {
             support.annotate(ex);
         }

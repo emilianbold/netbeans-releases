@@ -19,10 +19,12 @@
 package org.netbeans.modules.versioning.diff;
 
 import org.netbeans.modules.editor.errorstripe.privatespi.MarkProvider;
+import org.netbeans.modules.versioning.spi.OriginalContent;
+import org.netbeans.modules.versioning.spi.VersioningSystem;
+import org.netbeans.modules.versioning.VersioningManager;
 import org.openide.loaders.DataObject;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
 import javax.swing.*;
@@ -31,7 +33,6 @@ import javax.swing.text.Document;
 import java.io.File;
 import java.util.WeakHashMap;
 import java.util.Map;
-import java.util.Collection;
 
 /**
  * Central place of diff integration into editor and errorstripe.
@@ -97,13 +98,10 @@ class DiffSidebarManager {
                 }
                 if (file == null) return null;
     
-                DiffSidebarProvider.OriginalContent originalContent = null;
-                Collection<? extends DiffSidebarProvider> c = Lookup.getDefault().lookupAll(DiffSidebarProvider.class);
-                for (DiffSidebarProvider p : c) {
-                    originalContent = p.getOriginalContent(file);
-                    if (originalContent != null) {
-                        break;
-                    }
+                OriginalContent originalContent = null;
+                VersioningSystem vs = VersioningManager.getInstance().getOwner(file);
+                if (vs != null) {
+                    originalContent = vs.getVCSOriginalContent(file);
                 }
                 if (originalContent == null) return null;
     

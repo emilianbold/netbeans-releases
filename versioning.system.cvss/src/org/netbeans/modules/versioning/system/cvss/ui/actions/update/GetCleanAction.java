@@ -147,7 +147,7 @@ public class GetCleanAction extends AbstractSystemAction {
                 // 'atomic' action  >>>
                 backup(file, entry);
                 try {
-                    CvsVersioningSystem.ignoreFilesystemEvents(true);
+//                    CvsVersioningSystem.ignoreFilesystemEvents(true);
                     FileObject target;
                     if (file.exists() == false) {
                         File dir = file.getParentFile();
@@ -183,7 +183,7 @@ public class GetCleanAction extends AbstractSystemAction {
                     }
 
                 } finally {
-                    CvsVersioningSystem.ignoreFilesystemEvents(false);
+//                    CvsVersioningSystem.ignoreFilesystemEvents(false);
                 }
                 if (entry != null && entry.isUserFileToBeRemoved()) {
                     entry.setRevision(entry.getRevision().substring(1));

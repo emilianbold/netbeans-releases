@@ -128,7 +128,6 @@ public final class ModuleLifecycleManager extends ModuleInstall implements Error
 
     public void uninstalled() {
         Subversion.getInstance().shutdown();
-        FileStatusProvider.getInstance().shutdown();
     }
 
     public InputSource resolveEntity(String publicId, String systemId) {

@@ -174,7 +174,7 @@ public class UpdateExecutor extends ExecutorSupport {
 
         // special case: switching to a branch/tag changes textual annotations on nodes that are NOT changed during this operation, typically folders 
         if (ucmd.getUpdateByRevision() != null || ucmd.isResetStickyOnes()) {
-            FileStatusProvider.getInstance().refreshAllAnnotations(false, true);
+            CvsVersioningSystem.getInstance().refreshAllAnnotations();
         }        
     }
 

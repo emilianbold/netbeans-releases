@@ -16,42 +16,34 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-package org.netbeans.modules.subversion;
-
-import org.openide.util.actions.SystemAction;
-import org.netbeans.modules.versioning.spi.VCSAnnotator;
-import org.netbeans.modules.versioning.spi.VCSContext;
-import org.netbeans.modules.subversion.ui.actions.SvnCommandsMenuItem;
+package org.netbeans.modules.versioning.spi;
 
 import javax.swing.*;
 import java.awt.Image;
 
 /**
- * Contract specific for Filesystem <-> UI interaction, to be replaced later with something more
- * sophisticated (hopefuly).
- * 
+ * Versioning systems that need to annotate nodes' labels and icons implement this class.
+ *  
  * @author Maros Sandor
  */
-class FileStatusProvider extends VCSAnnotator {
+public abstract class VCSAnnotator {
 
-    private boolean shutdown; 
-
+    /**
+     * Allows a versioning system to decorate given name with HTML markup. This can be used to hilight file status. 
+     * 
+     * @param name text to decorate
+     * @param context a context this name represents
+     * @return decorated name
+     */
     public String annotateName(String name, VCSContext context) {
-        if (shutdown) return null;
-        return Subversion.getInstance().getAnnotator().annotateNameHtml(name, context, FileInformation.STATUS_VERSIONED_UPTODATE | FileInformation.STATUS_LOCAL_CHANGE | FileInformation.STATUS_NOTVERSIONED_EXCLUDED);
+        return name;
     }
 
     public Image annotateIcon(Image icon, VCSContext context) {
-        if (shutdown) return null;
-        return Subversion.getInstance().getAnnotator().annotateIcon(icon, context);
+        return icon;
     }
 
     public Action[] getActions(VCSContext context) {
-        return new Action[] { SystemAction.get(SvnCommandsMenuItem.class) };
-    }
-
-    void shutdown() {
-        shutdown = true;
+        return new Action[0];
     }
 }

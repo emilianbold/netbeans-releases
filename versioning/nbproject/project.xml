@@ -59,6 +59,24 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.masterfs</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.2</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.queries</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.8</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.awt</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -115,6 +133,9 @@ Microsystems, Inc. All Rights Reserved.
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.versioning.system.cvss</friend>
+                <friend>org.netbeans.modules.subversion</friend>
+                <package>org.netbeans.modules.versioning</package>
+                <package>org.netbeans.modules.versioning.spi</package>
                 <package>org.netbeans.modules.versioning.util</package>
                 <package>org.netbeans.modules.versioning.diff</package>
                 <package>org.netbeans.modules.proxy</package>

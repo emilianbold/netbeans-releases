@@ -20,10 +20,9 @@
 package org.netbeans.modules.subversion;
 
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.subversion.client.*;
 import org.netbeans.modules.subversion.util.FileUtils;
 import org.netbeans.modules.subversion.util.SvnUtils;
-import org.openide.filesystems.*;
+import org.netbeans.modules.subversion.client.SvnClient;
 import org.openide.util.RequestProcessor;
 import org.openide.ErrorManager;
 
@@ -33,7 +32,7 @@ import java.util.*;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
-import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
+import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.tigris.subversion.svnclientadapter.*;
 
 /**
@@ -41,8 +40,9 @@ import org.tigris.subversion.svnclientadapter.*;
  * 
  * @author Maros Sandor
  */
-class FilesystemHandler extends ProvidedExtensions implements FileChangeListener, ProvidedExtensions.DeleteHandler {
+class FilesystemHandler extends VCSInterceptor {
         
+    // TODO: perform tasks asynchronously if possible
     private static final RequestProcessor  eventProcessor = new RequestProcessor("Subversion FS Monitor", 1); // NOI18N
 
     private final Subversion svn;
@@ -53,57 +53,146 @@ class FilesystemHandler extends ProvidedExtensions implements FileChangeListener
      */ 
     private final Set<File> invalidMetadata = new HashSet<File>(5);
     
-    /**
-     * Delete interceptor: holds files and folders that we do not want to delete but must pretend that they were deleted.
-     */ 
-    private final Set<File> deletedFiles = new HashSet<File>(5);
-    
-    private static Thread ignoredThread;
-
     public FilesystemHandler(Subversion svn) {
         this.svn = svn;
         cache = svn.getStatusCache();
     }
 
-    /**
-     * Ignores (internal) events from current thread. E.g.:
-     * <pre>
-     * try {
-     *     FilesystemHandler.ignoreEvents(true);
-     *     fo.createData(file.getName());
-     * } finally {
-     *     FilesystemHandler.ignoreEvents(false);
-     * }
-     * </pre>
-     *
-     * <p>It assumes that filesystem operations fire
-     * synchronous events.
-     * @see http://javacvs.netbeans.org/nonav/issues/show_bug.cgi?id=68961
-     */
-    static void ignoreEvents(boolean ignore) {
-        if (ignore) {
-            ignoredThread = Thread.currentThread();
-        } else {
-            ignoredThread = null;
-        }
+    public boolean beforeDelete(File file) {
+        if (SvnUtils.isPartOfSubversionMetadata(file)) return true;
+        // calling cache results in SOE, we must check manually
+        return !file.isFile() && hasMetadata(file);
     }
 
     /**
-     * @return true if filesystem events are ignored in current thread, false otherwise
+     * This interceptor ensures that subversion metadata is NOT deleted. 
+     * 
+     * @param file file to delete
      */ 
-    static boolean ignoringEvents() {
-        return ignoredThread == Thread.currentThread();
+    public void doDelete(File file) throws IOException {
+        boolean isMetadata = SvnUtils.isPartOfSubversionMetadata(file);
+        if (!isMetadata) {
+            remove(file);
+        }
     }
-    
-    private void cleanupDeletedFiles(File createdFile) {
-        for (Iterator<File> i = deletedFiles.iterator(); i.hasNext();) {
-            File deleted = i.next();
-            if (!deleted.exists() || createdFile.equals(deleted)) {
-                i.remove();
+
+    public void afterDelete(File file) {
+        // needed for external deletes; othewise, beforeDelete is quicker
+        if (file != null) {
+            if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_NOTVERSIONED_EXCLUDED) == 0) {
+                // file is already deleted, cache contains null for up-to-date file
+                // for deleted files it'd mean FILE_INFORMATION_UNKNOWN
+                // on the other hand cache keeps all folders regardless their status
+                File probe = file.getParentFile();
+                if ((cache.getStatus(probe).getStatus() & FileInformation.STATUS_VERSIONED) != 0) {
+                    fileDeletedImpl(file);
+                }
             }
         }
     }
+
+    public boolean beforeMove(File from, File to) {
+        File destDir = to.getParentFile();
+        if (from != null && destDir != null) {
+            FileInformation info = cache.getStatus(from);
+            if ((info.getStatus() & FileInformation.STATUS_VERSIONED) != 0) {
+                return Subversion.getInstance().isManaged(to);
+            }
+            // else XXX handle file with saved administative
+            // right now they have old status in cache but is it guaranteed?
+        }
+
+        return false;
+    }
+
+    public void doMove(final File from, final File to) throws IOException {
+        if (SwingUtilities.isEventDispatchThread()) {
+            
+            Logger.getLogger("org.netbeans.modules.subversion").log(Level.INFO, "Warning: launching external process in AWT", new Exception().fillInStackTrace());
+            final Throwable innerT[] = new Throwable[1];
+            Runnable outOfAwt = new Runnable() {
+                public void run() {
+                    try {
+                        svnMoveImplementation(from, to);
+                    } catch (Throwable t) {
+                        innerT[0] = t;
+                    }
+                }
+            };
+            
+            Subversion.getInstance().getRequestProcessor().post(outOfAwt).waitFinished();
+            if (innerT[0] != null) {
+                if (innerT[0] instanceof IOException) {
+                    throw (IOException) innerT[0];
+                } else if (innerT[0] instanceof RuntimeException) {
+                    throw (RuntimeException) innerT[0];
+                } else if (innerT[0] instanceof Error) {
+                    throw (Error) innerT[0];
+                } else {
+                    throw new IllegalStateException("Unexpected exception class: " + innerT[0]);  // NOI18N
+                }
+            }
+            
+            // end of hack
+            
+        } else {
+            svnMoveImplementation(from, to);
+        }
+    }
+
+    public void afterMove(File from, File to) {
+        cache.refresh(to, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+        File parent = to.getParentFile();
+        if (parent != null) {
+            if (from.equals(to)) {
+                ErrorManager.getDefault().log(ErrorManager.WARNING, "Wrong (identity) rename event for " + from.getAbsolutePath()); // NOI18N
+            }
+            cache.refresh(from, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+        }
+    }
     
+    public boolean beforeCreate(File file, boolean isDirectory) {
+        if (svn.isAdministrative(file.getName())) {
+            if (file.isDirectory()) {
+                File f = new File(file, Subversion.INVALID_METADATA_MARKER);
+                try {
+                    f.createNewFile();
+                } catch (IOException e) {
+                    ErrorManager.getDefault().log(ErrorManager.ERROR, "Unable to create marker: " + f.getAbsolutePath()); // NOI18N
+                }
+                invalidMetadata.add(file);
+            }
+            return true;
+        } else {
+            if (!file.exists()) {
+                int status = cache.getStatus(file).getStatus();
+                if (status == FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY) {
+                    try {
+                        SvnClient client = Subversion.getInstance().getClient(true);
+                        client.revert(file, false);
+                        file.delete();
+                    } catch (SVNClientException ex) {
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                    }
+                }
+            }
+            return false;
+        }
+    }
+
+    public void doCreate(File file, boolean isDirectory) throws IOException {
+    }
+
+    public void afterCreate(File file) {
+        fileCreatedImpl(file);
+    }
+    
+    public void afterChange(File file) {
+        if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_MANAGED) != 0) {
+            cache.refreshCached(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+        }
+    }
+
     /**
      * Removes invalid metadata from all known folders.
      */ 
@@ -114,170 +203,6 @@ class FilesystemHandler extends ProvidedExtensions implements FileChangeListener
             }
             invalidMetadata.clear();
         }
-    }
-    
-    // FileChangeListener implementation ---------------------------
-    
-    public void fileFolderCreated(FileEvent fe) {
-        File file = FileUtil.toFile(fe.getFile());
-        cleanupDeletedFiles(file);
-        if (Thread.currentThread() == ignoredThread) return;
-        FileStatusCache cache = Subversion.getInstance().getStatusCache();
-        eventProcessor.post(new FileCreatedTask(file));
-    }
-
-    public void fileDataCreated(FileEvent fe) {
-        File file = FileUtil.toFile(fe.getFile());
-        cleanupDeletedFiles(file);
-        if (Thread.currentThread() == ignoredThread) return;
-        FileStatusCache cache = Subversion.getInstance().getStatusCache();
-        eventProcessor.post(new FileCreatedTask(file));
-    }
-    
-    public void fileChanged(FileEvent fe) {
-        if (Thread.currentThread() == ignoredThread) return;
-        File file = FileUtil.toFile(fe.getFile());
-        FileStatusCache cache = Subversion.getInstance().getStatusCache();
-        if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_MANAGED) != 0) {
-            eventProcessor.post(new FileChangedTask(file));
-        }
-    }
-
-    public void fileDeleted(FileEvent fe) {
-        // needed for external deletes; othewise, beforeDelete is quicker
-        if (Thread.currentThread() == ignoredThread) return;
-        File file = FileUtil.toFile(fe.getFile());
-        if (file != null) {
-            if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_NOTVERSIONED_EXCLUDED) == 0) {
-                // file is already deleted, cache contains null for up-to-date file
-                // for deleted files it'd mean FILE_INFORMATION_UNKNOWN
-                // on the other hand cache keeps all folders regardless their status
-                File probe = file.getParentFile();
-                FileStatusCache cache = Subversion.getInstance().getStatusCache();
-                if ((cache.getStatus(probe).getStatus() & FileInformation.STATUS_VERSIONED) != 0) {
-                    eventProcessor.post(new FileDeletedTask(file));
-                }
-            }
-        }
-    }
-
-    public void fileRenamed(FileRenameEvent fe) {
-        FileObject newFo = fe.getFile();
-        File newFile = FileUtil.toFile(newFo);
-        if (newFile != null) {
-            cache.refresh(newFile, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-            File parent = newFile.getParentFile();
-            if (parent != null) {
-                String name = fe.getName();
-                String ext = fe.getExt();
-                if (ext != null && "".equals(ext) == false) {  // NOI18N
-                    name += "." + ext;  // NOI18N
-                }
-                File oldFile = new File(parent, name);
-                if (oldFile.equals(newFile)) {
-                    ErrorManager.getDefault().log(ErrorManager.WARNING, "Wrong (identity) rename event for " + newFile.getAbsolutePath()); // NOI18N
-                }
-                cache.refresh(oldFile, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-            }
-        }
-    }
-
-    public void fileAttributeChanged(FileAttributeEvent fe) {
-        // not interested
-    }
-    
-    // InterceptionListener implementation ---------------------------
-    
-    public void createSuccess(FileObject fo) {
-        if (ignoringEvents()) return;
-        if (fo == null) return;
-        try {
-            Diagnostics.println("[createSuccess " + fo); // NOI18N
-            if (fo.isFolder() && svn.isAdministrative(fo.getNameExt())) {
-                // TODO: we need to delete all files created inside folders
-                File file = FileUtil.toFile(fo);
-                File f = new File(file, Subversion.INVALID_METADATA_MARKER);
-                try {
-                    f.createNewFile();
-                } catch (IOException e) {
-                    ErrorManager.getDefault().log(ErrorManager.ERROR, "Unable to create marker: " + f.getAbsolutePath()); // NOI18N
-                }
-                invalidMetadata.add(file);
-            }
-        } finally {
-            Diagnostics.println("]createSuccess " + fo); // NOI18N
-        }
-    }
-
-    // XXX depends on #75168
-    public void beforeCreate(FileObject parent, String name, boolean isFolder) {        
-        File file = FileUtil.toFile(parent);
-        if (file != null) {
-            try {
-                file = new File(file, name);
-                Diagnostics.println("[beforeCreate " + file); // NOI18N
-                if (file.exists() == false) {
-                    int status = cache.getStatus(file).getStatus();
-                    if (status == FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY) {
-                        try {
-                            SvnClient client = Subversion.getInstance().getClient(true);
-                            client.revert(file, false);
-                            file.delete();
-                        } catch (SVNClientException ex) {
-                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-                        }
-                    }
-                }
-            } finally {
-                Diagnostics.println("]beforeCreate " + file); // NOI18N
-            }
-        }
-        
-
-    }
-    
-    public void createFailure(FileObject parent, String name, boolean isFolder) {
-        // not interested
-    }
-
-    // package private contract ---------------------------
-
-    /**
-     * Registers listeners to all disk filesystems.
-     */ 
-    void init() {
-        Set filesystems = getRootFilesystems();
-        for (Iterator i = filesystems.iterator(); i.hasNext();) {
-            FileSystem fileSystem = (FileSystem) i.next();
-            fileSystem.addFileChangeListener(this);
-        }
-    }
-
-    /**
-     * Unregisters listeners from all disk filesystems.
-     */ 
-    void shutdown() {
-        Set filesystems = getRootFilesystems();
-        for (Iterator i = filesystems.iterator(); i.hasNext();) {
-            FileSystem fileSystem = (FileSystem) i.next();
-            fileSystem.removeFileChangeListener(this);
-        }
-    }
-
-    private Set<FileSystem> getRootFilesystems() {
-        Set<FileSystem> filesystems = new HashSet<FileSystem>();
-        File [] roots = File.listRoots();
-        for (int i = 0; i < roots.length; i++) {
-            File root = roots[i];
-            FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(root));
-            if (fo == null) continue;
-            try {
-                filesystems.add(fo.getFileSystem());
-            } catch (FileStateInvalidException e) {
-                // ignore invalid filesystems
-            }
-        }
-        return filesystems;
     }
     
     // private methods ---------------------------
@@ -311,76 +236,8 @@ class FilesystemHandler extends ProvidedExtensions implements FileChangeListener
         }
     }
     
-    // BEGIN #73042 ProvidedExtensions ~~~~~~~~~~~~~~~~~~~~
-    public ProvidedExtensions.IOHandler getRenameHandler(final File from, final String newName) {
-        final File to = new File(from.getParentFile(), newName);
-        return (implsRename(from, to)) ?  new ProvidedExtensions.IOHandler() {
-            public void handle() throws IOException {
-                renameImpl(from, to);
-            }
-        } : null;
-    }
-
-    public ProvidedExtensions.IOHandler getMoveHandler(final File from, final File to) {
-        return (implsMove(from, to)) ?  new ProvidedExtensions.IOHandler() {
-            public void handle() throws IOException {
-                moveImpl(from, to);
-            }
-        } : null;
-    }
-
     private boolean hasMetadata(File file) {
         return new File(file, ".svn/entries").canRead() || new File(file, "_svn/entries").canRead();
-    }
-    
-    /**
-     * Creates a handler object that will handle deletion of this file and all its children.
-     * 
-     * @param file file to delete
-     * @return a handler or null if this file deletion is not to be handled by this module
-     */
-    public DeleteHandler getDeleteHandler(File file) {
-        if (SvnUtils.isPartOfSubversionMetadata(file)) return this;
-        // calling cache results in SOE, we must check manually
-        if (file.isFile()) return null;
-        if (hasMetadata(file)) return this; 
-        return null;
-    }
-    
-    /**
-     * This interceptor ensures that subversion metadata is NOT deleted. 
-     * 
-     * @param file file to delete
-     * @return true if the deletion was successful, false otherwise
-     */ 
-    public boolean delete(File file) {
-        boolean isMetadata = SvnUtils.isPartOfSubversionMetadata(file);
-        synchronized(deletedFiles) {
-            if (file.isDirectory()) {
-                if (!isMetadata && !hasMetadata(file)) return file.delete();
-                File [] children = file.listFiles();
-                if (children == null) return true;
-                for (int i = 0; i < children.length; i++) {
-                    File child = children[i];
-                    if (!deletedFiles.contains(child)) return false;
-                }
-                if (!isMetadata) {
-                    remove(file);
-                }
-                // once we 'delete' a directory, we can forget about its children, can we not?
-                for (File child : children) {
-                    deletedFiles.remove(child);
-                }
-                deletedFiles.add(file);
-                return true;
-            }
-            if (isMetadata) {
-                deletedFiles.add(file);
-                return true;
-            } else {
-                return file.delete();
-            }
-        }
     }
     
     private boolean remove(File file) {
@@ -394,25 +251,7 @@ class FilesystemHandler extends ProvidedExtensions implements FileChangeListener
         }
     }
 
-    public boolean implsRename(File from, File to) {
-        return implsMove(from, to);
-    }
-
-    public boolean implsMove(File srcFile, File to) {
-        File destDir = to.getParentFile();
-        if (srcFile != null && destDir != null) {
-            FileInformation info = cache.getStatus(srcFile);
-            if ((info.getStatus() & FileInformation.STATUS_VERSIONED) != 0) {
-                return Subversion.getInstance().isManaged(to);
-            }
-            // else XXX handle file with saved administative
-            // right now they have old status in cache but is it guaranteed?
-        }
-
-        return false;
-    }
-
-    public  void svnMoveImplementation(final File srcFile, final File dstFile) throws IOException {
+    public void svnMoveImplementation(final File srcFile, final File dstFile) throws IOException {
         try {                        
             boolean force = true; // file with local changes must be forced
             ISVNClientAdapter client = Subversion.getInstance().getClient(false);
@@ -501,96 +340,4 @@ class FilesystemHandler extends ProvidedExtensions implements FileChangeListener
             throw new SVNClientException("Reached FS root, but it's still not Subversion versioned!"); // NOI18N
         }
     }
-
-    public void renameImpl(File from, File to) throws IOException {
-        moveImpl(from, to);
-    }
-
-    public void moveImpl(final File from, final File to) throws IOException {
-        if (SwingUtilities.isEventDispatchThread()) {
-            
-            Logger.getLogger("org.netbeans.modules.subversion").log(Level.INFO, "Warning: launching external process in AWT", new Exception().fillInStackTrace());
-            final Throwable innerT[] = new Throwable[1];
-            Runnable outOfAwt = new Runnable() {
-                public void run() {
-                    try {
-                        svnMoveImplementation(from, to);
-                    } catch (Throwable t) {
-                        innerT[0] = t;
-                    }
-                }
-            };
-            
-            Subversion.getInstance().getRequestProcessor().post(outOfAwt).waitFinished();
-            if (innerT[0] != null) {
-                if (innerT[0] instanceof IOException) {
-                    throw (IOException) innerT[0];
-                } else if (innerT[0] instanceof RuntimeException) {
-                    throw (RuntimeException) innerT[0];
-                } else if (innerT[0] instanceof Error) {
-                    throw (Error) innerT[0];
-                } else {
-                    throw new IllegalStateException("Unexpected exception class: " + innerT[0]);  // NOI18N
-                }
-            }
-            
-            // end of hack
-            
-        } else {
-            svnMoveImplementation(from, to);
-        }
-    }
-    // END #73042 InterceptionListener2 ~~~~~~~~~~~~~~~~~~~~
-
-    /**
-     * Handles the File Created event.
-     */ 
-    private final class FileCreatedTask implements Runnable {
-        
-        private final File file;
-
-        FileCreatedTask(File file) {
-            this.file = file;
-        }
-        
-        public void run() {
-            if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_MANAGED) != 0) {
-                fileCreatedImpl(file);
-            }
-        }
-    }
-
-    /**
-     * Handles the File Changed event.
-     */ 
-    private final class FileChangedTask implements Runnable {
-        
-        private final File file;
-
-        FileChangedTask(File file) {
-            this.file = file;
-        }
-        
-        public void run() {
-            cache.refreshCached(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-//            if (property_file_changed) cache.directoryContentChanged(file.getParentFile());
-        }
-    }
-
-    /**
-     * Handles the File Deleted event.
-     */
-    private final class FileDeletedTask implements Runnable {
-
-        private final File file;
-
-        FileDeletedTask(File file) {
-            this.file = file;
-        }
-
-        public void run() {
-            fileDeletedImpl(file);
-        }
-    }
-
 }

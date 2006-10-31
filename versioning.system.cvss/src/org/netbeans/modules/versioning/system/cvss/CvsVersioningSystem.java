@@ -21,6 +21,7 @@ package org.netbeans.modules.versioning.system.cvss;
 
 import org.netbeans.modules.versioning.util.ListenersSupport;
 import org.netbeans.modules.versioning.util.VersioningListener;
+import org.netbeans.modules.versioning.util.VersioningEvent;
 import org.netbeans.lib.cvsclient.admin.AdminHandler;
 import org.netbeans.lib.cvsclient.admin.Entry;
 import org.netbeans.lib.cvsclient.command.*;
@@ -32,6 +33,10 @@ import org.netbeans.modules.versioning.system.cvss.util.Context;
 import org.netbeans.modules.versioning.system.cvss.settings.MetadataAttic;
 import org.netbeans.modules.versioning.system.cvss.settings.CvsModuleConfig;
 import org.netbeans.modules.versioning.system.cvss.ui.syncview.CvsSynchronizeTopComponent;
+import org.netbeans.modules.versioning.spi.VersioningSystem;
+import org.netbeans.modules.versioning.spi.VCSAnnotator;
+import org.netbeans.modules.versioning.spi.VCSInterceptor;
+import org.netbeans.modules.versioning.spi.OriginalContent;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
@@ -45,6 +50,8 @@ import java.io.*;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 
 /**
  * A singleton CVS manager class, center of CVS module. Use {@link #getInstance()} to get access
@@ -61,6 +68,8 @@ public class CvsVersioningSystem {
 
     public static final Object EVENT_PARAM_CHANGED = new Object();
     public static final Object PARAM_BATCH_REFRESH_RUNNING = new Object();
+
+    public static final Object EVENT_REFRESH_ANNOTATIONS = new Object();    
 
     private static final String FILENAME_CVS_REPOSITORY = FILENAME_CVS + "/Repository"; // NOI18N
     private static final String FILENAME_CVS_ENTRIES = FILENAME_CVS + "/Entries"; // NOI18N
@@ -80,6 +89,7 @@ public class CvsVersioningSystem {
     private CvsLiteFileHandler  workdirFileHandler;
     private CvsLiteGzippedFileHandler workdirGzippedFileHandler;
     private FilesystemHandler filesystemHandler;
+    private VCSAnnotator fileStatusProvider;
 
     private Annotator annotator;
 
@@ -104,6 +114,7 @@ public class CvsVersioningSystem {
         fileStatusCache = new FileStatusCache(this);
         filesystemHandler  = new FilesystemHandler(this);
         annotator = new Annotator(this);
+        fileStatusProvider = new FileStatusProvider();
         cleanup();
     }
 
@@ -111,19 +122,31 @@ public class CvsVersioningSystem {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 // HACK: FileStatusProvider cannot do it itself
-                if (FileStatusProvider.getInstance() != null) {
+//                if (FileStatusProvider.getInstance() != null) {
                     // must be called BEFORE cache is cleaned up
-                    fileStatusCache.addVersioningListener(FileStatusProvider.getInstance());
-                    FileStatusProvider.getInstance().init();
-                }
+//                    fileStatusCache.addVersioningListener(FileStatusProvider.getInstance());
+//                    FileStatusProvider.getInstance().init();
+//                }
                 MetadataAttic.cleanUp();
                 // must be called AFTER the filestatusprovider is attached
                 fileStatusCache.cleanUp();
-                filesystemHandler.init();
             }
         }, 3000);
     }
 
+    void shutdown() {
+//        FileStatusProvider.getInstance().shutdown();
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                try {
+                    CvsSynchronizeTopComponent.getInstance().close();
+                } catch (Throwable e) {
+                    // ignore, this component is already invalid
+                }
+            }
+        });
+    }
+    
     private CvsVersioningSystem() {
     }
 
@@ -279,6 +302,10 @@ public class CvsVersioningSystem {
         
         int sharability = SharabilityQuery.getSharability(file);
         if (sharability == SharabilityQuery.NOT_SHARABLE) {
+            // BEWARE: In NetBeans VISIBILTY == SHARABILITY ... and we hide Locally Removed folders => we must not Ignore them by mistake
+            if (CvsVisibilityQuery.isHiddenFolder(file)) {
+                return false;
+            }
             try {
                 setIgnored(file);
             } catch (IOException e) {
@@ -596,41 +623,9 @@ public class CvsVersioningSystem {
         }
     }
 
-    /**
-     * Hook to obtain CVS system interception listener.
-     * 
-     * @return InterceptionListener returns file system handler instance
-     */ 
-    FilesystemHandler getFileSystemHandler() {
-        return filesystemHandler;
-    }
-
     /** @see FilesystemHandler#ignoreEvents */
     public static void ignoreFilesystemEvents(boolean ignore) {
         FilesystemHandler.ignoreEvents(ignore);
-    }
-
-    /**
-     * Should we ignore incoming filesystem events now?
-     * 
-     * @return true to ignore FS events, false otherwise
-     */ 
-    public static boolean ignoringFilesystemEvents() {
-        return FilesystemHandler.ignoringEvents();
-    }
-    
-    void shutdown() {
-        filesystemHandler.shutdown();
-        FileStatusProvider.getInstance().shutdown();
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                try {
-                    CvsSynchronizeTopComponent.getInstance().close();
-                } catch (Throwable e) {
-                    // ignore, this component is already invalid
-                }
-            }
-        });
     }
 
     /**
@@ -660,4 +655,74 @@ public class CvsVersioningSystem {
         }
         return globalOptions;
     }
+
+    public VCSAnnotator getVCSAnnotator() {
+        return fileStatusProvider;
+    }
+
+    public VCSInterceptor getVCSInterceptor() {
+        return filesystemHandler;
+    }
+
+    private static final int STATUS_DIFFABLE = 
+            FileInformation.STATUS_VERSIONED_UPTODATE | 
+            FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY |
+            FileInformation.STATUS_VERSIONED_MODIFIEDINREPOSITORY |
+            FileInformation.STATUS_VERSIONED_CONFLICT |
+            FileInformation.STATUS_VERSIONED_MERGE |
+            FileInformation.STATUS_VERSIONED_REMOVEDINREPOSITORY |
+            FileInformation.STATUS_VERSIONED_MODIFIEDINREPOSITORY |
+            FileInformation.STATUS_VERSIONED_MODIFIEDINREPOSITORY;
+    
+    
+    public OriginalContent getVCSOriginalContent(File file) {
+        FileInformation info = fileStatusCache.getStatus(file);
+        if ((info.getStatus() & STATUS_DIFFABLE) == 0) return null;
+        return new CvsOriginalContent(file);
+    }
+
+    public void refreshAllAnnotations() {
+        listenerSupport.fireVersioningEvent(EVENT_REFRESH_ANNOTATIONS);
+    }
+
+    private class CvsOriginalContent extends OriginalContent implements VersioningListener  {
+        
+        public CvsOriginalContent(File working) {
+            super(working);
+        }
+
+        public Reader getText() {
+            try {
+                File f = VersionsCache.getInstance().getRemoteFile(workingCopy, VersionsCache.REVISION_BASE, null, true);
+                String name = f.getName();
+                return createReader(f, name.substring(0, name.indexOf('#')));
+            } catch (Exception e) {
+                // no base
+                return null;
+            }
+        }
+
+        public void versioningEvent(VersioningEvent event) {
+            if (FileStatusCache.EVENT_FILE_STATUS_CHANGED == event.getId()) {
+                File eventFile = (File) event.getParams()[0];
+                if (eventFile.equals(workingCopy)) {
+                    support.firePropertyChange(PROP_CONTENT_CHANGED, null, null);
+                }
+            }
+        }
+        
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            if (!support.hasListeners(null)) {
+                fileStatusCache.addVersioningListener(this);
+            }
+            super.addPropertyChangeListener(listener);
+        }
+
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            super.removePropertyChangeListener(listener);
+            if (!support.hasListeners(null)) {
+                fileStatusCache.removeVersioningListener(this);
+            }
+        }
+    }    
 }

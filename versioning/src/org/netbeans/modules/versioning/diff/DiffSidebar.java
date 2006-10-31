@@ -29,6 +29,7 @@ import org.netbeans.api.diff.StreamSource;
 import org.netbeans.api.diff.DiffView;
 import org.netbeans.spi.diff.DiffProvider;
 import org.netbeans.modules.editor.errorstripe.privatespi.MarkProvider;
+import org.netbeans.modules.versioning.spi.OriginalContent;
 import org.openide.ErrorManager;
 import org.openide.windows.TopComponent;
 import org.openide.util.Lookup;
@@ -71,7 +72,7 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
     private Color colorRemoved =    new Color(255, 160, 180);
     private Color colorBorder =     new Color(102, 102, 102);
     
-    private final DiffSidebarProvider.OriginalContent originalContent;
+    private final OriginalContent originalContent;
 
     private int     originalContentSerial;
     private int     originalContentBufferSerial = -1;
@@ -79,7 +80,7 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
 
     private RequestProcessor.Task   refreshDiffTask;
 
-    public DiffSidebar(JTextComponent target, DiffSidebarProvider.OriginalContent content) {
+    public DiffSidebar(JTextComponent target, OriginalContent content) {
         this.textComponent = target;
         this.originalContent = content;
         this.editorUI = Utilities.getEditorUI(target);
@@ -507,7 +508,7 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
             if (evt.getNewValue() == null){
                 hideSidebar();
             }
-        } else if (DiffSidebarProvider.OriginalContent.PROP_CONTENT_CHANGED.equals(id)) {
+        } else if (OriginalContent.PROP_CONTENT_CHANGED.equals(id)) {
             originalContentSerial++;
             refreshDiff();
         }

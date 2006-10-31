@@ -21,9 +21,9 @@ package org.netbeans.modules.versioning.system.cvss;
 
 import org.netbeans.modules.versioning.util.ListenersSupport;
 import org.netbeans.modules.versioning.util.VersioningListener;
+import org.netbeans.modules.versioning.util.FlatFolder;
 import org.netbeans.modules.versioning.system.cvss.settings.MetadataAttic;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
-import org.netbeans.modules.versioning.system.cvss.util.FlatFolder;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
 import org.netbeans.modules.turbo.Turbo;
 import org.netbeans.modules.turbo.CustomProviders;
@@ -689,6 +689,13 @@ public class FileStatusCache {
     
     private void fireFileStatusChanged(File file, FileInformation oldInfo, FileInformation newInfo) {
         listenerSupport.fireVersioningEvent(EVENT_FILE_STATUS_CHANGED, new Object [] { file, oldInfo, newInfo });
+    }
+
+    public FileInformation getCachedStatus(File file) {
+        file = file.getParentFile();
+        if (file == null) return FILE_INFORMATION_NOTMANAGED_DIRECTORY;
+        Map<File, FileInformation> files = (Map<File, FileInformation>) turbo.readEntry(file, FILE_STATUS_MAP);
+        return files != null ? files.get(file) : null;
     }
 
     private static final class NotManagedMap extends AbstractMap {

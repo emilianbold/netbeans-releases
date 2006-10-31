@@ -19,8 +19,6 @@
 
 package org.netbeans.modules.subversion;
 
-import java.util.*;
-import org.netbeans.modules.masterfs.providers.InterceptionListener;
 import org.netbeans.modules.subversion.config.SvnConfigFiles;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.client.*;
@@ -34,13 +32,18 @@ import org.openide.util.RequestProcessor;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Reader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Iterator;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
+import java.beans.PropertyChangeListener;
 
 import org.netbeans.modules.subversion.config.ProxyDescriptor;
+import org.netbeans.modules.subversion.ui.diff.Setup;
+import org.netbeans.modules.versioning.spi.VCSInterceptor;
+import org.netbeans.modules.versioning.spi.OriginalContent;
+import org.netbeans.modules.versioning.util.VersioningListener;
+import org.netbeans.modules.versioning.util.VersioningEvent;
 import org.netbeans.api.queries.SharabilityQuery;
 
 /**
@@ -53,10 +56,21 @@ public class Subversion {
     
     static final String INVALID_METADATA_MARKER = "invalid-metadata"; // NOI18N
     
+    private static final int STATUS_DIFFABLE = 
+            FileInformation.STATUS_VERSIONED_UPTODATE | 
+            FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY |
+            FileInformation.STATUS_VERSIONED_MODIFIEDINREPOSITORY |
+            FileInformation.STATUS_VERSIONED_CONFLICT |
+            FileInformation.STATUS_VERSIONED_MERGE |
+            FileInformation.STATUS_VERSIONED_REMOVEDINREPOSITORY |
+            FileInformation.STATUS_VERSIONED_MODIFIEDINREPOSITORY |
+            FileInformation.STATUS_VERSIONED_MODIFIEDINREPOSITORY;
+        
     private static Subversion instance;
     
     private FileStatusCache                     fileStatusCache;
     private FilesystemHandler                   filesystemHandler;
+    private FileStatusProvider                  fileStatusProvider;
     private Annotator                           annotator;
     private HashMap<String, RequestProcessor>   processorsToUrl;
 
@@ -88,6 +102,7 @@ public class Subversion {
 
         fileStatusCache = new FileStatusCache();
         annotator = new Annotator(this);
+        fileStatusProvider = new FileStatusProvider();
         filesystemHandler  = new FilesystemHandler(this);
         cleanup();
     }
@@ -110,16 +125,8 @@ public class Subversion {
             public void run() {
                 try {
                     Diagnostics.println("Cleaning up"); // NOI18N
-                    // HACK: FileStatusProvider cannot do it itself
-                    if (FileStatusProvider.getInstance() != null) {
-                        // must be called BEFORE cache is cleaned up
-                        fileStatusCache.addVersioningListener(FileStatusProvider.getInstance());
-                        FileStatusProvider.getInstance().init();
-                    }
-    //                MetadataAttic.cleanUp();
-                    // must be called AFTER the filestatusprovider is attached
                     fileStatusCache.cleanUp();
-                    filesystemHandler.init();
+                    // TODO: refresh all annotations        
                 } finally {
                     Diagnostics.println("END Cleaning up"); // NOI18N
                 }
@@ -127,8 +134,9 @@ public class Subversion {
         }, 3000);
     }
     
-    public void shutdown() {        
-        filesystemHandler.shutdown();
+    public void shutdown() {
+        fileStatusProvider.shutdown();
+        // TODO: refresh all annotations        
     }
 
     public SvnFileNode [] getNodes(Context context, int includeStatus) {
@@ -277,7 +285,7 @@ public class Subversion {
         }        
     }            
     
-    public InterceptionListener getFileSystemHandler() {
+    public FilesystemHandler getFileSystemHandler() {
         return filesystemHandler;
     }
 
@@ -430,4 +438,64 @@ public class Subversion {
         return rp;
     }
 
+    FileStatusProvider getVCSAnnotator() {
+        return fileStatusProvider;
+    }
+
+    VCSInterceptor getVCSInterceptor() {
+        return filesystemHandler;
+    }
+
+    public void refreshAllAnnotations() {
+        // TODO: implement
+    }
+
+    public OriginalContent getVCSOriginalContent(File file) {
+        FileInformation info = fileStatusCache.getStatus(file);
+        if ((info.getStatus() & STATUS_DIFFABLE) == 0) return null;
+        return new SubversionOriginalContent(file);
+    }
+    
+    
+    private class SubversionOriginalContent extends OriginalContent implements VersioningListener {
+        
+        public SubversionOriginalContent(File working) { 
+            super(working);
+        }
+
+        public Reader getText() {
+            try {
+                File f = VersionsCache.getInstance().getFileRevision(workingCopy, Setup.REVISION_BASE);
+                String name = f.getName();
+                return createReader(f, name.substring(0, name.indexOf(".netbeans-base")));
+            } catch (IOException e) {
+                // ignore
+            }
+            return null;
+        }
+
+        public void versioningEvent(VersioningEvent event) {
+            if (FileStatusCache.EVENT_FILE_STATUS_CHANGED == event.getId()) {
+                File eventFile = (File) event.getParams()[0];
+                if (eventFile.equals(workingCopy)) {
+                    support.firePropertyChange(PROP_CONTENT_CHANGED, null, null);
+                }
+            }
+        }
+        
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            if (!support.hasListeners(null)) {
+                fileStatusCache.addVersioningListener(this);
+            }
+            super.addPropertyChangeListener(listener);
+        }
+
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            super.removePropertyChangeListener(listener);
+            if (!support.hasListeners(null)) {
+                fileStatusCache.removeVersioningListener(this);
+            }
+        }
+    }
+    
 }

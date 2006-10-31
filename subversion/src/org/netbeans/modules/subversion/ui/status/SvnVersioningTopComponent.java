@@ -28,7 +28,7 @@ import org.openide.util.HelpCtx;
 import org.openide.ErrorManager;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
-import org.netbeans.modules.subversion.util.FlatFolder;
+import org.netbeans.modules.versioning.util.FlatFolder;
 
 import java.awt.BorderLayout;
 import java.awt.Cursor;

@@ -24,7 +24,6 @@ import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.Lookup;
-import org.openide.util.MapFormat;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.ErrorManager;
@@ -44,8 +43,9 @@ import org.netbeans.modules.versioning.system.cvss.ui.actions.commit.CommitActio
 import org.netbeans.modules.versioning.system.cvss.ui.actions.update.UpdateAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.update.GetCleanAction;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
-import org.netbeans.modules.versioning.system.cvss.util.FlatFolder;
 import org.netbeans.modules.versioning.system.cvss.settings.CvsModuleConfig;
+import org.netbeans.modules.versioning.spi.VCSContext;
+import org.netbeans.modules.versioning.util.FlatFolder;
 import org.netbeans.lib.cvsclient.admin.Entry;
 
 import javax.swing.*;
@@ -296,6 +296,33 @@ public class Annotator {
         return annotateNameHtml(file.getName(), info, file);
     }
     
+    public String annotateNameHtml(String name, VCSContext context, int includeStatus) {
+        FileInformation mostImportantInfo = null;
+        File mostImportantFile = null;
+        boolean folderAnnotation = false;
+        
+        for (File file : context.getRootFiles()) {
+            FileInformation info = cache.getStatus(file);
+            int status = info.getStatus();
+            if ((status & includeStatus) == 0) continue;
+            
+            if (isMoreImportant(info, mostImportantInfo)) {
+                mostImportantInfo = info;
+                mostImportantFile = file;
+                folderAnnotation = file.isDirectory();
+            }
+        }
+
+        if (folderAnnotation == false && context.getRootFiles().size() > 1) {
+            folderAnnotation = looksLikeLogicalFolder(context.getRootFiles());
+        }
+
+        if (mostImportantInfo == null) return null;
+        return folderAnnotation ? 
+                annotateFolderNameHtml(name, mostImportantInfo, mostImportantFile) : 
+                annotateNameHtml(name, mostImportantInfo, mostImportantFile);
+    }
+    
     /**
      * Annotates given name by HTML markup.
      * 
@@ -483,7 +510,7 @@ public class Annotator {
      * try to distinguish between logical containes (e.g. "Important Files"
      * keeping manifest, arch, ..) and multi data objects (.form);
      */
-    static boolean looksLikeLogicalFolder(Set files) {
+    static boolean looksLikeLogicalFolder2(Set<FileObject> files) {
         Iterator it = files.iterator();
         FileObject fo = (FileObject) it.next();
         try {
@@ -503,9 +530,118 @@ public class Annotator {
         return false;
     }
 
+    static boolean looksLikeLogicalFolder(Set<File> files) {
+        Iterator<File> it = files.iterator();
+        File file = (File) it.next();
+        try {
+            FileObject fo = FileUtil.toFileObject(file);
+            DataObject etalon = DataObject.find(fo);
+            while (it.hasNext()) {
+                File file2 = (File) it.next();
+                FileObject fileObject = FileUtil.toFileObject(file2);
+                if (etalon.equals(DataObject.find(fileObject)) == false) {
+                    return true;
+                }
+            }
+        } catch (DataObjectNotFoundException e) {
+            ErrorManager err = ErrorManager.getDefault();
+            err.annotate(e, "Can not find dataobject, annottaing as logical folder");  // NOI18N
+            err.notify(e);
+            return true;
+        }
+        return false;
+    }
+    
     private static MessageFormat getFormat(String key) {
         String format = NbBundle.getMessage(Annotator.class, key);
         return new MessageFormat(format);
     }
 
+    private static final int STATUS_BADGEABLE = FileInformation.STATUS_VERSIONED_UPTODATE | FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
+    
+    public Image annotateIcon(Image icon, VCSContext context) {
+        boolean folderAnnotation = false;
+        for (File file : context.getRootFiles()) {
+            if (file.isDirectory()) {
+                folderAnnotation = true;
+                break;
+            }
+        }
+        
+        if (folderAnnotation == false && context.getRootFiles().size() > 1) {
+            folderAnnotation = Annotator.looksLikeLogicalFolder(context.getRootFiles());
+        }
+
+        if (folderAnnotation == false) {
+            return null;
+        }
+
+        FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
+        boolean isVersioned = false;
+        for (Iterator i = context.getRootFiles().iterator(); i.hasNext();) {
+            File file = (File) i.next();
+            if ((cache.getStatus(file).getStatus() & STATUS_BADGEABLE) != 0) {  
+                isVersioned = true;
+                break;
+            }
+        }
+        if (!isVersioned) return null;
+
+        
+        
+        
+        
+        CvsModuleConfig config = CvsModuleConfig.getDefault();
+        boolean allExcluded = true;
+        boolean modified = false;
+
+        Map map = cache.getAllModifiedFiles();
+        Map modifiedFiles = new HashMap();
+        for (Iterator i = map.keySet().iterator(); i.hasNext();) {
+            File file = (File) i.next();
+            FileInformation info = (FileInformation) map.get(file);
+            if (!info.isDirectory() && (info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) modifiedFiles.put(file, info);
+        }
+
+        for (Iterator i = context.getRootFiles().iterator(); i.hasNext();) {
+            File file = (File) i.next();
+            if (file instanceof FlatFolder) {
+                for (Iterator j = modifiedFiles.keySet().iterator(); j.hasNext();) {
+                    File mf = (File) j.next();
+                    if (mf.getParentFile().equals(file)) {
+                        FileInformation info = (FileInformation) modifiedFiles.get(mf);
+                        if (info.isDirectory()) continue;
+                        int status = info.getStatus();
+                        if (status == FileInformation.STATUS_VERSIONED_CONFLICT) {
+                            Image badge = Utilities.loadImage("org/netbeans/modules/versioning/system/cvss/resources/icons/conflicts-badge.png", true);  // NOI18N
+                            return Utilities.mergeImages(icon, badge, 16, 9);
+                        }
+                        modified = true;
+                        allExcluded &= config.isExcludedFromCommit(mf.getAbsolutePath());
+                    }
+                }
+            } else {
+                for (Iterator j = modifiedFiles.keySet().iterator(); j.hasNext();) {
+                    File mf = (File) j.next();
+                    if (Utils.isParentOrEqual(file, mf)) {
+                        FileInformation info = (FileInformation) modifiedFiles.get(mf);
+                        int status = info.getStatus();
+                        if (status == FileInformation.STATUS_VERSIONED_CONFLICT) {
+                            Image badge = Utilities.loadImage("org/netbeans/modules/versioning/system/cvss/resources/icons/conflicts-badge.png", true); // NOI18N
+                            return Utilities.mergeImages(icon, badge, 16, 9);
+                        }
+                        modified = true;
+                        allExcluded &= config.isExcludedFromCommit(mf.getAbsolutePath());
+                    }
+                }
+            }
+        }
+
+        if (modified && !allExcluded) {
+            Image badge = Utilities.loadImage("org/netbeans/modules/versioning/system/cvss/resources/icons/modified-badge.png", true); // NOI18N
+            return Utilities.mergeImages(icon, badge, 16, 9);
+        } else {
+            return null;
+        }
+    }
 }

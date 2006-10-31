@@ -211,7 +211,7 @@ public class CheckoutCompleted implements ActionListener {
         ContextAwareAction action = (ContextAwareAction) CommonProjectActions.setAsMainProjectAction();
         Lookup ctx = Lookups.singleton(p);
         Action ctxAction = action.createContextAwareInstance(ctx);
-        ctxAction.actionPerformed(null);
+        ctxAction.actionPerformed(new ActionEvent(this, 0, ""));
         ProjectUtilities.selectAndExpandProject(p);
     }
 }
