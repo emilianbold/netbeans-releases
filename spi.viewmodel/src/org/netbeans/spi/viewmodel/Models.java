@@ -24,6 +24,7 @@ import java.lang.StringBuffer;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
@@ -253,7 +254,7 @@ public final class Models {
         System.out.println("Column Models = "+columnModels);
          */
         if (treeModels.isEmpty ()) {
-            treeModels.add (new EmptyTreeModel ());
+            treeModels = Collections.singletonList(new EmptyTreeModel ());
         }
         if (treeExpansionModels.isEmpty()) {
             TreeExpansionModel tem = (TreeExpansionModel) defaultExpansionModels.get(models);
@@ -261,7 +262,7 @@ public final class Models {
                 tem = new DefaultTreeExpansionModel();
                 defaultExpansionModels.put(models, tem);
             }
-            treeExpansionModels.add(tem);
+            treeExpansionModels = Collections.singletonList(tem);
         }
         
         return new CompoundModel (
