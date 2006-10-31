@@ -72,7 +72,7 @@ import org.openide.util.actions.SystemAction;
 public final class ModuleActions implements ActionProvider {
     
     static Action[] getProjectActions(NbModuleProject project) {
-        List/*<Action>*/ actions = new ArrayList();
+        List<Action> actions = new ArrayList();
         actions.add(CommonProjectActions.newFileAction());
         actions.add(null);
         actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_BUILD, NbBundle.getMessage(ModuleActions.class, "ACTION_build"), null));
@@ -131,7 +131,7 @@ public final class ModuleActions implements ActionProvider {
                 while (it.hasNext()) {
                     Object next = it.next();
                     if (next instanceof Action) {
-                        actions.add(next);
+                        actions.add((Action) next);
                     } else if (next instanceof JSeparator) {
                         actions.add(null);
                     }
@@ -149,12 +149,12 @@ public final class ModuleActions implements ActionProvider {
     }
     
     private final NbModuleProject project;
-    private final Map/*<String,String>*/ globalCommands = new HashMap();
+    private final Map<String,String[]> globalCommands = new HashMap();
     private final String[] supportedActions;
     
     public ModuleActions(NbModuleProject project) {
         this.project = project;
-        Set/*<String>*/ supportedActionsSet = new HashSet();
+        Set<String> supportedActionsSet = new HashSet();
         globalCommands.put(ActionProvider.COMMAND_BUILD, new String[] {"netbeans"}); // NOI18N
         globalCommands.put(ActionProvider.COMMAND_CLEAN, new String[] {"clean"}); // NOI18N
         globalCommands.put(ActionProvider.COMMAND_REBUILD, new String[] {"clean", "netbeans"}); // NOI18N

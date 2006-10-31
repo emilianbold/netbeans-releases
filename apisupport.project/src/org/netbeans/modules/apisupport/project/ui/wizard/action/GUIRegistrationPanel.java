@@ -290,7 +290,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
                         ? getFolders(parentDF) : getFoldersByName(parentDF, subFolderName);
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
-                        Collection/*<LayerItemPresenter>*/ sorted = new LinkedHashSet();
+                        Collection<LayerItemPresenter> sorted = new LinkedHashSet();
                         while (folders.hasMoreElements()) {
                             DataFolder folder = (DataFolder) folders.nextElement();
                             sorted.add(new LayerItemPresenter(folder.getPrimaryFile(), parent, subFolderName != null));
@@ -980,8 +980,8 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
      * Actually really dedicated for Loader&hellip;Actions and
      * Editors&hellip;Popup.
      */
-    private Enumeration/*<DataFolder>*/ getFoldersByName(final DataFolder startFolder, final String subFoldersName) {
-        Enumeration/*<DataFolder>*/ folders = getFolders(startFolder);
+    private Enumeration<DataFolder> getFoldersByName(final DataFolder startFolder, final String subFoldersName) {
+        Enumeration<DataFolder> folders = getFolders(startFolder);
         Vector result = new Vector();
         while (folders.hasMoreElements()) {
             DataFolder dObj = (DataFolder) folders.nextElement();
@@ -993,13 +993,13 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         return result.elements();
     }
     
-    private static Enumeration/*<DataFolder>*/ getFolders(DataFolder folder) {
-        List/*<DataFolder>*/ folders = new ArrayList();
+    private static Enumeration<DataFolder> getFolders(DataFolder folder) {
+        List<DataFolder> folders = new ArrayList();
         getFolders(folder, folders); // #66144: depth-first, not breadth-first, search appropriate here
         return Collections.enumeration(folders);
     }
     
-    private static void getFolders(DataFolder folder, List/*<DataFolder>*/ folders) {
+    private static void getFolders(DataFolder folder, List<DataFolder> folders) {
         Enumeration e = folder.children();
         while (e.hasMoreElements()) {
             Object o = e.nextElement();

@@ -79,7 +79,7 @@ class AnnotatedNode extends AbstractNode implements Runnable, FileStatusListener
         }
     }
     
-    protected final Set/*<FileObject>*/ getFiles() {
+    protected final Set<FileObject> getFiles() {
         return files;
     }
     

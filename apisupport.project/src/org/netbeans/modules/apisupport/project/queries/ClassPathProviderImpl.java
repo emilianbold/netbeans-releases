@@ -34,6 +34,7 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.NbModuleProjectType;
 import org.netbeans.modules.apisupport.project.Util;
+import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.project.classpath.support.ProjectClassPathSupport;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
@@ -60,8 +61,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
     private ClassPath funcTestSource;
     private ClassPath funcTestCompile;
     private ClassPath funcTestExecute;
-    private Map/*<FileObject,ClassPath>*/ extraCompilationUnitsCompile = null;
-    private Map/*<FileObject,ClassPath>*/ extraCompilationUnitsExecute = null;
+    private Map<FileObject,ClassPath> extraCompilationUnitsCompile = null;
+    private Map<FileObject,ClassPath> extraCompilationUnitsExecute = null;
     
     public ClassPath findClassPath(FileObject file, String type) {
         if (type.equals(ClassPath.BOOT)) {
@@ -201,7 +202,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         return createPathFromProperty("cp"); // NOI18N
     }
     
-    private void addPathFromProjectEvaluated(List/*<PathResourceImplementation>*/ entries, String path) {
+    private void addPathFromProjectEvaluated(List<PathResourceImplementation> entries, String path) {
         if (path != null) {
             String[] pieces = PropertyUtils.tokenizePath(path);
             for (int i = 0; i < pieces.length; i++) {
@@ -236,7 +237,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         }
         extraCompilationUnitsCompile = new HashMap();
         extraCompilationUnitsExecute = new HashMap();
-        Iterator/*<Map.Entry>*/ ecus = project.getExtraCompilationUnits().entrySet().iterator();
+        Iterator<Map.Entry<FileObject,Element>> ecus = project.getExtraCompilationUnits().entrySet().iterator();
         while (ecus.hasNext()) {
             Map.Entry entry = (Map.Entry) ecus.next();
             FileObject pkgroot = (FileObject) entry.getKey();
@@ -249,12 +250,12 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                 extraCompilationUnitsExecute.put(pkgroot, ClassPathSupport.createClassPath(new URL[0]));
             } else {
                 String classpathEval = project.evaluator().evaluate(classpathS);
-                List/*<PathResourceImplementation>*/ entries = new ArrayList();
+                List<PathResourceImplementation> entries = new ArrayList();
                 addPathFromProjectEvaluated(entries, classpathEval);
                 extraCompilationUnitsCompile.put(pkgroot, ClassPathSupport.createClassPath(entries));
                 // Add <built-to> dirs and JARs for ClassPath.EXECUTE.
                 entries = new ArrayList(entries);
-                Iterator/*<Element>*/ pkgrootKids = Util.findSubElements(pkgrootEl).iterator();
+                Iterator<Element> pkgrootKids = Util.findSubElements(pkgrootEl).iterator();
                 while (pkgrootKids.hasNext()) {
                     Element kid = (Element) pkgrootKids.next();
                     if (!kid.getLocalName().equals("built-to")) { // NOI18N
@@ -284,7 +285,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                 return new ClassPath[] {findClassPath(srcDir, ClassPath.BOOT)};
             }
         }
-        List/*<ClassPath>*/ paths = new ArrayList(3);
+        List<ClassPath> paths = new ArrayList(3);
         if (ClassPath.COMPILE.equals(type)) {
             FileObject srcDir = project.getSourceDirectory();
             if (srcDir != null) {

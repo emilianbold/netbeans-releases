@@ -238,7 +238,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
     private PropertyEvaluator createEvaluator(ModuleList ml) {
         // XXX a lot of this duplicates ModuleList.parseProperties... can they be shared?
         PropertyProvider predefs = project.getHelper().getStockPropertyPreprovider();
-        Map/*<String,String>*/ stock = new HashMap();
+        Map<String,String> stock = new HashMap();
         File dir = project.getProjectDirectoryFile();
         NbModuleTypeProvider.NbModuleType type = typeProvider.getModuleType();
         File nbroot;
@@ -269,7 +269,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
                 stock.put("cluster", clusterDir.getAbsolutePath()); // NOI18N
             }
         }
-        List/*<PropertyProvider>*/ providers = new ArrayList();
+        List<PropertyProvider> providers = new ArrayList();
         providers.add(PropertyUtils.fixedPropertyProvider(stock));
         // XXX should listen to changes in values of properties which refer to property files:
         if (type == NbModuleTypeProvider.SUITE_COMPONENT) {
@@ -294,7 +294,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
                 public DestDirProvider(PropertyEvaluator eval) {
                     super(eval);
                 }
-                protected Map/*<String,String>*/ getProperties(Map/*<String,String>*/ inputPropertyValues) {
+                protected Map<String,String> getProperties(Map<String,String> inputPropertyValues) {
                     String platformS = (String) inputPropertyValues.get("nbplatform.active"); // NOI18N
                     if (platformS != null) {
                         return Collections.singletonMap("netbeans.dest.dir", "${nbplatform." + platformS + ".netbeans.dest.dir}"); // NOI18N
@@ -318,7 +318,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
         providers.add(new NbJdkProvider(baseEval));
         providers.add(project.getHelper().getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH));
         providers.add(project.getHelper().getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH));
-        Map/*<String,String>*/ defaults = new HashMap();
+        Map<String,String> defaults = new HashMap();
         defaults.put("code.name.base.dashes", project.getCodeNameBase().replace('.', '-')); // NOI18N
         defaults.put("module.jar.dir", "modules"); // NOI18N
         defaults.put("module.jar.basename", "${code.name.base.dashes}.jar"); // NOI18N
@@ -335,7 +335,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
         providers.add(PropertyUtils.fixedPropertyProvider(defaults));
         if (ml != null) {
             providers.add(PropertyUtils.fixedPropertyProvider(Collections.singletonMap("module.classpath", computeModuleClasspath(ml)))); // NOI18N
-            Map/*<String,String>*/ buildDefaults = new HashMap();
+            Map<String,String> buildDefaults = new HashMap();
             buildDefaults.put("cp.extra", ""); // NOI18N
             buildDefaults.put("cp", "${module.classpath}:${cp.extra}"); // NOI18N
             buildDefaults.put("run.cp", computeRuntimeModuleClasspath(ml) + ":${cp.extra}:${build.classes.dir}"); // NOI18N
@@ -376,7 +376,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
                         "${netbeans.user}/modules/org-netbeans-modules-nbjunit.jar:" + // NOI18N, new for 6.0
                         "${netbeans.user}/modules/org-netbeans-modules-nbjunit-ide.jar"; // NOI18N, new for 6.0
             }
-            Map/*<String,TestClassPath>*/ testsCPs = computeTestingClassPaths(ml,baseEval);
+            Map<String,TestClasspath> testsCPs = computeTestingClassPaths(ml,baseEval);
             TestClasspath tcp = TestClasspath.getOrEmpty(testsCPs, "unit"); // NOI18N
             
             buildDefaults.put("test.unit.cp", "${cp}:${cluster}/${module.jar}:" + testJars + ":${test.unit.cp.extra}:" + tcp.getCompileClasspath()); // NOI18N
@@ -412,7 +412,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
     private final class NbJdkProvider implements PropertyProvider, PropertyChangeListener { // #63541: JDK selection
         
         private final PropertyEvaluator eval;
-        private final List/*<ChangeListener>*/ listeners = new ArrayList();
+        private final List<ChangeListener> listeners = new ArrayList();
         private final PropertyChangeListener weakListener = WeakListeners.propertyChange(this, null);
         
         public NbJdkProvider(PropertyEvaluator eval) {
@@ -421,8 +421,8 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
             JavaPlatformManager.getDefault().addPropertyChangeListener(weakListener);
         }
         
-        public final Map/*<String,String>*/ getProperties() {
-            Map/*<String,String>*/ props = new HashMap();
+        public final Map<String,String> getProperties() {
+            Map<String,String> props = new HashMap();
             String home = eval.getProperty("nbjdk.home"); // NOI18N
             if (home == null) {
                 String active = eval.getProperty("nbjdk.active"); // NOI18N
@@ -436,7 +436,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
             if (home == null) {
                 JavaPlatform platform = JavaPlatformManager.getDefault().getDefaultPlatform();
                 if (platform != null) {
-                    Collection/*<FileObject>*/ installs = platform.getInstallFolders();
+                    Collection<FileObject> installs = platform.getInstallFolders();
                     if (installs.size() == 1) {
                         home = FileUtil.toFile((FileObject) installs.iterator().next()).getAbsolutePath();
                     }
@@ -454,7 +454,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
                             ClassPath boot = platforms[i].getBootstrapLibraries();
                             boot.removePropertyChangeListener(weakListener);
                             boot.addPropertyChangeListener(weakListener);
-                            Iterator/*<ClassPath.Entry>*/ entries = boot.entries().iterator();
+                            Iterator<ClassPath.Entry> entries = boot.entries().iterator();
                             while (entries.hasNext()) {
                                 ClassPath.Entry entry = (ClassPath.Entry) entries.next();
                                 URL u = entry.getURL();
@@ -490,7 +490,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
                 props.put("tools.jar", home + "/lib/tools.jar".replace('/', File.separatorChar)); // NOI18N
             }
             if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                Map/*<String,String>*/ _props = new TreeMap(eval.getProperties());
+                Map<String,String> _props = new TreeMap(eval.getProperties());
                 Iterator it = _props.entrySet().iterator();
                 while (it.hasNext()) {
                     String k = (String) ((Map.Entry) it.next()).getKey();
@@ -595,7 +595,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
         Element data = project.getPrimaryConfigurationData();
         Element moduleDependencies = Util.findElement(data,
             "module-dependencies", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
-        List/*<Element>*/ deps = Util.findSubElements(moduleDependencies);
+        List<Element> deps = Util.findSubElements(moduleDependencies);
         Iterator it = deps.iterator();
         StringBuffer cp = new StringBuffer();
         while (it.hasNext()) {
@@ -633,9 +633,9 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
      * @see "issue #70206"
      */
     private String computeRuntimeModuleClasspath(ModuleList ml) {
-        Set/*<String>*/ unprocessed = new HashSet();
+        Set<String> unprocessed = new HashSet();
         unprocessed.add(project.getCodeNameBase());
-        Set/*<String>*/ processed = new HashSet();
+        Set<String> processed = new HashSet();
         StringBuffer cp = new StringBuffer();
         while (!unprocessed.isEmpty()) { // crude breadth-first search
             Iterator it = unprocessed.iterator();
@@ -672,9 +672,9 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
      * the project's metadata (<em>project.xml<em>).
      */
     private Map computeTestingClassPaths(ModuleList ml, PropertyEvaluator evaluator) {
-        Map/*<String, TestClasspath>*/ classpaths = new HashMap();
+        Map<String, TestClasspath> classpaths = new HashMap();
         ProjectXMLManager pxm = new ProjectXMLManager(project);
-        Map/*<String, Set<TestModuleDependency>>*/ testTypes = pxm.getTestDependencies(ml);
+        Map<String, Set<TestModuleDependency>> testTypes = pxm.getTestDependencies(ml);
         
         String testDistDir =  evaluator.getProperty("test.dist.dir"); // NOI18N
         if (testDistDir == null) {
@@ -703,7 +703,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
         return classpaths;
     }
     
-    private void computeTestType(String ttName,File testDistDir, Set ttModules, Map/*<String,TestClasspath>*/ classpaths,ModuleList ml) {
+    private void computeTestType(String ttName,File testDistDir, Set ttModules, Map<String,TestClasspath> classpaths,ModuleList ml) {
   
         Set compileCnds = new HashSet();
         Set runtimeCnds = new HashSet();
@@ -743,7 +743,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
                                         Set runtimeCnds,
                                         Set processedRecursive,
                                         ModuleList ml) {
-        Set/*<String>*/ unprocessed = new HashSet();
+        Set<String> unprocessed = new HashSet();
         
         unprocessed.add(td.getModule().getCodeNameBase()); 
         while (!unprocessed.isEmpty()) { // crude breadth-first search

@@ -204,7 +204,7 @@ final class PlatformNode extends AbstractNode implements ChangeListener {
         private final PropertyEvaluator evaluator;
         private final String platformPropName;
         private JavaPlatform platformCache;
-        private List/*<ChangeListener>*/ listeners;
+        private List<ChangeListener> listeners;
         
         public PlatformProvider(PropertyEvaluator evaluator, String platformPropName) {
             this.evaluator = evaluator;
@@ -306,7 +306,7 @@ final class PlatformNode extends AbstractNode implements ChangeListener {
         
         private static URL[]  getJavadocRoots(JavaPlatform platform) {
             Set result = new HashSet();
-            List/*<ClassPath.Entry>*/ l = platform.getBootstrapLibraries().entries();
+            List<ClassPath.Entry> l = platform.getBootstrapLibraries().entries();
             for (Iterator it = l.iterator(); it.hasNext();) {
                 ClassPath.Entry e = (ClassPath.Entry) it.next();
                 result.addAll(Arrays.asList(JavadocForBinaryQuery.findJavadoc(e.getURL()).getRoots()));

@@ -139,7 +139,7 @@ public class NbModuleProjectGenerator {
                     
                     EditableProperties props = new EditableProperties(true);
                     props.put(SingleModuleProperties.IS_AUTOLOAD, "true"); // NOI18N
-                    SortedSet/*<String>*/ packageList = new TreeSet();
+                    SortedSet<String> packageList = new TreeSet();
                     Map classPathExtensions = new HashMap();
                     
                     File releaseDir = new File(projectDir, "release/modules/ext"); //NOI18N

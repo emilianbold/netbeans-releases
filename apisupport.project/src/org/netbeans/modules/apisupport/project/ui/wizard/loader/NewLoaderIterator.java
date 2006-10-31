@@ -254,7 +254,7 @@ final class NewLoaderIterator extends BasicWizardIterator {
         
         fileChanges.add(fileChanges.layerModifications(new CreatedModifiedFiles.LayerOperation() {
             public void run(FileSystem layer) throws IOException {
-                List/*<String>*/ actions = new ArrayList();
+                List<String> actions = new ArrayList();
                 if (isEditable) {
                     actions.add("org.openide.actions.OpenAction"); // NOI18N
                 }
@@ -273,7 +273,7 @@ final class NewLoaderIterator extends BasicWizardIterator {
                     "org.openide.actions.PropertiesAction", // NOI18N
                 }));
                 FileObject folder = FileUtil.createFolder(layer.getRoot(), "Loaders/" + mime + "/Actions"); // NOI18N
-                List/*<DataObject>*/ kids = new ArrayList();
+                List<DataObject> kids = new ArrayList();
                 Iterator it = actions.iterator();
                 int i = 0;
                 while (it.hasNext()) {

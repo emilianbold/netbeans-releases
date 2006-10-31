@@ -28,6 +28,8 @@ import java.util.SortedSet;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.CustomizerComponentFactory.SuiteSubModulesListModel;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
@@ -57,10 +59,10 @@ public final class SuiteProperties extends ModuleProperties {
     private SuiteProject project;
     
     /** Represent original set of sub-modules. */
-    private Set/*<Project>*/ origSubModules;
+    private Set<NbModuleProject> origSubModules;
     
     /** Represent currently set set of sub-modules. */
-    private Set/*<Project>*/ subModules;
+    private Set<NbModuleProject> subModules;
     
     // models
     private SuiteSubModulesListModel moduleListModel;
@@ -79,7 +81,7 @@ public final class SuiteProperties extends ModuleProperties {
      * Creates a new instance of SuiteProperties
      */
     public SuiteProperties(SuiteProject project, AntProjectHelper helper,
-            PropertyEvaluator evaluator, Set/*<Project>*/ subModules) {
+            PropertyEvaluator evaluator, Set<NbModuleProject> subModules) {
         super(helper, evaluator);
         this.project = project;
         refresh(subModules);
@@ -87,7 +89,7 @@ public final class SuiteProperties extends ModuleProperties {
         this.enabledClusters = getArrayProperty(evaluator, ENABLED_CLUSTERS_PROPERTY);
         if (enabledClusters.length == 0) {
             // Compatibility.
-            SortedSet/*<String>*/ clusters = new TreeSet();
+            SortedSet<String> clusters = new TreeSet();
             ModuleEntry[] modules = activePlatform.getModules();
             for (int i = 0; i < modules.length; i++) {
                 clusters.add(modules[i].getClusterDirectory().getName());
@@ -98,7 +100,7 @@ public final class SuiteProperties extends ModuleProperties {
         brandingModel = new BasicBrandingModel(this);
     }
     
-    void refresh(Set/*<Project>*/ subModules) {
+    void refresh(Set<NbModuleProject> subModules) {
         reloadProperties();
         this.origSubModules = Collections.unmodifiableSet(subModules);
         this.subModules = subModules;
@@ -112,7 +114,7 @@ public final class SuiteProperties extends ModuleProperties {
         return project;
     }
     
-    Map/*<String, String>*/ getDefaultValues() {
+    Map<String, String> getDefaultValues() {
         return Collections.EMPTY_MAP; // no default value (yet)
     }
     
@@ -205,7 +207,7 @@ public final class SuiteProperties extends ModuleProperties {
                 ep.setProperty(ENABLED_CLUSTERS_PROPERTY, separated);
                 setProperty(ENABLED_CLUSTERS_PROPERTY, (String) null);
                 // Compatibility.
-                SortedSet/*<String>*/ disabledClusters = new TreeSet();
+                SortedSet<String> disabledClusters = new TreeSet();
                 ModuleEntry[] modules = activePlatform.getModules();
                 for (int i = 0; i < modules.length; i++) {
                     disabledClusters.add(modules[i].getClusterDirectory().getName());
@@ -224,11 +226,11 @@ public final class SuiteProperties extends ModuleProperties {
         super.storeProperties();
     }
     
-    Set/*<Project>*/ getSubModules() {
+    Set<NbModuleProject> getSubModules() {
         return getModulesListModel().getSubModules();
     }
     
-    Set/*<Project>*/ getOrigSubModules() {
+    Set<NbModuleProject> getOrigSubModules() {
         return origSubModules;
     }
     

@@ -47,8 +47,8 @@ abstract class AbstractEntryWithSources extends AbstractEntry {
         return bundleInfo;
     }
     
-    protected Set/*<String>*/ computePublicClassNamesInMainModule() throws IOException {
-        Set/*<String>*/ result = new HashSet();
+    protected Set<String> computePublicClassNamesInMainModule() throws IOException {
+        Set<String> result = new HashSet();
         File src = new File(getSourceLocation(), "src"); // XXX hardcoding src.dir // NOI18N
         ManifestManager.PackageExport[] pkgs = getPublicPackages();
         for (int i = 0; i < pkgs.length; i++) {
@@ -58,7 +58,7 @@ abstract class AbstractEntryWithSources extends AbstractEntry {
         return result;
     }
     
-    private void scanForClasses(Set/*<String>*/ result, String pkg, File dir, boolean recurse) throws IOException {
+    private void scanForClasses(Set<String> result, String pkg, File dir, boolean recurse) throws IOException {
         if (!dir.isDirectory()) {
             return;
         }
@@ -80,7 +80,7 @@ abstract class AbstractEntryWithSources extends AbstractEntry {
     }
 
     public String[] getRunDependencies() {
-        Set/*<String>*/ deps = new TreeSet();
+        Set<String> deps = new TreeSet();
         FileObject source = FileUtil.toFileObject(getSourceLocation());
         if (source == null) { // ??
             return new String[0];
@@ -95,7 +95,7 @@ abstract class AbstractEntryWithSources extends AbstractEntry {
         Element data = project.getPrimaryConfigurationData();
         Element moduleDependencies = Util.findElement(data,
             "module-dependencies", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
-        List/*<Element>*/ depEls = Util.findSubElements(moduleDependencies);
+        List<Element> depEls = Util.findSubElements(moduleDependencies);
         Iterator it = depEls.iterator();
         while (it.hasNext()) {
             Element dep = (Element) it.next();

@@ -134,7 +134,7 @@ public final class TestEntry {
             // ModuleSuite
             SubprojectProvider subprojects = (SubprojectProvider) prj.getLookup().lookup(SubprojectProvider.class);
             if (subprojects != null) {
-                Set/*<Project>*/  projects = subprojects.getSubprojects();
+                Set<? extends Project>  projects = subprojects.getSubprojects();
                 for (Iterator it = projects.iterator() ; it.hasNext();) {
                     Project p = (Project)it.next();
                     if (p instanceof NbModuleProject) {

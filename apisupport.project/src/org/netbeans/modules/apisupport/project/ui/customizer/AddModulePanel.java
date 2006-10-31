@@ -198,7 +198,7 @@ public final class AddModulePanel extends JPanel {
                     String filterTextLC = filterText.toLowerCase(Locale.US);
                     Style match = doc.addStyle(null, null);
                     match.addAttribute(StyleConstants.Background, new Color(246, 248, 139));
-                    Set/*<String>*/ matches = filterer.getMatchesFor(filterText, deps[0]);
+                    Set<String> matches = filterer.getMatchesFor(filterText, deps[0]);
                     Iterator it = matches.iterator();
                     boolean isEven = false;
                     Style even = doc.addStyle(null, null);
@@ -252,7 +252,7 @@ public final class AddModulePanel extends JPanel {
         } else {
             final Runnable compute = new Runnable() {
                 public void run() {
-                    final Set/*<ModuleDependency>*/ matches = filterer.getMatches(text);
+                    final Set<ModuleDependency> matches = filterer.getMatches(text);
                     filterTask = null;
                     Mutex.EVENT.readAccess(new Runnable() {
                         public void run() {

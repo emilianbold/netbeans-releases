@@ -39,7 +39,7 @@ import org.openide.util.NbBundle;
  */
 final class ActionTypePanel extends BasicWizardIterator.Panel {
     
-    private static final Map/*<String, String>*/ NAME_TO_FQCN;
+    private static final Map<String, String> NAME_TO_FQCN;
     
     static {
         Map map = new HashMap(DataModel.PREDEFINED_COOKIE_CLASSES.length);

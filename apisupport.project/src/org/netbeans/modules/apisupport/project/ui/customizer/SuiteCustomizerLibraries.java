@@ -390,7 +390,7 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         return manager;
     }
     
-    private static final Set/*<String>*/ DISABLED_PLATFORM_MODULES = new HashSet();
+    private static final Set<String> DISABLED_PLATFORM_MODULES = new HashSet();
     
     static {
         // Probably not needed for most platform apps, and won't even work under JNLP.
@@ -587,9 +587,9 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         int getReleaseVersion();
         SpecificationVersion getSpecificationVersion();
         String getImplementationVersion();
-        Set/*<String>*/ getProvidedTokens();
-        Set/*<String>*/ getRequiredTokens();
-        Set/*<Dependency>*/ getModuleDependencies();
+        Set<String> getProvidedTokens();
+        Set<String> getRequiredTokens();
+        Set<Dependency> getModuleDependencies();
         String getCluster();
         String getDisplayName();
     }
@@ -606,10 +606,10 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         public String getImplementationVersion() {
             return mm.getImplementationVersion();
         }
-        public Set/*<String>*/ getProvidedTokens() {
+        public Set<String> getProvidedTokens() {
             return new HashSet(Arrays.asList(mm.getProvidedTokens()));
         }
-        public Set/*<String>*/ getRequiredTokens() {
+        public Set<String> getRequiredTokens() {
             Set s = new HashSet(Arrays.asList(mm.getRequiredTokens()));
             Iterator it = s.iterator();
             while (it.hasNext()) {
@@ -639,7 +639,7 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             String s = entry.getSpecificationVersion();
             return s != null ? new SpecificationVersion(s) : null;
         }
-        public Set/*<Dependency>*/ getModuleDependencies() {
+        public Set<Dependency> getModuleDependencies() {
             return mm.getModuleDependencies();
         }
         public String getCluster() {
@@ -652,7 +652,7 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     
     private static final class SuiteModule extends AbstractUniverseModule {
         private final NbModuleProject project;
-        private final Set/*<Dependency>*/ dependencies;
+        private final Set<Dependency> dependencies;
         public SuiteModule(NbModuleProject project) {
             super(ManifestManager.getInstance(project.getManifest(), false));
             this.project = project;
@@ -660,7 +660,7 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             // Cannot use ProjectXMLManager since we need to report also deps on nonexistent modules.
             Element dataE = project.getPrimaryConfigurationData();
             Element depsE = Util.findElement(dataE, "module-dependencies", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
-            Iterator/*<Element>*/ deps = Util.findSubElements(depsE).iterator();
+            Iterator<Element> deps = Util.findSubElements(depsE).iterator();
             while (deps.hasNext()) {
                 Element dep = (Element) deps.next();
                 Element run = Util.findElement(dep, "run-dependency", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
@@ -692,7 +692,7 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             String s = project.getSpecVersion();
             return s != null ? new SpecificationVersion(s) : null;
         }
-        public Set/*<Dependency>*/ getModuleDependencies() {
+        public Set<Dependency> getModuleDependencies() {
             return dependencies;
         }
         public String getCluster() {
@@ -716,9 +716,9 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         updateDependencyWarningsTask.schedule(0);
     }
     
-    static Set/*<UniverseModule>*/ loadUniverseModules(ModuleEntry[] platformModules, Set/*<NbModuleProject>*/ suiteModules) throws IOException {
+    static Set<UniverseModule> loadUniverseModules(ModuleEntry[] platformModules, Set<NbModuleProject> suiteModules) throws IOException {
         Set universe = new LinkedHashSet();
-        Iterator/*<Project>*/ it = suiteModules.iterator();
+        Iterator<NbModuleProject> it = suiteModules.iterator();
         while (it.hasNext()) {
             universe.add(new SuiteModule((NbModuleProject) it.next()));
         }
@@ -728,10 +728,10 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         return universe;
     }
     
-    static String[] findWarning(Set/*<UniverseModule>*/ universeModules, Set/*<String>*/ enabledClusters, Set/*<String>*/ disabledModules) {
-        SortedMap/*<String,UniverseModule>*/ sortedModules = new TreeMap();
-        Set/*<UniverseModule>*/ excluded = new HashSet();
-        Map/*<String,Set<UniverseModule>>*/ providers = new HashMap();
+    static String[] findWarning(Set<UniverseModule> universeModules, Set<String> enabledClusters, Set<String> disabledModules) {
+        SortedMap<String,UniverseModule> sortedModules = new TreeMap();
+        Set<UniverseModule> excluded = new HashSet();
+        Map<String,Set<UniverseModule>> providers = new HashMap();
         Iterator it = universeModules.iterator();
         while (it.hasNext()) {
             UniverseModule m = (UniverseModule) it.next();
@@ -741,10 +741,10 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
                 excluded.add(m);
             }
             sortedModules.put(cnb, m);
-            Iterator/*<String>*/ provides = m.getProvidedTokens().iterator();
+            Iterator<String> provides = m.getProvidedTokens().iterator();
             while (provides.hasNext()) {
                 String tok = (String) provides.next();
-                Set/*<UniverseModule>*/ providersOf = (Set) providers.get(tok);
+                Set<UniverseModule> providersOf = (Set) providers.get(tok);
                 if (providersOf == null) {
                     providersOf = new TreeSet(UNIVERSE_MODULE_COMPARATOR);
                     providers.put(tok, providersOf);
@@ -765,18 +765,18 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         }
         return null;
     }
-    private static final Comparator/*<UniverseModule>*/ UNIVERSE_MODULE_COMPARATOR = new Comparator() {
+    private static final Comparator<UniverseModule> UNIVERSE_MODULE_COMPARATOR = new Comparator() {
         Collator COLL = Collator.getInstance();
         public int compare(Object o1, Object o2) {
             return COLL.compare(((UniverseModule) o1).getDisplayName(), ((UniverseModule) o2).getDisplayName());
         }
     };
     
-    private Set/*<UniverseModule>*/ universe;
+    private Set<UniverseModule> universe;
     private /* #71791 */ synchronized void doUpdateDependencyWarnings() {
         if (universe == null) {
             try {
-                Set/*<Project>*/ suiteModules = getProperties().getSubModules();
+                Set<NbModuleProject> suiteModules = getProperties().getSubModules();
                 universe = loadUniverseModules(platformModules, suiteModules);
             } catch (IOException e) {
                 Util.err.notify(ErrorManager.INFORMATIONAL, e);
@@ -823,9 +823,9 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         
     }
 
-    private static String[] findWarning(UniverseModule m, Map/*<String,UniverseModule>*/ modules, Map/*<String,Set<UniverseModule>>*/ providers, Set/*<UniverseModule>*/ excluded) {
+    private static String[] findWarning(UniverseModule m, Map<String,UniverseModule> modules, Map<String,Set<UniverseModule>> providers, Set<UniverseModule> excluded) {
         // Check module dependencies:
-        SortedSet/*<Dependency>*/ deps = new TreeSet(new Comparator() {
+        SortedSet<Dependency> deps = new TreeSet(new Comparator() {
             public int compare(Object o1, Object o2) {
                 Dependency d1 = (Dependency) o1;
                 Dependency d2 = (Dependency) o2;
@@ -902,7 +902,7 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             String tok = (String) toks.next();
             UniverseModule wouldBeProvider = null;
             boolean found = false;
-            Set/*<UniverseModule>*/ possibleProviders = (Set) providers.get(tok);
+            Set<UniverseModule> possibleProviders = (Set) providers.get(tok);
             if (possibleProviders != null) {
                 it = possibleProviders.iterator();
                 while (it.hasNext()) {

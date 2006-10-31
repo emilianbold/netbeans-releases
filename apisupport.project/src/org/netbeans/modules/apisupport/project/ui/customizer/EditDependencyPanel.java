@@ -87,7 +87,7 @@ public final class EditDependencyPanel extends JPanel {
         if (hasAvailablePackages()) {
             // XXX should show all subpackages in the case of recursion is set
             // to true instead of e.g. org/**
-            SortedSet/*<String>*/ packages = new TreeSet();
+            SortedSet<String> packages = new TreeSet();
             for (int i = 0; i < pp.length; i++) {
                 packages.add(pp[i].getPackage() + (pp[i].isRecursive() ? ".**" : "")); // NOI18N
             }

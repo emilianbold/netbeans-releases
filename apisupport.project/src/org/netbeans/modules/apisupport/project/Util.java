@@ -146,9 +146,9 @@ public final class Util {
      * @return a list of direct child elements (may be empty)
      * @throws IllegalArgumentException if there are non-element children besides whitespace
      */
-    public static List/*<Element>*/ findSubElements(Element parent) throws IllegalArgumentException {
+    public static List<Element> findSubElements(Element parent) throws IllegalArgumentException {
         NodeList l = parent.getChildNodes();
-        List/*<Element>*/ elements = new ArrayList(l.getLength());
+        List<Element> elements = new ArrayList(l.getLength());
         for (int i = 0; i < l.getLength(); i++) {
             Node n = l.item(i);
             if (n.getNodeType() == Node.ELEMENT_NODE) {
@@ -343,7 +343,7 @@ public final class Util {
                 ManifestManager.getInstance(manifest, false).getLocalizingBundle();
         try {
             if (locBundleResource != null) {
-                List/*<FileObject>*/ bundleFOs = new ArrayList();
+                List<FileObject> bundleFOs = new ArrayList();
                 for (Iterator it = getPossibleResources(locBundleResource); it.hasNext(); ) {
                     String resource = (String) it.next();
                     FileObject bundleFO = sourceDir.getFileObject(resource);
@@ -399,8 +399,8 @@ public final class Util {
                 String locBundleResource =
                         ManifestManager.getInstance(mf, false).getLocalizingBundle();
                 if (locBundleResource != null) {
-                    List/*<InputStream>*/ bundleISs = new ArrayList();
-                    Collection/*<JarFile>*/ extraJarFiles = new ArrayList();
+                    List<InputStream> bundleISs = new ArrayList();
+                    Collection<JarFile> extraJarFiles = new ArrayList();
                     try {
                         // Look for locale variant JARs too.
                         // XXX the following could be simplified with #29580:
@@ -411,7 +411,7 @@ public final class Util {
                         }
                         String base = name.substring(0, dot);
                         String suffix = name.substring(dot);
-                        Iterator/*<String>*/ it = NbBundle.getLocalizingSuffixes();
+                        Iterator<String> it = NbBundle.getLocalizingSuffixes();
                         while (it.hasNext()) {
                             String infix = (String) it.next();
                             File variant = new File(binaryProject.getParentFile(), "locale" + File.separatorChar + base + infix + suffix); // NOI18N
@@ -446,7 +446,7 @@ public final class Util {
         }
         return null;
     }
-    private static void addBundlesFromJar(JarFile jf, List/*<InputStream>*/ bundleISs, String locBundleResource) throws IOException {
+    private static void addBundlesFromJar(JarFile jf, List<InputStream> bundleISs, String locBundleResource) throws IOException {
         for (Iterator it = getPossibleResources(locBundleResource); it.hasNext(); ) {
             String resource = (String) it.next();
             ZipEntry entry = jf.getEntry(resource);
@@ -693,8 +693,8 @@ public final class Util {
             locBundleResourceBase = locBundleResource;
             locBundleResourceExt = "";
         }
-        Collection/*<String>*/ resources = new LinkedHashSet();
-        for (Iterator/*<String>*/ it = NbBundle.getLocalizingSuffixes(); it.hasNext(); ) {
+        Collection<String> resources = new LinkedHashSet();
+        for (Iterator<String> it = NbBundle.getLocalizingSuffixes(); it.hasNext(); ) {
             String suffix = (String) it.next();
             String resource = locBundleResourceBase + suffix + locBundleResourceExt;
             resources.add(resource);
@@ -725,17 +725,17 @@ public final class Util {
      */
     public static abstract class ComputedPropertyProvider implements PropertyProvider, PropertyChangeListener {
         private final PropertyEvaluator eval;
-        private final List/*<ChangeListener>*/ listeners = new ArrayList();
+        private final List<ChangeListener> listeners = new ArrayList();
         protected ComputedPropertyProvider(PropertyEvaluator eval) {
             this.eval = eval;
             eval.addPropertyChangeListener(WeakListeners.propertyChange(this, eval));
         }
         /** get properties based on the incoming properties */
-        protected abstract Map/*<String,String>*/ getProperties(Map/*<String,String>*/ inputPropertyValues);
+        protected abstract Map<String,String> getProperties(Map<String,String> inputPropertyValues);
         /** specify interesting input properties */
-        protected abstract Set/*<String>*/ inputProperties();
-        public final Map/*<String,String>*/ getProperties() {
-            Map/*<String,String>*/ vals = new HashMap();
+        protected abstract Set<String> inputProperties();
+        public final Map<String,String> getProperties() {
+            Map<String,String> vals = new HashMap();
             Iterator it = inputProperties().iterator();
             while (it.hasNext()) {
                 String k = (String) it.next();
@@ -775,7 +775,7 @@ public final class Util {
     public static final class UserPropertiesFileProvider implements PropertyProvider, PropertyChangeListener, ChangeListener {
         private final PropertyEvaluator eval;
         private final File basedir;
-        private final List/*<ChangeListener>*/ listeners = new ArrayList();
+        private final List<ChangeListener> listeners = new ArrayList();
         private PropertyProvider delegate;
         public UserPropertiesFileProvider(PropertyEvaluator eval, File basedir) {
             this.eval = eval;
@@ -844,7 +844,7 @@ public final class Util {
     /**
      * Order projects by display name.
      */
-    public static Comparator/*<Project>*/ projectDisplayNameComparator() {
+    public static Comparator<Project> projectDisplayNameComparator() {
         return new Comparator() {
             private final Collator LOC_COLLATOR = Collator.getInstance();
             public int compare(Object o1, Object o2) {

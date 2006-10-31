@@ -430,7 +430,7 @@ final class LibrariesNode extends AbstractNode {
                 ModuleDependency editedDep = editPanel.getEditedDependency();
                 try {
                     ProjectXMLManager pxm = new ProjectXMLManager(project);
-                    SortedSet/*<Dependency>*/ deps = new TreeSet(pxm.getDirectDependencies());
+                    SortedSet<ModuleDependency> deps = new TreeSet(pxm.getDirectDependencies());
                     deps.remove(dep);
                     deps.add(editedDep);
                     pxm.replaceDependencies(deps);

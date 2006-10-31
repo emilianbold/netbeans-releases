@@ -67,7 +67,7 @@ import org.openide.util.lookup.Lookups;
 public final class SuiteOperations implements DeleteOperationImplementation,
         MoveOperationImplementation {
     
-    private static final Map/*<String, Set<Project>>*/ TEMPORARY_CACHE = new HashMap();
+    private static final Map<String,Set<NbModuleProject>> TEMPORARY_CACHE = new HashMap();
     
     private final SuiteProject suite;
     private final FileObject projectDir;
@@ -94,7 +94,7 @@ public final class SuiteOperations implements DeleteOperationImplementation,
     }
     
     public void notifyMoving() throws IOException {
-        Set/*<Project>*/ subprojects = SuiteUtils.getSubProjects(suite);
+        Set<NbModuleProject> subprojects = SuiteUtils.getSubProjects(suite);
         if (!subprojects.isEmpty()) {
             // XXX using suite's name is probably weak. Consider another solution. E.g.
             // store some "private" property and than read it.
@@ -111,7 +111,7 @@ public final class SuiteOperations implements DeleteOperationImplementation,
             suite.getHelper().notifyDeleted();
         } else { // called on the new project
             String name = ProjectUtils.getInformation(suite).getName();
-            Set/*<Project>*/ subprojects = (Set) TEMPORARY_CACHE.remove(name);
+            Set<Project> subprojects = (Set) TEMPORARY_CACHE.remove(name);
             if (subprojects != null) {
                 Set toOpen = new HashSet();
                 for (Iterator it = subprojects.iterator(); it.hasNext();) {
@@ -145,21 +145,21 @@ public final class SuiteOperations implements DeleteOperationImplementation,
         }
     }
     
-    public List/*<FileObject>*/ getMetadataFiles() {
-        List/*<FileObject>*/ files = new ArrayList();
+    public List<FileObject> getMetadataFiles() {
+        List<FileObject> files = new ArrayList();
         addFile(GeneratedFilesHelper.BUILD_XML_PATH, files);
         addFile("nbproject", files); // NOI18N
         addFile(".cvsignore", files); // NOI18N
         return files;
     }
     
-    public List/*<FileObject>*/ getDataFiles() {
-        List/*<FileObject>*/ files = new ArrayList();
+    public List<FileObject> getDataFiles() {
+        List<FileObject> files = new ArrayList();
         addFile(suite.getEvaluator().getProperty(BrandingSupport.BRANDING_DIR_PROPERTY), files);
         return files;
     }
     
-    private void addFile(String fileName, List/*<FileObject>*/ result) {
+    private void addFile(String fileName, List<FileObject> result) {
         FileObject file = projectDir.getFileObject(fileName);
         if (file != null) {
             result.add(file);

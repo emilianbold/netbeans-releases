@@ -37,6 +37,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -75,6 +76,7 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Enumerations;
+import org.openide.util.NbCollections;
 import org.openide.util.TopologicalSortException;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
@@ -548,7 +550,7 @@ final class WritableXMLFileSystem extends AbstractFileSystem
         if (el == null) {
             return Enumerations.empty();
         }
-        java.util.List/*<String>*/ l = new ArrayList(10);
+        java.util.List<String> l = new ArrayList(10);
         Iterator it = el.getChildNodes(TreeElement.class).iterator();
         while (it.hasNext()) {
             TreeElement sub = (TreeElement) it.next();
@@ -805,12 +807,12 @@ final class WritableXMLFileSystem extends AbstractFileSystem
         if (attrName.equals("OpenIDE-Folder-Order") && (v instanceof String)) { // NOI18N
             // This is a special case. We do not want to store a fully fixed order in a layer.
             // Rather, compute some reasonable orderings from it.
-            java.util.List/*<String>*/ order = Collections.list(new StringTokenizer((String) v, "/")); // NOI18N
+            java.util.List<String> order = Collections.list(NbCollections.checkedEnumerationByFilter(new StringTokenizer((String) v, "/"), String.class, true)); // NOI18N
             if (!order.isEmpty()) {
                 // XXX this is not really right. We just cannot know which attrs were already defined
                 // in the merged FS from other layers. So this will fail to store needed attrs sometimes.
                 // But better that than storing too many.
-                Set/*<String>*/ myOwn = new HashSet(Arrays.asList(children(name)));
+                Set<String> myOwn = new HashSet(Arrays.asList(children(name)));
                 Iterator it = order.iterator();
                 String prev = (String) it.next();
                 while (it.hasNext()) {
@@ -1224,8 +1226,8 @@ final class WritableXMLFileSystem extends AbstractFileSystem
                 return n.substring(n.indexOf('/') + 1);
             }
         }
-        Set/*<Item>*/ items = new LinkedHashSet();
-        SortedSet/*<Integer>*/ indices = new TreeSet();
+        Set<Item> items = new LinkedHashSet();
+        SortedSet<Integer> indices = new TreeSet();
         for (int i = 0; i < parent.getChildrenNumber(); i++) {
             TreeChild child = (TreeChild) parent.getChildNodes().get(i);
             if (child instanceof TreeElement) {
@@ -1235,10 +1237,10 @@ final class WritableXMLFileSystem extends AbstractFileSystem
                 indices.add(new Integer(i));
             }
         }
-        Map/*<Item,Collection<Item>>*/ edges = new LinkedHashMap();
-        Map/*<String,Item>*/ filesAndFolders = new LinkedHashMap();
-        Map/*<String,Item>*/ attrs = new LinkedHashMap();
-        Set/*<String>*/ orderedFilesAndFolders = new LinkedHashSet();
+        Map<Item,Collection<Item>> edges = new LinkedHashMap();
+        Map<String,Item> filesAndFolders = new LinkedHashMap();
+        Map<String,Item> attrs = new LinkedHashMap();
+        Set<String> orderedFilesAndFolders = new LinkedHashSet();
         Iterator it = items.iterator();
         while (it.hasNext()) {
             Item item = (Item) it.next();
@@ -1260,9 +1262,9 @@ final class WritableXMLFileSystem extends AbstractFileSystem
                 return i1.getName().compareTo(i2.getName());
             }
         }
-        Set/*<Item>*/ sortedAttrs = new TreeSet(new NameComparator());
-        Set/*<Item>*/ sortedFilesAndFolders = new TreeSet(new NameComparator());
-        Set/*<Item>*/ orderableItems = new LinkedHashSet();
+        Set<Item> sortedAttrs = new TreeSet(new NameComparator());
+        Set<Item> sortedFilesAndFolders = new TreeSet(new NameComparator());
+        Set<Item> orderableItems = new LinkedHashSet();
         it = items.iterator();
         while (it.hasNext()) {
             Item item = (Item) it.next();
@@ -1271,7 +1273,7 @@ final class WritableXMLFileSystem extends AbstractFileSystem
                 if (item.isOrderingAttr()) {
                     Item former = (Item) filesAndFolders.get(item.getFormer());
                     if (former != null) {
-                        Set/*<Item>*/ formerConstraints = (Set) edges.get(former);
+                        Set<Item> formerConstraints = (Set) edges.get(former);
                         if (formerConstraints == null) {
                             formerConstraints = new LinkedHashSet();
                             edges.put(former, formerConstraints);
@@ -1280,7 +1282,7 @@ final class WritableXMLFileSystem extends AbstractFileSystem
                     }
                     Item latter = (Item) filesAndFolders.get(item.getLatter());
                     if (latter != null) {
-                        Set/*<Item>*/ constraints = new LinkedHashSet();
+                        Set<Item> constraints = new LinkedHashSet();
                         constraints.add(latter);
                         edges.put(item, constraints);
                     }
@@ -1296,7 +1298,7 @@ final class WritableXMLFileSystem extends AbstractFileSystem
                 }
             }
         }
-        java.util.List/*<Item>*/ orderedItems;
+        java.util.List<Item> orderedItems;
         try {
             orderedItems = Utilities.topologicalSort(orderableItems, edges);
         } catch (TopologicalSortException e) {
@@ -1308,7 +1310,7 @@ final class WritableXMLFileSystem extends AbstractFileSystem
             Item item = (Item) it.next();
             parent.removeChild(item.child);
         }
-        java.util.List/*<Item>*/ allOrderedItems = new ArrayList(sortedAttrs);
+        java.util.List<Item> allOrderedItems = new ArrayList(sortedAttrs);
         allOrderedItems.addAll(orderedItems);
         allOrderedItems.addAll(sortedFilesAndFolders);
         assert new HashSet(allOrderedItems).equals(items);
@@ -1431,7 +1433,7 @@ final class WritableXMLFileSystem extends AbstractFileSystem
                 refreshResource("", true); // only works on root folder
                 refreshRoot();             // seems to do nothing at all
                  */
-                Enumeration/*<FileObject>*/ e = existingFileObjects(getRoot());
+                Enumeration<? extends FileObject> e = existingFileObjects(getRoot());
                 while (e.hasMoreElements()) {
                     FileObject fo = (FileObject) e.nextElement();
                     // fo.refresh() does not work

@@ -48,7 +48,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
     };
     
     /** Maps FQCN to CNB. */
-    private static final Map CLASS_TO_CNB/*<String, String>*/;
+    private static final Map<String,String> CLASS_TO_CNB;
     
     static {
         Map map = new HashMap(5);

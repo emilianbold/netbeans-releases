@@ -185,10 +185,10 @@ final class Service {
     
     static List/*Service*/ getPlatfromServices(NbModuleProject p) throws IOException {
         NbModuleTypeProvider.NbModuleType type = Util.getModuleType(p);
-        List/*<Service>*/ services = new ArrayList();
+        List<Service> services = new ArrayList();
         if (type == NbModuleTypeProvider.NETBEANS_ORG) {
             // special case fro nborg modules
-            Set/*<NbModuleProject>*/ projects = LayerUtils.getProjectsForNetBeansOrgProject(p);
+            Set<NbModuleProject> projects = LayerUtils.getProjectsForNetBeansOrgProject(p);
             Iterator it = projects.iterator();
             while (it.hasNext()) {
                 services.addAll(getOnlyProjectServices((NbModuleProject)it.next()));

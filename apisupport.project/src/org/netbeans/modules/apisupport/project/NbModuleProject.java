@@ -104,7 +104,7 @@ public final class NbModuleProject implements Project {
     private final AntProjectHelper helper;
     private final Evaluator eval;
     private final Lookup lookup;
-    private Map/*<FileObject,Element>*/ extraCompilationUnits;
+    private Map<FileObject,Element> extraCompilationUnits;
     private final GeneratedFilesHelper genFilesHelper;
     private final NbModuleTypeProviderImpl typeProvider;
     
@@ -153,7 +153,7 @@ public final class NbModuleProject implements Project {
         // #42332: also any other misc. test dirs (just add source roots, no CP etc. for now)
         FileObject testDir = helper.getProjectDirectory().getFileObject("test"); // NOI18N
         if (testDir != null) {
-            Enumeration/*<FileObject>*/ kids = testDir.getChildren(false);
+            Enumeration<? extends FileObject> kids = testDir.getChildren(false);
             while (kids.hasMoreElements()) {
                 FileObject testSubdir = (FileObject) kids.nextElement();
                 if (!testSubdir.isFolder()) {
@@ -319,7 +319,7 @@ public final class NbModuleProject implements Project {
         return eval;
     }
     
-    private final Map/*<String,FileObject>*/ directoryCache = new WeakHashMap();
+    private final Map<String,FileObject> directoryCache = new WeakHashMap();
     
     private FileObject getDir(String prop) {
         // XXX also add a PropertyChangeListener to eval and clear the cache of changed props
@@ -568,10 +568,10 @@ public final class NbModuleProject implements Project {
      * Find marked extra compilation units.
      * Gives a map from the package root to the defining XML element.
      */
-    public Map/*<FileObject,Element>*/ getExtraCompilationUnits() {
+    public Map<FileObject,Element> getExtraCompilationUnits() {
         if (extraCompilationUnits == null) {
             extraCompilationUnits = new HashMap();
-            Iterator/*<Element>*/ ecuEls = Util.findSubElements(getPrimaryConfigurationData()).iterator();
+            Iterator<Element> ecuEls = Util.findSubElements(getPrimaryConfigurationData()).iterator();
             while (ecuEls.hasNext()) {
                 Element ecu = (Element) ecuEls.next();
                 if (ecu.getLocalName().equals("extra-compilation-unit")) { // NOI18N

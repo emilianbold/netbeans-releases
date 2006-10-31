@@ -43,7 +43,7 @@ import org.openide.ErrorManager;
 abstract class AbstractEntry implements ModuleEntry {
     
     private String localizedName;
-    private Set/*<String>*/ publicClassNames;
+    private Set<String> publicClassNames;
     
     protected abstract LocalizedBundleInfo getBundleInfo();
     
@@ -74,7 +74,7 @@ abstract class AbstractEntry implements ModuleEntry {
         return (retval != 0) ? retval : getCodeNameBase().compareTo(((ModuleEntry) o).getCodeNameBase());
     }
     
-    public synchronized Set/*<String>*/ getPublicClassNames() {
+    public synchronized Set<String> getPublicClassNames() {
         if (publicClassNames == null) {
             try {
                 publicClassNames = computePublicClassNamesInMainModule();
@@ -96,10 +96,10 @@ abstract class AbstractEntry implements ModuleEntry {
         return publicClassNames;
     }
     
-    protected final void scanJarForPublicClassNames(Set/*<String>*/ result, File jar) throws IOException {
+    protected final void scanJarForPublicClassNames(Set<String> result, File jar) throws IOException {
         ManifestManager.PackageExport[] pkgs = getPublicPackages();
-        Set/*<String>*/ publicPackagesSlashNonRec = new HashSet();
-        List/*<String>*/ publicPackagesSlashRec = new ArrayList();
+        Set<String> publicPackagesSlashNonRec = new HashSet();
+        List<String> publicPackagesSlashRec = new ArrayList();
         for (int i = 0; i < pkgs.length; i++) {
             String name = pkgs[i].getPackage().replace('.', '/') + '/';
             if (pkgs[i].isRecursive()) {
@@ -154,7 +154,7 @@ abstract class AbstractEntry implements ModuleEntry {
         }
     }
     
-    protected abstract Set/*<String>*/ computePublicClassNamesInMainModule() throws IOException;
+    protected abstract Set<String> computePublicClassNamesInMainModule() throws IOException;
     
     // XXX consider inheritance refactoring instead.
     /**

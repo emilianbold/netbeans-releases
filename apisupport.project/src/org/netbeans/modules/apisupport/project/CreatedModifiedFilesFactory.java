@@ -89,23 +89,23 @@ public final class CreatedModifiedFilesFactory {
     }
     
     static CreatedModifiedFiles.Operation createFileWithSubstitutions(NbModuleProject project,
-            String path, URL content, Map/*<String,String>*/ tokens) {
+            String path, URL content, Map<String,String> tokens) {
         return new CreateFile(project, path, content, tokens);
     }
     
-    static CreatedModifiedFiles.Operation layerModifications(NbModuleProject project, CreatedModifiedFiles.LayerOperation op, Set/*<String>*/ externalFiles, CreatedModifiedFiles cmf) {
+    static CreatedModifiedFiles.Operation layerModifications(NbModuleProject project, CreatedModifiedFiles.LayerOperation op, Set<String> externalFiles, CreatedModifiedFiles cmf) {
         return new LayerModifications(project, op, externalFiles, cmf);
     }
     
     static CreatedModifiedFiles.Operation createLayerEntry(CreatedModifiedFiles cmf, NbModuleProject project,
             String layerPath, URL content,
-            Map/*<String,String>*/ substitutionTokens, String localizedDisplayName, Map attrs) {
+            Map<String,String> substitutionTokens, String localizedDisplayName, Map attrs) {
         return new CreateLayerEntry(cmf, project, layerPath, content,
                 substitutionTokens, localizedDisplayName, attrs);
     }
     
     static CreatedModifiedFiles.Operation manifestModification(NbModuleProject project, String section,
-            Map/*<String, String>*/ attributes) {
+            Map<String,String> attributes) {
         CreatedModifiedFilesFactory.ModifyManifest retval =
                 new CreatedModifiedFilesFactory.ModifyManifest(project);
         for (Iterator it = attributes.entrySet().iterator(); it.hasNext();) {
@@ -118,7 +118,7 @@ public final class CreatedModifiedFilesFactory {
     }
     
     static CreatedModifiedFiles.Operation propertiesModification(NbModuleProject project,
-            String propertyPath, Map/*<String, String>*/ properties) {
+            String propertyPath, Map<String,String> properties) {
         CreatedModifiedFilesFactory.ModifyProperties retval =
                 new CreatedModifiedFilesFactory.ModifyProperties(project, propertyPath);
         for (Iterator it = properties.entrySet().iterator(); it.hasNext();) {
@@ -134,9 +134,9 @@ public final class CreatedModifiedFilesFactory {
     public static abstract class OperationBase implements CreatedModifiedFiles.Operation {
         
         private NbModuleProject project;
-        private SortedSet/*<String>*/ createdPaths;
-        private SortedSet/*<String>*/ modifiedPaths;
-        private SortedSet/*<String>*/ invalidPaths;
+        private SortedSet<String> createdPaths;
+        private SortedSet<String> modifiedPaths;
+        private SortedSet<String> invalidPaths;
         
         protected OperationBase(NbModuleProject project) {
             this.project = project;
@@ -181,21 +181,21 @@ public final class CreatedModifiedFilesFactory {
             getInvalidPathsSet().addAll(Arrays.asList(o.getInvalidPaths()));
         }
         
-        protected SortedSet/*<String>*/ getCreatedPathsSet() {
+        protected SortedSet<String> getCreatedPathsSet() {
             if (createdPaths == null) {
                 createdPaths = new TreeSet();
             }
             return createdPaths;
         }
         
-        protected SortedSet/*<String>*/ getInvalidPathsSet() {
+        protected SortedSet<String> getInvalidPathsSet() {
             if (invalidPaths == null) {
                 invalidPaths = new TreeSet();
             }
             return invalidPaths;
         }
         
-        protected SortedSet/*<String>*/ getModifiedPathsSet() {
+        protected SortedSet<String> getModifiedPathsSet() {
             if (modifiedPaths == null) {
                 modifiedPaths = new TreeSet();
             }
@@ -226,13 +226,13 @@ public final class CreatedModifiedFilesFactory {
         
         private String path;
         private URL content;
-        private Map/*<String,String>*/ tokens;
+        private Map<String,String> tokens;
         
         public CreateFile(NbModuleProject project, String path, URL content) {
             this(project, path, content, null);
         }
         
-        public CreateFile(NbModuleProject project, String path, URL content, Map/*<String,String>*/ tokens) {
+        public CreateFile(NbModuleProject project, String path, URL content, Map<String,String> tokens) {
             super(project);
             this.path = path;
             this.content = content;
@@ -267,7 +267,7 @@ public final class CreatedModifiedFilesFactory {
         }
     }
     
-    private static void copyAndSubstituteTokens(URL content, FileLock lock, FileObject targetFO, Map/*<String,String>*/ tokens) throws IOException {
+    private static void copyAndSubstituteTokens(URL content, FileLock lock, FileObject targetFO, Map<String,String> tokens) throws IOException {
         // #64023: at least XML files must always use UTF-8; but user probably expects *.java to use platform default?
         boolean useUTF8 = targetFO.hasExt("xml"); // NOI18N
         OutputStream os = targetFO.getOutputStream(lock);
@@ -303,7 +303,7 @@ public final class CreatedModifiedFilesFactory {
         }
     }
     
-    private static String replaceTokens(Map/*<String,String>*/ tokens, String line) {
+    private static String replaceTokens(Map<String,String> tokens, String line) {
         for (Iterator it = tokens.entrySet().iterator(); it.hasNext(); ) {
             Map.Entry entry = (Map.Entry) it.next();
             line = line.replaceAll((String) entry.getKey(), (String) entry.getValue());
@@ -466,7 +466,7 @@ public final class CreatedModifiedFilesFactory {
         
         public CreateLayerEntry(CreatedModifiedFiles cmf, NbModuleProject project, final String layerPath,
                 final URL content,
-                final Map/*<String,String>*/ tokens, final String localizedDisplayName, final Map attrs) {
+                final Map<String,String> tokens, final String localizedDisplayName, final Map attrs) {
             
             super(project);
             CreatedModifiedFiles.LayerOperation op = new CreatedModifiedFiles.LayerOperation() {
@@ -503,7 +503,7 @@ public final class CreatedModifiedFilesFactory {
                     }
                 }
             };
-            Set/*<String>*/ externalFiles;
+            Set<String> externalFiles;
             if (content != null) {
                 FileObject xml = LayerUtils.layerForProject(project).getLayerFile();
                 FileObject parent = xml != null ? xml.getParent() : null;
@@ -533,10 +533,10 @@ public final class CreatedModifiedFilesFactory {
         
         private final NbModuleProject project;
         private final CreatedModifiedFiles.LayerOperation op;
-        private final Set/*<String>*/ externalFiles;
+        private final Set<String> externalFiles;
         private final CreatedModifiedFiles cmf;
         
-        public LayerModifications(NbModuleProject project, CreatedModifiedFiles.LayerOperation op, Set/*<String>*/ externalFiles, CreatedModifiedFiles cmf) {
+        public LayerModifications(NbModuleProject project, CreatedModifiedFiles.LayerOperation op, Set<String> externalFiles, CreatedModifiedFiles cmf) {
             this.project = project;
             this.op = op;
             this.externalFiles = externalFiles;

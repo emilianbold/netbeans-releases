@@ -30,6 +30,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -44,11 +45,11 @@ import org.openide.filesystems.FileObject;
  */
 final class SuiteSubprojectProviderImpl implements SubprojectProvider {
     
-    private Set/*<Project>*/ projects;
+    private Set<NbModuleProject> projects;
     private final AntProjectHelper helper;
     private final PropertyEvaluator eval;
     
-    private final Set/*<ChangeListener>*/ listeners = new HashSet();
+    private final Set<ChangeListener> listeners = new HashSet();
     private boolean reloadNeeded;
     
     public SuiteSubprojectProviderImpl(AntProjectHelper helper, PropertyEvaluator eval) {
@@ -64,7 +65,7 @@ final class SuiteSubprojectProviderImpl implements SubprojectProvider {
         });
     }
     
-    public Set/*<Project>*/ getSubprojects() {
+    public Set<NbModuleProject> getSubprojects() {
         if (projects == null || reloadNeeded) {
             projects = loadProjects();
             reloadNeeded = false;
@@ -99,8 +100,8 @@ final class SuiteSubprojectProviderImpl implements SubprojectProvider {
         }
     }
     
-    private Set/*<Project>*/ loadProjects() {
-        Set/*<Project>*/ newProjects = new HashSet();
+    private Set<NbModuleProject> loadProjects() {
+        Set<NbModuleProject> newProjects = new HashSet();
         String modules = eval.getProperty("modules"); // NOI18N
         if (modules != null) {
             String[] pieces = PropertyUtils.tokenizePath(modules);
@@ -109,8 +110,8 @@ final class SuiteSubprojectProviderImpl implements SubprojectProvider {
                 if (dir != null) {
                     try {
                         Project subp = ProjectManager.getDefault().findProject(dir);
-                        if (subp != null) {
-                            newProjects.add(subp);
+                        if (subp != null && subp instanceof NbModuleProject) {
+                            newProjects.add((NbModuleProject) subp);
                         }
                     } catch (IOException e) {
                         Util.err.notify(ErrorManager.INFORMATIONAL, e);

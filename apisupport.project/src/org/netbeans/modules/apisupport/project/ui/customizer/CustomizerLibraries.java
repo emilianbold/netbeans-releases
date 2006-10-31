@@ -48,6 +48,7 @@ import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.NbCollections;
 
 /**
  * Represents <em>Libraries</em> panel in NetBeans Module customizer.
@@ -507,7 +508,7 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
     }//GEN-LAST:event_editModuleDependency
     
     private void removeModuleDependency(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeModuleDependency
-        getDepListModel().removeDependencies(Arrays.asList(dependencyList.getSelectedValues()));
+        getDepListModel().removeDependencies(NbCollections.checkedListByCopy(Arrays.asList(dependencyList.getSelectedValues()), ModuleDependency.class, true));
         if (dependencyList.getModel().getSize() > 0) {
             dependencyList.setSelectedIndex(0);
         }

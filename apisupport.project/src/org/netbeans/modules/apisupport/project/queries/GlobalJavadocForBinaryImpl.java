@@ -86,7 +86,7 @@ public final class GlobalJavadocForBinaryImpl implements JavadocForBinaryQueryIm
                 return null;
             }
             String cnbdashes = n.substring(0, n.length() - 4);
-            final List/*<URL>*/ candidates = new ArrayList();
+            final List<URL> candidates = new ArrayList();
             URL[] roots = supposedPlaf.getJavadocRoots();
             Util.err.log("Platform in " + supposedPlaf.getDestDir() + " claimed to have Javadoc roots " + Arrays.asList(roots));
             for (int i = 0; i < roots.length; i++) {

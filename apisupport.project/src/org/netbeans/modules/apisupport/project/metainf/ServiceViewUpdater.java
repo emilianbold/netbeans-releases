@@ -43,7 +43,7 @@ import org.openide.filesystems.FileUtil;
  * It contains cached Services for suites. It should be better to move it to Suite Project.
  */
 final class ServiceViewUpdater {
-    private static Map /*<SuiteProject,List<Service>>*/ suiteToServices = new WeakHashMap(); 
+    private static Map <SuiteProject,List<Service>> suiteToServices = new WeakHashMap(); 
     /** Creates a new instance of ServiceViewUpdater */
     
     /** Called if a service was update. It will refresh all openeden ServiceNodeHandlers
@@ -120,7 +120,7 @@ final class ServiceViewUpdater {
     static List getAllServices(ServiceNodeHandler serviceNodeHandler) throws IOException {
         SuiteProject suite = getSuite(serviceNodeHandler);
         if (suite != null) {
-            List /*<Service>*/ services = (List) suiteToServices.get(suite);
+            List <Service> services = (List) suiteToServices.get(suite);
             if (services == null) {
                 services = Service.getPlatfromServices(serviceNodeHandler.getProject());
             }
@@ -138,10 +138,10 @@ final class ServiceViewUpdater {
     
     /** @return subset of services which are in project of handler
      */ 
-    static List/*<Service>*/ filterServices(List services,ServiceNodeHandler handler) throws IOException {
+    static List<Service> filterServices(List services,ServiceNodeHandler handler) throws IOException {
         if (getSuite(handler) != null) {
-            List/*<Service>*/ allServices = getAllServices(handler);
-            List /*<Service>*/ retList = new ArrayList();
+            List<Service> allServices = getAllServices(handler);
+            List <Service> retList = new ArrayList();
             String cnb = handler.getProject().getCodeNameBase();
             for (int i = 0 ; i < allServices.size() ; i++) {
                Service service = (Service) allServices.get(i);

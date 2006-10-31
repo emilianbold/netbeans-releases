@@ -55,7 +55,7 @@ public final class EditableManifest {
     private static final String MANIFEST_VERSION_VALUE = "1.0"; // NOI18N
     
     private final Section mainSection;
-    private final List/*<Section>*/ sections;
+    private final List<Section> sections;
     
     /**
      * Creates an almost empty manifest.
@@ -80,7 +80,7 @@ public final class EditableManifest {
         sections = new LinkedList();
         String text;
         int blankLines = 0;
-        List/*<Line>*/ lines = new ArrayList();
+        List<Line> lines = new ArrayList();
         Section _mainSection = null;
         while (true) {
             text = r.readLine();
@@ -115,7 +115,7 @@ public final class EditableManifest {
             }
         }
         mainSection = _mainSection;
-        Set/*<String>*/ names = new HashSet();
+        Set<String> names = new HashSet();
         Iterator it = sections.iterator();
         while (it.hasNext()) {
             Section s = (Section) it.next();
@@ -188,8 +188,8 @@ public final class EditableManifest {
      * Gets a list of all named sections (not including the main section).
      * @return a list of section names
      */
-    public Set/*<String>*/ getSectionNames() {
-        Set/*<String>*/ names = new HashSet();
+    public Set<String> getSectionNames() {
+        Set<String> names = new HashSet();
         Iterator it = sections.iterator();
         while (it.hasNext()) {
             Section s = (Section) it.next();
@@ -264,7 +264,7 @@ public final class EditableManifest {
      * @param section the name of the section to examine, or null for the main section
      * @throws IllegalArgumentException if the named section does not exist
      */
-    public Set/*<String>*/ getAttributeNames(String section) throws IllegalArgumentException {
+    public Set<String> getAttributeNames(String section) throws IllegalArgumentException {
         Section s = findSection(section);
         if (s == null) {
             throw new IllegalArgumentException(section);
@@ -318,10 +318,10 @@ public final class EditableManifest {
         private static final String NAME = "Name"; // NOI18N
         
         public final String name;
-        private final List/*<Line>*/ lines;
+        private final List<Line> lines;
         private final int blankLinesAfter;
         
-        public Section(List/*<Line>*/ lines, boolean main, int blankLinesAfter) throws IOException {
+        public Section(List<Line> lines, boolean main, int blankLinesAfter) throws IOException {
             this.lines = new ArrayList(lines);
             this.blankLinesAfter = blankLinesAfter;
             if (main) {
@@ -343,7 +343,7 @@ public final class EditableManifest {
                     throw new IOException("Cannot have a blank section name"); // NOI18N
                 }
             }
-            Set/*<String>*/ attrNames = new HashSet();
+            Set<String> attrNames = new HashSet();
             Iterator it = lines.iterator();
             if (!main) {
                 it.next();
@@ -441,8 +441,8 @@ public final class EditableManifest {
             }            
         }
         
-        public Set/*<String>*/ getAttributeNames() {
-            Set/*<String>*/ attrNames = new HashSet();
+        public Set<String> getAttributeNames() {
+            Set<String> attrNames = new HashSet();
             Iterator it = lines.iterator();
             if (name != null) {
                 it.next();

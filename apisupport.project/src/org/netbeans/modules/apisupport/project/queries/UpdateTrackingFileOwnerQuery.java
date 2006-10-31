@@ -68,7 +68,7 @@ public final class UpdateTrackingFileOwnerQuery implements FileOwnerQueryImpleme
     }
     
     private Project getOwner(File file) {
-        Set/*<ModuleEntry>*/ entries = ModuleList.getKnownEntries(file);
+        Set<ModuleEntry> entries = ModuleList.getKnownEntries(file);
         Iterator it = entries.iterator();
         while (it.hasNext()) {
             File sourcedir = ((ModuleEntry) it.next()).getSourceLocation();

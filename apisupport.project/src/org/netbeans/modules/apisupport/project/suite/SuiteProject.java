@@ -150,7 +150,7 @@ public final class SuiteProject implements Project {
     private PropertyEvaluator createEvaluator() {
         PropertyProvider predefs = helper.getStockPropertyPreprovider();
         File dir = getProjectDirectoryFile();
-        List/*<PropertyProvider>*/ providers = new ArrayList();
+        List<PropertyProvider> providers = new ArrayList();
         providers.add(helper.getPropertyProvider("nbproject/private/platform-private.properties")); // NOI18N
         providers.add(helper.getPropertyProvider("nbproject/platform.properties")); // NOI18N
         PropertyEvaluator baseEval = PropertyUtils.sequentialPropertyEvaluator(predefs, (PropertyProvider[]) providers.toArray(new PropertyProvider[providers.size()]));
@@ -160,7 +160,7 @@ public final class SuiteProject implements Project {
             public DestDirProvider(PropertyEvaluator eval) {
                 super(eval);
             }
-            protected Map/*<String,String>*/ getProperties(Map/*<String,String>*/ inputPropertyValues) {
+            protected Map<String,String> getProperties(Map<String,String> inputPropertyValues) {
                 String platformS = (String) inputPropertyValues.get("nbplatform.active"); // NOI18N
                 if (platformS != null) {
                     return Collections.singletonMap("netbeans.dest.dir", "${nbplatform." + platformS + ".netbeans.dest.dir}"); // NOI18N
@@ -175,7 +175,7 @@ public final class SuiteProject implements Project {
         providers.add(new DestDirProvider(baseEval));
         providers.add(helper.getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH));
         providers.add(helper.getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH));
-        Map/*<String,String>*/ fixedProps = new HashMap();
+        Map<String,String> fixedProps = new HashMap();
         // synchronize with suite.xml
         fixedProps.put(SuiteProperties.ENABLED_CLUSTERS_PROPERTY, "");
         fixedProps.put(SuiteProperties.DISABLED_CLUSTERS_PROPERTY, "");

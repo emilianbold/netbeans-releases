@@ -102,13 +102,13 @@ public final class CreatedModifiedFiles {
         
     }
     
-    private final SortedSet/*<String>*/ createdPaths = new TreeSet();
-    private final SortedSet/*<String>*/ modifiedPaths = new TreeSet();
-    private final SortedSet/*<String>*/ invalidPaths = new TreeSet();
+    private final SortedSet<String> createdPaths = new TreeSet();
+    private final SortedSet<String> modifiedPaths = new TreeSet();
+    private final SortedSet<String> invalidPaths = new TreeSet();
     
     /** {@link NbModuleProject} this instance manage. */
     private final NbModuleProject project;
-    private final List/*<CreatedModifiedFiles.Operation>*/ operations = new ArrayList();
+    private final List<CreatedModifiedFiles.Operation> operations = new ArrayList();
     
     // For use from CreatedModifiedFilesFactory.LayerModifications; XXX would be better to have an operation context or similar
     // (so that multiple operations could group pre- and post-actions)
@@ -226,7 +226,7 @@ public final class CreatedModifiedFiles {
      *        as an empty map).
      */
     public Operation createFileWithSubstitutions(String path,
-            URL content, Map/*<String,String>*/ tokens) {
+            URL content, Map<String,String> tokens) {
         return CreatedModifiedFilesFactory.createFileWithSubstitutions(project, path, content, tokens);
     }
     
@@ -344,9 +344,9 @@ public final class CreatedModifiedFiles {
     public Operation createLayerEntry(
             String layerPath,
             URL content,
-            Map/*<String,String>*/ substitutionTokens,
+            Map<String,String> substitutionTokens,
             String localizedDisplayName,
-            Map/*<String,Object>*/ fileAttributes) {
+            Map<String,Object> fileAttributes) {
         return CreatedModifiedFilesFactory.createLayerEntry(this, project, layerPath,
                 content, substitutionTokens,
                 localizedDisplayName, fileAttributes);
@@ -358,7 +358,7 @@ public final class CreatedModifiedFiles {
      * @param attributes &lt;String,String&gt; map mapping attributes names and values.
      * @return see {@link Operation}
      */
-    public Operation manifestModification(String section, Map/*<String, String>*/ attributes) {
+    public Operation manifestModification(String section, Map<String,String> attributes) {
         return CreatedModifiedFilesFactory.manifestModification(project, section, attributes);
     }
     
@@ -370,7 +370,7 @@ public final class CreatedModifiedFiles {
      * @return see {@link Operation}
      */
     public Operation propertiesModification(String propertyPath,
-            Map/*<String, String>*/ properties) {
+            Map<String,String> properties) {
         return CreatedModifiedFilesFactory.propertiesModification(project, propertyPath, properties);
     }
     
@@ -436,7 +436,7 @@ public final class CreatedModifiedFiles {
      *                      yourself using e.g. {@link FileObject#createData} and {@link FileObject#getOutputStream}
      * @return the operation handle
      */
-    public Operation layerModifications(final LayerOperation op, final Set/*<String>*/ externalFiles) {
+    public Operation layerModifications(final LayerOperation op, final Set<String> externalFiles) {
         return CreatedModifiedFilesFactory.layerModifications(project, op, externalFiles, this);
     }
     

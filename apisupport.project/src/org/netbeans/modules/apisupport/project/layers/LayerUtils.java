@@ -108,7 +108,7 @@ public class LayerUtils {
                     return new URL[] {fo.getURL()};
                 }
             } else if (u.getProtocol().equals("nbresloc")) { // NOI18N
-                List/*<URL>*/ urls = new ArrayList();
+                List<URL> urls = new ArrayList();
                 String path = u.getFile();
                 if (path.startsWith("/")) path = path.substring(1); // NOI18N
                 int idx = path.lastIndexOf('/');
@@ -158,7 +158,7 @@ public class LayerUtils {
     // Will actually produce:
     // 'foo', 'foo_ja', 'foo_ce', 'foo_ce_ja', 'foo_f4j', 'foo_f4j_ja', 'foo_f4j_ce'
     // since impossible to distinguish locale from branding reliably.
-    private static List/*<String>*/ computeSubVariants(String name) {
+    private static List<String> computeSubVariants(String name) {
         int idx = name.indexOf('_');
         if (idx == -1) {
             return Collections.EMPTY_LIST;
@@ -169,7 +169,7 @@ public class LayerUtils {
             return l.subList(0, l.size() - 1);
         }
     }
-    private static List/*<String>*/ computeSubVariants(String base, String suffix) {
+    private static List<String> computeSubVariants(String base, String suffix) {
         int idx = suffix.indexOf('_', 1);
         if (idx == -1) {
             List l = new LinkedList();
@@ -187,7 +187,7 @@ public class LayerUtils {
     }
     
     // XXX needs to hold a strong ref only when modified, probably?
-    private static final Map/*<NbModuleProject,LayerHandle>*/ layerHandleCache = new WeakHashMap();
+    private static final Map<NbModuleProject,LayerHandle> layerHandleCache = new WeakHashMap();
     
     /**
      * Gets a handle for one project's XML layer.
@@ -201,7 +201,7 @@ public class LayerUtils {
         return handle;
     }
 
-    private static final Set/*<String>*/ XML_LIKE_TYPES = new HashSet();
+    private static final Set<String> XML_LIKE_TYPES = new HashSet();
     static {
         XML_LIKE_TYPES.add(".settings"); // NOI18N
         XML_LIKE_TYPES.add(".wstcref"); // NOI18N
@@ -558,7 +558,7 @@ public class LayerUtils {
             NbModuleTypeProvider.NbModuleType type = Util.getModuleType(p);
             FileSystem projectLayer = layerForProject(p).layer(false);
             if (type == NbModuleTypeProvider.STANDALONE) {
-                Set/*<File>*/ jars = getPlatformJarsForStandaloneProject(p);
+                Set<File> jars = getPlatformJarsForStandaloneProject(p);
                 FileSystem[] platformLayers = getPlatformLayers(jars);
                 ClassPath cp = createLayerClasspath(Collections.singleton(p), jars);
                 return mergeFilesystems(projectLayer, platformLayers, cp);
@@ -567,8 +567,8 @@ public class LayerUtils {
                 if (suite == null) {
                     throw new IOException("Could not load suite for " + p); // NOI18N
                 }
-                List/*<FileSystem>*/ readOnlyLayers = new ArrayList();
-                Set/*<Project>*/ modules = SuiteUtils.getSubProjects(suite);
+                List<FileSystem> readOnlyLayers = new ArrayList();
+                Set<NbModuleProject> modules = SuiteUtils.getSubProjects(suite);
                 Iterator it = modules.iterator();
                 while (it.hasNext()) {
                     NbModuleProject sister = (NbModuleProject) it.next();
@@ -581,13 +581,13 @@ public class LayerUtils {
                         readOnlyLayers.add(roLayer);
                     }
                 }
-                Set/*<File>*/ jars = getPlatformJarsForSuiteComponentProject(p, suite);
+                Set<File> jars = getPlatformJarsForSuiteComponentProject(p, suite);
                 readOnlyLayers.addAll(Arrays.asList(getPlatformLayers(jars)));
                 ClassPath cp = createLayerClasspath(modules, jars);
                 return mergeFilesystems(projectLayer, (FileSystem[]) readOnlyLayers.toArray(new FileSystem[readOnlyLayers.size()]), cp);
             } else if (type == NbModuleTypeProvider.NETBEANS_ORG) {
-                Set/*<NbModuleProject>*/ projects = getProjectsForNetBeansOrgProject(p);
-                List/*<URL>*/ otherLayerURLs = new ArrayList();
+                Set<NbModuleProject> projects = getProjectsForNetBeansOrgProject(p);
+                List<URL> otherLayerURLs = new ArrayList();
                 Iterator it = projects.iterator();
                 while (it.hasNext()) {
                     NbModuleProject p2 = (NbModuleProject) it.next();
@@ -627,12 +627,12 @@ public class LayerUtils {
     /**
      * Get the platform JARs associated with a standalone module project.
      */
-    public static Set/*<File>*/ getPlatformJarsForStandaloneProject(NbModuleProject project) {
+    public static Set<File> getPlatformJarsForStandaloneProject(NbModuleProject project) {
         NbPlatform platform = project.getPlatform(true);
         return getPlatformJars(platform, null, null, null);
     }
     
-    public static Set/*<File>*/ getPlatformJarsForSuiteComponentProject(NbModuleProject project, SuiteProject suite) {
+    public static Set<File> getPlatformJarsForSuiteComponentProject(NbModuleProject project, SuiteProject suite) {
         NbPlatform platform = suite.getPlatform(true);
         PropertyEvaluator eval = suite.getEvaluator();
         String[] includedClusters = SuiteProperties.getArrayProperty(eval, SuiteProperties.ENABLED_CLUSTERS_PROPERTY);
@@ -641,9 +641,9 @@ public class LayerUtils {
         return getPlatformJars(platform, includedClusters, excludedClusters, excludedModules);
     }
     
-    public static Set/*<NbModuleProject>*/ getProjectsForNetBeansOrgProject(NbModuleProject project) throws IOException {
+    public static Set<NbModuleProject> getProjectsForNetBeansOrgProject(NbModuleProject project) throws IOException {
         ModuleList list = project.getModuleList();
-        Set/*<NbModuleProject>*/ projects = new HashSet();
+        Set<NbModuleProject> projects = new HashSet();
         projects.add(project);
         Iterator it = list.getAllEntriesSoft().iterator();
         while (it.hasNext()) {
@@ -666,15 +666,15 @@ public class LayerUtils {
      * Finds all the module JARs in the platform.
      * Can optionally pass non-null lists of cluster names and module CNBs to exclude, as per suite properties.
      */
-    private static Set/*<File>*/ getPlatformJars(NbPlatform platform, String[] includedClusters, String[] excludedClusters, String[] excludedModules) {
+    private static Set<File> getPlatformJars(NbPlatform platform, String[] includedClusters, String[] excludedClusters, String[] excludedModules) {
         if (platform == null) {
             return Collections.EMPTY_SET;
         }
-        Set/*<String>*/ includedClustersS = (includedClusters != null) ? new HashSet(Arrays.asList(includedClusters)) : Collections.EMPTY_SET;
-        Set/*<String>*/ excludedClustersS = (excludedClusters != null) ? new HashSet(Arrays.asList(excludedClusters)) : Collections.EMPTY_SET;
-        Set/*<String>*/ excludedModulesS = (excludedModules != null) ? new HashSet(Arrays.asList(excludedModules)) : Collections.EMPTY_SET;
+        Set<String> includedClustersS = (includedClusters != null) ? new HashSet(Arrays.asList(includedClusters)) : Collections.EMPTY_SET;
+        Set<String> excludedClustersS = (excludedClusters != null) ? new HashSet(Arrays.asList(excludedClusters)) : Collections.EMPTY_SET;
+        Set<String> excludedModulesS = (excludedModules != null) ? new HashSet(Arrays.asList(excludedModules)) : Collections.EMPTY_SET;
         ModuleEntry[] entries = platform.getModules();
-        Set/*<File>*/ jars = new HashSet(entries.length);
+        Set<File> jars = new HashSet(entries.length);
         for (int i = 0; i < entries.length; i++) {
             if (!includedClustersS.isEmpty() && !includedClustersS.contains(entries[i].getClusterDirectory().getName())) {
                 continue;
@@ -693,8 +693,8 @@ public class LayerUtils {
     /**
      * Constructs a list of filesystems representing the XML layers of the supplied platform module JARs.
      */
-    private static FileSystem[] getPlatformLayers(Set/*<File>*/ platformJars) throws IOException {
-        List/*<FileSystem>*/ layers = new ArrayList();
+    private static FileSystem[] getPlatformLayers(Set<File> platformJars) throws IOException {
+        List<FileSystem> layers = new ArrayList();
         Iterator it = platformJars.iterator();
         JAR: while (it.hasNext()) {
             File jar = (File) it.next();
@@ -739,8 +739,8 @@ public class LayerUtils {
     /**
      * Creates a classpath representing the source roots and platform binary JARs for a project/suite.
      */
-    static ClassPath createLayerClasspath(Set/*<NbModuleProject>*/ moduleProjects, Set/*<File>*/ platformJars) throws IOException {
-        List/*<URL>*/ roots = new ArrayList();
+    static ClassPath createLayerClasspath(Set<NbModuleProject> moduleProjects, Set<File> platformJars) throws IOException {
+        List<URL> roots = new ArrayList();
         Iterator it = moduleProjects.iterator();
         while (it.hasNext()) {
             NbModuleProject p = (NbModuleProject) it.next();

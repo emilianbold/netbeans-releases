@@ -46,7 +46,7 @@ class HarnessUpgrader {
             return;
         }
         ModuleUISettings.getDefault().setHarnessesUpgraded(true);
-        final Set/*<NbPlatform>*/ toUpgrade = new HashSet();
+        final Set<NbPlatform> toUpgrade = new HashSet();
         Iterator it = NbPlatform.getPlatforms().iterator();
         while (it.hasNext()) {
             NbPlatform p = (NbPlatform) it.next();
@@ -71,7 +71,7 @@ class HarnessUpgrader {
         }
     }
     
-    private static void promptForUpgrade(Set/*<NbPlatform>*/ platforms) {
+    private static void promptForUpgrade(Set<NbPlatform> platforms) {
         if (UIUtil.showAcceptCancelDialog(
                 NbBundle.getMessage(HarnessUpgrader.class, "HarnessUpgrader.title"),
                 NbBundle.getMessage(HarnessUpgrader.class, "HarnessUpgrader.text"),
@@ -86,7 +86,7 @@ class HarnessUpgrader {
         }
     }
     
-    private static void doUpgrade(Set/*<NbPlatform>*/ platforms) throws IOException {
+    private static void doUpgrade(Set<NbPlatform> platforms) throws IOException {
         File defaultHarness = NbPlatform.getDefaultPlatform().getHarnessLocation();
         Iterator it = platforms.iterator();
         while (it.hasNext()) {

@@ -55,8 +55,8 @@ public final class ModuleDependency implements Comparable {
     
     private ModuleEntry me;
     
-    private Set/*<String>*/ filterTokensNotFriend;
-    private Set/*<String>*/ filterTokensFriend;
+    private Set<String> filterTokensNotFriend;
+    private Set<String> filterTokensFriend;
     
     public static final Comparator LOCALIZED_NAME_COMPARATOR;
     public static final Comparator CNB_COMPARATOR;
@@ -195,9 +195,9 @@ public final class ModuleDependency implements Comparable {
      * module (according to whether or not it would be listed as a friend).
      * @param dependingModuleCNB the CNB of the module depending on this one
      */
-    Set/*<String>*/ getFilterTokens(String dependingModuleCNB) {
+    Set<String> getFilterTokens(String dependingModuleCNB) {
         boolean friend = me.isDeclaredAsFriend(dependingModuleCNB);
-        Set/*<String>*/ filterTokens = friend ? filterTokensFriend : filterTokensNotFriend;
+        Set<String> filterTokens = friend ? filterTokensFriend : filterTokensNotFriend;
         if (filterTokens == null) {
             filterTokens = new HashSet();
             filterTokens.add(me.getCodeNameBase());

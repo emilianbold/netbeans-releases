@@ -22,6 +22,7 @@ package org.netbeans.modules.apisupport.project.ui.customizer;
 import java.io.IOException;
 import java.util.Set;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -61,7 +62,7 @@ public final class SuiteCustomizer extends BasicCustomizer {
     void postSave() { /* nothing needs to be done for now */ }
     
     protected void prepareData() {
-        Set/*<Project>*/ subModules = SuiteUtils.getSubProjects(getProject());
+        Set<NbModuleProject> subModules = SuiteUtils.getSubProjects(getProject());
         if (suiteProps == null) { // first initialization
             suiteProps = new SuiteProperties((SuiteProject) getProject(), helper, evaluator, subModules);
             init();

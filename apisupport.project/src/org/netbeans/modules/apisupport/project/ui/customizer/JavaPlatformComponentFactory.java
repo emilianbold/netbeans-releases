@@ -56,12 +56,12 @@ public class JavaPlatformComponentFactory {
         return new Renderer();
     }
     
-    private static final class Model implements ComboBoxModel/*<JavaPlatform>*/, PropertyChangeListener, Comparator/*<JavaPlatform>*/ {
+    private static final class Model implements ComboBoxModel/*<JavaPlatform>*/, PropertyChangeListener, Comparator<JavaPlatform> {
         
         private static final Collator COLL = Collator.getInstance();
         private static final JavaPlatformManager mgr = JavaPlatformManager.getDefault();
-        private final SortedSet/*<JavaPlatform>*/ platforms = new TreeSet(this);
-        private final List/*<ListDataListener>*/ listeners = new ArrayList();
+        private final SortedSet<JavaPlatform> platforms = new TreeSet(this);
+        private final List<ListDataListener> listeners = new ArrayList();
         private JavaPlatform selected;
         
         public Model() {
@@ -114,9 +114,7 @@ public class JavaPlatformComponentFactory {
             fireChange();
         }
 
-        public int compare(Object o1, Object o2) {
-            JavaPlatform p1 = (JavaPlatform) o1;
-            JavaPlatform p2 = (JavaPlatform) o2;
+        public int compare(JavaPlatform p1, JavaPlatform p2) {
             int res = COLL.compare(p1.getDisplayName(), p2.getDisplayName());
             if (res != 0) {
                 return res;

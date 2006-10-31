@@ -87,7 +87,7 @@ public abstract class ModuleProperties {
      * Returns map of keys form main module properties and their default values.
      * Must be overriden by a subclass.
      */
-    abstract Map/*<String, String>*/ getDefaultValues();
+    abstract Map<String, String> getDefaultValues();
     
     AntProjectHelper getHelper() {
         return helper;
@@ -305,7 +305,7 @@ public abstract class ModuleProperties {
     }
     
     private static File getPlatformLocation(JavaPlatform platform) {
-        Collection/*<FileObject>*/ installs = platform.getInstallFolders();
+        Collection<FileObject> installs = platform.getInstallFolders();
         if (installs.size() == 1) {
             return FileUtil.toFile((FileObject) installs.iterator().next());
         } else {

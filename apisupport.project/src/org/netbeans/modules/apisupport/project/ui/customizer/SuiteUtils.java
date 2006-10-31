@@ -48,6 +48,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
+import org.openide.util.NbCollections;
 
 /**
  * Utility methods for miscellaneous suite module operations like moving its
@@ -89,7 +90,7 @@ public final class SuiteUtils {
                         Util.err.log(ErrorManager.WARNING,
                                 "Cannot find suite for the given suitecomponent (" + suiteComponent + ')'); // NOI18N
                     } else {
-                        Set/*<Project>*/ subProjects = SuiteUtils.getSubProjects(suite);
+                        Set<NbModuleProject> subProjects = SuiteUtils.getSubProjects(suite);
                         PROJECTS: for (Iterator it = subProjects.iterator(); it.hasNext();) {
                             NbModuleProject p = (NbModuleProject) it.next();
                             ProjectXMLManager pxm = new ProjectXMLManager(p);
@@ -120,8 +121,8 @@ public final class SuiteUtils {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
                 public Object run() throws Exception {
                     SuiteUtils utils = new SuiteUtils(suiteProps);
-                    Set/*<Project>*/ currentModules = suiteProps.getSubModules();
-                    Set/*<Project>*/ origSubModules = suiteProps.getOrigSubModules();
+                    Set<NbModuleProject> currentModules = suiteProps.getSubModules();
+                    Set<NbModuleProject> origSubModules = suiteProps.getOrigSubModules();
                     
                     // remove removed modules
                     for (Iterator it = origSubModules.iterator(); it.hasNext(); ) {
@@ -458,7 +459,7 @@ public final class SuiteUtils {
      * project with the same code name base.
      */
     public static boolean contains(final SuiteProject suite, final NbModuleProject project) {
-        Set/*<Project>*/ subModules = getSubProjects(suite);
+        Set<NbModuleProject> subModules = getSubProjects(suite);
         if (subModules.contains(project)) {
             return true;
         }
@@ -475,10 +476,10 @@ public final class SuiteUtils {
      * Utility method to acquire modules contains within a given suite. Just
      * delegates to {@link SubprojectProvider#getSubprojects()}.
      */
-    public static Set/*<Project>*/ getSubProjects(final Project suite) {
+    public static Set<NbModuleProject> getSubProjects(final Project suite) {
         assert suite != null;
         SubprojectProvider spp = (SubprojectProvider) suite.getLookup().lookup(SubprojectProvider.class);
-        return spp.getSubprojects();
+        return NbCollections.checkedSetByFilter(spp.getSubprojects(), NbModuleProject.class, true);
     }
     
     /**

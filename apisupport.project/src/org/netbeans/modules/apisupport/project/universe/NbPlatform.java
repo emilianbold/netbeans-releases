@@ -76,7 +76,7 @@ public final class NbPlatform {
     
     public static final String PROP_SOURCE_ROOTS = "sourceRoots"; // NOI18N
     
-    private static Set/*<NbPlatform>*/ platforms;
+    private static Set<NbPlatform> platforms;
     
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     
@@ -102,14 +102,14 @@ public final class NbPlatform {
     /**
      * Get a set of all registered platforms.
      */
-    public static synchronized Set/*<NbPlatform>*/ getPlatforms() {
+    public static synchronized Set<NbPlatform> getPlatforms() {
         return new HashSet(getPlatformsInternal());
     }
 
-    private static Set/*<NbPlatform>*/ getPlatformsInternal() {
+    private static Set<NbPlatform> getPlatformsInternal() {
         if (platforms == null) {
             platforms = new HashSet();
-            Map/*<String,String>*/ p = PropertyUtils.sequentialPropertyEvaluator(null, new PropertyProvider[] {PropertyUtils.globalPropertyProvider()}).getProperties();
+            Map<String,String> p = PropertyUtils.sequentialPropertyEvaluator(null, new PropertyProvider[] {PropertyUtils.globalPropertyProvider()}).getProperties();
             boolean foundDefault = false;
             Iterator entries = p.entrySet().iterator();
             while (entries.hasNext()) {
@@ -402,7 +402,7 @@ public final class NbPlatform {
     private File harness;
     private URL[] sourceRoots;
     private URL[] javadocRoots;
-    private List/*<ModuleList>*/ listsForSources;
+    private List<ModuleList> listsForSources;
     private int harnessVersion = -1;
     
     private NbPlatform(String id, String label, File nbdestdir, File harness, URL[] sources, URL[] javadoc) {
@@ -716,7 +716,7 @@ public final class NbPlatform {
         Iterator it = listsForSources.iterator();
         while (it.hasNext()) {
             ModuleList l = (ModuleList) it.next();
-            Set/*<ModuleEntry>*/ entries = l.getAllEntriesSoft();
+            Set<ModuleEntry> entries = l.getAllEntriesSoft();
             Iterator it2 = entries.iterator();
             while (it2.hasNext()) {
                 ModuleEntry entry = (ModuleEntry) it2.next();
@@ -752,7 +752,7 @@ public final class NbPlatform {
      */
     public ModuleEntry[] getModules() {
         try {
-            SortedSet/*<ModuleEntry>*/ set = new TreeSet(
+            SortedSet<ModuleEntry> set = new TreeSet(
                     ModuleList.findOrCreateModuleListFromBinaries(getDestDir()).getAllEntriesSoft());
             ModuleEntry[] entries = new ModuleEntry[set.size()];
             set.toArray(entries);

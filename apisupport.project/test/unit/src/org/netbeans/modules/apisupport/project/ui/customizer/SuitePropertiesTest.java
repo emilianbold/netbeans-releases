@@ -39,6 +39,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
+import org.openide.util.NbCollections;
 
 /**
  * Tests {@link SuiteProperties}. Actually also for some classes which
@@ -134,7 +135,7 @@ public class SuitePropertiesTest extends TestBase {
         
         assertNotNull("module2ToAdd is standalone module - has valid SuiteProvider", suiteProvider.getSuiteDirectory());
         
-        suiteProps.refresh(spp.getSubprojects());
+        suiteProps.refresh(NbCollections.checkedSetByFilter(spp.getSubprojects(), NbModuleProject.class, true));
         assertNotNull("module2ToAdd is standalone module - has valid SuiteProvider", suiteProvider.getSuiteDirectory());
         assertEquals("three module suite components", 3, suiteProps.getModulesListModel().getSize());
     }
@@ -221,7 +222,7 @@ public class SuitePropertiesTest extends TestBase {
         
         saveProperties(suiteProps);
         
-        suiteProps.refresh(spp.getSubprojects());
+        suiteProps.refresh(NbCollections.checkedSetByFilter(spp.getSubprojects(), NbModuleProject.class, true));
         assertEquals("two module suite components", 2, suiteProps.getModulesListModel().getSize());
     }
     
@@ -232,7 +233,7 @@ public class SuitePropertiesTest extends TestBase {
         SuiteProperties suiteProps = getSuiteProperties(suite1);
         assertEquals("one module", "${project.org.example.module1}", suiteProps.getProperty(SuiteUtils.MODULES_PROPERTY));
         TestBase.generateSuiteComponent(suite1, "module2");
-        suiteProps.refresh(spp.getSubprojects());
+        suiteProps.refresh(NbCollections.checkedSetByFilter(spp.getSubprojects(), NbModuleProject.class, true));
         assertEquals("two modules", "${project.org.example.module1}:${project.org.example.module2}", suiteProps.getProperty(SuiteUtils.MODULES_PROPERTY));
         assertEquals("two module suite component", 2, suiteProps.getModulesListModel().getSize());
     }
@@ -242,7 +243,7 @@ public class SuitePropertiesTest extends TestBase {
         SubprojectProvider spp = getSubProjectProvider(suite1);
         SuiteProperties suiteProps = getSuiteProperties(suite1);
         NbPlatform.removePlatform(NbPlatform.getPlatformByID("custom"));
-        suiteProps.refresh(spp.getSubprojects());
+        suiteProps.refresh(NbCollections.checkedSetByFilter(spp.getSubprojects(), NbModuleProject.class, true));
         assertNotNull(suiteProps.getActivePlatform());
         assertEquals("default platform", suiteProps.getActivePlatform(), NbPlatform.getDefaultPlatform());
     }
@@ -272,13 +273,13 @@ public class SuitePropertiesTest extends TestBase {
             }
         });
         
-        suiteProps.refresh(spp.getSubprojects());
+        suiteProps.refresh(NbCollections.checkedSetByFilter(spp.getSubprojects(), NbModuleProject.class, true));
         model = suiteProps.getModulesListModel(); // reload
         assertEquals("three module suite components", 3, model.getSize());
         model.removeModules(Arrays.asList(new Object[] { module2 }));
         saveProperties(suiteProps);
         
-        suiteProps.refresh(spp.getSubprojects());
+        suiteProps.refresh(NbCollections.checkedSetByFilter(spp.getSubprojects(), NbModuleProject.class, true));
         model = suiteProps.getModulesListModel(); // reload
         assertEquals("two module suite components", 2, model.getSize());
     }

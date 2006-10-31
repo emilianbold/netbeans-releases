@@ -248,13 +248,13 @@ public final class SuiteLogicalView implements LogicalViewProvider {
             return getIcon(true);
         }
         
-        static final class ModuleChildren extends Children.Keys/*<NbModuleProject>*/ implements ChangeListener {
+        static final class ModuleChildren extends Children.Keys<NbModuleProject> implements ChangeListener {
             
-            private final SubprojectProvider spp;
+            private final SuiteProject suite;
             
             public ModuleChildren(SuiteProject suite) {
-                this.spp = (SubprojectProvider) suite.getLookup().lookup(SubprojectProvider.class);
-                spp.addChangeListener(this);
+                suite.getLookup().lookup(SubprojectProvider.class).addChangeListener(this);
+                this.suite = suite;
             }
             
             protected void addNotify() {
@@ -270,20 +270,20 @@ public final class SuiteLogicalView implements LogicalViewProvider {
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
                         // #70112: sort them.
-                        SortedSet/*<NbModuleProject>*/ subModules = new TreeSet(Util.projectDisplayNameComparator());
-                        subModules.addAll(spp.getSubprojects());
+                        SortedSet<NbModuleProject> subModules = new TreeSet(Util.projectDisplayNameComparator());
+                        subModules.addAll(SuiteUtils.getSubProjects(suite));
                         setKeys(subModules);
                     }
                 });
             }
             
             protected void removeNotify() {
-                spp.removeChangeListener(this);
+                suite.getLookup().lookup(SubprojectProvider.class).removeChangeListener(this);
                 setKeys(Collections.EMPTY_SET);
             }
             
-            protected Node[] createNodes(Object key) {
-                return new Node[] { new SuiteComponentNode((NbModuleProject) key) };
+            protected Node[] createNodes(NbModuleProject p) {
+                return new Node[] {new SuiteComponentNode(p)};
             }
             
             public void stateChanged(ChangeEvent ev) {
@@ -497,13 +497,13 @@ public final class SuiteLogicalView implements LogicalViewProvider {
     /**
      * Actual list of important files.
      */
-    private static final class ImportantFilesChildren extends Children.Keys {
+    private static final class ImportantFilesChildren extends Children.Keys<String> {
         
-        private List/*<FileObject>*/ visibleFiles = new ArrayList();
+        private List<String> visibleFiles = new ArrayList();
         private FileChangeListener fcl;
         
         /** Abstract location to display name. */
-        private static final java.util.Map/*<String,String>*/ FILES = new LinkedHashMap();
+        private static final java.util.Map<String,String> FILES = new LinkedHashMap();
         static {
             FILES.put("master.jnlp", getMessage("LBL_jnlp_master"));
             FILES.put("build.xml", getMessage("LBL_build.xml"));
@@ -531,8 +531,7 @@ public final class SuiteLogicalView implements LogicalViewProvider {
             super.removeNotify();
         }
         
-        protected Node[] createNodes(Object key) {
-            final String loc = (String) key;
+        protected Node[] createNodes(String loc) {
             String locEval = project.getEvaluator().evaluate(loc);
             FileObject file = project.getHelper().resolveFileObject(locEval);
             
@@ -545,7 +544,7 @@ public final class SuiteLogicalView implements LogicalViewProvider {
         }
         
         private void refreshKeys() {
-            List/*<FileObject>*/ newVisibleFiles = new ArrayList();
+            List<String> newVisibleFiles = new ArrayList();
             Iterator it = FILES.keySet().iterator();
             Set files = new HashSet();
             while (it.hasNext()) {

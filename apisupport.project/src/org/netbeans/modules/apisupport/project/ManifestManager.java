@@ -340,7 +340,7 @@ public final class ManifestManager {
         return deprecated;
     }
     
-    public Set/*<Dependency>*/ getModuleDependencies() {
+    public Set<Dependency> getModuleDependencies() {
         if (moduleDependencies != null) {
             return Dependency.create(Dependency.TYPE_MODULE, moduleDependencies);
         } else {

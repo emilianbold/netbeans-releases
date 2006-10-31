@@ -51,7 +51,7 @@ import org.openide.util.NbBundle;
 public final class ModuleOperations implements DeleteOperationImplementation,
         MoveOperationImplementation, CopyOperationImplementation {
     
-    private static final Map/*<String, SuiteProject>*/ TEMPORARY_CACHE = new HashMap();
+    private static final Map<String, SuiteProject> TEMPORARY_CACHE = new HashMap();
     
     private final NbModuleProject project;
     private final FileObject projectDir;
@@ -138,8 +138,8 @@ public final class ModuleOperations implements DeleteOperationImplementation,
         }
     }
     
-    public List/*<FileObject>*/ getMetadataFiles() {
-        List/*<FileObject>*/ files = new ArrayList();
+    public List<FileObject> getMetadataFiles() {
+        List<FileObject> files = new ArrayList();
         addFile(GeneratedFilesHelper.BUILD_XML_PATH, files);
         addFile("manifest.mf", files); // NOI18N
         addFile("nbproject", files); // NOI18N
@@ -147,8 +147,8 @@ public final class ModuleOperations implements DeleteOperationImplementation,
         return files;
     }
     
-    public List/*<FileObject>*/ getDataFiles() {
-        List/*<FileObject>*/ files = new ArrayList();
+    public List<FileObject> getDataFiles() {
+        List<FileObject> files = new ArrayList();
         
         Sources srcs = ProjectUtils.getSources(project);
         SourceGroup[] grps = srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
@@ -164,7 +164,7 @@ public final class ModuleOperations implements DeleteOperationImplementation,
         return files;
     }
     
-    private void addFile(String fileName, List/*<FileObject>*/ result) {
+    private void addFile(String fileName, List<FileObject> result) {
         FileObject file = projectDir.getFileObject(fileName);
         if (file != null) {
             result.add(file);

@@ -335,7 +335,7 @@ public final class ModuleLogicalView implements LogicalViewProvider {
         private FileChangeListener fcl;
         
         /** Abstract location to display name. */
-        private static final java.util.Map/*<String,String>*/ FILES = new LinkedHashMap();
+        private static final java.util.Map<String,String> FILES = new LinkedHashMap();
         static {
             FILES.put("${manifest.mf}", NbBundle.getMessage(ModuleLogicalView.class, "LBL_module_manifest"));
             FILES.put("${javadoc.arch}", NbBundle.getMessage(ModuleLogicalView.class, "LBL_arch_desc"));
@@ -390,7 +390,7 @@ public final class ModuleLogicalView implements LogicalViewProvider {
         }
         
         private void refreshKeys() {
-            Set/*<FileObject>*/ files = new HashSet();
+            Set<FileObject> files = new HashSet();
             List newVisibleFiles = new ArrayList();
             LayerUtils.LayerHandle handle = LayerUtils.layerForProject(project);
             FileObject layerFile = handle.getLayerFile();

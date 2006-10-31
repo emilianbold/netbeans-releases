@@ -42,6 +42,7 @@ import javax.swing.ListModel;
 import javax.swing.table.AbstractTableModel;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.openide.awt.HtmlRenderer;
@@ -118,7 +119,7 @@ public final class CustomizerComponentFactory {
      * The dependencies will be sorted by module display name.
      */
     static CustomizerComponentFactory.DependencyListModel createSortedDependencyListModel(
-            final Set/*<ModuleDependency>*/ deps) {
+            final Set<ModuleDependency> deps) {
         assert deps != null;
         return new CustomizerComponentFactory.DependencyListModel(deps, true);
     }
@@ -128,15 +129,14 @@ public final class CustomizerComponentFactory {
      * The dependencies will be left in the order given.
      */
     static CustomizerComponentFactory.DependencyListModel createDependencyListModel(
-            final Set/*<ModuleDependency>*/ deps) {
+            final Set<ModuleDependency> deps) {
         assert deps != null;
         return new CustomizerComponentFactory.DependencyListModel(deps, false);
     }
     
     static synchronized CustomizerComponentFactory.DependencyListModel getInvalidDependencyListModel() {
         if (INVALID_DEP_LIST_MODEL == null) {
-            INVALID_DEP_LIST_MODEL = createDependencyListModel(
-                    Collections.singleton(CustomizerComponentFactory.INVALID_PLATFORM));
+            INVALID_DEP_LIST_MODEL = new DependencyListModel();
         }
         return INVALID_DEP_LIST_MODEL;
     }
@@ -154,28 +154,35 @@ public final class CustomizerComponentFactory {
     
     static final class DependencyListModel extends AbstractListModel {
         
-        private final Set/*<ModuleDependency>*/ currentDeps;
-        private final Set/*<ModuleDependency>*/ addedDeps = new HashSet();
-        private final Set/*<ModuleDependency>*/ removedDeps = new HashSet();
-        private final Map/*<ModuleDependency, ModuleDependency>*/ editedDeps = new HashMap();
+        private final Set<ModuleDependency> currentDeps;
+        private final Set<ModuleDependency> addedDeps = new HashSet();
+        private final Set<ModuleDependency> removedDeps = new HashSet();
+        private final Map<ModuleDependency, ModuleDependency> editedDeps = new HashMap();
         
         private boolean changed;
+        private final boolean invalid;
         
-        DependencyListModel(Set/*<ModuleDependency>*/ deps, boolean sorted) {
+        DependencyListModel(Set<ModuleDependency> deps, boolean sorted) {
             if (sorted) {
                 currentDeps = new TreeSet(ModuleDependency.LOCALIZED_NAME_COMPARATOR);
                 currentDeps.addAll(deps);
             } else {
                 currentDeps = deps;
             }
+            invalid = false;
+        }
+        
+        DependencyListModel() {
+            currentDeps = Collections.emptySet();
+            invalid = true;
         }
         
         public int getSize() {
-            return currentDeps.size();
+            return invalid ? 1 : currentDeps.size();
         }
         
         public Object getElementAt(int i) {
-            return currentDeps.toArray()[i];
+            return invalid ? INVALID_PLATFORM : currentDeps.toArray()[i];
         }
         
         ModuleDependency getDependency(int i) {
@@ -192,11 +199,10 @@ public final class CustomizerComponentFactory {
             }
         }
         
-        void removeDependencies(Collection deps) {
+        void removeDependencies(Collection<ModuleDependency> deps) {
             int origSize = currentDeps.size();
             currentDeps.removeAll(deps);
-            for (Iterator it = deps.iterator(); it.hasNext(); ) {
-                Object entry = it.next();
+            for (ModuleDependency entry : deps) {
                 if (!addedDeps.remove(entry)) {
                     removedDeps.add(entry);
                 }
@@ -213,19 +219,19 @@ public final class CustomizerComponentFactory {
             this.fireContentsChanged(this, 0, currentDeps.size());
         }
         
-        Set/*<ModuleDependency>*/ getDependencies() {
+        Set<ModuleDependency> getDependencies() {
             return Collections.unmodifiableSet(currentDeps);
         }
         
-        Set/*<ModuleDependency>*/ getRemovedDependencies() {
+        Set<ModuleDependency> getRemovedDependencies() {
             return removedDeps;
         }
         
-        Set/*<ModuleDependency>*/ getAddedDependencies() {
+        Set<ModuleDependency> getAddedDependencies() {
             return addedDeps;
         }
         
-        Map/*<ModuleDependency, ModuleDependency>*/ getEditedDependencies() {
+        Map<ModuleDependency, ModuleDependency> getEditedDependencies() {
             return editedDeps;
         }
         
@@ -317,11 +323,11 @@ public final class CustomizerComponentFactory {
         private Boolean[] originalSelected;
         private String[] pkgNames;
         
-        PublicPackagesTableModel(Map/*<String, Boolean>*/ publicPackages) {
+        PublicPackagesTableModel(Map<String, Boolean> publicPackages) {
             reloadData(publicPackages);
         }
         
-        void reloadData(Map/*<String, Boolean>*/ publicPackages) {
+        void reloadData(Map<String, Boolean> publicPackages) {
             selected = new Boolean[publicPackages.size()];
             publicPackages.values().toArray(selected);
             originalSelected = new Boolean[publicPackages.size()];
@@ -381,7 +387,7 @@ public final class CustomizerComponentFactory {
     
     static final class FriendListModel extends AbstractListModel {
         
-        private final Set/*<String>*/ friends = new TreeSet();
+        private final Set<String> friends = new TreeSet();
         
         private boolean changed;
         
@@ -427,7 +433,7 @@ public final class CustomizerComponentFactory {
     
     static final class RequiredTokenListModel extends AbstractListModel {
         
-        private final SortedSet/*<String>*/ tokens;
+        private final SortedSet<String> tokens;
         private boolean changed;
         
         RequiredTokenListModel(final SortedSet tokens) {
@@ -467,11 +473,11 @@ public final class CustomizerComponentFactory {
     
     static final class SuiteSubModulesListModel extends AbstractListModel {
         
-        private final Set/*<Project>*/ subModules;
+        private final Set<NbModuleProject> subModules;
         
         private boolean changed;
         
-        SuiteSubModulesListModel(Set/*<Project>*/ subModules) {
+        SuiteSubModulesListModel(Set<NbModuleProject> subModules) {
             this.subModules = new TreeSet(Util.projectDisplayNameComparator());
             this.subModules.addAll(subModules);
         }
@@ -495,7 +501,7 @@ public final class CustomizerComponentFactory {
             this.fireContentsChanged(this, 0, origSize);
         }
         
-        boolean addModule(Project module) {
+        boolean addModule(NbModuleProject module) {
             int origSize = subModules.size();
             boolean added = subModules.add(module);
             changed = true;
@@ -503,7 +509,7 @@ public final class CustomizerComponentFactory {
             return added;
         }
         
-        public Set/*<Project>*/ getSubModules() {
+        public Set<NbModuleProject> getSubModules() {
             return subModules;
         }
         

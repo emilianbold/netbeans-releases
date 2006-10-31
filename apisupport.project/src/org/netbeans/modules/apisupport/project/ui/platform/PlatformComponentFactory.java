@@ -58,7 +58,7 @@ public final class PlatformComponentFactory {
     private static final Color INVALID_PLAF_COLOR = UIManager.getColor("nb.errorForeground"); // NOI18N
     
     /** Set of suites added by the user in <em>this</em> IDE session. */
-    private static Set/*<String>*/ userSuites = new TreeSet(Collator.getInstance());
+    private static Set<String> userSuites = new TreeSet(Collator.getInstance());
     
     private PlatformComponentFactory() {
         // don't allow instances
@@ -242,10 +242,10 @@ public final class PlatformComponentFactory {
     private static class SuiteListModel extends AbstractListModel
             implements MutableComboBoxModel {
         
-        private Set/*<String>*/ suites = new TreeSet(Collator.getInstance());
-        private Object selectedSuite;
+        private Set<String> suites = new TreeSet(Collator.getInstance());
+        private String selectedSuite;
         
-        SuiteListModel(Set/*<String>*/ suites) {
+        SuiteListModel(Set<String> suites) {
             this.suites.addAll(suites);
         }
         
@@ -253,9 +253,8 @@ public final class PlatformComponentFactory {
             if (suite == null) {
                 return;
             }
-            assert suite instanceof String;
             if (selectedSuite != suite) {
-                selectedSuite = suite;
+                selectedSuite = (String) suite;
                 fireContentsChanged(this, -1, -1);
             }
         }
@@ -273,7 +272,7 @@ public final class PlatformComponentFactory {
         }
         
         public void addElement(Object obj) {
-            suites.add(obj);
+            suites.add((String) obj);
             fireIntervalAdded(this, 0, suites.size());
         }
         

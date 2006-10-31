@@ -69,7 +69,7 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
     private ClassPath classpath;
     private final FileSystem fs;
     private final FileChangeListener fileChangeListener;
-    private final List/*<FileStatusListener>*/ listeners = new ArrayList();
+    private final List<FileStatusListener> listeners = new ArrayList();
     
     public BadgingSupport(FileSystem fs) {
         this.fs = fs;

@@ -38,14 +38,13 @@ import org.xml.sax.SAXException;
  */
 public abstract class LayerTestBase extends NbTestCase {
     
-    // Copied from org.netbeans.api.project.TestUtil:
-    static {
-        // XXX replace with MockServices
-        System.setProperty("org.openide.util.Lookup", Lkp.class.getName());
-        Assert.assertEquals(Lkp.class, Lookup.getDefault().getClass());
-    }
-    
     public static final class Lkp extends ProxyLookup {
+        // Copied from org.netbeans.api.project.TestUtil:
+        static {
+            // XXX replace with MockServices
+            System.setProperty("org.openide.util.Lookup", Lkp.class.getName());
+            Assert.assertEquals(Lkp.class, Lookup.getDefault().getClass());
+        }
         private static Lkp DEFAULT;
         public Lkp() {
             Assert.assertNull(DEFAULT);

@@ -48,7 +48,7 @@ final class BinaryEntry extends AbstractEntry {
     public BinaryEntry(String cnb, File jar, File[] exts, File nbdestdir, File clusterDir,
             String releaseVersion, String specVersion, String[] providedTokens,
             ManifestManager.PackageExport[] publicPackages, String[] friends,
-            boolean deprecated, Set/*<Dependency>*/ moduleDependencies) {
+            boolean deprecated, Set<Dependency> moduleDependencies) {
         this.cnb = cnb;
         this.jar = jar;
         this.nbdestdir = nbdestdir;
@@ -65,7 +65,7 @@ final class BinaryEntry extends AbstractEntry {
         this.publicPackages = publicPackages;
         this.friends = friends;
         this.deprecated = deprecated;
-        Set/*<String>*/ deps = new TreeSet();
+        Set<String> deps = new TreeSet();
         Iterator it = moduleDependencies.iterator();
         while (it.hasNext()) {
             String codename = ((Dependency) it.next()).getName();
@@ -158,8 +158,8 @@ final class BinaryEntry extends AbstractEntry {
         return "BinaryEntry[" + getJarLocation() + (source != null ? "," + source : "") + "]"; // NOI18N
     }
     
-    protected Set/*<String>*/ computePublicClassNamesInMainModule() throws IOException {
-        Set/*<String>*/ result = new HashSet();
+    protected Set<String> computePublicClassNamesInMainModule() throws IOException {
+        Set<String> result = new HashSet();
         scanJarForPublicClassNames(result, jar);
         return result;
     }

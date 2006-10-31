@@ -99,7 +99,7 @@ public final class SingleModuleProperties extends ModuleProperties {
     
     static final String[] SOURCE_LEVELS = {"1.4", "1.5"}; // NOI18N
     
-    private final static Map/*<String, String>*/ DEFAULTS;
+    private final static Map<String, String> DEFAULTS;
     
     private boolean majorReleaseVersionChanged;
     private boolean specificationVersionChanged;
@@ -138,15 +138,15 @@ public final class SingleModuleProperties extends ModuleProperties {
     private JavaPlatform activeJavaPlatform;
     
     /** package name / selected */
-    private SortedSet/*<String>*/ availablePublicPackages;
+    private SortedSet<String> availablePublicPackages;
     
     private String[] allTokens;
     
     /** Unmodifiable sorted set of all categories in the module's universe. */
-    private SortedSet/*<String>*/ modCategories;
+    private SortedSet<String> modCategories;
     
     /** Unmodifiable sorted set of all dependencies in the module's universe. */
-    private Set/*<ModuleDependency>*/ universeDependencies;
+    private Set<ModuleDependency> universeDependencies;
     
     // models
     private PublicPackagesTableModel publicPackagesModel;
@@ -229,7 +229,7 @@ public final class SingleModuleProperties extends ModuleProperties {
         universeDependencies = null;
     }
     
-    Map/*<String, String>*/ getDefaultValues() {
+    Map<String, String> getDefaultValues() {
         return DEFAULTS;
     }
     
@@ -382,7 +382,7 @@ public final class SingleModuleProperties extends ModuleProperties {
         if (depsModel == CustomizerComponentFactory.INVALID_DEP_LIST_MODEL) {
             return false;
         }
-        Set/*<ModuleDependency>*/ deps = depsModel.getDependencies();
+        Set<ModuleDependency> deps = depsModel.getDependencies();
         for (Iterator it = deps.iterator(); it.hasNext(); ) {
             ModuleDependency dep = (ModuleDependency) it.next();
             if (dep.hasImplementationDepedendency()) {
@@ -453,14 +453,14 @@ public final class SingleModuleProperties extends ModuleProperties {
      *        public packages and have friendly relationship with this module
      *        will be included in the returned set
      */
-    Set/*<ModuleDependency>*/ getUniverseDependencies(
+    Set<ModuleDependency> getUniverseDependencies(
             final boolean filterExcludedModules, final boolean apiProvidersOnly) {
         assert !SwingUtilities.isEventDispatchThread() :
             "SingleModuleProperties.getUniverseDependencies() cannot be called from EDT"; // NOI18N
         if (universeDependencies == null) {
             reloadModuleListInfo();
         }
-        Set/*<ModuleDependency>*/ result = new HashSet(universeDependencies);
+        Set<ModuleDependency> result = new HashSet(universeDependencies);
         if (filterExcludedModules && isSuiteComponent()) {
             SuiteProject suite = getSuite();
             String[] disableModules = SuiteProperties.getArrayProperty(
@@ -499,7 +499,7 @@ public final class SingleModuleProperties extends ModuleProperties {
      * Delegates to {@link #getUniverseDependencies(boolean, boolean)} with
      * <code>false</code> as a second parameter.
      */
-    Set/*<ModuleDependency>*/ getUniverseDependencies(final boolean filterExcludedModules) {
+    Set<ModuleDependency> getUniverseDependencies(final boolean filterExcludedModules) {
         return getUniverseDependencies(filterExcludedModules, false);
     }
     
@@ -531,7 +531,7 @@ public final class SingleModuleProperties extends ModuleProperties {
                 }
             }
         } else if (isNetBeansOrg()) {
-            Set/*<ModuleDependency>*/ deps = getUniverseDependencies(false);
+            Set<ModuleDependency> deps = getUniverseDependencies(false);
             for (Iterator it = deps.iterator(); it.hasNext();) {
                 ModuleDependency dep = (ModuleDependency) it.next();
                 set.add(dep.getModuleEntry().getCodeNameBase());
@@ -558,7 +558,7 @@ public final class SingleModuleProperties extends ModuleProperties {
     String[] getAllTokens() {
         if (allTokens == null) {
             try {
-                SortedSet/*<String>*/ provTokens = new TreeSet();
+                SortedSet<String> provTokens = new TreeSet();
                 provTokens.addAll(Arrays.asList(IDE_TOKENS));
                 for (Iterator it = getModuleList().getAllEntriesSoft().iterator(); it.hasNext(); ) {
                     ModuleEntry me = (ModuleEntry) it.next();
@@ -582,9 +582,9 @@ public final class SingleModuleProperties extends ModuleProperties {
     }
     
     /** Loads a map of package-isSelected entries. */
-    private Map/*<String, Boolean>*/ loadPublicPackages() {
-        Collection/*<String>*/ selectedPackages = getSelectedPackages();
-        Map/*<String, Boolean>*/ publicPackages = new TreeMap();
+    private Map<String, Boolean> loadPublicPackages() {
+        Collection<String> selectedPackages = getSelectedPackages();
+        Map<String, Boolean> publicPackages = new TreeMap();
         for (Iterator it = getAvailablePublicPackages().iterator(); it.hasNext(); ) {
             String pkg = (String) it.next();
             publicPackages.put(pkg, Boolean.valueOf(selectedPackages.contains(pkg)));
@@ -593,7 +593,7 @@ public final class SingleModuleProperties extends ModuleProperties {
     }
     
     private Collection getSelectedPackages() {
-        Collection/*<String>*/ sPackages = new HashSet();
+        Collection<String> sPackages = new HashSet();
         ManifestManager.PackageExport[] pexports = getProjectXMLManager().getPublicPackages();
         for (int i = 0; i < pexports.length; i++) {
             ManifestManager.PackageExport pexport = pexports[i];
@@ -614,13 +614,13 @@ public final class SingleModuleProperties extends ModuleProperties {
     /**
      * Returns set of all available public packages for the project.
      */
-    Set/*<String>*/ getAvailablePublicPackages() {
+    Set<String> getAvailablePublicPackages() {
         if (availablePublicPackages == null) {
             availablePublicPackages = new TreeSet();
             
             // find all available public packages in a source root
             File srcDir = getHelper().resolveFile(getEvaluator().getProperty("src.dir")); // NOI18N
-            Set/*<FileObject>*/ pkgs = new HashSet();
+            Set<FileObject> pkgs = new HashSet();
             FileObject srcDirFO = FileUtil.toFileObject(srcDir);
             SingleModuleProperties.addNonEmptyPackages(
                     pkgs, srcDirFO, "java"); // NOI18N
@@ -666,7 +666,7 @@ public final class SingleModuleProperties extends ModuleProperties {
         // store module dependencies
         DependencyListModel dependencyListModel = getDependenciesListModel();
         if (dependencyListModel.isChanged()) {
-            Set/*<ModuleDependency>*/ depsToSave = new TreeSet(dependencyListModel.getDependencies());
+            Set<ModuleDependency> depsToSave = new TreeSet(dependencyListModel.getDependencies());
             
             // process removed modules
             depsToSave.removeAll(dependencyListModel.getRemovedDependencies());
@@ -675,10 +675,7 @@ public final class SingleModuleProperties extends ModuleProperties {
             depsToSave.addAll(dependencyListModel.getAddedDependencies());
             
             // process edited modules
-            Map/*<ModuleDependency, ModuleDependency>*/ toEdit
-                    = dependencyListModel.getEditedDependencies();
-            for (Iterator it = toEdit.entrySet().iterator(); it.hasNext(); ) {
-                Map.Entry entry = (Map.Entry) it.next();
+            for (Map.Entry<ModuleDependency,ModuleDependency> entry : dependencyListModel.getEditedDependencies().entrySet()) {
                 depsToSave.remove(entry.getKey());
                 depsToSave.add(entry.getValue());
             }
@@ -799,8 +796,8 @@ public final class SingleModuleProperties extends ModuleProperties {
             "SingleModuleProperties.reloadModuleListInfo() cannot be called from EDT"; // NOI18N
         if (isActivePlatformValid()) {
             try {
-                SortedSet/*<String>*/ allCategories = new TreeSet(Collator.getInstance());
-                Set/*<ModuleDependency>*/ allDependencies = new HashSet();
+                SortedSet<String> allCategories = new TreeSet(Collator.getInstance());
+                Set<ModuleDependency> allDependencies = new HashSet();
                 for (Iterator it = getModuleList().getAllEntriesSoft().iterator(); it.hasNext(); ) {
                     ModuleEntry me = (ModuleEntry) it.next();
                     if (!me.getCodeNameBase().equals(getCodeNameBase())) {
@@ -821,7 +818,7 @@ public final class SingleModuleProperties extends ModuleProperties {
         return false;
     }
     
-    private static void addNonEmptyPackagesFromJar(Set/*<String>*/ packages, File jarFile) {
+    private static void addNonEmptyPackagesFromJar(Set<String> packages, File jarFile) {
         FileObject jarFileFO = FileUtil.toFileObject(jarFile);
         if (jarFileFO == null) {
             // Broken classpath entry, perhaps.
@@ -832,7 +829,7 @@ public final class SingleModuleProperties extends ModuleProperties {
             // Not really a JAR?
             return;
         }
-        Set/*<FileObject>*/ pkgs = new HashSet();
+        Set<FileObject> pkgs = new HashSet();
         SingleModuleProperties.addNonEmptyPackages(pkgs, root, "class"); // NOI18N
         for (Iterator it = pkgs.iterator(); it.hasNext();) {
             FileObject pkg = (FileObject) it.next();
@@ -852,7 +849,7 @@ public final class SingleModuleProperties extends ModuleProperties {
      * package (x.y.z) <code>isJarRoot</code> specifies if a given root is root
      * of a jar file.
      */
-    private static void addNonEmptyPackages(final Set/*<FileObject>*/ validPkgs, final FileObject dir, final String ext) {
+    private static void addNonEmptyPackages(final Set<FileObject> validPkgs, final FileObject dir, final String ext) {
         if (dir == null) {
             return;
         }

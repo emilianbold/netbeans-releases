@@ -420,14 +420,14 @@ public final class UIUtil {
      *                     with a corresponding value.
      */
     public static ComboBoxModel createLayerPresenterComboModel(
-            final Project project, final String sfsRoot, final Map/*<Object, String>*/ excludeAttrs) {
+            final Project project, final String sfsRoot, final Map<Object, String> excludeAttrs) {
         DefaultComboBoxModel model = new DefaultComboBoxModel();
         try {
             FileSystem sfs = LayerUtils.getEffectiveSystemFilesystem(project);
             FileObject root = sfs.getRoot().getFileObject(sfsRoot);
             if (root != null) {
-                Collection/*<FileObject>*/ subFolders = getFolders(root, excludeAttrs);
-                SortedSet/*<LayerItemPresenter>*/ presenters = new TreeSet();
+                Collection<FileObject> subFolders = getFolders(root, excludeAttrs);
+                SortedSet<LayerItemPresenter> presenters = new TreeSet();
                 for (Iterator it = subFolders.iterator(); it.hasNext();) {
                     presenters.add(new LayerItemPresenter((FileObject) it.next(), root));
                 }
@@ -725,8 +725,8 @@ public final class UIUtil {
         return Util.getDisplayName(FileUtil.toFileObject(getSuiteDirectory(suiteComp)));
     }
     
-    private static Collection/*<FileObject>*/ getFolders(final FileObject root, final Map excludeAttrs) {
-        Collection/*<FileObject>*/ folders = new HashSet();
+    private static Collection<FileObject> getFolders(final FileObject root, final Map excludeAttrs) {
+        Collection<FileObject> folders = new HashSet();
         SUBFOLDERS: for (Enumeration subFolders = root.getFolders(false); subFolders.hasMoreElements(); ) {
             FileObject subFolder = (FileObject) subFolders.nextElement();
             for (Iterator it = excludeAttrs.entrySet().iterator(); it.hasNext();) {

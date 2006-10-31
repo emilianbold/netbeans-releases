@@ -59,7 +59,7 @@ public final class SubprojectProviderImpl implements SubprojectProvider {
     
     public Set getSubprojects() {
         // XXX could use a special set w/ lazy isEmpty() - cf. #58639 for freeform
-        Set/*<Project>*/ s = new HashSet();
+        Set<Project> s = new HashSet();
         ModuleList ml;
         try {
             ml = project.getModuleList();
@@ -70,7 +70,7 @@ public final class SubprojectProviderImpl implements SubprojectProvider {
         Element data = project.getPrimaryConfigurationData();
         Element moduleDependencies = Util.findElement(data,
             "module-dependencies", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
-        List/*<Element>*/ deps = Util.findSubElements(moduleDependencies);
+        List<Element> deps = Util.findSubElements(moduleDependencies);
         Iterator it = deps.iterator();
         while (it.hasNext()) {
             Element dep = (Element)it.next();
@@ -110,7 +110,7 @@ public final class SubprojectProviderImpl implements SubprojectProvider {
             }
         }
         // #63824: consider also artifacts found in ${cp.extra} and/or <class-path-extension>s
-        List/*<Element>*/ cpexts = Util.findSubElements(data);
+        List<Element> cpexts = Util.findSubElements(data);
         it = cpexts.iterator();
         while (it.hasNext()) {
             Element cpext = (Element) it.next();

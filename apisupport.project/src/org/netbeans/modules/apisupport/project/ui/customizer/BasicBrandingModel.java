@@ -87,7 +87,7 @@ public class BasicBrandingModel {
     private BrandingSupport.BundleKey splashProgressBarEdgeColor = null;
     private BrandingSupport.BundleKey splashProgressBarCornerColor = null;
     
-    private final Set/*<ChangeListener>*/ listeners = new HashSet();
+    private final Set<ChangeListener> listeners = new HashSet();
     
     /**all above splash BundleKeys in set*/
     private final Set splashKeys = new HashSet();

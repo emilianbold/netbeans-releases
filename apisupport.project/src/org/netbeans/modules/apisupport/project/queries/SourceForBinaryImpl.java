@@ -47,7 +47,7 @@ public final class SourceForBinaryImpl implements SourceForBinaryQueryImplementa
     private String clusterPath;
     private URL classesUrl;
     private URL testClassesUrl;
-    private Map/*<URL, SourceForBinaryQuery.Result>*/ cache = new HashMap ();
+    private Map<URL, SourceForBinaryQuery.Result> cache = new HashMap ();
     
     public SourceForBinaryImpl(NbModuleProject project) {
         this.project = project;
@@ -88,11 +88,11 @@ public final class SourceForBinaryImpl implements SourceForBinaryQueryImplementa
                 }
             } else {
                 // Check extra compilation units.
-                Iterator/*<Map.Entry>*/ ecus = project.getExtraCompilationUnits().entrySet().iterator();
+                Iterator<Map.Entry<FileObject,Element>> ecus = project.getExtraCompilationUnits().entrySet().iterator();
                 ECUS: while (ecus.hasNext()) {
                     Map.Entry entry = (Map.Entry) ecus.next();
                     Element pkgrootEl = (Element) entry.getValue();
-                    Iterator/*<Element>*/ pkgrootKids = Util.findSubElements(pkgrootEl).iterator();
+                    Iterator<Element> pkgrootKids = Util.findSubElements(pkgrootEl).iterator();
                     while (pkgrootKids.hasNext()) {
                         Element kid = (Element) pkgrootKids.next();
                         if (!kid.getLocalName().equals("built-to")) { // NOI18N

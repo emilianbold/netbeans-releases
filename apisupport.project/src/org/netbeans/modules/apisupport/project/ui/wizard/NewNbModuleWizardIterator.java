@@ -178,7 +178,7 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.AsynchronousI
         
         this.createdProjectFolder = FileUtil.toFileObject(FileUtil.normalizeFile(projectFolder));
         
-        Set/*<FileObject>*/ resultSet = new HashSet();
+        Set<FileObject> resultSet = new HashSet();
         resultSet.add(createdProjectFolder);
         
         UIUtil.setProjectChooserDirParent(projectFolder);

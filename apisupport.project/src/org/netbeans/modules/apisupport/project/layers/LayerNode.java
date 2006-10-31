@@ -240,7 +240,7 @@ public final class LayerNode extends FilterNode {
             public String getDisplayName() {
                 return FileUtil.getFileDisplayName(layer);
             }
-            public SystemAction[] getActions(Set/*<FileObject>*/ foSet) {
+            public SystemAction[] getActions(Set<FileObject> foSet) {
                 return new SystemAction[] {
                     SystemAction.get(PickNameAction.class),
                     SystemAction.get(PickIconAction.class),
@@ -275,7 +275,7 @@ public final class LayerNode extends FilterNode {
             if (suite == null) {
                 throw new IOException("Could not load suite for " + p); // NOI18N
             }
-            Set/*<Project>*/ modules = SuiteUtils.getSubProjects(suite);
+            Set<NbModuleProject> modules = SuiteUtils.getSubProjects(suite);
             return LayerUtils.createLayerClasspath(modules, LayerUtils.getPlatformJarsForSuiteComponentProject(p, suite));
         } else if (type == NbModuleTypeProvider.NETBEANS_ORG) {
             return LayerUtils.createLayerClasspath(LayerUtils.getProjectsForNetBeansOrgProject(p), Collections.EMPTY_SET);

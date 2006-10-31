@@ -97,7 +97,7 @@ public final class ProjectXMLManager {
     private NbPlatform customPlaf;
     
     private String cnb;
-    private SortedSet/*<ModuleDependency>*/ directDeps;
+    private SortedSet<ModuleDependency> directDeps;
     private ManifestManager.PackageExport[] publicPackages;
     private String[] cpExtensions;
     private String[] friends;
@@ -165,7 +165,7 @@ public final class ProjectXMLManager {
      * {@link #getDirectDependencies(NbPlatform)} for more details to which
      * this method delegates.
      */
-    public SortedSet/*<ModuleDependency>*/ getDirectDependencies() throws IOException {
+    public SortedSet<ModuleDependency> getDirectDependencies() throws IOException {
         return getDirectDependencies(null);
     }
     
@@ -175,15 +175,15 @@ public final class ProjectXMLManager {
      * Since no two modules with the same code name base may be set as a
      * dependency. Also this is ordering used in the <em>project.xml</em>.
      */
-    public SortedSet/*<ModuleDependency>*/ getDirectDependencies(final NbPlatform customPlaf) throws IOException {
+    public SortedSet<ModuleDependency> getDirectDependencies(final NbPlatform customPlaf) throws IOException {
         if (this.customPlaf == customPlaf && this.directDeps != null) {
             return this.directDeps;
         }
         this.customPlaf = customPlaf;
-        SortedSet/*<ModuleDependency>*/ directDeps = new TreeSet(ModuleDependency.CNB_COMPARATOR);
+        SortedSet<ModuleDependency> directDeps = new TreeSet(ModuleDependency.CNB_COMPARATOR);
         Element moduleDependencies = findModuleDependencies(getConfData());
         assert moduleDependencies != null : "Cannot find <module-dependencies> for: " + project;
-        List/*<Element>*/ deps = Util.findSubElements(moduleDependencies);
+        List<Element> deps = Util.findSubElements(moduleDependencies);
         File prjDirF = project.getProjectDirectoryFile();
         ModuleList ml;
         if (customPlaf != null) {
@@ -249,7 +249,7 @@ public final class ProjectXMLManager {
     public void removeDependency(String cnbToRemove) {
         Element confData = getConfData();
         Element moduleDependencies = findModuleDependencies(confData);
-        List/*<Element>*/ currentDeps = Util.findSubElements(moduleDependencies);
+        List<Element> currentDeps = Util.findSubElements(moduleDependencies);
         for (Iterator it = currentDeps.iterator(); it.hasNext(); ) {
             Element dep = (Element)it.next();
             Element cnbEl = findElement(dep, ProjectXMLManager.CODE_NAME_BASE);
@@ -265,7 +265,7 @@ public final class ProjectXMLManager {
      * Use this for removing more than one dependencies. It's faster then
      * iterating and using <code>removeDependency</code> for every entry.
      */
-    public void removeDependencies(Collection/*<ModuleDependency>*/ depsToDelete) {
+    public void removeDependencies(Collection<ModuleDependency> depsToDelete) {
         Set cnbsToDelete = new HashSet(depsToDelete.size());
         for (Iterator it = depsToDelete.iterator(); it.hasNext(); ) {
             cnbsToDelete.add(((ModuleDependency) it.next()).
@@ -278,10 +278,10 @@ public final class ProjectXMLManager {
      * Use this for removing more than one dependencies. It's faster then
      * iterating and using <code>removeDependency</code> for every entry.
      */
-    public void removeDependenciesByCNB(Collection/*<String>*/ cnbsToDelete) {
+    public void removeDependenciesByCNB(Collection<String> cnbsToDelete) {
         Element confData = getConfData();
         Element moduleDependencies = findModuleDependencies(confData);
-        List/*<Element>*/ currentDeps = Util.findSubElements(moduleDependencies);
+        List<Element> currentDeps = Util.findSubElements(moduleDependencies);
         for (Iterator it = currentDeps.iterator(); it.hasNext(); ) {
             Element dep = (Element)it.next();
             Element cnbEl = findElement(dep, ProjectXMLManager.CODE_NAME_BASE);
@@ -303,7 +303,7 @@ public final class ProjectXMLManager {
     public void editDependency(ModuleDependency origDep, ModuleDependency newDep) {
         Element confData = getConfData();
         Element moduleDependencies = findModuleDependencies(confData);
-        List/*<Element>*/ currentDeps = Util.findSubElements(moduleDependencies);
+        List<Element> currentDeps = Util.findSubElements(moduleDependencies);
         for (Iterator it = currentDeps.iterator(); it.hasNext(); ) {
             Element dep = (Element) it.next();
             Element cnbEl = findElement(dep, ProjectXMLManager.CODE_NAME_BASE);
@@ -328,7 +328,7 @@ public final class ProjectXMLManager {
     /**
      * Adds given modules as module-dependencies for the project.
      */
-    public void addDependencies(final Set/*<ModuleDependency>*/ toAdd) throws IOException {
+    public void addDependencies(final Set<ModuleDependency> toAdd) throws IOException {
         SortedSet deps = new TreeSet(getDirectDependencies());
         if (deps.addAll(toAdd)) {
             replaceDependencies(deps);
@@ -338,7 +338,7 @@ public final class ProjectXMLManager {
     /**
      * Replaces all original dependencies with the given <code>newDeps</code>.
      */
-    public void replaceDependencies(final Set/*<ModuleDependency>*/ newDeps) {
+    public void replaceDependencies(final Set<ModuleDependency> newDeps) {
         Element confData = getConfData();
         Document doc = confData.getOwnerDocument();
         Element moduleDependencies = findModuleDependencies(confData);
@@ -354,7 +354,7 @@ public final class ProjectXMLManager {
         assert before != null : "There must be " + PUBLIC_PACKAGES + " or " // NOI18N
                 + FRIEND_PACKAGES + " element according to XSD"; // NOI18N
         confData.insertBefore(moduleDependencies, before);
-        SortedSet/*<ModuleDependency>*/ sortedDeps = new TreeSet(newDeps);
+        SortedSet<ModuleDependency> sortedDeps = new TreeSet(newDeps);
         for (Iterator it = sortedDeps.iterator(); it.hasNext(); ) {
             ModuleDependency md = (ModuleDependency) it.next();
             createModuleDependencyElement(moduleDependencies, md, null);
@@ -377,10 +377,10 @@ public final class ProjectXMLManager {
      * Gives a map from test type (e.g. <em>unit</em> or <em>qa-functional</em>)
      * to the set of {@link TestModuleDependency dependencies} belonging to it.
      */
-    Map/*<String, Set<TestModuleDependency>>*/ getTestDependencies(final ModuleList ml) {
+    Map<String,Set<TestModuleDependency>> getTestDependencies(final ModuleList ml) {
         Element testDepsEl = findTestDependenciesElement(getConfData());
         
-        Map/*<String, SortedSet<TestModuleDependency>>*/ testDeps = new HashMap();
+        Map<String,Set<TestModuleDependency>> testDeps = new HashMap();
         
         if (testDepsEl != null) {
             for (Iterator typesIt = Util.findSubElements(testDepsEl).iterator(); typesIt.hasNext();) {
@@ -393,7 +393,7 @@ public final class ProjectXMLManager {
                 if (testType == null) {
                     testType = TestModuleDependency.UNIT; // default variant
                 }
-                Set/*<TestModuleDependency>*/ directTestDeps = new HashSet();
+                Set<TestModuleDependency> directTestDeps = new HashSet();
                 for (Iterator depsIt = Util.findSubElements(typeEl).iterator() ; depsIt.hasNext();) {
                     Element depEl = (Element) depsIt.next();
                     if (depEl.getTagName().equals(TEST_DEPENDENCY)) {
@@ -537,8 +537,8 @@ public final class ProjectXMLManager {
             return cpExtensions;
         }
         
-        List/*<Element>*/ cpExtEls = Util.findSubElements(getConfData());
-        Set/*<String>*/ binaryOrigs = new TreeSet();
+        List<Element> cpExtEls = Util.findSubElements(getConfData());
+        Set<String> binaryOrigs = new TreeSet();
         for (Iterator it = cpExtEls.iterator(); it.hasNext(); ) {
             Element cpExtEl = (Element) it.next();
             if (CLASS_PATH_EXTENSION.equals(cpExtEl.getTagName())) {
@@ -653,9 +653,9 @@ public final class ProjectXMLManager {
      * considers both <em>package</em> and <em>subpackages</em> elements with
      * the recursivity flag set appropriately for returned entries.
      */
-    private static Set/*<ManifestManager.PackageExport>*/ findAllPackages(Element parent) {
-        Set/*<ManifestManager.PackageExport>*/ packages = new HashSet();
-        List/*<Element>*/ pkgEls = Util.findSubElements(parent);
+    private static Set<ManifestManager.PackageExport> findAllPackages(Element parent) {
+        Set<ManifestManager.PackageExport> packages = new HashSet();
+        List<Element> pkgEls = Util.findSubElements(parent);
         for (Iterator it = pkgEls.iterator(); it.hasNext(); ) {
             Element pkgEl = (Element) it.next();
             if (PACKAGE.equals(pkgEl.getTagName())) {
@@ -677,7 +677,7 @@ public final class ProjectXMLManager {
      */
     public static ManifestManager.PackageExport[] findPublicPackages(final Element confData) {
         Element ppEl = findPublicPackagesElement(confData);
-        Set/*<ManifestManager.PackageExport>*/ pps = new HashSet();
+        Set<ManifestManager.PackageExport> pps = new HashSet();
         if (ppEl != null) {
             pps.addAll(findAllPackages(ppEl));
         }
@@ -693,8 +693,8 @@ public final class ProjectXMLManager {
     public static String[] findFriends(final Element confData) {
         Element friendsEl = findFriendsElement(confData);
         if (friendsEl != null) {
-            List/*<Element>*/ friendEls = Util.findSubElements(friendsEl);
-            Set/*<String>*/ friends = new TreeSet();
+            List<Element> friendEls = Util.findSubElements(friendsEl);
+            Set<String> friends = new TreeSet();
             for (Iterator it = friendEls.iterator(); it.hasNext(); ) {
                 Element friendEl = (Element) it.next();
                 if (FRIEND.equals(friendEl.getTagName())) {

@@ -58,7 +58,7 @@ import org.openide.util.actions.SystemAction;
 public final class SuiteActions implements ActionProvider {
     
     static Action[] getProjectActions(SuiteProject project) {
-        List/*<Action>*/ actions = new ArrayList();
+        List<Action> actions = new ArrayList();
         actions.add(CommonProjectActions.newFileAction());
         actions.add(null);
         actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_BUILD, NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_build"), null));
@@ -107,7 +107,7 @@ public final class SuiteActions implements ActionProvider {
                 while (it.hasNext()) {
                     Object next = it.next();
                     if (next instanceof Action) {
-                        actions.add(next);
+                        actions.add((Action) next);
                     } else if (next instanceof JSeparator) {
                         actions.add(null);
                     }

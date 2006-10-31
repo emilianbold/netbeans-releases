@@ -256,7 +256,7 @@ public final class LocalizedBundleInfo {
     }
     
     private static String[] splitBySentence(String text) {
-        List/*<String>*/ sentences = new ArrayList();
+        List<String> sentences = new ArrayList();
         // Use Locale.US since the customizer is setting the default (US) locale text only:
         BreakIterator it = BreakIterator.getSentenceInstance(Locale.US);
         it.setText(text);

@@ -32,13 +32,13 @@ import java.util.TreeSet;
  */
 final class AddModuleFilter {
 
-    private final Set/*<ModuleDependency>*/ universe;
+    private final Set<ModuleDependency> universe;
     private final String dependingModuleCNB;
 
     /**
      * Construct a filter given a list of possible dependencies.
      */
-    public AddModuleFilter(Set/*<ModuleDependency>*/ universe, String dependingModuleCNB) {
+    public AddModuleFilter(Set<ModuleDependency> universe, String dependingModuleCNB) {
         this.universe = universe;
         this.dependingModuleCNB = dependingModuleCNB;
         // Prime the cache:
@@ -54,9 +54,9 @@ final class AddModuleFilter {
     /**
      * Find matches for a search string.
      */
-    public Set/*<ModuleDependency>*/ getMatches(String text) {
+    public Set<ModuleDependency> getMatches(String text) {
         String textLC = text.toLowerCase(Locale.ENGLISH);
-        Set/*<ModuleDependency>*/[] matches = new Set[3];
+        Set<ModuleDependency>[] matches = new Set[3];
         for (int i = 0; i < matches.length; i++) {
             // Within groups, just sort by module display name:
             matches[i] = new TreeSet(ModuleDependency.LOCALIZED_NAME_COMPARATOR);
@@ -65,7 +65,7 @@ final class AddModuleFilter {
         while (it.hasNext()) {
             ModuleDependency dep = (ModuleDependency) it.next();
             int matchLevel = matches.length;
-            Set/*<String>*/ tokens = dep.getFilterTokens(dependingModuleCNB);
+            Set<String> tokens = dep.getFilterTokens(dependingModuleCNB);
             Iterator it2 = tokens.iterator();
             while (it2.hasNext()) {
                 String token = ((String) it2.next()).toLowerCase(Locale.ENGLISH);
@@ -95,9 +95,9 @@ final class AddModuleFilter {
     /**
      * Find which tokens actually matched a given dependency.
      */
-    public Set/*<String>*/ getMatchesFor(String text, ModuleDependency dep) {
+    public Set<String> getMatchesFor(String text, ModuleDependency dep) {
         String textLC = text.toLowerCase(Locale.US);
-        Set/*<String>*/ tokens = new TreeSet(Collator.getInstance());
+        Set<String> tokens = new TreeSet(Collator.getInstance());
         Iterator it = dep.getFilterTokens(dependingModuleCNB).iterator();
         while (it.hasNext()) {
             String token = (String) it.next();
