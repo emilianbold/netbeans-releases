@@ -3175,13 +3175,15 @@ public class JavaCompletionProvider implements CompletionProvider {
         private Env getCompletionEnvironment(CompilationController controller, boolean upToOffset) throws IOException {
             int offset = caretOffset;
             String prefix = null;
-            TokenSequence<JavaTokenId> ts = controller.getTokenHiearchy().tokenSequence(JavaTokenId.language());
-            if (ts.moveNext()) { //check for empty file
-                if (ts.move(offset) == 0)
-                    ts.movePrevious();
-                if (ts.offset() < offset && (ts.token().id() == JavaTokenId.IDENTIFIER || "keyword".equals(ts.token().id().primaryCategory()))) { //TODO: Use isKeyword(...) when available
-                    prefix = ts.token().toString().substring(0, offset - ts.offset());
-                    offset = ts.offset();
+            if (upToOffset) {
+                TokenSequence<JavaTokenId> ts = controller.getTokenHiearchy().tokenSequence(JavaTokenId.language());
+                if (ts.moveNext()) { //check for empty file
+                    if (ts.move(offset) == 0)
+                        ts.movePrevious();
+                    if (ts.offset() < offset && (ts.token().id() == JavaTokenId.IDENTIFIER || "keyword".equals(ts.token().id().primaryCategory()))) { //TODO: Use isKeyword(...) when available
+                        prefix = ts.token().toString().substring(0, offset - ts.offset());
+                        offset = ts.offset();
+                    }
                 }
             }
             controller.toPhase(Phase.PARSED);
