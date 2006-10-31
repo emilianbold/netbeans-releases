@@ -573,7 +573,6 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         
         public void cancel () {            
             this.canceled.set(true);
-            JavaSourceAccessor.INSTANCE.runSpecialTask (this,JavaSource.Priority.MAX);
         }
         
         public void run (final CompilationInfo nullInfo) throws IOException {
@@ -622,6 +621,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             try {
                                 if (!scanRoots()) {
                                     CompileWorker.this.work = new Work (WorkType.COMPILE_CONT);
+                                    JavaSourceAccessor.INSTANCE.runSpecialTask (CompileWorker.this,JavaSource.Priority.MAX);
                                     continuation = true;
                                     return null;
                                 }
@@ -652,6 +652,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                     }
                                     if (!scanRoots ()) {
                                         CompileWorker.this.work = new Work (WorkType.COMPILE_CONT);
+                                        JavaSourceAccessor.INSTANCE.runSpecialTask (CompileWorker.this,JavaSource.Priority.MAX);
                                         continuation = true;
                                         return null;
                                     }
@@ -707,7 +708,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     }                                                
                     return null;                    
                 } finally {
-                    if (!continuation) {
+                    if (!continuation) {                        
                         work.finished ();
                         if (handle != null) {
                             handle.finish ();
