@@ -38,6 +38,7 @@ public final class Icons {
 
     private static final String ICON_BASE = "/org/netbeans/modules/java/source/resources/icons/";
     private static final String GIF_EXTENSION = ".gif";
+    private static final String PNG_EXTENSION = ".png";
     private static final String WAIT = ICON_BASE + "wait" + GIF_EXTENSION;
         
     private static final Map<String,Icon> icons = new HashMap<String,Icon>();
@@ -70,31 +71,31 @@ public final class Icons {
 		img = Utilities.loadImage( ICON_BASE + "package" + GIF_EXTENSION );
 		break;
 	    case ENUM:	
-		img = Utilities.loadImage( ICON_BASE + "enum" + GIF_EXTENSION );
+		img = Utilities.loadImage( ICON_BASE + "enum" + PNG_EXTENSION );
 		break;
 	    case ANNOTATION_TYPE:
-		img = Utilities.loadImage( ICON_BASE + "annotation" + GIF_EXTENSION );
+		img = Utilities.loadImage( ICON_BASE + "annotation" + PNG_EXTENSION );
 		break;
 	    case CLASS:	
-		img = Utilities.loadImage( ICON_BASE + "class" + GIF_EXTENSION );
+		img = Utilities.loadImage( ICON_BASE + "class" + PNG_EXTENSION );
 		break;
 	    case INTERFACE:
-		img = Utilities.loadImage( ICON_BASE + "interface"  + GIF_EXTENSION );
+		img = Utilities.loadImage( ICON_BASE + "interface"  + PNG_EXTENSION );
 		break;
 	    case FIELD:
-		img = Utilities.loadImage( getIconName( ICON_BASE + "variable", GIF_EXTENSION, modifiers ) );
+		img = Utilities.loadImage( getIconName( ICON_BASE + "field", PNG_EXTENSION, modifiers ) );
 		break;
 	    case ENUM_CONSTANT: 
 		img = Utilities.loadImage( ICON_BASE + "constant" + GIF_EXTENSION );                                    
 		break;
 	    case CONSTRUCTOR:
-		img = Utilities.loadImage( getIconName( ICON_BASE + "constructor", GIF_EXTENSION, modifiers ) );
+		img = Utilities.loadImage( getIconName( ICON_BASE + "constructor", PNG_EXTENSION, modifiers ) );
 		break;
 	    case STATIC_INIT: 	
-		img = Utilities.loadImage( getIconName( ICON_BASE + "constructor", GIF_EXTENSION, modifiers ) );      
+		img = Utilities.loadImage( getIconName( ICON_BASE + "constructor", PNG_EXTENSION, modifiers ) );      
 		break;
 	    case METHOD: 	
-		img = Utilities.loadImage( getIconName( ICON_BASE + "method", GIF_EXTENSION, modifiers ) );      
+		img = Utilities.loadImage( getIconName( ICON_BASE + "method", PNG_EXTENSION, modifiers ) );      
 		break;
 	    default:	
 	        img = null;
@@ -111,7 +112,7 @@ public final class Icons {
         StringBuffer fileName = new StringBuffer( typeName );
         
         if ( modifiers.contains( Modifier.STATIC ) ) {
-            fileName.append( "St" );
+            fileName.append( "Static" );
         }
         if ( modifiers.contains( Modifier.PUBLIC ) ) {
             return fileName.append( "Public" ).append( extension ).toString();
