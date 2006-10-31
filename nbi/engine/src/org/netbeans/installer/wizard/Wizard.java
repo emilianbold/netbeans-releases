@@ -32,15 +32,22 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import org.netbeans.installer.download.DownloadOptions;
-import org.netbeans.installer.utils.FileProxy;
+import org.netbeans.installer.product.ProductComponent;
 import org.netbeans.installer.utils.ErrorLevel;
+import org.netbeans.installer.utils.LogManager;
+import org.netbeans.installer.wizard.components.WizardComponent;
+import static org.netbeans.installer.utils.ErrorLevel.DEBUG;
+import static org.netbeans.installer.utils.ErrorLevel.MESSAGE;
+import static org.netbeans.installer.utils.ErrorLevel.WARNING;
+import static org.netbeans.installer.utils.ErrorLevel.ERROR;
+import static org.netbeans.installer.utils.ErrorLevel.CRITICAL;
 import org.netbeans.installer.utils.ErrorManager;
+import org.netbeans.installer.utils.FileProxy;
 import org.netbeans.installer.utils.XMLUtils;
 import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.exceptions.ParseException;
 import org.netbeans.installer.wizard.components.WizardAction;
-import org.netbeans.installer.wizard.components.WizardComponent;
 import org.netbeans.installer.wizard.conditions.WizardCondition;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -48,9 +55,10 @@ import org.xml.sax.SAXException;
 
 /**
  *
+ *
  * @author Kirill Sorokin
  */
-public class Wizard extends SubWizard {
+public class Wizard {
     ////////////////////////////////////////////////////////////////////////////
     // Constants
     public static final String DEFAULT_COMPONENTS_INSTANCE_URI =
@@ -69,11 +77,9 @@ public class Wizard extends SubWizard {
     // Static
     private static Wizard instance;
     
-    private static String componentsInstanceURI =
-            DEFAULT_COMPONENTS_INSTANCE_URI;
+    private static String componentsInstanceURI = DEFAULT_COMPONENTS_INSTANCE_URI;
     
-    private static String componentsSchemaURI =
-            DEFAULT_COMPONENTS_SCHEMA_URI;
+    private static String componentsSchemaURI = DEFAULT_COMPONENTS_SCHEMA_URI;
     
     public static synchronized Wizard getInstance() {
         if (instance == null) {
@@ -88,6 +94,12 @@ public class Wizard extends SubWizard {
             }
             
             instance = new Wizard();
+            try {
+                instance.components = loadWizardComponents(componentsInstanceURI);
+            } catch (InitializationException e) {
+                ErrorManager.getInstance().notify(ErrorLevel.CRITICAL,
+                        "Failed to load wizard components", e);
+            }
         }
         
         return instance;
@@ -272,16 +284,41 @@ public class Wizard extends SubWizard {
     
     ////////////////////////////////////////////////////////////////////////////
     // Instance
-    boolean executingAction;
+    protected List<WizardComponent> components;
+    protected WizardFrame           frame;
     
-    // constructor /////////////////////////////////////////////////////////////
-    private Wizard() {
-        try {
-            components = loadWizardComponents(componentsInstanceURI);
-        } catch (InitializationException e) {
-            ErrorManager.getInstance().notify(ErrorLevel.CRITICAL,
-                    "Failed to load wizard components", e);
-        }
+    private   ProductComponent      productComponent;
+    private   int                   currentIndex;
+    private   Wizard             parent;
+    
+    private   LogManager            logManager = LogManager.getInstance();
+    
+    // constructors /////////////////////////////////////////////////////////////////
+    Wizard() {
+        this.currentIndex     = -1;
+    }
+    
+    Wizard(final Wizard parent) {
+        this();
+        
+        this.parent           = parent;
+        this.frame            = parent.getFrame();
+        this.productComponent = parent.getProductComponent();
+    }
+    
+    Wizard(final ProductComponent component, final Wizard parent, int index) {
+        this(parent);
+        
+        this.productComponent = component;
+        this.components = component.getWizardComponents();
+        this.currentIndex = index;
+    }
+    
+    Wizard(final List<WizardComponent> components, final Wizard parent, int index) {
+        this(parent);
+        
+        this.components = components;
+        this.currentIndex = index;
     }
     
     // wizard lifecycle control methods ////////////////////////////////////////
@@ -302,25 +339,155 @@ public class Wizard extends SubWizard {
         frame.dispose();
     }
     
+    // component flow control methods ///////////////////////////////////////////////
     public void next() {
-        if (executingAction) {
-            executingAction = false;
+        WizardComponent component = getNext();
+        
+        // if there is no next component in the current wizard, try to delegate
+        // the call to the parent wizard, and if there is no parent wizard... we
+        // should be here in the first place
+        if (component != null) {
+            currentIndex = components.indexOf(component);
+            component.executeForward(this);
+        } else if (parent != null) {
+            parent.next();
         } else {
-            super.next();
+            throw new IllegalStateException("Cannot move to the next " +
+                    "element - the wizard is at the last element");
         }
     }
     
-    // other ///////////////////////////////////////////////////////////////////
-    public void executeAction(WizardAction action) {
-        action.executeForward(this);
+    public void previous() {
+        WizardComponent component = getPrevious();
         
-        executingAction = true;
-        while (executingAction) {
-            try {
-                Thread.sleep(200);
-            } catch (InterruptedException e) {
-                ErrorManager.getInstance().notify(ErrorLevel.DEBUG, "interrupted", e);
+        // if there is no previous component in the current wizard, try to delegate
+        // the call to the parent wizard, and if there is no parent wizard... we
+        // should be here in the first place
+        if (component != null) {
+            currentIndex = components.indexOf(component);
+            component.executeBackward(this);
+        } else if (parent != null) {
+            parent.previous();
+        } else {
+            throw new IllegalStateException("Cannot move to the previous " +
+                    "component - the wizard is at the first component");
+        }
+    }
+    
+    // informational methods ///////////////////////////////////////////////////
+    private WizardComponent getCurrent() {
+        if ((currentIndex > -1) && (currentIndex < components.size())) {
+            return components.get(currentIndex);
+        } else {
+            return null;
+        }
+    }
+    
+    private WizardComponent getPrevious() {
+        // if current component is a point of no return - we cannot move backwards,
+        // i.e. there is no previous component
+        if ((getCurrent() != null) && getCurrent().isPointOfNoReturn()) {
+            return null;
+        }
+        
+        for (int i = currentIndex - 1; i > -1; i--) {
+            WizardComponent component = components.get(i);
+            
+            // if the component can be executed backward and its conditions are met,
+            // it is the previous one
+            if (component.canExecuteBackward() && component.evaluateConditions()) {
+                return component;
+            }
+            
+            // if the currently examined component is a point of no return and it
+            // cannot be executed (since we passed the previous statement) - we have
+            // no previous component
+            if (component.isPointOfNoReturn()) {
+                return null;
             }
         }
+        
+        // if we reached the before-first index and yet could not find a previous
+        // component, then there is no previous component
+        return null;
+    }
+    
+    public boolean hasPrevious() {
+        // if current component is a point of no return - we cannot move backwards,
+        // i.e. there is no previous component
+        if ((getCurrent() != null) && getCurrent().isPointOfNoReturn()) {
+            return false;
+        }
+        
+        for (int i = currentIndex - 1; i > -1; i--) {
+            WizardComponent component = components.get(i);
+            
+            // if the component can be executed backward and its conditions are met,
+            // it is the previous one
+            if (component.canExecuteBackward() && component.evaluateConditions()) {
+                return true;
+            }
+            
+            // if the currently examined component is a point of no return and it
+            // cannot be executed (since we passed the previous statement) - we have
+            // no previous component
+            if (component.isPointOfNoReturn()) {
+                return false;
+            }
+        }
+        
+        // if we got this far, there is not previous component in the current wizard,
+        // but no points of no return we encountered either. thus we should ask the
+        // parent wizard if it has a previous component
+        return (parent != null) && parent.hasPrevious();
+    }
+    
+    private WizardComponent getNext() {
+        for (int i = currentIndex + 1; i < components.size(); i++) {
+            WizardComponent component = components.get(i);
+            
+            // if the component can be executed forward and its conditions are met,
+            // it is the next one
+            if (component.canExecuteForward() && component.evaluateConditions()) {
+                return component;
+            }
+        }
+        
+        // if we reached the after-last index and yet could not find a next
+        // component, then there is no next component
+        return null;
+    }
+    
+    public boolean hasNext() {
+        // if there is no next component in the current wizard, we should check the
+        // parent wizard if it has one
+        return (getNext() != null) || ((parent != null) && parent.hasNext());
+    }
+    
+    // getters & setters ///////////////////////////////////////////////////////
+    public WizardFrame getFrame() {
+        return frame;
+    }
+    
+    public ProductComponent getProductComponent() {
+        return productComponent;
+    }
+    
+    public int getCurrentIndex() {
+        return currentIndex;
+    }
+    
+    // other ///////////////////////////////////////////////////////////////////
+    public void executeComponent(WizardComponent component) {
+        component.executeBlocking(this);
+    }
+    
+    // factory methods for children ////////////////////////////////////////////
+    public Wizard createSubWizard(ProductComponent component, int index) {
+        return new Wizard(component, this, index);
+    }
+    
+    public Wizard createSubWizard(List<WizardComponent> components, int index) {
+        return new Wizard(components, this, index);
     }
 }

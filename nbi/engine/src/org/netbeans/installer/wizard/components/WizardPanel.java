@@ -32,7 +32,7 @@ import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.helper.swing.NbiButton;
 
-import org.netbeans.installer.wizard.SubWizard;
+import org.netbeans.installer.wizard.Wizard;
 import org.netbeans.installer.wizard.conditions.WizardCondition;
 
 /**
@@ -42,19 +42,27 @@ import org.netbeans.installer.wizard.conditions.WizardCondition;
 public abstract class WizardPanel extends JPanel implements WizardComponent {
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
-    private SubWizard  wizard;
+    private Wizard  wizard;
     private boolean    initialized = false;
     
     private List<WizardCondition> conditions = new ArrayList<WizardCondition>();
     private Properties properties = new Properties();
     
     // WizardComponent implementation ///////////////////////////////////////////////
-    public final void executeForward(final SubWizard wizard) {
+    public final void executeForward(final Wizard wizard) {
         executeComponent(wizard);
     }
     
-    public final void executeBackward(final SubWizard wizard) {
+    public final void executeBackward(final Wizard wizard) {
         executeComponent(wizard);
+    }
+    
+    public final void executeBlocking(final Wizard wizard) {
+        executeForward(wizard);
+    }
+    
+    public final void executeSilently(final Wizard wizard) {
+        wizard.next();
     }
     
     public final void addChild(WizardComponent component) {
@@ -140,7 +148,7 @@ public abstract class WizardPanel extends JPanel implements WizardComponent {
     public abstract NbiButton getDefaultButton();
     
     /////////////////////////////////////////////////////////////////////////////////
-    private final void executeComponent(final SubWizard wizard) {
+    private final void executeComponent(final Wizard wizard) {
         this.wizard = wizard;
         
         if (!initialized) {
@@ -156,7 +164,7 @@ public abstract class WizardPanel extends JPanel implements WizardComponent {
         getWizard().getFrame().setWizardPanel(this);
     }
     
-    protected final SubWizard getWizard() {
+    protected final Wizard getWizard() {
         return wizard;
     }
     

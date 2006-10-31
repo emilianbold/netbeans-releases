@@ -29,7 +29,7 @@ import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
-import org.netbeans.installer.wizard.SubWizard;
+import org.netbeans.installer.wizard.Wizard;
 import org.netbeans.installer.wizard.conditions.WizardCondition;
 
 /**
@@ -37,17 +37,42 @@ import org.netbeans.installer.wizard.conditions.WizardCondition;
  * @author Kirill Sorokin
  */
 public abstract class WizardAction implements WizardComponent {
-    private SubWizard wizard;
+    private Wizard wizard;
     
     private List<WizardCondition> conditions = new ArrayList<WizardCondition>();
     private Properties properties = new Properties();
     
-    public final void executeForward(final SubWizard wizard) {
-        executeComponent(wizard);
+    public final void executeForward(final Wizard wizard) {
+        this.wizard = wizard;
+        
+        Thread workerThread = new Thread() {
+            public void run() {
+                executeComponent(wizard, true);
+                wizard.next();
+            }
+        };
+        workerThread.start();
     }
     
-    public final void executeBackward(final SubWizard wizard) {
-        executeComponent(wizard);
+    public final void executeBackward(final Wizard wizard) {
+        this.wizard = wizard;
+        
+        Thread workerThread = new Thread() {
+            public void run() {
+                executeComponent(wizard, true);
+                wizard.previous();
+            }
+        };
+        workerThread.start();
+    }
+    
+    public final void executeBlocking(final Wizard wizard) {
+        executeComponent(wizard, true);
+    }
+    
+    public final void executeSilently(final Wizard wizard) {
+        executeComponent(wizard, false);
+        wizard.next();
     }
     
     public final void addChild(WizardComponent component) {
@@ -117,30 +142,23 @@ public abstract class WizardAction implements WizardComponent {
     public abstract WizardPanel getUI();
     
     /////////////////////////////////////////////////////////////////////////////////
-    private void executeComponent(final SubWizard wizard) {
-        this.wizard = wizard;
-        
+    private void executeComponent(final Wizard wizard, final boolean showUi) {
         // first initialize and show the UI
-        WizardPanel ui = getUI();
-        if (ui != null) {
-            for (Object key: getProperties().keySet()) {
-                ui.getProperties().put(key, getProperties().get(key));
+        if (showUi) {
+            WizardPanel ui = getUI();
+            if (ui != null) {
+                for (Object key: getProperties().keySet()) {
+                    ui.getProperties().put(key, getProperties().get(key));
+                }
+                
+                ui.executeForward(wizard);
             }
-            
-            ui.executeForward(wizard);
         }
         
-        // then start the action
-        Thread workerThread = new Thread() {
-            public void run() {
-                execute();
-                wizard.next();
-            }
-        };
-        workerThread.start();
+        execute();
     }
     
-    protected final SubWizard getWizard() {
+    protected final Wizard getWizard() {
         return wizard;
     }
     

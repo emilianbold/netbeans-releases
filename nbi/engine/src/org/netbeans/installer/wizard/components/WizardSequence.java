@@ -29,7 +29,7 @@ import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
-import org.netbeans.installer.wizard.SubWizard;
+import org.netbeans.installer.wizard.Wizard;
 import org.netbeans.installer.wizard.conditions.WizardCondition;
 
 /**
@@ -37,25 +37,33 @@ import org.netbeans.installer.wizard.conditions.WizardCondition;
  * @author Kirill Sorokin
  */
 public class WizardSequence implements WizardComponent {
-    private SubWizard wizard;
-    private SubWizard childWizard;
+    private Wizard wizard;
+    private Wizard childWizard;
     
     private List<WizardComponent> components = new ArrayList<WizardComponent>();
     private List<WizardCondition> conditions = new ArrayList<WizardCondition>();
     private Properties properties = new Properties();
     
-    public void executeForward(final SubWizard wizard) {
+    public void executeForward(final Wizard wizard) {
         this.wizard = wizard;
         this.childWizard = wizard.createSubWizard(components, -1);
         
         childWizard.next();
     }
     
-    public void executeBackward(final SubWizard wizard) {
+    public void executeBackward(final Wizard wizard) {
         this.wizard = wizard;
         this.childWizard = wizard.createSubWizard(components, components.size());
         
         childWizard.previous();
+    }
+    
+    public void executeBlocking(final Wizard wizard) {
+        executeForward(wizard);
+    }
+    
+    public void executeSilently(final Wizard wizard) {
+        executeForward(wizard);
     }
     
     public final void addChild(WizardComponent component) {
@@ -159,7 +167,7 @@ public class WizardSequence implements WizardComponent {
     }
     
     /////////////////////////////////////////////////////////////////////////////////
-    protected final SubWizard getWizard() {
+    protected final Wizard getWizard() {
         return wizard;
     }
     

@@ -22,7 +22,7 @@ package org.netbeans.installer.wizard.components;
 
 import java.util.List;
 import java.util.Properties;
-import org.netbeans.installer.wizard.SubWizard;
+import org.netbeans.installer.wizard.Wizard;
 import org.netbeans.installer.wizard.conditions.WizardCondition;
 
 /**
@@ -30,9 +30,13 @@ import org.netbeans.installer.wizard.conditions.WizardCondition;
  * @author Kirill Sorokin
  */
 public interface WizardComponent {
-    public abstract void executeForward(SubWizard wizard);
+    public abstract void executeForward(Wizard wizard);
     
-    public abstract void executeBackward(SubWizard wizard);
+    public abstract void executeBackward(Wizard wizard);
+    
+    public abstract void executeBlocking(Wizard wizard);
+    
+    public abstract void executeSilently(Wizard wizard);
     
     public abstract void addChild(WizardComponent component);
     

@@ -37,7 +37,6 @@ import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.exceptions.DownloadException;
-import org.netbeans.installer.wizard.Wizard;
 import org.netbeans.installer.wizard.components.actions.FinalizeRegistryAction;
 import org.netbeans.installer.wizard.components.actions.InitalizeRegistryAction;
 
@@ -46,6 +45,7 @@ import static org.netbeans.installer.utils.ErrorLevel.MESSAGE;
 import static org.netbeans.installer.utils.ErrorLevel.WARNING;
 import static org.netbeans.installer.utils.ErrorLevel.ERROR;
 import static org.netbeans.installer.utils.ErrorLevel.CRITICAL;
+import org.netbeans.installer.wizard.Wizard;
 
 /**
  * The main class of the NBBA installer framework. It represents the installer and
@@ -163,7 +163,7 @@ public class Installer {
         final Wizard wizard = Wizard.getInstance();
         
         wizard.open();
-        wizard.executeAction(new InitalizeRegistryAction());
+        wizard.executeComponent(new InitalizeRegistryAction());
         wizard.next();
         cacheEngineLocally();
     }
@@ -189,9 +189,9 @@ public class Installer {
      * @see #criticalExit()
      */
     public void finish() {
-        Wizard wizard = Wizard.getInstance();
+        final Wizard wizard = Wizard.getInstance();
         
-        wizard.executeAction(new FinalizeRegistryAction());
+        wizard.executeComponent(new FinalizeRegistryAction());
         wizard.close();
         DownloadManager.getInstance().shutdown();
         System.exit(NORMAL_ERRORCODE);
