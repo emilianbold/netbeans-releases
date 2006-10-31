@@ -324,7 +324,7 @@ public final class ModuleManager {
         ClassLoader base = ModuleManager.class.getClassLoader();
         foundParents.add(base);
         parents.add(base);
-	for (Module m: modules) {
+        for (Module m : modules) {
             if (! m.isEnabled()) {
                 continue;
             }
@@ -740,7 +740,7 @@ public final class ModuleManager {
         ev.log(Events.PERF_START, "ModuleManager.enable"); // NOI18N
         // Basic problems will be caught here, and we also get the autoloads:
         List<Module> toEnable = simulateEnable(modules);
-	ev.log(Events.PERF_TICK, "checked the required ordering and autoloads"); // NOI18N
+        ev.log(Events.PERF_TICK, "checked the required ordering and autoloads"); // NOI18N
 
         Util.err.fine("enable: toEnable=" + toEnable); // NOI18N
         {
@@ -760,7 +760,7 @@ public final class ModuleManager {
             }
         }
         Util.err.fine("enable: verified dependencies");
-	ev.log(Events.PERF_TICK, "verified dependencies"); // NOI18N
+        ev.log(Events.PERF_TICK, "verified dependencies"); // NOI18N
 
         ev.log(Events.START_ENABLE_MODULES, toEnable);
         {
@@ -774,7 +774,7 @@ public final class ModuleManager {
             // If a failure due to package dep occurs, store it here.
             Dependency failedPackageDep = null;
             try {
-		ev.log(Events.PERF_START, "module preparation" ); // NOI18N
+                ev.log(Events.PERF_START, "module preparation" ); // NOI18N
                 for (Module m: toEnable) {
                     fallback.addFirst(m);
                     Util.err.fine("enable: bringing up: " + m);
@@ -1108,10 +1108,9 @@ public final class ModuleManager {
                         // and continue with the others, try to add them too...
                     }
                 }
-                if (!foundOne) {
-                    // Hmm, one of those was supposed to have worked.
-                    throw new IllegalStateException("Should have found a nonproblematic provider of: " + token); // NOI18N
-                }
+                // XXX sometimes fails, but not reproducible in a unit test.
+                // Logic is that missingDependencies(m) should contain dep in this case.
+                assert foundOne : "Should have found a nonproblematic provider of " + token + " among " + providers + " with willEnable=" + willEnable + " mightEnable=" + mightEnable;
             }
             // else some other kind of dependency that does not concern us
         }
@@ -1237,7 +1236,7 @@ public final class ModuleManager {
         // Find any modules depending on this one which are currently enabled.
         // (And not already here.)
         // If there are any, add them.
-	for (Module other: modules) {
+        for (Module other : modules) {
             if (other.isFixed() || ! other.isEnabled() || willDisable.contains(other)) {
                 continue;
             }
