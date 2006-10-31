@@ -68,12 +68,6 @@ public class J2MEKit extends JavaKit {
     public static final String generatePreprocessorPopupAction = "generate-preprocessor-popup"; // NOI18N
     public static final String PROJECT_CLIENT_PROPERTY = "projoject-client-property"; // NOI18N
     
-    public Document createDefaultDocument() {
-        final BaseDocument doc = new J2MEEditorDocument(this.getClass());
-        doc.putProperty(BaseDocument.WRITE_LINE_SEPARATOR_PROP, BaseDocument.LS_LF);
-        return doc;
-    }
-    
     protected Action[] createActions() {
         return TextAction.augmentList(super.createActions(), new Action[]{
             new GeneratePreprocessorPopupAction(),
@@ -85,7 +79,6 @@ public class J2MEKit extends JavaKit {
         });
     }
     
-    @SuppressWarnings("unchecked")
 	protected static JMenu createMenu(JMenu menu, final JTextComponent c) {
         final String menuText = NbBundle.getMessage(J2MEKit.class, "Menu/Edit/PreprocessorBlocks"); //NOI18N
         if (menu == null) menu = new JMenu(); else menu.removeAll();

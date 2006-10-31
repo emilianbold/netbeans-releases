@@ -53,8 +53,8 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.mobility.antext.preprocessor.CommentingPreProcessor;
-import org.netbeans.mobility.antext.preprocessor.CommentingPreProcessor;
 import org.netbeans.mobility.antext.preprocessor.PreprocessorException;
+import org.netbeans.modules.mobility.editor.J2MEKit;
 import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
 import org.netbeans.modules.mobility.project.TextSwitcher;
 import org.netbeans.modules.mobility.snippets.SnippetsPaletteSupport;
@@ -132,6 +132,8 @@ public class J2MEDataObject extends MultiDataObject {
         
         final private ProjectConfigurationsHelper pch;
         private static Method setAlreadyModified = null;
+    
+        private J2MEKit kit;
         
         static {
             try {
@@ -272,6 +274,14 @@ public class J2MEDataObject extends MultiDataObject {
             final CommentingPreProcessor cpp =new CommentingPreProcessor(ppSource, ppDestination, identifiers);
             cpp.run();
             super.loadFromStreamToKit(doc, new ByteArrayInputStream(out.toByteArray()), kit);
+        }
+
+        /** override to return j2me editor kit
+         * @return editor kit
+         */
+        protected EditorKit createEditorKit() {
+            if (kit == null) kit = new J2MEKit();
+            return kit;
         }
         
         protected boolean notifyModified() {
