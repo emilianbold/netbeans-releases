@@ -68,6 +68,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.*;
+import org.netbeans.modules.editor.java.JavaDocument;
 
 
 
@@ -79,7 +80,7 @@ import java.util.*;
  *
  * Document type which is aware of editable colored code blocks
  */
-public class J2MEEditorDocument extends NbEditorDocument {
+public class J2MEEditorDocument extends JavaDocument {
     
     public static final String PREPROCESSOR_LINE_LIST = "preprocessor.line.list"; //NOI18N
     

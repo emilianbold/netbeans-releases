@@ -40,7 +40,6 @@ import javax.swing.text.TextAction;
 
 import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.editor.BaseAction;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Utilities;
 import org.netbeans.mobility.antext.preprocessor.PPLine;
@@ -77,6 +76,16 @@ public class J2MEKit extends JavaKit {
             new CreateDebugBlockAction(),
             new RecommentAction()
         });
+    }
+
+    @Override
+    public Document createDefaultDocument() {
+        Document doc = new J2MEEditorDocument(this.getClass());
+        Object mimeType = doc.getProperty("mimeType"); //NOI18N
+        if (mimeType == null){
+            doc.putProperty("mimeType", getContentType()); //NOI18N
+        }
+        return doc;
     }
     
 	protected static JMenu createMenu(JMenu menu, final JTextComponent c) {
