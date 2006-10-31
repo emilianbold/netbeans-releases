@@ -331,7 +331,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
     public void valueChanged(javax.swing.event.ListSelectionEvent e) {
         assert (SwingUtilities.isEventDispatchThread());
 
-        if (layout.isDocumentationVisible()) {
+        if (layout.isDocumentationVisible() || CompletionSettings.INSTANCE.documentationAutoPopup()) {
             restartDocumentationAutoPopupTimer();
         }
     }
@@ -834,10 +834,13 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
 
         CompletionTask docTask;
         CompletionItem selectedItem = layout.getSelectedCompletionItem();
-        if (selectedItem != null && (docTask = selectedItem.createDocumentationTask()) != null) { // attempt the documentation for selected item
-            CompletionResultSetImpl resultSet = new CompletionResultSetImpl(
-                    this, newDocumentationResult, docTask, CompletionProvider.DOCUMENTATION_QUERY_TYPE);
-            documentationResultSets.add(resultSet);
+        if (selectedItem != null) {
+            docTask = selectedItem.createDocumentationTask();
+            if (docTask != null) { // attempt the documentation for selected item
+                CompletionResultSetImpl resultSet = new CompletionResultSetImpl(
+                        this, newDocumentationResult, docTask, CompletionProvider.DOCUMENTATION_QUERY_TYPE);
+                documentationResultSets.add(resultSet);
+            }
         } else { // No item selected => Query all providers
             for (int i = 0; i < activeProviders.length; i++) {
                 docTask = activeProviders[i].createTask(
@@ -850,8 +853,14 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
             }
         }
 
-        queryResultSets(documentationResultSets);
-        newDocumentationResult.queryInvoked();
+        if (documentationResultSets.size() > 0) {
+            queryResultSets(documentationResultSets);
+            newDocumentationResult.queryInvoked();
+        } else {
+            documentationCancel();
+            docAutoPopupTimer.stop();
+            layout.hideDocumentation();            
+        }
     }
 
     private void documentationCancel() {
