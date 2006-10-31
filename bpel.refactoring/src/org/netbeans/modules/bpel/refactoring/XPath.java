@@ -176,6 +176,11 @@ final class XPath extends AbstractXPathVisitor {
       return;
     }
 //Log.out(" Variable: " + myVariable.getName());
+
+    if (myVariable == myTarget) {
+      addItem();
+      return;
+    }
     LocationStep[] locations = expressionPath.getSteps();
     List<LocationStep> steps = new LinkedList<LocationStep>();
     steps.add(null); // first step is fake

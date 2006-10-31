@@ -41,7 +41,10 @@ import org.netbeans.modules.bpel.model.api.Reply;
 import org.netbeans.modules.bpel.model.api.StartCounterValue;
 import org.netbeans.modules.bpel.model.api.Throw;
 import org.netbeans.modules.bpel.model.api.To;
+import org.netbeans.modules.bpel.model.api.Validate;
 import org.netbeans.modules.bpel.model.api.Variable;
+import org.netbeans.modules.bpel.model.api.VariableDeclaration;
+import org.netbeans.modules.bpel.model.api.references.BpelReference;
 import org.netbeans.modules.bpel.model.api.references.WSDLReference;
 import org.netbeans.modules.bpel.model.api.support.ImportHelper;
 import org.netbeans.modules.bpel.model.api.support.SimpleBpelModelVisitorAdaptor;
@@ -104,6 +107,25 @@ final class BpelVisitor extends SimpleBpelModelVisitorAdaptor {
   }
 
   @Override
+  public void visit(Validate validate)
+  {
+    List<BpelReference<VariableDeclaration>> variables =
+      validate.getVaraibles();
+
+    if (variables == null) {
+      return;
+    }
+    for (BpelReference<VariableDeclaration> variable : variables) {
+      Util.visit(
+        variable,
+        myTarget,
+        validate,
+        myUsage
+      );
+    }
+  }
+
+  @Override
   public void visit(StartCounterValue value)
   {
 //Log.out();
@@ -160,27 +182,6 @@ final class BpelVisitor extends SimpleBpelModelVisitorAdaptor {
   }
 
   @Override
-  public void visit(To to)
-  {
-//Log.out();
-//Log.out();
-//Log.out("[TO]: " + Util.getName(to));
-    Util.visit(
-      to.getPart(),
-      myTarget,
-      to,
-      myUsage
-    );
-    Util.visit(
-      to.getProperty(),
-      myTarget,
-      to,
-      myUsage
-    );
-    visitContentElement(to);
-  }
-                     
-  @Override
   public void visit(CorrelationSet correlationSet)
   {
     List<WSDLReference<CorrelationProperty>> references =
@@ -217,7 +218,40 @@ final class BpelVisitor extends SimpleBpelModelVisitorAdaptor {
       from,
       myUsage
     );
+    Util.visit(
+      from.getVariable(),
+      myTarget,
+      from,
+      myUsage
+    );
     visitContentElement(from);
+  }
+
+  @Override
+  public void visit(To to)
+  {
+//Log.out();
+//Log.out();
+//Log.out("[TO]: " + Util.getName(to));
+    Util.visit(
+      to.getPart(),
+      myTarget,
+      to,
+      myUsage
+    );
+    Util.visit(
+      to.getProperty(),
+      myTarget,
+      to,
+      myUsage
+    );
+    Util.visit(
+      to.getVariable(),
+      myTarget,
+      to,
+      myUsage
+    );
+    visitContentElement(to);
   }
 
   private void visitContentElement(BpelEntity entity) {
@@ -281,6 +315,12 @@ final class BpelVisitor extends SimpleBpelModelVisitorAdaptor {
       message,
       myUsage
     );
+    Util.visit(
+      message.getVariable(),
+      myTarget,
+      message,
+      myUsage
+    );
   }
 
   @Override
@@ -337,6 +377,12 @@ final class BpelVisitor extends SimpleBpelModelVisitorAdaptor {
       reply,
       myUsage
     );
+    Util.visit(
+      reply.getVariable(),
+      myTarget,
+      reply,
+      myUsage
+    );
   }
 
   @Override
@@ -362,6 +408,12 @@ final class BpelVisitor extends SimpleBpelModelVisitorAdaptor {
       receive,
       myUsage
     );
+    Util.visit(
+      receive.getVariable(),
+      myTarget,
+      receive,
+      myUsage
+    );
   }
 
   @Override
@@ -381,6 +433,18 @@ final class BpelVisitor extends SimpleBpelModelVisitorAdaptor {
       invoke,
       myUsage
     );
+    Util.visit(
+      invoke.getInputVariable(),
+      myTarget,
+      invoke,
+      myUsage
+    );
+    Util.visit(
+      invoke.getOutputVariable(),
+      myTarget,
+      invoke,
+      myUsage
+    );
   }
 
   @Override
@@ -390,6 +454,12 @@ final class BpelVisitor extends SimpleBpelModelVisitorAdaptor {
 //Log.out("[THROW]: " + Util.getName(_throw));
     Util.visit(
       _throw.getFaultName(),
+      myTarget,
+      _throw,
+      myUsage
+    );
+    Util.visit(
+      _throw.getFaultVariable(),
       myTarget,
       _throw,
       myUsage
