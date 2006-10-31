@@ -36,7 +36,7 @@ import org.openide.util.Utilities;
  */
 public final class Icons {
 
-    private static final String ICON_BASE = "/org/netbeans/modules/java/source/resources/icons/";
+    private static final String ICON_BASE = "org/netbeans/modules/java/source/resources/icons/";
     private static final String GIF_EXTENSION = ".gif";
     private static final String PNG_EXTENSION = ".png";
     private static final String WAIT = ICON_BASE + "wait" + GIF_EXTENSION;
