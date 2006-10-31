@@ -59,7 +59,7 @@ import org.xml.sax.SAXException;
  * @author Kirill Sorokin
  */
 public class Wizard {
-    ////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////
     // Constants
     public static final String DEFAULT_COMPONENTS_INSTANCE_URI =
             "resource:org/netbeans/installer/wizard/wizard-components.xml";
@@ -73,7 +73,7 @@ public class Wizard {
     public static final String COMPONENTS_SCHEMA_URI_PROPERTY =
             "nbi.wizard.components.schema.uri";
     
-    ////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////
     // Static
     private static Wizard instance;
     
@@ -282,7 +282,7 @@ public class Wizard {
         }
     }
     
-    ////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////
     // Instance
     protected List<WizardComponent> components;
     protected WizardFrame           frame;
@@ -294,11 +294,11 @@ public class Wizard {
     private   LogManager            logManager = LogManager.getInstance();
     
     // constructors /////////////////////////////////////////////////////////////////
-    Wizard() {
+    private Wizard() {
         this.currentIndex     = -1;
     }
     
-    Wizard(final Wizard parent) {
+    private Wizard(final Wizard parent) {
         this();
         
         this.parent           = parent;
@@ -306,7 +306,7 @@ public class Wizard {
         this.productComponent = parent.getProductComponent();
     }
     
-    Wizard(final ProductComponent component, final Wizard parent, int index) {
+    private Wizard(final ProductComponent component, final Wizard parent, int index) {
         this(parent);
         
         this.productComponent = component;
@@ -314,14 +314,14 @@ public class Wizard {
         this.currentIndex = index;
     }
     
-    Wizard(final List<WizardComponent> components, final Wizard parent, int index) {
+    private Wizard(final List<WizardComponent> components, final Wizard parent, int index) {
         this(parent);
         
         this.components = components;
         this.currentIndex = index;
     }
     
-    // wizard lifecycle control methods ////////////////////////////////////////
+    // wizard lifecycle control methods /////////////////////////////////////////////
     public void open() {
         // create the UI
         frame = new WizardFrame(this);
@@ -374,7 +374,11 @@ public class Wizard {
         }
     }
     
-    // informational methods ///////////////////////////////////////////////////
+    public void executeComponent(WizardComponent component) {
+        component.executeBlocking(this);
+    }
+    
+    // informational methods ////////////////////////////////////////////////////////
     private WizardComponent getCurrent() {
         if ((currentIndex > -1) && (currentIndex < components.size())) {
             return components.get(currentIndex);
@@ -412,6 +416,22 @@ public class Wizard {
         return null;
     }
     
+    private WizardComponent getNext() {
+        for (int i = currentIndex + 1; i < components.size(); i++) {
+            WizardComponent component = components.get(i);
+            
+            // if the component can be executed forward and its conditions are met,
+            // it is the next one
+            if (component.canExecuteForward() && component.evaluateConditions()) {
+                return component;
+            }
+        }
+        
+        // if we reached the after-last index and yet could not find a next
+        // component, then there is no next component
+        return null;
+    }
+    
     public boolean hasPrevious() {
         // if current component is a point of no return - we cannot move backwards,
         // i.e. there is no previous component
@@ -442,29 +462,13 @@ public class Wizard {
         return (parent != null) && parent.hasPrevious();
     }
     
-    private WizardComponent getNext() {
-        for (int i = currentIndex + 1; i < components.size(); i++) {
-            WizardComponent component = components.get(i);
-            
-            // if the component can be executed forward and its conditions are met,
-            // it is the next one
-            if (component.canExecuteForward() && component.evaluateConditions()) {
-                return component;
-            }
-        }
-        
-        // if we reached the after-last index and yet could not find a next
-        // component, then there is no next component
-        return null;
-    }
-    
     public boolean hasNext() {
         // if there is no next component in the current wizard, we should check the
         // parent wizard if it has one
         return (getNext() != null) || ((parent != null) && parent.hasNext());
     }
     
-    // getters & setters ///////////////////////////////////////////////////////
+    // getters & setters ////////////////////////////////////////////////////////////
     public WizardFrame getFrame() {
         return frame;
     }
@@ -477,12 +481,7 @@ public class Wizard {
         return currentIndex;
     }
     
-    // other ///////////////////////////////////////////////////////////////////
-    public void executeComponent(WizardComponent component) {
-        component.executeBlocking(this);
-    }
-    
-    // factory methods for children ////////////////////////////////////////////
+    // factory methods for children /////////////////////////////////////////////////
     public Wizard createSubWizard(ProductComponent component, int index) {
         return new Wizard(component, this, index);
     }
