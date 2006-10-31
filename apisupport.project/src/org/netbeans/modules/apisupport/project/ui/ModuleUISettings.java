@@ -18,100 +18,89 @@
  */
 
 package org.netbeans.modules.apisupport.project.ui;
-
-import org.openide.options.SystemOption;
+import java.util.prefs.Preferences;
+import org.openide.util.NbPreferences;
 
 /**
  * Storage for settings used by a module's UI (wizards, properties, ...)
  *
- * @author Martin Krauskopf
+ * @author Martin Krauskopf, Jesse Glick
  */
-public class ModuleUISettings extends SystemOption {
+public class ModuleUISettings {
 
-    private static final long serialVersionUID = 736430338589073397L;
-
-    private static final String LAST_USED_MODULE_LOCATION = "lastUsedModuleLocation"; // NOI18N
     private static final String LAST_CHOSEN_LIBRARY_LOCATION = "lastChosenLibraryLocation"; // NOI18N
     private static final String LAST_USED_NB_PLATFORM_LOCATION = "lastUsedNbPlatformLocation"; // NOI18N
     private static final String NEW_MODULE_COUNTER = "newModuleCounter";  //NOI18N
     private static final String NEW_SUITE_COUNTER = "newSuiteCounter";  //NOI18N
     private static final String CONFIRM_RELOAD_IN_IDE = "confirmReloadInIDE"; // NOI18N
-    private static final String LAST_USED_PLATFORM_ID = "lastUsedPlatformId"; // NOI18N
+    private static final String LAST_USED_PLATFORM_ID = "lastUsedPlatformID"; // NOI18N
     private static final String HARNESSES_UPGRADED = "harnessesUpgraded"; // NOI18N
-    
+
     public static ModuleUISettings getDefault() {
-        return (ModuleUISettings) SystemOption.findObject(ModuleUISettings.class, true);
+        return new ModuleUISettings(); // stateless
     }
-    
-    public String displayName() {
-        return "NBMProjectUISetting"; // NOI18N (not shown in UI)
+
+    private Preferences prefs() {
+        return NbPreferences.forModule(ModuleUISettings.class);
     }
-    
-    private Object getProperty(Object key, Object fallback) {
-        Object value = getProperty(key);
-        return value == null ? fallback : value;
-    }
-    
+
     public int getNewModuleCounter() {
-        Integer counter = (Integer) getProperty(NEW_MODULE_COUNTER, new Integer(0));
-        return counter.intValue();
+        return prefs().getInt(NEW_MODULE_COUNTER, 0);
     }
-    
+
     public void setNewModuleCounter(int count) {
-        putProperty(NEW_MODULE_COUNTER, new Integer(count), true);
+        prefs().putInt(NEW_MODULE_COUNTER, count);
     }
-    
+
     public int getNewSuiteCounter() {
-        Integer counter = (Integer) getProperty(NEW_SUITE_COUNTER, new Integer(0));
-        return counter.intValue();
+        return prefs().getInt(NEW_SUITE_COUNTER, 0);
     }
-    
+
     public void setNewSuiteCounter(int count) {
-        putProperty(NEW_SUITE_COUNTER, new Integer(count), true);
+        prefs().putInt(NEW_SUITE_COUNTER, count);
     }
 
     public String getLastUsedNbPlatformLocation() {
-        return (String) getProperty(LAST_USED_NB_PLATFORM_LOCATION, System.getProperty("user.home")); // NOI18N
+        return prefs().get(LAST_USED_NB_PLATFORM_LOCATION, System.getProperty("user.home")); // NOI18N
     }
-    
+
     public void setLastUsedNbPlatformLocation(String location) {
         assert location != null : "Location can not be null"; // NOI18N
-        putProperty(LAST_USED_NB_PLATFORM_LOCATION, location, true);
+        prefs().put(LAST_USED_NB_PLATFORM_LOCATION, location);
     }
-    
+
     public boolean getConfirmReloadInIDE() {
-        Boolean b = (Boolean) getProperty(CONFIRM_RELOAD_IN_IDE, Boolean.TRUE);
-        return b.booleanValue();
+        return prefs().getBoolean(CONFIRM_RELOAD_IN_IDE, true);
     }
-    
+
     public void setConfirmReloadInIDE(boolean b) {
-        putProperty(CONFIRM_RELOAD_IN_IDE, Boolean.valueOf(b), true);
+        prefs().putBoolean(CONFIRM_RELOAD_IN_IDE, b);
     }
-    
+
     public String getLastChosenLibraryLocation() {
-        return (String) getProperty(LAST_CHOSEN_LIBRARY_LOCATION, System.getProperty("user.home")); // NOI18N
+        return prefs().get(LAST_CHOSEN_LIBRARY_LOCATION, System.getProperty("user.home")); // NOI18N
     }
-    
+
     public void setLastChosenLibraryLocation(String location) {
         assert location != null : "Location can not be null"; // NOI18N
-        putProperty(LAST_CHOSEN_LIBRARY_LOCATION, location, true);
+        prefs().put(LAST_CHOSEN_LIBRARY_LOCATION, location);
     }
-    
+
     public String getLastUsedPlatformID() {
-        return (String) getProperty(LAST_USED_PLATFORM_ID, "default"); // NOI18N
+        return prefs().get(LAST_USED_PLATFORM_ID, "default"); // NOI18N
     }
-    
+
     public void setLastUsedPlatformID(String id) {
         assert id != null : "Platform ID can not be null"; // NOI18N
-        putProperty(LAST_USED_PLATFORM_ID, id, true);
+        prefs().put(LAST_USED_PLATFORM_ID, id);
     }
 
     public boolean getHarnessesUpgraded() {
-        return ((Boolean) getProperty(HARNESSES_UPGRADED, Boolean.FALSE)).booleanValue();
+        return prefs().getBoolean(HARNESSES_UPGRADED, false);
     }
 
     public void setHarnessesUpgraded(boolean b) {
-        putProperty(HARNESSES_UPGRADED, Boolean.valueOf(b), true);
+        prefs().putBoolean(HARNESSES_UPGRADED, b);
     }
-    
+
 }

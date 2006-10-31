@@ -91,12 +91,12 @@ public abstract class BasicTestForImport extends NbTestCase {
         
         assertNotNull(parsedPropertyName);
         Class expectedClass = null;
-        Object obj = support.getProperty(parsedPropertyName);
-        if (obj == null) {
+        String actual = support.getProperty(parsedPropertyName);
+        if (actual == null) {
             assertNull(expectedClass);
-            assertEquals(expected, obj);
+            assertEquals(expected, actual);
         } else {
-            assertEquals(expected, obj);
+            assertEquals(expected, actual);
         }
     }    
     
@@ -112,28 +112,28 @@ public abstract class BasicTestForImport extends NbTestCase {
         }
         
         assertNotNull(parsedPropertyName);
-        Class expectedClass = null;
-        Object obj = support.getProperty(parsedPropertyName);
-        if (obj == null) {
-            assertNull(expectedClass);
-            assertEquals(expected, obj);
+        String actual = support.getProperty(parsedPropertyName);
+        if (actual == null) {
+            assertNull(expected);
         } else {
-            if (expectedClass == null) {
-                try {
-                    expectedClass = Class.forName(((String)expected));
-                } catch (ClassNotFoundException ex) {
-                    expectedClass = null;
-                }
+            Class expectedClass = null;
+            try {
+                expectedClass = Class.forName(expected);
+            } catch (ClassNotFoundException ex) {
             }
             if (expectedClass != null) {
-                Class cls = obj.getClass();
-                cls = Class.forName(((String)obj));
+                Class cls = Class.forName(actual);
                 assertTrue(expectedClass + " but : " + cls,expectedClass.isAssignableFrom(cls));
             } else {
-                assertEquals(expected, obj);
+                assertEquals(expected, actual);
             }
-            assertEquals(expected, obj);
+            assertEquals(expected, actual);
         }
+    }
+    
+    public void assertPropertyTypeAndValue(String propertyName, String expectedType, String expectedValue) throws Exception {
+        assertPropertyType(propertyName, expectedType);
+        assertProperty(propertyName, expectedValue);
     }
     
     public void assertPreferencesNodePath(final String expectedInstanceName) throws IOException, ClassNotFoundException {
