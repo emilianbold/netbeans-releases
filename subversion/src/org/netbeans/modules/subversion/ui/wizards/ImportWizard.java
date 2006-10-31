@@ -80,7 +80,11 @@ public final class ImportWizard implements ChangeListener {
                 importStep.stop();
             }            
         } else if (value == WizardDescriptor.FINISH_OPTION) {
+            if(wizardIterator.current() == importStep) {
                 setupImportPreviewStep();
+            } else if (wizardIterator.current() == importPreviewStep) {
+                importPreviewStep.storeTableSorter();
+            }            
         }
         return finnished;
     }    

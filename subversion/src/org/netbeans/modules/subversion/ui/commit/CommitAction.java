@@ -38,7 +38,9 @@ import java.util.List;
 import java.text.MessageFormat;
 
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.settings.HistorySettings;
 import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.subversion.util.TableSorter;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.modules.versioning.util.VersioningEvent;
 import org.openide.util.HelpCtx;
@@ -117,7 +119,13 @@ public class CommitAction extends ContextAction {
         
         // show commit dialog
         final CommitPanel panel = new CommitPanel();
-        final CommitTable data = new CommitTable(panel.filesLabel, CommitTable.COMMIT_COLUMNS);
+        final CommitTable data;
+        TableSorter sorter = HistorySettings.getImportTableSorter();
+        if(sorter==null) {
+            data = new CommitTable(panel.filesLabel, CommitTable.COMMIT_COLUMNS, new String[] { CommitTableModel.COLUMN_NAME_PATH });
+        } else {
+            data = new CommitTable(panel.filesLabel, CommitTable.COMMIT_COLUMNS, sorter);
+        }                                                           
         panel.setCommitTable(data);
         SvnFileNode[] nodes;
         ArrayList<SvnFileNode> nodesList = new ArrayList<SvnFileNode>(fileList.size());
@@ -152,7 +160,9 @@ public class CommitAction extends ContextAction {
         dialog.setVisible(true);
 
         if (dd.getValue() == commitButton) {
-
+            
+            HistorySettings.setImportTableSorter(data.getSorter());
+            
             final Map<SvnFileNode, CommitOptions> commitFiles = data.getCommitFiles();
             final String message = panel.messageTextArea.getText();
 

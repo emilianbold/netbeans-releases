@@ -36,8 +36,8 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableColumnModel;
 import java.awt.Component;
+import java.lang.String;
 import java.util.*;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  * {@link #getComponent Table} that displays nodes in the commit dialog.
@@ -63,24 +63,39 @@ public class CommitTable implements AncestorListener, TableModelListener {
     private JTable              table;
     private JComponent          component;
     
-    private TableSorter sorter;
-    private String[]    columns;
+    private TableSorter         sorter;
+    private String[]            columns;
+    private String[]            sortByColumns;
+    
+    
+    public CommitTable(JLabel label, String[] columns, String[] sortByColumns) {
+        init(label, columns, null);
+        this.sortByColumns = sortByColumns;        
+        setSortingStatus();            
+    }
 
-    public CommitTable(JLabel label, String[] columns) {
+    public CommitTable(JLabel label, String[] columns, TableSorter sorter) {
+        init(label, columns, sorter);        
+    }
+    
+    private void init(JLabel label, String[] columns, TableSorter sorter) {
         tableModel = new CommitTableModel(columns);
         tableModel.addTableModelListener(this);
-        sorter = new TableSorter(tableModel);
-        table = new JTable(sorter);
+        if(sorter == null) {
+            sorter = new TableSorter(tableModel);
+        } 
+        this.sorter = sorter;   
+        table = new JTable(this.sorter);
         table.getTableHeader().setReorderingAllowed(false);
         table.setDefaultRenderer(String.class, new CommitStringsCellRenderer());
         table.setDefaultEditor(CommitOptions.class, new CommitOptionsCellEditor());
         table.getTableHeader().setReorderingAllowed(true);
-        sorter.setTableHeader(table.getTableHeader());
+        this.sorter.setTableHeader(table.getTableHeader());
         table.setRowHeight(table.getRowHeight() * 6 / 5);
         table.addAncestorListener(this);
         component = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         label.setLabelFor(table);
-        table.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CommitTable.class, "ACSD_CommitTable")); // NOI18N
+        table.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CommitTable.class, "ACSD_CommitTable")); // NOI18N        
         setColumns(columns);
     }
 
@@ -96,29 +111,39 @@ public class CommitTable implements AncestorListener, TableModelListener {
         TableColumnModel columnModel = table.getColumnModel();
         if (columns == null || columnModel == null) return; // unsure when this methed will be called (component realization) 
         if (columnModel.getColumnCount() != columns.length) return; 
-        if (columns.length == 4) {
+        if (columns.length == 3) {
             for (int i = 0; i < columns.length; i++) {
-                String col = columns[i];
-                sorter.setColumnComparator(i, null);
-                sorter.setSortingStatus(i, TableSorter.NOT_SORTED);
+                String col = columns[i];                                
+                sorter.setColumnComparator(i, null);                    
+                if (col.equals(CommitTableModel.COLUMN_NAME_NAME)) {
+                    sorter.setColumnComparator(i, new FileNameComparator());
+                    columnModel.getColumn(i).setPreferredWidth(width * 30 / 100);
+                } else if (col.equals(CommitTableModel.COLUMN_NAME_ACTION)) {
+                    columnModel.getColumn(i).setPreferredWidth(width * 15 / 100);
+                } else {
+                    columnModel.getColumn(i).setPreferredWidth(width * 40 / 100);
+                }                
+            }
+        } else if (columns.length == 4) {
+            for (int i = 0; i < columns.length; i++) {
+                String col = columns[i];                                
+                sorter.setColumnComparator(i, null);                    
                 if (col.equals(CommitTableModel.COLUMN_NAME_NAME)) {
                     sorter.setColumnComparator(i, new FileNameComparator());
                     columnModel.getColumn(i).setPreferredWidth(width * 30 / 100);
                 } else if (col.equals(CommitTableModel.COLUMN_NAME_STATUS)) {
-                    sorter.setColumnComparator(i, new StatusComparator());
-                    sorter.setSortingStatus(i, TableSorter.ASCENDING);
+                    sorter.setColumnComparator(i, new StatusComparator());                    
                     columnModel.getColumn(i).setPreferredWidth(width * 15 / 100);
                 } else if (col.equals(CommitTableModel.COLUMN_NAME_ACTION)) {
                     columnModel.getColumn(i).setPreferredWidth(width * 15 / 100);
                 } else {
                     columnModel.getColumn(i).setPreferredWidth(width * 40 / 100);
-                }
+                }                
             }
         } else if (columns.length == 5) {
             for (int i = 0; i < columns.length; i++) {
                 String col = columns[i];
-                sorter.setColumnComparator(i, null);
-                sorter.setSortingStatus(i, TableSorter.NOT_SORTED);
+                sorter.setColumnComparator(i, null);                
                 if (col.equals(CommitTableModel.COLUMN_NAME_NAME)) {
                     sorter.setColumnComparator(i, new FileNameComparator());
                     columnModel.getColumn(i).setPreferredWidth(width * 25 / 100);
@@ -135,6 +160,23 @@ public class CommitTable implements AncestorListener, TableModelListener {
         }
     }
 
+    private void setSortingStatus() {
+        for (int i = 0; i < sortByColumns.length; i++) {
+            String sortByColumn = sortByColumns[i];        
+            for (int j = 0; j < columns.length; j++) {
+                String column = columns[j];
+                if(column.equals(sortByColumn)) {
+                    sorter.setSortingStatus(j, column.equals(sortByColumn) ? TableSorter.ASCENDING : TableSorter.NOT_SORTED);                       
+                    break;
+                }                    
+            }                        
+        }        
+    }
+    
+    public TableSorter getSorter() {
+        return sorter;
+    }
+    
     public void ancestorMoved(AncestorEvent event) {
     }
 

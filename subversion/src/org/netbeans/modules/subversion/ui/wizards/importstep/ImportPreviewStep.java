@@ -27,11 +27,13 @@ import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.SvnFileNode;
+import org.netbeans.modules.subversion.settings.HistorySettings;
 import org.netbeans.modules.subversion.ui.commit.CommitTable;
+import org.netbeans.modules.subversion.ui.commit.CommitTableModel;
 import org.netbeans.modules.subversion.ui.wizards.AbstractStep;
 import org.netbeans.modules.subversion.util.Context;
+import org.netbeans.modules.subversion.util.TableSorter;
 import org.openide.util.HelpCtx;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  * @author Tomas Stupka
@@ -43,7 +45,7 @@ public class ImportPreviewStep extends AbstractStep {
     private CommitTable table;    
     
     public ImportPreviewStep(Context context) {
-        this.context =context;
+        this.context = context;
     }
     
     public HelpCtx getHelp() {    
@@ -54,8 +56,13 @@ public class ImportPreviewStep extends AbstractStep {
         if (previewPanel == null) {
             previewPanel = new PreviewPanel();
 
-            table = new CommitTable(previewPanel.tableLabel, CommitTable.IMPORT_COLUMNS);
-            //previewPanel.tableLabel.setText(org.openide.util.NbBundle.getMessage(ImportPreviewStep.class, "CTL_Import_CommitTitle")); // NOI18N
+            TableSorter sorter = HistorySettings.getImportTableSorter();
+            if(sorter==null) {
+                table = new CommitTable(previewPanel.tableLabel, CommitTable.IMPORT_COLUMNS, new String[] { CommitTableModel.COLUMN_NAME_PATH });    
+            } else {
+                table = new CommitTable(previewPanel.tableLabel, CommitTable.IMPORT_COLUMNS, sorter);
+            }                                    
+            
             JComponent component = table.getComponent();
             previewPanel.tablePanel.setLayout(new BorderLayout());
             previewPanel.tablePanel.add(component, BorderLayout.CENTER);
@@ -103,6 +110,10 @@ public class ImportPreviewStep extends AbstractStep {
 
     public Map getCommitFiles() {
         return table.getCommitFiles();
+    }
+    
+    public void storeTableSorter() {
+        HistorySettings.setImportTableSorter(table.getSorter());        
     }
 
 }

@@ -37,13 +37,13 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  *
  * @author Maros Sandor
  */
-class CommitTableModel extends AbstractTableModel {
+public class CommitTableModel extends AbstractTableModel {
 
-    static final String COLUMN_NAME_NAME    = "name"; // NOI18N
-    static final String COLUMN_NAME_STATUS  = "status"; // NOI18N
-    static final String COLUMN_NAME_ACTION  = "action"; // NOI18N
-    static final String COLUMN_NAME_PATH    = "path"; // NOI18N
-    static final String COLUMN_NAME_BRANCH  = "branch"; // NOI18N
+    public static final String COLUMN_NAME_NAME    = "name"; // NOI18N
+    public static final String COLUMN_NAME_STATUS  = "status"; // NOI18N
+    public static final String COLUMN_NAME_ACTION  = "action"; // NOI18N
+    public static final String COLUMN_NAME_PATH    = "path"; // NOI18N
+    public static final String COLUMN_NAME_BRANCH  = "branch"; // NOI18N
 
     private class RootFile {
         String repositoryPath;
