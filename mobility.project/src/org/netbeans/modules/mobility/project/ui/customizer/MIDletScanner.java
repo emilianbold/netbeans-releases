@@ -24,7 +24,10 @@
  */
 package org.netbeans.modules.mobility.project.ui.customizer;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.net.URL;
@@ -35,6 +38,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Pattern;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -224,47 +228,30 @@ public class MIDletScanner implements Runnable {
                         icons.add(name);
                     }
                 } else if (("java".equals(ext) || "class".equals(ext))) { // NOI18N
-                    for (final String name:getMIDletClassNames(fo)) {
-                        synchronized (this) {
-                            midlets.add(name);
-                        }
+                    if (isMIDlet(fo)) synchronized (this) {
+                            String name = FileUtil.getRelativePath(root, fo);
+                            midlets.add(name.substring(0, name.length() - ext.length() - 1).replace('/', '.').replace('\\', '.'));
                     }
                 }
             }
         }
     }
     
-    private static ArrayList<String> getMIDletClassNames(final FileObject fo) {
-        final ArrayList<String> cnames = new ArrayList<String>();
-//        try {
-//            final SourceCookie src = (SourceCookie)DataObject.find(fo).getCookie(SourceCookie.class);
-//            if (src != null) {
-//                final SourceElement sel = src.getSource();
-//                if (sel != null) {
-//                    final ClassElement cel[] = sel.getAllClasses();
-//                    for (ClassElement celi : cel) {
-//                        if (celi.isClass() && Modifier.isPublic(celi.getModifiersMask()) && parentIsMIDlet(celi, fo)) {
-//                            cnames.add(celi.getName().getFullName());
-//                        }
-//                    }
-//                }
-//            }
-//        } catch (DataObjectNotFoundException dnfe) {}
-        return cnames;
-    }
+    private static Pattern p = Pattern.compile("\\s+extends\\s+(javax\\.microedition\\.midlet\\.)?MIDlet");//NOI18N
     
-//    private static boolean parentIsMIDlet(ClassElement cel, final FileObject reference) {
-//        while (cel != null) {
-//            final Identifier id = cel.getSuperclass();
-//            if (id == null) return false;
-//            final String name = id.getFullName();
-//            if ("java.lang.Object".equals(name)) return false; //NOI18N
-//            if ("javax.microedition.midlet.MIDlet".equals(name)) return true; //NOI18N
-//            // workaround for unresolved class full name
-//            if ("MIDlet".equals(name)) return true; //NOI18N
-//            cel = ClassElement.forName(name, reference);
-//        }
-//        return false;
-//    }
+    private boolean isMIDlet(FileObject fo) {
+        BufferedReader br = null;
+        try {
+            br = new BufferedReader(new InputStreamReader(fo.getInputStream()));
+            String s;
+            while((s = br.readLine()) != null) {
+                if (s.indexOf("javax/microedition/midlet/MIDlet") >= 0 || p.matcher(s).find()) return true; //NOI18N
+            }
+        } catch (IOException ioe) {
+        } finally {
+            if (br != null) try {br.close();} catch (IOException ioe) {}
+        } 
+        return false;
+    }
 }
 
