@@ -49,7 +49,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
-import junit.framework.Test;
+import java.util.logging.Level;
 import org.netbeans.InvalidException;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
@@ -57,14 +57,12 @@ import org.netbeans.Util;
 import org.netbeans.core.startup.SetupHid.FakeEvents;
 import org.netbeans.core.startup.SetupHid.FakeModuleInstaller;
 import org.netbeans.core.startup.SetupHid.LoggedPCListener;
-import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
-import org.openide.util.TopologicalSortException;
 import org.openide.util.Utilities;
 
 /** Test the module manager as well as the Module class.
@@ -90,26 +88,22 @@ public class ModuleManagerTest extends SetupHid {
         new URLConnection(ModuleManagerTest.class.getResource("ModuleManagerTest.class")) {
             public void connect() throws IOException {}
         }.setDefaultUseCaches(false);
-        // Just annoying and misleading (tests pass despite exception):
-        System.setProperty ("suppress.topological.exception", "true");
     }
 
     public ModuleManagerTest(String name) {
         super(name);
     }
 
-    public static Test suite() {
-        return new NbTestSuite(ModuleManagerTest.class);
-        //return new ModuleManagerTest("testNeedsWithAProviderWithoutAProvider");
-    }
     /*
-    public static void main(String[] args) {
-        // Turn on verbose logging while developing tests:
-        System.setProperty("org.netbeans.core.modules", "0");
-        System.setProperty("org.openide.util.Lookup", "-");
-        TestRunner.run(new NbTestSuite(ModuleManagerTest.class));
+    public static Test suite() {
+        return new ModuleManagerTest("test...");
     }
      */
+
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
+    }
 
     /** Load simple-module and depends-on-simple-module.
      * Make sure they can be installed and in a sane order.
@@ -131,8 +125,8 @@ public class ModuleManagerTest extends SetupHid {
             Map<String,Module> modulesByName = new HashMap<String,Module>();
             modulesByName.put(m1.getCodeNameBase(), m1);
             modulesByName.put(m2.getCodeNameBase(), m2);
-            List<Module> m1m2 = Arrays.asList(new Module[] {m1, m2});
-            List<Module> m2m1 = Arrays.asList(new Module[] {m2, m1});
+            List<Module> m1m2 = Arrays.asList(m1, m2);
+            List<Module> m2m1 = Arrays.asList(m2, m1);
             Map<Module,List<Module>> deps = Util.moduleDependencies(m1m2, modulesByName, Collections.<String,Set<Module>>emptyMap());
             assertNull(deps.get(m1));
             assertEquals(Collections.singletonList(m1), deps.get(m2));
@@ -148,56 +142,56 @@ public class ModuleManagerTest extends SetupHid {
             m1PlusM2.add(m1);
             m1PlusM2.add(m2);
             List<Module> toEnable = mgr.simulateEnable(m1PlusM2);
-            assertEquals("correct result of simulateEnable", Arrays.asList(new Module[] {m1, m2}), toEnable);
+            assertEquals("correct result of simulateEnable", Arrays.asList(m1, m2), toEnable);
             mgr.enable(m1PlusM2);
-            assertEquals(Arrays.asList(new String[] {
+            assertEquals(Arrays.asList(
                 "prepare",
                 "prepare",
                 "load"
-            }), installer.actions);
-            assertEquals(Arrays.asList(new Object[] {
+            ), installer.actions);
+            assertEquals(Arrays.asList(
                 m1,
                 m2,
-                Arrays.asList(new Module[] {m1, m2})
-            }), installer.args);
+                Arrays.asList(m1, m2)
+            ), installer.args);
             Class somethingelse = Class.forName("org.bar.SomethingElse", true, m2.getClassLoader());
             Method somemethod = somethingelse.getMethod("message");
             assertEquals("hello", somemethod.invoke(somethingelse.newInstance()));
             installer.clear();
             List<Module> toDisable = mgr.simulateDisable(Collections.singleton(m1));
-            assertEquals("correct result of simulateDisable", Arrays.asList(new Module[] {m2, m1}), toDisable);
+            assertEquals("correct result of simulateDisable", Arrays.asList(m2, m1), toDisable);
             toDisable = mgr.simulateDisable(m1PlusM2);
-            assertEquals("correct result of simulateDisable #2", Arrays.asList(new Module[] {m2, m1}), toDisable);
+            assertEquals("correct result of simulateDisable #2", Arrays.asList(m2, m1), toDisable);
             mgr.disable(m1PlusM2);
             assertFalse(m1.isEnabled());
             assertFalse(m2.isEnabled());
             assertEquals(Collections.EMPTY_SET, mgr.getEnabledModules());
             assertEquals(m1PlusM2, mgr.getModules());
-            assertEquals(Arrays.asList(new String[] {
+            assertEquals(Arrays.asList(
                 "unload",
                 "dispose",
                 "dispose"
-            }), installer.actions);
-            assertEquals(Arrays.asList(new Object[] {
-                Arrays.asList(new Module[] {m2, m1}),
+            ), installer.actions);
+            assertEquals(Arrays.asList(
+                Arrays.asList(m2, m1),
                 m2,
                 m1
-            }), installer.args);
+            ), installer.args);
             installer.clear();
             mgr.enable(m1);
             mgr.shutDown();
-            assertEquals(Arrays.asList(new String[] {
+            assertEquals(Arrays.asList(
                 "prepare",
                 "load",
                 "closing",
                 "close"
-            }), installer.actions);
-            assertEquals(Arrays.asList(new Object[] {
+            ), installer.actions);
+            assertEquals(Arrays.asList(
                 m1,
                 Collections.singletonList(m1),
                 Collections.singletonList(m1),
                 Collections.singletonList(m1)
-            }), installer.args);
+            ), installer.args);
         } finally {
             mgr.mutexPrivileged().exitWriteAccess();
         }
@@ -214,7 +208,7 @@ public class ModuleManagerTest extends SetupHid {
             // m1 will be an autoload.
             Module m1 = mgr.create(new File(jars, "simple-module.jar"), null, false, true, false);
             try {
-                mgr.simulateEnable(new HashSet<Module>(Arrays.asList(new Module[] {m1, m2})));
+                mgr.simulateEnable(new HashSet<Module>(Arrays.asList(m1, m2)));
                 assertTrue("Should not permit you to simulate enablement of an autoload", false);
             } catch (IllegalArgumentException iae) {
                 // Good. m1 should not have been passed to it.
@@ -222,35 +216,35 @@ public class ModuleManagerTest extends SetupHid {
             assertEquals(Collections.EMPTY_SET, m1.getProblems());
             assertEquals(Collections.EMPTY_SET, m2.getProblems());
             List toEnable = mgr.simulateEnable(Collections.singleton(m2));
-            assertEquals("correct result of simulateEnable", Arrays.asList(new Module[] {m1, m2}), toEnable);
+            assertEquals("correct result of simulateEnable", Arrays.asList(m1, m2), toEnable);
             mgr.enable(Collections.singleton(m2));
-            assertEquals(Arrays.asList(new String[] {
+            assertEquals(Arrays.asList(
                 "prepare",
                 "prepare",
-                "load",
-            }), installer.actions);
-            assertEquals(Arrays.asList(new Object[] {
+                "load"
+            ), installer.actions);
+            assertEquals(Arrays.asList(
                 m1,
                 m2,
-                Arrays.asList(new Module[] {m1, m2}),
-            }), installer.args);
+                Arrays.asList(m1, m2)
+            ), installer.args);
             Class somethingelse = Class.forName("org.bar.SomethingElse", true, m2.getClassLoader());
             Method somemethod = somethingelse.getMethod("message");
             assertEquals("hello", somemethod.invoke(somethingelse.newInstance()));
             // Now try turning off m2 and make sure m1 goes away as well.
-            assertEquals("correct result of simulateDisable", Arrays.asList(new Module[] {m2, m1}), mgr.simulateDisable(Collections.singleton(m2)));
+            assertEquals("correct result of simulateDisable", Arrays.asList(m2, m1), mgr.simulateDisable(Collections.singleton(m2)));
             installer.clear();
             mgr.disable(Collections.singleton(m2));
-            assertEquals(Arrays.asList(new String[] {
+            assertEquals(Arrays.asList(
                 "unload",
                 "dispose",
-                "dispose",
-            }), installer.actions);
-            assertEquals(Arrays.asList(new Object[] {
-                Arrays.asList(new Module[] {m2, m1}),
+                "dispose"
+            ), installer.actions);
+            assertEquals(Arrays.asList(
+                Arrays.asList(m2, m1),
                 m2,
-                m1,
-            }), installer.args);
+                m1
+            ), installer.args);
         } finally {
             mgr.mutexPrivileged().exitWriteAccess();
         }
@@ -267,7 +261,7 @@ public class ModuleManagerTest extends SetupHid {
             // m2 will be eager.
             Module m2 = mgr.create(new File(jars, "depends-on-simple-module.jar"), null, false, false, true);
             try {
-                mgr.simulateEnable(new HashSet<Module>(Arrays.asList(new Module[] {m1, m2})));
+                mgr.simulateEnable(new HashSet<Module>(Arrays.asList(m1, m2)));
                 fail("Should not permit you to simulate enablement of an eager module");
             } catch (IllegalArgumentException iae) {
                 // Good. m2 should not have been passed to it.
@@ -275,35 +269,35 @@ public class ModuleManagerTest extends SetupHid {
             assertEquals(Collections.EMPTY_SET, m1.getProblems());
             assertEquals(Collections.EMPTY_SET, m2.getProblems());
             List toEnable = mgr.simulateEnable(Collections.singleton(m1));
-            assertEquals("correct result of simulateEnable", Arrays.asList(new Module[] {m1, m2}), toEnable);
+            assertEquals("correct result of simulateEnable", Arrays.asList(m1, m2), toEnable);
             mgr.enable(Collections.singleton(m1));
-            assertEquals(Arrays.asList(new String[] {
+            assertEquals(Arrays.asList(
                 "prepare",
                 "prepare",
-                "load",
-            }), installer.actions);
-            assertEquals(Arrays.asList(new Object[] {
+                "load"
+            ), installer.actions);
+            assertEquals(Arrays.asList(
                 m1,
                 m2,
-                Arrays.asList(new Module[] {m1, m2}),
-            }), installer.args);
+                Arrays.asList(m1, m2)
+            ), installer.args);
             Class somethingelse = Class.forName("org.bar.SomethingElse", true, m2.getClassLoader());
             Method somemethod = somethingelse.getMethod("message");
             assertEquals("hello", somemethod.invoke(somethingelse.newInstance()));
             // Now try turning off m1 and make sure m2 goes away quietly.
-            assertEquals("correct result of simulateDisable", Arrays.asList(new Module[] {m2, m1}), mgr.simulateDisable(Collections.singleton(m1)));
+            assertEquals("correct result of simulateDisable", Arrays.asList(m2, m1), mgr.simulateDisable(Collections.singleton(m1)));
             installer.clear();
             mgr.disable(Collections.singleton(m1));
-            assertEquals(Arrays.asList(new String[] {
+            assertEquals(Arrays.asList(
                 "unload",
                 "dispose",
-                "dispose",
-            }), installer.actions);
-            assertEquals(Arrays.asList(new Object[] {
-                Arrays.asList(new Module[] {m2, m1}),
+                "dispose"
+            ), installer.actions);
+            assertEquals(Arrays.asList(
+                Arrays.asList(m2, m1),
                 m2,
-                m1,
-            }), installer.args);
+                m1
+            ), installer.args);
         } finally {
             mgr.mutexPrivileged().exitWriteAccess();
         }
@@ -320,38 +314,38 @@ public class ModuleManagerTest extends SetupHid {
             Module m2 = mgr.create(new File(jars, "depends-on-simple-module.jar"), null, false, false, false);
             Module m3 = mgr.create(new File(jars, "dep-on-dep-on-simple.jar"), null, false, false, true);
             List toEnable = mgr.simulateEnable(Collections.singleton(m2));
-            assertEquals("correct result of simulateEnable", Arrays.asList(new Module[] {m1, m2, m3}), toEnable);
+            assertEquals("correct result of simulateEnable", Arrays.asList(m1, m2, m3), toEnable);
             mgr.enable(Collections.singleton(m2));
-            assertEquals(Arrays.asList(new String[] {
+            assertEquals(Arrays.asList(
                 "prepare",
                 "prepare",
                 "prepare",
-                "load",
-            }), installer.actions);
-            assertEquals(Arrays.asList(new Object[] {
+                "load"
+            ), installer.actions);
+            assertEquals(Arrays.asList(
                 m1,
                 m2,
                 m3,
-                Arrays.asList(new Module[] {m1, m2, m3}),
-            }), installer.args);
+                Arrays.asList(m1, m2, m3)
+            ), installer.args);
             Class somethingelseagain = Class.forName("org.baz.SomethingElseAgain", true, m3.getClassLoader());
             Method somemethod = somethingelseagain.getMethod("doit");
             assertEquals("hello", somemethod.invoke(somethingelseagain.newInstance()));
-            assertEquals("correct result of simulateDisable", Arrays.asList(new Module[] {m3, m2, m1}), mgr.simulateDisable(Collections.singleton(m2)));
+            assertEquals("correct result of simulateDisable", Arrays.asList(m3, m2, m1), mgr.simulateDisable(Collections.singleton(m2)));
             installer.clear();
             mgr.disable(Collections.singleton(m2));
-            assertEquals(Arrays.asList(new String[] {
+            assertEquals(Arrays.asList(
                 "unload",
                 "dispose",
                 "dispose",
-                "dispose",
-            }), installer.actions);
-            assertEquals(Arrays.asList(new Object[] {
-                Arrays.asList(new Module[] {m3, m2, m1}),
+                "dispose"
+            ), installer.actions);
+            assertEquals(Arrays.asList(
+                Arrays.asList(m3, m2, m1),
                 m3,
                 m2,
-                m1,
-            }), installer.args);
+                m1
+            ), installer.args);
         } finally {
             mgr.mutexPrivileged().exitWriteAccess();
         }
@@ -437,7 +431,7 @@ public class ModuleManagerTest extends SetupHid {
             Module cyc1 = mgr.create(new File(jars, "cyclic-1.jar"), null, false, false, false);
             Module cyc2 = mgr.create(new File(jars, "cyclic-2.jar"), null, false, false, false);
             Module cycd = mgr.create(new File(jars, "depends-on-cyclic-1.jar"), null, false, false, false);
-            Set<Module> circular = new HashSet<Module>(Arrays.asList(new Module[] {cyc1, cyc2, cycd}));
+            Set<Module> circular = new HashSet<Module>(Arrays.asList(cyc1, cyc2, cycd));
             assertEquals("correct result of simulateEnable", Collections.EMPTY_LIST, mgr.simulateEnable(circular));
             assertEquals("cyc1 problems include cyc2", cyc1.getDependencies(), cyc1.getProblems());
             assertEquals("cyc2 problems include cyc1", cyc2.getDependencies(), cyc2.getProblems());
@@ -500,7 +494,7 @@ public class ModuleManagerTest extends SetupHid {
         random = l.lookup(Module.class);
         assertTrue(random == m1 || random == m2);
         Lookup.Result<ModuleInfo> resultAll = l.lookupResult(ModuleInfo.class);
-        assertEquals("finding all instances works", new HashSet<Module>(Arrays.asList(new Module[] {m1, m2})), new HashSet<ModuleInfo>(resultAll.allInstances()));
+        assertEquals("finding all instances works", new HashSet<Module>(Arrays.asList(m1, m2)), new HashSet<ModuleInfo>(resultAll.allInstances()));
         Lookup.Result<Module> resultInstance2 = l.lookup(new Lookup.Template<Module>(null, null, m2));
         assertEquals("finding one specific instance works", Collections.singleton(m2), new HashSet<Module>(resultInstance2.allInstances()));
         Collection<? extends Lookup.Item<Module>> items = resultInstance2.allItems();
@@ -528,7 +522,7 @@ public class ModuleManagerTest extends SetupHid {
         } finally {
             mgr.mutexPrivileged().exitWriteAccess();
         }
-        assertEquals("results changed", new HashSet<ModuleInfo>(Arrays.asList(new Module[] {m1, m3})), new HashSet<ModuleInfo>(resultAll.allInstances()));
+        assertEquals("results changed", new HashSet<ModuleInfo>(Arrays.asList(m1, m3)), new HashSet<ModuleInfo>(resultAll.allInstances()));
         synchronized (waiter) {
             if (! waiter[0]) {
                 waiter.wait(5000);
@@ -546,7 +540,7 @@ public class ModuleManagerTest extends SetupHid {
         try {
             Module m1 = mgr.create(new File(jars, "simple-module.jar"), null, false, false, false);
             Module m2 = mgr.create(new File(jars, "depends-on-simple-module.jar"), null, false, false, false);
-            Set<Module> m1AndM2 = new HashSet<Module>(Arrays.asList(new Module[] {m1, m2}));
+            Set<Module> m1AndM2 = new HashSet<Module>(Arrays.asList(m1, m2));
             mgr.enable(m1AndM2);
             mgr.disable(m1AndM2);
             assertEquals(Collections.EMPTY_SET, m2.getProblems());
@@ -573,7 +567,7 @@ public class ModuleManagerTest extends SetupHid {
             m2 = mgr.create(new File(jars, "depends-on-simple-module.jar"), null, false, false, false);
             m2.addPropertyChangeListener(listener);
             installer.delinquents.add(m1);
-            Set<Module> m1AndM2 = new HashSet<Module>(Arrays.asList(new Module[] {m1, m2}));
+            Set<Module> m1AndM2 = new HashSet<Module>(Arrays.asList(m1, m2));
             try {
                 mgr.enable(m1AndM2);
             } catch (InvalidException ie) {
@@ -656,7 +650,7 @@ public class ModuleManagerTest extends SetupHid {
             Module fixed  = mgr.createFixed(mani, null, this.getClass().getClassLoader());
 
             try {
-                mgr.enable(new HashSet<Module>(Arrays.asList(new Module[] {toFail, fixed})));
+                mgr.enable(new HashSet<Module>(Arrays.asList(toFail, fixed)));
                 fail("Was able to turn on fails-on-non-existing-package.jar without complaint");
             } catch (InvalidException e) {
                 assertTrue("fails-on-non-existing-package.jar was not enabled", e.getModule() == toFail);
@@ -866,8 +860,8 @@ public class ModuleManagerTest extends SetupHid {
             modulesByName.put(m2.getCodeNameBase(), m2);
             Map<String,Set<Module>> providersOf = new HashMap<String,Set<Module>>();
             providersOf.put("foo", Collections.singleton(m1));
-            List<Module> m1m2 = Arrays.asList(new Module[] {m1, m2});
-            List<Module> m2m1 = Arrays.asList(new Module[] {m2, m1});
+            List<Module> m1m2 = Arrays.asList(m1, m2);
+            List<Module> m2m1 = Arrays.asList(m2, m1);
             Map<Module,List<Module>> deps = Util.moduleDependencies(m1m2, modulesByName, providersOf);
             assertNull(deps.get(m1));
             assertEquals(Collections.singletonList(m1), deps.get(m2));
@@ -877,20 +871,20 @@ public class ModuleManagerTest extends SetupHid {
             m1PlusM2.add(m1);
             m1PlusM2.add(m2);
             List<Module> toEnable = mgr.simulateEnable(m1PlusM2);
-            assertEquals("correct result of simulateEnable", Arrays.asList(new Module[] {m1, m2}), toEnable);
+            assertEquals("correct result of simulateEnable", Arrays.asList(m1, m2), toEnable);
             toEnable = mgr.simulateEnable(Collections.singleton(m2));
-            assertEquals("correct result of simulateEnable #2", Arrays.asList(new Module[] {m1, m2}), toEnable);
+            assertEquals("correct result of simulateEnable #2", Arrays.asList(m1, m2), toEnable);
             mgr.enable(m1PlusM2);
-            assertEquals(Arrays.asList(new String[] {
+            assertEquals(Arrays.asList(
                 "prepare",
                 "prepare",
                 "load"
-            }), installer.actions);
-            assertEquals(Arrays.asList(new Object[] {
+            ), installer.actions);
+            assertEquals(Arrays.asList(
                 m1,
                 m2,
-                Arrays.asList(new Module[] {m1, m2})
-            }), installer.args);
+                Arrays.asList(m1, m2)
+            ), installer.args);
             Class testclazz = Class.forName("org.prov_foo.Clazz", true, m1.getClassLoader());
             try {
                 Class.forName("org.prov_foo.Clazz", true, m2.getClassLoader());
@@ -900,22 +894,22 @@ public class ModuleManagerTest extends SetupHid {
             }
             installer.clear();
             List<Module> toDisable = mgr.simulateDisable(Collections.singleton(m1));
-            assertEquals("correct result of simulateDisable", Arrays.asList(new Module[] {m2, m1}), toDisable);
+            assertEquals("correct result of simulateDisable", Arrays.asList(m2, m1), toDisable);
             toDisable = mgr.simulateDisable(m1PlusM2);
-            assertEquals("correct result of simulateDisable #2", Arrays.asList(new Module[] {m2, m1}), toDisable);
+            assertEquals("correct result of simulateDisable #2", Arrays.asList(m2, m1), toDisable);
             mgr.disable(m1PlusM2);
             assertFalse(m1.isEnabled());
             assertFalse(m2.isEnabled());
-            assertEquals(Arrays.asList(new String[] {
+            assertEquals(Arrays.asList(
                 "unload",
                 "dispose",
                 "dispose"
-            }), installer.actions);
-            assertEquals(Arrays.asList(new Object[] {
-                Arrays.asList(new Module[] {m2, m1}),
+            ), installer.actions);
+            assertEquals(Arrays.asList(
+                Arrays.asList(m2, m1),
                 m2,
                 m1
-            }), installer.args);
+            ), installer.args);
         } finally {
             mgr.mutexPrivileged().exitWriteAccess();
         }
@@ -966,7 +960,7 @@ public class ModuleManagerTest extends SetupHid {
                 m2.getProblems());
             assertEquals("neither m1 nor m2 can be installed",
                 Collections.EMPTY_LIST,
-                    mgr.simulateEnable(new HashSet<Module>(Arrays.asList(new Module[] {m1, m2}))));
+                    mgr.simulateEnable(new HashSet<Module>(Arrays.asList(m1, m2))));
             mgr.delete(m2);
             Module m3 = mgr.create(new File(jars, "prov-bar-dep-cyclic.jar"), null, false, false, false);
             assertEquals("m1 cannot be installed because of m3",
@@ -977,7 +971,7 @@ public class ModuleManagerTest extends SetupHid {
                 m3.getProblems());
             assertEquals("neither m1 nor m3 can be installed",
                 Collections.EMPTY_LIST,
-                    mgr.simulateEnable(new HashSet<Module>(Arrays.asList(new Module[] {m1, m3}))));
+                    mgr.simulateEnable(new HashSet<Module>(Arrays.asList(m1, m3))));
             m2 = mgr.create(new File(jars, "prov-bar-req-foo.jar"), null, false, false, false);
             assertEquals("m2 cannot be installed because of m1",
                 Dependency.create(Dependency.TYPE_REQUIRES, "foo"),
@@ -987,7 +981,7 @@ public class ModuleManagerTest extends SetupHid {
                 Collections.EMPTY_SET,
                 m2.getProblems());
             assertEquals("m2 and m4 can be enabled together",
-                Arrays.asList(new Module[] {m4, m2}),
+                Arrays.asList(m4, m2),
                 mgr.simulateEnable(Collections.singleton(m2)));
         } finally {
             mgr.mutexPrivileged().exitWriteAccess();
@@ -1003,15 +997,15 @@ public class ModuleManagerTest extends SetupHid {
             Module m1 = mgr.create(new File(jars, "prov-foo.jar"), null, false, false, false);
             Module m2 = mgr.create(new File(jars, "prov-foo-bar.jar"), null, false, false, false);
             Module m3 = mgr.create(new File(jars, "req-foo.jar"), null, false, false, false);
-            Set<Module> m123 = new HashSet<Module>(Arrays.asList(new Module[] {m1, m2, m3}));
+            Set<Module> m123 = new HashSet<Module>(Arrays.asList(m1, m2, m3));
             List<Module> toEnable = mgr.simulateEnable(Collections.singleton(m3));
             // Note order of first two items in toEnable is indeterminate.
             assertEquals("From start, turn on all providers", m123, new HashSet<Module>(toEnable));
             assertEquals("m3 last", m3, toEnable.get(2));
             assertEquals("Could request them all together too", m123, new HashSet<Module>(mgr.simulateEnable(m123)));
-            List<Module> m13 = Arrays.asList(new Module[] {m1, m3});
+            List<Module> m13 = Arrays.asList(m1, m3);
             assertEquals("Or just m1 + m3", m13, mgr.simulateEnable(new HashSet<Module>(m13)));
-            List<Module> m23 = Arrays.asList(new Module[] {m2, m3});
+            List<Module> m23 = Arrays.asList(m2, m3);
             assertEquals("Or just m2 + m3", m23, mgr.simulateEnable(new HashSet<Module>(m23)));
             mgr.enable(m123);
             assertTrue(m1.isEnabled());
@@ -1020,7 +1014,7 @@ public class ModuleManagerTest extends SetupHid {
             assertEquals("Can turn off one provider",
                 Collections.singletonList(m1),
                 mgr.simulateDisable(Collections.singleton(m1)));
-            Set<Module> m12 = new HashSet<Module>(Arrays.asList(new Module[] {m1, m2}));
+            Set<Module> m12 = new HashSet<Module>(Arrays.asList(m1, m2));
             assertEquals("Can't turn off both providers",
                 m123,
                 new HashSet<Module>(mgr.simulateDisable(m12)));
@@ -1028,7 +1022,7 @@ public class ModuleManagerTest extends SetupHid {
             assertFalse(m1.isEnabled());
             assertTrue(m2.isEnabled());
             assertTrue(m3.isEnabled());
-            List<Module> m32 = Arrays.asList(new Module[] {m3, m2});
+            List<Module> m32 = Arrays.asList(m3, m2);
             assertEquals("Can't turn off last provider",
                 m32,
                 mgr.simulateDisable(Collections.singleton(m2)));
@@ -1053,7 +1047,7 @@ public class ModuleManagerTest extends SetupHid {
             assertEquals(Collections.EMPTY_SET, m1.getProblems());
             assertEquals(Collections.EMPTY_SET, m3.getProblems());
             assertEquals(Dependency.create(Dependency.TYPE_REQUIRES, "bar"), m2.getProblems());
-            List<Module> m13 = Arrays.asList(new Module[] {m1, m3});
+            List<Module> m13 = Arrays.asList(m1, m3);
             assertEquals(m13, mgr.simulateEnable(Collections.singleton(m3)));
             mgr.enable(new HashSet<Module>(m13));
             assertTrue(m1.isEnabled());
@@ -1111,8 +1105,8 @@ public class ModuleManagerTest extends SetupHid {
             modulesByName.put(m2.getCodeNameBase(), m2);
             Map<String,Set<Module>> providersOf = new HashMap<String,Set<Module>>();
             providersOf.put("foo", Collections.singleton(m1));
-            List<Module> m1m2 = Arrays.asList(new Module[] {m1, m2});
-            List<Module> m2m1 = Arrays.asList(new Module[] {m2, m1});
+            List<Module> m1m2 = Arrays.asList(m1, m2);
+            List<Module> m2m1 = Arrays.asList(m2, m1);
             Map<Module,List<Module>> deps = Util.moduleDependencies(m1m2, modulesByName, providersOf);
             assertEquals(Collections.singletonList(m2), deps.get(m1));
 /*            assertEquals(Collections.singletonList(m1), deps.get(m2));
@@ -1135,22 +1129,22 @@ public class ModuleManagerTest extends SetupHid {
                 m1PlusM2.add(m2);
             }
             List<Module> toEnable = mgr.simulateEnable(m1PlusM2);
-            assertEquals("correct result of simulateEnable", Arrays.asList(new Module[] {m2, m1}), toEnable);
+            assertEquals("correct result of simulateEnable", Arrays.asList(m2, m1), toEnable);
             toEnable = mgr.simulateEnable(Collections.singleton(m1));
-            assertEquals("correct result of simulateEnable #2", Arrays.asList(new Module[] {m2, m1}), toEnable);
+            assertEquals("correct result of simulateEnable #2", Arrays.asList(m2, m1), toEnable);
             toEnable = mgr.simulateEnable(Collections.singleton(m2));
-            assertEquals("correct result of simulateEnable #3", Arrays.asList(new Module[] {m2, m1}), toEnable);
+            assertEquals("correct result of simulateEnable #3", Arrays.asList(m2, m1), toEnable);
             mgr.enable(m1PlusM2);
-            assertEquals(Arrays.asList(new String[] {
+            assertEquals(Arrays.asList(
                 "prepare",
                 "prepare",
                 "load"
-            }), installer.actions);
-            assertEquals(Arrays.asList(new Object[] {
+            ), installer.actions);
+            assertEquals(Arrays.asList(
                 m2,
                 m1,
-                Arrays.asList(new Module[] {m2, m1})
-            }), installer.args);
+                Arrays.asList(m2, m1)
+            ), installer.args);
             Class testclazz = Class.forName("org.prov_foo.Clazz", true, m1.getClassLoader());
             try {
                 Class.forName("org.prov_foo.Clazz", true, m2.getClassLoader());
@@ -1161,43 +1155,43 @@ public class ModuleManagerTest extends SetupHid {
             installer.clear();
             List<Module> toDisable = mgr.simulateDisable(Collections.singleton(m1));
             if (!recommends) {
-                assertEquals("correct result of simulateDisable", Arrays.asList(new Module[] {m1, m2}), toDisable);
+                assertEquals("correct result of simulateDisable", Arrays.asList(m1, m2), toDisable);
                 toDisable = mgr.simulateDisable(m1PlusM2);
-                assertEquals("correct result of simulateDisable #2", Arrays.asList(new Module[] {m1, m2}), toDisable);
+                assertEquals("correct result of simulateDisable #2", Arrays.asList(m1, m2), toDisable);
                 mgr.disable(m1PlusM2);
                 assertFalse(m1.isEnabled());
                 assertFalse(m2.isEnabled());
-                assertEquals(Arrays.asList(new String[] {
+                assertEquals(Arrays.asList(
                     "unload",
                     "dispose",
                     "dispose"
-                }), installer.actions);
-                assertEquals(Arrays.asList(new Object[] {
-                    Arrays.asList(new Module[] {m1, m2}),
+                ), installer.actions);
+                assertEquals(Arrays.asList(
+                    Arrays.asList(m1, m2),
                     m1,
                     m2
-                }), installer.args);
+                ), installer.args);
             } else {
-                assertEquals("correct result of simulateDisable", Arrays.asList(new Module[] {m1 }), toDisable);
+                assertEquals("correct result of simulateDisable", Collections.singletonList(m1 ), toDisable);
                 toDisable = mgr.simulateDisable(m1PlusM2);
-                assertEquals("correct result of simulateDisable #2", Arrays.asList(new Module[] {m1, m2}), toDisable);
+                assertEquals("correct result of simulateDisable #2", Arrays.asList(m1, m2), toDisable);
                 mgr.disable(m1);
                 assertFalse(m1.isEnabled());
                 assertTrue(m2.isEnabled());
                 mgr.disable(m2);
                 assertFalse(m2.isEnabled());
-                assertEquals(Arrays.asList(new String[] {
+                assertEquals(Arrays.asList(
                     "unload",
                     "dispose",
                     "unload",
                     "dispose"
-                }), installer.actions);
-                assertEquals(Arrays.asList(new Object[] {
-                    Arrays.asList(new Module[] {m1}),
+                ), installer.actions);
+                assertEquals(Arrays.asList(
+                    Collections.singletonList(m1),
                     m1,
-                    Arrays.asList(new Module[] {m2}),
+                    Collections.singletonList(m2),
                     m2
-                }), installer.args);
+                ), installer.args);
             }
         } finally {
             mgr.mutexPrivileged().exitWriteAccess();
@@ -1273,24 +1267,24 @@ public class ModuleManagerTest extends SetupHid {
             modulesByName.put(m2.getCodeNameBase(), m2);
             Map<String,Set<Module>> providersOf = new HashMap<String,Set<Module>>();
             providersOf.put("foo", Collections.singleton(m1));
-            List<Module> m1m2 = Arrays.asList(new Module[] {m1, m2});
-            List<Module> m2m1 = Arrays.asList(new Module[] {m2, m1});
+            List<Module> m1m2 = Arrays.asList(m1, m2);
+            List<Module> m2m1 = Arrays.asList(m2, m1);
             Map<Module,List<Module>> deps = Util.moduleDependencies(m1m2, modulesByName, providersOf);
             assertEquals(Collections.singletonList(m2), deps.get(m1));
             List<Module> toEnable = mgr.simulateEnable(Collections.singleton(m2));
-            assertEquals("correct result of simulateEnable", Arrays.asList(new Module[] {m2, m1}), toEnable);
+            assertEquals("correct result of simulateEnable", Arrays.asList(m2, m1), toEnable);
 
             mgr.enable(m2);
-            assertEquals(Arrays.asList(new String[] {
+            assertEquals(Arrays.asList(
                 "prepare",
                 "prepare",
                 "load"
-            }), installer.actions);
-            assertEquals(Arrays.asList(new Object[] {
+            ), installer.actions);
+            assertEquals(Arrays.asList(
                 m2,
                 m1,
-                Arrays.asList(new Module[] {m2, m1})
-            }), installer.args);
+                Arrays.asList(m2, m1)
+            ), installer.args);
             Class testclazz = Class.forName("org.prov_foo.Clazz", true, m1.getClassLoader());
             try {
                 Class.forName("org.prov_foo.Clazz", true, m2.getClassLoader());
@@ -1309,27 +1303,27 @@ public class ModuleManagerTest extends SetupHid {
                 assertFalse("M3 enabled", m3.isEnabled());
                 assertTrue("Provider enabled", m1.isEnabled());
                 assertTrue(m2.isEnabled());
-                assertEquals(Arrays.asList(new String[] {
+                assertEquals(Arrays.asList(
                     "unload",
                     "dispose"
-                }), installer.actions);
-                assertEquals(Arrays.asList(new Object[] {
-                    Arrays.asList(new Module[] { m3 }),
+                ), installer.actions);
+                assertEquals(Arrays.asList(
+                    Collections.singletonList( m3 ),
                     m3
-                }), installer.args);
+                ), installer.args);
             } else {
                 mgr.disable(m3);
                 assertFalse(m3.isEnabled());
                 assertTrue(m2.isEnabled());
                 assertTrue(m1.isEnabled());
-                assertEquals(Arrays.asList(new String[] {
+                assertEquals(Arrays.asList(
                     "unload",
                     "dispose"
-                }), installer.actions);
-                assertEquals(Arrays.asList(new Object[] {
-                    Arrays.asList(new Module[] {m3}),
-                    m3,
-                }), installer.args);
+                ), installer.actions);
+                assertEquals(Arrays.asList(
+                    Collections.singletonList(m3),
+                    m3
+                ), installer.args);
             }
         } finally {
             mgr.mutexPrivileged().exitWriteAccess();
@@ -1348,36 +1342,36 @@ public class ModuleManagerTest extends SetupHid {
             Map<String,Module> modulesByName = new HashMap<String,Module>();
             modulesByName.put(m2.getCodeNameBase(), m2);
             Map<String,Set<Module>> providersOf = new HashMap<String,Set<Module>>();
-            List<Module> m2List = Arrays.asList(new Module[] { m2 });
+            List<Module> m2List = Collections.singletonList( m2 );
             Map<Module,List<Module>> deps = Util.moduleDependencies(m2List, modulesByName, providersOf);
             assertEquals(null, deps.get(m2));
 
             List<Module> toEnable = mgr.simulateEnable(new HashSet<Module>(m2List));
-            assertEquals("correct result of simulateEnable", Arrays.asList(new Module[] {m2}), toEnable);
+            assertEquals("correct result of simulateEnable", Collections.singletonList(m2), toEnable);
             mgr.enable(new HashSet<Module>(m2List));
-            assertEquals(Arrays.asList(new String[] {
+            assertEquals(Arrays.asList(
                 "prepare",
                 "load"
-            }), installer.actions);
-            assertEquals(Arrays.asList(new Object[] {
+            ), installer.actions);
+            assertEquals(Arrays.asList(
                 m2,
 //                m1,
-                Arrays.asList(new Module[] {m2})
-            }), installer.args);
+                Collections.singletonList(m2)
+            ), installer.args);
             installer.clear();
             List<Module> toDisable = mgr.simulateDisable(Collections.singleton(m2));
-            assertEquals("correct result of simulateDisable", Arrays.asList(new Module[] {m2}), toDisable);
+            assertEquals("correct result of simulateDisable", Collections.singletonList(m2), toDisable);
             mgr.disable(m2);
             assertFalse(m2.isEnabled());
-            assertEquals(Arrays.asList(new String[] {
+            assertEquals(Arrays.asList(
                 "unload",
                 "dispose"
-            }), installer.actions);
-            assertEquals(Arrays.asList(new Object[] {
-                Arrays.asList(new Module[] {m2}),
+            ), installer.actions);
+            assertEquals(Arrays.asList(
+                Collections.singletonList(m2),
 //                m1,
                 m2
-            }), installer.args);
+            ), installer.args);
         } finally {
             mgr.mutexPrivileged().exitWriteAccess();
         }
@@ -1414,7 +1408,7 @@ public class ModuleManagerTest extends SetupHid {
             Map<String,Module> modulesByName = new HashMap<String,Module>();
             modulesByName.put(m2.getCodeNameBase(), m2);
             Map<String,Set<Module>> providersOf = new HashMap<String,Set<Module>>();
-            List<Module> m2List = Arrays.asList(new Module[] { m2 });
+            List<Module> m2List = Collections.singletonList(m2);
             Map<Module,List<Module>> deps = Util.moduleDependencies(m2List, modulesByName, providersOf);
             assertEquals(null, deps.get(m2));
 
@@ -1439,29 +1433,29 @@ public class ModuleManagerTest extends SetupHid {
                 m3 = mgr.create(copyJar(m2.getJarFile(), manifest), null, false, true, false);
             }
             
-            Set allThreeModules = new HashSet(Arrays.asList(new Module[] {m1, m3, m2, }));
+            Set allThreeModules = new HashSet<Module>(Arrays.asList(m1, m3, m2));
             
             toEnable = mgr.simulateEnable(new HashSet<Module>(m2List));
-            assertEquals("all 3 need to be enabled", allThreeModules, new HashSet(toEnable));
+            assertEquals("all 3 need to be enabled", allThreeModules, new HashSet<Module>(toEnable));
             
             mgr.enable(new HashSet<Module>(m2List));
-            assertEquals(Arrays.asList(new String[] {
+            assertEquals(Arrays.asList(
                 "prepare",
                 "prepare",
                 "prepare",
                 "load"
-            }), installer.actions);
+            ), installer.actions);
             installer.clear();
             List<Module> toDisable = mgr.simulateDisable(Collections.singleton(m2));
-            assertEquals("correct result of simulateDisable", allThreeModules, new HashSet(toDisable));
+            assertEquals("correct result of simulateDisable", allThreeModules, new HashSet<Module>(toDisable));
             mgr.disable(m2);
             assertFalse(m2.isEnabled());
-            assertEquals(Arrays.asList(new String[] {
+            assertEquals(Arrays.asList(
                 "unload",
                 "dispose",
                 "dispose",
                 "dispose"
-            }), installer.actions);
+            ), installer.actions);
         } finally {
             mgr.mutexPrivileged().exitWriteAccess();
         }
@@ -1476,11 +1470,11 @@ public class ModuleManagerTest extends SetupHid {
             Module m1 = mgr.create(new File(jars, "prov-foo.jar"), null, false, false, false);
             Module m2 = mgr.create(new File(jars, "prov-baz.jar"), null, false, false, false);
             Module m3 = mgr.create(new File(jars, "req-foo-baz.jar"), null, false, false, false);
-            Set<Module> m123 = new HashSet<Module>(Arrays.asList(new Module[] {m1, m2, m3}));
+            Set<Module> m123 = new HashSet<Module>(Arrays.asList(m1, m2, m3));
             assertEquals(m123, new HashSet<Module>(mgr.simulateEnable(Collections.singleton(m3))));
             mgr.enable(m123);
-            assertEquals(Arrays.asList(new Module[] {m3, m1}), mgr.simulateDisable(Collections.singleton(m1)));
-            assertEquals(Arrays.asList(new Module[] {m3, m2}), mgr.simulateDisable(Collections.singleton(m2)));
+            assertEquals(Arrays.asList(m3, m1), mgr.simulateDisable(Collections.singleton(m1)));
+            assertEquals(Arrays.asList(m3, m2), mgr.simulateDisable(Collections.singleton(m2)));
         } finally {
             mgr.mutexPrivileged().exitWriteAccess();
         }
@@ -1499,14 +1493,14 @@ public class ModuleManagerTest extends SetupHid {
                 mgr.simulateEnable(Collections.singleton(m1)));
             assertEquals(Collections.singletonList(m2),
                 mgr.simulateEnable(Collections.singleton(m2)));
-            Set<Module> m12 = new HashSet<Module>(Arrays.asList(new Module[] {m1, m2}));
-            Set<Module> m123 = new HashSet<Module>(Arrays.asList(new Module[] {m1, m2, m3}));
+            Set<Module> m12 = new HashSet<Module>(Arrays.asList(m1, m2));
+            Set<Module> m123 = new HashSet<Module>(Arrays.asList(m1, m2, m3));
             assertEquals(m123, new HashSet<Module>(mgr.simulateEnable(m12)));
             mgr.enable(m12);
             assertTrue(m3.isEnabled());
-            assertEquals(Arrays.asList(new Module[] {m3, m1}),
+            assertEquals(Arrays.asList(m3, m1),
                 mgr.simulateDisable(Collections.singleton(m1)));
-            assertEquals(Arrays.asList(new Module[] {m3, m2}),
+            assertEquals(Arrays.asList(m3, m2),
                 mgr.simulateDisable(Collections.singleton(m2)));
             assertEquals(m123,
                 new HashSet<Module>(mgr.simulateDisable(m12)));
@@ -1525,11 +1519,11 @@ public class ModuleManagerTest extends SetupHid {
         try {
             Module m1 = mgr.create(new File(jars, "prov-foo.jar"), null, false, true, false);
             Module m2 = mgr.create(new File(jars, "req-foo.jar"), null, false, false, false);
-            assertEquals(Arrays.asList(new Module[] {m1, m2}),
+            assertEquals(Arrays.asList(m1, m2),
                 mgr.simulateEnable(Collections.singleton(m2)));
             mgr.enable(m2);
             assertTrue(m1.isEnabled());
-            assertEquals(Arrays.asList(new Module[] {m2, m1}),
+            assertEquals(Arrays.asList(m2, m1),
                 mgr.simulateDisable(Collections.singleton(m2)));
             mgr.disable(m2);
             assertFalse(m1.isEnabled());
@@ -1549,7 +1543,7 @@ public class ModuleManagerTest extends SetupHid {
             Module m3 = mgr.create(new File(jars, "prov-foo-bar.jar"), null, false, false, false);
             Module m4 = mgr.create(new File(jars, "prov-foo-req-bar.jar"), null, false, false, true);
             assertEquals("m2 should not be enabled - m4 might ask for it but m3 already has bar",
-                new HashSet<Module>(Arrays.asList(new Module[] {m3, m4})),
+                new HashSet<Module>(Arrays.asList(m3, m4)),
                 new HashSet<Module>(mgr.simulateEnable(Collections.singleton(m3))));
         } finally {
             mgr.mutexPrivileged().exitWriteAccess();
@@ -1570,12 +1564,12 @@ public class ModuleManagerTest extends SetupHid {
             "prov-foo-req-bar.jar",
         };
         // Never make any of the following eager:
-        Set<String> noDepsNames = new HashSet<String>(Arrays.asList(new String[] {
+        Set<String> noDepsNames = new HashSet<String>(Arrays.asList(
             "simple-module.jar",
             "prov-foo.jar",
             "prov-baz.jar",
-            "prov-foo-bar.jar",
-        }));
+            "prov-foo-bar.jar"
+        ));
         List<String> freeModules = new ArrayList<String>(Arrays.asList(moduleNames));
         int count = 100; // # of things to do in order
         Random r = new Random(count * 17 + 113);
@@ -1983,7 +1977,7 @@ public class ModuleManagerTest extends SetupHid {
             Module m1 = mgr.createFixed(mani1, null, l);
             Module m2 = mgr.createFixed(mani2, null, l);
             Module m3 = mgr.create(j3, null, false, false, false);
-            mgr.enable(new HashSet<Module>(Arrays.asList(new Module[] {m1, m2, m3})));
+            mgr.enable(new HashSet<Module>(Arrays.asList(m1, m2, m3)));
         } finally {
             mgr.mutexPrivileged().exitWriteAccess();
         }
@@ -2116,7 +2110,7 @@ public class ModuleManagerTest extends SetupHid {
             assertEquals("uses-and-exports-api.jar had no problems", Collections.EMPTY_SET, m2.getProblems());
             assertEquals("uses-api-transitively.jar had no problems", Collections.EMPTY_SET, m3.getProblems());
             assertEquals("uses-api-directly.jar had no problems", Collections.EMPTY_SET, m4.getProblems());
-            mgr.enable(new HashSet<Module>(Arrays.asList(new Module[] {m1, m2, m3, m4})));
+            mgr.enable(new HashSet<Module>(Arrays.asList(m1, m2, m3, m4)));
             m4.getClassLoader().loadClass("usesapitrans.UsesDirectAPI").newInstance();
             m4.getClassLoader().loadClass("usesapitrans.UsesIndirectAPI").newInstance();
             m3.getClassLoader().loadClass("usesapitrans.UsesDirectAPI").newInstance();
@@ -2124,7 +2118,7 @@ public class ModuleManagerTest extends SetupHid {
                 m3.getClassLoader().loadClass("usesapitrans.UsesIndirectAPI").newInstance();
                 fail("Should not be able to use a transitive API class with no direct dependency");
             } catch (NoClassDefFoundError e) {}
-            mgr.disable(new HashSet<Module>(Arrays.asList(new Module[] {m1, m2, m3, m4})));
+            mgr.disable(new HashSet<Module>(Arrays.asList(m1, m2, m3, m4)));
             mgr.delete(m4);
             mgr.delete(m3);
             mgr.delete(m2);
@@ -2148,7 +2142,7 @@ public class ModuleManagerTest extends SetupHid {
             assertEquals("uses-and-exports-api.jar had no problems", Collections.EMPTY_SET, m3.getProblems());
             assertEquals("uses-api-directly.jar had no problems", Collections.EMPTY_SET, m4.getProblems());
             assertEquals("uses-api-impl-dep-for-friends.jar had no problems", Collections.EMPTY_SET, m5.getProblems());
-            mgr.enable(new HashSet<Module>(Arrays.asList(new Module[] {m1, m2, m3, m4, m5})));
+            mgr.enable(new HashSet<Module>(Arrays.asList(m1, m2, m3, m4, m5)));
             m2.getClassLoader().loadClass("usesapi.UsesPublicClass").newInstance();
             try {
                 m2.getClassLoader().loadClass("usesapi.UsesImplClass").newInstance();
@@ -2180,7 +2174,7 @@ public class ModuleManagerTest extends SetupHid {
                 fail("m5 has an implementation dependency and has not been allowed to load the imlpementation class");
             }
 
-            mgr.disable(new HashSet<Module>(Arrays.asList(new Module[] {m1, m2, m3, m4, m5})));
+            mgr.disable(new HashSet<Module>(Arrays.asList(m1, m2, m3, m4, m5)));
             mgr.delete(m5);
             mgr.delete(m4);
             mgr.delete(m3);
@@ -2200,8 +2194,8 @@ public class ModuleManagerTest extends SetupHid {
             Module m1 = mgr.create(new File(jars, "simple-module.jar"), null, false, false, false);
             Module m2 = mgr.create(new File(jars, "depends-on-simple-module.jar"), null, false, false, false);
             Module m3 = mgr.create(new File(jars, "dep-on-dep-on-simple.jar"), null, false, false, false);
-            Set<Module> m1m2 = new HashSet<Module>(Arrays.asList(new Module[] {m1, m2}));
-            Set<Module> m2m3 = new HashSet<Module>(Arrays.asList(new Module[] {m2, m3}));
+            Set<Module> m1m2 = new HashSet<Module>(Arrays.asList(m1, m2));
+            Set<Module> m2m3 = new HashSet<Module>(Arrays.asList(m2, m3));
             assertEquals(Collections.EMPTY_SET, mgr.getModuleInterdependencies(m1, false, false));
             assertEquals(Collections.EMPTY_SET, mgr.getModuleInterdependencies(m1, false, true));
             assertEquals(Collections.singleton(m2), mgr.getModuleInterdependencies(m1, true, false));
@@ -2219,11 +2213,11 @@ public class ModuleManagerTest extends SetupHid {
             m3 = mgr.create(new File(jars, "req-foo.jar"), null, false, false, false);
             Module m4 = mgr.create(new File(jars, "prov-baz.jar"), null, false, false, false);
             Module m5 = mgr.create(new File(jars, "req-foo-baz.jar"), null, false, false, false);
-            m1m2 = new HashSet<Module>(Arrays.asList(new Module[] {m1, m2}));
+            m1m2 = new HashSet<Module>(Arrays.asList(m1, m2));
             assertEquals(m1m2, mgr.getModuleInterdependencies(m3, false, true));
-            Set<Module> m1m2m4 = new HashSet<Module>(Arrays.asList(new Module[] {m1, m2, m4}));
+            Set<Module> m1m2m4 = new HashSet<Module>(Arrays.asList(m1, m2, m4));
             assertEquals(m1m2m4, mgr.getModuleInterdependencies(m5, false, true));
-            Set<Module> m3m5 = new HashSet<Module>(Arrays.asList(new Module[] {m3, m5}));
+            Set<Module> m3m5 = new HashSet<Module>(Arrays.asList(m3, m5));
             assertEquals(m3m5, mgr.getModuleInterdependencies(m1, true, true));
             // XXX could do more...
         } finally {
@@ -2281,7 +2275,7 @@ public class ModuleManagerTest extends SetupHid {
             assertTrue ("Successfully enabled", m1.isEnabled ());
             assertEquals ("Classloader at the time of PROP_ENABLED is the same as now", l.get (), l.l);
             assertNull ("No exception thrown", l.ex);
-            System.out.println("L: " + l.l);
+            //System.out.println("L: " + l.l);
             m1.removePropertyChangeListener (l);
 
             mgr.disable (m1);
