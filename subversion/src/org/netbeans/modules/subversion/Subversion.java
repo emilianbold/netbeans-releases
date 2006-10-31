@@ -40,6 +40,7 @@ import java.beans.PropertyChangeListener;
 
 import org.netbeans.modules.subversion.config.ProxyDescriptor;
 import org.netbeans.modules.subversion.ui.diff.Setup;
+import org.netbeans.modules.subversion.ui.ignore.IgnoreAction;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.spi.OriginalContent;
 import org.netbeans.modules.versioning.util.VersioningListener;
@@ -340,12 +341,12 @@ public class Subversion {
      * @return true if file is listed in parent's ignore list
      * or IDE thinks it should be.
      */
-    boolean isIgnored(File file) {
+    boolean isIgnored(final File file) {
         String name = file.getName();
 
         // ask SVN
 
-        File parent = file.getParentFile();
+        final File parent = file.getParentFile();
         if (parent != null) {
             int pstatus = fileStatusCache.getStatus(parent).getStatus();
             if ((pstatus & FileInformation.STATUS_VERSIONED) != 0) {
@@ -367,45 +368,29 @@ public class Subversion {
             }
         }
 
-        // ask projects and sync witn SVN
-        
-        int sharability = SharabilityQuery.getSharability(file);
-        
-        if (sharability == SharabilityQuery.NOT_SHARABLE) {
-            try {
-                // BEWARE: In NetBeans VISIBILTY == SHARABILITY ... and we hide Locally Removed folders => we must not Ignore them by mistake
-                FileInformation info = fileStatusCache.getCachedStatus(file); // getStatus may cause stack overflow
-                if (SubversionVisibilityQuery.isHiddenFolder(info, file)) {
-                    return false;
-                }
-                // if IDE-ignore-root then propagate IDE opinion to Subversion svn:ignore
-                if (SharabilityQuery.getSharability(parent) !=  SharabilityQuery.NOT_SHARABLE) {
-                    if ((fileStatusCache.getStatus(parent).getStatus() & FileInformation.STATUS_VERSIONED) != 0) {
-                        // synchronize read/write access to folder properties; do NOT put getSharability() into synchronized block, it
-                        // had caused numerous problems when creating new projects
-                        // technically, this block need not be synchronized but we want to have svn:ignore property set correctly at all times
-                        synchronized(this) {
-                            List<String> patterns = getClient(true).getIgnoredPatterns(parent);
-                            if (patterns.contains(file.getName()) == false) {
-                                patterns.add(file.getName());
-                                getClient(true).setIgnoredPatterns(parent, patterns);
-                            }
-                        }
+        // SQ acquires project locks, it is only safe to call it in a separate thread
+        RequestProcessor.Task task = org.netbeans.modules.versioning.util.Utils.createTask(new Runnable() {
+            public void run() {
+                try {
+                    if (SharabilityQuery.getSharability(file) != SharabilityQuery.NOT_SHARABLE) {
+                        return;
                     }
+                    // BEWARE: In NetBeans VISIBILTY == SHARABILITY ... and we hide Locally Removed folders => we must not Ignore them by mistake
+                    FileInformation info = fileStatusCache.getCachedStatus(file); // getStatus may cause stack overflow
+                    if (SubversionVisibilityQuery.isHiddenFolder(info, file)) {
+                        return;
+                    }
+                    // if IDE-ignore-root then propagate IDE opinion to Subversion svn:ignore
+                    if (SharabilityQuery.getSharability(parent) !=  SharabilityQuery.NOT_SHARABLE) {
+                        IgnoreAction.ignore(file);
+                    }
+                } catch (SVNClientException ex) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 }
-            } catch (SVNClientException ex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             }
-            return true;
-        } else {
-            // backward compatability #68124
-            if (".nbintdb".equals(name)) {  // NOI18N
-                return true;
-            }
-
-            return false;
-        }
-
+        });
+        task.schedule(20);
+        return false;
     }    
 
     /**

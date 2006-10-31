@@ -22,6 +22,7 @@ import org.netbeans.modules.editor.errorstripe.privatespi.MarkProvider;
 import org.netbeans.modules.versioning.spi.OriginalContent;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.netbeans.modules.versioning.VersioningManager;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.loaders.DataObject;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -50,11 +51,6 @@ class DiffSidebarManager {
         return instance;
     }
 
-    /**
-     * Allow 2 sidebars to be updated simultaneously.
-     */
-    private final RequestProcessor diffSidebarRequestprocessor = new RequestProcessor("DiffSidebar", 2);
-   
     private boolean sidebarEnabled = false;
 
     /**
@@ -72,7 +68,7 @@ class DiffSidebarManager {
      * @return RP task
      */
     RequestProcessor.Task createDiffSidebarTask(Runnable runnable) {
-        return diffSidebarRequestprocessor.create(runnable);
+        return Utils.createTask(runnable);
     }
 
     JComponent createSideBar(JTextComponent target) {

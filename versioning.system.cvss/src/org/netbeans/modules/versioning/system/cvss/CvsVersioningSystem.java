@@ -277,7 +277,7 @@ public class CvsVersioningSystem {
      * @param file file to be tested
      * @return true, if the file is ignored by CVS, false otherwise.
      */
-    boolean isIgnored(File file) {
+    boolean isIgnored(final File file) {
         if (file.isDirectory()) {
             File cvsRepository = new File(file, FILENAME_CVS_REPOSITORY);
             if (cvsRepository.canRead()) return false;
@@ -300,21 +300,27 @@ public class CvsVersioningSystem {
             if (pattern.matcher(name).matches()) return true;
         }
         
-        int sharability = SharabilityQuery.getSharability(file);
-        if (sharability == SharabilityQuery.NOT_SHARABLE) {
-            // BEWARE: In NetBeans VISIBILTY == SHARABILITY ... and we hide Locally Removed folders => we must not Ignore them by mistake
-            if (CvsVisibilityQuery.isHiddenFolder(file)) {
-                return false;
+        // SQ acquires project locks, it is only safe to call it in a separate thread
+        RequestProcessor.Task task = org.netbeans.modules.versioning.util.Utils.createTask(new Runnable() {
+            public void run() {
+                if (SharabilityQuery.getSharability(file) == SharabilityQuery.NOT_SHARABLE) {
+                    // BEWARE: In NetBeans VISIBILTY == SHARABILITY ... and we hide Locally Removed folders => we must not Ignore them by mistake
+                    if (!CvsVisibilityQuery.isHiddenFolder(file)) {
+                        File parent = file.getParentFile();
+                        if (SharabilityQuery.getSharability(parent) !=  SharabilityQuery.NOT_SHARABLE) {
+                            try {
+                                setIgnored(file);
+                                fileStatusCache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+                            } catch (IOException e) {
+                                // strange, but does no harm
+                            }
+                        }
+                    }
+                }
             }
-            try {
-                setIgnored(file);
-            } catch (IOException e) {
-                // strange, but does no harm
-            }
-            return true;
-        } else {
-            return false;
-        }
+        });
+        task.schedule(20);
+        return false;
     }
     
     private void addUserPatterns(Set patterns) {

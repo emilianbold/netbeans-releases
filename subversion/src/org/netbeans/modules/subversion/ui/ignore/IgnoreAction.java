@@ -206,7 +206,7 @@ public class IgnoreAction extends ContextAction {
      * @param file file to add
      * @throws SVNClientException if something goes wrong in subversion
      */ 
-    private void ensureVersioned(File file) throws SVNClientException {
+    private static void ensureVersioned(File file) throws SVNClientException {
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
         if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_VERSIONED) != 0) return;
         ensureVersioned(file.getParentFile());
@@ -219,7 +219,7 @@ public class IgnoreAction extends ContextAction {
      * 
      * @param file file to add
      */ 
-    private void add(File file) throws SVNClientException {
+    private static void add(File file) throws SVNClientException {
         SVNUrl repositoryUrl = SvnUtils.getRepositoryRootUrl(file);
         SvnClient client = Subversion.getInstance().getClient(repositoryUrl);               
         client.addFile(file);
@@ -229,4 +229,17 @@ public class IgnoreAction extends ContextAction {
         return false;
     }
 
+    public static void ignore(File file) throws SVNClientException {
+        // technically, this block need not be synchronized but we want to have svn:ignore property set correctly at all times
+        synchronized(IgnoreAction.class) {
+            File parent = file.getParentFile();
+            ensureVersioned(parent);
+            List<String> patterns = Subversion.getInstance().getClient(true).getIgnoredPatterns(parent);
+            if (patterns.contains(file.getName()) == false) {
+                patterns.add(file.getName());
+                Subversion.getInstance().getClient(true).setIgnoredPatterns(parent, patterns);
+            }
+            Subversion.getInstance().getStatusCache().refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+        }
+    }
 }
