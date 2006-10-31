@@ -22,30 +22,27 @@ import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
-import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.subversion.FileStatusCache;
-import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.settings.HistorySettings;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
-import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
+import org.openide.loaders.DataObject;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -165,27 +162,11 @@ public class CheckoutCompleted implements ActionListener {
         if (panel.openButton.equals(src)) {
             // show project chooser
             if (projectToBeOpened == null) {
-                JFileChooser chooser = ProjectChooser.projectChooser();
-                chooser.setCurrentDirectory(workingFolder);
-                chooser.setMultiSelectionEnabled(true);
-                chooser.showOpenDialog(null);
-                File [] projectDirs = chooser.getSelectedFiles();
-                for (int i = 0; i < projectDirs.length; i++) {
-                    File projectDir = projectDirs[i];
-                    FileObject projectFolder = FileUtil.toFileObject(projectDir);
-                    if (projectFolder != null) {
-                        try {
-                            Project p = ProjectManager.getDefault().findProject(projectFolder);
-                            if (p != null) {
-                                openProject(p);
-                            }
-                        } catch (IOException e1) {
-                            ErrorManager err = ErrorManager.getDefault();
-                            err.annotate(e1, NbBundle.getMessage(CheckoutAction.class, "BK3014", projectFolder)); // NOI18N
-                            err.notify(e1);
-                        }
-                    }
-                }
+                // et tu, svn? (see #77438)
+                Action a = findAction( "Actions/Project/org-netbeans-modules-project-ui-OpenProject.instance" ); // NOI18N
+                if( null != a ) {
+                    a.actionPerformed( e );
+                }                
             } else {
                 if (projectToBeOpened == null) return; 
                 openProject(projectToBeOpened);
@@ -197,6 +178,29 @@ public class CheckoutCompleted implements ActionListener {
         if (panel.againCheckBox.isSelected()) {
            HistorySettings.setFlag(HistorySettings.PROP_SHOW_CHECKOUT_COMPLETED, 0);
         }
+    }
+    
+    public static Action findAction( String key ) {
+        FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource(key);
+        
+        if (fo != null && fo.isValid()) {
+            try {
+                DataObject dob = DataObject.find(fo);
+                InstanceCookie ic = (InstanceCookie) dob.getCookie(InstanceCookie.class);
+                
+                if (ic != null) {
+                    Object instance = ic.instanceCreate();
+                    if (instance instanceof Action) {
+                        Action a = (Action) instance;
+                        return a;
+                    }
+                }
+            } catch (Exception e) {
+                ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
+                return null;
+            }
+        }
+        return null;
     }
     
     private void openProject(Project p) {
