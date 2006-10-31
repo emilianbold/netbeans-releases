@@ -30,15 +30,17 @@ import java.io.File;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.*;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 
 /**
  * @author Maros Sandor
  */
-public class SubversionVCS extends VersioningSystem implements VersioningListener, PropertyChangeListener {
+public class SubversionVCS extends VersioningSystem implements VersioningListener, PreferenceChangeListener {
 
     public SubversionVCS() {
         Subversion.getInstance().getStatusCache().addVersioningListener(this);
-        SvnModuleConfig.getDefault().addPropertyChangeListener(this);
+        SvnModuleConfig.getPreferences().addPreferenceChangeListener(this);
     }
 
     public File getTopmostManagedParent(File file) {
@@ -70,8 +72,8 @@ public class SubversionVCS extends VersioningSystem implements VersioningListene
         }
     }
 
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (SvnModuleConfig.PROP_COMMIT_EXCLUSIONS.equals(evt.getPropertyName())) {
+    public void preferenceChange(PreferenceChangeEvent evt) {
+        if (evt.getKey().startsWith(SvnModuleConfig.PROP_COMMIT_EXCLUSIONS)) {
             fireStatusChanged((Set<File>) null);
         }
     }

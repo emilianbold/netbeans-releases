@@ -51,6 +51,8 @@ import java.util.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.io.File;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import org.netbeans.modules.subversion.ui.update.UpdateAction;
 import org.tigris.subversion.svnclientadapter.*;
 
@@ -59,7 +61,7 @@ import org.tigris.subversion.svnclientadapter.*;
  * 
  * @author Maros Sandor 
  */
-class VersioningPanel extends JPanel implements ExplorerManager.Provider, PropertyChangeListener, VersioningListener, ActionListener {
+class VersioningPanel extends JPanel implements ExplorerManager.Provider, PreferenceChangeListener, PropertyChangeListener, VersioningListener, ActionListener {
     
     private ExplorerManager             explorerManager;
     private final SvnVersioningTopComponent parentTopComponent;
@@ -140,14 +142,18 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Proper
         onDisplayedStatusChanged();
     }
     
+    public void preferenceChange(PreferenceChangeEvent evt) {
+        if (evt.getKey().startsWith(SvnModuleConfig.PROP_COMMIT_EXCLUSIONS)) {
+            repaint();
+        }
+    }
+    
     public void propertyChange(PropertyChangeEvent evt) {
         if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
             TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class, this);
             if (tc == null) return;
             tc.setActivatedNodes((Node[]) evt.getNewValue());
-        } else if (SvnModuleConfig.PROP_COMMIT_EXCLUSIONS.equals(evt.getPropertyName())) {
-            repaint();            
-        }
+        } 
     }
 
     /**
@@ -166,14 +172,14 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Proper
     
     public void addNotify() {
         super.addNotify();
-        SvnModuleConfig.getDefault().addPropertyChangeListener(this);
+        SvnModuleConfig.getPreferences().addPreferenceChangeListener(this);
         subversion.getStatusCache().addVersioningListener(this);
 //        subversion.addVersioningListener(this);
         explorerManager.addPropertyChangeListener(this);
     }
 
     public void removeNotify() {
-        SvnModuleConfig.getDefault().removePropertyChangeListener(this);
+        SvnModuleConfig.getPreferences().removePreferenceChangeListener(this);
         subversion.getStatusCache().removeVersioningListener(this);
 //        subversion.removeVersioningListener(this);
         explorerManager.removePropertyChangeListener(this);

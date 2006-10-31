@@ -28,12 +28,14 @@ import javax.swing.event.TableModelListener;
 import javax.swing.event.TableModelEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 
 /**
  *
  * @author  pk97937
  */
-public class CommitPanel extends javax.swing.JPanel implements PropertyChangeListener, TableModelListener {
+public class CommitPanel extends javax.swing.JPanel implements PreferenceChangeListener, TableModelListener {
 
     static final Object EVENT_SETTINGS_CHANGED = new Object();
 
@@ -54,7 +56,7 @@ public class CommitPanel extends javax.swing.JPanel implements PropertyChangeLis
 
     public void addNotify() {
         super.addNotify();
-        SvnModuleConfig.getDefault().addPropertyChangeListener(this);
+        SvnModuleConfig.getPreferences().addPreferenceChangeListener(this);
         commitTable.getTableModel().addTableModelListener(this);
         listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
         messageTextArea.selectAll();
@@ -62,12 +64,12 @@ public class CommitPanel extends javax.swing.JPanel implements PropertyChangeLis
 
     public void removeNotify() {
         commitTable.getTableModel().removeTableModelListener(this);
-        SvnModuleConfig.getDefault().removePropertyChangeListener(this);
+        SvnModuleConfig.getPreferences().removePreferenceChangeListener(this);
         super.removeNotify();
     }
     
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (SvnModuleConfig.PROP_COMMIT_EXCLUSIONS.equals(evt.getPropertyName())) {
+    public void preferenceChange(PreferenceChangeEvent evt) {
+        if (evt.getKey().startsWith(SvnModuleConfig.PROP_COMMIT_EXCLUSIONS)) {
             commitTable.dataChanged();
             listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
         }
