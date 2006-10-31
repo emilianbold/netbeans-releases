@@ -366,7 +366,7 @@ public abstract class FileSystem implements Serializable {
     */
     public abstract SystemAction[] getActions();
 
-    public SystemAction[] getActions(java.util.Set foSet) {
+    public SystemAction[] getActions(Set<FileObject> foSet) {
         return this.getActions();
     }
 

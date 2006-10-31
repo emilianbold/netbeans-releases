@@ -252,7 +252,7 @@ public class MultiFileSystem extends FileSystem {
         return al.toArray(new SystemAction[al.size()]);
     }
 
-    public SystemAction[] getActions(final Set foSet) {
+    public SystemAction[] getActions(final Set<FileObject> foSet) {
         List<SystemAction> al = new ArrayList<SystemAction>(101); // randomly choosen constant
         Set<SystemAction> uniq = new HashSet<SystemAction>(101); // not that randommly choosen
 
