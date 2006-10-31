@@ -29,6 +29,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
 import java.io.IOException;
 import java.io.File;
+import java.util.prefs.Preferences;
 import org.openide.util.*;
 
 /**
@@ -43,9 +44,9 @@ class BranchSettings extends javax.swing.JPanel {
 
     public BranchSettings(File [] roots) {
         this.roots = roots;
-        initComponents();
-        cbTagBase.setSelected(CvsModuleConfig.getDefault().getDefaultValue("BranchSettings.tagBase", true)); // NOI18N
-        tfBaseTagName.setText(CvsModuleConfig.getDefault().getDefaultValue("BranchSettings.tagBaseName", NbBundle.getMessage(BranchSettings.class, "BK0001")));  // NOI18N
+        initComponents();        
+        cbTagBase.setSelected(CvsModuleConfig.getPreferences().getBoolean("BranchSettings.tagBase", true)); // NOI18N
+        tfBaseTagName.setText(CvsModuleConfig.getPreferences().get("BranchSettings.tagBaseName", NbBundle.getMessage(BranchSettings.class, "BK0001")));  // NOI18N
         tfBaseTagName.getDocument().addDocumentListener(new DocumentListener() {
             public void changedUpdate(DocumentEvent e) {
                 autoComputeBaseTagName = computeBaseTagName().equals(tfBaseTagName.getText());
@@ -58,9 +59,10 @@ class BranchSettings extends javax.swing.JPanel {
             public void removeUpdate(DocumentEvent e) {
                 autoComputeBaseTagName = computeBaseTagName().equals(tfBaseTagName.getText());
             }
-        });
-        cbCheckoutBranch.setSelected(CvsModuleConfig.getDefault().getDefaultValue("BranchSettings.checkout", true)); // NOI18N
-        tfName.setText(CvsModuleConfig.getDefault().getDefaultValue("BranchSettings.branchName", NbBundle.getMessage(BranchSettings.class, "BK0002"))); // NOI18N
+        });        
+        
+        cbCheckoutBranch.setSelected(CvsModuleConfig.getPreferences().getBoolean("BranchSettings.checkout", true)); // NOI18N
+        tfName.setText(CvsModuleConfig.getPreferences().get("BranchSettings.branchName", NbBundle.getMessage(BranchSettings.class, "BK0002"))); // NOI18N
         tfName.getDocument().addDocumentListener(new DocumentListener() {
             public void changedUpdate(DocumentEvent e) {
                 refreshComponents();
@@ -94,9 +96,9 @@ class BranchSettings extends javax.swing.JPanel {
     }
     
     public void saveSettings() {
-        CvsModuleConfig.getDefault().setDefaultValue("BranchSettings.tagBase", cbTagBase.isSelected());  // NOI18N
-        CvsModuleConfig.getDefault().setDefaultValue("BranchSettings.checkout", cbCheckoutBranch.isSelected()); // NOI18N
-        CvsModuleConfig.getDefault().setDefaultValue("BranchSettings.branchName", tfName.getText()); // NOI18N
+        CvsModuleConfig.getPreferences().putBoolean("BranchSettings.tagBase", cbTagBase.isSelected());  // NOI18N
+        CvsModuleConfig.getPreferences().putBoolean("BranchSettings.checkout", cbCheckoutBranch.isSelected()); // NOI18N
+        CvsModuleConfig.getPreferences().put("BranchSettings.branchName", tfName.getText()); // NOI18N
     }
 
     private String computeBaseTagName() {

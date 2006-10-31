@@ -244,7 +244,6 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-versioning-system-cvss-settings-HistorySettings.settings" url="../settings/HistorySettings.xml"/>
             <file name="org-netbeans-modules-versioning-system-cvss-settings-CvsRootSettings.settings" url="../settings/CvsRootSettings.xml"/>
             <file name="org-netbeans-modules-versioning-system-cvss-settings-MetadataAttic.settings" url="../settings/MetadataAttic.xml"/>
-            <file name="org-netbeans-modules-versioning-system-cvss-settings-CvsModuleConfig.settings" url="../settings/CvsModuleConfig.xml"/>
         </folder>
         <folder name="JavaHelp">
             <file name="org-netbeans-modules-versioning-system-cvss-resources-helpset.xml" url="helpset-decl.xml"/>

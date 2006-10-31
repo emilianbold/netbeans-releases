@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.versioning.system.cvss.ui.syncview;
 
+import java.util.prefs.PreferenceChangeEvent;
 import org.netbeans.modules.versioning.system.cvss.*;
 import org.netbeans.modules.versioning.system.cvss.util.NoContentPanel;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
@@ -45,16 +46,17 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.event.*;
 import java.util.*;
-import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.prefs.PreferenceChangeListener;
 
 /**
  * The main class of the Synchronize view, shows and acts on set of file roots. 
  * 
  * @author Maros Sandor
  */
-class SynchronizePanel extends JPanel implements ExplorerManager.Provider, PropertyChangeListener, VersioningListener, ActionListener {
+class SynchronizePanel extends JPanel implements ExplorerManager.Provider, PropertyChangeListener, PreferenceChangeListener, VersioningListener, ActionListener {
     
     private ExplorerManager             explorerManager;
     private final CvsSynchronizeTopComponent parentTopComponent;
@@ -135,14 +137,18 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
         onDisplayedStatusChanged();
     }
     
+    public void preferenceChange(PreferenceChangeEvent evt) {
+        if (evt.getKey().startsWith(CvsModuleConfig.PROP_COMMIT_EXCLUSIONS)) {
+            repaint();
+        }
+    }
+    
     public void propertyChange(PropertyChangeEvent evt) {
         if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
             TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class, this);
             if (tc == null) return;
             tc.setActivatedNodes((Node[]) evt.getNewValue());
-        } else if (CvsModuleConfig.PROP_COMMIT_EXCLUSIONS.equals(evt.getPropertyName())) {
-            repaint();            
-        }
+        } 
     }
 
     CvsVersioningSystem getCvs() {
@@ -165,14 +171,14 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
     
     public void addNotify() {
         super.addNotify();
-        CvsModuleConfig.getDefault().addPropertyChangeListener(this);
+        CvsModuleConfig.getPreferences().addPreferenceChangeListener(this);
         cvs.getStatusCache().addVersioningListener(this);
         cvs.addVersioningListener(this);
         explorerManager.addPropertyChangeListener(this);
     }
 
     public void removeNotify() {
-        CvsModuleConfig.getDefault().removePropertyChangeListener(this);
+        CvsModuleConfig.getPreferences().removePreferenceChangeListener(this);        
         cvs.getStatusCache().removeVersioningListener(this);
         cvs.removeVersioningListener(this);
         explorerManager.removePropertyChangeListener(this);

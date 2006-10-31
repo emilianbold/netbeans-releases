@@ -28,6 +28,7 @@ import org.netbeans.lib.cvsclient.admin.AdminHandler;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.prefs.Preferences;
 import org.openide.util.*;
 
 /**
@@ -43,16 +44,16 @@ class SwitchBranchPanel extends javax.swing.JPanel {
     public SwitchBranchPanel(File [] roots) {
         this.roots = roots;
         initComponents();
-        rbSwitchToTrunk.setSelected(CvsModuleConfig.getDefault().getDefaultValue("SwitchBranchSettings.switchToTrunk", true)); // NOI18N
-        rbSwitchToBranch.setSelected(CvsModuleConfig.getDefault().getDefaultValue("SwitchBranchSettings.switchToBranch", false)); // NOI18N
-        tfBranchName.setText(CvsModuleConfig.getDefault().getDefaultValue("SwitchBranchSettings.branchName", NbBundle.getMessage(SwitchBranchPanel.class, "BK2001"))); // NOI18N
+        rbSwitchToTrunk.setSelected(CvsModuleConfig.getPreferences().getBoolean("SwitchBranchSettings.switchToTrunk", true)); // NOI18N
+        rbSwitchToBranch.setSelected(CvsModuleConfig.getPreferences().getBoolean("SwitchBranchSettings.switchToBranch", false)); // NOI18N
+        tfBranchName.setText(CvsModuleConfig.getPreferences().get("SwitchBranchSettings.branchName", NbBundle.getMessage(SwitchBranchPanel.class, "BK2001"))); // NOI18N
         refreshComponents();
     }
 
     public void saveSettings() {
-        CvsModuleConfig.getDefault().setDefaultValue("SwitchBranchSettings.switchToTrunk", rbSwitchToTrunk.isSelected()); // NOI18N
-        CvsModuleConfig.getDefault().setDefaultValue("SwitchBranchSettings.switchToBranch", rbSwitchToBranch.isSelected()); // NOI18N
-        CvsModuleConfig.getDefault().setDefaultValue("SwitchBranchSettings.branchName", tfBranchName.getText()); // NOI18N
+        CvsModuleConfig.getPreferences().putBoolean("SwitchBranchSettings.switchToTrunk", rbSwitchToTrunk.isSelected()); // NOI18N
+        CvsModuleConfig.getPreferences().putBoolean("SwitchBranchSettings.switchToBranch", rbSwitchToBranch.isSelected()); // NOI18N
+        CvsModuleConfig.getPreferences().put("SwitchBranchSettings.branchName", tfBranchName.getText()); // NOI18N
     }
 
     private void refreshComponents() {

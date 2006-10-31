@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.versioning.system.cvss.ui.actions.commit;
 
+import java.util.prefs.PreferenceChangeEvent;
 import javax.swing.*;
 import org.netbeans.lib.cvsclient.command.commit.CommitCommand;
 import org.netbeans.modules.versioning.system.cvss.*;
@@ -30,15 +31,15 @@ import javax.swing.event.TableModelListener;
 import javax.swing.event.TableModelEvent;
 import java.awt.Dimension;
 import java.awt.Toolkit;
-import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 
 /**
  * Customization of commits.
  * 
  * @author Maros Sandor
  */
-public class CommitSettings extends javax.swing.JPanel implements PropertyChangeListener, TableModelListener {
+public class CommitSettings extends javax.swing.JPanel implements PreferenceChangeListener, TableModelListener {
     
     static final String COLUMN_NAME_NAME    = "name"; // NOI18N
     static final String COLUMN_NAME_STICKY  = "sticky"; // NOI18N
@@ -98,7 +99,7 @@ public class CommitSettings extends javax.swing.JPanel implements PropertyChange
     
     public void addNotify() {
         super.addNotify();
-        CvsModuleConfig.getDefault().addPropertyChangeListener(this);
+        CvsModuleConfig.getPreferences().addPreferenceChangeListener(this);
         commitTable.getTableModel().addTableModelListener(this);
         listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
         taMessage.selectAll();
@@ -107,12 +108,12 @@ public class CommitSettings extends javax.swing.JPanel implements PropertyChange
 
     public void removeNotify() {
         commitTable.getTableModel().removeTableModelListener(this);
-        CvsModuleConfig.getDefault().removePropertyChangeListener(this);
+        CvsModuleConfig.getPreferences().removePreferenceChangeListener(this);
         super.removeNotify();
     }
-
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (CvsModuleConfig.PROP_COMMIT_EXCLUSIONS.equals(evt.getPropertyName())) {
+    
+    public void preferenceChange(PreferenceChangeEvent evt) {
+        if (evt.getKey().startsWith(CvsModuleConfig.PROP_COMMIT_EXCLUSIONS)) {
             commitTable.dataChanged();
             listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
         }

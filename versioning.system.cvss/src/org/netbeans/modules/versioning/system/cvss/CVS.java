@@ -30,18 +30,20 @@ import java.io.File;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.*;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 
 /**
  * CVS registration class.
  * 
  * @author Maros Sandor
  */
-public class CVS extends VersioningSystem implements VersioningListener, PropertyChangeListener {
+public class CVS extends VersioningSystem implements VersioningListener, PreferenceChangeListener {
 
     public CVS() {
         CvsVersioningSystem.getInstance().addVersioningListener(this);
         CvsVersioningSystem.getInstance().getStatusCache().addVersioningListener(this);
-        CvsModuleConfig.getDefault().addPropertyChangeListener(this);
+        CvsModuleConfig.getPreferences().addPreferenceChangeListener(this);
     }
     
     /**
@@ -81,8 +83,8 @@ public class CVS extends VersioningSystem implements VersioningListener, Propert
         }
     }
 
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (CvsModuleConfig.PROP_COMMIT_EXCLUSIONS.equals(evt.getPropertyName())) {
+    public void preferenceChange(PreferenceChangeEvent evt) {
+        if (evt.getKey().startsWith(CvsModuleConfig.PROP_COMMIT_EXCLUSIONS)) {
             fireStatusChanged((Set<File>) null);
         }
     }
