@@ -26,6 +26,7 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -47,6 +48,8 @@ import org.openide.util.Exceptions;
  * @author Petr Hrebejk, Tomas Zezula
  */
 public final class ClassIndex {
+    
+    private static final Logger LOGGER = Logger.getLogger(ClassIndex.class.getName());
     
     private final ClassPath bootPath;
     private final ClassPath classPath;
@@ -217,9 +220,10 @@ public final class ClassIndex {
         final Set<ElementHandle<TypeElement>> result = new HashSet<ElementHandle<TypeElement>>();        
         final Iterable<? extends ClassIndexImpl> queries = this.getQueries (scope);        
         final ResultConvertor<ElementHandle<TypeElement>> thConvertor = ResultConvertor.elementHandleConvertor();
-	for (ClassIndexImpl query : queries) {
+        for (ClassIndexImpl query : queries) {
             query.getDeclaredTypes (name, kind, thConvertor, result);
         }
+        LOGGER.fine(String.format("ClassIndex.getDeclaredTypes returned %d elements\n", result.size()));
         return Collections.unmodifiableSet(result);
     }
     
@@ -272,7 +276,8 @@ public final class ClassIndex {
                 this.depsIndeces = indeces;
             }
             result.addAll(this.depsIndeces);
-        }            
+        }
+        LOGGER.fine(String.format("ClassIndex.queries[Scope=%s, sourcePath=%s, bootPath=%s, classPath=%s] => %s\n",scope,sourcePath,bootPath,classPath,result));
         return result;
     }
     

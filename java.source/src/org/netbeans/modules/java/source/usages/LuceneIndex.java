@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.lang.model.element.ElementKind;
@@ -67,6 +68,8 @@ class LuceneIndex extends Index {
     
     private static final boolean debugIndexMerging = Boolean.getBoolean("LuceneIndex.debugIndexMerge");     // NOI18N
     private static final String REFERENCES = "refs";    // NOI18N
+    
+    private static final Logger LOGGER = Logger.getLogger(LuceneIndex.class.getName());
     
     private final Directory directory;
     private Long rootTimeStamp;
@@ -197,6 +200,7 @@ class LuceneIndex extends Index {
     @SuppressWarnings ("unchecked") // NOI18N, unchecked - lucene has source 1.4
     public <T> void getDeclaredTypes (final String name, final ClassIndex.NameKind kind, final ResultConvertor<T> convertor, final Set<? super T> result) throws IOException {
         if (!isValid()) {
+            LOGGER.fine(String.format("LuceneIndex[%s] is invalid!\n", this.toString()));
             return;
         }
         assert name != null;                
@@ -269,6 +273,7 @@ class LuceneIndex extends Index {
                 throw new UnsupportedOperationException (kind.toString());
         }           
         TermDocs tds = in.termDocs();
+        LOGGER.fine(String.format("LuceneIndex.getDeclaredTypes[%s] returned %d elements\n",this.toString(), toSearch.size()));
         final Iterator<Term> it = toSearch.iterator();        
         final ElementKind[] kindHolder = new ElementKind[1];
         while (it.hasNext()) {
