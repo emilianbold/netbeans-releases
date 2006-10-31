@@ -60,6 +60,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
 import javax.tools.DiagnosticListener;
@@ -107,12 +108,8 @@ import org.openide.util.Utilities;
  * @author Tomas Zezula
  */
 public class RepositoryUpdater implements PropertyChangeListener, FileChangeListener {
-    
-    private static final boolean reportInitialCompilation = Boolean.getBoolean("RepositoryUpdater.report_compilation"); // NOI18N
-    private static final boolean reportErrors = Boolean.getBoolean("RepositoryUpdater.report_errors"); // NOI18N
-    private static final boolean reportWarning = Boolean.getBoolean("RepositoryUpdater.report_warnings"); // NOI18N
-    private static final boolean reportCompilerCreation = Boolean.getBoolean ("RepositoryUpdater.report_new_javac");  // NOI18N
-    
+        
+    private static final Logger LOGGER = Logger.getLogger(RepositoryUpdater.class.getName());
     private static final Set<String> ignoredDirectories = parseSet("org.netbeans.javacore.ignoreDirectories", "SCCS CVS .svn"); // NOI18N
     private static final String PACKAGE_INFO = "package-info.java";  //NOI18N
     
@@ -659,10 +656,10 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                 }
                                 completed = true;
                             } finally {
-                                if (!completed) {
+                                if (!completed && !continuation) {
                                     resetDirty ();
                                 }
-                            }
+                            }                            
                             final ClassIndexManager cim = ClassIndexManager.getDefault();
                             scannedRoots.removeAll(oldRoots);
                             for (URL oldRoot : oldRoots) {
@@ -708,7 +705,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     }                                                
                     return null;                    
                 } finally {
-                    if (!continuation) {                        
+                    if (!continuation) {
                         work.finished ();
                         if (handle != null) {
                             handle.finish ();
@@ -719,10 +716,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         }
         
         private void findDependencies (final URL rootURL, final Stack<URL> cycleDetector, final Map<URL,List<URL>> depGraph, final Set<URL> binaries) {           
-            if (RepositoryUpdater.this.scannedRoots.contains(rootURL)) {
-                if (reportInitialCompilation) {
-                    System.err.println("Skeeping: " + rootURL.getPath());    // NOI18N
-                }
+            if (RepositoryUpdater.this.scannedRoots.contains(rootURL)) {                                
                 this.oldRoots.remove(rootURL);                        
                 return;
             }
@@ -833,14 +827,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             if (isInitialCompilation) {
                 //Initial compilation  debug messages
                 if (RepositoryUpdater.this.scannedRoots.contains(root)) {
-                    if (reportInitialCompilation) {
-                        System.err.println("Skeeping: " + FileUtil.getFileDisplayName(rootFo));    // NOI18N
-                    }
                     return;
                 }                
-                if (reportInitialCompilation) {
-                    System.err.println("Scanning: " + FileUtil.getFileDisplayName(rootFo));      // NOI18N
-                }
+                LOGGER.fine("Scanning Root: " + FileUtil.getFileDisplayName(rootFo));    //NOI18N
             }
             try {                                
                 final File rootFile = FileUtil.toFile(rootFo);
@@ -1237,17 +1226,17 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         
         void cleanDiagnostics () {
             if (!this.errors.isEmpty()) {
-                if (reportErrors) {
+                if (LOGGER.isLoggable(Level.FINE)) {
                     for (Diagnostic msg : this.errors) {
-                        System.err.println (msg);
+                        LOGGER.fine(msg.toString());      //NOI18N
                     }
                 }
                 this.errors.clear();
             }
             if (!this.warnings.isEmpty()) {
-                if (reportWarning) {
+                if (LOGGER.isLoggable(Level.FINE)) {
                     for (Diagnostic msg: this.warnings) {
-                        System.err.println(msg);
+                        LOGGER.fine(msg.toString());      //NOI18N
                     }
                 }
                 this.warnings.clear();
@@ -1341,9 +1330,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         if (jt == null) {
                             jt = JavaSourceAccessor.INSTANCE.createJavacTask(cpInfo, listener, sourceLevel);
                             jt.setTaskListener(listener);
-                            if (reportCompilerCreation) {
-                                System.err.println("BC: New Javac created.");       // NOI18N
-                            }
+                            LOGGER.fine("Created new JavacTask for: " + FileUtil.getFileDisplayName(rootFo));    //NOI18N
                         }
                         Iterable<? extends CompilationUnitTree> trees = jt.parse(new JavaFileObject[] {active});
                         if (listener.lowMemory.getAndSet(false)) {
