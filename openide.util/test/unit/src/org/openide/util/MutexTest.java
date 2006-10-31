@@ -26,6 +26,9 @@ import java.lang.ref.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.ErrorManager;
 import junit.framework.*;
 import org.netbeans.junit.*;
@@ -46,7 +49,7 @@ public class MutexTest extends NbTestCase {
     
     public static Test suite() {
         NbTestSuite suite = new NbTestSuite(MutexTest.class);
-        
+
         return suite;
     }
     
@@ -710,6 +713,59 @@ public class MutexTest extends NbTestCase {
         
 //        assertTrue("Thread C succeed", done[2]);
     }
+
+    
+    public void testReadEnterAfterPostWriteWasContended87932() throws Exception {
+        final Logger LOG = Logger.getLogger("org.openide.util.test");//testReadEnterAfterPostWriteWasContended87932");
+        
+        final Mutex.Privileged pr = new Mutex.Privileged();
+        final Mutex mutex = new Mutex(pr);
+        final Ticker tick = new Ticker();
+        final AtomicBoolean inWrite = new AtomicBoolean();
+        
+        Thread t = new Thread("testReadEnterAfterPostWriteWasContended87932-reader") {
+            public void run() {
+                pr.enterReadAccess();
+                tick.tick();
+                
+                // wait for exploitable place in Mutex
+                LOG.log(Level.FINE, "wait for exploitable place in Mutex");
+
+                pr.exitReadAccess();
+                
+                //Let the othe thread continue
+                LOG.log(Level.FINE, "Let the other thread continue");
+                
+                // the writer gets in now, lets' give him some time.
+                MutexTest.sleep(50);
+                pr.enterReadAccess();
+//                if (inWrite.get()) fail("Another reader inside while writer keeps lock");
+                pr.exitReadAccess();
+                
+                
+            }
+        };
+        String str = "THREAD:testReadEnterAfterPostWriteWasContended87932-reader MSG:wait for exploitable place in Mutex" + 
+                "THREAD:main MSG:.*Processing posted requests: 2" +
+                "THREAD:testReadEnterAfterPostWriteWasContended87932-reader MSG:Let the other thread continue";
+        Log.controlFlow(Logger.getLogger("org.openide.util"), null, str, 100);
+        
+        pr.enterReadAccess();
+        t.start();
+        
+        tick.waitOn();
+        mutex.postWriteRequest(new Runnable() {
+            public void run() {
+                inWrite.set(true);
+                // just keep the write lock for a while
+                sleep(1000);
+                inWrite.set(false);
+            }            
+        });
+        pr.exitReadAccess();
+        
+        t.join(10000);
+    }
     
     private static class Ticker {
         boolean state;
@@ -1026,4 +1082,16 @@ public class MutexTest extends NbTestCase {
         }
         
     } // end of State            
+    
+    private static final void sleep(long ms) {
+        try {
+            Thread.sleep(ms);
+        } catch (InterruptedException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    protected Level logLevel() {
+        return Level.FINEST;
+    }
 }

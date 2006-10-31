@@ -716,6 +716,8 @@ public final class Mutex extends Object {
                     // no one has higher prio?
                     if (waiters.get(0) == cell) {
                         waiters.remove(0);
+                        
+                        setGrantedMode(mode);
 
                         return;
                     } else {
@@ -787,11 +789,11 @@ public final class Mutex extends Object {
                     needLock = reenter(t, postedMode); // grab lock
                 }
             }
-        }
-         // sync
+        } // sync
 
         // check posted requests
         if ((postedMode != NONE) && (info.getRunnableCount(postedMode) > 0)) {
+            doLog("Processing posted requests: {0}", postedMode); // NOI18N
             try {
                 if (needLock) { // go from S to X or CHAIN
                     privilegedEnter(t, postedMode);
