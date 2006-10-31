@@ -390,7 +390,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
 
         public CompletionTask createDocumentationTask() {
-            return JavaCompletionProvider.createDocTask(elem);
+            return JavaCompletionProvider.createDocTask(ElementHandle.create(elem));
         }
 
         protected ImageIcon getIcon(){
@@ -670,7 +670,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
 
         public CompletionTask createDocumentationTask() {
-            return JavaCompletionProvider.createDocTask(elem);
+            return JavaCompletionProvider.createDocTask(ElementHandle.create(elem));
         }
 
         protected String getLeftHtmlText() {
@@ -844,7 +844,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
         
         public CompletionTask createDocumentationTask() {
-            return JavaCompletionProvider.createDocTask(elem);
+            return JavaCompletionProvider.createDocTask(ElementHandle.create(elem));
         }
 
         protected ImageIcon getIcon() {
@@ -1059,7 +1059,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
         
         public CompletionTask createDocumentationTask() {
-            return JavaCompletionProvider.createDocTask(elem);
+            return JavaCompletionProvider.createDocTask(ElementHandle.create(elem));
         }
 
         protected void substituteText(final JTextComponent c, final int offset, final int len) {
@@ -1224,7 +1224,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }        
         
         public CompletionTask createDocumentationTask() {
-            return JavaCompletionProvider.createDocTask(elem);
+            return JavaCompletionProvider.createDocTask(ElementHandle.create(elem));
         }
 
         protected void substituteText(JTextComponent c, int offset, int len, String toAdd) {
@@ -1578,7 +1578,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
 
         public CompletionTask createDocumentationTask() {
-            return JavaCompletionProvider.createDocTask(memberElem);
+            return JavaCompletionProvider.createDocTask(ElementHandle.create(memberElem));
         }
 
         protected String getLeftHtmlText() {

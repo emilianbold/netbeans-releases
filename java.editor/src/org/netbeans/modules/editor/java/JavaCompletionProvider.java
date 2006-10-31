@@ -60,7 +60,7 @@ public class JavaCompletionProvider implements CompletionProvider {
     
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
         if (".".equals(typedText)) {
-            if (Utilities.isJavaContext(component, component.getSelectionStart()))
+            if (Utilities.isJavaContext(component, component.getSelectionStart() - 1))
                 return COMPLETION_QUERY_TYPE;
         }
         return 0;
@@ -72,7 +72,7 @@ public class JavaCompletionProvider implements CompletionProvider {
         return null;
     }
     
-    static CompletionTask createDocTask(Element element) {
+    static CompletionTask createDocTask(ElementHandle element) {
         JavaCompletionQuery query = new JavaCompletionQuery(DOCUMENTATION_QUERY_TYPE, -1);
         query.element = element;
         return new AsyncCompletionTask(query, Registry.getMostActiveComponent());
@@ -177,7 +177,7 @@ public class JavaCompletionProvider implements CompletionProvider {
         private int caretOffset;
         private String filterPrefix;
         
-        private Element element;
+        private ElementHandle element;
         
         private JavaCompletionQuery(int queryType, int caretOffset) {
             this.queryType = queryType;
@@ -212,7 +212,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     toolTip = null;
                     anchorOffset = -1;
                     JavaSource js = JavaSource.forDocument(doc);
-                    js.runUserActionTask(this, true);
+                    js.runUserActionTask(this, (queryType & COMPLETION_QUERY_TYPE) == 0);
                     if ((queryType & COMPLETION_QUERY_TYPE) != 0) {
                         if (results != null)
                             resultSet.addAllItems(results);
@@ -404,13 +404,8 @@ public class JavaCompletionProvider implements CompletionProvider {
         }
         
         private void resolveDocumentation(CompilationController controller) throws IOException {
-            Element el = element;
-            if (el == null) {
-                Env env = getCompletionEnvironment(controller, false);
-                el = controller.getTrees().getElement(env.getPath());
-            }
+            Element el = element != null ? element.resolve(controller) : controller.getTrees().getElement(getCompletionEnvironment(controller, false).getPath());
             if (el != null) {
-                controller.toPhase(Phase.PARSED);
                 documentation = JavaCompletionDoc.create(SourceUtils.javaDocFor(controller, el));
             }
         }
