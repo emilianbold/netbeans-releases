@@ -39,20 +39,23 @@ public class ImportsTest extends GeneratorTestMDRCompat {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        //suite.addTestSuite(ImportsTest.class);
+//        suite.addTestSuite(ImportsTest.class);
         suite.addTest(new ImportsTest("testAddFirst"));
+        suite.addTest(new ImportsTest("testAddFirstAgain"));
         suite.addTest(new ImportsTest("testAddSecondImport"));
+        suite.addTest(new ImportsTest("testAddSecondImportWithEndLineCmt"));
         suite.addTest(new ImportsTest("testAddTwoImportsOrigWithComment"));
         suite.addTest(new ImportsTest("testAddBetweenImports"));
         suite.addTest(new ImportsTest("testRemoveBetweenImportsWithLineEndComment"));
         suite.addTest(new ImportsTest("testRemoveAllImports"));
         suite.addTest(new ImportsTest("testAddFirstTwo"));
-        suite.addTest(new ImportsTest("testUnformatted"));
+        suite.addTest(new ImportsTest("testAddFirstTwoAgain"));
+        suite.addTest(new ImportsTest("testAddFirstToExisting"));
+        suite.addTest(new ImportsTest("testRemoveInnerImport"));
         return suite;
     }
     
     public void testAddFirst() throws Exception {
-        // XXX: for this test case, introduce two new lines?
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
             "package hierbas.del.litoral;\n\n" +
@@ -84,6 +87,82 @@ public class ImportsTest extends GeneratorTestMDRCompat {
             }
         );
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testAddFirstAgain() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n\n" +
+            "import java.io.IOException;\n\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "    }\n" +
+            "}\n";
+
+        process(
+            new Transformer<Void, Object>() {
+            
+                public Void visitCompilationUnit(CompilationUnitTree node, Object p) {
+                    super.visitCompilationUnit(node, p);
+                    CompilationUnitTree copy = make.addCompUnitImport(
+                            node, 
+                            make.Import(make.Identifier("java.io.IOException"), false)
+                    );
+                    changes.rewrite(node, copy);
+                    return null;
+                }
+            }
+        );
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testAddFirstToExisting() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n\n" +
+            "import java.lang.NullPointerException;\n\n" + 
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n\n" +
+            "import java.io.IOException;\n" +
+            "import java.lang.NullPointerException;\n\n" + 
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "    }\n" +
+            "}\n";
+
+        process(
+            new Transformer<Void, Object>() {
+            
+                public Void visitCompilationUnit(CompilationUnitTree node, Object p) {
+                    super.visitCompilationUnit(node, p);
+                    CompilationUnitTree copy = make.insertCompUnitImport(
+                            node, 
+                            0,
+                            make.Import(make.Identifier("java.io.IOException"), false)
+                    );
+                    changes.rewrite(node, copy);
+                    return null;
+                }
+            }
+        );
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
     
@@ -124,6 +203,50 @@ public class ImportsTest extends GeneratorTestMDRCompat {
             }
         );
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testAddFirstTwoAgain() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n\n" +
+            "/** javadoc comment */\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n\n" +
+            "import java.io.IOException;\n" +
+            "import java.util.List;\n\n" +
+            "/** javadoc comment */\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "    }\n" +
+            "}\n";
+
+        process(
+            new Transformer<Void, Object>() {
+            
+                public Void visitCompilationUnit(CompilationUnitTree node, Object p) {
+                    super.visitCompilationUnit(node, p);
+                    CompilationUnitTree copy = make.addCompUnitImport(
+                            node,
+                            make.Import(make.Identifier("java.io.IOException"), false)
+                    );
+                    copy = make.addCompUnitImport(
+                            copy, 
+                            make.Import(make.Identifier("java.util.List"), false)
+                    );
+                    changes.rewrite(node, copy);
+                    return null;
+                }
+            }
+        );
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
     
@@ -140,6 +263,43 @@ public class ImportsTest extends GeneratorTestMDRCompat {
         String golden =
             "package hierbas.del.litoral;\n\n" +
             "import java.io.IOException;\n" +
+            "import java.util.List;\n\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "    }\n" +
+            "}\n";
+
+        process(
+            new Transformer<Void, Object>() {
+            
+                public Void visitCompilationUnit(CompilationUnitTree node, Object p) {
+                    super.visitCompilationUnit(node, p);
+                    CompilationUnitTree copy = make.addCompUnitImport(
+                            node, 
+                            make.Import(make.Identifier("java.util.List"), false)
+                    );
+                    changes.rewrite(node, copy);
+                    return null;
+                }
+            }
+        );
+        String res = TestUtilities.copyFileToString(testFile);
+        assertEquals(golden, res);
+    }
+    
+    public void testAddSecondImportWithEndLineCmt() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n\n" +
+            "import java.io.IOException; // aa\n\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n\n" +
+            "import java.io.IOException; // aa\n" +
             "import java.util.List;\n\n" +
             "public class Test {\n" +
             "    public void taragui() {\n" +
@@ -203,6 +363,7 @@ public class ImportsTest extends GeneratorTestMDRCompat {
             }
         );
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
     
@@ -248,6 +409,7 @@ public class ImportsTest extends GeneratorTestMDRCompat {
             }
         );
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
     
@@ -287,6 +449,47 @@ public class ImportsTest extends GeneratorTestMDRCompat {
             }
         );
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testRemoveInnerImport() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n\n" +
+            "import java.io.IOException;\n" +
+            "import java.util.ArrayList;\n" +
+            "import java.util.List;\n" +
+            "import java.util.LinkedList;\n" +
+            "import java.util.Collections;\n\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "    }\n" +
+            "}\n");
+        String golden =
+            "package hierbas.del.litoral;\n\n" +
+            "import java.io.IOException;\n" +
+            "import java.util.ArrayList;\n" +
+            "import java.util.LinkedList;\n" +
+            "import java.util.Collections;\n\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "    }\n" +
+            "}\n";
+
+        process(
+            new Transformer<Void, Object>() {
+            
+                public Void visitCompilationUnit(CompilationUnitTree node, Object p) {
+                    super.visitCompilationUnit(node, p);
+                    CompilationUnitTree copy = make.removeCompUnitImport(node, 2);
+                    changes.rewrite(node, copy);
+                    return null;
+                }
+            }
+        );
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
     
@@ -302,7 +505,7 @@ public class ImportsTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n");
         String golden =
-            "package hierbas.del.litoral;\n\n" +
+            "package hierbas.del.litoral;\n\n\n" +
             "public class Test {\n" +
             "    public void taragui() {\n" +
             "    }\n" +
@@ -322,6 +525,7 @@ public class ImportsTest extends GeneratorTestMDRCompat {
             }
         );
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
     
@@ -359,6 +563,7 @@ public class ImportsTest extends GeneratorTestMDRCompat {
             }
         );
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
     
