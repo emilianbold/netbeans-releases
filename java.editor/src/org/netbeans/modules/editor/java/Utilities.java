@@ -35,7 +35,6 @@ import javax.swing.text.JTextComponent;
 
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.*;
 import org.netbeans.editor.ext.ExtSettingsDefaults;
@@ -89,12 +88,32 @@ public class Utilities {
     }        
     
     public static boolean isJavaContext(final JTextComponent component, final int caretOffset) {
-        TokenSequence ts = TokenHierarchy.get(component.getDocument()).tokenSequence();
-        if (!ts.moveNext()) //empty file
+        TokenSequence<JavaTokenId> ts = TokenHierarchy.get(component.getDocument()).tokenSequence(JavaTokenId.language());
+        if (ts == null)
+            return false;
+        if (!ts.moveNext() || ts.move(caretOffset) == 0)
             return true;
-        int delta = ts.move(caretOffset);
-        TokenId tokenId = ts.token().id();
-        return delta == 0 || !JavaTokenId.language().tokenCategoryMembers("comment").contains(tokenId); //NOI18N
+        switch(ts.token().id()) {
+            case DOUBLE_LITERAL:
+                if (ts.token().text().charAt(0) == '.')
+                    break;
+            case CHAR_LITERAL:
+            case CHAR_LITERAL_INCOMPLETE:
+            case FLOAT_LITERAL:
+            case FLOAT_LITERAL_INVALID:
+            case INT_LITERAL:
+            case INVALID_COMMENT_END:
+            case JAVADOC_COMMENT:
+            case JAVADOC_COMMENT_INCOMPLETE:
+            case LONG_LITERAL:
+            case STRING_LITERAL:
+            case STRING_LITERAL_INCOMPLETE:
+            case LINE_COMMENT:
+            case BLOCK_COMMENT:
+            case BLOCK_COMMENT_INCOMPLETE:
+                return false;
+        }
+        return true;
     }
     
     public static String getTypeName(TypeMirror type, boolean fqn) {
