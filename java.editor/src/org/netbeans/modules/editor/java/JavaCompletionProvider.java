@@ -1525,8 +1525,8 @@ public class JavaCompletionProvider implements CompletionProvider {
             CompilationUnitTree root = env.getRoot();
             int catTextStart = (int)sourcePositions.getEndPosition(root, cat.getVariable());
             if (catTextStart != Diagnostic.NOPOS) {
-                int rhsPos = (int)sourcePositions.getStartPosition(root, cat.getExpression());
-                if (offset <= rhsPos) {
+                Tree expr = unwrapErrTree(cat.getExpression());
+                if (expr == null || offset <= (int)sourcePositions.getStartPosition(root, expr)) {
                     String catText = env.getController().getText().substring(catTextStart, offset);
                     int eqPos = catText.indexOf('='); //NOI18N
                     if (eqPos > -1) {
