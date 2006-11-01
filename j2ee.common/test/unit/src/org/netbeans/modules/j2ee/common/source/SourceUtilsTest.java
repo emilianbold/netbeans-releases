@@ -20,6 +20,8 @@
 package org.netbeans.modules.j2ee.common.source;
 
 import java.io.IOException;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.junit.MockServices;
@@ -27,16 +29,14 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.j2ee.common.AbstractTask;
 import org.netbeans.modules.j2ee.common.source.RepositoryImpl;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 
 /**
  *
  * @author Andrei Badea
+ * @author Martin Adamek
  */
 public class SourceUtilsTest extends NbTestCase {
-
-    private FileObject workDir;
 
     public SourceUtilsTest(String testName) {
         super(testName);
@@ -45,7 +45,6 @@ public class SourceUtilsTest extends NbTestCase {
     protected void setUp() throws Exception {
         MockServices.setServices(FakeJavaMIMEResolver.class, FakeJavaDataLoaderPool.class, RepositoryImpl.class);
         clearWorkDir();
-        workDir = FileUtil.toFileObject(getWorkDir());
     }
 
     public void testMainElement() throws Exception {
@@ -72,4 +71,45 @@ public class SourceUtilsTest extends NbTestCase {
             assertTrue(e.getCause() instanceof IllegalStateException);
         }
     }
+
+    public void testHasMainMethod() throws Exception {
+        FileObject fo = URLMapper.findFileObject(getClass().getResource("ClassWithMainMethod1.javax"));
+        boolean hasMainMethod = hasMainMethod(fo);
+        assertTrue(hasMainMethod);
+        fo = URLMapper.findFileObject(getClass().getResource("ClassWithMainMethod2.javax"));
+        hasMainMethod = hasMainMethod(fo);
+        assertTrue(hasMainMethod);
+        fo = URLMapper.findFileObject(getClass().getResource("ClassWithMainMethod3.javax"));
+        hasMainMethod = hasMainMethod(fo);
+        assertTrue(hasMainMethod);
+        fo = URLMapper.findFileObject(getClass().getResource("ClassWithoutMainMethod1.javax"));
+        hasMainMethod = hasMainMethod(fo);
+        assertFalse(hasMainMethod);
+        fo = URLMapper.findFileObject(getClass().getResource("ClassWithoutMainMethod2.javax"));
+        hasMainMethod = hasMainMethod(fo);
+        assertFalse(hasMainMethod);
+        fo = URLMapper.findFileObject(getClass().getResource("ClassWithoutMainMethod3.javax"));
+        hasMainMethod = hasMainMethod(fo);
+        assertFalse(hasMainMethod);
+        fo = URLMapper.findFileObject(getClass().getResource("Interface1.javax"));
+        hasMainMethod = hasMainMethod(fo);
+        assertFalse(hasMainMethod);
+        fo = URLMapper.findFileObject(getClass().getResource("SomeClass.javax"));
+        hasMainMethod = hasMainMethod(fo);
+        assertFalse(hasMainMethod);
+    }
+
+    private Boolean hasMainMethod(FileObject javaFile) throws IOException {
+        final boolean[] hasMainMethod = new boolean[] {false};
+        JavaSource javaSource = JavaSource.forFileObject(javaFile);
+        javaSource.runUserActionTask(new CancellableTask<CompilationController>() {
+            public void cancel() {}
+            public void run(CompilationController cc) throws Exception {
+                SourceUtils sourceUtils = new SourceUtils(cc);
+                hasMainMethod[0] = sourceUtils.hasMainMethod();
+            }
+        }, true);
+        return hasMainMethod[0];
+    }
+    
 }

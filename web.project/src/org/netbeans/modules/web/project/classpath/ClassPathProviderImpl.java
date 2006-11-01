@@ -304,6 +304,9 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
      * (i.e., excluding tests roots). Valid types are SOURCE and COMPILE.
      */
     public ClassPath getProjectSourcesClassPath(String type) {
+        if (ClassPath.BOOT.equals(type)) {
+            return getBootClassPath();
+        }
         if (ClassPath.SOURCE.equals(type)) {
             return getSourcepath(0);
         }

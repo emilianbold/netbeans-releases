@@ -281,18 +281,18 @@ Microsystems, Inc. All Rights Reserved.
                 <friend>org.netbeans.modules.j2ee.persistence</friend>
                 <friend>org.netbeans.modules.j2ee.refactoring</friend>
                 <friend>org.netbeans.modules.j2ee.verification</friend>
+                <friend>org.netbeans.modules.mobility.end2end</friend>
                 <friend>org.netbeans.modules.web.core</friend>
                 <friend>org.netbeans.modules.web.jsf</friend>
                 <friend>org.netbeans.modules.web.project</friend>
                 <friend>org.netbeans.modules.web.struts</friend>
                 <friend>org.netbeans.modules.websvc.core</friend>
                 <friend>org.netbeans.modules.websvc.dev</friend>
-                <friend>org.netbeans.modules.mobility.end2end</friend>
                 <package>org.netbeans.modules.j2ee.common</package>
                 <package>org.netbeans.modules.j2ee.common.queries.api</package>
                 <package>org.netbeans.modules.j2ee.common.queries.spi</package>
+                <package>org.netbeans.modules.j2ee.common.source</package>
                 <package>org.netbeans.modules.j2ee.common.ui</package>
-                <package>org.netbeans.modules.j2ee.common.ui.nodes</package>
             </friend-packages>
         </data>
     </configuration>

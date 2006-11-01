@@ -45,10 +45,12 @@ public class RepositoryImpl extends Repository {
         try
         {
             FileSystem writeFs = FileUtil.createMemoryFileSystem();
-            FileSystem layerWebProject = new XMLFileSystem(RepositoryImpl.class.getClassLoader().getResource("org/netbeans/modules/websvc/jaxwsmodel/resources/layer.xml"));
+            FileSystem layerWebProject = new XMLFileSystem(RepositoryImpl.class.getClassLoader().getResource("org/netbeans/modules/j2ee/deployment/impl/layer.xml"));
             return new MultiFileSystem(new FileSystem[] {writeFs, layerWebProject});
         } catch (SAXException e) {
-            return null;
+            AssertionError ae = new AssertionError(e.getMessage());
+            ae.initCause(e);
+            throw ae;
         }
     }
     

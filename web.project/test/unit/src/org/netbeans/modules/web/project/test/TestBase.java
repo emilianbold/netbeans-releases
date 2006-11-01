@@ -21,9 +21,6 @@ package org.netbeans.modules.web.project.test;
 
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.Repository;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 
 /**
  * Common ancestor for all test classes.
@@ -35,10 +32,9 @@ public class TestBase extends NbTestCase {
     private static final Repository REPOSITORY;
     
     static {
-        // for setting the default lookup to TestUtil's one
-        TestUtil.setLookup(new Object[0]);
-        
         REPOSITORY = new RepositoryImpl();
+        // for setting the default lookup to TestUtil's one
+        setLookup(new Object[0]);
     }
     
     public static void setLookup(Object[] instances) {

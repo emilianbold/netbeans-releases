@@ -21,17 +21,22 @@ package org.netbeans.modules.j2ee.common.source;
 
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 import javax.lang.model.element.*;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.openide.filesystems.FileObject;
-import org.openide.util.NotImplementedException;
 
 /**
  *
  * @author Andrei Badea
+ * @author Martin Adamek
  */
 public class SourceUtils {
 
@@ -46,8 +51,19 @@ public class SourceUtils {
         }
     }
 
-    public boolean hasMainMethod() {
-        throw new NotImplementedException("Not implemented yet");
+    public TypeElement getMainTypeElement() {
+        return mainTypeElement;
+    }
+    
+    public boolean hasMainMethod() throws IOException {
+        controller.toPhase(Phase.ELEMENTS_RESOLVED);
+        TypeElement typeElement = findMainTypeElement();
+        for (ExecutableElement method : ElementFilter.methodsIn(typeElement.getEnclosedElements())) {
+            if (isMainMethod(method)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private TypeElement findMainTypeElement() throws IOException {
@@ -68,4 +84,40 @@ public class SourceUtils {
         }
         return globalTypes.next();
     }
+
+    private boolean isMainMethod(ExecutableElement method) {
+        // check method name
+        if (!method.getSimpleName().contentEquals("main")) {
+            return false;
+        }
+        // check modifiers
+        Set<Modifier> modifiers = method.getModifiers();
+        if (!modifiers.contains(Modifier.PUBLIC) || !modifiers.contains(Modifier.STATIC)) {
+            return false;
+        }
+        // check return type
+        if (TypeKind.VOID != method.getReturnType().getKind()) {
+            return false;
+        }
+        // check parameters
+        // there must be just one parameter
+        List<? extends VariableElement> params = method.getParameters();
+        if (params.size() != 1) {
+            return false;
+        }
+        VariableElement param = params.get(0); // it is ok to take first item, it was tested before
+        TypeMirror paramType = param.asType();
+        // parameter must be an array
+        if (TypeKind.ARRAY != paramType.getKind()) {
+            return false;
+        }
+        ArrayType arrayType = (ArrayType) paramType;
+        TypeElement stringTypeElement = controller.getElements().getTypeElement(String.class.getName());
+        // array must be array of Strings
+        if (!controller.getTypes().isSameType(stringTypeElement.asType(), arrayType.getComponentType())) {
+            return false;
+        }
+        return true;
+    }
+
 }
