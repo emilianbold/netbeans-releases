@@ -18,16 +18,15 @@
  */
 package org.netbeans.modules.java.examples;
 
-import org.openide.options.SystemOption;
+import java.util.prefs.Preferences;
+import org.netbeans.modules.java.examples.FoldersListSettings;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 
-public class FoldersListSettings extends SystemOption {
-
-    static final long serialVersionUID = -5L;
-
+public class FoldersListSettings  {
+    private static final FoldersListSettings INSTANCE = new FoldersListSettings();
     private static final String LAST_EXTERNAL_SOURCE_ROOT = "srcRoot";  //NOI18N
-
     private static final String NEW_PROJECT_COUNT = "newProjectCount"; //NOI18N
 
 
@@ -35,25 +34,28 @@ public class FoldersListSettings extends SystemOption {
         return NbBundle.getMessage (FoldersListSettings.class, "TXT_J2SEProjectFolderList"); //NOI18N
     }
 
-    public String getLastExternalSourceRoot () {
-        return (String) getProperty(LAST_EXTERNAL_SOURCE_ROOT);
+    private static Preferences getPreferences() {
+        return NbPreferences.forModule(FoldersListSettings.class);
+    }
+    
+    public String getLastExternalSourceRoot () {        
+        return getPreferences().get(LAST_EXTERNAL_SOURCE_ROOT, null);
     }
 
     public void setLastExternalSourceRoot (String path) {
-        putProperty (LAST_EXTERNAL_SOURCE_ROOT, path, true);
+        getPreferences().put(LAST_EXTERNAL_SOURCE_ROOT, path);
     }
 
     public int getNewProjectCount () {
-        Integer value = (Integer) getProperty (NEW_PROJECT_COUNT);
-        return value == null ? 0 : value.intValue();
+        return getPreferences().getInt(NEW_PROJECT_COUNT, 0);
     }
 
     public void setNewProjectCount (int count) {
-        this.putProperty(NEW_PROJECT_COUNT, new Integer(count),true);
+        getPreferences().putInt(NEW_PROJECT_COUNT, count);
     }
     
 
     public static FoldersListSettings getDefault () {
-        return (FoldersListSettings) SystemOption.findObject (FoldersListSettings.class, true);
+        return INSTANCE;
     }
 }
