@@ -105,13 +105,6 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  <file name="com-sun-jdo-modules-persistence-mapping-core-helpset.xml" url="helpset-decl.xml"/>
  <attr name="com-sun-jdo-modules-persistence-mapping-core-helpset.xml/org-netbeans-modules-usersguide-below-regular.txt" boolvalue="true"/>      </folder>
      
-     <folder name="J2EEServers">
-        <file name="PluginOptions.settings" url="PluginOptions.xml">
-          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.sun.ide.j2ee.Bundle"/>
-          <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/sun/ide/resources/sun-cluster_16_pad.gif"/>
-        </file>
-     </folder>
-
     <folder name="MIMEResolver">
       <file name="org-netbeans-modules-j2ee-sun-ide-j2ee-mime-resolver.xml" url="mime-resolver.xml">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.sun.ide.j2ee.Bundle" />
