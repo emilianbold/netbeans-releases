@@ -240,7 +240,10 @@ public class ServerPropertiesPanel extends JPanel
         // we use the GridBagLayout so we need the GridBagConstraints to
         // properly place the components
         GridBagConstraints gridBagConstraints;
-        
+        getAccessibleContext().setAccessibleDescription(
+                java.util.ResourceBundle.getBundle(
+                "org/netbeans/modules/j2ee/websphere6/ui/Bundle").
+                getString("MSG_ServerPropertiesPanelDescription"));
         // initialize the components
         domainPathLabel = new JLabel();
         domainPathField = new JTextField();
