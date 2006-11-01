@@ -19,48 +19,36 @@
 
 package org.netbeans.modules.db.core;
 
-import org.openide.options.SystemOption;
+import java.util.prefs.Preferences;
 import org.openide.util.NbBundle;
-import org.openide.util.SharedClassObject;
+import org.openide.util.NbPreferences;
 
 /**
  *
  * @author Andrei Badea
  */
-public class SQLOptions extends SystemOption {
-
-    private static final long serialVersionUID = -3200264376265775809L;
-
+public class SQLOptions  {
+    private static SQLOptions INSTANCE = new SQLOptions();
     private static final String PROP_FETCH_STEP = "fetchStep"; // NOI18N
-
     private static final int DEFAULT_FETCH_STEP = 200;
 
     public static SQLOptions getDefault() {
-        return (SQLOptions)SharedClassObject.findObject(SQLOptions.class, true);
+        return INSTANCE;
     }
     
     public String displayName() {
         return NbBundle.getMessage(SQLOptions.class, "LBL_SQLOptions");
     }
     
+    private static Preferences getPreferences() {
+        return NbPreferences.forModule(SQLOptions.class);
+    }
+        
     public int getFetchStep() {
-        Object data = getProperty(PROP_FETCH_STEP);
-        if (data != null) {
-            return convertToInt((String)data, DEFAULT_FETCH_STEP);
-        } else {
-            return DEFAULT_FETCH_STEP;
-        }
+        return getPreferences().getInt(PROP_FETCH_STEP, DEFAULT_FETCH_STEP);
     }
     
     public void setFetchStep(int value) {
-        putProperty(PROP_FETCH_STEP, String.valueOf(value), true);
-    }
-    
-    private static int convertToInt(String str, int def) {
-        try {
-            return Integer.parseInt(str);
-        } catch (NumberFormatException e) {
-            return def;
-        }
-    }
+        getPreferences().putInt(PROP_FETCH_STEP, value);
+    }    
 }
