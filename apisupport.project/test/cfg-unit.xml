@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-
 The contents of this file are subject to the terms of the Common Development
 and Distribution License (the License). You may not use this file except in
 compliance with the License.
@@ -19,12 +18,53 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <mconfig name="apisupport/project">
+    <testbag testattribs="stable" executor="unit-executor" name="apisupport/project">
+        <testset dir="unit/src">
+            <patternset>
+                <include name="**/*Test.class"/>
+                <!-- Too slow in the absence of input: -->
+                <exclude name="**/GenerateJNLPApplicationTest.class"/>
+                <!-- XXX Following test might need CVS repository. Double check them: -->
+                <exclude name="**/BrandingSupportTest.class"/>
+                <exclude name="**/GlobalSourceForBinaryImplTest.class"/>
+                <exclude name="**/LayerUtilsTest.class"/>
+                <exclude name="**/ModuleActionsTest.class"/>
+                <exclude name="**/ModuleLogicalViewTest.class"/>
+                <exclude name="**/NbPlatformTest.class"/>
+                <exclude name="**/WritableXMLFileSystemTest.class"/>
+                <!-- Tests which very likely needs access to CVS: -->
+                <exclude name="**/AccessibilityQueryImplTest.class"/>
+                <exclude name="**/AntArtifactProviderImplTest.class"/>
+                <exclude name="**/AvoidModuleListInProjectConstructorTest.class"/>
+                <exclude name="**/ClassPathProviderImplTest.class"/>
+                <exclude name="**/EvaluatorTest.class"/>
+                <exclude name="**/JavadocForBinaryImplTest.class"/>
+                <exclude name="**/ModuleListTest.class"/>
+                <exclude name="**/NbModuleProjectTest.class"/>
+                <exclude name="**/NbModuleProviderTest.class"/>
+                <exclude name="**/ProjectXMLManagerTest.class"/>
+                <exclude name="**/SingleModulePropertiesTest.class"/>
+                <exclude name="**/SourceForBinaryImplTest.class"/>
+                <exclude name="**/SourceLevelQueryImplTest.class"/>
+                <exclude name="**/SubprojectProviderImplTest.class"/>
+                <exclude name="**/TestBuildCleanTest.class"/>
+                <exclude name="**/TestEntryTest.class"/>
+                <exclude name="**/UnitTestForSourceQueryImplTest.class"/>
+                <exclude name="**/UpdateTrackingFileOwnerQueryTest.class"/>
+                <exclude name="**/UtilTest.class"/>
+                <!-- Tests which definitely needs access to CVS: -->
+                <!-- Move above test into this section once are checked for real CVS need. -->
+            </patternset>
+        </testset>
+    </testbag>
     <testbag testattribs="stable-cvs" executor="unit-executor" name="apisupport/project">
         <testset dir="unit/src">
             <patternset>
                 <include name="**/*Test.class"/>
                 <!-- Too slow in the absence of input: -->
                 <exclude name="**/GenerateJNLPApplicationTest.class"/>
+                <!-- XXX Elaborate. Very slow, sometime seems to end in endless wait-for-condition cycle: -->
+                <exclude name="**/ServiceNodeHandlerTest.class"/>
             </patternset>
         </testset>
     </testbag>
