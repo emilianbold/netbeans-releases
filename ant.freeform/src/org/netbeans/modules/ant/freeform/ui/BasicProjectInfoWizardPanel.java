@@ -21,19 +21,12 @@ package org.netbeans.modules.ant.freeform.ui;
 
 import java.awt.Component;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
-import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.ant.freeform.spi.support.NewFreeformProjectSupport;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
-import java.util.Collections;
-import org.netbeans.spi.project.support.ant.PropertyProvider;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.modules.ant.freeform.FreeformProjectGenerator;
 import org.openide.util.NbBundle;
 
 /**
