@@ -24,8 +24,11 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.*;
 import javax.lang.model.element.*;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.*;
+import org.netbeans.api.java.source.ClassIndex.NameKind;
 import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.modules.refactoring.java.DiffElement;
 import org.netbeans.modules.refactoring.api.*;
@@ -46,8 +49,7 @@ import org.openide.util.Utilities;
  */
 public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
     
-    private TreePathHandle jmiObject = null;
-    private String newName = null;
+    private TreePathHandle treePathHandle = null;
     private Collection overriddenByMethods = null; // methods that override the method to be renamed
     private Collection overridesMethods = null; // methods that are overridden by the method to be renamed
     private boolean doCheckName = true;
@@ -61,7 +63,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
         this.refactoring = rename;
         Object o = rename.getRefactoredObject();
         if (o instanceof TreePathHandle) {
-            jmiObject = (TreePathHandle) o;
+            treePathHandle = (TreePathHandle) o;
         } else {
             JavaSource source = JavaSource.forFileObject((FileObject) o);
             try {
@@ -72,7 +74,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
                     public void run(CompilationController co) throws Exception {
                         co.toPhase(JavaSource.Phase.RESOLVED);
                         CompilationUnitTree cut = co.getCompilationUnit();
-                        jmiObject = TreePathHandle.create(TreePath.getPath(cut, cut.getTypeDecls().get(0)), co);
+                        treePathHandle = TreePathHandle.create(TreePath.getPath(cut, cut.getTypeDecls().get(0)), co);
                         refactoring.getContext().add(co);
                     }
                 }, true);
@@ -86,11 +88,11 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
     
     public Problem preCheck() {
         CompilationInfo info = refactoring.getContext().lookup(CompilationInfo.class);
-        Element el = jmiObject.resolveElement(info);
+        Element el = treePathHandle.resolveElement(info);
         
         fireProgressListenerStart(refactoring.PRE_CHECK, 4);
         try {
-            Problem result = isElementAvail(jmiObject, info);
+            Problem result = isElementAvail(treePathHandle, info);
             if (result != null) {
                 return result;
             }
@@ -105,61 +107,43 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
             
             switch(el.getKind()) {
                 case METHOD:
-//                fireProgressListenerStep();
-//                Method m = (Method) jmiObject;
-//                List argTypes = getParamTypes(m);
-//                fireProgressListenerStep();
-//                overriddenByMethods = overriddenBy(m, m.getName(), argTypes);
-//                fireProgressListenerStep();
-//                if (!overriddenByMethods.isEmpty()) {
-//                    String msg = new MessageFormat(getString("ERR_IsOverridden")).format(
-//                        new Object[] {getDefClassName(m.getDeclaringClass())}
-//                    );
-//                    result = createProblem(result, false, msg);
-//                }
-//                ClassDefinition[] par = new ClassDefinition[] {null, null};
-//                overridesMethods = overrides(m, m.getName(), argTypes, par);
-//                fireProgressListenerStep();
-//                if (!overridesMethods.isEmpty()) {
-//                    if (par[0] == null) {
-//                        boolean fatal = false;
-//                        for (Iterator iter = overridesMethods.iterator();iter.hasNext();) {
-//                            Method method = (Method) iter.next();
-//                            if (CheckUtils.isFromLibrary(method.getResource())) {
-//                                fatal = true;
-//                                break;
-//                            }
-//                        }
-//                        String msg = fatal?getString("ERR_Overrides_Fatal"):getString ("ERR_Overrides");
-//                        result = createProblem(result, fatal, msg);
-//                    } else {
-//                        String clsName = getDefClassName(par[0]);
-//                        String msg;
-//                        if (CheckUtils.isFromLibrary(par[0].getResource())) {
-//                            msg = getString("ERR_Overrides_Fatal");
-//                        } else {
-//                            msg = new MessageFormat(getString("ERR_Overrides_tree")).format(
-//                                    new Object[] {clsName, getDefClassName(par[1]), clsName}
-//                            );
-//                        }
-//                        result = createProblem(result, true, msg);
-//                    }
-//                }
+                fireProgressListenerStep();
+                fireProgressListenerStep();
+                overriddenByMethods = RetoucheUtils.getOverridingMethods((ExecutableElement)el, info);
+                fireProgressListenerStep();
+                if (!overriddenByMethods.isEmpty()) {
+                    String msg = new MessageFormat(getString("ERR_IsOverridden")).format(
+                        new Object[] {SourceUtils.getEnclosingTypeElement(el).getSimpleName().toString()});
+                    result = createProblem(result, false, msg);
+                }
+                overridesMethods = RetoucheUtils.getOverridingMethods((ExecutableElement) treePathHandle.resolveElement(info), info);
+                fireProgressListenerStep();
+                if (!overridesMethods.isEmpty()) {
+                        boolean fatal = false;
+                        for (Iterator iter = overridesMethods.iterator();iter.hasNext();) {
+                            ExecutableElement method = (ExecutableElement) iter.next();
+                            if (RetoucheUtils.isFromLibrary(method, info.getClasspathInfo())) {
+                                fatal = true;
+                    break;
+                            }
+                        }
+                        String msg = fatal?getString("ERR_Overrides_Fatal"):getString ("ERR_Overrides");
+                        result = createProblem(result, fatal, msg);
+                    } 
                     break;
                 case FIELD:
                 case ENUM_CONSTANT:
-//                fireProgressListenerStep();
-//                fireProgressListenerStep();
-//                Field f = (Field) jmiObject;
-//                Field hiddenField = hides(f, f.getName());
-//                fireProgressListenerStep();
-//                fireProgressListenerStep();
-//                if (hiddenField != null) {
-//                    String msg = new MessageFormat(getString("ERR_Hides")).format(
-//                        new Object[] {getDefClassName(hiddenField.getDeclaringClass())}
-//                    );
-//                    result = createProblem(result, false, msg);
-//                }
+                fireProgressListenerStep();
+                fireProgressListenerStep();
+                Element hiddenField = hides(el, el.getSimpleName().toString(), info);
+                fireProgressListenerStep();
+                fireProgressListenerStep();
+                if (hiddenField != null) {
+                    String msg = new MessageFormat(getString("ERR_Hides")).format(
+                        new Object[] {SourceUtils.getEnclosingTypeElement(el)}
+                    );
+                    result = createProblem(result, false, msg);
+                }
                     break;
                 case PACKAGE:
                     //TODO: any prechecks?
@@ -190,9 +174,9 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
     
     public Problem fastCheckParameters() {
         CompilationInfo info = refactoring.getContext().lookup(CompilationInfo.class);
-        Element el = jmiObject.resolveElement(info);
+        Element el = treePathHandle.resolveElement(info);
         ElementKind kind = el.getKind();
-
+        
         String newName = refactoring.getNewName();
         Problem result = null;
         String oldName = el.getSimpleName().toString();
@@ -208,17 +192,17 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
             }
             if (nameNotChanged)
                 return createProblem(result, true, getString("ERR_NameNotChanged"));
-        } 
-
+        }
+        
         if (!Utilities.isJavaIdentifier(newName)) {
             String s = kind == ElementKind.PACKAGE? getString("ERR_InvalidPackage"):getString("ERR_InvalidIdentifier"); //NOI18N
             String msg = new MessageFormat(s).format(
-                new Object[] {newName}
+                    new Object[] {newName}
             );
             result = createProblem(result, true, msg);
             return result;
         }
-
+        
         if (kind == ElementKind.PACKAGE) {
             if (doCheckName) {
 //                JavaPackage pckg = (JavaPackage) jmiObject;
@@ -240,89 +224,82 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
 //                    }
 //                }
             }
-
-            this.newName = newName;
+            
             return result;
         }
-
+        
         if (kind.isClass()) {
             if (doCheckName) {
-//                Object ref;
-//                if (jmiObject instanceof Resource) {
-//                    ref = jmiObject;
-//                } else {
-//                    ref = jmiObject.refImmediateComposite();
-//                    String pkgname = ((NamedElement) jmiObject).getName();
-//                    int i = pkgname.indexOf('.');
-//                    if (i>=0)
-//                        pkgname = pkgname.substring(0,i);
-//                    else 
-//                        pkgname = "";
-//                       
-//                    String fqn = "".equals(pkgname) ? newName : pkgname + '.' + newName;
-//                    FileObject fo = JavaModel.getFileObject(((Element)ref).getResource());
-//                    ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-//                    JavaClass clazz = ClassIndex.getClassByFqn( fqn, cp);
-//                    if (clazz != null && !jmiObject.equals(clazz)) {
-//                        String msg = new MessageFormat(getString("ERR_ClassClash")).format(
-//                                new Object[] {newName, pkgname}
-//                        );
-//                        return createProblem(result, true, msg);
-//                    }
-//                }
-//                if (ref instanceof Resource && !JavaMetamodel.getManager().getDataObject((Resource) ref).getName().equals(newName)) {
-//                    DataObject dobj = JavaMetamodel.getManager().getDataObject((Resource)ref);
-//                    FileObject primFile = dobj.getPrimaryFile();
-//                    FileObject folder = primFile.getParent();
-//                    FileObject[] children = folder.getChildren();
-//                    for (int x = 0; x < children.length; x++) {
-//                        if (children[x] != primFile && !children[x].isVirtual() && children[x].getName().equals(newName) && "java".equals(children[x].getExt())) { //NOI18N
-//                            String msg = new MessageFormat (getString ("ERR_ClassClash")).format (
-//                                new Object[] {newName, ((Resource) ref).getPackageName()}
-//                            );
-//                            result = createProblem(result, true, msg);
-//                            break;
-//                        }
-//                    } // for
-//                } // if
-            } // if
-        }
-
-        if (kind == ElementKind.LOCAL_VARIABLE || kind == ElementKind.PARAMETER) {
+                TypeElement type = (TypeElement) el;
+                String oldfqn = type.getQualifiedName().toString();
+                String newFqn = oldfqn.substring(0, oldfqn.lastIndexOf(type.getSimpleName().toString()));
+                
+                String pkgname = type.getQualifiedName().toString();
+                int i = pkgname.indexOf('.');
+                if (i>=0)
+                    pkgname = pkgname.substring(0,i);
+                else
+                    pkgname = "";
+                
+                String fqn = "".equals(pkgname) ? newName : pkgname + '.' + newName;
+                FileObject fo = treePathHandle.getFileObject();
+                ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+                if (info.getElements().getTypeElement(newFqn)!=null) {
+                    String msg = new MessageFormat(getString("ERR_ClassClash")).format(
+                            new Object[] {newName, pkgname}
+                    );
+                    return createProblem(result, true, msg);
+                }
+            }
+            FileObject primFile = treePathHandle.getFileObject();
+            FileObject folder = primFile.getParent();
+            FileObject[] children = folder.getChildren();
+            for (int x = 0; x < children.length; x++) {
+                if (children[x] != primFile && !children[x].isVirtual() && children[x].getName().equals(newName) && "java".equals(children[x].getExt())) { //NOI18N
+                    String msg = new MessageFormat(getString("ERR_ClassClash")).format(
+                            new Object[] {newName, folder.getPath()}
+                    );
+                    result = createProblem(result, true, msg);
+                    break;
+                }
+            } // for
+            
+            if (kind == ElementKind.LOCAL_VARIABLE || kind == ElementKind.PARAMETER) {
 //            String msg = variableClashes(newName,JavaModelUtil.getDeclaringFeature((Variable) jmiObject));
 //            if (msg != null) {
 //                result = createProblem(result, true, msg);
 //                return result;
 //            }
-        }
-        if (kind.isField() || kind == kind.METHOD) {
+            }
+            if (kind.isField() || kind == kind.METHOD) {
 //            String msg = clashes((Feature) jmiObject, newName);
 //            if (msg != null) {
 //                result = createProblem(result, true, msg);
 //                return result;
 //            }
+            }
         }
         return result;
     }
     
     public Problem checkParameters() {
-//        int steps = 0;
-//        if (overriddenByMethods != null)
-//            steps += overriddenByMethods.size();
-//        if (overridesMethods != null)
-//            steps += overridesMethods.size();
-//        
-//        fireProgressListenerStart(refactoring.PARAMETERS_CHECK, 8 + 3*steps);
-//        
-//        try {
-//            fireProgressListenerStep();
-//            Problem result = checkParameters(newName);
-//            if (result != null && result.isFatal())
-//                return result;
-//            fireProgressListenerStep();
-//            String msg;
-//            if (jmiObject instanceof Method) {
-//                Method m = (Method) jmiObject;
+        int steps = 0;
+        if (overriddenByMethods != null)
+            steps += overriddenByMethods.size();
+        if (overridesMethods != null)
+            steps += overridesMethods.size();
+        
+        CompilationInfo info = refactoring.getContext().lookup(CompilationInfo.class);
+        Element element = treePathHandle.resolveElement(info);
+                
+        Problem result = null;
+        fireProgressListenerStart(refactoring.PARAMETERS_CHECK, 8 + 3*steps);
+        
+        try {
+            fireProgressListenerStep();
+            fireProgressListenerStep();
+            String msg;
+            if (element.getKind() == ElementKind.METHOD) {
 //                result = checkMethodForOverriding(m, newName, result);
 //                for (Iterator iter = overridesMethods.iterator(); iter.hasNext();) {
 //                    m = (Method) iter.next();
@@ -340,35 +317,30 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
 //                    }
 //                    result = checkMethodForOverriding(m, newName, result);
 //                }
-//                fireProgressListenerStep();
-//                fireProgressListenerStep();
-//            } else if (jmiObject instanceof Field) {
-//                Field f = (Field) jmiObject;
-//                fireProgressListenerStep();
-//                fireProgressListenerStep();
-//                Field hiddenField = hides(f, newName);
-//                fireProgressListenerStep();
-//                fireProgressListenerStep();
-//                fireProgressListenerStep();
-//                if (hiddenField != null) {
-//                    msg = new MessageFormat(getString("ERR_WillHide")).format(
-//                    new Object[] {getDefClassName(hiddenField.getDeclaringClass())}
-//                    );
-//                    result = createProblem(result, false, msg);
-//                }
-//            }
-//            
-//            if (result == null || !result.isFatal()) {
-//                this.newName = newName; // [PENDING] ???
-//            }
-//            return result;
-//        } finally {
-//            fireProgressListenerStop();
-//        }    
-        return null;
+                fireProgressListenerStep();
+                fireProgressListenerStep();
+            } else if (element.getKind().isField()) {
+                fireProgressListenerStep();
+                fireProgressListenerStep();
+                Element hiddenField = hides(element, refactoring.getNewName(), info);
+                fireProgressListenerStep();
+                fireProgressListenerStep();
+                fireProgressListenerStep();
+                if (hiddenField != null) {
+                    msg = new MessageFormat(getString("ERR_WillHide")).format(
+                            new Object[] {SourceUtils.getEnclosingTypeElement(element).toString()}
+                    );
+                    result = createProblem(result, false, msg);
+                }
+            }
+            
+            return result;
+        } finally {
+            fireProgressListenerStop();
+        }
     }
     
-//    private Problem checkMethodForOverriding(Method m, String newName, Problem problem) {
+//    private Problem checkMethodForOverriding(ExecutableElement m, String newName, Problem problem) {
 //        List argTypes = getParamTypes(m);
 //        fireProgressListenerStep();
 //        problem = willBeOverridden(m, newName, argTypes, problem);
@@ -410,7 +382,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
 
     private ClasspathInfo getClasspathInfo(CompilationInfo info) {
         ClassPath boot = info.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.BOOT);
-        FileObject fo = jmiObject.getFileObject();
+        FileObject fo = treePathHandle.getFileObject();
         ClassPath rcp = RefactoringClassPathImplementation.getCustom(Collections.singleton(fo));
         ClasspathInfo cpi = ClasspathInfo.create(boot, rcp, rcp);
         return cpi;
@@ -419,7 +391,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
     public Problem prepare(RefactoringElementsBag elements) {
         ClasspathInfo cpInfo = refactoring.getContext().lookup(ClasspathInfo.class);
         final CompilationInfo mainInfo = refactoring.getContext().lookup(CompilationInfo.class);
-        final Element element = jmiObject.resolveElement(mainInfo);
+        final Element element = treePathHandle.resolveElement(mainInfo);
         
         if (cpInfo==null) {
             cpInfo = getClasspathInfo(mainInfo);
@@ -884,21 +856,22 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
 //        return res;
 //    }
 //
-//    private Field hides (Field field, String name) {
-//        if (!CheckUtils.isVirtual(field))
-//            return null;
-//
-//        ClassDefinition jc = field.getDeclaringClass ();
-//        jc = jc.getSuperClass ();
-//        while (jc != null) {
-//            Field f = jc.getField (name, false);
-//            if ((f != null) && CheckUtils.isVirtual(f))
-//                return f;
-//            jc = jc.getSuperClass ();
-//        }
-//        return null;
-//    }
-//
+    private Element hides (Element field, String name, CompilationInfo info) {
+        TypeElement jc = SourceUtils.getEnclosingTypeElement(field);
+        Types types = info.getTypes();
+        Elements elements = info.getElements();
+        jc =(TypeElement) types.asElement(jc.getSuperclass());
+        while (jc != null) {
+            for (Element el : info.getElements().getAllMembers(jc)) {
+                if (elements.hides(el, field)) {
+                    return el;
+                }
+            }
+            jc =(TypeElement) types.asElement(jc.getSuperclass());
+        }
+        return null;
+    }
+
 //    private String variableClashes(String newName, Feature scope) {
 //        if (varNames==null)
 //            varNames=CheckUtils.getAllVariableNames(scope);
@@ -1292,7 +1265,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
                 ErrorManager.getDefault().log(ErrorManager.ERROR, "compiler.getCompilationUnit() is null " + compiler);
                 return;
             }
-            Element el = jmiObject.resolveElement(compiler);
+            Element el = treePathHandle.resolveElement(compiler);
             assert el != null;
 
             RenameTransformer findVisitor = new RenameTransformer(refactoring.getNewName(), compiler);
