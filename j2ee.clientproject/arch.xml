@@ -22,8 +22,9 @@ Microsystems, Inc. All Rights Reserved.
 ]>
 
 <api-answers
-  question-version="1.24"
-  author="jglick@netbeans.org"
+  question-version="1.26"
+  module="j2ee/clientproject"
+  author="jungi@netbeans.org"
 >
 
   &api-questions;
@@ -46,22 +47,23 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-overall">
   <p>
-   Uses various project APIs to implement the project type. <a
+   The module exposes a new NetBeans project type to create Java EE Enterprise
+   Application Client Module project, where a developer can create standard Java SE
+   applications, which have direct access to server environment and resources
+   (such as EJBs, Web Services), develop these applications, assemble them according
+   to Java EE specification, build them and deploy them to Application servers.
+  </p>
+  <p>
+   It uses various project APIs to implement the project type. <a
    href="http://projects.netbeans.org/buildsys/design.html">Build system design
-   document</a>
+   document</a>. Implements j2ee/ejbjarapi to provide project container
+   for an Enterprise application client module.
   </p>
   <ol>
    <li>
-    <api group="dtd" name="j2se-project.xsd" type="export" category="official" url="http://www.netbeans.org/ns/j2se-project/1.xsd">
+    <api group="dtd" name="car-project.xsd" type="export" category="private" url="org/netbeans/modules/j2ee/clientproject/resources/car-project.xsd">
      <p>
-      Definition of j2seproject-specific portions of <code>project.xml</code> (1st revision).
-     </p>
-    </api>
-   </li>
-   <li>
-    <api group="dtd" name="j2se-project-2.xsd" type="export" category="official" url="http://www.netbeans.org/ns/j2se-project/2.xsd">
-     <p>
-      Definition of j2seproject-specific portions of <code>project.xml</code> (2nd revision).
+      Definition of clientproject-specific portions of <code>project.xml</code>.
      </p>
     </api>
    </li>
@@ -78,6 +80,15 @@ Microsystems, Inc. All Rights Reserved.
      <p>
       Definition of targets in <code>build-impl.xml</code> which may be called or
       overridden in <code>build.xml</code>. XXX not yet formally specified.
+     </p>
+    </api>
+   </li>
+   <li>
+    <api group="java.io.File" name="LayoutOfProjectFiles" type="export" category="private">
+     <p>
+      Modules should make no assumptions about the layout of project direcotry other then
+      what is explicitly exposed via API (such as J2eeApplicationProvider from j2eeserver API,
+      AntArtifact).
      </p>
     </api>
    </li>
@@ -101,7 +112,7 @@ Microsystems, Inc. All Rights Reserved.
  <answer id="arch-quality">
   <p>
    There are some unit tests (not enough). IDE-wide functional testing covers
-   much of the module&rsquo;s functionality.
+   much of the module`s functionality.
   </p>
  </answer>
 
@@ -128,6 +139,14 @@ Microsystems, Inc. All Rights Reserved.
 
 <!--
         <question id="arch-usecases" when="init">
+            <hint>
+                Content of this answer will be displayed as part of page at
+                http://www.netbeans.org/download/dev/javadoc/usecases.html 
+                You can use tags &lt;usecase name="name&gt; regular html description &lt;/usecase&gt;
+                and if you want to use an URL you can prefix if with @TOP@ to begin
+                at the root of your javadoc
+            </hint>
+        
             Describe the main <a href="http://openide.netbeans.org/tutorial/api-design.html#usecase">
             use cases</a> of the new API. Who will use it under
             what circumstances? What kind of code would typically need to be written
@@ -136,7 +155,15 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-usecases">
   <p>
-   Covered by UI specification and design document.
+    <usecase id="id" name="Project Generator" >
+       AppClientProjectGenerator can be used to generate Application Client module
+       project. This can be used for example to create a populated EAR project
+       together with an Application Client module project.
+       This is the only (private) API.
+    </usecase>
+  </p>
+  <p>
+   The rest is covered by UI specification and design document.
   </p>
  </answer>
 
@@ -154,17 +181,45 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-what">
   <p>
-   Provides a project type for plain Java projects. J2SE projects can be created
-   from scratch, or you can import existing Java source trees. Creates an Ant
-   script letting you build the project (and subprojects), run it, debug it, run
-   JUnit-format tests, and build Javadoc. GUI customizer permits easy
-   customization of the most commonly needed project parameters. Provides code
-   completion and other services for editing Java sources. Classpaths can include
-   other projects, raw JARs, or configured libraries. Specific J2SE platforms may
-   be configured. <a
-   href="http://projects.netbeans.org/buildsys/j2se-project-ui-spec-promoe.html">Full UI
+   Provides a project type for Java EE enterprise application client module
+   projects. Application client projects can be created from scratch,
+   or you can import existing application client module source trees. Creates an Ant
+   script letting you build the project (and subprojects), deploy it, debug it, run
+   JUnit-format tests, and build Javadoc. Standard and server specific
+   configuration files are displayed in project and can be edited. GUI customizer
+   permits easy customization of the most commonly needed project parameters.
+   Provides code completion and other services for editing Java sources.
+   Classpaths can include other projects, raw JARs, or configured libraries.
+   Specific J2SE platforms may be configured. Target J2EE server can be selected
+   and provides code completion for the Java EE APIs available on the server.
+   <a
+   href="http://j2ee.netbeans.org/docs/promog/appclient-project-ui-spec-promog.html">Full UI
    specification</a>
   </p>
+  <api name="ClientProject" category="friend" group="java" type="export">
+   <p>
+    The module exposes a new NetBeans project type to create Java EE Application
+    Client Module project, where a developer can add EJBs, develop them, assemble them, build them and deploy them to Application servers.
+    The friend API allows EAR project to create an Application Client module project. It also allows the ejbcore project to set
+    one property in nbproject\project.properties file.
+   </p>
+  </api>
+ </answer>
+
+
+
+<!--
+        <question id="arch-where" when="init">
+            Where one can find sources for your module?
+            <hint>
+                Please provide link to the CVS web client at
+                http://www.netbeans.org/download/source_browse.html
+                or just use tag defaultanswer generate='here'
+            </hint>
+        </question>
+-->
+ <answer id="arch-where">
+  <defaultanswer generate='here' />
  </answer>
 
 
@@ -196,7 +251,14 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="compat-standards">
   <p>
-   No.
+  The module follows the Java EE 5 specifications. It allows the user
+  to develop applications conforming to this standard. The implementation is exact,
+  in the sense that the module accepts any compliant Application Client Module.
+  Since Java EE 5 has to be backward comaptible with J2EE 1.4, this module
+  supports J2EE 1.4 Application Client Modules. This module also supports J2EE 1.3
+  compliant Application Client modules, but it does not help you to create NEW ones,
+  it will just behave nicely with 1.3 Apps, due to the API layer designed in the j2ee/ddapi
+  module that handles more than one specification version of J2@@.
   </p>
  </answer>
 
@@ -218,8 +280,10 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="compat-version">
   <p>
-   The <code>project.xml</code> schema is versioned. There is a simple system
-   option.
+  The module stores some information into persistent data, and makes the best
+  effort to correctly interpret information stored by previous versions of the 
+  module. It is anticipated that future versions of the module will be able to
+  interpret information stored by the current version, whenever possible and practical.
   </p>
  </answer>
 
@@ -237,7 +301,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="dep-jre">
   <p>
-   1.4.
+   1.5 and higher.
   </p>
  </answer>
 
@@ -266,146 +330,123 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
  <answer id="dep-nb">
+  It uses various kinds of API's:
   <ul>
-   <li>
-    <api group="java" name="AntModuleAPI" type="import" category="devel">
-     <p>
-      Used for running actions and for the <code>AntLogger</code> SPI.
-     </p>
+  <li>
+    <api 
+        name="OpenAPIs"
+        type="import"
+        category="official"
+        group="java"
+        url="http://www.netbeans.org/download/dev/javadoc/OpenAPIs/"
+    >
+    NetBeans Open APIs
     </api>
-   </li>
-   <li>
-    <api group="java" name="JavaSupportAPIs" type="import" category="official">
-     <p>
-      Definition of classpaths and various queries implemented by the project type.
-     </p>
+  </li>
+  <li>
+    <api 
+        name="ExecutionAPIs"
+        type="import"
+        category="official"
+        group="java"
+        url="http://www.netbeans.org/download/dev/javadoc/ExecutionAPI/index.html"
+    >
+    NetBeans Execution APIs
     </api>
-   </li>
-   <li>
-    <api group="org.apache.tools.ant.Task" name="nbbrowse" type="import" category="devel">
-     <p>
-      Used to browse generated Javadoc.
-     </p>
+  </li>
+  <li>
+    <api 
+        name="openide.src"
+        type="import"
+        category="official"
+        group="java"
+        url="http://www.netbeans.org/download/dev/javadoc/JavaHierarchyAPI/index.html"
+    >
+    The Java Hierarchy API.
     </api>
-   </li>
-   <li>
-    <api group="org.apache.tools.ant.Task" name="nbjpdastart" type="import" category="devel">
-     <p>
-      Used to debug the project.
-     </p>
+  </li>
+  <li>
+    <api 
+        name="java"
+        type="import"
+        category="devel"
+        group="java"
+        url="http://java.netbeans.org/"
+    >
+    The <code>java</code> module.
     </api>
-   </li>
-   <li>
-    <api group="org.apache.tools.ant.Task" name="nbjpdareload" type="import" category="devel">
-     <p>
-      Used to implement JPDA &ldquo;Hot Fix&rdquo; functionality.
-     </p>
+  </li>
+  <li>
+    <api 
+        name="InputOutputAPI"
+        type="import"
+        category="official"
+        group="java"
+        url="http://www.netbeans.org/download/dev/javadoc/InputOutputAPI/index.html"
+    >
+    NetBeans Input-Output APIs
     </api>
-   </li>
-   <li>
-    <api group="java" name="JavaPlatformAPI" type="import" category="devel">
-     <p>
-      Used to select J2SE platforms (type <code>j2se</code>) to use as the target
-      for a project.
-     </p>
+  </li>
+  <li>
+    <api 
+        name="DebuggerCoreAPI"
+        type="import"
+        category="official"
+        group="java"
+        url="http://www.netbeans.org/download/dev/javadoc/Debugger%20API/index.html"
+    >
+    NetBeans Debugger APIs
     </api>
-   </li>
-   <li>
-    <api group="java" name="JavaProjectAPI" type="import" category="devel">
-     <p>
-      Various purposes, such as multiplexing queries, and creating the package
-      view.
-     </p>
+  </li>
+  <li>
+    <api 
+        name="JPDADebuggerAPI"
+        type="import"
+        category="official"
+        group="java"
+        url="	http://debuggercore.netbeans.org/docs/api/index.html"
+    >
+    The debugger JPDA module
     </api>
-   </li>
-   <li>
-    <api group="org.apache.tools.ant.Task" name="junit" type="import" category="devel">
-     <p>
-      Requires <code>junit.jar</code> to be in Ant&rsquo;s classpath so
-      <code>&lt;junit&gt;</code> can be used to run unit tests.
-     </p>
+  </li>
+  <li>
+    <api 
+        name="j2eeserver"
+        type="import"
+        category="friend"
+        group="java"
+        url="http://j2eeserver.netbeans.org/"
+    >
+    The Server Integration module
     </api>
-   </li>
-   <li>
-    <api group="java" name="AntProjectAPI" type="import" category="devel">
-     <p>
-      Used to implement core project type functionality.
-     </p>
+  </li>
+  <li>
+    <api group="java" name="EjbJarAPI" type="import" category="friend" url="http://www.netbeans.org/download/dev/javadoc/EjbJarAPI/"> Ejb Jar Project module</api>
+  </li>
+  <li>
+    <api 
+        name="schema2beans"
+        type="import"
+        category="friend"
+        group="java"
+        url="http://schema2beans.netbeans.org/"
+    >
+    The schema2beans module
     </api>
-   </li>
-   <li>
-    <api group="java" name="ProjectAPI" type="import" category="devel">
-     <p>
-      Used for many reasons.
-     </p>
+  </li>
+  <li>
+    <api 
+        name="EjbJarAPI"
+        type="import"
+        category="friend"
+        group="java"
+        url="http://www.netbeans.org/download/dev/javadoc/EjbJarAPI/"
+    >
+    The schema2beans module
     </api>
-   </li>
-   <li>
-    <api group="java" name="ProjectLibrariesAPI" type="import" category="devel">
-     <p>
-      Used to add class libraries (type <code>j2se</code>) to the project
-      classpath.
-     </p>
-    </api>
-   </li>
-   <li>
-    <api group="java" name="ProjectUIAPI" type="import" category="devel">
-     <p>
-      Used to define UI of the project type.
-     </p>
-    </api>
-   </li>
-   <li>
-    <api group="java" name="GeneralQueriesAPI" type="import" category="devel">
-     <p>
-      For various purposes both the API and SPI are used.
-     </p>
-    </api>
-   </li>
-   <li>
-    <api group="java" name="JavaHierarchyAPI" type="import" category="deprecated">
-     <p>
-      Used to find potential main classes for the project.
-     </p>
-    </api>
-   </li>
-   <li>
-    <api group="java" name="Datasystems" type="import" category="official">
-     <p>
-      Used for miscellaneous internal purposes.
-     </p>
-    </api>
-   </li>
-   <li>
-    <api group="java" name="Filesystems" type="import" category="official">
-     <p>
-      Many uses.
-     </p>
-    </api>
-   </li>
-   <li>
-    <api group="java" name="Nodes" type="import" category="official">
-     <p>
-      Used for logical view and perhaps in some dialogs and wizards.
-     </p>
-    </api>
-   </li>
-   <li>
-    <api group="java" name="Wizards" type="import" category="official">
-     <p>
-      Used for project creation wizard and for customizer dialog.
-     </p>
-    </api>
-   </li>
-   <li>
-    <api group="java" name="OptionsAPI" type="import" category="official">
-     <p>
-      Miscellaneous internal purposes (not exposed in the GUI).
-     </p>
-    </api>
-   </li>
+  </li>
   </ul>
-  <!-- XXX mdr for listening to project main class chg, etc. -->
+  <defaultanswer generate='here' />
  </answer>
 
 
@@ -471,7 +512,13 @@ Microsystems, Inc. All Rights Reserved.
         <question id="deploy-jar" when="impl">
             Do you deploy just module JAR file(s) or other files as well?
             <hint>
-            If your module consists of just one module JAR file, just confirm that.
+            Usually a module consist of one JAR file (perhaps with Class-Path
+            extensions) and also a configuration file that enables it. If you
+            have any other files, use
+            &lt;api group="java.io.File" name="yourname" type="export" category="friend"&gt;...&lt;/api&gt;
+            to define the location, name and stability of your files (of course
+            changing "yourname" and "friend" to suit your needs).
+            
             If it uses more than one JAR, describe where they are located, how
             they refer to each other. 
             If it consist of module JAR(s) and other files, please describe
@@ -525,7 +572,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="deploy-packages">
   <p>
-   No public packages.
+   No.
   </p>
  </answer>
 
@@ -543,7 +590,27 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="deploy-shared">
   <p>
-   Anywhere.
+   Either way is possible.
+  </p>
+ </answer>
+
+
+
+<!--
+        <question id="exec-ant-tasks" when="impl">
+            Do you define or register any ant tasks that other can use?
+            
+            <hint>
+            If you provide an ant task that users can use, you need to be very
+            careful about its syntax and behaviour, as it most likely forms an
+	          API for end users and as there is a lot of end users, their reaction
+            when such API gets broken can be pretty strong.
+            </hint>
+        </question>
+-->
+ <answer id="exec-ant-tasks">
+  <p>
+   No.
   </p>
  </answer>
 
@@ -665,11 +732,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-property">
   <p>
-   <api type="export" group="property" name="j2seproject.transparentUpdate" category="private">
-    If the property is set to <code>true</code> the project updates metadata of <code>project.xml</code> from
-    the namespace <code>http://www.netbeans.org/ns/j2se-project/1</code> to
-    <code>http://www.netbeans.org/ns/j2se-project/2</code> without explicit user confirmation.
-   </api>
+   No.
   </p>
  </answer>
 
@@ -762,10 +825,33 @@ Microsystems, Inc. All Rights Reserved.
 <!--
         <question id="format-types" when="impl">
             Which protocols and file formats (if any) does your module read or write on disk,
-            or transmit or receive over the network?
+            or transmit or receive over the network? Do you generate an ant build script?
+            Can it be edited and modified? 
+            
+            <hint>
+            <p>
+            Files can be read and written by other programs, modules and users. If they influence
+            your behaviour, make sure you either document the format or claim that it is a private
+            api (using the &lt;api&gt; tag). 
+            </p>
+            
+            <p>
+            If you generate an ant build file, this is very likely going to be seen by end users and
+            they will be attempted to edit it. You should be ready for that and provide here a link
+            to documentation that you have for such purposes and also describe how you are going to
+            understand such files during next release, when you (very likely) slightly change the 
+            format.
+            </p>
+            </hint>
         </question>
 -->
  <answer id="format-types">
+  <p>
+   It writes files through the OpenAPIs, specifically through the FileSystem API
+   and the Settings API.
+   Additionally, it reads the files in the formats specified by the J2EE 1.4
+   and Java EE 5 specification.
+  </p>
   <p>
    The usual Ant-based project metadata files and build scripts.
   </p>
@@ -847,7 +933,8 @@ Microsystems, Inc. All Rights Reserved.
  <answer id="perf-exit">
   <p>
    Not usually, though modified project metadata is saved on close or exit.
-   (Normally all GUI actions autosave immediately anyway.)
+   (Normally all GUI actions autosave immediately anyway.) It also unregisters
+   some listeners.
   </p>
  </answer>
 
@@ -861,7 +948,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-huge_dialogs">
   <p>
-   The customizer dialog is fairly large.
+   No, all dialogs and wizards are of reasonable complexity.
   </p>
  </answer>
 
@@ -898,7 +985,15 @@ Microsystems, Inc. All Rights Reserved.
 <!--
         <question id="perf-menus" when="final">
             Does your module use dynamically updated context menus, or
-            context-sensitive actions with complicated enablement logic?
+            context-sensitive actions with complicated and slow enablement logic?
+            <hint>
+                If you do a lot of tricks when adding actions to regular or context menus, you can significantly
+                slow down display of the menu, even when the user is not using your action. Pay attention to
+                actions you add to the main menu bar, and to context menus of foreign nodes or components. If
+                the action is conditionally enabled, or changes its display dynamically, you need to check the
+                impact on performance. In some cases it may be more appropriate to make a simple action that is
+                always enabled but does more detailed checks in a dialog if it is actually run.
+            </hint>
         </question>
 -->
  <answer id="perf-menus">
@@ -927,7 +1022,13 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-progress">
   <p>
-   No.
+   It launches the compilation of Java files, and deployment of
+   standalone Application Client Module.
+   Although ultimately these tasks are not directly performed 
+   by this module (but by cooperating modules), it can be assumed that these tasks 
+   will be long running.
+   Another long running task is the mounting of additional filesystems when
+   an application client module is registered or created in the IDE.
   </p>
  </answer>
 
@@ -1013,7 +1114,8 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="resources-file">
   <p>
-   Only where necessary according to other components.
+   Yes. The use of <code>java.io.File</code> is needed for interaction with the
+   Server Integration APIs, which expect it as parameters in some API calls.
   </p>
  </answer>
 
