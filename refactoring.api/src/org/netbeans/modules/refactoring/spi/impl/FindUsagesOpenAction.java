@@ -42,7 +42,7 @@ public class FindUsagesOpenAction extends AbstractAction {
                 FindUsagesOpenAction.class,
                 "LBL_UsagesWindow");                          //NOI18N
         putValue(NAME, name);
-        putValue("iconBase", "org/netbeans/modules/refactoring/resources/findusages.png"); // NOI18N
+        putValue("iconBase", "org/netbeans/modules/refactoring/api/resources/findusages.png"); // NOI18N
     }
     
     /**
