@@ -30,7 +30,6 @@ import org.netbeans.lib.cvsclient.connection.AuthenticationException;
 import org.netbeans.lib.cvsclient.file.FileHandler;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
-import org.netbeans.modules.versioning.system.cvss.settings.MetadataAttic;
 import org.netbeans.modules.versioning.system.cvss.settings.CvsModuleConfig;
 import org.netbeans.modules.versioning.system.cvss.ui.syncview.CvsSynchronizeTopComponent;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
@@ -127,7 +126,6 @@ public class CvsVersioningSystem {
 //                    fileStatusCache.addVersioningListener(FileStatusProvider.getInstance());
 //                    FileStatusProvider.getInstance().init();
 //                }
-                MetadataAttic.cleanUp();
                 // must be called AFTER the filestatusprovider is attached
                 fileStatusCache.cleanUp();
             }

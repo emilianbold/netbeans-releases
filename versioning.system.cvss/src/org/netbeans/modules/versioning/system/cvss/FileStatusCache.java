@@ -22,7 +22,6 @@ package org.netbeans.modules.versioning.system.cvss;
 import org.netbeans.modules.versioning.util.ListenersSupport;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.modules.versioning.util.FlatFolder;
-import org.netbeans.modules.versioning.system.cvss.settings.MetadataAttic;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
 import org.netbeans.modules.turbo.Turbo;
@@ -439,7 +438,7 @@ public class FileStatusCache {
     }
 
     private boolean isNotManagedByDefault(File dir) {
-        return !dir.exists() && MetadataAttic.getMetadata(dir) == null;
+        return !dir.exists();
     }
 
     /**
