@@ -86,11 +86,9 @@ import org.openide.filesystems.FileLock;
     
     protected void setUp() throws Exception {
         super.setUp();
-        nbcvsrootF = FileUtil.normalizeFile(getTestNBRoot());
-//        assertTrue("there is a dir " + nbcvsrootF, nbcvsrootF.isDirectory());
-        cvsAvailable = new File(nbcvsrootF, "nbbuild/netbeans/" + CLUSTER_IDE
-                + "/modules/org-netbeans-modules-apisupport-project.jar").isFile();
+        cvsAvailable = isCVSAvailable();
         if (cvsAvailable) {
+            nbcvsrootF = FileUtil.normalizeFile(getTestNBRoot());
             nbcvsroot = FileUtil.toFileObject(nbcvsrootF);
             assertNotNull("have a file object for nbcvsroot when using " + System.getProperty("java.class.path"), nbcvsroot);
             destDirF = file(nbcvsrootF, "nbbuild/netbeans").getAbsoluteFile();
@@ -152,7 +150,7 @@ import org.openide.filesystems.FileLock;
     
     private static File initializeBuildProperties(File workDir, File dataDir, File apisZip) throws Exception {
         File nbcvsrootF = getTestNBRoot();
-        boolean cvsAvailable = nbcvsrootF.isDirectory();
+        boolean cvsAvailable = isCVSAvailable();
         System.setProperty("netbeans.user", workDir.getAbsolutePath());
         File userPropertiesFile = new File(workDir, "build.properties");
         Properties p = new Properties();
@@ -185,6 +183,11 @@ import org.openide.filesystems.FileLock;
      */
     protected static File file(File root, String path) {
         return new File(root, path.replace('/', File.separatorChar));
+    }
+    
+    private static boolean isCVSAvailable() {
+        return new File(getTestNBRoot(), "nbbuild/netbeans/" + CLUSTER_IDE
+                + "/modules/org-netbeans-modules-apisupport-project.jar").isFile();
     }
     
     protected File nbCVSRootFile() {
