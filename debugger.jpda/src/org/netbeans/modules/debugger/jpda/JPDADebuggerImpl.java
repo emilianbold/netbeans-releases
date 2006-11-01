@@ -766,7 +766,9 @@ public class JPDADebuggerImpl extends JPDADebugger {
         synchronized (LOCK2) {
             starting = true;
         }
-        virtualMachine = vm;
+        synchronized (this) {
+            virtualMachine = vm;
+        }
         synchronized (canBeModifiedLock) {
             canBeModified = null; // Reset the can be modified flag
         }
@@ -799,8 +801,13 @@ public class JPDADebuggerImpl extends JPDADebugger {
 //        }
         
         setState (STATE_RUNNING);
-        synchronized (LOCK) {
-            virtualMachine.resume();
+        synchronized (this) {
+            vm = virtualMachine; // re-take the VM, it can be nulled by finish()
+        }
+        if (vm != null) {
+            synchronized (LOCK) {
+                vm.resume();
+            }
         }
         
         logger.fine("   JPDADebuggerImpl.setRunning () finished, VM resumed.");
@@ -850,21 +857,27 @@ public class JPDADebuggerImpl extends JPDADebugger {
             } catch (DebuggerStartException dsex) {
                 // We do not want to start it anyway when we're finishing - do not bother
             }
-            try {
-                if (virtualMachine != null) {
+            VirtualMachine vm;
+            synchronized (this) {
+                vm = virtualMachine;
+            }
+            if (vm != null) {
+                try {
                     if (di instanceof AttachingDICookie) {
                         logger.fine(" StartActionProvider.finish() VM dispose");
-                        virtualMachine.dispose ();
+                        vm.dispose ();
                     } else {
                         logger.fine(" StartActionProvider.finish() VM exit");
-                        virtualMachine.exit (0);
+                        vm.exit (0);
                     }
+                } catch (VMDisconnectedException e) {
+                    logger.fine(" StartActionProvider.finish() VM exception " + e);
+                    // debugee VM is already disconnected (it finished normally)
                 }
-            } catch (VMDisconnectedException e) {
-                logger.fine(" StartActionProvider.finish() VM exception " + e);
-                // debugee VM is already disconnected (it finished normally)
             }
-            virtualMachine = null;
+            synchronized (this) {
+                virtualMachine = null;
+            }
             setState (STATE_DISCONNECTED);
             if (jsr45EngineProviders != null) {
                 for (Iterator<JSR45DebuggerEngineProvider> i = jsr45EngineProviders.iterator(); i.hasNext();) {
@@ -891,12 +904,16 @@ public class JPDADebuggerImpl extends JPDADebugger {
      * @see  com.sun.jdi.ThreadReference#suspend
      */
     public void suspend () {
+        VirtualMachine vm;
+        synchronized (this) {
+            vm = virtualMachine;
+        }
         synchronized (LOCK) {
             if (getState () == STATE_STOPPED)
                 return;
-            if (virtualMachine != null) {
+            if (vm != null) {
                 logger.fine("VM suspend");
-                virtualMachine.suspend ();
+                vm.suspend ();
             }
             setState (STATE_STOPPED);
         }
@@ -917,21 +934,29 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 ((JPDAThreadImpl) threadOrGroup).notifyToBeRunning();
             }
         }
+        VirtualMachine vm;
+        synchronized (this) {
+            vm = virtualMachine;
+        }
         synchronized (LOCK) {
-            if (virtualMachine != null) {
+            if (vm != null) {
                 logger.fine("VM resume");
-                virtualMachine.resume ();
+                vm.resume ();
             }
         }
     }
     
     public JPDAThreadGroup[] getTopLevelThreadGroups() {
+        VirtualMachine vm;
+        synchronized (this) {
+            vm = virtualMachine;
+        }
+        if (vm == null) {
+            return new JPDAThreadGroup[0];
+        }
         List groupList;
         synchronized (LOCK) {
-            if (virtualMachine == null) {
-                return new JPDAThreadGroup[0];
-            }
-            groupList = virtualMachine.topLevelThreadGroups();
+            groupList = vm.topLevelThreadGroups();
         }
         JPDAThreadGroup[] groups = new JPDAThreadGroup[groupList.size()];
         for (int i = 0; i < groups.length; i++) {
@@ -972,8 +997,12 @@ public class JPDADebuggerImpl extends JPDADebugger {
     private void initGenericsSupport () {
         tcGenericSignatureMethod = null;
         if (Bootstrap.virtualMachineManager ().minorInterfaceVersion () >= 5) {
-            java.util.regex.Matcher m = jvmVersionPattern.matcher 
-                (virtualMachine.version ());
+            VirtualMachine vm;
+            synchronized (this) {
+                vm = virtualMachine;
+            }
+            if (vm == null) return ;
+            java.util.regex.Matcher m = jvmVersionPattern.matcher(vm.version ());
             if (m.matches ()) {
                 int minor = Integer.parseInt (m.group (2));
                 if (minor >= 5) {
@@ -1028,8 +1057,12 @@ public class JPDADebuggerImpl extends JPDADebugger {
 
     private ThreadReference getEvaluationThread () {
         if (currentThread != null) return currentThread.getThreadReference ();
-        if (virtualMachine == null) return null;
-        List l = virtualMachine.allThreads ();
+        VirtualMachine vm;
+        synchronized (this) {
+            vm = virtualMachine;
+        }
+        if (vm == null) return null;
+        List l = vm.allThreads ();
         if (l.size () < 1) return null;
         int i, k = l.size ();
         ThreadReference thread = null;
