@@ -24,6 +24,9 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="**/*Test.class"/>
                 <!-- Too slow in the absence of input: -->
                 <exclude name="**/GenerateJNLPApplicationTest.class"/>
+                <!-- Elaborate. Very slow, sometime seems to end in endless
+                wait-for-condition cycle. Also read through #87973. -->
+                <exclude name="**/ServiceNodeHandlerTest.class"/>
                 <!-- XXX Following test might need CVS repository. Double check them: -->
                 <exclude name="**/BrandingSupportTest.class"/>
                 <exclude name="**/GlobalSourceForBinaryImplTest.class"/>
@@ -53,7 +56,7 @@ Microsystems, Inc. All Rights Reserved.
                 <exclude name="**/UpdateTrackingFileOwnerQueryTest.class"/>
                 <exclude name="**/UtilTest.class"/>
                 <!-- Tests which definitely needs access to CVS: -->
-                <!-- Move above test into this section once are checked for real CVS need. -->
+                <!-- Move above test into this section once they are checked for real need of presence of CVS tree. -->
             </patternset>
         </testset>
     </testbag>
@@ -63,7 +66,8 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="**/*Test.class"/>
                 <!-- Too slow in the absence of input: -->
                 <exclude name="**/GenerateJNLPApplicationTest.class"/>
-                <!-- XXX Elaborate. Very slow, sometime seems to end in endless wait-for-condition cycle: -->
+                <!-- Elaborate. Very slow, sometime seems to end in endless
+                wait-for-condition cycle. Also read through #87973. -->
                 <exclude name="**/ServiceNodeHandlerTest.class"/>
             </patternset>
         </testset>
