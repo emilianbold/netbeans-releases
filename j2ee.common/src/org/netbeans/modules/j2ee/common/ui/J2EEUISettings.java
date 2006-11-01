@@ -19,12 +19,11 @@
 
 package org.netbeans.modules.j2ee.common.ui;
 
-import org.openide.options.SystemOption;
+import java.util.prefs.Preferences;
+import org.openide.util.NbPreferences;
 
-public class J2EEUISettings extends SystemOption {
-    
-    static final long serialVersionUID = 1L;
-    
+public class J2EEUISettings  {
+    private static final J2EEUISettings INSTANCE = new J2EEUISettings();
     private static final String SHOW_AGAIN_BROKEN_REF_ALERT = "showAgainBrokenRefAlert"; // NOI18N
     private static final String SHOW_AGAIN_BROKEN_SERVER_ALERT = "showAgainBrokenServerAlert"; // NOI18N
     
@@ -32,26 +31,28 @@ public class J2EEUISettings extends SystemOption {
         return "J2EEUISettings"; // NOI18N (not shown in UI)
     }
     
+    private static Preferences getPreferences() {
+        return NbPreferences.forModule(J2EEUISettings.class);
+    }
+    
     public boolean isShowAgainBrokenRefAlert() {
-        Boolean b = (Boolean) getProperty(SHOW_AGAIN_BROKEN_REF_ALERT);
-        return b == null ? true : b.booleanValue();
+        return getPreferences().getBoolean(SHOW_AGAIN_BROKEN_REF_ALERT, true);
     }
     
     public void setShowAgainBrokenRefAlert(boolean again) {
-        this.putProperty(SHOW_AGAIN_BROKEN_REF_ALERT, Boolean.valueOf(again), true);
+        getPreferences().putBoolean(SHOW_AGAIN_BROKEN_REF_ALERT, again);
     }
     
     public boolean isShowAgainBrokenServerAlert() {
-        Boolean b = (Boolean) getProperty(SHOW_AGAIN_BROKEN_SERVER_ALERT);
-        return b == null ? true : b.booleanValue();
+        return getPreferences().getBoolean(SHOW_AGAIN_BROKEN_SERVER_ALERT, true);
     }
     
     public void setShowAgainBrokenServerAlert(boolean again) {
-        this.putProperty(SHOW_AGAIN_BROKEN_SERVER_ALERT, Boolean.valueOf(again), true);
+        getPreferences().putBoolean(SHOW_AGAIN_BROKEN_SERVER_ALERT, again);
     }
     
     public static J2EEUISettings getDefault() {
-        return (J2EEUISettings) SystemOption.findObject(J2EEUISettings.class, true);
+        return INSTANCE;
     }
     
 }
