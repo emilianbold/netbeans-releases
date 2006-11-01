@@ -22,13 +22,9 @@ package org.netbeans.modules.web.project.ui;
 import org.openide.filesystems.FileUtil;
 
 import javax.swing.*;
-import javax.swing.filechooser.FileSystemView;
 import javax.swing.filechooser.FileFilter;
 import java.io.File;
-import java.io.IOException;
 import java.awt.*;
-import java.util.Map;
-import java.util.HashMap;
 
 public class FileChooser extends JFileChooser {
 
@@ -121,22 +117,12 @@ public class FileChooser extends JFileChooser {
     }
 
     public static File getLastChooserLocation(String key) {
-        Map map = FoldersListSettings.getDefault().getLastUsedChooserLocations();
-        if (map != null) {
-            return (File) map.get(key);
-        } else {
-            return null;
-        }
+        String path = FoldersListSettings.getPreferences().get(FoldersListSettings.LAST_USED_CHOOSER_LOCATIONS+key, null);
+        return path != null ? new File(path) : null;
     }
 
     public static void setLastChooserLocation(String key, File folder) {
-        FoldersListSettings foldersListSettings = FoldersListSettings.getDefault();
-        Map map = foldersListSettings.getLastUsedChooserLocations();
-        // we should get a different instance of the map to be sure
-        // that modification of settings will be detected
-        map = map == null ? new HashMap() : new HashMap(map);
-        map.put(key, folder);
-        foldersListSettings.setLastUsedChooserLocations(map);
+        FoldersListSettings.getPreferences().put(FoldersListSettings.LAST_USED_CHOOSER_LOCATIONS+key, folder.getPath());
     }
 
     public static FileChooser createDirectoryChooser(String key) {
