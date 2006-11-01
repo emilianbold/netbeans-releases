@@ -2,20 +2,20 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
- * 
+ *
  * $Id$
  */
 package org.netbeans.installer.utils;
@@ -31,6 +31,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Date;
+import org.netbeans.installer.Installer;
 import org.netbeans.installer.downloader.DownloadFilesBase;
 import org.netbeans.installer.downloader.DownloadManager;
 import org.netbeans.installer.downloader.queue.EmptyQueueListener;
@@ -45,6 +46,12 @@ import org.netbeans.installer.utils.progress.Progress;
 public class FileProxy {
   
   private final DownloadManager manager = DownloadManager.getInstance();
+  
+  private final File tmpDir = new File(Installer.DEFAULT_LOCAL_DIRECTORY_PATH, "tmp");
+  {
+    tmpDir.mkdirs();
+    tmpDir.deleteOnExit();
+  }
   
   MyListener listener = new MyListener();
   {
@@ -113,10 +120,11 @@ public class FileProxy {
     } else if (uri.getScheme().equals("resource")) {
       OutputStream out  = null;
       try {
-        File dir = SystemUtils.getInstance().getTempDirectory();//TODO: is Dir exists;
         String path = uri.getSchemeSpecificPart();
-        File file = new File(dir, path.substring(path.lastIndexOf('/')));
+        File file = new File(tmpDir, path.substring(path.lastIndexOf('/')));
+        if (file.exists()) return file;
         file.createNewFile();
+        file.deleteOnExit();
         final InputStream resource = (loader != null ? loader: getClass().getClassLoader()).getResourceAsStream(uri.getSchemeSpecificPart());
         out = new FileOutputStream(file);
         if (resource == null) throw new DownloadException("resource:" + uri + "not found");
