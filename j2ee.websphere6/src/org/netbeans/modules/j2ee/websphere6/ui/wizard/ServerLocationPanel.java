@@ -239,6 +239,9 @@ public class ServerLocationPanel extends JPanel
         gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
         gridBagConstraints.weighty = 1.0;
         add(formattingPanel, gridBagConstraints);
+        getAccessibleContext().setAccessibleDescription(
+                java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/websphere6/ui/wizard/Bundle").
+                getString("MSG_ServerLocationPanelDescription"));
     }
     
     /**
