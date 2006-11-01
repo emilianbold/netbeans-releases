@@ -122,7 +122,11 @@ public class FileProxy {
       try {
         String path = uri.getSchemeSpecificPart();
         File file = new File(tmpDir, path.substring(path.lastIndexOf('/')));
-        if (file.exists()) return file;
+        String fileName = file.getName();
+        File parent = file.getParentFile();
+        for (int i = 0; file.exists(); i++) {
+            file = new File(parent, fileName + "." + i);
+        }
         file.createNewFile();
         file.deleteOnExit();
         final InputStream resource = (loader != null ? loader: getClass().getClassLoader()).getResourceAsStream(uri.getSchemeSpecificPart());
