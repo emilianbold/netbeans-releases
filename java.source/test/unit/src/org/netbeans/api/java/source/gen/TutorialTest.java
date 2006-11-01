@@ -18,21 +18,16 @@
  */
 package org.netbeans.api.java.source.gen;
 
-import com.sun.source.tree.AnnotationTree;
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.ModifiersTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.TypeParameterTree;
-import com.sun.source.tree.VariableTree;
+import com.sun.source.tree.*;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
+import java.util.List;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
@@ -259,6 +254,65 @@ public class TutorialTest extends GeneratorTestMDRCompat {
                         // add feature to the class:
                         ClassTree modifiedClazz = make.addClassMember(clazz, newMethod);
                         workingCopy.rewrite(clazz, modifiedClazz);
+                    }
+                }
+            }
+
+            public void cancel() {
+            }
+        };
+
+        tutorialSource.runModificationTask(task).commit();
+        
+        // print the result to the System.err to see the changes in console.
+        BufferedReader in = new BufferedReader(new FileReader(tutorialFile));
+        PrintStream out = System.out;
+        String str;
+        while ((str = in.readLine()) != null) {
+            out.println(str);
+        }
+        in.close();
+    }
+    
+    // creates and adds annotation to class modifiers
+    public void testAddAnnotation() throws FileStateInvalidException, IOException {
+        File tutorialFile = getFile(getSourceDir(), "/org/netbeans/test/codegen/Tutorial1.java");
+        JavaSource tutorialSource = JavaSource.forFileObject(FileUtil.toFileObject(tutorialFile));
+        
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                
+                TreeMaker make = workingCopy.getTreeMaker();
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // ensure that it is correct type declaration, i.e. class
+                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                        ClassTree clazz = (ClassTree) typeDecl;
+                        
+                        // create the copy of the annotation list:
+                        List<? extends AnnotationTree> oldAnnList = clazz.getModifiers().getAnnotations();
+                        List<AnnotationTree> modifiedAnnList = new ArrayList<AnnotationTree>(oldAnnList);
+                        
+                        // create the new annotation and add it to the end
+                        // of the list:
+                        // Note:
+                        // use make.QualIdent(e) for correct import/FQN handling.
+                        AnnotationTree newAnnotation = make.Annotation(
+                                make.Identifier("Override"), 
+                                Collections.<ExpressionTree>emptyList()
+                        );
+                        modifiedAnnList.add(newAnnotation);
+                        
+                        // create new class modifiers, flags aren't changed,
+                        // annotation is added to the end of annotation list.
+                        ModifiersTree classModifiers = make.Modifiers(
+                            clazz.getModifiers().getFlags(),
+                            modifiedAnnList
+                        );
+                        // rewrite the original modifiers with the new one:
+                        workingCopy.rewrite(clazz.getModifiers(), classModifiers);
                     }
                 }
             }
