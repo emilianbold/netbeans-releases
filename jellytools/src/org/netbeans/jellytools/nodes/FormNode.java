@@ -54,8 +54,6 @@ public class FormNode extends Node {
     static final CutAction cutAction = new CutAction();
     static final CopyAction copyAction = new CopyAction();
     static final PasteAction pasteAction = new PasteAction();
-    static final AddClassAction addClassAction = new AddClassAction();
-    static final AddInterfaceAction addInterfaceAction = new AddInterfaceAction();
     static final DeleteAction deleteAction = new DeleteAction();
     static final SaveAsTemplateAction saveAsTemplateAction = new SaveAsTemplateAction();
     static final PropertiesAction propertiesAction = new PropertiesAction();
@@ -69,8 +67,6 @@ public class FormNode extends Node {
             cutAction,
             copyAction,
             pasteAction,
-            addClassAction,
-            addInterfaceAction,
             deleteAction,
             saveAsTemplateAction,
             propertiesAction
@@ -116,16 +112,6 @@ public class FormNode extends Node {
     /** performs PasteAction with this node */    
     public void paste() {
         pasteAction.perform(this);
-    }
-
-    /** performs AddClassAction with this node */    
-    public void addClass() {
-        addClassAction.perform(this);
-    }
-
-    /** performs AddInterfaceAction with this node */    
-    public void addInterface() {
-        addInterfaceAction.perform(this);
     }
 
     /** performs DeleteAction with this node */    
