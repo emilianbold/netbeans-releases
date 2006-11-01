@@ -197,6 +197,8 @@ Microsystems, Inc. All Rights Reserved.
         <executeTests pluginname="jvm">
             <classpath>
                 <path path="${test.qa-functional.runtime.cp}"/>
+                <pathelement path="${test.qa-functional.cp.extra}"/>
+                <pathelement path="${test.qa-functional.run.cp.extra}"/>
             </classpath>
         </executeTests>
     </target>
