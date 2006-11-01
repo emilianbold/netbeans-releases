@@ -120,7 +120,7 @@ public class CommitAction extends ContextAction {
         // show commit dialog
         final CommitPanel panel = new CommitPanel();
         final CommitTable data;
-        TableSorter sorter = HistorySettings.getImportTableSorter();
+        TableSorter sorter = HistorySettings.getCommitTableSorter();
         if(sorter==null) {
             data = new CommitTable(panel.filesLabel, CommitTable.COMMIT_COLUMNS, new String[] { CommitTableModel.COLUMN_NAME_PATH });
         } else {
@@ -161,7 +161,7 @@ public class CommitAction extends ContextAction {
 
         if (dd.getValue() == commitButton) {
             
-            HistorySettings.setImportTableSorter(data.getSorter());
+            HistorySettings.setCommitTableSorter(data.getSorter());
             
             final Map<SvnFileNode, CommitOptions> commitFiles = data.getCommitFiles();
             final String message = panel.messageTextArea.getText();
