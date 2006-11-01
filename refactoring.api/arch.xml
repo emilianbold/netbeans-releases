@@ -274,7 +274,7 @@ public class J2EERenameRefactoringPlugin implements RefactoringPlugin {
     }
 </pre>
 
-
+<i>Refactoring SPI Example:</i>
  </answer>
 
 
@@ -305,7 +305,7 @@ Refactoring module allows developer to do high level code transformations aka re
 -->
  <answer id="compat-standards">
   <p>
-	Refactoring module exposes <api name="RefactoringAPI" category="friend" type="export" group="java"/> and <api name="RefactoringSPI" category="friend" type="export" group="java"/>
+	Refactoring module exposes <api name="RefactoringAPI" category="devel" type="export" group="java"/> and <api name="RefactoringSPI" category="devel" type="export" group="java"/>
   </p>
  </answer>
 
@@ -321,9 +321,8 @@ Refactoring module allows developer to do high level code transformations aka re
  <answer id="dep-nb">
     <defaultanswer generate="none"/>
     <ul>
-    <li><api name="javacore" category="friend" type="import" group="java">JMI for Java Metadata (javacore)</api></li>
+    <li><api name="jbrowse" category="official" type="import" group="java">Retouche</api></li>
     <li><api name="openide" type="import" category="official" group="java">Lookup, Filesystems API, Modules API, Datasystems API, Window System API.</api></li>
-    <li><api name="mdr" type="import" category="official" group="java">MDR</api></li>
     <li><api name="ProjectAPI" type="import" category="official" group="java">Project API</api></li>
     </ul>
  </answer>
@@ -390,6 +389,7 @@ Refactoring module allows developer to do high level code transformations aka re
      <li>org.netbeans.modules.refactoring.api</li>
      <li>org.netbeans.modules.refactoring.api.ui</li>
      <li>org.netbeans.modules.refactoring.spi</li>
+     <li>org.netbeans.modules.refactoring.spi.ui</li>
    </ul>
  </answer>
 
@@ -411,9 +411,11 @@ Yes. We search for:
 <ul>
 <li><api group="lookup" name="org.netbeans.api.javahelp.Help" type="import" category="official"/></li>
 <li><code>org.openide.nodes.Node</code> - listens to <api group="lookup" name="org.openide.util.ContextGlobalProvider" type="import" category="official" /> (resp. <code>org.openide.util.Utilities.actionsGlobalContext()</code> lookup) to look for active node in <code>RefactoringSubMenuAction</code></li>
-<li>all instances of <api group="lookup" name="org.netbeans.modules.refactoring.spi.RefactoringPluginFactory" type="export" category="friend" /></li>
-<li>all instances of <api group="lookup" name="org.netbeans.modules.refactoring.spi.GuardedBlockHandlerFactory" type="export" category="friend" /></li>
-<li>an instance of  <api group="lookup" name="org.netbeans.modules.refactoring.spi.ReadOnlyFilesHandler" type="export" category="friend" /></li>
+<li>all instances of <api group="lookup" name="org.netbeans.modules.refactoring.spi.RefactoringPluginFactory" type="export" category="devel" /></li>
+<li>all instances of <api group="lookup" name="org.netbeans.modules.refactoring.spi.GuardedBlockHandlerFactory" type="export" category="devel" /></li>
+<li>an instance of  <api group="lookup" name="org.netbeans.modules.refactoring.spi.ReadOnlyFilesHandler" type="export" category="devel" /></li>
+<li>all instances of  <api group="lookup" name="org.netbeans.modules.refactoring.spi.RefactoringActionsFactoryImplementation" type="export" category="devel" /></li>
+<li>all instances of  <api group="lookup" name="org.netbeans.modules.refactoring.spi.ui.TreeElementFactoryImplementation" type="export" category="devel" /></li>
 </ul>
  </answer>
 
