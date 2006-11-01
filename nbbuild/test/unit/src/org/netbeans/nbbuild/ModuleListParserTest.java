@@ -180,9 +180,9 @@ public class ModuleListParserTest extends TestCase {
         assertEquals("org.netbeans.examples.modules.dummy", e.getCnb());
         assertEquals(file(nball, "apisupport/project/test/unit/data/example-external-projects/suite3/dummy-project/build/cluster/modules/org-netbeans-examples-modules-dummy.jar"), e.getJar());
         assertEquals(Collections.EMPTY_LIST, Arrays.asList(e.getClassPathExtensions()));
-        e = p.findByCodeNameBase("org.netbeans.modules.beans");
+        e = p.findByCodeNameBase("org.netbeans.modules.classfile");
         assertNotNull("found (fake) netbeans.org module by its binary", e);
-        assertEquals("org.netbeans.modules.beans", e.getCnb());
+        assertEquals("org.netbeans.modules.classfile", e.getCnb());
     }
     
 }
