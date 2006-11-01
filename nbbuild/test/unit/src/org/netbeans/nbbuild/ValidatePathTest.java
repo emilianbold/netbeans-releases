@@ -20,43 +20,49 @@
 package org.netbeans.nbbuild;
 
 import java.io.File;
-import java.io.IOException;
-import junit.framework.*;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.Path;
-import org.netbeans.junit.*;
+import org.netbeans.junit.NbTestCase;
 
 /**
  * It tests ValidatePath ant tasks
- * @author pzajac
+ * @author pzajac, Jesse Glick
  */
 public class ValidatePathTest extends NbTestCase {
-    
-    public ValidatePathTest(java.lang.String testName) {
-        super(testName);
+
+    public ValidatePathTest(String name) {
+        super(name);
     }
-    
-    public void testValidatePath() throws IOException {
+
+    private ValidatePath vp;
+    private Path path;
+
+    protected void setUp() throws Exception {
+        super.setUp();
         Project prj = new Project();
         prj.setBaseDir(getWorkDir());
-        Path path = new Path(prj); 
-        ValidatePath vp = new ValidatePath();
+        path = new Path(prj);
+        vp = new ValidatePath();
         vp.setPath(path);
-        
-        // empty path
+    }
+
+    public void testEmptyPath() throws Exception {
         vp.execute();
-        // a valid file
+    }
+
+    public void testValidFile() throws Exception {
         File f = new File(getWorkDir(),"file1");
         assertTrue("Cannot create temporary file",f.createNewFile());
         path.setPath(f.getAbsolutePath());
-        vp.setPath(path);
         vp.execute();
-        
-        // a valid  + a invalid file 
+    }
+
+    public void testValidPlusInvalidFile() throws Exception {
+        File f = new File(getWorkDir(),"file1");
+        assertTrue("Cannot create temporary file",f.createNewFile());
         File f2 = new File(getWorkDir(),"file2");
         path.setPath(f.getAbsolutePath() + ":" + f2.getAbsolutePath());
-        vp.setPath(path);
         try {
             vp.execute();
             fail("File " + f2.getPath() + " doesn't exist but task passed");
@@ -64,5 +70,5 @@ public class ValidatePathTest extends NbTestCase {
             // ok
         }
     }
-    
+
 }
