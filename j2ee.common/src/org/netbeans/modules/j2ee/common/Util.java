@@ -26,11 +26,9 @@ import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import javax.swing.JComponent;
-import java.util.Vector;
 import java.util.Iterator;
 import java.util.Collection;
 import java.util.Collections;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -82,7 +80,7 @@ public class Util {
     /*
      * Recursively gets all components in the components array and puts it in allComponents
      */
-    public static void getAllComponents( Component[] components, Collection allComponents ) {
+    public static void getAllComponents( Component[] components, Collection<Component> allComponents ) {
         for( int i = 0; i < components.length; i++ ) {
             if( components[i] != null ) {
                 allComponents.add( components[i] );
@@ -97,11 +95,11 @@ public class Util {
      *  Recursively finds a JLabel that has labelText in comp
      */
     public static JLabel findLabel(JComponent comp, String labelText) {
-        Vector allComponents = new Vector();
+        List<Component> allComponents = new ArrayList<Component>();
         getAllComponents(comp.getComponents(), allComponents);
-        Iterator iterator = allComponents.iterator();
+        Iterator<Component> iterator = allComponents.iterator();
         while(iterator.hasNext()) {
-            Component c = (Component)iterator.next();
+            Component c = iterator.next();
             if(c instanceof JLabel) {
                 JLabel label = (JLabel)c;
                 if(label.getText().equals(labelText)) {
@@ -122,31 +120,31 @@ public class Util {
     public static SourceGroup[] getJavaSourceGroups(Project project) {
         SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(
                                     JavaProjectConstants.SOURCES_TYPE_JAVA);
-        Set testGroups = getTestSourceGroups(sourceGroups);
-        List result = new ArrayList();
+        Set<SourceGroup> testGroups = getTestSourceGroups(sourceGroups);
+        List<SourceGroup> result = new ArrayList<SourceGroup>();
         for (int i = 0; i < sourceGroups.length; i++) {
             if (!testGroups.contains(sourceGroups[i])) {
                 result.add(sourceGroups[i]);
             }
         }
-        return (SourceGroup[]) result.toArray(new SourceGroup[result.size()]);
+        return result.toArray(new SourceGroup[result.size()]);
     }
 
-    private static Set/*<SourceGroup>*/ getTestSourceGroups(SourceGroup[] sourceGroups) {
-        Map foldersToSourceGroupsMap = createFoldersToSourceGroupsMap(sourceGroups);
-        Set testGroups = new HashSet();
+    private static Set<SourceGroup> getTestSourceGroups(SourceGroup[] sourceGroups) {
+        Map<FileObject, SourceGroup> foldersToSourceGroupsMap = createFoldersToSourceGroupsMap(sourceGroups);
+        Set<SourceGroup> testGroups = new HashSet<SourceGroup>();
         for (int i = 0; i < sourceGroups.length; i++) {
             testGroups.addAll(getTestTargets(sourceGroups[i], foldersToSourceGroupsMap));
         }
         return testGroups;
     }
     
-    private static Map createFoldersToSourceGroupsMap(final SourceGroup[] sourceGroups) {
-        Map result;
+    private static Map<FileObject, SourceGroup> createFoldersToSourceGroupsMap(final SourceGroup[] sourceGroups) {
+        Map<FileObject, SourceGroup> result;
         if (sourceGroups.length == 0) {
-            result = Collections.EMPTY_MAP;
+            result = Collections.<FileObject, SourceGroup>emptyMap();
         } else {
-            result = new HashMap(2 * sourceGroups.length, .5f);
+            result = new HashMap<FileObject, SourceGroup>(2 * sourceGroups.length, .5f);
             for (int i = 0; i < sourceGroups.length; i++) {
                 SourceGroup sourceGroup = sourceGroups[i];
                 result.put(sourceGroup.getRootFolder(), sourceGroup);
@@ -155,8 +153,8 @@ public class Util {
         return result;
     }
 
-    private static List/*<FileObject>*/ getFileObjects(URL[] urls) {
-        List result = new ArrayList();
+    private static List<FileObject> getFileObjects(URL[] urls) {
+        List<FileObject> result = new ArrayList<FileObject>();
         for (int i = 0; i < urls.length; i++) {
             FileObject sourceRoot = URLMapper.findFileObject(urls[i]);
             if (sourceRoot != null) {
@@ -172,16 +170,16 @@ public class Util {
         return result;
     }
     
-    private static List/*<SourceGroup>*/ getTestTargets(SourceGroup sourceGroup, Map foldersToSourceGroupsMap) {
+    private static List<SourceGroup> getTestTargets(SourceGroup sourceGroup, Map<FileObject, SourceGroup> foldersToSourceGroupsMap) {
         final URL[] rootURLs = UnitTestForSourceQuery.findUnitTests(sourceGroup.getRootFolder());
         if (rootURLs.length == 0) {
-            return new ArrayList();
+            return new ArrayList<SourceGroup>();
         }
-        List result = new ArrayList();
-        List sourceRoots = getFileObjects(rootURLs);
+        List<SourceGroup> result = new ArrayList<SourceGroup>();
+        List<FileObject> sourceRoots = getFileObjects(rootURLs);
         for (int i = 0; i < sourceRoots.size(); i++) {
-            FileObject sourceRoot = (FileObject) sourceRoots.get(i);
-            SourceGroup srcGroup = (SourceGroup) foldersToSourceGroupsMap.get(sourceRoot);
+            FileObject sourceRoot = sourceRoots.get(i);
+            SourceGroup srcGroup = foldersToSourceGroupsMap.get(sourceRoot);
             if (srcGroup != null) {
                 result.add(srcGroup);
             }
@@ -210,7 +208,7 @@ public class Util {
         if (project == null) {
             return false;
         }
-        J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+        J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
         if (j2eeModuleProvider != null) {
             J2eeModule j2eeModule = j2eeModuleProvider.getJ2eeModule();
             if (j2eeModule != null) {
@@ -237,7 +235,7 @@ public class Util {
      * @return source level string representation, e.g. "1.6"
      */
     public static String getSourceLevel(Project project) {
-        SourceLevelQueryImplementation sl = (SourceLevelQueryImplementation) project.getLookup().lookup(SourceLevelQueryImplementation.class);
+        SourceLevelQueryImplementation sl = project.getLookup().lookup(SourceLevelQueryImplementation.class);
         return sl.getSourceLevel(project.getProjectDirectory());
     }
     
@@ -282,7 +280,7 @@ public class Util {
      * @since 1.8
      */
     public static boolean isValidServerInstance(Project project) {
-        J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
+        J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
         if (j2eeModuleProvider == null) {
             return false;
         }
@@ -310,7 +308,7 @@ public class Util {
     public static File[] getJ2eePlatformClasspathEntries(Project project) {
         List<FileObject> j2eePlatformRoots = new ArrayList<FileObject>();
         if (project != null) {
-            J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+            J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
             if (j2eeModuleProvider != null) {
                 J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(j2eeModuleProvider.getServerInstanceID());
                 if (j2eePlatform != null) {

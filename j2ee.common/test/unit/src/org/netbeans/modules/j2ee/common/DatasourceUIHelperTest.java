@@ -52,7 +52,7 @@ public class DatasourceUIHelperTest extends NbTestCase {
         mds1 = new DatasourceImpl("mds1", "mds1_url", "mds1_user", "mds1_pass", "mds1_clz"); // NOI18N
         mds2 = new DatasourceImpl("mds2", "mds2_url", "mds2_user", "mds2_pass", "mds2_clz"); // NOI18N
         mds3 = new DatasourceImpl("mds3", "mds3_url", "mds3_user", "mds3_pass", "mds3_clz"); // NOI18N
-        Set moduleDatasources = new HashSet();
+        Set<Datasource> moduleDatasources = new HashSet<Datasource>();
         moduleDatasources.add(mds1);
         moduleDatasources.add(mds2);
         moduleDatasources.add(mds3);
@@ -61,7 +61,7 @@ public class DatasourceUIHelperTest extends NbTestCase {
         sds3 = new DatasourceImpl("sds3", "sds3_url", "sds3_user", "sds3_pass", "sds3_clz"); // NOI18N
         //copy of mds3 for merging verification
         sds4 = new DatasourceImpl("mds3", "mds3_url", "mds3_user", "mds3_pass", "mds3_clz"); // NOI18N
-        Set serverDatasources = new HashSet();
+        Set<Datasource> serverDatasources = new HashSet<Datasource>();
         serverDatasources.add(sds1);
         serverDatasources.add(sds2);
         serverDatasources.add(sds3);
@@ -77,7 +77,7 @@ public class DatasourceUIHelperTest extends NbTestCase {
     }
 
     public void testEmptyComboboxContentWithCreation() {
-        provider = new J2eeModuleProviderImpl(new HashSet(), new HashSet());
+        provider = new J2eeModuleProviderImpl(new HashSet<Datasource>(), new HashSet<Datasource>());
         
         JComboBox combo = connect();
         
@@ -88,7 +88,7 @@ public class DatasourceUIHelperTest extends NbTestCase {
     }   
 
     public void testEmptyComboboxContentWithoutCreation() {
-        provider = new J2eeModuleProviderImpl(new HashSet(), new HashSet(), false);//do not allow creation of new data source
+        provider = new J2eeModuleProviderImpl(new HashSet<Datasource>(), new HashSet<Datasource>(), false);//do not allow creation of new data source
         
         JComboBox combo = connect();
         

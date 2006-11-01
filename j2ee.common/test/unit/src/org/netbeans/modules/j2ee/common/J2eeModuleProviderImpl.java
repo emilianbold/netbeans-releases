@@ -21,6 +21,7 @@ package org.netbeans.modules.j2ee.common;
 
 import java.io.File;
 import java.util.Set;
+import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
@@ -32,15 +33,15 @@ import org.openide.filesystems.FileObject;
  */
 public class J2eeModuleProviderImpl extends J2eeModuleProvider {
     
-    private Set moduleDatasources;
-    private Set serverDatasources;
+    private Set<Datasource> moduleDatasources;
+    private Set<Datasource> serverDatasources;
     private boolean creationAllowed;
     
-    public J2eeModuleProviderImpl(Set moduleDatasources, Set serverDatasources) {
+    public J2eeModuleProviderImpl(Set<Datasource> moduleDatasources, Set<Datasource> serverDatasources) {
         this(moduleDatasources, serverDatasources, true);
     }
 
-    public J2eeModuleProviderImpl(Set moduleDatasources, Set serverDatasources, boolean creationAllowed) {
+    public J2eeModuleProviderImpl(Set<Datasource> moduleDatasources, Set<Datasource> serverDatasources, boolean creationAllowed) {
         this.moduleDatasources = moduleDatasources;
         this.serverDatasources = serverDatasources;
         this.creationAllowed = creationAllowed;
@@ -69,11 +70,11 @@ public class J2eeModuleProviderImpl extends J2eeModuleProvider {
 
     // J2eeModuleProvider DS API methods
     
-    public Set getModuleDatasources() {
+    public Set<Datasource> getModuleDatasources() {
         return moduleDatasources;
     }
 
-    public Set getServerDatasources() {
+    public Set<Datasource> getServerDatasources() {
         return serverDatasources;
     }
     

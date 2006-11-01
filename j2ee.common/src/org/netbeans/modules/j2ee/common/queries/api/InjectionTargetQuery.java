@@ -33,7 +33,7 @@ import org.openide.util.LookupListener;
  */
 public class InjectionTargetQuery {
     
-    private static Lookup.Result/*<InjectionTargetQueryImplementation>*/ implementations;
+    private static Lookup.Result<InjectionTargetQueryImplementation> implementations;
     /** Cache of all available InjectionTargetQueryImplementation instances. */
     private static List<InjectionTargetQueryImplementation> cache;
 
@@ -79,7 +79,7 @@ public class InjectionTargetQuery {
     
     private static synchronized List<InjectionTargetQueryImplementation> getInstances() {
         if (implementations == null) {
-            implementations = Lookup.getDefault().lookup(new Lookup.Template(InjectionTargetQueryImplementation.class));
+            implementations = Lookup.getDefault().lookup(new Lookup.Template<InjectionTargetQueryImplementation>(InjectionTargetQueryImplementation.class));
             implementations.addLookupListener(new LookupListener() {
                 public void resultChanged (LookupEvent ev) {
                     synchronized (InjectionTargetQuery.class) {

@@ -24,13 +24,11 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -52,7 +50,6 @@ import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
 import org.netbeans.modules.j2ee.common.EventRequestProcessor.Action;
 import org.netbeans.modules.j2ee.common.EventRequestProcessor.AsynchronousAction;
-import org.netbeans.modules.j2ee.common.EventRequestProcessor.SynchronousAction;
 import org.netbeans.modules.j2ee.common.EventRequestProcessor.Context;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
@@ -280,18 +277,18 @@ public final class DatasourceUIHelper {
         
         // fetch datasources asynchronously
         Collection<Action> actions = new ArrayList<Action>();
-        final List<Datasource> datasources[] = new <Datasource>List[1];
+        final List<Datasource> datasources = new ArrayList<Datasource>();
         actions.add(new AsynchronousAction() {
             public void run(Context actionContext) {
                 String msg = NbBundle.getMessage(DatasourceUIHelper.class, "MSG_retrievingDS");
                 actionContext.getProgress().progress(msg);
-                datasources[0] = getDatasources(provider);
+                datasources.addAll(getDatasources(provider));
             }
         });
         EventRequestProcessor eventRP = new EventRequestProcessor();
         eventRP.invoke(actions);
 
-        populate(datasources[0], provider.isDatasourceCreationSupported(), combo, selectedDatasource, false);
+        populate(datasources, provider.isDatasourceCreationSupported(), combo, selectedDatasource, false);
         Component toListenOn = (combo.isEditable() ? combo.getEditor().getEditorComponent() : combo);
             
         toListenOn.addKeyListener(new KeyAdapter() {
@@ -374,12 +371,12 @@ public final class DatasourceUIHelper {
             });
         }
         // fetch datasources asynchronously
-        final List<Datasource> datasources[] = new <Datasource>List[1];
+        final List<Datasource> datasources = new ArrayList<Datasource>();
         actions.add(new AsynchronousAction() {
             public void run(Context actionContext) {
                 String msg = NbBundle.getMessage(DatasourceUIHelper.class, "MSG_retrievingDS");
                 actionContext.getProgress().progress(msg);
-                datasources[0] = getDatasources(provider);
+                datasources.addAll(getDatasources(provider));
             }
 
             public boolean isEnabled() {
@@ -397,7 +394,7 @@ public final class DatasourceUIHelper {
                 }
             });
         } else {
-            populate(datasources[0], provider.isDatasourceCreationSupported(), combo, ds[0], selectItemLater);
+            populate(datasources, provider.isDatasourceCreationSupported(), combo, ds[0], selectItemLater);
         }
     }
     
