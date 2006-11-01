@@ -56,17 +56,17 @@ public class NbPlatformTest extends TestBase {
         assertNotNull("have custom platform", custom);
         assertNull("no such bogus platform", NbPlatform.getPlatformByID("bogus"));
         assertEquals(new HashSet(Arrays.asList(new NbPlatform[] {def, custom})), platforms);
-        assertEquals("right default platform by dest dir", def, NbPlatform.getPlatformByDestDir(file("nbbuild/netbeans")));
-        assertEquals("right custom platform by dest dir", custom, NbPlatform.getPlatformByDestDir(file(extexamplesF, "suite3/nbplatform")));
+        assertEquals("right default platform by dest dir", def, NbPlatform.getPlatformByDestDir(destDirF));
+        assertEquals("right custom platform by dest dir", custom, NbPlatform.getPlatformByDestDir(resolveEEPFile("suite3/nbplatform")));
         assertFalse("bogus platform is not valid", NbPlatform.getPlatformByDestDir(file("nbbuild")).isValid());
         assertFalse("bogus platform is not default", NbPlatform.getPlatformByDestDir(file("nbbuild")).isDefault());
-        assertEquals("right dest dir for default platform", file("nbbuild/netbeans"), def.getDestDir());
-        assertEquals("right dest dir for custom platform", file(extexamplesF, "suite3/nbplatform"), custom.getDestDir());
+        assertEquals("right dest dir for default platform", destDirF, def.getDestDir());
+        assertEquals("right dest dir for custom platform", resolveEEPFile("suite3/nbplatform"), custom.getDestDir());
         assertEquals("right name for default platform", NbPlatform.PLATFORM_ID_DEFAULT, def.getID());
         assertEquals("right name for custom platform", "custom", custom.getID());
         assertEquals("right sources for default platform", new HashSet(Arrays.asList(new URL[] {
-            Util.urlForDir(nbrootF),
-            Util.urlForDir(file(extexamplesF, "suite2")),
+            Util.urlForDir(nbCVSRootFile()),
+            Util.urlForDir(resolveEEPFile("suite2")),
         })), new HashSet(Arrays.asList(def.getSourceRoots())));
         assertEquals("right Javadoc for default platform", new HashSet(Arrays.asList(new URL[] {
             Util.urlForJar(apisZip),
@@ -81,7 +81,7 @@ public class NbPlatformTest extends TestBase {
     }
     
     public void testIsPlatformDirectory() throws Exception {
-        assertTrue("nbbuild/netbeans is a platform", NbPlatform.isPlatformDirectory(file("nbbuild/netbeans")));
+        assertTrue("nbbuild/netbeans is a platform", NbPlatform.isPlatformDirectory(destDirF));
         assertFalse(TestBase.CLUSTER_PLATFORM + " is not a platform", NbPlatform.isPlatformDirectory(file("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM)));
         assertFalse("nbbuild is not a platform", NbPlatform.isPlatformDirectory(file("nbbuild")));
         assertFalse("nbbuild/build.xml is not a platform", NbPlatform.isPlatformDirectory(file("nbbuild/build.xml")));
@@ -89,7 +89,7 @@ public class NbPlatformTest extends TestBase {
     }
     
     public void testComputeDisplayName() throws Exception {
-        String name = NbPlatform.computeDisplayName(file("nbbuild/netbeans"));
+        String name = NbPlatform.computeDisplayName(destDirF);
         //System.out.println("name: " + name);
         assertTrue("name '" + name + "' mentions 'NetBeans IDE'", name.indexOf("NetBeans IDE") != -1);
     }
@@ -219,8 +219,8 @@ public class NbPlatformTest extends TestBase {
     }
     
     public void testContains() throws Exception {
-        assertTrue("contains suite3/nbplatform", NbPlatform.contains(file(extexamplesF, "suite3/nbplatform")));
-        assertTrue("contains nbbuild/netbeans", NbPlatform.contains(file("nbbuild/netbeans")));
+        assertTrue("contains suite3/nbplatform", NbPlatform.contains(resolveEEPFile("suite3/nbplatform")));
+        assertTrue("contains nbbuild/netbeans", NbPlatform.contains(destDirF));
         assertFalse("doesn't contains whatever/platform", NbPlatform.contains(file("whatever/platform")));
     }
     

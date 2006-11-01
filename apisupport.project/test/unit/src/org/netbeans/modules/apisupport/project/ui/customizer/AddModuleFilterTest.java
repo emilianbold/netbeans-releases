@@ -44,7 +44,7 @@ public class AddModuleFilterTest extends TestBase {
     
     protected void setUp() throws Exception {
         super.setUp();
-        ModuleList ml = ModuleList.getModuleList(file(extexamplesF, "suite1/action-project"));
+        ModuleList ml = ModuleList.getModuleList(resolveEEPFile("suite1/action-project"));
         Set/*<ModuleDependency>*/ deps = new HashSet();
         Iterator it = ml.getAllEntries().iterator();
         while (it.hasNext()) {

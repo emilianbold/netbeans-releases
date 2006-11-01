@@ -177,8 +177,8 @@ public class ServiceNodeHandlerTest extends  TestBase {
        }
     }    
     public void testNbOrgModule() throws Exception {
-        FileObject prjFo = nbroot.getFileObject("openide/fs");
-        FileObject prj2Fo = nbroot.getFileObject("openide/masterfs");
+        FileObject prjFo = nbCVSRoot().getFileObject("openide/fs");
+        FileObject prj2Fo = nbCVSRoot().getFileObject("openide/masterfs");
         deleteService(prjFo,"org.myservice");   
         deleteService(prj2Fo,"org.myservice");   
         try {

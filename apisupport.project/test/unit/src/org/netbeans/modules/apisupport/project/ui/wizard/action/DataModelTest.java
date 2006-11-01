@@ -44,7 +44,7 @@ public class DataModelTest extends LayerTestBase {
     
     protected void setUp() throws Exception {
         super.setUp();
-        TestBase.initializeBuildProperties(getWorkDir());
+        TestBase.initializeBuildProperties(getWorkDir(), getDataDir());
     }
     
     public void testDataModelGenarationForAlwaysEnabledActions() throws Exception {

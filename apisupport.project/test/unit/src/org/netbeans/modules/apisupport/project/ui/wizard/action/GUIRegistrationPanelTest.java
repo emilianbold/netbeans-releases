@@ -50,7 +50,7 @@ public class GUIRegistrationPanelTest extends LayerTestBase {
     }
     
     public void testMemoryLeak_70032() throws Exception {
-        TestBase.initializeBuildProperties(getWorkDir());
+        TestBase.initializeBuildProperties(getWorkDir(), getDataDir());
         final WizardDescriptor wd = new WizardDescriptor(new WizardDescriptor.ArrayIterator() {
             public WizardDescriptor.Panel current() { // satisfying WizardDescriptor 1.32 (#76318)
                 return new BasicWizardPanel(null) {

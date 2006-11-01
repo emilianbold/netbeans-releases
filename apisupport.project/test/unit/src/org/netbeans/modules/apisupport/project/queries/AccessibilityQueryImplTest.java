@@ -33,19 +33,19 @@ public class AccessibilityQueryImplTest extends TestBase {
     }
 
     public void testPublicPackages() throws Exception {
-        assertEquals(Boolean.TRUE, AccessibilityQuery.isPubliclyAccessible(nbroot.getFileObject("ant/project/src/org/netbeans/spi/project/support/ant")));
-        assertEquals(Boolean.FALSE, AccessibilityQuery.isPubliclyAccessible(nbroot.getFileObject("ant/project/src/org/netbeans/modules/project/ant")));
+        assertEquals(Boolean.TRUE, AccessibilityQuery.isPubliclyAccessible(nbCVSRoot().getFileObject("ant/project/src/org/netbeans/spi/project/support/ant")));
+        assertEquals(Boolean.FALSE, AccessibilityQuery.isPubliclyAccessible(nbCVSRoot().getFileObject("ant/project/src/org/netbeans/modules/project/ant")));
     }
     
     public void testFriendPackages() throws Exception {
-        assertEquals(Boolean.TRUE, AccessibilityQuery.isPubliclyAccessible(nbroot.getFileObject("ant/freeform/src/org/netbeans/modules/ant/freeform/spi")));
-        assertEquals(Boolean.FALSE, AccessibilityQuery.isPubliclyAccessible(nbroot.getFileObject("ant/freeform/src/org/netbeans/modules/ant/freeform")));
+        assertEquals(Boolean.TRUE, AccessibilityQuery.isPubliclyAccessible(nbCVSRoot().getFileObject("ant/freeform/src/org/netbeans/modules/ant/freeform/spi")));
+        assertEquals(Boolean.FALSE, AccessibilityQuery.isPubliclyAccessible(nbCVSRoot().getFileObject("ant/freeform/src/org/netbeans/modules/ant/freeform")));
     }
     
     // XXX testSubpackages - would need to generate a new module to test
     
     public void testOtherSourceRoots() throws Exception {
-        assertEquals(null, AccessibilityQuery.isPubliclyAccessible(nbroot.getFileObject("ant/src-bridge/org/apache/tools/ant/module/bridge/impl")));
+        assertEquals(null, AccessibilityQuery.isPubliclyAccessible(nbCVSRoot().getFileObject("ant/src-bridge/org/apache/tools/ant/module/bridge/impl")));
     }
     
 }

@@ -49,12 +49,12 @@ public class NbModuleProjectTest extends TestBase {
     
     protected void setUp() throws Exception {
         super.setUp();
-        userPropertiesFile = TestBase.initializeBuildProperties(getWorkDir());
-        FileObject dir = nbroot.getFileObject("java/project");
+        userPropertiesFile = TestBase.initializeBuildProperties(getWorkDir(), getDataDir());
+        FileObject dir = nbCVSRoot().getFileObject("java/project");
         assertNotNull("have java/project checked out", dir);
         Project p = ProjectManager.getDefault().findProject(dir);
         javaProjectProject = (NbModuleProject)p;
-        dir = nbroot.getFileObject("openide/loaders");
+        dir = nbCVSRoot().getFileObject("openide/loaders");
         assertNotNull("have openide/loaders checked out", dir);
         p = ProjectManager.getDefault().findProject(dir);
         loadersProject = (NbModuleProject)p;
@@ -62,9 +62,9 @@ public class NbModuleProjectTest extends TestBase {
 
     /** #56457 */
     public void testExternalSourceRoots() throws Exception {
-        FileObject documentFinderJava = nbroot.getFileObject("editor/libsrc/org/netbeans/editor/DocumentFinder.java");
+        FileObject documentFinderJava = nbCVSRoot().getFileObject("editor/libsrc/org/netbeans/editor/DocumentFinder.java");
         assertNotNull("have DocumentFinder.java", documentFinderJava);
-        FileObject editorLib = nbroot.getFileObject("editor/lib");
+        FileObject editorLib = nbCVSRoot().getFileObject("editor/lib");
         assertNotNull("have editor/lib", editorLib);
         Project editorLibProject = ProjectManager.getDefault().findProject(editorLib);
         assertNotNull("have editor/lib project", editorLibProject);
@@ -73,28 +73,28 @@ public class NbModuleProjectTest extends TestBase {
     }
 
     public void testExternalModules() throws Exception {
-        FileObject suite1 = extexamples.getFileObject("suite1");
+        FileObject suite1 = resolveEEP("suite1");
         FileObject action = suite1.getFileObject("action-project");
         NbModuleProject actionProject = (NbModuleProject) ProjectManager.getDefault().findProject(action);
         PropertyEvaluator eval = actionProject.evaluator();
         String nbdestdir = eval.getProperty("netbeans.dest.dir");
         assertNotNull("defined netbeans.dest.dir", nbdestdir);
         assertEquals("right netbeans.dest.dir", file("nbbuild/netbeans"), PropertyUtils.resolveFile(FileUtil.toFile(action), nbdestdir));
-        FileObject suite3 = extexamples.getFileObject("suite3");
+        FileObject suite3 = resolveEEP("suite3");
         FileObject dummy = suite3.getFileObject("dummy-project");
         NbModuleProject dummyProject = (NbModuleProject) ProjectManager.getDefault().findProject(dummy);
         eval = dummyProject.evaluator();
-        assertEquals("right netbeans.dest.dir", file(extexamplesF, "suite3/nbplatform"), PropertyUtils.resolveFile(FileUtil.toFile(dummy), eval.getProperty("netbeans.dest.dir")));
+        assertEquals("right netbeans.dest.dir", resolveEEPFile("suite3/nbplatform"), PropertyUtils.resolveFile(FileUtil.toFile(dummy), eval.getProperty("netbeans.dest.dir")));
         // XXX more...
     }
 
     public void testGetType() throws Exception {
         assertEquals(NbModuleTypeProvider.NETBEANS_ORG, Util.getModuleType(javaProjectProject));
-        FileObject suite1 = extexamples.getFileObject("suite1");
+        FileObject suite1 = resolveEEP("suite1");
         FileObject action = suite1.getFileObject("action-project");
         NbModuleProject actionProject = (NbModuleProject) ProjectManager.getDefault().findProject(action);
         assertEquals(NbModuleTypeProvider.SUITE_COMPONENT, Util.getModuleType(actionProject));
-        FileObject suite3 = extexamples.getFileObject("suite3");
+        FileObject suite3 = resolveEEP("suite3");
         FileObject dummy = suite3.getFileObject("dummy-project");
         NbModuleProject dummyProject = (NbModuleProject) ProjectManager.getDefault().findProject(dummy);
         assertEquals(NbModuleTypeProvider.STANDALONE, Util.getModuleType(dummyProject));
@@ -102,7 +102,7 @@ public class NbModuleProjectTest extends TestBase {
 
     public void testSupportsJavadoc() throws Exception {
         assertTrue(javaProjectProject.supportsJavadoc());
-        FileObject dir = nbroot.getFileObject("beans");
+        FileObject dir = nbCVSRoot().getFileObject("beans");
         assertNotNull("have beans checked out", dir);
         Project p = ProjectManager.getDefault().findProject(dir);
         NbModuleProject beansProject = (NbModuleProject) p;
@@ -110,7 +110,7 @@ public class NbModuleProjectTest extends TestBase {
     }
 
     public void testGetNbrootFile() throws Exception {
-        NbModuleProject actionProject = (NbModuleProject) ProjectManager.getDefault().findProject(extexamples.getFileObject("suite1/action-project"));
+        NbModuleProject actionProject = (NbModuleProject) ProjectManager.getDefault().findProject(resolveEEP("suite1/action-project"));
         assertEquals(file("xtest/lib/insanelib.jar"), actionProject.getNbrootFile("xtest/lib/insanelib.jar"));
     }
 

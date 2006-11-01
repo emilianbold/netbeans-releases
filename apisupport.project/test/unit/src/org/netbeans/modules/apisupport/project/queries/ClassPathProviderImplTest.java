@@ -75,7 +75,7 @@ public class ClassPathProviderImplTest extends TestBase {
     
     protected void setUp() throws Exception {
         super.setUp();
-        copyOfSuite2 = copyFolder(file(EEP + "/suite2"));
+        copyOfSuite2 = copyFolder(resolveEEPFile("/suite2"));
         File miscF = new File(copyOfSuite2, "misc-project");
         copyOfMiscDir = FileUtil.toFileObject(miscF);
         copyOfMiscProject = (NbModuleProject) ProjectManager.getDefault().findProject(copyOfMiscDir);
@@ -87,7 +87,7 @@ public class ClassPathProviderImplTest extends TestBase {
     }
     
     private String urlForJar(String path) {
-        return Util.urlForJar(file(path)).toExternalForm();
+        return Util.urlForJar(PropertyUtils.resolveFile(nbCVSRootFile(), path)).toExternalForm();
     }
     
     private String urlForDir(String path) {
@@ -149,7 +149,7 @@ public class ClassPathProviderImplTest extends TestBase {
     }
     
     public void testMainClasspath() throws Exception {
-        FileObject src = nbroot.getFileObject("ant/src");
+        FileObject src = nbCVSRoot().getFileObject("ant/src");
         assertNotNull("have ant/src", src);
         ClassPath cp = ClassPath.getClassPath(src, ClassPath.COMPILE);
         assertNotNull("have a COMPILE classpath", cp);
@@ -194,13 +194,13 @@ public class ClassPathProviderImplTest extends TestBase {
     }
 
     public void testMainClasspathExternalModules() throws Exception {
-        FileObject src = extexamples.getFileObject("suite3/dummy-project/src");
+        FileObject src = resolveEEP("suite3/dummy-project/src");
         assertNotNull("have .../dummy-project/src", src);
         ClassPath cp = ClassPath.getClassPath(src, ClassPath.COMPILE);
         assertNotNull("have a COMPILE classpath", cp);
         Set/*<String>*/ expectedRoots = new TreeSet();
-        expectedRoots.add(urlForJar(EEP + "/suite3/nbplatform/random/modules/random.jar"));
-        expectedRoots.add(urlForJar(EEP + "/suite3/nbplatform/random/modules/ext/stuff.jar"));
+        expectedRoots.add(urlForJar(resolveEEPPath("/suite3/nbplatform/random/modules/random.jar")));
+        expectedRoots.add(urlForJar(resolveEEPPath("/suite3/nbplatform/random/modules/ext/stuff.jar")));
         assertEquals("right COMPILE classpath", expectedRoots, urlsOfCp(cp));
     }
     
@@ -209,7 +209,7 @@ public class ClassPathProviderImplTest extends TestBase {
      */
     public void testClasspathExtensions() throws Exception {
         // java/javacore has its own <class-path-extension> and uses others from dependents.
-        FileObject src = nbroot.getFileObject("java/javacore/src");
+        FileObject src = nbCVSRoot().getFileObject("java/javacore/src");
         assertNotNull("have java/javacore/src", src);
         ClassPath cp = ClassPath.getClassPath(src, ClassPath.COMPILE);
         assertNotNull("have a COMPILE classpath", cp);
@@ -245,7 +245,7 @@ public class ClassPathProviderImplTest extends TestBase {
     }
     
     public void testExtraCompilationUnits() throws Exception {
-        FileObject srcbridge = nbroot.getFileObject("ant/src-bridge");
+        FileObject srcbridge = nbCVSRoot().getFileObject("ant/src-bridge");
         assertNotNull("have ant/src-bridge", srcbridge);
         ClassPath cp = ClassPath.getClassPath(srcbridge, ClassPath.COMPILE);
         assertNotNull("have a COMPILE classpath", cp);
@@ -288,7 +288,7 @@ public class ClassPathProviderImplTest extends TestBase {
     }
     
     public void testUnitTestClasspaths() throws Exception {
-        FileObject src = nbroot.getFileObject("autoupdate/test/unit/src");
+        FileObject src = nbCVSRoot().getFileObject("autoupdate/test/unit/src");
         assertNotNull("have autoupdate/test/unit/src", src);
         ClassPath cp = ClassPath.getClassPath(src, ClassPath.COMPILE);
         assertNotNull("have a COMPILE classpath", cp);
@@ -338,11 +338,11 @@ public class ClassPathProviderImplTest extends TestBase {
     }
    
     public void testUnitTestClasspathsExternalModules() throws Exception {
-        FileObject src = extexamples.getFileObject("suite1/support/lib-project/test/unit/src");
+        FileObject src = resolveEEP("suite1/support/lib-project/test/unit/src");
         ClassPath cp = ClassPath.getClassPath(src, ClassPath.COMPILE);
         assertNotNull("have a COMPILE classpath", cp);
         Set/*<String>*/ expectedRoots = new TreeSet();
-        expectedRoots.add(urlForJar(EEP + "/suite1/build/cluster/modules/org-netbeans-examples-modules-lib.jar"));
+        expectedRoots.add(urlForJar(resolveEEPPath("/suite1/build/cluster/modules/org-netbeans-examples-modules-lib.jar")));
         expectedRoots.add("junit.jar");
         expectedRoots.add("nbjunit.jar");
         expectedRoots.add("insanelib.jar");
@@ -350,13 +350,13 @@ public class ClassPathProviderImplTest extends TestBase {
         expectedRoots.add("org-netbeans-modules-nbjunit-ide.jar");
         assertEquals("right COMPILE classpath", expectedRoots.toString(), urlsOfCp4Tests(cp).toString());
         // Now test in suite3, where there is no source...
-        src = extexamples.getFileObject("suite3/dummy-project/test/unit/src");
+        src = resolveEEP("suite3/dummy-project/test/unit/src");
         cp = ClassPath.getClassPath(src, ClassPath.COMPILE);
         assertNotNull("have a COMPILE classpath", cp);
         expectedRoots = new TreeSet();
-        expectedRoots.add(urlForJar(EEP + "/suite3/dummy-project/build/cluster/modules/org-netbeans-examples-modules-dummy.jar"));
-        expectedRoots.add(urlForJar(EEP + "/suite3/nbplatform/random/modules/random.jar"));
-        expectedRoots.add(urlForJar(EEP + "/suite3/nbplatform/random/modules/ext/stuff.jar"));
+        expectedRoots.add(urlForJar(resolveEEPPath("/suite3/dummy-project/build/cluster/modules/org-netbeans-examples-modules-dummy.jar")));
+        expectedRoots.add(urlForJar(resolveEEPPath("/suite3/nbplatform/random/modules/random.jar")));
+        expectedRoots.add(urlForJar(resolveEEPPath("/suite3/nbplatform/random/modules/ext/stuff.jar")));
         expectedRoots.add("junit.jar");
         expectedRoots.add("nbjunit.jar");
         expectedRoots.add("insanelib.jar");
@@ -366,10 +366,10 @@ public class ClassPathProviderImplTest extends TestBase {
         
         // test dependencies
         expectedRoots.clear();
-        src  = extexamples.getFileObject("/suite4/module2/test/unit/src");
-        expectedRoots.add(urlForJar(EEP + "/suite4/build/testdist/unit/cluster/module1/tests.jar"));
-        expectedRoots.add(urlForJar(EEP + "/suite4/build/cluster/modules/module1.jar"));
-        expectedRoots.add(urlForJar(EEP + "/suite4/build/cluster/modules/module2.jar"));
+        src  = resolveEEP("/suite4/module2/test/unit/src");
+        expectedRoots.add(urlForJar(resolveEEPPath("/suite4/build/testdist/unit/cluster/module1/tests.jar")));
+        expectedRoots.add(urlForJar(resolveEEPPath("/suite4/build/cluster/modules/module1.jar")));
+        expectedRoots.add(urlForJar(resolveEEPPath("/suite4/build/cluster/modules/module2.jar")));
         expectedRoots.add("junit.jar");
         expectedRoots.add("nbjunit.jar");
         expectedRoots.add("insanelib.jar");
@@ -381,7 +381,7 @@ public class ClassPathProviderImplTest extends TestBase {
     }
     
     public void testQaFunctionalTestClasspath() throws Exception {
-        FileObject qaftsrc = nbroot.getFileObject("performance/test/qa-functional/src");
+        FileObject qaftsrc = nbCVSRoot().getFileObject("performance/test/qa-functional/src");
         if (qaftsrc == null) {
             System.err.println("Skipping testQaFunctionalTestClasspath since performance not checked out");
             return;
@@ -411,7 +411,7 @@ public class ClassPathProviderImplTest extends TestBase {
     }
     
     public void testQaFunctionalTestClasspathExternalModules() throws Exception {
-        FileObject qaftsrc = extexamples.getFileObject("suite1/action-project/test/qa-functional/src");
+        FileObject qaftsrc = resolveEEP("suite1/action-project/test/qa-functional/src");
         assertNotNull("have action-project/test/qa-functional/src", qaftsrc);
         ClassPath cp = ClassPath.getClassPath(qaftsrc, ClassPath.COMPILE);
         assertNotNull("have a COMPILE classpath", cp);
@@ -439,11 +439,11 @@ public class ClassPathProviderImplTest extends TestBase {
     }
     
     public void testBuildClassPath () throws Exception {
-        FileObject srcRoot = nbroot.getFileObject("ant/project/src/");
+        FileObject srcRoot = nbCVSRoot().getFileObject("ant/project/src/");
         assertNotNull("have ant/project/src",srcRoot);
         ClassPath ccp = ClassPath.getClassPath(srcRoot, ClassPath.COMPILE);
         assertNotNull("No compile ClassPath for sources",ccp);
-        FileObject  buildClasses = nbroot.getFileObject("ant/project/build/classes/");
+        FileObject  buildClasses = nbCVSRoot().getFileObject("ant/project/build/classes/");
         assertNotNull("have ant/project/build/classes",buildClasses);
                 
         assertNull ("ClassPath.SOURCE for build must be null",ClassPath.getClassPath(buildClasses, ClassPath.SOURCE));
@@ -456,17 +456,17 @@ public class ClassPathProviderImplTest extends TestBase {
         });
         assertClassPathsHaveTheSameResources(cp, expectedCp);
         
-        FileObject testSrcRoot = nbroot.getFileObject("ant/project/test/unit/src/");
+        FileObject testSrcRoot = nbCVSRoot().getFileObject("ant/project/test/unit/src/");
         assertNotNull("have ant/project/test/unit/src/",testSrcRoot);
         ClassPath tccp = ClassPath.getClassPath(testSrcRoot, ClassPath.COMPILE);
         assertNotNull("No compile ClassPath for tests",tccp);
         Project prj = FileOwnerQuery.getOwner(testSrcRoot);
         assertNotNull("No project found",prj);
         assertTrue("Invalid project type", prj instanceof NbModuleProject);
-        FileObject testBuildClasses = nbroot.getFileObject ("ant/project/build/test/unit/classes/");
+        FileObject testBuildClasses = nbCVSRoot().getFileObject ("ant/project/build/test/unit/classes/");
         if (testBuildClasses == null) {
             // Have to have it, so we can call CP.gCP on it:
-            testBuildClasses = FileUtil.createFolder(nbroot, "ant/project/build/test/unit/classes");
+            testBuildClasses = FileUtil.createFolder(nbCVSRoot(), "ant/project/build/test/unit/classes");
         }
         assertNull ("ClassPath.SOURCE for build/test must be null",ClassPath.getClassPath(testBuildClasses, ClassPath.SOURCE));
         assertNull ("ClassPath.COMPILE for build/test must be null",ClassPath.getClassPath(testBuildClasses, ClassPath.COMPILE));

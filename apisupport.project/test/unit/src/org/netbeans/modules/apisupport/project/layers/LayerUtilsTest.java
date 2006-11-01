@@ -52,7 +52,7 @@ public class LayerUtilsTest extends LayerTestBase {
     
     protected void setUp() throws Exception {
         super.setUp();
-        TestBase.initializeBuildProperties(getWorkDir());
+        TestBase.initializeBuildProperties(getWorkDir(), getDataDir());
     }
     
     public void testLayerHandle() throws Exception {
@@ -287,12 +287,12 @@ public class LayerUtilsTest extends LayerTestBase {
     }
     
     public void testSystemFilesystemNetBeansOrgProject() throws Exception {
-        FileObject nbroot = FileUtil.toFileObject(new File(System.getProperty("test.nbroot")));
-        NbModuleProject p = (NbModuleProject) ProjectManager.getDefault().findProject(nbroot.getFileObject("beans"));
+        FileObject nbcvsroot = FileUtil.toFileObject(new File(System.getProperty("test.nbcvsroot")));
+        NbModuleProject p = (NbModuleProject) ProjectManager.getDefault().findProject(nbcvsroot.getFileObject("beans"));
         FileSystem fs = LayerUtils.getEffectiveSystemFilesystem(p);
         assertDisplayName(fs, "right display name for netbeans.org standard file", "Menu/RunProject", "Run");
         assertNull("not loading files from extra modules", fs.findResource("Templates/Documents/docbook-article.xml"));
-        FileObject docbook = nbroot.getFileObject("contrib/docbook");
+        FileObject docbook = nbcvsroot.getFileObject("contrib/docbook");
         if (docbook == null) {
             System.err.println("Skipping part of testSystemFilesystemNetBeansOrgProject since contrib is not checked out");
             return;

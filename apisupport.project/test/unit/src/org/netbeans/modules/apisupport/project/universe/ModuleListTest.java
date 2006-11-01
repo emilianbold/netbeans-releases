@@ -52,14 +52,14 @@ public class ModuleListTest extends TestBase {
     
     protected void setUp() throws Exception {
         super.setUp();
-        suite1 = file(extexamplesF, "suite1");
-        suite2 = file(extexamplesF, "suite2");
-        standaloneSuite3 = file(extexamplesF, "suite3");
+        suite1 = resolveEEPFile("suite1");
+        suite2 = resolveEEPFile("suite2");
+        standaloneSuite3 = resolveEEPFile("suite3");
     }
     
     public void testParseProperties() throws Exception {
         File basedir = file("ant/browsetask");
-        PropertyEvaluator eval = ModuleList.parseProperties(basedir, nbrootF, false, false, "org.netbeans.modules.ant.browsetask");
+        PropertyEvaluator eval = ModuleList.parseProperties(basedir, nbCVSRootFile(), false, false, "org.netbeans.modules.ant.browsetask");
         String nbdestdir = eval.getProperty("netbeans.dest.dir");
         assertNotNull(nbdestdir);
         assertEquals(file("nbbuild/netbeans"), PropertyUtils.resolveFile(basedir, nbdestdir));
@@ -67,7 +67,7 @@ public class ModuleListTest extends TestBase {
         assertEquals(file("nbbuild/netbeans/" + TestBase.CLUSTER_IDE), PropertyUtils.resolveFile(basedir, eval.getProperty("cluster")));
         assertNull(eval.getProperty("suite.dir"));
         basedir = file("openide/loaders");
-        eval = ModuleList.parseProperties(basedir, nbrootF, false, false, "org.openide.loaders");
+        eval = ModuleList.parseProperties(basedir, nbCVSRootFile(), false, false, "org.openide.loaders");
         assertEquals("modules/org-openide-loaders.jar", eval.getProperty("module.jar"));
         basedir = new File(suite1, "action-project");
         eval = ModuleList.parseProperties(basedir, suite1, true, false, "org.netbeans.examples.modules.action");
@@ -175,7 +175,7 @@ public class ModuleListTest extends TestBase {
         System.err.println("Time to scan suite + NB binaries: " + (System.currentTimeMillis() - start) + "msec");
         ModuleEntry e = ml.getEntry("org.netbeans.examples.modules.action");
         assertNotNull("action-project found", e);
-        File jar = file(EEP + "/suite1/build/cluster/modules/org-netbeans-examples-modules-action.jar");
+        File jar = resolveEEPFile("/suite1/build/cluster/modules/org-netbeans-examples-modules-action.jar");
         assertEquals("right JAR location", jar, e.getJarLocation());
         assertTrue("in all entries", ml.getAllEntries().contains(e));
         assertNull("no nb.org path", e.getNetBeansOrgPath());
@@ -207,7 +207,7 @@ public class ModuleListTest extends TestBase {
         ml = ModuleList.getModuleList(file(suite2, "misc-project"));
         e = ml.getEntry("org.netbeans.examples.modules.misc");
         assertNotNull("can find module from my own suite", e);
-        assertEquals("correct JAR location", file(EEP + "/suite2/build/cluster/modules/org-netbeans-examples-modules-misc.jar"), e.getJarLocation());
+        assertEquals("correct JAR location", resolveEEPFile("/suite2/build/cluster/modules/org-netbeans-examples-modules-misc.jar"), e.getJarLocation());
         assertNotNull("localized name", e.getLocalizedName());
         assertNotNull("display category", e.getCategory());
         assertNotNull("short description", e.getShortDescription());
@@ -250,9 +250,9 @@ public class ModuleListTest extends TestBase {
     }
     
     public void testFindNetBeansOrg() throws Exception {
-        assertEquals(nbrootF, ModuleList.findNetBeansOrg(file("xml")));
-        assertEquals(nbrootF, ModuleList.findNetBeansOrg(file("xml/tax")));
-        assertEquals(nbrootF, ModuleList.findNetBeansOrg(file("xml/tax/lib")));
+        assertEquals(nbCVSRootFile(), ModuleList.findNetBeansOrg(file("xml")));
+        assertEquals(nbCVSRootFile(), ModuleList.findNetBeansOrg(file("xml/tax")));
+        assertEquals(nbCVSRootFile(), ModuleList.findNetBeansOrg(file("xml/tax/lib")));
         assertEquals(null, ModuleList.findNetBeansOrg(file("xml/tax/lib/src")));
         assertEquals(null, ModuleList.findNetBeansOrg(File.listRoots()[0]));
     }

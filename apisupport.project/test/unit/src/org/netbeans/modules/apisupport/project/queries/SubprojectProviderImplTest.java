@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.apisupport.project.queries;
 
+import java.io.File;
 import java.util.Iterator;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -26,7 +27,9 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.spi.project.SubprojectProvider;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Test subprojects.
@@ -65,13 +68,13 @@ public class SubprojectProviderImplTest extends TestBase {
     }
     
     public void testExternalSubprojects() throws Exception {
-        checkSubprojects(EEP + "/suite1/action-project", new String[] {
-            EEP + "/suite1/support/lib-project",
-            "openide/dialogs",
+        checkSubprojects(resolveEEPPath("/suite1/action-project"), new String[] {
+            resolveEEPPath("/suite1/support/lib-project"),
+            file("openide/dialogs").getAbsolutePath(),
         });
-        checkSubprojects(EEP + "/suite1/support/lib-project", new String[0]);
+        checkSubprojects(resolveEEPPath("/suite1/support/lib-project"), new String[0]);
         // No sources for beans available, so no subprojects reported:
-        checkSubprojects(EEP + "/suite3/dummy-project", new String[0]);
+        checkSubprojects(resolveEEPPath("/suite3/dummy-project"), new String[0]);
     }
     
     /** @see "#63824" */
@@ -96,7 +99,11 @@ public class SubprojectProviderImplTest extends TestBase {
         assertNotNull("have SPP in " + p, spp);
         SortedSet/*<String>*/ expected = new TreeSet();
         for (int i = 0; i < subprojects.length; i++) {
-            expected.add(file(subprojects[i]).toURI().toString());
+            File f = new File(subprojects[i]);
+            if (!f.isAbsolute()) {
+                f = file(subprojects[i]);
+            }
+            expected.add(f.toURI().toString());
         }
         SortedSet/*<String>*/ actual = new TreeSet();
         Iterator it = spp.getSubprojects().iterator();
@@ -107,7 +114,8 @@ public class SubprojectProviderImplTest extends TestBase {
     }
     
     private Project project(String path) throws Exception {
-        FileObject dir = nbroot.getFileObject(path);
+        FileObject dir = FileUtil.toFileObject(PropertyUtils.resolveFile(nbCVSRootFile(), path));
+//        FileObject dir = nbCVSRoot().getFileObject(path);
         assertNotNull("have " + path, dir);
         Project p = ProjectManager.getDefault().findProject(dir);
         assertNotNull("have project in " + path, p);

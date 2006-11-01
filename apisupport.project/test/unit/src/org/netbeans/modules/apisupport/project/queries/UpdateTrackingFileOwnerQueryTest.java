@@ -24,6 +24,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.TestBase;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -56,22 +57,23 @@ public class UpdateTrackingFileOwnerQueryTest extends TestBase {
     
     public void testOwnershipExternal() throws Exception {
         // Will not normally exist when test is run:
-        assertOwnership(EEP + "/suite1/action-project", EEP + "/suite1/build/cluster/modules/org-netbeans-examples-modules-action.jar");
-        assertOwnership(EEP + "/suite1/action-project", EEP + "/suite1/build/cluster/update_tracking/org-netbeans-examples-modules-action.xml");
+        assertOwnership(resolveEEPPath("/suite1/action-project"), resolveEEPPath("/suite1/build/cluster/modules/org-netbeans-examples-modules-action.jar"));
+        assertOwnership(resolveEEPPath("/suite1/action-project"), resolveEEPPath("/suite1/build/cluster/update_tracking/org-netbeans-examples-modules-action.xml"));
     }
     
     private void assertOwnership(String project, String file) throws Exception {
-        FileObject projectFO = FileUtil.toFileObject(file(project));
+        FileObject projectFO = FileUtil.toFileObject(PropertyUtils.resolveFile(nbCVSRootFile(), project));
         assertNotNull("have project " + project, projectFO);
         Project p = ProjectManager.getDefault().findProject(projectFO);
         assertNotNull("have a project in " + project, p);
         // This has the side effect of forcing a scan of the module universe:
         ClassPath.getClassPath(projectFO.getFileObject("src"), ClassPath.COMPILE);
-        FileObject fileFO = FileUtil.toFileObject(file(file));
+        FileObject fileFO = FileUtil.toFileObject(PropertyUtils.resolveFile(nbCVSRootFile(), file));
         if (fileFO != null) { // OK if not currently built
             assertEquals("correct owner by FileObject of " + file, p, FileOwnerQuery.getOwner(fileFO));
         }
-        assertEquals("correct owner by URI of " + file, p, FileOwnerQuery.getOwner(file(file).toURI()));
+        assertEquals("correct owner by URI of " + file, p, FileOwnerQuery.getOwner(
+                PropertyUtils.resolveFile(nbCVSRootFile(), file).toURI()));
     }
     
 }

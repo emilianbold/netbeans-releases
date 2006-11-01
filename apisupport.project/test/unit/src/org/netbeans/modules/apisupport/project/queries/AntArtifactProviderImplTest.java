@@ -46,10 +46,10 @@ public class AntArtifactProviderImplTest extends TestBase {
     
     protected void setUp() throws Exception {
         super.setUp();
-        FileObject dir = nbroot.getFileObject("java/project");
+        FileObject dir = nbCVSRoot().getFileObject("java/project");
         assertNotNull("have java/project checked out", dir);
         javaProjectProject = (NbModuleProject) ProjectManager.getDefault().findProject(dir);
-        dir = nbroot.getFileObject("openide/loaders");
+        dir = nbCVSRoot().getFileObject("openide/loaders");
         assertNotNull("have openide/loaders checked out", dir);
         loadersProject = (NbModuleProject) ProjectManager.getDefault().findProject(dir);
     }
@@ -63,7 +63,7 @@ public class AntArtifactProviderImplTest extends TestBase {
         assertEquals("correct location",
             Collections.singletonList(URI.create("../../nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/org-openide-loaders.jar")),
             Arrays.asList(arts[0].getArtifactLocations()));
-        assertEquals("correct script", nbroot.getFileObject("openide/loaders/build.xml"), arts[0].getScriptFile());
+        assertEquals("correct script", nbCVSRoot().getFileObject("openide/loaders/build.xml"), arts[0].getScriptFile());
         assertEquals("correct build target", "netbeans", arts[0].getTargetName());
         assertEquals("correct clean target", "clean", arts[0].getCleanTargetName());
         assertEquals("no properties", new Properties(), arts[0].getProperties());

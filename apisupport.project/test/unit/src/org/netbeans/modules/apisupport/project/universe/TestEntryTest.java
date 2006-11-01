@@ -33,21 +33,21 @@ public class TestEntryTest extends TestBase {
     }
     
     public void testGetSourcesNbOrgModule() throws IOException {
-        File test = new File(nbrootF,"nbbuild/build/testdist/unit/" + CLUSTER_IDE + "/org-netbeans-modules-apisupport-project/tests.jar"); // NOI18N
+        File test = new File(nbCVSRootFile(),"nbbuild/build/testdist/unit/" + CLUSTER_IDE + "/org-netbeans-modules-apisupport-project/tests.jar"); // NOI18N
         TestEntry entry = TestEntry.get(test);
         assertNotNull("TestEntry for aisupport/project tests",entry);
         assertNotNull("Nbcvsroot wasn't found.", entry.getNBCVSRoot());
         URL srcDir = entry.getSrcDir();
-        assertEquals(new File(nbrootF,"apisupport/project/test/unit/src").toURI().toURL(),srcDir);
+        assertEquals(new File(nbCVSRootFile(),"apisupport/project/test/unit/src").toURI().toURL(),srcDir);
     }
     
     public void testGetSourcesFromExternalModule() throws IOException {
-        File test = file(EEP + "/suite4/build/testdist/unit/cluster/module1/tests.jar");
+        File test = resolveEEPFile("/suite4/build/testdist/unit/cluster/module1/tests.jar");
         TestEntry entry = TestEntry.get(test);
         assertNotNull("TestEntry for aisupport/project tests",entry);
         assertNull("Nbcvsroot was found.", entry.getNBCVSRoot());
         URL srcDir = entry.getSrcDir();
-        assertEquals(file(EEP + "/suite4/module1/test/unit/src").toURI().toURL().toExternalForm(),srcDir.toExternalForm());
+        assertEquals(resolveEEPFile("/suite4/module1/test/unit/src").toURI().toURL().toExternalForm(),srcDir.toExternalForm());
     }
     
 }

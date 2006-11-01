@@ -32,6 +32,7 @@ import org.netbeans.modules.apisupport.project.NbModuleProjectGenerator;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -71,14 +72,14 @@ public class SourceForBinaryImplTest extends TestBase {
     }
     
     public void testExternalModules() throws Exception {
-        ClassPath.getClassPath(FileUtil.toFileObject(file(EEP + "/suite1/action-project/src")), ClassPath.COMPILE);
-        check(EEP + "/suite1/action-project/src", file(EEP + "/suite1/build/cluster/modules/org-netbeans-examples-modules-action.jar"));
-        ClassPath.getClassPath(FileUtil.toFileObject(file(EEP + "/suite3/dummy-project/src")), ClassPath.COMPILE);
-        check(EEP + "/suite3/dummy-project/src",
-              file(EEP + "/suite3/dummy-project/build/cluster/modules/org-netbeans-examples-modules-dummy.jar"));
+        ClassPath.getClassPath(resolveEEP("/suite1/action-project/src"), ClassPath.COMPILE);
+        check(resolveEEPPath("/suite1/action-project/src"), resolveEEPFile("/suite1/build/cluster/modules/org-netbeans-examples-modules-action.jar"));
+        ClassPath.getClassPath(resolveEEP("/suite3/dummy-project/src"), ClassPath.COMPILE);
+        check(resolveEEPPath("/suite3/dummy-project/src"),
+              resolveEEPFile("/suite3/dummy-project/build/cluster/modules/org-netbeans-examples-modules-dummy.jar"));
         // test dependencies
-        ClassPath.getClassPath(FileUtil.toFileObject(file(EEP + "/suite4/module1/test/unit/src")),ClassPath.COMPILE);
-        check(EEP + "/suite4/module1/test/unit/src",file(EEP + "/suite4/build/testdist/unit/cluster/module1/tests.jar"));
+        ClassPath.getClassPath(resolveEEP("/suite4/module1/test/unit/src"),ClassPath.COMPILE);
+        check(resolveEEPPath("/suite4/module1/test/unit/src"),resolveEEPFile("/suite4/build/testdist/unit/cluster/module1/tests.jar"));
     }
     
     public void testCompletionWorks_69735() throws Exception {
@@ -109,7 +110,7 @@ public class SourceForBinaryImplTest extends TestBase {
     }
     
     private void check(String srcS, File jarF) throws Exception {
-        File srcF = file(srcS);
+        File srcF = PropertyUtils.resolveFile(nbCVSRootFile(), srcS);
         FileObject src = FileUtil.toFileObject(srcF);
         assertNotNull("have " + srcF, src);
         URL u = FileUtil.getArchiveRoot(jarF.toURI().toURL());

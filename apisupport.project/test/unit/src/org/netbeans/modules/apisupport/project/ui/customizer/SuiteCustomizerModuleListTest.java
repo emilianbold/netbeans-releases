@@ -47,7 +47,7 @@ public class SuiteCustomizerModuleListTest extends TestBase {
 
     protected void setUp() throws Exception {
         super.setUp();
-        suiteRepoFO = FileUtil.toFileObject(copyFolder(extexamplesF));
+        suiteRepoFO = FileUtil.toFileObject(copyFolder(resolveEEPFile(".")));
         suite1FO = suiteRepoFO.getFileObject("suite1");
         suite1Prj = (SuiteProject) ProjectManager.getDefault().findProject(suite1FO);
         this.suite1Props = new SuiteProperties(suite1Prj, suite1Prj.getHelper(),

@@ -43,7 +43,7 @@ public class UIUtilTest extends LayerTestBase {
     
     protected void setUp() throws Exception {
         super.setUp();
-        TestBase.initializeBuildProperties(getWorkDir());
+        TestBase.initializeBuildProperties(getWorkDir(), getDataDir());
     }
     
     /**
@@ -75,7 +75,7 @@ public class UIUtilTest extends LayerTestBase {
     }
     
     public void testLayerItemPresenterCompareTo() throws Exception {
-        TestBase.initializeBuildProperties(getWorkDir());
+        TestBase.initializeBuildProperties(getWorkDir(), getDataDir());
         NbModuleProject project = TestBase.generateStandaloneModule(getWorkDir(), "module");
         FileSystem fs = LayerUtils.getEffectiveSystemFilesystem(project);
         FileObject root = fs.getRoot().getFileObject("Templates/Project/APISupport");

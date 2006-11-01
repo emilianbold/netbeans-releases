@@ -58,7 +58,7 @@ public class SuiteCustomizerLibrariesTest extends NbTestCase {
         super.setUp();
         clearWorkDir();
         // PLATFORM SETUP
-        TestBase.initializeBuildProperties(getWorkDir());
+        TestBase.initializeBuildProperties(getWorkDir(), getDataDir());
         File install = new File(getWorkDir(), "install");
         TestBase.makePlatform(install);
         // MODULE foo

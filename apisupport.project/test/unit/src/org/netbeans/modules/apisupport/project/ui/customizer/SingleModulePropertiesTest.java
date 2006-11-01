@@ -186,7 +186,7 @@ public class SingleModulePropertiesTest extends TestBase {
         assertEquals("number of selected public packages", 1, pptm.getSelectedPackages().length);
         
         // libs/xerces properties
-        NbModuleProject libP = (NbModuleProject) ProjectManager.getDefault().findProject(nbroot.getFileObject("libs/xerces"));
+        NbModuleProject libP = (NbModuleProject) ProjectManager.getDefault().findProject(nbCVSRoot().getFileObject("libs/xerces"));
         props = loadProperties(libP);
         pptm = props.getPublicPackagesModel();
         assertEquals("number of available public packages", 39, pptm.getRowCount());
@@ -349,7 +349,7 @@ public class SingleModulePropertiesTest extends TestBase {
         assertEquals("There are two available friends for component2.", 2, props.getAvailableFriends().length);
         
         // netbeans.org
-        Project javaProject = ProjectManager.getDefault().findProject(nbroot.getFileObject("java/project"));
+        Project javaProject = ProjectManager.getDefault().findProject(nbCVSRoot().getFileObject("java/project"));
         props = loadProperties((NbModuleProject) javaProject);
         assertTrue("There are two available friends for component2.", props.getAvailableFriends().length > 50);
     }
@@ -518,7 +518,7 @@ public class SingleModulePropertiesTest extends TestBase {
     
 //    public void testReloadNetBeansModulueListSpeedHid() throws Exception {
 //        long startTotal = System.currentTimeMillis();
-//        SingleModuleProperties props = loadProperties(nbroot.getFileObject("apisupport/project"),
+//        SingleModuleProperties props = loadProperties(nbCVSRoot().getFileObject("apisupport/project"),
 //                "src/org/netbeans/modules/apisupport/project/Bundle.properties");
 //        long start = System.currentTimeMillis();
 //        props.reloadModuleListInfo();

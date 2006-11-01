@@ -39,8 +39,8 @@ public class ManifestManagerTest extends TestBase {
 
     protected void setUp() throws Exception {
         super.setUp();
-        suite1 = file(extexamplesF, "suite1");
-        suite2 = file(extexamplesF, "suite2");
+        suite1 = resolveEEPFile("suite1");
+        suite2 = resolveEEPFile("suite2");
     }
 
     public void testDirectManifestFile() throws Exception {

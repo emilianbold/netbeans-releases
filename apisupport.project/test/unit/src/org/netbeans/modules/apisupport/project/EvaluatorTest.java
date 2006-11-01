@@ -43,12 +43,12 @@ public class EvaluatorTest extends TestBase {
     
     protected void setUp() throws Exception {
         super.setUp();
-        userPropertiesFile = TestBase.initializeBuildProperties(getWorkDir());
-        FileObject dir = nbroot.getFileObject("java/project");
+        userPropertiesFile = TestBase.initializeBuildProperties(getWorkDir(), getDataDir());
+        FileObject dir = nbCVSRoot().getFileObject("java/project");
         assertNotNull("have java/project checked out", dir);
         Project p = ProjectManager.getDefault().findProject(dir);
         javaProjectProject = (NbModuleProject)p;
-        dir = nbroot.getFileObject("openide/loaders");
+        dir = nbCVSRoot().getFileObject("openide/loaders");
         assertNotNull("have openide/loaders checked out", dir);
         p = ProjectManager.getDefault().findProject(dir);
         loadersProject = (NbModuleProject)p;
@@ -58,7 +58,7 @@ public class EvaluatorTest extends TestBase {
         PropertyEvaluator eval = javaProjectProject.evaluator();
         assertEquals("right basedir", file("java/project"),
             javaProjectProject.getHelper().resolveFile(eval.getProperty("basedir")));
-        assertEquals("right nb_all", nbrootF,
+        assertEquals("right nb_all", nbCVSRootFile(),
             javaProjectProject.getHelper().resolveFile(eval.getProperty("nb_all")));
         assertEquals("right code.name.base.dashes", "org-netbeans-modules-java-project", eval.getProperty("code.name.base.dashes"));
         assertEquals("right is.autoload", "true", eval.getProperty("is.autoload"));

@@ -52,9 +52,10 @@ import org.openide.filesystems.FileLock;
 
 /**
  * Basic setup for all the tests.
- * @author Jesse Glick
+ *
+ * @author Jesse Glick, Martin Krauskopf
  */
-public abstract class TestBase extends NbTestCase {
+  public abstract class TestBase extends NbTestCase {
 
     public static final String CLUSTER_IDE = "ide8";
     public static final String CLUSTER_PLATFORM = "platform7";
@@ -64,36 +65,44 @@ public abstract class TestBase extends NbTestCase {
         super(name);
     }
     
-    protected static String EEP = "apisupport/project/test/unit/data/example-external-projects";
+    private static String EEP = "example-external-projects";
     
-    /** Represents netbeans.org CVS tree this test is run in. */
-    protected File nbrootF;
+    /**
+     * Tells whether NB CVS tree is available (which is not the case with e.g.
+     * within binary distribution).
+     */
+    private boolean cvsAvailable;
     
-    /** Represents netbeans.org CVS tree this test is run in. */
-    protected FileObject nbroot;
+    /** Represents netbeans.org CVS tree this test is run in if {@link #cvsAvailable}. */
+    private File nbcvsrootF;
     
-    /** represents destination directory with NetBeans */
+    /** Represents netbeans.org CVS tree this test is run in if {@link #cvsAvailable}. */
+    private FileObject nbcvsroot;
+    
+    /** Represents destination directory with NetBeans (always available). */
     protected File destDirF;
     
-    protected File extexamplesF;
-    protected FileObject extexamples;
     protected File apisZip;
     
     protected void setUp() throws Exception {
         super.setUp();
-        nbrootF = FileUtil.normalizeFile(new File(System.getProperty("test.nbroot")));
-        assertTrue("there is a dir " + nbrootF, nbrootF.isDirectory());
-        assertTrue("nbbuild exists", new File(nbrootF, "nbbuild").isDirectory());
-        nbroot = FileUtil.toFileObject(nbrootF);
-        assertNotNull("have a file object for nbroot when using " + System.getProperty("java.class.path"), nbroot);
-        
-        destDirF = file(nbrootF, "nbbuild/netbeans").getAbsoluteFile();
+        nbcvsrootF = FileUtil.normalizeFile(getTestNBRoot());
+//        assertTrue("there is a dir " + nbcvsrootF, nbcvsrootF.isDirectory());
+        File nbbuildF = new File(nbcvsrootF, "nbbuild");
+        cvsAvailable = nbbuildF.isDirectory();
+        if (cvsAvailable) {
+            nbcvsroot = FileUtil.toFileObject(nbcvsrootF);
+            assertNotNull("have a file object for nbcvsroot when using " + System.getProperty("java.class.path"), nbcvsroot);
+            destDirF = file(nbcvsrootF, "nbbuild/netbeans").getAbsoluteFile();
+            File extexamplesF = file(getDataDir(), EEP);
+            assertTrue("there is a dir " + extexamplesF, extexamplesF.isDirectory());
+            assertNotNull("have a file object for extexamples", FileUtil.toFileObject(extexamplesF));
+        } else {
+            destDirF = getXTestNBDestDir();
+        }
+
         assertTrue("Directory really exists: " + destDirF, destDirF.isDirectory());
         
-        extexamplesF = file(nbrootF, EEP);
-        assertTrue("there is a dir " + extexamplesF, extexamplesF.isDirectory());
-        extexamples = FileUtil.toFileObject(extexamplesF);
-        assertNotNull("have a file object for extexamples", extexamples);
         // Need to set up private locations in extexamples, as if they were opened in the IDE.
         clearWorkDir();
         
@@ -101,7 +110,7 @@ public abstract class TestBase extends NbTestCase {
         
         // Nonexistent path, just for JavadocForBuiltModuleTest:
         apisZip = new File(getWorkDir(), "apis.zip");
-        File userPropertiesFile = initializeBuildProperties(getWorkDir(), apisZip);
+        File userPropertiesFile = initializeBuildProperties(getWorkDir(), getDataDir(), apisZip);
         String[] suites = {
             // Suite projects:
             "suite1",
@@ -111,7 +120,7 @@ public abstract class TestBase extends NbTestCase {
             "suite3/dummy-project",
         };
         for (int i = 0; i < suites.length; i++) {
-            File platformPrivate = file(extexamplesF, suites[i] + "/nbproject/private/platform-private.properties");
+            File platformPrivate = resolveEEPFile(suites[i] + "/nbproject/private/platform-private.properties");
             Properties p = new Properties();
             p.setProperty("user.properties.file", userPropertiesFile.getAbsolutePath());
             platformPrivate.getParentFile().mkdirs();
@@ -137,24 +146,30 @@ public abstract class TestBase extends NbTestCase {
      * @param workDir use getWorkDir()
      * @return resulting properties file
      */
-    public static File initializeBuildProperties(File workDir) throws Exception {
-        return initializeBuildProperties(workDir, null);
+    public static File initializeBuildProperties(File workDir, File dataDir) throws Exception {
+        return initializeBuildProperties(workDir, dataDir, null);
     }
-    private static File initializeBuildProperties(File workDir, File apisZip) throws Exception {
-        File nbrootF = new File(System.getProperty("test.nbroot"));
-        assertTrue("there is a dir " + nbrootF, nbrootF.isDirectory());
-        assertTrue("nbbuild exists", new File(nbrootF, "nbbuild").isDirectory());
+    
+    private static File initializeBuildProperties(File workDir, File dataDir, File apisZip) throws Exception {
+        File nbcvsrootF = getTestNBRoot();
+        boolean cvsAvailable = nbcvsrootF.isDirectory();
         System.setProperty("netbeans.user", workDir.getAbsolutePath());
         File userPropertiesFile = new File(workDir, "build.properties");
         Properties p = new Properties();
-        p.setProperty("nbplatform.default.netbeans.dest.dir", file(nbrootF, "nbbuild/netbeans").getAbsolutePath());
+        File defaultPlatform = cvsAvailable ? file(nbcvsrootF, "nbbuild/netbeans") : getXTestNBDestDir();
+        assertTrue("default platform available (" + defaultPlatform + ')', defaultPlatform.isDirectory());
+        p.setProperty("nbplatform.default.netbeans.dest.dir", defaultPlatform.getAbsolutePath());
         p.setProperty("nbplatform.default.harness.dir", "${nbplatform.default.netbeans.dest.dir}/harness");
-        p.setProperty("nbplatform.custom.netbeans.dest.dir", file(nbrootF, EEP + "/suite3/nbplatform").getAbsolutePath());
+        File customPlatform = file(file(dataDir, EEP), "/suite3/nbplatform");
+        assertTrue("custom platform available (" + customPlatform + ')', customPlatform.isDirectory());
+        p.setProperty("nbplatform.custom.netbeans.dest.dir", customPlatform.getAbsolutePath());
         if (apisZip != null) {
             p.setProperty("nbplatform.default.javadoc", apisZip.getAbsolutePath());
         }
-        // Make source association work to find misc-project from its binary:
-        p.setProperty("nbplatform.default.sources", nbrootF.getAbsolutePath() + ":" + file(nbrootF, EEP + "/suite2").getAbsolutePath());
+        if (cvsAvailable) {
+            // Make source association work to find misc-project from its binary:
+            p.setProperty("nbplatform.default.sources", nbcvsrootF.getAbsolutePath() + ":" + file(file(dataDir, EEP), "/suite2").getAbsolutePath());
+        }
         OutputStream os = new FileOutputStream(userPropertiesFile);
         try {
             p.store(os, null);
@@ -172,13 +187,39 @@ public abstract class TestBase extends NbTestCase {
         return new File(root, path.replace('/', File.separatorChar));
     }
     
+    protected File nbCVSRootFile() {
+        assertTrue("NB CVS tree is available", cvsAvailable);
+        return nbcvsrootF;
+    }
+    
+    protected FileObject nbCVSRoot() {
+        assertTrue("NB CVS tree is available", cvsAvailable);
+        return nbcvsroot;
+    }
+    
+    protected File resolveEEPFile(final String relativePath) {
+        File eepF = FileUtil.normalizeFile(new File(getDataDir(), EEP));
+        assertTrue("has EEP directory (" + eepF + ')', eepF.isDirectory());
+        File eepRelF = new File(eepF, relativePath);
+//        assertTrue("resolved file exists (" + eepRelF + ')', eepRelF.exists());
+        return eepRelF;
+    }
+    
+    protected String resolveEEPPath(final String relativePath) {
+        return resolveEEPFile(relativePath).getAbsolutePath();
+    }
+    
+    protected FileObject resolveEEP(final String relativePath) {
+        return FileUtil.toFileObject(resolveEEPFile(relativePath));
+    }
+    
     /**
-     * Calls in turn {@link #file(File, String)} with {@link #nbrootF} as the
+     * Calls in turn {@link #file(File, String)} with {@link #nbcvsrootF} as the
      * first parameter. So the returned path will be actually relative to the
      * netbeans.org CVS tree this test is run in.
      */
     protected File file(String path) {
-        return file(nbrootF, path);
+        return file(nbcvsrootF, path);
     }
     
     /**
@@ -461,4 +502,16 @@ public abstract class TestBase extends NbTestCase {
         }
     }
     
-}
+    private static File getTestNBRoot() {
+        String nbcvsroot = System.getProperty("test.nbcvsroot");
+        assertNotNull("test.nbcvsroot property has to be set", nbcvsroot);
+        return new File(nbcvsroot);
+    }
+    
+    private static File getXTestNBDestDir() {
+        String destDir = System.getProperty("xtest.netbeans.dest.dir");
+        assertNotNull("xtest.netbeans.dest.dir property has to be set when running within binary distribution", destDir);
+        return new File(destDir);
+    }
+    
+  }

@@ -35,21 +35,21 @@ public class NbModuleProviderTest extends TestBase {
     }
 
     public void testNbModuleProvider() throws Exception {
-        FileObject dir = nbroot.getFileObject("java/project");
+        FileObject dir = nbCVSRoot().getFileObject("java/project");
         assertNotNull("have java/project checked out", dir);
         Project p = ProjectManager.getDefault().findProject(dir);
         NbModuleTypeProvider nmtp = (NbModuleTypeProvider) p.getLookup().lookup(NbModuleTypeProvider.class);
         assertNotNull("has NbModuleProvider", nmtp);
         assertSame("is netbeans.org modules", NbModuleTypeProvider.NETBEANS_ORG, nmtp.getModuleType());
         
-        FileObject suite1 = extexamples.getFileObject("suite1");
+        FileObject suite1 = resolveEEP("suite1");
         FileObject action = suite1.getFileObject("action-project");
         p = ProjectManager.getDefault().findProject(action);
         nmtp = (NbModuleTypeProvider) p.getLookup().lookup(NbModuleTypeProvider.class);
         assertNotNull("has NbModuleProvider", nmtp);
         assertSame("is suite-component module", NbModuleTypeProvider.SUITE_COMPONENT, nmtp.getModuleType());
         
-        FileObject suite3 = extexamples.getFileObject("suite3");
+        FileObject suite3 = resolveEEP("suite3");
         FileObject dummy = suite3.getFileObject("dummy-project");
         p = ProjectManager.getDefault().findProject(dummy);
         nmtp = (NbModuleTypeProvider) p.getLookup().lookup(NbModuleTypeProvider.class);

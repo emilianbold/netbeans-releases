@@ -39,7 +39,7 @@ public class AvoidModuleListInProjectConstructorTest extends TestBase {
     
     public void testNetBeansOrgModules() throws Exception {
         assertEquals("no scans of netbeans.org initially", 0, ModuleList.getKnownEntries(file("nbbuild/netbeans/ide6/org-apache-tools-ant-module.jar")).size());
-        FileObject fo = nbroot.getFileObject("ant");
+        FileObject fo = nbCVSRoot().getFileObject("ant");
         Project p = ProjectManager.getDefault().findProject(fo);
         assertNotNull(p);
         assertEquals("still no scans", 0, ModuleList.getKnownEntries(file("nbbuild/netbeans/" + TestBase.CLUSTER_IDE + "/modules/org-apache-tools-ant-module.jar")).size());
