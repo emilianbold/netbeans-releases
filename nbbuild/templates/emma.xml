@@ -147,8 +147,26 @@ TODO:
     <target name="show-coverage-results-nb" if="netbeans.home">
         <nbbrowse file="${coverage.dir}/coverage.html"/>
     </target>
+
+    <target name="emma-build-backup" if="nb_all" unless="emma.disable.backup">
+        <echo>Creating backup for ${netbeans.dest.dir} because some jars are instrumented.</echo>
+        <echo>It can be ignored by seting property emma.disable.backup.</echo>
+        <mkdir dir="${nb_all}/build/emma-backup"/>
+        <copy  todir="${nb_all}/build/emma-backup" >
+            <fileset dir="${netbeans.dest.dir}" />
+        </copy>    
+    </target>    
     
-    <target name="coverage" depends="emma,emma-init,emma-instrument,emma-instrument-no-filter,coverage-runtests,emma-report"/>
+    
+    <target name="emma-build-restore" if="nb_all" unless="emma.disable.backup">
+        <delete dir="${netbeans.dest.dir}"/>
+        <copy  todir="${netbeans.dest.dir}">
+            <fileset dir="${nb_all}/build/emma-backup" />
+        </copy>    
+        <delete dir="${nb_all}/build/emma-backup"/>
+    </target>    
+        
+    <target name="coverage" depends="emma-build-backup,emma,emma-init,emma-instrument,emma-instrument-no-filter,coverage-runtests,emma-report,emma-build-restore"/>
     
     <!--
     following must be passed to running measured process:
