@@ -147,7 +147,26 @@ public class JPDAReload extends Task {
             System.out.println (" No class to reload");
             return;
         }
-        debugger.fixClasses (map);
+        String error = null;
+        try {
+            debugger.fixClasses (map);
+        } catch (UnsupportedOperationException uoex) {
+            error = "The virtual machine does not support this operation: "+uoex.getLocalizedMessage();
+        } catch (NoClassDefFoundError ncdfex) {
+            error = "The bytes don't correspond to the class type (the names don't match): "+ncdfex.getLocalizedMessage();
+        } catch (VerifyError ver) {
+            error = "A \"verifier\" detects that a class, though well formed, contains an internal inconsistency or security problem: "+ver.getLocalizedMessage();
+        } catch (UnsupportedClassVersionError ucver) {
+            error = "The major and minor version numbers in bytes are not supported by the VM. "+ucver.getLocalizedMessage();
+        } catch (ClassFormatError cfer) {
+            error = "The bytes do not represent a valid class. "+cfer.getLocalizedMessage();
+        } catch (ClassCircularityError ccer) {
+            error = "A circularity has been detected while initializing a class: "+ccer.getLocalizedMessage();
+        }
+        if (error != null) {
+            getProject().log(error, Project.MSG_ERR);
+            throw new BuildException(error);
+        }
     }
     
     private String classToSourceURL (FileObject fo) {
