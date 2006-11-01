@@ -88,8 +88,8 @@ import org.openide.filesystems.FileLock;
         super.setUp();
         nbcvsrootF = FileUtil.normalizeFile(getTestNBRoot());
 //        assertTrue("there is a dir " + nbcvsrootF, nbcvsrootF.isDirectory());
-        File nbbuildF = new File(nbcvsrootF, "nbbuild");
-        cvsAvailable = nbbuildF.isDirectory();
+        cvsAvailable = new File(nbcvsrootF, "nbbuild/netbeans/" + CLUSTER_IDE
+                + "/modules/org-netbeans-modules-apisupport-project.jar").isFile();
         if (cvsAvailable) {
             nbcvsroot = FileUtil.toFileObject(nbcvsrootF);
             assertNotNull("have a file object for nbcvsroot when using " + System.getProperty("java.class.path"), nbcvsroot);
