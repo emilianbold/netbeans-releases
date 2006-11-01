@@ -83,7 +83,7 @@ public final class RefactoringSession {
                 while (it.hasNext()) {
                     fireProgressListenerStep();
                     RefactoringElementImplementation element = (RefactoringElementImplementation) it.next();
-                    if (!((element.getStatus() == RefactoringElement.GUARDED) || (element.getStatus() == RefactoringElement.READ_ONLY))) {
+                    if (element.isEnabled() && !((element.getStatus() == RefactoringElement.GUARDED) || (element.getStatus() == RefactoringElement.READ_ONLY))) {
                         element.performChange();
                     }
                 }
