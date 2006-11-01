@@ -37,6 +37,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Iterator;
 import java.beans.PropertyChangeListener;
+import java.lang.Boolean;
 
 import org.netbeans.modules.subversion.config.ProxyDescriptor;
 import org.netbeans.modules.subversion.ui.diff.Setup;
@@ -423,7 +424,7 @@ public class Subversion {
         return rp;
     }
 
-    FileStatusProvider getVCSAnnotator() {
+    FileStatusProvider getVCSAnnotator() {                                
         return fileStatusProvider;
     }
 
@@ -432,7 +433,8 @@ public class Subversion {
     }
 
     public void refreshAllAnnotations() {
-        // TODO: implement
+        // TODO: implement        
+        int i = 0;                                    
     }
 
     public OriginalContent getVCSOriginalContent(File file) {
