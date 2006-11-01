@@ -512,9 +512,8 @@ public class SourceUtils {
                 return false;
             JavaFileObject jfo = sym.outermostClass().sourcefile;
             if (jfo != null) {
-                URI uri = jfo.toUri();
                 for (JavaFileObject tmpJfo : jfos)
-                    if (uri.equals(tmpJfo.toUri()))
+                    if (jfo.equals(tmpJfo))
                         return false;
             }
             return true;
