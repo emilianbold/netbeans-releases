@@ -203,7 +203,7 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
     }
     
     public String name() {
-        return MessageFormat.format(NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_WizardStepsCount"), new String[] {Integer.toString(index + 1), Integer.toString(panels.length)}); //NOI18N
+        return MessageFormat.format(NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_WizardStepsCount"), Integer.toString(index + 1), Integer.toString(panels.length)); //NOI18N
     }
     
     public boolean hasNext() {

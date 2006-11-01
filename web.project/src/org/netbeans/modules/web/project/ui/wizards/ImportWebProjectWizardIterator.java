@@ -24,7 +24,6 @@ import java.awt.Dialog;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -42,7 +41,6 @@ import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -234,7 +232,7 @@ public class ImportWebProjectWizardIterator implements WizardDescriptor.Progress
     }
     
     public String name() {
-        return MessageFormat.format(NbBundle.getMessage(ImportWebProjectWizardIterator.class, "LBL_WizardStepsCount"), new String[] {Integer.toString(index + 1), Integer.toString(panels.length)}); //NOI18N
+        return MessageFormat.format(NbBundle.getMessage(ImportWebProjectWizardIterator.class, "LBL_WizardStepsCount"), Integer.toString(index + 1), Integer.toString(panels.length)); //NOI18N
     }
     
     public boolean hasNext() {

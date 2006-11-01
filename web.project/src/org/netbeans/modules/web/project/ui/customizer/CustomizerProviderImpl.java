@@ -37,13 +37,10 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.web.project.ProjectWebModule;
-import org.netbeans.modules.web.project.ProjectWebModuleProvider;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.UpdateHelper;
-import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -151,41 +148,34 @@ public class CustomizerProviderImpl implements CustomizerProvider {
         ProjectCustomizer.Category sources = ProjectCustomizer.Category.create(
                 SOURCES,
                 bundle.getString ("LBL_Config_Sources"),
-                null,
                 null);
         
         ProjectCustomizer.Category frameworks = ProjectCustomizer.Category.create (
                 FRAMEWORKS,
                 bundle.getString( "LBL_Config_Frameworks" ), // NOI18N
-                null,
                 null );
         
         ProjectCustomizer.Category libraries = ProjectCustomizer.Category.create (
                 LIBRARIES,
                 bundle.getString( "LBL_Config_Libraries" ), // NOI18N
-                null,
                 null );
         
         ProjectCustomizer.Category build = ProjectCustomizer.Category.create(
                 BUILD, 
                 bundle.getString( "LBL_Config_Build" ), // NOI18N
-                null,
                 null);
         ProjectCustomizer.Category war = ProjectCustomizer.Category.create(
                 WAR,
                 bundle.getString( "LBL_Config_War" ), // NOI18N
-                null,
                 null );
         ProjectCustomizer.Category javadoc = ProjectCustomizer.Category.create(
                 JAVADOC,
                 bundle.getString( "LBL_Config_Javadoc" ), // NOI18N
-                null,
                 null );
         
         ProjectCustomizer.Category run = ProjectCustomizer.Category.create(
                 RUN,
                 bundle.getString( "LBL_Config_Run" ), // NOI18N
-                null,
                 null );    
 
         ProjectCustomizer.Category buildCategory = ProjectCustomizer.Category.create(
@@ -218,12 +208,10 @@ public class CustomizerProviderImpl implements CustomizerProvider {
             services = ProjectCustomizer.Category.create(
                     WEBSERVICES,
                     bundle.getString( "LBL_Config_WebServices" ), // NOI18N
-                    null,
                     null);
             clients = ProjectCustomizer.Category.create(
                     WEBSERVICECLIENTS,
                     bundle.getString( "LBL_Config_WebServiceClients" ), // NOI18N
-                    null,
                     null);
             webServices = ProjectCustomizer.Category.create(
                     WEBSERVICE_CATEGORY,

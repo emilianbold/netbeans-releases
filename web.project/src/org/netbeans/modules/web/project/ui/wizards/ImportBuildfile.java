@@ -43,7 +43,7 @@ public class ImportBuildfile extends javax.swing.JPanel implements DocumentListe
         ok.setEnabled(false);
         
         String msg = MessageFormat.format(NbBundle.getMessage(ImportBuildfile.class,
-                "LBL_IW_BuildfileDesc_Label"), new String[]{buildFile.getAbsolutePath()}); //NOI18N
+                "LBL_IW_BuildfileDesc_Label"), buildFile.getAbsolutePath()); //NOI18N
         jLabelDesc.setText(msg);
         jTextFieldBuildName.getDocument().addDocumentListener(this);
         jTextFieldBuildName.setText(NbBundle.getMessage(ImportBuildfile.class, "LBL_IW_ProposedName_TextField")); //NOI18N
