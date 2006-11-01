@@ -70,9 +70,9 @@ public class SourceUtils {
     
     // instance methods --------------------------------------------------------
     
-//    public TypeElement getMainTypeElement() {
-//        return mainTypeElement;
-//    }
+    public TypeElement getMainTypeElement() {
+        return mainTypeElement;
+    }
     
     // private methods ---------------------------------------------------------
     
