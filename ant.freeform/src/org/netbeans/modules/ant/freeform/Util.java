@@ -23,7 +23,6 @@ import java.io.File;
 import java.io.IOException;
 import java.text.Collator;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -41,7 +40,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.Lookup;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -91,7 +89,7 @@ public class Util {
         }
         assert dob != null;
         AntProjectCookie apc = dob.getCookie(AntProjectCookie.class);
-        if (apc == null && fo.getMIMEType().equals("text/xml")) { // NOI18N
+        if (apc == null && /* #88430 */fo.isData()) {
             // Some file that *could* be an Ant script and just wasn't recognized
             // as such? Cf. also TargetLister.getAntProjectCookie, which has the
             // advantage of being inside the Ant module and therefore able to

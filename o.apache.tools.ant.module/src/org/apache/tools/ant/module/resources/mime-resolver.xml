@@ -53,5 +53,10 @@ Microsystems, Inc. All Rights Reserved.
             </xml-rule>
         </resolver>
     </file>
-        
+
+    <file>
+        <ext name="ant"/> <!-- #88430 -->
+        <resolver mime="text/x-ant+xml"/>
+    </file>
+
 </MIME-resolver>
