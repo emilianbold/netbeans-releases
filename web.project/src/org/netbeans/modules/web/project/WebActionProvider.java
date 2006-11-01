@@ -62,9 +62,6 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import java.util.HashSet;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.j2ee.common.source.SourceUtils;
 import org.netbeans.modules.web.api.webmodule.RequestParametersQuery;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
@@ -278,7 +275,7 @@ class WebActionProvider implements ActionProvider {
                             FileObject[] javaFiles = findJavaSources(context);
                             if ((javaFiles != null) && (javaFiles.length>0)) {
                                 FileObject javaFile = javaFiles[0];
-                                if (hasMainMethod(javaFile)) {
+                                if (SourceUtils.hasMainMethod(javaFile)) {
                                     // run Java with Main method
                                     String clazz = FileUtil.getRelativePath(getRoot(project.getSourceRoots().getRoots(),javaFile), javaFile);
                                     p.setProperty("javac.includes", clazz); // NOI18N
@@ -405,7 +402,7 @@ class WebActionProvider implements ActionProvider {
                             FileObject[] javaFiles = findJavaSources(context);
                             if ((javaFiles != null) && (javaFiles.length>0)) {
                                 FileObject javaFile = javaFiles[0];
-                                if (hasMainMethod(javaFile)) {
+                                if (SourceUtils.hasMainMethod(javaFile)) {
                                     // debug Java with Main method
                                     String clazz = FileUtil.getRelativePath(getRoot(project.getSourceRoots().getRoots(),javaFile), javaFile);
                                     p.setProperty("javac.includes", clazz); // NOI18N
@@ -603,19 +600,6 @@ class WebActionProvider implements ActionProvider {
         return targetNames;
     }
 
-    private Boolean hasMainMethod(FileObject javaFile) throws IOException {
-        final boolean[] hasMainMethod = new boolean[] {false};
-        JavaSource javaSource = JavaSource.forFileObject(javaFile);
-        javaSource.runUserActionTask(new CancellableTask<CompilationController>() {
-            public void cancel() {}
-            public void run(CompilationController cc) throws Exception {
-                SourceUtils sourceUtils = new SourceUtils(cc);
-                hasMainMethod[0] = sourceUtils.hasMainMethod();
-            }
-        }, true);
-        return hasMainMethod[0];
-    }
-    
     private String[] setupTestSingle(Properties p, FileObject[] files) {
         FileObject[] testSrcPath = project.getTestSourceRoots().getRoots();
         FileObject root = getRoot(testSrcPath, files[0]);

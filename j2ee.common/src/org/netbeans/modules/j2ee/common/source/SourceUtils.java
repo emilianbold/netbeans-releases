@@ -28,8 +28,10 @@ import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementUtilities;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.openide.filesystems.FileObject;
 
@@ -51,21 +53,29 @@ public class SourceUtils {
         }
     }
 
-    public TypeElement getMainTypeElement() {
-        return mainTypeElement;
+    // static methods ----------------------------------------------------------
+    
+    public static boolean hasMainMethod(FileObject fileObject) throws IOException {
+        JavaSource javaSource = JavaSource.forFileObject(fileObject);
+        final boolean[] result = new boolean[] {false};
+        javaSource.runUserActionTask(new CancellableTask<CompilationController>() {
+            public void cancel() {}
+            public void run(CompilationController cc) throws Exception {
+                SourceUtils sourceUtils = new SourceUtils(cc);
+                result[0] = sourceUtils.hasMainMethod();
+            }
+        }, true);
+        return result[0];
     }
     
-    public boolean hasMainMethod() throws IOException {
-        controller.toPhase(Phase.ELEMENTS_RESOLVED);
-        TypeElement typeElement = findMainTypeElement();
-        for (ExecutableElement method : ElementFilter.methodsIn(typeElement.getEnclosedElements())) {
-            if (isMainMethod(method)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
+    // instance methods --------------------------------------------------------
+    
+//    public TypeElement getMainTypeElement() {
+//        return mainTypeElement;
+//    }
+    
+    // private methods ---------------------------------------------------------
+    
     private TypeElement findMainTypeElement() throws IOException {
         controller.toPhase(Phase.ELEMENTS_RESOLVED);
 
@@ -83,6 +93,18 @@ public class SourceUtils {
             throw new IllegalStateException("Could not find the main type element in " + fo); // NOI18N
         }
         return globalTypes.next();
+    }
+
+    // TODO: will be replaced by Tomas's implementation from J2SE Project
+    private boolean hasMainMethod() throws IOException {
+        controller.toPhase(Phase.ELEMENTS_RESOLVED);
+        TypeElement typeElement = findMainTypeElement();
+        for (ExecutableElement method : ElementFilter.methodsIn(typeElement.getEnclosedElements())) {
+            if (isMainMethod(method)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean isMainMethod(ExecutableElement method) {
