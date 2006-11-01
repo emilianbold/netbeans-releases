@@ -73,6 +73,7 @@ public class PersistenceManager implements LazyDebuggerManagerListener {
                         }
                         breakpoints = breakpoints2;
                         i--;
+                        continue;
                     }
                 } catch (MalformedURLException ex) {
                     ErrorManager.getDefault().notify(ex);
