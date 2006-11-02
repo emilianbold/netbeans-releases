@@ -19,15 +19,10 @@
 
 package org.netbeans.modules.project.ui.actions;
 
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -39,9 +34,6 @@ import org.netbeans.api.project.ProjectUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
-import org.openide.util.Utilities;
 import org.openide.util.WeakSet;
 
 /** Nice utility methods to be used in ProjectBased Actions
@@ -50,7 +42,9 @@ import org.openide.util.WeakSet;
  */
 class ActionsUtil {
     
+    /*
     public static LookupResultsCache lookupResultsCache;
+     */
     
     public static final ShortcutsManager SHORCUTS_MANAGER = new ShortcutsManager();
     
@@ -62,16 +56,33 @@ class ActionsUtil {
      * is one project with the command disabled it will return empty array.
      */
     public static Project[] getProjectsFromLookup( Lookup lookup, String command ) {    
+        /*
         if ( lookupResultsCache == null ) {
             lookupResultsCache = new LookupResultsCache( new Class[] { Project.class, DataObject.class } );
         }
         
         Project[] projectsArray = lookupResultsCache.getProjects( lookup );
+         */
+        // #74161: do not cache
+        // First find out whether there is a project directly in the Lookup
+        Set<Project> result = new HashSet<Project>();
+        for (Project p : lookup.lookupAll(Project.class)) {
+            result.add(p);
+        }
+        // Now try to guess the project from dataobjects
+        for (DataObject dObj : lookup.lookupAll(DataObject.class)) {
+            FileObject fObj = dObj.getPrimaryFile();
+            Project p = FileOwnerQuery.getOwner(fObj);
+            if ( p != null ) {
+                result.add( p );
+            }
+        }
+        Project[] projectsArray = result.toArray(new Project[result.size()]);
                 
         if ( command != null ) {
             // All projects have to have the command enabled
-            for( int i = 0; i < projectsArray.length; i++ ) {
-                if ( !commandSupported( projectsArray[i], command, lookup ) ) {
+            for (Project p : projectsArray) {
+                if (!commandSupported(p, command, lookup)) {
                     return new Project[0];
                 }
             }
@@ -85,7 +96,7 @@ class ActionsUtil {
      */    
     public static FileObject[] getFilesFromLookup( Lookup lookup, Project project ) {
         HashSet<FileObject> result = new HashSet<FileObject>();
-	for (DataObject dObj: lookup.lookupAll(DataObject.class)) {
+        for (DataObject dObj : lookup.lookupAll(DataObject.class)) {
             FileObject fObj = dObj.getPrimaryFile();
             Project p = FileOwnerQuery.getOwner(fObj);
             if ( p != null && p.equals( project ) ) {
@@ -162,7 +173,7 @@ class ActionsUtil {
         
         mf.format( 
             new Object[] {
-                new Integer( numberOfObjects ),
+                numberOfObjects,
                 firstObjectName == null ? "" : firstObjectName,
             }, 
             result, 
@@ -235,8 +246,7 @@ class ActionsUtil {
                         
             if ( actionsToChange != null ) {
                 // Need to change actions in existing actions
-                for( Iterator<Action> it = actionsToChange.iterator(); it.hasNext(); ) {
-                    Action a = it.next();
+                for (Action a : actionsToChange) {
                     if ( a != null ) {
                         a.putValue( Action.ACCELERATOR_KEY, shortcut );
                     }                    
@@ -261,6 +271,7 @@ class ActionsUtil {
      *
      * Please see also the tests.
      */
+    /* XXX #74161: does not actually work
     private static class LookupResultsCache implements LookupListener {
         
         private Class<?> watch[];
@@ -274,13 +285,12 @@ class ActionsUtil {
         }
         
         public synchronized Project[] getProjects( Lookup lookup ) {
-            Lookup lruLookupLocal = lruLookup != null ? (Lookup) lruLookup.get() : null;
+            Lookup lruLookupLocal = lruLookup != null ? lruLookup.get() : null;
             
             if ( lookup != lruLookupLocal ) { // Lookup changed
                 if ( lruResults != null ) {
-                    for(Iterator i = lruResults.iterator(); i.hasNext(); ) {
-                        Lookup.Result result = (Lookup.Result) ((Reference) i.next()).get();
-                        
+                    for (Reference<Lookup.Result> r : lruResults) {
+                        Lookup.Result result = r.get();
                         if (result != null) {
                             result.removeLookupListener( this ); // Deregister
                         }
@@ -294,8 +304,8 @@ class ActionsUtil {
             if ( lruLookupLocal == null ) { // Needs to attach to lookup
                 lruLookup = new CleanableWeakReference<Lookup>(lruLookupLocal = lookup);
                 lruResults = new ArrayList<Reference<Lookup.Result>>();
-                for ( int i = 0; i < watch.length; i++ ) {
-                    Lookup.Result result = lookup.lookupResult(watch[i]);
+                for (Class<?> c : watch) {
+                    Lookup.Result result = lookup.lookupResult(c);
                     
                     result.allItems();
                     result.addLookupListener( this );
@@ -309,12 +319,12 @@ class ActionsUtil {
                 Set<Project> result = new HashSet<Project>();
 
                 // First find out whether there is a project directly in the Lookup
-		for (Project p: lruLookupLocal.lookupAll(Project.class)) {
+                for (Project p : lruLookupLocal.lookupAll(Project.class)) {
                     result.add(p);
                 }
 
                 // Now try to guess the project from dataobjects
-		for (DataObject dObj: lruLookupLocal.lookupAll(DataObject.class)) {
+                for (DataObject dObj : lruLookupLocal.lookupAll(DataObject.class)) {
                     FileObject fObj = dObj.getPrimaryFile();
                     Project p = FileOwnerQuery.getOwner(fObj);
                     if ( p != null ) {
@@ -362,6 +372,6 @@ class ActionsUtil {
         }
         
     }
+     */
 
 }
-
