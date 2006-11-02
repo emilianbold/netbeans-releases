@@ -23,7 +23,6 @@ Microsystems, Inc. All Rights Reserved.
 
 <api-answers
   question-version="1.26"
-  module="j2ee/clientproject"
   author="jungi@netbeans.org"
 >
 
@@ -49,14 +48,14 @@ Microsystems, Inc. All Rights Reserved.
   <p>
    The module exposes a new NetBeans project type to create Java EE Enterprise
    Application Client Module project, where a developer can create standard Java SE
-   applications, which have direct access to server environment and resources
+   applications, which have direct access to the server environment and resources
    (such as EJBs, Web Services), develop these applications, assemble them according
    to Java EE specification, build them and deploy them to Application servers.
   </p>
   <p>
    It uses various project APIs to implement the project type. <a
    href="http://projects.netbeans.org/buildsys/design.html">Build system design
-   document</a>. Implements j2ee/ejbjarapi to provide project container
+   document</a>. Implements j2ee/ejbapi to provide a project container
    for an Enterprise application client module.
   </p>
   <ol>
@@ -86,7 +85,7 @@ Microsystems, Inc. All Rights Reserved.
    <li>
     <api group="java.io.File" name="LayoutOfProjectFiles" type="export" category="private">
      <p>
-      Modules should make no assumptions about the layout of project direcotry other then
+      Modules should make no assumptions about the layout of project directory other then
       what is explicitly exposed via API (such as J2eeApplicationProvider from j2eeserver API,
       AntArtifact).
      </p>
@@ -112,7 +111,7 @@ Microsystems, Inc. All Rights Reserved.
  <answer id="arch-quality">
   <p>
    There are some unit tests (not enough). IDE-wide functional testing covers
-   much of the module`s functionality.
+   much of the module's functionality.
   </p>
  </answer>
 
@@ -156,7 +155,7 @@ Microsystems, Inc. All Rights Reserved.
  <answer id="arch-usecases">
   <p>
     <usecase id="id" name="Project Generator" >
-       AppClientProjectGenerator can be used to generate Application Client module
+       AppClientProjectGenerator can be used to generate an Application Client module
        project. This can be used for example to create a populated EAR project
        together with an Application Client module project.
        This is the only (private) API.
@@ -258,7 +257,7 @@ Microsystems, Inc. All Rights Reserved.
   supports J2EE 1.4 Application Client Modules. This module also supports J2EE 1.3
   compliant Application Client modules, but it does not help you to create NEW ones,
   it will just behave nicely with 1.3 Apps, due to the API layer designed in the j2ee/ddapi
-  module that handles more than one specification version of J2@@.
+  module that handles more than one specification version of J2EE.
   </p>
  </answer>
 
