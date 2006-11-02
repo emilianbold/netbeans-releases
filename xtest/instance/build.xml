@@ -25,20 +25,30 @@ Microsystems, Inc. All Rights Reserved.
     <property name="xtest.home" location=".."/>
     <property name="xtest.basedir" location="../.."/>
 
-    <property name="xtest.config" value="unit-nb"/>
     <property name="xtest.instance.name" value="NetBeans tests"/>
 
     <property name="xtest.harness.antfile" location="${xtest.home}/lib/harness.xml"/>
     <!-- location of zip file with tests distribution -->
     <property name="xtest.testsdist.zip" location="./tests-distribution.zip"/>
-    
+
     <!-- ============= -->
 
+    <!-- Generate custom master config and run it.
+        Usage:  ant -DmoduleMask=ide -Dxtest.attribs=stable
+        -->
     <target name="all">
-        <echo message="You should provide target to execute, see 'ant -projecthelp'"/>
+    	<property name="moduleMask" value="**"/>
+        <property name="mc.configfile" value="${basedir}${file.separator}current-config.xml"/>
+        <property name="xtest.config" value="custom"/>
+
+        <antcall target="mc.init"/>
+        <antcall target="mc.generate" />
+        <antcall target="mc.close"/>
+        <antcall target="mc.execute"/>
     </target>
     
     <target name="runtests">
+        <property name="xtest.config" value="unit-nb"/>
         <ant dir="." antfile="${xtest.harness.antfile}"
              target="runtests"/>
     </target>
@@ -145,7 +155,45 @@ Microsystems, Inc. All Rights Reserved.
         <ant dir="." antfile="${xtest.harness.antfile}"
              target="localresults-clean"/>
     </target>
+
+
+
+    <!--  ==== Custom testrun ==== -->
+
     
-    
-    
+    <target name="mc.init">
+       <echo>We are going to run regression tests via master config.</echo>
+       <echo>Check ${mc.configfile} for test list.</echo>
+       <echo file="${mc.configfile}" append="false">&lt;testconfig&gt;
+    &lt;config name="custom" defaultTesttypes="gui" defaultAttributes="all"&gt;</echo>
+    </target>
+
+    <target name="mc.generate">
+        <subant failonerror="true" genericantfile="mccheck.xml">
+            <property name="mc.configfile" value="${mc.configfile}"/>
+	    <property name="xtest.basedir" value="${xtest.basedir}"/>
+            <dirset dir="${xtest.basedir}">
+		<include name="${moduleMask}/**/test/**"/>
+	    </dirset>
+        </subant>
+    </target>
+      
+    <target name="mc.close">
+       <echo file="${mc.configfile}" append="true">
+    &lt;/config&gt;</echo>
+       <echo file="${mc.configfile}" append="true">
+&lt;/testconfig&gt;</echo>
+       <path id="tb.path">
+          <pathelement location="${tb.dir}"/>
+       </path>
+       <pathconvert targetos="unix" property="tb.unixstyle.path" refid="tb.path"/>
+       <replace file="${mc.configfile}" token="${tb.unixstyle.path}/" value=""/>
+    </target>   
+
+    <target name="mc.execute">
+       <property name="xtest.instance.master-config" value="${mc.configfile}"/>
+       <antcall target="runtests"/>
+       <delete file="${mc.configfile}"/>
+    </target>
+
 </project>
