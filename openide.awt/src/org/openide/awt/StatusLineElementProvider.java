@@ -24,7 +24,7 @@ import java.awt.Component;
 
 /**
  * Provides a component which will be added at east side of the status line.
- * A provider should be installed in default lookup, e.g. using META-INF/servicesd.
+ * A provider should be installed in default lookup, e.g. using META-INF/services.
  *
  * @since 6.4
  * @author Jiri Rechtacek
