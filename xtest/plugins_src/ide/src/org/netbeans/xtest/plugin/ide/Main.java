@@ -32,7 +32,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.Method;
-import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Date;
 import org.netbeans.TopSecurityManager;
@@ -227,6 +226,7 @@ public class Main extends Object {
     // properties used for new project infrastructure
     private static final String IDE_CREATE_PROJECT = "xtest.ide.create.project";
     private static final String IDE_OPEN_PROJECT = "xtest.ide.open.project";
+    private static final String IDE_OPEN_PROJECTS = "xtest.ide.open.projects";
     private static final String XTEST_USERDIR  = "xtest.userdir";
 
     private static MainWithProjectsInterface projectsHandle;
@@ -284,8 +284,18 @@ public class Main extends Object {
                         if (!System.getProperty(IDE_OPEN_PROJECT,"").equals("")) {
                             getProjectsHandle().openProject(System.getProperty(IDE_OPEN_PROJECT));
                         }
+                        // open multiple projects at specified location
+                        if (!System.getProperty(IDE_OPEN_PROJECTS,"").equals("")) {
+                            String pathToProjects = System.getProperty(IDE_OPEN_PROJECTS);
+                            File dir = new File(pathToProjects);
+                            File[] projects = dir.listFiles();
+                            for(int k=0;k<projects.length;k++) {
+                                if(projects[k].isDirectory()) {
+                                    getProjectsHandle().openProject(projects[k].getAbsolutePath());
+                                }
+                            }
+                        }
                     }
-                    
                     handle.run();
                 }
                 catch (Exception ex) {

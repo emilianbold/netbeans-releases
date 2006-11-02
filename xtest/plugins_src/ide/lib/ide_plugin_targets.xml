@@ -27,7 +27,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- ============= -->
     <!-- IDE test part -->
     <!-- ============= -->
-    <target name="ide_execution" depends="init,extra-classpath">
+    <target name="ide_execution" depends="init,extra-classpath,prepare-testdata,prepare-projects">
 
     <xtest executeAction="prepare-tests"/>
         <!-- BEGIN this has to be here, though it should be rather only in module_harness !!! -->
@@ -67,6 +67,8 @@ Microsystems, Inc. All Rights Reserved.
         <property name="xtest.ide.create.project" value="false"/>
         <!-- open project at specified location -->
         <property name="xtest.ide.open.project" value=""/>
+        <!-- open all projects from specified location -->
+        <property name="xtest.ide.open.projects" value=""/>
         <!-- install xtest error manager to IDE which tracks internal errors. 
              If exception or error appear, the test is signed as error. -->
         <property name="xtest.ide.error.manager" value="true"/>
@@ -240,6 +242,7 @@ Microsystems, Inc. All Rights Reserved.
 -J-Dxtest.timeout=${xtest.timeout}
 -J-Dxtest.ide.create.project=${xtest.ide.create.project}
 -J-Dxtest.ide.open.project=&quot;${xtest.ide.open.project}&quot;
+-J-Dxtest.ide.open.projects=&quot;${xtest.ide.open.projects}&quot;
 -J-Dxtest.ide.error.manager=${xtest.ide.error.manager}
 -J-Dxtest.ide.handler=${xtest.ide.handler}
 -J-Dxtest.userdir=&quot;${xtest.userdir}&quot;
@@ -445,7 +448,45 @@ It can cause problems when temp files are not deleted if test crashes
                    property="test.extra.classpath"/>
     </target>
     
+
+    <!-- ====================================================================== -->
+    <!-- These targets prepare test data to be extracted to xtest data directory-->
+    <!-- ====================================================================== -->
+
+    <!-- prepare-testdata target unzips testdata.zip to testdata.dst and passes testdata.dst to the test -->
+    <property name="testdata.zip" location="${xtest.data}/data.zip"/>
+    <property name="testdata.dst" location="${xtest.data}/data"/>
+   
+    <target name="check-testdata.zip">
+        <available file="${testdata.zip}" property="testdata.zip.available"/>
+    </target>
+
+    <target name="prepare-testdata" depends="check-testdata.zip" if="testdata.zip.available">
+        <delete dir="${testdata.dst}"/>        
+        <mkdir dir="${testdata.dst}"/>
+        <unzip src="${testdata.zip}" dest="${testdata.dst}"/>
+    </target>
     
+
+    <!-- ==================================================== -->
+    <!-- These targets prepare multiple projects to be opened -->
+    <!-- ==================================================== -->
+    
+    <!-- prepare-projects target allows to open in ide several projects stored to 'data/projects.zip' -->
+    <property name="projects.zip" location="${xtest.data}/projects.zip"/>
+    <property name="projects.dst" location="${xtest.data}/projects"/>
+
+    <target name="check-projects.zip">
+        <available file="${projects.zip}" property="projects.zip.available"/>
+    </target>
+
+    <target name="prepare-projects" depends="check-projects.zip" if="projects.zip.available">
+        <delete dir="${projects.dst}"/>        
+        <mkdir dir="${projects.dst}"/>
+        <unzip src="${projects.zip}" dest="${projects.dst}"/>
+        <property name="xtest.ide.open.projects" value="${projects.dst}"/>
+    </target>
+
     
     <!-- forbidden main target -->
     <target name="forbidden">
