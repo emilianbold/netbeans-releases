@@ -97,32 +97,25 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
     /** Creates a new instance of StatusLineComponent */
     public StatusLineComponent() {
         handleComponentMap = new HashMap<InternalHandle, ListComponent>();
-        label = new JLabel();
-        label.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        bar = new NbProgressBar();
-        bar.setUseInStatusBar(true);
+        FlowLayout flay = new FlowLayout();
+        flay.setVgap(1);
+        flay.setHgap(5);
+        setLayout(flay);
+        mouseListener = new MListener();
+        addMouseListener(mouseListener);
+        hideListener = new HideAWTListener();
+        
+        createLabel();
+        createBar();
         // tricks to figure out correct height.
         bar.setStringPainted(true);
         bar.setString("XXX");
         label.setText("XXX");
         prefferedHeight = Math.max(label.getPreferredSize().height, bar.getPreferredSize().height) + 2;
         
-        bar.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-//        setBorder(BorderFactory.createLineBorder(Color.BLUE, 1));
-        FlowLayout flay = new FlowLayout();
-        flay.setVgap(1);
-        flay.setHgap(5);
-        setLayout(flay);
-        // HACK - put smaller font inside the progress bar to keep
-        // the height of the progressbar constant for determinate and indeterminate bars
-//        Font fnt = UIManager.getFont("ProgressBar.font");
-//        bar.setFont(fnt.deriveFont(fnt.getStyle(), fnt.getSize() - 3));
-
-        mouseListener = new MListener();
-        label.addMouseListener(mouseListener);
-        bar.addMouseListener(mouseListener);
-        addMouseListener(mouseListener);
-        hideListener = new HideAWTListener();
+        discardLabel();
+        discardBar();
+        
         pane = new PopupPane();
         pane.getActionMap().put("HidePopup", new AbstractAction() {
             public void actionPerformed(ActionEvent actionEvent) {
@@ -132,9 +125,46 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
         });
         pane.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "HidePopup");
         pane.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "HidePopup");
-        separator = new JSeparator(JSeparator.VERTICAL);
-//        separator.setPreferredSize(new Dimension(5, prefferedHeight));
-        separator.setBorder(BorderFactory.createEmptyBorder(1, 0, 2, 0));
+        
+        
+    }
+    
+    private void createLabel() {
+        discardLabel();
+        label = new JLabel();
+        label.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        label.addMouseListener(mouseListener);
+    }
+    
+    private void discardLabel() {
+        if (label != null) {
+            label.removeMouseListener(mouseListener);
+            label = null;
+        }
+    }
+    private void createBar() {
+        discardBar();
+        bar = new NbProgressBar();
+        bar.setUseInStatusBar(true);
+        bar.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+//        setBorder(BorderFactory.createLineBorder(Color.BLUE, 1));
+        // HACK - put smaller font inside the progress bar to keep
+        // the height of the progressbar constant for determinate and indeterminate bars
+//        Font fnt = UIManager.getFont("ProgressBar.font");
+//        bar.setFont(fnt.deriveFont(fnt.getStyle(), fnt.getSize() - 3));
+        bar.addMouseListener(mouseListener);
+        
+    }
+    
+    private void discardBar() {
+        if (bar != null) {
+            bar.removeMouseListener(mouseListener);
+            bar = null;
+        }
+    }
+    
+    private void createCloseButton() {
+        discardCloseButton();
         closeButton = new JButton();
         closeButton.setBorderPainted(false);
         closeButton.setBorder(BorderFactory.createEmptyBorder());
@@ -154,8 +184,22 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
         if( null != img ) {
             closeButton.setPressedIcon( new ImageIcon( img ) );
         }
-        
         closeButton.setToolTipText(NbBundle.getMessage(ListComponent.class, "ListComponent.btnClose.tooltip"));
+    }
+    
+    private void discardCloseButton() {
+        closeButton = null;
+    }
+    
+    private void createSeparator() {
+        discardSeparator();
+        separator = new JSeparator(JSeparator.VERTICAL);
+//        separator.setPreferredSize(new Dimension(5, prefferedHeight));
+        separator.setBorder(BorderFactory.createEmptyBorder(1, 0, 2, 0));
+    }
+    
+    private void discardSeparator() {
+        separator = null;
     }
     
     public Dimension getPreferredSize() {
@@ -197,8 +241,12 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
         }
         String text = NbBundle.getMessage(StatusLineComponent.class, key, new Integer(size));
         setToolTipText(text);
-        label.setToolTipText(text);
-        bar.setToolTipText(text);
+        if (label != null) {
+            label.setToolTipText(text);
+        }
+        if (bar != null) {
+            bar.setToolTipText(text);
+        }
     }
     
     public void processProgressEvent(ProgressEvent event) {
@@ -235,6 +283,10 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
             //happens only when there's no more handles.
             hidePopup();
             removeAll();
+            discardSeparator();
+            discardCloseButton();
+            discardBar();
+            discardLabel();
             //#63393, 61940 fix - removeAll() just invalidates. seems to work without revalidate/repaint on some platforms, fail on others.
             revalidate();
             repaint();
@@ -279,22 +331,30 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
     private void initiateComponent(ProgressEvent event) {
         handle = event.getSource();
         boolean toShow = false;
-        label.setText(handle.getDisplayName());
-        if (label.getParent() == null) {
+        if (label == null) {
+            createLabel();
             add(label);
             toShow = true;
+            label.setToolTipText(getToolTipText());
+        }
+        label.setText(handle.getDisplayName());
+        
+        if (bar == null) {
+            createBar();
+            add(bar);
+            toShow = true;
+            bar.setToolTipText(getToolTipText());
+            
         }
         NbProgressBar.setupBar(event.getSource(), bar);
         
-        if (bar.getParent() == null) {
-            add(bar);
-            toShow = true;
-        }
-        if (closeButton.getParent() == null) {
+        if (closeButton == null) {
+            createCloseButton();
             add(closeButton);
             toShow = true;
         }
-        if (separator.getParent() == null) {
+        if (separator == null) {
+            createSeparator();
             add(separator);
             toShow = true;
         }
