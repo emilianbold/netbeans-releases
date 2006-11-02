@@ -60,13 +60,13 @@ public final class InsertModuleAllTargets extends Task {
     public void execute() throws BuildException {
         try {
             Project project = getProject();
-            Set/*<String>*/ existingTargets = project.getTargets().keySet();
+            Set<String> existingTargets = project.getTargets().keySet();
             if (existingTargets.contains("all-openide/util")) {
                 log("Already seem to have inserted targets into this project; will not do it twice", Project.MSG_VERBOSE);
                 return;
             }
-            Hashtable/*<String,String>*/ props = project.getProperties();
-            Map/*<String,String>*/ clustersOfModules = new HashMap();
+            Hashtable<String,String> props = project.getProperties();
+            Map<String,String> clustersOfModules = new HashMap();
             Iterator it = props.entrySet().iterator();
             while (it.hasNext()) {
                 Map.Entry pair = (Map.Entry) it.next();
@@ -80,7 +80,7 @@ public final class InsertModuleAllTargets extends Task {
                 }
             }
             ModuleListParser mlp = new ModuleListParser(props, ParseProjectXml.TYPE_NB_ORG, project);
-            SortedMap/*<String,ModuleListParser.Entry>*/ entries = new TreeMap();
+            SortedMap<String,ModuleListParser.Entry> entries = new TreeMap();
             it = mlp.findAll().iterator();
             while (it.hasNext()) {
                 ModuleListParser.Entry entry = (ModuleListParser.Entry) it.next();

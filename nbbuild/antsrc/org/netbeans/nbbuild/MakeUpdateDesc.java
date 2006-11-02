@@ -182,7 +182,7 @@ public class MakeUpdateDesc extends MatchingTask {
 	}
 	log ("Creating update description " + desc.getAbsolutePath ());
         
-        Map/*<String,List<Module>>*/ modulesByGroup = loadNBMs();
+        Map<String,List<Module>> modulesByGroup = loadNBMs();
         boolean targetClustersDefined = false;
         Iterator it1 = modulesByGroup.values().iterator();
         while (it1.hasNext()) {
@@ -259,12 +259,12 @@ public class MakeUpdateDesc extends MatchingTask {
                 }
 
                 pw.println ();
-		Map/*<String,Element>*/ licenses = new HashMap();
+		Map<String,Element> licenses = new HashMap();
 		java.util.Set licenseNames = new java.util.HashSet (); // Set<String>
                 
-                Iterator/*<Map.Entry<String,List<Module>>>*/ modulesByGroupIt = modulesByGroup.entrySet().iterator();
+                Iterator<Map.Entry<String,List<Module>>> modulesByGroupIt = modulesByGroup.entrySet().iterator();
                 while (modulesByGroupIt.hasNext()) {
-                    Map.Entry/*<String,List<Module>>*/ entry = (Map.Entry) modulesByGroupIt.next();
+                    Map.Entry<String,List<Module>> entry = (Map.Entry) modulesByGroupIt.next();
                     String groupName = (String) entry.getKey();
                     // Don't indent; embedded descriptions would get indented otherwise.
                     log("Creating group \"" + groupName + "\"");
@@ -272,8 +272,8 @@ public class MakeUpdateDesc extends MatchingTask {
                         pw.println("<module_group name=\"" + xmlEscape(groupName) + "\">");
                         pw.println();
                     }
-                    List/*<Module>*/ modules = (List) entry.getValue();
-                    Iterator/*<Module>*/ modulesIt = modules.iterator();
+                    List<Module> modules = (List) entry.getValue();
+                    Iterator<Module> modulesIt = modules.iterator();
                     while (modulesIt.hasNext()) {
                         Module m = (Module) modulesIt.next();
                         Element module = m.xml;
@@ -339,11 +339,11 @@ public class MakeUpdateDesc extends MatchingTask {
         public File nbm;
     }
     
-    private Map/*<String,List<Module>>*/ loadNBMs() throws BuildException {
-        Map r = new LinkedHashMap();
+    private Map<String,List<Module>> loadNBMs() throws BuildException {
+        Map<String,List<Module>> r = new LinkedHashMap<String,List<Module>>();
         for (int gi = 0; gi < groups.size(); gi++) {
             Group g = (Group) groups.elementAt(gi);
-            List/*<Element>*/ modules = new ArrayList();
+            List<Module> modules = new ArrayList();
             r.put(g.name, modules);
             for (int fsi = 0; fsi < g.filesets.size(); fsi++) {
                 FileSet fs = (FileSet) g.filesets.elementAt(fsi);

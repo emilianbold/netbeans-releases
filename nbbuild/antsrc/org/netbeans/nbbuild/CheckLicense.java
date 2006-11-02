@@ -25,7 +25,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -43,9 +42,9 @@ import org.apache.tools.ant.types.FileSet;
  */
 public class CheckLicense extends Task {
 
-    private final List filesets = new ArrayList (1); // List<FileSet>
+    private final List<FileSet> filesets = new ArrayList<FileSet>(1);
     private String fragment;
-    private List fragments; // List<Fragment>
+    private List<Convert> fragments;
     private FailType fail;
 
     /** Add a file set of source files to check.
@@ -77,7 +76,7 @@ public class CheckLicense extends Task {
     public Convert createConvert() {
         Convert f = new Convert();
         if (fragments == null) {
-            fragments = new ArrayList();
+            fragments = new ArrayList<Convert>();
         }
         
         fragments.add(f);

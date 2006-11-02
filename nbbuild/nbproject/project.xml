@@ -403,7 +403,7 @@ Microsystems, Inc. All Rights Reserved.
                 <classpath mode="boot">${nbjdk.bootclasspath}</classpath>
                 <built-to>build/antclasses</built-to>
                 <built-to>nbantext.jar</built-to>
-                <source-level>1.4</source-level>
+                <source-level>1.5</source-level>
             </compilation-unit>
             <compilation-unit>
                 <package-root>test/unit/src</package-root>
@@ -411,7 +411,7 @@ Microsystems, Inc. All Rights Reserved.
                 <classpath mode="compile">../junit/external/junit-3.8.2.jar:netbeans/testtools/modules/org-netbeans-modules-nbjunit.jar:../ant/external/lib/ant.jar:nbantext.jar</classpath>
                 <classpath mode="boot">${nbjdk.bootclasspath}</classpath>
                 <built-to>test/work/sys/tests/unit/classes</built-to>
-                <source-level>1.4</source-level>
+                <source-level>1.5</source-level>
             </compilation-unit>
         </java-data>
     </configuration>

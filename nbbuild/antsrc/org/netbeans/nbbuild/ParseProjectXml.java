@@ -236,7 +236,7 @@ public final class ParseProjectXml extends Task {
         }
         
     }
-      List /*<TestType>*/ testTypes = new LinkedList();
+      List <TestType> testTypes = new LinkedList();
       
       public void addTestType(TestType testType) {
           testTypes.add(testType);
@@ -488,8 +488,8 @@ public final class ParseProjectXml extends Task {
         if (pp == null) {
             throw new BuildException("No <public-packages>", getLocation());
         }
-        List/*<Element>*/ l = XMLUtil.findSubElements(pp);
-        List/*<PublicPackage>*/ pkgs = new ArrayList();
+        List<Element> l = XMLUtil.findSubElements(pp);
+        List<PublicPackage> pkgs = new ArrayList();
         Iterator it = l.iterator();
         while (it.hasNext()) {
             Element p = (Element)it.next();
@@ -519,8 +519,8 @@ public final class ParseProjectXml extends Task {
         if (pp == null) {
             return null;
         }
-        List/*<String>*/ friends = new ArrayList();
-        List/*<Element>*/ l = XMLUtil.findSubElements(pp);
+        List<String> friends = new ArrayList();
+        List<Element> l = XMLUtil.findSubElements(pp);
         Iterator it = l.iterator();
         boolean other = false;
         while (it.hasNext()) {
@@ -665,8 +665,8 @@ public final class ParseProjectXml extends Task {
         if (md == null) {
             throw new BuildException("No <module-dependencies>", getLocation());
         }
-        List/*<Element>*/ l = XMLUtil.findSubElements(md);
-        List/*<Dep>*/ deps = new ArrayList();
+        List<Element> l = XMLUtil.findSubElements(md);
+        List<Dep> deps = new ArrayList();
         Iterator it = l.iterator();
         while (it.hasNext()) {
             Element dep = (Element)it.next();
@@ -738,16 +738,16 @@ public final class ParseProjectXml extends Task {
         String myCnb = getCodeNameBase(pDoc);
         StringBuffer cp = new StringBuffer();
         String includedClustersProp = getProject().getProperty("enabled.clusters");
-        Set/*<String>*/ includedClusters = includedClustersProp != null ?
+        Set<String> includedClusters = includedClustersProp != null ?
             new HashSet(Arrays.asList(includedClustersProp.split(" *, *"))) :
             null;
         // Compatibility:
         String excludedClustersProp = getProject().getProperty("disabled.clusters");
-        Set/*<String>*/ excludedClusters = excludedClustersProp != null ?
+        Set<String> excludedClusters = excludedClustersProp != null ?
             new HashSet(Arrays.asList(excludedClustersProp.split(" *, *"))) :
             null;
         String excludedModulesProp = getProject().getProperty("disabled.modules");
-        Set/*<String>*/ excludedModules = excludedModulesProp != null ?
+        Set<String> excludedModules = excludedModulesProp != null ?
             new HashSet(Arrays.asList(excludedModulesProp.split(" *, *"))) :
             null;
         for (int i = 0; i < deps.length; i++) { // XXX should operative transitively if runtime
@@ -773,7 +773,7 @@ public final class ParseProjectXml extends Task {
                 throw new BuildException("Cannot compile against a module: " + depJar + " because of dependency: " + dep, getLocation());
             }
 
-            List/*<File>*/ additions = new ArrayList();
+            List<File> additions = new ArrayList();
             additions.add(depJar);
             // #52354: look for <class-path-extension>s in dependent modules.
             ModuleListParser.Entry entry = modules.findByCodeNameBase(cnb);
@@ -819,7 +819,7 @@ public final class ParseProjectXml extends Task {
     }
     
     private File computeClasspathModuleLocation(ModuleListParser modules, String cnb,
-            Set/*<String>*/ includedClusters, Set/*<String>*/ excludedClusters, Set/*<String>*/ excludedModules) throws BuildException {
+            Set<String> includedClusters, Set<String> excludedClusters, Set<String> excludedModules) throws BuildException {
         ModuleListParser.Entry module = modules.findByCodeNameBase(cnb);
         if (module == null) {
             throw new BuildException("No dependent module " + cnb, getLocation());
@@ -845,7 +845,7 @@ public final class ParseProjectXml extends Task {
       // unit, qa-functional, performance
       final String testtype;
       // all dependecies for the testtype
-      final  List /*<TestDep>*/ dependencies = new ArrayList();
+      final  List <TestDep> dependencies = new ArrayList();
       // code name base of tested module
       final String cnb;
       final ModuleListParser modulesParser;
@@ -858,8 +858,8 @@ public final class ParseProjectXml extends Task {
           this.modulesParser = modulesParser;
       }
       
-      public List/*<String>*/ getFiles(boolean compile) {
-          List/*<String>*/ files = new ArrayList();
+      public List<String> getFiles(boolean compile) {
+          List<String> files = new ArrayList();
           for (int dIt = 0 ; dIt < dependencies.size() ; dIt++) {
               files.addAll(((TestDep)dependencies.get(dIt)).getFiles(compile));
           }
@@ -884,9 +884,9 @@ public final class ParseProjectXml extends Task {
         String getCompileClassPath() {
             return getPath(getFiles(true));
         }
-        private String getPath(List/*<String>*/ files) {
+        private String getPath(List<String> files) {
             StringBuffer path = new StringBuffer();
-            Set/*<String>*/ filesSet = new HashSet();
+            Set<String> filesSet = new HashSet();
             for (int fIt = 0 ; fIt < files.size() ; fIt++) {
                 String filePath = (String)files.get(fIt);
                 if (!filesSet.contains(filePath)) {
@@ -929,10 +929,10 @@ public final class ParseProjectXml extends Task {
        }
        /* get modules dependecies
         */
-       List/*<ModuleListParser.Entry>*/ getModules() {
-           List /*<ModuleListParser.Entry>*/ entries = new ArrayList();
+       List<ModuleListParser.Entry> getModules() {
+           List <ModuleListParser.Entry> entries = new ArrayList();
            if (recursive ) {
-               Map/*<String,ModuleListParser.Entry>*/ entriesMap = new HashMap();
+               Map<String,ModuleListParser.Entry> entriesMap = new HashMap();
                addRecursiveModules(cnb,entriesMap);
                entries.addAll(entriesMap.values());
            } else {
@@ -962,10 +962,10 @@ public final class ParseProjectXml extends Task {
                }
            }
        }
-       List/*<String>*/ getFiles(boolean compile) {
-           List/*<String>*/ files = new ArrayList();
+       List<String> getFiles(boolean compile) {
+           List<String> files = new ArrayList();
            if (!compile ||  ( compile && this.compile)) {
-               List /*<ModuleListParser.Entry>*/ modules = getModules();  
+               List <ModuleListParser.Entry> modules = getModules();  
                for (int mIt = 0 ; mIt <modules.size() ; mIt++) {
                    ModuleListParser.Entry entry = (ModuleListParser.Entry)modules.get(mIt);
                    if (entry != null) {
@@ -993,7 +993,7 @@ public final class ParseProjectXml extends Task {
     private String computeClassPathExtensions(Document pDoc) {
         Element data = getConfig(pDoc);
         StringBuffer list = null;
-        List/*<Element>*/ exts = XMLUtil.findSubElements(data);
+        List<Element> exts = XMLUtil.findSubElements(data);
         Iterator it = exts.iterator();
         while (it.hasNext()) {
             Element ext = (Element) it.next();
@@ -1020,7 +1020,7 @@ public final class ParseProjectXml extends Task {
      * Forces the compiler to honor public package restrictions.
      * @see "#59792"
      */
-    private File createPublicPackageJar(List/*<File>*/ jars, String pubpkgs, File dir, String cnb) throws IOException {
+    private File createPublicPackageJar(List<File> jars, String pubpkgs, File dir, String cnb) throws IOException {
         if (!dir.isDirectory()) {
             throw new IOException("No such directory " + dir);
         }
@@ -1054,7 +1054,7 @@ public final class ParseProjectXml extends Task {
         OutputStream os = new FileOutputStream(ppjar);
         try {
             ZipOutputStream zos = new ZipOutputStream(os);
-            Set/*<String>*/ addedPaths = new HashSet();
+            Set<String> addedPaths = new HashSet();
             Iterator it = jars.iterator();
             while (it.hasNext()) {
                 File jar = (File) it.next();

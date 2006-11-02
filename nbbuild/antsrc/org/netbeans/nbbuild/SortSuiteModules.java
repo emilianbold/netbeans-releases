@@ -80,8 +80,8 @@ public class SortSuiteModules extends Task {
         if (sortedModulesProperty == null) {
             throw new BuildException("Must set sortedModulesProperty");
         }
-        Map/*<String,File>*/ basedirsByCNB = new TreeMap();
-        Map/*<String,List<String>>*/ buildDeps = new HashMap();
+        Map<String,File> basedirsByCNB = new TreeMap();
+        Map<String,List<String>> buildDeps = new HashMap();
         String[] pieces = unsortedModules.list();
         for (int i = 0; i < pieces.length; i++) {
             File d = new File(pieces[i]);
@@ -111,7 +111,7 @@ public class SortSuiteModules extends Task {
             }
             String cnb = XMLUtil.findText(cnbEl);
             basedirsByCNB.put(cnb, d);
-            List/*<String>*/ deps = new LinkedList();
+            List<String> deps = new LinkedList();
             Element depsEl = ParseProjectXml.findNBMElement(data, "module-dependencies");
             if (depsEl == null) {
                 throw new BuildException("Malformed project file " + projectXml, getLocation());
@@ -157,11 +157,11 @@ public class SortSuiteModules extends Task {
         }
         Iterator it = buildDeps.values().iterator();
         while (it.hasNext()) {
-            List/*<String>*/ deps = (List) it.next();
+            List<String> deps = (List) it.next();
             deps.retainAll(basedirsByCNB.keySet());
         }
         // Stolen from org.openide.util.Utilities.topologicalSort, with various simplifications:
-        List/*<String>*/ cnbs = new ArrayList();
+        List<String> cnbs = new ArrayList();
         List cRev = new ArrayList(basedirsByCNB.keySet());
         Map finished = new HashMap();
         it = cRev.iterator();
@@ -183,7 +183,7 @@ public class SortSuiteModules extends Task {
         getProject().setNewProperty(sortedModulesProperty, path.toString());
     }
     
-    private static /*<String>*/ boolean visit(String node, Map/*<String,List<String>>*/ edges, Map/*<String,Boolean>*/ finished, List/*<String>*/ r) {
+    private static <String> boolean visit(String node, Map<String,List<String>> edges, Map<String,Boolean> finished, List<String> r) {
         Boolean b = (Boolean) finished.get(node);
         if (b != null) {
             return b.booleanValue();

@@ -46,9 +46,9 @@ public class CheckLinks extends MatchingTask {
     private boolean checkexternal = true;
     private boolean checkspaces = true;
     private boolean checkforbidden = true;
-    private List mappers = new LinkedList(); // List<Mapper>
+    private List<Mapper> mappers = new LinkedList<Mapper>();
     private boolean failOnError;
-    private List filters = new ArrayList ();
+    private List<Filter> filters = new ArrayList<Filter>();
 
     /** Set whether to check external links (absolute URLs).
      * Local relative links are always checked.
@@ -105,9 +105,9 @@ public class CheckLinks extends MatchingTask {
         if (! checkexternal) message += " (external URLs will be skipped)";
         log (message);
         String[] files = scanner.getIncludedFiles ();
-        Set okurls = new HashSet (1000); // Set<URI>
-        Set badurls = new HashSet (100); // Set<URI>
-        Set cleanurls = new HashSet(100); // Set<URI>
+        Set<URI> okurls = new HashSet<URI>(1000);
+        Set<URI> badurls = new HashSet<URI>(100);
+        Set<URI> cleanurls = new HashSet<URI>(100);
         for (int i = 0; i < files.length; i++) {
             File file = new File (basedir, files[i]);
             URI fileurl = file.toURI();
@@ -143,11 +143,11 @@ public class CheckLinks extends MatchingTask {
      *                2 - recurse
      * @param mappers a list of Mappers to apply to get source files from HTML files
      */
-    public static void scan(Task task, String referrer, String referrerLocation, URI u, Set okurls, Set badurls, Set cleanurls, boolean checkexternal, boolean checkspaces, boolean checkforbidden, int recurse, List mappers) throws IOException {
-        scan (task, referrer, referrerLocation, u, okurls, badurls, cleanurls, checkexternal, checkspaces, checkforbidden, recurse, mappers, Collections.EMPTY_LIST);
+    public static void scan(Task task, String referrer, String referrerLocation, URI u, Set<URI> okurls, Set<URI> badurls, Set<URI> cleanurls, boolean checkexternal, boolean checkspaces, boolean checkforbidden, int recurse, List<Mapper> mappers) throws IOException {
+        scan (task, referrer, referrerLocation, u, okurls, badurls, cleanurls, checkexternal, checkspaces, checkforbidden, recurse, mappers, Collections.<Filter>emptyList());
     }
     
-    private static void scan(Task task, String referrer, String referrerLocation, URI u, Set okurls, Set badurls, Set cleanurls, boolean checkexternal, boolean checkspaces, boolean checkforbidden, int recurse, List mappers, List filters) throws IOException {
+    private static void scan(Task task, String referrer, String referrerLocation, URI u, Set<URI> okurls, Set<URI> badurls, Set<URI> cleanurls, boolean checkexternal, boolean checkspaces, boolean checkforbidden, int recurse, List<Mapper> mappers, List<Filter> filters) throws IOException {
         //task.log("scan: u=" + u + " referrer=" + referrer + " okurls=" + okurls + " badurls=" + badurls + " cleanurls=" + cleanurls + " recurse=" + recurse, Project.MSG_DEBUG);
         if (okurls.contains(u) && recurse == 0) {
             // Yes it is OK.
@@ -180,10 +180,7 @@ public class CheckLinks extends MatchingTask {
         }
 
         if (checkforbidden) {
-            Iterator it = filters.iterator ();
-            while (it.hasNext ()) {
-                Filter f = (Filter)it.next ();
-                
+            for (Filter f : filters) {
                 Boolean decision = f.isOk (u);
                 if (Boolean.TRUE.equals (decision)) {
                     break;
@@ -238,9 +235,9 @@ public class CheckLinks extends MatchingTask {
         }
         okurls.add(base);
         // map from other URIs (hrefs) to line/col info where they occur in this file (format: ":1:2")
-        Map others = null; // Map<URI, String>
+        Map<URI,String> others = null;
         if (recurse > 0 && cleanurls.add(base)) {
-            others = new HashMap(100);
+            others = new HashMap<URI,String>(100);
         }
             if (recurse == 0 && frag == null) {
                 // That is all we wanted to check.
@@ -249,7 +246,7 @@ public class CheckLinks extends MatchingTask {
             if ("text/html".equals(mimeType)) {
                 task.log("Parsing " + base, Project.MSG_VERBOSE);
                 Matcher m = hrefOrAnchor.matcher(content);
-                Set names = new HashSet(100); // Set<String>
+                Set<String> names = new HashSet<String>(100);
                 while (m.find()) {
                     // Get the stuff involved:
                     String type = m.group(3);
@@ -325,11 +322,9 @@ public class CheckLinks extends MatchingTask {
         }
     }
     
-    private static String normalize(String path, List mappers) throws IOException {
+    private static String normalize(String path, List<Mapper> mappers) throws IOException {
         try {
-            Iterator it = mappers.iterator();
-            while (it.hasNext()) {
-                Mapper m = (Mapper)it.next();
+            for (Mapper m : mappers) {
                 String[] nue = m.getImplementation().mapFileName(path);
                 if (nue != null) {
                     for (int i = 0; i < nue.length; i++) {

@@ -22,7 +22,6 @@ package org.netbeans.nbbuild;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.Vector;
@@ -39,8 +38,8 @@ import org.apache.tools.ant.taskdefs.Ant;
  */
 public class CleanAll extends Task {
 
-    private Vector modules = new Vector (); // Vector<String>
-    private Vector failedmodules = new Vector (); // Vector of failed modules
+    private List<String> modules = new ArrayList<String>();
+    private List<String> failedmodules = new ArrayList<String>();
     private String targetname = "clean";
     private File topdir = null;
     private File [] topdirs = null;
@@ -52,9 +51,9 @@ public class CleanAll extends Task {
     /** Comma-separated list of modules to include. */
     public void setModules (String s) {
         StringTokenizer tok = new StringTokenizer (s, ", ");
-        modules = new Vector ();
+        modules = new ArrayList<String>();
         while (tok.hasMoreTokens ())
-            modules.addElement (tok.nextToken ());
+            modules.add(tok.nextToken());
     }
     
     /** Name of the target to run in each module's build script. */ 
@@ -103,24 +102,24 @@ public class CleanAll extends Task {
         while (targets.contains (dummyName))
             dummyName += "-x";
         dummy.setName (dummyName);
-        for (int i = 0; i < modules.size (); i++) {
-            String module = (String) modules.elementAt (i);
+        for (String module : modules) {
             dummy.addDependency (deptargetprefix + module);
         }
         getProject().addTarget(dummy);
-        Vector fullList = getProject().topoSort(dummyName, targets);
+        @SuppressWarnings("unchecked")
+        Vector<Target> fullList = getProject().topoSort(dummyName, targets);
         // Now remove earlier ones: already done.
-        Vector doneList = getProject().topoSort(getOwningTarget().getName(), targets);
-        List todo = new ArrayList(fullList.subList(0, fullList.indexOf(dummy)));
+        @SuppressWarnings("unchecked")
+        Vector<Target> doneList = getProject().topoSort(getOwningTarget().getName(), targets);
+        List<Target> todo = new ArrayList<Target>(fullList.subList(0, fullList.indexOf(dummy)));
         todo.removeAll(doneList.subList(0, doneList.indexOf(getOwningTarget())));
 
-        Iterator targit = todo.iterator();
-        while (targit.hasNext()) {
-            String _targetname = ((Target) targit.next()).getName();
+        for (Target t : todo) {
+            String _targetname = t.getName();
             if (_targetname.startsWith(deptargetprefix)) {
                 String module = _targetname.substring(deptargetprefix.length());
                 if (modules.indexOf(module) < 0) {
-                    modules.addElement(module);
+                    modules.add(module);
                     log("Adding dependency module \"" + module + "\" to the list of modules for cleaning", Project.MSG_VERBOSE);
                 }
             }
@@ -142,8 +141,7 @@ public class CleanAll extends Task {
             
         for (int j = 0; j < topdirs.length; j++) {
             topdir = topdirs[j];            
-            for (int i = 0; i < modules.size (); i++) {
-                String module = (String) modules.elementAt (i);
+            for (String module : modules) {
                 Ant ant = (Ant) getProject().createTask("ant");
                 ant.init ();                
                 ant.setLocation(getLocation());
@@ -152,18 +150,7 @@ public class CleanAll extends Task {
                 if (! fl.exists()) {                    
                     continue;
                 }
-                try {
-                    // This param changed from String to File after Ant 1.1, so to work in both:
-                    try {
-                        Ant.class.getMethod ("setDir", new Class[] { File.class }).invoke
-                        (ant, new Object[] { new File (topdir, module) });
-                    } catch (NoSuchMethodException nsme) {
-                        Ant.class.getMethod ("setDir", new Class[] { String.class }).invoke
-                        (ant, new Object[] { topdir.getAbsolutePath () + File.separatorChar + module });
-                    }
-                } catch (Exception e) {
-                    throw new BuildException("Could not set 'dir' attribute on Ant task", e, getLocation());
-                }
+                ant.setDir(new File(topdir, module));
                 ant.setTarget (targetname);
                 try {
                     log("Process '"+ module + "' location with '" + targetname + "' target", Project.MSG_INFO);
@@ -176,7 +163,7 @@ public class CleanAll extends Task {
                         log(fl.getAbsolutePath());
                         log(be.getMessage());
                         String fname = fl.getAbsolutePath();
-                        failedmodules.addElement( fname );
+                        failedmodules.add(fname);
                     }
                 }
             }

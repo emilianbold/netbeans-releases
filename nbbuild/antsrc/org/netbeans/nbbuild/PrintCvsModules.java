@@ -39,7 +39,7 @@ import org.apache.tools.ant.types.FileSet;
  */
 public class PrintCvsModules extends Task {
     
-    private List/*<String>*/ modules; // list of modules defined by build.xml
+    private List<String> modules; // list of modules defined by build.xml
     private String selectorId;
     private File dir;
     private String cvsModulesProperty;
@@ -71,7 +71,7 @@ public class PrintCvsModules extends Task {
     }
 
     public void execute () throws BuildException {
-        Set/*<String>*/ cvslist = new TreeSet();
+        Set<String> cvslist = new TreeSet();
         cvslist.add("nbbuild");
         Iterator modulesIt = modules.iterator();
         while (modulesIt.hasNext()) {

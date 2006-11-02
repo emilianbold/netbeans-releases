@@ -47,7 +47,7 @@ import org.netbeans.nbbuild.ModuleListParser.Entry;
 public class FixTestDependencies extends org.apache.tools.ant.Task {
     /**  entries for unit testing in order to avoid scanning modules
      */
-    Set/*<ModuleListParser.Entry>*/ cachedEntries ;
+    Set<ModuleListParser.Entry> cachedEntries ;
     
     /** Creates a new instance of FixTestClassPath */
     public FixTestDependencies() {
@@ -116,17 +116,17 @@ public class FixTestDependencies extends org.apache.tools.ant.Task {
                     return ;
                 }
                 Set entries = getModuleList(projectType);
-                Set/*<String>*/ allCnbs = getCNBsFromEntries(entries);
+                Set<String> allCnbs = getCNBsFromEntries(entries);
                 // read properties
 
                 // remove modules and test from properties and put it to project.xml
 
                 // unittest
                 //
-                Set/*<String>*/ compileCNB = new TreeSet();
-                Set/*<String>*/ compileTestCNB = new TreeSet();
-                Set/*<String>*/ runtimeCNB = new TreeSet();
-                Set/*<String>*/ runtimeTestCNB = new TreeSet();
+                Set<String> compileCNB = new TreeSet();
+                Set<String> compileTestCNB = new TreeSet();
+                Set<String> runtimeCNB = new TreeSet();
+                Set<String> runtimeTestCNB = new TreeSet();
 
                 Properties projectProperties = getTestProperties();
                 readCodeNameBases(compileCNB,compileTestCNB,projectProperties,"test.unit.cp",allCnbs,entries);
@@ -217,8 +217,8 @@ public class FixTestDependencies extends org.apache.tools.ant.Task {
         }
     }
     
-    private Set/*<String>*/ getCNBsFromEntries(Set/*<ModuleListParser.Entry>*/ entries) {
-        Set /*<String>*/ cnbs = new HashSet();
+    private Set<String> getCNBsFromEntries(Set<ModuleListParser.Entry> entries) {
+        Set <String> cnbs = new HashSet();
         for (Iterator it = entries.iterator() ; it.hasNext();) {
             cnbs.add(((ModuleListParser.Entry)it.next()).getCnb());
         }
@@ -226,12 +226,12 @@ public class FixTestDependencies extends org.apache.tools.ant.Task {
     }
     /** parses all codenamebases from path
      */
-     void readCodeNameBases(Set/*<String>*/ compileCNB,
-            Set /*<String>*/ testsCNB,
+     void readCodeNameBases(Set<String> compileCNB,
+            Set <String> testsCNB,
             Properties projectPropertis,
             String property,
-            Set /*<String>*/ allCnbs,
-            Set /*<ModuleListParser.Entry>*/ entries) {
+            Set <String> allCnbs,
+            Set <ModuleListParser.Entry> entries) {
         String prop = projectPropertis.getProperty(property);
         StringBuffer newProp = new StringBuffer();
         if (prop !=   null) {
@@ -372,7 +372,7 @@ public class FixTestDependencies extends org.apache.tools.ant.Task {
             
             // read properties
             BufferedReader reader = new BufferedReader (new FileReader(propertiesFile));
-            List/*<String>*/ lines = new ArrayList();
+            List<String> lines = new ArrayList();
             String line = null;
             while ((line = reader.readLine()) != null) {
                 lines.add(line);
@@ -398,7 +398,7 @@ public class FixTestDependencies extends org.apache.tools.ant.Task {
         
     }
 
-    private List replaceProperty(String name,String value,List/*<String>*/ lines) {
+    private List replaceProperty(String name,String value,List<String> lines) {
         List retLines = new ArrayList();
         for (int i = 0 ; i < lines.size() ; i++) {
             String line = (String)lines.get(i);

@@ -21,7 +21,6 @@ package org.netbeans.nbbuild;
 
 
 import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 
 /** Task to check value of any property. If value match than it will set
@@ -29,6 +28,7 @@ import org.apache.tools.ant.Task;
  * @author Michal Zlamal
  * @deprecated unused
  */
+@Deprecated
 public class CheckValue extends Task {
     String property = null;
     String value = null;

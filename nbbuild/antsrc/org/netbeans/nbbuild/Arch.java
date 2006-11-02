@@ -29,14 +29,12 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -47,7 +45,6 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.URIResolver;
 import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.dom.DOMSource;
@@ -55,9 +52,7 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
-import org.apache.tools.ant.Target;
 import org.apache.tools.ant.Task;
-import org.apache.tools.ant.taskdefs.Ant;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -76,8 +71,8 @@ import org.xml.sax.SAXParseException;
 public class Arch extends Task implements ErrorHandler, EntityResolver, URIResolver {
 
     /** map from String ids -> Elements */
-    private Map answers;
-    private Map questions;
+    private Map<String,Element> answers;
+    private Map<String,Element> questions;
     /** exception during parsing */
     private SAXParseException parseException;
     
@@ -205,7 +200,7 @@ public class Arch extends Task implements ErrorHandler, EntityResolver, URIResol
         if (generateTemplate) {
             log ("Input file " + questionsFile + " does not exist. Generating it with skeleton answers.");
             try {
-                TreeSet s = new TreeSet (questions.keySet ());
+                SortedSet<String> s = new TreeSet<String>(questions.keySet());
                 generateTemplateFile(questionsVersion, s);
             } catch (IOException ex) {
                 throw new BuildException (ex);
@@ -245,7 +240,7 @@ public class Arch extends Task implements ErrorHandler, EntityResolver, URIResol
         
         {
             // check all answers have their questions
-            TreeSet s = new TreeSet (questions.keySet ());
+            SortedSet<String> s = new TreeSet<String>(questions.keySet());
             s.removeAll (answers.keySet ());
             if (!s.isEmpty()) {
                 if ("true".equals (this.getProject().getProperty ("arch.generate"))) {
@@ -542,7 +537,7 @@ public class Arch extends Task implements ErrorHandler, EntityResolver, URIResol
         }
     }
     
-    private void generateMissingQuestions (Set missing) throws IOException, BuildException {
+    private void generateMissingQuestions(SortedSet<String> missing) throws IOException, BuildException {
         StringBuffer sb = new StringBuffer();
         InputStreamReader is = new InputStreamReader(new FileInputStream(questionsFile.toString()));
         char[] arr = new char[4096];
@@ -567,11 +562,9 @@ public class Arch extends Task implements ErrorHandler, EntityResolver, URIResol
         w.close();
     }
 
-    private void writeQuestions (Writer w, Set missing) throws IOException {
-        Iterator it = missing.iterator();
-        while (it.hasNext()) {
-            String s = (String)it.next ();
-            Element n = (Element)questions.get (s);
+    private void writeQuestions(Writer w, SortedSet<String> missing) throws IOException {
+        for (String s : missing) {
+            Element n = questions.get(s);
             
             //w.write("\n\n<!-- Question: " + s + "\n");
             w.write("\n\n<!--\n        ");
@@ -611,7 +604,7 @@ public class Arch extends Task implements ErrorHandler, EntityResolver, URIResol
         return null;
     }
     
-    private void generateTemplateFile (String versionOfQuestions, Set missing) throws IOException {
+    private void generateTemplateFile(String versionOfQuestions, SortedSet<String> missing) throws IOException {
         String nbRoot = findNbRoot(questionsFile);
         if (nbRoot == null) {
             nbRoot = "http://www.netbeans.org/source/browse/~checkout~/";
@@ -655,8 +648,8 @@ public class Arch extends Task implements ErrorHandler, EntityResolver, URIResol
         w.close ();
     }
 
-    private static HashMap readElements (Document q, String name) {
-        HashMap map = new HashMap ();
+    private static Map<String,Element> readElements (Document q, String name) {
+        Map<String,Element> map = new HashMap<String,Element>();
        
         NodeList list = q.getElementsByTagName(name);
         for (int i = 0; i < list.getLength(); i++) {
@@ -666,7 +659,7 @@ public class Arch extends Task implements ErrorHandler, EntityResolver, URIResol
             }
             String id = n.getNodeValue();
 
-            map.put (id, list.item (i));
+            map.put(id, (Element) list.item(i));
         }
         
         return map;
@@ -721,9 +714,9 @@ public class Arch extends Task implements ErrorHandler, EntityResolver, URIResol
         return null;
     }
     
-    private static Map publicIds;
+    private static Map<String,String> publicIds;
     static {
-        publicIds = new HashMap();
+        publicIds = new HashMap<String,String>();
         publicIds.put("xhtml1-strict.dtd", "Arch-fake-xhtml.dtd");
         publicIds.put("Arch.dtd", "Arch.dtd");
         publicIds.put("Arch-api-questions.xml", "Arch-api-questions.xml");
@@ -751,7 +744,7 @@ public class Arch extends Task implements ErrorHandler, EntityResolver, URIResol
             }
         }
         
-        String replace = (String)publicIds.get(last);
+        String replace = publicIds.get(last);
         if (replace == null) {
             log("Not replacing id", Project.MSG_VERBOSE);
             return null;

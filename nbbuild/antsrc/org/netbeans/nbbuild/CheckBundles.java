@@ -78,10 +78,10 @@ public class CheckBundles extends Task {
     public void execute() throws BuildException {
         log("Scanning "+srcdir.getAbsolutePath(), Project.MSG_VERBOSE);
 
-        Map knownNames = parseManifest(srcdir);
+        Map<String,File> knownNames = parseManifest(srcdir);
 
-        Collection bundles = new ArrayList();
-        Map sources = new TreeMap();
+        Collection<File> bundles = new ArrayList<File>();
+        Map<File,String[]> sources = new TreeMap<File,String[]>();
 
 
         try {        
@@ -115,7 +115,7 @@ public class CheckBundles extends Task {
         }
     }
     
-    private void scan (File file, Collection bundles, Map sources) throws Exception {
+    private void scan (File file, Collection<File> bundles, Map<File,String[]> sources) throws Exception {
         File bundle = new File (file, "Bundle.properties");
         if (!bundle.exists()) {
             log("No bundle in "+file.getAbsolutePath()+". OK", Project.MSG_VERBOSE);
@@ -127,16 +127,12 @@ public class CheckBundles extends Task {
         addSources (file, sources);
     }
 
-    private void check (Collection bundles, Map files, Map knownNames) {
+    private void check(Collection<File> bundles, Map<File,String[]> files, Map<String,File> knownNames) {
         try {
-            Iterator bIt = bundles.iterator();
-            while (bIt.hasNext ()) {
-                File bundle = (File)bIt.next();
-                Iterator it = entries(bundle).entrySet().iterator();
-                while (it.hasNext()) {
-                    Map.Entry entry = (Map.Entry) it.next();
-                    String key = (String) entry.getKey();
-                    int line = ((Integer) entry.getValue()).intValue();
+            for (File bundle : bundles) {
+                for (Map.Entry<String,Integer> entry : entries(bundle).entrySet()) {
+                    String key = entry.getKey();
+                    int line = entry.getValue();
                     log("Looking for "+key, Project.MSG_DEBUG);
                     boolean found = false;
                     // module info or file name from layer
@@ -146,9 +142,7 @@ public class CheckBundles extends Task {
                     }
                     else {
                         // java source in the same package
-                        Object o = files.get (bundle.getParentFile());
-                        log(" in "+o, Project.MSG_DEBUG);
-                        String [] srcs = (String [])o;
+                        String [] srcs = files.get (bundle.getParentFile());
                         for (int i=0; i<srcs.length; i++) {
                             if (srcs[i].indexOf("\""+key+"\"")>=0) {
                                 log("Checking "+key+" OK", Project.MSG_VERBOSE);
@@ -185,7 +179,7 @@ public class CheckBundles extends Task {
         }
     }
     
-    private void scanSubdirs (File file, Collection bundles, Map srcs) throws Exception {
+    private void scanSubdirs(File file, Collection<File> bundles, Map<File,String[]> srcs) throws Exception {
         log("scanSubdirs "+file, Project.MSG_DEBUG);
         File [] subdirs = file.listFiles(new FilenameFilter () {
                 public boolean accept (File f, String name) {
@@ -200,7 +194,7 @@ public class CheckBundles extends Task {
     }
     
     /** Adds dir -> array of source texts */
-    private void addSources (File dir, Map map) throws Exception {
+    private void addSources(File dir, Map<File,String[]> map) throws Exception {
         File [] files = dir.listFiles(new FilenameFilter () {
                 public boolean accept(File dir, String name) {
                     if (name.endsWith(".java")) {
@@ -226,8 +220,8 @@ public class CheckBundles extends Task {
     /**
      * Get a list of keys in a bundle file, with accompanying line numbers.
      */
-    private Map/*<String,int>*/ entries(File bundle) throws IOException {
-        Map/*<String,int>*/ entries = new LinkedHashMap();
+    private Map<String,Integer> entries(File bundle) throws IOException {
+        Map<String,Integer> entries = new LinkedHashMap<String,Integer>();
         BufferedReader r = new BufferedReader (new FileReader (bundle));
         String l;
         boolean multi = false;
@@ -239,7 +233,7 @@ public class CheckBundles extends Task {
                 int i = l.indexOf('=');
                 if (i>0 && !multi) {
                     String key = l.substring(0,i).trim();
-                    entries.put(key, new Integer(line));
+                    entries.put(key, line);
                 }
                 if (l.endsWith("\\"))
                     multi = true;
@@ -250,8 +244,8 @@ public class CheckBundles extends Task {
         return entries;
     }
 
-    private Map parseManifest(File dir) {
-        HashMap files = new HashMap(10);
+    private Map<String,File> parseManifest(File dir) {
+        Map<String,File> files = new HashMap<String,File>(10);
         try {
             File mf = new File(srcdir, "manifest.mf");
             if (!mf.exists()) {
@@ -309,10 +303,9 @@ public class CheckBundles extends Task {
 
         private String path;
 
-        private Map map;
+        private Map<String,File> map;
         
-        /** Creates a new instance of XmlTest */
-        public SAXHandler(Map map) {
+        public SAXHandler(Map<String,File> map) {
             this.map = map;
         }
 

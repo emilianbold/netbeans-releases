@@ -344,7 +344,7 @@ public class MakeJNLP extends Task {
         return localizedFiles;
     }
     
-    private static void removeWithLocales(Map removeFrom, String removeWhat, File clusterRoot, Map/*<String,List<File>>*/ recordLocales) {
+    private static void removeWithLocales(Map removeFrom, String removeWhat, File clusterRoot, Map<String,List<File>> recordLocales) {
         if (removeFrom.remove(removeWhat) != null && removeWhat.endsWith(".jar")) {
             int basedir = removeWhat.lastIndexOf('/');
             String base = basedir == -1 ? "" : removeWhat.substring(0, basedir);

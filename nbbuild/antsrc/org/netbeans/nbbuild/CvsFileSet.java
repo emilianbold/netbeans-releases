@@ -24,9 +24,11 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.apache.tools.ant.BuildException;
@@ -79,21 +81,25 @@ public class CvsFileSet extends FileSet {
         return scan;
     }
     
-    private static final Set[] NO_ENTRIES = new Set[] {Collections.EMPTY_SET, Collections.EMPTY_SET};
+    private static final List<Set<String>> NO_ENTRIES = new ArrayList<Set<String>>();
+    static {
+        NO_ENTRIES.add(Collections.<String>emptySet());
+        NO_ENTRIES.add(Collections.<String>emptySet());
+    }
         
     private class CvsDirectoryScanner extends DirectoryScanner {
         
         // Map from dirs to parsed CVS/Entries, being set of text and binary filenames
-        private final Map entries = new HashMap(100); // Map<File,Set<String>[2]>
+        private final Map<File,List/*2*/<Set<String>>> entries = new HashMap<File,List<Set<String>>>(100);
         
         protected boolean isIncluded(String name) throws BuildException {
             if (! super.isIncluded(name)) return false;
             File f = new File(getBasedir(), name);
             if (! f.exists()) throw new IllegalStateException();
             if (! f.isFile()) return false;
-            Set[] entries = loadEntries(f.getParentFile());
-            Set text = entries[0];
-            Set binary = entries[1];
+            List<Set<String>> entries = loadEntries(f.getParentFile());
+            Set<String> text = entries.get(0);
+            Set<String> binary = entries.get(1);
             String bname = f.getName();
             if (mode.equals("controlled")) {
                 return text.contains(bname) || binary.contains(bname);
@@ -108,12 +114,14 @@ public class CvsFileSet extends FileSet {
             }
         }
         
-        private Set[] loadEntries(File dir) throws BuildException {
-            Set[] tb = (Set[])entries.get(dir);
+        private List<Set<String>> loadEntries(File dir) throws BuildException {
+            List<Set<String>> tb = entries.get(dir);
             if (tb == null) {
                 File efile = new File(new File(dir, "CVS"), "Entries");
                 if (efile.exists()) {
-                    tb = new Set[] {new HashSet(10), new HashSet(10)};
+                    tb = new ArrayList<Set<String>>();
+                    tb.add(new HashSet<String>(10));
+                    tb.add(new HashSet<String>(10));
                     try {
                         Reader r = new FileReader(efile);
                         try {
@@ -131,16 +139,16 @@ public class CvsFileSet extends FileSet {
                                     idx = line.lastIndexOf('/');
                                     String subst = line.substring(idx + 1);
                                     if (subst.equals("")) {
-                                        tb[0].add(name);
+                                        tb.get(0).add(name);
                                     } else if (subst.equals("-kb")) {
-                                        tb[1].add(name);
+                                        tb.get(1).add(name);
                                     } else {
                                         /* Don't know why, but getProject() stoped working, returns null :-(
                                         getProject().log(efile + ":" + lineNumber + ": warning: strange key subst mode: " + subst, Project.MSG_WARN);
                                         */
                                         if (subst.equals("-ko")) {
                                             // Treat it like -kkv.
-                                            tb[0].add(name);
+                                            tb.get(0).add(name);
                                         }
                                     }
                                 }

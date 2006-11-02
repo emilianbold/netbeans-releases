@@ -55,7 +55,7 @@ import org.xml.sax.SAXException;
  */
 final class XMLUtil extends Object {
 
-    private static final ThreadLocal/*<DocumentBuilder>*/[] builderTL = new ThreadLocal[4];
+    private static final ThreadLocal<DocumentBuilder>[] builderTL = new ThreadLocal[4];
     static {
         for (int i = 0; i < 4; i++) {
             builderTL[i] = new ThreadLocal();
@@ -228,9 +228,9 @@ final class XMLUtil extends Object {
      * @return a list of direct child elements (may be empty)
      * @throws IllegalArgumentException if there are non-element children besides whitespace
      */
-    static List/*<Element>*/ findSubElements(Element parent) throws IllegalArgumentException {
+    static List<Element> findSubElements(Element parent) throws IllegalArgumentException {
         NodeList l = parent.getChildNodes();
-        List/*<Element>*/ elements = new ArrayList(l.getLength());
+        List<Element> elements = new ArrayList(l.getLength());
         for (int i = 0; i < l.getLength(); i++) {
             Node n = l.item(i);
             if (n.getNodeType() == Node.ELEMENT_NODE) {

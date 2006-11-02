@@ -311,7 +311,7 @@ public class ModuleDependencies extends org.apache.tools.ant.Task {
                     throw new BuildException("Too many friends (" + info.friends.size() + ") for module " + info.getName());
                 }
                 
-		Set/*<String>*/ pkgs = (Set/*<String>*/)entry.getValue();
+		Set<String> pkgs = (Set<String>)entry.getValue();
 		Iterator iterPkgs = pkgs.iterator();
 		while (iterPkgs.hasNext()) {
 		    String out = (String)iterPkgs.next ();
@@ -720,8 +720,8 @@ public class ModuleDependencies extends org.apache.tools.ant.Task {
         public int majorVersion;
         public String specificationVersion;
         public String implementationVersion;
-        public Set/*<Dependency>*/ depends;
-        public Set/*<Dependency>*/ provides;
+        public Set<Dependency> depends;
+        public Set<Dependency> provides;
         
         public ModuleInfo (String g, File f, String a) {
             this.group = g;

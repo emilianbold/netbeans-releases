@@ -52,10 +52,10 @@ final class ModuleListParser {
     /** Synch with org.netbeans.modules.apisupport.project.ModuleList.DEPTH_NB_ALL */
     private static final int DEPTH_NB_ALL = 3;
     
-    private static Map/*<File,Map<String,Entry>>*/ SOURCE_SCAN_CACHE = new HashMap();
-    private static Map/*<File,Map<String,Entry>>*/ SUITE_SCAN_CACHE = new HashMap();
-    private static Map/*<File,Entry>*/ STANDALONE_SCAN_CACHE = new HashMap();
-    private static Map/*<File,Map<String,Entry>>*/ BINARY_SCAN_CACHE = new HashMap();
+    private static Map<File,Map<String,Entry>> SOURCE_SCAN_CACHE = new HashMap();
+    private static Map<File,Map<String,Entry>> SUITE_SCAN_CACHE = new HashMap();
+    private static Map<File,Entry> STANDALONE_SCAN_CACHE = new HashMap();
+    private static Map<File,Map<String,Entry>> BINARY_SCAN_CACHE = new HashMap();
     
     /** Clear caches. Cf. #71130. */
     public static void resetCaches() {
@@ -68,12 +68,12 @@ final class ModuleListParser {
     /**
      * Find all NBM projects in a root, possibly from cache.
      */
-    private static Map/*<String,Entry>*/ scanNetBeansOrgSources(File root, Hashtable properties, Project project) throws IOException {
-        Map/*<String,Entry>*/ entries = (Map) SOURCE_SCAN_CACHE.get(root);
+    private static Map<String,Entry> scanNetBeansOrgSources(File root, Hashtable properties, Project project) throws IOException {
+        Map<String,Entry> entries = (Map) SOURCE_SCAN_CACHE.get(root);
         if (entries == null) {
             entries = new HashMap();
             // Similar to #62221: if just invoked from a module in standard clusters, only scan those clusters (faster):
-            Set/*<String>*/ standardModules = new HashSet();
+            Set<String> standardModules = new HashSet();
             boolean doFastScan = false;
             String basedir = (String) properties.get("basedir");
             if (basedir != null) {
@@ -133,7 +133,7 @@ final class ModuleListParser {
     /**
      * Scan a root for all NBM projects.
      */
-    private static void doScanNetBeansOrgSources(Map/*<String,Entry>*/ entries, File dir, int depth, Hashtable properties, String pathPrefix, Project project) throws IOException {
+    private static void doScanNetBeansOrgSources(Map<String,Entry> entries, File dir, int depth, Hashtable properties, String pathPrefix, Project project) throws IOException {
         if (depth == 0) {
             return;
         }
@@ -160,7 +160,7 @@ final class ModuleListParser {
     /**
      * Check a single dir to see if it is an NBM project, and if so, register it.
      */
-    private static boolean scanPossibleProject(File dir, Map/*<String,Entry>*/ entries, Hashtable properties, String path, int moduleType, Project project) throws IOException {
+    private static boolean scanPossibleProject(File dir, Map<String,Entry> entries, Hashtable properties, String path, int moduleType, Project project) throws IOException {
         File nbproject = new File(dir, "nbproject");
         File projectxml = new File(nbproject, "project.xml");
         if (!projectxml.isFile()) {
@@ -287,8 +287,8 @@ final class ModuleListParser {
             assert false : moduleType;
         }
         File jar = fakeproj.resolveFile(fakeproj.replaceProperties("${cluster}/${module.jar}"));
-        List/*<File>*/ exts = new ArrayList();
-        Iterator/*<Element>*/ extEls = XMLUtil.findSubElements(dataEl).iterator();
+        List<File> exts = new ArrayList();
+        Iterator<Element> extEls = XMLUtil.findSubElements(dataEl).iterator();
         while (extEls.hasNext()) {
             Element ext = (Element) extEls.next();
             if (!ext.getLocalName().equals("class-path-extension")) {
@@ -327,8 +327,8 @@ final class ModuleListParser {
                 exts.add(resultBin);
             }
         }
-        List/*<String>*/ prereqs = new ArrayList();
-        List/*<String>*/ rundeps = new ArrayList();
+        List<String> prereqs = new ArrayList();
+        List<String> rundeps = new ArrayList();
         Element depsEl = ParseProjectXml.findNBMElement(dataEl, "module-dependencies");
         if (depsEl == null) {
             throw new IOException("Malformed project file " + projectxml);
@@ -360,7 +360,7 @@ final class ModuleListParser {
     /**
      * Find all modules in a binary build, possibly from cache.
      */
-    private static Map/*<String,Entry>*/ scanBinaries(Hashtable properties, Project project) throws IOException {
+    private static Map<String,Entry> scanBinaries(Hashtable properties, Project project) throws IOException {
         String buildS = (String) properties.get("netbeans.dest.dir");
         File basedir = new File((String) properties.get("basedir"));
         if (buildS == null) {
@@ -372,7 +372,7 @@ final class ModuleListParser {
         if (!build.isDirectory()) {
             throw new IOException("No such netbeans.dest.dir: " + build);
         }
-        Map/*<String,Entry>*/ entries = (Map) BINARY_SCAN_CACHE.get(build);
+        Map<String,Entry> entries = (Map) BINARY_SCAN_CACHE.get(build);
         if (entries == null) {
             if (project != null) {
                 project.log("Scanning for modules in " + build);
@@ -399,7 +399,7 @@ final class ModuleListParser {
      * Checks modules/{,autoload/,eager/}*.jar as well as well-known core/*.jar and lib/boot.jar in each cluster.
      * XXX would be slightly more precise to check config/Modules/*.xml rather than scan for module JARs.
      */
-    private static void doScanBinaries(File build, Map/*<String,Entry>*/ entries) throws IOException {
+    private static void doScanBinaries(File build, Map<String,Entry> entries) throws IOException {
         File[] clusters = build.listFiles();
         if (clusters == null) {
             throw new IOException("Cannot examine dir " + build);
@@ -462,7 +462,7 @@ final class ModuleListParser {
         }
     }
     
-    private static Map/*<String,Entry>*/ scanSuiteSources(Hashtable properties, Project project) throws IOException {
+    private static Map<String,Entry> scanSuiteSources(Hashtable properties, Project project) throws IOException {
         File basedir = new File((String) properties.get("basedir"));
         String suiteDir = (String) properties.get("suite.dir");
         if (suiteDir == null) {
@@ -472,7 +472,7 @@ final class ModuleListParser {
         if (!suite.isDirectory()) {
             throw new IOException("No such suite " + suite);
         }
-        Map/*<String,Entry>*/ entries = (Map) SUITE_SCAN_CACHE.get(suite);
+        Map<String,Entry> entries = (Map) SUITE_SCAN_CACHE.get(suite);
         if (entries == null) {
             if (project != null) {
                 project.log("Scanning for modules in suite " + suite);
@@ -487,7 +487,7 @@ final class ModuleListParser {
         return entries;
     }
     
-    private static void doScanSuite(Map/*<String,Entry>*/ entries, File suite, Hashtable properties, Project project) throws IOException {
+    private static void doScanSuite(Map<String,Entry> entries, File suite, Hashtable properties, Project project) throws IOException {
         Project fakeproj = new Project();
         fakeproj.setBaseDir(suite); // in case ${basedir} is used somewhere
         Property faketask = new Property();
@@ -516,19 +516,19 @@ final class ModuleListParser {
         File basedir = new File((String) properties.get("project"));
         Entry entry = (Entry) STANDALONE_SCAN_CACHE.get(basedir);
         if (entry == null) {
-            Map/*<String,Entries>*/ entries = new HashMap();
+            Map<String,Entry> entries = new HashMap<String,Entry>();
             if (!scanPossibleProject(basedir, entries, properties, null, ParseProjectXml.TYPE_STANDALONE, project)) {
                 throw new IOException("No valid module found in " + basedir);
             }
             assert entries.size() == 1;
-            entry = (Entry) entries.values().iterator().next();
+            entry = entries.values().iterator().next();
             STANDALONE_SCAN_CACHE.put(basedir, entry);
         }
         return entry;
     }
     
     /** all module entries, indexed by cnb */
-    private final Map/*<String,Entry>*/ entries;
+    private final Map<String,Entry> entries;
     
     /**
      * Initiates scan if not already parsed.
@@ -594,7 +594,7 @@ final class ModuleListParser {
      * Find all entries in this list.
      * @return a set of all known entries
      */
-    public Set/*<Entry>*/ findAll() {
+    public Set<Entry> findAll() {
         return new HashSet(entries.values());
     }
     
@@ -615,7 +615,7 @@ final class ModuleListParser {
         if (moduleDependencies == null) {
             return new String[0];
         }
-        List/*<String>*/ cnds = new ArrayList();
+        List<String> cnds = new ArrayList();
         StringTokenizer toks = new StringTokenizer(moduleDependencies,",");
         while (toks.hasMoreTokens()) {
             String token = toks.nextToken().trim();

@@ -589,43 +589,21 @@ public class MakeNBM extends Task {
             } else {
                 log ("Signing NBM file " + file);
                 SignJar signjar = (SignJar) getProject().createTask("signjar");
-                //I have to use Reflection API, because there was changed API in ANT1.5
-                try {
+                try { // Signatures changed in various Ant versions.
                     try {
-                        Class[] paramsT = {String.class};
-                        Object[] paramsV1 = {signature.keystore.getAbsolutePath()};
-                        Object[] paramsV2 = {file.getAbsolutePath()};
-                        signjar.getClass().getDeclaredMethod( "setKeystore", paramsT ).invoke( signjar, paramsV1 );
-                        signjar.getClass().getDeclaredMethod( "setJar", paramsT ).invoke( signjar, paramsV2 );
-                    } catch (NoSuchMethodException ex1) {
-                        //Probably ANT 1.5
-                        try {
-                            Class[] paramsT = {File.class};
-                            Object[] paramsV1 = {signature.keystore};
-                            Object[] paramsV2 = {file};
-                            signjar.getClass().getDeclaredMethod( "setKeystore", paramsT ).invoke( signjar, paramsV1 );
-                            signjar.getClass().getDeclaredMethod( "setJar", paramsT ).invoke( signjar, paramsV2 );
-                        }
-                        catch (NoSuchMethodException ex2) {
-			    //Probably ANT1.5.2
-			    try {
-				Class[] paramsT1 = {File.class};
-				Class[] paramsT2 = {String.class};
-				Object[] paramsV1 = {signature.keystore.getAbsolutePath()};
-				Object[] paramsV2 = {file};
-				signjar.getClass().getDeclaredMethod( "setKeystore", paramsT2 ).invoke( signjar, paramsV1 );
-				signjar.getClass().getDeclaredMethod( "setJar", paramsT1 ).invoke( signjar, paramsV2 );
-			    }
-			    catch (NoSuchMethodException ex3) {
-				
-				throw new BuildException("Unknown Ant version, only Ant 1.6.5 is currently supported.");
-			    }
-                        }
+                        SignJar.class.getMethod("setKeystore", File.class).invoke(signjar, signature.keystore);
+                    } catch (NoSuchMethodException x) {
+                        SignJar.class.getMethod("setKeystore", String.class).invoke(signjar, signature.keystore.getAbsolutePath());
                     }
-                } catch (IllegalAccessException ex3) {
-                    throw new BuildException(ex3);
-                } catch (java.lang.reflect.InvocationTargetException ex4) {
-                    throw new BuildException(ex4);
+                    try {
+                        SignJar.class.getMethod("setJar", File.class).invoke(signjar, file);
+                    } catch (NoSuchMethodException x) {
+                        SignJar.class.getMethod("setJar", String.class).invoke(signjar, file.getAbsolutePath());
+                    }
+                } catch (BuildException x) {
+                    throw x;
+                } catch (Exception x) {
+                    throw new BuildException(x);
                 }
                 signjar.setStorepass (signature.storepass);
                 signjar.setAlias (signature.alias);

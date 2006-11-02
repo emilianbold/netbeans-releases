@@ -92,9 +92,10 @@ Microsystems, Inc. All Rights Reserved.
     <!-- OK, continue: -->
     <mkdir dir="build/antclasses"/>
     <available property="have.javahelp" file="../apisupport/external" type="dir"/>
-    <javac srcdir="antsrc" destdir="build/antclasses" deprecation="true" debug="${build.compiler.debug}" source="1.4">
+    <javac srcdir="antsrc" destdir="build/antclasses" deprecation="true" debug="${build.compiler.debug}" source="1.5">
       <classpath refid="bootstrap-cp"/>
       <exclude name="**/CheckHelpSets.java" unless="have.javahelp"/>
+      <compilerarg value="-Xlint"/>
     </javac>
     <jar jarfile="nbantext.jar">
       <fileset dir="build/antclasses"/>

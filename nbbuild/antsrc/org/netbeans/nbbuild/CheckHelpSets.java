@@ -51,6 +51,7 @@ import org.apache.tools.ant.Location;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.types.FileSet;
+import org.apache.tools.ant.types.Mapper;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -68,7 +69,7 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class CheckHelpSets extends Task {
     
-    private List filesets = new ArrayList(); // List<FileSet>
+    private List<FileSet> filesets = new ArrayList<FileSet>();
     
     /** Add a fileset with one or more helpsets in it.
      * <strong>Only</strong> the <samp>*.hs</samp> should match!
@@ -122,9 +123,9 @@ public class CheckHelpSets extends Task {
         HelpSet.parse(hsfile.toURI().toURL(), null, new VerifyHSFactory());
         log("Checking links from help map and between HTML files...");
         Enumeration e = map.getAllIDs();
-        Set okurls = new HashSet(1000); // Set<URI>
-        Set badurls = new HashSet(1000); // Set<URI>
-        Set cleanurls = new HashSet(1000); // Set<URI>
+        Set<URI> okurls = new HashSet<URI>(1000);
+        Set<URI> badurls = new HashSet<URI>(1000);
+        Set<URI> cleanurls = new HashSet<URI>(1000);
         while (e.hasMoreElements()) {
             javax.help.Map.ID id = (javax.help.Map.ID)e.nextElement();
             URL u = map.getURLFromID(id);
@@ -132,7 +133,7 @@ public class CheckHelpSets extends Task {
                 throw new BuildException("Bogus map ID: " + id.id, new Location(hsfile.getAbsolutePath()));
             }
             log("Checking ID " + id.id, Project.MSG_VERBOSE);
-            CheckLinks.scan(this, id.id, "", new URI(u.toExternalForm()), okurls, badurls, cleanurls, false, false, false, 2, Collections.EMPTY_LIST);
+            CheckLinks.scan(this, id.id, "", new URI(u.toExternalForm()), okurls, badurls, cleanurls, false, false, false, 2, Collections.<Mapper>emptyList());
         }
     }
     
@@ -165,8 +166,8 @@ public class CheckHelpSets extends Task {
         
         // Filler methods:
         
-        public java.util.Enumeration listMessages() {
-            return Collections.enumeration(Collections.EMPTY_LIST);
+        public Enumeration listMessages() {
+            return Collections.enumeration(Collections.<String>emptyList());
         }
         
         public void processPI(HelpSet helpSet, String str, String str2) {
@@ -198,7 +199,7 @@ public class CheckHelpSets extends Task {
     
     private final class VerifyHSFactory extends HelpSet.DefaultHelpSetFactory {
         
-        private Set ids = new HashSet(1000); // Set<String>
+        private Set<String> ids = new HashSet<String>(1000);
         
         public void processMapRef(HelpSet hs, Hashtable attrs) {
             try {
