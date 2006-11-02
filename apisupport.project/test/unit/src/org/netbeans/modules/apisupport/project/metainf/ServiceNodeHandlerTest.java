@@ -22,11 +22,19 @@ package org.netbeans.modules.apisupport.project.metainf;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.TestBase;
+import org.netbeans.modules.apisupport.project.metainf.SUtil;
 import org.netbeans.modules.apisupport.project.metainf.ServiceNodeHandler.ServiceRootChildren;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
@@ -44,17 +52,19 @@ public class ServiceNodeHandlerTest extends  TestBase {
     NbModuleProject prj; 
     ServiceNodeHandler nodeHandler;
     ServiceNodeHandler.ServiceRootNode serviceRootNode;
-                
+    LoggingHandler log;                
     
     public ServiceNodeHandlerTest(java.lang.String testName) {
-	super(testName);
+        super(testName);
+    }
+        
+    protected void setUp() throws Exception {
+        super.setUp();
+        log = new LoggingHandler();
+        SUtil.getLogger().setLevel(Level.INFO);
+        SUtil.getLogger().addHandler(log);
     }
     
-//    public static Test suite() {
-//	TestSuite suite = new NbTestSuite();
-//        suite.addTest(new ServiceNodeHandlerTest("testNbOrgModule"));
-//	return suite;
-//    }
     private void setUpSimpleSuite() throws Exception {
         SuiteProject suite = TestBase.generateSuite(getWorkDir(), "suite");
         EditableProperties ep = suite.getHelper().getProperties("nbproject/platform.properties");
@@ -65,7 +75,6 @@ public class ServiceNodeHandlerTest extends  TestBase {
         prj = TestBase.generateSuiteComponent(suite, "prj1");
         nodeHandler = (ServiceNodeHandler) prj.getLookup().lookup(ServiceNodeHandler.class);
         serviceRootNode = (ServiceNodeHandler.ServiceRootNode) nodeHandler.createServiceRootNode();
-   
     }
     
      private void setUpStandaloneModule() throws Exception {
@@ -313,16 +322,14 @@ public class ServiceNodeHandlerTest extends  TestBase {
     }
 
     private Node[] exploreNodes(ServiceNodeHandler.ServiceRootChildren children) throws Exception {
-	while(true) {
+        List/*<String>*/ events = new ArrayList();
+        events.add(SUtil.LOG_COMPUTE_KEYS);
+        events.add(SUtil.LOG_END_COMPUTE_KEYS);
+        log.setEvents(events);
 	    children.getNodes(true);
-	    synchronized(nodeHandler) {
-		if (children.fullyComputed) {
-		    break;
-		}
-                Thread.currentThread().sleep(100);
-	    }
-	}
-	return children.getNodes(true);
+        log.waitToEvents();
+        SUtil.log("Test.exploreNodes : node computed");
+	    return children.getNodes(true);
     }
     
     private static void deleteServiceFolder(NbModuleProject prj) throws IOException {
@@ -335,6 +342,52 @@ public class ServiceNodeHandlerTest extends  TestBase {
             }
         });
     }
+    
+    static class LoggingHandler extends Handler {
+    private List events;
+    private int index;
+    private boolean bWait;  
+    public void publish(LogRecord rec) {
+       synchronized(this) {
+           if (events != null && index < events.size() && rec.getMessage().equals(events.get(index))) {
+               index++;
+           }
+           if (events != null && index == events.size() && bWait) {
+               bWait = false;
+               System.out.println("notify");
+               notify();
+               System.out.println("end not");
+           }
+
+       }
+    }
+    public synchronized void setEvents(List events) {
+        this.events = events;
+        index = 0;
+        
+    }
+    public synchronized void waitToEvents() {
+        if(events != null && index < events.size() ) {
+            try {
+                bWait = true;
+                System.out.println("wait");
+                wait();
+            } catch (InterruptedException ex) {
+                java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE,
+                                                                 ex.getMessage(),
+                                                                 ex);
+            }
+        } else {
+            System.out.println("no wait");
+        }
+    }
+    public void flush() {
+       
+    }
+    
+    public void close() throws SecurityException {
+    }
+    }    
     
 //    public static ServiceNodeHandler.ServiceRootNode getServiceNodeRoot(Project prj) {
 //        ModuleLogicalView mlv = (ModuleLogicalView)prj.getLookup().lookup(ModuleLogicalView.class);

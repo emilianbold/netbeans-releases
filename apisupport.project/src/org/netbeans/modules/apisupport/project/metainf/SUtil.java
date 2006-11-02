@@ -24,6 +24,8 @@ import java.awt.Toolkit;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.Util;
 import org.openide.filesystems.FileObject;
@@ -34,13 +36,29 @@ import org.openide.filesystems.FileObject;
  * @author pzajac
  */
  class SUtil {
+    static final String LOG_SET_KEYS = "setting keys"; 
+    static final String LOG_COMPUTE_KEYS = "computing services keys";  
+    static final String LOG_END_COMPUTE_KEYS = "compute keys finished";
+    static final String LOG_SERVICE_NODE_HANDLER_ADD_NOTIFY = "ServiceNodeHandler.addNotify()";
+    static Logger logger ;
+    
     static FileObject projectDir;
     static Set platformJars;
     /** Creates a new instance of SUtil */
     public SUtil() {
     }
 
- 
+    static Logger getLogger() {
+        if (logger == null) {
+         logger = Logger.getLogger("apisupport.meta-inf"); // NOI18N
+         logger.setLevel(Level.OFF);
+        }
+        return logger;
+    }  
+    
+    static void log(String message) {
+        getLogger().log(Level.INFO, message);
+    }
 
 //    static String getCodeNameBase(NbModuleProject nbModuleProject) {
 //        return (nbModuleProject == null) ? 

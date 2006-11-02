@@ -114,6 +114,7 @@ public final class ServiceNodeHandler  {
         }
         
         protected void addNotify() {
+            SUtil.log(SUtil.LOG_SERVICE_NODE_HANDLER_ADD_NOTIFY);
             super.addNotify();
             if (fullyComputed) {
                 Object keys[] = null;
@@ -121,6 +122,7 @@ public final class ServiceNodeHandler  {
                     // only services from this project
                     keys = moduleServiceMap.keySet().toArray();
                     prevModuleServicesCount = moduleServiceMap.keySet().size();
+                    SUtil.log(SUtil.LOG_SET_KEYS);
                     setKeys(keys);
                 } else {
                     keys = allServicesMap.keySet().toArray();
@@ -128,6 +130,7 @@ public final class ServiceNodeHandler  {
                     setKeys(keys);
                 }
             } else {
+                SUtil.log(SUtil.LOG_COMPUTE_KEYS);
                 setKeys(new Object[] {KEY_WAIT});
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
@@ -136,33 +139,29 @@ public final class ServiceNodeHandler  {
                             // synchronize access to TreeMaps
                             // categorize services
                             synchronized(ServiceNodeHandler.this) {
-                                
+                                if (moduleServiceMap == null) {
+                                    moduleServiceMap = new TreeMap();
+                                    moduleServices = Service.getOnlyProjectServices(project);
+                                    sortServices(moduleServiceMap, moduleServices);
+                                }                                
                                 if (bProjectServices) {
                                     // only services from this project
-                                    if (moduleServiceMap == null) {
-                                        moduleServiceMap = new TreeMap();
-                                        moduleServices = Service.getOnlyProjectServices(project);
-                                        sortServices(moduleServiceMap, moduleServices);
-                                    }
                                     keys = moduleServiceMap.keySet().toArray();
                                     prevModuleServicesCount = moduleServiceMap.keySet().size();
                                 } else {
-                                    if (moduleServiceMap == null) {
-                                        moduleServiceMap = new TreeMap();
-                                        moduleServices =  Service.getOnlyProjectServices(project);
-                                        sortServices(moduleServiceMap, moduleServices);
-                                    }
                                     if (allServicesMap == null) {
                                         allServicesMap = new TreeMap();
                                         List /*Service*/ services = ServiceViewUpdater.getAllServices(ServiceNodeHandler.this);
                                         if (services != null) {
                                             assert moduleServiceMap!=null;
                                             sortServices(allServicesMap, services);
-                                //            sortServices(allServicesMap, moduleServices);
                                         }
                                     }
                                     prevAllServicesCount = allServicesMap.keySet().size();
                                     keys = allServicesMap.keySet().toArray();
+                                    if (keys.length > 0) {
+                                        SUtil.log(keys[0].toString());
+                                    }
                                 }
                                 
                             }
@@ -170,6 +169,7 @@ public final class ServiceNodeHandler  {
                             synchronized (ServiceNodeHandler.this) {
                                 // tell the test that it is initialized
                                 fullyComputed = true;
+                                SUtil.log(SUtil.LOG_END_COMPUTE_KEYS);
                             }
                         } catch (IOException e) {
                             Util.err.notify(ErrorManager.INFORMATIONAL, e);

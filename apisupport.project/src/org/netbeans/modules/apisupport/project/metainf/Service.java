@@ -153,7 +153,7 @@ final class Service {
         classes.remove(name);
     }
     
-    private  static Set /*File*/ getJars(NbModuleProject p) throws IOException {
+    private  static Set<File> getJars(NbModuleProject p) throws IOException {
         if (p == null) {
             // testing
             return SUtil.getPlatformJars();
@@ -183,9 +183,9 @@ final class Service {
         }
     }
     
-    static List/*Service*/ getPlatfromServices(NbModuleProject p) throws IOException {
+    static List <Service> getPlatfromServices(NbModuleProject p) throws IOException {
         NbModuleTypeProvider.NbModuleType type = Util.getModuleType(p);
-        List<Service> services = new ArrayList();
+        List<Service> services = new ArrayList<Service>();
         if (type == NbModuleTypeProvider.NETBEANS_ORG) {
             // special case fro nborg modules
             Set<NbModuleProject> projects = LayerUtils.getProjectsForNetBeansOrgProject(p);
@@ -194,10 +194,10 @@ final class Service {
                 services.addAll(getOnlyProjectServices((NbModuleProject)it.next()));
             }
         } else {
-            Set /*File*/jars = getJars(p);
-            for (Iterator jIt = jars.iterator() ; jIt.hasNext(); ) {
-                services.addAll(readServices((File)jIt.next()));
-            }
+            Set<File> jars = getJars(p);
+            for (File jarFile : jars) {
+                services.addAll(readServices(jarFile));
+            }            
         }
         return services;
     }
