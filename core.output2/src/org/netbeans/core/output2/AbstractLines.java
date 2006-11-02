@@ -313,6 +313,7 @@ abstract class AbstractLines implements Lines, Runnable {
      */
     public int getLineStart (int line) {
         if (isDisposed() || isTrouble()) return 0;
+        if (lineStartList.size() == 0) return 0;
         return toCharIndex(lineStartList.get(line));
     }
 
