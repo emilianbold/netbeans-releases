@@ -22,9 +22,11 @@ import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
 import org.openide.awt.Mnemonics;
 import org.openide.awt.DynamicMenuContent;
+import org.netbeans.modules.versioning.VersioningConfig;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
+import java.util.prefs.Preferences;
 
 /**
  * View/Show Diff Sidebar toggle item in main menu.
@@ -47,7 +49,7 @@ public class ShowDiffSidebarAction extends SystemAction implements DynamicMenuCo
     }
 
     private void updateState() {
-        menuItems[0].setSelected(DiffSidebarManager.getInstance().isSidebarEnabled());
+        menuItems[0].setSelected(VersioningConfig.getDefault().getPreferences().getBoolean(DiffSidebarManager.SIDEBAR_ENABLED, true));
     }
 
     private void createItems() {
@@ -72,6 +74,7 @@ public class ShowDiffSidebarAction extends SystemAction implements DynamicMenuCo
     }
 
     public void actionPerformed(ActionEvent e) {
-        DiffSidebarManager.getInstance().setSidebarEnabled(!DiffSidebarManager.getInstance().isSidebarEnabled());
+        Preferences prefs = VersioningConfig.getDefault().getPreferences();
+        prefs.putBoolean(DiffSidebarManager.SIDEBAR_ENABLED, !prefs.getBoolean(DiffSidebarManager.SIDEBAR_ENABLED, true));
     }
 }

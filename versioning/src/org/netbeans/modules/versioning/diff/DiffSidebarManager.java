@@ -22,6 +22,7 @@ import org.netbeans.modules.editor.errorstripe.privatespi.MarkProvider;
 import org.netbeans.modules.versioning.spi.OriginalContent;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.netbeans.modules.versioning.VersioningManager;
+import org.netbeans.modules.versioning.VersioningConfig;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.loaders.DataObject;
 import org.openide.filesystems.FileObject;
@@ -34,13 +35,17 @@ import javax.swing.text.Document;
 import java.io.File;
 import java.util.WeakHashMap;
 import java.util.Map;
+import java.util.prefs.PreferenceChangeListener;
+import java.util.prefs.PreferenceChangeEvent;
 
 /**
  * Central place of diff integration into editor and errorstripe.
  * 
  * @author Maros Sandor
  */
-class DiffSidebarManager {
+class DiffSidebarManager implements PreferenceChangeListener {
+
+    static final String SIDEBAR_ENABLED = "diff.sidebarEnabled";
 
     private static DiffSidebarManager instance;
 
@@ -51,7 +56,7 @@ class DiffSidebarManager {
         return instance;
     }
 
-    private boolean sidebarEnabled = false;
+    private boolean sidebarEnabled;
 
     /**
      * Holds created sidebars (to be able to show/hide them all at once). It is just a set, values are always null.
@@ -59,6 +64,8 @@ class DiffSidebarManager {
     private final Map<DiffSidebar, Object> sideBars = new WeakHashMap<DiffSidebar, Object>();
 
     private DiffSidebarManager() {
+        sidebarEnabled = VersioningConfig.getDefault().getPreferences().getBoolean(SIDEBAR_ENABLED, true); 
+        VersioningConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
     }
 
     /**
@@ -109,17 +116,13 @@ class DiffSidebarManager {
         }
     }
 
-    void setSidebarEnabled(boolean enable) {
+    private void setSidebarEnabled(boolean enable) {
         synchronized(sideBars) {
             for (DiffSidebar sideBar : sideBars.keySet()) {
                 sideBar.setSidebarVisible(enable);
             }
             sidebarEnabled = enable;
         }
-    }
-
-    boolean isSidebarEnabled() {
-        return sidebarEnabled;
     }
 
     MarkProvider createMarkProvider(JTextComponent target) {
@@ -129,5 +132,11 @@ class DiffSidebarManager {
 
     DiffSidebar t9y_getSidebar() {
         return sideBars.keySet().iterator().next();
+    }
+
+    public void preferenceChange(PreferenceChangeEvent evt) {
+        if (evt.getKey().equals(SIDEBAR_ENABLED)) {
+            setSidebarEnabled(Boolean.valueOf(evt.getNewValue()));
+        }
     }
 }
