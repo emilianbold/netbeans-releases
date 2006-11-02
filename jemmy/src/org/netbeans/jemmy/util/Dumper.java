@@ -266,7 +266,7 @@ public class Dumper {
     }
     
     public static String escape(String str) {
-        return str.replace("&", "&amp;").replace("<", "&lt;")
-                .replace(">", "&gt;").replace("\"", "&quot;");
+        return str.replaceAll("&", "&amp;").replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;").replaceAll("\"", "&quot;");
     }
 }
