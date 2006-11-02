@@ -40,7 +40,13 @@ import java.util.logging.Logger;
 import org.openide.util.Exceptions;
 
 
-/** Base class for all system options.
+/** 
+* <i><b>Note:</b> While not formally deprecated, this class
+* should be treated as such and not used in new code.  If you
+* are looking for a way to persist settings, see 
+* <code>NbPreferences</code></i>.
+* <p>
+* Base class for all system options.
 * Provides methods for adding
 * and working with property change and guarantees
 * that all instances of the same class will share these listeners.
