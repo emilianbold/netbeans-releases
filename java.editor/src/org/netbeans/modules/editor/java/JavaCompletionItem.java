@@ -39,6 +39,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.*;
+import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
@@ -1084,7 +1085,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     public void cancel() {
                     }
                     public void run(WorkingCopy copy) throws IOException {
-                        copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                        copy.toPhase(Phase.ELEMENTS_RESOLVED);
                         ExecutableElement ee = elemHandle.resolve(copy);
                         
                         if (ee == null) {
@@ -1094,6 +1095,10 @@ public abstract class JavaCompletionItem implements CompletionItem {
                         TreePath tp = copy.getTreeUtilities().pathFor(offset);
                         Tree t = tp.getLeaf();
                         if (t.getKind() == Tree.Kind.CLASS) {
+                            if (Utilities.isInMethod(tp)) {
+                                copy.toPhase(Phase.RESOLVED);
+                            }
+                        
                             Tree lastBefore = null;
                             for (Tree tree : ((ClassTree) t).getMembers()) {
                                 if (copy.getTrees().getSourcePositions().getStartPosition(tp.getCompilationUnit(), tree) < offset) {

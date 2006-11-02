@@ -201,6 +201,18 @@ public class Utilities {
         return result;
     }
 
+    public static boolean isInMethod(TreePath tp) {
+        while (tp != null) {
+            if (tp.getLeaf().getKind() == Tree.Kind.METHOD) {
+                return true;
+            }
+            
+            tp = tp.getParentPath();
+        }
+        
+        return false;
+    }
+        
     private static List<String> varNamesForType(TypeMirror type, Types types, Elements elements) {
         switch (type.getKind()) {
             case ARRAY:
