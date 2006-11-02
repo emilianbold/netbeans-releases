@@ -50,9 +50,9 @@ import org.netbeans.installer.product.ProductComponent;
 import org.netbeans.installer.product.ProductComponent.Status;
 import org.netbeans.installer.product.ProductRegistry;
 import org.netbeans.installer.product.ProductTreeNode;
+import org.netbeans.installer.product.filters.TrueFilter;
 import org.netbeans.installer.utils.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
-import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
 import org.netbeans.installer.utils.helper.swing.NbiScrollPane;
 import org.netbeans.installer.utils.helper.swing.NbiTextPane;
@@ -179,7 +179,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
         List<ProductComponent> componentsToInstall = new ArrayList<ProductComponent>();
         List<ProductComponent> componentsToUninstall = new ArrayList<ProductComponent>();
         
-        for (ProductComponent component: ProductRegistry.getInstance().getProductComponentsAsList()) {
+        for (ProductComponent component: ProductRegistry.getInstance().queryComponents(new TrueFilter())) {
             if (component.getStatus() == Status.TO_BE_INSTALLED) {
                 componentsToInstall.add(component);
             }
@@ -207,7 +207,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
         }
         
         for (ProductComponent component: componentsToUninstall) {
-            for (ProductComponent dependent: ProductRegistry.getInstance().getProductComponentsAsList()) {
+            for (ProductComponent dependent: ProductRegistry.getInstance().queryComponents(new TrueFilter())) {
                 if (dependent.requires(component) && ((dependent.getStatus() == Status.INSTALLED) || (dependent.getStatus() == Status.TO_BE_INSTALLED))) {
                     return stringUtils.formatMessage(getProperty(ERROR_REQUIREMENT_UNINSTALL_PROPERTY), component.getDisplayName(), dependent.getDisplayName());
                 }
@@ -261,7 +261,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
     private void updateTotalSizes() {
         List<ProductComponent> components = new ArrayList<ProductComponent>();
         
-        for (ProductComponent component: ProductRegistry.getInstance().getProductComponentsAsList()) {
+        for (ProductComponent component: ProductRegistry.getInstance().queryComponents(new TrueFilter())) {
             if (component.getStatus() == Status.TO_BE_INSTALLED) {
                 components.add(component);
             }
