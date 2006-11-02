@@ -24,7 +24,7 @@ import java.awt.Component;
 
 /**
  * Provides a component which will be added at east side of the status line.
- * The providers can be declared in module's MET-INF/services.
+ * A provider should be installed in default lookup, e.g. using META-INF/servicesd.
  *
  * @since 6.4
  * @author Jiri Rechtacek
