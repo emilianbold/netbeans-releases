@@ -31,7 +31,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -236,7 +235,7 @@ public final class ParseProjectXml extends Task {
         }
         
     }
-      List <TestType> testTypes = new LinkedList();
+      List<TestType> testTypes = new LinkedList<TestType>();
       
       public void addTestType(TestType testType) {
           testTypes.add(testType);
@@ -247,8 +246,7 @@ public final class ParseProjectXml extends Task {
   
       
       private TestType getTestType(String name) {
-          for (int i = 0 ; i < testTypes.size() ; i++) {
-              TestType testType = (TestType) testTypes.get(i);
+          for (TestType testType : testTypes) {
               if (testType.getName().equals(name)) {
                   return testType;
               }
@@ -284,19 +282,19 @@ public final class ParseProjectXml extends Task {
                     if (pkgs.length > 0) {
                         String sep = "";
                         StringBuffer b = new StringBuffer();
-                        for (int i = 0; i < pkgs.length; i++) {
+                        for (PublicPackage p : pkgs) {
                             b.append(sep);
                             
-                            String name = pkgs[i].name;
+                            String name = p.name;
                             if (name.indexOf (',') >= 0) {
-                                throw new BuildException ("Package name cannot contain ',' as " + pkgs[i], getLocation ());
+                                throw new BuildException ("Package name cannot contain ',' as " + p, getLocation ());
                             }
                             if (name.indexOf ('*') >= 0) {
-                                throw new BuildException ("Package name cannot contain '*' as " + pkgs[i], getLocation ());
+                                throw new BuildException ("Package name cannot contain '*' as " + p, getLocation ());
                             }
                             
                             b.append(name);
-                            if (pkgs[i].subpackages) {
+                            if (p.subpackages) {
                                 b.append (".**");
                             } else {
                                 b.append(".*");
@@ -313,17 +311,17 @@ public final class ParseProjectXml extends Task {
                     if (pkgs.length > 0) {
                         String sep = "";
                         StringBuffer b = new StringBuffer();
-                        for (int i = 0; i < pkgs.length; i++) {
+                        for (PublicPackage p : pkgs) {
                             b.append(sep);
-                            if (pkgs[i].subpackages) {
+                            if (p.subpackages) {
                                 if (getProject().getProperty(javadocPackagesProperty) == null) {
-                                    String msg = javadocPackagesProperty + " cannot be set as <subpackages> does not work for Javadoc (see <subpackages>" + pkgs[i].name + "</subpackages> tag in " + getProjectFile () + "). Set the property in project.properties if you want to build Javadoc.";
+                                    String msg = javadocPackagesProperty + " cannot be set as <subpackages> does not work for Javadoc (see <subpackages>" + p.name + "</subpackages> tag in " + getProjectFile () + "). Set the property in project.properties if you want to build Javadoc.";
                                     // #52135: do not halt the build, just leave it.
                                     getProject().log("Warning: " + msg, Project.MSG_WARN);
                                 }
                                 break NO_JAVA_DOC_PROPERTY_SET;
                             }
-                            b.append(pkgs[i].name);
+                            b.append(p.name);
                             sep = ", ";
                         }
                         define(javadocPackagesProperty, b.toString());
@@ -334,11 +332,11 @@ public final class ParseProjectXml extends Task {
                 String[] friends = getFriends(pDoc);
                 if (friends != null) {
                     StringBuffer b = new StringBuffer();
-                    for (int i = 0; i < friends.length; i++) {
-                        if (i > 0) {
+                    for (String f : friends) {
+                        if (b.length() > 0) {
                             b.append(", ");
                         }
-                        b.append(friends[i]);
+                        b.append(f);
                     }
                     define(friendsProperty, b.toString());
                 }
@@ -349,9 +347,10 @@ public final class ParseProjectXml extends Task {
                     moduleClassPathProperty != null || 
                     moduleRunClassPathProperty != null ||
                     testTypes.size() > 0) {
-                String nball = getProject().getProperty("nb_all");
                 Hashtable properties = getProject().getProperties();
-                properties.put("project", project.getAbsolutePath());
+                @SuppressWarnings("unchecked")
+                Map<String,String> _properties = properties;
+                _properties.put("project", project.getAbsolutePath());
                 modules = new ModuleListParser(properties, getModuleType(pDoc), getProject());
                 ModuleListParser.Entry myself = modules.findByCodeNameBase(getCodeNameBase(pDoc));
                 if (myself == null) { // #71130
@@ -365,14 +364,14 @@ public final class ParseProjectXml extends Task {
             if (moduleDependenciesProperty != null) {
                 if (moduleDependenciesProperty != null) {
                     StringBuffer b = new StringBuffer();
-                    for (int i = 0; i < deps.length; i++) {
-                        if (!deps[i].run) {
+                    for (Dep d : deps) {
+                        if (!d.run) {
                             continue;
                         }
                         if (b.length() > 0) {
                             b.append(", ");
                         }
-                        b.append(deps[i]);
+                        b.append(d);
                     }
                     if (b.length() > 0) {
                         define(moduleDependenciesProperty, b.toString());
@@ -430,24 +429,21 @@ public final class ParseProjectXml extends Task {
                }
                ParseProjectXml.testDistLocation = testDistLocation;
                
-                TestDeps testDepss[] = getTestDeps(pDoc,modules,getCodeNameBase(pDoc));
-                for (int tdIt = 0 ; tdIt < testDepss.length ; tdIt++) {
-                    TestDeps td = testDepss[tdIt];
-                    // unit tests 
-                    TestType testType = getTestType(td.testtype);
-                    if (testType!= null ) {
-                        if (testType.getFolder() != null) {
-                            define (testType.getFolder(),td.getTestFolder());
-                        }
-                        if (testType.getCompileCP() != null && td.getCompileClassPath() != null && td.getCompileClassPath().trim().length() > 0) {
-                            define(testType.getCompileCP(),td.getCompileClassPath());
-                        }
-                        if (testType.getRuntimeCP() != null && td.getRuntimeClassPath() != null && td.getRuntimeClassPath().trim().length() > 0) {
-                            define(testType.getRuntimeCP(),td.getRuntimeClassPath());
-                        }
-
-                    } 
-                }
+               for (TestDeps td : getTestDeps(pDoc, modules, getCodeNameBase(pDoc))) {
+                   // unit tests
+                   TestType testType = getTestType(td.testtype);
+                   if (testType!= null ) {
+                       if (testType.getFolder() != null) {
+                           define(testType.getFolder(),td.getTestFolder());
+                       }
+                       if (testType.getCompileCP() != null && td.getCompileClassPath() != null && td.getCompileClassPath().trim().length() > 0) {
+                           define(testType.getCompileCP(),td.getCompileClassPath());
+                       }
+                       if (testType.getRuntimeCP() != null && td.getRuntimeClassPath() != null && td.getRuntimeClassPath().trim().length() > 0) {
+                           define(testType.getRuntimeCP(),td.getRuntimeClassPath());
+                       }
+                   }
+               }
             }
         } catch (BuildException e) {
             throw e;
@@ -488,11 +484,8 @@ public final class ParseProjectXml extends Task {
         if (pp == null) {
             throw new BuildException("No <public-packages>", getLocation());
         }
-        List<Element> l = XMLUtil.findSubElements(pp);
-        List<PublicPackage> pkgs = new ArrayList();
-        Iterator it = l.iterator();
-        while (it.hasNext()) {
-            Element p = (Element)it.next();
+        List<PublicPackage> pkgs = new ArrayList<PublicPackage>();
+        for (Element p : XMLUtil.findSubElements(pp)) {
             boolean sub = false;
             if ("friend".equals(p.getNodeName())) {
                 continue;
@@ -510,7 +503,7 @@ public final class ParseProjectXml extends Task {
             }
             pkgs.add(new PublicPackage(t, sub));
         }
-        return (PublicPackage[]) pkgs.toArray(new PublicPackage[pkgs.size()]);
+        return pkgs.toArray(new PublicPackage[pkgs.size()]);
     }
     
     private String[] getFriends(Document d) throws BuildException {
@@ -519,12 +512,9 @@ public final class ParseProjectXml extends Task {
         if (pp == null) {
             return null;
         }
-        List<String> friends = new ArrayList();
-        List<Element> l = XMLUtil.findSubElements(pp);
-        Iterator it = l.iterator();
+        List<String> friends = new ArrayList<String>();
         boolean other = false;
-        while (it.hasNext()) {
-            Element p = (Element) it.next();
+        for (Element p : XMLUtil.findSubElements(pp)) {
             if ("friend".equals(p.getNodeName())) {
                 String t = XMLUtil.findText(p);
                 if (t == null) {
@@ -541,7 +531,7 @@ public final class ParseProjectXml extends Task {
         if (!other) {
             throw new BuildException("Must have at least one <package> in <friend-packages>", getLocation());
         }
-        return (String[]) friends.toArray(new String[friends.size()]);
+        return friends.toArray(new String[friends.size()]);
     }
 
     private final class Dep {
@@ -665,11 +655,8 @@ public final class ParseProjectXml extends Task {
         if (md == null) {
             throw new BuildException("No <module-dependencies>", getLocation());
         }
-        List<Element> l = XMLUtil.findSubElements(md);
-        List<Dep> deps = new ArrayList();
-        Iterator it = l.iterator();
-        while (it.hasNext()) {
-            Element dep = (Element)it.next();
+        List<Dep> deps = new ArrayList<Dep>();
+        for (Element dep : XMLUtil.findSubElements(md)) {
             Dep d = new Dep(modules);
             Element cnb = findNBMElement(dep, "code-name-base");
             if (cnb == null) {
@@ -707,7 +694,7 @@ public final class ParseProjectXml extends Task {
             d.compile = findNBMElement(dep, "compile-dependency") != null;
             deps.add(d);
         }
-        return (Dep[])deps.toArray(new Dep[deps.size()]);
+        return deps.toArray(new Dep[deps.size()]);
     }
 
     private String getCodeNameBase(Document d) throws BuildException {
@@ -739,19 +726,18 @@ public final class ParseProjectXml extends Task {
         StringBuffer cp = new StringBuffer();
         String includedClustersProp = getProject().getProperty("enabled.clusters");
         Set<String> includedClusters = includedClustersProp != null ?
-            new HashSet(Arrays.asList(includedClustersProp.split(" *, *"))) :
+            new HashSet<String>(Arrays.asList(includedClustersProp.split(" *, *"))) :
             null;
         // Compatibility:
         String excludedClustersProp = getProject().getProperty("disabled.clusters");
         Set<String> excludedClusters = excludedClustersProp != null ?
-            new HashSet(Arrays.asList(excludedClustersProp.split(" *, *"))) :
+            new HashSet<String>(Arrays.asList(excludedClustersProp.split(" *, *"))) :
             null;
         String excludedModulesProp = getProject().getProperty("disabled.modules");
         Set<String> excludedModules = excludedModulesProp != null ?
-            new HashSet(Arrays.asList(excludedModulesProp.split(" *, *"))) :
+            new HashSet<String>(Arrays.asList(excludedModulesProp.split(" *, *"))) :
             null;
-        for (int i = 0; i < deps.length; i++) { // XXX should operative transitively if runtime
-            Dep dep = deps[i];
+        for (Dep dep : deps) { // XXX should operative transitively if runtime
             if (!dep.compile) { // XXX should be sensitive to runtime
                 continue;
             }
@@ -773,15 +759,16 @@ public final class ParseProjectXml extends Task {
                 throw new BuildException("Cannot compile against a module: " + depJar + " because of dependency: " + dep, getLocation());
             }
 
-            List<File> additions = new ArrayList();
+            if (!runtime && Boolean.parseBoolean(attr.getValue("OpenIDE-Module-Deprecated"))) {
+                log("The module " + cnb + " has been deprecated", Project.MSG_WARN);
+            }
+
+            List<File> additions = new ArrayList<File>();
             additions.add(depJar);
             // #52354: look for <class-path-extension>s in dependent modules.
             ModuleListParser.Entry entry = modules.findByCodeNameBase(cnb);
             if (entry != null) {
-                File[] exts = entry.getClassPathExtensions();
-                for (int j = 0; j < exts.length; j++) {
-                    additions.add(exts[j]);
-                }
+                additions.addAll(Arrays.asList(entry.getClassPathExtensions()));
             }
             
             if (!dep.impl && /* #71807 */ dep.run) {
@@ -799,21 +786,19 @@ public final class ParseProjectXml extends Task {
                 }
             }
             
-            Iterator it = additions.iterator();
-            while (it.hasNext()) {
+            for (File f : additions) {
                 if (cp.length() > 0) {
                     cp.append(':');
                 }
-                cp.append(((File) it.next()).getAbsolutePath());
+                cp.append(f.getAbsolutePath());
             }
         }
         // Also look for <class-path-extension>s for myself and put them in my own classpath.
         ModuleListParser.Entry entry = modules.findByCodeNameBase(myCnb);
         assert entry != null;
-        File[] exts = entry.getClassPathExtensions();
-        for (int i = 0; i < exts.length; i++) {
+        for (File f : entry.getClassPathExtensions()) {
             cp.append(':');
-            cp.append(exts[i].getAbsolutePath());
+            cp.append(f.getAbsolutePath());
         }
         return cp.toString();
     }
@@ -845,7 +830,7 @@ public final class ParseProjectXml extends Task {
       // unit, qa-functional, performance
       final String testtype;
       // all dependecies for the testtype
-      final  List <TestDep> dependencies = new ArrayList();
+      final  List<TestDep> dependencies = new ArrayList<TestDep>();
       // code name base of tested module
       final String cnb;
       final ModuleListParser modulesParser;
@@ -859,9 +844,9 @@ public final class ParseProjectXml extends Task {
       }
       
       public List<String> getFiles(boolean compile) {
-          List<String> files = new ArrayList();
-          for (int dIt = 0 ; dIt < dependencies.size() ; dIt++) {
-              files.addAll(((TestDep)dependencies.get(dIt)).getFiles(compile));
+          List<String> files = new ArrayList<String>();
+          for (TestDep d : dependencies) {
+              files.addAll(d.getFiles(compile));
           }
           return files;
       }
@@ -886,9 +871,8 @@ public final class ParseProjectXml extends Task {
         }
         private String getPath(List<String> files) {
             StringBuffer path = new StringBuffer();
-            Set<String> filesSet = new HashSet();
-            for (int fIt = 0 ; fIt < files.size() ; fIt++) {
-                String filePath = (String)files.get(fIt);
+            Set<String> filesSet = new HashSet<String>();
+            for (String filePath : files) {
                 if (!filesSet.contains(filePath)) {
                     if (path.length() > 0) {
                         path.append(File.pathSeparatorChar);
@@ -930,9 +914,9 @@ public final class ParseProjectXml extends Task {
        /* get modules dependecies
         */
        List<ModuleListParser.Entry> getModules() {
-           List <ModuleListParser.Entry> entries = new ArrayList();
+           List<ModuleListParser.Entry> entries = new ArrayList<ModuleListParser.Entry>();
            if (recursive ) {
-               Map<String,ModuleListParser.Entry> entriesMap = new HashMap();
+               Map<String,ModuleListParser.Entry> entriesMap = new HashMap<String,ModuleListParser.Entry>();
                addRecursiveModules(cnb,entriesMap);
                entries.addAll(entriesMap.values());
            } else {
@@ -946,7 +930,7 @@ public final class ParseProjectXml extends Task {
            
        } 
        
-       private void addRecursiveModules(String cnd, Map entriesMap) {
+       private void addRecursiveModules(String cnd, Map<String,ModuleListParser.Entry> entriesMap) {
            if (!entriesMap.containsKey(cnd)) {
                ModuleListParser.Entry entry = modulesParser.findByCodeNameBase(cnd);
                if (entry == null) {
@@ -956,18 +940,17 @@ public final class ParseProjectXml extends Task {
                String cnds[] = entry.getRuntimeDependencies();
                // cnds can be null
                if (cnds != null) {
-                   for (int i = 0 ; i < cnds.length ; i++) {
-                       addRecursiveModules(cnds[i],entriesMap);
+                   for (String c : cnds) {
+                       addRecursiveModules(c, entriesMap);
                    }
                }
            }
        }
        List<String> getFiles(boolean compile) {
-           List<String> files = new ArrayList();
+           List<String> files = new ArrayList<String>();
            if (!compile ||  ( compile && this.compile)) {
-               List <ModuleListParser.Entry> modules = getModules();  
-               for (int mIt = 0 ; mIt <modules.size() ; mIt++) {
-                   ModuleListParser.Entry entry = (ModuleListParser.Entry)modules.get(mIt);
+               List<ModuleListParser.Entry> modules = getModules();
+               for (ModuleListParser.Entry entry : getModules()) {
                    if (entry != null) {
                        files.add(entry.getJar().getAbsolutePath());
                    } else {
@@ -977,7 +960,7 @@ public final class ParseProjectXml extends Task {
                // get tests files
                if (test) {
                    // get test folder
-                   ModuleListParser.Entry entry = (ModuleListParser.Entry) modulesParser.findByCodeNameBase(cnb);
+                   ModuleListParser.Entry entry = modulesParser.findByCodeNameBase(cnb);
                    String sep = File.separator;
                    String cluster = entry.getClusterName();
                    if (cluster == null) {
@@ -993,10 +976,7 @@ public final class ParseProjectXml extends Task {
     private String computeClassPathExtensions(Document pDoc) {
         Element data = getConfig(pDoc);
         StringBuffer list = null;
-        List<Element> exts = XMLUtil.findSubElements(data);
-        Iterator it = exts.iterator();
-        while (it.hasNext()) {
-            Element ext = (Element) it.next();
+        for (Element ext : XMLUtil.findSubElements(data)) {
             if (!ext.getLocalName().equals("class-path-extension")) {
                 continue;
             }
@@ -1029,9 +1009,7 @@ public final class ParseProjectXml extends Task {
             // Check if it is up to date first. Must be as new as any input JAR.
             boolean uptodate = true;
             long stamp = ppjar.lastModified();
-            Iterator it = jars.iterator();
-            while (it.hasNext()) {
-                File jar = (File) it.next();
+            for (File jar : jars) {
                 if (jar.lastModified() > stamp) {
                     uptodate = false;
                     break;
@@ -1054,10 +1032,8 @@ public final class ParseProjectXml extends Task {
         OutputStream os = new FileOutputStream(ppjar);
         try {
             ZipOutputStream zos = new ZipOutputStream(os);
-            Set<String> addedPaths = new HashSet();
-            Iterator it = jars.iterator();
-            while (it.hasNext()) {
-                File jar = (File) it.next();
+            Set<String> addedPaths = new HashSet<String>();
+            for (File jar : jars) {
                 if (!jar.isFile()) {
                     log("Classpath entry " + jar + " does not exist; skipping", Project.MSG_WARN);
                 }
@@ -1102,13 +1078,12 @@ public final class ParseProjectXml extends Task {
     private TestDeps[] getTestDeps(Document pDoc,ModuleListParser modules,String testCnb) {
         assert modules != null;
         Element cfg = getConfig(pDoc);
-        List testDepsList = new ArrayList(); 
+        List<TestDeps> testDepsList = new ArrayList<TestDeps>();
         Element pp = findNBMElement(cfg, "test-dependencies");
         boolean existsUnitTests = false;
         boolean existsQaFunctionalTests = false;
         if (pp != null) {
-            for (Iterator depssIt = XMLUtil.findSubElements(pp).iterator(); depssIt.hasNext();) {
-                Element depssEl = (Element) depssIt.next();
+            for (Element depssEl : XMLUtil.findSubElements(pp)) {
                 String testType = findTextOrNull(depssEl,"name");
                 if (testType == null) {
                     testType = TestDeps.UNIT; // default variant
@@ -1120,8 +1095,7 @@ public final class ParseProjectXml extends Task {
                 }
                 TestDeps testDeps = new TestDeps(testType,testCnb,modules);
                 testDepsList.add(testDeps);
-                for (Iterator depsIt = XMLUtil.findSubElements(depssEl).iterator() ; depsIt.hasNext();) {
-                    Element el = (Element) depsIt.next();
+                for (Element el : XMLUtil.findSubElements(depssEl)) {
                     if (el.getTagName().equals("test-dependency")) {
                         // parse test dep
                         boolean  test =   (findNBMElement(el,"test") != null);
@@ -1148,9 +1122,7 @@ public final class ParseProjectXml extends Task {
             log("Default TestDeps for qa-functional", Project.MSG_VERBOSE);
             testDepsList.add(new TestDeps(TestDeps.QA_FUNCTIONAL,testCnb,modules));
         }
-        TestDeps testDepss[] = new TestDeps[testDepsList.size()];
-        testDepsList.toArray(testDepss);
-        return testDepss;      
+        return testDepsList.toArray(new TestDeps[testDepsList.size()]);
     }
     private static String findTextOrNull(Element parentElement,String elementName) {
         Element el = findNBMElement(parentElement,elementName);
