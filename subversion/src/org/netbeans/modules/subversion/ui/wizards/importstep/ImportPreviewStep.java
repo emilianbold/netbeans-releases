@@ -54,12 +54,12 @@ public class ImportPreviewStep extends AbstractStep {
         if (previewPanel == null) {
             previewPanel = new PreviewPanel();
 
-            TableSorter sorter = SvnModuleConfig.getDefault().getImportTableSorter();
-            if(sorter==null) {
+            //TableSorter sorter = SvnModuleConfig.getDefault().getImportTableSorter();
+            //if(sorter==null) {
                 table = new CommitTable(previewPanel.tableLabel, CommitTable.IMPORT_COLUMNS, new String[] { CommitTableModel.COLUMN_NAME_PATH });    
-            } else {
-                table = new CommitTable(previewPanel.tableLabel, CommitTable.IMPORT_COLUMNS, sorter);
-            }                                    
+            //} else {
+            //    table = new CommitTable(previewPanel.tableLabel, CommitTable.IMPORT_COLUMNS, sorter);
+            //}                                    
             
             JComponent component = table.getComponent();
             previewPanel.tablePanel.setLayout(new BorderLayout());
@@ -111,7 +111,7 @@ public class ImportPreviewStep extends AbstractStep {
     }
     
     public void storeTableSorter() {
-        SvnModuleConfig.getDefault().setImportTableSorter(table.getSorter());        
+        //SvnModuleConfig.getDefault().setImportTableSorter(table.getSorter());        
     }
 
 }

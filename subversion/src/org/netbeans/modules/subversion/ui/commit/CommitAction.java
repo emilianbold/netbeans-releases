@@ -120,12 +120,12 @@ public class CommitAction extends ContextAction {
         // show commit dialog
         final CommitPanel panel = new CommitPanel();
         final CommitTable data;
-        TableSorter sorter = SvnModuleConfig.getDefault().getCommitTableSorter();
-        if(sorter==null) {
+        //TableSorter sorter = SvnModuleConfig.getDefault().getCommitTableSorter();
+        //if(sorter==null) {
             data = new CommitTable(panel.filesLabel, CommitTable.COMMIT_COLUMNS, new String[] { CommitTableModel.COLUMN_NAME_PATH });
-        } else {
-            data = new CommitTable(panel.filesLabel, CommitTable.COMMIT_COLUMNS, sorter);
-        }                                                           
+        //} else {
+        //    data = new CommitTable(panel.filesLabel, CommitTable.COMMIT_COLUMNS, sorter);
+        //}                                                           
         panel.setCommitTable(data);
         SvnFileNode[] nodes;
         ArrayList<SvnFileNode> nodesList = new ArrayList<SvnFileNode>(fileList.size());
@@ -161,7 +161,7 @@ public class CommitAction extends ContextAction {
 
         if (dd.getValue() == commitButton) {
             
-            SvnModuleConfig.getDefault().setCommitTableSorter(data.getSorter());
+            //SvnModuleConfig.getDefault().setCommitTableSorter(data.getSorter());
             
             final Map<SvnFileNode, CommitOptions> commitFiles = data.getCommitFiles();
             final String message = panel.messageTextArea.getText();
