@@ -27,15 +27,11 @@ import org.openide.filesystems.FileUtil;
 import org.openide.*;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataShadow;
-import org.openide.xml.XMLUtil;
 import org.netbeans.api.project.*;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.queries.SharabilityQuery;
-import org.netbeans.modules.versioning.system.cvss.settings.HistorySettings;
-import org.netbeans.modules.versioning.system.cvss.util.Utils;
+import org.netbeans.modules.versioning.system.cvss.CvsModuleConfig;
 import org.netbeans.modules.versioning.system.cvss.ui.wizards.RepositoryStep;
 import org.netbeans.modules.versioning.system.cvss.ui.wizards.AbstractStep;
-import org.netbeans.modules.versioning.system.cvss.ui.selectors.Kit;
 import org.netbeans.modules.versioning.system.cvss.ui.selectors.ModuleSelector;
 import org.netbeans.modules.versioning.system.cvss.ui.selectors.ProxyDescriptor;
 import org.netbeans.modules.versioning.system.cvss.FileInformation;
@@ -48,13 +44,11 @@ import org.netbeans.lib.cvsclient.CVSRoot;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 
 import javax.swing.*;
-import javax.swing.filechooser.*;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
 import java.io.*;
-import java.io.FileFilter;
 import java.util.*;
 import java.text.MessageFormat;
 import java.awt.event.ActionListener;
@@ -83,12 +77,11 @@ import java.awt.event.ActionEvent;
  */
 public final class AddToRepositoryAction extends NodeAction implements ChangeListener {
 
+    private static final String RECENT_ROOTS = "addToRepositoryAction.recentRoots";
 
     private WizardDescriptor wizard;
 
     private WizardDescriptor.Iterator wizardIterator;
-
-    private String errorMessage;
 
     private RepositoryStep repositoryStep;
     private ImportStep importStep;
@@ -226,7 +219,7 @@ public final class AddToRepositoryAction extends NodeAction implements ChangeLis
         String folder = importStep.getFolder();
         File dir = new File(folder);
 
-        HistorySettings.addRecent(HistorySettings.PROP_CVS_ROOTS, selectedRoot);
+        org.netbeans.modules.versioning.util.Utils.insert(CvsModuleConfig.getDefault().getPreferences(), RECENT_ROOTS, selectedRoot, 8);
 
         ExecutorGroup group = new ExecutorGroup(NbBundle.getMessage(AddToRepositoryAction.class, "BK0019"));
         try {
@@ -328,7 +321,6 @@ public final class AddToRepositoryAction extends NodeAction implements ChangeLis
     }
 
     private void setErrorMessage(String msg) {
-        errorMessage = msg;
         if (wizard != null) {
             wizard.putProperty("WizardPanel_errorMessage", msg); // NOI18N
         }

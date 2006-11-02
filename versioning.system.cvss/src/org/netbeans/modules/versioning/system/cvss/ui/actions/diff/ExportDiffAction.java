@@ -21,7 +21,7 @@ package org.netbeans.modules.versioning.system.cvss.ui.actions.diff;
 
 import org.netbeans.modules.versioning.system.cvss.FileInformation;
 import org.netbeans.modules.versioning.system.cvss.ExecutorGroup;
-import org.netbeans.modules.versioning.system.cvss.settings.CvsModuleConfig;
+import org.netbeans.modules.versioning.system.cvss.CvsModuleConfig;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
 import org.netbeans.modules.versioning.system.cvss.util.AccessibleJFileChooser;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
@@ -136,7 +136,7 @@ public class ExportDiffAction extends AbstractSystemAction {
             chooser.removeChoosableFileFilter(fileFilter);
 
         }        
-        chooser.setCurrentDirectory(new File(CvsModuleConfig.getPreferences().get("ExportDiff.saveFolder", System.getProperty("user.home")))); // NOI18N
+        chooser.setCurrentDirectory(new File(CvsModuleConfig.getDefault().getPreferences().get("ExportDiff.saveFolder", System.getProperty("user.home")))); // NOI18N
         chooser.addChoosableFileFilter(new javax.swing.filechooser.FileFilter() {
             public boolean accept(File f) {
                 return f.getName().endsWith("diff") || f.getName().endsWith("patch") || f.isDirectory();  // NOI18N
@@ -177,7 +177,7 @@ public class ExportDiffAction extends AbstractSystemAction {
                         }
                     }
 
-                    CvsModuleConfig.getPreferences().put("ExportDiff.saveFolder", destination.getParent());
+                    CvsModuleConfig.getDefault().getPreferences().put("ExportDiff.saveFolder", destination.getParent());
 
                     final File out = destination;
                     RequestProcessor.getDefault().post(new Runnable() {

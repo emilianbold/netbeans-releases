@@ -29,7 +29,7 @@ import org.netbeans.lib.cvsclient.command.add.AddCommand;
 import org.netbeans.lib.cvsclient.command.KeywordSubstitutionOptions;
 import org.netbeans.lib.cvsclient.command.remove.RemoveCommand;
 import org.netbeans.modules.versioning.system.cvss.*;
-import org.netbeans.modules.versioning.system.cvss.settings.CvsModuleConfig;
+import org.netbeans.modules.versioning.system.cvss.CvsModuleConfig;
 import org.netbeans.modules.versioning.system.cvss.executor.RemoveExecutor;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.util.Context;

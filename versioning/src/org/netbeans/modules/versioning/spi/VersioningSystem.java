@@ -97,6 +97,10 @@ public abstract class VersioningSystem {
     public final void removePropertyChangeListener(PropertyChangeListener listener) {
         support.removePropertyChangeListener(listener);
     }
+
+    protected final void fireAnnotationsChanged(Set<File> files) {
+        support.firePropertyChange(PROP_ANNOTATIONS_CHANGED, null, files);
+    }
     
     protected final void fireStatusChanged(Set<File> files) {
         support.firePropertyChange(PROP_STATUS_CHANGED, null, files);

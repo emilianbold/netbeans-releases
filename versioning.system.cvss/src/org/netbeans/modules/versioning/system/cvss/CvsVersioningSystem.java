@@ -30,9 +30,8 @@ import org.netbeans.lib.cvsclient.connection.AuthenticationException;
 import org.netbeans.lib.cvsclient.file.FileHandler;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
-import org.netbeans.modules.versioning.system.cvss.settings.CvsModuleConfig;
+import org.netbeans.modules.versioning.system.cvss.CvsModuleConfig;
 import org.netbeans.modules.versioning.system.cvss.ui.syncview.CvsSynchronizeTopComponent;
-import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.spi.OriginalContent;
@@ -50,7 +49,6 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
 
 /**
  * A singleton CVS manager class, center of CVS module. Use {@link #getInstance()} to get access

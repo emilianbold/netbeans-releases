@@ -24,7 +24,7 @@ import org.netbeans.modules.versioning.system.cvss.CvsFileNode;
 import org.netbeans.modules.versioning.system.cvss.FileInformation;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
-import org.netbeans.modules.versioning.system.cvss.settings.CvsModuleConfig;
+import org.netbeans.modules.versioning.system.cvss.CvsModuleConfig;
 import org.netbeans.lib.cvsclient.command.KeywordSubstitutionOptions;
 
 import javax.swing.table.AbstractTableModel;

@@ -148,6 +148,9 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
         if (VersioningSystem.PROP_STATUS_CHANGED.equals(evt.getPropertyName())) {
             Set<File> files = (Set<File>) evt.getNewValue();
             VersioningAnnotationProvider.instance.refreshAnnotations(files);
+        } else if (VersioningSystem.PROP_ANNOTATIONS_CHANGED.equals(evt.getPropertyName())) {
+            Set<File> files = (Set<File>) evt.getNewValue();
+            VersioningAnnotationProvider.instance.refreshAnnotations(files);
         }
     }
 }

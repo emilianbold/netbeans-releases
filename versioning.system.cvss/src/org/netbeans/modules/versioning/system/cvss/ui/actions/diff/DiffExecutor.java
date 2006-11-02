@@ -19,7 +19,7 @@
 
 package org.netbeans.modules.versioning.system.cvss.ui.actions.diff;
 
-import org.netbeans.modules.versioning.system.cvss.settings.CvsModuleConfig;
+import org.netbeans.modules.versioning.system.cvss.CvsModuleConfig;
 import org.openide.windows.TopComponent;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
@@ -27,7 +27,6 @@ import org.netbeans.modules.versioning.system.cvss.*;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
 
 import javax.swing.*;
-import java.awt.Component;
 import java.awt.BorderLayout;
 import java.io.*;
 import java.util.List;

@@ -23,7 +23,7 @@ import java.util.prefs.PreferenceChangeEvent;
 import org.netbeans.modules.versioning.system.cvss.*;
 import org.netbeans.modules.versioning.system.cvss.util.NoContentPanel;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
-import org.netbeans.modules.versioning.system.cvss.settings.CvsModuleConfig;
+import org.netbeans.modules.versioning.system.cvss.CvsModuleConfig;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.update.UpdateExecutor;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.commit.CommitAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.diff.DiffExecutor;
@@ -171,14 +171,14 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
     
     public void addNotify() {
         super.addNotify();
-        CvsModuleConfig.getPreferences().addPreferenceChangeListener(this);
+        CvsModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
         cvs.getStatusCache().addVersioningListener(this);
         cvs.addVersioningListener(this);
         explorerManager.addPropertyChangeListener(this);
     }
 
     public void removeNotify() {
-        CvsModuleConfig.getPreferences().removePreferenceChangeListener(this);        
+        CvsModuleConfig.getDefault().getPreferences().removePreferenceChangeListener(this);        
         cvs.getStatusCache().removeVersioningListener(this);
         cvs.removeVersioningListener(this);
         explorerManager.removePropertyChangeListener(this);

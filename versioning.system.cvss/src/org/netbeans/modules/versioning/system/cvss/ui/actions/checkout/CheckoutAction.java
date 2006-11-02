@@ -24,7 +24,7 @@ import org.netbeans.modules.versioning.system.cvss.ui.wizards.CheckoutWizard;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.netbeans.modules.versioning.system.cvss.ExecutorGroup;
 import org.netbeans.modules.versioning.system.cvss.FileStatusCache;
-import org.netbeans.modules.versioning.system.cvss.settings.HistorySettings;
+import org.netbeans.modules.versioning.system.cvss.CvsModuleConfig;
 import org.netbeans.modules.versioning.system.cvss.executor.CheckoutExecutor;
 import org.netbeans.lib.cvsclient.command.checkout.CheckoutCommand;
 import org.netbeans.lib.cvsclient.command.GlobalOptions;
@@ -61,6 +61,8 @@ import java.util.List;
  */
 public final class CheckoutAction extends SystemAction {
 
+    private static final String SHOW_CHECKOUT_COMPLETED = "checkoutAction.showCheckoutCompleted";
+    
     // avoid instance fields, it's singleton
     
     public CheckoutAction() {
@@ -152,7 +154,7 @@ public final class CheckoutAction extends SystemAction {
         }
         CheckoutExecutor executor = new CheckoutExecutor(cvs, cmd, gtx);
         group.addExecutor(executor);
-        if (HistorySettings.getFlag(HistorySettings.PROP_SHOW_CHECKOUT_COMPLETED, -1) != 0 && scanProject) {
+        if (CvsModuleConfig.getDefault().getPreferences().getBoolean(SHOW_CHECKOUT_COMPLETED, true) && scanProject) {
             group.addBarrier(new CheckoutCompletedController(executor, workingFolder, scanProject));
         }
 
@@ -315,7 +317,7 @@ public final class CheckoutAction extends SystemAction {
                 ProjectUtilities.newProjectWizard(workingFolder);
             }
             if (panel.againCheckBox.isSelected()) {
-               HistorySettings.setFlag(HistorySettings.PROP_SHOW_CHECKOUT_COMPLETED, 0);
+                CvsModuleConfig.getDefault().getPreferences().putBoolean(SHOW_CHECKOUT_COMPLETED, false);
             }
         }
 

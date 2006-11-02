@@ -43,7 +43,7 @@ import org.netbeans.modules.versioning.system.cvss.ui.actions.commit.CommitActio
 import org.netbeans.modules.versioning.system.cvss.ui.actions.update.UpdateAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.update.GetCleanAction;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
-import org.netbeans.modules.versioning.system.cvss.settings.CvsModuleConfig;
+import org.netbeans.modules.versioning.system.cvss.CvsModuleConfig;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.FlatFolder;
 import org.netbeans.lib.cvsclient.admin.Entry;
@@ -152,7 +152,7 @@ public class Annotator {
         name = htmlEncode(name);
         int status = info.getStatus();
         String textAnnotation;
-        String textAnnotationFormat = CvsModuleConfig.getDefault().getTextAnnotationsFormat();
+        String textAnnotationFormat = CvsModuleConfig.getDefault().getPreferences().get(CvsModuleConfig.PROP_TEXT_ANNOTATIONS_FORMAT, null);
         if (textAnnotationFormat != null && file != null && (status & STATUS_TEXT_ANNOTABLE) != 0) {
             if (format != null) {
                 textAnnotation = formatAnnotation(info, file);
@@ -245,7 +245,7 @@ public class Annotator {
         name = htmlEncode(name);
         int status = info.getStatus();
         String textAnnotation;
-        String textAnnotationFormat = CvsModuleConfig.getDefault().getTextAnnotationsFormat();        
+        String textAnnotationFormat = CvsModuleConfig.getDefault().getPreferences().get(CvsModuleConfig.PROP_TEXT_ANNOTATIONS_FORMAT, null);        
         if (textAnnotationFormat != null && file != null && (status & FileInformation.STATUS_MANAGED) != 0) {
             String sticky = Utils.getSticky(file);
             if (status == FileInformation.STATUS_VERSIONED_UPTODATE && sticky == null) {

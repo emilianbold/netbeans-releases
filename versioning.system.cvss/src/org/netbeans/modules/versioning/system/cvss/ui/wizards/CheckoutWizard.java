@@ -23,7 +23,7 @@ import org.openide.*;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
-import org.netbeans.modules.versioning.system.cvss.settings.HistorySettings;
+import org.netbeans.modules.versioning.system.cvss.CvsModuleConfig;
 import org.netbeans.modules.versioning.system.cvss.ui.selectors.ModuleSelector;
 import org.netbeans.modules.versioning.system.cvss.ui.selectors.BranchSelector;
 import org.netbeans.lib.cvsclient.CVSRoot;
@@ -45,6 +45,7 @@ import java.text.MessageFormat;
 
 import org.netbeans.modules.versioning.system.cvss.ui.selectors.ProxyDescriptor;
 import org.netbeans.modules.versioning.system.cvss.util.AccessibleJFileChooser;
+import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 
 /**
@@ -53,6 +54,8 @@ import org.netbeans.spi.project.ui.support.ProjectChooser;
  * @author Petr Kuzel
  */
 public final class CheckoutWizard implements ChangeListener{
+
+    private static final String RECENT_DIRECTORY = "checkout.recentDirectory";
 
     private WizardDescriptor wizard;
 
@@ -104,7 +107,7 @@ public final class CheckoutWizard implements ChangeListener{
     /** Called on sucessfull finish. */
     private void onFinished() {
         String checkout = modulePanel.workTextField.getText();
-        HistorySettings.addRecent(HistorySettings.PROP_CHECKOUT_DIRECTORY, checkout);
+        Utils.insert(CvsModuleConfig.getDefault().getPreferences(), RECENT_DIRECTORY, checkout, 8);
     }
 
     /** Tells invalidation reason never <code>null</code>, */
@@ -366,7 +369,7 @@ public final class CheckoutWizard implements ChangeListener{
             }
 
             if (defaultDir == null) {
-                List recent = HistorySettings.getRecent(HistorySettings.PROP_CHECKOUT_DIRECTORY);
+                List recent = Utils.getStringList(CvsModuleConfig.getDefault().getPreferences(), RECENT_DIRECTORY);
                 Iterator it = recent.iterator();
 
                 while (it.hasNext()) {

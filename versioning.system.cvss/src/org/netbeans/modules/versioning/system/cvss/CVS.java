@@ -24,11 +24,9 @@ import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.spi.OriginalContent;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.modules.versioning.util.VersioningEvent;
-import org.netbeans.modules.versioning.system.cvss.settings.CvsModuleConfig;
+import org.netbeans.modules.versioning.system.cvss.CvsModuleConfig;
 
 import java.io.File;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.*;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
@@ -43,7 +41,7 @@ public class CVS extends VersioningSystem implements VersioningListener, Prefere
     public CVS() {
         CvsVersioningSystem.getInstance().addVersioningListener(this);
         CvsVersioningSystem.getInstance().getStatusCache().addVersioningListener(this);
-        CvsModuleConfig.getPreferences().addPreferenceChangeListener(this);
+        CvsModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
     }
     
     /**
@@ -86,6 +84,8 @@ public class CVS extends VersioningSystem implements VersioningListener, Prefere
     public void preferenceChange(PreferenceChangeEvent evt) {
         if (evt.getKey().startsWith(CvsModuleConfig.PROP_COMMIT_EXCLUSIONS)) {
             fireStatusChanged((Set<File>) null);
+        } else if (evt.getKey().startsWith(CvsModuleConfig.PROP_TEXT_ANNOTATIONS_FORMAT)) {
+            fireAnnotationsChanged((Set<File>) null);
         }
     }
 }

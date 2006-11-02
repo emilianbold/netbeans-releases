@@ -21,8 +21,6 @@ package org.netbeans.modules.versioning.system.cvss.ui.wizards;
 
 import org.openide.WizardDescriptor;
 import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
@@ -30,12 +28,12 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.lib.cvsclient.connection.*;
 import org.netbeans.lib.cvsclient.CVSRoot;
-import org.netbeans.modules.versioning.system.cvss.settings.HistorySettings;
-import org.netbeans.modules.versioning.system.cvss.settings.CvsRootSettings;
+import org.netbeans.modules.versioning.system.cvss.CvsModuleConfig;
 import org.netbeans.modules.versioning.system.cvss.ClientRuntime;
 import org.netbeans.modules.versioning.system.cvss.SSHConnection;
 import org.netbeans.modules.versioning.system.cvss.ui.selectors.ProxySelector;
 import org.netbeans.modules.versioning.system.cvss.ui.selectors.ProxyDescriptor;
+import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.proxy.ConnectivitySettings;
 import org.netbeans.modules.proxy.ClientSocketFactory;
 
@@ -47,10 +45,7 @@ import javax.net.SocketFactory;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.*;
-import java.util.Vector;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.*;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.InetSocketAddress;
@@ -65,6 +60,9 @@ import java.lang.reflect.InvocationTargetException;
  * @author Petr Kuzel
  */
 public final class RepositoryStep extends AbstractStep implements WizardDescriptor.AsynchronousValidatingPanel, ActionListener, DocumentListener {
+
+    private static final String EXT_COMMAND = "repositoryStep.extCommand";
+    private static final String RECENT_ROOTS = "repositoryStep.recentRoots";
 
     private RequestProcessor.Task updatePasswordTask;
     private volatile boolean passwordExpected;
@@ -141,7 +139,7 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
         if (preferedCvsRoot != null) {
             recentRoots.add(preferedCvsRoot);
         }
-        recentRoots.addAll(HistorySettings.getRecent(HistorySettings.PROP_CVS_ROOTS));
+        recentRoots.addAll(Utils.getStringList(CvsModuleConfig.getDefault().getPreferences(), RECENT_ROOTS));
         if (initialCvsRoot != null) {
             // it's first => initially selected
             recentRoots.add(initialCvsRoot);
@@ -171,13 +169,13 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
         } else {
             validateCvsRoot();
             CVSRoot root = getCVSRoot();
-            proxyDescriptor = CvsRootSettings.getProxyFor(root);
+            proxyDescriptor = CvsModuleConfig.getDefault().getProxyFor(root);
             schedulePasswordUpdate();
         }
         textEditor.selectAll();
         textEditor.getDocument().addDocumentListener(this);
 
-        String extCommand = HistorySettings.getDefault().getExtCommand();
+        String extCommand = CvsModuleConfig.getDefault().getPreferences().get(EXT_COMMAND, "");
         repositoryPanel.extCommandTextField.setText(extCommand);
 
         repositoryPanel.proxyConfigurationButton.addActionListener(this);
@@ -397,23 +395,23 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
         } else if (root.startsWith(":ext:")) {  // NOI18N
             boolean internalSsh = repositoryPanel.internalSshRadioButton.isSelected();
             storeProxySettings = internalSsh;
-            CvsRootSettings.ExtSettings extSettings = new CvsRootSettings.ExtSettings();
+            CvsModuleConfig.ExtSettings extSettings = new CvsModuleConfig.ExtSettings();
             extSettings.extUseInternalSsh = internalSsh;
             if (internalSsh) {
                 extSettings.extPassword = repositoryPanel.extPasswordField.getText();
                 extSettings.extRememberPassword = repositoryPanel.extREmemberPasswordCheckBox.isSelected();
             } else {
                 extSettings.extCommand = repositoryPanel.extCommandTextField.getText();
-                HistorySettings.getDefault().setExtCommand(extSettings.extCommand);
+                CvsModuleConfig.getDefault().getPreferences().put(EXT_COMMAND, extSettings.extCommand);
             }
-            CvsRootSettings.setExtSettingsFor(cvsRoot, extSettings);
+            CvsModuleConfig.getDefault().setExtSettingsFor(cvsRoot, extSettings);
         }
 
         if (storeProxySettings) {
-            CvsRootSettings.setProxyFor(cvsRoot, getProxyDescriptor());
+            CvsModuleConfig.getDefault().setProxyFor(cvsRoot, getProxyDescriptor());
         }
 
-        HistorySettings.addRecent(HistorySettings.PROP_CVS_ROOTS, root);
+        Utils.insert(CvsModuleConfig.getDefault().getPreferences(), RECENT_ROOTS, root, 8);
     }
 
     /**
@@ -455,11 +453,11 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
             CVSRoot root = getCVSRoot();
             if (userVisitedProxySettings == false) {
                 // load  proxy from history
-                proxyDescriptor = CvsRootSettings.getProxyFor(root);
+                proxyDescriptor = CvsModuleConfig.getDefault().getProxyFor(root);
             }
             if (CVSRoot.METHOD_EXT.equals(root.getMethod())) {
-                if (CvsRootSettings.hasExtSettingsFor(root)) {
-                    CvsRootSettings.ExtSettings extSettings = CvsRootSettings.getExtSettingsFor(root);
+                if (CvsModuleConfig.getDefault().hasExtSettingsFor(root)) {
+                    CvsModuleConfig.ExtSettings extSettings = CvsModuleConfig.getDefault().getExtSettingsFor(root);
                     repositoryPanel.internalSshRadioButton.setSelected(extSettings.extUseInternalSsh);
                     repositoryPanel.extPasswordField.setText(extSettings.extPassword);
                     repositoryPanel.extREmemberPasswordCheckBox.setSelected(extSettings.extRememberPassword);

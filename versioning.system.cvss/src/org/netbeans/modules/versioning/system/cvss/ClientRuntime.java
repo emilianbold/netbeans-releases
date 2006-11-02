@@ -32,7 +32,6 @@ import org.netbeans.lib.cvsclient.command.checkout.CheckoutCommand;
 import org.netbeans.lib.cvsclient.command.add.AddCommand;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.ui.selectors.ProxyDescriptor;
-import org.netbeans.modules.versioning.system.cvss.settings.CvsRootSettings;
 import org.netbeans.modules.proxy.ClientSocketFactory;
 import org.netbeans.modules.proxy.ConnectivitySettings;
 import org.openide.util.RequestProcessor;
@@ -318,7 +317,7 @@ public class ClientRuntime {
             return con;
         }
 
-        if (proxy == null ) proxy = CvsRootSettings.getProxyFor(cvsRoot);
+        if (proxy == null ) proxy = CvsModuleConfig.getDefault().getProxyFor(cvsRoot);
 
         SocketFactory factory = SocketFactory.getDefault();
         if (proxy.needsProxy(cvsRoot.getHostName())) {
@@ -332,7 +331,7 @@ public class ClientRuntime {
             con.setEncodedPassword(password);
             return con;
         } else if (CVSRoot.METHOD_EXT.equals(method)) {
-            CvsRootSettings.ExtSettings extSettings = CvsRootSettings.getExtSettingsFor(cvsRoot);
+            CvsModuleConfig.ExtSettings extSettings = CvsModuleConfig.getDefault().getExtSettingsFor(cvsRoot);
             String userName = cvsRoot.getUserName();
             String host = cvsRoot.getHostName();
             if (extSettings.extUseInternalSsh) {

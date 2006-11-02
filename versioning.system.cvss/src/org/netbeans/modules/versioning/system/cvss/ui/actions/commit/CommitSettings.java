@@ -23,7 +23,7 @@ import java.util.prefs.PreferenceChangeEvent;
 import javax.swing.*;
 import org.netbeans.lib.cvsclient.command.commit.CommitCommand;
 import org.netbeans.modules.versioning.system.cvss.*;
-import org.netbeans.modules.versioning.system.cvss.settings.CvsModuleConfig;
+import org.netbeans.modules.versioning.system.cvss.CvsModuleConfig;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.modules.versioning.util.ListenersSupport;
 
@@ -31,7 +31,6 @@ import javax.swing.event.TableModelListener;
 import javax.swing.event.TableModelEvent;
 import java.awt.Dimension;
 import java.awt.Toolkit;
-import java.beans.PropertyChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 
 /**
@@ -99,7 +98,7 @@ public class CommitSettings extends javax.swing.JPanel implements PreferenceChan
     
     public void addNotify() {
         super.addNotify();
-        CvsModuleConfig.getPreferences().addPreferenceChangeListener(this);
+        CvsModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
         commitTable.getTableModel().addTableModelListener(this);
         listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
         taMessage.selectAll();
@@ -108,7 +107,7 @@ public class CommitSettings extends javax.swing.JPanel implements PreferenceChan
 
     public void removeNotify() {
         commitTable.getTableModel().removeTableModelListener(this);
-        CvsModuleConfig.getPreferences().removePreferenceChangeListener(this);
+        CvsModuleConfig.getDefault().getPreferences().removePreferenceChangeListener(this);
         super.removeNotify();
     }
     

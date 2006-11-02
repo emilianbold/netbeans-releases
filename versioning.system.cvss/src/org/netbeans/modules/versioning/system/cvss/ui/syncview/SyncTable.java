@@ -44,7 +44,7 @@ import org.netbeans.modules.versioning.system.cvss.ui.actions.update.UpdateActio
 import org.netbeans.modules.versioning.system.cvss.ui.actions.update.GetCleanAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.diff.DiffAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.diff.ResolveConflictsAction;
-import org.netbeans.modules.versioning.system.cvss.settings.CvsModuleConfig;
+import org.netbeans.modules.versioning.system.cvss.CvsModuleConfig;
 import org.netbeans.modules.versioning.system.cvss.util.TableSorter;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.util.FilePathCellRenderer;
