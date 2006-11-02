@@ -144,9 +144,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
     public static final String BOLD = "<b>"; //NOI18N
     public static final String BOLD_END = "</b>"; //NOI18N
 
-    protected int substitutionOffset;
+    int substitutionOffset;
     
-    private JavaCompletionItem(int substitutionOffset) {
+    JavaCompletionItem(int substitutionOffset) {
         this.substitutionOffset = substitutionOffset;
     }
     
@@ -198,7 +198,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
         CompletionUtilities.renderHtml(getIcon(), getLeftHtmlText(), getRightHtmlText(), g, defaultFont, defaultColor, width, height, selected);
     }
 
-    protected abstract ImageIcon getIcon();
+    protected ImageIcon getIcon() {
+        return null;
+    }
     
     protected String getLeftHtmlText() {
         return null;

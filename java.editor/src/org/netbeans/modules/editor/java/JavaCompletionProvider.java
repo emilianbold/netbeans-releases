@@ -78,6 +78,19 @@ public class JavaCompletionProvider implements CompletionProvider {
         return new AsyncCompletionTask(query, Registry.getMostActiveComponent());
     }
     
+    public static List<? extends CompletionItem> query(JavaSource source, int queryType, int offset, int substitutionOffset) throws IOException {
+        assert source != null;
+        assert (queryType & COMPLETION_QUERY_TYPE) != 0;
+        JavaCompletionQuery query = new JavaCompletionQuery(queryType, offset);
+        source.runUserActionTask(query, false);
+        if (offset != substitutionOffset) {
+            for (JavaCompletionItem jci : query.results) {
+                jci.substitutionOffset += (substitutionOffset - offset);
+            }
+        }
+        return query.results;
+    }
+    
     static final class JavaCompletionQuery extends AsyncCompletionQuery implements CancellableTask<CompilationController> {
         
         private static final String ERROR = "<error>"; //NOI18N
@@ -166,7 +179,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             TRANSIENT_KEYWORD, VOID_KEYWORD, VOLATILE_KEYWORD
         };
         
-        private Collection<CompletionItem> results;
+        private List<JavaCompletionItem> results;
         private JToolTip toolTip;
         private CompletionDocumentation documentation;
         private int anchorOffset;
@@ -220,7 +233,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         if (toolTip != null)
                             resultSet.setToolTip(toolTip);
                     } else if (queryType == DOCUMENTATION_QUERY_TYPE) {
-                        if (doc != null)
+                        if (documentation != null)
                             resultSet.setDocumentation(documentation);
                     }
                     if (anchorOffset > -1)
@@ -412,7 +425,7 @@ public class JavaCompletionProvider implements CompletionProvider {
         
         private void resolveCompletion(CompilationController controller) throws IOException {
             Env env = getCompletionEnvironment(controller, true);
-            results = new ArrayList<CompletionItem>();
+            results = new ArrayList<JavaCompletionItem>();
             anchorOffset = env.getOffset();
             TreePath path = env.getPath();
             switch(path.getLeaf().getKind()) {
@@ -2810,15 +2823,13 @@ public class JavaCompletionProvider implements CompletionProvider {
             return true;
         }
         
-        private Collection getFilteredData(Collection<CompletionItem> data, String prefix) {
+        private Collection getFilteredData(Collection<JavaCompletionItem> data, String prefix) {
             if (prefix.length() == 0)
                 return data;
             List ret = new ArrayList();
-            for (Iterator<CompletionItem> it = data.iterator(); it.hasNext();) {
+            for (Iterator<JavaCompletionItem> it = data.iterator(); it.hasNext();) {
                 CompletionItem itm = it.next();
                 if (Utilities.startsWith(itm.getInsertPrefix().toString(), prefix))
-                    ret.add(itm);
-                else if (itm instanceof LazyTypeCompletionItem && Utilities.startsWith(((LazyTypeCompletionItem)itm).getItemText(), prefix))
                     ret.add(itm);
             }
             return ret;

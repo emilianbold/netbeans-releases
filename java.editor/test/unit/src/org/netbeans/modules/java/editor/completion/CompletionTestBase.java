@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Writer;
-import java.lang.Boolean;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -35,30 +34,24 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
-import javax.swing.JEditorPane;
-import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import junit.framework.Assert;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.lexer.JavaTokenId;
-import org.netbeans.api.java.source.SourceUtilsTestUtil;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtilsTestUtil2;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.editor.completion.CompletionImpl;
 import org.netbeans.modules.editor.completion.CompletionItemComparator;
-import org.netbeans.modules.editor.completion.CompletionResultSetImpl;
 import org.netbeans.modules.editor.java.JavaCompletionProvider;
 import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.java.JavaDataLoader;
-import org.netbeans.modules.java.JavaDataObject;
 import org.netbeans.modules.java.JavaDataObject.JavaEditorSupport;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.spi.editor.completion.CompletionProvider;
-import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 
@@ -113,10 +106,7 @@ public class CompletionTestBase extends NbTestCase {
     
     protected void setUp() throws Exception {
         XMLFileSystem system = new XMLFileSystem();
-        system.setXmlUrls(new URL[] {
-            JavaCompletionProviderBasicTest.class.getResource("/org/netbeans/modules/java/editor/resources/layer.xml"),
-            JavaCompletionProviderBasicTest.class.getResource("/org/netbeans/modules/defaults/mf-layer.xml")
-        });
+        system.setXmlUrl(JavaCompletionProviderBasicTest.class.getResource("/org/netbeans/modules/defaults/mf-layer.xml"));
         Repository repository = new Repository(system);
         File cacheFolder = new File(getWorkDir(), "var/cache/index");
         cacheFolder.mkdirs();
@@ -150,7 +140,6 @@ public class CompletionTestBase extends NbTestCase {
         };                               
         SharedClassObject loader = JavaDataLoader.findObject(JavaDataLoader.class, true);
         Lkp.initLookups(new Object[] {repository, loader, cpp});
-        JEditorPane.registerEditorKitForContentType("text/x-java", "org.netbeans.modules.editor.java.JavaKit");
         Utilities.setCaseSensitive(true);
     }
     
@@ -170,29 +159,11 @@ public class CompletionTestBase extends NbTestCase {
         final Document doc = ec.openDocument();
         assertNotNull(doc);
         doc.putProperty(Language.class, JavaTokenId.language());
-        JEditorPane editor = new JEditorPane();
-        editor.setDocument(doc);
         int textToInsertLength = textToInsert != null ? textToInsert.length() : 0;
         if (textToInsertLength > 0)
             doc.insertString(caretPos, textToInsert, null);
-        editor.setCaretPosition(caretPos + textToInsertLength);
-        
-        JavaCompletionProvider provider = new JavaCompletionProvider();
-        int queryType = CompletionProvider.COMPLETION_QUERY_TYPE;
-        final CompletionTask task = provider.createTask(queryType, editor);
-        CompletionImpl ci = CompletionImpl.get();
-        final CompletionResultSetImpl result = ci.createTestResultSet(task, queryType);
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                task.query(result.getResultSet());
-            }
-        });
-        long start = System.currentTimeMillis();
-        while(!result.isFinished() && start + FINISH_OUTTIME > System.currentTimeMillis())
-            Thread.sleep(100);
-        if (!result.isFinished())
-            fail("Result not finished in given time (" + FINISH_OUTTIME + ")");
-        List items = result.getItems();
+        JavaSource js = JavaSource.forDocument(doc);
+        List items = JavaCompletionProvider.query(js, CompletionProvider.COMPLETION_QUERY_TYPE, caretPos + textToInsertLength, caretPos + textToInsertLength);
         Collections.sort(items, CompletionItemComparator.BY_PRIORITY);
         
         File output = new File(getWorkDir(), getName() + ".out");

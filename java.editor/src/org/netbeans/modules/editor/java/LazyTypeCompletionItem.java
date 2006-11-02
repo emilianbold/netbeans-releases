@@ -39,7 +39,7 @@ import org.netbeans.spi.editor.completion.support.CompletionUtilities;
  *
  * @author Dusan Balek
  */
-public class LazyTypeCompletionItem implements LazyCompletionItem {
+public class LazyTypeCompletionItem extends JavaCompletionItem implements LazyCompletionItem {
     
     public static final LazyTypeCompletionItem create(String name, EnumSet<ElementKind> kinds, int substitutionOffset, CompilationInfo info) {
         return new LazyTypeCompletionItem(name, kinds, substitutionOffset, info);
@@ -50,16 +50,15 @@ public class LazyTypeCompletionItem implements LazyCompletionItem {
     private String simpleName;
     private String pkgName;
     private EnumSet<ElementKind> kinds;
-    private int substitutionOffset;
     private CompilationInfo info;
     
     private LazyTypeCompletionItem(String name, EnumSet<ElementKind> kinds, int substitutionOffset, CompilationInfo info) {
+        super(substitutionOffset);
         this.name = name;
         int idx = name.lastIndexOf('.'); //NOI18N
         this.simpleName = idx > -1 ? name.substring(idx + 1) : name;
         this.pkgName = idx > -1 ? name.substring(0, idx) : ""; //NOI18N
         this.kinds = kinds;
-        this.substitutionOffset = substitutionOffset;
         this.info = info;
     }
     
