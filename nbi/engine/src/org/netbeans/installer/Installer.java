@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.net.URLDecoder;
 
 import java.util.Locale;
 import java.util.Properties;
@@ -444,6 +445,7 @@ public class Installer {
                         try {
                             logManager.log(MESSAGE,
                                     "Downloading engine jar file from " + jarLocation);
+                            jarLocation = URLDecoder.decode(jarLocation,"UTF8");
                             jarfile = FileProxy.getInstance().getFile(jarLocation);
                         }  catch(DownloadException ex) {
                             logManager.log(WARNING,
@@ -453,21 +455,24 @@ public class Installer {
                         
                     }
                     
-                    if(jarfile!=null) {
-                        dest = new File(getLocalDirectory().getPath() +
-                                File.separator + name);
-                        if(!jarfile.getAbsolutePath().equals(dest.getAbsolutePath())) {
+                    dest = new File(getLocalDirectory().getPath() +
+                            File.separator + name);
+                    
+                    if(jarfile!=null) {                        
+                        if(!jarfile.getAbsolutePath().equals(dest.getAbsolutePath()) && jarfile.exists()) {                            
                             FileUtils.getInstance().copyFile(jarfile,dest);
                         }
                     }
-                    cachedEngineJarFile = dest;
+                    cachedEngineJarFile = (!dest.exists()) ? null : dest;
                     logManager.log(MESSAGE, "NBI Engine jar file = [" +
-                            cachedEngineJarFile + "], exist = " + cachedEngineJarFile.exists());
+                            cachedEngineJarFile + "], exist = " +
+                            ((cachedEngineJarFile==null) ? false : cachedEngineJarFile.exists()));
                 }
             }
             
         } catch (IOException ex) {
-            logManager.log(CRITICAL,"can`t cache installer engine");
+            logManager.log(CRITICAL, "can`t cache installer engine");
+            logManager.log(CRITICAL, ex);
         }
         logManager.unindent();
         logManager.log(MESSAGE, "... finished caching engine data");
