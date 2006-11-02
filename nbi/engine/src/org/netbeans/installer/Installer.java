@@ -85,6 +85,9 @@ public class Installer {
     public static final String NBI_LOOK_AND_FEEL_CLASS_NAME_PROPERTY =
             "nbi.look.and.feel";
     
+    public static final String CREATE_BUNDLE_PATH_PROPERTY = 
+            "nbi.create.bundle.path";
+    
     /** Errorcode to be used at normal exit */
     public static final int NORMAL_ERRORCODE = 0;
     
@@ -99,7 +102,9 @@ public class Installer {
     // Static
     private static Installer instance;
     
-    private static File cachedEngineJarFile;
+    private static LogManager   logManager   = LogManager.getInstance();
+    private static ErrorManager errorManager = ErrorManager.getInstance();
+    
     /**
      * Returns an instance of <code>Installer</code>. If the instance does not
      * exist - it is created.
@@ -115,8 +120,9 @@ public class Installer {
     private File localDirectory =
             new File(DEFAULT_LOCAL_DIRECTORY_PATH).getAbsoluteFile();
     
-    private LogManager   logManager   = LogManager.getInstance();
-    private ErrorManager errorManager = ErrorManager.getInstance();
+    private File cachedEngineJarFile;
+    
+    private InstallerExecutionMode executionMode = InstallerExecutionMode.NORMAL;
     
     // Constructor //////////////////////////////////////////////////////////////////
     /**
@@ -249,6 +255,14 @@ public class Installer {
         return localDirectory;
     }
     
+    public File getCachedEngineJarFile() {
+        return cachedEngineJarFile;
+    }
+    
+    public InstallerExecutionMode getExecutionMode() {
+        return executionMode;
+    }
+    
     // Private stuff ////////////////////////////////////////////////////////////////
     /**
      * Parses the command line arguments passed to the installer. All unknown
@@ -338,6 +352,86 @@ public class Installer {
                 logManager.unindent();
                 continue;
             }
+            
+            if (arguments[i].equalsIgnoreCase("--state")) {
+                logManager.log(MESSAGE, "parsing command line parameter \"--state\"");
+                logManager.indent();
+                
+                if (i < arguments.length - 1) {
+                    String value = arguments[i + 1];
+                    
+                    File stateFile = new File(value).getAbsoluteFile();
+                    if (!stateFile.exists()) {
+                        ErrorManager.getInstance().notify(WARNING, "The specified state file \"" + stateFile + "\", does not exist. \"--state\" parameter is ignored.");
+                    } else {
+                        System.setProperty(ProductRegistry.SOURCE_STATE_FILE_PATH_PROPERTY, stateFile.getAbsolutePath());
+                    }
+                    
+                    i = i + 1;
+                } else {
+                    ErrorManager.getInstance().notify(WARNING, "Required parameter missing for command line argument \"--state\". Should be \"--state <state-file-path>\".");
+                }
+                
+                logManager.unindent();
+                continue;
+            }
+            
+            if (arguments[i].equalsIgnoreCase("--record")) {
+                logManager.log(MESSAGE, "parsing command line parameter \"--record\"");
+                logManager.indent();
+                
+                if (i < arguments.length - 1) {
+                    String value = arguments[i + 1];
+                    
+                    File stateFile = new File(value).getAbsoluteFile();
+                    if (stateFile.exists()) {
+                        ErrorManager.getInstance().notify(WARNING, "The specified state file \"" + stateFile + "\", exists. \"--record\" parameter is ignored.");
+                    } else {
+                        System.setProperty(ProductRegistry.TARGET_STATE_FILE_PATH_PROPERTY, stateFile.getAbsolutePath());
+                    }
+                    
+                    i = i + 1;
+                } else {
+                    ErrorManager.getInstance().notify(WARNING, "Required parameter missing for command line argument \"--record\". Should be \"--record <state-file-path>\".");
+                }
+                
+                logManager.unindent();
+                continue;
+            }
+            
+            if (arguments[i].equalsIgnoreCase("--silent")) {
+                logManager.log(MESSAGE, "parsing command line parameter \"--silent\"");
+                logManager.indent();
+                
+                System.setProperty(Wizard.SILENT_MODE_ACTIVE_PROPERTY, "true");
+                
+                logManager.unindent();
+                continue;
+            }
+            
+            if (arguments[i].equalsIgnoreCase("--create-bundle")) {
+                logManager.log(MESSAGE, "parsing command line parameter \"--create-bundle\"");
+                logManager.indent();
+                
+                if (i < arguments.length - 1) {
+                    String value = arguments[i + 1];
+                    
+                    File targetFile = new File(value).getAbsoluteFile();
+                    if (targetFile.exists()) {
+                        ErrorManager.getInstance().notify(WARNING, "The specified target file \"" + targetFile + "\", exists. \"--create-bundle\" parameter is ignored.");
+                    } else {
+                        executionMode = InstallerExecutionMode.CREATE_BUNDLE;
+                        System.setProperty(CREATE_BUNDLE_PATH_PROPERTY, targetFile.getAbsolutePath());
+                    }
+                    
+                    i = i + 1;
+                } else {
+                    ErrorManager.getInstance().notify(WARNING, "Required parameter missing for command line argument \"--create-bundle\". Should be \"--create-bundle <target-file-path>\".");
+                }
+                
+                logManager.unindent();
+                continue;
+            }
         }
         
         if (arguments.length == 0) {
@@ -413,6 +507,7 @@ public class Installer {
         logManager.unindent();
         logManager.log(MESSAGE, "... finished initializing local directory");
     }
+    
     private void cacheEngineLocally() {
         logManager.log(MESSAGE, "cache engine data locally to run uninstall in the future");
         logManager.indent();
@@ -477,7 +572,11 @@ public class Installer {
         logManager.unindent();
         logManager.log(MESSAGE, "... finished caching engine data");
     }
-    public File getCachedEngineJarFile() {
-        return cachedEngineJarFile;
+    
+    /////////////////////////////////////////////////////////////////////////////////
+    // Inner classes
+    public static enum InstallerExecutionMode {
+        NORMAL,
+        CREATE_BUNDLE;
     }
 }

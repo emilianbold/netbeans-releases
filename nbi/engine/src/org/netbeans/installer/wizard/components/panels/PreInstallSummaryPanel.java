@@ -163,6 +163,16 @@ public class PreInstallSummaryPanel extends DefaultWizardPanel {
         
     }
     
+    public boolean canExecuteForward() {
+        return ProductRegistry.getInstance().getComponentsToInstall().size() + 
+                ProductRegistry.getInstance().getComponentsToUninstall().size() > 0;
+    }
+    
+    public boolean canExecuteBackward() {
+        return ProductRegistry.getInstance().getComponentsToInstall().size() + 
+                ProductRegistry.getInstance().getComponentsToUninstall().size() > 0;
+    }
+    
     public static final String MESSAGE_TEXT_PROPERTY = "message.text";
     public static final String MESSAGE_CONTENT_TYPE_PROPERTY = "message.content.type";
     public static final String COMPONENTS_TO_INSTALL_LABEL_TEXT_PROPERTY = "components.to.install.label.text";

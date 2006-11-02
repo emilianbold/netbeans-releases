@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  The contents of this file are subject to the terms of the Common Development
+  and Distribution License (the License). You may not use this file except in
+  compliance with the License.
+  
+  You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+  or http://www.netbeans.org/cddl.txt.
+  
+  When distributing Covered Code, include this CDDL Header Notice in each file
+  and include the License file at http://www.netbeans.org/cddl.txt.
+  If applicable, add the following below the CDDL Header, with the fields
+  enclosed by brackets [] replaced by your own identifying information:
+  "Portions Copyrighted [year] [name of copyright owner]"
+  
+  The Original Software is NetBeans. The Initial Developer of the Original
+  Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+  Microsystems, Inc. All Rights Reserved.
+   
+  $Id$
+-->
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+    <xsd:element name="state">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="properties" type="properties-list-type" minOccurs="0"/>
+                <xsd:element name="components" type="components-list-type" minOccurs="0"/>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+    
+    <xsd:complexType name="properties-list-type">
+        <xsd:sequence>
+            <xsd:element name="property" minOccurs="1" maxOccurs="unbounded">
+                <xsd:complexType>
+                    <xsd:simpleContent>
+                        <xsd:extension base="xsd:string">
+                            <xsd:attribute name="name" type="xsd:string"/>
+                        </xsd:extension>
+                    </xsd:simpleContent>
+                </xsd:complexType>
+            </xsd:element>
+        </xsd:sequence>
+    </xsd:complexType>
+    
+    <xsd:complexType name="components-list-type">
+        <xsd:sequence>
+            <xsd:element name="component" type="component-type" minOccurs="1" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    
+    <xsd:complexType name="component-type">
+        <xsd:sequence>
+            <xsd:element name="properties" type="properties-list-type" minOccurs="0"/>
+            <xsd:element name="components" type="components-list-type" minOccurs="0"/>
+        </xsd:sequence>
+        <xsd:attribute name="uid" type="xsd:string"/>
+        <xsd:attribute name="version" type="xsd:string"/>
+        <xsd:attribute name="platform">
+            <xsd:simpleType>
+                <xsd:list itemType="platform-type"/>
+            </xsd:simpleType>
+        </xsd:attribute>
+        <xsd:attribute name="status" type="status-type"/>
+    </xsd:complexType>
+    
+    <xsd:simpleType name="platform-type">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="all"/>
+            <xsd:enumeration value="windows"/>
+            <xsd:enumeration value="linux"/>
+            <xsd:enumeration value="solaris-x86"/>
+            <xsd:enumeration value="solaris-sparc"/>
+            <xsd:enumeration value="macos-x-ppc"/>
+            <xsd:enumeration value="macos-x-x86"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    
+    <xsd:simpleType name="status-type">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="not-installed"/>
+            <xsd:enumeration value="to-be-installed"/>
+            <xsd:enumeration value="installed"/>
+            <xsd:enumeration value="to-be-uninstalled"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+</xsd:schema>
