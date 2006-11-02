@@ -33,8 +33,7 @@ import org.netbeans.jellytools.modules.j2ee.actions.StopAction;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
-//retouche:
-//import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
+import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 
 /** Node representing a J2EE Server node under Servers node.
  * <p>
@@ -138,71 +137,66 @@ public class J2eeServerNode extends Node {
     //// PRIVATE METHODS ////
     
     private void waitDebugging() {
-//retouche:
-//        waitServerState(ServerInstance.STATE_DEBUGGING);
+        waitServerState(ServerInstance.STATE_DEBUGGING);
     }
     
     private void waitRunning() {
-//retouche:
-//        waitServerState(ServerInstance.STATE_RUNNING);
+        waitServerState(ServerInstance.STATE_RUNNING);
     }
     
     private void waitStopped() {
-//retouche:
-//        waitServerState(ServerInstance.STATE_STOPPED);
+        waitServerState(ServerInstance.STATE_STOPPED);
     }
 
     private void waitServerState(int state) {
-//retouche:
-//        org.openide.nodes.Node ideNode = (org.openide.nodes.Node) getOpenideNode();
-//        final ServerInstance server = (ServerInstance) ideNode.getCookie(
-//                ServerInstance.class);
-//        final int targetState = state;
-//        waitFor(new Waitable() {
-//            public Object actionProduced(Object obj) {
-//                if (server.getServerState() == targetState) {
-//                    return "Server state: "+getStateName()+" reached.";
-//                }
-//                return null;
-//            }
-//            public String getDescription() {
-//                return "Wait for server state: "+getStateName();
-//            }
-//            private String getStateName() {
-//                switch (targetState) {
-//                    case ServerInstance.STATE_DEBUGGING:
-//                        return "DEBUGGING";
-//                    case ServerInstance.STATE_RUNNING:
-//                        return "RUNNING";
-//                    case ServerInstance.STATE_STOPPED:
-//                        return "STOPPED";
-//                    case ServerInstance.STATE_SUSPENDED:
-//                        return "SUSPENDED";
-//                    case ServerInstance.STATE_WAITING:
-//                        return "WAITING";
-//                    default:
-//                        return "UNKNOWN STATE";
-//                }
-//            }
-//        });
+        org.openide.nodes.Node ideNode = (org.openide.nodes.Node) getOpenideNode();
+        final ServerInstance server = (ServerInstance) ideNode.getCookie(
+                ServerInstance.class);
+        final int targetState = state;
+        waitFor(new Waitable() {
+            public Object actionProduced(Object obj) {
+                if (server.getServerState() == targetState) {
+                    return "Server state: "+getStateName()+" reached.";
+                }
+                return null;
+            }
+            public String getDescription() {
+                return "Wait for server state: "+getStateName();
+            }
+            private String getStateName() {
+                switch (targetState) {
+                    case ServerInstance.STATE_DEBUGGING:
+                        return "DEBUGGING";
+                    case ServerInstance.STATE_RUNNING:
+                        return "RUNNING";
+                    case ServerInstance.STATE_STOPPED:
+                        return "STOPPED";
+                    case ServerInstance.STATE_SUSPENDED:
+                        return "SUSPENDED";
+                    case ServerInstance.STATE_WAITING:
+                        return "WAITING";
+                    default:
+                        return "UNKNOWN STATE";
+                }
+            }
+        });
     }
     
     private void waitNotWaiting() {
-//retouche:
-//        org.openide.nodes.Node ideNode = (org.openide.nodes.Node) getOpenideNode();
-//        final ServerInstance server = (ServerInstance) ideNode.getCookie(
-//                ServerInstance.class);
-//        waitFor(new Waitable() {
-//            public Object actionProduced(Object obj) {
-//                if (server.getServerState() != ServerInstance.STATE_WAITING) {
-//                    return "Server leaves WAITING state.";
-//                }
-//                return null;
-//            }
-//            public String getDescription() {
-//                return "Wait till server leaves state WAITING.";
-//            }
-//        });
+        org.openide.nodes.Node ideNode = (org.openide.nodes.Node) getOpenideNode();
+        final ServerInstance server = (ServerInstance) ideNode.getCookie(
+                ServerInstance.class);
+        waitFor(new Waitable() {
+            public Object actionProduced(Object obj) {
+                if (server.getServerState() != ServerInstance.STATE_WAITING) {
+                    return "Server leaves WAITING state.";
+                }
+                return null;
+            }
+            public String getDescription() {
+                return "Wait till server leaves state WAITING.";
+            }
+        });
     }
     
     private static Object waitFor(Waitable action) {

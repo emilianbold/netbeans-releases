@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.jellytools;
 
+import com.sun.source.tree.CompilationUnitTree;
+import java.io.IOException;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Collections;
@@ -28,13 +30,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
-//retouche:
-//import org.netbeans.jmi.javamodel.Resource;
-//import org.netbeans.modules.javacore.api.JavaModel;
-//import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -160,7 +163,7 @@ public class JellyTestCaseWizardIterator implements TemplateWizard.Iterator {
     }
     
     /** Create a new file from template. */
-    public Set instantiate(TemplateWizard wizard) throws IOException {
+    public Set<DataObject> instantiate(TemplateWizard wizard) throws IOException {
         DataObject createdDO = wizard.getTemplate().createFromTemplate(wizard.getTargetFolder(), wizard.getTargetName());
         setPackageName(createdDO);
         return Collections.singleton(createdDO);
@@ -171,7 +174,7 @@ public class JellyTestCaseWizardIterator implements TemplateWizard.Iterator {
      * from wizard panel and set it after DataObject from template is created.
      */
     private void setPackageName(DataObject createdDO) {
-        String packageNameFromPanel;
+        final String packageNameFromPanel;
         try {
             // find NetBeans SystemClassLoader in threads hierarchy
             ThreadGroup tg = Thread.currentThread().getThreadGroup();
@@ -190,22 +193,36 @@ public class JellyTestCaseWizardIterator implements TemplateWizard.Iterator {
             
             // get package name from panel
             Class clazz = Class.forName("org.netbeans.modules.java.project.JavaTargetChooserPanelGUI", false, systemClassloader); //NOI18N
-            Method method = clazz.getDeclaredMethod("getPackageName", null); //NOI18N
+            Method method = clazz.getDeclaredMethod("getPackageName", (Class[])null); //NOI18N
             method.setAccessible(true);
-            packageNameFromPanel = method.invoke(targetPanel.getComponent(), null).toString();
+            packageNameFromPanel = method.invoke(targetPanel.getComponent(), (Object[])null).toString();
         } catch (Exception e) {
             // log and ignore
             Logger.getAnonymousLogger().log(Level.WARNING, "Problem when using reflection to correct package name.", e); // NOI18N
             return;
         }
         // set package name
-//retouche:
-//        JavaMetamodel.getDefaultRepository().beginTrans(true);
-//        try {
-//            Resource res = JavaModel.getResource(createdDO.getPrimaryFile());
-//            res.setPackageName(packageNameFromPanel);
-//        } finally {
-//            JavaMetamodel.getDefaultRepository().endTrans();
-//        }
+        JavaSource js = JavaSource.forFileObject(createdDO.getPrimaryFile());
+        try {
+            js.runModificationTask(new CancellableTask<WorkingCopy>() {
+                public void run(WorkingCopy workingCopy) throws IOException {
+                    workingCopy.toPhase(Phase.RESOLVED);
+                    CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                    TreeMaker make = workingCopy.getTreeMaker();
+                    CompilationUnitTree copy = make.CompilationUnit(
+                        make.Identifier(packageNameFromPanel),
+                        cut.getImports(),
+                        cut.getTypeDecls(),
+                        cut.getSourceFile()
+                    );
+                    workingCopy.rewrite(cut, copy);
+                }
+                
+                public void cancel() {
+                }
+            }).commit();
+        } catch (IOException e) {
+            Logger.getLogger("").log(Level.SEVERE, e.getMessage(), e);
+        }
     }
 }

@@ -71,7 +71,7 @@ public class SaveAllAction extends Action {
                     return("Wait SaveAllAction is finished.");
                 }
             });
-            SystemAction saveAllAction = SystemAction.get(Class.forName(systemActionClassname));
+            SystemAction saveAllAction = SystemAction.get(Class.forName(systemActionClassname).asSubclass(SystemAction.class));
             waiter.waitAction(saveAllAction);
         } catch(InterruptedException e) {
             throw new JemmyException("Waiting interrupted.", e);
