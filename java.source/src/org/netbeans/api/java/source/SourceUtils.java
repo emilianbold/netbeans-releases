@@ -455,7 +455,7 @@ public class SourceUtils {
         public FieldDocImpl getFieldDoc(VarSymbol var) {
             if (isFromClassFile(var)) {
                 Context ctx = getSourceContextFor(cpInfo, Phase.ELEMENTS_RESOLVED, var);
-                if (ctx != null) {
+                if (ctx != null && ctx != this.ctx) {
                     Element e = getSourceElementFor(var, ctx);
                     if (e != null)
                         return DocEnv.instance(ctx).getFieldDoc((VarSymbol)e);
@@ -467,7 +467,7 @@ public class SourceUtils {
         public ClassDocImpl getClassDoc(ClassSymbol clazz) {
             if (isFromClassFile(clazz)) {
                 Context ctx = getSourceContextFor(cpInfo, Phase.ELEMENTS_RESOLVED, clazz);
-                if (ctx != null) {
+                if (ctx != null && ctx != this.ctx) {
                     Element e = getSourceElementFor(clazz, ctx);
                     if (e != null)
                         return DocEnv.instance(ctx).getClassDoc((ClassSymbol)e);
@@ -479,7 +479,7 @@ public class SourceUtils {
         public MethodDocImpl getMethodDoc(MethodSymbol meth) {
             if (isFromClassFile(meth)) {
                 Context ctx = getSourceContextFor(cpInfo, Phase.ELEMENTS_RESOLVED, meth);
-                if (ctx != null) {
+                if (ctx != null && ctx != this.ctx) {
                     Element e = getSourceElementFor(meth, ctx);
                     if (e != null)
                         return DocEnv.instance(ctx).getMethodDoc((MethodSymbol)e);
@@ -491,7 +491,7 @@ public class SourceUtils {
         public ConstructorDocImpl getConstructorDoc(MethodSymbol meth) {
             if (isFromClassFile(meth)) {
                 Context ctx = getSourceContextFor(cpInfo, Phase.ELEMENTS_RESOLVED, meth);
-                if (ctx != null) {
+                if (ctx != null && ctx != this.ctx) {
                     Element e = getSourceElementFor(meth, ctx);
                     if (e != null)
                         return DocEnv.instance(ctx).getConstructorDoc((MethodSymbol)e);
