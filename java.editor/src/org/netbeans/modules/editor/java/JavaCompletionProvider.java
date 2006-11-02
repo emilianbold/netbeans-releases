@@ -604,6 +604,8 @@ public class JavaCompletionProvider implements CompletionProvider {
             SourcePositions sourcePositions = env.getSourcePositions();
             CompilationUnitTree root = env.getRoot();
             int startPos = (int)sourcePositions.getEndPosition(root, cls.getModifiers()) + 1;
+            if (startPos <= 0)
+                startPos = (int)sourcePositions.getStartPosition(root, cls);
             String headerText = controller.getText().substring(startPos, offset);
             int idx = headerText.indexOf('{'); //NOI18N
             if (idx >= 0) {

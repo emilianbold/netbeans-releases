@@ -197,7 +197,10 @@ public final class TreeUtilities {
         switch (path.getLeaf().getKind()) {
             case CLASS:
                 ClassTree ct = (ClassTree)path.getLeaf();
-                if (info.getText().substring((int)sourcePositions.getEndPosition(root, ct.getModifiers()), pos).indexOf('{') >= 0)
+                int startPos = (int)sourcePositions.getEndPosition(root, ct.getModifiers()) + 1;
+                if (startPos <= 0)
+                    startPos = (int)sourcePositions.getStartPosition(root, ct);
+                if (info.getText().substring(startPos, pos).indexOf('{') >= 0)
                     path = new TreePath(path, ct.getMembers().get(0));
                 break;
             case BLOCK:
