@@ -23,7 +23,6 @@ import javax.swing.SwingUtilities;
 import org.netbeans.modules.subversion.util.FileUtils;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.subversion.client.SvnClient;
-import org.openide.util.RequestProcessor;
 import org.openide.ErrorManager;
 
 import java.io.File;
@@ -33,6 +32,7 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
+import org.netbeans.modules.versioning.util.Utils;
 import org.tigris.subversion.svnclientadapter.*;
 
 /**
@@ -42,9 +42,6 @@ import org.tigris.subversion.svnclientadapter.*;
  */
 class FilesystemHandler extends VCSInterceptor {
         
-    // TODO: perform tasks asynchronously if possible
-    private static final RequestProcessor  eventProcessor = new RequestProcessor("Subversion FS Monitor", 1); // NOI18N
-
     private final Subversion svn;
     private final FileStatusCache   cache;
     
@@ -76,19 +73,23 @@ class FilesystemHandler extends VCSInterceptor {
         }
     }
 
-    public void afterDelete(File file) {
-        // needed for external deletes; othewise, beforeDelete is quicker
-        if (file != null) {
-            if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_NOTVERSIONED_EXCLUDED) == 0) {
-                // file is already deleted, cache contains null for up-to-date file
-                // for deleted files it'd mean FILE_INFORMATION_UNKNOWN
-                // on the other hand cache keeps all folders regardless their status
-                File probe = file.getParentFile();
-                if ((cache.getStatus(probe).getStatus() & FileInformation.STATUS_VERSIONED) != 0) {
-                    fileDeletedImpl(file);
+    public void afterDelete(final File file) {
+        Utils.post(new Runnable() {
+            public void run() {
+                // needed for external deletes; othewise, beforeDelete is quicker
+                if (file != null) {
+                    if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_NOTVERSIONED_EXCLUDED) == 0) {
+                        // file is already deleted, cache contains null for up-to-date file
+                        // for deleted files it'd mean FILE_INFORMATION_UNKNOWN
+                        // on the other hand cache keeps all folders regardless their status
+                        File probe = file.getParentFile();
+                        if ((cache.getStatus(probe).getStatus() & FileInformation.STATUS_VERSIONED) != 0) {
+                            fileDeletedImpl(file);
+                        }
+                    }
                 }
             }
-        }
+        });
     }
 
     public boolean beforeMove(File from, File to) {
@@ -140,15 +141,19 @@ class FilesystemHandler extends VCSInterceptor {
         }
     }
 
-    public void afterMove(File from, File to) {
-        cache.refresh(to, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-        File parent = to.getParentFile();
-        if (parent != null) {
-            if (from.equals(to)) {
-                ErrorManager.getDefault().log(ErrorManager.WARNING, "Wrong (identity) rename event for " + from.getAbsolutePath()); // NOI18N
+    public void afterMove(final File from, final File to) {
+        Utils.post(new Runnable() {
+            public void run() {
+                cache.refresh(to, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+                File parent = to.getParentFile();
+                if (parent != null) {
+                    if (from.equals(to)) {
+                        ErrorManager.getDefault().log(ErrorManager.WARNING, "Wrong (identity) rename event for " + from.getAbsolutePath()); // NOI18N
+                    }
+                    cache.refresh(from, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+                }
             }
-            cache.refresh(from, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-        }
+        });
     }
     
     public boolean beforeCreate(File file, boolean isDirectory) {
@@ -183,14 +188,28 @@ class FilesystemHandler extends VCSInterceptor {
     public void doCreate(File file, boolean isDirectory) throws IOException {
     }
 
-    public void afterCreate(File file) {
-        fileCreatedImpl(file);
+    public void afterCreate(final File file) {
+        Utils.post(new Runnable() {
+            public void run() {
+                if (file == null) return;
+                int status = cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN).getStatus();
+
+                if ((status & FileInformation.STATUS_MANAGED) == 0) return;
+
+//        if (properties_changed) cache.directoryContentChanged(file.getParentFile());
+                if (file.isDirectory()) cache.directoryContentChanged(file);
+            }
+        });
     }
     
-    public void afterChange(File file) {
-        if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_MANAGED) != 0) {
-            cache.refreshCached(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-        }
+    public void afterChange(final File file) {
+        Utils.post(new Runnable() {
+            public void run() {
+                if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_MANAGED) != 0) {
+                    cache.refreshCached(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+                }
+            }
+        });
     }
 
     /**
@@ -206,16 +225,6 @@ class FilesystemHandler extends VCSInterceptor {
     }
     
     // private methods ---------------------------
-    
-    private void fileCreatedImpl(File file) {
-        if (file == null) return;
-        int status = cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN).getStatus();
-
-        if ((status & FileInformation.STATUS_MANAGED) == 0) return;
-
-//        if (properties_changed) cache.directoryContentChanged(file.getParentFile());
-        if (file.isDirectory()) cache.directoryContentChanged(file);
-    }
 
     /**
      * If a regular file is deleted then update its Entries as if it has been removed.

@@ -369,30 +369,32 @@ public class Subversion {
             }
         }
 
-        // SQ acquires project locks, it is only safe to call it in a separate thread
-        RequestProcessor.Task task = org.netbeans.modules.versioning.util.Utils.createTask(new Runnable() {
-            public void run() {
-                try {
-                    if (SharabilityQuery.getSharability(file) != SharabilityQuery.NOT_SHARABLE) {
-                        return;
-                    }
-                    // BEWARE: In NetBeans VISIBILTY == SHARABILITY ... and we hide Locally Removed folders => we must not Ignore them by mistake
-                    FileInformation info = fileStatusCache.getCachedStatus(file); // getStatus may cause stack overflow
-                    if (SubversionVisibilityQuery.isHiddenFolder(info, file)) {
-                        return;
-                    }
-                    // if IDE-ignore-root then propagate IDE opinion to Subversion svn:ignore
-                    if (SharabilityQuery.getSharability(parent) !=  SharabilityQuery.NOT_SHARABLE) {
+        if (SharabilityQuery.getSharability(file) == SharabilityQuery.NOT_SHARABLE) {
+            try {
+                // BEWARE: In NetBeans VISIBILTY == SHARABILITY ... and we hide Locally Removed folders => we must not Ignore them by mistake
+                FileInformation info = fileStatusCache.getCachedStatus(file); // getStatus may cause stack overflow
+                if (SubversionVisibilityQuery.isHiddenFolder(info, file)) {
+                    return false;
+                }
+                // if IDE-ignore-root then propagate IDE opinion to Subversion svn:ignore
+                if (SharabilityQuery.getSharability(parent) !=  SharabilityQuery.NOT_SHARABLE) {
+                    if ((fileStatusCache.getStatus(parent).getStatus() & FileInformation.STATUS_VERSIONED) != 0) {
                         IgnoreAction.ignore(file);
                     }
-                } catch (SVNClientException ex) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 }
+            } catch (SVNClientException ex) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             }
-        });
-        task.schedule(20);
-        return false;
-    }    
+            return true;
+        } else {
+            // backward compatability #68124
+            if (".nbintdb".equals(name)) {  // NOI18N
+                return true;
+            }
+
+            return false;    
+        }
+    }
 
     /**
      * Serializes all SVN requests (moves them out of AWT).

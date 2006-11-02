@@ -97,7 +97,7 @@ public class IgnoreAction extends ContextAction {
             return false;
         }
         List<String> patternsList = getMatchingPatterns(patterns, file.getName(), true);
-        return patternsList != null && !patternsList.get(0).equals("");        
+        return patternsList.size() > 0 && !patternsList.get(0).equals("");        
     }
 
     private List<String> getMatchingPatterns(List<String> patterns, String value, boolean onlyFirtsMatch) {                

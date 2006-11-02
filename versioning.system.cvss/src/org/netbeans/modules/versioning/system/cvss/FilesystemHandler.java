@@ -20,10 +20,10 @@
 package org.netbeans.modules.versioning.system.cvss;
 
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
+import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.lib.cvsclient.admin.StandardAdminHandler;
 import org.netbeans.lib.cvsclient.admin.Entry;
 import org.netbeans.lib.cvsclient.admin.AdminHandler;
-import org.openide.util.RequestProcessor;
 import org.openide.ErrorManager;
 
 import java.io.File;
@@ -38,12 +38,7 @@ import java.util.regex.Pattern;
  */
 class FilesystemHandler extends VCSInterceptor {
         
-    private static final String METADATA_PATTERN = File.separator + CvsVersioningSystem.FILENAME_CVS;
-
     private static final Pattern metadataPattern = Pattern.compile(".*\\" + File.separatorChar + "CVS(\\" + File.separatorChar + ".*|$)");
-    
-    // TODO: perform tasks asynchronously if possible
-    private final RequestProcessor rp = new RequestProcessor("VCS-Interceptor", 1); // NOI18N            
     
     private final FileStatusCache   cache;
     private static Thread ignoredThread;
@@ -75,9 +70,13 @@ class FilesystemHandler extends VCSInterceptor {
         }
     }
 
-    public void afterDelete(File file) {
-        if (ignoringEvents() || !shouldHandle(file)) return;
-        fileDeletedImpl(file);
+    public void afterDelete(final File file) {
+        if (ignoringEvents()) return;
+        Utils.post(new Runnable() {
+            public void run() {
+                fileDeletedImpl(file);
+            }
+        });
     }
     
     /**
@@ -154,15 +153,18 @@ class FilesystemHandler extends VCSInterceptor {
         }
     }
 
-    public void afterMove(File from, File to) {
+    public void afterMove(final File from, final File to) {
         if (ignoringEvents()) return;
-        if (!shouldHandle(from) && !shouldHandle(to)) return;
-        fileDeletedImpl(from);
-        fileCreatedImpl(to);
+        Utils.post(new Runnable() {
+            public void run() {
+                fileDeletedImpl(from);
+                fileCreatedImpl(to);
+            }
+        });
     }
     
     public boolean beforeCreate(File file, boolean isDirectory) {
-        if (ignoringEvents() || !shouldHandle(file)) return false;
+        if (ignoringEvents()) return false;
         if (file.getName().equals(CvsVersioningSystem.FILENAME_CVS)) {
             if (file.isDirectory()) {
                 File f = new File(file, CvsLiteAdminHandler.INVALID_METADATA_MARKER);
@@ -188,52 +190,26 @@ class FilesystemHandler extends VCSInterceptor {
         }
     }
 
-    public void afterCreate(File file) {
-        if (ignoringEvents() || !shouldHandle(file)) return;
-        fileCreatedImpl(file);
+    public void afterCreate(final File file) {
+        if (ignoringEvents()) return;
+        Utils.post(new Runnable() {
+            public void run() {
+                fileCreatedImpl(file);
+            }
+        });
     }
 
-    public void afterChange(File file) {
-        if (ignoringEvents() || !shouldHandle(file)) return;
-        cache.refreshCached(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-        if (file.getName().equals(CvsVersioningSystem.FILENAME_CVSIGNORE)) cache.directoryContentChanged(file.getParentFile());
+    public void afterChange(final File file) {
+        if (ignoringEvents()) return;
+        Utils.post(new Runnable() {
+            public void run() {
+                cache.refreshCached(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+                if (file.getName().equals(CvsVersioningSystem.FILENAME_CVSIGNORE)) cache.directoryContentChanged(file.getParentFile());
+            }
+        });
     }
 
     // private methods ---------------------------
-
-    /**
-     * Determines whether changes to a given FileObject should be handled.
-     * 
-     * @param file File that changed somehow
-     * @return true if events coming from the given FileObject should be handled by this versioning module, false otherwise
-     */ 
-    private boolean shouldHandle(File file) {
-        
-        // IMPLEMENTATION NOTE: 
-        // Strictly speaking, we should NOT rely on FileStatusCache in this method because call to this method PRECEDES 
-        // updates to the cache and thus in this moment status of files in the cache, particulary status of this file is 
-        // most probably wrong and will be updated only once this call returns TRUE.
-        // But since the cache is fast, we will use it for all files except those that do not exist.
-
-        // also process events from CVS/ metadata dir, which would otherwise be reported as NOT_MANAGED by the cache
-        String path = file.getAbsolutePath();
-
-        int idx = path.lastIndexOf(METADATA_PATTERN);
-        if (idx != -1) {
-            if (idx == path.length() - 4) return true;
-            if (path.charAt(idx + 4) == File.separatorChar) {
-                return path.indexOf(File.separatorChar, idx + 5) == -1;
-            }
-        }
-
-        for (;;) {
-            if (file.exists()) break;
-            file = file.getParentFile();
-            if (file == null) return true;  // be on the safe side
-        }
-        int status = cache.getStatus(file).getStatus();
-        return (status & FileInformation.STATUS_MANAGED) != 0;
-    }
 
     private void fileCreatedImpl(File file) {
         if (file == null) return;

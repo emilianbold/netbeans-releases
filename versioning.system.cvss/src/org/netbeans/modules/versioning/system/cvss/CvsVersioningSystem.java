@@ -296,27 +296,21 @@ public class CvsVersioningSystem {
             if (pattern.matcher(name).matches()) return true;
         }
         
-        // SQ acquires project locks, it is only safe to call it in a separate thread
-        RequestProcessor.Task task = org.netbeans.modules.versioning.util.Utils.createTask(new Runnable() {
-            public void run() {
-                if (SharabilityQuery.getSharability(file) == SharabilityQuery.NOT_SHARABLE) {
-                    // BEWARE: In NetBeans VISIBILTY == SHARABILITY ... and we hide Locally Removed folders => we must not Ignore them by mistake
-                    if (!CvsVisibilityQuery.isHiddenFolder(file)) {
-                        File parent = file.getParentFile();
-                        if (SharabilityQuery.getSharability(parent) !=  SharabilityQuery.NOT_SHARABLE) {
-                            try {
-                                setIgnored(file);
-                                fileStatusCache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-                            } catch (IOException e) {
-                                // strange, but does no harm
-                            }
-                        }
-                    }
-                }
+        int sharability = SharabilityQuery.getSharability(file);
+        if (sharability == SharabilityQuery.NOT_SHARABLE) {
+            // BEWARE: In NetBeans VISIBILTY == SHARABILITY ... and we hide Locally Removed folders => we must not Ignore them by mistake
+            if (CvsVisibilityQuery.isHiddenFolder(file)) {
+                return false;
             }
-        });
-        task.schedule(20);
-        return false;
+            try {
+                setIgnored(file);
+            } catch (IOException e) {
+                // strange, but does no harm
+            }
+            return true;
+        } else {
+            return false;
+        }
     }
     
     private void addUserPatterns(Set patterns) {
