@@ -110,12 +110,12 @@ public class SetMainProjectTest extends NbTestCase {
             //ignore....
         }
         
-        OpenProjectList.getDefault().close(new Project[] {p1});
+        OpenProjectList.getDefault().close(new Project[] {p1}, false);
         
         assertEquals(1, menu.getItemCount());
         assertTrue(menu.isEnabled());
 
-        OpenProjectList.getDefault().close(new Project[] {p2});
+        OpenProjectList.getDefault().close(new Project[] {p2}, false);
         
         assertEquals(0, menu.getItemCount());
         assertFalse(menu.isEnabled());

@@ -122,7 +122,7 @@ public class ProjectUtilitiesTest extends NbTestCase {
     }
     
     private void closeProjectWithOpenedFiles () {
-        AuxiliaryConfiguration aux = (AuxiliaryConfiguration) project1.getLookup ().lookup (AuxiliaryConfiguration.class);
+        AuxiliaryConfiguration aux = project1.getLookup().lookup(AuxiliaryConfiguration.class);
         assertNotNull ("AuxiliaryConfiguration must be present if project's lookup", aux);
 
         Element openFilesEl = aux.getConfigurationFragment (ProjectUtilities.OPEN_FILES_ELEMENT, ProjectUtilities.OPEN_FILES_NS, false);
@@ -132,8 +132,8 @@ public class ProjectUtilitiesTest extends NbTestCase {
         
         Project[] projects = new Project[] {project1};
         
-        if (ProjectUtilities.closeAllDocuments (projects)) {
-            OpenProjectList.getDefault ().close (projects);
+        if (ProjectUtilities.closeAllDocuments(projects, false)) {
+            OpenProjectList.getDefault().close(projects, false);
         }
         
         openFilesEl = aux.getConfigurationFragment (ProjectUtilities.OPEN_FILES_ELEMENT, ProjectUtilities.OPEN_FILES_NS, false);
@@ -171,7 +171,7 @@ public class ProjectUtilitiesTest extends NbTestCase {
     }
     
     public void testSavingModifiedNotOpenedFiles67526() throws BadLocationException, IOException {
-        AuxiliaryConfiguration aux = (AuxiliaryConfiguration) project1.getLookup ().lookup (AuxiliaryConfiguration.class);
+        AuxiliaryConfiguration aux = project1.getLookup().lookup(AuxiliaryConfiguration.class);
         assertNotNull ("AuxiliaryConfiguration must be present if project's lookup", aux);
         
         Element openFilesEl = aux.getConfigurationFragment (ProjectUtilities.OPEN_FILES_ELEMENT, ProjectUtilities.OPEN_FILES_NS, false);
@@ -183,8 +183,8 @@ public class ProjectUtilitiesTest extends NbTestCase {
         
         Project[] projects = new Project[] {project1};
         
-        if (ProjectUtilities.closeAllDocuments (projects)) {
-            OpenProjectList.getDefault ().close (projects);
+        if (ProjectUtilities.closeAllDocuments(projects, true)) {
+            OpenProjectList.getDefault().close(projects, true);
         }
         
         assertFalse("the do1_4_close not modified", do1_4_close.isModified());
@@ -226,11 +226,11 @@ public class ProjectUtilitiesTest extends NbTestCase {
             assertTrue ("TopComponent has been closed successfully.", ((TopComponent)openTCs.next ()).close ());
         }
         
-        if (ProjectUtilities.closeAllDocuments (new Project[] {project1} )) {
-            OpenProjectList.getDefault ().close (new Project[] {project1} );
+        if (ProjectUtilities.closeAllDocuments(new Project[] {project1}, false)) {
+            OpenProjectList.getDefault().close(new Project[] {project1}, false);
         }
 
-        AuxiliaryConfiguration aux = (AuxiliaryConfiguration) project1.getLookup ().lookup (AuxiliaryConfiguration.class);
+        AuxiliaryConfiguration aux = project1.getLookup().lookup(AuxiliaryConfiguration.class);
         Element openFilesEl = aux.getConfigurationFragment (ProjectUtilities.OPEN_FILES_ELEMENT, ProjectUtilities.OPEN_FILES_NS, false);
         assertNull ("OPEN_FILES_ELEMENT not found in the private configuration.", openFilesEl);
         

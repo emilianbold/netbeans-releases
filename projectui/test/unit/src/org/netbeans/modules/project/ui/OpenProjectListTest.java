@@ -81,7 +81,7 @@ public class OpenProjectListTest extends NbTestCase {
 
         // project2 depends on projects1
         project2 = ProjectManager.getDefault ().findProject (p2);
-        ((TestSupport.TestProject) project2).setLookup (Lookups.fixed (new Object[] { TestSupport.createAuxiliaryConfiguration (), new MySubprojectProvider (project1) } ));
+        ((TestSupport.TestProject) project2).setLookup(Lookups.fixed(TestSupport.createAuxiliaryConfiguration(), new MySubprojectProvider(project1)));
         
         // prepare set of open documents for both projects
         ProjectUtilities.OPEN_CLOSE_PROJECT_DOCUMENT_IMPL.open (f1_1_open);
@@ -89,12 +89,12 @@ public class OpenProjectListTest extends NbTestCase {
         ProjectUtilities.OPEN_CLOSE_PROJECT_DOCUMENT_IMPL.open (f2_1_open);
         
         // close both projects with own open files
-        ProjectUtilities.closeAllDocuments (new Project [] { project1, project2 });
-        OpenProjectList.getDefault ().close (new Project [] { project1, project2 });
+        ProjectUtilities.closeAllDocuments(new Project[] {project1, project2}, false);
+        OpenProjectList.getDefault().close(new Project[] {project1, project2}, false);
     }
     
     protected void tearDown () {
-        OpenProjectList.getDefault ().close (new Project [] { project1, project2 });
+        OpenProjectList.getDefault().close(new Project[] {project1, project2}, false);
     }
 
     public void testOpen () throws Exception {
@@ -110,8 +110,8 @@ public class OpenProjectListTest extends NbTestCase {
     public void testClose () throws Exception {
         testOpen ();
         
-        ProjectUtilities.closeAllDocuments (new Project [] { project1 });
-        OpenProjectList.getDefault ().close (new Project [] { project1 });
+        ProjectUtilities.closeAllDocuments(new Project[] {project1}, false);
+        OpenProjectList.getDefault().close(new Project[] {project1}, false);
         assertFalse ("Document f1_1_open isn't loaded.", handler.openFiles.contains (f1_1_open.getURL ().toExternalForm ()));
         assertFalse ("Document f1_2_open isn't loaded.", handler.openFiles.contains (f1_2_open.getURL ().toExternalForm ()));
         assertFalse ("Document f2_1_open isn't loaded.", handler.openFiles.contains (f2_1_open.getURL ().toExternalForm ()));
@@ -123,8 +123,8 @@ public class OpenProjectListTest extends NbTestCase {
         handler.openFiles.remove (f1_1_open.getURL ().toExternalForm ());
         handler.openFiles.remove (f1_2_open.getURL ().toExternalForm ());
         
-        ProjectUtilities.closeAllDocuments (new Project [] {project1});
-        OpenProjectList.getDefault ().close (new Project [] {project1});
+        ProjectUtilities.closeAllDocuments(new Project[] {project1}, false);
+        OpenProjectList.getDefault().close(new Project[] {project1}, false);
 
         OpenProjectList.getDefault ().open (project1);
         assertFalse ("Document f1_1_open isn't loaded.", handler.openFiles.contains (f1_1_open.getURL ().toExternalForm ()));
@@ -153,8 +153,8 @@ public class OpenProjectListTest extends NbTestCase {
         
         assertFalse ("Document f2_1_open isn't loaded.", handler.openFiles.contains (f2_1_open.getURL ().toExternalForm ()));
         
-        ProjectUtilities.closeAllDocuments (new Project [] { project2 });
-        OpenProjectList.getDefault ().close (new Project [] { project2 });
+        ProjectUtilities.closeAllDocuments(new Project[] {project2}, false);
+        OpenProjectList.getDefault().close(new Project[] {project2}, false);
 
         assertFalse ("Project2 is closed.", OpenProjectList.getDefault ().isOpen (project2));
     }
@@ -173,7 +173,7 @@ public class OpenProjectListTest extends NbTestCase {
         assertEquals("both open hooks were called", 2, TestProjectOpenedHookImpl.opened);
         assertEquals("no close hook was called", 0, TestProjectOpenedHookImpl.closed);
         
-        OpenProjectList.getDefault().close(new Project[] {project1});
+        OpenProjectList.getDefault().close(new Project[] {project1}, false);
         
         assertEquals("both open hooks were called", 2, TestProjectOpenedHookImpl.opened);
         assertEquals("both close hooks were called", 2, TestProjectOpenedHookImpl.closed);
@@ -191,7 +191,7 @@ public class OpenProjectListTest extends NbTestCase {
         
         OpenProjectList.getDefault().open(project1);
         
-        OpenProjectList.getDefault().close(new Project[] {project1});
+        OpenProjectList.getDefault().close(new Project[] {project1}, false);
         
         p1TestProject.delete();
         TestSupport.notifyDeleted(project1);
@@ -208,7 +208,7 @@ public class OpenProjectListTest extends NbTestCase {
         assertNotNull("project2 is recognized", project2);
         OpenProjectList.getDefault().open(project2);
         
-        OpenProjectList.getDefault().close(new Project[] {project2});
+        OpenProjectList.getDefault().close(new Project[] {project2}, false);
         
         TestSupport.notifyDeleted(project2);
         
@@ -253,7 +253,7 @@ public class OpenProjectListTest extends NbTestCase {
         
         assertTrue("open project does not change main project", OpenProjectList.getDefault().getMainProject() == project1);
         
-        OpenProjectList.getDefault().close(new Project[] {project1});
+        OpenProjectList.getDefault().close(new Project[] {project1}, false);
         
         assertNull("no main project set when main project is closed", OpenProjectList.getDefault().getMainProject());
         
@@ -319,7 +319,7 @@ public class OpenProjectListTest extends NbTestCase {
             return true;
         }
         
-        public Map<Project,SortedSet<String>> close(Project[] projects) {
+        public Map<Project,SortedSet<String>> close(Project[] projects, boolean notifyUI) {
             
             for (int i = 0; i < projects.length; i++) {
                 SortedSet<String> projectOpenFiles = urls4project.get(projects [i]);

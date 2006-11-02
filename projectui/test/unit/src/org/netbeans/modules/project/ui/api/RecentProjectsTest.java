@@ -82,7 +82,7 @@ public class RecentProjectsTest extends NbTestCase {
         
         // Close all projects in the list one by one
         for (int j = 0; j < testProjects.length; j++) {
-            OpenProjectList.getDefault().close(new Project[] { testProjects[j] });
+            OpenProjectList.getDefault().close(new Project[] {testProjects[j]}, false);
             pil = RecentProjects.getDefault().getRecentProjectInformation();
             assertEquals(1, RecentProjects.getDefault().getRecentProjectInformation().size());
             assertEquals(tpDisplayNames[j], ((UnloadedProjectInformation) pil.get(0)).getDisplayName());
@@ -94,11 +94,11 @@ public class RecentProjectsTest extends NbTestCase {
         assertEquals(0, RecentProjects.getDefault().getRecentProjectInformation().size());
         
         // Close rand number of rand modules
-        OpenProjectList.getDefault().close(new Project[] {testProjects[3]});
-        OpenProjectList.getDefault().close(new Project[] {testProjects[4]});
-        OpenProjectList.getDefault().close(new Project[] {testProjects[6]});
-        OpenProjectList.getDefault().close(new Project[] {testProjects[10]});
-        OpenProjectList.getDefault().close(new Project[] {testProjects[12]});
+        OpenProjectList.getDefault().close(new Project[] {testProjects[3]}, false);
+        OpenProjectList.getDefault().close(new Project[] {testProjects[4]}, false);
+        OpenProjectList.getDefault().close(new Project[] {testProjects[6]}, false);
+        OpenProjectList.getDefault().close(new Project[] {testProjects[10]}, false);
+        OpenProjectList.getDefault().close(new Project[] {testProjects[12]}, false);
         
         pil = RecentProjects.getDefault().getRecentProjectInformation();
         assertEquals(5, RecentProjects.getDefault().getRecentProjectInformation().size());
@@ -133,7 +133,7 @@ public class RecentProjectsTest extends NbTestCase {
         
         // Close ten projects
         for (int k = 3; k < 13; k++) {
-            OpenProjectList.getDefault().close(new Project[] { testProjects[k] });
+            OpenProjectList.getDefault().close(new Project[] {testProjects[k]}, false);
         }
         pil = RecentProjects.getDefault().getRecentProjectInformation();
         assertEquals(10, RecentProjects.getDefault().getRecentProjectInformation().size());
@@ -150,7 +150,7 @@ public class RecentProjectsTest extends NbTestCase {
         
         // Open and close more than ten projects
         for (int n = 0; n < testProjects.length; n++) {
-            OpenProjectList.getDefault().close(new Project[] { testProjects[n] });
+            OpenProjectList.getDefault().close(new Project[] {testProjects[n]}, false);
         }
         pil = RecentProjects.getDefault().getRecentProjectInformation();
         assertEquals(10, RecentProjects.getDefault().getRecentProjectInformation().size());
@@ -166,7 +166,7 @@ public class RecentProjectsTest extends NbTestCase {
         assertEquals(0, RecentProjects.getDefault().getRecentProjectInformation().size());
         
         // close array of projects
-        OpenProjectList.getDefault().close(new Project[] { testProjects[2], testProjects[5], testProjects[9], testProjects[11] });
+        OpenProjectList.getDefault().close(new Project[] {testProjects[2], testProjects[5], testProjects[9], testProjects[11]}, false);
         pil = RecentProjects.getDefault().getRecentProjectInformation();
         assertEquals(4, RecentProjects.getDefault().getRecentProjectInformation().size());
         
