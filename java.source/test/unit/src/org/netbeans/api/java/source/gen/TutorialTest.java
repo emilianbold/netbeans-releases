@@ -19,6 +19,7 @@
 package org.netbeans.api.java.source.gen;
 
 import com.sun.source.tree.*;
+import com.sun.source.util.SourcePositions;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -315,6 +316,63 @@ public class TutorialTest extends GeneratorTestMDRCompat {
                         workingCopy.rewrite(clazz.getModifiers(), classModifiers);
                     }
                 }
+            }
+
+            public void cancel() {
+            }
+        };
+
+        tutorialSource.runModificationTask(task).commit();
+        
+        // print the result to the System.err to see the changes in console.
+        BufferedReader in = new BufferedReader(new FileReader(tutorialFile));
+        PrintStream out = System.out;
+        String str;
+        while ((str = in.readLine()) != null) {
+            out.println(str);
+        }
+        in.close();
+    }
+    
+    // obtain, modify and replace the method body as a text
+    public void testForJean() throws FileStateInvalidException, IOException {
+        File tutorialFile = getFile(getSourceDir(), "/org/netbeans/test/codegen/Tutorial2.java");
+        JavaSource tutorialSource = JavaSource.forFileObject(FileUtil.toFileObject(tutorialFile));
+        
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                
+                TreeMaker make = workingCopy.getTreeMaker();
+                // we know there is exactly one class, named Tutorial2.
+                // (ommiting test for kind corectness!)
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                // get the method, there is a default constructor and
+                // exactly one method, named demoMethod().
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                BlockTree body = method.getBody();
+                
+                // get SourcePositions instance for your working copy and
+                // fetch out start and end position.
+                SourcePositions sp = workingCopy.getTrees().getSourcePositions();
+                int start = (int) sp.getStartPosition(cut, body);
+                int end = (int) sp.getEndPosition(cut, body);
+                // get body text from source text
+                String bodyText = workingCopy.getText().substring(start, end);
+                MethodTree modified = make.Method(
+                        method.getModifiers(), // copy original values
+                        method.getName(),
+                        method.getReturnType(),
+                        method.getTypeParameters(),
+                        method.getParameters(),
+                        method.getThrows(),
+                        bodyText.replace("{0}", "-tag-replace-"), // replace body with the new text
+                        null // not applicable here
+                );
+                // rewrite the original modifiers with the new one:
+                 workingCopy.rewrite(method, modified);
             }
 
             public void cancel() {
