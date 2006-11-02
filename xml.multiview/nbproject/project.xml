@@ -147,6 +147,8 @@ Microsystems, Inc. All Rights Reserved.
                 <friend>org.netbeans.modules.e2e.jsr172</friend>
                 <friend>org.netbeans.modules.j2ee.persistence</friend>
                 <friend>org.netbeans.modules.j2ee.ddloaders</friend>
+                <friend>de.genomatix.jasperreporteditor</friend>
+                <friend>de.genomatix.graphmlsupport</friend>
                 <package>org.netbeans.modules.xml.multiview</package>
                 <package>org.netbeans.modules.xml.multiview.cookies</package>
                 <package>org.netbeans.modules.xml.multiview.ui</package>
