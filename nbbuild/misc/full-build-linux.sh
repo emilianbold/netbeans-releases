@@ -262,10 +262,17 @@ then
     echo "----------UPDATING SOURCES----------" 1>&2
     (cd $sources; cvs -q update |tee $CVSLOG)
 
+    if [ `grep -c '^[MAR] ' $CVSLOG` -ne 0 ]; then
+        echo 1>&2
+        echo "Your modifications in summary:" 1>&2
+        grep '^[MAR] ' $CVSLOG 1>&2
+    fi
+
     if [ $verifyupdate = yes ] ; then
         # verify that CVS has all the source files in its repository, 
         # and that there aren't any conflicts
         if [ `grep -c '^[C?] ' $CVSLOG` -ne 0 ]; then
+            echo 1>&2
             echo "CVS update had problems:" 1>&2
             grep '^[C?] ' $CVSLOG 1>&2
             exit 1
