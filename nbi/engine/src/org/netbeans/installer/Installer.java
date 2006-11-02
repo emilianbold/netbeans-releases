@@ -21,6 +21,7 @@
 package org.netbeans.installer;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
 
@@ -32,6 +33,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 import org.netbeans.installer.downloader.DownloadManager;
 import org.netbeans.installer.downloader.DownloaderConsts;
 import org.netbeans.installer.product.ProductRegistry;
+import org.netbeans.installer.utils.ErrorLevel;
 import org.netbeans.installer.utils.FileProxy;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.FileUtils;
@@ -155,6 +157,7 @@ public class Installer {
         } else if (!localDirectory.canWrite()) {
             ErrorManager.getInstance().notify(CRITICAL, "Cannot write to local directory - not enought permissions");
         }
+        createInstallerLockFile(localDirectory);
         
         DownloaderConsts.setWorkingDirectory(new File(localDirectory, "wd"));
         DownloaderConsts.setOutputDirectory(new File(localDirectory, "downloads"));
@@ -168,6 +171,36 @@ public class Installer {
         cacheEngineLocally();
     }
     
+    private void createInstallerLockFile(File directory)  {
+        LogManager.getInstance().log(ErrorLevel.DEBUG,
+                "    creating lock file in " + directory);
+        File installerLock = new File(directory,
+                ".nbilock");
+        if(installerLock.exists()) {
+            ErrorManager.getInstance().notify(CRITICAL,
+                    "It seems that another instance of installer is already running!\n" +
+                    "If you are sure that no other instance is running just remove the file:\n" +
+                    installerLock + "\n");
+        }
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(installerLock);
+        } catch (IOException ex) {
+            ErrorManager.getInstance().notify(CRITICAL,
+                    "Can`t create lock for the local registry file!");
+        } finally {
+            try {
+                installerLock.deleteOnExit();
+                if(fos!=null) {
+                    fos.close();
+                }
+            } catch (IOException ex) {
+                LogManager.getInstance().log(ErrorLevel.DEBUG,ex);
+            }
+        }
+        LogManager.getInstance().log(ErrorLevel.DEBUG,
+                "    ... lock created " + installerLock);
+    }
     /**
      * Cancels the installation. This method cancels the changes that were possibly
      * made to the components registry and exits with the cancel error code.
