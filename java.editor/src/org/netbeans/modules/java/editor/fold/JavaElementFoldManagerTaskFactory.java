@@ -22,6 +22,7 @@ import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.JavaSource.Priority;
 import org.netbeans.api.java.source.support.EditorAwareJavaSourceTaskFactory;
 import org.openide.filesystems.FileObject;
 
@@ -33,14 +34,7 @@ public class JavaElementFoldManagerTaskFactory extends EditorAwareJavaSourceTask
 
     /** Creates a new instance of JavaElementFoldManagerTaskFactory */
     public JavaElementFoldManagerTaskFactory() {
-    }
-
-    public JavaSource.Priority getPriority() {
-        return JavaSource.Priority.NORMAL;
-    }
-
-    public Phase getPhase() {
-        return Phase.PARSED;
+        super(Phase.PARSED, Priority.NORMAL);
     }
 
     public CancellableTask<CompilationInfo> createTask(FileObject file) {

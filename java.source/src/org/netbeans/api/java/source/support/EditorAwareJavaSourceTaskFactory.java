@@ -24,6 +24,9 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.JavaSource.Priority;
+import org.netbeans.api.java.source.JavaSourceTaskFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 
@@ -32,9 +35,15 @@ import org.openide.loaders.DataObject;
  *
  * @author Jan Lahoda
  */
-public abstract class EditorAwareJavaSourceTaskFactory extends JavaSourceTaskFactorySupport {
+public abstract class EditorAwareJavaSourceTaskFactory extends JavaSourceTaskFactory {
     
-    protected EditorAwareJavaSourceTaskFactory() {
+    /**Construct the EditorAwareJavaSourceTaskFactory with given {@link Phase} and {@link Priority}.
+     *
+     * @param phase phase to use for tasks created by {@link #createTask}
+     * @param priority priority to use for tasks created by {@link #createTask}
+     */
+    protected EditorAwareJavaSourceTaskFactory(Phase phase, Priority priority) {
+        super(phase, priority);
         //XXX: weak, or something like this:
         OpenedEditors.getDefault().addChangeListener(new ChangeListenerImpl());
     }
@@ -48,7 +57,7 @@ public abstract class EditorAwareJavaSourceTaskFactory extends JavaSourceTaskFac
 
     private class ChangeListenerImpl implements ChangeListener {
         public void stateChanged(ChangeEvent e) {
-            fireChangeEvent();
+            fileObjectsChanged();
         }
     }
 

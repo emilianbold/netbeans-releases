@@ -70,8 +70,8 @@ public class JBrowseModule extends ModuleInstall {
         else {
             lockDir.mkdirs();
         }
+        JavaSourceTaskFactoryManager.register();
         System.setProperty(LUCENE_LOCK_DIR,lockDir.getAbsolutePath());                
-        JavaSourceTaskFactoryImpl.getDefault();
         WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
             public void run () {
                 RepositoryUpdater.getDefault();

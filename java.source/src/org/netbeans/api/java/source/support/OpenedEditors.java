@@ -72,7 +72,7 @@ class OpenedEditors implements ChangeListener, PropertyChangeListener {
         List<ChangeListener> listenersCopy = null;
 
         synchronized (this) {
-            listenersCopy = Collections.unmodifiableList(listeners);
+            listenersCopy = new ArrayList(listeners);
         }
 
         for (ChangeListener l : listenersCopy) {

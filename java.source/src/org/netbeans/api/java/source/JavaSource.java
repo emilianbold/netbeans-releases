@@ -78,7 +78,6 @@ import org.netbeans.modules.java.builder.ASTService;
 import org.netbeans.modules.java.builder.Builder2;
 import org.netbeans.modules.java.builder.Scanner;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
-import org.netbeans.modules.java.source.JavaSourceTaskFactoryImpl;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.util.LowMemoryEvent;
 import org.netbeans.modules.java.source.util.LowMemoryListener;
@@ -1206,23 +1205,6 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         return info;
     }
 
-    static {
-        JavaSourceTaskFactoryImpl.ACCESSOR = new JavaSourceTaskFactoryImpl.JavaSourceFactoryAccessor() {
-
-            public void addPhaseCompletionTask(JavaSource js, CancellableTask<CompilationInfo> task, Phase phase, Priority priority) throws IOException {
-                js.addPhaseCompletionTask(task, phase, priority);
-            }
-
-            public void removePhaseCompletionTask(JavaSource js, CancellableTask<CompilationInfo> task) {
-                js.removePhaseCompletionTask(task);
-            }
-            
-            public void reschedule(JavaSource js, CancellableTask<CompilationInfo> task) {
-                js.rescheduleTask(task);
-            }
-        };
-    }
-    
     private static void handleAddRequest (final Request nr) {
         assert nr != null;
         requests.add (nr);

@@ -28,6 +28,9 @@ import javax.swing.event.CaretListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.JavaSource.Priority;
+import org.netbeans.api.java.source.JavaSourceTaskFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.util.RequestProcessor;
 
@@ -39,21 +42,23 @@ import org.openide.util.RequestProcessor;
  *
  * @author Jan Lahoda
  */
-public abstract class CaretAwareJavaSourceTaskFactory extends JavaSourceTaskFactorySupport {
+public abstract class CaretAwareJavaSourceTaskFactory extends JavaSourceTaskFactory {
     
     private static final int DEFAULT_RESCHEDULE_TIMEOUT = 300;
     private static final RequestProcessor WORKER = new RequestProcessor("CaretAwareJavaSourceTaskFactory worker");
     
     private int timeout;
     
-    public CaretAwareJavaSourceTaskFactory() {
-        this(DEFAULT_RESCHEDULE_TIMEOUT);
-    }
-    
-    public CaretAwareJavaSourceTaskFactory(int rescheduleTimeout) {
+    /**Construct the CaretAwareJavaSourceTaskFactory with given {@link Phase} and {@link Priority}.
+     *
+     * @param phase phase to use for tasks created by {@link #createTask}
+     * @param priority priority to use for tasks created by {@link #createTask}
+     */
+    public CaretAwareJavaSourceTaskFactory(Phase phase, Priority priority) {
+        super(phase, priority);
         //XXX: weak, or something like this:
         OpenedEditors.getDefault().addChangeListener(new ChangeListenerImpl());
-        this.timeout = rescheduleTimeout;
+        this.timeout = DEFAULT_RESCHEDULE_TIMEOUT;
     }
     
     /**@inheritDoc*/
@@ -113,7 +118,7 @@ public abstract class CaretAwareJavaSourceTaskFactory extends JavaSourceTaskFact
                 setLastPosition(OpenedEditors.getFileObject(c), c.getCaretPosition());
             }
             
-            fireChangeEvent();
+            fileObjectsChanged();
         }
         
     }

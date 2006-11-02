@@ -24,6 +24,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.JavaSource.Priority;
+import org.netbeans.api.java.source.JavaSourceTaskFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -41,7 +44,7 @@ import org.openide.util.LookupListener;
  *
  * @author Jan Lahoda
  */
-public abstract class LookupBasedJavaSourceTaskFactory extends JavaSourceTaskFactorySupport {
+public abstract class LookupBasedJavaSourceTaskFactory extends JavaSourceTaskFactory {
 
     private Result<FileObject> fileObjectResult;
     private Result<DataObject> dataObjectResult;
@@ -50,7 +53,13 @@ public abstract class LookupBasedJavaSourceTaskFactory extends JavaSourceTaskFac
     private List<FileObject> currentFiles;
     private LookupListener listener;
 
-    public LookupBasedJavaSourceTaskFactory() {
+    /**Construct the LookupBasedJavaSourceTaskFactory with given {@link Phase} and {@link Priority}.
+     *
+     * @param phase phase to use for tasks created by {@link #createTask}
+     * @param priority priority to use for tasks created by {@link #createTask}
+     */
+    public LookupBasedJavaSourceTaskFactory(Phase phase, Priority priority) {
+        super(phase, priority);
         currentFiles = Collections.emptyList();
         listener = new LookupListenerImpl();
     }
@@ -59,7 +68,7 @@ public abstract class LookupBasedJavaSourceTaskFactory extends JavaSourceTaskFac
      *
      * @param lookup new {@link Lookup}
      */
-    protected synchronized void setLookup(Lookup lookup) {
+    protected synchronized final void setLookup(Lookup lookup) {
         if (fileObjectResult != null) {
             fileObjectResult.removeLookupListener(listener);
         }
@@ -78,7 +87,7 @@ public abstract class LookupBasedJavaSourceTaskFactory extends JavaSourceTaskFac
         nodeResult.addLookupListener(listener);
 
         updateCurrentFiles();
-        fireChangeEvent();
+        fileObjectsChanged();
     }
 
     private synchronized void updateCurrentFiles() {
@@ -99,6 +108,8 @@ public abstract class LookupBasedJavaSourceTaskFactory extends JavaSourceTaskFac
         }
 
         currentFiles = new ArrayList<FileObject>(newCurrentFiles);
+        
+        lookupContentChanged();
     }
     
     /**@inheritDoc*/
@@ -106,10 +117,16 @@ public abstract class LookupBasedJavaSourceTaskFactory extends JavaSourceTaskFac
         return currentFiles;
     }
 
+    /**This method is called when the provided Lookup's content changed.
+     * Subclasses may override this method in order to be notified about such change.
+     */
+    protected void lookupContentChanged() {
+    }
+
     private class LookupListenerImpl implements LookupListener {
         public void resultChanged(LookupEvent ev) {
             updateCurrentFiles();
-            fireChangeEvent();
+            fileObjectsChanged();
         }
     }
 

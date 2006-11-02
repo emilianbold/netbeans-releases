@@ -23,6 +23,7 @@ import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.JavaSource.Priority;
 import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
 import org.openide.filesystems.FileObject;
 
@@ -34,14 +35,7 @@ public class MarkOccurrencesHighlighterFactory extends CaretAwareJavaSourceTaskF
 
     /** Creates a new instance of SemanticHighlighterFactory */
     public MarkOccurrencesHighlighterFactory() {
-    }
-
-    public JavaSource.Priority getPriority() {
-        return JavaSource.Priority.LOW;
-    }
-
-    public Phase getPhase() {
-        return Phase.RESOLVED;
+        super(Phase.RESOLVED, Priority.LOW);
     }
 
     public CancellableTask<CompilationInfo> createTask(FileObject file) {

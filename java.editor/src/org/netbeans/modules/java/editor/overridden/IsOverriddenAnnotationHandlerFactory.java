@@ -22,7 +22,7 @@ import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.RescheduleListener;
+import org.netbeans.api.java.source.JavaSource.Priority;
 import org.netbeans.api.java.source.support.EditorAwareJavaSourceTaskFactory;
 import org.openide.filesystems.FileObject;
 
@@ -36,14 +36,7 @@ public class IsOverriddenAnnotationHandlerFactory extends EditorAwareJavaSourceT
      * Creates a new instance of IsOverriddenAnnotationHandlerFactory
      */
     public IsOverriddenAnnotationHandlerFactory() {
-    }
-
-    public JavaSource.Priority getPriority() {
-        return JavaSource.Priority.MIN;
-    }
-
-    public Phase getPhase() {
-        return Phase.RESOLVED;
+        super(Phase.RESOLVED, Priority.MIN);
     }
 
     public CancellableTask<CompilationInfo> createTask(FileObject file) {

@@ -24,6 +24,7 @@ import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.JavaSource.Priority;
 import org.netbeans.api.java.source.support.LookupBasedJavaSourceTaskFactory;
 import org.netbeans.modules.java.debug.TreeNavigatorJavaSourceFactory.WrapperTask;
 import org.openide.filesystems.FileObject;
@@ -42,16 +43,9 @@ public final class ElementNavigatorJavaSourceFactory extends LookupBasedJavaSour
     }
     
     public ElementNavigatorJavaSourceFactory() {
+        super(Phase.UP_TO_DATE, Priority.NORMAL);
     }
 
-    public JavaSource.Priority getPriority() {
-        return JavaSource.Priority.NORMAL;
-    }
-    
-    public Phase getPhase() {
-        return Phase.UP_TO_DATE;
-    }
-    
     public synchronized CancellableTask<CompilationInfo> createTask(FileObject file) {
         //XXX: should not be necessary to do the wrapper task, but for some reason it is necessary:
         return new WrapperTask(task);

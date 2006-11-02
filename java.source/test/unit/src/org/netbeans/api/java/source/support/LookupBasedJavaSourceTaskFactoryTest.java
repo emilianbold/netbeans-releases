@@ -64,85 +64,78 @@ public class LookupBasedJavaSourceTaskFactoryTest extends NbTestCase {
     }
     
     public void testFactoryListensOnLookupChanges() throws Exception {
-        LookupBasedJavaSourceTaskFactory factory = new LookupBasedJavaSourceTaskFactoryImpl();
-        ChangeListenerImpl l = new ChangeListenerImpl();
+        int[] changeCount = new int[1];
+        LookupBasedJavaSourceTaskFactory factory = new LookupBasedJavaSourceTaskFactoryImpl(changeCount);
         ChangeableLookup lookup = new ChangeableLookup();
         
-        factory.addChangeListener(l);
         factory.setLookup(lookup);
         
-        assertEquals(1, l.changeCount);
+        assertEquals(1, changeCount[0]);
         assertEquals(0, factory.getFileObjects().size());
         
         lookup.setLookupsImpl(new Lookup[] {Lookups.singleton(testFile1)});
         
-        assertEquals(2, l.changeCount);
+        assertEquals(2, changeCount[0]);
         assertEquals(1, factory.getFileObjects().size());
         assertEquals(testFile1, factory.getFileObjects().get(0));
         
         lookup.setLookupsImpl(new Lookup[] {Lookups.singleton(testFile2)});
         
-        assertEquals(3, l.changeCount);
+        assertEquals(3, changeCount[0]);
         assertEquals(1, factory.getFileObjects().size());
         assertEquals(testFile2, factory.getFileObjects().get(0));
         
         lookup.setLookupsImpl(new Lookup[] {});
         
-        assertEquals(4, l.changeCount);
+        assertEquals(4, changeCount[0]);
         assertEquals(0, factory.getFileObjects().size());
         
         lookup.setLookupsImpl(new Lookup[] {Lookups.fixed(new Object[] {testFile1, testFile2})});
         
-        assertEquals(5, l.changeCount);
+        assertEquals(5, changeCount[0]);
         assertEquals(2, factory.getFileObjects().size());
         assertEquals(new HashSet(Arrays.asList(testFile1, testFile2)), new HashSet(factory.getFileObjects()));
         
         lookup.setLookupsImpl(new Lookup[] {});
         
-        assertEquals(6, l.changeCount);
+        assertEquals(6, changeCount[0]);
         assertEquals(0, factory.getFileObjects().size());
         
         lookup.setLookupsImpl(new Lookup[] {Lookups.singleton(testFile1DO)});
         
-        assertEquals(7, l.changeCount);
+        assertEquals(7, changeCount[0]);
         assertEquals(1, factory.getFileObjects().size());
         assertEquals(testFile1, factory.getFileObjects().get(0));
         
         lookup.setLookupsImpl(new Lookup[] {Lookups.fixed(new Object[] {testFile1DO, testFile1Node})});
         
-        assertEquals(8, l.changeCount);
+        assertEquals(8, changeCount[0]);
         assertEquals(1, factory.getFileObjects().size());
         assertEquals(testFile1, factory.getFileObjects().get(0));
         
         lookup.setLookupsImpl(new Lookup[] {Lookups.singleton(testFile2Node)});
         
-        assertEquals(10, l.changeCount);
+        assertEquals(10, changeCount[0]);
         assertEquals(1, factory.getFileObjects().size());
         assertEquals(testFile2, factory.getFileObjects().get(0));
     }
 
     private static class LookupBasedJavaSourceTaskFactoryImpl extends LookupBasedJavaSourceTaskFactory {
         
-        public JavaSource.Priority getPriority() {
-            throw new IllegalStateException();
+        private int[] changeCount;
+        
+        public LookupBasedJavaSourceTaskFactoryImpl(int[] changeCount) {
+            super(null, null);
+            this.changeCount = changeCount;
         }
-
-        public Phase getPhase() {
-            throw new IllegalStateException();
-        }
-
+        
         public CancellableTask<CompilationInfo> createTask(FileObject file) {
             throw new IllegalStateException();
         }
         
-    }
-    
-    private static class ChangeListenerImpl implements ChangeListener {
-        
-        private int changeCount;
-        
-        public void stateChanged(ChangeEvent e) {
-            changeCount++;
+        @Override
+        protected void lookupContentChanged() {
+            changeCount[0]++;
         }
         
     }

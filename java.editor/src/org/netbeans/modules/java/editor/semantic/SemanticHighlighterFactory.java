@@ -22,7 +22,7 @@ import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.RescheduleListener;
+import org.netbeans.api.java.source.JavaSource.Priority;
 import org.netbeans.api.java.source.support.EditorAwareJavaSourceTaskFactory;
 import org.openide.filesystems.FileObject;
 
@@ -34,14 +34,7 @@ public class SemanticHighlighterFactory extends EditorAwareJavaSourceTaskFactory
     
     /** Creates a new instance of SemanticHighlighterFactory */
     public SemanticHighlighterFactory() {
-    }
-
-    public JavaSource.Priority getPriority() {
-        return JavaSource.Priority.BELOW_NORMAL;
-    }
-
-    public Phase getPhase() {
-        return Phase.RESOLVED;
+        super(Phase.RESOLVED, Priority.BELOW_NORMAL);
     }
 
     public CancellableTask<CompilationInfo> createTask(FileObject file) {
