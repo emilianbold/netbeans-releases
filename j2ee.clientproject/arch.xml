@@ -60,7 +60,7 @@ Microsystems, Inc. All Rights Reserved.
   </p>
   <ol>
    <li>
-    <api group="dtd" name="car-project.xsd" type="export" category="private" url="org/netbeans/modules/j2ee/clientproject/resources/car-project.xsd">
+    <api group="dtd" name="car-project.xsd" type="export" category="devel" url="http://www.netbeans.org/ns/car-project/1.xsd">
      <p>
       Definition of clientproject-specific portions of <code>project.xml</code>.
      </p>
@@ -86,7 +86,7 @@ Microsystems, Inc. All Rights Reserved.
     <api group="java.io.File" name="LayoutOfProjectFiles" type="export" category="private">
      <p>
       Modules should make no assumptions about the layout of project directory other then
-      what is explicitly exposed via API (such as J2eeApplicationProvider from j2eeserver API,
+      what is explicitly exposed via API (such as J2eeModuleProvider from j2eeserver API,
       AntArtifact).
      </p>
     </api>
@@ -329,122 +329,6 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
  <answer id="dep-nb">
-  It uses various kinds of API's:
-  <ul>
-  <li>
-    <api 
-        name="OpenAPIs"
-        type="import"
-        category="official"
-        group="java"
-        url="http://www.netbeans.org/download/dev/javadoc/OpenAPIs/"
-    >
-    NetBeans Open APIs
-    </api>
-  </li>
-  <li>
-    <api 
-        name="ExecutionAPIs"
-        type="import"
-        category="official"
-        group="java"
-        url="http://www.netbeans.org/download/dev/javadoc/ExecutionAPI/index.html"
-    >
-    NetBeans Execution APIs
-    </api>
-  </li>
-  <li>
-    <api 
-        name="openide.src"
-        type="import"
-        category="official"
-        group="java"
-        url="http://www.netbeans.org/download/dev/javadoc/JavaHierarchyAPI/index.html"
-    >
-    The Java Hierarchy API.
-    </api>
-  </li>
-  <li>
-    <api 
-        name="java"
-        type="import"
-        category="devel"
-        group="java"
-        url="http://java.netbeans.org/"
-    >
-    The <code>java</code> module.
-    </api>
-  </li>
-  <li>
-    <api 
-        name="InputOutputAPI"
-        type="import"
-        category="official"
-        group="java"
-        url="http://www.netbeans.org/download/dev/javadoc/InputOutputAPI/index.html"
-    >
-    NetBeans Input-Output APIs
-    </api>
-  </li>
-  <li>
-    <api 
-        name="DebuggerCoreAPI"
-        type="import"
-        category="official"
-        group="java"
-        url="http://www.netbeans.org/download/dev/javadoc/Debugger%20API/index.html"
-    >
-    NetBeans Debugger APIs
-    </api>
-  </li>
-  <li>
-    <api 
-        name="JPDADebuggerAPI"
-        type="import"
-        category="official"
-        group="java"
-        url="	http://debuggercore.netbeans.org/docs/api/index.html"
-    >
-    The debugger JPDA module
-    </api>
-  </li>
-  <li>
-    <api 
-        name="j2eeserver"
-        type="import"
-        category="friend"
-        group="java"
-        url="http://j2eeserver.netbeans.org/"
-    >
-    The Server Integration module
-    </api>
-  </li>
-  <li>
-    <api group="java" name="EjbJarAPI" type="import" category="friend" url="http://www.netbeans.org/download/dev/javadoc/EjbJarAPI/"> Ejb Jar Project module</api>
-  </li>
-  <li>
-    <api 
-        name="schema2beans"
-        type="import"
-        category="friend"
-        group="java"
-        url="http://schema2beans.netbeans.org/"
-    >
-    The schema2beans module
-    </api>
-  </li>
-  <li>
-    <api 
-        name="EjbJarAPI"
-        type="import"
-        category="friend"
-        group="java"
-        url="http://www.netbeans.org/download/dev/javadoc/EjbJarAPI/"
-    >
-    The schema2beans module
-    </api>
-  </li>
-  </ul>
   <defaultanswer generate='here' />
  </answer>
 
