@@ -90,7 +90,7 @@ public class ProjectAction extends LookupSensitiveAction implements Presenter.Me
         
         if ( projects.length == 1 ) {
             if ( command != null ) {
-                ActionProvider ap = (ActionProvider)projects[0].getLookup().lookup( ActionProvider.class );        
+                ActionProvider ap = projects[0].getLookup().lookup(ActionProvider.class);
                 ap.invokeAction( command, Lookup.EMPTY );        
             }
             else if ( performer != null ) {

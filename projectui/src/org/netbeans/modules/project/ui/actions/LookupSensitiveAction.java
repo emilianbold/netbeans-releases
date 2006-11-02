@@ -81,7 +81,7 @@ public abstract class LookupSensitiveAction extends BasicAction implements Looku
         for ( int i = 0; i < watch.length; i++ ) {
             results[i] = lookup.lookupResult(watch[i]);
             results[i].allItems();
-            LookupListener resultListener = (LookupListener)WeakListeners.create( LookupListener.class, this, results[i] );
+            LookupListener resultListener = WeakListeners.create(LookupListener.class, this, results[i]);
             results[i].addLookupListener( resultListener ); 
         }
         initialized = true;
