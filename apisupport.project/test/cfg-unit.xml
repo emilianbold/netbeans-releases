@@ -22,8 +22,6 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="unit/src">
             <patternset>
                 <include name="**/*Test.class"/>
-                <!-- Too slow in the absence of input: -->
-                <exclude name="**/GenerateJNLPApplicationTest.class"/>
                 <!-- Elaborate. Very slow, sometime seems to end in endless
                 wait-for-condition cycle. Also read through #87973. -->
                 <exclude name="**/ServiceNodeHandlerTest.class"/>
