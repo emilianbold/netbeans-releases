@@ -23,11 +23,9 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Map;
 import javax.swing.JComponent;
-import org.netbeans.modules.subversion.FileInformation;
-import org.netbeans.modules.subversion.FileStatusCache;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.SvnFileNode;
-import org.netbeans.modules.subversion.settings.HistorySettings;
+
+import org.netbeans.modules.subversion.*;
+import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.ui.commit.CommitTable;
 import org.netbeans.modules.subversion.ui.commit.CommitTableModel;
 import org.netbeans.modules.subversion.ui.wizards.AbstractStep;
@@ -56,7 +54,7 @@ public class ImportPreviewStep extends AbstractStep {
         if (previewPanel == null) {
             previewPanel = new PreviewPanel();
 
-            TableSorter sorter = HistorySettings.getImportTableSorter();
+            TableSorter sorter = SvnModuleConfig.getDefault().getImportTableSorter();
             if(sorter==null) {
                 table = new CommitTable(previewPanel.tableLabel, CommitTable.IMPORT_COLUMNS, new String[] { CommitTableModel.COLUMN_NAME_PATH });    
             } else {
@@ -113,7 +111,7 @@ public class ImportPreviewStep extends AbstractStep {
     }
     
     public void storeTableSorter() {
-        HistorySettings.setImportTableSorter(table.getSorter());        
+        SvnModuleConfig.getDefault().setImportTableSorter(table.getSorter());        
     }
 
 }

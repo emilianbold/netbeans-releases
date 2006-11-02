@@ -31,8 +31,9 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
-import org.netbeans.modules.subversion.settings.HistorySettings;
 import org.netbeans.modules.subversion.ui.browser.RepositoryPaths;
+import org.netbeans.modules.subversion.SvnModuleConfig;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
@@ -76,7 +77,7 @@ public abstract class CopyDialog implements PropertyChangeListener {
         if(cbo==null) {
             return;
         }
-        List<String> recentFolders = HistorySettings.getRecent(key);
+        List<String> recentFolders = Utils.getStringList(SvnModuleConfig.getDefault().getPreferences(), key);
         ComboBoxModel rootsModel = new DefaultComboBoxModel(new Vector<String>(recentFolders));
         cbo.setModel(rootsModel);        
                 
@@ -111,7 +112,7 @@ public abstract class CopyDialog implements PropertyChangeListener {
             JComboBox cbo = (JComboBox) urlComboBoxes.get(key);
             Object item = cbo.getEditor().getItem();
             if(item != null && !item.equals("")) { // NOI18N
-                HistorySettings.addRecent(key, (String) item); 
+                Utils.insert(SvnModuleConfig.getDefault().getPreferences(), key, (String) item, 8);
             }            
         }                
     }       

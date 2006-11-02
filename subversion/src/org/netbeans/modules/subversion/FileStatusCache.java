@@ -25,7 +25,6 @@ import org.netbeans.modules.subversion.client.ExceptionHandler;
 import org.netbeans.modules.versioning.util.ListenersSupport;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.modules.versioning.util.FlatFolder;
-import org.netbeans.modules.subversion.settings.MetadataAttic;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.turbo.Turbo;
@@ -488,7 +487,7 @@ public class FileStatusCache implements ISVNNotifyListener {
     }
 
     private boolean isNotManagedByDefault(File dir) {
-        return !dir.exists() && MetadataAttic.getMetadata(dir) == null;
+        return !dir.exists();
     }
 
     /**

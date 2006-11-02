@@ -32,7 +32,7 @@ import javax.swing.event.DocumentListener;
 
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.subversion.RepositoryFile;
-import org.netbeans.modules.subversion.settings.HistorySettings;
+import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.ui.browser.Browser;
 import org.netbeans.modules.subversion.ui.wizards.AbstractStep;
 import org.netbeans.modules.subversion.ui.wizards.CheckoutWizard;
@@ -48,10 +48,12 @@ import org.tigris.subversion.svnclientadapter.SVNRevision;
  * @author Tomas Stupka
  */
 public class CheckoutStep extends AbstractStep implements ActionListener, DocumentListener, FocusListener {
+
+    public static final String CHECKOUT_DIRECTORY = "checkoutStep.checkoutDirectory";
     
     private CheckoutPanel workdirPanel;
-    private RepositoryPaths repositoryPaths; 
-    
+    private RepositoryPaths repositoryPaths;
+
     public HelpCtx getHelp() {    
         return new HelpCtx(CheckoutStep.class);
     }    
@@ -215,7 +217,7 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
         }
 
         if (defaultDir == null) {
-            String coDir = HistorySettings.getDefault().getCheckoutDirectory();
+            String coDir = SvnModuleConfig.getDefault().getPreferences().get(CHECKOUT_DIRECTORY, null);
             if(coDir != null) {
                 defaultDir = new File(coDir);               
             }            

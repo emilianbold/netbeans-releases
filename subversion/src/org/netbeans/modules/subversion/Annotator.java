@@ -40,7 +40,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.netbeans.modules.subversion.util.SvnUtils;
-import org.netbeans.modules.subversion.settings.SvnModuleConfig;
+import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.versioning.util.FlatFolder;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.spi.VCSContext;

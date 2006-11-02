@@ -32,7 +32,7 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
-import org.netbeans.modules.subversion.settings.HistorySettings;
+import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.openide.DialogDescriptor;
@@ -55,6 +55,8 @@ import org.openide.util.lookup.Lookups;
  */
 public class CheckoutCompleted implements ActionListener {
 
+    static final String SHOW_CHECKOUT_COMPLETED = "checkoutCompleted.showCheckoutCompleted";
+    
     private final File workingFolder;
     private final boolean openProject;
     private String[] checkedOutFolders;
@@ -175,9 +177,7 @@ public class CheckoutCompleted implements ActionListener {
         } else if (panel.createButton.equals(src)) {
             ProjectUtilities.newProjectWizard(workingFolder);
         }
-        if (panel.againCheckBox.isSelected()) {
-           HistorySettings.setFlag(HistorySettings.PROP_SHOW_CHECKOUT_COMPLETED, 0);
-        }
+        SvnModuleConfig.getDefault().getPreferences().putBoolean(SHOW_CHECKOUT_COMPLETED, !panel.againCheckBox.isSelected());
     }
     
     public static Action findAction( String key ) {

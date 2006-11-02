@@ -42,10 +42,11 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.subversion.config.ProxyDescriptor;
-import org.netbeans.modules.subversion.settings.HistorySettings;
 import org.netbeans.modules.subversion.config.PasswordFile;
 import org.netbeans.modules.subversion.config.SvnConfigFiles;
 import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.subversion.SvnModuleConfig;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.ErrorManager;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
@@ -66,6 +67,8 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
     private final static String SVN_URL_HELP        = "svn://hostname/repository_path[@REV]"; // NOI18N
     private final static String SVN_SSH_URL_HELP    = "svn+ssh://hostname/repository_path[@REV]"; // NOI18N
 
+    private static final String RECENT_URL = "repository.recentURL";
+    
     private RepositoryPanel repositoryPanel;
     private ProxyDescriptor proxyDescriptor;
     private RequestProcessor.Task updatePasswordAndProxyTask;
@@ -180,7 +183,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         }
         
         Set<String> recentRoots = new LinkedHashSet<String>();
-        recentRoots.addAll(HistorySettings.getRecent(HistorySettings.PROP_SVN_URLS));        
+        recentRoots.addAll(Utils.getStringList(SvnModuleConfig.getDefault().getPreferences(), RECENT_URL));        
         // templates for supported connection methods        
         recentRoots.add("file:///");      // NOI18N
         recentRoots.add("http://");       // NOI18N
@@ -256,7 +259,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         } catch (InterruptedException ex) {
             return; // should not happen
         }
-        HistorySettings.addRecent(HistorySettings.PROP_SVN_URLS, repository.getUrl().toString());        
+        Utils.insert(SvnModuleConfig.getDefault().getPreferences(), RECENT_URL, repository.getUrl().toString(), 8);
     }
 
     public void insertUpdate(DocumentEvent e) {

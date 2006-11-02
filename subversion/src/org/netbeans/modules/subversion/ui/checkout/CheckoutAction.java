@@ -21,9 +21,9 @@ package org.netbeans.modules.subversion.ui.checkout;
 import java.io.File;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.client.SvnClient;
-import org.netbeans.modules.subversion.settings.HistorySettings;
 import org.netbeans.modules.subversion.ui.wizards.*;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
@@ -70,7 +70,7 @@ public final class CheckoutAction extends CallableSystemAction {
                 }
                 
                 setDisplayName(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/checkout/Bundle").getString("LBL_ScanFolders_Progress"));
-                if (HistorySettings.getFlag(HistorySettings.PROP_SHOW_CHECKOUT_COMPLETED, -1) != 0) {
+                if (SvnModuleConfig.getDefault().getPreferences().getBoolean(CheckoutCompleted.SHOW_CHECKOUT_COMPLETED, true)) {
                     String[] folders;
                     if(atWorkingDirLevel) {
                         folders = new String[1];

@@ -19,13 +19,11 @@
 
 package org.netbeans.modules.subversion.ui.commit;
 
-import java.io.*;
-import org.netbeans.modules.subversion.*;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.subversion.SvnFileNode;
 import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.util.SvnUtils;
-import org.netbeans.modules.subversion.settings.SvnModuleConfig;
+import org.netbeans.modules.subversion.SvnModuleConfig;
 
 import javax.swing.table.AbstractTableModel;
 import java.util.*;

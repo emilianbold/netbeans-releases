@@ -24,11 +24,9 @@ import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.spi.OriginalContent;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.modules.versioning.util.VersioningEvent;
-import org.netbeans.modules.subversion.settings.SvnModuleConfig;
+import org.netbeans.modules.subversion.SvnModuleConfig;
 
 import java.io.File;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.*;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
@@ -40,7 +38,7 @@ public class SubversionVCS extends VersioningSystem implements VersioningListene
 
     public SubversionVCS() {
         Subversion.getInstance().getStatusCache().addVersioningListener(this);
-        SvnModuleConfig.getPreferences().addPreferenceChangeListener(this);
+        SvnModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
     }
 
     public File getTopmostManagedParent(File file) {
@@ -75,6 +73,8 @@ public class SubversionVCS extends VersioningSystem implements VersioningListene
     public void preferenceChange(PreferenceChangeEvent evt) {
         if (evt.getKey().startsWith(SvnModuleConfig.PROP_COMMIT_EXCLUSIONS)) {
             fireStatusChanged((Set<File>) null);
+        } else if (evt.getKey().startsWith(SvnModuleConfig.PROP_TEXT_ANNOTATIONS_FORMAT)) {
+            fireAnnotationsChanged((Set<File>) null);
         }
     }
 }

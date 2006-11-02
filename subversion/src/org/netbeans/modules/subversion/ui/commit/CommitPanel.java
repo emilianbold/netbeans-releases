@@ -19,15 +19,12 @@
 
 package org.netbeans.modules.subversion.ui.commit;
 
-import org.netbeans.modules.subversion.SvnFileNode;
-import org.netbeans.modules.subversion.settings.SvnModuleConfig;
+import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.versioning.util.ListenersSupport;
 import org.netbeans.modules.versioning.util.VersioningListener;
 
 import javax.swing.event.TableModelListener;
 import javax.swing.event.TableModelEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 
@@ -56,7 +53,7 @@ public class CommitPanel extends javax.swing.JPanel implements PreferenceChangeL
 
     public void addNotify() {
         super.addNotify();
-        SvnModuleConfig.getPreferences().addPreferenceChangeListener(this);
+        SvnModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
         commitTable.getTableModel().addTableModelListener(this);
         listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
         messageTextArea.selectAll();
@@ -64,7 +61,7 @@ public class CommitPanel extends javax.swing.JPanel implements PreferenceChangeL
 
     public void removeNotify() {
         commitTable.getTableModel().removeTableModelListener(this);
-        SvnModuleConfig.getPreferences().removePreferenceChangeListener(this);
+        SvnModuleConfig.getDefault().getPreferences().removePreferenceChangeListener(this);
         super.removeNotify();
     }
     

@@ -20,9 +20,10 @@
 package org.netbeans.modules.subversion.ui.commit;
 
 import java.io.*;
-import org.netbeans.modules.subversion.settings.*;
+
 import org.netbeans.modules.subversion.ui.actions.*;
 import org.netbeans.modules.subversion.FileInformation;
+import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.openide.nodes.*;
 
 /**

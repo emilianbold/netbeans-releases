@@ -22,8 +22,8 @@ package org.netbeans.modules.subversion.ui.diff;
 import org.netbeans.modules.diff.builtin.visualizer.TextDiffVisualizer;
 import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
-import org.netbeans.modules.subversion.settings.SvnModuleConfig;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.AccessibleJFileChooser;
 import org.netbeans.modules.subversion.util.SvnUtils;
@@ -132,7 +132,7 @@ public class ExportDiffAction extends ContextAction {
             chooser.removeChoosableFileFilter(fileFilter);
 
         }
-        chooser.setCurrentDirectory(new File(SvnModuleConfig.getPreferences().get("ExportDiff.saveFolder", System.getProperty("user.home")))); // NOI18N
+        chooser.setCurrentDirectory(new File(SvnModuleConfig.getDefault().getPreferences().get("ExportDiff.saveFolder", System.getProperty("user.home")))); // NOI18N
         chooser.addChoosableFileFilter(new javax.swing.filechooser.FileFilter() {
             public boolean accept(File f) {
                 return f.getName().endsWith("diff") || f.getName().endsWith("patch") || f.isDirectory();  // NOI18N
@@ -171,7 +171,7 @@ public class ExportDiffAction extends ContextAction {
                             return;
                         }
                     }
-                    SvnModuleConfig.getPreferences().put("ExportDiff.saveFolder", destination.getParent()); // NOI18N
+                    SvnModuleConfig.getDefault().getPreferences().put("ExportDiff.saveFolder", destination.getParent()); // NOI18N
                     final File out = destination;
                     RequestProcessor rp = Subversion.getInstance().getRequestProcessor();
                     SvnProgressSupport ps = new SvnProgressSupport() {

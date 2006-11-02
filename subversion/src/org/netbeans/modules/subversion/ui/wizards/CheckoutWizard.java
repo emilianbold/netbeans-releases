@@ -26,7 +26,7 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.subversion.RepositoryFile;
-import org.netbeans.modules.subversion.settings.HistorySettings;
+import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.ui.wizards.repositorystep.RepositoryStep;
 import org.netbeans.modules.subversion.ui.wizards.checkoutstep.CheckoutStep;
 import org.openide.DialogDisplayer;
@@ -77,7 +77,7 @@ public final class CheckoutWizard implements ChangeListener {
     /** Called on sucessfull finish. */
     private void onFinished() {
         String checkout = checkoutStep.getWorkdir().getPath();
-        HistorySettings.getDefault().setCheckoutDirectory(checkout);
+        SvnModuleConfig.getDefault().getPreferences().put(CheckoutStep.CHECKOUT_DIRECTORY, checkout);
     }
 
     private void setErrorMessage(String msg) {

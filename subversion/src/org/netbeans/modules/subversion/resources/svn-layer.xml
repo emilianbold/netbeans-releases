@@ -292,22 +292,9 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="instanceClass" stringvalue="org.netbeans.modules.versioning.system.cvss.ui.actions.status.OpenVersioningAction" />
         </file>
     </folder>
-
-    <folder name="Services">
-        <folder name="Hidden">
-            <file name="org-netbeans-modules-versioning-system-cvss-settings-HistorySettings.settings" url="../settings/HistorySettings.xml"/>
-            <file name="org-netbeans-modules-versioning-system-cvss-settings-CvsRootSettings.settings" url="../settings/CvsRootSettings.xml"/>
-            <file name="org-netbeans-modules-versioning-system-cvss-settings-MetadataAttic.settings" url="../settings/MetadataAttic.xml"/>
-            <file name="org-netbeans-modules-versioning-system-cvss-settings-CvsModuleConfig.settings" url="../settings/CvsModuleConfig.xml"/>
-        </folder>
-    </folder>
 -->
 
     <folder name="Services">
-        <folder name="Hidden">
-            <file name="org-netbeans-modules-subversion-settings-HistorySettings.settings" url="../settings/HistorySettings.xml"/>            
-<!--            <file name="org-netbeans-modules-subversion-settings-MetadataAttic.settings" url="../settings/MetadataAttic.xml"/>-->
-        </folder>
         <folder name="JavaHelp">
             <file name="org-netbeans-modules-subversion-resources-helpset.xml" url="helpset-decl.xml"/>
             <attr name="org-netbeans-modules-versioning-system-cvss-resources-helpset.xml/org-netbeans-modules-subversion-resources-helpset.xml" boolvalue="true"/>

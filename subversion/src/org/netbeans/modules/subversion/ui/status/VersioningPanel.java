@@ -24,17 +24,13 @@ import org.netbeans.modules.subversion.ui.commit.*;
 import org.netbeans.modules.subversion.ui.diff.*;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.modules.versioning.util.VersioningEvent;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.FileInformation;
-import org.netbeans.modules.subversion.FileStatusCache;
-import org.netbeans.modules.subversion.SvnFileNode;
-import org.netbeans.modules.subversion.settings.SvnModuleConfig;
+import org.netbeans.modules.subversion.*;
+import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.NoContentPanel;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.openide.*;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.*;
 import org.openide.windows.TopComponent;
@@ -172,14 +168,14 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
     
     public void addNotify() {
         super.addNotify();
-        SvnModuleConfig.getPreferences().addPreferenceChangeListener(this);
+        SvnModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
         subversion.getStatusCache().addVersioningListener(this);
 //        subversion.addVersioningListener(this);
         explorerManager.addPropertyChangeListener(this);
     }
 
     public void removeNotify() {
-        SvnModuleConfig.getPreferences().removePreferenceChangeListener(this);
+        SvnModuleConfig.getDefault().getPreferences().removePreferenceChangeListener(this);
         subversion.getStatusCache().removeVersioningListener(this);
 //        subversion.removeVersioningListener(this);
         explorerManager.removePropertyChangeListener(this);

@@ -20,12 +20,12 @@
 package org.netbeans.modules.subversion.ui.diff;
 
 import java.util.*;
-import org.netbeans.modules.subversion.settings.*;
+
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.*;
 import java.io.File;
-import org.netbeans.modules.subversion.client.SvnProgressSupport;
+
 import org.openide.nodes.Node;
 import org.openide.util.*;
 

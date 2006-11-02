@@ -38,7 +38,7 @@ import java.util.List;
 import java.text.MessageFormat;
 
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
-import org.netbeans.modules.subversion.settings.HistorySettings;
+import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.subversion.util.TableSorter;
 import org.netbeans.modules.versioning.util.VersioningListener;
@@ -120,7 +120,7 @@ public class CommitAction extends ContextAction {
         // show commit dialog
         final CommitPanel panel = new CommitPanel();
         final CommitTable data;
-        TableSorter sorter = HistorySettings.getCommitTableSorter();
+        TableSorter sorter = SvnModuleConfig.getDefault().getCommitTableSorter();
         if(sorter==null) {
             data = new CommitTable(panel.filesLabel, CommitTable.COMMIT_COLUMNS, new String[] { CommitTableModel.COLUMN_NAME_PATH });
         } else {
@@ -161,7 +161,7 @@ public class CommitAction extends ContextAction {
 
         if (dd.getValue() == commitButton) {
             
-            HistorySettings.setCommitTableSorter(data.getSorter());
+            SvnModuleConfig.getDefault().setCommitTableSorter(data.getSorter());
             
             final Map<SvnFileNode, CommitOptions> commitFiles = data.getCommitFiles();
             final String message = panel.messageTextArea.getText();

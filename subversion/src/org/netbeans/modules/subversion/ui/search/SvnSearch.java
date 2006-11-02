@@ -36,7 +36,7 @@ import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
-import org.netbeans.modules.subversion.settings.HistorySettings;
+import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.util.NoContentPanel;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -52,6 +52,7 @@ import org.tigris.subversion.svnclientadapter.SVNRevision;
  */
 public class SvnSearch implements ActionListener, DocumentListener {
     
+    private static final String DATE_FROM = "svnSearch.dateFrom";
     private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd"); // NOI18N
     private final SvnSearchPanel panel;    
     
@@ -59,7 +60,7 @@ public class SvnSearch implements ActionListener, DocumentListener {
     private SvnSearchView searchView ;
     private SvnProgressSupport support;
     private NoContentPanel noContentPanel;
-            
+
     public SvnSearch(RepositoryFile repositoryRoot) {
         this.repositoryRoot = repositoryRoot;
         panel = new SvnSearchPanel();
@@ -67,7 +68,7 @@ public class SvnSearch implements ActionListener, DocumentListener {
         panel.dateFromTextField.getDocument().addDocumentListener(this); 
         
         String date = DATE_FORMAT.format(new Date(System.currentTimeMillis() - 1000 * 60 * 60 * 24 * 7));
-        panel.dateFromTextField.setText(HistorySettings.getDefault().getSearchDateFrom(date));
+        panel.dateFromTextField.setText(SvnModuleConfig.getDefault().getPreferences().get(DATE_FROM, date));
         
         searchView = new SvnSearchView();
         
@@ -100,7 +101,7 @@ public class SvnSearch implements ActionListener, DocumentListener {
         
         final SVNRevision revisionFrom = getRevisionFrom();
         if(revisionFrom instanceof SVNRevision.DateSpec) {
-            HistorySettings.getDefault().setSearchDateFrom(panel.dateFromTextField.getText().trim());
+            SvnModuleConfig.getDefault().getPreferences().put(DATE_FROM, panel.dateFromTextField.getText().trim());
         }
         
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(this.repositoryRoot.getRepositoryUrl());
