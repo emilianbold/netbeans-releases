@@ -197,7 +197,9 @@ public class SvnConfigFiles {
                         } else {
                             // if there is a global section with a different proxy
                             // then check if the host isn't in its exceptions                            
-                            String[] hosts = globalSection.get("http-proxy-exceptions").split(",");     // NOI18N
+                            String exceptionsStrig = globalSection.get("http-proxy-exceptions");
+                            if (exceptionsStrig == null) exceptionsStrig  = "";                                        
+                            String[] hosts = exceptionsStrig.split(",");     // NOI18N
                             StringBuffer newHosts = new StringBuffer();
                             for (int i = 0; i < hosts.length; i++) {
                                 if(!hosts[i].trim().equals(host)) {
@@ -366,7 +368,9 @@ public class SvnConfigFiles {
             if(serverGroups == null) {
                 return;
             }
-            String[] hosts = serverGroups.get(groupName).split(",");            // NOI18N
+            String hostsString = serverGroups.get(groupName);
+            if(hostsString==null) hostsString = "";
+            String[] hosts = hostsString.split(",");            // NOI18N
             if(hosts.length == 1) {
                 serverGroups.remove(groupName);
                 servers.remove(group);
