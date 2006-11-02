@@ -33,6 +33,7 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestResult;
 import junit.framework.TestSuite;
+import org.netbeans.junit.AssertionKnownBugError;
 import org.netbeans.junit.Manager;
 import org.netbeans.junit.NbPerformanceTest;
 import org.netbeans.junit.NbTest;
@@ -130,7 +131,12 @@ public class XMLReporter implements JUnitTestListener {
 
         if (test instanceof NbTest) {
            String exp_mesg = ((NbTest)test).getExpectedFail();
-           if (exp_mesg != null) {
+           if (assertionFailedError instanceof AssertionKnownBugError){
+               AssertionKnownBugError assertionKBE = (AssertionKnownBugError)assertionFailedError;
+               currentTestCase.xmlat_result = UnitTestCase.TEST_EXPECTED_FAIL;
+               currentTestCase.xmlat_failReason = "KNOWN BUG " + assertionKBE.getBugID();
+               testsExpectedFailed++;
+           } else if (exp_mesg != null) {
                currentTestCase.xmlat_result = UnitTestCase.TEST_EXPECTED_FAIL;
                currentTestCase.xmlat_failReason = exp_mesg;
                testsExpectedFailed++;

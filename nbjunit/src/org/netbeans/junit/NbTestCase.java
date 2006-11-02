@@ -1246,7 +1246,24 @@ public abstract class NbTestCase extends TestCase implements NbTest {
         }
         return -1; // fail throws for sure
     }
-    
+
+    /**
+     * Fails a test with known bug ID.
+     * @param bugID the bug number according bug report system.
+     */
+    public static void failByBug(int bugID) {
+        throw new AssertionKnownBugError(bugID);
+    }
+
+    /**
+     * Fails a test with known bug ID and with the given message.
+     * @param bugID the bug number according bug report system.
+     * @param message the text to show when test fails.
+     */
+    public static void failByBug(int bugID, String message) {
+        throw new AssertionKnownBugError(bugID, message);
+    }
+
     private static class ObjectFoundException extends RuntimeException {}
     
     private static String findRefsFromRoot(final Object target, final Set<?> rootsHint) throws Exception {
