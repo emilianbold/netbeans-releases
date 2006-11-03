@@ -60,6 +60,8 @@ public class Utilities {
     }
     
     public static boolean startsWith(String theString, String prefix) {
+        if (theString == null || theString.length() == 0)
+            return false;
         if (prefix == null || prefix.length() == 0)
             return true;
         return caseSensitive ? theString.startsWith(prefix) :
