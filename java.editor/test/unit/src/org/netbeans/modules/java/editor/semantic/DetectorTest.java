@@ -216,6 +216,10 @@ public class DetectorTest extends TestBase {
         performTest("SuperIsKeyword");
     }
     
+    public void testNewArrayIsClassUse() throws Exception {
+        performTest("NewArrayIsClassUse");
+    }
+    
     private void performTest(String fileName) throws Exception {
         performTest(fileName, new Performer() {
             public Collection<Highlight> compute(CompilationController parameter, Document doc) {
