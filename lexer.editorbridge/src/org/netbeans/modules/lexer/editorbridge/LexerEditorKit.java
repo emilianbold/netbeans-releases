@@ -19,17 +19,26 @@
 
 package org.netbeans.modules.lexer.editorbridge;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.awt.event.ActionEvent;
+import javax.swing.Action;
 import javax.swing.JEditorPane;
 import javax.swing.plaf.TextUI;
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
+import javax.swing.text.TextAction;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.editor.BaseAction;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseTextUI;
-import org.netbeans.editor.Settings;
-import org.netbeans.editor.SettingsNames;
+import org.netbeans.editor.Syntax;
+import org.netbeans.editor.SyntaxSupport;
+import org.netbeans.editor.ext.ExtSyntaxSupport;
+import org.netbeans.editor.ext.plain.PlainSyntax;
 import org.netbeans.modules.editor.NbEditorKit;
 
 public class LexerEditorKit extends NbEditorKit {
+
+    public static final String tokenListDebugAction = "token-list-debug";
 
     public void install(JEditorPane pane) {
         super.install(pane);
@@ -37,6 +46,37 @@ public class LexerEditorKit extends NbEditorKit {
         TextUI ui = pane.getUI();
         if (ui instanceof BaseTextUI) {
             ((BaseTextUI)ui).getEditorUI().addLayer(new LexerLayer(pane), LexerLayer.VISIBILITY);
+        }
+    }
+
+    public Syntax createSyntax(Document doc) {
+        return new PlainSyntax();
+    }
+
+    public SyntaxSupport createSyntaxSupport(BaseDocument doc) {
+        return new ExtSyntaxSupport(doc);
+    }
+
+    protected Action[] createActions() {
+        Action[] calcActions = new Action[] {
+            new TokenListDebugAction(),
+        };
+        return TextAction.augmentList(super.createActions(), calcActions);
+    }
+
+    public static class TokenListDebugAction extends BaseAction {
+        
+        public TokenListDebugAction() {
+            super(tokenListDebugAction, 0);
+        }
+
+        public void actionPerformed(final ActionEvent evt, final JTextComponent target) {
+            TokenHierarchy hi = TokenHierarchy.get(target.getDocument());
+            if (hi != null) {
+                /*DEBUG*/System.err.println("Token list:\n" + hi.tokenSequence());
+            } else {
+                /*DEBUG*/System.err.println("Token hierarchy is null.");
+            }
         }
     }
 
