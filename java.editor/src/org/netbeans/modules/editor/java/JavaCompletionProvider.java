@@ -1990,6 +1990,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                     if (st.getKind() == TypeKind.DECLARED) {
                         final DeclaredType type = (DeclaredType)st;
                         final TypeElement element = (TypeElement)type.asElement();
+                        if (withinScope(env, element))
+                            continue;
                         final boolean isStatic = element.getKind().isClass() || element.getKind().isInterface();
                         ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
                             public boolean accept(Element e, TypeMirror t) {
@@ -3187,6 +3189,14 @@ public class JavaCompletionProvider implements CompletionProvider {
                 tree = it.hasNext() ? it.next() : null;
             }
             return tree;
+        }
+        
+        private boolean withinScope(Env env, TypeElement e) throws IOException {
+            for (Element encl = env.getScope().getEnclosingClass(); encl != null; encl = encl.getEnclosingElement()) {
+                if (e == encl)
+                    return true;
+            }
+            return false;
         }
         
         private Env getCompletionEnvironment(CompilationController controller, boolean upToOffset) throws IOException {
