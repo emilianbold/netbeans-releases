@@ -250,6 +250,24 @@ public final class TreeMaker {
                                                     ExpressionTree falseExpression) {
         return delegate.ConditionalExpression(condition, trueExpression, falseExpression);
     }
+
+    /**
+     * Creates a new MethodTree representing constructor.
+     * 
+     * @param modifiers the modifiers of this method.
+     * @param typeParameters the list of generic type parameters, or an empty list.
+     * @param parameters the list of parameters, or an empty list.
+     * @param throwsList the list of throws clauses, or an empty list.
+     * @param body the method's code block.
+     * @see com.sun.source.tree.MethodTree
+     */
+    public MethodTree Constructor(ModifiersTree modifiers,
+                             List<? extends TypeParameterTree> typeParameters,
+                             List<? extends VariableTree> parameters,
+                             List<? extends ExpressionTree> throwsList,
+                             BlockTree body) {
+        return delegate.Method(modifiers, "<init>", null, typeParameters, parameters, throwsList, body, null);
+    }
     
     /**
      * Creates a new ContinueTree.

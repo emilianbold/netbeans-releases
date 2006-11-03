@@ -19,14 +19,19 @@
 package org.netbeans.api.java.source.gen;
 
 import com.sun.source.tree.*;
+import static com.sun.source.tree.Tree.Kind.*;
 import java.util.*;
 import java.io.IOException;
 import java.util.EnumSet;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
-import org.netbeans.jackpot.transform.Transformer;
 import org.netbeans.junit.NbTestSuite;
 import junit.textui.TestRunner;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.WorkingCopy;
 
 /**
  * Tests the method generator.
@@ -51,36 +56,85 @@ public class ConstructorTest extends GeneratorTest {
 
     public void testAddConstructor() throws IOException {
         testFile = getFile(getSourceDir(), getSourcePckg() + "ConstructorTest.java");
-        process(new Transformer<Void, Object>() {
-            public Void visitClass(ClassTree node, Object p) {
-                super.visitClass(node, p);
-                if ("InnerClass1".equals(node.getSimpleName().toString())) {
-                    ModifiersTree mods = make.Modifiers(EnumSet.of(Modifier.PUBLIC));
-                    List<VariableTree> arguments = new ArrayList<VariableTree>();
-                    arguments.add(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "a", make.PrimitiveType(TypeKind.BOOLEAN), null));
-                    MethodTree constr = make.Method(mods, "<init>", null, Collections.<TypeParameterTree> emptyList(), arguments, Collections.<ExpressionTree>emptyList(), make.Block(Collections.<StatementTree>emptyList(), false), null);
-                    changes.rewrite(node, make.addClassMember(node, constr));
-                    return null;
+        
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                // exactly one class in compilation unit
+                ClassTree topLevel = (ClassTree) cut.getTypeDecls().iterator().next();
+                for (Tree member : topLevel.getMembers()) {
+                    // for the first inner class in top level
+                    if (CLASS == member.getKind()) {
+                        
+                        ModifiersTree mods = make.Modifiers(EnumSet.of(Modifier.PUBLIC));
+                        
+                        List<VariableTree> arguments = new ArrayList<VariableTree>();
+                        arguments.add(make.Variable(
+                                make.Modifiers(EnumSet.noneOf(Modifier.class)),
+                                "a",
+                                make.PrimitiveType(TypeKind.BOOLEAN), null)
+                        );
+                        
+                        MethodTree newConstructor = make.Constructor(
+                                mods, 
+                                Collections.<TypeParameterTree>emptyList(), 
+                                arguments, 
+                                Collections.<ExpressionTree>emptyList(), 
+                                make.Block(Collections.<StatementTree>emptyList(), false)
+                        );
+                        ClassTree newInner = make.addClassMember((ClassTree) member, newConstructor);
+                        workingCopy.rewrite(member, newInner);
+                    }
                 }
-                return null;
             }
-        });
+                
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
         assertFiles("testAddConstructor.pass");
     }
         
     public void testAddConstructor2() throws IOException {
         testFile = getFile(getSourceDir(), getSourcePckg() + "ConstructorTest2.java");
-        process(new Transformer<Void, Object>() {
-            public Void visitClass(ClassTree node, Object p) {
-                super.visitClass(node, p);
+        
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                // exactly one class in compilation unit
+                ClassTree topLevel = (ClassTree) cut.getTypeDecls().iterator().next();
+                
                 ModifiersTree mods = make.Modifiers(EnumSet.of(Modifier.PUBLIC));
                 List<VariableTree> arguments = new ArrayList<VariableTree>();
-                arguments.add(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "a", make.PrimitiveType(TypeKind.BOOLEAN), null));
-                MethodTree constr = make.Method(mods, "<init>", null, Collections.<TypeParameterTree> emptyList(), arguments, Collections.<ExpressionTree>emptyList(), make.Block(Collections.<StatementTree>emptyList(), false), null);
-                changes.rewrite(node, make.addClassMember(node, constr));
-                return null;
+                arguments.add(make.Variable(
+                        make.Modifiers(EnumSet.noneOf(Modifier.class)),
+                        "a", 
+                        make.PrimitiveType(TypeKind.BOOLEAN), null)
+                );
+                MethodTree newConstructor = make.Constructor(
+                        mods, 
+                        Collections.<TypeParameterTree>emptyList(), 
+                        arguments, 
+                        Collections.<ExpressionTree>emptyList(), 
+                        make.Block(Collections.<StatementTree>emptyList(), false)
+                );
+
+                ClassTree newClass = make.addClassMember(topLevel, newConstructor);
+                workingCopy.rewrite(topLevel, newClass);
             }
-        });
+                
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
         assertFiles("testAddConstructor2.pass");
     }
     
