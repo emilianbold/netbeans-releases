@@ -826,18 +826,20 @@ public class JavaSourceTest extends NbTestCase {
         public void run (CompilationController controler) {
             try {
                 controler.toPhase(Phase.PARSED);
-                assertTrue (Phase.PARSED.compareTo(controler.getPhase())<=0);
-                assertNotNull("No ComplationUnitTrees after parse",controler.getCompilationUnit());
-                controler.toPhase(Phase.RESOLVED);           
-                assertTrue (Phase.RESOLVED.compareTo(controler.getPhase())<=0);
-                
-                //all elements should be resolved now:
-                new ScannerImpl(controler).scan(controler.getCompilationUnit(), null);
-                
-                controler.toPhase(Phase.PARSED);
-                //Was not modified should stay in {@link Phase#RESOLVED}
-                assertTrue (Phase.RESOLVED.compareTo(controler.getPhase())<=0);
-                this.latch.countDown();
+                if (!controler.delegate.needsRestart) {
+                    assertTrue (Phase.PARSED.compareTo(controler.getPhase())<=0);
+                    assertNotNull("No ComplationUnitTrees after parse",controler.getCompilationUnit());
+                    controler.toPhase(Phase.RESOLVED);           
+                    assertTrue (Phase.RESOLVED.compareTo(controler.getPhase())<=0);
+
+                    //all elements should be resolved now:
+                    new ScannerImpl(controler).scan(controler.getCompilationUnit(), null);
+
+                    controler.toPhase(Phase.PARSED);
+                    //Was not modified should stay in {@link Phase#RESOLVED}
+                    assertTrue (Phase.RESOLVED.compareTo(controler.getPhase())<=0);
+                    this.latch.countDown();
+                }
             } catch (IOException ioe) {
                 ioe.printStackTrace();
             }
