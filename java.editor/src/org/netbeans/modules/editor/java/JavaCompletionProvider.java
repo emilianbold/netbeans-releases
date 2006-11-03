@@ -2190,7 +2190,6 @@ public class JavaCompletionProvider implements CompletionProvider {
             final Types types = controller.getTypes();
             final TreeUtilities tu = controller.getTreeUtilities();
             TypeElement typeElem = type.getKind() == TypeKind.DECLARED ? (TypeElement)((DeclaredType)type).asElement() : null;
-            boolean ctorAdded = false;
             final boolean isStatic = elem != null && (elem.getKind().isClass() || elem.getKind().isInterface());
             final Scope scope = env.getScope();
             final Set<TypeMirror> finalSmartTypes = smartTypes;
@@ -2252,6 +2251,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         else
                             results.add(JavaCompletionItem.createVariableItem((VariableElement)e, type.getKind() == TypeKind.DECLARED ? types.asMemberOf((DeclaredType)type, e) : e.asType(), offset, typeElem != e.getEnclosingElement(), elements.isDeprecated(e)));
                         break;
+                    case CONSTRUCTOR:
                     case METHOD:
                         results.add(JavaCompletionItem.createExecutableItem((ExecutableElement)e, (ExecutableType)(type.getKind() == TypeKind.DECLARED ? types.asMemberOf((DeclaredType)type, e) : e.asType()), offset, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), inImport));
                         break;
@@ -2261,15 +2261,6 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case ANNOTATION_TYPE:
                         results.add(JavaCompletionItem.createTypeItem((TypeElement)e, (DeclaredType)e.asType(), offset, false, elements.isDeprecated(e)));
                         break;
-                    case CONSTRUCTOR:
-                        results.add(JavaCompletionItem.createExecutableItem((ExecutableElement)e, (ExecutableType)(type.getKind() == TypeKind.DECLARED ? types.asMemberOf((DeclaredType)type, e) : e.asType()), offset, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), inImport));
-                        ctorAdded = true;
-                        break;
-                }
-            }
-            if (!ctorAdded && kinds.contains(CONSTRUCTOR)) {
-                if (elem.getKind().isClass() || elem.getKind().isInterface()) {
-                    results.add(JavaCompletionItem.createDefaultConstructorItem((TypeElement)elem, offset));
                 }
             }
         }
