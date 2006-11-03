@@ -56,14 +56,6 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.openide.options</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>6.2</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.openide.execution</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -75,6 +67,10 @@ Microsystems, Inc. All Rights Reserved.
           <test-dependencies>
               <test-type>
                   <name>unit</name>
+                <test-dependency>
+                    <code-name-base>org.openide.options</code-name-base>
+                    <compile-dependency/>
+                </test-dependency>                  
                   <test-dependency>
                       <code-name-base>org.netbeans.modules.extbrowser</code-name-base>
                       <recursive/>
