@@ -61,9 +61,9 @@ import javax.xml.transform.stream.StreamResult;
 
 /**
  * Tracks activity within a GUI program, this activity loosely being the
- * major events within the lifetime of the application.  The activity is 
+ * major events within the lifetime of the application.  The activity is
  * recorded in a simple object (@see ActionTracker.Tuple).  Activity is
- * tracked in "groups" of actions (@see ActionTracker.EventList), and a 
+ * tracked in "groups" of actions (@see ActionTracker.EventList), and a
  * new "group" is begun for each TRACK_START received.
  */
 public class ActionTracker {
@@ -133,13 +133,56 @@ public class ActionTracker {
     /** The attribute name for calculated time difference since the last MOUSE_DRAGGED event. */
     public final static String ATTR_TIME_DIFF_DRAG  = "diffdrag";
     
+    // Instance of the ActionTracker
     private static ActionTracker instance = null;
+    
+    // List of event lists
+    private LinkedList<EventList> eventLists = null;
+    
+    // Events gathered during one event tracking period
+    private EventList/*Tuple*/ currentEvents = null;
+    
+    // Our AWT Event listener
+    private OurAWTEventListener awt_listener = null;
+    
+    // Flag to handle connection to AWT
+    private boolean connected = false;
+    
+    // Output file name
+    private String fnActionOutput = null;
+    
+    // Flag to handle finished application
+    private boolean exportXmlWhenScenarioFinished = false;
+    
+    // Flag to handle recording
+    private boolean allowRecording = true;
+    
+    // document builder
+    private DocumentBuilder dbld = null;
+    
+    // document builder factory
+    private DocumentBuilderFactory dbfactory = null;
+    
+    // tranformer factory
+    private TransformerFactory tfactory = null;
+    
+    // default awt event mask
+    private long default_awt_event_mask = AWTEvent.COMPONENT_EVENT_MASK
+            | AWTEvent.MOUSE_EVENT_MASK
+            | AWTEvent.MOUSE_MOTION_EVENT_MASK
+            | AWTEvent.KEY_EVENT_MASK;
+    
+    // awt event mask
+    long awt_event_mask = -1;
+    
+    
     
     /**
      * Retrieves the ActionTracker instance for this application.  Rather
      * than constructing your own ActionTracker (note that the constructor
      * is <code>private</code>, meaning you can't construct your own) use
      * this method to get the instance.
+     * @return return ActionTracker instance
      */
     public static ActionTracker getInstance() {
         if (instance == null)
@@ -147,45 +190,47 @@ public class ActionTracker {
         return instance;
     }
     
-    /** List of event lists. */
-    private LinkedList<EventList> eventLists = null;
-    
-    /** Events gathered during one event tracking period. */
-    private EventList/*Tuple*/ currentEvents = null;
-    
-    private OurAWTEventListener awt_listener = null;
-    private boolean connected = false;
-    
-    private String fnActionOutput = null;
-    private boolean exportXmlWhenScenarioFinished = false;
-    
-    private boolean allowRecording = true;
-    
     /** Creates a new instance of RepaintTracker, private so that
      * this is a singleton class. */
     private ActionTracker() {
-        setDefaultAWTEventListeningMask();
+        awt_event_mask = default_awt_event_mask;
     }
     
+    /**
+     * Stop actions recording
+     */
     public void stopRecording() {
         allowRecording = false;
     }
     
+    /**
+     * Start actions recording
+     */
     public void startRecording() {
         allowRecording = true;
     }
     
+    /**
+     * check whether it's recording
+     * @return true - it's recording, false - it isn't
+     */
     public boolean isRecording() {
         return allowRecording;
     }
     
     /**
      * Set the default file name to output to for <code>outputAsXML</code>.
+     * @param fn file name
      */
     public void setOutputFileName(String fn) {
         fnActionOutput = fn;
     }
     
+    /**
+     * Set exportXmlWhenScenarioFinished property when the test finished to
+     * allow export XML
+     * @param export set exportXmlWhenScenarioFinished
+     */
     public void setExportXMLWhenScenarioFinished(boolean export) {
         exportXmlWhenScenarioFinished = export;
     }
@@ -193,6 +238,7 @@ public class ActionTracker {
     /**
      * Get the <i>current</i> <code>EventList</code> into which events
      * are being recorded.
+     * @return 
      */
     public EventList getCurrentEvents() {
         return currentEvents;
@@ -207,6 +253,10 @@ public class ActionTracker {
             eventLists.removeLast();
     }
     
+    /**
+     * Get list of all events
+     * @return list of events
+     */
     public LinkedList getEventLists() {
         return eventLists;
     }
@@ -221,9 +271,10 @@ public class ActionTracker {
     }
     
     /**
-     * Record a TRACK_START event.  This causes a clean, fresh, and new 
+     * Record a TRACK_START event.  This causes a clean, fresh, and new
      * EventList to be begun (with the previous current EventList to be
      * saved away).
+     * @param name 
      */
     public void startNewEventList(String name) {
         if (eventLists == null)
@@ -236,24 +287,18 @@ public class ActionTracker {
         add(TRACK_START, "START", currentEvents.startMillies);
     }
     
-    long default_awt_event_mask = AWTEvent.COMPONENT_EVENT_MASK 
-                                | AWTEvent.MOUSE_EVENT_MASK
-                                | AWTEvent.MOUSE_MOTION_EVENT_MASK
-                                | AWTEvent.KEY_EVENT_MASK;
-    long awt_event_mask = -1;
-    
-    public void setDefaultAWTEventListeningMask() {
-         awt_event_mask = default_awt_event_mask;
-    }
-    
-    public long getDefaultAWTEventListengingMask() {
-        return default_awt_event_mask;
-    }
-    
+    /**
+     * Set AWT Event mask if not default_awt_event_mask is used
+     * @param mask to be set
+     */
     public void setAWTEventListeningMask(long mask) {
         awt_event_mask = mask;
     }
     
+    /**
+     * Set AWT Event mask
+     * @return used mask
+     */
     public long getAWTEventListengingMask() {
         return awt_event_mask;
     }
@@ -261,14 +306,15 @@ public class ActionTracker {
     /**
      * Manage the connection to the AWT <code>EventQueue</code>, recording
      * interesting events that go by.
+     * @param connect if true - connect to AWT, else disconnect
      */
     public void connectToAWT(boolean connect) {
         if (connect) {
             if (awt_listener == null)
                 awt_listener = new OurAWTEventListener(this);
             if (!connected) {
-                Toolkit.getDefaultToolkit().addAWTEventListener(awt_listener, 
-                                                                awt_event_mask);
+                Toolkit.getDefaultToolkit().addAWTEventListener(awt_listener,
+                        awt_event_mask);
             }
             connected = true;
         } else {
@@ -280,9 +326,10 @@ public class ActionTracker {
     
     /**
      * Add the <code>Tuple</code> to the current EventList.
+     * @param t tuple
      */
     public void add(Tuple t) {
-        if (!isRecording()) 
+        if (!isRecording())
             return;
         if (currentEvents != null)
             currentEvents.add(t);
@@ -291,6 +338,9 @@ public class ActionTracker {
     /**
      * Add a <code>Tuple</code> matching these parameters
      * to the current EventList.
+     * @param code 
+     * @param name
+     * @param millies
      */
     public void add(int code, String name, long millies) {
         EventList ce = getCurrentEvents();
@@ -301,6 +351,8 @@ public class ActionTracker {
      * Add a <code>Tuple</code> matching these parameters
      * to the current EventList.  The <code>time</code> parameter is
      * derived from the current time.
+     * @param code
+     * @param name
      */
     public void add(int code, String name) {
         EventList ce = getCurrentEvents();
@@ -310,64 +362,61 @@ public class ActionTracker {
     /**
      * Process an AWTEvent, and if it's interesting recording it in
      * the current EventList.
+     * @param event
      */
     public void add(AWTEvent event) {
         if (event instanceof MouseEvent) {
             MouseEvent me = (MouseEvent) event;
-            int mod = me.getModifiers();
             int id = me.getID();
             if ((id == MouseEvent.MOUSE_PRESSED
-              || id == MouseEvent.MOUSE_RELEASED)) {
+                    || id == MouseEvent.MOUSE_RELEASED)) {
                 
                 String mr = id == MouseEvent.MOUSE_PRESSED
                         ? "MOUSE_PRESSED" : "MOUSE_RELEASED";
                 int bmask = me.getButton();
                 
                 add(id == MouseEvent.MOUSE_PRESSED
-                     ? TRACK_MOUSE_PRESS : TRACK_MOUSE_RELEASE,
-                  mr
-                    + " bmask=" + Integer.toString(bmask)
-                    + " modifiers=" + MouseEvent.getMouseModifiersText(me.getModifiers())
-                );
+                        ? TRACK_MOUSE_PRESS : TRACK_MOUSE_RELEASE,
+                        mr
+                        + " bmask=" + Integer.toString(bmask)
+                        + " modifiers=" + MouseEvent.getMouseModifiersText(me.getModifiers())
+                        );
             }
             if (id == MouseEvent.MOUSE_MOVED
-             || id == MouseEvent.MOUSE_DRAGGED) {
-                 String mm = id == MouseEvent.MOUSE_MOVED
-                    ? "MOUSE_MOVED" : "MOUSE_DRAGGED";
-                 
-                 add(id == MouseEvent.MOUSE_MOVED
+                    || id == MouseEvent.MOUSE_DRAGGED) {
+                String mm = id == MouseEvent.MOUSE_MOVED
+                        ? "MOUSE_MOVED" : "MOUSE_DRAGGED";
+                
+                add(id == MouseEvent.MOUSE_MOVED
                         ? TRACK_MOUSE_MOVED : TRACK_MOUSE_DRAGGED,
-                     mm + " " 
+                        mm + " "
                         + Integer.toString(me.getX())
                         + ","
                         + Integer.toString(me.getY())
-                 );
+                        );
             }
-        }
-        else if (event instanceof KeyEvent) {
+        } else if (event instanceof KeyEvent) {
             KeyEvent ke = (KeyEvent) event;
             int id = ke.getID();
             if (id == KeyEvent.KEY_PRESSED
-             || id == KeyEvent.KEY_RELEASED) {
-                 
+                    || id == KeyEvent.KEY_RELEASED) {
+                
                 String kr = id == KeyEvent.KEY_PRESSED
                         ? "KEY_PRESSED" : "KEY_RELEASED";
                 int kc = ke.getKeyCode();
                 
                 add(id == KeyEvent.KEY_PRESSED
-                  ? ActionTracker.TRACK_KEY_PRESS
-                  : ActionTracker.TRACK_KEY_RELEASE,
-                  "KeyEvent " + kr 
-                + " keycode=" + Integer.toString(kc)
-                + " keytext=" + KeyEvent.getKeyText(kc)
-                + " modtext=" + KeyEvent.getKeyModifiersText(ke.getModifiers()));
+                        ? ActionTracker.TRACK_KEY_PRESS
+                        : ActionTracker.TRACK_KEY_RELEASE,
+                        "KeyEvent " + kr
+                        + " keycode=" + Integer.toString(kc)
+                        + " keytext=" + KeyEvent.getKeyText(kc)
+                        + " modtext=" + KeyEvent.getKeyModifiersText(ke.getModifiers()));
             }
-        }
-        else if (event instanceof WindowEvent) {
-            WindowEvent we = (WindowEvent) event;
-            //System.out.println("WindowEvent " + we.paramString());
-        }
-        else if (event instanceof FocusEvent) {
+        } else if (event instanceof WindowEvent) {
+            // Silent event - not tracked
+            // WindowEvent we = (WindowEvent) event;
+        } else if (event instanceof FocusEvent) {
             FocusEvent fe = (FocusEvent) event;
             int id = fe.getID();
             Component opposite = fe.getOppositeComponent();
@@ -375,73 +424,68 @@ public class ActionTracker {
             boolean   temp     = fe.isTemporary();
             if (id == FocusEvent.FOCUS_GAINED) {
                 add(ActionTracker.TRACK_FOCUS_GAINED,
-                    (temp ? "temp " : "perm ")
-                    + "opp " + opposite
-                    + "this " + thisone);
+                        (temp ? "temp " : "perm ")
+                        + "opp " + opposite
+                        + "this " + thisone);
             } else if (id == FocusEvent.FOCUS_LOST) {
                 add(ActionTracker.TRACK_FOCUS_LOST,
-                    (temp ? "temp " : "perm ")
-                    + "opp " + opposite
-                    + "this " + thisone);
+                        (temp ? "temp " : "perm ")
+                        + "opp " + opposite
+                        + "this " + thisone);
             }
-        }
-        else if (event instanceof ComponentEvent) {
+        } else if (event instanceof ComponentEvent) {
             ComponentEvent ce = (ComponentEvent) event;
             int id = ce.getID();
             // ignore ComponentEvent.COMPONENT_MOVED & ComponentEvent.COMPONENT_RESIZED
             if (id == ComponentEvent.COMPONENT_HIDDEN
-             || id == ComponentEvent.COMPONENT_SHOWN) {
-                 Component c = ce.getComponent();
-                 if (c instanceof Frame  || c instanceof JFrame) {
-                      add(id == ComponentEvent.COMPONENT_HIDDEN
-                        ? ActionTracker.TRACK_FRAME_HIDE
-                        : ActionTracker.TRACK_FRAME_SHOW,
-                        ce.paramString() + " " + c.getClass().getName());
-                 }
-                 else if (c instanceof Dialog || c instanceof JDialog) {
-                      add(id == ComponentEvent.COMPONENT_HIDDEN
-                        ? ActionTracker.TRACK_DIALOG_HIDE
-                        : ActionTracker.TRACK_DIALOG_SHOW,
-                        ce.paramString() + " " + c.getClass().getName());
-                 }
-                 else if (c instanceof Window || c instanceof JWindow) {
-                      add(id == ComponentEvent.COMPONENT_HIDDEN
-                        ? ActionTracker.TRACK_COMPONENT_HIDE
-                        : ActionTracker.TRACK_COMPONENT_SHOW,
-                        ce.paramString() + " " + c.getClass().getName());
-                 }
+                    || id == ComponentEvent.COMPONENT_SHOWN) {
+                Component c = ce.getComponent();
+                if (c instanceof Frame  || c instanceof JFrame) {
+                    add(id == ComponentEvent.COMPONENT_HIDDEN
+                            ? ActionTracker.TRACK_FRAME_HIDE
+                            : ActionTracker.TRACK_FRAME_SHOW,
+                            ce.paramString() + " " + c.getClass().getName());
+                } else if (c instanceof Dialog || c instanceof JDialog) {
+                    add(id == ComponentEvent.COMPONENT_HIDDEN
+                            ? ActionTracker.TRACK_DIALOG_HIDE
+                            : ActionTracker.TRACK_DIALOG_SHOW,
+                            ce.paramString() + " " + c.getClass().getName());
+                } else if (c instanceof Window || c instanceof JWindow) {
+                    add(id == ComponentEvent.COMPONENT_HIDDEN
+                            ? ActionTracker.TRACK_COMPONENT_HIDE
+                            : ActionTracker.TRACK_COMPONENT_SHOW,
+                            ce.paramString() + " " + c.getClass().getName());
+                }
             }
-        }
-        else if (event instanceof InvocationEvent) {
+        } else if (event instanceof InvocationEvent) {
             // there is way too many InvocationEvents
-//            InvocationEvent ie = (InvocationEvent)event;
-//            add(TRACK_INVOCATION, ie.paramString());
-        }
-        else {
+            //            InvocationEvent ie = (InvocationEvent)event;
+            //            add(TRACK_INVOCATION, ie.paramString());
+        } else {
             add(TRACK_UNKNOWN, "unknown event: " + event.paramString());
         }
     }
     
     /**
-     * Record a message from the application, recording a 
+     * Record a message from the application, recording a
      * <code>TRACK_APPLICATION_MESSAGE</code> event.
+     * @param msg
      */
     public void applicationMessage(String msg) {
         add(TRACK_APPLICATION_MESSAGE, msg);
     }
-   
+    
     /**
-     * Record a painting notification from the application, recording a 
+     * Record a painting notification from the application, recording a
      * <code>TRACK_PAINT</code> event.
+     * @param name
      */
     public void paintHappened(String name) {
         add(TRACK_PAINT, name);
     }
     
-    Object paintWaiter = new Object();
-    
     /**
-     * Notify the ActionTracker that the scenario is finishing, and is to be 
+     * Notify the ActionTracker that the scenario is finishing, and is to be
      * called by the scenario, when it's <code>run</code> method is finishing.
      * Otherwise nothing in the system knows that it's finished.
      */
@@ -455,42 +499,41 @@ public class ActionTracker {
         }
     }
     
-    
-    DocumentBuilder dbld = null;
-    DocumentBuilderFactory dbfactory = null;
-    TransformerFactory tfactory = null;
-    
-    TransformerFactory getTransformerFactory()
-        throws TransformerConfigurationException
-    {
-        if (tfactory == null) tfactory = TransformerFactory.newInstance();
+    TransformerFactory getTransformerFactory() throws TransformerConfigurationException {
+        if (tfactory == null) 
+            tfactory = TransformerFactory.newInstance();
+        
         return tfactory;
     }
     
-    DocumentBuilder getDocumentBuilder()
-        throws ParserConfigurationException
-    {
-        if (dbfactory == null) dbfactory = DocumentBuilderFactory.newInstance();
-        if (dbld == null)      dbld      = dbfactory.newDocumentBuilder();
+    DocumentBuilder getDocumentBuilder() throws ParserConfigurationException {
+        if (dbfactory == null) 
+            dbfactory = DocumentBuilderFactory.newInstance();
+        
+        if (dbld == null)      
+            dbld = dbfactory.newDocumentBuilder();
+        
         return dbld;
     }
     
     /**
      * Write all recorded event information, in XML format,
      * to <code>System.out</code>.
+     * @throws javax.xml.parsers.ParserConfigurationException
+     * @throws javax.xml.transform.TransformerConfigurationException
+     * @throws javax.xml.transform.TransformerException
      */
     public void exportAsXML()
-        throws ParserConfigurationException, TransformerConfigurationException,
-               TransformerException
-    {
+            throws ParserConfigurationException, TransformerConfigurationException,
+            TransformerException {
         PrintStream out = System.out; // Default
         if (fnActionOutput != null) {
             try {
                 out = new PrintStream(
                         new FileOutputStream(
-                            new File(fnActionOutput)
+                        new File(fnActionOutput)
                         )
-                );
+                        );
             } catch (Exception e) {
                 out = System.out;
             }
@@ -501,11 +544,15 @@ public class ActionTracker {
     /**
      * Write all recorded event information, in XML format,
      * to the given <code>PrintStream</code>.
+     *
+     * @param out
+     * @throws javax.xml.parsers.ParserConfigurationException
+     * @throws javax.xml.transform.TransformerConfigurationException
+     * @throws javax.xml.transform.TransformerException
      */
     public void exportAsXML(PrintStream out)
-        throws ParserConfigurationException, TransformerConfigurationException,
-               TransformerException
-    {
+            throws ParserConfigurationException, TransformerConfigurationException,
+            TransformerException {
         exportAsXML(null, out);
     }
     
@@ -513,14 +560,19 @@ public class ActionTracker {
      * Write all recorded event information, in XML format,
      * to the given <code>PrintStream</code>.  In addition, it is transformed
      * by the given XSLT script.
+     *
+     * @param style
+     * @param out
+     * @throws javax.xml.parsers.ParserConfigurationException
+     * @throws javax.xml.transform.TransformerConfigurationException
+     * @throws javax.xml.transform.TransformerException
      */
     public void exportAsXML(Document style, PrintStream out)
-        throws ParserConfigurationException, TransformerConfigurationException,
-               TransformerException
-    {
+            throws ParserConfigurationException, TransformerConfigurationException,
+            TransformerException {
         Document doc = getDocumentBuilder()
-                      .getDOMImplementation()
-                      .createDocument(null, TN_ROOT_ELEMENT, null);
+                .getDOMImplementation()
+                .createDocument(null, TN_ROOT_ELEMENT, null);
         Element root = doc.getDocumentElement();
         
         // Construct the DOM contents by scanning through all EventLists,
@@ -559,15 +611,20 @@ public class ActionTracker {
         // Now, transform it out
         
         Transformer tr = style != null
-            ? getTransformerFactory().newTransformer(new DOMSource(style))
-            : getTransformerFactory().newTransformer();
-            
+                ? getTransformerFactory().newTransformer(new DOMSource(style))
+                : getTransformerFactory().newTransformer();
+        
         tr.setOutputProperty(OutputKeys.INDENT, "yes");
         DOMSource docSrc = new DOMSource(doc);
         StreamResult rslt = new StreamResult(out);
         tr.transform(docSrc, rslt);
     }
     
+    /**
+     * Get name for the code
+     * @param code one of the TRACK_xxx codes
+     * @return name of the code
+     */
     public static String getNameForCode(int code) {
         String cname = "unk";
         switch (code) {
@@ -598,14 +655,21 @@ public class ActionTracker {
      * the list just use that mechanism.
      */
     public final class EventList extends LinkedList<Tuple> {
-        
+        // name of the event list
         private String name = "unknown";
+        
+        // start time
         private long startMillies = -1;
-
-        EventList() { 
+        
+        /** Create empty EventList */
+        EventList() {
             super();
         }
         
+        /**
+         * Create list of events with specific name
+         * @param name name of the event list
+         */
         public EventList(String name) {
             this();
             if (name == null || name.length() <= 0)
@@ -618,41 +682,73 @@ public class ActionTracker {
          * <code>System.nanoTime()</code>.
          */
         public void start() {
-            if (startMillies == -1) 
+            if (startMillies == -1)
                 startMillies = System.nanoTime();
         }
         
-        /** Return the recorded "start time" for this list. */
+        /**
+         * Return the recorded "start time" for this list.
+         * @return start time in ms
+         */
         public long getStartMillis() {
             return startMillies/1000000;
         }
         
+        /**
+         * Get name of the event list
+         * @return name of the event list
+         */
         public String getName() {
             return name;
         }
         
+        /**
+         * String presentation of the event list
+         * @return string presentation of the event list
+         */
         public String toString() {
-            return getName() 
-                + " (" + this.size() + ") " 
-                + new Date(getStartMillis()).toString();
+            return getName()
+                    + " (" + this.size() + ") "
+                    + new Date(getStartMillis()).toString();
         }
     }
     
-    /** Events to record into an EventList.  The code is one of the 
+    /** Events to record into an EventList.  The code is one of the
      * ActionTracker.TRACK_xxx values, and the name can be any String
      * that makes sense to you.  The time (millies) comes from
      * <code>System.nanoTime()</code>.
      */
     public final class Tuple {
-//        public Tuple(int code, String name) {
-//            this(code, name, System.nanoTime(), (long)0);
-//        }
+        /** One of the ActionTracker.TRACK_xxx values */
+        int code;
+        
+        /** name of the action */
+        String name;
+        
+        /** time when action started */
+        long millies;
+        
+        /** difference from a "start" time in millis */
+        long diffies;
+        
+        /**
+         * Create a tuple to track actions.
+         *
+         * @param code code of the action (one of the ActionTracker.TRACK_xxx values)
+         * @param name name of the action
+         * @param start time when action started
+         */
         public Tuple(int code, String name, long start) {
-            this.code = code;
-            this.name = name;
-            this.millies = System.nanoTime();
-            this.diffies = millies - start;
+            this(code, name, System.nanoTime(), start);
         }
+        
+        /**
+         * Create a tuple to track actions.
+         * @param code code of the action (one of the ActionTracker.TRACK_xxx values)
+         * @param name name of the action
+         * @param start time when action started
+         * @param millies current time
+         */
         public Tuple(int code, String name, long millies, long start) {
             this.code = code;
             this.name = name;
@@ -660,34 +756,62 @@ public class ActionTracker {
             this.diffies = millies - start;
             //System.err.println("new ActionTracker.Tuple " + toString()+" ,start="+start);
         }
-        int code;
-        String name;
-        long millies;
-	/** Difference from a "start" time in millis */
-        long diffies;
         
-        /** Get the translation of the code into a String. */
+        /**
+         * Get the translation of the code into a String.
+         * @return translation of the code into the String
+         */
         public String getCodeName() {
             return ActionTracker.getNameForCode(code);
         }
         
+        /**
+         * Get code of the action
+         * @return code of the action
+         */
         public int getCode() {
             return code;
         }
         
+        /**
+         * Get name of the action
+         * @return name of the action
+         */
         public String getName() { return name; }
         
+        /**
+         * Get current time in milliseconds
+         * @return time in ms
+         */
         public long getTimeMillis() { return millies/1000000; }
         
+        /**
+         * Get difference in milliseconds
+         * @return difference in ms
+         */
         public long getTimeDifference() { return diffies/1000000; }
         
+        /**
+         * Convert tuple to the string
+         * @return string presentation of tuple
+         */
         public String toString() {
-            return getCodeName() 
-                + " " + name 
-                + " " + Long.toString(millies)
-                + " " + Long.toString(diffies);
+            return getCodeName()
+                    + " " + name
+                    + " " + Long.toString(millies)
+                    + " " + Long.toString(diffies);
         }
         
+        /**
+         * Compare two tuples, they are equals if : 
+         * <li> code is the same
+         * <li> name is the same
+         * <li> time of occurence is the same
+         * <li> difference to start time is the same
+         * 
+         * @param obj tuple to be compared with <i>this</i>
+         * @return true if are equals, false else
+         */
         public boolean equals(Object obj) {
             Tuple t = (Tuple) obj;
             return this.code==t.code && this.name.equalsIgnoreCase(t.name) && this.millies==t.millies && this.diffies==t.diffies;
@@ -705,5 +829,5 @@ public class ActionTracker {
             tracker.add(event);
         }
     }
-        
+    
 }

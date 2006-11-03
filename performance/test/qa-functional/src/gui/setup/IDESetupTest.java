@@ -53,8 +53,8 @@ public class IDESetupTest extends org.netbeans.jellytools.JellyTestCase {
     }
     
     public void openFoldersProject() {
-        ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+"/PerformanceTestFoldersData");
-        ProjectSupport.waitScanFinished();
+//TODO retouche        ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+"/PerformanceTestFoldersData");
+//TODO retouche        ProjectSupport.waitScanFinished();
     }
     
     public void openNBProject() {

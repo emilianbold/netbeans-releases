@@ -24,7 +24,6 @@ import org.netbeans.performance.test.guitracker.LoggingRepaintManager.RegionFilt
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.editor.options.BaseOptions;
 import org.netbeans.modules.java.editor.options.JavaOptions;
-import org.netbeans.modules.java.settings.JavaSettings;
 
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
@@ -73,8 +72,10 @@ public class JavaCompletionInEditor extends org.netbeans.performance.test.utilit
             ((JavaOptions)options).setJavaDocAutoPopup(false);
         }
         // turn off the error hightlighting feature
+        /* TODO doesn't work after retouche integration
         parsingErrors = JavaSettings.getDefault().getParsingErrors();
         JavaSettings.getDefault().setParsingErrors(0);        
+         */
     }
     
     protected void turnBack() {
@@ -85,7 +86,10 @@ public class JavaCompletionInEditor extends org.netbeans.performance.test.utilit
             ((JavaOptions)options).setCompletionAutoPopupDelay(completionAutoPopupDelay);
             ((JavaOptions)options).setJavaDocAutoPopup(javaDocAutoPopup);
         }
+        
+        /* TODO doesn't work after retouche integration
         JavaSettings.getDefault().setParsingErrors(parsingErrors);        
+         */
     }
     
     public void initialize() {

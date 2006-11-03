@@ -45,8 +45,7 @@ Microsystems, Inc. All Rights Reserved.
                source="1.5">
 	    <compilerarg line="-Xlint:unchecked"/>
             <classpath>
-                <path refid="compiletest.classpath"/>
-                <path refid="jemmy.and.jelly.path"/>
+                <path refid="testutilities.classpath"/>
             </classpath>
             
         </javac>
@@ -58,5 +57,30 @@ Microsystems, Inc. All Rights Reserved.
             <fileset file="${performance.testutilities.dist.jar}" />
         </delete>
     </target>
+    
+    <path id="testutilities.classpath">        
+        <pathelement location="${openide/nodes.dir}/modules/org-openide-nodes.jar"/>
+        <pathelement location="${openide/options.dir}/modules/org-openide-options.jar"/>
+        <pathelement location="${openide/util.dir}/lib/org-openide-util.jar"/>
+        
+        <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor.jar"/>
+        <pathelement location="${editor.dir}/modules/org-netbeans-modules-java-editor.jar"/>
+        <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor-lib.jar"/>
+        <pathelement location="${editor/plain.dir}/modules/org-netbeans-modules-editor-plain.jar"/>
+        
+        <pathelement location="${java.dir}/modules/org-netbeans-modules-java.jar"/>
+        
+        <pathelement location="${web/jspsyntax.dir}/modules/org-netbeans-modules-web-core-syntax.jar"/>
+        
+        <pathelement location="${xml/text-edit.dir}/modules/org-netbeans-modules-xml-text.jar"/>        
+                
+        <pathelement location="${nball.dir}/xtest/lib/junit.jar"/>
+        <pathelement location="${nball.dir}/xtest/lib/nbjunit.jar"/>
+        <pathelement location="${nball.dir}/xtest/lib/nbjunit-ide.jar"/>
+
+        <pathelement location="${nball.dir}/jemmy/builds/jemmy.jar"/>
+        <pathelement location="${nball.dir}/jellytools/builds/jelly2-nb.jar"/>
+    </path>
+    
         
 </project>

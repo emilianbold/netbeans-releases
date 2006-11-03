@@ -21,23 +21,26 @@ Microsystems, Inc. All Rights Reserved.
 <project name="Template For Performance Test build scripts" basedir="." default="jar">
 
     <!-- Imports jemmy.and.jelly.path and default qa-functional-compiler and
-         runidetest executor -->
+         runidetest executor 
     <import file="${nball.dir}/nbbuild/templates/xtest-qa-functional.xml"/>
-
+    -->
+    
     <property file="${nball.dir}/performance/performancetestutilities/dist/performance-tests.properties"/>
 
-    <!-- path reference used in both compiler and executor -->
+    <!-- path reference used in both compiler and executor 
     <path id="jemmy.and.jelly.path">
         <pathelement location="${nball.dir}/jemmy/builds/jemmy.jar"/>
         <pathelement location="${nball.dir}/jellytools/builds/jelly2-nb.jar"/>
     </path>
+    -->
     
-    <!-- path reference used in both compiler and executor -->
+    <!-- path reference used in both compiler and executor 
     <path id="performance.testutilities.path">
         <pathelement location="${performance.testutilities.dist.jar}"/>
     </path>
+    -->
     
-    <!-- compilation classpath -->
+    <!-- compilation classpath
     <path id="compiletest.classpath">        
         <pathelement location="${openide/nodes.dir}/modules/org-openide-nodes.jar"/>
         <pathelement location="${openide/options.dir}/modules/org-openide-options.jar"/>
@@ -58,7 +61,7 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${nball.dir}/xtest/lib/nbjunit.jar"/>
         <pathelement location="${nball.dir}/xtest/lib/nbjunit-ide.jar"/>
     </path>
-    
+     -->
     
     <!-- ========= -->
     <!-- Utils     -->

@@ -19,10 +19,6 @@
 
 package gui.action;
 
-import java.awt.event.KeyEvent;
-
-import org.netbeans.editor.BaseCaret;
-import org.netbeans.modules.java.settings.JavaSettings;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.editor.options.BaseOptions;
 import org.netbeans.modules.java.editor.options.JavaOptions;
@@ -31,8 +27,6 @@ import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.actions.Action;
-import org.netbeans.jellytools.actions.Action.Shortcut;
 import org.netbeans.jellytools.actions.OpenAction;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
@@ -42,9 +36,13 @@ import org.netbeans.performance.test.guitracker.LoggingRepaintManager.RegionFilt
 /**
  * Test of typing in opened source editor.
  *
- * @author  anebuzelsky@netbeans.org
+ * @author  anebuzelsky@netbeans.org, mmirilovic@netbeans.org
  */
 public class TypingInEditor extends org.netbeans.performance.test.utilities.PerformanceTestCase {
+    
+    private EditorOperator editorOperator;
+    private int fontSize;
+    private int parsingErrors;
     
     /** Creates a new instance of TypingInEditor */
     public TypingInEditor(String testName) {
@@ -72,10 +70,6 @@ public class TypingInEditor extends org.netbeans.performance.test.utilities.Perf
          */
     }
     
-    private EditorOperator editorOperator;
-    private int fontSize;
-    private int parsingErrors;
-    
     protected void turnOff() {
         // set large font size
         Class kitClass = JavaKit.class;
@@ -84,9 +78,12 @@ public class TypingInEditor extends org.netbeans.performance.test.utilities.Perf
             fontSize = ((JavaOptions)options).getFontSize();
             ((JavaOptions)options).setFontSize(20);
         }
+        
         // turn off the error hightlighting feature
+        /* TODO doesn't work after retouche integration
         parsingErrors = JavaSettings.getDefault().getParsingErrors();
         JavaSettings.getDefault().setParsingErrors(0);
+         */
     }
     
     protected void turnBack() {
@@ -96,8 +93,11 @@ public class TypingInEditor extends org.netbeans.performance.test.utilities.Perf
         if (options instanceof JavaOptions) {
             ((JavaOptions)options).setFontSize(fontSize);
         }
+        
         // set the modified properties back to default
+        /* TODO doesn't work after retouche integration
         JavaSettings.getDefault().setParsingErrors(parsingErrors);
+         */
     }
     
     public void initialize() {

@@ -286,13 +286,9 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
                     
                     logMemoryUsage();
                     
-                    // PENDING need to check this
-                    //                    if(testedComponentOperator != null) {
-                    //                        java.awt.EventQueue.writeOutput("<wait_until_painted time=\""+System.nanoTime()+"\">");
-                    //                        Component comp = testedComponentOperator.getSource();
-                    //                        waitUntilPainted(comp);
-                    //                        java.awt.EventQueue.writeOutput("</wait_until_painted>");
-                    //                    }
+                    // we were waiting for painting the component, but after 
+                    // starting to use RepaintManager it's not possible, so at least
+                    // wait for empty EventQueue
                     new QueueTool().waitEmpty();
                     
                     measuredTime[i] = getMeasuredTime();
@@ -604,7 +600,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
      * in the JSP editor. This method should be called from a test's initialize() method.
      */
     protected void setJSPEditorCaretFilteringOn() {
-        setEditorCaretFilteringOn(org.netbeans.modules.web.core.syntax.JSPKit.class);
+//TODO disabled after Retouche merge        setEditorCaretFilteringOn(org.netbeans.modules.web.core.syntax.JSPKit.class);
     }
     
     /**
@@ -717,8 +713,8 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
      * If scan dialog rises wait some time after scan finished
      */
     public void checkScanFinished() {
-        if(org.netbeans.junit.ide.ProjectSupport.waitScanFinished())
-            waitNoEvent(1000);
+//TODO disabled after Retouche merge        if(org.netbeans.junit.ide.ProjectSupport.waitScanFinished())
+            waitNoEvent(30000);
     }
     
     
@@ -803,7 +799,10 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
      * @return PerformanceData[] performance data
      */
     public NbPerformanceTest.PerformanceData[] getPerformanceData() {
-        return data.toArray(new NbPerformanceTest.PerformanceData[0]);
+        if(data != null)
+            return data.toArray(new NbPerformanceTest.PerformanceData[0]);
+        else
+            return null;
     }
     
     /**
