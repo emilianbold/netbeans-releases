@@ -36,10 +36,8 @@ import org.netbeans.installer.utils.helper.swing.NbiTextPane;
  */
 public class PreCreateBundleSummaryPanel extends DefaultWizardPanel {
     private NbiTextPane   messagePane;
-    private NbiLabel      componentsToInstallLabel;
-    private NbiTextPane   componentsToInstallPane;
-    private NbiLabel      componentsToUninstallLabel;
-    private NbiTextPane   componentsToUninstallPane;
+    private NbiLabel      componentsToBundleLabel;
+    private NbiTextPane   componentsToBundlePane;
     private NbiLabel      downloadSizeLabel;
     private NbiLabel      requiredDiskSpaceLabel;
     
@@ -48,12 +46,9 @@ public class PreCreateBundleSummaryPanel extends DefaultWizardPanel {
     public PreCreateBundleSummaryPanel() {
         setProperty(MESSAGE_TEXT_PROPERTY, DEFAULT_MESSAGE_TEXT);
         setProperty(MESSAGE_CONTENT_TYPE_PROPERTY, DEFAULT_MESSAGE_CONTENT_TYPE);
-        setProperty(COMPONENTS_TO_INSTALL_LABEL_TEXT_PROPERTY, DEFAULT_COMPONENTS_TO_INSTALL_LABEL_TEXT);
-        setProperty(COMPONENTS_TO_INSTALL_TEXT_PROPERTY, DEFAULT_COMPONENTS_TO_INSTALL_TEXT);
-        setProperty(COMPONENTS_TO_INSTALL_CONTENT_TYPE_PROPERTY, DEFAULT_COMPONENTS_TO_INSTALL_CONTENT_TYPE);
-        setProperty(COMPONENTS_TO_UNINSTALL_LABEL_TEXT_PROPERTY, DEFAULT_COMPONENTS_TO_UNINSTALL_LABEL_TEXT);
-        setProperty(COMPONENTS_TO_UNINSTALL_TEXT_PROPERTY, DEFAULT_COMPONENTS_TO_UNINSTALL_TEXT);
-        setProperty(COMPONENTS_TO_UNINSTALL_CONTENT_TYPE_PROPERTY, DEFAULT_COMPONENTS_TO_UNINSTALL_CONTENT_TYPE);
+        setProperty(COMPONENTS_TO_BUNDLE_LABEL_TEXT_PROPERTY, DEFAULT_COMPONENTS_TO_BUNDLE_LABEL_TEXT);
+        setProperty(COMPONENTS_TO_BUNDLE_TEXT_PROPERTY, DEFAULT_COMPONENTS_TO_BUNDLE_TEXT);
+        setProperty(COMPONENTS_TO_BUNDLE_CONTENT_TYPE_PROPERTY, DEFAULT_COMPONENTS_TO_BUNDLE_CONTENT_TYPE);
         setProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY, DEFAULT_COMPONENTS_LIST_SEPARATOR);
         setProperty(DOWNLOAD_SIZE_LABEL_TEXT_PROPERTY, DEFAULT_DOWNLOAD_SIZE_LABEL_TEXT);
         setProperty(REQUIRED_DISK_SPACE_LABEL_TEXT_PROPERTY, DEFAULT_REQUIRED_DISK_SPACE_LABEL_TEXT);
@@ -71,80 +66,48 @@ public class PreCreateBundleSummaryPanel extends DefaultWizardPanel {
         final String messageText = getProperty(MESSAGE_TEXT_PROPERTY);
         messagePane.setText(messageText);
         
-        List<ProductComponent> componentsToInstall = ProductRegistry.getInstance().getComponentsToInstall();
-        List<ProductComponent> componentsToUninstall = ProductRegistry.getInstance().getComponentsToUninstall();
+        List<ProductComponent> componentsToBundle = ProductRegistry.getInstance().getComponentsToInstall();
         
-        if (componentsToUninstall.size() > 0) {
-            componentsToUninstallLabel.setVisible(true);
-            componentsToUninstallPane.setVisible(true);
-            
-            final String componentsToUninstallLabelText = getProperty(COMPONENTS_TO_UNINSTALL_LABEL_TEXT_PROPERTY);
-            componentsToUninstallLabel.setText(componentsToUninstallLabelText);
-            
-            final String componentsToUninstallContentType = getProperty(COMPONENTS_TO_UNINSTALL_CONTENT_TYPE_PROPERTY);
-            componentsToUninstallPane.setContentType(componentsToUninstallContentType);
-            
-            final String componentsToUninstallText = stringUtils.formatMessage(getProperty(COMPONENTS_TO_UNINSTALL_TEXT_PROPERTY), stringUtils.asString(componentsToUninstall, getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY)));
-            componentsToUninstallPane.setText(componentsToUninstallText);
-        } else {
-            componentsToUninstallLabel.setVisible(false);
-            componentsToUninstallPane.setVisible(false);
+        componentsToBundleLabel.setVisible(true);
+        componentsToBundlePane.setVisible(true);
+        downloadSizeLabel.setVisible(true);
+        requiredDiskSpaceLabel.setVisible(true);
+        
+        final String componentsToInstallLabelText = getProperty(COMPONENTS_TO_BUNDLE_LABEL_TEXT_PROPERTY);
+        componentsToBundleLabel.setText(componentsToInstallLabelText);
+        
+        final String componentsToInstallContentType = getProperty(COMPONENTS_TO_BUNDLE_CONTENT_TYPE_PROPERTY);
+        componentsToBundlePane.setContentType(componentsToInstallContentType);
+        
+        final String componentsToInstallText = stringUtils.formatMessage(getProperty(COMPONENTS_TO_BUNDLE_TEXT_PROPERTY), stringUtils.asString(componentsToBundle, getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY)));
+        componentsToBundlePane.setText(componentsToInstallText);
+        
+        long downloadSize = 0;
+        for (ProductComponent component: componentsToBundle) {
+            downloadSize += component.getDownloadSize();
         }
         
-        if (componentsToInstall.size() > 0) {
-            componentsToInstallLabel.setVisible(true);
-            componentsToInstallPane.setVisible(true);
-            downloadSizeLabel.setVisible(true);
-            requiredDiskSpaceLabel.setVisible(true);
-                    
-            final String componentsToInstallLabelText = getProperty(COMPONENTS_TO_INSTALL_LABEL_TEXT_PROPERTY);
-            componentsToInstallLabel.setText(componentsToInstallLabelText);
-            
-            final String componentsToInstallContentType = getProperty(COMPONENTS_TO_INSTALL_CONTENT_TYPE_PROPERTY);
-            componentsToInstallPane.setContentType(componentsToInstallContentType);
-            
-            final String componentsToInstallText = stringUtils.formatMessage(getProperty(COMPONENTS_TO_INSTALL_TEXT_PROPERTY), stringUtils.asString(componentsToInstall, getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY)));
-            componentsToInstallPane.setText(componentsToInstallText);
-            
-            long downloadSize = 0;
-            for (ProductComponent component: componentsToInstall) {
-                downloadSize += component.getDownloadSize();
-            }
-            
-            long requiredDiskSpace = 0;
-            for (ProductComponent component: componentsToInstall) {
-                requiredDiskSpace += component.getRequiredDiskSpace();
-            }
-            
-            final String downloadSizeLabelText = stringUtils.formatMessage(getProperty(DOWNLOAD_SIZE_LABEL_TEXT_PROPERTY), stringUtils.formatSize(downloadSize));
-            downloadSizeLabel.setText(downloadSizeLabelText);
-            
-            final String requiredDiskSpaceLabelText = stringUtils.formatMessage(getProperty(REQUIRED_DISK_SPACE_LABEL_TEXT_PROPERTY), stringUtils.formatSize(requiredDiskSpace));
-            requiredDiskSpaceLabel.setText(requiredDiskSpaceLabelText);
-        } else {
-            componentsToInstallLabel.setVisible(false);
-            componentsToInstallPane.setVisible(false);
-            downloadSizeLabel.setVisible(false);
-            requiredDiskSpaceLabel.setVisible(false);
+        long requiredDiskSpace = 0;
+        for (ProductComponent component: componentsToBundle) {
+            requiredDiskSpace += component.getRequiredDiskSpace();
         }
+        
+        final String downloadSizeLabelText = stringUtils.formatMessage(getProperty(DOWNLOAD_SIZE_LABEL_TEXT_PROPERTY), stringUtils.formatSize(downloadSize));
+        downloadSizeLabel.setText(downloadSizeLabelText);
+        
+        final String requiredDiskSpaceLabelText = stringUtils.formatMessage(getProperty(REQUIRED_DISK_SPACE_LABEL_TEXT_PROPERTY), stringUtils.formatSize(requiredDiskSpace));
+        requiredDiskSpaceLabel.setText(requiredDiskSpaceLabelText);
     }
     
     public void initComponents() {
         messagePane = new NbiTextPane();
         
-        componentsToUninstallLabel = new NbiLabel();
+        componentsToBundleLabel = new NbiLabel();
         
-        componentsToUninstallPane = new NbiTextPane();
-        componentsToUninstallPane.setOpaque(false);
-        componentsToUninstallPane.setEditable(false);
-        componentsToUninstallPane.setBorder(new EmptyBorder(0, 0, 0, 0));
-        
-        componentsToInstallLabel = new NbiLabel();
-        
-        componentsToInstallPane = new NbiTextPane();
-        componentsToInstallPane.setOpaque(false);
-        componentsToInstallPane.setEditable(false);
-        componentsToInstallPane.setBorder(new EmptyBorder(0, 0, 0, 0));
+        componentsToBundlePane = new NbiTextPane();
+        componentsToBundlePane.setOpaque(false);
+        componentsToBundlePane.setEditable(false);
+        componentsToBundlePane.setBorder(new EmptyBorder(0, 0, 0, 0));
         
         downloadSizeLabel = new NbiLabel();
         
@@ -153,49 +116,39 @@ public class PreCreateBundleSummaryPanel extends DefaultWizardPanel {
         spacer = new NbiPanel();
         
         add(messagePane, new GridBagConstraints(0, 0, 1, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(11, 11, 0, 11), 0, 0));
-        add(componentsToUninstallLabel, new GridBagConstraints(0, 1, 1, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(15, 11, 0, 11), 0, 0));
-        add(componentsToUninstallPane, new GridBagConstraints(0, 2, 1, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(3, 11, 0, 11), 0, 0));
-        add(componentsToInstallLabel, new GridBagConstraints(0, 3, 1, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(15, 11, 0, 11), 0, 0));
-        add(componentsToInstallPane, new GridBagConstraints(0, 4, 1, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(3, 11, 0, 11), 0, 0));
-        add(downloadSizeLabel, new GridBagConstraints(0, 5, 1, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(25, 11, 0, 11), 0, 0));
-        add(requiredDiskSpaceLabel, new GridBagConstraints(0, 6, 1, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(3, 11, 0, 11), 0, 0));
-        add(spacer, new GridBagConstraints(0, 7, 1, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 11, 11, 11), 0, 0));
+        add(componentsToBundleLabel, new GridBagConstraints(0, 2, 1, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(15, 11, 0, 11), 0, 0));
+        add(componentsToBundlePane, new GridBagConstraints(0, 3, 1, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(3, 11, 0, 11), 0, 0));
+        add(downloadSizeLabel, new GridBagConstraints(0, 4, 1, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(25, 11, 0, 11), 0, 0));
+        add(requiredDiskSpaceLabel, new GridBagConstraints(0, 5, 1, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(3, 11, 0, 11), 0, 0));
+        add(spacer, new GridBagConstraints(0, 6, 1, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 11, 11, 11), 0, 0));
         
     }
     
     public boolean canExecuteForward() {
-        return ProductRegistry.getInstance().getComponentsToInstall().size() + 
-                ProductRegistry.getInstance().getComponentsToUninstall().size() > 0;
+        return ProductRegistry.getInstance().getComponentsToInstall().size() > 0;
     }
     
     public boolean canExecuteBackward() {
-        return ProductRegistry.getInstance().getComponentsToInstall().size() + 
-                ProductRegistry.getInstance().getComponentsToUninstall().size() > 0;
+        return ProductRegistry.getInstance().getComponentsToInstall().size() > 0;
     }
     
     public static final String MESSAGE_TEXT_PROPERTY = "message.text";
     public static final String MESSAGE_CONTENT_TYPE_PROPERTY = "message.content.type";
-    public static final String COMPONENTS_TO_INSTALL_LABEL_TEXT_PROPERTY = "components.to.install.label.text";
-    public static final String COMPONENTS_TO_INSTALL_TEXT_PROPERTY = "components.to.install.text";
-    public static final String COMPONENTS_TO_INSTALL_CONTENT_TYPE_PROPERTY = "components.to.install.content.type";
-    public static final String COMPONENTS_TO_UNINSTALL_LABEL_TEXT_PROPERTY = "components.to.uninstall.label.text";
-    public static final String COMPONENTS_TO_UNINSTALL_TEXT_PROPERTY = "components.to.uninstall.text";
-    public static final String COMPONENTS_TO_UNINSTALL_CONTENT_TYPE_PROPERTY = "components.to.uninstall.content.type";
+    public static final String COMPONENTS_TO_BUNDLE_LABEL_TEXT_PROPERTY = "components.to.bundle.label.text";
+    public static final String COMPONENTS_TO_BUNDLE_TEXT_PROPERTY = "components.to.bundle.text";
+    public static final String COMPONENTS_TO_BUNDLE_CONTENT_TYPE_PROPERTY = "components.to.bundle.content.type";
     public static final String COMPONENTS_LIST_SEPARATOR_PROPERTY = "components.list.separator";
     public static final String DOWNLOAD_SIZE_LABEL_TEXT_PROPERTY = "download.size.label.text";
     public static final String REQUIRED_DISK_SPACE_LABEL_TEXT_PROPERTY = "required.disk.space.label.text";
     
-    public static final String DEFAULT_MESSAGE_TEXT = resourceUtils.getString(PreInstallSummaryPanel.class, "PreInstallSummaryPanel.default.message.text");
-    public static final String DEFAULT_MESSAGE_CONTENT_TYPE = resourceUtils.getString(PreInstallSummaryPanel.class, "PreInstallSummaryPanel.default.message.content.type");
-    public static final String DEFAULT_COMPONENTS_TO_INSTALL_LABEL_TEXT = resourceUtils.getString(PreInstallSummaryPanel.class, "PreInstallSummaryPanel.default.components.to.install.label.text");
-    public static final String DEFAULT_COMPONENTS_TO_INSTALL_TEXT = resourceUtils.getString(PreInstallSummaryPanel.class, "PreInstallSummaryPanel.default.components.to.install.text");
-    public static final String DEFAULT_COMPONENTS_TO_INSTALL_CONTENT_TYPE = resourceUtils.getString(PreInstallSummaryPanel.class, "PreInstallSummaryPanel.default.components.to.install.content.type");
-    public static final String DEFAULT_COMPONENTS_TO_UNINSTALL_LABEL_TEXT = resourceUtils.getString(PreInstallSummaryPanel.class, "PreInstallSummaryPanel.default.components.to.uninstall.label.text");
-    public static final String DEFAULT_COMPONENTS_TO_UNINSTALL_TEXT = resourceUtils.getString(PreInstallSummaryPanel.class, "PreInstallSummaryPanel.default.components.to.uninstall.text");
-    public static final String DEFAULT_COMPONENTS_TO_UNINSTALL_CONTENT_TYPE = resourceUtils.getString(PreInstallSummaryPanel.class, "PreInstallSummaryPanel.default.components.to.uninstall.content.type");
-    public static final String DEFAULT_COMPONENTS_LIST_SEPARATOR = resourceUtils.getString(PreInstallSummaryPanel.class, "PreInstallSummaryPanel.default.components.list.separator");
-    public static final String DEFAULT_DOWNLOAD_SIZE_LABEL_TEXT = resourceUtils.getString(PreInstallSummaryPanel.class, "PreInstallSummaryPanel.default.download.size.label.text");
-    public static final String DEFAULT_REQUIRED_DISK_SPACE_LABEL_TEXT = resourceUtils.getString(PreInstallSummaryPanel.class, "PreInstallSummaryPanel.default.required.disk.space.label.text");
+    public static final String DEFAULT_MESSAGE_TEXT = resourceUtils.getString(PreCreateBundleSummaryPanel.class, "PreCreateBundleSummaryPanel.default.message.text");
+    public static final String DEFAULT_MESSAGE_CONTENT_TYPE = resourceUtils.getString(PreCreateBundleSummaryPanel.class, "PreCreateBundleSummaryPanel.default.message.content.type");
+    public static final String DEFAULT_COMPONENTS_TO_BUNDLE_LABEL_TEXT = resourceUtils.getString(PreCreateBundleSummaryPanel.class, "PreCreateBundleSummaryPanel.default.components.to.bundle.label.text");
+    public static final String DEFAULT_COMPONENTS_TO_BUNDLE_TEXT = resourceUtils.getString(PreCreateBundleSummaryPanel.class, "PreCreateBundleSummaryPanel.default.components.to.bundle.text");
+    public static final String DEFAULT_COMPONENTS_TO_BUNDLE_CONTENT_TYPE = resourceUtils.getString(PreCreateBundleSummaryPanel.class, "PreCreateBundleSummaryPanel.default.components.to.bundle.content.type");
+    public static final String DEFAULT_COMPONENTS_LIST_SEPARATOR = resourceUtils.getString(PreCreateBundleSummaryPanel.class, "PreCreateBundleSummaryPanel.default.components.list.separator");
+    public static final String DEFAULT_DOWNLOAD_SIZE_LABEL_TEXT = resourceUtils.getString(PreCreateBundleSummaryPanel.class, "PreCreateBundleSummaryPanel.default.download.size.label.text");
+    public static final String DEFAULT_REQUIRED_DISK_SPACE_LABEL_TEXT = resourceUtils.getString(PreCreateBundleSummaryPanel.class, "PreCreateBundleSummaryPanel.default.required.disk.space.label.text");
     
-    public static final String DEFAULT_DIALOG_TITLE = resourceUtils.getString(PreInstallSummaryPanel.class, "PreInstallSummaryPanel.default.dialog.title");
+    public static final String DEFAULT_DIALOG_TITLE = resourceUtils.getString(PreCreateBundleSummaryPanel.class, "PreCreateBundleSummaryPanel.default.dialog.title");
 }
