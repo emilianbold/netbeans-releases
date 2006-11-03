@@ -27,7 +27,7 @@ import org.openide.ErrorManager;
 import org.openide.windows.TopComponent;
 import org.netbeans.api.diff.DiffView;
 import org.netbeans.api.diff.Diff;
-import org.netbeans.modules.subversion.util.NoContentPanel;
+import org.netbeans.modules.versioning.util.NoContentPanel;
 import org.netbeans.modules.subversion.ui.diff.DiffStreamSource;
 import org.netbeans.modules.subversion.ui.diff.DiffSetupSource;
 

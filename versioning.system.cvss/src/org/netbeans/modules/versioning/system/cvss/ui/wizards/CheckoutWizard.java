@@ -44,7 +44,7 @@ import java.io.File;
 import java.text.MessageFormat;
 
 import org.netbeans.modules.versioning.system.cvss.ui.selectors.ProxyDescriptor;
-import org.netbeans.modules.versioning.system.cvss.util.AccessibleJFileChooser;
+import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 

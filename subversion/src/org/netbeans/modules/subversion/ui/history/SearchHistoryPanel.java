@@ -29,7 +29,7 @@ import org.openide.windows.TopComponent;
 import org.openide.awt.Mnemonics;
 import org.netbeans.modules.subversion.ui.diff.DiffSetupSource;
 import org.netbeans.modules.subversion.ui.diff.Setup;
-import org.netbeans.modules.subversion.util.NoContentPanel;
+import org.netbeans.modules.versioning.util.NoContentPanel;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNUrl;

@@ -37,7 +37,7 @@ import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.SvnModuleConfig;
-import org.netbeans.modules.subversion.util.NoContentPanel;
+import org.netbeans.modules.versioning.util.NoContentPanel;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.RequestProcessor;

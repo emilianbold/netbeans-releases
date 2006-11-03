@@ -25,7 +25,7 @@ import java.util.*;
 import java.util.prefs.Preferences;
 import org.openide.util.NbPreferences;
 import org.netbeans.modules.versioning.util.Utils;
-import org.netbeans.modules.subversion.util.TableSorter;
+import org.netbeans.modules.versioning.util.TableSorter;
 
 /**
  * Stores Subversion module configuration.

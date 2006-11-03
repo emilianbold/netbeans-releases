@@ -41,7 +41,7 @@ import org.openide.ErrorManager;
 import org.openide.awt.MouseUtils;
 import org.openide.awt.Mnemonics;
 import org.netbeans.modules.versioning.util.FilePathCellRenderer;
-import org.netbeans.modules.subversion.util.TableSorter;
+import org.netbeans.modules.versioning.util.TableSorter;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.Annotator;

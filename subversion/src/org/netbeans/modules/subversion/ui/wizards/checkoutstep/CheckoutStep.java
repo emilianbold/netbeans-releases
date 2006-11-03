@@ -37,7 +37,7 @@ import org.netbeans.modules.subversion.ui.browser.Browser;
 import org.netbeans.modules.subversion.ui.wizards.AbstractStep;
 import org.netbeans.modules.subversion.ui.wizards.CheckoutWizard;
 import org.netbeans.modules.subversion.ui.browser.RepositoryPaths;
-import org.netbeans.modules.subversion.util.AccessibleJFileChooser;
+import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;

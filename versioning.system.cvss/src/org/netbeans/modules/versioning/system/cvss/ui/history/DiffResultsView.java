@@ -21,8 +21,8 @@ package org.netbeans.modules.versioning.system.cvss.ui.history;
 
 import org.netbeans.lib.cvsclient.command.log.LogInformation;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
-import org.netbeans.modules.versioning.system.cvss.util.NoContentPanel;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.diff.DiffStreamSource;
+import org.netbeans.modules.versioning.util.NoContentPanel;
 import org.netbeans.api.diff.DiffView;
 import org.netbeans.api.diff.Diff;
 import org.openide.explorer.ExplorerManager;

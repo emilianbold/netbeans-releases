@@ -38,9 +38,7 @@ import java.util.List;
 import java.text.MessageFormat;
 
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
-import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.util.SvnUtils;
-import org.netbeans.modules.subversion.util.TableSorter;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.modules.versioning.util.VersioningEvent;
 import org.openide.util.HelpCtx;

@@ -27,11 +27,11 @@ import org.openide.nodes.Node;
 import org.openide.windows.TopComponent;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
-import org.netbeans.modules.versioning.system.cvss.util.NoContentPanel;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.diff.DiffSetupSource;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.diff.Setup;
+import org.netbeans.modules.versioning.util.NoContentPanel;
 import org.netbeans.lib.cvsclient.command.log.LogInformation;
 import org.netbeans.api.project.Project;
 

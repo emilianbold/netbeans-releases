@@ -20,7 +20,7 @@
 package org.netbeans.modules.subversion.ui.commit;
 
 import org.netbeans.modules.versioning.util.FilePathCellRenderer;
-import org.netbeans.modules.subversion.util.TableSorter;
+import org.netbeans.modules.versioning.util.TableSorter;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.subversion.SvnFileNode;
 import org.netbeans.modules.subversion.FileInformation;

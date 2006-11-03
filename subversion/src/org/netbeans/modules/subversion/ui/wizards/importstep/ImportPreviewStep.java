@@ -25,12 +25,10 @@ import java.util.Map;
 import javax.swing.JComponent;
 
 import org.netbeans.modules.subversion.*;
-import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.ui.commit.CommitTable;
 import org.netbeans.modules.subversion.ui.commit.CommitTableModel;
 import org.netbeans.modules.subversion.ui.wizards.AbstractStep;
 import org.netbeans.modules.subversion.util.Context;
-import org.netbeans.modules.subversion.util.TableSorter;
 import org.openide.util.HelpCtx;
 
 /**

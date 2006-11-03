@@ -20,9 +20,9 @@
 package org.netbeans.modules.versioning.system.cvss.ui.actions.commit;
 
 import org.netbeans.modules.versioning.system.cvss.*;
-import org.netbeans.modules.versioning.system.cvss.util.TableSorter;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.util.FilePathCellRenderer;
+import org.netbeans.modules.versioning.util.TableSorter;
 import org.openide.util.NbBundle;
 
 import javax.swing.*;

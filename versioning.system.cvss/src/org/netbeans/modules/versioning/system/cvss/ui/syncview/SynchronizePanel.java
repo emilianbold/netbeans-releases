@@ -21,7 +21,6 @@ package org.netbeans.modules.versioning.system.cvss.ui.syncview;
 
 import java.util.prefs.PreferenceChangeEvent;
 import org.netbeans.modules.versioning.system.cvss.*;
-import org.netbeans.modules.versioning.system.cvss.util.NoContentPanel;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
 import org.netbeans.modules.versioning.system.cvss.CvsModuleConfig;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.update.UpdateExecutor;
@@ -29,6 +28,7 @@ import org.netbeans.modules.versioning.system.cvss.ui.actions.commit.CommitActio
 import org.netbeans.modules.versioning.system.cvss.ui.actions.diff.DiffExecutor;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.modules.versioning.util.VersioningEvent;
+import org.netbeans.modules.versioning.util.NoContentPanel;
 import org.netbeans.lib.cvsclient.command.update.UpdateCommand;
 import org.netbeans.lib.cvsclient.command.GlobalOptions;
 import org.netbeans.api.progress.ProgressHandle;
