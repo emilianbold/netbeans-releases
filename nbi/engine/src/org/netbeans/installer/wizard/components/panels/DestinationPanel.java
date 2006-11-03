@@ -136,9 +136,10 @@ public class DestinationPanel extends ErrorMessagePanel {
     
     public void evaluateNextButtonClick() {
         String errorMessage = validateInput();
+        String path = new File(destinationField.getText().trim()).getAbsolutePath();
         
         if (errorMessage == null) {
-            getWizard().getProductComponent().setProperty(INSTALLATION_LOCATION_PROPERTY, destinationField.getText());
+            getWizard().getProductComponent().setProperty(INSTALLATION_LOCATION_PROPERTY, path);
             super.evaluateNextButtonClick();
         } else {
             ErrorManager.getInstance().notify(ErrorLevel.ERROR, errorMessage);
