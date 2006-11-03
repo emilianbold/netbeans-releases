@@ -111,6 +111,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         
     private static final Logger LOGGER = Logger.getLogger(RepositoryUpdater.class.getName());
     private static final Set<String> ignoredDirectories = parseSet("org.netbeans.javacore.ignoreDirectories", "SCCS CVS .svn"); // NOI18N
+    private static final boolean noscan = Boolean.getBoolean("netbeans.javacore.noscan");   //NOI18N
     private static final String PACKAGE_INFO = "package-info.java";  //NOI18N
     
     private static final int DELAY = Utilities.isWindows() ? 2000 : 1000;
@@ -338,8 +339,10 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     }
     
     private void submit (final Work  work) {
-        final CompileWorker cw = new CompileWorker (work);
-        JavaSourceAccessor.INSTANCE.runSpecialTask (cw,JavaSource.Priority.MAX);
+        if (!noscan) {
+            final CompileWorker cw = new CompileWorker (work);
+            JavaSourceAccessor.INSTANCE.runSpecialTask (cw,JavaSource.Priority.MAX);
+        }
     }
     
     
