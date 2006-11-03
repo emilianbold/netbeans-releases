@@ -2641,21 +2641,12 @@ public class JavaCompletionProvider implements CompletionProvider {
                 if (smartTypes != null && !smartTypes.isEmpty()) {
                     Set<String> kws = new HashSet<String>();
                     for (TypeMirror st : smartTypes) {
-                        switch (st.getKind()) {
-                            case BOOLEAN:
-                                kws.add(FALSE_KEYWORD);
-                                kws.add(TRUE_KEYWORD);
-                                break;
-                            case ARRAY:
-                            case DECLARED:
-                            case TYPEVAR:
-                                kws.add(NULL_KEYWORD);
-                                break;
+                        if (st.getKind() == TypeKind.BOOLEAN) {
+                            if (Utilities.startsWith(FALSE_KEYWORD, prefix))
+                                results.add(JavaCompletionItem.createKeywordItem(FALSE_KEYWORD, null, offset));
+                            if (Utilities.startsWith(TRUE_KEYWORD, prefix))
+                                results.add(JavaCompletionItem.createKeywordItem(TRUE_KEYWORD, null, offset));
                         }
-                    }
-                    for (String kw : kws) {
-                        if (Utilities.startsWith(kw, prefix))
-                            results.add(JavaCompletionItem.createKeywordItem(kw, null, offset));
                     }
                 }
                 return;
