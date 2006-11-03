@@ -111,9 +111,14 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
         <!---attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/sun/ide/resources/..." /-->
       </file>
      </folder>    
-  
+     
+    <folder name="J2EEServers">
+        <file name="org-netbeans-modules-j2ee-sun-ide-j2ee-PluginOptionsNode.instance">
+            <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.sun.ide.j2ee.PluginOptions.createViewNode"/>
+        </file>                                      
+    </folder>       
   </folder>
-  
+    
   <folder name="Databases">
      <!-- Register the Pointbase database runtime -->
      <folder name="Runtimes">
