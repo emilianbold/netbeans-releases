@@ -224,6 +224,10 @@ public class DetectorTest extends TestBase {
         performTest("NotKeywords");
     }
     
+    public void testArrayThroughInitializer() throws Exception {
+        performTest("ArrayThroughInitializer");
+    }
+    
     private void performTest(String fileName) throws Exception {
         performTest(fileName, new Performer() {
             public Collection<Highlight> compute(CompilationController parameter, Document doc) {
