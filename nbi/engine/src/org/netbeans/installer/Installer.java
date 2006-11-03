@@ -176,36 +176,6 @@ public class Installer {
         cacheEngineLocally();
     }
     
-    private void createInstallerLockFile(File directory)  {
-        LogManager.getInstance().log(ErrorLevel.DEBUG,
-                "    creating lock file in " + directory);
-        File installerLock = new File(directory,
-                ".nbilock");
-        if(installerLock.exists()) {
-            ErrorManager.getInstance().notify(CRITICAL,
-                    "It seems that another instance of installer is already running!\n" +
-                    "If you are sure that no other instance is running just remove the file:\n" +
-                    installerLock + "\n");
-        }
-        FileOutputStream fos = null;
-        try {
-            fos = new FileOutputStream(installerLock);
-        } catch (IOException ex) {
-            ErrorManager.getInstance().notify(CRITICAL,
-                    "Can`t create lock for the local registry file!");
-        } finally {
-            try {
-                installerLock.deleteOnExit();
-                if(fos!=null) {
-                    fos.close();
-                }
-            } catch (IOException ex) {
-                LogManager.getInstance().log(ErrorLevel.DEBUG,ex);
-            }
-        }
-        LogManager.getInstance().log(ErrorLevel.DEBUG,
-                "    ... lock created " + installerLock);
-    }
     /**
      * Cancels the installation. This method cancels the changes that were possibly
      * made to the components registry and exits with the cancel error code.
@@ -580,6 +550,37 @@ public class Installer {
         }
         logManager.unindent();
         logManager.log(MESSAGE, "... finished caching engine data");
+    }
+    
+    private void createInstallerLockFile(File directory)  {
+        LogManager.getInstance().log(ErrorLevel.DEBUG,
+                "    creating lock file in " + directory);
+        File installerLock = new File(directory,
+                ".nbilock");
+        if(installerLock.exists()) {
+            ErrorManager.getInstance().notify(CRITICAL,
+                    "It seems that another instance of installer is already running!\n" +
+                    "If you are sure that no other instance is running just remove the file:\n" +
+                    installerLock + "\n");
+        }
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(installerLock);
+        } catch (IOException ex) {
+            ErrorManager.getInstance().notify(CRITICAL,
+                    "Can`t create lock for the local registry file!");
+        } finally {
+            try {
+                installerLock.deleteOnExit();
+                if(fos!=null) {
+                    fos.close();
+                }
+            } catch (IOException ex) {
+                LogManager.getInstance().log(ErrorLevel.DEBUG,ex);
+            }
+        }
+        LogManager.getInstance().log(ErrorLevel.DEBUG,
+                "    ... lock created " + installerLock);
     }
     
     /////////////////////////////////////////////////////////////////////////////////
