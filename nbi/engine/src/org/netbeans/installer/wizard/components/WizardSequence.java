@@ -66,6 +66,10 @@ public class WizardSequence implements WizardComponent {
         executeForward(wizard);
     }
     
+    public void executeSilentlyBlocking(final Wizard wizard) {
+        executeForward(wizard);
+    }
+    
     public final void addChild(WizardComponent component) {
         components.add(component);
     }

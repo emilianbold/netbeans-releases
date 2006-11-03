@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import javax.swing.JPanel;
+import org.netbeans.installer.Installer;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
@@ -58,11 +59,19 @@ public abstract class WizardPanel extends JPanel implements WizardComponent {
     }
     
     public final void executeBlocking(final Wizard wizard) {
-        executeForward(wizard);
+        executeComponent(wizard);
     }
     
     public final void executeSilently(final Wizard wizard) {
-        wizard.next();
+        if (wizard.hasNext()) {
+            wizard.next();
+        } else {
+            Installer.getInstance().finish();
+        }
+    }
+    
+    public final void executeSilentlyBlocking(final Wizard wizard) {
+        // does exactly nothing
     }
     
     public final void addChild(WizardComponent component) {

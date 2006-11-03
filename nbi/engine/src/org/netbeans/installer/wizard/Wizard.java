@@ -73,7 +73,7 @@ public class Wizard {
     public static final String DEFAULT_COMPONENTS_SCHEMA_URI =
             "resource:org/netbeans/installer/wizard/wizard-components.xsd";
     
-    public static final String SILENT_MODE_ACTIVE_PROPERTY = 
+    public static final String SILENT_MODE_ACTIVE_PROPERTY =
             "nbi.wizard.silent.mode.active";
     
     /////////////////////////////////////////////////////////////////////////////////
@@ -90,40 +90,41 @@ public class Wizard {
     
     public static synchronized Wizard getInstance() {
         if (instance == null) {
+            // initialize uri for root wizard's components list
             if (System.getProperty(COMPONENTS_INSTANCE_URI_PROPERTY) != null) {
                 componentsInstanceURI =
                         System.getProperty(COMPONENTS_INSTANCE_URI_PROPERTY);
             }
             
+            // initialize uri for components list xml schema
             if (System.getProperty(COMPONENTS_SCHEMA_URI_PROPERTY) != null) {
                 componentsInstanceURI =
                         System.getProperty(COMPONENTS_SCHEMA_URI_PROPERTY);
             }
             
+            // check whether silent mode is active
+            if (System.getProperty(SILENT_MODE_ACTIVE_PROPERTY) != null) {
+                executionMode = WizardExecutionMode.SILENT;
+            }
+            
+            // create the root wizard and load its components
             instance = new Wizard();
             try {
                 instance.components = loadWizardComponents(componentsInstanceURI);
             } catch (InitializationException e) {
-                errorManager.notify(ErrorLevel.CRITICAL, 
+                errorManager.notify(ErrorLevel.CRITICAL,
                         "Failed to load wizard components", e);
-            }
-            
-            if (System.getProperty(SILENT_MODE_ACTIVE_PROPERTY) != null) {
-                executionMode = WizardExecutionMode.SILENT;
             }
         }
         
         return instance;
     }
     
-    public static List<WizardComponent> loadWizardComponents(
-            String componentsURI) throws InitializationException {
+    public static List<WizardComponent> loadWizardComponents(String componentsURI) throws InitializationException {
         return loadWizardComponents(componentsURI, Wizard.class.getClassLoader());
     }
     
-    public static List<WizardComponent> loadWizardComponents(
-            String componentsURI, ClassLoader loader)
-            throws InitializationException {
+    public static List<WizardComponent> loadWizardComponents(String componentsURI, ClassLoader loader) throws InitializationException {
         try {
             DownloadOptions options = DownloadOptions.getDefaults();
             options.put(DownloadOptions.CLASSLOADER, loader);
@@ -164,8 +165,7 @@ public class Wizard {
         }
     }
     
-    private static List<WizardComponent> loadWizardComponents(Node node, ClassLoader loader)
-            throws InitializationException {
+    private static List<WizardComponent> loadWizardComponents(Node node, ClassLoader loader) throws InitializationException {
         List<WizardComponent> wizardComponents = new ArrayList<WizardComponent>();
         
         List <Node> nodeList = XMLUtils.getInstance().getChildList(node, "./component");
@@ -178,8 +178,7 @@ public class Wizard {
         return wizardComponents;
     }
     
-    private static WizardComponent loadWizardComponent(Node node, ClassLoader loader)
-            throws InitializationException {
+    private static WizardComponent loadWizardComponent(Node node, ClassLoader loader) throws InitializationException {
         WizardComponent component = null;
         
         try {
@@ -232,8 +231,7 @@ public class Wizard {
         return component;
     }
     
-    private static List<WizardCondition> loadWizardConditions(Node node, ClassLoader loader)
-            throws InitializationException {
+    private static List<WizardCondition> loadWizardConditions(Node node, ClassLoader loader) throws InitializationException {
         List<WizardCondition> wizardConditions = new ArrayList<WizardCondition>();
         
         try {
@@ -272,8 +270,7 @@ public class Wizard {
         return wizardConditions;
     }
     
-    private static void loadProperties(Node node, Object component, ClassLoader loader)
-            throws InitializationException {
+    private static void loadProperties(Node node, Object component, ClassLoader loader) throws InitializationException {
         
         List <Node> nodeList = XMLUtils.getInstance().getChildList(node,
                 "./property");
@@ -332,19 +329,40 @@ public class Wizard {
     
     // wizard lifecycle control methods /////////////////////////////////////////////
     public void open() {
-        // create the UI
         frame = new WizardFrame(this);
         
-        // show the UI
-        SwingUtilities.invokeLater(new Runnable(){
-            public void run() {
-                frame.setVisible(true);
-            }
-        });
+        switch (executionMode) {
+            case GUI:
+                SwingUtilities.invokeLater(new Runnable(){
+                    public void run() {
+                        frame.setVisible(true);
+                    }
+                });
+                break;
+            case SILENT:
+                // we don't have to initialize anything for silent mode
+                break;
+            default:
+                errorManager.notify(ERROR, "Something terrible has " +
+                        "happened - we have an execution mode which is not " +
+                        "in its enum");
+        }
     }
     
     public void close() {
-        frame.setVisible(false);
+        switch (executionMode) {
+            case GUI:
+                frame.setVisible(false);
+                break;
+            case SILENT:
+                // we don't have to initialize anything for silent mode
+                break;
+            default:
+                errorManager.notify(ERROR, "Something terrible has " +
+                        "happened - we have an execution mode which is not " +
+                        "in its enum");
+        }
+        
         frame.dispose();
     }
     
@@ -365,7 +383,7 @@ public class Wizard {
                     component.executeSilently(this);
                     break;
                 default:
-                    throw new IllegalStateException("Something terrible has " +
+                    errorManager.notify(ERROR, "Something terrible has " +
                             "happened - we have an execution mode which is not " +
                             "in its enum");
             }
@@ -373,7 +391,7 @@ public class Wizard {
         } else if (parent != null) {
             parent.next();
         } else {
-            throw new IllegalStateException("Cannot move to the next " +
+            errorManager.notify(ERROR, "Cannot move to the next " +
                     "element - the wizard is at the last element");
         }
     }
@@ -391,10 +409,11 @@ public class Wizard {
                     component.executeBackward(this);
                     break;
                 case SILENT:
-                    throw new IllegalStateException("Moving backward is " +
+                    errorManager.notify(ERROR, "Moving backward is " +
                             "not possible in silent mode");
+                    break;
                 default:
-                    throw new IllegalStateException("Something terrible has " +
+                    errorManager.notify(ERROR, "Something terrible has " +
                             "happened - we have an execution mode which is not " +
                             "in its enum");
             }
@@ -402,13 +421,24 @@ public class Wizard {
         } else if (parent != null) {
             parent.previous();
         } else {
-            throw new IllegalStateException("Cannot move to the previous " +
+            errorManager.notify(ERROR, "Cannot move to the previous " +
                     "component - the wizard is at the first component");
         }
     }
     
     public void executeComponent(WizardComponent component) {
-        component.executeBlocking(this);
+        switch (executionMode) {
+            case GUI:
+                component.executeBlocking(this);
+                break;
+            case SILENT:
+                component.executeSilentlyBlocking(this);
+                break;
+            default:
+                errorManager.notify(ERROR, "Something terrible has " +
+                        "happened - we have an execution mode which is not " +
+                        "in its enum");
+        }
     }
     
     // informational methods ////////////////////////////////////////////////////////

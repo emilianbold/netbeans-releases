@@ -38,6 +38,8 @@ public interface WizardComponent {
     
     public abstract void executeSilently(Wizard wizard);
     
+    public abstract void executeSilentlyBlocking(Wizard wizard);
+    
     public abstract void addChild(WizardComponent component);
     
     public abstract void removeChild(WizardComponent component);

@@ -43,8 +43,6 @@ public abstract class WizardAction implements WizardComponent {
     private Properties properties = new Properties();
     
     public final void executeForward(final Wizard wizard) {
-        this.wizard = wizard;
-        
         Thread workerThread = new Thread() {
             public void run() {
                 executeComponent(wizard, true);
@@ -55,8 +53,6 @@ public abstract class WizardAction implements WizardComponent {
     }
     
     public final void executeBackward(final Wizard wizard) {
-        this.wizard = wizard;
-        
         Thread workerThread = new Thread() {
             public void run() {
                 executeComponent(wizard, true);
@@ -73,6 +69,10 @@ public abstract class WizardAction implements WizardComponent {
     public final void executeSilently(final Wizard wizard) {
         executeComponent(wizard, false);
         wizard.next();
+    }
+    
+    public final void executeSilentlyBlocking(final Wizard wizard) {
+        executeComponent(wizard, false);
     }
     
     public final void addChild(WizardComponent component) {
@@ -143,6 +143,8 @@ public abstract class WizardAction implements WizardComponent {
     
     /////////////////////////////////////////////////////////////////////////////////
     private void executeComponent(final Wizard wizard, final boolean showUi) {
+        this.wizard = wizard;
+        
         // first initialize and show the UI
         if (showUi) {
             WizardPanel ui = getUI();
@@ -154,7 +156,6 @@ public abstract class WizardAction implements WizardComponent {
                 ui.executeForward(wizard);
             }
         }
-        
         execute();
     }
     

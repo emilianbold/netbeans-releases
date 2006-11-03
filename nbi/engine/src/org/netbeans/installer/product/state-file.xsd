@@ -53,7 +53,6 @@
     <xsd:complexType name="component-type">
         <xsd:sequence>
             <xsd:element name="properties" type="properties-list-type" minOccurs="0"/>
-            <xsd:element name="components" type="components-list-type" minOccurs="0"/>
         </xsd:sequence>
         <xsd:attribute name="uid" type="xsd:string"/>
         <xsd:attribute name="version" type="xsd:string"/>

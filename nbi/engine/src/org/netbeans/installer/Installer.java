@@ -25,7 +25,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLDecoder;
-
 import java.util.Locale;
 import java.util.Properties;
 import javax.swing.JFrame;
@@ -42,7 +41,6 @@ import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.wizard.components.actions.FinalizeRegistryAction;
 import org.netbeans.installer.wizard.components.actions.InitalizeRegistryAction;
-
 import static org.netbeans.installer.utils.ErrorLevel.DEBUG;
 import static org.netbeans.installer.utils.ErrorLevel.MESSAGE;
 import static org.netbeans.installer.utils.ErrorLevel.WARNING;
@@ -51,7 +49,7 @@ import static org.netbeans.installer.utils.ErrorLevel.CRITICAL;
 import org.netbeans.installer.wizard.Wizard;
 
 /**
- * The main class of the NBBA installer framework. It represents the installer and
+ * The main class of the NBI framework. It represents the installer and
  * provides methods to start the installation/maintenance process as well as to
  * finish/cancel/break the installation.
  *
@@ -120,7 +118,7 @@ public class Installer {
     private File localDirectory =
             new File(DEFAULT_LOCAL_DIRECTORY_PATH).getAbsoluteFile();
     
-    private File cachedEngineJarFile;
+    private File cachedEngine;
     
     private InstallerExecutionMode executionMode = InstallerExecutionMode.NORMAL;
     
@@ -255,8 +253,8 @@ public class Installer {
         return localDirectory;
     }
     
-    public File getCachedEngineJarFile() {
-        return cachedEngineJarFile;
+    public File getCachedEngine() {
+        return cachedEngine;
     }
     
     public InstallerExecutionMode getExecutionMode() {
@@ -438,8 +436,19 @@ public class Installer {
             logManager.log(MESSAGE, "... no command line arguments were specified");
         }
         
+        validateArguments();
+        
         logManager.unindent();
         logManager.log(MESSAGE, "... finished parsing command line arguments");
+    }
+    
+    private void validateArguments() {
+        if (System.getProperty(Wizard.SILENT_MODE_ACTIVE_PROPERTY) != null) {
+            if (System.getProperty(ProductRegistry.SOURCE_STATE_FILE_PATH_PROPERTY) == null) {
+                System.getProperties().remove(Wizard.SILENT_MODE_ACTIVE_PROPERTY);
+                ErrorManager.getInstance().notify(WARNING, "\"--state\" option is required when using \"--silent\". \"--silent\" will be ignored.");
+            }
+        }
     }
     
     private void setLookAndFeel() {
@@ -558,10 +567,10 @@ public class Installer {
                             FileUtils.getInstance().copyFile(jarfile,dest);
                         }
                     }
-                    cachedEngineJarFile = (!dest.exists()) ? null : dest;
+                    cachedEngine = (!dest.exists()) ? null : dest;
                     logManager.log(MESSAGE, "NBI Engine jar file = [" +
-                            cachedEngineJarFile + "], exist = " +
-                            ((cachedEngineJarFile==null) ? false : cachedEngineJarFile.exists()));
+                            cachedEngine + "], exist = " +
+                            ((cachedEngine==null) ? false : cachedEngine.exists()));
                 }
             }
             
