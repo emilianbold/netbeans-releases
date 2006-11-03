@@ -92,6 +92,7 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -236,6 +237,8 @@ public final class JavaSource {
         }
         try {
             return new JavaSource(cpInfo, files);
+        } catch (DataObjectNotFoundException donf) {
+            Logger.getLogger("global").warning("Ignoring non existent file: " + FileUtil.getFileDisplayName(donf.getFileObject()));     //NOI18N
         } catch (IOException ex) {            
             Exceptions.printStackTrace(ex);
         }        
@@ -270,6 +273,9 @@ public final class JavaSource {
     public static JavaSource forFileObject(FileObject fileObject) throws IllegalArgumentException {
         if (fileObject == null) {
             throw new IllegalArgumentException ("fileObject == null");  //NOI18N
+        }
+        if (!fileObject.isValid()) {
+            return null;
         }
         if (!"text/x-java".equals(FileUtil.getMIMEType(fileObject)) && !"java".equals(fileObject.getExt())) {  //NOI18N
             //TODO: JavaSource cannot be created for all kinds of files, but text/x-java is too restrictive:
@@ -312,10 +318,22 @@ public final class JavaSource {
     private JavaSource (ClasspathInfo cpInfo, Collection<FileObject> files) throws IOException {
         this.files = files;  
         this.fileChangeListener = new FileChangeListenerImpl ();
-        for (FileObject file : files) {
-            TimesCollector.getDefault().reportReference( file, JavaSource.class.toString(), "[M] JavaSource", this );       //NOI18N
-            file.addFileChangeListener(FileUtil.weakFileChangeListener(this.fileChangeListener,file));
-            this.assignDocumentListener(file);
+        boolean multipleSources = files.size() > 1;
+        for (Iterator<FileObject> it = files.iterator(); it.hasNext();) {
+            FileObject file = it.next();
+            try {
+                TimesCollector.getDefault().reportReference( file, JavaSource.class.toString(), "[M] JavaSource", this );       //NOI18N
+                file.addFileChangeListener(FileUtil.weakFileChangeListener(this.fileChangeListener,file));
+                this.assignDocumentListener(file);
+            } catch (DataObjectNotFoundException donf) {
+                if (multipleSources) {
+                    Logger.getLogger("global").warning("Ignoring non existent file: " + FileUtil.getFileDisplayName(file));     //NOI18N
+                    it.remove();
+                }
+                else {
+                    throw donf;
+                }
+            }
         }
 	this.classpathInfo = cpInfo;
         this.classpathInfo.addChangeListener(WeakListeners.change(this.listener, this.classpathInfo));
