@@ -185,7 +185,7 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
         //#34155 - is this already instantiated SystemOption?
         boolean recreate = false;
         if (instance != null && instance.getCachedInstance() != null) {
-            if (instance.getCachedInstance() instanceof org.openide.options.SystemOption) {
+            if (isSystemOption(instance.getCachedInstance())) {
                 recreate = true;
             }
         }
@@ -213,6 +213,16 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
             }
         }
         if (XMLSettingsSupport.err.isLoggable(Level.FINE)) XMLSettingsSupport.err.fine("done: " + this.dobj); // NOI18N
+    }
+    
+    private static boolean isSystemOption(final Object obj) {
+        boolean b =  false;
+        if (obj != null && obj instanceof SharedClassObject){
+            for(Class c = obj.getClass(); !b && c != null; c = c.getSuperclass()) {
+                b =  "org.openide.options.SystemOption".equals(c.getName());//NOI18N
+            }
+        }
+        return b;
     }
     
     public void propertyChange(PropertyChangeEvent evt) {
