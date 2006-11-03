@@ -20,7 +20,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <mconfig name="jbrowse">
-
+    
     <testbag testattribs="stable" executor="unit-executor" name="jbrowse">
         <testset dir="unit/src">
             <patternset>
@@ -46,6 +46,7 @@ Microsystems, Inc. All Rights Reserved.
                 <exclude name="org/netbeans/api/java/source/gen/CompareTreeTest.class"/>
                 <exclude name="org/netbeans/api/java/source/gen/MethodCreationTest.class"/>
                 <exclude name="org/netbeans/api/java/source/gen/MemberAdditionTest.class"/>
+                <exclude name="org/netbeans/api/java/source/gen/IndentAddedElemTest.class"/>
             </patternset>
         </testset>
     </testbag>
@@ -72,7 +73,7 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/api/java/source/gen/ClassMemberTest.class"/>
                 <include name="org/netbeans/api/java/source/gen/FeatureAddingTest.class"/>
                 <include name="org/netbeans/api/java/source/gen/AddCastTest.class"/>
-
+                
                 <!--
                 Makes many operation on field declaration.
                 -->
@@ -93,7 +94,7 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </testset>
     </testbag>
-
+    
     <testbag testattribs="issue" executor="unit-executor" name="modifying sources">
         <testset dir="unit/src">
             <patternset>
@@ -105,12 +106,12 @@ Microsystems, Inc. All Rights Reserved.
                 not reported.
                 -->
                 <include name="org/netbeans/api/java/source/gen/LabelsTest.class"/> 
-
+                
                 <!--
                 Second test method corrupts the source. Details are not available yet.
                 -->
                 <include name="org/netbeans/api/java/source/gen/AnnotationOnLocVarTest.class"/>
-
+                
                 <!--
                 Three method for testing body provided as a text.
                 Current problems:
@@ -121,7 +122,7 @@ Microsystems, Inc. All Rights Reserved.
                 * immediately in text.
                 -->
                 <include name="org/netbeans/api/java/source/gen/MethodBodyTextTest.class"/>
-
+                
                 <!-- <include name="org/netbeans/api/java/source/gen/CompareTreeTest.class"/> -->
                 <!-- <include name="org/netbeans/api/java/source/gen/FieldTest2.class"/> -->
                 <!-- <include name="org/netbeans/api/java/source/gen/FieldTest3.class"/> -->
@@ -129,7 +130,16 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </testset>
     </testbag>
-
+        
+    <testbag testattribs="qa" executor="unit-executor" name="modifying sources">
+        <testset dir="unit/src">
+            <patternset>
+                <!-- Test indentation (issue 87542) -->
+                <include name="org/netbeans/api/java/source/gen/IndentAddedElemTest.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
     <compiler name="default-compiler" antfile="build-unit.xml" target="default-compiler" default="true"/>
     <executor name="unit-executor" antfile="build-unit.xml" target="run-unit-test"/>
     
