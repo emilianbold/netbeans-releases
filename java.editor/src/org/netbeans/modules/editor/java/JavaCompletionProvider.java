@@ -511,6 +511,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                 case INSTANCE_OF:
                     insideTypeCheck(env);
                     break;
+                case ARRAY_ACCESS:
+                    insideArrayAccess(env);
+                    break;
                 case ASSIGNMENT:
                     insideAssignment(env);
                     break;
@@ -1507,6 +1510,25 @@ public class JavaCompletionProvider implements CompletionProvider {
             TokenSequence<JavaTokenId> ts = findLastNonWhitespaceToken(env, iot, env.getOffset());
             if (ts != null && ts.token().id() == JavaTokenId.INSTANCEOF)
                 addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM), null, null);
+        }
+        
+        private void insideArrayAccess(Env env) throws IOException {
+            int offset = env.getOffset();
+            ArrayAccessTree aat = (ArrayAccessTree)env.getPath().getLeaf();
+            SourcePositions sourcePositions = env.getSourcePositions();
+            CompilationUnitTree root = env.getRoot();
+            int aaTextStart = (int)sourcePositions.getEndPosition(root, aat.getExpression());
+            if (aaTextStart != Diagnostic.NOPOS) {
+                Tree expr = unwrapErrTree(aat.getIndex());
+                if (expr == null || offset <= (int)sourcePositions.getStartPosition(root, expr)) {
+                    String aatText = env.getController().getText().substring(aaTextStart, offset);
+                    int bPos = aatText.indexOf('['); //NOI18N
+                    if (bPos > -1) {
+                        localResult(env);
+                        addValueKeywords(env);
+                    }
+                }
+            }
         }
         
         private void insideAssignment(Env env) throws IOException {
