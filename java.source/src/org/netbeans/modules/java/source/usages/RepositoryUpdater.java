@@ -34,6 +34,7 @@ import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.Abort;
+import com.sun.tools.javac.util.Name;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
@@ -948,7 +949,8 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 Iterable<? extends CompilationUnitTree> trees = jt.parse(new JavaFileObject[] {active});
                 jt.enter();            
                 jt.analyze ();
-                dumpClasses(listener.getEnteredTypes(), fm, com.sun.tools.javac.code.Types.instance(jt.getContext()));
+                dumpClasses(listener.getEnteredTypes(), fm, com.sun.tools.javac.code.Types.instance(jt.getContext()),
+                    com.sun.tools.javac.util.Name.Table.instance(jt.getContext()));
                 sa.analyse (trees, jt, fm, active);
                 listener.cleanDiagnostics();
                 sa.store();
@@ -1356,7 +1358,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             continue;
                         }
                         Iterable<? extends TypeElement> types = jt.enterTrees(trees);
-                        dumpClasses (listener.getEnteredTypes(), fileManager, com.sun.tools.javac.code.Types.instance(jt.getContext()));
+                        dumpClasses (listener.getEnteredTypes(),fileManager, 
+                                com.sun.tools.javac.code.Types.instance(jt.getContext()),
+                                com.sun.tools.javac.util.Name.Table.instance(jt.getContext()));
                         if (listener.lowMemory.getAndSet(false)) {
                             jt.finish();
                             jt = null;
@@ -1391,7 +1395,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             }
                         };
                         f.run(jc.todo, types);
-                        dumpClasses (listener.getEnteredTypes(), fileManager, com.sun.tools.javac.code.Types.instance(jt.getContext()));
+                        dumpClasses (listener.getEnteredTypes(), fileManager,
+                                com.sun.tools.javac.code.Types.instance(jt.getContext()),
+                                com.sun.tools.javac.util.Name.Table.instance(jt.getContext()));
                         if (listener.lowMemory.getAndSet(false)) {
                             jt.finish();
                             jt = null;
@@ -1463,73 +1469,80 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     }
     
     
-    private static void dumpClasses (final List<? extends ClassSymbol> entered, final JavaFileManager fileManager, final com.sun.tools.javac.code.Types javacTypes) throws IOException {
+    private static void dumpClasses (final List<? extends ClassSymbol> entered, final JavaFileManager fileManager, final com.sun.tools.javac.code.Types javacTypes,
+        final com.sun.tools.javac.util.Name.Table nameTable) throws IOException {
         for (ClassSymbol classSym : entered) {
             JavaFileObject source = classSym.sourcefile;            
-            dumpTopLevel(classSym, fileManager, source, javacTypes);
+            dumpTopLevel(classSym, fileManager, source, javacTypes, nameTable);
         }
     }
     
-    private static void dumpTopLevel (final ClassSymbol classSym, final JavaFileManager fileManager, final JavaFileObject source, final com.sun.tools.javac.code.Types types) throws IOException {
-        final String sourceName = fileManager.inferBinaryName(StandardLocation.SOURCE_PATH, source);
-        final StringBuilder classNameBuilder = new StringBuilder ();
-        ClassFileUtil.encodeClassName(classSym, classNameBuilder, '.');  //NOI18N
-        final String binaryName = classNameBuilder.toString();
-        Set<String> rsList = null;
-        if (!sourceName.equals(binaryName)) {            
-            rsList = new HashSet<String>();
-        }
-        final JavaFileObject fobj = fileManager.getJavaFileForOutput(StandardLocation.CLASS_OUTPUT, binaryName, JavaFileObject.Kind.CLASS, source);
-        final PrintWriter out = new PrintWriter (new OutputStreamWriter(fobj.openOutputStream()));
-        try {               
-            SymbolDumper.dump(out,types,classSym,null);
-        } finally {
-            out.close();
-        }
-        if (rsList != null) {
-            rsList.add(binaryName);
-        }
-        final List<Symbol> enclosedElements = classSym.getEnclosedElements();
-        for (Symbol ee : enclosedElements) {
-            if (ee.getKind().isClass() || ee.getKind().isInterface()) {
-                dumpClass ((ClassSymbol)ee,fileManager, source, types, rsList);
+    private static void dumpTopLevel (final ClassSymbol classSym, final JavaFileManager fileManager, final JavaFileObject source, final com.sun.tools.javac.code.Types types,
+        com.sun.tools.javac.util.Name.Table nameTable) throws IOException {
+        if (classSym.getSimpleName() != nameTable.error) {
+            final String sourceName = fileManager.inferBinaryName(StandardLocation.SOURCE_PATH, source);
+            final StringBuilder classNameBuilder = new StringBuilder ();
+            ClassFileUtil.encodeClassName(classSym, classNameBuilder, '.');  //NOI18N
+            final String binaryName = classNameBuilder.toString();
+            Set<String> rsList = null;
+            if (!sourceName.equals(binaryName)) {            
+                rsList = new HashSet<String>();
             }
-        }
-        if (rsList != null) {
-            final int index = sourceName.lastIndexOf('.');              //NOI18N
-            final String pkg = index == -1 ? "" : sourceName.substring(0,index);    //NOI18N
-            final String rsName = (index == -1 ? sourceName : sourceName.substring(index+1)) + '.' + FileObjects.RS;    //NOI18N
-            javax.tools.FileObject fo = fileManager.getFileForOutput(StandardLocation.CLASS_OUTPUT, pkg, rsName, source);
-            assert fo != null;
-            PrintWriter rsOut = new PrintWriter(fo.openWriter());
-            try {
-                for (String sig : rsList) {
-                    rsOut.println(sig);                    
-                }
+            final JavaFileObject fobj = fileManager.getJavaFileForOutput(StandardLocation.CLASS_OUTPUT, binaryName, JavaFileObject.Kind.CLASS, source);
+            final PrintWriter out = new PrintWriter (new OutputStreamWriter(fobj.openOutputStream()));
+            try {               
+                SymbolDumper.dump(out,types,classSym,null);
             } finally {
-                rsOut.close();
+                out.close();
+            }
+            if (rsList != null) {
+                rsList.add(binaryName);
+            }
+            final List<Symbol> enclosedElements = classSym.getEnclosedElements();
+            for (Symbol ee : enclosedElements) {
+                if (ee.getKind().isClass() || ee.getKind().isInterface()) {
+                    dumpClass ((ClassSymbol)ee,fileManager, source, types, nameTable, rsList);
+                }
+            }
+            if (rsList != null) {
+                final int index = sourceName.lastIndexOf('.');              //NOI18N
+                final String pkg = index == -1 ? "" : sourceName.substring(0,index);    //NOI18N
+                final String rsName = (index == -1 ? sourceName : sourceName.substring(index+1)) + '.' + FileObjects.RS;    //NOI18N
+                javax.tools.FileObject fo = fileManager.getFileForOutput(StandardLocation.CLASS_OUTPUT, pkg, rsName, source);
+                assert fo != null;
+                PrintWriter rsOut = new PrintWriter(fo.openWriter());
+                try {
+                    for (String sig : rsList) {
+                        rsOut.println(sig);                    
+                    }
+                } finally {
+                    rsOut.close();
+                }
             }
         }
     }
             
-    private static void dumpClass (final ClassSymbol classSym, final JavaFileManager fileManager, final JavaFileObject source, final com.sun.tools.javac.code.Types types, final Set<? super String> rsList) throws IOException {
-        final StringBuilder classNameBuilder = new StringBuilder ();
-        ClassFileUtil.encodeClassName(classSym, classNameBuilder, '.');  //NOI18N
-        final String binaryName = classNameBuilder.toString();
-        final JavaFileObject fobj = fileManager.getJavaFileForOutput(StandardLocation.CLASS_OUTPUT, binaryName, JavaFileObject.Kind.CLASS, source);
-        final PrintWriter out = new PrintWriter (new OutputStreamWriter(fobj.openOutputStream()));
-        try {               
-            SymbolDumper.dump(out,types,classSym,null);
-        } finally {
-            out.close();
-        }
-        if (rsList != null) {
-            rsList.add(binaryName);
-        }
-        final List<Symbol> enclosedElements = classSym.getEnclosedElements();
-        for (Symbol ee : enclosedElements) {
-            if (ee.getKind().isClass() || ee.getKind().isInterface()) {
-                dumpClass ((ClassSymbol)ee,fileManager, source, types, rsList);
+    private static void dumpClass (final ClassSymbol classSym, final JavaFileManager fileManager, final JavaFileObject source, final com.sun.tools.javac.code.Types types,
+            final com.sun.tools.javac.util.Name.Table nameTable, final Set<? super String> rsList) throws IOException {
+        if (classSym.getSimpleName() != nameTable.error) {
+            final StringBuilder classNameBuilder = new StringBuilder ();
+            ClassFileUtil.encodeClassName(classSym, classNameBuilder, '.');  //NOI18N
+            final String binaryName = classNameBuilder.toString();
+            final JavaFileObject fobj = fileManager.getJavaFileForOutput(StandardLocation.CLASS_OUTPUT, binaryName, JavaFileObject.Kind.CLASS, source);
+            final PrintWriter out = new PrintWriter (new OutputStreamWriter(fobj.openOutputStream()));
+            try {               
+                SymbolDumper.dump(out,types,classSym,null);
+            } finally {
+                out.close();
+            }
+            if (rsList != null) {
+                rsList.add(binaryName);
+            }
+            final List<Symbol> enclosedElements = classSym.getEnclosedElements();
+            for (Symbol ee : enclosedElements) {
+                if (ee.getKind().isClass() || ee.getKind().isInterface()) {
+                    dumpClass ((ClassSymbol)ee,fileManager, source, types, nameTable, rsList);
+                }
             }
         }
     }

@@ -405,7 +405,7 @@ public class SourceAnalyser {
                     enclosingElement = old;
                 }
             }
-            if (shouldGenerate(className, sym)) {
+            if (!errorInDecl && shouldGenerate(className, sym)) {
                 dump(sym, className, enclosingElement);
             }
             return null;
