@@ -91,7 +91,7 @@ Microsystems, Inc. All Rights Reserved.
     <property name="jnlp.signjar.password" value="netbeans"/>
     <available property="jnlp.signjar.keystore.exists" file="${jnlp.signjar.keystore}"/>
     <target name="jnlp-generate-keystore" depends="jnlp-init" unless="jnlp.signjar.keystore.exists">
-        <property name="jnlp.signjar.vendor" value="CN=A NetBeans Friend, OU=NetBeans, O=netbeans.org, C=US"/>
+        <property name="jnlp.signjar.vendor" value="CN=${user.name}"/>
         
         <mkdir dir="${jnlp.signjar.keystore}/../"/>
         <echo message="Going to create default keystore in ${jnlp.signjar.keystore}"/>
