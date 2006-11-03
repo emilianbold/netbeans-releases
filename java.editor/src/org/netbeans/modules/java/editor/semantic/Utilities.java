@@ -438,11 +438,15 @@ public class Utilities {
         keywords.add("null");
         keywords.add("this");
         keywords.add("super");
+        keywords.add("class");
     }
     
     public static boolean isKeyword(Tree tree) {
-        if (tree instanceof IdentifierTree) {
+        if (tree.getKind() == Kind.IDENTIFIER) {
             return keywords.contains(((IdentifierTree) tree).getName().toString());
+        }
+        if (tree.getKind() == Kind.MEMBER_SELECT) {
+            return keywords.contains(((MemberSelectTree) tree).getIdentifier().toString());
         }
         
         return false;
