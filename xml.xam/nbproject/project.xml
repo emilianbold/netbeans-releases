@@ -37,47 +37,12 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <friend-packages>
-                <friend>org.netbeans.modules.bpel.core</friend>
-                <friend>org.netbeans.modules.bpel.editor.expression</friend>
-                <friend>org.netbeans.modules.bpel.editors</friend>
-                <friend>org.netbeans.modules.bpel.model</friend>
-                <friend>org.netbeans.modules.bpel.model.outsideide</friend>
-                <friend>org.netbeans.modules.bpel.project</friend>
-                <friend>org.netbeans.modules.bpel.refactoring</friend>
-                <friend>org.netbeans.modules.websvc.core</friend>
-                <friend>org.netbeans.modules.websvc.customization</friend>
-                <friend>org.netbeans.modules.websvc.clientapi</friend>
-                <friend>org.netbeans.modules.websvc.jaxwsmodel</friend>
-                <friend>org.netbeans.modules.websvc.wsitconf</friend>
-                <friend>org.netbeans.modules.websvc.wsitmodelext</friend>
-                <friend>org.netbeans.modules.xml.axi</friend>
-                <friend>org.netbeans.modules.xml.refactoring</friend>
-                <friend>org.netbeans.modules.xml.retriever</friend>
-                <friend>org.netbeans.modules.xml.schema.abe</friend>
-                <friend>org.netbeans.modules.xml.schema.completion</friend>
-                <friend>org.netbeans.modules.xml.schema.core</friend>
-                <friend>org.netbeans.modules.xml.schema.model</friend>
-                <friend>org.netbeans.modules.xml.schema.refactoring</friend>
-                <friend>org.netbeans.modules.xml.schema.ui.analysis</friend>
-                <friend>org.netbeans.modules.xml.schema.ui.basic</friend>
-                <friend>org.netbeans.modules.xml.wsdlextui</friend>
-                <friend>org.netbeans.modules.xml.validation</friend>
-                <friend>org.netbeans.modules.xml.wsdl.extensions</friend>
-                <friend>org.netbeans.modules.xml.wsdl.model</friend>
-                <friend>org.netbeans.modules.xml.wsdl.refactoring</friend>
-                <friend>org.netbeans.modules.xml.wsdlui</friend>
-                <friend>org.netbeans.modules.xml.xam.ui</friend>
-                <friend>org.netbeans.modules.xml.xdm</friend>
-		<friend>org.netbeans.modules.bpel.debugger.ui</friend>
-                <friend>org.netbeans.modules.compapp.projects.jbi</friend>
-                <friend>com.sun.jbi.ui.devtool.wsdl.file</friend>
+            <public-packages>
                 <package>org.netbeans.modules.xml.xam</package>
                 <package>org.netbeans.modules.xml.xam.dom</package>
                 <package>org.netbeans.modules.xml.xam.locator</package>
                 <package>org.netbeans.modules.xml.xam.spi</package>
-                
-            </friend-packages>
+            </public-packages>
         </data>
     </configuration>
 </project>

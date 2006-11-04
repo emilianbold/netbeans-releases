@@ -41,31 +41,10 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <friend-packages>
-                <friend>org.netbeans.modules.bpel.editor.expression</friend>
-                <friend>org.netbeans.modules.bpel.editors</friend>
-                <friend>org.netbeans.modules.bpel.model</friend>
-                <friend>org.netbeans.modules.bpel.model.outsideide</friend>
-                <friend>org.netbeans.modules.bpel.project</friend>
-                <friend>org.netbeans.modules.bpel.refactoring</friend>
-                <friend>org.netbeans.modules.websvc.customization</friend>
-                <friend>org.netbeans.modules.websvc.wsitconf</friend>
-                <friend>org.netbeans.modules.xml.axi</friend>
-                <friend>org.netbeans.modules.xml.schema.abe</friend>
-                <friend>org.netbeans.modules.xml.schema.completion</friend>
-                <friend>org.netbeans.modules.xml.schema.core</friend>
-                <friend>org.netbeans.modules.xml.schema.refactoring</friend>
-                <friend>org.netbeans.modules.xml.schema.ui.analysis</friend>
-                <friend>org.netbeans.modules.xml.schema.ui.basic</friend>
-                <friend>org.netbeans.modules.xml.wsdl.extensions</friend>
-                <friend>org.netbeans.modules.xml.wsdl.model</friend>
-                <friend>org.netbeans.modules.xml.wsdl.refactoring</friend>
-                <friend>org.netbeans.modules.xml.wsdlui</friend>
-                <friend>org.netbeans.modules.compapp.projects.jbi</friend>
-                <friend>com.sun.jbi.ui.devtool.wsdl.file</friend>
+            <public-packages>
                 <package>org.netbeans.modules.xml.schema.model</package>
                 <package>org.netbeans.modules.xml.schema.model.visitor</package>
-            </friend-packages>
+            </public-packages>
         </data>
     </configuration>
 </project>

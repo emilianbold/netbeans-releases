@@ -98,32 +98,13 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <friend-packages>
-                <friend>org.netbeans.modules.bpel.core</friend>
-                <friend>org.netbeans.modules.bpel.editor.expression</friend>
-                <friend>org.netbeans.modules.bpel.editors</friend>
-                <friend>org.netbeans.modules.bpel.model</friend>
-                <friend>org.netbeans.modules.websvc.core</friend>
-                <friend>org.netbeans.modules.websvc.customization</friend>
-                <friend>org.netbeans.modules.websvc.wsitconf</friend>
-                <friend>org.netbeans.modules.xml.axi</friend>
-                <friend>org.netbeans.modules.xml.schema.abe</friend>
-                <friend>org.netbeans.modules.xml.schema.refactoring</friend>
-                <friend>org.netbeans.modules.xml.schema.core</friend>
-                <friend>org.netbeans.modules.xml.schema.model</friend>
-                <friend>org.netbeans.modules.xml.schema.ui.analysis</friend>
-                <friend>org.netbeans.modules.xml.schema.ui.basic</friend>
-                <friend>org.netbeans.modules.xml.wsdl.extensions</friend>
-                <friend>org.netbeans.modules.xml.wsdl.model</friend>
-                <friend>org.netbeans.modules.xml.wsdlui</friend>
-                <friend>org.netbeans.modules.xml.xam</friend>
-                <friend>com.sun.jbi.ui.devtool.wsdl.file</friend>
+            <public-packages>
                 <package>org.netbeans.modules.xml.xdm</package>
                 <package>org.netbeans.modules.xml.xdm.diff</package>
                 <package>org.netbeans.modules.xml.xdm.nodes</package>
                 <package>org.netbeans.modules.xml.xdm.visitor</package>
                 <package>org.netbeans.modules.xml.xdm.xam</package>
-            </friend-packages>
+            </public-packages>
         </data>
     </configuration>
 </project>
