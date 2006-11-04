@@ -2,16 +2,16 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- *
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -362,8 +362,12 @@ public abstract class AbstractDocumentComponent<C extends DocumentComponent<C>>
      * @return aggregated text string of all child text nodes.
      */
     protected String getText() {
+        return getText(getPeer());
+    }
+
+    public static String getText(Element e) {
         StringBuilder text = new StringBuilder();
-        org.w3c.dom.NodeList nl = node.getChildNodes();
+        org.w3c.dom.NodeList nl = e.getChildNodes();
         for (int i = 0; i < nl.getLength(); i++) {
             org.w3c.dom.Node n = nl.item(i);
             if (n instanceof org.w3c.dom.Text) {
@@ -405,7 +409,7 @@ public abstract class AbstractDocumentComponent<C extends DocumentComponent<C>>
                 } else {
                     break;
                 }
-            } else if (i == 0 || i == pathToRoot.size()-1) {
+            } else if (i == pathToRoot.size()-1) {
                 throw new IllegalArgumentException("Expect new reference node has same Id as current"); //NOI18N
             }
         }
@@ -710,19 +714,6 @@ public abstract class AbstractDocumentComponent<C extends DocumentComponent<C>>
     }
     
     /**
-     * This method provides a consistent way of resolving references to 
-     * external models. The algorithm is to first attempt to use the hint
-     * if the hint cannot be found then use the backup. The XML example will
-     * use the location as a hint and then use the namespace as the backup. 
-     * @throws CatalogModelException if the model cannot be located or the 
-     * hints are not URIs.
-     * @deprecated use #resolveModel(String hint) instead
-     */
-    protected ModelSource resolveModel(String hint, String backup) throws CatalogModelException {
-        return _resolveModel(hint, null);
-    }
-    
-    /**
      * Resolves reference to external models using location hint. 
      * @param hint on location of where external model reference could reside.
      * @return the model source of the referenced model if found.
@@ -796,6 +787,38 @@ public abstract class AbstractDocumentComponent<C extends DocumentComponent<C>>
             p = (AbstractDocumentComponent) ((EmbeddableRoot)this).getForeignParent();
         }
         return p;
+    }
+
+
+    protected Element getChildElement(QName qname) {
+        NodeList nl = getPeer().getElementsByTagName(qname.getLocalPart());
+        Element ret = null;
+        if (nl != null) {
+            for (int i=0; i<nl.getLength(); i++) {
+                if (qname.equals(getQName(nl.item(i)))) {
+                    ret = (Element) nl.item(i);
+                    break;
+                }
+            }
+        }
+        return ret;
+    }
+    
+    protected String getChildElementText(QName qname) {
+        Element ret = getChildElement(qname);
+        return ret == null ? null : getText(ret);
+    }
+    
+    protected void setChildElementText(String propertyName, String text, QName qname) {
+        verifyWrite();
+        Element childElement = getChildElement(qname);
+        String oldVal = childElement == null ? null : getText(childElement);
+        if (childElement == null) {
+            childElement = getPeer().getOwnerDocument().createElementNS(qname.getNamespaceURI(), qname.getLocalPart());
+        }
+        getModel().getAccess().setText(childElement, text, this);
+        firePropertyChange(propertyName, oldVal, text);
+        fireValueChanged();
     }
 }
 

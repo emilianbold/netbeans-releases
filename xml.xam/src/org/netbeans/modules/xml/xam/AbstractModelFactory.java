@@ -49,6 +49,25 @@ public abstract class AbstractModelFactory<M extends Model> {
     
     protected abstract M createModel(ModelSource source);
     
+
+    /**
+     * Create new model from given model source or null if there are errors.
+     * The returned model might not be valid, i.e., source is well-formed. 
+     * Note that the returned model is not cached so client code should handle 
+     * sharing if needed.
+     */
+    public M createFreshModel(ModelSource modelSource) {
+        M model = createModel(modelSource);
+        try {
+            if (model != null) {
+                model.sync();
+            }
+        } catch (IOException ioe) {
+            Logger.getLogger(this.getClass().getName()).log(Level.FINE, "Sync has errors", ioe);
+        }
+        return model;
+    }
+    
     /**
      * This method extracts the key from the model source. A subclass can 
      * change the ModelSource lookup requirements and thus this method may

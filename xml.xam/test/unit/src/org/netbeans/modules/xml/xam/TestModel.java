@@ -1,5 +1,7 @@
 package org.netbeans.modules.xml.xam;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import javax.swing.event.UndoableEditListener;
 import org.openide.util.Lookup;
@@ -11,6 +13,7 @@ import org.openide.util.lookup.Lookups;
  */
 public class TestModel extends AbstractModel<TestComponent> implements Model<TestComponent> {
     TestComponent testRoot;
+    TestAccess access;
     
     /** Creates a new instance of TestModel */
     public TestModel() {
@@ -46,11 +49,16 @@ public class TestModel extends AbstractModel<TestComponent> implements Model<Tes
     }
 
     
-    public ModelAccess getAccess() {
-        return new TestAccess();
+    public TestAccess getAccess() {
+        if (access == null) { 
+            access = new TestAccess();
+        }
+        return access;
     }
     
-    private static class TestAccess extends ModelAccess {
+    public static class TestAccess extends ModelAccess {
+        PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+        
         public void removeUndoableEditListener(UndoableEditListener listener) {
             //TODO
         }
@@ -66,10 +74,22 @@ public class TestModel extends AbstractModel<TestComponent> implements Model<Tes
         public void prepareForUndoRedo() {
         }
 
+        Long lastFlushTime = null;
         public void flush() {
+            Long currentTime = new Long(System.currentTimeMillis());
+            pcs.firePropertyChange("flushed", lastFlushTime, currentTime);
+            lastFlushTime = currentTime;
         }
 
         public void finishUndoRedo() {
+        }
+        
+        public void addFlushListener(PropertyChangeListener l) {
+            pcs.addPropertyChangeListener(l);
+        }
+        
+        public void removeFlushListener(PropertyChangeListener l) {
+            pcs.removePropertyChangeListener(l);
         }
     }
 }

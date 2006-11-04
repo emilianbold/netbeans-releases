@@ -129,4 +129,39 @@ public class AbstractModelTest extends TestCase {
         model.endTransaction();
         plistener.assertEvent(Model.STATE_PROPERTY, Model.State.VALID, Model.State.NOT_WELL_FORMED);
     }
+    
+    private class FlushListener implements PropertyChangeListener {
+        long flushTime = 0;
+        public FlushListener() {
+            model.getAccess().addFlushListener(this);
+        }
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (evt.getSource() == model.getAccess() && evt.getPropertyName().equals("flushed")) {
+                flushTime = ((Long)evt.getNewValue()).longValue();
+            }
+        }
+        public void assertFlushEvent(long since) {
+            assertTrue("Expect flush event after "+since, flushTime >= since);
+        }
+        public void assertNoFlushEvents(long since) {
+            assertTrue("Expect no flush events after "+since, flushTime < since);
+        }
+    }
+    
+    public void testReadOnlyTransactionSkipFlush() throws Exception {
+        FlushListener list = new FlushListener();
+        long since = System.currentTimeMillis();
+        model.startTransaction();
+        model.endTransaction();
+        list.assertNoFlushEvents(since);
+    }
+    
+    public void testWriteTransactionDidFlush() throws Exception {
+        FlushListener list = new FlushListener();
+        long since = System.currentTimeMillis();
+        model.startTransaction();
+        model.getRootComponent().setValue("newValue");
+        model.endTransaction();
+        list.assertFlushEvent(since);
+    }
 }
