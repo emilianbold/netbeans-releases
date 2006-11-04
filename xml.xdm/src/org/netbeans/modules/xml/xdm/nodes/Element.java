@@ -847,10 +847,12 @@ public class Element extends NodeImpl implements Node, org.w3c.dom.Element {
         }
     }
 
-
-    public Element cloneNode(boolean deep) {
+    public Element cloneNode(boolean deep, boolean cloneNamespacePrefix) {
         Document root = isInTree() ? (Document) getOwnerDocument() : null;
-        Map<Integer,String> allNamespaces = root == null ? null : root.getNamespaceMap();
+        Map<Integer,String> allNamespaces = null;
+        if (root != null && cloneNamespacePrefix) {
+            allNamespaces = root.getNamespaceMap();
+        }
         Map<String,String> clonePrefixes = new HashMap<String,String>();
         Element clone = (Element) super.cloneNode(deep, allNamespaces, clonePrefixes);
         for (Map.Entry e : clonePrefixes.entrySet()) {

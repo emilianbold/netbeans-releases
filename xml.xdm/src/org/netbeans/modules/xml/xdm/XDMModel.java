@@ -40,6 +40,7 @@ import org.netbeans.modules.xml.xdm.diff.Add;
 import org.netbeans.modules.xml.xdm.diff.Change;
 import org.netbeans.modules.xml.xdm.diff.Delete;
 import org.netbeans.modules.xml.xdm.diff.DefaultElementIdentity;
+import org.netbeans.modules.xml.xdm.diff.MergeDiff;
 import org.netbeans.modules.xml.xdm.diff.NodeIdDiffFinder;
 import org.netbeans.modules.xml.xdm.diff.NodeInfo;
 import org.netbeans.modules.xml.xdm.diff.SyncPreparation;
@@ -53,6 +54,7 @@ import org.netbeans.modules.xml.xdm.nodes.Token;
 import org.netbeans.modules.xml.xdm.nodes.XMLSyntaxParser;
 import org.netbeans.modules.xml.xdm.visitor.FindVisitor;
 import org.netbeans.modules.xml.xdm.visitor.FlushVisitor;
+import org.netbeans.modules.xml.xdm.visitor.NamespaceRefactorVisitor;
 import org.netbeans.modules.xml.xdm.visitor.PathFromRootVisitor;
 import org.netbeans.modules.xml.xdm.visitor.Utils;
 import org.w3c.dom.NamedNodeMap;
@@ -184,10 +186,8 @@ public class XDMModel {
                     return;
                 }
                 List<Difference> diffs = preparation.getDifferences();
-                XDMTreeDiff.mergeDiff(this, diffs);
+                mergeDiff(diffs);
                 diffs = DiffFinder.filterWhitespace(diffs);
-                // exception in event firing should not put tree out-of-sync with buffer
-                setStatus(Status.STABLE);
                 fireDiffEvents(diffs);
                 if (getCurrentDocument() != oldDoc) {
                     fireUndoableEditEvent(getCurrentDocument(), oldDoc);
@@ -215,6 +215,13 @@ public class XDMModel {
             }
             preparation = null;
         }
+    }
+    
+    public void mergeDiff(List<Difference> diffs) {
+        setStatus(Status.PARSING);
+        new MergeDiff().merge(this, diffs);
+        // exception in event firing should not put tree out-of-sync with buffer
+        setStatus(Status.STABLE);
     }
     
     private void fireDiffEvents(final List<Difference> deList) {
@@ -405,7 +412,7 @@ public class XDMModel {
                 String namespace = newNode.lookupNamespaceURI(prefix);
                 if (namespace == null) continue;
                 prefix = NodeImpl.lookupPrefix(namespace, parentAndAncestors);
-                if (prefix != null) {
+                  if (prefix != null) {
                     attr.setPrefix(prefix);
                 }
             }
@@ -438,10 +445,9 @@ public class XDMModel {
                 newNode.removeAttributeNode(attr);
                 root.appendAttribute(attr);
             } else if (existingNS == null && existingPrefix != null) { // case 2.
-                // this assume newly create node has namespaces only at top level
-                //newNode.removeAttributeNode(attr);
+                new NamespaceRefactorVisitor().refactor(newNode, namespace, existingPrefix);
             } else if (existingNS != null && existingNS.equals(namespace)) { // case 3
-                newNode.removeAttributeNode(attr);
+                new NamespaceRefactorVisitor().refactor(newNode, namespace, existingPrefix);
             } else {
                 // case 4 do nothing, i.e., leave prefix as overriding with different namespace
             }

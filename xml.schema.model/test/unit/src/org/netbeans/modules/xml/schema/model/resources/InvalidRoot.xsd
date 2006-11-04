@@ -2,10 +2,10 @@
 
 <xsd:element name="new"></xsd:element>
 
-<schema xmlns="http://www.w3.org/2001/XMLSchema"
+<xsd:schema xmlns="http://www.w3.org/2001/XMLSchema"
         xmlns:po="http://www.example.com/PO1"
         targetNamespace="http://www.example.com/PO1"
         elementFormDefault="unqualified"
         attributeFormDefault="unqualified">
 
-</schema>
+</xsd:schema>

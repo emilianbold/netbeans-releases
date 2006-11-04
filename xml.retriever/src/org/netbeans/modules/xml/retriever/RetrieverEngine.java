@@ -426,6 +426,16 @@ public class RetrieverEngine implements Runnable{
     private void createCatalogIfRequired(RetrieveEntry rent) {
         URI curURI = null;
         String addr = rent.getEffectiveAddress();
+        try {
+            //check if this is the first entry and the connection was redirected. If yes, then
+            //store the URI as the original URI instead of the redirected URI
+            String tempStr = URLResourceRetriever.resolveURL(rent.getBaseAddress(), rent.getCurrentAddress());
+            if(! (new URI(tempStr).equals(new URI(addr))) ){
+                addr = tempStr;
+            }
+        } catch (URISyntaxException ex) {
+            //ignore
+        }
         if(isSave2SingleFolder()){
             if( !rent.getCurrentAddress().equals(rent.getEffectiveAddress()) )
                 addr = rent.getCurrentAddress();

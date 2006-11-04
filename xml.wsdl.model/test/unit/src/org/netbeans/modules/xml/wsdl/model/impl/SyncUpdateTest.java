@@ -1,15 +1,20 @@
 package org.netbeans.modules.xml.wsdl.model.impl;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.text.Document;
+import javax.swing.undo.UndoManager;
 import junit.framework.TestCase;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.wsdl.model.Binding;
+import org.netbeans.modules.xml.wsdl.model.BindingOperation;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
+import org.netbeans.modules.xml.wsdl.model.Documentation;
 import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.NamespaceLocation;
 import org.netbeans.modules.xml.wsdl.model.NotificationOperation;
@@ -26,11 +31,14 @@ import org.netbeans.modules.xml.wsdl.model.TestCatalogModel;
 import org.netbeans.modules.xml.wsdl.model.Types;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.Util;
+import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.extensions.xsd.WSDLSchema;
+import org.netbeans.modules.xml.wsdl.model.spi.GenericExtensibilityElement;
 import org.netbeans.modules.xml.wsdl.model.visitor.FindReferencedVisitor;
 import org.netbeans.modules.xml.xam.ComponentEvent;
 import org.netbeans.modules.xml.xam.ComponentListener;
 import org.netbeans.modules.xml.xam.Model;
+import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.w3c.dom.Element;
 
@@ -40,9 +48,52 @@ import org.w3c.dom.Element;
  */
 public class SyncUpdateTest extends TestCase {
     private TestComponentListener listener;
+    private TestPropertyListener plistener;
     
     public SyncUpdateTest(String testName) {
         super(testName);
+    }
+    
+    static class TestPropertyListener implements PropertyChangeListener {
+        ArrayList<PropertyChangeEvent> events  = new ArrayList<PropertyChangeEvent>();
+        public void propertyChange(PropertyChangeEvent evt) {
+            events.add(evt);
+        }
+        
+        public void assertNoEvents(String propertyName) {
+            for (PropertyChangeEvent e : events) {
+                if (propertyName.equals(e.getPropertyName())) {
+                    assertTrue("Expect no property change events "+propertyName, false);
+                }
+            }
+            return; //matched
+        }
+        
+        public void assertEvent(String propertyName, Object source) {
+            for (PropertyChangeEvent e : events) {
+                if (propertyName.equals(e.getPropertyName()) && e.getSource() == source) {
+                    return; //matched
+                }
+            }
+            assertTrue("Expect property change event "+propertyName, false);
+        }
+        
+        public void assertEvent(String propertyName, Object old, Object now) {
+            for (PropertyChangeEvent e : events) {
+                if (propertyName.equals(e.getPropertyName())) {
+                    if (old != null && ! old.equals(e.getOldValue()) ||
+                        old == null && e.getOldValue() != null) {
+                        continue;
+                    }
+                    if (now != null && ! now.equals(e.getNewValue()) ||
+                        now == null && e.getNewValue() != null) {
+                        continue;
+                    }
+                    return; //matched
+                }
+            }
+            assertTrue("Expect property change event on "+propertyName+" with "+old+" and "+now, false);
+        }
     }
     
     public static class TestComponentListener implements ComponentListener {
@@ -101,9 +152,15 @@ public class SyncUpdateTest extends TestCase {
     
     private WSDLModel setup(NamespaceLocation wsdl) throws Exception {
         WSDLModel m = TestCatalogModel.getDefault().getWSDLModel(wsdl);
-        listener = new TestComponentListener();
-        m.addComponentListener(listener);
+        setup(m);
         return m;
+    }
+    
+    private void setup(WSDLModel m) {
+        listener = new TestComponentListener();
+        plistener = new TestPropertyListener();
+        m.addComponentListener(listener);
+        m.addPropertyChangeListener(plistener);
     }
     
     protected void tearDown() throws Exception {
@@ -286,5 +343,56 @@ public class SyncUpdateTest extends TestCase {
             // good
             assertEquals(Model.State.NOT_WELL_FORMED, model.getState());
         }
+     }
+     
+     // assert generic EE added/removed/changed events
+     public void testEventsOnGenericExtensibilityElement() throws Exception {
+        WSDLModel model = Util.loadWSDLModel("resources/TestEventsOnEE.wsdl");
+        setup(model);
+        Definitions d = model.getDefinitions();
+        Binding binding = d.getBindings().iterator().next();
+        BindingOperation bindop = binding.getBindingOperations().iterator().next();
+        Service service = d.getServices().iterator().next();
+        GenericExtensibilityElement ee0 = (GenericExtensibilityElement) binding.getExtensibilityElements().get(0);
+        GenericExtensibilityElement ee3 = (GenericExtensibilityElement) service.getExtensibilityElements().get(0);
+
+        Util.setDocumentContentTo(model, "resources/TestEventsOnEE_after.wsdl");
+        model.sync();
+
+        listener.assertChangeEvent(ee0);
+        listener.assertChildAddedEvent(bindop);
+        listener.assertChildRemovedEvent(bindop);
+        plistener.assertEvent(WSDLComponent.EXTENSIBILITY_ELEMENT_PROPERTY, bindop);
+        listener.assertChangeEvent(ee3);
+        plistener.assertEvent(DocumentComponent.TEXT_CONTENT_PROPERTY, ee3);
+     }
+     
+     public void testDocumentationChangeEvents() throws Exception {
+        WSDLModel model = Util.loadWSDLModel("resources/TestDocumentation.wsdl");
+        setup(model);
+        Documentation doc = Util.find(Documentation.class, model, "/definitions/portType/operation/documentation");
+
+        Util.setDocumentContentTo(model, "resources/TestDocumentation_after.wsdl");
+        model.sync();
+
+        listener.assertChangeEvent(doc);
+        plistener.assertEvent(DocumentComponent.TEXT_CONTENT_PROPERTY, doc);
+     }
+
+     
+     public void testUndoXsdImportChange() throws Exception {
+         WSDLModel model = Util.loadWSDLModel("resources/HotelReservationService2.wsdl");
+         UndoManager um = new UndoManager();
+         model.addUndoableEditListener(um);
+         WSDLSchema schema = model.getDefinitions().getTypes().getExtensibilityElements(WSDLSchema.class).get(0);
+         org.netbeans.modules.xml.schema.model.Import xsdImport = 
+             schema.getSchemaModel().getSchema().getImports().iterator().next();
+        
+        model.startTransaction();
+        xsdImport.setSchemaLocation("OTA_TravelItinerary.xsd");
+        model.endTransaction();
+        
+        um.undo();
+        assertEquals("OTA_TravelItinerary2.xsd", xsdImport.getSchemaLocation());
      }
 }

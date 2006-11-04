@@ -211,8 +211,8 @@ public abstract class AbstractDocumentModel<T extends DocumentComponent<T>>
                     continue;
                 }
                 
-                QName q = new QName(n.getNamespaceURI(), n.getLocalName());
-                if (qnames.contains(q) || enames.contains(q.getLocalPart())) {
+                QName q = new QName(getAccess().lookupNamespaceURI(n, pathToRoot), n.getLocalName());
+                if (qnames.contains(q)) {
                     current = n;
                     if (i+1 < pathToRoot.size()) {
                         parent = (Element) pathToRoot.get(i+1);
@@ -243,14 +243,22 @@ public abstract class AbstractDocumentModel<T extends DocumentComponent<T>>
             current = pathToRoot.get(i-1);
         }
         
-        List<Element> rootToParent = Collections.emptyList();
+        List<Element> rootToParent = new ArrayList<Element>();
         if (parent != null) {
-            rootToParent = new ArrayList<Element>(pathToRoot.size()-pathToRoot.indexOf(parent));
             for (int i = pathToRoot.indexOf(parent); i<pathToRoot.size(); i++) {
                 rootToParent.add(0, (Element)pathToRoot.get(i));
             }
         }
-        return new ChangeInfo(parent, current, changedIsDomainElement, rootToParent);
+        
+        List<Node> otherNodes = new ArrayList<Node>();
+        if (parent != null) {
+            int iCurrent = pathToRoot.indexOf(current);
+            for (int i=0; i < iCurrent; i++) {
+                otherNodes.add(0, pathToRoot.get(i));
+            }
+        }
+        
+        return new ChangeInfo(parent, current, changedIsDomainElement, rootToParent, otherNodes);
     }
     
     public SyncUnit prepareSyncUnit(ChangeInfo change, SyncUnit order) {

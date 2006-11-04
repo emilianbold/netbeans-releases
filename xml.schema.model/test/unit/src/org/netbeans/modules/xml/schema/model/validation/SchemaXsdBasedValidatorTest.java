@@ -67,7 +67,6 @@ public class SchemaXsdBasedValidatorTest extends TestCase {
         assertEquals("from imported model", importedModel, results0.get(1).getModel());
         assertEquals(expected2, results0.get(1).getDescription()); 
         
-        // FIXME how do i use resolver for jar content file
         Validation validation2 = new Validation();
         validation2.validate(model, Validation.ValidationType.COMPLETE);
         List<ResultItem> results = validation2.getValidationResult();

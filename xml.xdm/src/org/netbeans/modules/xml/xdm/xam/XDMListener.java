@@ -149,7 +149,7 @@ public class XDMListener implements PropertyChangeListener {
             if (! (eventNode instanceof Element)) {
                 return;
             }
-            assert eventNode.getId() == 1;
+            //assert eventNode.getId() == 1;
             if (! isAdded) {
                 return;
             }

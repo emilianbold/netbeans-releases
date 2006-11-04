@@ -7,12 +7,13 @@
 
 package org.netbeans.modules.xml.schema.model.impl;
 
-import java.io.File;
 import java.io.IOException;
+import javax.xml.XMLConstants;
 import junit.framework.*;
 import java.util.Collection;
 import org.netbeans.modules.xml.schema.model.Annotation;
 import org.netbeans.modules.xml.schema.model.AttributeGroupReference;
+import org.netbeans.modules.xml.schema.model.Documentation;
 import org.netbeans.modules.xml.schema.model.GlobalAttributeGroup;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.GlobalComplexType;
@@ -207,5 +208,36 @@ public class SchemaComponentImplTest extends TestCase {
         //Util.dumpToFile(mod.getBaseDocument(), new File("c:/temp/testout.xml"));
         assertEquals(schema.getPeer().getChildNodes().item(1), ge.getPeer());
         assertEquals(3, schema.getPeer().getChildNodes().getLength());
+    }
+    
+    public void testNamespaceConsolidation() throws Exception {
+        SchemaModel model = Util.loadSchemaModel("resources/Empty.xsd");
+        SchemaModel model2 = Util.loadSchemaModel("resources/Empty_loanApp.xsd");
+        
+        SchemaComponentFactory factory = model.getFactory();
+        GlobalElement ge = factory.createGlobalElement();
+        assertEquals(XMLConstants.W3C_XML_SCHEMA_NS_URI, ge.getPeer().getAttribute(XMLConstants.XMLNS_ATTRIBUTE));
+        Annotation ann = factory.createAnnotation();
+        ge.setAnnotation(ann);
+        assertNull(ann.getPeer().getAttribute(XMLConstants.XMLNS_ATTRIBUTE));
+        Documentation doc = factory.createDocumentation();
+        ann.addDocumentation(doc);
+        assertNull(doc.getPeer().getAttribute(XMLConstants.XMLNS_ATTRIBUTE));
+        Element copy = (Element) ge.getPeer().cloneNode(true);
+        
+        model.startTransaction();
+        model.getSchema().addElement(ge);
+        model.endTransaction();
+        
+        assertNull(ge.getPeer().getAttribute(XMLConstants.XMLNS_ATTRIBUTE));
+        assertEquals("element", ((Element)ge.getPeer()).getTagName());
+        
+        GlobalElement geCopy = (GlobalElement) model2.getFactory().create(copy, model2.getSchema());
+        model2.startTransaction();
+        model2.getSchema().addElement(geCopy);
+        model2.endTransaction();
+        
+        assertNull(ge.getPeer().getAttribute(XMLConstants.XMLNS_ATTRIBUTE));
+        assertEquals("xs:element", ((Element)geCopy.getPeer()).getTagName());
     }
 }

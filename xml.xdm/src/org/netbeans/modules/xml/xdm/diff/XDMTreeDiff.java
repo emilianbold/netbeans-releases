@@ -57,12 +57,8 @@ public class XDMTreeDiff {
     
     public List<Difference> performDiffAndMutate(XDMModel model, Document doc2) {
         List<Difference> deList = performDiff(model.getDocument(), doc2);
-        mergeDiff(model, deList);
+        model.mergeDiff(deList);
         return deList;
-    }
-    
-    public static void mergeDiff(XDMModel model, List<Difference> deList) {
-        new MergeDiff().merge(model, deList);
     }
     
     public static void printDocument(Node node) {

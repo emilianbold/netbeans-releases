@@ -66,7 +66,7 @@ public abstract class SchemaComponentImpl
     public abstract void accept(SchemaVisitor v);
     
     protected static Element createNewComponent(SchemaElements type, SchemaModelImpl model) {
-        return model.getDocument().createElement(type.getName());
+        return model.getDocument().createElementNS(XMLConstants.W3C_XML_SCHEMA_NS_URI, type.getName());
     }
     
     protected void populateChildren(List<SchemaComponent> children) {

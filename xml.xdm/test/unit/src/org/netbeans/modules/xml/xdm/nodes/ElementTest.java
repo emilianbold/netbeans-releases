@@ -7,7 +7,10 @@
 
 package org.netbeans.modules.xml.xdm.nodes;
 
+import java.io.File;
+import javax.xml.XMLConstants;
 import junit.framework.*;
+import org.netbeans.modules.xml.xam.TestComponent;
 import org.netbeans.modules.xml.xdm.Util;
 import org.netbeans.modules.xml.xdm.XDMModel;
 import org.w3c.dom.NamedNodeMap;
@@ -279,11 +282,42 @@ public class ElementTest extends TestCase {
         assertNull(pasted.getAttribute("xmlns"));
     }
     
-    public void testInsertWithLimitedConsolidation() throws Exception {
+    public void testInsertWithFullConsolidation() throws Exception {
         xmlModel = Util.loadXDMModel("nodes/cloned-node.xml");
         Element root = (Element) xmlModel.getDocument().getDocumentElement();
         Element cloned = Util.getChildElementByTag(root, "a1:A");
         Element clone = (Element)cloned.cloneNode(true);
+        assertEquals("namespaceB", clone.getAttribute("xmlns:b1"));
+        assertEquals("namespaceB", clone.getAttribute("xmlns"));
+        
+        javax.swing.text.Document doc = Util.getResourceAsDocument("nodes/clone-receiver3.xml");
+        XDMModel dest = Util.loadXDMModel(doc);
+        Element receiverRoot = (Element) dest.getDocument().getDocumentElement();
+        Element middle = Util.getChildElementByTag(receiverRoot, "m:middle");
+        middle = (Element) dest.add(middle, clone, 0).get(0);
+
+        dest.flush();
+        
+        receiverRoot = (Element) dest.getDocument().getDocumentElement();
+        assertTrue(middle == Util.getChildElementByTag(receiverRoot, "m:middle"));
+        Element pasted = Util.getChildElementByTag(middle, "a2:A");
+        assertNull(receiverRoot.lookupNamespaceURI(""));
+        assertNull(receiverRoot.lookupNamespaceURI("a1"));
+        assertNull(pasted.getAttribute("xmlns:a1"));
+        assertNull(pasted.getAttribute("xmlns:b1"));
+        assertNull(pasted.getAttribute("xmlns"));
+        Element pastedChild = Util.getChildElementByTag(pasted, "b1:B");
+        assertEquals("value1", pastedChild.getAttributeNS("namespaceB","attrB"));
+        assertNull(pastedChild.getAttribute("xmlns:b1"));
+    }
+    
+    public void testInsertWithLimitedConsolidationDueToPrefixedAttribute() throws Exception {
+        xmlModel = Util.loadXDMModel("nodes/cloned-node.xml");
+        Element root = (Element) xmlModel.getDocument().getDocumentElement();
+        Element cloned = Util.getChildElementByTag(root, "a1:A");
+        Element clone = (Element)cloned.cloneNode(true);
+        assertEquals("namespaceB", clone.getAttribute("xmlns:b1"));
+        assertEquals("namespaceB", clone.getAttribute("xmlns"));
         
         javax.swing.text.Document doc = Util.getResourceAsDocument("nodes/clone-receiver2.xml");
         XDMModel dest = Util.loadXDMModel(doc);
@@ -291,20 +325,23 @@ public class ElementTest extends TestCase {
         Element middle = Util.getChildElementByTag(receiverRoot, "m:middle");
         middle = (Element) dest.add(middle, clone, 0).get(0);
 
-        //dest.flush();
+        dest.flush();
         //Util.dumpToFile(doc, new File("c:\\temp\\test1.xml"));
         
         receiverRoot = (Element) dest.getDocument().getDocumentElement();
         assertTrue(middle == Util.getChildElementByTag(receiverRoot, "m:middle"));
-        Element pasted = Util.getChildElementByTag(middle, "a1:A");
+        Element pasted = Util.getChildElementByTag(middle, "a2:A");
         assertNull(receiverRoot.lookupNamespaceURI(""));
         assertNull(receiverRoot.lookupNamespaceURI("a1"));
-        assertEquals("namespaceA", pasted.getAttribute("xmlns:a1"));
+        assertNull(pasted.getAttribute("xmlns:a1"));
+        assertNull(pasted.getAttribute("xmlns:b1"));
         assertNull(pasted.getAttribute("xmlns"));
         Element pastedChild = Util.getChildElementByTag(pasted, "B");
         assertEquals("value1", pastedChild.getAttributeNS("namespaceB","attrB"));
+        assertNull(pasted.getAttribute("xmlns:b1"));
+        assertEquals("namespaceB", pastedChild.getAttribute("xmlns:b1"));
     }
-    
+
     public void testElementGetAttributes() throws Exception {
         xmlModel = Util.loadXDMModel("nodes/elementAttributes.xml");
         /*
@@ -328,6 +365,21 @@ public class ElementTest extends TestCase {
         assertEquals("myAttribute", "8", attrVal2);
         String attrVal3 = e.getAttributeNS("http://org.company/schemas/test2.xsd", "myAttribute");
         assertEquals("otherNs:myAttribute", "9", attrVal3);
+    }
+    
+    public void testConsolidateNamespace() throws Exception {
+        javax.swing.text.Document doc = Util.getResourceAsDocument("nodes/test2.xml");
+        XDMModel model = Util.loadXDMModel(doc);
+        Element root = (Element) model.getDocument().getDocumentElement();
+        Element a1 = (Element) model.getDocument().createElementNS(TestComponent.NS_URI, "a1");
+        assertEquals(TestComponent.NS_URI, a1.getAttribute(XMLConstants.XMLNS_ATTRIBUTE));
+
+        Element a2 = (Element) model.getDocument().createElementNS(TestComponent.NS_URI, "a2");
+        a1.appendChild(a2);
+        assertNull(a2.getAttribute(XMLConstants.XMLNS_ATTRIBUTE));
+        
+        model.append(root, a1);
+        assertNull(a1.getAttribute(XMLConstants.XMLNS_ATTRIBUTE));
     }
     
     private XDMModel xmlModel;

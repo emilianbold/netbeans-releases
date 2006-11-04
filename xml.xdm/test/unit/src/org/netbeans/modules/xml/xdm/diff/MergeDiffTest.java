@@ -7,6 +7,7 @@
 
 package org.netbeans.modules.xml.xdm.diff;
 
+import java.io.File;
 import java.util.Iterator;
 import java.util.List;
 import junit.framework.*;
@@ -451,8 +452,7 @@ public class MergeDiffTest extends TestCase {
     }
     
     public static void merge(XDMModel model, List<Difference> diffs) {
-        XDMTreeDiff treeDiff = new XDMTreeDiff(Util.getDefaultElementIdentity());
-        treeDiff.mergeDiff(model, diffs);
+        model.mergeDiff(diffs);
         model.flush();
     }
     

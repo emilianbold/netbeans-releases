@@ -76,6 +76,14 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
                 <friend>org.netbeans.modules.xml.wsdlextui</friend>
                 <friend>org.netbeans.modules.xml.wsdlui</friend>
                 <friend>com.sun.jbi.ui.devtool.wsdl.file</friend>
+                <friend>com.sun.jbi.ui.devtool.wsdl.jms</friend>
+                <friend>com.sun.jbi.ui.devtool.wsdl.mq</friend>
+                <friend>com.sun.jbi.ui.devtool.wsdl.sag</friend>
+                <friend>com.sun.jbi.ui.devtool.wsdl.ftp</friend>
+                <friend>com.sun.jbi.ui.devtool.wsdl.sap</friend>
+                <friend>com.sun.jbi.ui.devtool.wsdl.jdbc</friend>
+                <friend>com.sun.jbi.ui.devtool.wsdl.msmq</friend>
+                <friend>com.sun.jbi.ui.devtool.wsdl.hl7</friend>
                 <package>org.netbeans.modules.xml.wsdl.model</package>
                 <package>org.netbeans.modules.xml.wsdl.model.extensions.soap</package>
                 <package>org.netbeans.modules.xml.wsdl.model.extensions.xsd</package>

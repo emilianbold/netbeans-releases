@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 public class SyncUnit {
     private final DocumentComponent target;
@@ -57,10 +58,12 @@ public class SyncUnit {
             } else {
                 addToRemovedAttributes(attr);
             }
-        } else if (change.getChangedNode() != null &&
-                ! (change.getChangedNode() instanceof Element)) {
-            // should be text, cdata, comment...
-            setHasTextContentChanges(true);
+        } else {
+            Node actualChanged = change.getActualChangedNode();
+            if (! (actualChanged instanceof Attribute || actualChanged instanceof Element)) {
+                // should be text, cdata, comment...
+                setHasTextContentChanges(true);
+            }
         }
     }
     

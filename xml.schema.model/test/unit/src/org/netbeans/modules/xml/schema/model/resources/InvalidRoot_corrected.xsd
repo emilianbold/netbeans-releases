@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<schema xmlns="http://www.w3.org/2001/XMLSchema"
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
         xmlns:po="http://www.example.com/PO1"
         targetNamespace="http://www.example.com/PO1"
         elementFormDefault="unqualified"
@@ -8,4 +8,4 @@
 
 <xsd:element name="new"></xsd:element>
 
-</schema>
+</xsd:schema>

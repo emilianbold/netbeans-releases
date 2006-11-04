@@ -334,7 +334,7 @@ public class MergeDiff {
     }
     
     private NodeImpl createCopy(final Node currNode) {
-        NodeImpl newNode = (NodeImpl) ((NodeImpl)currNode).copy();
+        NodeImpl newNode = (NodeImpl) ((NodeImpl)currNode).cloneNode(true, false);
         return newNode;
     }
     

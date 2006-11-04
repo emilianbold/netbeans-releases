@@ -38,6 +38,7 @@
     </xs:element>
     
     <xs:simpleType name="LoanType">
+        <!-- comment -->
         <xs:restriction base="xs:string">
             <xs:enumeration value="new"/>
             <xs:enumeration value="used dealer"/>

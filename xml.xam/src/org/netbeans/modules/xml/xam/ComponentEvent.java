@@ -74,4 +74,8 @@ public class ComponentEvent extends EventObject {
     public EventType getEventType() {
         return event;
     }
+    
+    public String toString() {
+        return event + ":" + source;
+    }
 }

@@ -2,16 +2,16 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- *
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -29,8 +29,10 @@ import java.util.logging.Logger;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
+import org.netbeans.modules.xml.wsdl.model.spi.GenericExtensibilityElement;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
+import org.netbeans.modules.xml.wsdl.model.Documentation;
 import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 import org.netbeans.modules.xml.wsdl.model.Import;
 import org.netbeans.modules.xml.wsdl.model.ReferenceableWSDLComponent;
@@ -39,7 +41,6 @@ import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponentFactory;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.xsd.WSDLSchema;
-import org.netbeans.modules.xml.wsdl.model.extensions.xsd.impl.WSDLSchemaImpl;
 import org.netbeans.modules.xml.wsdl.model.visitor.FindReferencedVisitor;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
@@ -233,11 +234,33 @@ public class WSDLModelImpl extends WSDLModel {
         if (parentComponent == null) {
             return change;
         }
-        if (! (parentComponent.getModel() instanceof WSDLModel)) {
+        if (! (parentComponent.getModel() instanceof WSDLModel)) 
+        {
             getElementRegistry().addEmbeddedModelQNames((AbstractDocumentModel)parentComponent.getModel());
             change = super.prepareChangeInfo(pathToRoot);
+        } else if (isDomainElement(parentComponent.getPeer()) && 
+                ! change.isDomainElement() && change.getChangedElement() != null) 
+        {
+            if (change.getOtherNonDomainElementNodes() == null ||
+                change.getOtherNonDomainElementNodes().isEmpty()) 
+            {
+                // case add or remove generic extensibility element
+                change.setDomainElement(true);
+                change.setParentComponent(null);
+            } else if (! (parentComponent instanceof Documentation)) {
+                List<Element> rootToChanged = new ArrayList<Element>(change.getRootToParentPath());
+                rootToChanged.add(change.getChangedElement());
+                DocumentComponent changedComponent = findComponent(rootToChanged);
+                if (changedComponent != null && 
+                    changedComponent.getClass().isAssignableFrom(GenericExtensibilityElement.class)) {
+                    // case generic extensibility element changed
+                    change.markNonDomainChildAsChanged();
+                    change.setParentComponent(null);
+                }
+            }
+        } else {
+            change.setParentComponent(parentComponent);
         }
-        change.setParentComponent(parentComponent);
         return change;
     }
     

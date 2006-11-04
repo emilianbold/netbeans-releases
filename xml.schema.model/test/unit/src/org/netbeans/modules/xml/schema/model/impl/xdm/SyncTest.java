@@ -41,12 +41,23 @@ public class SyncTest extends TestCase {
     public static final String TEST_XSD     = "resources/PurchaseOrder.xsd";
     public static final String TEST_XSD_OP     = "resources/PurchaseOrderSyncTest.xsd";
     
+    private SchemaModel model;
+    private TestPropertyListener plistener;
+    private TestComponentListener clistener;
+    
     public SyncTest(String testName) {
         super(testName);
     }
+
     @Override
     protected void setUp() throws Exception {
-	
+    }
+ 
+    private void setup(Model model) throws Exception {
+        plistener = new TestPropertyListener();
+        model.addPropertyChangeListener(plistener);
+        clistener = new TestComponentListener();
+        model.addComponentListener(clistener);
     }
     
     @Override
@@ -60,18 +71,27 @@ public class SyncTest extends TestCase {
             events.add(evt);
         }
         
-        public void assertNoEvents(String propertyName) {
+        public void assertNoEvents(String propertyName, Object source) {
             for (PropertyChangeEvent e : events) {
-                if (propertyName.equals(e.getPropertyName())) {
+                if (propertyName.equals(e.getPropertyName()) && e.getSource() == source) {
                     assertTrue("Expect no property change events "+propertyName, false);
                 }
             }
-            return; //matched
         }
         
-        public void assertEvent(String propertyName) {
+        public void assertEventCount(String propertyName, int expectedCount) {
+            int found = 0;
             for (PropertyChangeEvent e : events) {
                 if (propertyName.equals(e.getPropertyName())) {
+                    found++;
+                }
+            }
+            assertEquals("Event count mismatched", expectedCount, found);
+        }
+        
+        public void assertEvent(String propertyName, Object source) {
+            for (PropertyChangeEvent e : events) {
+                if (propertyName.equals(e.getPropertyName()) && e.getSource() == source) {
                     return; //matched
                 }
             }
@@ -122,6 +142,16 @@ public class SyncTest extends TestCase {
                     ". Instead received: " + accu, false);
         }
 
+        public void assertEventCount(ComponentEvent.EventType type, int expectedCount) {
+            int found = 0;
+            for (ComponentEvent e : accu) {
+                if (type.equals(e.getEventType())) {
+                    found++;
+                }
+            }
+            assertEquals("Event count mismatched", expectedCount, found);
+        }
+        
         private void assertNoEvents(ComponentEvent.EventType type, DocumentComponent source) {
             for (ComponentEvent e : accu) {
                 if (e.getEventType().equals(type) &&
@@ -147,9 +177,8 @@ public class SyncTest extends TestCase {
         assertEquals("comment2",ge.getName());
         assertEquals(2,model.getSchema().getComplexTypes().size());
         ElementReference poComment = (ElementReference)
-            Util.findComponent(model.getSchema(), "/schema/complexType[@name='PurchaseOrderType']/sequence/element[3]");
-        // FIXME:  DiffFinder miss attribute change when parent got position change
-        // assertEquals(1,poComment.getMinOccurs().intValue());
+        Util.findComponent(model.getSchema(), "/schema/complexType[@name='PurchaseOrderType']/sequence/element[3]");
+        assertEquals(1,poComment.getMinOccurs().intValue());
         assertEquals(1,model.getSchema().getSimpleTypes().size());
     }
     
@@ -230,7 +259,10 @@ public class SyncTest extends TestCase {
         model.sync();
         
         clistener.assertEvent(ComponentEvent.EventType.VALUE_CHANGED, textDoc);
-        plistener.assertEvent(Documentation.CONTENT_PROPERTY);
+        plistener.assertEvent(Documentation.TEXT_CONTENT_PROPERTY, textDoc);
+        clistener.assertEvent(ComponentEvent.EventType.VALUE_CHANGED, htmlDoc);
+        plistener.assertEvent(Documentation.TEXT_CONTENT_PROPERTY, htmlDoc);
+
         assertEquals("text documentation sync", "A CHANGED loan application", textDoc.getContent());
         NodeList nl = htmlDoc.getDocumentationElement().getChildNodes();
         Element n = (Element) nl.item(1);
@@ -513,11 +545,14 @@ public class SyncTest extends TestCase {
     
     public void testSyncReformat() throws Exception {
         SchemaModel model = Util.loadSchemaModel("resources/reformat_before.xsd");
-        UndoManager um = new UndoManager();
-        model.addUndoableEditListener(um);
+        GlobalSimpleType type = Util.findGlobalSimpleType(model.getSchema(), "LoanType");
+        setup(model);
 
         Util.setDocumentContentTo(model, "resources/reformat_after.xsd");
         model.sync();
+     
+        plistener.assertEvent(DocumentComponent.TEXT_CONTENT_PROPERTY, type);
+        clistener.assertEvent(ComponentEvent.EventType.VALUE_CHANGED, type);
         assertNotNull(model.getSchema().getElements().iterator().next().getAnnotation());
     }
     
@@ -541,15 +576,12 @@ public class SyncTest extends TestCase {
     
     public void testSyncTwoSequences() throws Exception {
         SchemaModel model = Util.loadSchemaModel("resources/Empty.xsd");
-        TestPropertyListener plistener = new TestPropertyListener();
-        model.addPropertyChangeListener(plistener);
-        TestComponentListener clistener = new TestComponentListener();
-        model.addComponentListener(clistener);
+        setup(model);
         
         Util.setDocumentContentTo(model, "resources/TwoSequences.xsd");
         model.sync();
         
-        plistener.assertNoEvents(DocumentComponent.TEXT_CONTENT_PROPERTY);
+        plistener.assertNoEvents(DocumentComponent.TEXT_CONTENT_PROPERTY, model.getSchema());
         clistener.assertNoEvents(ComponentEvent.EventType.VALUE_CHANGED, model.getSchema());
         
         String xpath = "/xsd:schema/xsd:complexType";
@@ -564,7 +596,30 @@ public class SyncTest extends TestCase {
         assertEquals("billTo", ((LocalElement)seq.getContent().iterator().next()).getName());
     }
     
-    
-    private SchemaModel model;
-    
+    public void testComponentPeerTokensChange() throws Exception {
+        SchemaModel model = Util.loadSchemaModel("resources/Empty.xsd");
+        setup(model);
+
+        Util.setDocumentContentTo(model, "resources/Schema_tokenChanges.xsd");
+        model.sync();
+
+        clistener.assertEvent(ComponentEvent.EventType.VALUE_CHANGED, model.getSchema());
+        plistener.assertNoEvents(DocumentComponent.TEXT_CONTENT_PROPERTY, model.getSchema());
+    }
+
+    public void testAppInfoHavingChildrenElementsWithXsdLocalName() throws Exception {
+        SchemaModel model = Util.loadSchemaModel("resources/testAppInfo.xsd");
+        setup(model);
+        
+        AppInfo appInfo = model.getSchema().getAnnotation().getAppInfos().iterator().next();
+        assertEquals("expect no children, got "+ appInfo.getChildren(), 0, appInfo.getChildren().size());
+
+        Util.setDocumentContentTo(model, "resources/testAppInfo_after.xsd");
+        model.sync();
+
+        clistener.assertEvent(ComponentEvent.EventType.VALUE_CHANGED, appInfo);
+        plistener.assertNoEvents(DocumentComponent.TEXT_CONTENT_PROPERTY, appInfo);
+        clistener.assertNoEvents(ComponentEvent.EventType.CHILD_REMOVED, appInfo);
+        clistener.assertNoEvents(ComponentEvent.EventType.CHILD_ADDED, appInfo);
+    }
 }

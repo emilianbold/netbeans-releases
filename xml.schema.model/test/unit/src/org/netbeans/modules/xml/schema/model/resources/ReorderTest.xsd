@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<schema xmlns="http://www.w3.org/2001/XMLSchema"
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
         targetNamespace="http://www.example.com/OrgChart">
 
   <xsd:element name="OrgChart">
@@ -15,4 +15,4 @@
     </xsd:complexType>
   </xsd:element>
 
-</schema>
+</xsd:schema>

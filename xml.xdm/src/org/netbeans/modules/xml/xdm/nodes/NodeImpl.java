@@ -231,8 +231,15 @@ public abstract class NodeImpl implements Node, Cloneable {
      * @return the clone
      */
     public Node cloneNode(boolean deep) {
+        return cloneNode(deep, true);
+    }
+    
+    public Node cloneNode(boolean deep, boolean cloneNamespacePrefix) {
         Document root = isInTree() ? (Document) getOwnerDocument() : null;
-        Map<Integer,String> allNamespaces = root == null ? null : root.getNamespaceMap();
+        Map<Integer,String> allNamespaces = null;
+        if (cloneNamespacePrefix && root != null) {
+            allNamespaces = root.getNamespaceMap();
+        }
         Map<String,String> clonePrefixes = new HashMap<String,String>();
         return cloneNode(deep, allNamespaces, clonePrefixes);
     }

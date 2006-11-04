@@ -37,19 +37,36 @@ public class ChangeInfo {
         private boolean domainElement;
         private boolean added;
         private List<Element> rootToParent;
+        private List<Node> otherNonDomainElementNodes;
         
-        public ChangeInfo(Element parent, Node child, boolean isDomainElement, List<Element> rootToParent) {
-            this.parent = parent;  
-            changed = child; 
+        /**
+         * Creates change info.
+         *
+         * @parent parent node of changed
+         * @changed added/removed domain element or first non-domain change node.
+         * @isDomainElement is the changed node a domain element.
+         * @rootToParent path from root to parent node, inclusively.
+         * @otherNodes list of other nodes that are not domain elements beside the changed nodes.
+         */
+        public ChangeInfo(Element parent, Node changed, boolean isDomainElement, List<Element> rootToParent, List<Node> otherNodes) {
+            this.parent = parent;
+            this.changed = changed;
             domainElement = isDomainElement;
+            if (! domainElement) {
+                otherNonDomainElementNodes = otherNodes;
+            }
             this.rootToParent = rootToParent;
         }
         public Element getParent() { return parent; }
         public Node getChangedNode() { return changed; }
         public Element getChangedElement() {
-            return (Element) changed;
+            if (changed instanceof Element) {
+                return (Element) changed;
+            }
+            return null;
         }
         public boolean isDomainElement() { return domainElement; }
+        public void setDomainElement(boolean v) { domainElement = v; }
         public void setRootToParentPath(List<Element> path) {
             rootToParent = path;
         }
@@ -84,5 +101,27 @@ public class ChangeInfo {
         }
         public DocumentComponent getParentComponent() {
             return parentComponent;
+        }
+        public List<Node> getOtherNonDomainElementNodes() {
+            return otherNonDomainElementNodes;
+        }
+        public Node getActualChangedNode() {
+            if (isDomainElement()) {
+                return changed;
+            } else {
+                if (otherNonDomainElementNodes == null || otherNonDomainElementNodes.isEmpty()) {
+                    return changed;
+                } else {
+                    return otherNonDomainElementNodes.get(otherNonDomainElementNodes.size()-1);
+                }
+            }
+        }
+        public void markNonDomainChildAsChanged() {
+            assert otherNonDomainElementNodes != null && otherNonDomainElementNodes.size() > 0;
+            assert(changed instanceof Element);
+            rootToParent.add((Element) changed);
+            parent = (Element) changed;
+            changed = otherNonDomainElementNodes.remove(0);
+            parentComponent = null;
         }
 }

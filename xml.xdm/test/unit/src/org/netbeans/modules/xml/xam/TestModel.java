@@ -108,6 +108,7 @@ public class TestModel extends AbstractDocumentModel<TestComponent> implements D
         if (qnames == null) {
             qnames = new HashSet<QName>();
             qnames.add(TestComponent.A.QNAME);
+            qnames.add(TestComponent.Aa.QNAME);
             qnames.add(TestComponent.B.QNAME);
             qnames.add(TestComponent.C.QNAME);
             qnames.add(TestComponent.D.QNAME);

@@ -52,6 +52,8 @@ public class SOAPComponentValidator
     
     private static final ResourceBundle mMessages =
             ResourceBundle.getBundle("org.netbeans.modules.xml.wsdl.model.extensions.soap.validation.resources.Bundle");
+    private static final String HTTP_DEFAULT_PORT_TOKEN = "${HttpDefaultPort}";
+    private static final String HTTPS_DEFAULT_PORT_TOKEN = "${HttpsDefaultPort}";
     
     private Validation mValidation;
     private ValidationType mValidationType;
@@ -355,6 +357,54 @@ public class SOAPComponentValidator
             return;
         }
         
+        ///////////////////////////////////////////////////////
+        // Check for valid tokens for default HTTP and HTTPS port
+        // Introduced to support clustering
+        ////////////////////////////////////////////////////////
+        
+        if (location.indexOf(HTTP_DEFAULT_PORT_TOKEN, 6) > 0) {
+            int colonIndex = -1;
+            int contextStartIndex = -1;
+            
+            if (location.startsWith("http")) {
+                // look for ${HttpDefaultPort} token 
+                colonIndex = location.indexOf(":", 6);
+                contextStartIndex = location.indexOf("/", 7);
+                
+                if (HTTP_DEFAULT_PORT_TOKEN.equals(location.substring(colonIndex + 1, contextStartIndex))) {
+                    return;
+                } else {
+                    results.add(
+                            new Validator.ResultItem(this,
+                            Validator.ResultType.ERROR,
+                            address,
+                            mMessages.getString("SOAPAddressValidator.Unsupported_location_attribute")));
+                    return;
+                }
+            }
+        }
+        
+        if (location.indexOf(HTTPS_DEFAULT_PORT_TOKEN, 7) > 0) {
+            int colonIndex = -1;
+            int contextStartIndex = -1;
+            
+            if (location.startsWith("https")) {
+                // look for ${HttpDefaultPort} token 
+                colonIndex = location.indexOf(":", 7);
+                contextStartIndex = location.indexOf("/", 8);
+                
+                if (HTTPS_DEFAULT_PORT_TOKEN.equals(location.substring(colonIndex + 1, contextStartIndex))) {
+                    return;
+                } else {
+                    results.add(
+                            new Validator.ResultItem(this,
+                            Validator.ResultType.ERROR,
+                            address,
+                            mMessages.getString("SOAPAddressValidator.Unsupported_location_attribute")));
+                    return;
+                }
+            }
+        }
         
         try {
             URI uri = new URI(location);

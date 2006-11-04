@@ -145,7 +145,21 @@ public abstract class DocumentModelAccess extends ModelAccess {
 
     public abstract Node getNewEventParentNode(PropertyChangeEvent evt);
 
-
+    public String lookupNamespaceURI(Node node, List<Node> pathToRoot) {
+        String prefix = node.getPrefix();
+        if (prefix == null) prefix = ""; //NOI18N
+        String namespace = node.lookupNamespaceURI(prefix);
+        if (namespace == null) {
+            for (Node n : pathToRoot) {
+                namespace = n.lookupNamespaceURI(prefix);
+                if (namespace != null) {
+                    break;
+                }
+            }
+        }
+        return namespace;
+    }
+    
     private long dirtyTimeMillis = 0;
     public long dirtyIntervalMillis() {
         if (dirtyTimeMillis == 0) return 0;
