@@ -84,7 +84,7 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
         if (newSchema != null) {
             schema = newSchema;
         } else {
-            throw new IllegalArgumentException("Invalid DOM element "+root.getLocalName()); //NOI18N
+            return null;
         }
         return getSchema();
     }

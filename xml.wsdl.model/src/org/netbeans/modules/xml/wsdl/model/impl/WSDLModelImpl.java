@@ -72,7 +72,7 @@ public class WSDLModelImpl extends WSDLModel {
             newDefinitions = new DefinitionsImpl(this, root);
             setDefinitions(newDefinitions);
         } else {
-            throw new IllegalArgumentException("Invalid DOM element "+q);
+            return null;
         }
         
         return getDefinitions();
