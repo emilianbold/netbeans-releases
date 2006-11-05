@@ -61,8 +61,9 @@ public abstract class GraphPinScene<N, E, P> extends ObjectScene {
 
     /**
      * Adds a node.
-     * @param node the node to be added; the node must not be null, must not be already in the model and must be unique in the model
+     * @param node the node to be added; the node must not be null, must not be already in the model, must be unique in the model
      *           (means: there is no other node, edge or pin in the model has is equal to this node)
+     *           and must not be a Widget
      * @return the widget that is created by attachNodeWidget; null if the node is non-visual
      */
     public final Widget addNode (N node) {
@@ -100,8 +101,9 @@ public abstract class GraphPinScene<N, E, P> extends ObjectScene {
 
     /**
      * Adds an edge.
-     * @param edge the edge to be added; the edge must not be null, must not be already in the model and must be unique in the model
+     * @param edge the edge to be added; the edge must not be null, must not be already in the model, must be unique in the model
      *           (means: there is no other node, edge or pin in the model has is equal to this edge)
+     *           and must not be a Widget
      * @return the widget that is created by attachEdgeWidget; null if the edge is non-visual
      */
     public final Widget addEdge (E edge) {
@@ -140,8 +142,9 @@ public abstract class GraphPinScene<N, E, P> extends ObjectScene {
     /**
      * Adds a pin and assigns it to a specified node.
      * @param node the node where the pin is assigned to
-     * @param pin the pin to be added; the pin must not be null, must not be already in the model and must be unique in the model
+     * @param pin the pin to be added; the pin must not be null, must not be already in the model, must be unique in the model
      *           (means: there is no other node, edge or pin in the model has is equal to this pin)
+     *           and must not be a Widget
      * @return the widget that is created by attachPinWidget; null if the pin is non-visual
      */
     public final Widget addPin (N node, P pin) {
@@ -292,28 +295,31 @@ public abstract class GraphPinScene<N, E, P> extends ObjectScene {
 
     /**
      * Checks whether an object is registered as a node in the graph model.
-     * @param object the object
+     * @param object the object; must not be a Widget
      * @return true, if the object is registered as a node
      */
     public boolean isNode (Object object) {
+        assert ! (object instanceof Widget) : "Use findObject method for getting an object assigned to a specific Widget"; // NOI18N
         return nodes.contains (object);
     }
 
     /**
      * Checks whether an object is registered as an edge in the graph model.
-     * @param object the object
+     * @param object the object; must not be a Widget
      * @return true, if the object is registered as a edge
      */
     public boolean isEdge (Object object) {
+        assert ! (object instanceof Widget) : "Use findObject method for getting an object assigned to a specific Widget"; // NOI18N
         return edges.contains (object);
     }
 
     /**
      * Checks whether an object is registered as a pin in the graph model.
-     * @param object the object
+     * @param object the object; must not be a Widget
      * @return true, if the object is registered as a pin
      */
     public boolean isPin (Object object) {
+        assert ! (object instanceof Widget) : "Use findObject method for getting an object assigned to a specific Widget"; // NOI18N
         return pins.contains (object);
     }
 

@@ -51,11 +51,11 @@ public class ObjectScene extends Scene {
 
     /**
      * Adds a mapping between an object and a widget.
-     * @param object the model object
+     * @param object the model object; the object must not be a Widget
      * @param widget the scene widget; if null then the object is non-visual and does not have any widget assigned
      */
     public final void addObject (Object object, Widget widget) {
-        assert object != null  &&  ! objects.containsKey (object);
+        assert object != null  &&  ! (object instanceof Widget)  &&  ! objects.containsKey (object);
         if (widget != null)
             assert ! widget2objects.containsKey (widget)  &&  widget.getScene () == this  &&  widget.getParentWidget () != null;
         objects.put (object, object);
@@ -231,11 +231,11 @@ public class ObjectScene extends Scene {
 
     /**
      * Returns the widget that is mapped to a specified object.
-     * @param object the object
+     * @param object the object; must not be a Widget
      * @return the widget from the registered mapping; null if object is non-visual or no mapping is registered
      */
     public final Widget findWidget (Object object) {
-        assert ! (object instanceof Widget) : "Use findObject method for getting an object assigned to a specific Widget";
+        assert ! (object instanceof Widget) : "Use findObject method for getting an object assigned to a specific Widget"; // NOI18N
         return object2widgets.get (object);
     }
 
@@ -258,11 +258,12 @@ public class ObjectScene extends Scene {
     /**
      * Returns an instance of stored object.
      * It searches for an instance of an object stored internally in the class using "equals" method on an object.
-     * @param object the object that is equals (observed by calling the "equals" method on the instances stored in the class)
+     * @param object the object that is equals (observed by calling the "equals" method on the instances stored in the class);
+     *           the object must not be a Widget
      * @return the stored instance of the object
      */
     public final Object findStoredObject (Object object) {
-        assert ! (object instanceof Widget);
+        assert ! (object instanceof Widget) : "Use findObject method for getting an object assigned to a specific Widget"; // NOI18N
         return objects.get (object);
     }
 
@@ -280,7 +281,6 @@ public class ObjectScene extends Scene {
      * @param suggestedSelectedObjects the selected objects suggested by an user
      * @param invertSelection the invert selection is specified by an user
      */
-    // TODO - could be final?
     public void userSelectionSuggested (Set<?> suggestedSelectedObjects, boolean invertSelection) {
         if (invertSelection) {
             HashSet<Object> objects = new HashSet<Object> (getSelectedObjects ());

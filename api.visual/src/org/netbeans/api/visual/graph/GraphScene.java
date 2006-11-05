@@ -31,6 +31,9 @@ import java.util.*;
  * class MyGraph extends GraphScene&lt;MyNode, MyEdge&gt; { ... }
  * </pre>
  * Since the type of nodes and edges could be the same, all node and edge instances has to be unique within the whole scene.
+ * <p>
+ * Node and Edge should not be a Widget. It should work properly but in that case the ObjectScene class is loosing its purpose
+ * because there is no need to manage a mapping of an instance to the same instance.
  *
  * @author David Kaspar
  */
@@ -56,8 +59,9 @@ public abstract class GraphScene<N, E> extends ObjectScene {
 
     /**
      * Adds a node.
-     * @param node the node to be added; the node must not be null, must not be already in the model and must be unique in the model
+     * @param node the node to be added; the node must not be null, must not be already in the model, must be unique in the model
      *           (means: there is no other node or edge in the model has is equal to this node)
+     *           and must not be a Widget
      * @return the widget that is created by attachNodeWidget; null if the node is non-visual
      */
     public final Widget addNode (N node) {
@@ -110,8 +114,9 @@ public abstract class GraphScene<N, E> extends ObjectScene {
 
     /**
      * Adds an edge.
-     * @param edge the edge to be added; the edge must not be null, must not be already in the model and must be unique in the model
+     * @param edge the edge to be added; the edge must not be null, must not be already in the model, must be unique in the model
      *           (means: there is no other node or edge in the model has is equal to this edge)
+     *           and must not be a Widget
      * @return the widget that is created by attachEdgeWidget; null if the edge is non-visual
      */
     public final Widget addEdge (E edge) {
@@ -237,19 +242,21 @@ public abstract class GraphScene<N, E> extends ObjectScene {
 
     /**
      * Checks whether an object is registered as a node in the graph model.
-     * @param object the object
+     * @param object the object; must not be a Widget
      * @return true, if the object is registered as a node
      */
     public boolean isNode (Object object) {
+        assert ! (object instanceof Widget) : "Use findObject method for getting an object assigned to a specific Widget"; // NOI18N
         return nodes.contains (object);
     }
 
     /**
      * Checks whether an object is registered as a edge in the graph model.
-     * @param object the object
+     * @param object the object; must not be a Widget
      * @return true, if the object is registered as a edge
      */
     public boolean isEdge (Object object) {
+        assert ! (object instanceof Widget) : "Use findObject method for getting an object assigned to a specific Widget"; // NOI18N
         return edges.contains (object);
     }
 
