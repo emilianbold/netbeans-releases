@@ -66,6 +66,8 @@ public final class ObjectSceneRectangularSelectProvider implements RectangularSe
                 }
             }
         }
+        Iterator<Object> iterator = set.iterator ();
+        scene.setFocusedObject (iterator.hasNext () ? iterator.next () : null);
         scene.userSelectionSuggested (set, false);
     }
 

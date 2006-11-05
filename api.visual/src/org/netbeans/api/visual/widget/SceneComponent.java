@@ -130,19 +130,19 @@ final class SceneComponent extends JComponent implements MouseListener, MouseMot
     }
 
     public void keyTyped (KeyEvent e) {
-        WidgetAction.State state = processOperator (Operator.KEY_TYPED, new WidgetAction.WidgetKeyEvent (++ eventIDcounter, e));
+        WidgetAction.State state = processKeyOperator (Operator.KEY_TYPED, new WidgetAction.WidgetKeyEvent (++ eventIDcounter, e));
         if (state.isConsumed ())
             e.consume ();
     }
 
     public void keyPressed (KeyEvent e) {
-        WidgetAction.State state = processOperator (Operator.KEY_PRESSED, new WidgetAction.WidgetKeyEvent (++ eventIDcounter, e));
+        WidgetAction.State state = processKeyOperator (Operator.KEY_PRESSED, new WidgetAction.WidgetKeyEvent (++ eventIDcounter, e));
         if (state.isConsumed ())
             e.consume ();
     }
 
     public void keyReleased (KeyEvent e) {
-        WidgetAction.State state = processOperator (Operator.KEY_RELEASED, new WidgetAction.WidgetKeyEvent (++ eventIDcounter, e));
+        WidgetAction.State state = processKeyOperator (Operator.KEY_RELEASED, new WidgetAction.WidgetKeyEvent (++ eventIDcounter, e));
         if (state.isConsumed ())
             e.consume ();
     }
@@ -218,7 +218,7 @@ final class SceneComponent extends JComponent implements MouseListener, MouseMot
         event.translatePoint (- location.x, - location.y);
 
         Rectangle bounds = widget.getBounds ();
-        assert bounds != null : "Widget is not validated. See first Q/A at http://graph.netbeans.org/faq.html page.";
+        assert bounds != null : Widget.MESSAGE_NULL_BOUNDS;
         if (bounds.contains (event.getPoint ())) {
             WidgetAction.State state;
 
@@ -286,12 +286,11 @@ final class SceneComponent extends JComponent implements MouseListener, MouseMot
                 return state;
         }
 
-        WidgetAction.Chain actions;
         state = operator.operate (widget.getActions (), widget, event);
         if (state.isConsumed ())
             return state;
 
-        actions = widget.getActions (tool);
+        WidgetAction.Chain actions = widget.getActions (tool);
         if (actions != null) {
             state = operator.operate (actions, widget, event);
             if (state.isConsumed ())
@@ -299,6 +298,59 @@ final class SceneComponent extends JComponent implements MouseListener, MouseMot
         }
 
         return WidgetAction.State.REJECTED;
+    }
+
+    private WidgetAction.State processParentOperator (Operator operator, String tool, Widget widget, WidgetAction.WidgetKeyEvent event) {
+        while (widget != null) {
+            WidgetAction.State state;
+
+            state = operator.operate (widget.getActions (), widget, event);
+            if (state.isConsumed ())
+                return state;
+
+            WidgetAction.Chain actions = widget.getActions (tool);
+            if (actions != null) {
+                state = operator.operate (actions, widget, event);
+                if (state.isConsumed ())
+                    return state;
+            }
+
+            widget = widget.getParentWidget ();
+        }
+
+        return WidgetAction.State.REJECTED;
+    }
+
+    private WidgetAction.State processKeyOperator (Operator operator, WidgetAction.WidgetKeyEvent event) {
+        WidgetAction.State state;
+        String tool = scene.getActiveTool ();
+
+        if (lockedAction != null) {
+            state = operator.operate (lockedAction, lockedWidget, event);
+            if (! state.isConsumed ())
+                state = processKeyOperator (operator, tool, scene, event);
+        } else
+            state = processKeyOperator (operator, tool, scene, event);
+
+        lockedWidget = state.getLockedWidget ();
+        lockedAction = state.getLockedAction ();
+        scene.validate ();
+
+        if (lockedWidget != null)
+            scrollRectToVisible (scene.convertSceneToView (lockedWidget.convertLocalToScene (lockedWidget.getBounds ())));
+
+        return state;
+    }
+
+    private WidgetAction.State processKeyOperator (Operator operator, String tool, Scene scene, WidgetAction.WidgetKeyEvent event) {
+        switch (scene.getKeyEventProcessingType ()) {
+            case ALL_WIDGETS:
+                return processOperator (operator, tool, scene, event);
+            case FOCUSED_WIDGET_AND_ITS_PARENTS:
+                return processParentOperator (operator, tool, scene.getFocusedWidget (), event);
+            default:
+                throw new IllegalStateException ();
+        }
     }
 
     private boolean resolveContext (Widget widget, Point point, MouseContext context) {

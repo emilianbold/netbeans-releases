@@ -57,6 +57,8 @@ import java.util.List;
 // TODO - Should Widget be an abstract class?
 public class Widget {
 
+    static final String MESSAGE_NULL_BOUNDS = "Scene.validate was not called after last change. Widget is not validated. See first Q/A at http://graph.netbeans.org/faq.html page.";
+
     private static final HashMap<String, WidgetAction.Chain> EMPTY_HASH_MAP = new HashMap<String, WidgetAction.Chain> (0);
 
     private Scene scene;
@@ -859,7 +861,7 @@ public class Widget {
      * Paints the widget with its children widget into the Graphics2D instance acquired from Scene.getGraphics method.
      */
     public final void paint () {
-        assert bounds != null : "Scene.validate was not called";
+        assert bounds != null : MESSAGE_NULL_BOUNDS; // NOI18N
         Graphics2D gr = scene.getGraphics ();
 
         AffineTransform previousTransform = gr.getTransform();

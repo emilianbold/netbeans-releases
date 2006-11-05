@@ -22,10 +22,12 @@ import java.awt.*;
  */
 public class DashedBorder implements Border {
 
+    private static final BasicStroke BASIC_STROKE = new BasicStroke ();
+
     protected int thickness = 1;
     protected Color color;
 
-    private BasicStroke stroke = new BasicStroke ();
+    private BasicStroke stroke = BASIC_STROKE;
 
     public DashedBorder (Color color, float l1, float l2) {
         this (color, new float[] { l1, l2 }, 1);

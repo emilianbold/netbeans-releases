@@ -23,19 +23,24 @@ package org.netbeans.api.visual.model;
 // TODO - rename to VisualState?
 public class ObjectState {
 
-    private static final ObjectState NORMAL = new ObjectState (false, false, false, false, false);
+    private static final ObjectState NORMAL = new ObjectState (false, false, false, false, false, false, false);
 
     private boolean objectSelected;
     private boolean objectHighlighted;
     private boolean objectHovered;
+    private boolean objectFocused;
+
     private boolean widgetHovered;
+    private boolean widgetFocused;
     private boolean widgetAimed;
 
-    private ObjectState (boolean objectSelected, boolean objectHighlighted, boolean objectHovered, boolean widgetHovered, boolean widgetAimed) {
+    private ObjectState (boolean objectSelected, boolean objectHighlighted, boolean objectHovered, boolean objectFocused, boolean widgetHovered, boolean widgetFocused, boolean widgetAimed) {
         this.objectSelected = objectSelected;
         this.objectHighlighted = objectHighlighted;
         this.objectHovered = objectHovered;
+        this.objectFocused = objectFocused;
         this.widgetHovered = widgetHovered;
+        this.widgetFocused = widgetFocused;
         this.widgetAimed = widgetAimed;
     }
 
@@ -53,7 +58,7 @@ public class ObjectState {
      * @return the new state
      */
     public ObjectState deriveSelected (boolean selected) {
-        return new ObjectState (selected, objectHighlighted, objectHovered, widgetHovered, widgetAimed);
+        return new ObjectState (selected, objectHighlighted, objectHovered, objectFocused, widgetHovered, widgetFocused, widgetAimed);
     }
 
     /**
@@ -70,12 +75,12 @@ public class ObjectState {
      * @return the new state
      */
     public ObjectState deriveHighlighted (boolean highlighted) {
-        return new ObjectState (objectSelected, highlighted, objectHovered, widgetHovered, widgetAimed);
+        return new ObjectState (objectSelected, highlighted, objectHovered, objectFocused, widgetHovered, widgetFocused, widgetAimed);
     }
 
     /**
      * Returns a value of hovered-flag.
-     * @return true, if object-hovered of widget-hovered flag is set
+     * @return true, if object-hovered or widget-hovered flag is set
      */
     public boolean isHovered () {
         return objectHovered  ||  widgetHovered;
@@ -95,7 +100,7 @@ public class ObjectState {
      * @return the new state
      */
     public ObjectState deriveObjectHovered (boolean hovered) {
-        return new ObjectState (objectSelected, objectHighlighted, hovered, widgetHovered, widgetAimed);
+        return new ObjectState (objectSelected, objectHighlighted, hovered, objectFocused, widgetHovered, widgetFocused, widgetAimed);
     }
 
     /**
@@ -112,7 +117,49 @@ public class ObjectState {
      * @return the new state
      */
     public ObjectState deriveWidgetHovered (boolean hovered) {
-        return new ObjectState (objectSelected, objectHighlighted, objectHovered, hovered, widgetAimed);
+        return new ObjectState (objectSelected, objectHighlighted, objectHovered, objectFocused, hovered, widgetFocused, widgetAimed);
+    }
+
+    /**
+     * Returns a value of focused-flag.
+     * @return true, if object-focused or widget-focused flag is set
+     */
+    public boolean isFocused () {
+        return objectFocused  ||  widgetFocused;
+    }
+
+    /**
+     * Returns a value of object-focused flag.
+     * @return true, if object-focused
+     */
+    public boolean isObjectFocused () {
+        return objectFocused;
+    }
+
+    /**
+     * Creates a state derived from this one where the object-focused flag will be set according to the parameter.
+     * @param focused the new object-focused-flag of the new state.
+     * @return the new state
+     */
+    public ObjectState deriveObjectFocused (boolean focused) {
+        return new ObjectState (objectSelected, objectHighlighted, objectHovered, focused, widgetHovered, widgetFocused, widgetAimed);
+    }
+
+    /**
+     * Returns a value of widget-focused-flag.
+     * @return true, if widget-focused
+     */
+    public boolean isWidgetFocused () {
+        return widgetFocused;
+    }
+
+    /**
+     * Creates a state derived from this one where the widget-focused flag will be set according to the parameter.
+     * @param focused the new widget-focused-flag of the new state.
+     * @return the new state
+     */
+    public ObjectState deriveWidgetFocused (boolean focused) {
+        return new ObjectState (objectSelected, objectHighlighted, objectHovered, objectFocused, widgetHovered, focused, widgetAimed);
     }
 
     /**
@@ -129,7 +176,7 @@ public class ObjectState {
      * @return the new state
      */
     public ObjectState deriveWidgetAimed (boolean aimed) {
-        return new ObjectState (objectSelected, objectHighlighted, objectHovered, widgetHovered, aimed);
+        return new ObjectState (objectSelected, objectHighlighted, objectHovered, objectFocused, widgetHovered, widgetFocused, aimed);
     }
 
     /**

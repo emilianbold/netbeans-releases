@@ -44,6 +44,7 @@ public class ObjectScene extends Scene {
     private HashSet<Object> highlightedObjects = new HashSet<Object> ();
     private Set<Object> highlightedObjectsUm = Collections.unmodifiableSet (highlightedObjects);
 
+    private Object focusedObject = null;
     private Object hoveredObject = null;
 
     private WidgetAction selectAction = ActionFactory.createSelectAction (new ObjectSelectProvider ());
@@ -183,7 +184,7 @@ public class ObjectScene extends Scene {
 
     /**
      * Sets a hovered object.
-     * @param hoveredObject the hovered object; if null, then scene does not have hovered object
+     * @param hoveredObject the hovered object; if null, then the scene does not have hovered object
      */
     // TODO - could be final?
     public void setHoveredObject (Object hoveredObject) {
@@ -195,8 +196,8 @@ public class ObjectScene extends Scene {
                 return;
         }
         if (this.hoveredObject != null) {
-            Widget widget = object2widgets.get (this.hoveredObject);
             objectStates.put (this.hoveredObject, objectStates.get (this.hoveredObject).deriveObjectHovered (false));
+            Widget widget = object2widgets.get (this.hoveredObject);
             if (widget != null)
                 widget.setState (widget.getState ().deriveObjectHovered (false));
         }
@@ -206,6 +207,41 @@ public class ObjectScene extends Scene {
             Widget widget = object2widgets.get (this.hoveredObject);
             if (widget != null)
                 widget.setState (widget.getState ().deriveObjectHovered (true));
+        }
+    }
+
+    /**
+     * Returns a focused object. There could be only one focused object at maximum at the same time.
+     * @return the focused object; null if no object is focused
+     */
+    public final Object getFocusedObject () {
+        return hoveredObject;
+    }
+
+    /**
+     * Sets a focused object.
+     * @param focusedObject the focused object; if null, then the scene does not have focused object
+     */
+    public final void setFocusedObject (Object focusedObject) {
+        if (focusedObject != null) {
+            if (focusedObject.equals (this.focusedObject))
+                return;
+        } else {
+            if (this.focusedObject == null)
+                return;
+        }
+        if (this.focusedObject != null) {
+            objectStates.put (this.focusedObject, objectStates.get (this.focusedObject).deriveObjectFocused (false));
+            Widget widget = object2widgets.get (this.focusedObject);
+            if (widget != null)
+                widget.setState (widget.getState ().deriveObjectFocused (false));
+        }
+        this.focusedObject = focusedObject;
+        if (this.focusedObject != null) {
+            objectStates.put (this.focusedObject, objectStates.get (this.focusedObject).deriveObjectFocused (true));
+            Widget widget = object2widgets.get (this.focusedObject);
+            if (widget != null)
+                widget.setState (widget.getState ().deriveObjectFocused (true));
         }
     }
 
@@ -310,6 +346,7 @@ public class ObjectScene extends Scene {
         public void select (Widget widget, Point localLocation, boolean invertSelection) {
             Object object = findObject (widget);
 
+            setFocusedObject (object);
             if (object != null) {
                 if (getSelectedObjects ().contains (object))
                     return;

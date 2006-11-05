@@ -163,7 +163,7 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener, VMDMin
             bringToFront ();
 
         header.setOpaque (state.isSelected ());
-        header.setBorder (state.isHovered () ? VMDNodeWidget.BORDER_HOVERED : VMDNodeWidget.BORDER);
+        header.setBorder (state.isFocused () || state.isHovered () ? VMDNodeWidget.BORDER_HOVERED : VMDNodeWidget.BORDER);
     }
 
     /**

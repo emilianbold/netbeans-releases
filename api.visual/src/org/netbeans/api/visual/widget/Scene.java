@@ -53,18 +53,21 @@ public class Scene extends Widget {
     private double zoomFactor = 1.0;
     private SceneAnimator sceneAnimator;
 
-    private JComponent component;
-    private Graphics2D graphics;
+    private JComponent component = null;
+    private Graphics2D graphics = null;
     private boolean paintEverything = true;
 
     private Font defaultFont;
     private Rectangle repaintRegion = null;
     private HashSet<Widget> repaintWidgets = new HashSet<Widget> ();
     private LookFeel lookFeel = new DefaultLookFeel ();
-    private String activeTool;
+    private String activeTool = null;
 
     private final ArrayList<SceneListener> sceneListeners = new ArrayList<SceneListener> ();
 
+    private EventProcessingType keyEventProcessingType = EventProcessingType.ALL_WIDGETS;
+
+    private Widget focusedWidget = this;
     private WidgetAction widgetHoverAction;
 
     /**
@@ -168,7 +171,7 @@ public class Scene extends Widget {
     }
 
     // TODO - maybe it could improve the perfomance, if bounds != null then do nothing
-    // WARNING - you have to asure that there will be no component/widget will change its location/bounds between this and validate method calls
+    // WARNING - you have to asure that there will be no component/widget that will change its location/bounds between this and validate method calls
     final void revalidateWidget (Widget widget) {
         Rectangle widgetBounds = widget.getBounds ();
         if (widgetBounds != null) {
@@ -300,12 +303,51 @@ public class Scene extends Widget {
             listener.sceneRepaint ();
     }
 
-    boolean isPaintEverything () {
+    final boolean isPaintEverything () {
         return paintEverything;
     }
 
-    void setPaintEverything (boolean paintEverything) {
+    final void setPaintEverything (boolean paintEverything) {
         this.paintEverything = paintEverything;
+    }
+
+    /**
+     * Returns a key events processing type of the scene.
+     * @return the processing type for key events
+     */
+    public EventProcessingType getKeyEventProcessingType () {
+        return keyEventProcessingType;
+    }
+
+    /**
+     * Sets a key events processing type of the scene.
+     * @param keyEventProcessingType the processing type for key events
+     */
+    public void setKeyEventProcessingType (EventProcessingType keyEventProcessingType) {
+        assert keyEventProcessingType != null;
+        this.keyEventProcessingType = keyEventProcessingType;
+    }
+
+    /**
+     * Returns a focused widget of the scene.
+     * @return the focused widget; null if no widget is focused
+     */
+    public final Widget getFocusedWidget () {
+        return focusedWidget;
+    }
+
+    /**
+     * Sets a focused widget of the scene.
+     * @param focusedWidget the focused widget; if null, then the scene itself is taken as the focused widget
+     */
+    public final void setFocusedWidget (Widget focusedWidget) {
+        if (focusedWidget == null)
+            focusedWidget = this;
+        else
+            assert focusedWidget.getScene () == this;
+        this.focusedWidget.setState (this.focusedWidget.getState ().deriveWidgetFocused (false));
+        this.focusedWidget = focusedWidget;
+        this.focusedWidget.setState (this.focusedWidget.getState ().deriveWidgetFocused (true));
     }
 
     /**

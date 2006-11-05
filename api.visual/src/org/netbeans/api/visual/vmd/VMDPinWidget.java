@@ -55,7 +55,7 @@ public class VMDPinWidget extends Widget {
      */
     protected void notifyStateChanged (ObjectState previousState, ObjectState state) {
         setOpaque (state.isSelected ());
-        setBorder (state.isHovered () ? VMDNodeWidget.BORDER_HOVERED : VMDNodeWidget.BORDER);
+        setBorder (state.isFocused () || state.isHovered () ? VMDNodeWidget.BORDER_HOVERED : VMDNodeWidget.BORDER);
 //        LookFeel lookFeel = getScene ().getLookFeel ();
 //        setBorder (BorderFactory.createCompositeBorder (BorderFactory.createEmptyBorder (8, 2), lookFeel.getMiniBorder (state)));
 //        setForeground (lookFeel.getForeground (state));
