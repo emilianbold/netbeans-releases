@@ -56,6 +56,7 @@ import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.modules.java.JavaDataLoader;
+import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 
 import org.openide.ErrorManager;
@@ -301,6 +302,15 @@ public class SourceUtils {
             ErrorManager.getDefault().notify(e);
         }
         return null;
+    }        
+    
+    /**
+     * Waits for the end of the initial scan, this helper method 
+     * is designed for tests which require to wait for end of initial scan.
+     * @throws InterruptedException is thrown when the waiting thread is interrupted.
+     */
+    public static void waitScanFinished () throws InterruptedException {
+        RepositoryUpdater.getDefault().waitScanFinished();
     }
     
     private static boolean isCaseSensitive () {

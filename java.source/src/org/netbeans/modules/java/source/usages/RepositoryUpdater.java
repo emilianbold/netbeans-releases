@@ -127,6 +127,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     private Delay delay;
     private Work currentWork;
     private boolean dirty;
+    private int noSubmited;
     
     /** Creates a new instance of RepositoryUpdater */
     private RepositoryUpdater() {
@@ -168,6 +169,12 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         }
         else {
             this.dirty = true;
+        }
+    }
+    
+    public synchronized void waitScanFinished () throws InterruptedException {
+        while (this.noSubmited > 0 ) {
+            this.wait();
         }
     }
     
@@ -341,6 +348,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     
     private void submit (final Work  work) {
         if (!noscan) {
+            synchronized (this) {
+                this.noSubmited++;
+            }
             final CompileWorker cw = new CompileWorker (work);
             JavaSourceAccessor.INSTANCE.runSpecialTask (cw,JavaSource.Priority.MAX);
         }
@@ -710,6 +720,12 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     return null;                    
                 } finally {
                     if (!continuation) {
+                        synchronized (RepositoryUpdater.this) {
+                            RepositoryUpdater.this.noSubmited--;
+                            if (RepositoryUpdater.this.noSubmited == 0) {
+                                RepositoryUpdater.this.notifyAll();
+                            }
+                        }
                         work.finished ();
                         if (handle != null) {
                             handle.finish ();
