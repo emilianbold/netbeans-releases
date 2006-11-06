@@ -19,7 +19,7 @@
 
 package org.netbeans.modules.j2ee.ejbcore.api.methodcontroller;
 
-import org.netbeans.jmi.javamodel.Method;
+import javax.lang.model.element.ExecutableElement;
 
 /**
  * Provide simple instance of the visitor pattern to use for code generation.
@@ -33,13 +33,13 @@ public abstract class MethodType {
     public static final int METHOD_TYPE_FINDER = 4;
     public static final int METHOD_TYPE_HOME = 5;
 
-    private Method me;
-    public MethodType(Method me) {
+    private ExecutableElement me;
+    public MethodType(ExecutableElement me) {
         this.me = me;
     }
     
     public abstract void accept(MethodTypeVisitor visitor);
-    public final Method getMethodElement() {
+    public final ExecutableElement getMethodElement() {
         return me;
     }
     
@@ -51,7 +51,7 @@ public abstract class MethodType {
     }
     
     public static class BusinessMethodType extends MethodType {
-        public BusinessMethodType(Method me) {
+        public BusinessMethodType(ExecutableElement me) {
             super(me);
         }
         
@@ -61,7 +61,7 @@ public abstract class MethodType {
     }
     
     public static class SelectMethodType extends MethodType {
-        public SelectMethodType(Method me) {
+        public SelectMethodType(ExecutableElement me) {
             super(me);
         }
         
@@ -72,7 +72,7 @@ public abstract class MethodType {
     }
     
     public static class CreateMethodType extends MethodType {
-        public CreateMethodType(Method me) {
+        public CreateMethodType(ExecutableElement me) {
             super(me);
         }
         
@@ -82,7 +82,7 @@ public abstract class MethodType {
     }
     
     public static class HomeMethodType extends MethodType {
-        public HomeMethodType(Method me) {
+        public HomeMethodType(ExecutableElement me) {
             super(me);
         }
         
@@ -92,7 +92,7 @@ public abstract class MethodType {
     }
     
     public static class FinderMethodType extends MethodType {
-        public FinderMethodType(Method me) {
+        public FinderMethodType(ExecutableElement me) {
             super(me);
         }
         

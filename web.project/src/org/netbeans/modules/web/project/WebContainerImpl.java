@@ -21,10 +21,8 @@ package org.netbeans.modules.web.project;
 
 import java.io.IOException;
 import java.util.Collections;
-import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -38,8 +36,6 @@ import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
 import org.netbeans.modules.j2ee.common.queries.api.InjectionTargetQuery;
-import org.netbeans.modules.j2ee.common.source.AbstractTask;
-import org.netbeans.modules.j2ee.common.source.SourceUtils;
 import org.netbeans.modules.web.project.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.web.project.classpath.WebProjectClassPathExtender;
 import org.netbeans.modules.web.project.ui.customizer.AntArtifactChooser;
@@ -55,7 +51,8 @@ import org.openide.filesystems.FileObject;
  *
  * @author Chris Webster
  */
-class WebContainerImpl extends EnterpriseReferenceContainer {
+class WebContainerImpl implements EnterpriseReferenceContainer {
+    
     private Project webProject;
     private AntProjectHelper antHelper;
     private static final String SERVICE_LOCATOR_PROPERTY = "project.serviceLocator.class"; //NOI18N
@@ -66,16 +63,15 @@ class WebContainerImpl extends EnterpriseReferenceContainer {
         this.antHelper = antHelper;
     }
     
-    public String addEjbLocalReference(EjbLocalRef localRef, String referencedClassName, AntArtifact target) throws java.io.IOException {
-        return addReference(localRef, target, referencedClassName);
+    public String addEjbLocalReference(EjbLocalRef localRef, FileObject referencingFile, String referencingClass, AntArtifact target) throws IOException {
+        return addReference(localRef, target, referencingFile, referencingClass);
     }
     
-    public String addEjbReferernce(EjbRef ref, String referencedClassName, AntArtifact target) throws IOException {
-        return addReference(ref, target, referencedClassName);
+    public String addEjbReference(EjbRef ref, FileObject referencingFile, String referencingClass, AntArtifact target) throws IOException {
+        return addReference(ref, target, referencingFile, referencingClass);
     }
     
-    
-    private String addReference(Object ref, AntArtifact target, String referencingClassName) throws IOException {
+    private String addReference(Object ref, AntArtifact target, FileObject referencingFile, String referencingClass) throws IOException {
         String refName = null;
         WebApp webApp = getWebApp();
         if (ref instanceof EjbRef) {
@@ -132,7 +128,7 @@ class WebContainerImpl extends EnterpriseReferenceContainer {
             ErrorManager.getDefault().log("WebProjectClassPathExtender not found in the project lookup of project: "+webProject.getProjectDirectory().getPath());    //NOI18N
         }
         
-        writeDD(referencingClassName);
+        writeDD(referencingFile, referencingClass);
         return refName;
     }
     
@@ -159,7 +155,7 @@ class WebContainerImpl extends EnterpriseReferenceContainer {
         return webApp;
     }
     
-    private void writeDD(String referencingClassName) throws IOException {
+    private void writeDD(FileObject referencingFile, String referencingClass) throws IOException {
         ClassPathProviderImpl cppImpl = webProject.getLookup().lookup(ClassPathProviderImpl.class);
         ClasspathInfo classpathInfo = ClasspathInfo.create(
             cppImpl.getProjectSourcesClassPath(ClassPath.BOOT), 
@@ -167,22 +163,15 @@ class WebContainerImpl extends EnterpriseReferenceContainer {
             cppImpl.getProjectSourcesClassPath(ClassPath.SOURCE) 
         );
         JavaSource javaSource = JavaSource.create(classpathInfo, Collections.<FileObject>emptyList());
-        final boolean shouldWrite[] = new boolean[] {false};
-        final WebModuleImplementation jp = (WebModuleImplementation) webProject.getLookup().lookup(WebModuleImplementation.class);
-        javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
-            public void run(CompilationController cc) throws Exception {
-                SourceUtils sourceUtils = SourceUtils.newInstance(cc);
-                TypeElement typeElement = sourceUtils.getTypeElement();
-                shouldWrite[0] = isDescriptorMandatory(jp.getJ2eePlatformVersion()) || !InjectionTargetQuery.isInjectionTarget(typeElement);
-            }
-        }, true);
-        if (shouldWrite[0]) {
+        WebModuleImplementation jp = (WebModuleImplementation) webProject.getLookup().lookup(WebModuleImplementation.class);
+        boolean shouldWrite = isDescriptorMandatory(jp.getJ2eePlatformVersion()) || !InjectionTargetQuery.isInjectionTarget(referencingFile, referencingClass);
+        if (shouldWrite) {
             FileObject fo = jp.getDeploymentDescriptor();
             getWebApp().write(fo);
         }
     }
     
-    public String addResourceRef(ResourceRef ref, String referencingClass) throws IOException {
+    public String addResourceRef(ResourceRef ref, FileObject referencingFile, String referencingClass) throws IOException {
         WebApp wa = getWebApp();
         String resourceRefName = ref.getResRefName();
         // see if jdbc resource has already been used in the app
@@ -204,7 +193,7 @@ class WebContainerImpl extends EnterpriseReferenceContainer {
             resourceRefName = getUniqueName(wa, "ResourceRef", "ResRefName", ref.getResRefName()); //NOI18N
             ref.setResRefName(resourceRefName);
             wa.addResourceRef(ref);
-            writeDD(referencingClass);
+            writeDD(referencingFile, referencingClass);
         }
         return resourceRefName;
     }
@@ -231,7 +220,7 @@ class WebContainerImpl extends EnterpriseReferenceContainer {
         return proposedValue;
     }
     
-    public String addDestinationRef(MessageDestinationRef ref, String referencingClass) throws IOException {
+    public String addDestinationRef(MessageDestinationRef ref, FileObject referencingFile, String referencingClass) throws IOException {
         try {
             // do not add if there is already an existing destination ref (see #85673)
             for (MessageDestinationRef mdRef : getWebApp().getMessageDestinationRef()){
@@ -249,7 +238,7 @@ class WebContainerImpl extends EnterpriseReferenceContainer {
         ref.setMessageDestinationRefName(refName);
         try {
             getWebApp().addMessageDestinationRef(ref);
-            writeDD(referencingClass);
+            writeDD(referencingFile, referencingClass);
         } catch (VersionNotSupportedException ex){
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }

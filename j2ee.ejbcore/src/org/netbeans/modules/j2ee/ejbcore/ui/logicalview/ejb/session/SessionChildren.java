@@ -21,25 +21,26 @@ package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.session;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.SessionMethodController;
-import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.EjbViewController;
-import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.MethodsNode;
-
-import org.openide.nodes.*;
-import org.openide.util.NbBundle;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 
 
 /**
  * @author Chris Webster
+ * @author Martin Adamek
  */
-public class SessionChildren extends Children.Keys implements PropertyChangeListener {
-    private static final String REMOTE_KEY = "remote"; //NOI18N
-    private static final String LOCAL_KEY = "local"; //NOI18N
+
+public class SessionChildren extends Children.Keys<SessionChildren.Key> implements PropertyChangeListener {
+    
+    public enum Key {REMOTE, LOCAL};
     
     private final Session model;
     private final ClassPath srcPath;
@@ -50,7 +51,8 @@ public class SessionChildren extends Children.Keys implements PropertyChangeList
         this.srcPath = srcPath;
         this.model = model;
         this.jar = jar;
-        controller = new SessionMethodController(model, srcPath);
+        //TODO: RETOUCHE
+        controller = new SessionMethodController(null, model);
     }
     
     protected void addNotify() {
@@ -63,13 +65,9 @@ public class SessionChildren extends Children.Keys implements PropertyChangeList
     private void updateKeys() {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                List keys = new ArrayList();
-                if (model.getRemote() != null) {
-                    keys.add(REMOTE_KEY);
-                }
-                if (model.getLocal()!=null) {
-                    keys.add(LOCAL_KEY);
-                }
+                List<Key> keys = new ArrayList<Key>();
+                if (model.getRemote() != null) { keys.add(Key.REMOTE); }
+                if (model.getLocal()!=null) { keys.add(Key.LOCAL); }
                 setKeys(keys);
             }
         });
@@ -78,25 +76,25 @@ public class SessionChildren extends Children.Keys implements PropertyChangeList
     protected void removeNotify() {
         model.removePropertyChangeListener(this);
         srcPath.removePropertyChangeListener(this);
-        setKeys(Collections.EMPTY_SET);
+        setKeys(Collections.<Key>emptyList());
         super.removeNotify();
     }
-     
-    protected Node[] createNodes(Object key) {
-        if (LOCAL_KEY.equals(key)) {
-            Children c = new MethodChildren(controller, controller.getLocalInterfaces(), true);
-            MethodsNode n = new MethodsNode(model, jar, srcPath, c, true);
-            n.setIconBaseWithExtension("org/netbeans/modules/j2ee/ejbcore/resources/LocalMethodContainerIcon.gif");
-            n.setDisplayName(NbBundle.getMessage(EjbViewController.class, "LBL_LocalMethods"));
-            return new Node[] { n };
-        }
-        if (REMOTE_KEY.equals(key)) {
-            Children c = new MethodChildren(controller, controller.getRemoteInterfaces(), false);
-            MethodsNode n = new MethodsNode(model, jar, srcPath, c, false);
-            n.setIconBaseWithExtension("org/netbeans/modules/j2ee/ejbcore/resources/RemoteMethodContainerIcon.gif");
-            n.setDisplayName(NbBundle.getMessage(EjbViewController.class, "LBL_RemoteMethods"));
-            return new Node[] { n };
-        }
+    
+    protected Node[] createNodes(Key key) {
+//        if (Key.LOCAL.equals(key)) {
+//            Children c = new MethodChildren(controller, controller.getLocalInterfaces(), true);
+//            MethodsNode n = new MethodsNode(model, jar, srcPath, c, true);
+//            n.setIconBaseWithExtension("org/netbeans/modules/j2ee/ejbcore/resources/LocalMethodContainerIcon.gif");
+//            n.setDisplayName(NbBundle.getMessage(EjbViewController.class, "LBL_LocalMethods"));
+//            return new Node[] { n };
+//        }
+//        if (Key.REMOTE.equals(key)) {
+//            Children c = new MethodChildren(controller, controller.getRemoteInterfaces(), false);
+//            MethodsNode n = new MethodsNode(model, jar, srcPath, c, false);
+//            n.setIconBaseWithExtension("org/netbeans/modules/j2ee/ejbcore/resources/RemoteMethodContainerIcon.gif");
+//            n.setDisplayName(NbBundle.getMessage(EjbViewController.class, "LBL_RemoteMethods"));
+//            return new Node[] { n };
+//        }
         return null;
     }
     

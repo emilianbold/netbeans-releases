@@ -21,12 +21,12 @@ package org.netbeans.modules.j2ee.ejbcore.patterns;
 
 
 import java.util.ArrayList;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.jmi.javamodel.Feature;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.modules.j2ee.common.JMIUtils;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.dd.api.ejb.CmpField;
 import org.netbeans.modules.j2ee.dd.api.ejb.CmrField;
@@ -39,7 +39,6 @@ import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.dd.api.ejb.Relationships;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EntityMethodController;
-import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -52,19 +51,16 @@ public class DTOHelper {
     private Project project;
     private EjbJar ejbJar;
     private Entity entity;
-    private JavaClass classElm;
+    private TypeElement classElm;
     private EnterpriseBeans beans;
     private FileObject fo;
     
     /** Create new instance of Data Transfer Object helper class
      * @param me <code>MemberElement</code> that represents entity implementation class
      */
-    public DTOHelper(Feature feature) {
-        classElm = JMIUtils.getDeclaringClass(feature);
-        DataObject dObj = JavaMetamodel.getManager().getDataObject(feature.getResource());
-        assert dObj != null : "Can not find data object for class";
-        
-        fo = dObj.getPrimaryFile();
+    public DTOHelper(CompilationController cc, Element feature) {
+        classElm = (TypeElement) feature.getEnclosingElement();
+        fo = cc.getFileObject();
         project = FileOwnerQuery.getOwner(fo);
         
         org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(fo);
@@ -77,7 +73,7 @@ public class DTOHelper {
             
             entity = (Entity) beans.findBeanByName(
                     EnterpriseBeans.ENTITY,
-                    Ejb.EJB_CLASS, classElm.getName());
+                    Ejb.EJB_CLASS, classElm.getQualifiedName().toString());
         }catch(java.io.IOException ex) {
             // IO error while reading DD
             ErrorManager.getDefault().notify(ex);
@@ -222,8 +218,9 @@ public class DTOHelper {
      */
     public String getFieldType(String fieldName) {
         String returnType = "";
-        returnType = EntityMethodController.getGetterMethod(
-                classElm, fieldName).getType().getName();
+        //TODO: RETOUCHE
+//        returnType = EntityMethodController.getGetterMethod(
+//                classElm, fieldName).getType().getName();
         return returnType;
     }
     
@@ -246,7 +243,7 @@ public class DTOHelper {
      * @return full entity bean name
      */
     public String getFullName() {
-        return classElm.getName();
+        return classElm.getQualifiedName().toString();
     }
     
     /* Get package of entity bean class

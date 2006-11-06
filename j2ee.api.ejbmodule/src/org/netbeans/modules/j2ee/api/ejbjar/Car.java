@@ -19,7 +19,6 @@
 package org.netbeans.modules.j2ee.api.ejbjar;
 
 import java.util.Collections;
-import java.util.Iterator;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.ejbjar.CarAccessor;
@@ -50,8 +49,8 @@ import org.openide.util.Lookup;
  */
 public final class Car implements MetadataUnit {
     private CarImplementation impl;
-    private static final Lookup.Result implementations =
-        Lookup.getDefault().lookup(new Lookup.Template(CarProvider.class));
+    private static final Lookup.Result<CarProvider> implementations =
+        Lookup.getDefault().lookup(new Lookup.Template<CarProvider>(CarProvider.class));
     
     static  {
         CarAccessor.DEFAULT = new CarAccessor() {
@@ -79,9 +78,7 @@ public final class Car implements MetadataUnit {
         if (f == null) {
             throw new NullPointerException("Passed null to Car.getCar(FileObject)"); // NOI18N
         }
-        Iterator it = implementations.allInstances().iterator();
-        while (it.hasNext()) {
-            CarProvider impl = (CarProvider)it.next();
+        for (CarProvider impl : implementations.allInstances()) {
             Car wm = impl.findCar (f);
             if (wm != null) {
                 return wm;
@@ -94,7 +91,7 @@ public final class Car implements MetadataUnit {
      * @return an array of Car instance (empty array if no instance are found).
      */
     public static Car[] getCars (Project project) {
-        CarsInProject providers = (CarsInProject) project.getLookup().lookup(CarsInProject.class);
+        CarsInProject providers = project.getLookup().lookup(CarsInProject.class);
         if (providers != null) {
             Car jars [] = providers.getCars();
             if (jars != null) {

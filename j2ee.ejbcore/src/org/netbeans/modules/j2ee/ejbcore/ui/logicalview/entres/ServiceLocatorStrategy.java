@@ -28,11 +28,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.jmi.javamodel.Field;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.Method;
-import org.netbeans.modules.j2ee.common.JMIUtils;
-import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -54,31 +49,31 @@ public class ServiceLocatorStrategy {
         cName = s;
     }
     
-    public String genLocalEjbStringLookup(String jndiName, String homeName, JavaClass targetClass, boolean create) {
-        String initString = initString("getLocalHome", jndiName, targetClass,""); //NOI18N
-        return "return " + addCast(create, homeName, initString, CREATE) + ";"; // NOI18N
-    }
-    
-    public String genRemoteEjbStringLookup(String jndiName, String homeCls, JavaClass targetClass, boolean create) {
-        String initString = initString("getRemoteHome", jndiName, targetClass, ","+homeCls+".class"); //NOI18N
-        return "return " + addCast(create, homeCls, initString, CREATE) + ";"; //NOI18N
-    }
-    
-    public String genDestinationLookup(String jndiName, JavaClass targetClass) {
-        return initString("getDestination", jndiName, targetClass, ""); //NOI18N
-    }
-    
-    public String genJMSFactory(String jndiName, JavaClass targetClass) {
-        return initString("getConnectionFactory", jndiName, targetClass, ""); //NOI18N
-    }
-    
-    public String genDataSource(String jndiName, JavaClass targetClass) {
-        return initString("getDataSource", jndiName, targetClass, ""); //NOI18N
-    }
-    
-    public String genMailSession(String jndiName, JavaClass targetClass) {
-        return initString("getSession", jndiName, targetClass, ""); //NOI18N
-    }
+//    public String genLocalEjbStringLookup(String jndiName, String homeName, JavaClass targetClass, boolean create) {
+//        String initString = initString("getLocalHome", jndiName, targetClass,""); //NOI18N
+//        return "return " + addCast(create, homeName, initString, CREATE) + ";"; // NOI18N
+//    }
+//    
+//    public String genRemoteEjbStringLookup(String jndiName, String homeCls, JavaClass targetClass, boolean create) {
+//        String initString = initString("getRemoteHome", jndiName, targetClass, ","+homeCls+".class"); //NOI18N
+//        return "return " + addCast(create, homeCls, initString, CREATE) + ";"; //NOI18N
+//    }
+//    
+//    public String genDestinationLookup(String jndiName, JavaClass targetClass) {
+//        return initString("getDestination", jndiName, targetClass, ""); //NOI18N
+//    }
+//    
+//    public String genJMSFactory(String jndiName, JavaClass targetClass) {
+//        return initString("getConnectionFactory", jndiName, targetClass, ""); //NOI18N
+//    }
+//    
+//    public String genDataSource(String jndiName, JavaClass targetClass) {
+//        return initString("getDataSource", jndiName, targetClass, ""); //NOI18N
+//    }
+//    
+//    public String genMailSession(String jndiName, JavaClass targetClass) {
+//        return initString("getSession", jndiName, targetClass, ""); //NOI18N
+//    }
     
     public static ServiceLocatorStrategy create(Project p, FileObject srcFile, String serviceLocator) {
         ClassPathProvider cpp = (ClassPathProvider)
@@ -123,86 +118,86 @@ public class ServiceLocatorStrategy {
         return newValue;
     }
     
-    private String initString(String methodName, String jndiName, 
-                              JavaClass ce, String otherParams) {
-        String initString = null;
-        JavaClass serviceLocator = findClass(cp);
-        // at this point we are unable to find the actual class 
-        // now lets just assume that we can create a new instance
-        // user can resolve the compiler errors
-        Method staticCreation = null;
-        if (serviceLocator != null) {
-            staticCreation = getStaticLocator(serviceLocator);
-        }
-        if (staticCreation != null) {
-            initString = cName+"."+staticCreation.getName()+"()."+methodName+ //NOI18N
-                         "(\"java:comp/env/"+jndiName+"\""+otherParams+")"; //NOI18N
-        } else {
-            initString = findOrCreateArtifacts(ce)+"()."+methodName+ //NOI18N
-                         "(\"java:comp/env/"+jndiName+"\""+otherParams+")"; //NOI18N
-        }
-        return initString;
-    }
-    
-    private String findOrCreateArtifacts(JavaClass target) {
-        String methodName = null;
-        Method[] methods = JMIUtils.getMethods(target);
-        for (int i = 0; i < methods.length; i++) {
-            String returnValue = methods[i].getType().getName();
-            if (returnValue.equals(cName) &&
-                methods[i].getParameters().size() == 0) {
-                methodName = methods[i].getName();
-                break;
-            }
-        }
-        if (methodName == null) {
-            Field fe = JMIUtils.createField(target, "serviceLocator", cName); //NOI18N
-            fe.setModifiers(Modifier.PRIVATE);
-            target.getContents().add(fe);
-            
-            Method me = JMIUtils.createMethod(target);
-            me.setType(fe.getType());
-            me.setName("getServiceLocator"); //NOI18N
-            me.setModifiers(Modifier.PRIVATE);
-            String body =
-                "if ("+fe.getName()+" == null) {\n" + //NOI18N
-                fe.getName() + " = new "+cName+"();\n" + //NOI18N
-                "}\n" + //NOI18N
-                "return "+fe.getName()+";\n"; //NOI18N
-            me.setBodyText(body);
-            target.getContents().add(me);
-            methodName = me.getName();
-        }
-        return methodName;
-    }
-    
-    private JavaClass findClass(ClassPath cp) {
-        return JMIUtils.findClass(cName, cp);
-        // TODO: what about .class resolving?
-//        FileObject clazz = cp.findResource(cName.replace('.', '/')+".java"); //NOI18N
-//        if (clazz == null) {
-//            clazz = cp.findResource(cName.replace('.', '/')+".class"); //NOI18N
-//            if (clazz != null) {
-//                return findClass(buildClassPathFromImportedProject(clazz));
+//    private String initString(String methodName, String jndiName, 
+//                              JavaClass ce, String otherParams) {
+//        String initString = null;
+//        JavaClass serviceLocator = findClass(cp);
+//        // at this point we are unable to find the actual class 
+//        // now lets just assume that we can create a new instance
+//        // user can resolve the compiler errors
+//        Method staticCreation = null;
+//        if (serviceLocator != null) {
+//            staticCreation = getStaticLocator(serviceLocator);
+//        }
+//        if (staticCreation != null) {
+//            initString = cName+"."+staticCreation.getName()+"()."+methodName+ //NOI18N
+//                         "(\"java:comp/env/"+jndiName+"\""+otherParams+")"; //NOI18N
+//        } else {
+//            initString = findOrCreateArtifacts(ce)+"()."+methodName+ //NOI18N
+//                         "(\"java:comp/env/"+jndiName+"\""+otherParams+")"; //NOI18N
+//        }
+//        return initString;
+//    }
+//    
+//    private String findOrCreateArtifacts(JavaClass target) {
+//        String methodName = null;
+//        Method[] methods = JMIUtils.getMethods(target);
+//        for (int i = 0; i < methods.length; i++) {
+//            String returnValue = methods[i].getType().getName();
+//            if (returnValue.equals(cName) &&
+//                methods[i].getParameters().size() == 0) {
+//                methodName = methods[i].getName();
+//                break;
 //            }
 //        }
-//        ClassElement ce = null;
-//        if (clazz != null) {
-//            ce = ClassElement.forName(cName, clazz);
+//        if (methodName == null) {
+//            Field fe = JMIUtils.createField(target, "serviceLocator", cName); //NOI18N
+//            fe.setModifiers(Modifier.PRIVATE);
+//            target.getContents().add(fe);
+//            
+//            Method me = JMIUtils.createMethod(target);
+//            me.setType(fe.getType());
+//            me.setName("getServiceLocator"); //NOI18N
+//            me.setModifiers(Modifier.PRIVATE);
+//            String body =
+//                "if ("+fe.getName()+" == null) {\n" + //NOI18N
+//                fe.getName() + " = new "+cName+"();\n" + //NOI18N
+//                "}\n" + //NOI18N
+//                "return "+fe.getName()+";\n"; //NOI18N
+//            me.setBodyText(body);
+//            target.getContents().add(me);
+//            methodName = me.getName();
 //        }
-//        return ce;
-    }
-    
-    private Method getStaticLocator(JavaClass ce) {
-        Method[] methods = JMIUtils.getMethods(ce);
-        String cName = ce.getName();
-        for (int i = 0; i < methods.length; i++) {
-            if (Modifier.isStatic(methods[i].getModifiers()) &&
-                Modifier.isPublic(methods[i].getModifiers()) &&
-                methods[i].getType().getName().equals(cName)) {
-                return methods[i];
-            }
-        }
-        return null;
-    }
+//        return methodName;
+//    }
+//    
+//    private JavaClass findClass(ClassPath cp) {
+//        return JMIUtils.findClass(cName, cp);
+//        // TODO: what about .class resolving?
+////        FileObject clazz = cp.findResource(cName.replace('.', '/')+".java"); //NOI18N
+////        if (clazz == null) {
+////            clazz = cp.findResource(cName.replace('.', '/')+".class"); //NOI18N
+////            if (clazz != null) {
+////                return findClass(buildClassPathFromImportedProject(clazz));
+////            }
+////        }
+////        ClassElement ce = null;
+////        if (clazz != null) {
+////            ce = ClassElement.forName(cName, clazz);
+////        }
+////        return ce;
+//    }
+//    
+//    private Method getStaticLocator(JavaClass ce) {
+//        Method[] methods = JMIUtils.getMethods(ce);
+//        String cName = ce.getName();
+//        for (int i = 0; i < methods.length; i++) {
+//            if (Modifier.isStatic(methods[i].getModifiers()) &&
+//                Modifier.isPublic(methods[i].getModifiers()) &&
+//                methods[i].getType().getName().equals(cName)) {
+//                return methods[i];
+//            }
+//        }
+//        return null;
+//    }
 }

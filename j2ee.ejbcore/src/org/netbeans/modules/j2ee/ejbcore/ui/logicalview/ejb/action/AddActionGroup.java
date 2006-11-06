@@ -37,11 +37,12 @@ public class AddActionGroup extends EJBActionGroup {
     /** List of system actions to be displayed within this one's toolbar or submenu. */
     protected Action[] grouped() {
         return new Action[] {
-            new AddBusinessMethodAction(NbBundle.getMessage(AddBusinessMethodAction.class, "LBL_BusinessMethodAction")),
-            new AddCreateMethodAction(NbBundle.getMessage(AddCreateMethodAction.class, "LBL_CreateMethodAction")),
-            new AddFinderMethodAction(NbBundle.getMessage(AddCreateMethodAction.class, "LBL_FinderMethodAction")),
-            new AddHomeMethodAction(NbBundle.getMessage(AddHomeMethodAction.class, "LBL_HomeMethodAction")),
-            new AddSelectMethodAction(NbBundle.getMessage(AddSelectMethodAction.class, "LBL_SelectMethodAction")),
+            //TODO: RETOUCHE
+//            new AddBusinessMethodAction(NbBundle.getMessage(AddBusinessMethodAction.class, "LBL_BusinessMethodAction")),
+//            new AddCreateMethodAction(NbBundle.getMessage(AddCreateMethodAction.class, "LBL_CreateMethodAction")),
+//            new AddFinderMethodAction(NbBundle.getMessage(AddCreateMethodAction.class, "LBL_FinderMethodAction")),
+//            new AddHomeMethodAction(NbBundle.getMessage(AddHomeMethodAction.class, "LBL_HomeMethodAction")),
+//            new AddSelectMethodAction(NbBundle.getMessage(AddSelectMethodAction.class, "LBL_SelectMethodAction")),
             SystemAction.get(AddCmpFieldAction.class)
         };
     }

@@ -18,19 +18,24 @@
  */
 package org.netbeans.modules.j2ee.ejbcore.api.methodcontroller;
 
-import java.lang.reflect.Modifier;
-import org.netbeans.jmi.javamodel.Method;
-import org.netbeans.jmi.javamodel.PrimitiveType;
-import org.netbeans.jmi.javamodel.PrimitiveTypeKindEnum;
-import org.netbeans.jmi.javamodel.Type;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.StatementTree;
+import com.sun.source.util.SourcePositions;
+import com.sun.source.util.TreePath;
+import com.sun.source.util.Trees;
+import java.util.Collections;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import org.netbeans.api.java.source.TreeUtilities;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.AbstractMethodController;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType.BusinessMethodType;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType.CreateMethodType;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType.FinderMethodType;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType.HomeMethodType;
-import org.netbeans.modules.j2ee.common.JMIUtils;
-import org.netbeans.modules.javacore.api.JavaModel;
 
 /**
  *
@@ -38,69 +43,70 @@ import org.netbeans.modules.javacore.api.JavaModel;
  * @author Martin Adamek
  */
 class SessionGenerateFromIntfVisitor implements MethodType.MethodTypeVisitor, AbstractMethodController.GenerateFromIntf {
-    private Method implMethod;
+
+    private WorkingCopy workingCopy;
+    private ExecutableElement implMethod;
     private static final String TODO = "//TODO implement "; //NOI18N
+    
+    public SessionGenerateFromIntfVisitor(WorkingCopy workingCopy) {
+        this.workingCopy = workingCopy;
+    }
     
     public void getInterfaceMethodFromImpl(MethodType m) {
         m.accept(this);
     }
     
-    public Method getImplMethod() {
+    public ExecutableElement getImplMethod() {
         return implMethod;
     }
     
-    public Method getSecondaryMethod() {
+    public ExecutableElement getSecondaryMethod() {
         return null;
     }
     
     public void visit(BusinessMethodType bmt) {
-        implMethod = JMIUtils.duplicate(bmt.getMethodElement());
-        implMethod.setModifiers(Modifier.PUBLIC);
-        String body = TODO + implMethod.getName();
-        Type type= implMethod.getType();
-        if ((type instanceof PrimitiveType) && ((PrimitiveType) type).getKind().equals(PrimitiveTypeKindEnum.VOID)){
+        implMethod = bmt.getMethodElement();
+        TypeMirror type= implMethod.getReturnType();
 
-        }
-        else if ((type instanceof PrimitiveType) && ((PrimitiveType) type).getKind().equals(PrimitiveTypeKindEnum.BOOLEAN)){
-            body+="\nreturn false;";
-        }
-        else if ((type instanceof PrimitiveType) && ((PrimitiveType) type).getKind().equals(PrimitiveTypeKindEnum.BYTE)){
-            body+="\nreturn 0;";
-        }
-        else if ((type instanceof PrimitiveType) && ((PrimitiveType) type).getKind().equals(PrimitiveTypeKindEnum.CHAR)){
-            body+="\nreturn '0';";
-        }
-        else if ((type instanceof PrimitiveType) && ((PrimitiveType) type).getKind().equals(PrimitiveTypeKindEnum.DOUBLE)){
-            body+="\nreturn 0.0;";
-        }
-        else if ((type instanceof PrimitiveType) && ((PrimitiveType) type).getKind().equals(PrimitiveTypeKindEnum.FLOAT)){
-            body+="\nreturn 0;";
-        }
-        else if ((type instanceof PrimitiveType) && ((PrimitiveType) type).getKind().equals(PrimitiveTypeKindEnum.INT)){
-            body+="\nreturn 0;";
-        }
-        else if ((type instanceof PrimitiveType) && ((PrimitiveType) type).getKind().equals(PrimitiveTypeKindEnum.LONG)){
-            body+="\nreturn 0;";
-        }
-        else if ((type instanceof PrimitiveType) && ((PrimitiveType) type).getKind().equals(PrimitiveTypeKindEnum.SHORT)){
-            body+="\nreturn 0;";
-        }
-        else{
-            body+="\nreturn null;";
-
-        }
-
-        implMethod.setBodyText(body);
+        SourcePositions[] positions = new SourcePositions[1];
+        TreeUtilities tu = workingCopy.getTreeUtilities();
+        String body = TODO + implMethod.getSimpleName() + EntityGenerateFromIntfVisitor.getReturnStatement(type);
+        StatementTree bodyTree = tu.parseStatement(body, positions);
+        
+        MethodTree resultTree = AbstractMethodController.modifyMethod(
+                workingCopy, 
+                implMethod, 
+                Collections.singleton(Modifier.PUBLIC), 
+                null, null, null, null,
+                workingCopy.getTreeMaker().Block(Collections.singletonList(bodyTree), false)
+                );
+        Trees trees = workingCopy.getTrees();
+        TreePath treePath = trees.getPath(workingCopy.getCompilationUnit(), resultTree);
+        implMethod = (ExecutableElement) trees.getElement(treePath);
     }
        
     public void visit(CreateMethodType cmt) {
-        implMethod = JMIUtils.duplicate(cmt.getMethodElement());
-        String origName = implMethod.getName();
+        implMethod = cmt.getMethodElement();
+        String origName = implMethod.getSimpleName().toString();
         String newName = prependAndUpper(origName,"ejb"); //NOI18N
-        implMethod.setName(newName);
-        implMethod.setType(JMIUtils.resolveType("void"));
-        implMethod.setModifiers(Modifier.PUBLIC);
-        implMethod.setBodyText(TODO + newName);
+        
+        SourcePositions[] positions = new SourcePositions[1];
+        TreeUtilities tu = workingCopy.getTreeUtilities();
+        String body = TODO + newName;
+        StatementTree bodyTree = tu.parseStatement(body, positions);
+        
+        MethodTree resultTree = AbstractMethodController.modifyMethod(
+                workingCopy, 
+                implMethod, 
+                Collections.singleton(Modifier.PUBLIC), 
+                newName, 
+                workingCopy.getTreeMaker().PrimitiveType(TypeKind.VOID),
+                null, null,
+                workingCopy.getTreeMaker().Block(Collections.singletonList(bodyTree), false)
+                );
+        Trees trees = workingCopy.getTrees();
+        TreePath treePath = trees.getPath(workingCopy.getCompilationUnit(), resultTree);
+        implMethod = (ExecutableElement) trees.getElement(treePath);
     }
     
     public void visit(HomeMethodType hmt) {

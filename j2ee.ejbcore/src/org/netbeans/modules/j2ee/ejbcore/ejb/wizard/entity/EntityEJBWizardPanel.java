@@ -24,7 +24,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.j2ee.common.FQNSearch;
+//import org.netbeans.modules.j2ee.common.FQNSearch;
 
 /**
  *
@@ -209,7 +209,8 @@ public class EntityEJBWizardPanel extends javax.swing.JPanel {
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         SwingUtilities.invokeLater (new Runnable() {
             public void run() {
-                FQNSearch.showFastOpen(primaryKeyTextField);
+                //TODO: RETOUCHE FQNSearch
+//                FQNSearch.showFastOpen(primaryKeyTextField);
             }
         });
     }//GEN-LAST:event_jButton1ActionPerformed

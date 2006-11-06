@@ -19,9 +19,20 @@
 
 package org.netbeans.modules.j2ee.ejbcore.api.codegeneration;
 
+import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.ModifiersTree;
+import com.sun.source.util.Trees;
 import java.io.IOException;
 import java.util.Collections;
-import javax.jmi.reflect.JmiException;
+import java.util.List;
+import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.ModificationResult;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
@@ -29,21 +40,13 @@ import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.api.project.Project;
-import org.netbeans.jmi.javamodel.Annotation;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.modules.j2ee.common.JMIUtils;
-import org.netbeans.modules.j2ee.common.JMIGenerationUtil;
+import org.netbeans.modules.j2ee.common.source.AbstractTask;
+import org.netbeans.modules.j2ee.common.source.GenerationUtils;
 import org.netbeans.modules.j2ee.dd.api.ejb.AssemblyDescriptor;
 import org.netbeans.modules.j2ee.dd.api.ejb.ContainerTransaction;
 import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.gen.Bean;
 import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.gen.Method;
-import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
-import org.openide.ErrorManager;
-import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-
 
 /**
  *
@@ -54,10 +57,8 @@ public class SessionGenerator extends EntityAndSessionGenerator {
     private static final String SESSION_TEMPLATE = EjbGenerationUtil.TEMPLATE_BASE+"SessionBean.xml"; //NOI18N
     private static final String SESSION_TEMPLATE_WS_JAVAEE5 = EjbGenerationUtil.TEMPLATE_BASE+"SessionBean_WS_JavaEE5.xml"; //NOI18N
     
-    public FileObject generateSessionBean(String ejbName, FileObject pkg,
-            boolean hasRemote, boolean hasLocal,
-            boolean isStateful, Project project)
-            throws IOException {
+    public FileObject generateSessionBean(String ejbName, FileObject pkg, boolean hasRemote, boolean hasLocal,
+            final boolean isStateful, Project project) throws IOException {
         DDProvider provider = DDProvider.getDefault();
         EjbJar ejbModule = EjbJar.getEjbJar(pkg);
         boolean simplified = ejbModule.getJ2eePlatformVersion().equals(J2eeModule.JAVA_EE_5);
@@ -72,24 +73,21 @@ public class SessionGenerator extends EntityAndSessionGenerator {
         String pkgName = EjbGenerationUtil.getSelectedPackageName(pkg, project);
         
         // generate bean class
-        String beanClass = null;
+        final String[] beanClass = new String[1];
+        FileObject beanClassFO = null;
         if (simplified) {
-            boolean rollback = true;
-            JMIUtils.beginJmiTransaction(true);
-            try {
-                JavaClass javaClass = JMIGenerationUtil.createClass(pkg, EjbGenerationUtil.getBeanClassName(ejbName));
-                String annotationTypeName = isStateful ? "javax.ejb.Stateful" : "javax.ejb.Stateless";
-                Annotation sessionType = JMIGenerationUtil.createAnnotation(javaClass, annotationTypeName, Collections.EMPTY_LIST);
-                javaClass.getAnnotations().add(sessionType);
-                beanClass = javaClass.getName();
-                rollback = false;
-            } catch (IOException ioe) {
-                ErrorManager.getDefault().notify(ioe);
-            } catch (JmiException jmie) {
-                ErrorManager.getDefault().notify(jmie);
-            } finally {
-                JMIUtils.endJmiTransaction(rollback);
-            }
+            beanClassFO = GenerationUtils.createClass(pkg, EjbGenerationUtil.getBeanClassName(ejbName), null);
+            String annotationTypeName = isStateful ? "javax.ejb.Stateful" : "javax.ejb.Stateless";
+            addSimpleAnnotationToClass(beanClassFO, annotationTypeName);
+            JavaSource javaSource = JavaSource.forFileObject(beanClassFO);
+            ModificationResult modificationResult = javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
+                public void run(WorkingCopy workingCopy) throws Exception {
+                    GenerationUtils generationUtils = GenerationUtils.newInstance(workingCopy);
+                    TypeElement javaClass = generationUtils.getTypeElement();
+                    beanClass[0] = javaClass.getQualifiedName().toString();
+                }
+            });
+            modificationResult.commit();
         } else {
             Bean b = genUtil.getDefaultBean();
             b.setCommentDataEjbName(ejbName + "Bean");
@@ -101,7 +99,7 @@ public class SessionGenerator extends EntityAndSessionGenerator {
             if (pkgName!=null) {
                 b.setClassnamePackage(pkgName);
             }
-            beanClass = genUtil.generateBeanClass(SESSION_TEMPLATE, b, pkgName, pkg, false);
+            beanClass[0] = genUtil.generateBeanClass(SESSION_TEMPLATE, b, pkgName, pkg, false);
         }
         
         String remoteBusinessIntfName = null;
@@ -113,7 +111,7 @@ public class SessionGenerator extends EntityAndSessionGenerator {
                 homeName = generateHome(pkgName, pkg, EjbGenerationUtil.getHomeName(pkgName, ejbName), remoteName, ejbName);
                 remoteBusinessIntfName = EjbGenerationUtil.getBusinessInterfaceName(pkgName, ejbName);
             }
-            genUtil.generateBusinessInterfaces(pkgName, pkg, remoteBusinessIntfName, ejbName, beanClass, remoteName, simplified);
+            genUtil.generateBusinessInterfaces(pkgName, pkg, remoteBusinessIntfName, ejbName, beanClass[0], remoteName, simplified);
         }
         
         String localBusinessIntfName = null;
@@ -126,20 +124,28 @@ public class SessionGenerator extends EntityAndSessionGenerator {
                         localName, ejbName);
                 localBusinessIntfName = EjbGenerationUtil.getLocalBusinessInterfaceName(pkgName, ejbName);
             }
-            genUtil.generateBusinessInterfaces(pkgName, pkg, localBusinessIntfName, ejbName, beanClass, localName, simplified);
+            genUtil.generateBusinessInterfaces(pkgName, pkg, localBusinessIntfName, ejbName, beanClass[0], localName, simplified);
         }
         
+        final String localBusIfName = localBusinessIntfName;
         if (simplified && hasLocal) {
-            JavaClass localIF = JMIUtils.findClass(localBusinessIntfName, pkg);
-            Annotation localAnn = JMIGenerationUtil.createAnnotation(localIF, "javax.ejb.Local", Collections.EMPTY_LIST);
-            localIF.getAnnotations().add(localAnn);
-            JMIUtils.saveClass(localIF);
+            JavaSource javaSource = JavaSource.forFileObject(beanClassFO);
+            javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
+                public void run(WorkingCopy workingCopy) throws Exception {
+                    TypeElement typeElement = workingCopy.getElements().getTypeElement(localBusIfName);
+                    addSimpleAnnotationToClass(workingCopy, typeElement, "javax.ejb.Local");
+                }
+            });
         }
+        final String remoteBusIfName = remoteBusinessIntfName;
         if (simplified && hasRemote) {
-            JavaClass remoteIF = JMIUtils.findClass(remoteBusinessIntfName, pkg);
-            Annotation remoteAnn = JMIGenerationUtil.createAnnotation(remoteIF, "javax.ejb.Remote", Collections.EMPTY_LIST);
-            remoteIF.getAnnotations().add(remoteAnn);
-            JMIUtils.saveClass(remoteIF);
+            JavaSource javaSource = JavaSource.forFileObject(beanClassFO);
+            javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
+                public void run(WorkingCopy workingCopy) throws Exception {
+                    TypeElement typeElement = workingCopy.getElements().getTypeElement(remoteBusIfName);
+                    addSimpleAnnotationToClass(workingCopy, typeElement, "javax.ejb.Remote");
+                }
+            });
         }
         
         //put these lines in a common function at the appropriate place after EA1
@@ -152,8 +158,6 @@ public class SessionGenerator extends EntityAndSessionGenerator {
         pwm.getConfigSupport().ensureConfigurationReady();
         ///
         
-        FileObject beanFO = pkg.getFileObject(EjbGenerationUtil.getBaseName(beanClass), "java"); // NOI18N
-            
         // for annotable EJBs it will be discovered by annotation listener
         if (!simplified) {
             EnterpriseBeans beans = ejbJar.getEnterpriseBeans();
@@ -165,7 +169,7 @@ public class SessionGenerator extends EntityAndSessionGenerator {
             s = beans.newSession();
             s.setEjbName(ejbName + "Bean");
             s.setDisplayName(ejbName+"SB");
-            s.setEjbClass(beanClass);
+            s.setEjbClass(beanClass[0]);
             
             s.setRemote(remoteName);
             s.setLocal(localName);
@@ -193,32 +197,8 @@ public class SessionGenerator extends EntityAndSessionGenerator {
             ad.addContainerTransaction(ct);
             ejbJar.write(ejbModule.getDeploymentDescriptor());
             
-            // use simple names in all generated classes, use imports
-            boolean rollback = true;
-            JMIUtils.beginJmiTransaction(true);
-            try {
-                JavaMetamodel.getManager().setClassPath(beanFO);
-                JMIUtils.fixImports(s.getEjbClass());
-                JMIUtils.fixImports(s.getLocal());
-                JMIUtils.fixImports(s.getLocalHome());
-                JMIUtils.fixImports(s.getRemote());
-                JMIUtils.fixImports(s.getHome());
-                JMIUtils.fixImports(remoteBusinessIntfName);
-                JMIUtils.fixImports(localBusinessIntfName);
-                rollback = false;
-            } finally {
-                JMIUtils.endJmiTransaction(rollback);
-            }
-            
-            JMIUtils.saveClass(s.getLocal(), beanFO);
-            JMIUtils.saveClass(s.getLocalHome(), beanFO);
-            JMIUtils.saveClass(s.getRemote(), beanFO);
-            JMIUtils.saveClass(s.getHome(), beanFO);
-            JMIUtils.saveClass(remoteBusinessIntfName, beanFO);
-            JMIUtils.saveClass(localBusinessIntfName, beanFO);
         }
-        JMIUtils.saveClass(beanClass, beanFO);
-        return beanFO;
+        return beanClassFO;
     }
     
     /**
@@ -254,4 +234,40 @@ public class SessionGenerator extends EntityAndSessionGenerator {
         create.addExceptionType("javax.ejb.CreateException");
         return new Method[] {create};
     }
+    
+    private static void addSimpleAnnotationToClass(FileObject beanClassFO, final String annotationTypeName) throws IOException {
+        JavaSource javaSource = JavaSource.forFileObject(beanClassFO);
+        ModificationResult modificationResult = javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws Exception {
+                GenerationUtils generationUtils = GenerationUtils.newInstance(workingCopy);
+                TypeElement javaClass = generationUtils.getTypeElement();
+                addSimpleAnnotationToClass(workingCopy, javaClass, annotationTypeName);
+            }
+        });
+        modificationResult.commit();
+    }
+
+    private static void addSimpleAnnotationToClass(WorkingCopy workingCopy, TypeElement typeElement, final String annotationTypeName) {
+        TreeMaker treeMaker = workingCopy.getTreeMaker();
+        Trees trees = workingCopy.getTrees();
+        ClassTree clazz = trees.getTree(typeElement);
+        AnnotationTree annotationTree = treeMaker.Annotation(
+                trees.getTree(workingCopy.getElements().getTypeElement(annotationTypeName)),
+                Collections.<ExpressionTree>emptyList()
+                );
+        ModifiersTree modifiersTree = treeMaker.Modifiers(
+                clazz.getModifiers(),
+                Collections.<AnnotationTree>singletonList(annotationTree)
+                );
+        ClassTree modifiedClazz = treeMaker.Class(
+                modifiersTree,
+                clazz.getSimpleName(),
+                clazz.getTypeParameters(),
+                clazz.getExtendsClause(),
+                (List<ExpressionTree>) clazz.getImplementsClause(), //TODO: RETOUCHE ???
+                clazz.getMembers()
+                );
+        workingCopy.rewrite(clazz, modifiedClazz);
+    }
+    
 }

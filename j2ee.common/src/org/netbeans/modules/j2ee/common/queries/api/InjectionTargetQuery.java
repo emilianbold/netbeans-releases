@@ -22,7 +22,9 @@ package org.netbeans.modules.j2ee.common.queries.api;
 import java.util.ArrayList;
 import java.util.List;
 import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.modules.j2ee.common.queries.spi.InjectionTargetQueryImplementation;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -42,15 +44,17 @@ public class InjectionTargetQuery {
     
     /**
      * Decide if dependency injection can be used in given class
-     * @param typeElement class where annotated field or method should be inserted
+     * @param fileObject file of class where annotated field or method should be inserted
+     * @param typeElement fully-qualified name of class where annotated field or method should be inserted,
+     * if null is provided, main public class from file is taken
      * @return true if any container or environment is able to inject resources in given class, false otherwise
      */
-    public static boolean isInjectionTarget(TypeElement typeElement) {
-        if (typeElement == null) {
-            throw new NullPointerException("Passed null to InjectionTargetQuery.isInjectionTarget(JavaClass)"); // NOI18N
+    public static boolean isInjectionTarget(FileObject fileObject, String fqn) {
+        if (fileObject == null) {
+            throw new NullPointerException("Passed null FileObject to InjectionTargetQuery.isInjectionTarget(FileObject, String)"); // NOI18N
         }
         for (InjectionTargetQueryImplementation elem : getInstances()) {
-            if (elem.isInjectionTarget(typeElement)) {
+            if (elem.isInjectionTarget(fileObject, fqn)) {
                 return true;
             }
         }
@@ -62,15 +66,17 @@ public class InjectionTargetQuery {
      * For example, in application client injection can be used only in class with main method and all
      * injected fields must be static<br>
      * Implementation 
-     * @param typeElement class where annotated field or method should be inserted
+     * @param fileObject file of class where annotated field or method should be inserted
+     * @param typeElement fully-qualified name of class where annotated field or method should be inserted,
+     * if null is provided, main public class from file is taken
      * @return true if static reference is required in given class, false otherwise
      */
-    public static boolean isStaticReferenceRequired(TypeElement typeElement) {
-        if (typeElement == null) {
-            throw new NullPointerException("Passed null to InjectionTargetQuery.isStaticReferenceRequired(JavaClass)"); // NOI18N
+    public static boolean isStaticReferenceRequired(FileObject fileObject, String fqn) {
+        if (fileObject == null) {
+            throw new NullPointerException("Passed null FileObject to InjectionTargetQuery.isStaticReferenceRequired(FileObject, String)"); // NOI18N
         }
         for (InjectionTargetQueryImplementation elem : getInstances()) {
-            if (elem.isStaticReferenceRequired(typeElement)) {
+            if (elem.isStaticReferenceRequired(fileObject, fqn)) {
                 return true;
             }
         }

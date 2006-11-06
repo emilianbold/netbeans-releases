@@ -20,15 +20,11 @@
 package org.netbeans.modules.j2ee.ejbcore.api.codegeneration;
 
 import java.io.IOException;
-import java.util.Collection;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.jmi.javamodel.UnresolvedClass;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
-import org.netbeans.modules.j2ee.common.JMIUtils;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.api.project.Project;
-import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.modules.j2ee.dd.api.ejb.AssemblyDescriptor;
 import org.netbeans.modules.j2ee.dd.api.ejb.CmpField;
 import org.netbeans.modules.j2ee.dd.api.ejb.ContainerTransaction;
@@ -36,7 +32,6 @@ import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.gen.Bean;
 import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.gen.Method;
-import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -72,26 +67,7 @@ public class EntityGenerator extends EntityAndSessionGenerator {
         this.primaryKeyFQN = primaryKeyClassName;
         this.primaryKeySimpleName = primaryKeyClassName;
 
-        if (primaryKeyClassName.indexOf(".") == -1) {
-            Collection classes = JMIUtils.getClassesBySimpleName(primaryKeyClassName, cp);
-            if (!classes.isEmpty()) {
-                JavaClass jc = (JavaClass) classes.toArray()[0];
-                this.primaryKeyFQN = jc.getName();
-                this.primaryKeySimpleName = jc.getSimpleName();
-            } else {
-                JavaClass jc = (JavaClass) JMIUtils.resolveType("java.lang." + primaryKeyClassName);
-                if (!(jc instanceof UnresolvedClass)) {
-                    this.primaryKeyFQN = jc.getName();
-                    this.primaryKeySimpleName = jc.getSimpleName();
-                }
-            }
-        } else {
-            JavaClass jc = (JavaClass) JMIUtils.resolveType(primaryKeyClassName);
-            if (!(jc instanceof UnresolvedClass)) {
-                this.primaryKeyFQN = jc.getName();
-                this.primaryKeySimpleName = jc.getSimpleName();
-            }
-        }
+        //TODO: RETOUCHE remove XSLT generation and all these simple/fqn names handling
 
         ejbName = EjbGenerationUtil.uniqueSingleEjbName(ejbName, ejbJar);
 
@@ -176,31 +152,6 @@ public class EntityGenerator extends EntityAndSessionGenerator {
         ct.addMethod(m);
         ad.addContainerTransaction(ct);
         ejbJar.write(ejbModule.getDeploymentDescriptor());
-
-        // use simple names in all generated classes, use imports
-        boolean rollback = true;
-        JMIUtils.beginJmiTransaction(true);
-        try {
-            JavaMetamodel.getManager().setClassPath(bFile);
-            JMIUtils.fixImports(e.getEjbClass());
-            JMIUtils.fixImports(e.getLocal());
-            JMIUtils.fixImports(e.getLocalHome());
-            JMIUtils.fixImports(e.getRemote());
-            JMIUtils.fixImports(e.getHome());
-            JMIUtils.fixImports(remoteBusinessIntfName);
-            JMIUtils.fixImports(localBusinessIntfName);
-            rollback = false;
-        } finally {
-            JMIUtils.endJmiTransaction(rollback);
-        }
-        
-        JMIUtils.saveClass(e.getEjbClass(), bFile);
-        JMIUtils.saveClass(e.getLocal(), bFile);
-        JMIUtils.saveClass(e.getLocalHome(), bFile);
-        JMIUtils.saveClass(e.getRemote(), bFile);
-        JMIUtils.saveClass(e.getHome(), bFile);
-        JMIUtils.saveClass(remoteBusinessIntfName, bFile);
-        JMIUtils.saveClass(localBusinessIntfName, bFile);
 
         DataObject dobj = DataObject.find(bFile);
         EditorCookie ec = (EditorCookie) dobj.getCookie(EditorCookie.class);

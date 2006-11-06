@@ -18,10 +18,17 @@
  */
 package org.netbeans.modules.j2ee.ejbcore.api.methodcontroller;
 
+import com.sun.source.tree.MethodTree;
+import com.sun.source.util.TreePath;
+import com.sun.source.util.Trees;
 import java.util.Collection;
 import java.util.Set;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.Method;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.AbstractMethodController;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType;
@@ -29,8 +36,6 @@ import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType.Busines
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType.CreateMethodType;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType.FinderMethodType;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType.HomeMethodType;
-import org.netbeans.modules.j2ee.common.JMIUtils;
-import org.netbeans.modules.javacore.api.JavaModel;
 
 /**
  *
@@ -38,69 +43,85 @@ import org.netbeans.modules.javacore.api.JavaModel;
  * @author Martin Adamek
  */
 class EntityGenerateFromImplVisitor implements MethodType.MethodTypeVisitor, AbstractMethodController.GenerateFromImpl {
-    private Method intfMethod;
-    private JavaClass destination;
-    private JavaClass home;
-    private JavaClass component;
+    
+    private WorkingCopy workingCopy;
+    private ExecutableElement intfMethod;
+    private TypeElement destination;
+    private TypeElement home;
+    private TypeElement component;
     private Entity e;
     
-    public EntityGenerateFromImplVisitor(Entity e) {
+    public EntityGenerateFromImplVisitor(WorkingCopy workingCopy, Entity e) {
+        this.workingCopy = workingCopy;
         this.e = e;
     }
     
-    public void getInterfaceMethodFromImpl(MethodType m, JavaClass home,
-                                           JavaClass component) {
+    public void getInterfaceMethodFromImpl(MethodType m, TypeElement home, TypeElement component) {
         this.home = home;
         this.component = component;
         m.accept(this);
     }
     
-    public Method getInterfaceMethod() {
+    public ExecutableElement getInterfaceMethod() {
         return intfMethod;
     }
     
-    public JavaClass getDestinationInterface() {
+    public TypeElement getDestinationInterface() {
         return destination;
     }
     
     public void visit(BusinessMethodType bmt) {
-        intfMethod = JMIUtils.duplicate(bmt.getMethodElement());
+        intfMethod = bmt.getMethodElement();
         destination = component;
     }
     
     public void visit(CreateMethodType cmt) {
-        intfMethod = JMIUtils.duplicate(cmt.getMethodElement());
-        String origName = intfMethod.getName();
+        intfMethod = cmt.getMethodElement();
+        String origName = intfMethod.getSimpleName().toString();
+        String newName = null;
         if (origName.startsWith("ejbPostCreate")) {
-            String newName = chopAndUpper(origName,"ejbPost"); //NOI18N
-            intfMethod.setName(newName);
+            newName = chopAndUpper(origName,"ejbPost"); //NOI18N
         } else {
-            String newName = chopAndUpper(origName,"ejb"); //NOI18N
-            intfMethod.setName(newName);
-            intfMethod.setType(JMIUtils.resolveType(component.getName()));
+            newName = chopAndUpper(origName,"ejb"); //NOI18N
         }
+        MethodTree resultTree = AbstractMethodController.modifyMethod(workingCopy, intfMethod, null, newName, null, null, null, null);
+        Trees trees = workingCopy.getTrees();
+        TreePath treePath = trees.getPath(workingCopy.getCompilationUnit(), resultTree);
+        intfMethod =  (ExecutableElement) trees.getElement(treePath);
         destination = home;
     }
     
     public void visit(HomeMethodType hmt) {
-        intfMethod = JMIUtils.duplicate(hmt.getMethodElement());
-        String origName = intfMethod.getName();
+        intfMethod = hmt.getMethodElement();
+        String origName = intfMethod.getSimpleName().toString();
         String newName = chopAndUpper(origName,"ejbHome"); //NOI18N
-        intfMethod.setName(newName);
+        MethodTree resultTree = AbstractMethodController.modifyMethod(workingCopy, intfMethod, null, newName, null, null, null, null);
+        Trees trees = workingCopy.getTrees();
+        TreePath treePath = trees.getPath(workingCopy.getCompilationUnit(), resultTree);
+        intfMethod =  (ExecutableElement) trees.getElement(treePath);
         destination = home;
     }
     
     public void visit(FinderMethodType fmt) {
-        intfMethod = JMIUtils.duplicate(fmt.getMethodElement());
-        String origName = intfMethod.getName();
+        intfMethod = fmt.getMethodElement();
+        String origName = intfMethod.getSimpleName().toString();
         String newName = chopAndUpper(origName,"ejb"); //NOI18N
-        intfMethod.setName(newName);
-        String rv = intfMethod.getType().getName();
-        if (!rv.equals(Collection.class.getName()) ||
-        !rv.equals(Set.class.getName())) {
-        intfMethod.setType(JMIUtils.resolveType(component.getName()));
+        MethodTree resultTree = AbstractMethodController.modifyMethod(workingCopy, intfMethod, null, newName, null, null, null, null);
+        Trees trees = workingCopy.getTrees();
+        TreePath treePath = trees.getPath(workingCopy.getCompilationUnit(), resultTree);
+        intfMethod =  (ExecutableElement) trees.getElement(treePath);
+        TypeMirror returnType = intfMethod.getReturnType();
+        if (TypeKind.DECLARED == returnType.getKind()) {
+            DeclaredType declaredType = (DeclaredType) returnType;
+            String rv = ((TypeElement) declaredType.asElement()).getQualifiedName().toString();
+            if (!rv.equals(Collection.class.getName()) || !rv.equals(Set.class.getName())) {
+                resultTree = AbstractMethodController.modifyMethod(workingCopy, intfMethod, null, null, trees.getTree(component), null, null, null);
+                treePath = trees.getPath(workingCopy.getCompilationUnit(), resultTree);
+                intfMethod =  (ExecutableElement) trees.getElement(treePath);
+            }
         }
-        intfMethod.setBody(null);
+        //TODO: RETOUCHE need to empty the body?
+//        intfMethod.setBody(null);
         destination = home;
     }
     

@@ -25,6 +25,7 @@ import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
 import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
 import org.netbeans.modules.j2ee.dd.api.common.MessageDestinationRef;
 import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
+import org.openide.filesystems.FileObject;
 
 /**
  * Instances of this class should be supplied by projects to indicate that
@@ -34,7 +35,7 @@ import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
  * This api is current experimental and subject to change.
  * @author Chris Webster
  */
-public abstract class EnterpriseReferenceContainer {
+public interface EnterpriseReferenceContainer {
     
     /**
      * Add given ejb reference into deployment descriptor. This method should
@@ -54,23 +55,24 @@ public abstract class EnterpriseReferenceContainer {
      * @param target to include in the build
      * @return actual jndi name used in deployment descriptor
      */
-    public abstract String addEjbReferernce(EjbRef ref, String referenceClassName,  AntArtifact target) throws IOException;
+    String addEjbReference(EjbRef ref, FileObject referencingFile, String referencingClass, AntArtifact target) throws IOException;
+    
     /**
-     * @see #addEjbReference(EjbRef, String, AntArtifact)
+     * @see #addEjbReference(EjbRef, FileObject, String, AntArtifact)
      */
-    public abstract String addEjbLocalReference(EjbLocalRef localRef, String referencedClassName, AntArtifact target) throws IOException;
+    String addEjbLocalReference(EjbLocalRef localRef, FileObject referencingFile, String referencingClass, AntArtifact target) throws IOException;
     
     /**
      * @return name of the service locator defined for this project or null
      * if service locator is not being used
      */
-    public abstract String getServiceLocatorName();
+    String getServiceLocatorName();
     
     /**
      * set name of service locator fo this project. 
      * @param serviceLocator used in this project
      */
-    public abstract void setServiceLocatorName(String serviceLocator) throws IOException;
+    void setServiceLocatorName(String serviceLocator) throws IOException;
     
     /**
      * Add given message destination reference into the deployment descriptor
@@ -78,9 +80,9 @@ public abstract class EnterpriseReferenceContainer {
      * @param referencingClass class using the destination
      * @return unique jndi name used in the deployment descriptor
      */
-    public abstract String addDestinationRef(MessageDestinationRef ref, String referencingClass) throws IOException;
+    String addDestinationRef(MessageDestinationRef ref, FileObject referencingFile, String referencingClass) throws IOException;
 
-    public abstract MessageDestinationRef createDestinationRef(String className) throws IOException;
+    MessageDestinationRef createDestinationRef(String className) throws IOException;
     
     /**
      * Add given resource reference into the deployment descriptor.
@@ -88,11 +90,11 @@ public abstract class EnterpriseReferenceContainer {
      * @param referencingClass class which will use the resource
      * @return unique jndi name used in deployment descriptor
      */
-    public abstract String addResourceRef(ResourceRef ref, String referencingClass) throws IOException;
+    String addResourceRef(ResourceRef ref, FileObject referencingFile, String referencingClass) throws IOException;
     
     /**
      * Create resource ref instance based on current project type.
      * @param className to determine context from
      */
-    public abstract ResourceRef createResourceRef(String className) throws IOException;
+    ResourceRef createResourceRef(String className) throws IOException;
 }

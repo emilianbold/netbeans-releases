@@ -22,7 +22,6 @@ package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.entity;
 import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import org.netbeans.modules.j2ee.common.JMIUtils;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -35,7 +34,6 @@ import org.openide.util.actions.SystemAction;
 import org.openide.util.WeakListeners;
 import java.io.IOException;
 import java.util.List;
-import org.netbeans.jmi.javamodel.Method;
 import org.netbeans.modules.j2ee.dd.api.ejb.CmrField;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EntityMethodController;
 import org.openide.filesystems.FileObject;
@@ -99,11 +97,12 @@ public class CMRFieldNode extends AbstractNode implements PropertyChangeListener
     public void open() {
         List methods = controller.getMethods(field);
         if (!methods.isEmpty()) {
-            Method getMethod = (Method) methods.get(0);
-            OpenCookie cookie = (OpenCookie) JMIUtils.getCookie(getMethod, OpenCookie.class);
-            if(cookie != null){
-                cookie.open();
-            }
+            //TODO: RETOUCHE
+//            Method getMethod = (Method) methods.get(0);
+//            OpenCookie cookie = (OpenCookie) JMIUtils.getCookie(getMethod, OpenCookie.class);
+//            if(cookie != null){
+//                cookie.open();
+//            }
         }
     }
 }

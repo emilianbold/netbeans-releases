@@ -20,8 +20,7 @@
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 
 
-import org.netbeans.jmi.javamodel.Feature;
-import org.netbeans.jmi.javamodel.UnresolvedClass;
+import javax.lang.model.element.Element;
 import org.netbeans.modules.j2ee.ejbcore.patterns.DTOGenerator;
 import org.netbeans.modules.j2ee.ejbcore.patterns.DTOHelper;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EntityMethodController;
@@ -41,14 +40,15 @@ import org.openide.util.actions.NodeAction;
 public class GenerateDTOAction extends NodeAction {
     
     protected void performAction(Node[] nodes) {
-            Feature mE = getMemberElement(nodes[0]);
-            DTOHelper dtoHelp = new DTOHelper(mE);
-            DTOGenerator dtoGen = new DTOGenerator();
-            try{
-                dtoGen.generateDTO(dtoHelp, null, false);
-            }catch(java.io.IOException ex){
-                ErrorManager.getDefault().notify(ex);
-            }
+        //TODO: RETOUCHE
+//            Element mE = getMemberElement(nodes[0]);
+//            DTOHelper dtoHelp = new DTOHelper(mE);
+//            DTOGenerator dtoGen = new DTOGenerator();
+//            try{
+//                dtoGen.generateDTO(dtoHelp, null, false);
+//            }catch(java.io.IOException ex){
+//                ErrorManager.getDefault().notify(ex);
+//            }
     }
     
     protected boolean enable(Node[] nodes) {
@@ -56,15 +56,17 @@ public class GenerateDTOAction extends NodeAction {
             return false;
         }
         EjbMethodController c;
-        Feature feature = getMemberElement(nodes[0]);
-        if (feature == null || (feature instanceof UnresolvedClass)) {
+        Element feature = getMemberElement(nodes[0]);
+        if (feature == null) {
             return false;
         }
-        return nodes.length == 1 &&
-                isMemberElement(nodes[0]) &&
-                (c = EjbMethodController.create(feature)) != null &&
-                c instanceof EntityMethodController &&
-                ((EntityMethodController) c).isCMP();
+        //TODO: RETOUCHE
+        return false;
+//        return nodes.length == 1 &&
+//                isMemberElement(nodes[0]) &&
+//                (c = EjbMethodController.create(feature)) != null &&
+//                c instanceof EntityMethodController &&
+//                ((EntityMethodController) c).isCMP();
     }
     
     public String getName() {
@@ -83,8 +85,10 @@ public class GenerateDTOAction extends NodeAction {
         return false;
     }
         
-    private Feature getMemberElement(Node node) {
-        return (Feature) node.getLookup().lookup(Feature.class);
+    private Element getMemberElement(Node node) {
+        //TODO: RETOUCHE element in lookup
+        return null;
+//        return (Feature) node.getLookup().lookup(Feature.class);
     }
     
     private boolean isMemberElement(Node node){

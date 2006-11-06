@@ -18,19 +18,25 @@
  */
 package org.netbeans.modules.j2ee.ejbcore.api.methodcontroller;
 
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.VariableTree;
+import com.sun.source.util.Trees;
 import java.io.IOException;
-import java.lang.reflect.Modifier;
 import java.util.*;
 import java.rmi.RemoteException;
-
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.jmi.javamodel.ClassMember;
-import org.netbeans.jmi.javamodel.Field;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.Method;
-import org.netbeans.jmi.javamodel.Parameter;
-import org.netbeans.jmi.javamodel.Type;
-import org.netbeans.modules.j2ee.common.JMIUtils;
+import java.util.Collections;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Types;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.j2ee.dd.api.ejb.CmpField;
 import org.netbeans.modules.j2ee.dd.api.ejb.CmrField;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
@@ -38,6 +44,8 @@ import org.netbeans.modules.j2ee.dd.api.ejb.EjbRelation;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbRelationshipRole;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.dd.api.ejb.MethodParams;
+import org.netbeans.modules.j2ee.dd.api.ejb.Query;
+import org.netbeans.modules.j2ee.dd.api.ejb.Query;
 import org.netbeans.modules.j2ee.dd.api.ejb.Query;
 import org.netbeans.modules.j2ee.dd.api.ejb.QueryMethod;
 import org.netbeans.modules.j2ee.dd.api.ejb.Relationships;
@@ -49,15 +57,20 @@ import org.openide.util.NbBundle;
  * @author Chris Webster
  * @author Martin Adamek
  */
-public class EntityMethodController extends AbstractMethodController {
+public final class EntityMethodController extends AbstractMethodController {
+    
+    private WorkingCopy workingCopy;
     private Entity model;
     private EjbJar parent;
-    private static final int MODIFIERS_PUBLIC_ABSTRACT = Modifier.PUBLIC | Modifier.ABSTRACT;
+    private Set<Modifier> modifiersPublicAbstract = new HashSet(2);
 
-    public EntityMethodController(Entity model, ClassPath cp, EjbJar parent) {
-        super(model,cp);
+    public EntityMethodController(WorkingCopy workingCopy, Entity model, EjbJar parent) {
+        super(workingCopy, model);
+        this.workingCopy = workingCopy;
         this.model = model;
         this.parent = parent;
+        modifiersPublicAbstract.add(Modifier.PUBLIC);
+        modifiersPublicAbstract.add(Modifier.ABSTRACT);
     }
 
     public List getMethods(CmpField field) {
@@ -68,19 +81,15 @@ public class EntityMethodController extends AbstractMethodController {
         return getMethods(field.getCmrFieldName());
     }
 
-    public void deleteQueryMapping(Method method, FileObject dd) throws IOException {
+    public void deleteQueryMapping(ExecutableElement method, FileObject dd) throws IOException {
         Query[] queries = model.getQuery();
-        Query q = null;
-        for (int i=0; i < queries.length; i++) {
-            q = queries[i];
-            String methodName = q.getQueryMethod().getMethodName();
-            if (methodName.equals(method.getName())) {
-                break;
+        for (Query query : queries) {
+            String methodName = query.getQueryMethod().getMethodName();
+            if (method.getSimpleName().contentEquals(methodName)) {
+                model.removeQuery(query);
+                parent.write(dd);
+                return;
             }
-        }
-        if (q != null) {
-            model.removeQuery(q);
-            parent.write(dd);
         }
     }
 
@@ -99,39 +108,28 @@ public class EntityMethodController extends AbstractMethodController {
      * @throws java.io.IOException
      */
     public void deleteField(CmpField field, FileObject dd) throws IOException {
-        beginWriteJmiTransaction();
-        boolean rollback = true;
         Query query = null;
-        try {
-            String fieldName = field.getFieldName();
-            // find findBy<field> query in DD
-            query = findQueryByCmpField(fieldName);
-            // remove findBy<field> method from local interfaces (should be only in local home)
-            for (Iterator iter = getLocalInterfaces().iterator(); iter.hasNext();) {
-                JavaClass ce = (JavaClass) iter.next();
-                Method me = getFinderMethod(ce, fieldName, getGetterMethod(getBeanClass(), fieldName));
-                if (me != null) {
-                    JavaClass declaringClass = (JavaClass) me.getDeclaringClass();
-                    registerClassForSave(declaringClass);
-                    declaringClass.getContents().remove(me);
-                }
+        String fieldName = field.getFieldName();
+        // find findBy<field> query in DD
+        query = findQueryByCmpField(fieldName);
+        // remove findBy<field> method from local interfaces (should be only in local home)
+        for (TypeElement ce : getLocalInterfaces()) {
+            ExecutableElement me = getFinderMethod(ce, fieldName, getGetterMethod(getBeanClass(), fieldName));
+            if (me != null) {
+                TypeElement declaringClass = (TypeElement) me.getEnclosingElement();
+                removeMethodFromClass(declaringClass, me);
             }
-            // remove findBy<field> method from remote interfaces (should be only in remote home)
-            for (Iterator iter = getRemoteInterfaces().iterator(); iter.hasNext();) {
-                JavaClass ce = (JavaClass) iter.next();
-                Method me = getFinderMethod(ce, fieldName, getGetterMethod(getBeanClass(), fieldName));
-                if (me != null) {
-                    JavaClass declaringClass = (JavaClass) me.getDeclaringClass();
-                    registerClassForSave(declaringClass);
-                    declaringClass.getContents().remove(me);
-                }
-            }
-            removeMethodsFromBean(getMethods(fieldName));
-            updateFieldAccessors(fieldName, false, false, false, false);
-            rollback = false;
-        } finally {
-            endWriteJmiTransaction(rollback);
         }
+        // remove findBy<field> method from remote interfaces (should be only in remote home)
+        for (TypeElement ce : getRemoteInterfaces()) {
+            ExecutableElement me = getFinderMethod(ce, fieldName, getGetterMethod(getBeanClass(), fieldName));
+            if (me != null) {
+                TypeElement declaringClass = (TypeElement) me.getEnclosingElement();
+                removeMethodFromClass(declaringClass, me);
+            }
+        }
+        removeMethodsFromBean(getMethods(fieldName));
+        updateFieldAccessors(fieldName, false, false, false, false);
         // remove findBy<field> query from DD
         if (query != null) {
             model.removeQuery(query);
@@ -143,8 +141,7 @@ public class EntityMethodController extends AbstractMethodController {
 
     private Query findQueryByCmpField(String fieldName) {
         Query[] queries = model.getQuery();
-        for (int i = 0; i < queries.length; i++) {
-            Query query = queries[i];
+        for (Query query : queries) {
             String queryMethodName = query.getQueryMethod().getMethodName();
             if (queryMethodName.equals(prependAndUpper(fieldName, "findBy"))) {
                 return query;
@@ -153,30 +150,26 @@ public class EntityMethodController extends AbstractMethodController {
         return null;
     }
 
-    private void removeMethodsFromBean(List methods) {
-        for (Iterator iter = methods.iterator(); iter.hasNext();) {
-            Method method = (Method) iter.next();
+    private void removeMethodsFromBean(List<ExecutableElement> methods) {
+        for (ExecutableElement method : methods) {
             // remove get/set<field> from local/remote/business interfaces
             if (hasLocal()) {
-                Method me = getInterface(method, true);
+                ExecutableElement me = getInterface(method, true);
                 if (me != null) {
-                    JavaClass declaringClass = (JavaClass) me.getDeclaringClass();
-                    registerClassForSave(declaringClass);
-                    declaringClass.getFeatures().remove(me);
+                    TypeElement declaringClass = (TypeElement) me.getEnclosingElement();
+                    removeMethodFromClass(declaringClass, me);
                 }
             }
             if (hasRemote()) {
-                Method me = getInterface(method, false);
+                ExecutableElement me = getInterface(method, false);
                 if (me != null) {
-                    JavaClass declaringClass = (JavaClass) me.getDeclaringClass();
-                    registerClassForSave(declaringClass);
-                    declaringClass.getContents().remove(me);
+                    TypeElement declaringClass = (TypeElement) me.getEnclosingElement();
+                    removeMethodFromClass(declaringClass, me);
                 }
             }
             // remove get/set<field> from main bean class
-            JavaClass declaringClass = (JavaClass) method.getDeclaringClass();
-            registerClassForSave(declaringClass);
-            declaringClass.getContents().remove(method);
+            TypeElement declaringClass = (TypeElement) method.getEnclosingElement();
+            removeMethodFromClass(declaringClass, method);
         }
     }
 
@@ -192,15 +185,8 @@ public class EntityMethodController extends AbstractMethodController {
      * @throws java.io.IOException
      */
     public void deleteField(CmrField field, FileObject dd) throws IOException {
-        beginWriteJmiTransaction();
-        boolean rollback = true;
-        try {
-            List methods = getMethods(field.getCmrFieldName());
-            removeMethodsFromBean(methods);
-            rollback = false;
-        } finally {
-            endWriteJmiTransaction(rollback);
-        }
+        List methods = getMethods(field.getCmrFieldName());
+        removeMethodsFromBean(methods);
         // remove relation from DD
         deleteRelationships(field.getCmrFieldName());
         parent.write(dd);
@@ -222,7 +208,7 @@ public class EntityMethodController extends AbstractMethodController {
         return null;
     }
     
-    public boolean hasJavaImplementation(Method intfView) {
+    public boolean hasJavaImplementation(ExecutableElement intfView) {
         return hasJavaImplementation(getMethodTypeFromInterface(intfView));
     }
 
@@ -230,32 +216,29 @@ public class EntityMethodController extends AbstractMethodController {
         return !(isCMP() && (isFinder(mt) || isSelect(mt)));
     }
 
-    public MethodType getMethodTypeFromImpl(Method implView) {
+    public MethodType getMethodTypeFromImpl(ExecutableElement implView) {
         MethodType mt = null;
-        if (implView.getName().startsWith("ejbCreate") || implView.getName().startsWith("ejbPostCreate")) { //NOI18N
+        if (implView.getSimpleName().toString().startsWith("ejbCreate") || implView.getSimpleName().toString().startsWith("ejbPostCreate")) { //NOI18N
             mt = new MethodType.CreateMethodType(implView);
-        } else if (!implView.getName().startsWith("ejb")) { //NOI18N
+        } else if (!implView.getSimpleName().toString().startsWith("ejb")) { //NOI18N
             mt = new MethodType.BusinessMethodType(implView);
-        } else if (implView.getName().startsWith("ejbFind")) { //NOI18N
+        } else if (implView.getSimpleName().toString().startsWith("ejbFind")) { //NOI18N
             mt = new MethodType.FinderMethodType(implView);
-        } else if (implView.getName().startsWith("ejbHome")) { //NOI18N
+        } else if (implView.getSimpleName().toString().startsWith("ejbHome")) { //NOI18N
             mt = new MethodType.HomeMethodType(implView);
         }
         return mt;
     }
 
-    public MethodType getMethodTypeFromInterface(Method clientView) {
-        if (!clientView.isValid()) {
-            return null;
-        }
-        assert clientView.getDeclaringClass() != null: "declaring class cannot be null";
-        String cName = clientView.getDeclaringClass().getName();
+    public MethodType getMethodTypeFromInterface(ExecutableElement clientView) {
+        assert clientView.getEnclosingElement() != null: "declaring class cannot be null";
+        String cName = ((TypeElement) clientView.getEnclosingElement()).getQualifiedName().toString();
         MethodType mt;
         if (cName.equals(model.getLocalHome()) ||
             cName.equals(model.getHome())) {
-            if (clientView.getName().startsWith("create")) { //NOI18N
+            if (clientView.getSimpleName().toString().startsWith("create")) { //NOI18N
                 mt = new MethodType.CreateMethodType(clientView);
-            } else if (clientView.getName().startsWith("find")) { //NOI18N
+            } else if (clientView.getSimpleName().toString().startsWith("find")) { //NOI18N
                 mt = new MethodType.FinderMethodType(clientView);
             } else {
                 mt = new MethodType.HomeMethodType(clientView);
@@ -267,45 +250,35 @@ public class EntityMethodController extends AbstractMethodController {
     }
 
     public AbstractMethodController.GenerateFromImpl createGenerateFromImpl() {
-        return new EntityGenerateFromImplVisitor(model);
+        return new EntityGenerateFromImplVisitor(workingCopy, model);
     }
 
     public AbstractMethodController.GenerateFromIntf createGenerateFromIntf() {
-        return new EntityGenerateFromIntfVisitor(model);
+        return new EntityGenerateFromIntfVisitor(workingCopy, model);
     }
 
-    public void addSelectMethod(Method selectMethod, String ql, FileObject dd)
-    throws IOException {
-        getBeanClass().getContents().add(selectMethod);
+    public void addSelectMethod(ExecutableElement selectMethod, String ql, FileObject dd) throws IOException {
+        addMethodToClass(getBeanClass(), selectMethod);
         addEjbQl(selectMethod,ql, dd);
     }
 
-    public void addEjbQl(Method clientView, String ejbql, FileObject dd) throws IOException {
+    public void addEjbQl(ExecutableElement clientView, String ejbql, FileObject dd) throws IOException {
         if (isBMP()) {
             super.addEjbQl(clientView, ejbql, dd);
         }
-
         model.addQuery(buildQuery(clientView, ejbql));
         parent.write(dd);
     }
 
-    public void addField(Field field, FileObject ddFile, boolean localGetter, boolean localSetter,
-            boolean remoteGetter, boolean remoteSetter, String description) throws IOException {
-        beginWriteJmiTransaction();
-        boolean rollback = true;
-        try {
-            JavaClass beanClass = getBeanClass();
-            registerClassForSave(beanClass);
-            addSetterMethod(beanClass, field, MODIFIERS_PUBLIC_ABSTRACT, false, model);
-            addGetterMethod(beanClass, field, MODIFIERS_PUBLIC_ABSTRACT, false, model);
-            final String fieldName = field.getName();
-            updateFieldAccessors(fieldName, localGetter, localSetter, remoteGetter, remoteSetter);
-            rollback = false;
-        } finally {
-            endWriteJmiTransaction(rollback);
-        }
+    public void addField(VariableElement field, FileObject ddFile, boolean localGetter, boolean localSetter,
+        boolean remoteGetter, boolean remoteSetter, String description) throws IOException {
+        TypeElement beanClass = getBeanClass();
+        addSetterMethod(beanClass, field, modifiersPublicAbstract, false, model);
+        addGetterMethod(beanClass, field, modifiersPublicAbstract, false, model);
+        final String fieldName = field.getSimpleName().toString();
+        updateFieldAccessors(fieldName, localGetter, localSetter, remoteGetter, remoteSetter);
         CmpField f = model.newCmpField();
-        f.setFieldName(field.getName());
+        f.setFieldName(field.getSimpleName().toString());
         f.setDescription(description);
         model.addCmpField(f);
         parent.write(ddFile);
@@ -322,68 +295,109 @@ public class EntityMethodController extends AbstractMethodController {
         }
     }
 
-    private static Method addSetterMethod(JavaClass javaClass, Field field, int modifiers, boolean remote, Entity e) {
-        Method method = createSetterMethod(javaClass, field, modifiers, remote);
+    private ExecutableElement addSetterMethod(TypeElement javaClass, VariableElement field, Set<Modifier> modifiers, boolean remote, Entity e) {
+        ExecutableElement method = createSetterMethod(javaClass, field, modifiers, remote);
         addMethod(javaClass, method, e);
         return method;
     }
 
-    private static Method addGetterMethod(JavaClass javaClass, Field fe, int modifiers, boolean remote, Entity e) {
-        Method method = createGetterMethod(javaClass, fe, modifiers, remote);
+    private ExecutableElement addGetterMethod(TypeElement javaClass, VariableElement fe, Set<Modifier> modifiers, boolean remote, Entity e) {
+        ExecutableElement method = createGetterMethod(javaClass, fe, modifiers, remote);
         addMethod(javaClass, method, e);
         return method;
     }
 
-    private static void addMethod(JavaClass javaClass, Method method, Entity e) {
+    private void addMethod(TypeElement javaClass, ExecutableElement method, Entity e) {
         // try to add method as the last CMP field getter/setter in class
-        List cmpFields = new ArrayList();
-        CmpField[] cmpFieldArray = e.getCmpField();
-        for (int i = 0; i < cmpFieldArray.length; i++) {
-            cmpFields.add(cmpFieldArray[i].getFieldName());
-        }
-        int index = -1;
-        for (Iterator it = javaClass.getContents().iterator(); it.hasNext();) {
-            Object elem = (Object) it.next();
-            if (elem instanceof Method) {
-                String fieldName = getFieldName(((Method) elem).getName());
-                if (cmpFields.contains(fieldName)) {
-                    index = javaClass.getContents().indexOf(elem);
-                }
-            }
-        }
-        if (index != -1) {
-            javaClass.getContents().add(index + 1, method);
+        addMethodToClass(javaClass, method);
+        //TODO: RETOUCHE insert into specified position
+//        List cmpFields = new ArrayList();
+//        CmpField[] cmpFieldArray = e.getCmpField();
+//        for (int i = 0; i < cmpFieldArray.length; i++) {
+//            cmpFields.add(cmpFieldArray[i].getFieldName());
+//        }
+//        int index = -1;
+//        for (Iterator it = javaClass.getContents().iterator(); it.hasNext();) {
+//            Object elem = (Object) it.next();
+//            if (elem instanceof Method) {
+//                String fieldName = getFieldName(((Method) elem).getName());
+//                if (cmpFields.contains(fieldName)) {
+//                    index = javaClass.getContents().indexOf(elem);
+//
+//                }
+//            }
+//        }
+//        if (index != -1) {
+//            javaClass.getContents().add(index + 1, method);
+//        } else {
+//            javaClass.getContents().add(method);
+//        }
+    }
+
+    private ExecutableElement createGetterMethod(TypeElement javaClass, VariableElement field, Set<Modifier> modifiers, boolean remote) {
+        final String fieldName = field.getSimpleName().toString();
+        ExecutableElement method = createMethod(getMethodName(fieldName, true));
+        MethodTree methodTree = null;
+        if (remote) {
+            TypeElement element = workingCopy.getElements().getTypeElement(RemoteException.class.getName());
+            ExpressionTree throwsClause = workingCopy.getTreeMaker().QualIdent(element);
+            methodTree = modifyMethod(
+                    workingCopy,
+                    method, 
+                    modifiers, 
+                    null, 
+                    workingCopy.getTreeMaker().PrimitiveType(TypeKind.VOID), 
+                    Collections.singletonList(field.asType()), 
+                    Collections.<ExpressionTree>singletonList(throwsClause),
+                    null
+                    );
         } else {
-            javaClass.getContents().add(method);
+            methodTree = modifyMethod(
+                    workingCopy,
+                    method, 
+                    modifiers, 
+                    null, 
+                    workingCopy.getTreeMaker().PrimitiveType(TypeKind.VOID), 
+                    Collections.singletonList(field.asType()), 
+                    null,
+                    null
+                    );
         }
+        Trees trees = workingCopy.getTrees();
+        return (ExecutableElement) trees.getElement(trees.getPath(workingCopy.getCompilationUnit(), methodTree));
     }
 
-    private static void removeMethod(JavaClass javaClass, Method method) {
-        javaClass.getContents().remove(method);
-    }
-
-    private static Method createGetterMethod(JavaClass javaClass, Field field, int modifiers, boolean remote) {
-        Method method = JMIUtils.createMethod(javaClass);
-        method.setModifiers(modifiers);
-        method.setType(field.getType());
-        method.setName(getMethodName(field.getName(), true));
+    private ExecutableElement createSetterMethod(TypeElement javaClass, VariableElement field, Set<Modifier> modifiers, boolean remote) {
+        final String fieldName = field.getSimpleName().toString();
+        ExecutableElement method = createMethod(getMethodName(fieldName, false));
+        MethodTree methodTree = null;
         if (remote) {
-            JMIUtils.addException(method, RemoteException.class.getName());
+            TypeElement element = workingCopy.getElements().getTypeElement(RemoteException.class.getName());
+            ExpressionTree throwsClause = workingCopy.getTreeMaker().QualIdent(element);
+            methodTree = modifyMethod(
+                    workingCopy,
+                    method, 
+                    modifiers, 
+                    null, 
+                    workingCopy.getTreeMaker().PrimitiveType(TypeKind.VOID), 
+                    Collections.singletonList(field.asType()), 
+                    Collections.<ExpressionTree>singletonList(throwsClause),
+                    null
+                    );
+        } else {
+            methodTree = modifyMethod(
+                    workingCopy,
+                    method, 
+                    modifiers, 
+                    null, 
+                    workingCopy.getTreeMaker().PrimitiveType(TypeKind.VOID), 
+                    Collections.singletonList(field.asType()), 
+                    null,
+                    null
+                    );
         }
-        return method;
-    }
-
-    private static Method createSetterMethod(JavaClass javaClass, Field field, int modifiers, boolean remote) {
-        Method method = JMIUtils.createMethod(javaClass);
-        method.setModifiers(modifiers);
-        method.setType(JMIUtils.resolveType("void"));
-        final String fieldName = field.getName();
-        method.setName(getMethodName(fieldName, false));
-        method.getParameters().add(JMIUtils.createParameter(method, fieldName, field.getType(), false));
-        if (remote) {
-            JMIUtils.addException(method, RemoteException.class.getName());
-        }
-        return method;
+        Trees trees = workingCopy.getTrees();
+        return (ExecutableElement) trees.getElement(trees.getPath(workingCopy.getCompilationUnit(), methodTree));
     }
 
     private boolean isBMP() {
@@ -427,14 +441,20 @@ public class EntityMethodController extends AbstractMethodController {
         return ql;
     }
 
-    private Query buildQuery(Method clientView, String ejbql) {
+    private Query buildQuery(ExecutableElement clientView, String ejbql) {
         Query q = model.newQuery();
         QueryMethod qm = q.newQueryMethod();
-        qm.setMethodName(clientView.getName());
+        qm.setMethodName(clientView.getSimpleName().toString());
         MethodParams mParams = qm.newMethodParams();
-        Parameter[] params = (Parameter[]) clientView.getParameters().toArray(new Parameter[clientView.getParameters().size()]);
-        for (int i =0; i < params.length; i++) {
-            mParams.addMethodParam(params[i].getType().getName());
+        Types types = workingCopy.getTypes();
+        for (VariableElement param : clientView.getParameters()) {
+            TypeMirror typeMirror = param.asType();
+            Element element = types.asElement(typeMirror);
+            if (ElementKind.CLASS == element.getKind()) {
+                mParams.addMethodParam(((TypeElement) element).getQualifiedName().toString());
+            } else {
+                mParams.addMethodParam(element.getSimpleName().toString());
+            }
         }
         qm.setMethodParams(mParams);
         q.setQueryMethod(qm);
@@ -500,80 +520,62 @@ public class EntityMethodController extends AbstractMethodController {
         }
     }
 
-    private List getMethods(String propName) {
+    private List<ExecutableElement> getMethods(String propName) {
         assert propName != null;
-        JMIUtils.beginJmiTransaction();
-        try {
-            List l = new LinkedList();
-            JavaClass ce = getBeanClass();
-            Method getMethod = getGetterMethod(ce, propName);
-            if (getMethod != null) {
-                l.add(getMethod);
-                Method setMethod = getSetterMethod(ce, propName, getMethod.getType());
-                if (setMethod != null) {
-                    l.add(setMethod);
-                }
+        List<ExecutableElement> l = new LinkedList<ExecutableElement>();
+        TypeElement ce = getBeanClass();
+        ExecutableElement getMethod = getGetterMethod(ce, propName);
+        if (getMethod != null) {
+            l.add(getMethod);
+            ExecutableElement setMethod = getSetterMethod(ce, propName, getMethod.getReturnType());
+            if (setMethod != null) {
+                l.add(setMethod);
             }
-            return l;
-        } finally {
-            JMIUtils.endJmiTransaction();
         }
+        return l;
     }
 
-    public static Method getGetterMethod(JavaClass javaClass, String fieldName) {
+    public ExecutableElement getGetterMethod(TypeElement javaClass, String fieldName) {
         if (javaClass == null || fieldName == null) {
             return null;
         }
-        return javaClass.getMethod(getMethodName(fieldName, true), Collections.EMPTY_LIST, false);
+        ExecutableElement method = createMethod(getMethodName(fieldName, true));
+        MethodTree methodTree = modifyMethod(workingCopy, method, null, null, null, Collections.<TypeMirror>emptyList(), null, null);
+        Trees trees = workingCopy.getTrees();
+        Element element = trees.getElement(trees.getPath(workingCopy.getCompilationUnit(), methodTree));
+        return findInClass(javaClass, (ExecutableElement) element);
     }
 
-    public static Method getSetterMethod(JavaClass classElement, String fieldName, Method getterMethod) {
-        return getSetterMethod(classElement, fieldName, getterMethod.getType());
+    public static ExecutableElement getSetterMethod(TypeElement classElement, String fieldName, ExecutableElement getterMethod) {
+        return getSetterMethod(classElement, fieldName, getterMethod);
     }
 
-    public Method getGetterMethod(String fieldName, boolean local) {
-        JMIUtils.beginJmiTransaction();
-        try {
-            return getGetterMethod(getBeanInterface(local, true), fieldName);
-        } finally {
-            JMIUtils.endJmiTransaction();
-        }
+    public ExecutableElement getGetterMethod(String fieldName, boolean local) {
+        return getGetterMethod(getBeanInterface(local, true), fieldName);
     }
 
-    public static Method getSetterMethod(JavaClass classElement, String fieldName, Type type) {
+    public ExecutableElement getSetterMethod(TypeElement classElement, String fieldName, TypeMirror type) {
         if (classElement == null) {
             return null;
         }
-        JMIUtils.beginJmiTransaction();
-        try {
-            if (type == null) {
-                return null;
-            }
-            type = JMIUtils.resolveType(type.getName());
-            String methodName = getMethodName(fieldName, false);
-            List parameters = Arrays.asList(new Type[]{type});
-            try {
-                return classElement.getMethod(methodName, parameters, false);
-            } catch (Exception e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                return null;
-            }
-        } finally {
-            JMIUtils.endJmiTransaction();
+        if (type == null) {
+            return null;
         }
+        String methodName = getMethodName(fieldName, false);
+        List<TypeMirror> parameters = Collections.singletonList(type);
+        ExecutableElement method = createMethod(getMethodName(fieldName, true));
+        MethodTree methodTree = modifyMethod(workingCopy, method, null, null, null, parameters, null, null);
+        Trees trees = workingCopy.getTrees();
+        Element element = trees.getElement(trees.getPath(workingCopy.getCompilationUnit(), methodTree));
+        return findInClass(classElement, (ExecutableElement) element);
     }
 
-    public Method getSetterMethod(String fieldName, boolean local) {
-        JMIUtils.beginJmiTransaction();
-        try {
-            Field field = getField(fieldName, true);
-            if (field == null) {
-                return null;
-            } else {
-                return getSetterMethod(getBeanInterface(local, true), fieldName, field.getType());
-            }
-        } finally {
-            JMIUtils.endJmiTransaction();
+    public ExecutableElement getSetterMethod(String fieldName, boolean local) {
+        VariableElement field = getField(fieldName, true);
+        if (field == null) {
+            return null;
+        } else {
+            return getSetterMethod(getBeanInterface(local, true), fieldName, field.asType());
         }
     }
 
@@ -584,12 +586,17 @@ public class EntityMethodController extends AbstractMethodController {
      * @param getterMethod getter method for field, it is used for detection of field type
      * @return found method which conforms to: findBy<field>, null if method was not found
      */
-    public static Method getFinderMethod(JavaClass classElement, String fieldName, Method getterMethod) {
+    public ExecutableElement getFinderMethod(TypeElement classElement, String fieldName, ExecutableElement getterMethod) {
         if (getterMethod == null) {
             return null;
         }
-        return classElement .getMethod(prependAndUpper(fieldName, "findBy"),
-                Arrays.asList(new Type[]{getterMethod.getType()}), false);
+        String name = prependAndUpper(fieldName, "findBy");
+        List<TypeMirror> params = Collections.singletonList(getterMethod.getReturnType());
+        ExecutableElement method = createMethod(getMethodName(fieldName, true));
+        MethodTree methodTree = modifyMethod(workingCopy, method, null, null, null, params, null, null);
+        Trees trees = workingCopy.getTrees();
+        Element element = trees.getElement(trees.getPath(workingCopy.getCompilationUnit(), methodTree));
+        return findInClass(classElement, (ExecutableElement) element);
     }
 
     public boolean supportsMethodType(int mt) {
@@ -605,56 +612,62 @@ public class EntityMethodController extends AbstractMethodController {
     }
 
     public void updateFieldAccessor(String fieldName, boolean getter, boolean local, boolean shouldExist) {
-        beginWriteJmiTransaction();
-        boolean rollback = true;
-        try {
-            Field field = getField(fieldName, true);
-            if (field == null) {
-                return;
+        VariableElement field = getField(fieldName, true);
+        if (field == null) {
+            return;
+        }
+        TypeElement businessInterface = getBeanInterface(local, true);
+        if (businessInterface != null) {
+            ExecutableElement method;
+            if (getter) {
+                method = getGetterMethod(businessInterface, fieldName);
+            } else {
+                method = getSetterMethod(businessInterface, fieldName, field.asType());
             }
-            JavaClass businessInterface = getBeanInterface(local, true);
-            if (businessInterface != null) {
-            registerClassForSave(businessInterface);
-                Method method;
-                if (getter) {
-                    method = getGetterMethod(businessInterface, fieldName);
-                } else {
-                    method = getSetterMethod(businessInterface, fieldName, field.getType());
-                }
-                if (shouldExist) {
-                    if (method == null) {
-                        if (getter) {
-                            addGetterMethod(businessInterface, field, 0, !local, model);
-                        } else {
-                            addSetterMethod(businessInterface, field, 0, !local, model);
-                        }
+            if (shouldExist) {
+                if (method == null) {
+                    if (getter) {
+                        addGetterMethod(businessInterface, field, Collections.<Modifier>emptySet(), !local, model);
+                    } else {
+                        addSetterMethod(businessInterface, field, Collections.<Modifier>emptySet(), !local, model);
                     }
-                } else if (method != null) {
-                    removeMethod(businessInterface, method);
                 }
+            } else if (method != null) {
+                removeMethodFromClass(businessInterface, method);
             }
-            rollback = false;
-        } finally {
-            endWriteJmiTransaction(rollback);
         }
     }
 
-    private Field getField(String fieldName, boolean create) {
-        JavaClass beanClass = getBeanClass();
-        Method getterMethod = getGetterMethod(beanClass, fieldName);
+    private VariableElement getField(String fieldName, boolean create) {
+        TypeElement beanClass = getBeanClass();
+        ExecutableElement getterMethod = getGetterMethod(beanClass, fieldName);
+        TreeMaker treeMaker = workingCopy.getTreeMaker();
+        Trees trees = workingCopy.getTrees();
         if (getterMethod == null) {
             if (!create) {
                 return null;
             }
-            Field field = JMIUtils.createField(beanClass, fieldName, "String"); //NOI18N
-            createGetterMethod(getBeanClass(), field, MODIFIERS_PUBLIC_ABSTRACT, false);
+            VariableTree fieldTree = treeMaker.Variable(
+                    treeMaker.Modifiers(Collections.<Modifier>emptySet()),
+                    fieldName,
+                    trees.getTree(workingCopy.getElements().getTypeElement(String.class.getName())),
+                    null
+                    );
+            VariableElement field = (VariableElement) trees.getElement(trees.getPath(workingCopy.getCompilationUnit(), fieldTree));
+            createGetterMethod(getBeanClass(), field, modifiersPublicAbstract, false);
             return field;
         } else {
-            Type type = getterMethod.getType();
+            TypeMirror type = getterMethod.getReturnType();
             if (type == null) {
                 return null;
             } else {
-                return JMIUtils.createField(beanClass, fieldName, type.getName());
+                VariableTree fieldTree = treeMaker.Variable(
+                        treeMaker.Modifiers(Collections.<Modifier>emptySet()),
+                        fieldName,
+                        treeMaker.Type(type),
+                        null
+                        );
+                return (VariableElement) trees.getElement(trees.getPath(workingCopy.getCompilationUnit(), fieldTree));
             }
         }
     }

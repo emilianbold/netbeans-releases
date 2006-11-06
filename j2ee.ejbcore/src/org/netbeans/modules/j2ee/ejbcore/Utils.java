@@ -18,46 +18,43 @@
  */
 
 package org.netbeans.modules.j2ee.ejbcore;
-import java.lang.reflect.Modifier;
+
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Iterator;
-import javax.jmi.reflect.JmiException;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
-import org.netbeans.modules.j2ee.common.JMIUtils;
 import org.netbeans.modules.j2ee.common.queries.api.InjectionTargetQuery;
 import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
 import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.javacore.api.JavaModel;
-import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
-
 import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.jmi.javamodel.ClassDefinition;
-import org.netbeans.jmi.javamodel.Feature;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.Method;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeAppProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
-import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-
+import org.openide.nodes.Node;
 
 public class Utils {
     
@@ -123,34 +120,6 @@ public class Utils {
         setSteps(panels, steps, steps, 0);
     }
     
-    /**
-     * JMI transaction must be started and JMI classpath must be set to use this method
-     */
-    public static void save(JavaClass jc) {
-        if (jc == null) {
-            return;
-        }
-        SaveCookie saveCookie = (SaveCookie) JMIUtils.getCookie(jc, SaveCookie.class);
-        // TODO: SaveCookie - is returned if file is not modified?
-//        assert saveCookie != null: ("SaveCookie not found for " + jc.getName());
-        if (saveCookie != null) {
-            try {
-                saveCookie.save();
-            } catch (IOException ioe) {
-                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ioe);
-            }
-        }
-    }
-    
-    /**
-     * JMI transaction must be started and JMI classpath must be set to use this method
-     */
-    public static boolean isModified(JavaClass ce) {
-        DataObject dataObject = JavaMetamodel.getManager().getDataObject(ce.getResource());
-        assert dataObject != null: ("DataObject not found for " + ce.getName());
-        return dataObject.isModified();
-    }
-    
     public static boolean areInSameJ2EEApp(Project p1, Project p2) {
         Project[] openProjects = OpenProjects.getDefault().getOpenProjects();
         for (int i = 0; i < openProjects.length; i++) {
@@ -177,121 +146,95 @@ public class Utils {
         return false;
     }
     
-    
     // =========================================================================
     
     // utils for ejb code synchronization
     
-    public static boolean canExposeInLocal(Method me) {
-        boolean signatureOk =
-                Modifier.isPublic(me.getModifiers()) &&
-                !Modifier.isProtected(me.getModifiers()) &&
-                !Modifier.isPrivate(me.getModifiers()) &&
-                !Modifier.isStatic(me.getModifiers());
+    public static boolean canExposeInLocal(WorkingCopy workingCopy, ExecutableElement me) {
+        Set<Modifier> modifiers = me.getModifiers();
+        boolean signatureOk = modifiers.contains(Modifier.PUBLIC) && !modifiers.contains(Modifier.STATIC);
         if (signatureOk) {
-            ClassDefinition clzDef = me.getDeclaringClass();
-            EjbMethodController c = (clzDef instanceof JavaClass)?
-                EjbMethodController.createFromClass((JavaClass)clzDef):
-                null;
-            return c != null &&
-                    c.hasLocal() &&
-                    !c.hasMethodInInterface(me, c.getMethodTypeFromImpl(me), true);
+            Element enclosingElement = me.getEnclosingElement();
+            if (ElementKind.CLASS == enclosingElement.getKind()) {
+                TypeElement clzDef = (TypeElement) enclosingElement;
+                EjbMethodController c = EjbMethodController.createFromClass(workingCopy, clzDef);
+                return c != null && c.hasLocal() && !c.hasMethodInInterface(me, c.getMethodTypeFromImpl(me), true);
+            }
         }
         return false;
     }
     
     
-    public static void exposeInLocal(Method method) {
-        EjbMethodController c = EjbMethodController.create(method);
+    public static void exposeInLocal(WorkingCopy workingCopy, ExecutableElement method) {
+        EjbMethodController c = EjbMethodController.create(workingCopy, method);
         c.createAndAddInterface(method, true);
     }
     
-    public static boolean canExposeInRemote(Method me) {
-        boolean signatureOk =
-                Modifier.isPublic(me.getModifiers()) &&
-                !Modifier.isProtected(me.getModifiers()) &&
-                !Modifier.isPrivate(me.getModifiers()) &&
-                !Modifier.isStatic(me.getModifiers());
+    public static boolean canExposeInRemote(WorkingCopy workingCopy, ExecutableElement me) {
+        Set<Modifier> modifiers = me.getModifiers();
+        boolean signatureOk = modifiers.contains(Modifier.PUBLIC) && !modifiers.contains(Modifier.STATIC);
         if (signatureOk) {
-            ClassDefinition clzDef = me.getDeclaringClass();
-            EjbMethodController c = (clzDef instanceof JavaClass)?
-                EjbMethodController.createFromClass((JavaClass)clzDef):
-                null;
-            return c != null &&
-                    c.hasRemote() &&
-                    !c.hasMethodInInterface(me, c.getMethodTypeFromImpl(me), false);
+            Element enclosingElement = me.getEnclosingElement();
+            if (ElementKind.CLASS == enclosingElement.getKind()) {
+                TypeElement clzDef = (TypeElement) enclosingElement;
+                EjbMethodController c = EjbMethodController.createFromClass(workingCopy, clzDef);
+                return c != null && c.hasRemote() && !c.hasMethodInInterface(me, c.getMethodTypeFromImpl(me), false);
+            }
         }
         return false;
     }
     
-    public static void exposeInRemote(Method me) {
-        EjbMethodController c = EjbMethodController.create(me);
+    public static void exposeInRemote(WorkingCopy workingCopy, ExecutableElement me) {
+        EjbMethodController c = EjbMethodController.create(workingCopy, me);
         c.createAndAddInterface(me, false);
     }
     
-    public  static void addReference(JavaClass beanClass, EjbReference ref, String serviceLocator, boolean remote,
-            boolean throwExceptions, String ejbRefName, Project nodeProject) {
+    public static void addReference(WorkingCopy workingCopy, TypeElement beanClass, EjbReference ref, String serviceLocator, boolean remote,
+            boolean throwExceptions, String ejbRefName, Project nodeProject) throws IOException {
         // find the project containing the source file
-        FileObject srcFile = JavaModel.getFileObject(beanClass.getResource());
+        FileObject srcFile = workingCopy.getFileObject();
         Project enterpriseProject = FileOwnerQuery.getOwner(srcFile);
-        try {
-            EnterpriseReferenceContainer erc = (EnterpriseReferenceContainer)
-            enterpriseProject.getLookup().lookup(EnterpriseReferenceContainer.class);
-            
-            boolean enterpriseProjectIsJavaEE5 = isJavaEE5orHigher(enterpriseProject);
-            boolean nodeProjectIsJavaEE5 = isJavaEE5orHigher(nodeProject);
-            
-            if (remote) {
-                EjbRef ejbRef = ref.createRef();
-                if (ejbRefName != null) {
-                    ejbRef.setEjbRefName(ejbRefName);
-                }
-                if (enterpriseProjectIsJavaEE5 && InjectionTargetQuery.isInjectionTarget(beanClass)) {
-                    addProjectToClassPath(enterpriseProject, ref);
-                } else if (nodeProjectIsJavaEE5 == enterpriseProjectIsJavaEE5){ // see #75876
-                    erc.addEjbReferernce(ejbRef, beanClass.getName(), ref.getClientJarTarget());
-                }
-                if (serviceLocator == null) {
-                    Feature f = ref.generateReferenceCode(beanClass, ejbRef, throwExceptions);
-//                    JMIUtils.openInEditor(f);
-                } else {
-                    ref.generateServiceLocatorLookup(beanClass, ejbRef, serviceLocator, throwExceptions);
-                }
+        EnterpriseReferenceContainer erc = (EnterpriseReferenceContainer)
+        enterpriseProject.getLookup().lookup(EnterpriseReferenceContainer.class);
+
+        boolean enterpriseProjectIsJavaEE5 = isJavaEE5orHigher(enterpriseProject);
+        boolean nodeProjectIsJavaEE5 = isJavaEE5orHigher(nodeProject);
+
+        if (remote) {
+            EjbRef ejbRef = ref.createRef();
+            if (ejbRefName != null) {
+                ejbRef.setEjbRefName(ejbRefName);
+            }
+            if (enterpriseProjectIsJavaEE5 && InjectionTargetQuery.isInjectionTarget(srcFile, beanClass.getQualifiedName().toString())) {
+                addProjectToClassPath(enterpriseProject, ref);
+            } else if (nodeProjectIsJavaEE5 == enterpriseProjectIsJavaEE5){ // see #75876
+                erc.addEjbReference(ejbRef, srcFile, beanClass.getQualifiedName().toString(), ref.getClientJarTarget());
+            }
+            if (serviceLocator == null) {
+                //TODO: RETOUCHE fix this api, what should be returned?
+                Element f = (Element) ref.generateReferenceCode(beanClass, ejbRef, throwExceptions);
             } else {
-                EjbLocalRef ejbLocalRef = ref.createLocalRef();
-                if (ejbRefName != null) {
-                    ejbLocalRef.setEjbRefName(ejbRefName);
-                }
-                if (enterpriseProjectIsJavaEE5 && InjectionTargetQuery.isInjectionTarget(beanClass)) {
-                    addProjectToClassPath(enterpriseProject, ref);
-                } else if (nodeProjectIsJavaEE5 == enterpriseProjectIsJavaEE5){ // see #75876
-                    erc.addEjbLocalReference(ejbLocalRef, beanClass.getName(), ref.getClientJarTarget());
-                }
-                if (serviceLocator == null) {
-                    Feature f = ref.generateReferenceCode(beanClass, ejbLocalRef, throwExceptions);
-//                    JMIUtils.openInEditor(f);
-                } else {
-                    ref.generateServiceLocatorLookup(beanClass, ejbLocalRef, serviceLocator, throwExceptions);
-                }
-                
+                ref.generateServiceLocatorLookup(beanClass, ejbRef, serviceLocator, throwExceptions);
             }
-            
-            if (serviceLocator != null) {
-                erc.setServiceLocatorName(serviceLocator);
+        } else {
+            EjbLocalRef ejbLocalRef = ref.createLocalRef();
+            if (ejbRefName != null) {
+                ejbLocalRef.setEjbRefName(ejbRefName);
             }
-            
-            boolean failed = true;
-            JavaModel.getJavaRepository().beginTrans(true);
-            try {
-                JMIUtils.fixImports(beanClass);
-                failed = false;
-            } finally {
-                JavaModel.getJavaRepository().endTrans(failed);
+            if (enterpriseProjectIsJavaEE5 && InjectionTargetQuery.isInjectionTarget(srcFile, beanClass.getQualifiedName().toString())) {
+                addProjectToClassPath(enterpriseProject, ref);
+            } else if (nodeProjectIsJavaEE5 == enterpriseProjectIsJavaEE5){ // see #75876
+                erc.addEjbLocalReference(ejbLocalRef, srcFile, beanClass.getQualifiedName().toString(), ref.getClientJarTarget());
             }
-        } catch (IOException ioe) {
-            Utils.notifyError(ioe);
-        } catch (JmiException jmie) {
-            ErrorManager.getDefault().notify(jmie);
+            if (serviceLocator == null) {
+                //TODO: RETOUCHE fix this api, what should be returned?
+                Element f = (Element) ref.generateReferenceCode(beanClass, ejbLocalRef, throwExceptions);
+            } else {
+                ref.generateServiceLocatorLookup(beanClass, ejbLocalRef, serviceLocator, throwExceptions);
+            }
+        }
+        if (serviceLocator != null) {
+            erc.setServiceLocatorName(serviceLocator);
         }
     }
     
@@ -327,10 +270,10 @@ public class Utils {
         // call ejb should not make this check, all should be handled in EnterpriseReferenceContainer
         boolean isCallerFreeform = enterpriseProject.getClass().getName().equals("org.netbeans.modules.ant.freeform.FreeformProject");
         
-        List /*<Project>*/ filteredResults = new ArrayList(allProjects.length);
+        List<Project> filteredResults = new ArrayList<Project>(allProjects.length);
         for (int i = 0; i < allProjects.length; i++) {
             boolean isEJBModule = false;
-            J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) allProjects[i].getLookup().lookup(J2eeModuleProvider.class);
+            J2eeModuleProvider j2eeModuleProvider = allProjects[i].getLookup().lookup(J2eeModuleProvider.class);
             if (j2eeModuleProvider != null && j2eeModuleProvider.getJ2eeModule().getModuleType().equals(J2eeModule.EJB)) {
                 isEJBModule = true;
             }
@@ -339,7 +282,7 @@ public class Utils {
                 filteredResults.add(allProjects[i]);
             }
         }
-        return (Project []) filteredResults.toArray(new Project[filteredResults.size()]);
+        return filteredResults.toArray(new Project[filteredResults.size()]);
     }
     
 //TODO: this method should be removed and org.netbeans.modules.j2ee.common.Util.isJavaEE5orHigher(Project project)
@@ -376,26 +319,27 @@ public class Utils {
     /**
      * @return true if given <code>target</code> is defined in a Java SE environment.
      */
-    public static boolean isTargetJavaSE(JavaClass target){
-        Project owner = FileOwnerQuery.getOwner(JavaModel.getFileObject(target.getResource()));
+    public static boolean isTargetJavaSE(CompilationController cc, TypeElement target){
+        Project owner = FileOwnerQuery.getOwner(cc.getFileObject());
         if (owner.getLookup().lookup(J2eeModuleProvider.class) == null){
             return true;
         }
-        return extendsTestCase(target);
+        return extendsTestCase(cc, target);
     }
     
     /**
      * @return true if given <code>javaClass</code> is a subtype (direct or
      * indirect) of <code>junit.framework.TestCase</code>.
      */
-    private static boolean extendsTestCase(JavaClass javaClass){
-        if (javaClass == null){
+    private static boolean extendsTestCase(CompilationController cc, TypeElement typeElement){
+        if (typeElement == null){
             return false;
         }
-        if (javaClass.getName().equals("junit.framework.TestCase")){
+        if (typeElement.getQualifiedName().contentEquals("junit.framework.TestCase")){
             return true;
         }
-        return extendsTestCase(javaClass.getSuperClass());
+        DeclaredType superClassType = (DeclaredType) typeElement.getSuperclass();
+        return extendsTestCase(cc, (TypeElement) superClassType.asElement());
     }
     
     /**
@@ -457,15 +401,23 @@ public class Utils {
      * @return true if the given <code>javaClass</code> contains a feature
      * whose name is identical with the given <code>feature</code>'s name.
      */
-    public static boolean containsFeature(JavaClass javaClass, Feature feature){
-        for (Iterator it = javaClass.getFeatures().iterator(); it.hasNext();) {
-            Feature existing = (Feature) it.next();
-            String name = existing.getName();
-            if (name != null && name.equals(feature.getName())){
+    public static boolean containsFeature(TypeElement javaClass, Element searchedElement) {
+        for (Element element : javaClass.getEnclosedElements()) {
+            if (searchedElement.getSimpleName().equals(element.getSimpleName())) {
                 return true;
             }
         }
         return false;
     }
 
+    public static TypeElement getJavaClassFromNode(Node node) {
+        //TODO: RETOUCHE TypeElement from Node
+        return null;
+    }
+
+    public static ExecutableElement getMethodFromNode(Node node) {
+        //TODO: RETOUCHE ExecutableElement from Node
+        return null;
+    }
+    
 }

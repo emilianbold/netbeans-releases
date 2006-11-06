@@ -17,24 +17,42 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.j2ee.ejbcore.api.methodcontroller;
+import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.StatementTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeParameterTree;
+import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePath;
+import com.sun.source.util.Trees;
 import java.rmi.RemoteException;
 import java.util.*;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.jmi.javamodel.Feature;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.JavaModelPackage;
-import org.netbeans.jmi.javamodel.Method;
-import org.netbeans.jmi.javamodel.MultipartId;
-import org.netbeans.jmi.javamodel.Parameter;
-import org.netbeans.jmi.javamodel.Resource;
-import org.netbeans.jmi.javamodel.StatementBlock;
-import org.netbeans.jmi.javamodel.TypeReference;
-import org.netbeans.modules.j2ee.common.JMIUtils;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.Types;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
-import org.netbeans.modules.j2ee.ejbcore.Utils;
-import org.netbeans.modules.javacore.api.JavaModel;
-import org.netbeans.modules.javacore.internalapi.JavaModelUtil;
-import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -42,324 +60,250 @@ import org.openide.filesystems.FileObject;
  * @author Martin Adamek
  */
 public abstract class AbstractMethodController extends EjbMethodController {
+    
+    private WorkingCopy workingCopy;
     private EntityAndSession model;
-    private ClassPath cp;
     protected Set classesForSave;
-    private int transactionLevel = 0;
-    private boolean writeTransactionRollBack = false;
     private boolean simplified = false;
-
-    public AbstractMethodController(EntityAndSession model, ClassPath cp) {
+    
+    public AbstractMethodController(WorkingCopy workingCopy, EntityAndSession model) {
+        this.workingCopy = workingCopy;
         this.model = model;
-        this.cp = cp;
         this.simplified = model.getRoot().getVersion().doubleValue() > 2.1;
     }
-
+    
     public interface GenerateFromImpl {
-        void getInterfaceMethodFromImpl(MethodType t, JavaClass home, JavaClass component);
-        JavaClass getDestinationInterface();
-        Method getInterfaceMethod();
+        void getInterfaceMethodFromImpl(MethodType t, TypeElement home, TypeElement component);
+        TypeElement getDestinationInterface();
+        ExecutableElement getInterfaceMethod();
     }
-
+    
     public interface GenerateFromIntf {
         void getInterfaceMethodFromImpl(MethodType t);
-        Method getImplMethod();
-        Method getSecondaryMethod();
+        ExecutableElement getImplMethod();
+        ExecutableElement getSecondaryMethod();
     }
-
+    
     public abstract GenerateFromImpl createGenerateFromImpl();
     public abstract GenerateFromIntf createGenerateFromIntf();
-
-    public final void createAndAdd(Method clientView, boolean local, boolean isComponent) {
-        JavaClass home = null;
-        JavaClass component = null;
-        Method methodToOpen = null;
-        boolean rollback = true;
-        beginWriteJmiTransaction();
-        try {
-            if (local) {
-                home = JMIUtils.findClass(model.getLocalHome(), cp);
-                component = businessInterface(model.getLocal());
-            } else {
-                home = JMIUtils.findClass(model.getHome(), cp);
-                component = businessInterface(model.getRemote());
-            }
-            if (isComponent) {
-                registerClassForSave(component);
-                component.getContents().add(clientView);
-            } else {
-                registerClassForSave(home);
-                home.getContents().add(clientView);
-            }
-            JavaClass bc = JMIUtils.findClass(model.getEjbClass(), cp);
-            if (hasJavaImplementation(clientView)) {
-                List implMethods = getImplementationMethods(clientView);
-                Iterator it = implMethods.iterator();
-                while (it.hasNext()) {
-                    Method me = (Method) it.next();
-                    if (JMIUtils.findInClass(me,bc) == null) {
-                        registerClassForSave(bc);
-                        TypeReference typeReference = JavaModelUtil.resolveImportsForType(bc, me.getType());
-                        me.setTypeName(typeReference);
-                        bc.getContents().add(me);
-                        methodToOpen = me;
-                        for (Iterator it2 = me.getParameters().iterator(); it2.hasNext();) {
-                            Parameter param = (Parameter) it2.next();
-                            JavaModelUtil.resolveImportsForType(bc, param.getType());
-                        }
-                    }
+    
+    public final void createAndAdd(ExecutableElement clientView, boolean local, boolean isComponent) {
+        TypeElement home = null;
+        TypeElement component = null;
+        ExecutableElement methodToOpen = null;
+        if (local) {
+            home = workingCopy.getElements().getTypeElement(model.getLocalHome());
+            component = businessInterface(model.getLocal());
+        } else {
+            home = workingCopy.getElements().getTypeElement(model.getHome());
+            component = businessInterface(model.getRemote());
+        }
+        if (isComponent) {
+            addMethodToClass(component, clientView);
+        } else {
+            addMethodToClass(home, clientView);
+        }
+        TypeElement bc = workingCopy.getElements().getTypeElement(model.getEjbClass());
+        if (hasJavaImplementation(clientView)) {
+            for (ExecutableElement me : getImplementationMethods(clientView)) {
+                if (findInClass(bc, me) == null) {
+                    addMethodToClass(bc, me);
+                    methodToOpen = me;
                 }
             }
-            TypeReference typeReference = JavaModelUtil.resolveImportsForType(isComponent ? component : home, clientView.getType());
-            clientView.setTypeName(typeReference);
-            if (!local && !simplified) {
-                addExceptionIfNecessary(clientView, RemoteException.class.getName());
-            }
-            JMIUtils.fixImports(component);
-            JMIUtils.fixImports(home);
-            rollback = false;
-        } finally {
-            endWriteJmiTransaction(rollback);
+        }
+        if (!local && !simplified) {
+            addExceptionIfNecessary(clientView, RemoteException.class.getName());
         }
         if (methodToOpen != null) {
-            StatementBlock stBlock = null;
-            JMIUtils.beginJmiTransaction();
-            try {
-                if (methodToOpen.isValid())
-                    stBlock = methodToOpen.getBody();
-            } finally {
-                JMIUtils.endJmiTransaction();
-            }
-            if (stBlock != null)
-                JMIUtils.openInEditor(stBlock);
+            //TODO: RETOUCHE opening generated method in editor
+//            StatementBlock stBlock = null;
+//            if (methodToOpen.isValid())
+//                stBlock = methodToOpen.getBody();
+//            if (stBlock != null)
+//                JMIUtils.openInEditor(stBlock);
         }
     }
-
-    public final void createAndAddInterface(Method beanImpl, boolean local) {
-        beginWriteJmiTransaction();
-        boolean rollback = false;
-        try {
-            MethodType t = getMethodTypeFromImpl(beanImpl);
-            GenerateFromImpl v = createGenerateFromImpl();
-            JavaClass home = null;
-            JavaClass component = null;
-            if (local) {
-                home = JMIUtils.findClass(model.getLocalHome(), cp);
-                component = businessInterface(model.getLocal());
-            } else {
-                home = JMIUtils.findClass(model.getHome(), cp);
-                component = businessInterface(model.getRemote());
-            }
-            registerClassForSave(home);
-            registerClassForSave(component);
-            v.getInterfaceMethodFromImpl(t,home,component);
-            Method me = v.getInterfaceMethod();
-            if (!local && !simplified) {
-                addExceptionIfNecessary(me, RemoteException.class.getName());
-            }
-            me.setModifiers(0);
-            JavaClass destinationInterface = v.getDestinationInterface();
-            registerClassForSave(destinationInterface);
-            destinationInterface.getContents().add(me);
-            rollback = false;
-        } finally {
-            endWriteJmiTransaction(rollback);
+    
+    public final void createAndAddInterface(ExecutableElement beanImpl, boolean local) {
+        MethodType t = getMethodTypeFromImpl(beanImpl);
+        GenerateFromImpl v = createGenerateFromImpl();
+        TypeElement home = null;
+        TypeElement component = null;
+        if (local) {
+            home = workingCopy.getElements().getTypeElement(model.getLocalHome());
+            component = businessInterface(model.getLocal());
+        } else {
+            home = workingCopy.getElements().getTypeElement(model.getHome());
+            component = businessInterface(model.getRemote());
         }
-    }
-
-    public final void createAndAddImpl(Method intfView) {
-        beginWriteJmiTransaction();
-        boolean rollback = true;
-        try {
-            MethodType t = getMethodTypeFromInterface(intfView);
-            GenerateFromIntf v = createGenerateFromIntf();
-            v.getInterfaceMethodFromImpl(t);
-            Method bcm = v.getImplMethod();
-            JavaClass bc = JMIUtils.findClass(model.getEjbClass(), cp);
-            registerClassForSave(bc);
-            bc.getContents().add(bcm);
-            rollback = false;
-        } finally {
-            endWriteJmiTransaction(rollback);
+        v.getInterfaceMethodFromImpl(t,home,component);
+        ExecutableElement me = v.getInterfaceMethod();
+        if (!local && !simplified) {
+            addExceptionIfNecessary(me, RemoteException.class.getName());
         }
+        modifyMethod(workingCopy, me, Collections.<Modifier>emptySet(), null, null, null, null, null);
+        TypeElement destinationInterface = v.getDestinationInterface();
+        addMethodToClass(destinationInterface, me);
     }
-
-    private List getImplementationMethods(Method intfView) {
+    
+    public final void createAndAddImpl(ExecutableElement intfView) {
         MethodType t = getMethodTypeFromInterface(intfView);
         GenerateFromIntf v = createGenerateFromIntf();
         v.getInterfaceMethodFromImpl(t);
-        Method primary = v.getImplMethod();
-        Method secondary = v.getSecondaryMethod();
-        List rv = null;
+        ExecutableElement bcm = v.getImplMethod();
+        TypeElement bc = workingCopy.getElements().getTypeElement(model.getEjbClass());
+        addMethodToClass(bc, bcm);
+    }
+    
+    private List<ExecutableElement> getImplementationMethods(ExecutableElement intfView) {
+        MethodType t = getMethodTypeFromInterface(intfView);
+        GenerateFromIntf v = createGenerateFromIntf();
+        v.getInterfaceMethodFromImpl(t);
+        ExecutableElement primary = v.getImplMethod();
+        ExecutableElement secondary = v.getSecondaryMethod();
+        List<ExecutableElement> rv = null;
         if (secondary != null) {
-            rv = Arrays.asList(new Method[] {primary,secondary});
+            rv = Arrays.asList(new ExecutableElement[] {primary,secondary});
         } else {
             rv = Collections.singletonList(primary);
         }
         return rv;
     }
-
-    public final List getImplementation(Method intfView) {
-        List methods = getImplementationMethods(intfView);
-        List l = new ArrayList(methods.size());
-        Iterator mIt = methods.iterator();
-        while (mIt.hasNext()) {
-            Method m = (Method) mIt.next();
-            l.add(JMIUtils.findInClass(m, getBeanClass()));
-        }
-       return l;
-    }
-
-    public final Method getInterface(Method beanImpl, boolean local) {
-        MethodType t = getMethodTypeFromImpl(beanImpl);
-        assert t != null: "method cannot be used in interface";
-        GenerateFromImpl v = createGenerateFromImpl();
-        JavaClass home = null;
-        JavaClass component = null;
-        if (local) {
-            home = JMIUtils.findClass(model.getLocalHome(), cp);
-            component = businessInterface(model.getLocal());
-        } else {
-            home = JMIUtils.findClass(model.getHome(), cp);
-            component = businessInterface(model.getRemote());
-        }
-        v.getInterfaceMethodFromImpl(t,home,component);
-        return JMIUtils.findInClass(v.getInterfaceMethod(), v.getDestinationInterface());
-    }
-
-
-    /** Performs the check if the method is defined in apporpriate interface
-     * @return false if the interface is found but does not contain matching method.
-     */
-    public boolean hasMethodInInterface(Method m, MethodType methodType, boolean local) {
-        boolean result = false;
-        JavaClass intf = null;
-        Method wantedMethod = JMIUtils.duplicate(m);
-        if (methodType instanceof MethodType.BusinessMethodType) {
-            intf = findBusinessInterface(local? model.getLocal(): model.getRemote());
-        }
-        else if (methodType instanceof MethodType.CreateMethodType) {
-            wantedMethod.setName(chopAndUpper(m.getName(),"ejb")); //NOI18N
-            wantedMethod.setType(findJavaClass(local? model.getLocal(): model.getRemote()));
-            intf = findJavaClass(local? model.getLocalHome(): model.getHome());
-        }
-        if (wantedMethod.getName() == null || intf == null || wantedMethod.getType() == null) {
-            return true;
-        }
-        Iterator/*<Feature>*/ features = intf.getFeatures().iterator();
-        while (features.hasNext()) {
-            Feature f = (Feature)features.next();
-            if (f instanceof Method) {
-                if (JMIUtils.equalMethods(wantedMethod, (Method) f)) {
-                    result = true;
-                    break;
-                }
-            }
-        }
-        return result;
-    }
-
-    /** Find a @link{JavaClass} for given classname.
-     */
-    private JavaClass findJavaClass (String clzName) {
-        FileObject clzFo = cp.findResource(clzName.replace('.', '/')+".java");
-        Resource res = (clzFo != null)? JavaModel.getResource(clzFo): null;
-        if (res != null) {
-            List classes = res.getClassifiers();
-            assert classes.size() == 1: "" + res + " should contain just one class";
-            JavaClass beani = (JavaClass)classes.get(0);
-            return beani;
-        }
-        return null;
-    }
-
-    private String chopAndUpper(String fullName, String chop) {
-         StringBuffer sb = new StringBuffer(fullName);
-         sb.delete(0, chop.length());
-         sb.setCharAt(0, Character.toLowerCase(sb.charAt(0)));
-         return sb.toString();
-    }
-
-    private void addExceptionIfNecessary(Method me, String exceptionName) {
-        // TODO: test this!
-        JavaModelPackage javaModelPackage = (JavaModelPackage) me.refImmediatePackage();
-        MultipartId exceptionMultipartId = javaModelPackage.getMultipartId().createMultipartId(exceptionName, null, null);
-
-        if (!me.getExceptionNames().contains(exceptionMultipartId)) {
-            JMIUtils.addException(me, exceptionName);
-        }
-    }
-
-    private JavaClass businessInterface(String compInterfaceName) {
-        JavaClass compInterface = JMIUtils.findClass(compInterfaceName, cp);
-        JavaClass beanClass = JMIUtils.findClass(model.getEjbClass(), cp);
-        if (compInterface == null || beanClass == null) {
-            return null;
-        }
-        // get bean interfaces
-        List beanInterfaces = buildInterfaces(beanClass.getInterfaces());
-
-        // get method interfaces
-        List compInterfaces = buildInterfaces(compInterface.getInterfaces());
-
-        // look for common candidates
-        compInterfaces.retainAll(beanInterfaces);
-
-        if (compInterfaces.isEmpty()) {
-            return compInterface;
-        }
-
-        JavaClass business = JMIUtils.findClass(compInterfaces.get(0).toString(), cp);
-        return business == null ? compInterface : business;
-    }
-
-    private JavaClass findBusinessInterface(String compInterfaceName) {
-        JavaClass compInterface = findJavaClass(compInterfaceName);
-        JavaClass beanClass = findJavaClass(model.getEjbClass());
-        if (compInterface == null || beanClass == null) {
-            return null;
-        }
-        // get bean interfaces
-        List/*<JavaClass>*/ beanInterfaces = beanClass.getInterfaces();
-//        System.out.println("beanInterfaces "+beanInterfaces+", "+beanInterfaces.size()+", "+beanClass.getInterfaces().size());
-
-        // get method interfaces
-        List/*<JavaClass>*/ compInterfaces = compInterface.getInterfaces();
-//        System.out.println("compInterfaces "+compInterfaces+", "+compInterfaces.size()+", "+compInterface.getInterfaces().size());
-
-        // look for common candidates
-        JavaClass business = null;
-        for (int i=0; i<compInterfaces.size(); i++) {
-            Object o = compInterfaces.get(i);
-            if (beanInterfaces.contains(o)) {
-                business = (JavaClass)o;
-                break;
-            }
-        }
-
-        return business == null ? compInterface : business;
-    }
-
-    private List buildInterfaces(List/*<JavaClass>*/ interfaces) {
-        JavaClass[] interfacesArray = (JavaClass[]) interfaces.toArray(new JavaClass[interfaces.size()]);
-        List l = new java.util.ArrayList(interfacesArray.length);
-        for (int i = 0 ; i < interfacesArray.length; i++) {
-            l.add(interfacesArray[i].getName());
+    
+    public final List<ExecutableElement> getImplementation(ExecutableElement intfView) {
+        List<ExecutableElement> methods = getImplementationMethods(intfView);
+        List<ExecutableElement> l = new ArrayList<ExecutableElement>(methods.size());
+        for (ExecutableElement method : methods) {
+            l.add(findInClass(getBeanClass(), method));
         }
         return l;
     }
-
-    public final JavaClass getBeanClass() {
-        return model.getEjbClass() == null ? null : JMIUtils.findClass(model.getEjbClass(), cp);
+    
+    public final ExecutableElement getInterface(ExecutableElement beanImpl, boolean local) {
+        MethodType t = getMethodTypeFromImpl(beanImpl);
+        assert t != null: "method cannot be used in interface";
+        GenerateFromImpl v = createGenerateFromImpl();
+        TypeElement home = null;
+        TypeElement component = null;
+        if (local) {
+            home = workingCopy.getElements().getTypeElement(model.getLocalHome());
+            component = businessInterface(model.getLocal());
+        } else {
+            home = workingCopy.getElements().getTypeElement(model.getHome());
+            component = businessInterface(model.getRemote());
+        }
+        v.getInterfaceMethodFromImpl(t,home,component);
+        return findInClass(v.getDestinationInterface(), v.getInterfaceMethod());
     }
     
-    public final Collection getLocalInterfaces() {
-        if (!hasLocal()) {
-            return Collections.EMPTY_LIST;
+    
+    /** Performs the check if the method is defined in apporpriate interface
+     * @return false if the interface is found but does not contain matching method.
+     */
+    public boolean hasMethodInInterface(ExecutableElement m, MethodType methodType, boolean local) {
+        TypeElement intf = null;
+        ExecutableElement wantedMethod = createMethodCopy(m);
+        if (methodType instanceof MethodType.BusinessMethodType) {
+            intf = findBusinessInterface(local ? model.getLocal() : model.getRemote());
+        } else if (methodType instanceof MethodType.CreateMethodType) {
+            String name = chopAndUpper(m.getSimpleName().toString(), "ejb"); //NOI18N
+            TypeElement type = workingCopy.getElements().getTypeElement(local ? model.getLocal() : model.getRemote());
+            modifyMethod(workingCopy, wantedMethod, null, name, workingCopy.getTrees().getTree(type), null, null, null);
+            intf = workingCopy.getElements().getTypeElement(local ? model.getLocalHome() : model.getHome());
         }
-        List l = new ArrayList(2);
+        if (wantedMethod.getSimpleName() == null || intf == null || wantedMethod.getReturnType() == null) {
+            return true;
+        }
+        if (findInClass(intf, wantedMethod) != null) {
+            return true;
+        }
+        return false;
+    }
+    
+    private String chopAndUpper(String fullName, String chop) {
+        StringBuffer sb = new StringBuffer(fullName);
+        sb.delete(0, chop.length());
+        sb.setCharAt(0, Character.toLowerCase(sb.charAt(0)));
+        return sb.toString();
+    }
+    
+    private void addExceptionIfNecessary(ExecutableElement method, String exceptionName) {
+        TypeElement exceptionTypeElement = workingCopy.getElements().getTypeElement(exceptionName);
+        List<? extends TypeMirror> exceptionsTypeMirrors = method.getThrownTypes();
+        if (!containsTypeMirror(exceptionsTypeMirrors, exceptionTypeElement.asType())) {
+            MethodTree methodTree = workingCopy.getTrees().getTree(method);
+            TreeMaker treeMaker = workingCopy.getTreeMaker();
+            ExpressionTree expressionTree = treeMaker.QualIdent(exceptionTypeElement);
+            treeMaker.addMethodThrows(methodTree, expressionTree);
+        }
+    }
+    
+    private TypeElement businessInterface(String compInterfaceName) {
+        TypeElement compInterface = workingCopy.getElements().getTypeElement(compInterfaceName);
+        TypeElement beanClass = workingCopy.getElements().getTypeElement(model.getEjbClass());
+        if (compInterface == null || beanClass == null) {
+            return null;
+        }
+        // get bean interfaces
+        List<? extends TypeMirror> beanInterfaces = beanClass.getInterfaces();
+        // get method interfaces
+        List<? extends TypeMirror> compInterfaces = compInterface.getInterfaces();
+        // look for common candidates
+        compInterfaces.retainAll(beanInterfaces);
+        if (compInterfaces.isEmpty()) {
+            return compInterface;
+        }
+        TypeMirror typeMirror = compInterfaces.get(0);
+        TypeElement business = null;
+        if (TypeKind.DECLARED == typeMirror.getKind()) {
+            DeclaredType declaredType = (DeclaredType) typeMirror;
+            Element element = declaredType.asElement();
+            if (ElementKind.CLASS == element.getKind()) {
+                business = (TypeElement) element;
+            }
+        }
+        return business == null ? compInterface : business;
+    }
+    
+    private TypeElement findBusinessInterface(String compInterfaceName) {
+        TypeElement compInterface = workingCopy.getElements().getTypeElement(compInterfaceName);
+        TypeElement beanClass = workingCopy.getElements().getTypeElement(model.getEjbClass());
+        if (compInterface == null || beanClass == null) {
+            return null;
+        }
+        // get bean interfaces
+        List<? extends TypeMirror> beanInterfaces = beanClass.getInterfaces();
+        // get method interfaces
+        List<? extends TypeMirror> compInterfaces = compInterface.getInterfaces();
+        // look for common candidates
+        TypeElement business = null;
+        for (TypeMirror typeMirror : compInterfaces) {
+            if (beanInterfaces.contains(typeMirror)) {
+                if (TypeKind.DECLARED == typeMirror.getKind()) {
+                    DeclaredType declaredType = (DeclaredType) typeMirror;
+                    Element element = declaredType.asElement();
+                    if (ElementKind.CLASS == element.getKind()) {
+                        business = (TypeElement) element;
+                    }
+                }
+                break;
+            }
+        }
+        return business == null ? compInterface : business;
+    }
+    
+    public final TypeElement getBeanClass() {
+        return model.getEjbClass() == null ? null : workingCopy.getElements().getTypeElement(model.getEjbClass());
+    }
+    
+    public final List<TypeElement> getLocalInterfaces() {
+        if (!hasLocal()) {
+            return Collections.<TypeElement>emptyList();
+        }
+        List<TypeElement> l = new ArrayList<TypeElement>(2);
         if (model.getLocalHome() != null) {
-            l.add(JMIUtils.findClass(model.getLocalHome(), cp));
+            l.add(workingCopy.getElements().getTypeElement(model.getLocalHome()));
         }
         if (model.getLocal() != null) {
             l.add(businessInterface(model.getLocal()));
@@ -368,43 +312,42 @@ public abstract class AbstractMethodController extends EjbMethodController {
         return l;
     }
     
-    public final Collection getRemoteInterfaces() {
+    public final List<TypeElement> getRemoteInterfaces() {
         if (!hasRemote()) {
-            return Collections.EMPTY_LIST;
+            return Collections.<TypeElement>emptyList();
         }
-        List l = new ArrayList(2);
+        List<TypeElement> l = new ArrayList<TypeElement>(2);
         if (model.getHome() != null) {
-            l.add(JMIUtils.findClass(model.getHome(), cp));
+            l.add(workingCopy.getElements().getTypeElement(model.getHome()));
         }
         if (model.getRemote() != null) {
             l.add(businessInterface(model.getRemote()));
         }
-        
         return l;
     }
     
-    public final void delete(Method interfaceMethod, boolean local) {
-        Collection impls = getImplementation(interfaceMethod);
+    public final void delete(ExecutableElement interfaceMethod, boolean local) {
+        List<ExecutableElement> impls = getImplementation(interfaceMethod);
         boolean checkOther = local?hasRemote():hasLocal();
         if (!impls.isEmpty()) {
-            Iterator implIt = impls.iterator();
-            while (implIt.hasNext()) {
-                Method impl = (Method) implIt.next();
+            for (ExecutableElement impl : impls) {
                 if (impl != null) { // could be null here if the method is missing
                     if (((checkOther && getInterface(impl, !local) == null)) ||
                             !checkOther) {
-                        impl.getDeclaringClass().getContents().remove(impl);
+                        TypeElement typeElement = (TypeElement) impl.getEnclosingElement();
+                        removeMethodFromClass(typeElement, impl);
                     }
                 }
             }
-            interfaceMethod.getDeclaringClass().getContents().remove(interfaceMethod);
+            TypeElement typeElement = (TypeElement) interfaceMethod.getEnclosingElement();
+            removeMethodFromClass(typeElement, interfaceMethod);
         }
     }
     
     public boolean hasRemote() {
         String intf = model.getHome();
         if (!simplified) {
-            if (intf == null || findJavaClass(intf) == null) {
+            if (intf == null || workingCopy.getElements().getTypeElement(intf) == null) {
                 return false;
             }
         }
@@ -418,7 +361,7 @@ public abstract class AbstractMethodController extends EjbMethodController {
     public boolean hasLocal() {
         String intf = model.getLocalHome();
         if (!simplified) {
-            if (intf == null || findJavaClass(intf) == null) {
+            if (intf == null || workingCopy.getElements().getTypeElement(intf) == null) {
                 return false;
             }
         }
@@ -428,146 +371,182 @@ public abstract class AbstractMethodController extends EjbMethodController {
         }
         return true;
     }
-
-    public Method getPrimaryImplementation(Method intfView) {
-        List impls = getImplementation(intfView);
-        return impls.isEmpty()?null:(Method)impls.get(0);
+    
+    public ExecutableElement getPrimaryImplementation(ExecutableElement intfView) {
+        List<ExecutableElement> impls = getImplementation(intfView);
+        return impls.isEmpty() ? null : impls.get(0);
     }
-
+    
     public String getRemote() {
         return model.getRemote();
     }
-
+    
     public String getLocal() {
         return model.getLocal();
     }
-
-    public final void addMethod(Method method, boolean local, boolean isComponent) {
-        beginWriteJmiTransaction();
-        boolean rollback = true;
-        try {
-            method = JMIUtils.duplicate(method);
-            JavaClass javaClass = getBeanInterface(local, isComponent);
-            assert javaClass != null;
-            registerClassForSave(javaClass);
-            javaClass.getContents().add(method);
-            if (!local) {
-                addExceptionIfNecessary(method, RemoteException.class.getName());
-            }
-            createBeanMethod(method);
-            rollback = false;
-        } finally {
-            endWriteJmiTransaction(rollback);
+    
+    public final void addMethod(ExecutableElement method, boolean local, boolean isComponent) {
+        TypeElement javaClass = getBeanInterface(local, isComponent);
+        assert javaClass != null;
+        addMethodToClass(javaClass, method);
+        if (!local) {
+            addExceptionIfNecessary(method, RemoteException.class.getName());
         }
+        createBeanMethod(method);
     }
-
-    public JavaClass getBeanInterface(boolean local, boolean isComponent) {
+    
+    public TypeElement getBeanInterface(boolean local, boolean isComponent) {
         if (isComponent) {
             return businessInterface(local ? model.getLocal() : model.getRemote());
         } else {
             String className = local ? model.getLocalHome() : model.getHome();
-            return JMIUtils.findClass(className, cp);
+            return workingCopy.getElements().getTypeElement(className);
         }
     }
-
-    private void createBeanMethod(Method method) {
-        beginWriteJmiTransaction();
-        boolean rollback = true;
-        try {
-            JavaClass beanClass = JMIUtils.findClass(model.getEjbClass(), cp);
-            if (hasJavaImplementation(method)) {
-                List implMethods = getImplementationMethods(method);
-                Iterator it = implMethods.iterator();
-                while (it.hasNext()) {
-                    Method me = (Method) it.next();
-                    if (JMIUtils.findInClass(me, beanClass) == null) {
-                        beanClass.getContents().add(me);
-                    }
+    
+    private void createBeanMethod(ExecutableElement method) {
+        TypeElement beanClass = workingCopy.getElements().getTypeElement(model.getEjbClass());
+        if (hasJavaImplementation(method)) {
+            List<ExecutableElement> implMethods = getImplementationMethods(method);
+            for (ExecutableElement me : implMethods) {
+                if (findInClass(beanClass, me) == null) {
+                    addMethodToClass(beanClass, method);
                 }
             }
-            rollback = false;
-        } finally {
-            endWriteJmiTransaction(rollback);
         }
     }
-
-    public final void removeMethod(Method method, boolean local, boolean isComponent) {
-        beginWriteJmiTransaction();
-        boolean rollback = true;
-        try {
-            JavaClass javaClass = getBeanInterface(local, isComponent);
-            assert javaClass != null;
-            registerClassForSave(javaClass);
-            if (!local) {
-                addExceptionIfNecessary(method, RemoteException.class.getName());
-            }
-            javaClass.getContents().remove(method);
-            createBeanMethod(method);
-            rollback = false;
-        } finally {
-            endWriteJmiTransaction(rollback);
+    
+    public final void removeMethod(ExecutableElement method, boolean local, boolean isComponent) {
+        TypeElement clazz = getBeanInterface(local, isComponent);
+        assert clazz != null;
+        if (!local) {
+            addExceptionIfNecessary(method, RemoteException.class.getName());
         }
+        removeMethodFromClass(clazz, method);
+        createBeanMethod(method);
     }
-
-    public final void updateMethod(Method method, boolean local, boolean isComponent, boolean shouldExist) {
-        beginWriteJmiTransaction();
-        boolean rollback = true;
-        try {
-            JavaClass javaClass = getBeanInterface(local, isComponent);
-            assert javaClass != null;
-            registerClassForSave(javaClass);
-            Method m = JMIUtils.findInClass(method, javaClass);
-            final List contents = javaClass.getContents();
-            if (shouldExist) {
-                if (m == null) {
-                    if (!local) {
-                        addExceptionIfNecessary(method, RemoteException.class.getName());
-                    }
-                    contents.add(method);
+    
+    public final void updateMethod(ExecutableElement method, boolean local, boolean isComponent, boolean shouldExist) {
+        TypeElement javaClass = getBeanInterface(local, isComponent);
+        assert javaClass != null;
+        ExecutableElement foundMethod = findInClass(javaClass, method);
+        if (shouldExist) {
+            if (foundMethod == null) {
+                if (!local) {
+                    addExceptionIfNecessary(method, RemoteException.class.getName());
                 }
-            } else {
-                if (m != null) {
-                    contents.remove(m);
-                }
+                addMethodToClass(javaClass, method);
             }
-            rollback = false;
-        } finally {
-            endWriteJmiTransaction(rollback);
-        }
-    }
-
-    public void beginWriteJmiTransaction() {
-        if (transactionLevel++ == 0) {
-            writeTransactionRollBack = false;
-            classesForSave = new HashSet();
-            JMIUtils.beginJmiTransaction(true);
-        }
-    }
-
-    public void endWriteJmiTransaction(boolean rollback) {
-        writeTransactionRollBack = writeTransactionRollBack || rollback;
-        if (--transactionLevel == 0) {
-            JMIUtils.endJmiTransaction(writeTransactionRollBack);
-            if (!writeTransactionRollBack) {
-                saveModifiedClasses();
+        } else {
+            if (foundMethod != null) {
+                Trees trees = workingCopy.getTrees();
+                ClassTree classTree = trees.getTree(javaClass);
+                MethodTree methodTree = trees.getTree(method);
+                workingCopy.getTreeMaker().removeClassMember(classTree, methodTree);
             }
         }
     }
-
-    public void registerClassForSave(JavaClass javaClass) {
-        if (transactionLevel > 0 && javaClass != null && !Utils.isModified(javaClass)) {
-            classesForSave.add(javaClass);
-        }
-    }
-
-    private void saveModifiedClasses() {
-        for (Iterator it = classesForSave.iterator(); it.hasNext();) {
-            JavaClass javaClass = (JavaClass) it.next();
-            if (Utils.isModified(javaClass)) {
-                Utils.save(javaClass);
+    
+    // util candidates
+    // -------------------------------------------------------------------------
+    
+    protected ExecutableElement findInClass(TypeElement clazz, ExecutableElement method) {
+        ExecutableType methodType = (ExecutableType) method.asType();
+        Types types = workingCopy.getTypes();
+        for (ExecutableElement m : ElementFilter.methodsIn(clazz.getEnclosedElements())) {
+            if (types.isSubsignature((ExecutableType) m.asType(), methodType)) {
+                return m;
             }
-
         }
+        return null;
     }
-
+    
+    protected void addMethodToClass(TypeElement clazz, ExecutableElement method) {
+        Trees trees = workingCopy.getTrees();
+        ClassTree classTree = trees.getTree(clazz);
+        MethodTree methodTree = trees.getTree(method);
+        workingCopy.getTreeMaker().addClassMember(classTree, methodTree);
+    }
+    
+    protected void removeMethodFromClass(TypeElement clazz, ExecutableElement method) {
+        Trees trees = workingCopy.getTrees();
+        ClassTree classTree = trees.getTree(clazz);
+        MethodTree methodTree = trees.getTree(method);
+        workingCopy.getTreeMaker().removeClassMember(classTree, methodTree);
+    }
+    
+    private boolean containsTypeMirror(List<? extends TypeMirror> types, TypeMirror type) {
+        for (TypeMirror typeMirror : types) {
+            if (workingCopy.getTypes().isSameType(typeMirror, type)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public static MethodTree modifyMethod(WorkingCopy workingCopy, ExecutableElement method, Set<Modifier> modifiers, CharSequence name, 
+            Tree returnType, List<TypeMirror> parameters, List<ExpressionTree> throwsList, BlockTree body) {
+        Trees trees = workingCopy.getTrees();
+        MethodTree methodTree = trees.getTree(method);
+        TreeMaker treeMaker = workingCopy.getTreeMaker();
+        List<VariableTree> createdParams = new ArrayList<VariableTree>();
+        if (parameters != null) {
+            int index = 0;
+            for (TypeMirror typeMirror : parameters) {
+                VariableTree variableTree = treeMaker.Variable(
+                        treeMaker.Modifiers(Collections.<Modifier>emptySet()),
+                        "arg" + index,
+                        treeMaker.Type(typeMirror),
+                        null
+                        );
+                createdParams.add(variableTree);
+                index++;
+            }
+        }
+        return treeMaker.Method(
+                modifiers == null ? methodTree.getModifiers() : treeMaker.Modifiers(modifiers),
+                name == null ? methodTree.getName() : name,
+                returnType == null ? methodTree.getReturnType() : returnType,
+                methodTree.getTypeParameters(),
+                createdParams,
+                throwsList == null ? methodTree.getThrows() : throwsList,
+                body == null ? methodTree.getBody() : body,
+                (ExpressionTree) methodTree.getDefaultValue()
+                );
+    }
+    
+    private ExecutableElement createMethodCopy(ExecutableElement method) {
+        Trees trees = workingCopy.getTrees();
+        MethodTree methodTree = trees.getTree(method);
+        MethodTree resultTree = workingCopy.getTreeMaker().Method(
+                methodTree.getModifiers(),
+                methodTree.getName(),
+                methodTree.getReturnType(),
+                methodTree.getTypeParameters(),
+                methodTree.getParameters(),
+                methodTree.getThrows(),
+                methodTree.getBody(),
+                (ExpressionTree) methodTree.getDefaultValue()
+                );
+        TreePath treePath = trees.getPath(workingCopy.getCompilationUnit(), resultTree);
+        return (ExecutableElement) trees.getElement(treePath);
+    }
+    
+    protected ExecutableElement createMethod(CharSequence name) {
+        TreeMaker treeMaker = workingCopy.getTreeMaker();
+        MethodTree resultTree = treeMaker.Method(
+                treeMaker.Modifiers(Collections.<Modifier>emptySet()),
+                name,
+                treeMaker.PrimitiveType(TypeKind.VOID),
+                Collections.<TypeParameterTree>emptyList(),
+                Collections.<VariableTree>emptyList(),
+                Collections.<ExpressionTree>emptyList(),
+                treeMaker.Block(Collections.<StatementTree>emptyList(), false),
+                null
+                );
+        Trees trees = workingCopy.getTrees();
+        TreePath treePath = trees.getPath(workingCopy.getCompilationUnit(), resultTree);
+        return (ExecutableElement) trees.getElement(treePath);
+    }
+    
 }

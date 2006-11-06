@@ -18,8 +18,7 @@
  */
 
 package org.netbeans.modules.j2ee.common.queries.spi;
-import javax.lang.model.element.TypeElement;
-
+import org.openide.filesystems.FileObject;
 
 /**
  * Knowledge of ability to use resouce injection in Java class and the way the injection is generated
@@ -30,19 +29,23 @@ public interface InjectionTargetQueryImplementation {
     
     /**
      * Decide if dependency injection can be used in given class.<br>
-     * @param typeElement class where annotated field or method should be inserted
+     * @param fileObject file of class where annotated field or method should be inserted
+     * @param typeElement fully-qualified name of class where annotated field or method should be inserted,
+     * if null is provided, main public class from file is taken
      * @return true if any container or environment is able to inject resources in given class, false otherwise
      */
-    boolean isInjectionTarget(TypeElement typeElement);
+    boolean isInjectionTarget(FileObject fileObject, String fqn);
     
     /**
      * Decide if injected reference must be static in given class. 
      * For example, in application client injection can be used only in class with main method and all
      * injected fields must be static<br>
      * Implementation 
-     * @param typeElement class where annotated field or method should be inserted
+     * @param fileObject file of class where annotated field or method should be inserted
+     * @param typeElement fully-qualified name of class where annotated field or method should be inserted,
+     * if null is provided, main public class from file is taken
      * @return true if static reference is required in given class, false otherwise
      */
-    boolean isStaticReferenceRequired(TypeElement typeElement);
+    boolean isStaticReferenceRequired(FileObject fileObject, String fqn);
     
 }

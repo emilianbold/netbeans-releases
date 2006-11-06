@@ -46,7 +46,7 @@ import javax.swing.SwingUtilities;
  * Ejbs contained within a module
  * @author Chris Webster
  */
-public class EjbContainerChildren extends Children.Keys implements PropertyChangeListener {
+public class EjbContainerChildren extends Children.Keys<Ejb> implements PropertyChangeListener {
 
     private final EjbJar model;
     private final ClassPath srcPath;
@@ -71,14 +71,14 @@ public class EjbContainerChildren extends Children.Keys implements PropertyChang
 
     private void updateKeys() {
         EnterpriseBeans beans = model.getEnterpriseBeans();
-        List keys = Collections.EMPTY_LIST;
+        List<Ejb> keys = Collections.<Ejb>emptyList();
         if (beans != null) {
             Session[] sessionBeans = beans.getSession();
             Entity[] entityBeans = beans.getEntity();
             MessageDriven[] messageBeans = beans.getMessageDriven();
-            Comparator ejbComparator = new Comparator() {
-                public int compare(Object o1, Object o2) {
-                    return getEjbDisplayName((Ejb) o1).compareTo(getEjbDisplayName((Ejb) o2));
+            Comparator<Ejb> ejbComparator = new Comparator<Ejb>() {
+                public int compare(Ejb ejb1, Ejb ejb2) {
+                    return getEjbDisplayName(ejb1).compareTo(getEjbDisplayName(ejb2));
                 }
 
                 private String getEjbDisplayName(Ejb ejb) {
@@ -95,9 +95,7 @@ public class EjbContainerChildren extends Children.Keys implements PropertyChang
             Arrays.sort(sessionBeans, ejbComparator);
             Arrays.sort(entityBeans, ejbComparator);
             Arrays.sort(messageBeans, ejbComparator);
-            keys = new ArrayList(sessionBeans.length +
-                                 entityBeans.length  +
-                                 messageBeans.length);
+            keys = new ArrayList<Ejb>(sessionBeans.length + entityBeans.length  + messageBeans.length);
             addKeyValues(keys, Arrays.asList(sessionBeans));
             addKeyValues(keys, Arrays.asList(messageBeans));
             addKeyValues(keys, Arrays.asList(entityBeans));
@@ -107,11 +105,11 @@ public class EjbContainerChildren extends Children.Keys implements PropertyChang
 
     protected void removeNotify() {
         model.removePropertyChangeListener(this);
-        setKeys(Collections.EMPTY_SET);
+        setKeys(Collections.<Ejb>emptyList());
         super.removeNotify();
     }
 
-    protected Node[] createNodes(Object key) {
+    protected Node[] createNodes(Ejb key) {
         Node[] node = null;
         if (key instanceof Session) {
             // do not create node for web service
@@ -132,18 +130,18 @@ public class EjbContainerChildren extends Children.Keys implements PropertyChang
         if (key instanceof MessageDriven && nodeFactory != null) {
             node = new Node[] { nodeFactory.createMessageNode((MessageDriven) key, model, srcPath)};
         }
-        return node == null?new Node[0]:node;
+        return node == null ? new Node[0] : node;
     }
 
     public void propertyChange(PropertyChangeEvent pce) {
-	SwingUtilities.invokeLater(new Runnable() {
-	    public void run() {
-		updateKeys();
-	    }
-	});
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                updateKeys();
+            }
+        });
     }
 
-    private void addKeyValues(List keyContainer, List beans) {
+    private void addKeyValues(List<Ejb> keyContainer, List<? extends Ejb> beans) {
         keyContainer.addAll(beans);
     }
 }

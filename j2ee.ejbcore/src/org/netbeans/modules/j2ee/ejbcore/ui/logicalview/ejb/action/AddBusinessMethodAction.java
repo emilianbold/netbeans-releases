@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 import javax.swing.Action;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.openide.util.HelpCtx;
 
 
@@ -28,12 +29,12 @@ import org.openide.util.HelpCtx;
  */
 public class AddBusinessMethodAction extends AbstractAddMethodAction {
 
-    public AddBusinessMethodAction() {
-        super(new AddBusinessMethodStrategy());
+    public AddBusinessMethodAction(WorkingCopy workingCopy) {
+        super(workingCopy, new AddBusinessMethodStrategy());
     }
 
-    public AddBusinessMethodAction(String name) {
-        super(new AddBusinessMethodStrategy(name));
+    public AddBusinessMethodAction(WorkingCopy workingCopy, String name) {
+        super(workingCopy, new AddBusinessMethodStrategy(name));
     }
 
     public HelpCtx getHelpCtx() {

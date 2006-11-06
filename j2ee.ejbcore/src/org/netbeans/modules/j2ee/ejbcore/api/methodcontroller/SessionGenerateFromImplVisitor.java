@@ -18,16 +18,20 @@
  */
 package org.netbeans.modules.j2ee.ejbcore.api.methodcontroller;
 
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.Method;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.util.TreePath;
+import com.sun.source.util.Trees;
+import java.util.Collections;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.AbstractMethodController;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType.BusinessMethodType;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType.CreateMethodType;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType.FinderMethodType;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType.HomeMethodType;
-import org.netbeans.modules.j2ee.common.JMIUtils;
-import org.netbeans.modules.javacore.api.JavaModel;
 
 /**
  *
@@ -35,38 +39,53 @@ import org.netbeans.modules.javacore.api.JavaModel;
  * @author Martin Adamek
  */
 class SessionGenerateFromImplVisitor implements MethodType.MethodTypeVisitor, AbstractMethodController.GenerateFromImpl {
-    private Method intfMethod;
-    private JavaClass destination;
-    private JavaClass home;
-    private JavaClass component;
+
+    private WorkingCopy workingCopy;
+    private ExecutableElement intfMethod;
+    private TypeElement destination;
+    private TypeElement home;
+    private TypeElement component;
+
+    public SessionGenerateFromImplVisitor(WorkingCopy workingCopy) {
+        this.workingCopy = workingCopy;
+    }
     
-    public void getInterfaceMethodFromImpl(MethodType m, 
-                                           JavaClass home,
-                                           JavaClass component) {
+    public void getInterfaceMethodFromImpl(MethodType m, TypeElement home, TypeElement component) {
         this.home = home;
         this.component = component;
         m.accept(this);
     }
     
-    public Method getInterfaceMethod() {
+    public ExecutableElement getInterfaceMethod() {
         return intfMethod;
     }
     
-    public JavaClass getDestinationInterface() {
+    public TypeElement getDestinationInterface() {
         return destination;
     }
     
     public void visit(BusinessMethodType bmt) {
-        intfMethod = JMIUtils.duplicate(bmt.getMethodElement());
+        intfMethod = bmt.getMethodElement();
         destination = component;
     }
        
     public void visit(CreateMethodType cmt) {
-        intfMethod = JMIUtils.duplicate(cmt.getMethodElement());
-        String origName = intfMethod.getName();
+        intfMethod = cmt.getMethodElement();
+        String origName = intfMethod.getSimpleName().toString();
         String newName = chopAndUpper(origName,"ejb"); //NOI18N
-        intfMethod.setName(newName);
-        intfMethod.setType(JMIUtils.resolveType(home.getName()));
+        
+        MethodTree resultTree = AbstractMethodController.modifyMethod(
+                workingCopy, 
+                intfMethod, 
+                Collections.singleton(Modifier.PUBLIC), 
+                newName, 
+                workingCopy.getTrees().getTree(home),
+                null, null, null
+                );
+        Trees trees = workingCopy.getTrees();
+        TreePath treePath = trees.getPath(workingCopy.getCompilationUnit(), resultTree);
+        intfMethod = (ExecutableElement) trees.getElement(treePath);
+        
         destination = home;
     }
     

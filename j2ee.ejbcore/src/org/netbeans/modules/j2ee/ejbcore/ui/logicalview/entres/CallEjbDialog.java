@@ -20,15 +20,16 @@
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+import javax.lang.model.element.TypeElement;
 import javax.swing.Action;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
-import org.netbeans.modules.javacore.api.JavaModel;
 import org.openide.DialogDescriptor;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Children;
@@ -50,9 +51,8 @@ import org.openide.nodes.FilterNode;
  */
 public class CallEjbDialog {
     
-    
-    public boolean open(JavaClass beanClass, String title) {
-        Project enterpriseProject = FileOwnerQuery.getOwner(JavaModel.getFileObject(beanClass.getResource()));
+    public boolean open(WorkingCopy workingCopy, TypeElement beanClass, String title) throws IOException {
+        Project enterpriseProject = FileOwnerQuery.getOwner(workingCopy.getFileObject());
         
         Project[] allProjects = Utils.getCallableEjbProjects(enterpriseProject);
         List ejbProjectNodes = new LinkedList();
@@ -73,7 +73,7 @@ public class CallEjbDialog {
         EnterpriseReferenceContainer erc = (EnterpriseReferenceContainer)
         enterpriseProject.getLookup().lookup(EnterpriseReferenceContainer.class);
         boolean isJavaEE5orHigher = Utils.isJavaEE5orHigher(enterpriseProject);
-        CallEjbPanel panel = new CallEjbPanel(root, isJavaEE5orHigher ? null : erc.getServiceLocatorName(), beanClass);
+        CallEjbPanel panel = new CallEjbPanel(workingCopy, root, isJavaEE5orHigher ? null : erc.getServiceLocatorName(), beanClass);
         if (isJavaEE5orHigher) {
             panel.disableServiceLocator();
         }
@@ -116,7 +116,7 @@ public class CallEjbDialog {
         DataObject dataObject = (DataObject) ejbNode.getCookie(DataObject.class);
         Project nodeProject = FileOwnerQuery.getOwner(dataObject.getPrimaryFile());
         
-        Utils.addReference(beanClass, ref, panel.getServiceLocator(), 
+        Utils.addReference(workingCopy, beanClass, ref, panel.getServiceLocator(), 
                 panel.isRemoteInterfaceSelected(), throwExceptions, 
                 referenceNameFromPanel, nodeProject);
         return true;

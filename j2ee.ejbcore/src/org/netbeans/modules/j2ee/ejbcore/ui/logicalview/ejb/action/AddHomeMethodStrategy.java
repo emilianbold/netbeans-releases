@@ -18,11 +18,7 @@
  */
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.Method;
-import org.netbeans.modules.j2ee.common.JMIUtils;
-import org.netbeans.modules.j2ee.common.ui.nodes.MethodCollectorFactory;
-import org.netbeans.modules.j2ee.common.ui.nodes.MethodCustomizer;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.Utils;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType;
@@ -43,19 +39,21 @@ public class AddHomeMethodStrategy extends AbstractAddMethodStrategy {
         super(NbBundle.getMessage(AddHomeMethodAction.class, "LBL_AddHomeMethodAction"));
     }
     
-    protected MethodType getPrototypeMethod(JavaClass jc) {
-        Method me = JMIUtils.createMethod(jc);
-        me.setName("homeMethod"); //NOI18N
-        return new MethodType.HomeMethodType(me);
+    protected MethodType getPrototypeMethod(TypeElement jc) {
+        //TODO: RETOUCHE
+        return null;
+//        Method me = JMIUtils.createMethod(jc);
+//        me.setName("homeMethod"); //NOI18N
+//        return new MethodType.HomeMethodType(me);
     }
 
-    protected MethodCustomizer createDialog(MethodType pType, EjbMethodController c) {
-        Method[] methodElements = Utils.getMethods(c, true, false);
-	MethodsNode methodsNode = getMethodsNode();
-	boolean local = methodsNode == null ? c.hasLocal() : (methodsNode.isLocal() && c.hasLocal());
-	boolean remote = methodsNode == null ? c.hasRemote() : (!methodsNode.isLocal() && c.hasRemote());
-        return MethodCollectorFactory.homeCollector(pType.getMethodElement(), c.hasRemote(), c.hasLocal(), methodElements, remote, local);
-    }
+//    protected MethodCustomizer createDialog(MethodType pType, EjbMethodController c) {
+//        Method[] methodElements = Utils.getMethods(c, true, false);
+//	MethodsNode methodsNode = getMethodsNode();
+//	boolean local = methodsNode == null ? c.hasLocal() : (methodsNode.isLocal() && c.hasLocal());
+//	boolean remote = methodsNode == null ? c.hasRemote() : (!methodsNode.isLocal() && c.hasRemote());
+//        return MethodCollectorFactory.homeCollector(pType.getMethodElement(), c.hasRemote(), c.hasLocal(), methodElements, remote, local);
+//    }
     
     public int prototypeMethod() {
         return MethodType.METHOD_TYPE_HOME;

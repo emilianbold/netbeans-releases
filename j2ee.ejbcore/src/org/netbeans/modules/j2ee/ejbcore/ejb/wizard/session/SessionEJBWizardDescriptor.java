@@ -25,7 +25,6 @@ import java.util.Iterator;
 import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -68,20 +67,22 @@ public class SessionEJBWizardDescriptor implements WizardDescriptor.FinishablePa
             wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(SessionEJBWizardPanel.class,"ERR_RemoteOrLocal_MustBeSelected")); //NOI18N
             return false;
         }
-        if (JavaMetamodel.getManager().isScanInProgress()) {
-            if (!isWaitingForScan) {
-                isWaitingForScan = true;
-                RequestProcessor.getDefault().post(new Runnable() {
-                    public void run() {
-                        JavaMetamodel.getManager().waitScanFinished();
-                        isWaitingForScan = false;
-                        fireChangeEvent();
-                    }
-                });
-            }
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(SessionEJBWizardPanel.class,"scanning-in-progress")); //NOI18N
-            return false;
-        }
+        
+        //TODO: RETOUCHE waitScanFinished
+//        if (JavaMetamodel.getManager().isScanInProgress()) {
+//            if (!isWaitingForScan) {
+//                isWaitingForScan = true;
+//                RequestProcessor.getDefault().post(new Runnable() {
+//                    public void run() {
+//                        JavaMetamodel.getManager().waitScanFinished();
+//                        isWaitingForScan = false;
+//                        fireChangeEvent();
+//                    }
+//                });
+//            }
+//            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(SessionEJBWizardPanel.class,"scanning-in-progress")); //NOI18N
+//            return false;
+//        }
         wizardDescriptor.putProperty("WizardPanel_errorMessage", " "); //NOI18N
         return true;
     }

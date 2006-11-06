@@ -20,7 +20,6 @@
 package org.netbeans.modules.j2ee.ejbcore;
 
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.dd.api.ejb.MessageDriven;
@@ -29,7 +28,6 @@ import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.entity.EntityNode;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.mdb.MessageNode;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.session.SessionNode;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbNodesFactory;
-import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres.CallEjbDialog;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 

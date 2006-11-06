@@ -29,6 +29,9 @@ import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
  * @author Martin Adamek
  */
 public interface EjbReference extends Node.Cookie {
+
+    //TODO: RETOUCHE remove this class? 
+    // It seems to be possible to replace it with EnterpriseReferenceContainer?
     
     boolean supportsLocalInvocation();
     

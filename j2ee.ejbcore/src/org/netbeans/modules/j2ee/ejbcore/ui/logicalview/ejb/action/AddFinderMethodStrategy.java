@@ -19,12 +19,7 @@
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 import java.util.Collection;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.Method;
-import org.netbeans.jmi.javamodel.Type;
-import org.netbeans.modules.j2ee.common.JMIUtils;
-import org.netbeans.modules.j2ee.common.ui.nodes.MethodCollectorFactory;
-import org.netbeans.modules.j2ee.common.ui.nodes.MethodCustomizer;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.Utils;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType;
@@ -44,39 +39,41 @@ public class AddFinderMethodStrategy extends AbstractAddMethodStrategy {
         super (NbBundle.getMessage(AddFinderMethodAction.class, "LBL_AddFinderMethodAction"));
     }
     
-    protected MethodType getPrototypeMethod(JavaClass jc) {
+    protected MethodType getPrototypeMethod(TypeElement jc) {
         return getFinderPrototypeMethod(jc);
     }
 
-    public static MethodType getFinderPrototypeMethod(JavaClass jc) {
-        Method me = JMIUtils.createMethod(jc);
-        me.setName("findBy"); //NOI18N
-        JMIUtils.addException(me, "javax.ejb.FinderException"); //NOI18N
-        return new MethodType.FinderMethodType(me);
+    public static MethodType getFinderPrototypeMethod(TypeElement jc) {
+        //TODO: RETOUCHE
+        return null;
+//        Method me = JMIUtils.createMethod(jc);
+//        me.setName("findBy"); //NOI18N
+//        JMIUtils.addException(me, "javax.ejb.FinderException"); //NOI18N
+//        return new MethodType.FinderMethodType(me);
     }
 
-    protected MethodCustomizer createDialog(MethodType pType, EjbMethodController c) {
-        return createFinderDialog(c, pType);
-    }
-
-    public static MethodCustomizer createFinderDialog(EjbMethodController c, MethodType pType) {
-        boolean javaImpl = c.hasJavaImplementation(pType);
-        Method[] methodElements = Utils.getMethods(c, true, false);
-	MethodsNode methodsNode = getMethodsNode();
-	boolean local = methodsNode == null ? c.hasLocal() : (methodsNode.isLocal() && c.hasLocal());
-	boolean remote = methodsNode == null ? c.hasRemote() : (!methodsNode.isLocal() && c.hasRemote());
-        return MethodCollectorFactory.finderCollector(pType.getMethodElement(), c.hasRemote(), c.hasLocal(), !javaImpl, methodElements, remote, local);
-    }
-
-    protected Type remoteReturnType(EjbMethodController c, Type t, boolean isOneReturn) {
-        String fullName = isOneReturn?c.getRemote():Collection.class.getName();
-        return JMIUtils.resolveType(fullName);
-    }
-
-    protected Type localReturnType(EjbMethodController c, Type t, boolean isOneReturn) {
-        String fullName = isOneReturn?c.getLocal():Collection.class.getName();
-        return JMIUtils.resolveType(fullName);
-    }
+//    protected MethodCustomizer createDialog(MethodType pType, EjbMethodController c) {
+//        return createFinderDialog(c, pType);
+//    }
+//
+//    public static MethodCustomizer createFinderDialog(EjbMethodController c, MethodType pType) {
+//        boolean javaImpl = c.hasJavaImplementation(pType);
+//        Method[] methodElements = Utils.getMethods(c, true, false);
+//	MethodsNode methodsNode = getMethodsNode();
+//	boolean local = methodsNode == null ? c.hasLocal() : (methodsNode.isLocal() && c.hasLocal());
+//	boolean remote = methodsNode == null ? c.hasRemote() : (!methodsNode.isLocal() && c.hasRemote());
+//        return MethodCollectorFactory.finderCollector(pType.getMethodElement(), c.hasRemote(), c.hasLocal(), !javaImpl, methodElements, remote, local);
+//    }
+//
+//    protected Type remoteReturnType(EjbMethodController c, Type t, boolean isOneReturn) {
+//        String fullName = isOneReturn?c.getRemote():Collection.class.getName();
+//        return JMIUtils.resolveType(fullName);
+//    }
+//
+//    protected Type localReturnType(EjbMethodController c, Type t, boolean isOneReturn) {
+//        String fullName = isOneReturn?c.getLocal():Collection.class.getName();
+//        return JMIUtils.resolveType(fullName);
+//    }
     
     public int prototypeMethod() {
         return MethodType.METHOD_TYPE_FINDER;

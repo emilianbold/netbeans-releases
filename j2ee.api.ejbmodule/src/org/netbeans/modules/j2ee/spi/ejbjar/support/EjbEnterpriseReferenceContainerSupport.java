@@ -53,7 +53,7 @@ public final class EjbEnterpriseReferenceContainerSupport {
         return new ERC(project, helper);
     }
     
-    private static class ERC extends EnterpriseReferenceContainer {
+    private static class ERC implements EnterpriseReferenceContainer {
         
         private Project ejbProject;
         private AntProjectHelper antHelper;
@@ -64,17 +64,17 @@ public final class EjbEnterpriseReferenceContainerSupport {
             antHelper = helper;
         }
         
-        public String addEjbLocalReference(EjbLocalRef localRef, String referencedClassName, AntArtifact target) throws java.io.IOException {
-            return addReference(localRef, referencedClassName, target);
+        public String addEjbLocalReference(EjbLocalRef localRef, FileObject referencingFile, String referencingClass, AntArtifact target) throws IOException {
+            return addReference(localRef, referencingFile, referencingClass, target);
         }
         
-        public String addEjbReferernce(EjbRef ref, String referencedClassName, AntArtifact target) throws IOException {
-            return addReference(ref, referencedClassName, target);
+        public String addEjbReference(EjbRef ref, FileObject referencingFile, String referencingClass, AntArtifact target) throws IOException {
+            return addReference(ref, referencingFile, referencingClass, target);
         }
         
-        private String addReference(Object ref, String referencedClassName, AntArtifact target) throws IOException {
+        private String addReference(Object ref, FileObject referencingFile, String referencingClass, AntArtifact target) throws IOException {
             String refName = null;
-            Ejb model = findEjbForClass(referencedClassName);
+            Ejb model = findEjbForClass(referencingClass);
             // XXX: target may be null (for example for a freeform project which doesn't have jar outputs set)
             // that's the reason of the check for target == null
             boolean fromSameProject = (target == null || ejbProject.equals(target.getProject()));
@@ -117,7 +117,7 @@ public final class EjbEnterpriseReferenceContainerSupport {
             
             if(!fromSameProject) {
                 try {
-                    ProjectClassPathExtender pcpe = (ProjectClassPathExtender) ejbProject.getLookup().lookup(ProjectClassPathExtender.class);
+                    ProjectClassPathExtender pcpe = ejbProject.getLookup().lookup(ProjectClassPathExtender.class);
                     assert pcpe != null;
                     pcpe.addAntArtifact(target, target.getArtifactLocations()[0]);
                 } catch (IOException ioe) {
@@ -136,8 +136,7 @@ public final class EjbEnterpriseReferenceContainerSupport {
         }
         
         public void setServiceLocatorName(String serviceLocator) throws IOException {
-            EditableProperties ep =
-                    antHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+            EditableProperties ep = antHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
             ep.setProperty(SERVICE_LOCATOR_PROPERTY, serviceLocator);
             antHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
             ProjectManager.getDefault().saveProject(ejbProject);
@@ -153,19 +152,12 @@ public final class EjbEnterpriseReferenceContainerSupport {
             EnterpriseBeans beans = dd.getEnterpriseBeans();
             Ejb ejb = null;
             if (beans != null) {
-                ejb = (Ejb) beans.findBeanByName(EnterpriseBeans.SESSION,
-                        Ejb.EJB_CLASS,
-                        className);
+                ejb = (Ejb) beans.findBeanByName(EnterpriseBeans.SESSION, Ejb.EJB_CLASS, className);
                 if (ejb == null) {
-                    ejb = (Ejb) beans.findBeanByName(EnterpriseBeans.ENTITY,
-                            Ejb.EJB_CLASS,
-                            className);
+                    ejb = (Ejb) beans.findBeanByName(EnterpriseBeans.ENTITY, Ejb.EJB_CLASS, className);
                 }
-                
                 if (ejb == null) {
-                    ejb = (Ejb) beans.findBeanByName(EnterpriseBeans.MESSAGE_DRIVEN,
-                            Ejb.EJB_CLASS,
-                            className);
+                    ejb = (Ejb) beans.findBeanByName(EnterpriseBeans.MESSAGE_DRIVEN, Ejb.EJB_CLASS, className);
                 }
             }
             return ejb;
@@ -188,7 +180,7 @@ public final class EjbEnterpriseReferenceContainerSupport {
             }
         }
         
-        public String addResourceRef(ResourceRef ref, String referencingClass) throws IOException {
+        public String addResourceRef(ResourceRef ref, FileObject referencingFile, String referencingClass) throws IOException {
             Ejb ejb = findEjbForClass(referencingClass);
             if (ejb == null) {
                 return ref.getResRefName();
@@ -274,13 +266,13 @@ public final class EjbEnterpriseReferenceContainerSupport {
             return ref;
         }
         
-        public String addDestinationRef(MessageDestinationRef ref, String referencingClass) throws IOException {
+        public String addDestinationRef(MessageDestinationRef ref, FileObject referencingFile, String referencingClass) throws IOException {
             Ejb ejb = findEjbForClass(referencingClass);
             if (ejb == null) {
                 return ref.getMessageDestinationRefName();
             }
             try {
-            // do not add if there is already an existing destination ref (see #85673)
+                // do not add if there is already an existing destination ref (see #85673)
                 for (MessageDestinationRef mdRef : ejb.getMessageDestinationRef()){
                     if (mdRef.getMessageDestinationRefName().equals(ref.getMessageDestinationRefName())){
                         return mdRef.getMessageDestinationRefName();
@@ -325,6 +317,7 @@ public final class EjbEnterpriseReferenceContainerSupport {
             }
             return ref;
         }
+        
     }
     
     private static boolean isDescriptorMandatory(String j2eeVersion) {

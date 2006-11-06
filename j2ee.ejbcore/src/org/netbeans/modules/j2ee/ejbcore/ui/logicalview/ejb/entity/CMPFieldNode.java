@@ -31,12 +31,10 @@ import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.WeakListeners;
 import java.io.IOException;
-import org.netbeans.jmi.javamodel.Method;
 import org.netbeans.modules.j2ee.dd.api.ejb.CmpField;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EntityMethodController;
 import org.netbeans.modules.j2ee.common.DDEditorNavigator;
-import org.netbeans.modules.javacore.api.JavaModel;
-import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
+//import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -57,15 +55,17 @@ public class CMPFieldNode extends AbstractNode implements PropertyChangeListener
     private CMPFieldNode(CmpField field, EntityMethodController controller, FileObject ddFile, InstanceContent ic) {
         super(Children.LEAF, new AbstractLookup(ic));
         ic.add(this); // for enabling Open action
-        try {
-            ic.add(DataObject.find(JavaModel.getFileObject(controller.getBeanClass().getResource()))); // for enabling SafeDelete action
-        } catch (DataObjectNotFoundException ex) {
-            // ignore
-        }
-        Method getterMethod = controller.getGetterMethod(controller.getBeanClass(), field.getFieldName());
-        if (getterMethod != null) {
-            ic.add(getterMethod); // for SafeDelete refactoring to find Method element
-        }
+        
+        //TODO: RETOUCHE
+//        try {
+//            ic.add(DataObject.find(JavaModel.getFileObject(controller.getBeanClass().getResource()))); // for enabling SafeDelete action
+//        } catch (DataObjectNotFoundException ex) {
+//            // ignore
+//        }
+//        Method getterMethod = controller.getGetterMethod(controller.getBeanClass(), field.getFieldName());
+//        if (getterMethod != null) {
+//            ic.add(getterMethod); // for SafeDelete refactoring to find Method element
+//        }
         this.field = field;
         this.ddFile = ddFile;
         this.controller = controller;
@@ -97,7 +97,8 @@ public class CMPFieldNode extends AbstractNode implements PropertyChangeListener
         return new Action[] {
             SystemAction.get(OpenAction.class),
             null,
-            RefactoringActionsFactory.safeDeleteAction().createContextAwareInstance(Utilities.actionsGlobalContext())
+        //TODO: RETOUCHE
+//            RefactoringActionsFactory.safeDeleteAction().createContextAwareInstance(Utilities.actionsGlobalContext())
         };
     }
     

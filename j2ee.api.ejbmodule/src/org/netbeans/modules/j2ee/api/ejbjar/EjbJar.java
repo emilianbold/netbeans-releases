@@ -18,14 +18,12 @@
  */
 package org.netbeans.modules.j2ee.api.ejbjar;
 
-import java.util.Collections;
 import java.util.Iterator;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.ejbjar.EjbJarAccessor;
 import org.netbeans.modules.j2ee.metadata.MetadataUnit;
 import org.netbeans.modules.j2ee.spi.ejbjar.*;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
@@ -45,8 +43,8 @@ import org.openide.util.Lookup;
 public final class EjbJar {
     
     private EjbJarImplementation impl;
-    private static final Lookup.Result implementations =
-        Lookup.getDefault().lookup(new Lookup.Template(EjbJarProvider.class));
+    private static final Lookup.Result<EjbJarProvider> implementations =
+        Lookup.getDefault().lookup(new Lookup.Template<EjbJarProvider>(EjbJarProvider.class));
     
     static  {
         EjbJarAccessor.DEFAULT = new EjbJarAccessor() {
@@ -73,9 +71,7 @@ public final class EjbJar {
         if (f == null) {
             throw new NullPointerException("Passed null to EjbJar.getEjbJar(FileObject)"); // NOI18N
         }
-        Iterator it = implementations.allInstances().iterator();
-        while (it.hasNext()) {
-            EjbJarProvider impl = (EjbJarProvider)it.next();
+        for (EjbJarProvider impl : implementations.allInstances()) {
             EjbJar wm = impl.findEjbJar (f);
             if (wm != null) {
                 return wm;
@@ -88,7 +84,7 @@ public final class EjbJar {
      * @return an array of EjbJar instance (empty array if no instance are found).
      */
     public static EjbJar [] getEjbJars (Project project) {
-        EjbJarsInProject providers = (EjbJarsInProject) project.getLookup().lookup(EjbJarsInProject.class);
+        EjbJarsInProject providers = project.getLookup().lookup(EjbJarsInProject.class);
         if (providers != null) {
             EjbJar jars [] = providers.getEjbJars();
             if (jars != null) {

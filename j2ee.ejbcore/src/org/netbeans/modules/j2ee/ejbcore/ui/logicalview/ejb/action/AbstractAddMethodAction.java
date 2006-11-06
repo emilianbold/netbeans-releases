@@ -18,11 +18,12 @@
  */
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
+import javax.lang.model.element.TypeElement;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.modules.j2ee.common.JMIUtils;
+import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.j2ee.ejbcore.Utils;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
 import org.openide.nodes.Node;
 import org.openide.util.ContextAwareAction;
@@ -36,13 +37,15 @@ import org.openide.util.actions.Presenter;
  */
 public abstract class AbstractAddMethodAction extends AbstractAction implements Presenter.Popup, ContextAwareAction {
     
+    private WorkingCopy workingCopy;
     /** Action context. */
     private Lookup context;
     private String name;
     private AbstractAddMethodStrategy strategy;
 
-    public AbstractAddMethodAction(AbstractAddMethodStrategy strategy) {
+    public AbstractAddMethodAction(WorkingCopy workingCopy, AbstractAddMethodStrategy strategy) {
         super(/*strategy.getTitle()*/);
+        this.workingCopy = workingCopy;
         this.strategy = strategy;
         this.name = strategy.getTitle();
     }
@@ -61,19 +64,14 @@ public abstract class AbstractAddMethodAction extends AbstractAction implements 
         if (activatedNodes.length != 1) {
             return false;
         }
-        JMIUtils.beginJmiTransaction();
-        try {
-            JavaClass jc = JMIUtils.getJavaClassFromNode(activatedNodes[0]);
-            boolean result = false;
-            if (jc != null) {
-                EjbMethodController c = EjbMethodController.createFromClass(jc);
-                result = (c != null) && c.supportsMethodType(strategy.prototypeMethod());
-            }
-            return result;
+        TypeElement jc = Utils.getJavaClassFromNode(activatedNodes[0]);
+        boolean result = false;
+        if (jc != null) {
+            EjbMethodController c = EjbMethodController.createFromClass(workingCopy, jc);
+            result = (c != null) && c.supportsMethodType(strategy.prototypeMethod());
+            //TODO: RETOUCHE
         }
-        finally {
-            JMIUtils.endJmiTransaction();
-        }
+        return result;
     }
     
     public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -83,7 +81,7 @@ public abstract class AbstractAddMethodAction extends AbstractAction implements 
     }
     
     protected void performAction(org.openide.nodes.Node[] activatedNodes) {
-        JavaClass jc = JMIUtils.getJavaClassFromNode(activatedNodes[0]);
+        TypeElement jc = Utils.getJavaClassFromNode(activatedNodes[0]);
         if (jc != null) {
             strategy.addMethod(jc);
         }

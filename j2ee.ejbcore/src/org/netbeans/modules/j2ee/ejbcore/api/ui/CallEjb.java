@@ -19,11 +19,14 @@
 
 package org.netbeans.modules.j2ee.ejbcore.api.ui;
 
-import org.netbeans.jmi.javamodel.JavaClass;
+import java.io.IOException;
+import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.AddCmpFieldAction;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.AddFinderMethodStrategy;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.AddSelectMethodStrategy;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres.CallEjbDialog;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -32,19 +35,24 @@ import org.openide.filesystems.FileObject;
  */
 public final class CallEjb {
     
-    public static boolean showCallEjbDialog (JavaClass beanClass, String title) {
-        return new CallEjbDialog().open(beanClass, title);
+    public static boolean showCallEjbDialog(WorkingCopy workingCopy, TypeElement beanClass, String title) {
+        try {
+            return new CallEjbDialog().open(workingCopy, beanClass, title);
+        } catch (IOException ex) {
+            ErrorManager.getDefault().notify(ex);
+            return false;
+        }
     }
     
-    public static boolean addCmpField(JavaClass beanClass, FileObject ddFile) {
+    public static boolean addCmpField(TypeElement beanClass, FileObject ddFile) {
         return AddCmpFieldAction.addCmpField(beanClass, ddFile);
     }
     
-    public static void addFinderMethod (JavaClass beanClass) {
+    public static void addFinderMethod(TypeElement beanClass) {
         new AddFinderMethodStrategy().addMethod(beanClass);
     }
     
-    public static void addSelectMethod (JavaClass beanClass) {
+    public static void addSelectMethod(TypeElement beanClass) {
         new AddSelectMethodStrategy().addMethod(beanClass);
     }
 }

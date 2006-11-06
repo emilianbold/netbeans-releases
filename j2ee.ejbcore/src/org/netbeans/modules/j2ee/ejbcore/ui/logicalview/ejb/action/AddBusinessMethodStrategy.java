@@ -18,11 +18,9 @@
  */
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.Method;
-import org.netbeans.modules.j2ee.common.JMIUtils;
-import org.netbeans.modules.j2ee.common.ui.nodes.MethodCollectorFactory;
-import org.netbeans.modules.j2ee.common.ui.nodes.MethodCustomizer;
+//import org.netbeans.modules.j2ee.common.ui.nodes.MethodCollectorFactory;
+//import org.netbeans.modules.j2ee.common.ui.nodes.MethodCustomizer;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.MethodsNode;
@@ -41,18 +39,21 @@ public class AddBusinessMethodStrategy extends AbstractAddMethodStrategy {
         super (NbBundle.getMessage(AddBusinessMethodAction.class, "LBL_AddBusinessMethodAction"));
     }
     
-    protected MethodType getPrototypeMethod(JavaClass jc) {
-        Method method = JMIUtils.createMethod(jc);
-        method.setName("businessMethod");
-        return new MethodType.BusinessMethodType(method);
+    protected MethodType getPrototypeMethod(TypeElement jc) {
+        //TODO: RETOUCHE
+        return null;
+//        Method method = JMIUtils.createMethod(jc);
+//        method.setName("businessMethod");
+//        return new MethodType.BusinessMethodType(method);
     }
 
-    protected MethodCustomizer createDialog(MethodType pType, EjbMethodController c) {
-	MethodsNode methodsNode = getMethodsNode();
-	boolean local = methodsNode == null ? c.hasLocal() : (methodsNode.isLocal() && c.hasLocal());
-	boolean remote = methodsNode == null ? c.hasRemote() : (!methodsNode.isLocal() && c.hasRemote());
-        return MethodCollectorFactory.businessCollector(pType.getMethodElement(), c.hasRemote(), c.hasLocal(), JMIUtils.getMethods(c.getBeanClass()), remote, local);
-    }
+    //TODO: RETOUCHE
+//    protected MethodCustomizer createDialog(MethodType pType, EjbMethodController c) {
+//	MethodsNode methodsNode = getMethodsNode();
+//	boolean local = methodsNode == null ? c.hasLocal() : (methodsNode.isLocal() && c.hasLocal());
+//	boolean remote = methodsNode == null ? c.hasRemote() : (!methodsNode.isLocal() && c.hasRemote());
+//        return MethodCollectorFactory.businessCollector(pType.getMethodElement(), c.hasRemote(), c.hasLocal(), JMIUtils.getMethods(c.getBeanClass()), remote, local);
+//    }
 
     public int prototypeMethod() {
         return MethodType.METHOD_TYPE_BUSINESS;

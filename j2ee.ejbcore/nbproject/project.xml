@@ -24,22 +24,6 @@ Microsystems, Inc. All Rights Reserved.
             <code-name-base>org.netbeans.modules.j2ee.ejbcore</code-name-base>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>javax.jmi.model</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>javax.jmi.reflect</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.apache.tools.ant.module</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -82,14 +66,6 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.api.mdr</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.api.progress</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -98,12 +74,11 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.jmi.javamodel</code-name-base>
+                    <code-name-base>org.netbeans.libs.javacapi</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>2</release-version>
-                        <specification-version>1.16</specification-version>
+                        <specification-version>0.5</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -135,14 +110,6 @@ Microsystems, Inc. All Rights Reserved.
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.editor.completion</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.editor.hints</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
@@ -196,29 +163,12 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.j2ee.persistence</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.j2eeserver</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>4</release-version>
                         <specification-version>1.10</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.java</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.20</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -254,35 +204,17 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.javacore</code-name-base>
+                    <code-name-base>org.netbeans.modules.java.source</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.5</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.jmiutils</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
+                        <specification-version>0.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.junit</code-name-base>
                     <run-dependency>
                         <release-version>2</release-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.mdr</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <implementation-version/>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -319,14 +251,6 @@ Microsystems, Inc. All Rights Reserved.
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.queries</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.refactoring</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>

@@ -27,7 +27,6 @@ import java.util.Set;
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
 import javax.lang.model.util.*;
-import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.JavaSource;
@@ -86,8 +85,7 @@ public class SourceUtils {
     public static boolean hasMainMethod(FileObject fileObject) throws IOException {
         JavaSource javaSource = JavaSource.forFileObject(fileObject);
         final boolean[] result = { false };
-        javaSource.runUserActionTask(new CancellableTask<CompilationController>() {
-            public void cancel() {}
+        javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
             public void run(CompilationController cc) throws Exception {
                 SourceUtils sourceUtils = SourceUtils.newInstance(cc);
                 result[0] = sourceUtils.hasMainMethod();

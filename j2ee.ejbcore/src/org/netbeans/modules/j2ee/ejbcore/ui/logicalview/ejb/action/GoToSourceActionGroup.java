@@ -21,15 +21,14 @@ package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import javax.lang.model.element.TypeElement;
 import javax.swing.Action;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.modules.j2ee.common.JMIUtils;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
-import org.netbeans.modules.javacore.api.JavaModel;
+import org.netbeans.modules.j2ee.ejbcore.Utils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -77,30 +76,35 @@ public class GoToSourceActionGroup extends EJBActionGroup {
     // private helpers =========================================================
     
     private ClassPath getClassPath() {
-        JavaClass jc = JMIUtils.getJavaClassFromNode(getActivatedNodes()[0]);
-        FileObject fo = JavaModel.getFileObject(jc.getResource());
-        return ClassPath.getClassPath(fo, ClassPath.SOURCE);
+        //TODO: RETOUCHE
+        return null;
+//        TypeElement jc = Utils.getJavaClassFromNode(getActivatedNodes()[0]);
+//        FileObject fo = JavaModel.getFileObject(jc.getResource());
+//        return ClassPath.getClassPath(fo, ClassPath.SOURCE);
     }
     
     private EntityAndSession getEjb() {
-        try {
-            JavaClass jc = JMIUtils.getJavaClassFromNode(getActivatedNodes()[0]);
-            EjbJar ejbJar = DDProvider.getDefault().getMergedDDRoot(getApiEjbJar(jc).getMetadataUnit());
-            Ejb[] ejbs = ejbJar.getEnterpriseBeans().getEjbs();
-            for (int i = 0; i < ejbs.length; i++) {
-                if (jc.getName().equals(ejbs[i].getEjbClass())) {
-                    return (EntityAndSession) ejbs[i];
-                }
-            }
-        } catch (IOException ioe) {
-            // do nothing
-        }
+        //TODO: RETOUCHE
+//        try {
+//            JavaClass jc = JMIUtils.getJavaClassFromNode(getActivatedNodes()[0]);
+//            EjbJar ejbJar = DDProvider.getDefault().getMergedDDRoot(getApiEjbJar(jc).getMetadataUnit());
+//            Ejb[] ejbs = ejbJar.getEnterpriseBeans().getEjbs();
+//            for (int i = 0; i < ejbs.length; i++) {
+//                if (jc.getName().equals(ejbs[i].getEjbClass())) {
+//                    return (EntityAndSession) ejbs[i];
+//                }
+//            }
+//        } catch (IOException ioe) {
+//            // do nothing
+//        }
         return null;
     }
 
-    private org.netbeans.modules.j2ee.api.ejbjar.EjbJar getApiEjbJar(JavaClass jc) {
-        FileObject fo = JavaModel.getFileObject(jc.getResource());
-        return org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(fo);
+    private org.netbeans.modules.j2ee.api.ejbjar.EjbJar getApiEjbJar(TypeElement jc) {
+        //TODO: RETOUCHE
+        return null;
+//        FileObject fo = JavaModel.getFileObject(jc.getResource());
+//        return org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(fo);
     }
     
 }

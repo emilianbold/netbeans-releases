@@ -55,7 +55,8 @@ public class EntityChildren extends Children.Keys implements PropertyChangeListe
         this.model = model;
         this.jar = jar;
         this.ddFile = ddFile;
-        controller = new EntityMethodController(model, srcPath, jar);
+        //TODO: RETOUCHE
+        controller = new EntityMethodController(null, model, jar);
     }
     
     protected void addNotify() {
@@ -91,26 +92,27 @@ public class EntityChildren extends Children.Keys implements PropertyChangeListe
     }
      
     protected Node[] createNodes(Object key) {
-        if (LOCAL_KEY.equals(key)) {
-            Children c = new MethodChildren(controller, model, controller.getLocalInterfaces(), true, ddFile);
-            MethodsNode n = new MethodsNode(model, jar, srcPath, c, true);
-            n.setIconBaseWithExtension("org/netbeans/modules/j2ee/ejbcore/resources/LocalMethodContainerIcon.gif");
-            n.setDisplayName(NbBundle.getMessage(EjbViewController.class, "LBL_LocalMethods"));
-            return new Node[] { n };
-        }
-        if (REMOTE_KEY.equals(key)) {
-            Children c = new MethodChildren(controller, model, controller.getRemoteInterfaces(), false, ddFile);
-            MethodsNode n = new MethodsNode(model, jar, srcPath, c, false);
-            n.setIconBaseWithExtension("org/netbeans/modules/j2ee/ejbcore/resources/RemoteMethodContainerIcon.gif");
-            n.setDisplayName(NbBundle.getMessage(EjbViewController.class, "LBL_RemoteMethods"));
-            return new Node[] { n };
-        }
-        if (CMP_FIELDS.equals(key)) {
-            CMPFieldsNode n = new CMPFieldsNode(controller,model,jar, ddFile);
-            n.setIconBaseWithExtension("org/netbeans/modules/j2ee/ejbcore/resources/CMFieldContainerIcon.gif");
-            n.setDisplayName(NbBundle.getMessage(EntityChildren.class, "LBL_CMPFields"));
-            return new Node[] { n };
-        }
+        //TODO: RETOUCHE
+//        if (LOCAL_KEY.equals(key)) {
+//            Children c = new MethodChildren(controller, model, controller.getLocalInterfaces(), true, ddFile);
+//            MethodsNode n = new MethodsNode(model, jar, srcPath, c, true);
+//            n.setIconBaseWithExtension("org/netbeans/modules/j2ee/ejbcore/resources/LocalMethodContainerIcon.gif");
+//            n.setDisplayName(NbBundle.getMessage(EjbViewController.class, "LBL_LocalMethods"));
+//            return new Node[] { n };
+//        }
+//        if (REMOTE_KEY.equals(key)) {
+//            Children c = new MethodChildren(controller, model, controller.getRemoteInterfaces(), false, ddFile);
+//            MethodsNode n = new MethodsNode(model, jar, srcPath, c, false);
+//            n.setIconBaseWithExtension("org/netbeans/modules/j2ee/ejbcore/resources/RemoteMethodContainerIcon.gif");
+//            n.setDisplayName(NbBundle.getMessage(EjbViewController.class, "LBL_RemoteMethods"));
+//            return new Node[] { n };
+//        }
+//        if (CMP_FIELDS.equals(key)) {
+//            CMPFieldsNode n = new CMPFieldsNode(controller,model,jar, ddFile);
+//            n.setIconBaseWithExtension("org/netbeans/modules/j2ee/ejbcore/resources/CMFieldContainerIcon.gif");
+//            n.setDisplayName(NbBundle.getMessage(EntityChildren.class, "LBL_CMPFields"));
+//            return new Node[] { n };
+//        }
         return null;
     }
     

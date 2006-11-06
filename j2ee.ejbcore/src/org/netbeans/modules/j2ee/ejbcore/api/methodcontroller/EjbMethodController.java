@@ -22,24 +22,19 @@ package org.netbeans.modules.j2ee.ejbcore.api.methodcontroller;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.jmi.javamodel.Feature;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.Method;
-import org.netbeans.modules.j2ee.common.JMIUtils;
-import org.netbeans.modules.j2ee.common.Util;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
-import org.netbeans.modules.javacore.api.JavaModel;
-import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.util.Utilities;
 
 /**
  * This class encapsulates functionality required for working with EJB methods.
@@ -48,15 +43,15 @@ import org.openide.util.Utilities;
  */
 public abstract class EjbMethodController {
     
-    public static EjbMethodController create(Feature feature) {
-        JavaClass jc = JMIUtils.getDeclaringClass(feature);
-        return createFromClass(jc);
+    public static EjbMethodController create(WorkingCopy workingCopy, ExecutableElement method) {
+        TypeElement enclosingClass = (TypeElement) method.getEnclosingElement();
+        assert ElementKind.CLASS == enclosingClass.getKind() : "Cannot find enclosing class for method " + method.getSimpleName();
+        return createFromClass(workingCopy, enclosingClass);
     }
     
-    public static EjbMethodController createFromClass(JavaClass jc) {
-        FileObject fo = JavaModel.getFileObject(jc.getResource());
-        ClassPath cp = Util.getFullClasspath(fo);
-        assert cp != null : "Cannot find ClassPath for " + String.valueOf(fo);
+    public static EjbMethodController createFromClass(WorkingCopy workingCopy, TypeElement clazz) {
+        FileObject fo = workingCopy.getFileObject();
+        assert fo != null : "Cannot find FileObject for " + clazz.getQualifiedName();
 
         org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(fo);
         if (ejbModule == null) {
@@ -69,27 +64,23 @@ public abstract class EjbMethodController {
             ejbJar = provider.getMergedDDRoot(ejbModule.getMetadataUnit());
             EnterpriseBeans beans = ejbJar.getEnterpriseBeans();
             if (beans != null) {
-                Session s = (Session) beans.findBeanByName(
-                        EnterpriseBeans.SESSION,
-                        Ejb.EJB_CLASS, jc.getName());
+                Session s = (Session) beans.findBeanByName(EnterpriseBeans.SESSION, Ejb.EJB_CLASS, clazz.getQualifiedName().toString());
                 if (s != null) {
-                    controller = new SessionMethodController(s,cp);
+                    controller = new SessionMethodController(workingCopy, s);
                     // TODO EJB3: on Java EE 5.0 this always sets controller to null
                     if (!controller.hasLocal() && !controller.hasRemote()) {
                         // this is either an error or a web service 
                         controller = null;
                     }
                 } else {
-                    Entity e = (Entity) beans.findBeanByName(
-                        EnterpriseBeans.ENTITY,
-                        Ejb.EJB_CLASS, jc.getName());
+                    Entity e = (Entity) beans.findBeanByName(EnterpriseBeans.ENTITY, Ejb.EJB_CLASS, clazz.getQualifiedName().toString());
                     if (e != null) {
-                        controller = new EntityMethodController(e, cp, ejbJar);
+                        controller = new EntityMethodController(workingCopy, e, ejbJar);
                     }
                 }
             }
         } catch (IOException ioe) {
-            // Cannot read dd
+            ErrorManager.getDefault().notify(ioe);
         }
         return controller;
     }
@@ -98,12 +89,12 @@ public abstract class EjbMethodController {
      * Find the implementation methods
      * @return MethodElement representing the implementation method or null.
      */
-    public abstract List getImplementation(Method intfView);
-    public abstract Method getPrimaryImplementation(Method intfView);
+    public abstract List getImplementation(ExecutableElement intfView);
+    public abstract ExecutableElement getPrimaryImplementation(ExecutableElement intfView);
     /**
      * @return true if intfView has a java implementation.
      */
-    public abstract boolean hasJavaImplementation(Method intfView);
+    public abstract boolean hasJavaImplementation(ExecutableElement intfView);
     public abstract boolean hasJavaImplementation(MethodType mt);
     
     /**
@@ -111,8 +102,7 @@ public abstract class EjbMethodController {
      * @param beanImpl implementation method
      * @param local true if local method should be returned false otherwise
      */
-    public abstract Method getInterface(Method beanImpl,
-                                               boolean local);
+    public abstract ExecutableElement getInterface(ExecutableElement beanImpl, boolean local);
     
     /** Return if the passed method is implementation of method defined 
      * in local or remote interface.
@@ -122,23 +112,23 @@ public abstract class EjbMethodController {
      *              if <code>false</code> the remote interface is searched.
      */
 //    public abstract boolean hasMethodInInterface(Method m, int methodType, boolean local);
-    public abstract boolean hasMethodInInterface(Method m, MethodType methodType, boolean local);
+    public abstract boolean hasMethodInInterface(ExecutableElement m, MethodType methodType, boolean local);
     
     /**
      * @param clientView of the method
      */
-    public abstract MethodType getMethodTypeFromInterface(Method clientView);
-    public abstract MethodType getMethodTypeFromImpl(Method implView);
+    public abstract MethodType getMethodTypeFromInterface(ExecutableElement clientView);
+    public abstract MethodType getMethodTypeFromImpl(ExecutableElement implView);
 //    public abstract int getMethodTypeFromImpl(Method implView);
     
-    public abstract JavaClass getBeanClass();
+    public abstract TypeElement getBeanClass();
     public abstract String getLocal();
     public abstract String getRemote();
-    public abstract Collection getLocalInterfaces();
-    public abstract Collection getRemoteInterfaces();
+    public abstract Collection<TypeElement> getLocalInterfaces();
+    public abstract Collection<TypeElement> getRemoteInterfaces();
     public abstract boolean hasLocal();
     public abstract boolean hasRemote();
-    public void addEjbQl(Method clientView, String ejbql, FileObject dd) throws IOException {
+    public void addEjbQl(ExecutableElement clientView, String ejbql, FileObject dd) throws IOException {
         assert false: "ejbql not supported for this bean type";
     }
     
@@ -149,7 +139,7 @@ public abstract class EjbMethodController {
     /**
      * create interface signature based on the given implementation
      */
-    public abstract void createAndAddInterface(Method beanImpl, boolean local);
+    public abstract void createAndAddInterface(ExecutableElement beanImpl, boolean local);
     
     /**
      * create implementation methods based on the client method. 
@@ -157,13 +147,13 @@ public abstract class EjbMethodController {
      * @param intf interface where element will be inserted. This can be the
      * use the business interface pattern.
      */
-    public abstract void createAndAddImpl(Method clientView);
+    public abstract void createAndAddImpl(ExecutableElement clientView);
     
-    public abstract void delete(Method interfaceMethod, boolean local);
+    public abstract void delete(ExecutableElement interfaceMethod, boolean local);
     
     /** Checks if given method type is supported by controller.
      * @param type One of <code>METHOD_</code> constants in @link{MethodType}
      */
     public abstract boolean supportsMethodType(int type);
-    public abstract void createAndAdd(Method clientView, boolean local, boolean component);
+    public abstract void createAndAdd(ExecutableElement clientView, boolean local, boolean component);
 }

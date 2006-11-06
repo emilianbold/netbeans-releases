@@ -29,7 +29,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.session.SessionEJBWizardPanel;
-import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
@@ -85,20 +84,22 @@ public class EntityEJBWizardDescriptor implements WizardDescriptor.FinishablePan
             wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(EntityEJBWizardDescriptor.class,"ERR_PrimaryKeyNotEmpty")); //NOI18N
             return false;
         }
-        if (JavaMetamodel.getManager().isScanInProgress()) {
-            if (!isWaitingForScan) {
-                isWaitingForScan = true;
-                RequestProcessor.getDefault().post(new Runnable() {
-                    public void run() {
-                        JavaMetamodel.getManager().waitScanFinished();
-                        isWaitingForScan = false;
-                        fireChangeEvent();
-                    }
-                });
-            }
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(SessionEJBWizardPanel.class,"scanning-in-progress")); //NOI18N
-            return false;
-        }
+        
+        //TODO: RETOUCHE waitScanFinished
+//        if (JavaMetamodel.getManager().isScanInProgress()) {
+//            if (!isWaitingForScan) {
+//                isWaitingForScan = true;
+//                RequestProcessor.getDefault().post(new Runnable() {
+//                    public void run() {
+//                        JavaMetamodel.getManager().waitScanFinished();
+//                        isWaitingForScan = false;
+//                        fireChangeEvent();
+//                    }
+//                });
+//            }
+//            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(SessionEJBWizardPanel.class,"scanning-in-progress")); //NOI18N
+//            return false;
+//        }
         String errorMessage = (String) wizardDescriptor.getProperty("WizardPanel_errorMessage");
         if (errorMessage == null || errorMessage.trim().equals("")) {
             wizardDescriptor.putProperty("WizardPanel_errorMessage", " "); //NOI18N

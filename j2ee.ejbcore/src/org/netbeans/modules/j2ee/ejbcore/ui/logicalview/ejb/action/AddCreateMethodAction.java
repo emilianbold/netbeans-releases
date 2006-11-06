@@ -18,6 +18,7 @@
  */
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.openide.util.HelpCtx;
 
 /**
@@ -26,12 +27,12 @@ import org.openide.util.HelpCtx;
  */
 public class AddCreateMethodAction extends AbstractAddMethodAction {
 
-    public AddCreateMethodAction() {
-        super(new AddCreateMethodStrategy());
+    public AddCreateMethodAction(WorkingCopy workingCopy) {
+        super(workingCopy, new AddCreateMethodStrategy());
     }
 
-    public AddCreateMethodAction(String name) {
-        super(new AddCreateMethodStrategy(name));
+    public AddCreateMethodAction(WorkingCopy workingCopy, String name) {
+        super(workingCopy, new AddCreateMethodStrategy(name));
     }
 
     public HelpCtx getHelpCtx() {

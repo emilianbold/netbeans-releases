@@ -23,7 +23,7 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.j2ee.common.FQNSearch;
+//import org.netbeans.modules.j2ee.common.FQNSearch;
 import org.openide.util.Utilities;
 
 
@@ -179,7 +179,8 @@ public class ServiceLocatorStrategyPanel extends javax.swing.JPanel {
         unreferencedServiceLocator.setSelected(true);
         SwingUtilities.invokeLater (new Runnable() {
             public void run() {
-                FQNSearch.showFastOpen(className);
+                //TODO: RETOUCHE
+//                FQNSearch.showFastOpen(className);
             }
         });
     }//GEN-LAST:event_jButton1ActionPerformed

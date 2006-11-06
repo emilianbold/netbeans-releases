@@ -20,7 +20,6 @@
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.entity;
 
 import javax.swing.Action;
-import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.openide.actions.*;
 import org.openide.cookies.OpenCookie;
@@ -58,9 +57,10 @@ public class CMPFieldsNode extends AbstractNode implements OpenCookie {
         this.ejbJar = jar;
         this.ddFile = ddFile;
         content.add(this);
-        JavaClass jc = controller.getBeanClass();
-        if (jc != null)
-            content.add(jc);
+        //TODO: RETOUCHE
+//        JavaClass jc = controller.getBeanClass();
+//        if (jc != null)
+//            content.add(jc);
     }
     
     public Action[] getActions(boolean context) {

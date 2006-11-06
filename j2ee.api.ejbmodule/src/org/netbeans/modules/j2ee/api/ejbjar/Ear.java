@@ -18,9 +18,9 @@
  */
 package org.netbeans.modules.j2ee.api.ejbjar;
 
-import java.util.Iterator;
 import org.netbeans.modules.j2ee.ejbjar.EarAccessor;
 import org.netbeans.modules.j2ee.spi.ejbjar.EarImplementation;
+import org.netbeans.modules.j2ee.spi.ejbjar.EarProvider;
 import org.netbeans.modules.j2ee.spi.ejbjar.EarProvider;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.filesystems.FileObject;
@@ -43,8 +43,8 @@ import org.openide.util.Lookup;
 public final class Ear {
     
     private final EarImplementation impl;
-    private static final Lookup.Result implementations =
-        Lookup.getDefault().lookup(new Lookup.Template(EarProvider.class));
+    private static final Lookup.Result<EarProvider> implementations =
+        Lookup.getDefault().lookup(new Lookup.Template<EarProvider>(EarProvider.class));
     
     static  {
         EarAccessor.DEFAULT = new EarAccessor() {
@@ -72,10 +72,8 @@ public final class Ear {
         if (f == null) {
             throw new NullPointerException("Passed null to Ear.getEar(FileObject)"); // NOI18N
         }
-        Iterator it = implementations.allInstances().iterator();
-        while (it.hasNext()) {
-            EarProvider impl = (EarProvider)it.next();
-            Ear wm = impl.findEar (f);
+        for (EarProvider earProvider : implementations.allInstances()) {
+            Ear wm = earProvider.findEar(f);
             if (wm != null) {
                 return wm;
             }

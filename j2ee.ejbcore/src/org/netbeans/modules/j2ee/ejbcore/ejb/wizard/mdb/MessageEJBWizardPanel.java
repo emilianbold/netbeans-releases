@@ -28,12 +28,10 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 public class MessageEJBWizardPanel implements WizardDescriptor.FinishablePanel {
     
@@ -58,20 +56,21 @@ public class MessageEJBWizardPanel implements WizardDescriptor.FinishablePanel {
             wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(MessageEJBWizardPanel.class,"MSG_WrongJ2EESpecVersion")); //NOI18N
             return false;
         }
-        
-        if (JavaMetamodel.getManager().isScanInProgress()) {
-            if (!isWaitingForScan) {
-                isWaitingForScan = true;
-                RequestProcessor.getDefault().post(new Runnable() {
-                    public void run() {
-                        JavaMetamodel.getManager().waitScanFinished();
-                        fireChangeEvent();
-                    }
-                });
-            }
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(MessageEJBWizardPanel.class,"scanning-in-progress")); //NOI18N
-            return false;
-        }
+
+        //TODO: RETOUCHE waitScanFinished
+//        if (JavaMetamodel.getManager().isScanInProgress()) {
+//            if (!isWaitingForScan) {
+//                isWaitingForScan = true;
+//                RequestProcessor.getDefault().post(new Runnable() {
+//                    public void run() {
+//                        JavaMetamodel.getManager().waitScanFinished();
+//                        fireChangeEvent();
+//                    }
+//                });
+//            }
+//            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(MessageEJBWizardPanel.class,"scanning-in-progress")); //NOI18N
+//            return false;
+//        }
 
         // XXX add the following checks
         // p.getName = valid NmToken

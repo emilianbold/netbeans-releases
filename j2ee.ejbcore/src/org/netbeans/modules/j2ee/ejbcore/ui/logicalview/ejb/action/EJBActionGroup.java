@@ -19,8 +19,8 @@
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 
+import javax.lang.model.element.TypeElement;
 import javax.swing.*;
-import org.netbeans.jmi.javamodel.UnresolvedClass;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -28,8 +28,7 @@ import org.openide.nodes.Node;
 import org.openide.util.*;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.modules.j2ee.common.JMIUtils;
+import org.netbeans.modules.j2ee.ejbcore.Utils;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
 import org.openide.util.actions.Presenter;
 import org.openide.util.actions.NodeAction;
@@ -53,11 +52,12 @@ public class EJBActionGroup extends NodeAction implements Presenter.Popup {
             SystemAction.get(ExposeInLocalAction.class),
             SystemAction.get(ExposeInRemoteAction.class),
             null,
-            new AddBusinessMethodAction(),
-            new AddCreateMethodAction(),
-            new AddFinderMethodAction(),
-            new AddHomeMethodAction(),
-            new AddSelectMethodAction(),
+            //TODO: RETOUCHE
+//            new AddBusinessMethodAction(),
+//            new AddCreateMethodAction(),
+//            new AddFinderMethodAction(),
+//            new AddHomeMethodAction(),
+//            new AddSelectMethodAction(),
             SystemAction.get(AddCmpFieldAction.class)
         };
     }
@@ -85,19 +85,14 @@ public class EJBActionGroup extends NodeAction implements Presenter.Popup {
         if (activatedNodes.length != 1) {
             return false;
         }
-        JMIUtils.beginJmiTransaction();
-        try {
-            JavaClass jc = JMIUtils.getJavaClassFromNode(activatedNodes[0]);
-            boolean result = false;
-            if (jc != null && !(jc instanceof UnresolvedClass)) {
-                EjbMethodController c = EjbMethodController.createFromClass(jc);
-                result = (c != null);
-            }
-            return result;
-        }
-        finally {
-            JMIUtils.endJmiTransaction();
-        }
+        TypeElement jc = Utils.getJavaClassFromNode(activatedNodes[0]);
+        boolean result = false;
+        //TODO: RETOUCHE
+//        if (jc != null) {
+//            EjbMethodController c = EjbMethodController.createFromClass(jc);
+//            result = (c != null);
+//        }
+        return result;
     }
     
     protected void performAction(org.openide.nodes.Node[] activatedNodes) {
