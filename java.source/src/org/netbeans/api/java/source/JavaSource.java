@@ -684,6 +684,9 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
     private static JavacTaskImpl createJavacTask(final ClasspathInfo cpInfo, final DiagnosticListener<? super JavaFileObject> diagnosticListener, final String sourceLevel, final boolean backgroundCompilation) {
         ArrayList<String> options = new ArrayList<String>();
         if (!backgroundCompilation) {
+            if (Boolean.getBoolean("org.netbeans.api.java.source.JavaSource.USE_COMPILER_LINT")) { // XXX temp workaround for #76702
+                options.add("-Xlint");
+            }
             options.add("-Xjcov"); //NOI18N, Make the compiler store end positions
         } else {
             options.add("-XDbackgroundCompilation");    //NOI18N
