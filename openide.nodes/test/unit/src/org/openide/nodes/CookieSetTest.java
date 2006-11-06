@@ -19,6 +19,7 @@
 
 package org.openide.nodes;
 
+import com.sun.org.apache.bcel.internal.generic.ARRAYLENGTH;
 import junit.framework.*;
 import junit.textui.TestRunner;
 import java.util.*;
@@ -29,6 +30,10 @@ import org.openide.nodes.*;
 
 import org.netbeans.junit.*;
 import javax.swing.event.ChangeListener;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
+import org.openide.util.lookup.InstanceContent;
 
 /** Tests behaviour of CookieSet.
  *
@@ -39,9 +44,6 @@ public class CookieSetTest extends NbTestCase {
         super(name);
     }
 
-    public static void main(String[] args) {
-        TestRunner.run(new NbTestSuite(CookieSetTest.class));
-    }
     
     public void testAddRemove () throws Exception {
         CookieSet set = new CookieSet ();
@@ -87,6 +89,8 @@ public class CookieSetTest extends NbTestCase {
         assertEquals ("One change expected", l.cnt (), 1);
         assertEquals ("C1 cookie", c1, set.getCookie (Node.Cookie.class));
         assertNull ("Null index", set.getCookie (Index.class));
+        
+        assertCookieSet(set);
     }
         
     /** Adding smaller and bigger and removing smaller.
@@ -105,6 +109,7 @@ public class CookieSetTest extends NbTestCase {
         
         assertEquals ("C2 index", c2, set.getCookie (Index.class));
         assertEquals ("C2 cookie", c2, set.getCookie (Node.Cookie.class));
+        assertCookieSet(set);
     }
 
     /** Adding bigger and smaller and removing bigger.
@@ -127,6 +132,8 @@ public class CookieSetTest extends NbTestCase {
         
         assertEquals ("C1 cookie", c1, set.getCookie (Node.Cookie.class));
         assertEquals ("Null index", null, set.getCookie (Index.class));
+
+        assertCookieSet(set);
     }
     
     /** Tests behaviour of modifications via factory.
@@ -169,6 +176,8 @@ public class CookieSetTest extends NbTestCase {
         // remove of a factory
         set.remove(C1.class, l);
         assertNull("Removed factory still returns a cookie", set.getCookie (C1.class));
+
+        assertCookieSet(set);
     }
 
     /** Tests behaviour of modifications via factory.
@@ -198,6 +207,7 @@ public class CookieSetTest extends NbTestCase {
         
         assertNull ("Still nobody registered as C2", set.getCookie (C2.class));
         
+        assertCookieSet(set);
     }
     
     public void testCookieSetThruLookupReturnsTheSame () throws Exception {
@@ -235,6 +245,7 @@ public class CookieSetTest extends NbTestCase {
         set.add (c1);
         assertEquals ("Smaller takes preceedence", c1, set.getCookie (Node.Cookie.class));
         assertEquals ("Smaller even in lookup", c1, n.getLookup ().lookup (Node.Cookie.class));
+        assertCookieSet(set);
     }
     
     public void testCookieSetThruLookupImprovedVersionIssue47411 () throws Exception {
@@ -280,12 +291,96 @@ public class CookieSetTest extends NbTestCase {
         assertEquals (null, an.getLookup ().lookup (SaveCookie.class));
         assertEquals (a, an.getLookup ().lookup (OpenCookie.class));
         assertEquals (x, an.getLookup ().lookup (EditCookie.class));
+        assertCookieSet(set);
+    }
+    
+    private static void assertCookieSet(CookieSet en) {
+        if (en.getCookie(Node.Cookie.class) == null) {
+            assertEquals("Should be empty", 0, en.getLookup().lookupAll(Node.Cookie.class).size());
+            return;
+        }
+    
+        Lookup.Result<Node.Cookie> all = en.getLookup().lookupResult(Node.Cookie.class);
+        int cnt = 0;
+        for (Class<? extends Node.Cookie> c : all.allClasses()) {
+            Object o = en.getLookup().lookup(c);
+            assertEquals("Query for " + c, o, en.getCookie(c));
+            cnt++;
+        }
+        
+        if (cnt == 0) {
+            fail("There shall be at least one object in lookup: " + cnt);
+        }
+    }
+
+    public void testOneChangeInLookupWhenAddingMultipleElements() throws Exception {
+        CookieSet general = CookieSet.createGeneric(null);
+        
+        L listener = new L();
+        Lookup.Result<String> res = general.getLookup().lookupResult(String.class);
+        res.addLookupListener(listener);
+        res.allItems();
+        
+        assertEquals("No change", 0, listener.cnt());
+        
+        general.assign(String.class, "Ahoj", "Jardo");
+        
+        assertEquals("One change", 1, listener.cnt());
+        assertEquals("Two items", 2, res.allItems().size());
+
+        general.assign(String.class, "Ahoj", "Jardo");
+        assertEquals("No change", 0, listener.cnt());
+        assertEquals("Still two items", 2, res.allItems().size());
+        
+        general.assign(String.class, "Ahoj");
+        assertEquals("Yet one change", 1, listener.cnt());
+        assertEquals("One item", 1, res.allItems().size());
+    }
+
+    public void testOneChangeInLookupWhenAddingMultipleElementsWithBefore() throws Exception {
+        class B implements CookieSet.Before {
+            CookieSet general;
+            private String[] asg;
+            public void assign(String... arr) {
+                asg = arr;
+            }
+            
+            public void beforeLookup(Class<?> c) {
+                if (asg != null) {
+                    general.assign(String.class, asg);
+                    asg = null;
+                }
+            }
+        }
+        B b = new B();
+        
+        b.general = CookieSet.createGeneric(b);
+        
+        L listener = new L();
+        Lookup.Result<String> res = b.general.getLookup().lookupResult(String.class);
+        res.addLookupListener(listener);
+        res.allItems();
+        
+        assertEquals("No change", 0, listener.cnt());
+        
+        b.assign("Ahoj", "Jardo");
+        
+        assertEquals("Two items", 2, res.allItems().size());
+        assertEquals("One change", 1, listener.cnt());
+
+        b.assign("Ahoj", "Jardo");
+        assertEquals("Still two items", 2, res.allItems().size());
+        assertEquals("No change", 0, listener.cnt());
+        
+        b.assign("Ahoj");
+        assertEquals("One item", 1, res.allItems().size());
+        assertEquals("Yet one change", 1, listener.cnt());
     }
     
     /** Change listener.
      */
     private static final class L extends Object 
-    implements ChangeListener, CookieSet.Factory {
+    implements LookupListener, ChangeListener, CookieSet.Factory {
         private int count;
         
         public void stateChanged(javax.swing.event.ChangeEvent changeEvent) {
@@ -308,6 +403,10 @@ public class CookieSetTest extends NbTestCase {
                 return new C1 ();
             } 
             return new C2 ();
+        }
+
+        public void resultChanged(LookupEvent ev) {
+            count++;
         }
         
     }

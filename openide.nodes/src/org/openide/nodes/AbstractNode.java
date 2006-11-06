@@ -169,6 +169,13 @@ public class AbstractNode extends Node {
         // not called from constructor (see e.g. DataNode)
         super.setName(""); // NOI18N
     }
+    
+    /** Fake node constructor with given CookieSet
+     */
+    AbstractNode(CookieSet set) {
+        super(Children.LEAF);
+        lookup = set;
+    }
 
     /** Clone the node. If the object implements {@link Cloneable},
     * that is used; otherwise a {@link FilterNode filter node}

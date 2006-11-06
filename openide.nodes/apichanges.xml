@@ -23,7 +23,33 @@ Microsystems, Inc. All Rights Reserved.
 <apidef name="nodes">Nodes API</apidef>
 </apidefs>
 <changes>
-<change id="BeanNode.LookupCtor">
+    <change id="GenericCookieSet">
+        <api name="nodes"/>
+        <summary>CookieSet can hold any objects and not just cookies</summary>
+        <version major="7" minor="0"/>
+        <date day="6" month="11" year="2006"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+            New method <a href="@TOP@/org/openide/nodes/CookieSet.html#createGeneric(org.openide.nodes.CookieSet.Before)">
+            CookieSet.createGeneric</a> has been added. It allows to create 
+            an instance of <a href="@TOP@/org/openide/nodes/CookieSet.html">
+            CookieSet</a> that can contain any object, not just 
+            <a href="@TOP@/org/openide/nodes/Node.Cookie.html">Cookies</a>.
+            This addition change is accompanied with two additional changes:
+            <a href="@TOP@/org/openide/nodes/CookieSet.html">
+            CookieSet</a> now implements <a href="@org-openide-util@/org/openide/util/Lookup.Provider.html">
+            Lookup.Provider</a> and thus has a method <code>getLookup</code> to 
+            allow queries for of its content.
+            Also there is a new method 
+            <a href="@TOP@/org/openide/nodes/CookieSet.html#assign(java.lang.Class,%20T...)">
+            assign(clazz, instances)</a> that allows to add/remove 
+            plain old java objects to the <code>CookieSet</code>.
+        </description>
+        <class package="org.openide.nodes" name="CookieSet"/>
+        <issue number="62707"/>
+    </change>
+    <change id="BeanNode.LookupCtor">
      <api name="nodes"/>
      <summary>BeanNode constructor allows passing Lookup instance</summary>
      <version major="6" minor="9"/>

@@ -36,6 +36,10 @@ public class DataLoaderOrigTest extends NbTestCase {
     public DataLoaderOrigTest(String name) {
         super(name);
     }
+    
+    protected void setUp() throws IOException {
+        clearWorkDir();
+    }
 
     public void testSimpleLoader() throws Exception {
         DataLoader l = DataLoader.getLoader(SimpleUniFileLoader.class);

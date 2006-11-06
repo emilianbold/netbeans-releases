@@ -26,6 +26,9 @@ import java.util.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 
 /** Support class for storing cookies and
@@ -35,7 +38,7 @@ import javax.swing.event.EventListenerList;
 *
 * @author Jaroslav Tulach
 */
-public final class CookieSet extends Object {
+public final class CookieSet extends Object implements Lookup.Provider {
     /** variable to allow effecient communication with NodeLookup, Node.Cookie or Class or Set */
     private static ThreadLocal<Object> QUERY_MODE = new ThreadLocal<Object>();
 
@@ -44,11 +47,58 @@ public final class CookieSet extends Object {
 
     /** set of listeners */
     private EventListenerList listeners = new EventListenerList();
+    
+    /** potential instance content */
+    private final CookieSetLkp ic;
+    /** lookup to use return from the cookie set, if initialized */
+    private Lookup lookup;
 
     /** Default constructor. */
     public CookieSet() {
+        this(null, null);
+    }
+    
+    private CookieSet(CookieSetLkp ic, Lookup lookup) {
+        this.ic = ic;
+        this.lookup = lookup;
+    }
+    
+    /** Factory method to create new, general purpose cookie set. 
+     * The <q>general purpose</q> means that it is possible to store
+     * any object, into the cookie set and then obtain it using {@link #getLookup}
+     * and queries on the returned {@link Lookup}. The before object can
+     * be passed in if one wants to do a lazy initialization of the {@link CookieSet}
+     * content.
+     * 
+     * @param before the interface to support lazy initialization
+     * @return new cookie set that can contain not only {@link Node.Cookie} but also 
+     *    any plain old java object
+     * @see #assign
+     * @since 7.0
+     */
+    public static CookieSet createGeneric(Before before) {
+        CookieSetLkp al = new CookieSetLkp(before);
+        return new CookieSet(al, al);
     }
 
+    /** The lookup associated with this cookie set. Keeps track of
+     * the same things that are in the cookie set, but presents them
+     * as being inside the lookup.
+     * 
+     * @return the lookup representing this cookie set
+     * @since 7.0
+     */
+    public Lookup getLookup() {
+        synchronized (QUERY_MODE) {
+            if (lookup == null) {
+                AbstractNode an = new AbstractNode(this);
+                lookup = an.getLookup();
+            }
+        }
+        return lookup;
+    }
+
+    
     /** Add a new cookie to the set. If a cookie of the same
     * <em>actual</em> (not representation!) class is already there,
     * it is replaced.
@@ -59,23 +109,39 @@ public final class CookieSet extends Object {
     * @param cookie cookie to add
     */
     public void add(Node.Cookie cookie) {
+        addImpl((Object)cookie);
+        fireChangeEvent();
+    }
+    
+    private void addImpl(Object cookie) {
         synchronized (this) {
             registerCookie(cookie.getClass(), cookie);
         }
-
-        fireChangeEvent();
+        if (ic != null) {
+            ic.add(cookie);
+        }
     }
 
     /** Remove a cookie from the set.
     * @param cookie the cookie to remove
     */
     public void remove(Node.Cookie cookie) {
+        removeImpl((Object)cookie);
+        fireChangeEvent();
+    }
+    
+    void removeImpl(Object cookie) {
         synchronized (this) {
             unregisterCookie(cookie.getClass(), cookie);
         }
-
-        fireChangeEvent();
+        if (ic != null) {
+            ic.remove(cookie);
+        }
     }
+    
+    /** Associates a given set of instances with
+     */
+    
 
     /** Get a cookie.
     *
@@ -83,6 +149,10 @@ public final class CookieSet extends Object {
     * @return a cookie assignable to the representation class, or <code>null</code> if there is none
     */
     public <T extends Node.Cookie> T getCookie(Class<T> clazz) {
+        if (ic != null) {
+            ic.beforeLookupImpl(clazz);
+        }
+        
         Node.Cookie ret = null;
         Object queryMode = QUERY_MODE.get();
 
@@ -90,13 +160,17 @@ public final class CookieSet extends Object {
             R r = findR(clazz);
 
             if (r == null) {
-                return null;
-            }
+                if (queryMode == null || ic == null) {
+                    return null;
+                }
+            } else {
+                ret = r.cookie();
 
-            ret = r.cookie();
-
-            if (queryMode instanceof Set) {
-                ((Set) queryMode).addAll(map.keySet());
+                if (queryMode instanceof Set) {
+                    @SuppressWarnings("unchecked")
+                    Set<Class> keys = (Set<Class>)queryMode;
+                    keys.addAll(map.keySet());
+                }
             }
         }
 
@@ -110,9 +184,33 @@ public final class CookieSet extends Object {
                 // unwrap the cookie
                 ret = ((CookieEntry) ret).getCookie(true);
             }
+        } else if (ret == null) {
+            if (ic != null && 
+                (!Node.Cookie.class.isAssignableFrom(clazz) || clazz == Node.Cookie.class)
+            ) {
+                enhancedQueryMode(lookup, clazz);
+                ret = null;
+            }
         }
 
         return clazz.cast(ret);
+    }
+    
+    static void enhancedQueryMode(Lookup lookup, Class<?> clazz) {
+        Object type = QUERY_MODE.get();
+        if (type != clazz) {
+            return;
+        }
+        Collection<? extends Lookup.Item<?>> items = lookup.lookupResult(clazz).allItems();
+        if (items.size() == 0) {
+            return;
+        }
+        AbstractLookup.Pair[] arr = new AbstractLookup.Pair[items.size()];
+        Iterator<? extends Lookup.Item> it = items.iterator();
+        for (int i = 0; i < arr.length; i++) {
+            arr[i] = new PairWrap(it.next());
+        }
+        QUERY_MODE.set(arr);
     }
 
     /** Add a listener to changes in the cookie set.
@@ -128,7 +226,8 @@ public final class CookieSet extends Object {
     public void removeChangeListener(ChangeListener l) {
         listeners.remove(ChangeListener.class, l);
     }
-
+    
+    
     /** Node lookup starts its non-important query.
      */
     static Object entryQueryMode(Class c) {
@@ -149,12 +248,14 @@ public final class CookieSet extends Object {
 
     /** Exits query mode.
      */
-    static org.openide.util.lookup.AbstractLookup.Pair exitQueryMode(Object prev) {
+    static Collection<AbstractLookup.Pair> exitQueryMode(Object prev) {
         Object cookie = QUERY_MODE.get();
         QUERY_MODE.set(prev);
 
         if (cookie instanceof CookieSet.CookieEntry) {
-            return new CookieEntryPair((CookieSet.CookieEntry) cookie);
+            return Collections.singleton((AbstractLookup.Pair)new CookieEntryPair((CookieSet.CookieEntry) cookie));
+        } else if (cookie instanceof AbstractLookup.Pair[]) {
+            return Arrays.asList((AbstractLookup.Pair[])cookie);
         } else {
             return null;
         }
@@ -174,7 +275,7 @@ public final class CookieSet extends Object {
 
     /** Fires change event
     */
-    private void fireChangeEvent() {
+    final void fireChangeEvent() {
         Object[] arr = listeners.getListenerList();
 
         if (arr.length > 0) {
@@ -200,7 +301,7 @@ public final class CookieSet extends Object {
     * @param c class or null
     * @param cookie cookie to attach
     */
-    private void registerCookie(Class<?> c, Node.Cookie cookie) {
+    private void registerCookie(Class<?> c, Object cookie) {
         if ((c == null) || !Node.Cookie.class.isAssignableFrom(c)) {
             return;
         }
@@ -213,7 +314,7 @@ public final class CookieSet extends Object {
             map.put(c, r);
         }
 
-        r.add(cookie);
+        r.add((Node.Cookie)cookie);
 
         registerCookie(c.getSuperclass(), cookie);
 
@@ -230,7 +331,7 @@ public final class CookieSet extends Object {
     * @param c class or null
     * @param cookie cookie to attach
     */
-    private void unregisterCookie(Class<?> c, Node.Cookie cookie) {
+    private void unregisterCookie(Class<?> c, Object cookie) {
         if ((c == null) || !Node.Cookie.class.isAssignableFrom(c)) {
             return;
         }
@@ -242,7 +343,7 @@ public final class CookieSet extends Object {
 
         if (r != null) {
             // remove the cookie
-            r.remove(cookie);
+            r.remove((Node.Cookie)cookie);
         }
 
         unregisterCookie(c.getSuperclass(), cookie);
@@ -263,7 +364,9 @@ public final class CookieSet extends Object {
         synchronized (this) {
             registerCookie(cookieClass, new CookieEntry(factory, cookieClass));
         }
-
+        if (ic != null) {
+            ic.add(new FactAndClass(cookieClass, factory), C.INSTANCE);
+        }
         fireChangeEvent();
     }
 
@@ -279,6 +382,11 @@ public final class CookieSet extends Object {
             }
         }
 
+        if (ic != null) {
+            for (Class<? extends Node.Cookie> c : cookieClass) {
+                ic.add(new FactAndClass(c, factory), C.INSTANCE);
+            }
+        }
         fireChangeEvent();
     }
 
@@ -305,6 +413,9 @@ public final class CookieSet extends Object {
                     }
                 }
             }
+        }
+        if (ic != null) {
+            ic.remove(new FactAndClass(cookieClass, factory), C.INSTANCE);
         }
 
         fireChangeEvent();
@@ -336,10 +447,69 @@ public final class CookieSet extends Object {
                 }
             }
         }
+        
+        if (ic != null) {
+            for (Class<? extends Node.Cookie> c : cookieClass) {
+                ic.remove(new FactAndClass(c, factory), C.INSTANCE);
+            }
+        }
 
         fireChangeEvent();
     }
-
+    
+    /** Removes all instances of clazz from the set and replaces them
+     * with newly provided instance(s).
+     * 
+     * @param clazz the root clazz for cookies to remove
+     * @param instances the one or more instances to put into the lookup
+     * 
+     * @since 7.0
+     */
+    public <T> void assign(Class<? extends T> clazz, T... instances) {
+        if (Node.Cookie.class.isAssignableFrom(clazz)) {
+            Class<? extends Node.Cookie> cookieClazz = clazz.asSubclass(Node.Cookie.class);
+            for(;;) {
+                Node.Cookie cookie = getCookie(cookieClazz);
+                if (cookie != null) {
+                    removeImpl(cookie);
+                } else {
+                    break;
+                }
+            }
+            for (T t : instances) {
+                addImpl(t);
+            }
+        
+            fireChangeEvent();
+        } else if (ic != null) {
+            synchronized (this) {
+                for (T t : instances) {
+                    registerCookie(t.getClass(), t);
+                }
+            }
+            ic.replaceInstances(clazz, instances, this);
+        }
+    }
+    
+    /** Assignes a trigger that gets called everytime given class is about
+     * to be queried. Can be used only for cookie set created with
+     * {@link CookieSet#create(true)} and for classes that are not 
+     * subclasses of Node.Cookie.
+     *
+     * @param clazz the trigger class (not subclass of Node.Cookie)
+     * @param run runnable to run when the task is queried
+     *
+    public void beforeLookup(Class<?> clazz, Runnable run) {
+        if (Node.Cookie.class.isAssignableFrom(clazz) || clazz == Object.class) {
+            throw new IllegalArgumentException("Too generic class: " + clazz); // NOI18N
+        }
+        if (ic == null) {
+            throw new IllegalStateException("Can be used only on CookieSet.create(true)"); // NOI18N
+        }
+        ic.registerBeforeLookup(clazz, run);
+    }
+    */
+        
     /** Finds a result in a map.
      */
     private R findR(Class<? extends Node.Cookie> c) {
@@ -364,6 +534,13 @@ public final class CookieSet extends Object {
          * may be called more than once.
          */
         <T extends Node.Cookie> T createCookie(Class<T> klass);
+    }
+    
+    /** Allows to update content of the cookie set just before 
+     * a query for a given class is made.
+     */
+    public interface Before {
+        public void beforeLookup(Class<?> clazz);
     }
 
     /** Entry for one Cookie */
@@ -405,55 +582,7 @@ public final class CookieSet extends Object {
 
             return ret;
         }
-    }
-     // end of CookieEntry
-
-    /** Pair that represents an entry.
-     */
-    private static final class CookieEntryPair extends org.openide.util.lookup.AbstractLookup.Pair {
-        private CookieEntry entry;
-
-        public CookieEntryPair(CookieEntry e) {
-            this.entry = e;
-        }
-
-        protected boolean creatorOf(Object obj) {
-            return obj == entry.getCookie(false);
-        }
-
-        public String getDisplayName() {
-            return getId();
-        }
-
-        public String getId() {
-            return entry.klass.getName();
-        }
-
-        public Object getInstance() {
-            return entry.getCookie(true);
-        }
-
-        public Class getType() {
-            return entry.klass;
-        }
-
-        protected boolean instanceOf(Class c) {
-            return c.isAssignableFrom(entry.klass);
-        }
-
-        public int hashCode() {
-            return entry.hashCode() + 5;
-        }
-
-        public boolean equals(Object obj) {
-            if (obj instanceof CookieEntryPair) {
-                return ((CookieEntryPair) obj).entry == entry;
-            }
-
-            return false;
-        }
-    }
-     // end of CookieEntryPair
+    } // end of CookieEntry
 
     /** Implementation of the result.
      */
@@ -513,6 +642,145 @@ public final class CookieSet extends Object {
          */
         public Node.Cookie cookie() {
             return ((cookies == null) || cookies.isEmpty()) ? null : cookies.get(0);
+        }
+    }
+    
+    /** Pair that wraps another Lookup.Item
+     */
+    private static final class PairWrap extends AbstractLookup.Pair {
+        private Lookup.Item<?> item;
+        private boolean created;
+        
+        public PairWrap(Lookup.Item<?> item) {
+            this.item = item;
+        }
+
+        protected boolean instanceOf(Class c) {
+            Class<?> k = c;
+            return k.isAssignableFrom(getType());
+        }
+
+        protected boolean creatorOf(Object obj) {
+            return created && getInstance() == obj;
+        }
+
+        public Object getInstance() {
+            created = true;
+            return item.getInstance();
+        }
+
+        public Class<? extends Object> getType() {
+            return item.getType();
+        }
+
+        public String getId() {
+            return item.getId();
+        }
+
+        public String getDisplayName() {
+            return item.getDisplayName();
+        }
+
+        public int hashCode() {
+            return 777 + item.hashCode();
+        }
+
+        public boolean equals(Object object) {
+            if (object instanceof PairWrap) {
+                PairWrap p = (PairWrap)object;
+                return item.equals(p.item);
+            }
+            return false;
+        }
+    } // end of PairWrap
+
+    /** Pair that represents an entry.
+     */
+    private static final class CookieEntryPair extends AbstractLookup.Pair {
+        private CookieEntry entry;
+
+        public CookieEntryPair(CookieEntry e) {
+            this.entry = e;
+        }
+
+        protected boolean creatorOf(Object obj) {
+            return obj == entry.getCookie(false);
+        }
+
+        public String getDisplayName() {
+            return getId();
+        }
+
+        public String getId() {
+            return entry.klass.getName();
+        }
+
+        public Object getInstance() {
+            return entry.getCookie(true);
+        }
+
+        public Class getType() {
+            return entry.klass;
+        }
+
+        protected boolean instanceOf(Class c) {
+            Class<?> k = c;
+            return k.isAssignableFrom(entry.klass);
+        }
+
+        public int hashCode() {
+            return entry.hashCode() + 5;
+        }
+
+        public boolean equals(Object obj) {
+            if (obj instanceof CookieEntryPair) {
+                return ((CookieEntryPair) obj).entry == entry;
+            }
+
+            return false;
+        }
+    } // end of CookieEntryPair
+    
+    private static final class FactAndClass {
+        final Class<? extends Node.Cookie> clazz;
+        final Factory factory;
+        
+        public FactAndClass(Class<? extends Node.Cookie> clazz, Factory factory) {
+            this.clazz = clazz;
+            this.factory = factory;
+        }
+        
+        public int hashCode() {
+            return clazz.hashCode() + factory.hashCode();
+        }
+        
+        public boolean equals(Object o) {
+            if (o instanceof FactAndClass) {
+                FactAndClass f = (FactAndClass)o;
+                return f.clazz.equals(clazz) && f.factory == factory;
+            }
+            return false;
+        }
+    }
+    
+    private static class C implements InstanceContent.Convertor<FactAndClass, Node.Cookie> {
+        static final C INSTANCE = new C();
+        
+
+        public Node.Cookie convert(CookieSet.FactAndClass obj) {
+            return obj.factory.createCookie(obj.clazz);
+        }
+
+        public Class<? extends Node.Cookie> type(CookieSet.FactAndClass obj) {
+            return obj.clazz;
+        }
+
+        public String id(CookieSet.FactAndClass obj) {
+            return obj.clazz.getName();
+        }
+
+        public String displayName(CookieSet.FactAndClass obj) {
+            return obj.clazz.getName();
         }
     }
 }

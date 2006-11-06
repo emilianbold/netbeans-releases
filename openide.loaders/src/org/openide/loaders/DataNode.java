@@ -77,6 +77,9 @@ public class DataNode extends AbstractNode {
         this.obj = obj;
 
         propL = new PropL ();
+        if (lookup == null) {
+            setCookieSet(CookieSet.createGeneric(propL));
+        }
 
         obj.addPropertyChangeListener (org.openide.util.WeakListeners.propertyChange (propL, obj));
 
@@ -622,6 +625,15 @@ public class DataNode extends AbstractNode {
 
         return p;
     }
+    
+    /** Update files, if we are using CookieSet
+     */
+    private void updateFilesInCookieSet(Set<FileObject> obj) {
+        if (ownLookup()) {
+            return;
+        }
+        getCookieSet().assign(FileObject.class, obj.toArray(new FileObject[0]));
+    }
 
     /** Support for firing property change.
     * @param ev event describing the change
@@ -636,10 +648,14 @@ public class DataNode extends AbstractNode {
                 }
 
                 if (DataObject.PROP_PRIMARY_FILE.equals(ev.getPropertyName())) {
-                    // the node is not interested in children changes
                     propL.updateStatusListener();
                     setName(obj.getName(), false);
+                    updateFilesInCookieSet(obj.files());
                     return;
+                }
+
+                if (DataObject.PROP_FILES.equals(ev.getPropertyName())) {
+                    updateFilesInCookieSet(obj.files());
                 }
 
                 if (DataObject.PROP_NAME.equals(ev.getPropertyName())) {
@@ -751,7 +767,7 @@ public class DataNode extends AbstractNode {
     * properties to this node.
     */
     private class PropL extends Object
-        implements PropertyChangeListener, FileStatusListener {
+    implements PropertyChangeListener, FileStatusListener, CookieSet.Before {
         /** weak version of this listener */
         private FileStatusListener weakL;
         /** previous filesystem we were attached to */
@@ -825,6 +841,12 @@ public class DataNode extends AbstractNode {
                         }
                     }
                 }
+            }
+        }
+
+        public void beforeLookup(Class<?> clazz) {
+            if (clazz.isAssignableFrom(FileObject.class)) {
+                updateFilesInCookieSet(obj.files());
             }
         }
     }

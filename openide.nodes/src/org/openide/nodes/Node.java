@@ -691,7 +691,11 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
         Lookup l = internalLookup(true);
 
         if (l != null) {
-            return l.lookup(type);
+            Object obj = l.lookup(type);
+            if (Node.Cookie.class.isInstance(obj)) {
+                return type.cast(obj);
+            }
+            CookieSet.enhancedQueryMode(l, type);
         }
 
         return null;

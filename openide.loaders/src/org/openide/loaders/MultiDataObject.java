@@ -259,6 +259,7 @@ public class MultiDataObject extends DataObject {
         }
         
         firePropertyChangeLater (PROP_FILES, null, null);
+        updateFilesInCookieSet();
 
         if (fe.isImportant ()) {
             checkConsistency(this);
@@ -736,7 +737,7 @@ public class MultiDataObject extends DataObject {
             if (cookieSet != null) return cookieSet;
 
             // sets empty sheet and adds a listener to it
-            setCookieSet (new CookieSet (), false);
+            setCookieSet (CookieSet.createGeneric(getChangeListener()), false);
             return cookieSet;
         }
     }
@@ -770,7 +771,10 @@ public class MultiDataObject extends DataObject {
     ) {
         firingProcessor.post(new Runnable () {
     	    public void run () {
-        	firePropertyChange (name, oldV, newV);
+                firePropertyChange (name, oldV, newV);
+                if (PROP_FILES.equals(name) || PROP_PRIMARY_FILE.equals(name)) {
+                    updateFilesInCookieSet();
+                }
             }
         });
     }
@@ -807,17 +811,12 @@ public class MultiDataObject extends DataObject {
         checked = true;
     }
 
-    private ChangeListener chLis;
+    private ChangeAndBefore chLis;
 
-    final ChangeListener getChangeListener() {
-	if (chLis == null) {
-	    chLis = new ChangeListener() {
-    		/** State changed */
-    		public void stateChanged (ChangeEvent ev) {
-        	    fireCookieChange ();
-    		}
-	    };
-	}
+    final ChangeAndBefore getChangeListener() {
+        if (chLis == null) {
+            chLis = new ChangeAndBefore();
+        }
         return chLis;
     }
 
@@ -1123,6 +1122,24 @@ public class MultiDataObject extends DataObject {
      */
     void notifyFileDataCreated(FileEvent fe) {
         checked = false;
+    }
+
+    final void updateFilesInCookieSet() {
+        getCookieSet().assign(FileObject.class, files().toArray(new FileObject[0]));
+    }
+    
+    /** Change listener and implementation of before.
+     */
+    private final class ChangeAndBefore implements ChangeListener, CookieSet.Before {
+        public void stateChanged (ChangeEvent ev) {
+            fireCookieChange ();
+        }
+
+        public void beforeLookup(Class<?> clazz) {
+            if (clazz.isAssignableFrom(FileObject.class)) {
+                updateFilesInCookieSet();
+            }
+        }
     }
 
     /** Entry replace.

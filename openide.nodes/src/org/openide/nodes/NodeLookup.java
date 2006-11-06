@@ -21,6 +21,7 @@ package org.openide.nodes;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import org.openide.util.Lookup.Template;
 import org.openide.util.lookup.AbstractLookup;
@@ -62,29 +63,36 @@ final class NodeLookup extends AbstractLookup {
      * @param c class to query
      * @param colleciton to put Pair into if found
      */
-    private static void addCookie(Node node, Class c, 
+    private static void addCookie(Node node, Class<?> c, 
             Collection<AbstractLookup.Pair> collection, 
             java.util.Map<AbstractLookup.Pair, Class> fromPairToClass) {
         Object res;
-        AbstractLookup.Pair pair;
+        Collection<AbstractLookup.Pair> pairs;
         Object prev = CookieSet.entryQueryMode(c);
 
         try {
-            res = node.getCookie(c);
+            @SuppressWarnings("unchecked")
+            Class<? extends Node.Cookie> fake = (Class<? extends Node.Cookie>)c;
+            res = node.getCookie(fake);
         } finally {
-            pair = CookieSet.exitQueryMode(prev);
+            pairs = CookieSet.exitQueryMode(prev);
         }
 
-        if (pair == null) {
+        if (pairs == null) {
             if (res == null) {
                 return;
             }
 
-            pair = new LookupItem(res);
+            pairs = Collections.singleton((AbstractLookup.Pair)new LookupItem(res));
         }
 
-        collection.add(pair);
-        fromPairToClass.put(pair, c);
+        collection.addAll(pairs);
+        for (AbstractLookup.Pair p : pairs) {
+            Class<?> oldClazz = fromPairToClass.get(p);
+            if (oldClazz == null || c.isAssignableFrom(oldClazz)) {
+                fromPairToClass.put(p, c);
+            }
+        }
     }
 
     /** Notifies subclasses that a query is about to be processed.
@@ -113,14 +121,14 @@ final class NodeLookup extends AbstractLookup {
                 updateLookupAsCookiesAreChanged(c);
             }
 
-            // fallthru and update Node.Cookie if not yet
-            type = Node.Cookie.class;
+            // update Node.Cookie if not yet
+            if (!queriedCookieClasses.contains(Node.Cookie.class)) {
+                updateLookupAsCookiesAreChanged(Node.Cookie.class);
+            }
         }
 
-        if (Node.Cookie.class.isAssignableFrom(type)) {
-            if (!queriedCookieClasses.contains(type)) {
-                updateLookupAsCookiesAreChanged(type);
-            }
+        if (!queriedCookieClasses.contains(type)) {
+            updateLookupAsCookiesAreChanged(type);
         }
     }
 
@@ -140,7 +148,7 @@ final class NodeLookup extends AbstractLookup {
             }
 
             instances = new java.util.LinkedHashSet<AbstractLookup.Pair>(queriedCookieClasses.size());
-            fromPairToQueryClass = new java.util.HashMap<AbstractLookup.Pair, Class>();
+            fromPairToQueryClass = new java.util.LinkedHashMap<AbstractLookup.Pair, Class>();
 
             java.util.Iterator<Class> it = /* #74334 */new ArrayList<Class>(queriedCookieClasses).iterator();
             LookupItem nodePair = new LookupItem(node);
@@ -159,6 +167,10 @@ final class NodeLookup extends AbstractLookup {
             public int compare(AbstractLookup.Pair p1, AbstractLookup.Pair p2) {
                 Class<?> c1 = m.get(p1);
                 Class<?> c2 = m.get(p2);
+                
+                if (c1 == c2) {
+                    return 0;
+                }
 
                 if (c1.isAssignableFrom(c2)) {
                     return -1;

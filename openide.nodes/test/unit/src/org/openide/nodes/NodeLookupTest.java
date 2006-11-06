@@ -25,7 +25,9 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import junit.framework.Test;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
 import org.openide.cookies.SaveCookie;
 import org.openide.util.Lookup;
 import org.openide.util.LookupListener;
@@ -39,6 +41,11 @@ import org.openide.util.lookup.InstanceContent;
 public class NodeLookupTest extends NbTestCase {
     public NodeLookupTest(String name) {
         super(name);
+    }
+    
+    public static Test suite() {
+        //return new NodeLookupTest("testChangeInObjectVisibleInLookupThruFilterNodeWhenItOverridesGetCookie");
+        return new NbTestSuite(NodeLookupTest.class);
     }
     
     public void testChangesAreFiredFromLookup () {
@@ -282,6 +289,12 @@ public class NodeLookupTest extends NbTestCase {
         assertTrue ("And it is the one", c.iterator ().next () == fn);
     }
     
+    public void testChangeInObjectVisibleInLookup () {
+        CookieNode n = new CookieNode ();
+        n.setSet(CookieSet.createGeneric(null));
+        checkInstanceInLookup (new Integer(1), n.cookieSet(), n.getLookup ());
+        checkInstanceInLookup (new Node.Cookie() {}, n.cookieSet(), n.getLookup ());
+    }
     public void testChangeInCookieVisibleInLookup () {
         CookieNode n = new CookieNode ();
         checkInstanceInLookup (new Node.Cookie() {}, n.cookieSet(), n.getLookup ());
@@ -292,35 +305,31 @@ public class NodeLookupTest extends NbTestCase {
         FilterNode f = new FilterNode (n);
         checkInstanceInLookup (new Node.Cookie() {}, n.cookieSet(), f.getLookup ());
     }
+
+    public void testChangeInObjectVisibleInLookupThruFilterNode () {
+        CookieNode n = new CookieNode ();
+        n.setSet(CookieSet.createGeneric(null));
+        FilterNode f = new FilterNode (n);
+        checkInstanceInLookup (new Node.Cookie() {}, n.cookieSet(), f.getLookup ());
+        checkInstanceInLookup (new Integer(2), n.cookieSet(), f.getLookup ());
+    }
     
     public void testChangeInCookieVisibleInLookupThruFilterNodeWhenItOverridesGetCookie () {
         CookieNode n = new CookieNode ();
         
-        class MyFilterNode extends FilterNode implements javax.swing.event.ChangeListener {
-            public CookieSet set = new CookieSet ();
-            
-            public MyFilterNode (Node n) {
-                super (n);
-                set.addChangeListener(this);
-            }
-            
-            public Node.Cookie getCookie (Class cl) {
-                Node.Cookie c = super.getCookie (cl);
-                if (c != null) {
-                    return c;
-                }
-                return set.getCookie (cl);
-            }
-            
-            public void stateChanged (javax.swing.event.ChangeEvent ev) {
-                fireCookieChange ();
-            }
-        }
-                
-        MyFilterNode f = new MyFilterNode (n);
+        MyFilterNode f = new MyFilterNode (n, false);
         
         checkInstanceInLookup (new Node.Cookie() {}, n.cookieSet(), f.getLookup ());
         checkInstanceInLookup (new Node.Cookie() {}, f.set, f.getLookup ());
+    }
+    public void testChangeInObjectVisibleInLookupThruFilterNodeWhenItOverridesGetCookie () {
+        CookieNode n = new CookieNode ();
+        n.setSet(CookieSet.createGeneric(null));
+                
+        MyFilterNode f = new MyFilterNode (n, true);
+        
+        checkInstanceInLookup (new Integer(3), n.cookieSet(), f.getLookup ());
+        checkInstanceInLookup (new Integer(4), f.set, f.getLookup ());
     }
     
     public void testFilterNodeDelegatesCorrectly () {
@@ -359,26 +368,26 @@ public class NodeLookupTest extends NbTestCase {
         }
     }
     
-    private void checkInstanceInLookup (Node.Cookie obj, CookieSet ic, Lookup l) {
+    private void checkInstanceInLookup (Object obj, CookieSet ic, Lookup l) {
         Listener listener = new Listener ();
         Lookup.Result res = l.lookupResult(Object.class);
         Collection justToEnsureChangesToListenerWillBeFired = res.allItems ();
         res.addLookupListener(listener);
         
-        ic.add (obj);
+        ic.assign(obj.getClass(), obj);
         listener.assertEvents ("One change in lookup", -1, 1);
 
         assertEquals ("Can access cookie in the content", obj, l.lookup (obj.getClass ()));
 
-        ic.remove (obj);
+        ic.assign(obj.getClass());
         listener.assertEvents ("One change in lookup", -1, 1);
         
-        ic.add (obj);
+        ic.assign(obj.getClass(), obj);
         listener.assertEvents ("One change in lookup", -1, 1);
 
         assertEquals ("Can access cookie in the content", obj, l.lookup (obj.getClass ()));
 
-        ic.remove (obj);
+        ic.assign(obj.getClass());
         listener.assertEvents ("One change in lookup", -1, 1);
     }
     
@@ -757,6 +766,27 @@ public class NodeLookupTest extends NbTestCase {
         protected void beforeLookup (Lookup.Template t) {
             super.beforeLookup (t);
             queries.add (t.getType ());
+        }
+    }
+    class MyFilterNode extends FilterNode implements javax.swing.event.ChangeListener {
+        public final CookieSet set;
+
+        public MyFilterNode (Node n, boolean generalCookieSet) {
+            super (n);
+            set = generalCookieSet ? CookieSet.createGeneric(null) : new CookieSet();
+            set.addChangeListener(this);
+        }
+
+        public Node.Cookie getCookie (Class cl) {
+            Node.Cookie c = super.getCookie (cl);
+            if (c != null) {
+                return c;
+            }
+            return set.getCookie (cl);
+        }
+
+        public void stateChanged (javax.swing.event.ChangeEvent ev) {
+            fireCookieChange ();
         }
     }
 }
