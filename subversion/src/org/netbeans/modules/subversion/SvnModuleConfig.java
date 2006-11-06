@@ -50,25 +50,6 @@ public class SvnModuleConfig {
 
     // properties ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    /**
-     * Returns current text annotations format.
-     * 
-     * @return String current text annotations format or null if text annotations are off
-     */ 
-    public String getTextAnnotationsFormat() {
-        return getPreferences().get(PROP_TEXT_ANNOTATIONS_FORMAT, null);
-    }
-
-    /**
-     * Turns on/off text annotations.
-     * 
-     * @param format new format for text annotations; recognized macros are {sticky} and {status}. To turn text
-     * annotations off, set it to null.
-     */ 
-    public void setTextAnnotationsFormat(String format) {
-        getPreferences().put(PROP_TEXT_ANNOTATIONS_FORMAT, format);
-    }        
-
     public Preferences getPreferences() {
         return NbPreferences.forModule(SvnModuleConfig.class);
     }

@@ -40,7 +40,6 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.netbeans.modules.subversion.util.SvnUtils;
-import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.versioning.util.FlatFolder;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.spi.VCSContext;
@@ -150,7 +149,7 @@ public class Annotator {
         name = htmlEncode(name);
         int status = info.getStatus();
         String textAnnotation;
-        String textAnnotationFormat = SvnModuleConfig.getDefault().getTextAnnotationsFormat();
+        String textAnnotationFormat = SvnModuleConfig.getDefault().getPreferences().get(SvnModuleConfig.PROP_TEXT_ANNOTATIONS_FORMAT, null);
         if (textAnnotationFormat != null && file != null && (status & STATUS_TEXT_ANNOTABLE) != 0) {
             if (format != null) {
                 textAnnotation = formatAnnotation(info, file);
@@ -257,7 +256,7 @@ public class Annotator {
         name = htmlEncode(name);
         int status = info.getStatus();
         String textAnnotation;
-        String textAnnotationFormat = SvnModuleConfig.getDefault().getTextAnnotationsFormat();        
+        String textAnnotationFormat = SvnModuleConfig.getDefault().getPreferences().get(SvnModuleConfig.PROP_TEXT_ANNOTATIONS_FORMAT, null);        
         if (textAnnotationFormat != null && file != null && (status & FileInformation.STATUS_MANAGED) != 0) {
 
             String sticky;
