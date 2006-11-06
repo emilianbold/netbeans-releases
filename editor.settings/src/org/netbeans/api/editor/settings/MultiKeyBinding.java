@@ -44,7 +44,7 @@ final public class MultiKeyBinding {
     /**
      * Constructor for assigning keystroke sequence to action
      * 
-     * @param keyStrokeList non-null successive keystrokes that must be pressed in order
+     * @param keyStrokes non-null successive keystrokes that must be pressed in order
      *    to invoke action. The passed array must not be modified by the caller.
      * @param actionName non-null name of the action that will be invoked.
      */

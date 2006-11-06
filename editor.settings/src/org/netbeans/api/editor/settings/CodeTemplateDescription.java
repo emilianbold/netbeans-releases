@@ -44,7 +44,7 @@ public final class CodeTemplateDescription {
      *
      * @param abbreviation non-null abbreviation.
      * @param description non-null description.
-     * @param parametrized non-null parametrized text.
+     * @param parametrizedText non-null parametrized text.
      */
     public CodeTemplateDescription(String abbreviation, String description, String parametrizedText) {
         this(abbreviation, description, parametrizedText, null);

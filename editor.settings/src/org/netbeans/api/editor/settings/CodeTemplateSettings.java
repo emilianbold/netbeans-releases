@@ -23,14 +23,11 @@ import java.util.List;
 import javax.swing.KeyStroke;
 
 /**
- * Code templates settings are represented by map
- * of key=&lt;String&gt;code template name
- * and value=&lt;String&gt;code template string.
- * <br>
- * Instances of this class should be retrieved from the {@link org.netbeans.api.editor.mimelookup.MimeLookup}
- * for a given mime-type.
- * <br>
- * <font color="red">This class must NOT be extended by any API clients</font>
+ * The list of available templates. Instances of this class should be retrieved
+ * from <code>MimeLookup</code>.
+ * 
+ * 
+ * <p><font color="red">This class must NOT be extended by any API clients.</font>
  *
  * @author Martin Roskanin
  */

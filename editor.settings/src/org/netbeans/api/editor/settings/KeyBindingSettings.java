@@ -20,13 +20,13 @@
 package org.netbeans.api.editor.settings;
 
 /**
- * KeyBindings settings are represented by List of keybindings.
- * The List contains the instances of {@link MultiKeyBinding}.
- * <br>
- * Instances of this class should be retrieved from the {@link org.netbeans.api.editor.mimelookup.MimeLookup}
- * for a given mime-type.
- * <br>
- * <font color="red">This class must NOT be extended by any API clients</font>
+ * The list of available key bindings. Each key binding is represented by an
+ * instance of the <code>MultiKeyBinding</code> class, which associates one
+ * or more keyboard shortcuts with an <code>Action</code>.
+ * 
+ * <p>Instances of this class should be retrieved from <code>MimeLookup</code>.
+ * 
+ * <p><font color="red">This class must NOT be extended by any API clients.</font>
  *
  * @author Martin Roskanin
  */
