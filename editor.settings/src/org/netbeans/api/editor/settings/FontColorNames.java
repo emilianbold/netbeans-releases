@@ -63,5 +63,8 @@ public final class FontColorNames {
 
     /** Coloring used to mark important text in the status bar */
     public static final String STATUS_BAR_BOLD_COLORING = "status-bar-bold"; // NOI18N
-    
+ 
+    private FontColorNames() {
+        // to prevent instantialization
+    }
 }

@@ -48,7 +48,7 @@ public abstract class CodeTemplateSettings {
      *
      * @return non-modifiable list of the code template descriptions.
      */
-    public abstract List/*<CodeTemplateDescription>*/ getCodeTemplateDescriptions();
+    public abstract List<CodeTemplateDescription> getCodeTemplateDescriptions();
     
     /**
      * Get the keystroke that expands the code templates abbreviations.

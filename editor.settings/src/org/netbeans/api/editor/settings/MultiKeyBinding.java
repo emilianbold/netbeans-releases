@@ -28,12 +28,12 @@ import javax.swing.KeyStroke;
  * @author Miloslav Metelka, Martin Roskanin
  */
 
-final public class MultiKeyBinding {
+public final class MultiKeyBinding {
 
     /**
      * List of the keystrokes that invoke the action.
      */
-    private List keyStrokeList;
+    private List<KeyStroke> keyStrokeList;
 
     /**
      * The name of the action to be invoked by the keyStrokes.
@@ -55,7 +55,7 @@ final public class MultiKeyBinding {
         if (actionName == null) {
             throw new NullPointerException("actionName cannot be null"); // NOI18N
         }
-        this.keyStrokeList = new UnmodifiableArrayList(keyStrokes);
+        this.keyStrokeList = new UnmodifiableArrayList<KeyStroke>(keyStrokes);
         this.actionName = actionName;
     }
 
@@ -94,7 +94,7 @@ final public class MultiKeyBinding {
      *
      * @return non-null unmodifiable list of the keystrokes.
      */
-    public List getKeyStrokeList() {
+    public List<KeyStroke> getKeyStrokeList() {
         return keyStrokeList;
     }
     
@@ -147,22 +147,22 @@ final public class MultiKeyBinding {
     public String toString() {
         StringBuffer sb = new StringBuffer();
         sb.append("keys("); // NOI18N
-        for (int i = 0; i < keyStrokeList.size(); i++) {
-            sb.append(getKeyStroke(i));
+        for (KeyStroke ks : keyStrokeList) {
+            sb.append(ks);
         }
         sb.append("), actionName="); // NOI18N
         sb.append(actionName);
         return sb.toString();
     }
 
-    private static final class UnmodifiableArrayList extends java.util.AbstractList
+    private static final class UnmodifiableArrayList<E> extends java.util.AbstractList<E>
     implements java.util.RandomAccess, java.io.Serializable {
 
         private static final long serialVersionUID = 0L;
 
-        private Object[] array;
+        private E[] array;
 
-	UnmodifiableArrayList(Object[] array) {
+	UnmodifiableArrayList(E[] array) {
             if (array == null) {
                 throw new NullPointerException();
             }
@@ -177,7 +177,7 @@ final public class MultiKeyBinding {
 	    return (Object[]) array.clone();
 	}
 
-	public Object get(int index) {
+	public E get(int index) {
 	    return array[index];
 	}
 

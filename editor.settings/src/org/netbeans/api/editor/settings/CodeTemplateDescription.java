@@ -50,7 +50,7 @@ public final class CodeTemplateDescription {
         this(abbreviation, description, parametrizedText, null);
     }
     
-    public CodeTemplateDescription(String abbreviation, String description, String parametrizedText, List/*<String>*/ contexts) {
+    public CodeTemplateDescription(String abbreviation, String description, String parametrizedText, List<String> contexts) {
         assert (abbreviation != null);
         assert (description != null);
         assert (parametrizedText != null);
@@ -60,7 +60,7 @@ public final class CodeTemplateDescription {
 	    this.contexts = contexts;
     }
     
-    private final List/*<String>*/ contexts;    
+    private final List<String> contexts;    
     
     /**
      * Get abbreviation that triggers expansion of this code template.
@@ -97,7 +97,7 @@ public final class CodeTemplateDescription {
         return parametrizedText;
     }
 
-    public List/*<String>*/ getContexts() {
+    public List<String> getContexts() {
         return contexts;
     }
 

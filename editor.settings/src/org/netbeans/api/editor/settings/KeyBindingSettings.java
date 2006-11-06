@@ -47,6 +47,6 @@ public abstract class KeyBindingSettings {
      *
      * @return List of {@link MultiKeyBinding}
      */
-    public abstract java.util.List/*<MultiKeyBinding>*/ getKeyBindings();
+    public abstract java.util.List<MultiKeyBinding> getKeyBindings();
 
 }

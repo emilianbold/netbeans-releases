@@ -283,4 +283,7 @@ public final class SimpleValueNames {
      */
     public static final String SHOW_DEPRECATED_MEMBERS = "show-deprecated-members"; // NOI18N
 
+    private SimpleValueNames() {
+        // to prevent instantialization
+    }
 }
