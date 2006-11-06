@@ -34,7 +34,6 @@ import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.Abort;
-import com.sun.tools.javac.util.Name;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
@@ -954,6 +953,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             sa.delete (className);
                         }
                     }
+                }
+                else {
+                    sa.delete(FileObjects.convertFolder2Package(offset, '/'));  //NOI18N
                 }
                 assert fo != null;
                 String sourceLevel = SourceLevelQuery.getSourceLevel(fo);
