@@ -23,22 +23,21 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Set;
 
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Set;
 import org.netbeans.modules.subversion.client.*;
 
 /**
  *
- * @author Ed Hillmann
+ * @author Ed Hillmann 
  */
 public class SvnWcUtils {
 
+    private static final String ENTRIES = "entries";      // NOI18N    
     public static final String[] ADMIN_DIR_NAMES = new String[] {".svn", "_svn" };
 
     private static final String PROPS = "props";
@@ -87,6 +86,10 @@ public class SvnWcUtils {
             returnValue = dateFormat.parse(inputValue);
         }
         return returnValue;        
+    }
+
+    static File getEntriesFile(File file) throws IOException {
+        return getSvnFile(!file.isDirectory() ? file.getParentFile() : file, ENTRIES);        
     }
     
 }

@@ -24,18 +24,15 @@ import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.ExceptionHandler;
+import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
-import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
-import org.tigris.subversion.svnclientadapter.SVNRevision;
-import org.tigris.subversion.svnclientadapter.SVNRevision;
-import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
@@ -93,7 +90,7 @@ public class CreateCopyAction extends ContextAction {
         RepositoryFile toRepositoryFile = createCopy.getToRepositoryFile();                
         
         try {                
-            ISVNClientAdapter client;
+            SvnClient client;
             try {
                 client = Subversion.getInstance().getClient(toRepositoryFile.getRepositoryUrl());
             } catch (SVNClientException ex) {

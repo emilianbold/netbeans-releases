@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.subversion.client;
 
-import java.io.File;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -27,8 +26,6 @@ import java.util.*;
 import javax.net.ssl.SSLKeyException;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.client.parser.LocalSubversionException;
-import org.netbeans.modules.subversion.client.parser.SvnWcParser;
 import org.openide.ErrorManager;
 import org.openide.util.Cancellable;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
@@ -37,19 +34,11 @@ import org.tigris.subversion.svnclientadapter.SVNClientException;
 /**
  *
  *
- * @author Tomas Stupka
+ * @author Tomas Stupka 
  */
-public class SvnClientInvocationHandler implements InvocationHandler {
-
-    private static final String ISVNSTATUS_IMPL = System.getProperty("ISVNStatus.impl", ""); // NOI18N
-    private static final String GET_SINGLE_STATUS = "getSingleStatus"; // NOI18N
-    private static final String GET_STATUS = "getStatus"; // NOI18N
-    private static final String GET_INFO_FROM_WORKING_COPY = "getInfoFromWorkingCopy"; // NOI18N
-
-    private static Set<String> remoteMethods = new HashSet<String>();
-
-    private static Object semaphor = new Object();
-        
+public class SvnClientInvocationHandler implements InvocationHandler {    
+    
+    private static Set<String> remoteMethods = new HashSet<String>();    
     static {
         remoteMethods.add("checkout");  // NOI18N
         remoteMethods.add("commit"); // NOI18N
@@ -73,13 +62,14 @@ public class SvnClientInvocationHandler implements InvocationHandler {
         remoteMethods.add("merge"); // NOI18N
         remoteMethods.add("lock"); // NOI18N
         remoteMethods.add("unlock"); // NOI18N        
-    }
+    }       
+    
+    private static Object semaphor = new Object();        
 
     private final ISVNClientAdapter adapter;
     private final SvnClientDescriptor desc;
     private Cancellable cancellable;
     private SvnProgressSupport support;
-    private SvnWcParser wcParser = new SvnWcParser();
     private final int handledExceptions; 
     
    /**
@@ -113,8 +103,9 @@ public class SvnClientInvocationHandler implements InvocationHandler {
      * @see InvocationHandler#invoke(Object proxy, Method method, Object[] args)
      */
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {               
-
-        assert noRemoteCallinAWT(method, args) : "noRemoteCallinAWT(): " + method.getName(); // NOI18N
+        
+        String methodName = method.getName();
+        assert noRemoteCallinAWT(methodName, args) : "noRemoteCallinAWT(): " + methodName; // NOI18N
 
         try {      
             Object ret = null;        
@@ -154,23 +145,13 @@ public class SvnClientInvocationHandler implements InvocationHandler {
         }
     }
     
-    private Object invokeMethod(Method proxyMethod, Object[] args)
+    protected Object invokeMethod(Method proxyMethod, Object[] args)
     throws NoSuchMethodException, IllegalAccessException, InvocationTargetException
     {
-        Object ret = null;        
-        if (isHandledLocally(proxyMethod, args)) {
-            try {
-                ret = handleLocally(proxyMethod, args);
-            } catch (LocalSubversionException ex) {
-                //Exception thrown.  Call out to the default adapter
-            }
-        } else {
-            ret = handleRemotely(proxyMethod, args);    
-        }
-        return ret;
+        return handle(proxyMethod, args);    
     }
 
-    private Object handleRemotely(final Method proxyMethod, final Object[] args) 
+    protected Object handle(final Method proxyMethod, final Object[] args) 
     throws SecurityException, InvocationTargetException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException 
     {
         Object ret;
@@ -196,54 +177,9 @@ public class SvnClientInvocationHandler implements InvocationHandler {
         } else {
             // try to take care for hashCode, equals & co. -> fallback to clientadapter
             ret = adapter.getClass().getMethod(proxyMethod.getName(), parameters).invoke(adapter, args);
-        }        
-        return ret;
-    }
-
-    private static boolean isHandledLocally(Method method, Object[] args) {
-        boolean exec = ISVNSTATUS_IMPL.equals("exec"); // NOI18N
-        if(exec) {
-            return false;
-        }        
+        }                
         
-        String methodName = method.getName();
-        return methodName.equals(GET_SINGLE_STATUS) || 
-               methodName.equals(GET_INFO_FROM_WORKING_COPY) ||  
-               (method.getName().equals(GET_STATUS) && method.getParameterTypes().length == 3); 
-    }
-
-    private Object handleLocally(Method method, Object[] args) throws LocalSubversionException {
-        Object returnValue = null;
-
-        if (GET_SINGLE_STATUS.equals(method.getName())) {
-            returnValue = wcParser.getSingleStatus((File) args[0]);
-        } else if (GET_INFO_FROM_WORKING_COPY.equals(method.getName())) {
-            returnValue= wcParser.getInfoFromWorkingCopy((File) args[0]);
-        } else if (GET_STATUS.equals(method.getName())) {
-            returnValue= wcParser.getStatus(
-                    (File) args[0], 
-                    ((Boolean) args[1]).booleanValue(), 
-                    ((Boolean) args[2]).booleanValue()
-            );
-        }
-        return returnValue;
-    }
-
-   /**
-     * @return false for methods that perform calls over network
-     */
-    private static boolean noRemoteCallinAWT(Method method, Object[] args) {
-        if(!SwingUtilities.isEventDispatchThread()) {
-            return true;
-        }
-
-        String name = method.getName();
-        if (remoteMethods.contains(name)) {
-            return false;
-        } else if ("getStatus".equals(name)) { // NOI18N
-            return args.length != 4 || (Boolean.TRUE.equals(args[3]) == false);
-        }
-        return true;
+        return ret;
     }
 
     private boolean handleException(SvnClient client, Throwable t) throws Throwable {
@@ -258,6 +194,19 @@ public class SvnClientInvocationHandler implements InvocationHandler {
         SvnClientExceptionHandler eh = new SvnClientExceptionHandler((SVNClientException) t, adapter, client, handledExceptions);        
         return eh.handleException();        
     }
+    
+   /**
+     * @return false for methods that perform calls over network
+     */
+    protected boolean noRemoteCallinAWT(String methodName, Object[] args) {
+        if(!SwingUtilities.isEventDispatchThread()) {
+            return true;
+        }
 
+        if (remoteMethods.contains(methodName)) {
+            return false;
+        } 
+        return true;
+    }
 }
 

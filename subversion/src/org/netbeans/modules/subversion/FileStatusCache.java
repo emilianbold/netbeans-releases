@@ -35,7 +35,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.ErrorManager;
 
 import java.util.*;
-import org.openide.filesystems.FileSystem;
+import org.netbeans.modules.subversion.client.SvnClient;
 import org.openide.filesystems.FileSystem;
 import org.tigris.subversion.svnclientadapter.*;
 import org.tigris.subversion.svnclientadapter.ISVNStatus;
@@ -266,7 +266,7 @@ public class FileStatusCache implements ISVNNotifyListener {
         
         ISVNStatus status = null;
         try {
-            ISVNClientAdapter client = Subversion.getInstance().getClient(false);
+            SvnClient client = Subversion.getInstance().getClient(false);
             status = client.getSingleStatus(file);
             if (status != null && SVNStatusKind.UNVERSIONED.equals(status.getTextStatus())) {
                 status = null;
@@ -358,12 +358,14 @@ public class FileStatusCache implements ISVNNotifyListener {
     private static boolean equal(ISVNStatus e1, ISVNStatus e2) {
         long r1 = -1;
         if (e1 != null) {
-            r1 = e1.getRevision().getNumber();
+            SVNRevision r = e1.getRevision();
+            r1 = r != null ? e1.getRevision().getNumber() : r1;
         }
 
         long r2 = -2;
         if (e2 != null) {
-            r2 = e2.getRevision().getNumber();
+            SVNRevision r = e1.getRevision();
+            r2 = r != null ? e2.getRevision().getNumber() : r2;
         }
         
         if ( r1 != r2 ) {
@@ -503,7 +505,7 @@ public class FileStatusCache implements ISVNNotifyListener {
 
         ISVNStatus [] entries = null;
         try {
-            ISVNClientAdapter client = Subversion.getInstance().getClient(true); // XXX use methodcall with repository url if server contact is needed...
+            SvnClient client = Subversion.getInstance().getClient(true); 
             if (Subversion.getInstance().isManaged(dir)) {
                 entries = client.getStatus(dir, false, false); 
             }

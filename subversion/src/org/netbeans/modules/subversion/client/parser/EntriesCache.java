@@ -40,7 +40,7 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class EntriesCache {
 
-    private static final String ENTRIES = "entries";      // NOI18N    
+
     private static final String SVN_THIS_DIR = "svn:this_dir"; // NOI18N
     private static final String EMPTY_STRING = "";       
     private static final String DELIMITER = "\f";
@@ -118,7 +118,7 @@ public class EntriesCache {
     }
     
     Map<String, String> getFileAttributes(File file) throws IOException, SAXException {        
-        File entriesFile = SvnWcUtils.getSvnFile(!file.isDirectory() ? file.getParentFile() : file, ENTRIES);        
+        File entriesFile = SvnWcUtils.getEntriesFile(file);
         if(entriesFile==null) {
             return null;
         }
@@ -214,7 +214,7 @@ public class EntriesCache {
         } finally {
             fileReader.close();
         }
-    }    
+    }       
     
     private EntryAttributes loadAttributesFromXml(File entriesFile) throws IOException, SAXException {
         //Parse the entries file

@@ -94,7 +94,7 @@ public class Subversion {
         try {
             Diagnostics.init();
             loadIniParserClassesWorkaround();
-            CmdLineClientAdapterFactory.setup();
+            SvnClientFactory.getInstance().setup();
         } catch (SVNClientException ex) {
             ErrorManager.getDefault().annotate(ex, UnsupportedSvnClientAdapter.getMessage());
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);

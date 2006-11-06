@@ -234,7 +234,7 @@ class FilesystemHandler extends VCSInterceptor {
     private void fileDeletedImpl(File file) {
         if (file == null) return;
         try {
-            ISVNClientAdapter client = Subversion.getInstance().getClient(false);
+            SvnClient client = Subversion.getInstance().getClient(false);
             client.remove(new File [] { file }, true);
 
             // fire event explicitly because the file is already gone
@@ -251,7 +251,7 @@ class FilesystemHandler extends VCSInterceptor {
     
     private boolean remove(File file) {
         try {
-            ISVNClientAdapter client = Subversion.getInstance().getClient(false);
+            SvnClient client = Subversion.getInstance().getClient(false);
             // funny thing is, the command will delete all files recursively
             client.remove(new File [] { file }, true);
             return true;
@@ -263,7 +263,7 @@ class FilesystemHandler extends VCSInterceptor {
     public void svnMoveImplementation(final File srcFile, final File dstFile) throws IOException {
         try {                        
             boolean force = true; // file with local changes must be forced
-            ISVNClientAdapter client = Subversion.getInstance().getClient(false);
+            SvnClient client = Subversion.getInstance().getClient(false);
             
             File tmpMetadata = null;
             try {
@@ -342,7 +342,7 @@ class FilesystemHandler extends VCSInterceptor {
             if ((FileInformation.STATUS_VERSIONED & status) == 0) {
                 addDirectories(parent);  // RECURSION
             }
-            ISVNClientAdapter client = Subversion.getInstance().getClient(false);
+            SvnClient client = Subversion.getInstance().getClient(false);
             client.addDirectory(dir, false);
             cache.refresh(dir, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
         } else {
