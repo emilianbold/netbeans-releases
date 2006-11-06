@@ -24,18 +24,14 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.modules.project.ui.ProjectUtilities;
 import org.openide.ErrorManager;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
-//retouche:
-//import org.netbeans.modules.javacore.JMManager;
 import org.netbeans.modules.project.ui.OpenProjectList;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Mutex;
 
@@ -61,6 +57,10 @@ public class ProjectSupport {
         try {
             // open project
             final Project project = OpenProjectList.fileToProject(projectDir);
+            if(project == null) {
+                ErrorManager.getDefault().log(ErrorManager.USER, "Project not found: "+projectDir);
+                return null;
+            }
             // posting the to AWT event thread
             Mutex.EVENT.writeAccess(new Runnable() {
                 public void run() {
@@ -133,6 +133,7 @@ public class ProjectSupport {
      * @param projectParentDir directory where to create name subdirectory and
      * new project structure in that subdirectory.
      * @param name name of the project
+     * @return Project instance of created project
      */
     public static Object createProject(File projectParentDir, String name) {
         String mainClass = null;
@@ -190,15 +191,13 @@ public class ProjectSupport {
     }
     
     /** Waits until metadata scanning is finished. */
-    public static boolean waitScanFinished() {
-//retouche:
-//        return ((JMManager)JMManager.getManager()).waitScanFinished();
-//XXX:
+    public static void waitScanFinished() {
         try {
-            Thread.sleep(60000);
-	} catch (InterruptedException e) {}
-	
-        return true;
+            SourceUtils.waitScanFinished();
+        }
+        catch (InterruptedException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+        }
     }
 
     /** Listener for project open. */

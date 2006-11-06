@@ -22,8 +22,8 @@ Microsystems, Inc. All Rights Reserved.
 ]>
 
 <api-answers
-  question-version="1.27"
-  author="yourname@netbeans.org"
+  question-version="1.29"
+  author="jskrivanek@netbeans.org"
 >
 
   &api-questions;
@@ -46,7 +46,9 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-overall">
   <p>
-   XXX no answer for arch-overall
+        It contains just ProjectSupport class which should help test developers to
+        work with projects in NetBeans IDE. It is used as a library in XTest module
+        and it is also plugable module to NetBeans IDE.
   </p>
  </answer>
 
@@ -66,7 +68,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-quality">
   <p>
-   XXX no answer for arch-quality
+        Unit tests exists for all methods.
   </p>
  </answer>
 
@@ -85,7 +87,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-time">
   <p>
-   XXX no answer for arch-time
+        It is done.
   </p>
  </answer>
 
@@ -109,7 +111,13 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-usecases">
   <p>
-   XXX no answer for arch-usecases
+        Use ProjectSupport class in your tests. E.g.:
+        <tt>
+            Project project = (Project)ProjectSupport.createProject(this.getWorkDir(), "MyProject");
+            ProjectSupport.closeProject("MyProject"));
+            Project project = (Project)ProjectSupport.openProject(new File(projectParentDir, "MyProject"));
+            ProjectSupport.waitScanFinished();
+        </tt>
   </p>
  </answer>
 
@@ -127,7 +135,9 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-what">
   <p>
-   XXX no answer for arch-what
+        It contains just ProjectSupport class which should help test developers to
+        work with projects in NetBeans IDE. It is used as a library in XTest module
+        and it is also plugable module to NetBeans IDE.
   </p>
  </answer>
 
@@ -161,7 +171,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="compat-i18n">
   <p>
-   XXX no answer for compat-i18n
+        N/A. It is just a library. No UI exposed.
   </p>
  </answer>
 
@@ -175,7 +185,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="compat-standards">
   <p>
-   XXX no answer for compat-standards
+        No.
   </p>
  </answer>
 
@@ -197,7 +207,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="compat-version">
   <p>
-   XXX no answer for compat-version
+       N/A.
   </p>
  </answer>
 
@@ -215,7 +225,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="dep-jre">
   <p>
-   XXX no answer for dep-jre
+        1.5.
   </p>
  </answer>
 
@@ -228,7 +238,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="dep-jrejdk">
   <p>
-   XXX no answer for dep-jrejdk
+        JDK.
   </p>
  </answer>
 
@@ -263,7 +273,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="dep-non-nb">
   <p>
-   XXX no answer for dep-non-nb
+        None.
   </p>
  </answer>
 
@@ -281,7 +291,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="dep-platform">
   <p>
-   XXX no answer for dep-platform
+        Any.
   </p>
  </answer>
 
@@ -305,7 +315,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="deploy-dependencies">
   <p>
-   XXX no answer for deploy-dependencies
+        Only standard dependencies.
   </p>
  </answer>
 
@@ -333,7 +343,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="deploy-jar">
   <p>
-   XXX no answer for deploy-jar
+        Jar and javadoc zip.
   </p>
  </answer>
 
@@ -349,7 +359,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="deploy-nbm">
   <p>
-   XXX no answer for deploy-nbm
+        Yes.
   </p>
  </answer>
 
@@ -375,7 +385,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="deploy-packages">
   <p>
-   XXX no answer for deploy-packages
+        No.
   </p>
  </answer>
 
@@ -393,7 +403,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="deploy-shared">
   <p>
-   XXX no answer for deploy-shared
+       N/A.
   </p>
  </answer>
 
@@ -413,7 +423,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-ant-tasks">
   <p>
-   XXX no answer for exec-ant-tasks
+        No.
   </p>
  </answer>
 
@@ -429,7 +439,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-classloader">
   <p>
-   XXX no answer for exec-classloader
+        No.
   </p>
  </answer>
 
@@ -452,7 +462,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-component">
   <p>
-   XXX no answer for exec-component
+        No.
   </p>
  </answer>
 
@@ -472,7 +482,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-introspection">
   <p>
-   XXX no answer for exec-introspection
+        No.
   </p>
  </answer>
 
@@ -490,7 +500,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-privateaccess">
   <p>
-   XXX no answer for exec-privateaccess
+        No.
   </p>
  </answer>
 
@@ -508,7 +518,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-process">
   <p>
-   XXX no answer for exec-process
+        No.
   </p>
  </answer>
 
@@ -534,7 +544,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-property">
   <p>
-   XXX no answer for exec-property
+        No.
   </p>
  </answer>
 
@@ -552,7 +562,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-reflection">
   <p>
-   XXX no answer for exec-reflection
+        No.
   </p>
  </answer>
 
@@ -580,7 +590,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-threading">
   <p>
-   XXX no answer for exec-threading
+        N/A.
   </p>
  </answer>
 
@@ -599,7 +609,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="format-clipboard">
   <p>
-   XXX no answer for format-clipboard
+        N/A.
   </p>
  </answer>
 
@@ -617,7 +627,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="format-dnd">
   <p>
-   XXX no answer for format-dnd
+        N/A.
   </p>
  </answer>
 
@@ -648,7 +658,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="format-types">
   <p>
-   XXX no answer for format-types
+        N/A.
   </p>
  </answer>
 
@@ -669,7 +679,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="lookup-lookup">
   <p>
-   XXX no answer for lookup-lookup
+        No.
   </p>
  </answer>
 
@@ -686,7 +696,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="lookup-register">
   <p>
-   XXX no answer for lookup-register
+        No.
   </p>
  </answer>
 
@@ -703,7 +713,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="lookup-remove">
   <p>
-   XXX no answer for lookup-remove
+        No.
   </p>
  </answer>
 
@@ -716,7 +726,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-exit">
   <p>
-   XXX no answer for perf-exit
+        No.
   </p>
  </answer>
 
@@ -730,7 +740,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-huge_dialogs">
   <p>
-   XXX no answer for perf-huge_dialogs
+        No.
   </p>
  </answer>
 
@@ -744,7 +754,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-limit">
   <p>
-   XXX no answer for perf-limit
+        No.
   </p>
  </answer>
 
@@ -758,7 +768,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-mem">
   <p>
-   XXX no answer for perf-mem
+        N/A.
   </p>
  </answer>
 
@@ -780,7 +790,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-menus">
   <p>
-   XXX no answer for perf-menus
+        No.
   </p>
  </answer>
 
@@ -804,7 +814,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-progress">
   <p>
-   XXX no answer for perf-progress
+        No.
   </p>
  </answer>
 
@@ -823,7 +833,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-scale">
   <p>
-   XXX no answer for perf-scale
+        N/A.
   </p>
  </answer>
 
@@ -841,7 +851,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-spi">
   <p>
-   XXX no answer for perf-spi
+        N/A.
   </p>
  </answer>
 
@@ -854,7 +864,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-startup">
   <p>
-   XXX no answer for perf-startup
+        No.
   </p>
  </answer>
 
@@ -868,7 +878,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-wakeup">
   <p>
-   XXX no answer for perf-wakeup
+        No.
   </p>
  </answer>
 
@@ -889,7 +899,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="resources-file">
   <p>
-   XXX no answer for resources-file
+        Yes.
   </p>
  </answer>
 
@@ -912,7 +922,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="resources-layer">
   <p>
-   XXX no answer for resources-layer
+        Yes. It add one node to Libraries (NB JUnit IDE library) and Templates (NB JUnit).
   </p>
  </answer>
 
@@ -933,7 +943,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="resources-mask">
   <p>
-   XXX no answer for resources-mask
+        No.
   </p>
  </answer>
 
@@ -953,7 +963,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="resources-read">
   <p>
-   XXX no answer for resources-read
+        No.
   </p>
  </answer>
 
@@ -971,7 +981,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="security-grant">
   <p>
-   XXX no answer for security-grant
+        No.
   </p>
  </answer>
 
@@ -988,7 +998,52 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="security-policy">
   <p>
-   XXX no answer for security-policy
+        No.
+  </p>
+ </answer>
+
+
+
+
+<!--
+        <question id="compat-deprecation" when="init">
+            How the introduction of your project influences functionality
+            provided by previous version of the product?
+            <hint>
+            If you are planning to deprecate/remove/change any existing APIs,
+            list them here accompanied with the reason explaining why you
+            are doing so.
+            </hint>
+        </question>
+-->
+ <answer id="compat-deprecation">
+  <p>
+        N/A.
+  </p>
+ </answer>
+
+
+
+<!--
+        <question id="resources-preferences" when="final">
+            Does your module uses preferences via Preferences API? Does your module use NbPreferences or
+            or regular JDK Preferences ? Does it read, write or both ? 
+            Does it share preferences with other modules ? If so, then why ?
+            <hint>
+                You may use
+                <pre xml:space="preserve">
+                    &lt;api type="export" group="preferences"
+                    name="preference node's absolute path name" category="private" url="http://..."&gt;
+                    description of individual keys, where it is used, what it
+                    influence, whether the module reads/write it, etc.
+                    &lt;/api&gt;            
+                </pre>
+            </hint>
+        </question>
+-->
+ <answer id="resources-preferences">
+  <p>
+        No.
   </p>
  </answer>
 

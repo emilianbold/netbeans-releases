@@ -18,51 +18,69 @@
  */
 package org.netbeans.junit.ide;
 
-import junit.framework.TestCase;
-import junit.framework.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.io.IOException;
-import java.util.Iterator;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.modules.project.ui.ProjectUtilities;
-import org.openide.ErrorManager;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
-import org.netbeans.modules.javacore.JMManager;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.project.ui.OpenProjectList;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.util.Mutex;
 
-/**
- *
- * @author Jaroslav Tulach
+/** Test of ProjectSupport class.
+ * @author Jiri Skrivanek 
  */
-public class ProjectSupportTest extends TestCase {
+public class ProjectSupportTest extends NbTestCase {
     
+    /** Creates a new test. 
+     * @param testName name of test
+     */
     public ProjectSupportTest(String testName) {
         super(testName);
     }
 
-    protected void setUp() throws Exception {
+    /** Set up. */
+    protected void setUp() {
+        System.out.println("########  "+getName()+"  #######");
     }
 
-    protected void tearDown() throws Exception {
-    }
-
-    public static Test suite() {
-        TestSuite suite = new TestSuite(ProjectSupportTest.class);
-        
+    /** Creates a new test suite.
+     * @return returns a new suite.
+     */
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite(ProjectSupportTest.class);
         return suite;
     }
 
-    public void testOpenProject() {
-        // just an empty test placeholder for now
+    private static final String PROJECT_NAME = "SampleProject";
+    private static File projectParentDir;
+    
+    /** Test createProject method. */
+    public void testCreateProject() throws Exception {
+        projectParentDir = this.getWorkDir();
+        Project project = (Project)ProjectSupport.createProject(this.getWorkDir(), PROJECT_NAME);
+        Project[] projects = OpenProjectList.getDefault().getOpenProjects();
+        assertEquals("Only 1 project should be opened.", 1, projects.length);
+        assertSame("Created project not opened.", project, projects[0]);
     }
     
+    /** Test closeProject method. */
+    public void testCloseProject() {
+        assertTrue("Should return true if succeeded.", ProjectSupport.closeProject(PROJECT_NAME));
+        Project[] projects = OpenProjectList.getDefault().getOpenProjects();
+        assertEquals("None project should be opened.", 0, projects.length);
+        assertFalse("Should return false if project doesn't exist.", ProjectSupport.closeProject("Dummy"));
+    }
+    
+    /** Test openProject method. */
+    public void testOpenProject() throws Exception {
+        Project project = (Project)ProjectSupport.openProject(new File(projectParentDir, PROJECT_NAME));
+        Project[] projects = OpenProjectList.getDefault().getOpenProjects();
+        assertEquals("Only 1 project should be opened.", 1, projects.length);
+        assertSame("Opened project not opened.", project, projects[0]);
+        assertNull("Should return null if project doesn't exist.", ProjectSupport.openProject(new File(projectParentDir, "Dummy")));
+    }
+    
+    /** Test waitScanFinished method. */
+    public void testWaitScanFinished() {
+        // TODO - somehow check this functionality
+        ProjectSupport.waitScanFinished();
+    }
 }

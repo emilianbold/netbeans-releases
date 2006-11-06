@@ -23,10 +23,9 @@ import java.beans.PropertyChangeListener;
 import org.openide.ErrorManager;
 import java.io.File;
 import java.io.IOException;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
-//import org.netbeans.modules.javacore.JMManager;
 import org.netbeans.modules.project.ui.OpenProjectList;
 import org.openide.util.Mutex;
 
@@ -60,6 +59,10 @@ public class MainWithProjects implements Main.MainWithProjectsInterface, Propert
         try {
             // open project
             final Project project = OpenProjectList.fileToProject(projectDir);
+            if(project == null) {
+                ErrorManager.getDefault().notify(new Exception("Project not found: "+projectDir));
+                return;
+            }
             final MainWithProjects instance = this;
             // posting the to AWT event thread
             Mutex.EVENT.writeAccess(new Runnable() {
@@ -98,8 +101,8 @@ public class MainWithProjects implements Main.MainWithProjectsInterface, Propert
                 waitThread.interrupt();
             }
             // WAIT PROJECT OPEN - end
-            // wait until metadata scanning is finished
-//            ((JMManager)JMManager.getManager()).waitScanFinished();
+            // wait until classpath scanning is finished
+            SourceUtils.waitScanFinished();
         } catch (Exception ex) {
             ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
         } finally {

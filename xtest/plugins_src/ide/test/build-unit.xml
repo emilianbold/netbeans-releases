@@ -31,6 +31,9 @@ Microsystems, Inc. All Rights Reserved.
             <classpath>
                 <pathelement location="${xtest.home}/lib/xtest.jar"/>
                 <pathelement location="${netbeans.dest.dir}/platform7/lib/org-openide-util.jar"/>
+                <!-- Used in NoScanTest class. -->
+                <pathelement location="${xtest.home}/lib/nbjunit-ide.jar"/>
+                <pathelement location="${netbeans.dest.dir}/platform7/modules/org-netbeans-api-progress.jar"/>
             </classpath>
         </buildTests>
     </target>
@@ -55,5 +58,17 @@ Microsystems, Inc. All Rights Reserved.
             </classpath>
         </executeTests>
     </target>
+    
+    <!-- Run tests in IDE with -J-Dnetbeans.javacore.noscan=true -->
+    <target name="run-ide-noscan">
+        <property name="xtest.ide.commandline.suffix" value="--nogui"/>
+        <property name="xtest.ide.commandline.suffix" value="-J-Dnetbeans.javacore.noscan=true"/>
+        <executeTests  pluginName="ide">
+            <classpath>
+            </classpath>
+        </executeTests>
+    </target>
+    
+
 </project>
 

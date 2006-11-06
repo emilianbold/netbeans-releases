@@ -24,10 +24,19 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="unit/src">
             <patternset>
                 <!-- Order of classes is significant. -->
-		<include name="**/XTestIDEHandlerTest.class"/>
+                <include name="**/XTestIDEHandlerTest.class"/>
                 <include name="**/XTestIDEHandlerCheckTest.class"/>
-		<include name="**/XTestErrorManagerTest.class"/>
+                <include name="**/XTestErrorManagerTest.class"/>
                 <include name="**/XTestErrorManagerCheckTest.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+
+    <!-- Test netbeans.javacore.noscan=true property. -->
+    <testbag testattribs="stable" executor="ide-noscan" name="XTest IDE Plugin - NoScan">
+        <testset dir="unit/src">
+            <patternset>
+                <include name="**/NoScanTest.class"/>
             </patternset>
         </testset>
     </testbag>
@@ -50,6 +59,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <executor name="jvm" antfile="build-unit.xml" target="run-jvm" default="true"/>
     <executor name="ide" antfile="build-unit.xml" target="run-ide"/>
+    <executor name="ide-noscan" antfile="build-unit.xml" target="run-ide-noscan"/>
     <compiler name="unit-compiler" antfile="build-unit.xml" target="unit-compiler" default="true"/>
 
 </mconfig>

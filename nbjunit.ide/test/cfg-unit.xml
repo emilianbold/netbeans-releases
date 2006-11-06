@@ -19,9 +19,9 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<mconfig name="xtest/nbjunit test config">
+<mconfig name="xtest/nbjunit/ide test config">
 
-    <testbag testattribs="stable" executor="unit-executor" name="Stable tests">
+    <testbag testattribs="stable" executor="ide" name="ProjectSupport tests">
         <testset dir="unit/src">
             <patternset>
                 <include name="org/netbeans/**/*.class"/>
@@ -38,5 +38,5 @@ Microsystems, Inc. All Rights Reserved.
 
     <compiler name="default-compiler" antfile="build-unit.xml" target="default-compiler" default="true"/>
     <executor name="unit-executor" antfile="build-unit.xml" target="run-unit-test"/>
-
+    <executor name="ide" antfile="build-unit.xml" target="run-ide"/>
 </mconfig>
