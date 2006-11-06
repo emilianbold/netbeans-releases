@@ -17,6 +17,7 @@ import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 
 import java.util.*;
+import java.util.List;
 import java.awt.*;
 
 /**
@@ -29,6 +30,9 @@ import java.awt.*;
  * @author David Kaspar
  */
 public class ObjectScene extends Scene {
+
+    private static final ObjectSceneListener[] EMPTY_LISTENERS = new ObjectSceneListener[0];
+    private static final Set<Object> EMPTY_SET = Collections.unmodifiableSet (Collections.emptySet ());
 
     private HashMap<Object, Object> objects = new HashMap<Object, Object> ();
     private Set<Object> objectsUm = Collections.unmodifiableSet (objects.keySet ());
@@ -50,6 +54,9 @@ public class ObjectScene extends Scene {
     private WidgetAction selectAction = ActionFactory.createSelectAction (new ObjectSelectProvider ());
     private WidgetAction objectHoverAction;
 
+    private Map<ObjectSceneEventType, List<ObjectSceneListener>> listeners = new java.util.EnumMap<ObjectSceneEventType, List<ObjectSceneListener>> (ObjectSceneEventType.class);
+    private ObjectSceneEvent event = new ObjectSceneEvent (this);
+
     /**
      * Adds a mapping between an object and a widget.
      * @param object the model object; the object must not be a Widget
@@ -66,6 +73,8 @@ public class ObjectScene extends Scene {
             widget2objects.put (widget, object);
             widget.setState (ObjectState.createNormal ());
         }
+        for (ObjectSceneListener listener : getListeners (ObjectSceneEventType.OBJECT_ADDED))
+            listener.objectAdded (event, object);
     }
 
     /**
@@ -85,6 +94,8 @@ public class ObjectScene extends Scene {
             widget2objects.remove (widget);
         }
         objects.remove (object);
+        for (ObjectSceneListener listener : getListeners (ObjectSceneEventType.OBJECT_REMOVED))
+            listener.objectRemoved (event, object);
     }
 
     /**
@@ -118,25 +129,41 @@ public class ObjectScene extends Scene {
      */
     // TODO - could be final?
     public void setSelectedObjects (Set<?> selectedObjects) {
+        ObjectSceneListener[] listeners = getListeners (ObjectSceneEventType.OBJECT_STATE_CHANGED);
+        ObjectSceneListener[] selectionListeners = getListeners (ObjectSceneEventType.OBJECT_SELECTION_CHANGED);
+        Set<Object> previouslySelectedObject = selectionListeners.length != 0 ? Collections.unmodifiableSet (new HashSet<Object> (this.selectedObjects)) : EMPTY_SET;
+
         for (Iterator<Object> iterator = this.selectedObjects.iterator (); iterator.hasNext ();) {
             Object object = iterator.next ();
             if (! selectedObjects.contains (object)) {
                 iterator.remove ();
-                objectStates.put (object, objectStates.get (object).deriveSelected (false));
+                ObjectState previousState = objectStates.get (object);
+                ObjectState newState = previousState.deriveSelected (false);
+                objectStates.put (object, newState);
                 Widget widget = object2widgets.get (object);
                 if (widget != null)
                     widget.setState (widget.getState ().deriveSelected (false));
+                for (ObjectSceneListener listener : listeners)
+                    listener.objectStateChanged (event, object, previousState, newState);
             }
         }
+
         for (Object object : selectedObjects) {
             if (! this.selectedObjects.contains (object)) {
                 this.selectedObjects.add (object);
-                objectStates.put (object, objectStates.get (object).deriveSelected (true));
+                ObjectState previousState = objectStates.get (object);
+                ObjectState newState = previousState.deriveSelected (true);
+                objectStates.put (object, newState);
                 Widget widget = object2widgets.get (object);
                 if (widget != null)
                     widget.setState (widget.getState ().deriveSelected (true));
+                for (ObjectSceneListener listener : listeners)
+                    listener.objectStateChanged (event, object, previousState, newState);
             }
         }
+
+        for (ObjectSceneListener listener : selectionListeners)
+            listener.selectionChanged (event, previouslySelectedObject, this.selectedObjectsUm);
     }
 
     /**
@@ -153,25 +180,41 @@ public class ObjectScene extends Scene {
      */
     // TODO - could be final?
     public void setHighlightedObjects (Set<?> highlightedObjects) {
+        ObjectSceneListener[] listeners = getListeners (ObjectSceneEventType.OBJECT_STATE_CHANGED);
+        ObjectSceneListener[] highlightingListeners = getListeners (ObjectSceneEventType.OBJECT_HIGHLIGHTING_CHANGED);
+        Set<Object> previouslyHighlightedObject = highlightingListeners.length != 0 ? Collections.unmodifiableSet (new HashSet<Object> (this.highlightedObjects)) : EMPTY_SET;
+
         for (Iterator<Object> iterator = this.highlightedObjects.iterator (); iterator.hasNext ();) {
             Object object = iterator.next ();
             if (! highlightedObjects.contains (object)) {
                 iterator.remove ();
-                objectStates.put (object, objectStates.get (object).deriveHighlighted (false));
+                ObjectState previousState = objectStates.get (object);
+                ObjectState newState = previousState.deriveHighlighted (false);
+                objectStates.put (object, newState);
                 Widget widget = object2widgets.get (object);
                 if (widget != null)
                     widget.setState (widget.getState ().deriveHighlighted (false));
+                for (ObjectSceneListener listener : listeners)
+                    listener.objectStateChanged (event, object, previousState, newState);
             }
         }
+
         for (Object object : highlightedObjects) {
             if (! this.highlightedObjects.contains (object)) {
                 this.highlightedObjects.add (object);
-                objectStates.put (object, objectStates.get (object).deriveHighlighted (true));
+                ObjectState previousState = objectStates.get (object);
+                ObjectState newState = previousState.deriveHighlighted (true);
+                objectStates.put (object, newState);
                 Widget widget = object2widgets.get (object);
                 if (widget != null)
                     widget.setState (widget.getState ().deriveHighlighted (true));
+                for (ObjectSceneListener listener : listeners)
+                    listener.objectStateChanged (event, object, previousState, newState);
             }
         }
+
+        for (ObjectSceneListener listener : highlightingListeners)
+            listener.highlightingChanged (event, previouslyHighlightedObject, this.highlightedObjectsUm);
     }
 
     /**
@@ -195,19 +238,37 @@ public class ObjectScene extends Scene {
             if (this.hoveredObject == null)
                 return;
         }
+
+        ObjectSceneListener[] listeners = getListeners (ObjectSceneEventType.OBJECT_STATE_CHANGED);
+        ObjectSceneListener[] hoverListeners = getListeners (ObjectSceneEventType.OBJECT_HOVER_CHANGED);
+        Object previouslyHoveredObject = this.hoveredObject;
+
         if (this.hoveredObject != null) {
-            objectStates.put (this.hoveredObject, objectStates.get (this.hoveredObject).deriveObjectHovered (false));
+            ObjectState previousState = objectStates.get (this.hoveredObject);
+            ObjectState newState = previousState.deriveObjectHovered (false);
+            objectStates.put (this.hoveredObject, newState);
             Widget widget = object2widgets.get (this.hoveredObject);
             if (widget != null)
                 widget.setState (widget.getState ().deriveObjectHovered (false));
+            for (ObjectSceneListener listener : listeners)
+                listener.objectStateChanged (event, this.hoveredObject, previousState, newState);
         }
+
         this.hoveredObject = hoveredObject;
+
         if (this.hoveredObject != null) {
-            objectStates.put (this.hoveredObject, objectStates.get (this.hoveredObject).deriveObjectHovered (true));
+            ObjectState previousState = objectStates.get (this.hoveredObject);
+            ObjectState newState = previousState.deriveObjectHovered (true);
+            objectStates.put (this.hoveredObject, newState);
             Widget widget = object2widgets.get (this.hoveredObject);
             if (widget != null)
                 widget.setState (widget.getState ().deriveObjectHovered (true));
+            for (ObjectSceneListener listener : listeners)
+                listener.objectStateChanged (event, this.hoveredObject, previousState, newState);
         }
+
+        for (ObjectSceneListener listener : hoverListeners)
+            listener.hoverChanged (event, previouslyHoveredObject, this.hoveredObject);
     }
 
     /**
@@ -230,19 +291,38 @@ public class ObjectScene extends Scene {
             if (this.focusedObject == null)
                 return;
         }
+
+        ObjectSceneListener[] listeners = getListeners (ObjectSceneEventType.OBJECT_STATE_CHANGED);
+        ObjectSceneListener[] focusListeners = getListeners (ObjectSceneEventType.OBJECT_FOCUS_CHANGED);
+        Object previouslyFocusedObject = this.focusedObject;
+
         if (this.focusedObject != null) {
-            objectStates.put (this.focusedObject, objectStates.get (this.focusedObject).deriveObjectFocused (false));
+            ObjectState previousState = objectStates.get (this.focusedObject);
+            ObjectState newState = previousState.deriveObjectFocused (false);
+            objectStates.put (this.focusedObject, newState);
             Widget widget = object2widgets.get (this.focusedObject);
             if (widget != null)
                 widget.setState (widget.getState ().deriveObjectFocused (false));
+            for (ObjectSceneListener listener : listeners)
+                listener.objectStateChanged (event, this.focusedObject, previousState, newState);
         }
+
         this.focusedObject = focusedObject;
+
         if (this.focusedObject != null) {
-            objectStates.put (this.focusedObject, objectStates.get (this.focusedObject).deriveObjectFocused (true));
+            ObjectState previousState = objectStates.get (this.focusedObject);
+            ObjectState newState = previousState.deriveObjectFocused (true);
+            objectStates.put (this.focusedObject, newState);
             Widget widget = object2widgets.get (this.focusedObject);
             if (widget != null)
                 widget.setState (widget.getState ().deriveObjectFocused (true));
+            for (ObjectSceneListener listener : listeners)
+                listener.objectStateChanged (event, this.focusedObject, previousState, newState);
         }
+
+        for (ObjectSceneListener listener : focusListeners)
+            listener.focusChanged (event, previouslyFocusedObject, this.focusedObject);
+
     }
 
     /**
@@ -330,6 +410,51 @@ public class ObjectScene extends Scene {
         } else {
             setSelectedObjects (suggestedSelectedObjects);
         }
+    }
+
+    /**
+     * Adds object scene listener for specified object scene event types.
+     * @param listener the object scene listener
+     * @param types the object scene event types
+     */
+    public final void addObjectSceneListener (ObjectSceneListener listener, ObjectSceneEventType... types) {
+        for (ObjectSceneEventType type : types)
+            addObjectSceneListenerCore (listener, type);
+    }
+
+    private void addObjectSceneListenerCore (ObjectSceneListener listener, ObjectSceneEventType type) {
+        List<ObjectSceneListener> list = listeners.get (type);
+        if (list == null) {
+            list = new ArrayList<ObjectSceneListener> ();
+            listeners.put (type, list);
+        }
+        list.add (listener);
+    }
+
+    /**
+     * Removes object scene listener for specified object scene event types.
+     * @param listener the object scene listener
+     * @param types the object scene event types
+     */
+    public final void removeObjectSceneListener (ObjectSceneListener listener, ObjectSceneEventType... types) {
+        for (ObjectSceneEventType type : types)
+            removeObjectSceneListenerCore (listener, type);
+    }
+
+    private void removeObjectSceneListenerCore (ObjectSceneListener listener, ObjectSceneEventType type) {
+        List<ObjectSceneListener> list = listeners.get (type);
+        if (list == null)
+            return;
+        list.remove (listener);
+        if (list.isEmpty ())
+            listeners.remove (type);
+    }
+
+    private ObjectSceneListener[] getListeners (ObjectSceneEventType type) {
+        List<ObjectSceneListener> listeners = this.listeners.get (type);
+        if (listeners == null)
+            return EMPTY_LISTENERS;
+        return listeners.toArray (new ObjectSceneListener[listeners.size ()]);
     }
 
     private class ObjectSelectProvider implements SelectProvider {
