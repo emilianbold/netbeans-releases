@@ -120,6 +120,8 @@ public class CreateProject extends org.netbeans.performance.test.utilities.Perfo
     
     public ComponentOperator open(){
         wizard_location.finish();
+        ProjectSupport.waitScanFinished();
+        new EventTool().waitNoEvent(1000);
         return null;
     }
     

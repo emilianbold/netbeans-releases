@@ -108,6 +108,8 @@ public class CreateNBProject extends org.netbeans.performance.test.utilities.Per
             wizard_location.next();
         }
         wizard_location.finish();
+        ProjectSupport.waitScanFinished();
+        new EventTool().waitNoEvent(1000);
         return null;
     }
     

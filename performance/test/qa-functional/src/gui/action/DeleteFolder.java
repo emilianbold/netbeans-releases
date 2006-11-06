@@ -140,8 +140,10 @@ public class DeleteFolder extends org.netbeans.performance.test.utilities.Perfor
             
             foldersNode = new Node(projectNode, gui.Utilities.SOURCE_PACKAGES + "|folders");
             
+            /* no more present after retouche merge
             new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenu(Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/File")+"|"+Bundle.getStringTrimmed("org.netbeans.modules.javacore.Bundle","LBL_RescanAction"),"|"); //File|Refresh All Files
             waitNoEvent(500);
+             */
 
             nodeToBeDeleted = new Node(projectNode, gui.Utilities.SOURCE_PACKAGES + "|folders." + folderToBeDeleted + "_delete");
             
@@ -157,8 +159,11 @@ public class DeleteFolder extends org.netbeans.performance.test.utilities.Perfor
                 gui.Utilities.copyFile(files[i], copyFile);
             }
             
+            /* no more present after retouche merge
             new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenu(Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/File")+"|"+Bundle.getStringTrimmed("org.netbeans.modules.javacore.Bundle","LBL_RescanAction"),"|"); //File|Refresh All Files
             waitNoEvent(500);
+             */
+            
             nodeToBeDeleted.expand();
             
         }catch(Exception exc){
