@@ -19,44 +19,13 @@
 
 package org.netbeans.nbbuild;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.net.URI;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.StringTokenizer;
-import java.util.Vector;
-import java.util.jar.Attributes;
-import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import java.util.jar.Manifest;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.DirectoryScanner;
-import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
-import org.apache.tools.ant.taskdefs.Copy;
-import org.apache.tools.ant.taskdefs.Jar;
-import org.apache.tools.ant.taskdefs.SignJar;
 import org.apache.tools.ant.types.FileSet;
-import org.apache.tools.ant.types.ZipFileSet;
 
 /** Generates JNLP files for signed versions of the module JAR files.
  *
@@ -64,12 +33,12 @@ import org.apache.tools.ant.types.ZipFileSet;
  */
 public class MakeMasterJNLP extends Task {
     /** the files to work on */
-    private org.apache.tools.ant.types.FileSet files;
+    private FileSet files;
     
-    public org.apache.tools.ant.types.FileSet createModules() 
+    public FileSet createModules() 
     throws BuildException {
         if (files != null) throw new BuildException("modules can be created just once");
-        files = new org.apache.tools.ant.types.FileSet();
+        files = new FileSet();
         return files;
     }
     
@@ -95,10 +64,8 @@ public class MakeMasterJNLP extends Task {
     }
     
     private void generateFiles() throws IOException, BuildException {
-        DirectoryScanner scan = files.getDirectoryScanner(getProject());
-        String[] arr = scan.getIncludedFiles();
-        for (int i = 0; i < arr.length; i++) {
-            File jar = new File (files.getDir(getProject()), arr[i]);
+        for (String nm : files.getDirectoryScanner(getProject()).getIncludedFiles()) {
+            File jar = new File (files.getDir(getProject()), nm);
             
             if (!jar.canRead()) {
                 throw new BuildException("Cannot read file: " + jar);

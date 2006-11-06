@@ -23,15 +23,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.URL;
-import java.net.URLClassLoader;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Iterator;
-// IMPORTANT! You may need to mount ant.jar before this class will
-// compile. So mount the JAR modules/ext/ant-1.4.1.jar (NOT modules/ant.jar)
-// from your IDE installation directory in your Filesystems before
-// continuing to ensure that it is in your classpath.
-
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.apache.tools.ant.*;
 import org.apache.tools.ant.types.*;
 
@@ -74,7 +70,7 @@ public class NbEnhanceClass extends Task {
         String clazz;
         String nbSuperClass;
         String nbImplements;
-        ArrayList members;
+        List<Member> members;
         
         
         /** Class in form of java/lang/Object */
@@ -92,7 +88,7 @@ public class NbEnhanceClass extends Task {
         public Object createMember () {
             Member m = new Member();
             if (members == null) {
-                members = new ArrayList ();
+                members = new ArrayList<Member>();
             }
             members.add (m);
             return m;
@@ -111,7 +107,7 @@ public class NbEnhanceClass extends Task {
             }
         }
     }
-    private ArrayList patches = new ArrayList (); // List<Nestme>
+    private List<Patch> patches = new ArrayList<Patch>();
     public Patch createPatch () {
         Patch n = new Patch ();
         patches.add(n);
@@ -135,10 +131,10 @@ public class NbEnhanceClass extends Task {
         
         ClassLoader cl = new AntClassLoader(getProject(), patchPath, false);
         
-        java.lang.reflect.Method m;
+        Method m;
         try {
             Class c = cl.loadClass (patchClass);
-            m = c.getMethod(enhanceMethod, new Class[] { byte[].class, java.util.Map.class });
+            m = c.getMethod(enhanceMethod, byte[].class, Map.class);
             if (m.getReturnType() != byte[].class) {
                 throw new BuildException ("Method does not return byte[]: " + m);
             }
@@ -158,11 +154,8 @@ public class NbEnhanceClass extends Task {
         //
         // Ok we have the method and we can do the patching
         //
-        
-        Iterator it = patches.iterator();
-        while (it.hasNext()) {
-            Patch p = (Patch)it.next ();
-            
+
+        for (Patch p : patches) {
             if (p.clazz == null) {
                 throw new BuildException ("Attribute class must be specified");
             }
@@ -183,19 +176,16 @@ public class NbEnhanceClass extends Task {
                 throw new BuildException ("Cannot read file " + f, ex);
             }
             
-            ArrayList members = null;
-            ArrayList rename = null;
+            List<String> members = null;
+            List<String> rename = null;
             if (p.members != null) {
-                members = new ArrayList ();
-                Iterator myIt = p.members.iterator();
-                int i = 0;
-                while (myIt.hasNext ()) {
-                    Patch.Member mem = (Patch.Member)myIt.next ();
+                members = new ArrayList<String>();
+                for (Patch.Member mem : p.members) {
                     members.add (mem.name);
                     
                     if (mem.rename != null) {
                         if (rename == null) {
-                            rename = new ArrayList ();
+                            rename = new ArrayList<String>();
                         }
                         rename.add (mem.name);
                         rename.add (mem.rename);
@@ -206,7 +196,7 @@ public class NbEnhanceClass extends Task {
              
             byte[] out;
             try {
-                java.util.Map args = new java.util.HashMap ();
+                Map<String,Object> args = new HashMap<String,Object>();
                 if (p.nbSuperClass != null) {
                     args.put ("netbeans.superclass", p.nbSuperClass);
                 }
@@ -222,7 +212,7 @@ public class NbEnhanceClass extends Task {
                 
                 log("Patching " + p.clazz + " with arguments " + args, Project.MSG_VERBOSE);
                 
-                out = (byte[])m.invoke (null, new Object[] { arr, args });
+                out = (byte[]) m.invoke(null, arr, args);
                 if (out == null) {
                     // no patching needed
                     continue;

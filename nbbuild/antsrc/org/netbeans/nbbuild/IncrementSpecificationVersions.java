@@ -31,7 +31,6 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
@@ -83,9 +82,7 @@ public final class IncrementSpecificationVersions extends Task {
         if (nbroot == null || modules == null) {
             throw new BuildException("Missing params 'nbroot' or 'modules'", getLocation());
         }
-        Iterator it = modules.iterator();
-        MODULE: while (it.hasNext()) {
-            String module = (String) it.next();
+        MODULE: for (String module : modules) {
             File dir = new File(nbroot, module.replace('/', File.separatorChar));
             if (!dir.isDirectory()) {
                 log("No such directory " + dir + "; skipping", Project.MSG_WARN);
@@ -205,12 +202,12 @@ public final class IncrementSpecificationVersions extends Task {
         InputStream is = new FileInputStream(file);
         try {
             BufferedReader r = new BufferedReader(new InputStreamReader(is, enc));
-            List<String> l = new ArrayList();
+            List<String> l = new ArrayList<String>();
             String line;
             while ((line = r.readLine()) != null) {
                 l.add(line);
             }
-            return (String[]) l.toArray(new String[l.size()]);
+            return l.toArray(new String[l.size()]);
         } finally {
             is.close();
         }
@@ -220,8 +217,8 @@ public final class IncrementSpecificationVersions extends Task {
         OutputStream os = new FileOutputStream(file);
         try {
             PrintWriter w = new PrintWriter(new OutputStreamWriter(os, enc));
-            for (int i = 0; i < lines.length; i++) {
-                w.println(lines[i]);
+            for (String line : lines) {
+                w.println(line);
             }
             w.flush();
         } finally {

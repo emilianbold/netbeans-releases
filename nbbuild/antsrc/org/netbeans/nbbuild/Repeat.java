@@ -18,14 +18,11 @@
  */
 package org.netbeans.nbbuild;
 
-import java.io.File;
-import java.util.*;
-
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringTokenizer;
 import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.taskdefs.Ant;
-
 import org.apache.tools.ant.Project;
-import org.apache.tools.ant.Target;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.taskdefs.CallTarget;
 import org.apache.tools.ant.taskdefs.Property;
@@ -38,7 +35,7 @@ import org.apache.tools.ant.taskdefs.Property;
  */
 public class Repeat extends Task {
     
-    private List   values; // List<String>
+    private List<String> values;
     private String target;
     private String startdir;
     private String name;
@@ -48,7 +45,7 @@ public class Repeat extends Task {
     //
     
     public Repeat() {
-        values = new Vector();
+        values = new ArrayList<String>();
         target    = null;
     }
 
@@ -68,7 +65,7 @@ public class Repeat extends Task {
         log ("SET values = " + s, Project.MSG_DEBUG);
 
         StringTokenizer tok = new StringTokenizer (s, ", ");
-        values = new Vector ();
+        values = new ArrayList<String>();
         while ( tok.hasMoreTokens() ) {
             values.add (tok.nextToken().trim());
         }
@@ -93,10 +90,7 @@ public class Repeat extends Task {
             throw new BuildException("Target must be set!", getLocation());
         }
 
-        Iterator it = values.iterator();
-        while ( it.hasNext() ) {
-            String val = (String) it.next();
-
+        for (String val : values) {
             log ("Process '" + val + "' location with '" + target + "' target ...", Project.MSG_VERBOSE);
             
             CallTarget antCall = (CallTarget) getProject().createTask("antcall");

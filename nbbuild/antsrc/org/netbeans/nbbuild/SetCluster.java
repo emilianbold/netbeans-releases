@@ -24,14 +24,14 @@ import java.util.*;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.taskdefs.*;
-import org.apache.tools.ant.Task;
 import org.apache.tools.ant.Project;
+import org.apache.tools.ant.Task;
 
 /** Settigns the given property to cluster value
  *
  * @author Michal Zlamal
  */
-public class SetCluster extends org.apache.tools.ant.Task {
+public class SetCluster extends Task {
     private String name = null;
     private String propertiesList = null;
     private String cluster;

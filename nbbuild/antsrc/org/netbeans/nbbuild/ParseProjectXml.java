@@ -347,10 +347,9 @@ public final class ParseProjectXml extends Task {
                     moduleClassPathProperty != null || 
                     moduleRunClassPathProperty != null ||
                     testTypes.size() > 0) {
-                Hashtable properties = getProject().getProperties();
                 @SuppressWarnings("unchecked")
-                Map<String,String> _properties = properties;
-                _properties.put("project", project.getAbsolutePath());
+                Hashtable<String,String> properties = getProject().getProperties();
+                properties.put("project", project.getAbsolutePath());
                 modules = new ModuleListParser(properties, getModuleType(pDoc), getProject());
                 ModuleListParser.Entry myself = modules.findByCodeNameBase(getCodeNameBase(pDoc));
                 if (myself == null) { // #71130

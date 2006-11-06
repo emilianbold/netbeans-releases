@@ -31,10 +31,11 @@ import org.apache.tools.ant.Task;
  * @author Jesse Glick
  * @deprecated unused
  */
+@Deprecated
 public class ConfigureModules extends Task {
 
     private String property, config;
-    private List configs = new LinkedList ();
+    private List<Config> configs = new LinkedList<Config>();
 
     /** You must add a <samp>&lt;config&gt;</samp> nested element for each configuration. */
     public class Config {

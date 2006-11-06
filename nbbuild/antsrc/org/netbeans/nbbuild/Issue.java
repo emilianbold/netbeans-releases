@@ -20,15 +20,8 @@
 package org.netbeans.nbbuild;
 
 import java.io.*;
-import java.net.URL;
 import java.util.*;
 import java.util.Date;
-
-import javax.xml.parsers.SAXParserFactory;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.ParserConfigurationException;
-import org.xml.sax.SAXException;
-
 
 /** Represents on issue in issuezilla.
  * Created by {@link Issuezilla#getBug}
@@ -66,7 +59,7 @@ public final class Issue extends Object implements Comparable {
     /** Name of the attribute containing the long_desc as a list */
     static final String LONG_DESC_LIST = "long_desc_list";
 
-    private HashMap attributes = new HashMap (49);
+    private Map<String,Object> attributes = new HashMap<String,Object>(49);
 
 
     /**
@@ -101,9 +94,9 @@ public final class Issue extends Object implements Comparable {
      * @return array of names or empty array if nobody is
      */
     public String[] getObservedBy () {
-        java.util.List l = (java.util.List)getAttribute (CC);
+        List<?> l = (List<?>) getAttribute (CC);
         if (l != null) {
-            return (String[])l.toArray (new String[0]);
+            return l.toArray(new String[0]);
         } else {
             return new String[0];
         }
@@ -166,7 +159,7 @@ public final class Issue extends Object implements Comparable {
             return new Description[0];
         }
 
-        return (Description[])((List)obj).toArray (new Description[0]);
+        return ((List<?>) obj).toArray(new Description[0]);
     }
     
     /** A list of bugs that depends on this one.
@@ -207,6 +200,7 @@ public final class Issue extends Object implements Comparable {
     /**
      * @deprecated Use <code>getWhiteboardAttribute("duration")</code> instead.
      */
+    @Deprecated
     public String getDuration () {
         String val = getWhiteboardAttribute("duration");
         return val == null ? "" :  val;

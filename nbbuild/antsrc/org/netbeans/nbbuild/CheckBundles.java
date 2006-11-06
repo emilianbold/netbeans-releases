@@ -32,7 +32,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.TreeMap;
@@ -142,9 +141,8 @@ public class CheckBundles extends Task {
                     }
                     else {
                         // java source in the same package
-                        String [] srcs = files.get (bundle.getParentFile());
-                        for (int i=0; i<srcs.length; i++) {
-                            if (srcs[i].indexOf("\""+key+"\"")>=0) {
+                        for (String src : files.get(bundle.getParentFile())) {
+                            if (src.indexOf("\"" + key+  "\"") >= 0) {
                                 log("Checking "+key+" OK", Project.MSG_VERBOSE);
                                 found = true;
                                 break;
@@ -154,12 +152,10 @@ public class CheckBundles extends Task {
                     if (!found) {
                         // try other java sources
                         // XXX should skip moduleKeys, etc.
-                        Iterator fIt = files.keySet().iterator();
-                        while (fIt.hasNext()) {
-                            File dir = (File)fIt.next();
-                            String [] srcs = (String [])files.get (dir);
-                            for (int i=0; i<srcs.length; i++) {
-                                if (srcs[i].indexOf("\""+key+"\"")>=0) {
+                        for (Map.Entry<File,String[]> entry2 : files.entrySet()) {
+                            File dir = entry2.getKey();
+                            for (String src : entry2.getValue()) {
+                                if (src.indexOf("\"" + key + "\"") >= 0) {
                                     log(bundle.getPath() + ":" + line + ": " + key + " used from " + dir.getPath(), Project.MSG_WARN);
                                     found = true;
                                     break;
@@ -259,7 +255,7 @@ public class CheckBundles extends Task {
             Attributes attr = m.getMainAttributes();
 
             // Try to find bundle
-            String lb = (attr == null)? null: (String)attr.getValue("OpenIDE-Module-Localizing-Bundle");
+            String lb = (attr == null) ? null : attr.getValue("OpenIDE-Module-Localizing-Bundle");
             if (lb != null) {
                 File lbundle = new File(srcdir.getAbsolutePath()+File.separator+"src"+File.separatorChar+lb);
                 log("Recognized localizing bundle "+lbundle, Project.MSG_VERBOSE);
@@ -269,7 +265,7 @@ public class CheckBundles extends Task {
             }
 
             // Try to find XML layer
-            String xml = (attr == null)? null: (String)attr.getValue("OpenIDE-Module-Layer");
+            String xml = (attr == null) ? null : attr.getValue("OpenIDE-Module-Layer");
             File xmlFile = null;
             if (xml != null) {
                 xmlFile = new File (srcdir.getAbsolutePath()+File.separator+"src"+File.separator+xml);

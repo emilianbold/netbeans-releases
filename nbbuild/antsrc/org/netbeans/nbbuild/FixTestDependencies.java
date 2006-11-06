@@ -29,14 +29,13 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 import org.apache.tools.ant.BuildException;
-import org.netbeans.nbbuild.ModuleListParser.Entry;
+import org.apache.tools.ant.Task;
 
 // XXX should use DOM, not text manipulation
 
@@ -44,7 +43,7 @@ import org.netbeans.nbbuild.ModuleListParser.Entry;
  * Moves classpath from properties to project.xml
  * @author pzajac
  */
-public class FixTestDependencies extends org.apache.tools.ant.Task {
+public class FixTestDependencies extends Task {
     /**  entries for unit testing in order to avoid scanning modules
      */
     Set<ModuleListParser.Entry> cachedEntries ;
@@ -115,7 +114,7 @@ public class FixTestDependencies extends org.apache.tools.ant.Task {
                     ps.close();                  
                     return ;
                 }
-                Set entries = getModuleList(projectType);
+                Set<ModuleListParser.Entry> entries = getModuleList(projectType);
                 Set<String> allCnbs = getCNBsFromEntries(entries);
                 // read properties
 
@@ -123,10 +122,10 @@ public class FixTestDependencies extends org.apache.tools.ant.Task {
 
                 // unittest
                 //
-                Set<String> compileCNB = new TreeSet();
-                Set<String> compileTestCNB = new TreeSet();
-                Set<String> runtimeCNB = new TreeSet();
-                Set<String> runtimeTestCNB = new TreeSet();
+                Set<String> compileCNB = new TreeSet<String>();
+                Set<String> compileTestCNB = new TreeSet<String>();
+                Set<String> runtimeCNB = new TreeSet<String>();
+                Set<String> runtimeTestCNB = new TreeSet<String>();
 
                 Properties projectProperties = getTestProperties();
                 readCodeNameBases(compileCNB,compileTestCNB,projectProperties,"test.unit.cp",allCnbs,entries);
@@ -206,7 +205,7 @@ public class FixTestDependencies extends org.apache.tools.ant.Task {
         // store project.properties and project.xml
     }
 
-    private Set getModuleList(final int projectType) throws IOException {
+    private Set<ModuleListParser.Entry> getModuleList(final int projectType) throws IOException {
         if (cachedEntries == null ) {
           // scan for all modules
             ModuleListParser listParser = new ModuleListParser(getProject().getProperties(), projectType, getProject());
@@ -218,9 +217,9 @@ public class FixTestDependencies extends org.apache.tools.ant.Task {
     }
     
     private Set<String> getCNBsFromEntries(Set<ModuleListParser.Entry> entries) {
-        Set <String> cnbs = new HashSet();
-        for (Iterator it = entries.iterator() ; it.hasNext();) {
-            cnbs.add(((ModuleListParser.Entry)it.next()).getCnb());
+        Set<String> cnbs = new HashSet<String>();
+        for (ModuleListParser.Entry e : entries) {
+            cnbs.add(e.getCnb());
         }
         return cnbs;
     }
@@ -260,20 +259,18 @@ public class FixTestDependencies extends org.apache.tools.ant.Task {
                         } else  {
                             String name = token.substring(lastSlash + 1, token.length());
                             // check if the file is wrapped library
-                            String wrappCNB = null;
-                            for (Iterator eIt = entries.iterator() ; eIt.hasNext() ; ) {
-                                  ModuleListParser.Entry entry = (Entry) eIt.next();
+                            String wrapCNB = null;
+                            for (ModuleListParser.Entry entry : entries) {
                                   File extensions [] = entry.getClassPathExtensions();
                                   if (extensions != null) {
-                                      for (int e = 0 ; e < extensions.length ; e++ ) {
-                                          File f = extensions[e];
+                                      for (File f : extensions) {
                                           if (f.getPath().endsWith( name)) {
-                                              if (wrappCNB != null) {
+                                              if (wrapCNB != null) {
                                                 // collision
                                                   found = false;
                                                   System.out.println("wrapped? " + entry.getCnb() + " -> " + token + " = " + f);
                                               } else {
-                                                  wrappCNB = entry.getCnb();
+                                                  wrapCNB = entry.getCnb();
                                                   found = true;
                                               }
                                           }
@@ -281,8 +278,8 @@ public class FixTestDependencies extends org.apache.tools.ant.Task {
                                   }
 
                             }
-                            if (found && wrappCNB != null && allCnbs.contains(wrappCNB)) {
-                                  compileCNB.add(wrappCNB);
+                            if (found && wrapCNB != null && allCnbs.contains(wrapCNB)) {
+                                  compileCNB.add(wrapCNB);
                             }
                          }
                         // check if the dependency is dependency on test
@@ -319,9 +316,8 @@ public class FixTestDependencies extends org.apache.tools.ant.Task {
         }
     }
     
-    private void addDependencies(PrintWriter buffer, Set moduleCNB,Set testCNB, boolean compile, boolean recursive) {
-        for (Iterator it = moduleCNB.iterator() ; it.hasNext() ;) {
-            String cnb = (String)it.next();
+    private void addDependencies(PrintWriter buffer, Set<String> moduleCNB, Set<String> testCNB, boolean compile, boolean recursive) {
+        for (String cnb : moduleCNB) {
             addDependency(buffer,cnb,compile,recursive,testCNB.contains(cnb));
         }
     }
@@ -358,9 +354,8 @@ public class FixTestDependencies extends org.apache.tools.ant.Task {
     
     /** @return codeNameBase of project for relative folder prjFolder
      */
-    private String getCNBForFolder(String prjFolder, Set entries) {
-        for (Iterator it = entries.iterator(); it.hasNext();) {
-            ModuleListParser.Entry elem = (ModuleListParser.Entry) it.next();
+    private String getCNBForFolder(String prjFolder, Set<ModuleListParser.Entry> entries) {
+        for (ModuleListParser.Entry elem : entries) {
             if (prjFolder.equals(elem.getNetbeansOrgPath())) {
                 return elem.getCnb();
             }
@@ -372,7 +367,7 @@ public class FixTestDependencies extends org.apache.tools.ant.Task {
             
             // read properties
             BufferedReader reader = new BufferedReader (new FileReader(propertiesFile));
-            List<String> lines = new ArrayList();
+            List<String> lines = new ArrayList<String>();
             String line = null;
             while ((line = reader.readLine()) != null) {
                 lines.add(line);
@@ -380,15 +375,14 @@ public class FixTestDependencies extends org.apache.tools.ant.Task {
             reader.close();
             
             // merge properties
-            for (int i = 0; i < names.length; i++) {
-               String propName = names[i];
+            for (String propName : names) {
                String value = projectProperties.getProperty(propName);
                lines = replaceProperty(propName,value,lines);    
             }
             // store properties
             PrintStream ps = new PrintStream(propertiesFile);
-            for (int i = 0 ; i < lines.size() ; i++) {
-                ps.println(lines.get(i));
+            for (String l : lines) {
+                ps.println(l);
             }
             ps.close();
             
@@ -398,17 +392,17 @@ public class FixTestDependencies extends org.apache.tools.ant.Task {
         
     }
 
-    private List replaceProperty(String name,String value,List<String> lines) {
-        List retLines = new ArrayList();
+    private List<String> replaceProperty(String name, String value, List<String> lines) {
+        List<String> retLines = new ArrayList<String>();
         for (int i = 0 ; i < lines.size() ; i++) {
-            String line = (String)lines.get(i);
+            String line = lines.get(i);
             String trimmedLine = line.trim();
             int eqIdx = trimmedLine.indexOf("=");
             if (eqIdx != -1) {
                 String pName = line.substring(0,eqIdx).trim();
                 if (pName.equals(name)) {
                     // skip property
-                    for (; i < lines.size() && ((String)lines.get(i)).trim().endsWith("\\") ; i++) ;
+                    for (; i < lines.size() && lines.get(i).trim().endsWith("\\") ; i++) ;
                     // append new property 
                     if (value != null && !value.trim().equals("")) {
                         retLines.add(name + "=" + value);

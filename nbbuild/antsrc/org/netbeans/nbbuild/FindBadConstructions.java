@@ -37,8 +37,8 @@ public class FindBadConstructions extends Task {
 
     private static final Pattern lineBreak = Pattern.compile("^", Pattern.MULTILINE);
 
-    private List filesets = new LinkedList(); // List<FileSet>
-    private List bad = new LinkedList(); // List<Construction>
+    private List<FileSet> filesets = new LinkedList<FileSet>();
+    private List<Construction> bad = new LinkedList<Construction>();
     
     /** Add a set of files to scan. */
     public void addFileset(FileSet fs) {
@@ -87,20 +87,16 @@ public class FindBadConstructions extends Task {
     public void execute() throws BuildException {
         if (filesets.isEmpty()) throw new BuildException("Must give at least one fileset", getLocation());
         if (bad.isEmpty()) throw new BuildException("Must give at least one construction", getLocation());
-        Iterator it = filesets.iterator();
-        while (it.hasNext()) {
-            FileSet fs = (FileSet)it.next();
+        for (FileSet fs : filesets) {
             FileScanner scanner = fs.getDirectoryScanner(getProject());
             File dir = scanner.getBasedir();
             String[] files = scanner.getIncludedFiles();
             log("Scanning " + files.length + " files in " + dir);
-            for (int i = 0; i < files.length; i++) {
-                File f = new File(dir, files[i]);
+            for (String name : files) {
+                File f = new File(dir, name);
                 //System.err.println("working on " + f);
                 try {
-                    Iterator it2 = bad.iterator();
-                    while (it2.hasNext()) {
-                        Construction c = (Construction)it2.next();
+                    for (Construction c : bad) {
                         if (c.regexp == null) throw new BuildException("Must specify regexp on a construction", getLocation());
                         FileInputStream fis = new FileInputStream(f);
                         FileChannel fc = fis.getChannel();

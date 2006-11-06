@@ -19,21 +19,30 @@
 
 package org.netbeans.nbbuild;
 
-import java.io.*;
-import java.nio.*;
-import java.nio.channels.*;
-import java.util.regex.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.FileScanner;
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.Task;
+import org.apache.tools.ant.taskdefs.Ant;
+import org.apache.tools.ant.types.FileSet;
+import org.apache.tools.ant.util.FileUtils;
 
 /** Assistent in changing of build scripts.
  *
  * @author  Jaroslav Tulach
  */
-public class FixDependencies extends org.apache.tools.ant.Task {
+public class FixDependencies extends Task {
     /** Replace*/
-    private java.util.ArrayList replaces = new java.util.ArrayList();
+    private List<Replace> replaces = new ArrayList<Replace>();
     /** files to fix */
-    private org.apache.tools.ant.types.FileSet set;
+    private FileSet set;
     /** verify target */
     private String target;
     /** clean target */
@@ -59,9 +68,9 @@ public class FixDependencies extends org.apache.tools.ant.Task {
         return r;
     }
     
-    public org.apache.tools.ant.types.FileSet createFileset () throws org.apache.tools.ant.BuildException {
+    public FileSet createFileset() throws BuildException {
         if (this.set != null) throw new BuildException ("Only one file set is allowed");
-        this.set = new org.apache.tools.ant.types.FileSet ();
+        this.set = new FileSet();
         return this.set;
     }
     
@@ -86,34 +95,33 @@ public class FixDependencies extends org.apache.tools.ant.Task {
     }
 
     public void execute () throws org.apache.tools.ant.BuildException {
-        org.apache.tools.ant.FileScanner scan = this.set.getDirectoryScanner(getProject());
+        FileScanner scan = this.set.getDirectoryScanner(getProject());
         File dir = scan.getBasedir();
-        String[] kids = scan.getIncludedFiles();
-        for (int i = 0; i < kids.length; i++) {
-            File xml = new File(dir, kids[i]);
+        for (String kid : scan.getIncludedFiles()) {
+            File xml = new File(dir, kid);
             if (!xml.exists()) throw new BuildException("File does not exist: " + xml, getLocation());
 
-            log ("Fixing " + xml, org.apache.tools.ant.Project.MSG_INFO);
+            log ("Fixing " + xml, Project.MSG_INFO);
 
             File script = null;
-            org.apache.tools.ant.taskdefs.Ant task = null;
-            org.apache.tools.ant.taskdefs.Ant cleanTask = null;
+            Ant task = null;
+            Ant cleanTask = null;
             if (ant != null && target != null) {
                 task = (org.apache.tools.ant.taskdefs.Ant)getProject ().createTask ("ant");
-                script = org.apache.tools.ant.util.FileUtils.newFileUtils ().resolveFile (xml, ant);
+                script = FileUtils.newFileUtils().resolveFile(xml, ant);
                 if (!script.exists ()) {
                     String msg = "Skipping. Cannot find file " + ant + " from + " + xml;
                     if (fail) {
                         throw new BuildException (msg);
                     }
-                    log(msg, org.apache.tools.ant.Project.MSG_ERR);
+                    log(msg, Project.MSG_ERR);
                     continue;
                 }
                 task.setAntfile (script.getPath ());
                 task.setDir (script.getParentFile ());
                 task.setTarget (target);
                 if (clean != null) {
-                    cleanTask = (org.apache.tools.ant.taskdefs.Ant)getProject ().createTask ("ant");
+                    cleanTask = (Ant) getProject().createTask("ant");
                     cleanTask.setAntfile (script.getPath ());
                     cleanTask.setDir (script.getParentFile ());
                     cleanTask.setTarget (clean);
@@ -157,7 +165,7 @@ public class FixDependencies extends org.apache.tools.ant.Task {
     private boolean fix (File file) throws IOException, BuildException {
         int s = (int)file.length ();
         byte[] data = new byte[s];
-        java.io.FileInputStream is = new java.io.FileInputStream (file);
+        InputStream is = new FileInputStream(file);
         if (s != is.read (data)) {
             is.close ();
             throw new BuildException ("Cannot read " + file);
@@ -167,10 +175,8 @@ public class FixDependencies extends org.apache.tools.ant.Task {
         String stream = new String (data);
         String old = stream;
         data = null;
-        
-        java.util.Iterator it = replaces.iterator ();
-        while (it.hasNext ()) {
-            Replace r = (Replace)it.next ();
+
+        for (Replace r : replaces) {
             int idx = stream.indexOf ("<code-name-base>" + r.codeNameBase + "</code-name-base>");
             if (idx == -1) continue;
             
@@ -191,10 +197,7 @@ public class FixDependencies extends org.apache.tools.ant.Task {
             StringBuffer sb = new StringBuffer ();
             sb.append (stream.substring (0, from));
             
-            java.util.Iterator add = r.modules.iterator ();
-            while (add.hasNext ()) {
-                Module m = (Module)add.next ();
-                
+            for (Module m : r.modules) {
                 if (stream.indexOf ("<code-name-base>" + m.codeNameBase + "</code-name-base>") != -1) {
                     continue;
                 }
@@ -244,7 +247,7 @@ public class FixDependencies extends org.apache.tools.ant.Task {
         
         int s = (int)file.length ();
         byte[] data = new byte[s];
-        java.io.FileInputStream is = new java.io.FileInputStream (file);
+        InputStream is = new FileInputStream(file);
         if (s != is.read (data)) {
             is.close ();
             throw new BuildException ("Cannot read " + file);
@@ -261,7 +264,7 @@ public class FixDependencies extends org.apache.tools.ant.Task {
         StringBuffer sb = new StringBuffer ();
         for (;;) {
             if (cleanTask != null) {
-                log ("Cleaning " + clean + " in " + script, org.apache.tools.ant.Project.MSG_INFO);
+                log ("Cleaning " + clean + " in " + script, Project.MSG_INFO);
                 cleanTask.execute ();
             }
             
@@ -303,7 +306,7 @@ public class FixDependencies extends org.apache.tools.ant.Task {
 
             String result;
             try {
-                log ("Executing target " + target + " in " + script, org.apache.tools.ant.Project.MSG_INFO);
+                log ("Executing target " + target + " in " + script, Project.MSG_INFO);
                 task.execute ();
                 result = "Ok";
                 success.append (dep);
@@ -313,7 +316,7 @@ public class FixDependencies extends org.apache.tools.ant.Task {
                 // ok, this is needed dependency
                 sb.append (stream.substring (from, after));
             }
-            log ("Removing dependency " + dep + ": " + result, org.apache.tools.ant.Project.MSG_INFO);
+            log ("Removing dependency " + dep + ": " + result, Project.MSG_INFO);
             
         }
 
@@ -324,7 +327,7 @@ public class FixDependencies extends org.apache.tools.ant.Task {
             fw.close ();
         }
         
-        log ("Final verification runs " + target + " in " + script, org.apache.tools.ant.Project.MSG_INFO);
+        log ("Final verification runs " + target + " in " + script, Project.MSG_INFO);
         // now verify, if there is a failure then something is wrong now
         task.execute ();
         
@@ -344,7 +347,7 @@ public class FixDependencies extends org.apache.tools.ant.Task {
 
     public static final class Replace extends Object {
         String codeNameBase;
-        java.util.ArrayList modules = new java.util.ArrayList();
+        List<Module> modules = new ArrayList<Module>();
         boolean addCompileTime;
         
         public void setCodeNameBase (String s) {

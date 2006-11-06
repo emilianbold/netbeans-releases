@@ -19,51 +19,35 @@
 
 package org.netbeans.nbbuild;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.net.URI;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.Vector;
-import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
+import javax.xml.parsers.ParserConfigurationException;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.taskdefs.Copy;
-import org.apache.tools.ant.taskdefs.Jar;
 import org.apache.tools.ant.taskdefs.SignJar;
 import org.apache.tools.ant.types.FileSet;
-import org.apache.tools.ant.types.ZipFileSet;
+import org.xml.sax.SAXException;
 
 /** Generates JNLP files for signed versions of the module JAR files.
  *
@@ -71,13 +55,13 @@ import org.apache.tools.ant.types.ZipFileSet;
  */
 public class MakeJNLP extends Task {
     /** the files to work on */
-    private org.apache.tools.ant.types.FileSet files;
+    private FileSet files;
     private SignJar signTask;
     
-    public org.apache.tools.ant.types.FileSet createModules() 
+    public FileSet createModules() 
     throws BuildException {
         if (files != null) throw new BuildException("modules can be created just once");
-        files = new org.apache.tools.ant.types.FileSet();
+        files = new FileSet();
         return files;
     }
     
@@ -145,9 +129,8 @@ public class MakeJNLP extends Task {
     
     private void generateFiles() throws IOException, BuildException {
         DirectoryScanner scan = files.getDirectoryScanner(getProject());
-        String[] arr = scan.getIncludedFiles();
-        for (int i = 0; i < arr.length; i++) {
-            File jar = new File (files.getDir(getProject()), arr[i]);
+        for (String f : scan.getIncludedFiles()) {
+            File jar = new File (files.getDir(getProject()), f);
             
             if (!jar.canRead()) {
                 throw new BuildException("Cannot read file: " + jar);
@@ -187,7 +170,7 @@ public class MakeJNLP extends Task {
                 shrt = prop.getProperty("OpenIDE-Module-Long-Description", oneline);
             }
             
-            Map localizedFiles = verifyExtensions(jar, theJar.getManifest(), dashcnb, codenamebase, verify);
+            Map<String,List<File>> localizedFiles = verifyExtensions(jar, theJar.getManifest(), dashcnb, codenamebase, verify);
             
 
             File signed = new File(target, jar.getName());
@@ -212,17 +195,13 @@ public class MakeJNLP extends Task {
             
             {
                 // write down locales
-                Iterator it = localizedFiles.entrySet().iterator();
-                while (it.hasNext()) {
-                    Map.Entry e = (Map.Entry)it.next();
-                    String locale = (String)e.getKey();
-                    List files = (List)e.getValue();
+                for (Map.Entry<String,List<File>> e : localizedFiles.entrySet()) {
+                    String locale = e.getKey();
+                    List<File> files = e.getValue();
                     
                     writeJNLP.write("  <resources locale='" + locale + "'>\n");
 
-                    Iterator fit = files.iterator();
-                    while (fit.hasNext()) {
-                        File n = (File)fit.next();
+                    for (File n : files) {
                         File t = new File(target, n.getName());
                         
                         getSignTask().setJar(n);
@@ -255,8 +234,8 @@ public class MakeJNLP extends Task {
         
     }
     
-    private Map verifyExtensions(File f, Manifest mf, String dashcnb, String codebasename, boolean verify) throws IOException, BuildException {
-        Map localizedFiles = new HashMap();
+    private Map<String,List<File>> verifyExtensions(File f, Manifest mf, String dashcnb, String codebasename, boolean verify) throws IOException, BuildException {
+        Map<String,List<File>> localizedFiles = new HashMap<String,List<File>>();
         
         
         File clusterRoot = f.getParentFile();
@@ -283,14 +262,14 @@ public class MakeJNLP extends Task {
             throw new BuildException("The file " + ut + " for module " + codebasename + " cannot be found");
         }
         
-        HashMap fileToOwningModule = new HashMap();
+        Map<String,String> fileToOwningModule = new HashMap<String,String>();
         try {
             ModuleSelector.readUpdateTracking(getProject(), ut.toString(), fileToOwningModule);
         } catch (IOException ex) {
             throw new BuildException(ex);
-        } catch (javax.xml.parsers.ParserConfigurationException ex) {
+        } catch (ParserConfigurationException ex) {
             throw new BuildException(ex);
-        } catch (org.xml.sax.SAXException ex) {
+        } catch (SAXException ex) {
             throw new BuildException(ex);
         }
         
@@ -344,7 +323,7 @@ public class MakeJNLP extends Task {
         return localizedFiles;
     }
     
-    private static void removeWithLocales(Map removeFrom, String removeWhat, File clusterRoot, Map<String,List<File>> recordLocales) {
+    private static void removeWithLocales(Map<String,String> removeFrom, String removeWhat, File clusterRoot, Map<String,List<File>> recordLocales) {
         if (removeFrom.remove(removeWhat) != null && removeWhat.endsWith(".jar")) {
             int basedir = removeWhat.lastIndexOf('/');
             String base = basedir == -1 ? "" : removeWhat.substring(0, basedir);
@@ -358,9 +337,9 @@ public class MakeJNLP extends Task {
                 if (m.matches()) {
                     String locale = m.group(1).substring(1);
                     
-                    List l = (List)recordLocales.get(locale);
+                    List<File> l = recordLocales.get(locale);
                     if (l == null) {
-                        l = new ArrayList();
+                        l = new ArrayList<File>();
                         recordLocales.put(locale, l);
                     }
                     l.add(new File(clusterRoot, s.replace('/', File.separatorChar)));
@@ -449,9 +428,9 @@ public class MakeJNLP extends Task {
     
     private static boolean isSigned(File f) throws IOException {
         JarFile jar = new JarFile(f);
-        Enumeration en = jar.entries();
+        Enumeration<JarEntry> en = jar.entries();
         while (en.hasMoreElements()) {
-            JarEntry e = (JarEntry)en.nextElement();
+            JarEntry e = en.nextElement();
             if (e.getName().endsWith(".SF")) {
                 jar.close();
                 return true;

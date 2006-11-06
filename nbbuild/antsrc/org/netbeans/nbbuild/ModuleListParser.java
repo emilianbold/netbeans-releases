@@ -52,10 +52,10 @@ final class ModuleListParser {
     /** Synch with org.netbeans.modules.apisupport.project.ModuleList.DEPTH_NB_ALL */
     private static final int DEPTH_NB_ALL = 3;
     
-    private static Map<File,Map<String,Entry>> SOURCE_SCAN_CACHE = new HashMap();
-    private static Map<File,Map<String,Entry>> SUITE_SCAN_CACHE = new HashMap();
-    private static Map<File,Entry> STANDALONE_SCAN_CACHE = new HashMap();
-    private static Map<File,Map<String,Entry>> BINARY_SCAN_CACHE = new HashMap();
+    private static Map<File,Map<String,Entry>> SOURCE_SCAN_CACHE = new HashMap<File,Map<String,Entry>>();
+    private static Map<File,Map<String,Entry>> SUITE_SCAN_CACHE = new HashMap<File,Map<String,Entry>>();
+    private static Map<File,Entry> STANDALONE_SCAN_CACHE = new HashMap<File,Entry>();
+    private static Map<File,Map<String,Entry>> BINARY_SCAN_CACHE = new HashMap<File,Map<String,Entry>>();
     
     /** Clear caches. Cf. #71130. */
     public static void resetCaches() {
@@ -68,22 +68,22 @@ final class ModuleListParser {
     /**
      * Find all NBM projects in a root, possibly from cache.
      */
-    private static Map<String,Entry> scanNetBeansOrgSources(File root, Hashtable properties, Project project) throws IOException {
-        Map<String,Entry> entries = (Map) SOURCE_SCAN_CACHE.get(root);
+    private static Map<String,Entry> scanNetBeansOrgSources(File root, Hashtable<String,String> properties, Project project) throws IOException {
+        Map<String,Entry> entries = SOURCE_SCAN_CACHE.get(root);
         if (entries == null) {
-            entries = new HashMap();
+            entries = new HashMap<String,Entry>();
             // Similar to #62221: if just invoked from a module in standard clusters, only scan those clusters (faster):
-            Set<String> standardModules = new HashSet();
+            Set<String> standardModules = new HashSet<String>();
             boolean doFastScan = false;
-            String basedir = (String) properties.get("basedir");
+            String basedir = properties.get("basedir");
             if (basedir != null) {
                 File basedirF = new File(basedir);
-                String clusterList = (String) properties.get("nb.clusters.list");
+                String clusterList = properties.get("nb.clusters.list");
                 if (clusterList != null) {
                     StringTokenizer tok = new StringTokenizer(clusterList, ", ");
                     while (tok.hasMoreTokens()) {
                         String clusterName = tok.nextToken();
-                        String moduleList = (String) properties.get(clusterName);
+                        String moduleList = properties.get(clusterName);
                         if (moduleList != null) {
                             StringTokenizer tok2 = new StringTokenizer(moduleList, ", ");
                             while (tok2.hasMoreTokens()) {
@@ -133,7 +133,7 @@ final class ModuleListParser {
     /**
      * Scan a root for all NBM projects.
      */
-    private static void doScanNetBeansOrgSources(Map<String,Entry> entries, File dir, int depth, Hashtable properties, String pathPrefix, Project project) throws IOException {
+    private static void doScanNetBeansOrgSources(Map<String,Entry> entries, File dir, int depth, Hashtable<String,String> properties, String pathPrefix, Project project) throws IOException {
         if (depth == 0) {
             return;
         }
@@ -141,26 +141,26 @@ final class ModuleListParser {
         if (kids == null) {
             return;
         }
-        KIDS: for (int i = 0; i < kids.length; i++) {
-            if (!kids[i].isDirectory()) {
+        KIDS: for (File kid : kids) {
+            if (!kid.isDirectory()) {
                 continue;
             }
-            String name = kids[i].getName();
-            for (int j = 0; j < EXCLUDED_DIR_NAMES.length; j++) {
-                if (name.equals(EXCLUDED_DIR_NAMES[j])) {
+            String name = kid.getName();
+            for (String n : EXCLUDED_DIR_NAMES) {
+                if (name.equals(n)) {
                     continue KIDS;
                 }
             }
             String newPathPrefix = (pathPrefix != null) ? pathPrefix + "/" + name : name;
-            scanPossibleProject(kids[i], entries, properties, newPathPrefix, ParseProjectXml.TYPE_NB_ORG, project);
-            doScanNetBeansOrgSources(entries, kids[i], depth - 1, properties, newPathPrefix, project);
+            scanPossibleProject(kid, entries, properties, newPathPrefix, ParseProjectXml.TYPE_NB_ORG, project);
+            doScanNetBeansOrgSources(entries, kid, depth - 1, properties, newPathPrefix, project);
         }
     }
     
     /**
      * Check a single dir to see if it is an NBM project, and if so, register it.
      */
-    private static boolean scanPossibleProject(File dir, Map<String,Entry> entries, Hashtable properties, String path, int moduleType, Project project) throws IOException {
+    private static boolean scanPossibleProject(File dir, Map<String,Entry> entries, Hashtable<String,String> properties, String path, int moduleType, Project project) throws IOException {
         File nbproject = new File(dir, "nbproject");
         File projectxml = new File(nbproject, "project.xml");
         if (!projectxml.isFile()) {
@@ -242,14 +242,12 @@ final class ModuleListParser {
         case ParseProjectXml.TYPE_NB_ORG:
             assert path != null;
             // Find the associated cluster.
-            Iterator it = properties.entrySet().iterator();
-            while (it.hasNext()) {
-                Map.Entry entry = (Map.Entry) it.next();
-                String val = (String) entry.getValue();
+            for (Map.Entry<String,String> entry : properties.entrySet()) {
+                String val = entry.getValue();
                 String[] modules = val.split(", *");
                 if (Arrays.asList(modules).contains(path)) {
-                    String key = (String) entry.getKey();
-                    String clusterDir = (String) properties.get(key + ".dir");
+                    String key = entry.getKey();
+                    String clusterDir = properties.get(key + ".dir");
                     if (clusterDir != null) {
                         faketask.setName("cluster.dir");
                         faketask.setValue(clusterDir);
@@ -262,7 +260,7 @@ final class ModuleListParser {
             faketask.setValue("extra"); // fallback
             faketask.execute();
             faketask.setName("netbeans.dest.dir");
-            faketask.setValue((String) properties.get("netbeans.dest.dir"));
+            faketask.setValue(properties.get("netbeans.dest.dir"));
             faketask.execute();
             faketask.setName("cluster");
             faketask.setValue(fakeproj.replaceProperties("${netbeans.dest.dir}/${cluster.dir}"));
@@ -271,7 +269,7 @@ final class ModuleListParser {
         case ParseProjectXml.TYPE_SUITE:
             assert path == null;
             faketask.setName("suite.dir");
-            faketask.setValue((String) properties.get("suite.dir"));
+            faketask.setValue(properties.get("suite.dir"));
             faketask.execute();
             faketask.setName("cluster");
             faketask.setValue(fakeproj.replaceProperties("${suite.dir}/build/cluster"));
@@ -287,10 +285,8 @@ final class ModuleListParser {
             assert false : moduleType;
         }
         File jar = fakeproj.resolveFile(fakeproj.replaceProperties("${cluster}/${module.jar}"));
-        List<File> exts = new ArrayList();
-        Iterator<Element> extEls = XMLUtil.findSubElements(dataEl).iterator();
-        while (extEls.hasNext()) {
-            Element ext = (Element) extEls.next();
+        List<File> exts = new ArrayList<File>();
+        for (Element ext : XMLUtil.findSubElements(dataEl)) {
             if (!ext.getLocalName().equals("class-path-extension")) {
                 continue;
             }
@@ -298,7 +294,7 @@ final class ModuleListParser {
             File origBin = null;
             if (binaryOrigin != null) {
                 String reltext = XMLUtil.findText(binaryOrigin);
-                String nball = (String) properties.get("nb_all");
+                String nball = properties.get("nb_all");
                 if (nball != null) {
                     faketask.setName("nb_all");
                     faketask.setValue(nball);
@@ -327,15 +323,13 @@ final class ModuleListParser {
                 exts.add(resultBin);
             }
         }
-        List<String> prereqs = new ArrayList();
-        List<String> rundeps = new ArrayList();
+        List<String> prereqs = new ArrayList<String>();
+        List<String> rundeps = new ArrayList<String>();
         Element depsEl = ParseProjectXml.findNBMElement(dataEl, "module-dependencies");
         if (depsEl == null) {
             throw new IOException("Malformed project file " + projectxml);
         }
-        Iterator deps = XMLUtil.findSubElements(depsEl).iterator();
-        while (deps.hasNext()) {
-            Element dep = (Element) deps.next();
+        for (Element dep : XMLUtil.findSubElements(depsEl)) {
             Element cnbEl2 = ParseProjectXml.findNBMElement(dep, "code-name-base");
             if (cnbEl2 == null) {
                 throw new IOException("Malformed project file " + projectxml);
@@ -348,7 +342,8 @@ final class ModuleListParser {
             prereqs.add(cnb2);
         }
         String cluster = fakeproj.getProperty("cluster.dir"); // may be null
-        Entry entry = new Entry(cnb, jar, (File[]) exts.toArray(new File[exts.size()]), dir, path, (String[]) prereqs.toArray(new String[prereqs.size()]),cluster,(String[])rundeps.toArray(new String[rundeps.size()]));
+        Entry entry = new Entry(cnb, jar, exts.toArray(new File[exts.size()]), dir, path,
+                prereqs.toArray(new String[prereqs.size()]), cluster, rundeps.toArray(new String[rundeps.size()]));
         if (entries.containsKey(cnb)) {
             throw new IOException("Duplicated module " + cnb + ": found in " + entries.get(cnb) + " and " + entry);
         } else {
@@ -360,9 +355,9 @@ final class ModuleListParser {
     /**
      * Find all modules in a binary build, possibly from cache.
      */
-    private static Map<String,Entry> scanBinaries(Hashtable properties, Project project) throws IOException {
-        String buildS = (String) properties.get("netbeans.dest.dir");
-        File basedir = new File((String) properties.get("basedir"));
+    private static Map<String,Entry> scanBinaries(Hashtable<String,String> properties, Project project) throws IOException {
+        String buildS = properties.get("netbeans.dest.dir");
+        File basedir = new File(properties.get("basedir"));
         if (buildS == null) {
             throw new IOException("No definition of netbeans.dest.dir in " + basedir);
         }
@@ -372,12 +367,12 @@ final class ModuleListParser {
         if (!build.isDirectory()) {
             throw new IOException("No such netbeans.dest.dir: " + build);
         }
-        Map<String,Entry> entries = (Map) BINARY_SCAN_CACHE.get(build);
+        Map<String,Entry> entries = BINARY_SCAN_CACHE.get(build);
         if (entries == null) {
             if (project != null) {
                 project.log("Scanning for modules in " + build);
             }
-            entries = new HashMap();
+            entries = new HashMap<String,Entry>();
             doScanBinaries(build, entries);
             if (project != null) {
                 project.log("Found modules: " + entries.keySet(), Project.MSG_VERBOSE);
@@ -462,9 +457,9 @@ final class ModuleListParser {
         }
     }
     
-    private static Map<String,Entry> scanSuiteSources(Hashtable properties, Project project) throws IOException {
-        File basedir = new File((String) properties.get("basedir"));
-        String suiteDir = (String) properties.get("suite.dir");
+    private static Map<String,Entry> scanSuiteSources(Hashtable<String,String> properties, Project project) throws IOException {
+        File basedir = new File(properties.get("basedir"));
+        String suiteDir = properties.get("suite.dir");
         if (suiteDir == null) {
             throw new IOException("No definition of suite.dir in " + basedir);
         }
@@ -472,12 +467,12 @@ final class ModuleListParser {
         if (!suite.isDirectory()) {
             throw new IOException("No such suite " + suite);
         }
-        Map<String,Entry> entries = (Map) SUITE_SCAN_CACHE.get(suite);
+        Map<String,Entry> entries = SUITE_SCAN_CACHE.get(suite);
         if (entries == null) {
             if (project != null) {
                 project.log("Scanning for modules in suite " + suite);
             }
-            entries = new HashMap();
+            entries = new HashMap<String,Entry>();
             doScanSuite(entries, suite, properties, project);
             if (project != null) {
                 project.log("Found modules: " + entries.keySet(), Project.MSG_VERBOSE);
@@ -487,7 +482,7 @@ final class ModuleListParser {
         return entries;
     }
     
-    private static void doScanSuite(Map<String,Entry> entries, File suite, Hashtable properties, Project project) throws IOException {
+    private static void doScanSuite(Map<String,Entry> entries, File suite, Hashtable<String,String> properties, Project project) throws IOException {
         Project fakeproj = new Project();
         fakeproj.setBaseDir(suite); // in case ${basedir} is used somewhere
         Property faketask = new Property();
@@ -512,9 +507,9 @@ final class ModuleListParser {
         }
     }
     
-    private static Entry scanStandaloneSource(Hashtable properties, Project project) throws IOException {
-        File basedir = new File((String) properties.get("project"));
-        Entry entry = (Entry) STANDALONE_SCAN_CACHE.get(basedir);
+    private static Entry scanStandaloneSource(Hashtable<String,String> properties, Project project) throws IOException {
+        File basedir = new File(properties.get("project"));
+        Entry entry = STANDALONE_SCAN_CACHE.get(basedir);
         if (entry == null) {
             Map<String,Entry> entries = new HashMap<String,Entry>();
             if (!scanPossibleProject(basedir, entries, properties, null, ParseProjectXml.TYPE_STANDALONE, project)) {
@@ -546,11 +541,11 @@ final class ModuleListParser {
      * @param type the type of project
      * @param project a project ref, only for logging (may be null with no loss of semantics)
      */
-    public ModuleListParser(Hashtable properties, int type, Project project) throws IOException {
-        String nball = (String) properties.get("nb_all");
+    public ModuleListParser(Hashtable<String,String> properties, int type, Project project) throws IOException {
+        String nball = properties.get("nb_all");
         if (type != ParseProjectXml.TYPE_NB_ORG) {
             // External module.
-            File basedir = new File((String) properties.get("basedir"));
+            File basedir = new File(properties.get("basedir"));
             if (nball != null) {
                 throw new IOException("You must *not* declare <suite-component/> or <standalone/> for a netbeans.org module in " + basedir + "; fix project.xml to use the /2 schema");
             }
@@ -565,7 +560,7 @@ final class ModuleListParser {
         } else {
             // netbeans.org module.
             if (nball == null) {
-                throw new IOException("You must declare either <suite-component/> or <standalone/> for an external module in " + new File((String) properties.get("basedir")));
+                throw new IOException("You must declare either <suite-component/> or <standalone/> for an external module in " + new File(properties.get("basedir")));
             }
             // If scan.binaries property is set or it runs from tests we scan binaries otherwise sources.
             boolean xtest = properties.get("xtest.home") != null && properties.get("xtest.testtype") != null;
@@ -575,7 +570,7 @@ final class ModuleListParser {
                     Entry e = scanStandaloneSource(properties, project);
                     // xtest gets module jar and cluster from binaries
                     if (e.clusterName == null && xtest) {
-                         Entry oldEntry = (Entry) entries.get(e.getCnb());
+                         Entry oldEntry = entries.get(e.getCnb());
                          if (oldEntry != null) {
                              e = new Entry(e.getCnb(),oldEntry.getJar(),
                                           e.getClassPathExtensions(),e.sourceLocation,
@@ -595,7 +590,7 @@ final class ModuleListParser {
      * @return a set of all known entries
      */
     public Set<Entry> findAll() {
-        return new HashSet(entries.values());
+        return new HashSet<Entry>(entries.values());
     }
     
     /**
@@ -604,7 +599,7 @@ final class ModuleListParser {
      * @return the matching entry or null
      */
     public Entry findByCodeNameBase(String cnb) {
-        return (Entry)entries.get(cnb);
+        return entries.get(cnb);
     }
 
     
@@ -615,7 +610,7 @@ final class ModuleListParser {
         if (moduleDependencies == null) {
             return new String[0];
         }
-        List<String> cnds = new ArrayList();
+        List<String> cnds = new ArrayList<String>();
         StringTokenizer toks = new StringTokenizer(moduleDependencies,",");
         while (toks.hasMoreTokens()) {
             String token = toks.nextToken().trim();
@@ -639,9 +634,7 @@ final class ModuleListParser {
                cnds.add(token);
             }
         }
-        String cndsArray [] = new String[cnds.size()];
-        cnds.toArray(cndsArray);
-        return cndsArray;
+        return cnds.toArray(new String[cnds.size()]);
     }
     
     /**

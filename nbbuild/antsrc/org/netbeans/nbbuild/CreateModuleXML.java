@@ -32,11 +32,11 @@ import java.util.zip.ZipEntry;
  */
 public class CreateModuleXML extends Task {
 
-    private final List enabled = new ArrayList(1); // List<FileSet>
-    private final List disabled = new ArrayList(1); // List<FileSet>
-    private final List autoload = new ArrayList(1); // List<FileSet>
-    private final List eager = new ArrayList(1); // List<FileSet>
-    private final List hidden = new ArrayList(1); // List<FileSet>
+    private final List<FileSet> enabled = new ArrayList<FileSet>(1);
+    private final List<FileSet> disabled = new ArrayList<FileSet>(1);
+    private final List<FileSet> autoload = new ArrayList<FileSet>(1);
+    private final List<FileSet> eager = new ArrayList<FileSet>(1);
+    private final List<FileSet> hidden = new ArrayList<FileSet>(1);
     
     /** Add a set of module JARs that should be enabled.
      */
@@ -77,11 +77,11 @@ public class CreateModuleXML extends Task {
         xmldir = f;
     }
     
-    private List enabledNames = new ArrayList(50); // List<String>
-    private List disabledNames = new ArrayList(10); // List<String>
-    private List autoloadNames = new ArrayList(10); // List<String>
-    private List eagerNames = new ArrayList(10); // List<String>
-    private List hiddenNames = new ArrayList(10); // List<String>
+    private List<String> enabledNames = new ArrayList<String>(50);
+    private List<String> disabledNames = new ArrayList<String>(10);
+    private List<String> autoloadNames = new ArrayList<String>(10);
+    private List<String> eagerNames = new ArrayList<String>(10);
+    private List<String> hiddenNames = new ArrayList<String>(10);
     
     public void execute() throws BuildException {
         if (xmldir == null) throw new BuildException("Must set xmldir attribute", getLocation());
@@ -91,25 +91,20 @@ public class CreateModuleXML extends Task {
         if (enabled.isEmpty() && disabled.isEmpty() && autoload.isEmpty() && eager.isEmpty() && hidden.isEmpty()) {
             log("Warning: <createmodulexml> with no modules listed", Project.MSG_WARN);
         }
-        Iterator it = enabled.iterator();
-        while (it.hasNext()) {
-            scanModules((FileSet)it.next(), true, false, false, false, enabledNames);
+        for (FileSet fs : enabled) {
+            scanModules(fs, true, false, false, false, enabledNames);
         }
-        it = disabled.iterator();
-        while (it.hasNext()) {
-            scanModules((FileSet)it.next(), false, false, false, false, disabledNames);
+        for (FileSet fs : disabled) {
+            scanModules(fs, false, false, false, false, disabledNames);
         }
-        it = autoload.iterator();
-        while (it.hasNext()) {
-            scanModules((FileSet)it.next(), false, true, false, false, autoloadNames);
+        for (FileSet fs : autoload) {
+            scanModules(fs, false, true, false, false, autoloadNames);
         }
-        it = eager.iterator();
-        while (it.hasNext()) {
-            scanModules((FileSet)it.next(), false, false, true, false, eagerNames);
+        for (FileSet fs : eager) {
+            scanModules(fs, false, false, true, false, eagerNames);
         }
-        it = hidden.iterator();
-        while (it.hasNext()) {
-            scanModules((FileSet)it.next(), false, false, false, true, hiddenNames);
+        for (FileSet fs : hidden) {
+            scanModules(fs, false, false, false, true, hiddenNames);
         }
         Collections.sort(enabledNames);
         Collections.sort(disabledNames);
@@ -133,12 +128,11 @@ public class CreateModuleXML extends Task {
         }
     }
     
-    private void scanModules(FileSet fs, boolean isEnabled, boolean isAutoload, boolean isEager, boolean isHidden, List names) throws BuildException {
+    private void scanModules(FileSet fs, boolean isEnabled, boolean isAutoload, boolean isEager, boolean isHidden, List<String> names) throws BuildException {
         FileScanner scan = fs.getDirectoryScanner(getProject());
         File dir = scan.getBasedir();
-        String[] kids = scan.getIncludedFiles();
-        for (int i = 0; i < kids.length; i++) {
-            File module = new File(dir, kids[i]);
+        for (String kid : scan.getIncludedFiles()) {
+            File module = new File(dir, kid);
             if (!module.exists()) throw new BuildException("Module file does not exist: " + module, getLocation());
             if (!module.getName().endsWith(".jar")) throw new BuildException("Only *.jar may be listed, check the fileset: " + module, getLocation());
             try {
@@ -231,7 +225,7 @@ public class CreateModuleXML extends Task {
                             if (!isAutoload && !isEager) {
                                 pw.println("    <param name=\"enabled\">" + isEnabled + "</param>");
                             }
-                            pw.println("    <param name=\"jar\">" + kids[i].replace(File.separatorChar, '/') + "</param>");
+                            pw.println("    <param name=\"jar\">" + kid.replace(File.separatorChar, '/') + "</param>");
                             if (rel != -1) {
                                 pw.println("    <param name=\"release\">" + rel + "</param>");
                             }

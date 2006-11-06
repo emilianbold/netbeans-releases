@@ -31,11 +31,11 @@ import org.apache.tools.ant.Project;
  *
  * @author Michal Zlamal
  */
-public class GetDependsClusters extends org.apache.tools.ant.Task {
+public class GetDependsClusters extends Task {
     private String name = null;
     private String propertiesList = null;
     private String thisModuleName = null;
-
+    
     /** Comma separated list of properties. One of those properties should contain the name of module from what it ran. */
     public void setList( String propertiesList ) {
         this.propertiesList = propertiesList;
@@ -45,19 +45,17 @@ public class GetDependsClusters extends org.apache.tools.ant.Task {
     public void setName(String name) {
         this.name = name;
     }
-
+    
     public void execute() throws BuildException {
         if (name == null)
             throw new BuildException("Name of property to set have to be specified",this.getLocation());
         if (propertiesList == null)
-	    throw new BuildException("List of clusters have to be specified",this.getLocation());
-
-	thisModuleName = this.getOwningTarget().getName();
-	if (!thisModuleName.startsWith("all-")) 
-	    throw new BuildException("This task could be used only in targets \"all-{modulename}\"",this.getLocation());
-	thisModuleName = thisModuleName.substring("all-".length());
-
-        HashSet modules = new HashSet();
+            throw new BuildException("List of clusters have to be specified",this.getLocation());
+        
+        thisModuleName = this.getOwningTarget().getName();
+        if (!thisModuleName.startsWith("all-"))
+            throw new BuildException("This task could be used only in targets \"all-{modulename}\"",this.getLocation());
+        thisModuleName = thisModuleName.substring("all-".length());
         
         StringTokenizer tokens = new StringTokenizer( propertiesList, " \t\n\f\r," );
         while (tokens.hasMoreTokens()) {
@@ -69,17 +67,17 @@ public class GetDependsClusters extends org.apache.tools.ant.Task {
                 String module = modTokens.nextToken();
                 log( property + " " + module, Project.MSG_VERBOSE );
                 if (module.equals(thisModuleName)) {
-		    String clusterDepends = this.getProject().getProperty(property + ".depends");
+                    String clusterDepends = this.getProject().getProperty(property + ".depends");
                     if (clusterDepends == null) throw new BuildException( "Property: " + property + ".depends have to be defined", this.getLocation());
-		    log( "Property: " + name + " will be set to " + clusterDepends, Project.MSG_VERBOSE);
+                    log( "Property: " + name + " will be set to " + clusterDepends, Project.MSG_VERBOSE);
                     this.getProject().setProperty( name, clusterDepends );
                     return;
                 }
             }
         }
-	    log("No cluster list with this module: " + thisModuleName + " was found. Assume that this module " + thisModuleName + " depends on all clusters: " + propertiesList, Project.MSG_WARN);
-	log( "Property: " + name + " will be set to " + propertiesList, Project.MSG_VERBOSE);
-	this.getProject().setProperty( name, propertiesList );
-	//	throw new BuildException("No cluster list with this module: " + thisModuleName + " was found.",this.getLocation());
+        log("No cluster list with this module: " + thisModuleName + " was found. Assume that this module " + thisModuleName + " depends on all clusters: " + propertiesList, Project.MSG_WARN);
+        log( "Property: " + name + " will be set to " + propertiesList, Project.MSG_VERBOSE);
+        this.getProject().setProperty( name, propertiesList );
+        //	throw new BuildException("No cluster list with this module: " + thisModuleName + " was found.",this.getLocation());
     }
 }

@@ -27,6 +27,8 @@ import org.w3c.dom.*;
 import org.xml.sax.InputSource;
 
 import org.apache.tools.ant.BuildException;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.SAXParseException;
 
 /** This class represents module updates tracking
  *
@@ -94,7 +96,7 @@ class UpdateTracking {
         read();
         if ( module.getVersions().size() != 1 ) 
             throw new BuildException ("Module described in update tracking file " + utf.getAbsolutePath() + " has got " + module.getVersions().size() + " specification versions. Correct number is 1.");
-        return ((Version) module.getVersions().get(0)).getVersion();
+        return module.getVersions().get(0).getVersion();
     }
     
     public String getCodenameFromFile (File utf) throws BuildException {
@@ -117,7 +119,7 @@ class UpdateTracking {
         read();
         if ( module.getVersions().size() != 1 ) 
             throw new BuildException ("Module with codenamebase " + codeName + " has got " + module.getVersions().size() + " specification versions. Correct number is 1.");
-        return ((Version) module.getVersions().get(0)).getVersion();
+        return module.getVersions().get(0).getVersion();
     }
     
     public String[] getListOfNBM( String codeName ) throws BuildException {
@@ -135,10 +137,10 @@ class UpdateTracking {
         if ( module.getVersions().size() != 1 ) 
             throw new BuildException ("Module with codenamebase " + codeName + " has got " + module.getVersions().size() + " specification versions. Correct number is 1.");
         
-        List files = ((Version) module.getVersions().get(0)).getFiles();
+        List<ModuleFile> files = module.getVersions().get(0).getFiles();
         String [] listFiles = new String[ files.size() ];
         for (int i=0; i < files.size(); i++) {
-            listFiles[i] = (((ModuleFile) files.get(i)).getName().replace(File.separatorChar,'/'));
+            listFiles[i] = files.get(i).getName().replace(File.separatorChar,'/');
         }
         
         return listFiles;
@@ -164,18 +166,14 @@ class UpdateTracking {
         Document document = XMLUtil.createDocument(ELEMENT_MODULE);  
         Element e_module = document.getDocumentElement();
         e_module.setAttribute(ATTR_CODENAME, module.getCodename());
-        Iterator it2 = module.getVersions().iterator();
-        while ( it2.hasNext() ) {
-            Version ver = (Version)it2.next();
+        for (Version ver : module.getVersions()) {
             Element e_version = document.createElement(ELEMENT_VERSION);
             e_version.setAttribute(ATTR_VERSION, ver.getVersion());
             e_version.setAttribute(ATTR_ORIGIN, ver.getOrigin());
             e_version.setAttribute(ATTR_LAST, "true");                          //NOI18N
             e_version.setAttribute(ATTR_INSTALL, Long.toString(ver.getInstall_time()));
             e_module.appendChild( e_version );
-            Iterator it3 = ver.getFiles().iterator();
-            while ( it3.hasNext() ) {
-                ModuleFile file = (ModuleFile)it3.next();
+            for (ModuleFile file : ver.getFiles()) {
                 Element e_file = document.createElement(ELEMENT_FILE);
                 e_file.setAttribute(ATTR_FILE_NAME, file.getName().replace(File.separatorChar,'/'));
                 e_file.setAttribute(ATTR_CRC, file.getCrc());
@@ -244,10 +242,10 @@ class UpdateTracking {
         return trackingFileName;
     }
 
-    /** Scan through org.w3c.dom.Document document. */
+    /** Scan through Document document. */
     private void read() throws BuildException {
-        /** org.w3c.dom.Document document */
-        org.w3c.dom.Document document;
+        /** Document document */
+        Document document;
         if (this.is == null) {
             File directory = new File( nbPath + FILE_SEPARATOR + TRACKING_DIRECTORY );
             if (!directory.exists()) {
@@ -276,27 +274,27 @@ class UpdateTracking {
             }
         }
             
-        org.w3c.dom.Element element = document.getDocumentElement();
+        Element element = document.getDocumentElement();
         if ((element != null) && element.getTagName().equals(ELEMENT_MODULE)) {
             scanElement_module(element);
         }
     }    
     
-    /** Scan through org.w3c.dom.Element named module. */
-    void scanElement_module(org.w3c.dom.Element element) { // <module>
+    /** Scan through Element named module. */
+    void scanElement_module(Element element) { // <module>
         module = new Module();        
-        org.w3c.dom.NamedNodeMap attrs = element.getAttributes();
+        NamedNodeMap attrs = element.getAttributes();
         for (int i = 0; i < attrs.getLength(); i++) {
-            org.w3c.dom.Attr attr = (org.w3c.dom.Attr)attrs.item(i);
+            Attr attr = (Attr) attrs.item(i);
             if (attr.getName().equals(ATTR_CODENAME)) { // <module codename="???">
                 module.setCodename( attr.getValue() );
             }
         }
-        org.w3c.dom.NodeList nodes = element.getChildNodes();
+        NodeList nodes = element.getChildNodes();
         for (int i = 0; i < nodes.getLength(); i++) {
-            org.w3c.dom.Node node = nodes.item(i);
-            if ( node.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE ) {
-                org.w3c.dom.Element nodeElement = (org.w3c.dom.Element)node;
+            Node node = nodes.item(i);
+            if ( node.getNodeType() == Node.ELEMENT_NODE ) {
+                Element nodeElement = (Element) node;
                 if (nodeElement.getTagName().equals(ELEMENT_VERSION)) {
                     scanElement_module_version(nodeElement, module);
                 }
@@ -304,12 +302,12 @@ class UpdateTracking {
         }
     }
     
-    /** Scan through org.w3c.dom.Element named module_version. */
-    void scanElement_module_version(org.w3c.dom.Element element, Module module) { // <module_version>
+    /** Scan through Element named module_version. */
+    void scanElement_module_version(Element element, Module module) { // <module_version>
         Version version = new Version();        
-        org.w3c.dom.NamedNodeMap attrs = element.getAttributes();
+        NamedNodeMap attrs = element.getAttributes();
         for (int i = 0; i < attrs.getLength(); i++) {
-            org.w3c.dom.Attr attr = (org.w3c.dom.Attr)attrs.item(i);
+            Attr attr = (Attr) attrs.item(i);
             if (attr.getName().equals(ATTR_VERSION)) { // <module_version specification_version="???">
                 version.setVersion( attr.getValue() );
             }
@@ -328,11 +326,11 @@ class UpdateTracking {
                 version.setInstall_time( li );
             }
         }
-        org.w3c.dom.NodeList nodes = element.getChildNodes();
+        NodeList nodes = element.getChildNodes();
         for (int i = 0; i < nodes.getLength(); i++) {
-            org.w3c.dom.Node node = nodes.item(i);
-            if ( node.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE ) {
-                org.w3c.dom.Element nodeElement = (org.w3c.dom.Element)node;
+            Node node = nodes.item(i);
+            if (node.getNodeType() == Node.ELEMENT_NODE) {
+                Element nodeElement = (Element) node;
                 if (nodeElement.getTagName().equals(ELEMENT_FILE)) {
                     scanElement_file(nodeElement, version);
                 }
@@ -341,12 +339,12 @@ class UpdateTracking {
         module.addVersion( version );
     }
     
-    /** Scan through org.w3c.dom.Element named file. */
-    void scanElement_file(org.w3c.dom.Element element, Version version) { // <file>
+    /** Scan through Element named file. */
+    void scanElement_file(Element element, Version version) { // <file>
         ModuleFile file = new ModuleFile();        
-        org.w3c.dom.NamedNodeMap attrs = element.getAttributes();
+        NamedNodeMap attrs = element.getAttributes();
         for (int i = 0; i < attrs.getLength(); i++) {
-            org.w3c.dom.Attr attr = (org.w3c.dom.Attr)attrs.item(i);
+            Attr attr = (Attr)attrs.item(i);
             if (attr.getName().equals(ATTR_FILE_NAME)) { // <file name="???">
                 file.setName( attr.getValue().replace(File.separatorChar,'/') );
             }
@@ -363,7 +361,7 @@ class UpdateTracking {
         private String codename;
         
         /** Holds value of property versions. */
-        private List versions = new ArrayList();
+        private List<Version> versions = new ArrayList<Version>();
         
         /** Getter for property codenamebase.
          * @return Value of property codenamebase.
@@ -393,24 +391,24 @@ class UpdateTracking {
         /** Getter for property versions.
          * @return Value of property versions.
          */
-        List getVersions() {
+        List<Version> getVersions() {
             return versions;
         }
         
         /** Setter for property versions.
          * @param versions New value of property versions.
          */
-        void setVersions(List versions) {
+        void setVersions(List<Version> versions) {
             this.versions = versions;
         }
         
         void addVersion( Version version ) {
-            versions = new ArrayList();
+            versions = new ArrayList<Version>();
             versions.add( version );
         }
 
         void setVersion( Version version ) {
-            versions = new ArrayList();
+            versions = new ArrayList<Version>();
             versions.add( version );
         }
         
@@ -438,7 +436,7 @@ class UpdateTracking {
         private long install_time = 0;
         
         /** Holds value of property files. */
-        private List files = new ArrayList();
+        private List<ModuleFile> files = new ArrayList<ModuleFile>();
         
         /** Getter for property version.
          * @return Value of property version.
@@ -499,14 +497,14 @@ class UpdateTracking {
         /** Getter for property files.
          * @return Value of property files.
          */
-        List getFiles() {
+        List<ModuleFile> getFiles() {
             return files;
         }
         
         /** Setter for property files.
          * @param files New value of property files.
          */
-        void setFiles(List files) {
+        void setFiles(List<ModuleFile> files) {
             this.files = files;
         }
         
@@ -522,13 +520,11 @@ class UpdateTracking {
         }
         
         public void removeLocalized( String locale ) {
-            ArrayList newFiles = new ArrayList();
-            Iterator it = files.iterator();
-            while (it.hasNext()) {
-                ModuleFile file = (ModuleFile) it.next();
+            List<ModuleFile> newFiles = new ArrayList<ModuleFile>();
+            for (ModuleFile file : files) {
                 if (file.getName().indexOf("_" + locale + ".") == -1 // NOI18N
-                    && file.getName().indexOf("_" + locale + "/") == -1 // NOI18N
-                    && !file.getName().endsWith("_" + locale) ) // NOI18N
+                        && file.getName().indexOf("_" + locale + "/") == -1 // NOI18N
+                        && !file.getName().endsWith("_" + locale) ) // NOI18N
                     newFiles.add ( file );
             }
             files = newFiles;
@@ -575,21 +571,17 @@ class UpdateTracking {
         
     }
 
-    class ErrorCatcher implements org.xml.sax.ErrorHandler {
-        private void message (String level, org.xml.sax.SAXParseException e) {
-            pError = true;
-        }
-
-        public void error (org.xml.sax.SAXParseException e) {
+    class ErrorCatcher implements ErrorHandler {
+        public void error(SAXParseException e) {
             // normally a validity error
             pError = true;
         }
 
-        public void warning (org.xml.sax.SAXParseException e) {
+        public void warning(SAXParseException e) {
             //parseFailed = true;
         }
 
-        public void fatalError (org.xml.sax.SAXParseException e) {
+        public void fatalError(SAXParseException e) {
             pError = true;
         }
     }

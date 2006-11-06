@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.util.*;
 
 import org.apache.tools.ant.FileScanner;
-import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.taskdefs.MatchingTask;
 import org.apache.tools.ant.taskdefs.UpToDate;
@@ -86,9 +85,8 @@ public class MakeLayer extends MatchingTask {
         }
         
         FileScanner scanner = getDirectoryScanner (topdir);
-        String[] files = scanner.getIncludedFiles ();
-        for (int i=0; i <files.length; i++) {
-            File aFileName = new File(topdir, files[i]);
+        for (String file : scanner.getIncludedFiles()) {
+            File aFileName = new File(topdir, file);
             try {
                 layerFile.write(("<file name=\""+aFileName.getName()+"\"\n").replace(File.separatorChar,'/')); //NOI18N
                 layerFile.write(("  url=\""+aFileName.getAbsolutePath().substring(topdir.getAbsolutePath().length()+lengthAdjust)+"\"/>\n").replace(File.separatorChar,'/')); //NOI18N

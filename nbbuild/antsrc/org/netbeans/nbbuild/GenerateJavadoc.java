@@ -21,10 +21,10 @@ package org.netbeans.nbbuild;
 
 import java.io.File;
 import java.util.*;
+import java.util.ArrayList;
+import java.util.ArrayList;
 
 import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.Project;
-import org.apache.tools.ant.Target;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.taskdefs.*;
 import org.apache.tools.ant.types.*;
@@ -36,10 +36,9 @@ import org.apache.tools.ant.types.*;
 public class GenerateJavadoc extends Task
 {
     private File dest;
-    private Vector modules = new Vector ();
-    private Vector classpath = new Vector ();
+    private List<String> modules = new ArrayList<String>();
     private String packageNames = null;
-    private List topdirs = new ArrayList ();
+    private List<File> topdirs = new ArrayList<File>();
 
     /** Target directory to unpack to (top of IDE installation). */
     public void setDestdir(File f) {
@@ -49,9 +48,9 @@ public class GenerateJavadoc extends Task
     /** Comma-separated list of modules to include. */
     public void setModules (String s) {
         StringTokenizer tok = new StringTokenizer (s, ",");
-        modules = new Vector ();
+        modules = new ArrayList<String>();
         while (tok.hasMoreTokens ())
-            modules.addElement (tok.nextToken ());
+            modules.add(tok.nextToken ());
     }
 
     /** Comma-separated list of modules to include. */
@@ -97,10 +96,8 @@ public class GenerateJavadoc extends Task
         delete.setLocation (location);
         delete.execute ();*/
         Path path = new Path(getProject());
-        for (int j = 0; j < topdirs.size (); j++) {
-            File topdir = (File) topdirs.get (j);
-            for (int i = 0; i < modules.size (); i++) {
-                String module = (String) modules.elementAt (i);
+        for (File topdir : topdirs) {
+            for (String module : modules) {
                 File sources = new File (new File (topdir, module), "javadoc-temp/");
                 if (! sources.exists ()) { //testing existination of 'javadoc-temp' dir if existing - skiping dafult source dirs...
                     sources = new File (new File (topdir, module), "src/");

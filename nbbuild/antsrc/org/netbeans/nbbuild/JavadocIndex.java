@@ -23,18 +23,14 @@ import java.io.*;
 import java.io.File;
 import java.util.*;
 import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
-import java.util.StringTokenizer;
-import java.util.Vector;
 import java.util.regex.*;
 
 import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
-import org.apache.tools.ant.Target;
 import org.apache.tools.ant.Task;
-import org.apache.tools.ant.taskdefs.Ant;
+import org.apache.tools.ant.types.FileSet;
 
 /** Generates a file with index of all files.
  *
@@ -42,9 +38,8 @@ import org.apache.tools.ant.taskdefs.Ant;
  */
 public class JavadocIndex extends Task {
     private File target;
-    private org.apache.tools.ant.types.FileSet set;
-    /** map of String(like name of package) -> List<Clazz> */
-    private Map classes = new HashMap (101);
+    private FileSet set;
+    private Map<String,List<Clazz>> classes = new HashMap<String,List<Clazz>>(101);
     
     /** The file to generate the index to.
      */
@@ -54,15 +49,14 @@ public class JavadocIndex extends Task {
 
     /** List of indexes to search in.
      */
-    public void addPackagesList (org.apache.tools.ant.types.FileSet set) 
-    throws BuildException {        
+    public void addPackagesList(FileSet set) throws BuildException {        
         if (this.set != null) {
             throw new BuildException ("Package list can be associated only once");
         }
         this.set = set;
     }
     
-    public void execute () throws org.apache.tools.ant.BuildException {
+    public void execute() throws BuildException {
         if (target == null) {
             throw new BuildException ("Target must be set"); // NOI18N
         }
@@ -70,11 +64,10 @@ public class JavadocIndex extends Task {
             throw new BuildException ("Set of files must be provided: " + set); // NOI18N
         }
         
-        org.apache.tools.ant.DirectoryScanner scan =  set.getDirectoryScanner (this.getProject ());
-        String[] files = scan.getIncludedFiles();
+        DirectoryScanner scan =  set.getDirectoryScanner(this.getProject());
         File bdir = scan.getBasedir();
-        for (int k=0; k <files.length; k++) {
-            File f = new File(bdir, files[k]);
+        for (String n : scan.getIncludedFiles()) {
+            File f = new File(bdir, n);
             parseForClasses (f);
         }
 
@@ -156,9 +149,9 @@ public class JavadocIndex extends Task {
                     
                     log ("Adding class: " + c, Project.MSG_DEBUG);
                     
-                    List l = (List)classes.get (c.pkg);
+                    List<Clazz> l = classes.get(c.pkg);
                     if (l == null) {
-                        l = new ArrayList ();
+                        l = new ArrayList<Clazz>();
                         classes.put (c.pkg, l);
                     }
                     l.add (c);
@@ -176,51 +169,13 @@ public class JavadocIndex extends Task {
         }
     }
     
-    private void printClasses (PrintStream ps) {
-        TreeSet allPkgs = new TreeSet (classes.keySet ());
-        Iterator it = allPkgs.iterator ();
-        while (it.hasNext ()) {
-            String pkg = (String)it.next ();
-            ps.println ("PKG " + pkg);
-
-            List list = (List)classes.get (pkg);
-            Collections.sort (list);
-            
-            Iterator clss = list.iterator ();
-            while (clss.hasNext ()) {
-                Clazz c = (Clazz)clss.next ();
-                if (c.isInterface) {
-                    ps.print ("INF");
-                } else {
-                    ps.print ("CLS");
-                }
-                ps.print (" ");
-                ps.println (c.name);
-                
-                ps.print ("URL ");
-                ps.println (c.url);
-            }
-            
-        }
-    }
-
     private void printClassesAsHtml (PrintStream ps) {
         ps.println ("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">");
         ps.println ("<HTML>\n<HEAD><TITLE>List of All Classes</TITLE></HEAD>");
         ps.println ();
-        
-        TreeSet allPkgs = new TreeSet (classes.keySet ());
-        Iterator it = allPkgs.iterator ();
-        while (it.hasNext ()) {
-            String pkg = (String)it.next ();
+        for (String pkg : new TreeSet<String>(classes.keySet())) {
             ps.println ("<H2>" + pkg + "</H2>");
-
-            List list = (List)classes.get (pkg);
-            Collections.sort (list);
-            
-            Iterator clss = list.iterator ();
-            while (clss.hasNext ()) {
-                Clazz c = (Clazz)clss.next ();
+            for (Clazz c : new TreeSet<Clazz>(classes.get(pkg))) {
                 ps.print ("<A HREF=\"" + c.url + "\">");
                 if (c.isInterface) {
                     ps.print ("<I>");
@@ -238,18 +193,8 @@ public class JavadocIndex extends Task {
     private void printClassesAsXML (PrintStream ps) {
         ps.println ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
         ps.println ("<classes>");
-        
-        TreeSet allPkgs = new TreeSet (classes.keySet ());
-        Iterator it = allPkgs.iterator ();
-        while (it.hasNext ()) {
-            String pkg = (String)it.next ();
-
-            List list = (List)classes.get (pkg);
-            Collections.sort (list);
-            
-            Iterator clss = list.iterator ();
-            while (clss.hasNext ()) {
-                Clazz c = (Clazz)clss.next ();
+        for (String pkg : new TreeSet<String>(classes.keySet())) {
+            for (Clazz c : new TreeSet<Clazz>(classes.get(pkg))) {
                 ps.print ("<class name=\"");
                 ps.print (c.name);
                 ps.print ("\"");
@@ -269,8 +214,7 @@ public class JavadocIndex extends Task {
     }
     
     /** An information about one class in api */
-    private static final class Clazz extends Object 
-    implements Comparable {
+    private static final class Clazz extends Object implements Comparable<Clazz> {
         public final String pkg;
         public final String name;
         public final String url;
@@ -283,8 +227,8 @@ public class JavadocIndex extends Task {
         }
         
         /** Compares based on class names */
-        public int compareTo (Object o) {
-            return name.compareTo (((Clazz)o).name);
+        public int compareTo(Clazz o) {
+            return name.compareTo(o.name);
         }
 
         public String toString () {
@@ -292,4 +236,3 @@ public class JavadocIndex extends Task {
         }
     } // end of Clazz
 }
-

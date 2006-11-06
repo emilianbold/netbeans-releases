@@ -175,7 +175,7 @@ public final class CheckModuleConfigs extends Task {
             String config = k.substring(prefix.length());
             Set<String> modules = new TreeSet<String>(split(buildProperties.get(k)));
             String fixedK = "config.fixedmodules." + config;
-            String fixed = (String) buildProperties.get(fixedK);
+            String fixed = buildProperties.get(fixedK);
             if (fixed != null) {
                 modules.addAll(split(fixed));
             } else {
@@ -205,7 +205,7 @@ public final class CheckModuleConfigs extends Task {
     }
 
     private Map<String,Set<String>> loadModuleClusters(Map<String,String> clusterProperties, File clusterPropertiesFile) {
-        String l = (String) clusterProperties.get("nb.clusters.list");
+        String l = clusterProperties.get("nb.clusters.list");
         if (l == null) {
             log(clusterPropertiesFile + ": warning: no definition for nb.clusters.list", Project.MSG_WARN);
             return Collections.emptyMap();

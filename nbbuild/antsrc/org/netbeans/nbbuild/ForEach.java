@@ -19,13 +19,12 @@
 package org.netbeans.nbbuild;
 
 import java.io.File;
-import java.util.*;
-
+import java.lang.String;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringTokenizer;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.taskdefs.Ant;
-
-import org.apache.tools.ant.Project;
-import org.apache.tools.ant.Target;
 import org.apache.tools.ant.Task;
 
 /**
@@ -38,7 +37,7 @@ public class ForEach extends Task {
     private static final boolean DEBUG = false;
     private static final boolean ECHO  = true;
 
-    private List   locations; // List<String>
+    private List<String> locations;
     private String target;
     private String startdir;
     
@@ -58,7 +57,7 @@ public class ForEach extends Task {
         if ( DEBUG ) log ("SET locations = " + s);
 
         StringTokenizer tok = new StringTokenizer (s, ",");
-        locations = new Vector ();
+        locations = new ArrayList<String>();
         while ( tok.hasMoreTokens() ) {
             locations.add (tok.nextToken().trim());
         }
@@ -99,10 +98,7 @@ public class ForEach extends Task {
             baseDir = new File(getProject().getBaseDir(), startdir);
         }
 
-        Iterator it = locations.iterator();
-        while ( it.hasNext() ) {
-            String dirName = (String) it.next();
-
+        for (String dirName : locations) {
             if ( ECHO ) log ("Process '" + dirName + "' location with '" + target + "' target ...");
             
             Ant ant = (Ant) getProject().createTask("ant");

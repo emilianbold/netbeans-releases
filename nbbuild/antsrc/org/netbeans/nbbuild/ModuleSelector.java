@@ -23,16 +23,19 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.Parameter;
-import org.apache.tools.ant.types.selectors.SelectorUtils;
+import org.apache.tools.ant.types.selectors.BaseExtendSelector;
+import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
@@ -40,11 +43,11 @@ import org.xml.sax.helpers.DefaultHandler;
  *
  * @author Jaroslav Tulach
  */
-public final class ModuleSelector extends org.apache.tools.ant.types.selectors.BaseExtendSelector {
-    private HashSet excludeModules;
-    private HashSet includeClusters;
-    private HashSet excludeClusters;
-    private HashMap/*<String,String*/ fileToOwningModule;
+public final class ModuleSelector extends BaseExtendSelector {
+    private Set<String> excludeModules;
+    private Set<String> includeClusters;
+    private Set<String> excludeClusters;
+    private Map<String,String> fileToOwningModule;
     private boolean acceptExcluded;
     
     /** Creates a new instance of ModuleSelector */
@@ -106,7 +109,7 @@ public final class ModuleSelector extends org.apache.tools.ant.types.selectors.B
             }
             
             if (module == null && fileToOwningModule != null) {
-                module = (String)fileToOwningModule.get(name);
+                module = fileToOwningModule.get(name);
             }
             
             if (dir.equals(p)) {
@@ -139,40 +142,40 @@ public final class ModuleSelector extends org.apache.tools.ant.types.selectors.B
             return;
         }
         
-        includeClusters = new HashSet();
-        excludeClusters = new HashSet();
-        excludeModules = new HashSet();
+        includeClusters = new HashSet<String>();
+        excludeClusters = new HashSet<String>();
+        excludeModules = new HashSet<String>();
         
         Parameter[] arr = getParameters();
         if (arr == null) {
             return;
         }
         
-        for (int i = 0; i < arr.length; i++) {
-            if ("excludeModules".equals(arr[i].getName())) {
-                parse(arr[i].getValue(), excludeModules);
+        for (Parameter p : arr) {
+            if ("excludeModules".equals(p.getName())) {
+                parse(p.getValue(), excludeModules);
                 log("Will excludeModules: " + excludeModules, Project.MSG_VERBOSE);
                 continue;
             }
-            if ("includeClusters".equals(arr[i].getName())) {
-                parse(arr[i].getValue(), includeClusters);
+            if ("includeClusters".equals(p.getName())) {
+                parse(p.getValue(), includeClusters);
                 log("Will includeClusters: " + includeClusters, Project.MSG_VERBOSE);
                 continue;
             }
-            if ("excludeClusters".equals(arr[i].getName())) {
-                parse(arr[i].getValue(), excludeClusters);
+            if ("excludeClusters".equals(p.getName())) {
+                parse(p.getValue(), excludeClusters);
                 log("Will excludeClusters: " + excludeClusters, Project.MSG_VERBOSE);
                 continue;
             }
-            if ("excluded".equals(arr[i].getName())) {
-                acceptExcluded = Boolean.valueOf(arr[i].getValue()).booleanValue();
+            if ("excluded".equals(p.getName())) {
+                acceptExcluded = Boolean.parseBoolean(p.getValue());
                 log("Will acceptExcluded: " + acceptExcluded, Project.MSG_VERBOSE);
                 continue;
             }
-            if ("updateTrackingFiles".equals(arr[i].getName())) {
-                fileToOwningModule = new HashMap();
+            if ("updateTrackingFiles".equals(p.getName())) {
+                fileToOwningModule = new HashMap<String,String>();
                 try {
-                    readUpdateTracking(getProject(), arr[i].getValue(), fileToOwningModule);
+                    readUpdateTracking(getProject(), p.getValue(), fileToOwningModule);
                 } catch (IOException ex) {
                     throw new BuildException(ex);
                 } catch (ParserConfigurationException ex) {
@@ -183,11 +186,11 @@ public final class ModuleSelector extends org.apache.tools.ant.types.selectors.B
                 log("Will accept these files: " + fileToOwningModule.keySet(), Project.MSG_VERBOSE);
                 continue;
             }
-            setError("Unknown parameter: " + arr[i].getName());
+            setError("Unknown parameter: " + p.getName());
         }
     }
     
-    private static void parse(String tokens, Set to) {
+    private static void parse(String tokens, Set<String> to) {
         StringTokenizer tok = new StringTokenizer(tokens, ", \n");
         
         while(tok.hasMoreElements()) {
@@ -195,10 +198,10 @@ public final class ModuleSelector extends org.apache.tools.ant.types.selectors.B
         }
     }
 
-    static void readUpdateTracking(final Project p, String tokens, final HashMap files) throws SAXException, IOException, ParserConfigurationException {
+    static void readUpdateTracking(final Project p, String tokens, final Map<String,String> files) throws SAXException, IOException, ParserConfigurationException {
         StringTokenizer tok = new StringTokenizer(tokens, File.pathSeparator);
         
-        javax.xml.parsers.SAXParserFactory factory = javax.xml.parsers.SAXParserFactory.newInstance();
+        SAXParserFactory factory = SAXParserFactory.newInstance();
         factory.setValidating(false);
         final SAXParser parser = factory.newSAXParser();
 
@@ -206,7 +209,7 @@ public final class ModuleSelector extends org.apache.tools.ant.types.selectors.B
             public File where;
             public String module;
             
-            public void startElement(String uri, String localName, String qName, org.xml.sax.Attributes attributes) throws org.xml.sax.SAXException {
+            public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
                 if (qName.equals("file")) {
                     String file = attributes.getValue("name");
                     if (file == null) {

@@ -22,7 +22,6 @@ package org.netbeans.nbbuild;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
@@ -60,37 +59,32 @@ public final class InsertModuleAllTargets extends Task {
     public void execute() throws BuildException {
         try {
             Project project = getProject();
+            @SuppressWarnings("unchecked")
             Set<String> existingTargets = project.getTargets().keySet();
             if (existingTargets.contains("all-openide/util")) {
                 log("Already seem to have inserted targets into this project; will not do it twice", Project.MSG_VERBOSE);
                 return;
             }
+            @SuppressWarnings("unchecked")
             Hashtable<String,String> props = project.getProperties();
-            Map<String,String> clustersOfModules = new HashMap();
-            Iterator it = props.entrySet().iterator();
-            while (it.hasNext()) {
-                Map.Entry pair = (Map.Entry) it.next();
-                String cluster = (String) pair.getKey();
+            Map<String,String> clustersOfModules = new HashMap<String,String>();
+            for (Map.Entry<String,String> pair : props.entrySet()) {
+                String cluster = pair.getKey();
                 if (!cluster.startsWith("nb.cluster.") || cluster.endsWith(".depends") || cluster.endsWith(".dir")) {
                     continue;
                 }
-                String[] modules = ((String) pair.getValue()).split(", *");
-                for (int i = 0; i < modules.length; i++) {
-                    clustersOfModules.put(modules[i], cluster);
+                for (String module : pair.getValue().split(", *")) {
+                    clustersOfModules.put(module, cluster);
                 }
             }
             ModuleListParser mlp = new ModuleListParser(props, ParseProjectXml.TYPE_NB_ORG, project);
-            SortedMap<String,ModuleListParser.Entry> entries = new TreeMap();
-            it = mlp.findAll().iterator();
-            while (it.hasNext()) {
-                ModuleListParser.Entry entry = (ModuleListParser.Entry) it.next();
+            SortedMap<String,ModuleListParser.Entry> entries = new TreeMap<String,ModuleListParser.Entry>();
+            for (ModuleListParser.Entry entry : mlp.findAll()) {
                 String path = entry.getNetbeansOrgPath();
                 assert path != null : entry;
                 entries.put(path, entry);
             }
-            it = entries.values().iterator();
-            while (it.hasNext()) {
-                ModuleListParser.Entry entry = (ModuleListParser.Entry) it.next();
+            for (ModuleListParser.Entry entry : entries.values()) {
                 String path = entry.getNetbeansOrgPath();
                 assert path != null : entry;
                 String target = "all-" + path;
@@ -100,9 +94,8 @@ public final class InsertModuleAllTargets extends Task {
                 }
                 String[] prereqsAsCnb = entry.getBuildPrerequisites();
                 StringBuffer namedDeps = new StringBuffer("init");
-                String myCluster = (String) clustersOfModules.get(path);
-                for (int i = 0; i < prereqsAsCnb.length; i++) {
-                    String cnb = prereqsAsCnb[i];
+                String myCluster = clustersOfModules.get(path);
+                for (String cnb : prereqsAsCnb ) {
                     ModuleListParser.Entry other = mlp.findByCodeNameBase(cnb);
                     if (other == null) {
                         log("Cannot find build prerequisite " + cnb + " of " + entry, Project.MSG_WARN);
@@ -110,7 +103,7 @@ public final class InsertModuleAllTargets extends Task {
                     }
                     String otherPath = other.getNetbeansOrgPath();
                     assert otherPath != null : other;
-                    String otherCluster = (String) clustersOfModules.get(otherPath);
+                    String otherCluster = clustersOfModules.get(otherPath);
                     if (myCluster == null || otherCluster == null || myCluster.equals(otherCluster)) {
                         namedDeps.append(",all-");
                         namedDeps.append(otherPath);
@@ -129,7 +122,7 @@ public final class InsertModuleAllTargets extends Task {
                     call.setInheritAll(false);
                     Property param = call.createParam();
                     param.setName("one.cluster.dependencies");
-                    param.setValue((String) props.get(myCluster + ".depends"));
+                    param.setValue(props.get(myCluster + ".depends"));
                     param = call.createParam();
                     param.setName("one.cluster.name");
                     param.setValue("this-cluster");

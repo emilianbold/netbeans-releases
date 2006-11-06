@@ -24,9 +24,7 @@ import java.util.*;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
-import org.apache.tools.ant.Target;
 import org.apache.tools.ant.Task;
-import org.apache.tools.ant.taskdefs.Delete;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.FileSet;
 
@@ -40,9 +38,9 @@ import org.apache.tools.ant.types.FileSet;
 public class SimpleMerge extends Task {
     
     private File dest;
-    private Vector modules = new Vector (); // Vector<String>
-    private List topdirs = new ArrayList (); // List<File>
-    private List subdirs = new ArrayList (); // List<File>
+    private List<String> modules = new ArrayList<String>();
+    private List<File> topdirs = new ArrayList<File>();
+    private List<String> subdirs = new ArrayList<String>();
     
     /** Target directory to unpack to (top of IDE installation). */
     public void setDest (File f) {
@@ -52,9 +50,9 @@ public class SimpleMerge extends Task {
     /** Comma-separated list of modules to include. */
     public void setModules (String s) {
         StringTokenizer tok = new StringTokenizer (s, ", ");
-        modules = new Vector ();
+        modules = new ArrayList<String>();
         while (tok.hasMoreTokens ())
-            modules.addElement (tok.nextToken ());
+            modules.add(tok.nextToken ());
     }
     
     /** Set the top directory.
@@ -115,26 +113,23 @@ public class SimpleMerge extends Task {
         }
 
         log ( "Starting merge to " + dest.getAbsolutePath() );
-        for (int j = 0; j < topdirs.size (); j++) {
-            File topdir = (File) topdirs.get (j);
-            for (int i = 0; i < modules.size (); i++) {
-                String module = (String) modules.elementAt (i);
-                for (int h = 0; h < subdirs.size (); h++) {
-                    String sdir = (String) subdirs.get (h);
-		    File subdir = new File (new File (topdir, module), sdir );
-		    if (! subdir.exists ()) {
-			log ("Dir " + subdir + " does not exist, skipping...", Project.MSG_WARN);
-			continue;
-		    }
-		    Copy copy = (Copy) getProject().createTask("copy");
-		    FileSet fs = new FileSet ();
-		    fs.setDir (subdir);
-		    copy.addFileset (fs);
-		    copy.setTodir (dest);
-		    copy.setIncludeEmptyDirs (true);
-		    copy.init ();
-		    copy.setLocation(getLocation());
-		    copy.execute ();
+        for (File topdir : topdirs) {
+            for (String module : modules) {
+                for (String sdir : subdirs) {
+                    File subdir = new File(new File(topdir, module), sdir);
+                    if (!subdir.exists()) {
+                        log("Dir " + subdir + " does not exist, skipping...", Project.MSG_WARN);
+                        continue;
+                    }
+                    Copy copy = (Copy) getProject().createTask("copy");
+                    FileSet fs = new FileSet();
+                    fs.setDir(subdir);
+                    copy.addFileset(fs);
+                    copy.setTodir(dest);
+                    copy.setIncludeEmptyDirs(true);
+                    copy.init();
+                    copy.setLocation(getLocation());
+                    copy.execute();
                 }
             }
         }
