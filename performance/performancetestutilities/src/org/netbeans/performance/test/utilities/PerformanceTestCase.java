@@ -600,7 +600,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
      * in the JSP editor. This method should be called from a test's initialize() method.
      */
     protected void setJSPEditorCaretFilteringOn() {
-//TODO disabled after Retouche merge        setEditorCaretFilteringOn(org.netbeans.modules.web.core.syntax.JSPKit.class);
+        setEditorCaretFilteringOn(org.netbeans.modules.web.core.syntax.JSPKit.class);
     }
     
     /**
@@ -710,11 +710,13 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
     }
     
     /**
-     * If scan dialog rises wait some time after scan finished
+     * If scanning of classpath started wait till the scan finished
+     * (just to be sure check it twice after short delay)
      */
     public void checkScanFinished() {
-//TODO disabled after Retouche merge        if(org.netbeans.junit.ide.ProjectSupport.waitScanFinished())
-            waitNoEvent(30000);
+        org.netbeans.junit.ide.ProjectSupport.waitScanFinished();
+        waitNoEvent(1000);
+        org.netbeans.junit.ide.ProjectSupport.waitScanFinished();
     }
     
     

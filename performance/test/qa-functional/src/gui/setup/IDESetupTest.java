@@ -26,6 +26,7 @@ import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 
 import org.netbeans.junit.ide.ProjectSupport;
 
+import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.operators.JMenuItemOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
@@ -43,23 +44,19 @@ public class IDESetupTest extends org.netbeans.jellytools.JellyTestCase {
     }
     
     public void openDataProject() {
-        ProjectSupport.openProject(System.getProperty("xtest.data")+"/PerformanceTestData");
-        ProjectSupport.waitScanFinished();
+        waitProjectOpenedScanFinished(System.getProperty("xtest.data")+"/PerformanceTestData");
     }
     
     public void openWebProject() {
-        ProjectSupport.openProject(System.getProperty("xtest.data")+"/PerformanceTestWebApplication");
-        ProjectSupport.waitScanFinished();
+        waitProjectOpenedScanFinished(System.getProperty("xtest.data")+"/PerformanceTestWebApplication");
     }
     
     public void openFoldersProject() {
-//TODO retouche        ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+"/PerformanceTestFoldersData");
-//TODO retouche        ProjectSupport.waitScanFinished();
+        waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir")+"/PerformanceTestFoldersData");
     }
     
     public void openNBProject() {
-        ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+"/SystemProperties");
-        ProjectSupport.waitScanFinished();
+        waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir")+"/SystemProperties");
     }
     
     /**
@@ -105,6 +102,13 @@ public class IDESetupTest extends org.netbeans.jellytools.JellyTestCase {
             mainWindow.pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
         }
         
+    }
+    
+    private void waitProjectOpenedScanFinished(String projectFolder){
+        ProjectSupport.openProject(projectFolder);
+        ProjectSupport.waitScanFinished();
+        new QueueTool().waitEmpty(1000);
+        ProjectSupport.waitScanFinished();
     }
     
     
