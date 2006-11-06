@@ -37,7 +37,6 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.platform.resources.Bundle"/>
             </folder>
         </folder>
-        <file name="org-netbeans-modules-java-platform-settings.settings" url="platformSettings.settings"/>
     </folder>
     
     <folder name="Templates">

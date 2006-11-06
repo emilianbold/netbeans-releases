@@ -19,8 +19,9 @@
 package org.netbeans.modules.java.platform;
 
 import java.io.File;
-import org.openide.options.SystemOption;
+import java.util.prefs.Preferences;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
 
 
@@ -29,12 +30,8 @@ import org.openide.util.Utilities;
  *
  * @author Tomas  Zezula
  */
-public class PlatformSettings extends SystemOption {
-
-    static final long serialVersionUID = -4636292603494310012L;
-
-    private static PlatformSettings instance;
-
+public class PlatformSettings {
+    private static final PlatformSettings INSTANCE = new PlatformSettings();
     private static final String PROP_PLATFORMS_FOLDER = "platformsFolder"; //NOI18N
     private static final String APPLE_JAVAVM_FRAMEWORK_PATH = "/System/Library/Frameworks/JavaVM.framework/Versions/";//NOI18N
 
@@ -45,9 +42,13 @@ public class PlatformSettings extends SystemOption {
     public String displayName() {
         return NbBundle.getMessage(PlatformSettings.class,"TXT_PlatformSettings");
     }
+    
+    private static Preferences getPreferences() {
+        return NbPreferences.forModule(PlatformSettings.class);
+    }
 
     public File getPlatformsFolder () {
-        String folderName = (String)this.getProperty(PROP_PLATFORMS_FOLDER);
+        String folderName = getPreferences().get(PROP_PLATFORMS_FOLDER, null);
         if (folderName == null) {
             File f;
             if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
@@ -68,14 +69,11 @@ public class PlatformSettings extends SystemOption {
     }
 
     public void setPlatformsFolder (File file) {
-        this.putProperty(PROP_PLATFORMS_FOLDER,file.getAbsolutePath(),true);
+        getPreferences().put(PROP_PLATFORMS_FOLDER, file.getAbsolutePath());
     }
 
 
     public synchronized static PlatformSettings getDefault () {
-        if (instance == null) {
-            instance = (PlatformSettings) SystemOption.findObject(PlatformSettings.class,true);
-        }
-        return instance;
+        return INSTANCE;
     }
 }
