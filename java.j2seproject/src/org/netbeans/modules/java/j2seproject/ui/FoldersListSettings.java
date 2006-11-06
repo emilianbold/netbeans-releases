@@ -19,18 +19,18 @@
 
 package org.netbeans.modules.java.j2seproject.ui;
 
-import org.openide.options.SystemOption;
 import org.openide.util.NbBundle;
 
 import java.io.File;
+import java.util.prefs.Preferences;
+import org.netbeans.modules.java.j2seproject.ui.FoldersListSettings;
+import org.openide.util.NbPreferences;
 
 /**
  * Misnamed storage of information application to the new j2seproject wizard.
  */
-public class FoldersListSettings extends SystemOption {
-
-    private static final long serialVersionUID = 2386225041150479082L;
-
+public class FoldersListSettings {
+    private static final FoldersListSettings INSTANCE = new FoldersListSettings();
     private static final String NEW_PROJECT_COUNT = "newProjectCount"; //NOI18N
 
     private static final String NEW_APP_COUNT = "newApplicationCount";  //NOI18N
@@ -43,7 +43,11 @@ public class FoldersListSettings extends SystemOption {
     
 
     public static FoldersListSettings getDefault () {
-        return (FoldersListSettings) SystemOption.findObject (FoldersListSettings.class, true);
+        return INSTANCE;
+    }
+    
+    private static Preferences getPreferences() {
+        return NbPreferences.forModule(FoldersListSettings.class);
     }
     
     public String displayName() {
@@ -51,58 +55,46 @@ public class FoldersListSettings extends SystemOption {
     }
 
     public int getNewProjectCount () {
-        Integer value = (Integer) getProperty (NEW_PROJECT_COUNT);
-        return value == null ? 0 : value.intValue();
+        return getPreferences().getInt(NEW_PROJECT_COUNT, 0);
     }
 
     public void setNewProjectCount (int count) {
-        this.putProperty(NEW_PROJECT_COUNT, new Integer(count),true);
+        getPreferences().putInt(NEW_PROJECT_COUNT, count);
     }
     
     public int getNewApplicationCount () {
-        Integer value = (Integer) getProperty (NEW_APP_COUNT);
-        return value == null ? 0 : value.intValue();
+        return getPreferences().getInt(NEW_APP_COUNT, 0);
     }
     
     public void setNewApplicationCount (int count) {
-        this.putProperty(NEW_APP_COUNT, new Integer(count),true);
+        getPreferences().putInt(NEW_APP_COUNT, count);
     }
     
     public int getNewLibraryCount () {
-        Integer value = (Integer) getProperty (NEW_LIB_COUNT);
-        return value == null ? 0 : value.intValue();
+        return getPreferences().getInt(NEW_LIB_COUNT, 0);
     }
     
     public void setNewLibraryCount (int count) {
-        this.putProperty(NEW_LIB_COUNT, new Integer(count),true);
+        getPreferences().putInt(NEW_LIB_COUNT, count);
     }
 
     public File getLastUsedClassPathFolder () {
-        String lucpr = (String) this.getProperty (LAST_USED_CP_FOLDER);
-        if (lucpr == null) {
-            lucpr = System.getProperty("user.home");    //NOI18N
-        }
-        return new File (lucpr);
+        return new File (getPreferences().get(LAST_USED_CP_FOLDER, System.getProperty("user.home")));
     }
 
     public void setLastUsedClassPathFolder (File folder) {
         assert folder != null : "ClassPath root can not be null";
         String path = folder.getAbsolutePath();
-        this.putProperty(LAST_USED_CP_FOLDER, path, true);
+        getPreferences().put(LAST_USED_CP_FOLDER, path);
     }
 
     public File getLastUsedArtifactFolder () {
-        String folder = (String) this.getProperty (LAST_USED_ARTIFACT_FOLDER);
-        if (folder == null) {
-            folder = System.getProperty("user.home");    //NOI18N
-        }
-        return new File (folder);
+        return new File (getPreferences().get(LAST_USED_ARTIFACT_FOLDER, System.getProperty("user.home")));
     }
 
     public void setLastUsedArtifactFolder (File folder) {
         assert folder != null : "Folder can not be null";
         String path = folder.getAbsolutePath();
-        this.putProperty (LAST_USED_ARTIFACT_FOLDER, path, true);
+        getPreferences().put(LAST_USED_ARTIFACT_FOLDER, path);
     }   
-
 }
