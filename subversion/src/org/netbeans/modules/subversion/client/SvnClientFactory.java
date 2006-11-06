@@ -48,6 +48,8 @@ public class SvnClientFactory {
     
     private ClientAdapterFactory factory;
         
+    private SVNClientException exception;
+    
     /** Creates a new instance of SvnClientFactory */
     private SvnClientFactory() {
 
@@ -97,11 +99,29 @@ public class SvnClientFactory {
 //            else {                
 //                throw new SVNClientException("Unknown factory: " + factoryType);
 //            } 
-        } catch (Throwable t) {
-            if(t instanceof SVNClientException) throw (SVNClientException) t;
+        } catch (Throwable t) {            
             //ErrorManager.getDefault().notify(ErrorManager.WARNING, "Could not setup for the given ")
             // XXX is this robust enought? - no! if this won't work then you'll get NPEs until the doctor comes
-            throw new SVNClientException(t);
+            
+           factory = new ClientAdapterFactory() {
+                public ISVNClientAdapter createAdapter() {
+                    return new UnsupportedSvnClientAdapter();
+                }
+                public boolean isCommandLine() {
+                    return true;
+                }                        
+                protected ISVNClientAdapter createSvnClientAdapter(SVNUrl repositoryUrl, ProxyDescriptor pd, String username, String password) {
+                    return super.createSvnClientAdapter(repositoryUrl, pd, username, password);
+                }
+
+                public SvnClientInvocationHandler getInvocationHandler(ISVNClientAdapter adapter, SvnClientDescriptor desc, SvnProgressSupport support, int handledExceptions) {
+                    return new SvnCmdLineClientInvocationHandler(adapter, desc, support, handledExceptions);
+                }            
+            }; 
+            
+            if(t instanceof SVNClientException) throw (SVNClientException) t;
+            
+            throw exception;
         }
     }
     
@@ -169,7 +189,7 @@ public class SvnClientFactory {
      *
      * @return the SvnClient
      */
-    public SvnClient createSvnClient() {                        
+    public SvnClient createSvnClient() {    
         return factory.createSvnClient();
     }
 
