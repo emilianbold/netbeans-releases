@@ -555,6 +555,7 @@ OUTER:
         }
 
         public void putValue(String key, Object o) {
+            delegate.putValue(key, o);
         }
 
         public Object getValue(String key) {
@@ -566,6 +567,7 @@ OUTER:
         }
 
         public void setEnabled(boolean b) {
+            delegate.setEnabled(b);
         }
 
         public void resultChanged(LookupEvent ev) {
