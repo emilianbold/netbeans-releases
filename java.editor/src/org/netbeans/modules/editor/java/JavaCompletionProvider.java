@@ -2998,7 +2998,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                                 return e.getKind() == METHOD && (!isStatic || e.getModifiers().contains(STATIC)) && tu.isAccessible(scope, e, t);
                                             }
                                         };
-                                        return getMatchingArgumentTypes(controller.getElementUtilities().getMembers(tm, acceptor), name, args, controller.getTypes());
+                                        return getMatchingArgumentTypes(tm, controller.getElementUtilities().getMembers(tm, acceptor), name, args, controller.getTypes());
                                     }
                                     return null;
                                 }
@@ -3014,14 +3014,15 @@ public class JavaCompletionProvider implements CompletionProvider {
                                                 return e.getKind() == CONSTRUCTOR && tu.isAccessible(scope, e, t);
                                             }
                                         };
-                                        return getMatchingArgumentTypes(controller.getElementUtilities().getMembers(enclClass.getSuperclass(), acceptor), INIT, args, controller.getTypes());
+                                        TypeMirror superclass = enclClass.getSuperclass();
+                                        return getMatchingArgumentTypes(superclass, controller.getElementUtilities().getMembers(superclass, acceptor), INIT, args, controller.getTypes());
                                     }
                                     ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
                                         public boolean accept(Element e, TypeMirror t) {
                                             return e.getKind() == METHOD && (!isStatic || e.getModifiers().contains(STATIC)) && tu.isAccessible(scope, e, t);
                                         }
                                     };
-                                    return getMatchingArgumentTypes(controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor), THIS_KEYWORD.equals(name) ? INIT : name, args, controller.getTypes());
+                                    return getMatchingArgumentTypes(enclClass.asType(), controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor), THIS_KEYWORD.equals(name) ? INIT : name, args, controller.getTypes());
                                 }
                             }
                         }
@@ -3051,7 +3052,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                         return e.getKind() == CONSTRUCTOR && tu.isAccessible(scope, e, t);
                                     }
                                 };
-                                return getMatchingArgumentTypes(controller.getElementUtilities().getMembers(tm, acceptor), INIT, args, controller.getTypes());
+                                return getMatchingArgumentTypes(tm, controller.getElementUtilities().getMembers(tm, acceptor), INIT, args, controller.getTypes());
                             }
                             return null;
                         }
@@ -3164,7 +3165,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             return ret.isEmpty() ? null : ret;
         }
         
-        private Set<TypeMirror> getMatchingArgumentTypes(Iterable<? extends Element> elements, String name, TypeMirror[] argTypes, Types types) {
+        private Set<TypeMirror> getMatchingArgumentTypes(TypeMirror type, Iterable<? extends Element> elements, String name, TypeMirror[] argTypes, Types types) {
             Set<TypeMirror> ret = new HashSet<TypeMirror>();
             for (Element e : elements) {
                 if ((e.getKind() == CONSTRUCTOR || e.getKind() == METHOD) && name.contentEquals(e.getSimpleName())) {
@@ -3172,12 +3173,13 @@ public class JavaCompletionProvider implements CompletionProvider {
                     Collection<? extends VariableElement> params = ((ExecutableElement)e).getParameters();
                     if (params.size() <= argTypes.length)
                         continue;
-                    for (VariableElement vd : params) {
+                    ExecutableType eType = (ExecutableType)(type.getKind() == TypeKind.DECLARED ? types.asMemberOf((DeclaredType)type, e) : e.asType());
+                    for (TypeMirror param : eType.getParameterTypes()) {
                         if (i == argTypes.length) {
-                            ret.add(vd.asType());
+                            ret.add(param);
                             break;
                         }
-                        if (!types.isAssignable(argTypes[i++], vd.asType()))
+                        if (!types.isAssignable(argTypes[i++], param))
                             break;
                     }
                 }
