@@ -19,15 +19,16 @@
 
 package org.netbeans.modules.j2ee.common.source;
 
+import java.io.File;
 import java.io.IOException;
-import org.netbeans.api.java.source.CompilationController;
+import javax.lang.model.element.*;
+import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.j2ee.common.AbstractTask;
-import org.netbeans.modules.j2ee.common.source.RepositoryImpl;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 
 /**
@@ -37,65 +38,175 @@ import org.openide.filesystems.URLMapper;
  */
 public class SourceUtilsTest extends NbTestCase {
 
+    private FileObject testFO;
+
     public SourceUtilsTest(String testName) {
         super(testName);
     }
 
     protected void setUp() throws Exception {
-        MockServices.setServices(FakeJavaMIMEResolver.class, FakeJavaDataLoaderPool.class, RepositoryImpl.class);
+        MockServices.setServices(FakeJavaDataLoaderPool.class, RepositoryImpl.class);
+
         clearWorkDir();
+        FileObject workDir = FileUtil.toFileObject(getWorkDir());
+        testFO = workDir.createData("TestClass.java");
     }
 
-    public void testMainElement() throws Exception {
-        FileObject javaClass = URLMapper.findFileObject(getClass().getResource("SomeClass.javax"));
-        JavaSource javaSource = JavaSource.forFileObject(javaClass);
-        javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+    public void testMainTypeElement() throws Exception {
+        TestUtilities.copyStringToFileObject(testFO,
+                "package foo;" +
+                "public class TestClass {" +
+                "}" +
+                "class AnotherClass {" +
+                "}");
+        runInUserAction(testFO, new AbstractTask<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
-                SourceUtils srcUtils = new SourceUtils(controller);
+                TypeElement typeElement = SourceUtils.newInstance(controller).getTypeElement();
+                assertTrue(typeElement.getQualifiedName().contentEquals("foo.TestClass"));
             }
-        }, true);
+        });
 
-        // now trying a class which does not have a main type element
-        // should throw an IllegalStateException
-        javaClass = URLMapper.findFileObject(getClass().getResource("EmptyFile.javax"));
-        javaSource = JavaSource.forFileObject(javaClass);
-        try {
-            javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
-                public void run(CompilationController controller) throws IOException {
-                    SourceUtils srcUtils = new SourceUtils(controller);
-                }
-            }, true);
-            fail();
-        } catch (IOException e) {
-            assertTrue(e.getCause() instanceof IllegalStateException);
-        }
+        TestUtilities.copyStringToFileObject(testFO,
+                "package foo;" +
+                "public class AnotherClass {" +
+                "}");
+        runInUserAction(testFO, new AbstractTask<CompilationController>() {
+            public void run(CompilationController controller) throws IOException {
+                assertNull(SourceUtils.newInstance(controller));
+            }
+        });
+    }
+
+    public void testGetDefaultConstructor() throws Exception {
+        TestUtilities.copyStringToFileObject(testFO,
+                "package foo;" +
+                "public class TestClass {" +
+                "   public TestClass() {" +
+                "   }" +
+                "}");
+        runInUserAction(testFO, new AbstractTask<CompilationController>() {
+            public void run(CompilationController controller) throws Exception {
+                SourceUtils srcUtils = SourceUtils.newInstance(controller);
+                ExecutableElement constructor = srcUtils.getDefaultConstructor();
+                assertNotNull(constructor);
+                assertFalse(controller.getElementUtilities().isSyntetic(constructor));
+            }
+        });
+
+        TestUtilities.copyStringToFileObject(testFO,
+                "package foo;" +
+                "public class TestClass {" +
+                "}");
+        runInUserAction(testFO, new AbstractTask<CompilationController>() {
+            public void run(CompilationController controller) throws Exception {
+                SourceUtils srcUtils = SourceUtils.newInstance(controller);
+                assertNull(srcUtils.getDefaultConstructor());
+            }
+        });
     }
 
     public void testHasMainMethod() throws Exception {
-        FileObject fo = URLMapper.findFileObject(getClass().getResource("ClassWithMainMethod1.javax"));
-        boolean hasMainMethod = SourceUtils.hasMainMethod(fo);
-        assertTrue(hasMainMethod);
-        fo = URLMapper.findFileObject(getClass().getResource("ClassWithMainMethod2.javax"));
-        hasMainMethod = SourceUtils.hasMainMethod(fo);
-        assertTrue(hasMainMethod);
-        fo = URLMapper.findFileObject(getClass().getResource("ClassWithMainMethod3.javax"));
-        hasMainMethod = SourceUtils.hasMainMethod(fo);
-        assertTrue(hasMainMethod);
-        fo = URLMapper.findFileObject(getClass().getResource("ClassWithoutMainMethod1.javax"));
-        hasMainMethod = SourceUtils.hasMainMethod(fo);
-        assertFalse(hasMainMethod);
-        fo = URLMapper.findFileObject(getClass().getResource("ClassWithoutMainMethod2.javax"));
-        hasMainMethod = SourceUtils.hasMainMethod(fo);
-        assertFalse(hasMainMethod);
-        fo = URLMapper.findFileObject(getClass().getResource("ClassWithoutMainMethod3.javax"));
-        hasMainMethod = SourceUtils.hasMainMethod(fo);
-        assertFalse(hasMainMethod);
-        fo = URLMapper.findFileObject(getClass().getResource("Interface1.javax"));
-        hasMainMethod = SourceUtils.hasMainMethod(fo);
-        assertFalse(hasMainMethod);
-        fo = URLMapper.findFileObject(getClass().getResource("SomeClass.javax"));
-        hasMainMethod = SourceUtils.hasMainMethod(fo);
-        assertFalse(hasMainMethod);
+        TestUtilities.copyStringToFileObject(testFO,
+                "package foo;" +
+                "public class TestClass {" +
+                "   public TestClass() { " +
+                "   }" +
+                "   public static void main(String[] args) {" +
+                "   }" +
+                "   public void method() {" +
+                "   }" +
+                "}");
+        assertTrue(SourceUtils.hasMainMethod(testFO));
+
+        TestUtilities.copyStringToFileObject(testFO,
+                "package foo;" +
+                "public class TestClass {" +
+                "   public TestClass() { " +
+                "   }" +
+                "   public void method1() {" +
+                "   }" +
+                "   public static void main(String[] args) {" +
+                "   }" +
+                "   public void method2() {" +
+                "   }" +
+                "}");
+        assertTrue(SourceUtils.hasMainMethod(testFO));
+
+        TestUtilities.copyStringToFileObject(testFO,
+                "package foo;" +
+                "public class TestClass {" +
+                "   public TestClass() { " +
+                "   }" +
+                "   public void method() {" +
+                "   }" +
+                "   public static void main(String[] args) {" +
+                "   }" +
+                "}");
+        assertTrue(SourceUtils.hasMainMethod(testFO));
+
+        TestUtilities.copyStringToFileObject(testFO,
+                "package foo;" +
+                "public class TestClass {" +
+                "   public TestClass() { " +
+                "   }" +
+                "   static void main(String[] args) {" +
+                "   }" +
+                "   public void method() {" +
+                "   }" +
+                "   public static void main(Integer[] args) {" +
+                "   }" +
+                "}");
+        assertFalse(SourceUtils.hasMainMethod(testFO));
+
+        TestUtilities.copyStringToFileObject(testFO,
+                "package foo;" +
+                "public class TestClass {" +
+                "   public TestClass() { " +
+                "   }" +
+                "   public static boolean main(String[] args) {" +
+                "   }" +
+                "   public void method() {" +
+                "   }" +
+                "   public static void main() {" +
+                "   }" +
+                "}");
+        assertFalse(SourceUtils.hasMainMethod(testFO));
+
+        TestUtilities.copyStringToFileObject(testFO,
+                "package foo;" +
+                "public class TestClass {" +
+                "   public TestClass() { " +
+                "   }" +
+                "   public void main(String[] args) {" +
+                "   }" +
+                "   public void method() {" +
+                "   }" +
+                "}");
+        assertFalse(SourceUtils.hasMainMethod(testFO));
+
+        TestUtilities.copyStringToFileObject(testFO,
+                "package foo;" +
+                "public interface TestClass {" +
+                "   public TestClass() { " +
+                "   }" +
+                "   public void main(String[] args) {" +
+                "   }" +
+                "   public void method() {" +
+                "   }" +
+                "}");
+        assertFalse(SourceUtils.hasMainMethod(testFO));
+
+        TestUtilities.copyStringToFileObject(testFO,
+                "package foo;" +
+                "public class TestClass {" +
+                "   public TestClass() {" +
+                "   }" +
+                "}");
+        assertFalse(SourceUtils.hasMainMethod(testFO));
     }
 
+    private static void runInUserAction(FileObject javaFile, CancellableTask<CompilationController> taskToTest) throws Exception {
+        JavaSource javaSource = JavaSource.forFileObject(javaFile);
+        javaSource.runUserActionTask(taskToTest, true);
+    }
 }

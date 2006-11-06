@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.util.Collections;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -39,6 +38,7 @@ import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
 import org.netbeans.modules.j2ee.common.queries.api.InjectionTargetQuery;
+import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.common.source.SourceUtils;
 import org.netbeans.modules.web.project.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.web.project.classpath.WebProjectClassPathExtender;
@@ -169,11 +169,10 @@ class WebContainerImpl extends EnterpriseReferenceContainer {
         JavaSource javaSource = JavaSource.create(classpathInfo, Collections.<FileObject>emptyList());
         final boolean shouldWrite[] = new boolean[] {false};
         final WebModuleImplementation jp = (WebModuleImplementation) webProject.getLookup().lookup(WebModuleImplementation.class);
-        javaSource.runUserActionTask(new CancellableTask<CompilationController>() {
-            public void cancel() {}
+        javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
             public void run(CompilationController cc) throws Exception {
-                SourceUtils sourceUtils = new SourceUtils(cc);
-                TypeElement typeElement = sourceUtils.getMainTypeElement();
+                SourceUtils sourceUtils = SourceUtils.newInstance(cc);
+                TypeElement typeElement = sourceUtils.getTypeElement();
                 shouldWrite[0] = isDescriptorMandatory(jp.getJ2eePlatformVersion()) || !InjectionTargetQuery.isInjectionTarget(typeElement);
             }
         }, true);

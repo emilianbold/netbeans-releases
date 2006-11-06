@@ -35,20 +35,30 @@ public class RepositoryImpl extends Repository {
     private XMLFileSystem system;
 
     public RepositoryImpl() {
-        super(createDefFs());
+        super(new MultiFileSystemImpl());
     }
 
-    private static FileSystem createDefFs() {
-        try
-        {
-            FileSystem writeFs = FileUtil.createMemoryFileSystem();
-            FileSystem j2eeserverFs = new XMLFileSystem(RepositoryImpl.class.getClassLoader().getResource("org/netbeans/modules/j2ee/deployment/impl/layer.xml"));
-            FileSystem javaProjectFs = new XMLFileSystem(RepositoryImpl.class.getClassLoader().getResource("org/netbeans/modules/java/project/layer.xml"));
-            return new MultiFileSystem(new FileSystem[] { writeFs, j2eeserverFs, javaProjectFs });
-        } catch (SAXException e) {
-            AssertionError ae = new AssertionError(e.getMessage());
-            ae.initCause(e);
-            throw ae;
+    public static final class MultiFileSystemImpl extends MultiFileSystem {
+
+        public MultiFileSystemImpl() {
+            super(createFileSystems());
+        }
+
+        public void reset() {
+            setDelegates(createFileSystems());
+        }
+
+        private static FileSystem[] createFileSystems() {
+            try {
+                FileSystem writeFs = FileUtil.createMemoryFileSystem();
+                FileSystem j2eeserverFs = new XMLFileSystem(RepositoryImpl.class.getClassLoader().getResource("org/netbeans/modules/j2ee/deployment/impl/layer.xml"));
+                FileSystem javaProjectFs = new XMLFileSystem(RepositoryImpl.class.getClassLoader().getResource("org/netbeans/modules/java/project/layer.xml"));
+                return new FileSystem[] { writeFs, j2eeserverFs, javaProjectFs };
+            } catch (SAXException e) {
+                AssertionError ae = new AssertionError(e.getMessage());
+                ae.initCause(e);
+                throw ae;
+            }
         }
     }
 }

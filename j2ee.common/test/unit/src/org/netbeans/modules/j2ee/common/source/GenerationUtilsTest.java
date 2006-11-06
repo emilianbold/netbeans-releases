@@ -19,7 +19,16 @@
 
 package org.netbeans.modules.j2ee.common.source;
 
+import java.io.IOException;
+import javax.lang.model.element.*;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
 
 /**
  *
@@ -27,15 +36,65 @@ import org.netbeans.junit.NbTestCase;
  */
 public class GenerationUtilsTest extends NbTestCase {
 
+    private FileObject workDir;
+
     public GenerationUtilsTest(String testName) {
         super(testName);
     }
 
-    public void testCreateClass() throws Exception {
-        // TODO implement
+    protected void setUp() throws Exception {
+        MockServices.setServices(FakeJavaDataLoaderPool.class, RepositoryImpl.class);
+        clearWorkDir();
+        workDir = FileUtil.toFileObject(getWorkDir());
     }
 
-    public void testEnsureDefaultConstructor() throws Exception {
-        // TODO implement
+    public void testCreateClass() throws Exception {
+        FileObject javaFO = GenerationUtils.createClass(workDir, "TestClass", "Javadoc");
+        runUserActionTask(javaFO, new AbstractTask<CompilationController>() {
+            public void run(CompilationController controller) throws IOException {
+                SourceUtils srcUtils = SourceUtils.newInstance(controller);
+                assertEquals(ElementKind.CLASS, srcUtils.getTypeElement().getKind());
+                assertTrue(srcUtils.getDefaultConstructor() != null);
+                // TODO assert for Javadoc
+            }
+        });
+    }
+
+    public void testCreateInterface() throws Exception {
+        FileObject javaFO = GenerationUtils.createInterface(workDir, "TestClass", "Javadoc");
+        runUserActionTask(javaFO, new AbstractTask<CompilationController>() {
+            public void run(CompilationController controller) throws IOException {
+                SourceUtils srcUtils = SourceUtils.newInstance(controller);
+                assertEquals(ElementKind.INTERFACE, srcUtils.getTypeElement().getKind());
+                // TODO assert for Javadoc
+            }
+        });
+    }
+
+    public void testCreateClassEnsuresDefaultConstructor() throws Exception {
+        // replacing the Java template for classes with one without a default constructor
+        RepositoryImpl.MultiFileSystemImpl systemFS = (RepositoryImpl.MultiFileSystemImpl)Repository.getDefault().getDefaultFileSystem();
+        FileObject classTemplate = systemFS.getRoot().getFileObject("Templates/Classes/Class.java");
+        TestUtilities.copyStringToFileObject(classTemplate,
+                "package Templates.Classes;" +
+                "public class Class {" +
+                "}");
+        try {
+            // assert a default constructor is added even when the template did not contain one
+            FileObject javaFO = GenerationUtils.createClass(workDir, "TestClass2", "Javadoc");
+            runUserActionTask(javaFO, new AbstractTask<CompilationController>() {
+                public void run(CompilationController controller) throws Exception {
+                    assertTrue(SourceUtils.newInstance(controller).getDefaultConstructor() != null);
+                }
+            });
+        } finally {
+            // cleaning the changes to the system file system
+            systemFS.reset();
+        }
+    }
+
+    private static void runUserActionTask(FileObject javaFile, CancellableTask<CompilationController> taskToTest) throws Exception {
+        JavaSource javaSource = JavaSource.forFileObject(javaFile);
+        javaSource.runUserActionTask(taskToTest, true);
     }
 }
