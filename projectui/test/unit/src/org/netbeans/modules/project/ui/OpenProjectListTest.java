@@ -89,7 +89,6 @@ public class OpenProjectListTest extends NbTestCase {
         ProjectUtilities.OPEN_CLOSE_PROJECT_DOCUMENT_IMPL.open (f2_1_open);
         
         // close both projects with own open files
-        ProjectUtilities.closeAllDocuments(new Project[] {project1, project2}, false);
         OpenProjectList.getDefault().close(new Project[] {project1, project2}, false);
     }
     
@@ -110,7 +109,6 @@ public class OpenProjectListTest extends NbTestCase {
     public void testClose () throws Exception {
         testOpen ();
         
-        ProjectUtilities.closeAllDocuments(new Project[] {project1}, false);
         OpenProjectList.getDefault().close(new Project[] {project1}, false);
         assertFalse ("Document f1_1_open isn't loaded.", handler.openFiles.contains (f1_1_open.getURL ().toExternalForm ()));
         assertFalse ("Document f1_2_open isn't loaded.", handler.openFiles.contains (f1_2_open.getURL ().toExternalForm ()));
