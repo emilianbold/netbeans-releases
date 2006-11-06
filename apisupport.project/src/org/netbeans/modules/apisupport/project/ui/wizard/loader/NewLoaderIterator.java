@@ -32,15 +32,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
+import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
+import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbBundle;
 import org.openide.xml.XMLUtil;
 
@@ -204,7 +209,21 @@ final class NewLoaderIterator extends BasicWizardIterator {
         }
         
         String doName = model.getDefaultPackagePath(namePrefix + "DataObject.java"); // NOI18N
-        template = NewLoaderIterator.class.getResource("templateDataObject.javx");//NOI18N
+        template = null;
+        try {
+            ModuleList moduleList = model.getProject().getModuleList();
+            ModuleEntry entry = moduleList.getEntry("org.openide.loaders"); // NOI18N
+            SpecificationVersion current = new SpecificationVersion(entry.getSpecificationVersion());
+            SpecificationVersion desired = new SpecificationVersion("6.0"); // NOI18N
+            if (current.compareTo(desired) >= 0) {
+                template = NewLoaderIterator.class.getResource("templateDataObjectWithLookup.javx");//NOI18N
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(NewLoaderIterator.class.getName()).log(Level.INFO, null, ex);
+        }
+        if (template == null) {
+            template = NewLoaderIterator.class.getResource("templateDataObject.javx");//NOI18N
+        }
         fileChanges.add(fileChanges.createFileWithSubstitutions(doName, template, replaceTokens));
         
         // 3. node file

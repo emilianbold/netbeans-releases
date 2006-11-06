@@ -2,6 +2,7 @@ package @@PACKAGENAME@@;
 
 import org.openide.loaders.DataNode;
 import org.openide.nodes.Children;
+import org.openide.util.Lookup;
 
 public class @@PREFIX@@DataNode extends DataNode {
 
@@ -9,6 +10,10 @@ public class @@PREFIX@@DataNode extends DataNode {
 
     public @@PREFIX@@DataNode(@@PREFIX@@DataObject obj) {
         super(obj, Children.LEAF);
+@@COMMENTICON@@        setIconBaseWithExtension(IMAGE_ICON_BASE);
+    }
+    @@PREFIX@@DataNode(@@PREFIX@@DataObject obj, Lookup lookup) {
+        super(obj, Children.LEAF, lookup);
 @@COMMENTICON@@        setIconBaseWithExtension(IMAGE_ICON_BASE);
     }
 
