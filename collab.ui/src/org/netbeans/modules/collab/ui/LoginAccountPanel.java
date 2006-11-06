@@ -486,26 +486,24 @@ public class LoginAccountPanel extends JPanel {
         loginButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
 
+        FormListener formListener = new FormListener();
+
         setLayout(new java.awt.GridBagLayout());
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        setOpaque(false);
         setPreferredSize(new java.awt.Dimension(275, 300));
         setRequestFocusEnabled(false);
-        setOpaque(false);
         accountScrollPane.setBorder(null);
         accountScrollPane.setMinimumSize(new java.awt.Dimension(200, 22));
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
-        newAccountLink.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/collab/ui/Bundle").getString("LBL_LoginAccountForm_newAccountLink"));
+        org.openide.awt.Mnemonics.setLocalizedText(newAccountLink, org.openide.util.NbBundle.getMessage(LoginAccountPanel.class, "LBL_LoginAccountForm_newAccountLink")); // NOI18N
         newAccountLink.setBorderPainted(false);
         newAccountLink.setDebugGraphicsOptions(javax.swing.DebugGraphics.NONE_OPTION);
         newAccountLink.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         newAccountLink.setMinimumSize(new java.awt.Dimension(109, 15));
-        newAccountLink.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                newAccountLinkActionPerformed(evt);
-            }
-        });
+        newAccountLink.addActionListener(formListener);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -522,7 +520,8 @@ public class LoginAccountPanel extends JPanel {
         accountPanel.setLayout(new java.awt.GridBagLayout());
 
         accountPanel.setOpaque(false);
-        accountLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/collab/ui/Bundle").getString("LBL_LoginAccountPanel_Account"));
+        accountLabel.setLabelFor(accountComboBox);
+        org.openide.awt.Mnemonics.setLocalizedText(accountLabel, org.openide.util.NbBundle.getMessage(LoginAccountPanel.class, "LBL_LoginAccountPanel_Account")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -530,11 +529,7 @@ public class LoginAccountPanel extends JPanel {
 
         accountComboBox.setMinimumSize(new java.awt.Dimension(24, 22));
         accountComboBox.setPreferredSize(new java.awt.Dimension(24, 22));
-        accountComboBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                accountComboBoxActionPerformed(evt);
-            }
-        });
+        accountComboBox.addActionListener(formListener);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -544,8 +539,7 @@ public class LoginAccountPanel extends JPanel {
         accountPanel.add(accountComboBox, gridBagConstraints);
 
         passwordLabel.setLabelFor(passwordField);
-        passwordLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/collab/ui/Bundle").getString("LBL_LoginAccountPanel_Password"));
-        passwordLabel.setFocusable(false);
+        org.openide.awt.Mnemonics.setLocalizedText(passwordLabel, org.openide.util.NbBundle.getMessage(LoginAccountPanel.class, "LBL_LoginAccountPanel_Password")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -563,25 +557,17 @@ public class LoginAccountPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(3, 0, 5, 0);
         accountPanel.add(passwordField, gridBagConstraints);
 
-        rememberPasswordCheckBox.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/collab/ui/Bundle").getString("LBL_LoginAccountPanel_RememberPassword"));
+        org.openide.awt.Mnemonics.setLocalizedText(rememberPasswordCheckBox, org.openide.util.NbBundle.getMessage(LoginAccountPanel.class, "LBL_LoginAccountPanel_RememberPassword")); // NOI18N
         rememberPasswordCheckBox.setOpaque(false);
-        rememberPasswordCheckBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                rememberPasswordCheckBoxItemStateChanged(evt);
-            }
-        });
+        rememberPasswordCheckBox.addItemListener(formListener);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         accountPanel.add(rememberPasswordCheckBox, gridBagConstraints);
 
-        autoLoginCheckBox.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/collab/ui/Bundle").getString("LBL_LoginAccountPanel_AutoLogin"));
-        autoLoginCheckBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                autoLoginCheckBoxItemStateChanged(evt);
-            }
-        });
+        org.openide.awt.Mnemonics.setLocalizedText(autoLoginCheckBox, org.openide.util.NbBundle.getMessage(LoginAccountPanel.class, "LBL_LoginAccountPanel_AutoLogin")); // NOI18N
+        autoLoginCheckBox.addItemListener(formListener);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -616,12 +602,8 @@ public class LoginAccountPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         jPanel1.add(messageLabel, gridBagConstraints);
 
-        loginButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/collab/ui/Bundle").getString("BTN_LoginAccountPanel_Login"));
-        loginButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                loginButtonActionPerformed(evt);
-            }
-        });
+        org.openide.awt.Mnemonics.setLocalizedText(loginButton, org.openide.util.NbBundle.getMessage(LoginAccountPanel.class, "BTN_LoginAccountPanel_Login")); // NOI18N
+        loginButton.addActionListener(formListener);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.RELATIVE;
@@ -630,13 +612,9 @@ public class LoginAccountPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 3);
         jPanel1.add(loginButton, gridBagConstraints);
 
-        cancelButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/collab/ui/Bundle").getString("LBL_LoginAccountPanel_cancelButton"));
+        org.openide.awt.Mnemonics.setLocalizedText(cancelButton, org.openide.util.NbBundle.getMessage(LoginAccountPanel.class, "LBL_LoginAccountPanel_cancelButton")); // NOI18N
         cancelButton.setEnabled(false);
-        cancelButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cancelButtonActionPerformed(evt);
-            }
-        });
+        cancelButton.addActionListener(formListener);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -649,6 +627,35 @@ public class LoginAccountPanel extends JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         add(jPanel1, gridBagConstraints);
 
+    }
+
+    // Code for dispatching events from components to event handlers.
+
+    private class FormListener implements java.awt.event.ActionListener, java.awt.event.ItemListener {
+        FormListener() {}
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            if (evt.getSource() == newAccountLink) {
+                LoginAccountPanel.this.newAccountLinkActionPerformed(evt);
+            }
+            else if (evt.getSource() == accountComboBox) {
+                LoginAccountPanel.this.accountComboBoxActionPerformed(evt);
+            }
+            else if (evt.getSource() == loginButton) {
+                LoginAccountPanel.this.loginButtonActionPerformed(evt);
+            }
+            else if (evt.getSource() == cancelButton) {
+                LoginAccountPanel.this.cancelButtonActionPerformed(evt);
+            }
+        }
+
+        public void itemStateChanged(java.awt.event.ItemEvent evt) {
+            if (evt.getSource() == rememberPasswordCheckBox) {
+                LoginAccountPanel.this.rememberPasswordCheckBoxItemStateChanged(evt);
+            }
+            else if (evt.getSource() == autoLoginCheckBox) {
+                LoginAccountPanel.this.autoLoginCheckBoxItemStateChanged(evt);
+            }
+        }
     }// </editor-fold>//GEN-END:initComponents
     private void rememberPasswordCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_rememberPasswordCheckBoxItemStateChanged
 

@@ -88,7 +88,7 @@ public class AuthSubscriptionForm extends javax.swing.JPanel {
         Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
 
         try {
-            dialog.show();
+            dialog.setVisible(true);
 
             if (descriptor.getValue() == DialogDescriptor.OK_OPTION) {
                 if (rbAccept.isSelected()) {
@@ -161,7 +161,7 @@ public class AuthSubscriptionForm extends javax.swing.JPanel {
         setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 0, 5));
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        jLabel2.setText(NbBundle.getMessage(AuthSubscriptionForm.class, "LBL_AuthSubscriptionForm_Subscriber", subscriberName));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, NbBundle.getMessage(AuthSubscriptionForm.class, "LBL_AuthSubscriptionForm_Subscriber", subscriberName)); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -171,7 +171,7 @@ public class AuthSubscriptionForm extends javax.swing.JPanel {
 
         buttonGroup1.add(rbAccept);
         rbAccept.setSelected(true);
-        rbAccept.setText(org.openide.util.NbBundle.getMessage(AuthSubscriptionForm.class, "BTN_AuthSubscriptionForm_Accept"));
+        org.openide.awt.Mnemonics.setLocalizedText(rbAccept, org.openide.util.NbBundle.getMessage(AuthSubscriptionForm.class, "BTN_AuthSubscriptionForm_Accept")); // NOI18N
         rbAccept.addItemListener(formListener);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -183,7 +183,7 @@ public class AuthSubscriptionForm extends javax.swing.JPanel {
         jPanel1.add(rbAccept, gridBagConstraints);
 
         buttonGroup1.add(rbDeny);
-        rbDeny.setText(org.openide.util.NbBundle.getMessage(AuthSubscriptionForm.class, "BTN_AuthSubscriptionForm_Deny"));
+        org.openide.awt.Mnemonics.setLocalizedText(rbDeny, org.openide.util.NbBundle.getMessage(AuthSubscriptionForm.class, "BTN_AuthSubscriptionForm_Deny")); // NOI18N
         rbDeny.addItemListener(formListener);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -194,7 +194,7 @@ public class AuthSubscriptionForm extends javax.swing.JPanel {
         jPanel1.add(rbDeny, gridBagConstraints);
 
         cbxAdd.setSelected(true);
-        cbxAdd.setText(NbBundle.getMessage(AuthSubscriptionForm.class, "CBX_AuthSubscriptionForm_AddTo", subscriberName));
+        org.openide.awt.Mnemonics.setLocalizedText(cbxAdd, NbBundle.getMessage(AuthSubscriptionForm.class, "CBX_AuthSubscriptionForm_AddTo", subscriberName)); // NOI18N
         cbxAdd.addItemListener(formListener);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -217,6 +217,7 @@ public class AuthSubscriptionForm extends javax.swing.JPanel {
     // Code for dispatching events from components to event handlers.
 
     private class FormListener implements java.awt.event.ItemListener {
+        FormListener() {}
         public void itemStateChanged(java.awt.event.ItemEvent evt) {
             if (evt.getSource() == rbAccept) {
                 AuthSubscriptionForm.this.rbAcceptItemStateChanged(evt);
@@ -228,8 +229,7 @@ public class AuthSubscriptionForm extends javax.swing.JPanel {
                 AuthSubscriptionForm.this.cbxAddItemStateChanged(evt);
             }
         }
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     private void rbDenyItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_rbDenyItemStateChanged
         if (rbDeny.isSelected()) {
             cbxAdd.setEnabled(false);

@@ -407,8 +407,8 @@ public class AddConversationForm extends javax.swing.JPanel implements ListSelec
         setPreferredSize(new java.awt.Dimension(400, 300));
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(AddConversationForm.class, "TITLE_AddConversationForm_FindConference")), null));
-        conferenceNameLabel.setText(org.openide.util.NbBundle.getMessage(AddConversationForm.class, "LBL_AddConversationForm_Name"));
+        jPanel1.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(AddConversationForm.class, "TITLE_AddConversationForm_FindConference")), null)); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(conferenceNameLabel, org.openide.util.NbBundle.getMessage(AddConversationForm.class, "LBL_AddConversationForm_Name")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.RELATIVE;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
@@ -426,7 +426,7 @@ public class AddConversationForm extends javax.swing.JPanel implements ListSelec
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 5);
         jPanel1.add(conferenceNameField, gridBagConstraints);
 
-        findBtn.setText(org.openide.util.NbBundle.getMessage(AddConversationForm.class, "BTN_AddConversationForm_Find"));
+        org.openide.awt.Mnemonics.setLocalizedText(findBtn, org.openide.util.NbBundle.getMessage(AddConversationForm.class, "BTN_AddConversationForm_Find")); // NOI18N
         findBtn.setEnabled(false);
         findBtn.addActionListener(formListener);
 
@@ -437,7 +437,7 @@ public class AddConversationForm extends javax.swing.JPanel implements ListSelec
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 5);
         jPanel1.add(findBtn, gridBagConstraints);
 
-        browseBtn.setText(org.openide.util.NbBundle.getMessage(AddConversationForm.class, "BTN_AddConversationForm_BrowseConferences"));
+        org.openide.awt.Mnemonics.setLocalizedText(browseBtn, org.openide.util.NbBundle.getMessage(AddConversationForm.class, "BTN_AddConversationForm_BrowseConferences")); // NOI18N
         browseBtn.addActionListener(formListener);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -466,7 +466,7 @@ public class AddConversationForm extends javax.swing.JPanel implements ListSelec
 
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
-        jPanel2.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(AddConversationForm.class, "LBL_AddConversationForm_ConferencesToAdd")), javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1)));
+        jPanel2.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(AddConversationForm.class, "LBL_AddConversationForm_ConferencesToAdd")), javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1))); // NOI18N
         jScrollPane1.setViewportView(resultJList);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -477,7 +477,7 @@ public class AddConversationForm extends javax.swing.JPanel implements ListSelec
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         jPanel2.add(jScrollPane1, gridBagConstraints);
 
-        removeBtn.setText(org.openide.util.NbBundle.getMessage(AddConversationForm.class, "BTN_AddConversationForm_Remove"));
+        org.openide.awt.Mnemonics.setLocalizedText(removeBtn, org.openide.util.NbBundle.getMessage(AddConversationForm.class, "BTN_AddConversationForm_Remove")); // NOI18N
         removeBtn.setEnabled(false);
         removeBtn.addActionListener(formListener);
 
@@ -501,6 +501,7 @@ public class AddConversationForm extends javax.swing.JPanel implements ListSelec
     // Code for dispatching events from components to event handlers.
 
     private class FormListener implements java.awt.event.ActionListener {
+        FormListener() {}
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             if (evt.getSource() == conferenceNameField) {
                 AddConversationForm.this.conferenceNameFieldActionPerformed(evt);
