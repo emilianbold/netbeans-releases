@@ -62,21 +62,21 @@ public class CvsModuleConfig {
     }
     
     /**
-     * @param path File.getAbsolutePath()
+     * @param paths collection of paths, of File.getAbsolutePath()
      */
-    public void addExclusionPath(String path) {
+    public void addExclusionPaths(Collection<String> paths) {
         Set<String> exclusions = getCommitExclusions();
-        if (exclusions.add(path)) {
+        if (exclusions.addAll(paths)) {
             Utils.put(getPreferences(), PROP_COMMIT_EXCLUSIONS, new ArrayList<String>(exclusions));
         }
     }
 
     /**
-     * @param path File.getAbsolutePath()
+     * @param paths collection of paths, File.getAbsolutePath()
      */
-    public void removeExclusionPath(String path) {
+    public void removeExclusionPaths(Collection<String> paths) {
         Set<String> exclusions = getCommitExclusions();
-        if (exclusions.remove(path)) {
+        if (exclusions.removeAll(paths)) {
             Utils.put(getPreferences(), PROP_COMMIT_EXCLUSIONS, new ArrayList<String>(exclusions));
         }
     }

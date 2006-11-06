@@ -128,10 +128,11 @@ public class CommitAction extends AbstractSystemAction {
         CommitSettings.CommitFile [] files = settings.getCommitFiles();
         for (int i = 0; i < files.length; i++) {
             CommitSettings.CommitFile file = files[i];
+            List<String> paths = Arrays.asList(new String[] { file.getNode().getFile().getAbsolutePath() });
             if (file.getOptions() == CommitOptions.EXCLUDE) {
-                CvsModuleConfig.getDefault().addExclusionPath(file.getNode().getFile().getAbsolutePath());
+                CvsModuleConfig.getDefault().addExclusionPaths(paths);
             } else {
-                CvsModuleConfig.getDefault().removeExclusionPath(file.getNode().getFile().getAbsolutePath());
+                CvsModuleConfig.getDefault().removeExclusionPaths(paths);
             }
         }
     }

@@ -20,6 +20,8 @@
 package org.netbeans.modules.subversion.ui.commit;
 
 import java.io.*;
+import java.util.List;
+import java.util.ArrayList;
 
 import org.netbeans.modules.subversion.ui.actions.*;
 import org.netbeans.modules.subversion.FileInformation;
@@ -87,22 +89,15 @@ public final class ExcludeFromCommitAction extends ContextAction {
                 SvnModuleConfig config = SvnModuleConfig.getDefault();
                 int status = getActionStatus(nodes);
                 File [] files = getContext(nodes).getFiles();
+                List<String> paths = new ArrayList<String>(files.length);
+                for (File file : files) {
+                    paths.add(file.getAbsolutePath());
+                }
+                if (isCanceled()) return;
                 if (status == EXCLUDING) {
-                    for (int i = 0; i < files.length; i++) {
-                        if(isCanceled()) {
-                            return;
-                        }
-                        File file = files[i];
-                        config.addExclusionPath(file.getAbsolutePath());
-                    }
+                    config.addExclusionPaths(paths);
                 } else if (status == INCLUDING) {
-                    for (int i = 0; i < files.length; i++) {
-                        if(isCanceled()) {
-                            return;
-                        }
-                        File file = files[i];
-                        config.removeExclusionPath(file.getAbsolutePath());
-                    }
+                    config.removeExclusionPaths(paths);
                 }
             }
         };
