@@ -19,11 +19,14 @@
 
 package org.netbeans.modules.java;
 
+import com.sun.tools.javac.util.List;
+import java.util.Collection;
+import org.netbeans.spi.java.loaders.RenameHandler;
+import org.openide.ErrorManager;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Children;
-
-
+import org.openide.util.Lookup;
 
 /**
  * The node representation of Java source files.
@@ -44,5 +47,27 @@ public final class JavaNode extends DataNode {
         super (jdo, Children.LEAF);
         this.setIconBaseWithExtension(isJavaSource ? JAVA_ICON_BASE : CLASS_ICON_BASE);
     }
+    
+    public void setName(String name) {
+        RenameHandler handler = getRenameHandler();
+        if (handler == null) {
+            super.setName(name);
+        } else {
+            try {
+                handler.handleRename(JavaNode.this, name);
+            } catch (IllegalArgumentException ioe) {
+                super.setName(name);
+            }
+        }
+    }
+    
+    private static synchronized RenameHandler getRenameHandler() {
+        Collection<? extends RenameHandler> handlers = (Lookup.getDefault().lookupAll(RenameHandler.class)) ;
+        if (handlers.size()==0)
+            return null;
+        if (handlers.size()>1)
+            ErrorManager.getDefault().log(ErrorManager.WARNING, "Multiple instances of RenameHandler found in Lookup; only using first one: " + handlers); //NOI18N
+        return handlers.iterator().next();
+    }    
 
 }

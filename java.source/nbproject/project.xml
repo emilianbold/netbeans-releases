@@ -248,6 +248,7 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.netbeans.api.java.loaders</package>
                 <package>org.netbeans.api.java.source</package>
                 <package>org.netbeans.api.java.source.support</package>
+                <package>org.netbeans.spi.java.loaders</package>
             </public-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/lucene-core-2.0.0.jar</runtime-relative-path>
