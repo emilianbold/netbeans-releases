@@ -47,8 +47,8 @@ public class PostCreateBundleSummaryPanel extends TextPanel {
     
     private NbiLabel    successfullyBundledComponentsLabel;
     private NbiTextPane successfullyBundledComponentsPane;
-    private NbiLabel    componentsFailedToInstallLabel;
-    private NbiTextPane componentsFailedToInstallPane;
+    private NbiLabel    componentsFailedToBundleLabel;
+    private NbiTextPane componentsFailedToBundlePane;
     
     private NbiButton   viewLogButton;
     private NbiButton   sendLogButton;
@@ -106,25 +106,19 @@ public class PostCreateBundleSummaryPanel extends TextPanel {
         
         components = registry.getComponentsFailedToInstallDuringThisSession();
         if (components.size() > 0) {
-            componentsFailedToInstallLabel.setVisible(true);
-            componentsFailedToInstallPane.setVisible(true);
+            componentsFailedToBundleLabel.setVisible(true);
+            componentsFailedToBundlePane.setVisible(true);
             
-            componentsFailedToInstallLabel.setText(getProperty(COMPONENTS_FAILED_TO_BUNDLE_LABEL_TEXT_PROPERTY));
-            componentsFailedToInstallPane.setContentType(getProperty(COMPONENTS_FAILED_TO_BUNDLE_CONTENT_TYPE_PROPERTY));
-            componentsFailedToInstallPane.setText(stringUtils.formatMessage(getProperty(COMPONENTS_FAILED_TO_BUNDLE_TEXT_PROPERTY), stringUtils.asString(components, getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY))));
+            componentsFailedToBundleLabel.setText(getProperty(COMPONENTS_FAILED_TO_BUNDLE_LABEL_TEXT_PROPERTY));
+            componentsFailedToBundlePane.setContentType(getProperty(COMPONENTS_FAILED_TO_BUNDLE_CONTENT_TYPE_PROPERTY));
+            componentsFailedToBundlePane.setText(stringUtils.formatMessage(getProperty(COMPONENTS_FAILED_TO_BUNDLE_TEXT_PROPERTY), stringUtils.asString(components, getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY))));
         } else {
-            componentsFailedToInstallLabel.setVisible(false);
-            componentsFailedToInstallPane.setVisible(false);
+            componentsFailedToBundleLabel.setVisible(false);
+            componentsFailedToBundlePane.setVisible(false);
         }
         
-        final String viewLogButtonText = getProperty(VIEW_LOG_BUTTON_TEXT_PROPERTY);
-        viewLogButton.setText(stringUtils.stripMnemonic(viewLogButtonText));
-        viewLogButton.setMnemonic(stringUtils.fetchMnemonic(viewLogButtonText));
-        
-        final String sendLogButtonText = getProperty(SEND_LOG_BUTTON_TEXT_PROPERTY);
-        sendLogButton.setText(stringUtils.stripMnemonic(sendLogButtonText));
-        sendLogButton.setMnemonic(stringUtils.fetchMnemonic(sendLogButtonText));
-        
+        viewLogButton.setText(getProperty(VIEW_LOG_BUTTON_TEXT_PROPERTY));
+        sendLogButton.setText(getProperty(SEND_LOG_BUTTON_TEXT_PROPERTY));
     }
     
     public void initComponents() {
@@ -137,12 +131,12 @@ public class PostCreateBundleSummaryPanel extends TextPanel {
         successfullyBundledComponentsPane.setEditable(false);
         successfullyBundledComponentsPane.setBorder(new EmptyBorder(0, 0, 0, 0));
         
-        componentsFailedToInstallLabel = new NbiLabel();
+        componentsFailedToBundleLabel = new NbiLabel();
         
-        componentsFailedToInstallPane = new NbiTextPane();
-        componentsFailedToInstallPane.setOpaque(false);
-        componentsFailedToInstallPane.setEditable(false);
-        componentsFailedToInstallPane.setBorder(new EmptyBorder(0, 0, 0, 0));
+        componentsFailedToBundlePane = new NbiTextPane();
+        componentsFailedToBundlePane.setOpaque(false);
+        componentsFailedToBundlePane.setEditable(false);
+        componentsFailedToBundlePane.setBorder(new EmptyBorder(0, 0, 0, 0));
         
         viewLogButton = new NbiButton();
         viewLogButton.addActionListener(new ActionListener() {
@@ -164,9 +158,11 @@ public class PostCreateBundleSummaryPanel extends TextPanel {
         add(messagePane, new GridBagConstraints(0, 0, 2, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(11, 11, 0, 11), 0, 0));
         add(successfullyBundledComponentsLabel, new GridBagConstraints(0, 1, 2, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(15, 11, 0, 11), 0, 0));
         add(successfullyBundledComponentsPane, new GridBagConstraints(0, 2, 2, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(3, 11, 0, 11), 0, 0));
-        add(spacer, new GridBagConstraints(0, 3, 2, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 11, 0, 11), 0, 0));
-        add(viewLogButton, new GridBagConstraints(1, 4, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(3, 11, 11, 0), 0, 0));
-        add(sendLogButton, new GridBagConstraints(2, 4, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(3, 6, 11, 11), 0, 0));
+        add(componentsFailedToBundleLabel, new GridBagConstraints(0, 3, 2, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(15, 11, 0, 11), 0, 0));
+        add(componentsFailedToBundlePane, new GridBagConstraints(0, 4, 2, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(3, 11, 0, 11), 0, 0));
+        add(spacer, new GridBagConstraints(0, 5, 2, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 11, 0, 11), 0, 0));
+        add(viewLogButton, new GridBagConstraints(0, 6, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(3, 11, 11, 0), 0, 0));
+        add(sendLogButton, new GridBagConstraints(1, 6, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(3, 6, 11, 11), 0, 0));
     }
     
     private void viewLogButtonClicked() {

@@ -22,6 +22,7 @@ package org.netbeans.installer.utils.helper.swing;
 
 import java.awt.Toolkit;
 import javax.swing.JButton;
+import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
 
 /**
@@ -29,6 +30,8 @@ import org.netbeans.installer.utils.SystemUtils;
  * @author ks152834
  */
 public class NbiButton extends JButton {
+    private static final StringUtils stringUtils = StringUtils.getInstance();
+    
     public NbiButton() {
         super();
         
@@ -42,5 +45,10 @@ public class NbiButton extends JButton {
                 setOpaque(false);
             }
         }
+    }
+    
+    public void setText(String text) {
+        super.setText(stringUtils.stripMnemonic(text));
+        super.setMnemonic(stringUtils.fetchMnemonic(text));
     }
 }

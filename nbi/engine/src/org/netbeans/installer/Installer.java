@@ -83,7 +83,7 @@ public class Installer {
     public static final String NBI_LOOK_AND_FEEL_CLASS_NAME_PROPERTY =
             "nbi.look.and.feel";
     
-    public static final String CREATE_BUNDLE_PATH_PROPERTY = 
+    public static final String CREATE_BUNDLE_PATH_PROPERTY =
             "nbi.create.bundle.path";
     
     /** Errorcode to be used at normal exit */
@@ -131,13 +131,13 @@ public class Installer {
         logManager.log(MESSAGE, "initializing the installer engine");
         logManager.indent();
         
+        instance = this;
+        
         dumpSystemInfo();
         
         parseArguments(arguments);
         
         setLookAndFeel();
-        
-        instance = this;
         
         logManager.unindent();
         logManager.log(MESSAGE, "... finished initializing the installer engine");
@@ -496,26 +496,36 @@ public class Installer {
             if(url == null) {
                 throw new IOException("No manifest in the engine");
             }
+            
+            logManager.log(DEBUG, "NBI Engine URL for Installer.Class = " + url);
+            logManager.log(DEBUG, "URL Path = " + url.getPath());
+            
             if("jar".equals(url.getProtocol())) {
-                //we run engine from jar, not from .class
+                // we run engine from jar, not from .class
                 String path = url.getPath();
-                logManager.log(DEBUG, "NBI Engine URL for Installer.Class = " + url);
-                logManager.log(DEBUG, "URL Path = " + url.getPath());
                 String filePrefix = "file:";
                 String httpPrefix = "http://";
-                String jarResourceSep = "!/";
+                String jarSep = "!/";
                 String name = "nbi-engine.jar";
                 File dest = null;
                 File jarfile = null;
-                if(path!=null) {
-                    if(path.startsWith(filePrefix)) {
-                        jarfile = new File(path.substring(filePrefix.length(),
-                                path.indexOf(jarResourceSep + installerResource)));
-                        
-                    } else if(path.startsWith(httpPrefix)) {
+                if (path != null) {
+                    if (path.startsWith(filePrefix)) {
+                        if (path.indexOf(jarSep) != -1) {
+                            jarfile = new File(path.substring(filePrefix.length(),
+                                    path.indexOf(jarSep + installerResource)));
+                        } else {
+                            // a quick hack to allow caching engine when run from
+                            // the IDE (i.e. as a .class) - probably to be removed
+                            // later. Or maybe not...
+                            File root = new File(path.substring(filePrefix.length(),
+                                    path.indexOf(installerResource)));
+                            jarfile = new File(root, "dist/nbi-engine.jar");
+                        }
+                    } else if (path.startsWith(httpPrefix)) {
                         String jarLocation = path.substring(
                                 path.indexOf(httpPrefix),
-                                path.indexOf(jarResourceSep + installerResource));
+                                path.indexOf(jarSep + installerResource));
                         try {
                             logManager.log(MESSAGE,
                                     "Downloading engine jar file from " + jarLocation);
@@ -532,8 +542,8 @@ public class Installer {
                     dest = new File(getLocalDirectory().getPath() +
                             File.separator + name);
                     
-                    if(jarfile!=null) {                        
-                        if(!jarfile.getAbsolutePath().equals(dest.getAbsolutePath()) && jarfile.exists()) {                            
+                    if(jarfile!=null) {
+                        if(!jarfile.getAbsolutePath().equals(dest.getAbsolutePath()) && jarfile.exists()) {
                             FileUtils.getInstance().copyFile(jarfile,dest);
                         }
                     }
@@ -544,6 +554,32 @@ public class Installer {
                 }
             }
             
+            // a quick hack to allow caching engine when run from
+            // the IDE (i.e. as a .class) - probably to be removed
+            // later. Or maybe not...
+            if("file".equals(url.getProtocol())) {
+                String path = url.toString();
+                String filePrefix = "file:";
+                String name = "nbi-engine.jar";
+                
+                File root = new File(path.substring(filePrefix.length(),
+                        path.indexOf("build/classes/" + installerResource)));
+                
+                File jarfile = new File(root, "dist/nbi-engine.jar");
+                
+                File dest = new File(getLocalDirectory().getPath() + File.separator + name);
+                
+                if (jarfile != null) {
+                    if(!jarfile.getAbsolutePath().equals(dest.getAbsolutePath()) && jarfile.exists()) {
+                        FileUtils.getInstance().copyFile(jarfile, dest);
+                    }
+                }
+                
+                cachedEngine = (!dest.exists()) ? null : dest;
+                logManager.log(MESSAGE, "NBI Engine jar file = [" +
+                        cachedEngine + "], exist = " +
+                        ((cachedEngine==null) ? false : cachedEngine.exists()));
+            }
         } catch (IOException ex) {
             logManager.log(CRITICAL, "can`t cache installer engine");
             logManager.log(CRITICAL, ex);

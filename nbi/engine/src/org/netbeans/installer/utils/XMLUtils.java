@@ -23,6 +23,7 @@ package org.netbeans.installer.utils;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -60,7 +61,9 @@ public abstract class XMLUtils {
     
     ////////////////////////////////////////////////////////////////////////////
     // Instance
-    public abstract void saveXMLDocument(Document doc, File file,File xsltTransformFile) throws TransformerConfigurationException, TransformerException, IOException;
+    public abstract void saveXMLDocument(Document document, File file, File stylesheet) throws TransformerConfigurationException, TransformerException, IOException;
+    
+    public abstract void saveXMLDocument(Document document, OutputStream output, File stylesheet) throws TransformerConfigurationException, TransformerException, IOException;
     
     public abstract List <Node> getChildList(Node root, String ... childs);
     
@@ -77,24 +80,30 @@ public abstract class XMLUtils {
     ////////////////////////////////////////////////////////////////////////////
     // Inner Classes
     private static class GenericXMLUtils extends XMLUtils {
-        public void saveXMLDocument(Document doc, File file,File xsltTransformFile) throws TransformerConfigurationException, TransformerException, IOException {
-            FileOutputStream outputStream = null;
+        public void saveXMLDocument(Document document, File file, File stylesheet) throws TransformerConfigurationException, TransformerException, IOException {
+            FileOutputStream output = null;
             try {
-                Source xsltSource = new StreamSource(xsltTransformFile);
-                Source domSource = new DOMSource(doc);
-                outputStream = new FileOutputStream(file);
-                Result streamResult = new StreamResult(outputStream);
+                output = new FileOutputStream(file);
                 
-                TransformerFactory transformerFactory = TransformerFactory.newInstance();
-                Transformer transformer = transformerFactory.newTransformer(xsltSource);
-                
-                transformer.transform(domSource, streamResult);
+                saveXMLDocument(document, output, stylesheet);
             } finally {
-                if(outputStream!=null) {
-                    outputStream.close();
+                if (output != null) {
+                    output.close();
                 }
             }
         }
+        
+        public void saveXMLDocument(Document document, OutputStream output, File stylesheet) throws TransformerConfigurationException, TransformerException, IOException {
+            Source xsltSource = new StreamSource(stylesheet);
+            Source domSource = new DOMSource(document);
+            Result streamResult = new StreamResult(output);
+            
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            Transformer transformer = transformerFactory.newTransformer(xsltSource);
+            
+            transformer.transform(domSource, streamResult);
+        }
+        
         // get an array of String from string "(Name1,Name2,Name3)"
         private String [] getChildNamesFromString(String childname, String name) {
             String [] result;
@@ -123,6 +132,7 @@ public abstract class XMLUtils {
             }
             return result;
         }
+        
         private HashMap <String,String> getAttributesFromChildName(String childname) {
             HashMap <String,String> map = new HashMap <String,String> ();
             
@@ -145,6 +155,7 @@ public abstract class XMLUtils {
             }
             return map;
         }
+        
         private boolean hasAttributes(Node childNode, HashMap <String, String> attributes) {
             int size = attributes.size();
             if(size==0) {
@@ -161,6 +172,7 @@ public abstract class XMLUtils {
             }
             return true;
         }
+        
         private void processChild(List <Node> result, Node childNode, String childnameString) {
             String name =  childNode.getNodeName();
             String [] names = getChildNamesFromString(childnameString,name);
@@ -171,6 +183,7 @@ public abstract class XMLUtils {
                 }
             }
         }
+        
         private List <Node> getChildListFromRootList(List <Node> rootlist, String childname) {
             List <Node> result = new LinkedList <Node> ();
             for(int i=0;i<rootlist.size();i++) {
@@ -217,6 +230,7 @@ public abstract class XMLUtils {
             }
             return list.get(0);
         }
+        
         public String getNodeAttribute(Node node, String attrName) {
             String str = null;
             
@@ -240,6 +254,7 @@ public abstract class XMLUtils {
             return (node==null) ? null : node.getTextContent();
             
         }
+        
         public String getChildNodeTextContent(Node root, String ... childs) throws ParseException {
             return getNodeTextContent(getChildNode(root,childs));
         }
@@ -256,6 +271,7 @@ public abstract class XMLUtils {
             }
             return result;
         }
+        
         private static final String ATTR_BEGIN = "[@";
         private static final String ATTR_END = "]";
         private static final String ATTR_DELIM = "=";

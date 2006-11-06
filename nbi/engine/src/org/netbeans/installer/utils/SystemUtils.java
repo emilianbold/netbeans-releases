@@ -22,6 +22,8 @@ package org.netbeans.installer.utils;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -135,6 +137,8 @@ public abstract class SystemUtils {
      *  <br>CURRENT_USER & ALL_USERS are not used by GenericSystemUtils, only by Windows/Unix/MacOSX implementations<br>
      */
     public abstract boolean setEnvironmentVariable(String name, String value, EnvironmentVariableScope scope, boolean flag) throws IOException, UnsupportedActionException;
+    
+    public abstract void transferStream(InputStream in, OutputStream out) throws IOException;
     
     // some helper overloaded implementations ///////////////////////////////////////
     public String parseString(String string) {
