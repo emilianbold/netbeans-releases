@@ -614,7 +614,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             int idx = headerText.indexOf('{'); //NOI18N
             if (idx >= 0) {
                 addKeywordsForClassBody(env);
-                addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM), null, null);
+                addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, TYPE_PARAMETER), null, null);
                 return;
             }
             TreeUtilities tu = controller.getTreeUtilities();
@@ -713,7 +713,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 addClassModifiers(env, cls.getModifiers().getFlags());
             } else {
                 addMemberModifiers(env, cls.getModifiers().getFlags(), false);
-                addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM), null, null);
+                addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, TYPE_PARAMETER), null, null);
             }
         }
         
@@ -729,7 +729,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 (int)sourcePositions.getEndPosition(root, type) : (int)sourcePositions.getStartPosition(root, type);            
             if (offset <= typePos) {
                 addMemberModifiers(env, var.getModifiers().getFlags(), isLocal);
-                addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM), null, null);
+                addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, TYPE_PARAMETER), null, null);
                 return;
             }
             Tree init = unwrapErrTree(var.getInitializer());
@@ -760,13 +760,13 @@ public class JavaCompletionProvider implements CompletionProvider {
                     startPos = modPos;
                 if (controller.getText().substring(startPos, offset).trim().length() == 0) {
                     addMemberModifiers(env, mth.getModifiers().getFlags(), false);
-                    addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM), null, null);
+                    addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, TYPE_PARAMETER), null, null);
                     return;
                 }
             } else {
                 if (offset <= sourcePositions.getStartPosition(root, retType)) {
                     addMemberModifiers(env, mth.getModifiers().getFlags(), false);
-                    addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM), null, null);
+                    addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, TYPE_PARAMETER), null, null);
                     return;
                 }
                 startPos = (int)sourcePositions.getEndPosition(root, retType) + 1;
@@ -799,7 +799,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                             if (ex.getKind() == TypeKind.DECLARED)
                                 results.add(JavaCompletionItem.createTypeItem((TypeElement)((DeclaredType)ex).asElement(), (DeclaredType)ex, offset, true, elements.isDeprecated(((DeclaredType)ex).asElement())));
                     } else {
-                        addTypes(env, EnumSet.of(CLASS, INTERFACE), controller.getTypes().getDeclaredType(controller.getElements().getTypeElement("java.lang.Throwable")), null); //NOI18N
+                        addTypes(env, EnumSet.of(CLASS, INTERFACE, TYPE_PARAMETER), controller.getTypes().getDeclaredType(controller.getElements().getTypeElement("java.lang.Throwable")), null); //NOI18N
                     }
                 }
                 return;
@@ -819,7 +819,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                 if (ex.getKind() == TypeKind.DECLARED)
                                     results.add(JavaCompletionItem.createTypeItem((TypeElement)((DeclaredType)ex).asElement(), (DeclaredType)ex, offset, true, elements.isDeprecated(((DeclaredType)ex).asElement())));
                         } else {
-                            addTypes(env, EnumSet.of(CLASS, INTERFACE), controller.getTypes().getDeclaredType(controller.getElements().getTypeElement("java.lang.Throwable")), null); //NOI18N
+                            addTypes(env, EnumSet.of(CLASS, INTERFACE, TYPE_PARAMETER), controller.getTypes().getDeclaredType(controller.getElements().getTypeElement("java.lang.Throwable")), null); //NOI18N
                         }
                     } else {
                         Tree mthParent = path.getParentPath().getLeaf();
@@ -841,7 +841,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     headerText = headerText.substring(parStart).trim();
                     if ("(".equals(headerText) || ",".equals(headerText)) { //NOI18N
                         addMemberModifiers(env, Collections.<Modifier>emptySet(), true);
-                        addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM), null, null);
+                        addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, TYPE_PARAMETER), null, null);
                     }
                 }
             }
@@ -905,10 +905,10 @@ public class JavaCompletionProvider implements CompletionProvider {
                 addClassModifiers(env, m);
             } else if (parent.getKind() != Tree.Kind.VARIABLE || grandParent == null || grandParent.getKind() == Tree.Kind.CLASS) {
                 addMemberModifiers(env, m, false);
-                addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM), null, null);
+                addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, TYPE_PARAMETER), null, null);
             } else if (parent.getKind() == Tree.Kind.VARIABLE && grandParent.getKind() == Tree.Kind.METHOD) {
                 addMemberModifiers(env, m, true);
-                addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM), null, null);
+                addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, TYPE_PARAMETER), null, null);
             } else {
                 localResult(env);
                 addKeywordsForBlock(env);
@@ -996,7 +996,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case SUPER:
                     case LT:
                     case COMMA:
-                        addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM), null, null);
+                        addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, TYPE_PARAMETER), null, null);
                         break;
                     case QUESTION:
                         if (Utilities.startsWith(EXTENDS_KEYWORD, prefix))
@@ -1017,7 +1017,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             String text = env.getController().getText().substring(blockPos, offset);
             if (text.indexOf('{') < 0) { //NOI18N
                 addMemberModifiers(env, Collections.singleton(STATIC), false);
-                addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM), null, null);
+                addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, TYPE_PARAMETER), null, null);
                 return;
             }
             StatementTree last = null;
@@ -1106,7 +1106,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case COLON:
                     case EXTENDS:
                     case SUPER:
-                        addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM), null, null);
+                        addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, TYPE_PARAMETER), null, null);
                         break;
                 }
             } else if (lastNonWhitespaceTokenId != JavaTokenId.STAR) {
@@ -1268,7 +1268,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             addLocalMembersAndVars(env);
             addValueKeywords(env);
             if (queryType != COMPLETION_SMART_QUERY_TYPE) {
-                addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM), null, null);
+                addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, TYPE_PARAMETER), null, null);
                 addPrimitiveTypeKeywords(env);
             }
         }
@@ -1305,7 +1305,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         addLocalMembersAndVars(env);
                         addValueKeywords(env);
                         if (queryType != COMPLETION_SMART_QUERY_TYPE) {
-                            addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM), null, null);
+                            addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, TYPE_PARAMETER), null, null);
                             addPrimitiveTypeKeywords(env);
                         }
                         break;
@@ -1332,7 +1332,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         if (ex.getKind() == TypeKind.DECLARED)
                             results.add(JavaCompletionItem.createTypeItem((TypeElement)((DeclaredType)ex).asElement(), (DeclaredType)ex, offset, true, elements.isDeprecated(((DeclaredType)ex).asElement())));
                 } else {
-                    addTypes(env, EnumSet.of(CLASS, INTERFACE), controller.getTypes().getDeclaredType(controller.getElements().getTypeElement("java.lang.Throwable")), null); //NOI18N
+                    addTypes(env, EnumSet.of(CLASS, INTERFACE, TYPE_PARAMETER), controller.getTypes().getDeclaredType(controller.getElements().getTypeElement("java.lang.Throwable")), null); //NOI18N
                 }
             }
         }        
@@ -1386,7 +1386,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             }
             if (lastTree == null) {
                 addLocalFieldsAndVars(env);
-                addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM), null, null);
+                addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, TYPE_PARAMETER), null, null);
                 addPrimitiveTypeKeywords(env);
             } else {
                 String text = env.getController().getText().substring(lastTreePos, offset).trim();
@@ -1505,7 +1505,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             InstanceOfTree iot = (InstanceOfTree)env.getPath().getLeaf();
             TokenSequence<JavaTokenId> ts = findLastNonWhitespaceToken(env, iot, env.getOffset());
             if (ts != null && ts.token().id() == JavaTokenId.INSTANCEOF)
-                addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM), null, null);
+                addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, TYPE_PARAMETER), null, null);
         }
         
         private void insideArrayAccess(Env env) throws IOException {
@@ -1887,7 +1887,7 @@ public class JavaCompletionProvider implements CompletionProvider {
         
         private void localResult(Env env) throws IOException {
             addLocalMembersAndVars(env);
-            addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM), null, null);
+            addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, TYPE_PARAMETER), null, null);
             addPrimitiveTypeKeywords(env);
         }
         
@@ -1964,7 +1964,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             };
             for (Element e : controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor))
                 results.add(JavaCompletionItem.createVariableItem((VariableElement)e, e.asType(), offset, env.getScope().getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e)));
-            addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM), null, null);
+            addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, TYPE_PARAMETER), null, null);
         }
         
         private void addLocalMembersAndVars(Env env) throws IOException {
@@ -2189,7 +2189,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             final Types types = controller.getTypes();
             final TreeUtilities tu = controller.getTreeUtilities();
             TypeElement typeElem = type.getKind() == TypeKind.DECLARED ? (TypeElement)((DeclaredType)type).asElement() : null;
-            final boolean isStatic = elem != null && (elem.getKind().isClass() || elem.getKind().isInterface());
+            final boolean isStatic = elem != null && (elem.getKind().isClass() || elem.getKind().isInterface() || elem.getKind() == TYPE_PARAMETER);
             final Scope scope = env.getScope();
             final Set<TypeMirror> finalSmartTypes = smartTypes;
             ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
@@ -2341,16 +2341,27 @@ public class JavaCompletionProvider implements CompletionProvider {
                 (tu.isStaticContext(scope) || (env.getPath().getLeaf().getKind() == Tree.Kind.BLOCK && ((BlockTree)env.getPath().getLeaf()).isStatic()));
             ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
                 public boolean accept(Element e, TypeMirror t) {
-                    if (e.getKind().isClass() || e.getKind().isInterface()) {
+                    if (e.getKind().isClass() || e.getKind().isInterface() || e.getKind() == TYPE_PARAMETER) {
                         String name = e.getSimpleName().toString();
                         return name.length() > 0 && !Character.isDigit(name.charAt(0)) && Utilities.startsWith(name, prefix) &&
-                                (!isStatic || e.getModifiers().contains(STATIC)) && isOfKindAndType(e, kinds, baseType, scope, trees, types) && tu.isAccessible(scope, e, t);
+                                (!isStatic || e.getModifiers().contains(STATIC)) && isOfKindAndType(e, kinds, baseType, scope, trees, types);
                     }
                     return false;
                 }
             };
-            for(Element e : controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor))
-                results.add(JavaCompletionItem.createTypeItem((TypeElement)e, (DeclaredType)e.asType(), offset, false, elements.isDeprecated(e)));
+            for(Element e : controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor)) {
+                switch (e.getKind()) {
+                    case CLASS:
+                    case ENUM:
+                    case INTERFACE:
+                    case ANNOTATION_TYPE:
+                        results.add(JavaCompletionItem.createTypeItem((TypeElement)e, (DeclaredType)e.asType(), offset, false, elements.isDeprecated(e)));
+                        break;
+                    case TYPE_PARAMETER:
+                        results.add(JavaCompletionItem.createTypeParameterItem((TypeParameterElement)e, offset));
+                        break;                        
+                }                
+            }
             acceptor = new ElementUtilities.ElementAcceptor() {
                 public boolean accept(Element e, TypeMirror t) {
                     return toExclude != e && Utilities.startsWith(e.getSimpleName().toString(), prefix) &&

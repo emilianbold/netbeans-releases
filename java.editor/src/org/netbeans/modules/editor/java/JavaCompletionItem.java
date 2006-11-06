@@ -78,6 +78,10 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
     }
     
+    public static final JavaCompletionItem createTypeParameterItem(TypeParameterElement elem, int substitutionOffset) {
+        return new TypeParameterItem(elem, substitutionOffset);
+    }
+
     public static final JavaCompletionItem createVariableItem(VariableElement elem, TypeMirror type, int substitutionOffset, boolean isInherited, boolean isDeprecated) {
         switch (elem.getKind()) {
             case LOCAL_VARIABLE:
@@ -589,6 +593,49 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
     }
     
+    private static class TypeParameterItem extends JavaCompletionItem {
+        
+        private static final String TYPE_PARAMETER = "org/netbeans/modules/java/editor/resources/javakw.gif"; //NOI18N
+        private static final String TYPE_PARAMETER_COLOR = "<font color=#000000>"; //NOI18N
+        private static ImageIcon icon;
+
+        private TypeParameterElement elem;
+
+        private TypeParameterItem(TypeParameterElement elem, int substitutionOffset) {
+            super(substitutionOffset);
+            this.elem = elem;
+        }
+        
+        public int getSortPriority() {
+            return 700;
+        }
+        
+        public CharSequence getSortText() {
+            return elem.getSimpleName();
+        }
+        
+        public CharSequence getInsertPrefix() {
+            return elem.getSimpleName();
+        }
+        
+        protected ImageIcon getIcon(){
+            if (icon == null) icon = new ImageIcon(org.openide.util.Utilities.loadImage(TYPE_PARAMETER));
+            return icon;            
+        }
+        
+        protected String getLeftHtmlText() {
+            return TYPE_PARAMETER_COLOR + elem.getSimpleName() + COLOR_END;
+        }
+        
+        protected void substituteText(JTextComponent c, int offset, int len, String toAdd) {
+            super.substituteText(c, offset, len, toAdd);
+        }
+    
+        public String toString() {
+            return elem.getSimpleName().toString();
+        }        
+    }
+
     private static class VariableItem extends JavaCompletionItem {
         
         private static final String LOCAL_VARIABLE = "org/netbeans/modules/editor/resources/completion/localVariable.gif"; //NOI18N
