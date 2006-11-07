@@ -35,6 +35,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.JTree;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.CellEditorListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
@@ -71,6 +72,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
     
     private NbiLabel      displayNameLabel;
     private NbiTextPane   descriptionPane;
+    private NbiScrollPane descriptionScrollPane;
     private NbiLabel      requirementsLabel;
     private NbiLabel      conflictsLabel;
     
@@ -145,6 +147,10 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
         
         descriptionPane = new NbiTextPane();
         
+        descriptionScrollPane = new NbiScrollPane(descriptionPane);
+        descriptionScrollPane.setVerticalScrollBarPolicy(NbiScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        descriptionScrollPane.setBorder(new EmptyBorder(0, 0, 0, 0));
+        
         requirementsLabel = new NbiLabel();
         
         conflictsLabel = new NbiLabel();
@@ -157,7 +163,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
         add(treeTableScrollPane, new GridBagConstraints(0, 1, 2, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(7, 11, 0, 11), 0, 0));
         
         add(displayNameLabel, new GridBagConstraints(0, 2, 2, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(7, 11, 0, 11), 0, 0));
-        add(descriptionPane, new GridBagConstraints(0, 3, 2, 1, 1.0, 0.1, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(3, 11, 0, 11), 0, 0));
+        add(descriptionScrollPane, new GridBagConstraints(0, 3, 2, 1, 1.0, 0.3, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(3, 11, 0, 11), 0, 0));
         add(requirementsLabel, new GridBagConstraints(0, 4, 2, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(3, 11, 0, 11), 0, 0));
         add(conflictsLabel, new GridBagConstraints(0, 5, 2, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(3, 11, 0, 11), 0, 0));
         
@@ -239,6 +245,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
             
             descriptionPane.setText(stringUtils.formatMessage(getProperty(DESCRIPTION_TEXT_PROPERTY), node.getDescription()) + " ");
             descriptionPane.setEnabled(true);
+            descriptionPane.setCaretPosition(0);
             
             if ((node instanceof ProductComponent) && (((ProductComponent) node).getRequirements().size() > 0)) {
                 requirementsLabel.setText(stringUtils.formatMessage(getProperty(REQUIREMENTS_LABEL_TEXT_PROPERTY), stringUtils.asString(((ProductComponent) node).getRequirements())) + " ");
