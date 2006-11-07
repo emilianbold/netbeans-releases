@@ -1,0 +1,51 @@
+
+
+########### tokens ##################################################################
+
+TOKEN:operator: ( [
+    "+" "|" "&" "<" ">" "!" "@" "=" ":" "/" "\\" "(" ")" "," "%" "^" "#" "{" "}" "?" "!" "." "$" "*" "_" "-"
+] )
+
+TOKEN:line-comment: ( "rem " [^ "\n" "\r"]* )
+
+TOKEN:keyword:(
+    "AUX" |
+    "call" |
+    "cd" |
+    "chdir" |
+    "cls" |
+    "copy" |
+    "defined" |
+    "del" |
+    "do" |
+    "echo" |
+    "echo." |
+    "else" |
+    "errorlevel" |
+    "exist" |
+    "endlocal" |
+    "exit" |
+    "for" |
+    "goto" |
+    "if" |
+    "in" |
+    "md" |
+    "mkdir" |
+    "move" |
+    "move" |
+    "not" |
+    "NUL" |
+    "pause" |
+    "ren" |
+    "set" |
+    "setlocal" |
+    "shift" |
+    "PRN"
+)
+
+TOKEN:number: (["0"-"9"] ["0"-"9" "."]*)
+
+TOKEN:whitespace: ([" " "\t" "\n" "\r"]+)
+
+TOKEN:identifier:( ["a"-"z" "A"-"Z"]+ )
+

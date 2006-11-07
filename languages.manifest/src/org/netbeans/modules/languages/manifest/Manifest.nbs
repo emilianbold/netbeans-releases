@@ -1,0 +1,16 @@
+
+
+########### tokens #############################################################
+
+TOKEN:comment:( "#" [^ "\n" "\r"]* ["\n" "\r"]+ )
+TOKEN:keyword:( [^"#"] [^ ":" "\n" "\r"]* ):<VALUE>
+
+<VALUE> {
+    TOKEN:whitespace:( ["\n" "\r"]+ ):<DEFAULT>
+    TOKEN:operator:( ":" ):<IN_VALUE>
+}
+
+<IN_VALUE> {
+    TOKEN:whitespace:( ["\n" "\r"]+ ):<DEFAULT>
+    TOKEN:identifier:( [^ "\n" "\r"]* )
+}

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="Services">
+        <folder name="MIMEResolver">
+            <file name="JavaScript.xml" url="JavaScript.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.Bundle"/>
+            </file>
+        </folder>
+    </folder>
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="javascript">
+                <file name="language.nbs" url="JavaScript.nbs">
+                    <attr name="icon" stringvalue="org/netbeans/modules/languages/javascript/JavaScript.png"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+</filesystem>

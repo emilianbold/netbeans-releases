@@ -1,0 +1,218 @@
+
+
+########### Syntax Coloring ##################################################################
+
+TOKEN:keyword:( 
+    "ACTION" |
+    "COLOR" | 
+    "COMPLETE" |  
+    "COMPLETION" | 
+    "FOLD" | 
+    "HYPERLINK" | 
+    "IMPORT" | 
+    "INDENT" | 
+    "MARK" | 
+    "NAVIGATOR" | 
+    "PARSE" | 
+    "PROPERTIES" | 
+    "REFORMAT" |
+    "SKIP" | 
+    "STORE" | 
+    "TOKEN" | 
+    "TOOLTIP"
+)
+TOKEN:identifier: ( ["a"-"z" "A"-"Z"] ["a"-"z" "A"-"Z" "0"-"9" "_" "-"]* )
+TOKEN:operator: ( 
+    ":" | "*" | "?" | "+" | "-" | "[" | "]" | "<" | ">" |
+    "^" | "|" | "{" | "}" | "(" | ")" | "," | "=" | ";" | 
+    "." | "$"
+)
+TOKEN:string:( 
+    "\"" 
+        (  
+            [^ "\"" "\\" "\r" "\n"] | 
+            ("\\" ["r" "n" "t" "\\" "\'" "\""]) 
+        )* 
+    "\""
+)
+TOKEN:string:( 
+    "\'" 
+        (  
+            [^ "\'" "\\" "\r" "\n"] | 
+            ("\\" ["r" "n" "t" "\\" "\'" "\""]) 
+        )* 
+    "\'"
+)
+TOKEN:comment: ( "#" [^"\n" "\r"]* ["\n" "\r"]+ )
+TOKEN:whitespace:( ["\n" "\r" " " "\t"]+ )
+
+SKIP:comment
+SKIP:whitespace
+
+S = token S;
+S = tokenState S;
+S = grammarRule S;
+S = command S;
+S = ;
+                    
+token = "TOKEN" ":" <identifier> ":" "(" regularExpression ")" token2;
+token2 = ":" state;
+token2 = ;
+state = "<" <identifier> ">";
+tokenState = state tokenState1;
+tokenState1 = "{" tokenGroup;
+tokenState1 = ":" token;
+tokenGroup = tokensInGroup "}";
+tokensInGroup = tokenInGroup tokensInGroup;
+tokensInGroup = ;
+tokenInGroup = "TOKEN" ":" <identifier> ":" "(" regularExpression ")" token2;
+                    
+regularExpression = reChoice regularExpression1;
+regularExpression1 = "|" reChoice regularExpression1;
+regularExpression1 = ;
+reChoice = rePart reChoice1;
+reChoice1 = rePart reChoice1;
+reChoice1 = ;
+rePart = <string> rePartOperatorOrMinus;
+rePart = "." rePartOperator;
+rePart = reClass rePartOperator;
+rePart = "(" regularExpression ")" rePartOperator;
+rePartOperator = ;
+rePartOperator = "+";
+rePartOperator = "?";
+rePartOperator = "*";
+rePartOperatorOrMinus = "-" <string>;
+rePartOperatorOrMinus = rePartOperator;
+reClass = "[" reInClassNegation reInClass "]";
+reInClassNegation = "^";
+reInClassNegation = ;
+reInClass = <string> reInClassMinus reInClass1;
+reInClass1 = <string> reInClassMinus reInClass1;
+reInClass1 = ;
+reInClassMinus = "-" <string>;
+reInClassMinus = ;
+                    
+grammarRule = <identifier> "=" grRightSide ";";
+grRightSide = grChoice grRightSide1;
+grRightSide1 = "|" grChoice grRightSide1;
+grRightSide1 = ;
+grChoice = grPart grChoice;
+grChoice = ;
+grPart = <identifier> grOperator;
+grPart = tokenDef grOperator;
+grPart = <string> grOperator;
+grPart = "[" grRightSide "]";
+grPart = "(" grRightSide ")" grOperator;
+grOperator = "+";
+grOperator = "*";
+grOperator = "?";
+grOperator = ;
+tokenDef = "<" <identifier> tokenDef1 ">";
+tokenDef1 = "," <string>;
+tokenDef1 = ;
+                    
+command = <keyword> command0;
+command0 = "{" properties "}";
+command0 = ":" class command1;
+command0 = command2;
+command1 = "{" properties "}";
+command1 = ":" command2;
+command1 = ;
+command2 = class;
+command2 = <string>;
+properties = property properties;
+properties = ;
+property = <identifier> ":" propertyValue ";";
+propertyValue = <string>;
+propertyValue = class;
+                    
+class = <identifier> class1;
+class1 = "." <identifier> class1;
+class1 = ;
+
+
+NAVIGATOR:token {
+    display-name: "<html><b><font color=000099>TOKEN</font></b>: $identifier$</html>";
+}
+
+NAVIGATOR:groupToken {
+    display-name: "<html><b><font color=000099>TOKEN</font></b>: $identifier$</html>";
+}
+
+NAVIGATOR:command {
+    display-name: "<html><b><font color=000099>$keyword$</font></b>: $command0.class$</html>";
+}
+
+HYPERLINK:value:org.netbeans.modules.languages.NBS.hyperlink  
+
+COMPLETION:S {
+    text1:        "TOKEN";
+    description1: "<html><b><font color=blue>TOKEN</font></b> <font color=#aaaaaa> Regular expression defining one token.</font></html>";
+    text2:        "COLOR";
+    description2: "<html><b><font color=blue>COLOR</font></b> <font color=#aaaaaa> Defines font&color for some token or grammar rule.</font></html>";
+    text3:        "SKIP";
+    description3: "<html><b><font color=blue>SKIP</font></b> <font color=#aaaaaa> Tokens ignorred by syntax analyser.</font></html>";
+    text4:        "NAVIGATOR";
+    description4: "<html><b><font color=blue>NAVIGATOR</font></b> <font color=#aaaaaa> Define AST nodes visible in navigator.</font></html>";
+    text5:        "FOLD";
+    description5: "<html><b><font color=blue>FOLD</font></b> <font color=#aaaaaa> Define AST nodes to be folded.</font></html>";
+    text6:        "COMPLETION";
+    description6: "<html><b><font color=blue>COMPLETION</font></b> <font color=#aaaaaa> Define completion content for some AST node.</font></html>";
+    text7:        "IMPORT";
+    description7: "<html><b><font color=blue>IMPORT</font></b> <font color=#aaaaaa> Imports one language to another.</font></html>";
+    text8:        "TOOLTIP";
+    description8: "<html><b><font color=blue>TOOLTIP</font></b> <font color=#aaaaaa> Define tooltip for given token.</font></html>";
+    text9:        "HYPERLINK";
+    description9: "<html><b><font color=blue>HYPERLINK</font></b> <font color=#aaaaaa> Define hyperlink for given token.</font></html>";
+}
+
+COMPLETION:colorKey {
+    text1:        "color-name";
+    description1: "<html><b><font color=blue>color-name</font></b> <font color=#aaaaaa> The name of coloring.</font></html>";
+    text2:        "default-coloring";
+    description2: "<html><b><font color=blue>default-coloring</font></b> <font color=#aaaaaa> Defines basic type this font&color is extended from (like keyword, operator).</font></html>";
+    text3:        "foreground-color";
+    description3: "<html><b><font color=blue>foreground-color</font></b> <font color=#aaaaaa> Foregroud color.</font></html>";
+    text4:        "background-color";
+    description4: "<html><b><font color=blue>background-color</font></b> <font color=#aaaaaa> background color.</font></html>";
+    text5:        "underline-color";
+    description5: "<html><b><font color=blue>underline-color</font></b> <font color=#aaaaaa> Underline color.</font></html>";
+    text6:        "wave-underline-color";
+    description6: "<html><b><font color=blue>wave-underline-color</font></b> <font color=#aaaaaa> Wave underline color.</font></html>";
+    text7:        "strike-through-color";
+    description7: "<html><b><font color=blue>strike-through-color</font></b> <font color=#aaaaaa> Strike trough color.</font></html>";
+    text8:        "font-name";
+    description8: "<html><b><font color=blue>font-name</font></b> <font color=#aaaaaa> Font name.</font></html>";
+    text9:        "font-type";
+    description9: "<html><b><font color=blue>font-type</font></b> <font color=#aaaaaa> Font type like bold and italic.</font></html>";
+}
+
+COMPLETION:completionKey {
+    text1:        "recursive";
+    description1: "<html><b><font color=blue>recursive</font></b> <font color=#aaaaaa> Set true if this completion should be defined for all embeded grammar rules.</font></html>";
+    text2:        "text";
+    description2: "<html><b><font color=blue>text</font></b> <font color=#aaaaaa> Text to be inserted.</font></html>";
+    text3:        "description";
+    description3: "<html><b><font color=blue>description</font></b> <font color=#aaaaaa> HTML description of this option.</font></html>";
+    text4:        "icon";
+    description4: "<html><b><font color=blue>icon</font></b> <font color=#aaaaaa> Icon.</font></html>";
+}
+
+COMPLETION:navigatorKey {
+    text1:        "display-name";
+    description1: "<html><b><font color=blue>display-name</font></b> <font color=#aaaaaa> text to be displayed in Navigator.</font></html>";
+    text2:        "tooltip";
+    description2: "<html><b><font color=blue>tooltip</font></b> <font color=#aaaaaa> Tooltip.</font></html>";
+    text3:        "icon";
+    description3: "<html><b><font color=blue>icon</font></b> <font color=#aaaaaa> Icon.</font></html>";
+}
+
+COMPLETION:importKey {
+    text1:        "state";
+    description1: "<html><b><font color=blue>state</font></b> <font color=#aaaaaa> text to be displayed in Navigator.</font></html>";
+    text2:        "tooltip";
+    description2: "<html><b><font color=blue>tooltip</font></b> <font color=#aaaaaa> Tooltip.</font></html>";
+    text3:        "icon";
+    description3: "<html><b><font color=blue>icon</font></b> <font color=#aaaaaa> Icon.</font></html>";
+}
+

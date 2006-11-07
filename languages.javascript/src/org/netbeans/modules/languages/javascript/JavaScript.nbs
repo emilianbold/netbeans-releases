@@ -1,0 +1,360 @@
+
+
+########### tokens #############################################################
+
+TOKEN:js-comment:("/*" - "*/")
+TOKEN:js-comment:("<!--")
+TOKEN:js-line-comment: ("//"[^"\n""\r"]*)
+TOKEN:js-keyword: (
+    "abstract" | 
+    "boolean" |  
+    "break" |
+    "byte" |
+    "case" |
+    "catch" |
+    "char" |
+    "class" |
+    "const" |
+    "continue" |
+    "debugger" |
+    "default" |
+    "delete" |
+    "do" |
+    "double" |
+    "else" |
+    "enum" |
+    "export" |
+    "extends" |
+    "false" |
+    "final" |
+    "finally" |
+    "float" |
+    "for" |
+    "function" |
+    "goto" |
+    "if" |
+    "implements" |
+    "import" |
+    "in" |
+    "instanceof" |
+    "int" |
+    "interface" |
+    "long" | 
+    "native" |
+    "new" |
+    "null" |
+    "package" |
+    "private" |
+    "protected" |
+    "public" |
+    "return" |
+    "short" |
+    "static" |
+    "super" |
+    "switch" |
+    "synchronized" |
+    "this" |
+    "throw" |
+    "throws" |
+    "transient" |
+    "true" |
+    "try" |
+    "typeof" |
+    "var" |
+    "void" |
+    "volatile" |
+    "while" |
+    "with"
+)
+
+TOKEN:js-operator: (
+    "==" | "!=" | "<<" | ">>" | ">>>" | ">=" | "<=" | "++" | "--" | 
+    "+=" | "-=" | "*=" | "/=" | "%=" | "<<=" | ">>=" | ">>>=" | "&=" | 
+    "^=" | "|=" | "&&" | "||" | "===" | "!==" | 
+    "?" | ":" | "<" | ">" | "/" | "*" | "-" | "+" | "." | "," | "=" |
+     "(" | ")" | "[" | "]" | "!" | "@" | "#" | "%" | "^" | "&" | 
+    "~" | "|" | "\\"
+)
+
+TOKEN:js-separator: ( [";" "{" "}"] )
+
+TOKEN:js-string: (
+    "\"" ( 
+        [^ "\\" "\"" "\n" "\r"] |
+        ("\\" (
+            . |
+            (["0"-"7"] ["0"-"7"] ["0"-"7"]) |
+            ("x" ["0"-"9" "a"-"f" "A"-"F"] ["0"-"9" "a"-"f" "A"-"F"]) |
+            ("u" ["0"-"9" "a"-"f" "A"-"F"] ["0"-"9" "a"-"f" "A"-"F"] ["0"-"9" "a"-"f" "A"-"F"] ["0"-"9" "a"-"f" "A"-"F"])
+        ))
+    )* 
+    "\""
+)
+TOKEN:js-string: (
+    "\'" ( 
+        [^ "\\" "\'" "\n" "\r"] |
+        ("\\" (
+            . |
+            (["0"-"7"] ["0"-"7"] ["0"-"7"]) |
+            ("x" ["0"-"9" "a"-"f" "A"-"F"] ["0"-"9" "a"-"f" "A"-"F"]) |
+            ("u" ["0"-"9" "a"-"f" "A"-"F"] ["0"-"9" "a"-"f" "A"-"F"] ["0"-"9" "a"-"f" "A"-"F"] ["0"-"9" "a"-"f" "A"-"F"])
+        ))
+    )* 
+    "\'"
+)
+#TOKEN:regularExpression: (
+#    "/" ( [^ "\n" "\r"] )* "/" ['g' 'i' 'm']*
+#)
+TOKEN:js-number: (
+    (["0"-"9"]+ ("." ["0"-"9"]*)? | "." ["0"-"9"]+) ("E" ("-")? ["0"-"9"]+)? 
+)
+
+TOKEN:js-whitespace: ([" " "\t" "\n" "\r"]+)
+
+TOKEN:js-identifier: (
+    ["a"-"z" "A"-"Z" "_" "$"] 
+    ["a"-"z" "A"-"Z" "0"-"9" "_" "$" "-"
+    ]*
+)
+
+
+########### grammar ############################################################
+
+SKIP:js-whitespace
+SKIP:js-comment
+SKIP:js-line-comment
+
+S = (SourceElement)+;
+SourceElement = Statement;
+FormalParameterList = [<js-identifier> ("," <js-identifier>)*]; 
+
+Statement = EmptyStatement | ExpressionStatement | VariableStatement | 
+    Block | LabelledStatement | IfStatement | SwitchStatement | 
+    DoStatement | WhileStatement | ForStatement | 
+    WithStatement | ContinueStatement | BreakStatement | ReturnStatement | 
+    ThrowStatement | TryStatement;
+Block = "{" (Statement)* "}";
+VariableStatement = "var" VariableDeclaration ("," VariableDeclaration)* [";"];
+VariableDeclaration = <js-identifier> [Initializer];
+Initializer = "=" AssignmentExpression;
+EmptyStatement = ";";
+ExpressionStatement = ExpressionInitial [";"];
+IfStatement = "if" "(" Expression ")" Statement ["else" Statement];
+DoStatement = "do" Statement "while" "(" Expression ")" [";"];
+WhileStatement = "while" "(" Expression ")" Statement;
+ForStatement = 
+    "for" "(" [AssignmentExpression] [";" [Expression] ";" [Expression]] ")" Statement |
+    "for" "(" "var" VariableDeclarationNoIn (
+        ("," VariableDeclarationNoIn)* ";" [Expression] ";" [Expression] |
+        "in" Expression
+    ) ")" Statement;
+#HACK                     "for" "(" LeftHandSideExpression "in" Expression ")" Statement;
+VariableDeclarationNoIn = <js-identifier> [InitializerNoIn];
+InitializerNoIn = "=" AssignmentExpressionNoIn;
+ContinueStatement = "continue" [<js-identifier>] [";"];
+BreakStatement = "break" [<js-identifier>] [";"];
+ReturnStatement = "return" [Expression] [";"];
+WithStatement = "with" "(" Expression ")" Statement;
+SwitchStatement = "switch" "(" Expression ")" "{" (CaseClause)* [DefaultClause] (CaseClause)* "}";
+CaseClause = "case" Expression ":" (Statement)*;
+DefaultClause = "default" ":" (Statement)*;
+LabelledStatement = <js-identifier> ":" Statement;
+ThrowStatement = "throw" Expression ";";
+TryStatement = "try" Block [Catch] [Finally];
+Catch = "catch" "(" <js-identifier> ")" Block;
+Finally = "finally" Block;
+
+ExpressionInitial = AssignmentExpressionInitial ("," AssignmentExpression)*;
+Expression = AssignmentExpression ("," AssignmentExpression)*;
+ExpressionInitialNoIn = AssignmentExpressionInitialNoIn ("," AssignmentExpressionNoIn)*;
+ExpressionNoIn = AssignmentExpressionNoIn ("," AssignmentExpressionNoIn)*;
+AssignmentExpression = ConditionalExpression (AssignmentOperator ConditionalExpression)*;
+AssignmentExpressionInitial = ConditionalExpressionInitial (AssignmentOperator ConditionalExpression)*;
+AssignmentExpressionNoIn = ConditionalExpressionNoIn (AssignmentOperator ConditionalExpressionNoIn)*;
+AssignmentExpressionInitialNoIn = ConditionalExpressionInitialNoIn (AssignmentOperator ConditionalExpressionNoIn)*;
+AssignmentOperator = "=" | "*=" | "/=" | "%=" | "+=" | "-=" | "<<=" | ">>=" | ">>>=" | "&=" | "^=" | "|=";
+ConditionalExpression = LogicalORExpression ["?" AssignmentExpression ":" AssignmentExpression];
+ConditionalExpressionInitial = LogicalORExpressionInitial ["?" AssignmentExpression ":" AssignmentExpression];
+ConditionalExpressionNoIn = LogicalORExpressionNoIn ["?" AssignmentExpressionNoIn ":" AssignmentExpressionNoIn];
+ConditionalExpressionInitialNoIn = LogicalORExpressionInitialNoIn ["?" AssignmentExpressionNoIn ":" AssignmentExpressionNoIn];
+LogicalORExpression = LogicalANDExpression ("||" LogicalANDExpression)*;
+LogicalORExpressionInitial = LogicalANDExpressionInitial ("||" LogicalANDExpression)*;
+LogicalORExpressionNoIn = LogicalANDExpressionNoIn ("||" LogicalANDExpressionNoIn)*;
+LogicalORExpressionInitialNoIn = LogicalANDExpressionInitialNoIn ("||" LogicalANDExpressionNoIn)*;
+LogicalANDExpression = BitwiseORExpression ("&&" BitwiseORExpression)*;
+LogicalANDExpressionInitial = BitwiseORExpressionInitial ("&&" BitwiseORExpression)*;
+LogicalANDExpressionNoIn = BitwiseORExpressionNoIn ("&&" BitwiseORExpressionNoIn)*;
+LogicalANDExpressionInitialNoIn = BitwiseORExpressionInitialNoIn ("&&" BitwiseORExpressionNoIn)*;
+BitwiseORExpression = BitwiseXORExpression ("|" BitwiseXORExpression)*;
+BitwiseORExpressionInitial = BitwiseXORExpressionInitial ("|" BitwiseXORExpression)*;
+BitwiseORExpressionNoIn = BitwiseXORExpressionNoIn ("|" BitwiseXORExpressionNoIn)*;
+BitwiseORExpressionInitialNoIn = BitwiseXORExpressionInitialNoIn ("|" BitwiseXORExpressionNoIn)*;
+BitwiseXORExpression = BitwiseANDExpression ("^" BitwiseANDExpression)*;
+BitwiseXORExpressionInitial = BitwiseANDExpressionInitial ("^" BitwiseANDExpression)*;
+BitwiseXORExpressionNoIn = BitwiseANDExpressionNoIn ("^" BitwiseANDExpressionNoIn)*;
+BitwiseXORExpressionInitialNoIn = BitwiseANDExpressionInitialNoIn ("^" BitwiseANDExpressionNoIn)*;
+BitwiseANDExpression = EqualityExpression ("&" EqualityExpression)*;
+BitwiseANDExpressionInitial = EqualityExpressionInitial ("&" EqualityExpression)*;
+BitwiseANDExpressionNoIn = EqualityExpressionNoIn ("&" EqualityExpressionNoIn)*;
+BitwiseANDExpressionInitialNoIn = EqualityExpressionInitialNoIn ("&" EqualityExpressionNoIn)*;
+EqualityExpression = RelationalExpression (EqualityOperator EqualityExpression)*;
+EqualityExpressionInitial = RelationalExpressionInitial (EqualityOperator EqualityExpression)*;
+EqualityExpressionNoIn = RelationalExpressionNoIn (EqualityOperator EqualityExpressionNoIn)*;
+EqualityExpressionInitialNoIn = RelationalExpressionInitialNoIn (EqualityOperator EqualityExpressionNoIn)*;
+EqualityOperator = "==" | "!=" | "===" | "!==";
+RelationalExpression = ShiftExpression ((RelationalOperator | "in") ShiftExpression)*;
+RelationalExpressionInitial = ShiftExpressionInitial ((RelationalOperator | "in") RelationalExpression)*;
+RelationalExpressionNoIn = ShiftExpression (RelationalOperator ShiftExpression)*;
+RelationalExpressionInitialNoIn = ShiftExpressionInitial (RelationalOperator ShiftExpression)*;
+RelationalOperator = "<" | ">" | "<=" | ">=" | "instanceof";
+ShiftExpression = AdditiveExpression (("<<" | ">>" | ">>>") AdditiveExpression)*;
+ShiftExpressionInitial = AdditiveExpressionInitial (("<<" | ">>" | ">>>") AdditiveExpression)*;
+AdditiveExpression = MultiplicativeExpression (("+" | "-") MultiplicativeExpression)*;
+AdditiveExpressionInitial = MultiplicativeExpressionInitial (("+" | "-") MultiplicativeExpression)*;
+MultiplicativeExpression = UnaryExpression (("*" | "/" | "%") UnaryExpression)*;
+MultiplicativeExpressionInitial = UnaryExpressionInitial (("*" | "/" | "%") UnaryExpression)*;
+UnaryExpression = PostfixExpression | 
+    "delete" UnaryExpression |
+    "void" UnaryExpression |
+    "typeof" UnaryExpression |
+    "++" UnaryExpression |
+    "--" UnaryExpression |
+    "+" UnaryExpression |
+    "-" UnaryExpression |
+    "~" UnaryExpression |
+    "!" UnaryExpression;
+UnaryExpressionInitial = PostfixExpressionInitial | 
+    "delete" UnaryExpression |
+    "void" UnaryExpression |
+    "typeof" UnaryExpression |
+    "++" UnaryExpression |
+    "--" UnaryExpression |
+    "+" UnaryExpression |
+    "-" UnaryExpression |
+    "~" UnaryExpression |
+    "!" UnaryExpression;
+PostfixExpression = LeftHandSideExpression ["++" | "--"];
+PostfixExpressionInitial = LeftHandSideExpressionInitial ["++" | "--"];
+LeftHandSideExpression = CallExpression | NewExpression;
+LeftHandSideExpressionInitial = CallExpressionInitial | NewExpression;
+CallExpression = PrimaryExpression (MemberOperator | Arguments)*;
+CallExpressionInitial = PrimaryExpressionInitial (MemberOperator | Arguments)*;
+NewExpression = "new" NewSubExpression [Arguments];
+NewSubExpression = PrimaryExpression (MemberOperator)* | NewExpression;
+MemberOperator = "[" Expression "]" | "." <js-identifier>;
+Arguments = "(" [AssignmentExpression ("," AssignmentExpression)*] ")";
+PrimaryExpression = PrimaryExpressionInitial | ObjectLiteral;
+PrimaryExpressionInitial = "this" | "null" | "true" | "false" | 
+    <js-number> | <js-string> | <js-identifier> | RegularExpression |
+    "(" Expression ")" | ArrayLiteral | FunctionDeclaration;
+ArrayLiteral = "[" (",")* [AssignmentExpression] ( (",")+ AssignmentExpression)* (",")* "]";
+ObjectLiteral = "{" [PropertyNameAndValue ("," PropertyNameAndValue)*] "}";
+PropertyNameAndValue = PropertyName ":" AssignmentExpression;
+PropertyName = <js-identifier> | <js-string> | <js-number>;
+FunctionDeclaration = "function" [<js-identifier>] "(" FormalParameterList ")" FunctionBody;
+FunctionBody = Block;
+
+RegularExpression = "/";
+
+PARSE:RegularExpression:org.netbeans.modules.languages.javascript.JavaScript.parseRegularExpression
+
+
+########### colors #############################################################
+
+COLOR:js-separator {
+    color-name: "js-operator";
+}
+
+#COLOR:functionName {
+#    color-name: "method";
+#    default-coloring: "default";
+#    font-type: "bold";
+#}
+
+COLOR:RegularExpression {
+    color-name: "regularExpression";
+    default-coloring: "string";
+    font-type: "bold";
+    foreground-color: "0x99006b";
+}
+
+########### indentation ########################################################
+ 
+
+########### code folding #######################################################
+
+FOLD:FunctionBody:"{...}"
+
+
+########### navigator ##########################################################
+
+NAVIGATOR:FunctionDeclaration {
+    display-name: org.netbeans.modules.languages.javascript.JavaScript.functionName;
+    icon: "/org/netbeans/modules/languages/resources/method.gif";
+    isLeaf: "true";
+}
+
+NAVIGATOR:VariableDeclaration {
+    display-name: "$js-identifier$";
+    tooltip: "$js-identifier$ $Initializer$";
+    icon: "/org/netbeans/modules/languages/resources/variable.gif";
+}
+
+NAVIGATOR:ObjectLiteral {
+    display-name: org.netbeans.modules.languages.javascript.JavaScript.objectName;
+    icon: "/org/netbeans/modules/languages/resources/class.gif";
+}
+
+NAVIGATOR:PropertyNameAndValue {
+    display-name: "$PropertyName$";
+    icon: "/org/netbeans/modules/languages/resources/variable.gif";
+}
+
+
+MARK:ERROR {
+    type:"Error";
+    message:"Syntax error.";
+}
+
+MARK:error {
+    type:"Error";
+    message:"Unexpected character.";
+}
+
+COMPLETION:js-identifier {
+    text1:org.netbeans.modules.languages.javascript.JavaScript.completionItems; 
+    description1:org.netbeans.modules.languages.javascript.JavaScript.completionDescriptions; 
+}
+
+STORE:VariableDeclaration {
+    context:current_project;
+    name:"$js-identifier$";
+}
+
+STORE:FunctionDeclaration {
+    context:current_project;
+    name:org.netbeans.modules.languages.javascript.JavaScript.functionName;
+}
+
+STORE:PropertyNameAndValue {
+    context:current_project;
+    name:"$PropertyName$";
+}
+
+HYPERLINK:js-identifier:org.netbeans.modules.languages.javascript.JavaScript.hyperlink
+
+COMPLETE "(:)"
+COMPLETE "{:}"
+COMPLETE "\":\""
+COMPLETE "':'"
+COMPLETE "[:]"
+
+PROPERTIES {
+    #traceSteps:"true";
+    #printRules:"true";
+    #printFirst:"true";
+    bracketCompletion:org.netbeans.modules.languages.javascript.JavaScript.bracketCompletion;
+    onEnter:org.netbeans.modules.languages.javascript.JavaScript.onEnter;
+    projectsViewIcon:"org/netbeans/modules/languages/javascript/JavaScript.jpg";
+}
+

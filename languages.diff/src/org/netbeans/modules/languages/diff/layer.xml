@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="Services">
+        <folder name="MIMEResolver">
+            <file name="Diff.xml" url="Diff.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.diff.Bundle"/>
+            </file>
+        </folder>
+    </folder>
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="x-diff">
+                <file name="language.nbs" url="Diff.nbs">
+                    <attr name="icon" stringvalue="org/netbeans/modules/languages/diff/diff.gif"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+</filesystem>
