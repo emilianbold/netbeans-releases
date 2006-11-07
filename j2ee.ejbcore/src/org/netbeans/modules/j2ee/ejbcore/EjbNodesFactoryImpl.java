@@ -40,15 +40,15 @@ public final class EjbNodesFactoryImpl implements EjbNodesFactory {
     public EjbNodesFactoryImpl() {
     }
     
-    public Node createSessionNode (Session session, EjbJar model, ClassPath srcPath) {
-        return new SessionNode (session, model, srcPath);
+    public Node createSessionNode (Session session, EjbJar ejbJar, ClassPath classPath) {
+        return new SessionNode (session, ejbJar, classPath);
     }
     
-    public Node createEntityNode (Entity entity, EjbJar model, ClassPath srcPath, FileObject ddFile) {
-        return new EntityNode (entity, model, srcPath, ddFile);
+    public Node createEntityNode (Entity entity, EjbJar ejbJar, ClassPath classPath, FileObject ddFile) {
+        return new EntityNode (entity, ejbJar, classPath, ddFile);
     }
     
-    public Node createMessageNode (MessageDriven mdb, EjbJar model, ClassPath srcPath) {
-        return new MessageNode(mdb, model, srcPath);
+    public Node createMessageNode (MessageDriven mdb, EjbJar ejbJar, ClassPath classPath) {
+        return new MessageNode(mdb, ejbJar, classPath);
     }
 }

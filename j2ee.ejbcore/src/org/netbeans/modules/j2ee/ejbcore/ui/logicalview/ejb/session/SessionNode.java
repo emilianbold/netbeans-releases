@@ -55,72 +55,69 @@ import org.openide.util.lookup.InstanceContent;
  * @author Ludovic Champenois
  * @author Martin Adamek
  */
-public class SessionNode extends AbstractNode implements OpenCookie {
+public final class SessionNode extends AbstractNode implements OpenCookie {
     
     private final PropertyChangeListener nameChangeListener;
-    private final EjbViewController controller;
+    private final EjbViewController ejbViewController;
     
-    public SessionNode(Session model, EjbJar module, ClassPath srcPath) {
-        this(new InstanceContent(), model, module, srcPath);
+    public SessionNode(Session session, EjbJar ejbJar, ClassPath classPath) {
+        this(new InstanceContent(), session, ejbJar, classPath);
     }
     
-    private SessionNode(InstanceContent content, Session model, EjbJar module, ClassPath srcPath) {
-        super(new SessionChildren(model, srcPath, module), new AbstractLookup(content));
+    private SessionNode(InstanceContent instanceContent, Session session, EjbJar ejbJar, ClassPath classPath) {
+        super(new SessionChildren(session, classPath), new AbstractLookup(instanceContent));
         setIconBaseWithExtension("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/ejb/session/SessionNodeIcon.gif");
-        setName(model.getEjbName()+"");
-        controller = new EjbViewController(model, module, srcPath);
+        setName(session.getEjbName() + "");
+        ejbViewController = new EjbViewController(session, ejbJar, classPath);
         setDisplayName();
         nameChangeListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent pce) {
                 setDisplayName();
             }
         };
-        model.addPropertyChangeListener(
-            WeakListeners.propertyChange(nameChangeListener,model));
-        content.add(this);
-        content.add(controller.getBeanClass());
-        if (controller.getBeanDo() != null) {
-            content.add(controller.getBeanDo());
+        session.addPropertyChangeListener(WeakListeners.propertyChange(nameChangeListener, session));
+        instanceContent.add(this);
+        instanceContent.add(ejbViewController.getBeanClass());
+        if (ejbViewController.getBeanDo() != null) {
+            instanceContent.add(ejbViewController.getBeanDo());
         }
-        content.add(controller.createEjbReference());
+        instanceContent.add(ejbViewController.createEjbReference());
     }
     
     private void setDisplayName() {
-        setDisplayName(controller.getDisplayName());
+        setDisplayName(ejbViewController.getDisplayName());
     }
     
     public Action[] getActions(boolean context) {
-        Node[] nodes = (Node[])Utilities.actionsGlobalContext().lookup(new Lookup.Template(Node.class)).allInstances().toArray(new Node[0]);
-        List list = new ArrayList();
+        int nodesCount = Utilities.actionsGlobalContext().lookup(new Lookup.Template<Node>(Node.class)).allInstances().size();
+        List<SystemAction> list = new ArrayList<SystemAction>();
         list.add(SystemAction.get(OpenAction.class));
         list.add(null);
         list.add(SystemAction.get(DeleteAction.class));
-        if (nodes.length == 1) {
+        if (nodesCount == 1) {
             list.add(SystemAction.get(AddActionGroup.class));
             list.add(null);
             list.add(SystemAction.get(GoToSourceActionGroup.class));
         }
-        return (SystemAction[])list.toArray(new SystemAction[0]);
+        return list.toArray(new SystemAction[list.size()]);
     }
     
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
-        // TODO
-        // return new HelpCtx(SessionNode.class);
     }
     
     public boolean canDestroy() {
         return true;
     }
     
-    public void destroy() throws java.io.IOException {
+    public void destroy() throws IOException {
         super.destroy();
-        String deleteOptions = DeleteEJBDialog.open(controller.getDisplayName());
+        String deleteOptions = DeleteEJBDialog.open(ejbViewController.getDisplayName());
         if (!deleteOptions.equals(DeleteEJBDialog.DELETE_NOTHING)) {
             if (deleteOptions.equals(DeleteEJBDialog.DELETE_ONLY_DD)) {
-                controller.delete(false);
+                ejbViewController.delete(false);
             } else {
-                controller.delete(true);
+                ejbViewController.delete(true);
             }
         }
     }
@@ -134,15 +131,15 @@ public class SessionNode extends AbstractNode implements OpenCookie {
     }
     
     public Transferable clipboardCopy() throws IOException {
-        EjbReference ejbRef = controller.createEjbReference();
-        String ejbRefString = "";
+        EjbReference ejbRef = ejbViewController.createEjbReference();
+        StringBuffer ejbRefString = new StringBuffer();
         if (ejbRef.supportsRemoteInvocation()) {
-            ejbRefString += controller.getRemoteStringRepresentation("Session");
+            ejbRefString.append(ejbViewController.getRemoteStringRepresentation("Session"));
         }
         if (ejbRef.supportsLocalInvocation()) {
-            ejbRefString += controller.getLocalStringRepresentation("Session");
+            ejbRefString.append(ejbViewController.getLocalStringRepresentation("Session"));
         }
-        return new EjbTransferable(ejbRefString,ejbRef);
+        return new EjbTransferable(ejbRefString.toString(), ejbRef);
     }
     
     public Transferable clipboardCut() throws IOException {
@@ -150,9 +147,9 @@ public class SessionNode extends AbstractNode implements OpenCookie {
     }
     
     public void open() {
-        DataObject ce = controller.getBeanDo();
-        if (ce != null) {
-            OpenCookie cookie = (OpenCookie) ce.getCookie(OpenCookie.class);
+        DataObject dataObject = ejbViewController.getBeanDo();
+        if (dataObject != null) {
+            OpenCookie cookie = dataObject.getCookie(OpenCookie.class);
             if(cookie != null){
                 cookie.open();
             }
@@ -168,7 +165,7 @@ public class SessionNode extends AbstractNode implements OpenCookie {
      */
     public Object getValue(String attributeName) {
         Object retValue;
-        if (attributeName.equals("customDelete")) {
+        if ("customDelete".equals(attributeName)) {
             retValue = Boolean.TRUE;
         } else {
             retValue = super.getValue(attributeName);

@@ -63,7 +63,7 @@ public class EjbInjectionTargetQueryImplementation implements InjectionTargetQue
         return false;
     }
 
-    public boolean isStaticReferenceRequired(FileObject fo, String fqn) {
+    public boolean isStaticReferenceRequired(FileObject fileObject, String fqn) {
         return false;
     }
     

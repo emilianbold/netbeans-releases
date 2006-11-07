@@ -26,7 +26,6 @@ import java.util.Collections;
 import java.util.List;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.SessionMethodController;
 import org.openide.nodes.Children;
@@ -38,44 +37,42 @@ import org.openide.nodes.Node;
  * @author Martin Adamek
  */
 
-public class SessionChildren extends Children.Keys<SessionChildren.Key> implements PropertyChangeListener {
+public final class SessionChildren extends Children.Keys<SessionChildren.Key> implements PropertyChangeListener {
     
     public enum Key {REMOTE, LOCAL};
     
-    private final Session model;
-    private final ClassPath srcPath;
+    private final Session session;
+    private final ClassPath classPath;
     private final SessionMethodController controller;
-    private final EjbJar jar;
     
-    public SessionChildren(Session model, ClassPath srcPath, EjbJar jar) {
-        this.srcPath = srcPath;
-        this.model = model;
-        this.jar = jar;
+    public SessionChildren(Session session, ClassPath classPath) {
+        this.classPath = classPath;
+        this.session = session;
         //TODO: RETOUCHE
-        controller = new SessionMethodController(null, model);
+        controller = new SessionMethodController(null, session);
     }
     
     protected void addNotify() {
         super.addNotify();
         updateKeys();
-        model.addPropertyChangeListener(this);
-        srcPath.addPropertyChangeListener(this);
+        session.addPropertyChangeListener(this);
+        classPath.addPropertyChangeListener(this);
     }
     
     private void updateKeys() {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 List<Key> keys = new ArrayList<Key>();
-                if (model.getRemote() != null) { keys.add(Key.REMOTE); }
-                if (model.getLocal()!=null) { keys.add(Key.LOCAL); }
+                if (session.getRemote() != null) { keys.add(Key.REMOTE); }
+                if (session.getLocal()!=null) { keys.add(Key.LOCAL); }
                 setKeys(keys);
             }
         });
     }
     
     protected void removeNotify() {
-        model.removePropertyChangeListener(this);
-        srcPath.removePropertyChangeListener(this);
+        session.removePropertyChangeListener(this);
+        classPath.removePropertyChangeListener(this);
         setKeys(Collections.<Key>emptyList());
         super.removeNotify();
     }
@@ -98,7 +95,7 @@ public class SessionChildren extends Children.Keys<SessionChildren.Key> implemen
         return null;
     }
     
-    public void propertyChange(PropertyChangeEvent ev) {
+    public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 updateKeys();

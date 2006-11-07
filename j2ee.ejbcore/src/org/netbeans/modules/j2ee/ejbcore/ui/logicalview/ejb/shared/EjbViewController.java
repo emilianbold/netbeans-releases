@@ -17,7 +17,6 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared;
 
 import java.io.IOException;
@@ -48,56 +47,54 @@ import org.netbeans.modules.j2ee.dd.api.ejb.MessageDriven;
 import org.netbeans.modules.j2ee.dd.api.ejb.Method;
 import org.netbeans.modules.j2ee.dd.api.ejb.MethodPermission;
 import org.netbeans.modules.j2ee.dd.api.ejb.Relationships;
-import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.dnd.EjbReferenceImpl;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-
 
 /**
  * This class provides controller capabilities for ejb logical views. The nodes
  * should delegate non ui tasks to this class.
- * @author  Chris Webster
+ * @author Chris Webster
  * @author Martin Adamek
  */
-public class EjbViewController {
-    private final Ejb model;
-    private final EjbJar module;
-    private final Project myProject;
-    private final ClassPath srcPath;
+public final class EjbViewController {
     
-    public EjbViewController(Ejb model, EjbJar module, ClassPath src) {
-        this.model = model;
-        this.module = module;
-        srcPath = src;
-        myProject = FileOwnerQuery.getOwner(srcPath.getRoots()[0]);
+    private final Ejb ejb;
+    private final EjbJar ejbJar;
+    private final Project project;
+    private final ClassPath classPath;
+    
+    public EjbViewController(Ejb ejb, EjbJar ejbJar, ClassPath classPath) {
+        this.ejb = ejb;
+        this.ejbJar = ejbJar;
+        this.classPath = classPath;
+        project = FileOwnerQuery.getOwner(classPath.getRoots()[0]);
     }
     
     public String getDisplayName() {
-        String name = model.getDefaultDisplayName();
+        String name = ejb.getDefaultDisplayName();
         if (name == null) {
-            name = model.getEjbName();
+            name = ejb.getEjbName();
         }
         return name;
     }
     
     public void delete(boolean deleteClasses) throws IOException {
-        EnterpriseBeans beans = module.getEnterpriseBeans();
-        J2eeModuleProvider pwm = (J2eeModuleProvider) myProject.getLookup().lookup(J2eeModuleProvider.class);
-        pwm.getConfigSupport().ensureConfigurationReady();
+        EnterpriseBeans beans = ejbJar.getEnterpriseBeans();
+        J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
+        j2eeModuleProvider.getConfigSupport().ensureConfigurationReady();
         deleteTraces();
         // for MDBs remove message destination from assembly descriptor
-        if (model instanceof MessageDriven) {
+        if (ejb instanceof MessageDriven) {
             try {
-                AssemblyDescriptor assemblyDescriptor = module.getSingleAssemblyDescriptor();
-                String mdLinkName = ((MessageDriven) model).getMessageDestinationLink();
+                AssemblyDescriptor assemblyDescriptor = ejbJar.getSingleAssemblyDescriptor();
+                String mdLinkName = ((MessageDriven) ejb).getMessageDestinationLink();
                 MessageDestination[] messageDestinations = assemblyDescriptor.getMessageDestination();
-                for (int i = 0; i < messageDestinations.length; i++) {
-                    if (messageDestinations[i].getMessageDestinationName().equals(mdLinkName)) {
-                        assemblyDescriptor.removeMessageDestination(messageDestinations[i]);
+                for (MessageDestination messageDestination : messageDestinations) {
+                    if (messageDestination.getMessageDestinationName().equals(mdLinkName)) {
+                        assemblyDescriptor.removeMessageDestination(messageDestination);
                         break;
                     }
                 }
@@ -105,7 +102,7 @@ public class EjbViewController {
                 ErrorManager.getDefault().notify(ex);
             }
         }
-        beans.removeEjb(model);
+        beans.removeEjb(ejb);
         writeDD();
         if (deleteClasses) {
             deleteClasses();
@@ -113,7 +110,7 @@ public class EjbViewController {
     }
     
     public EjbReference createEjbReference() {
-        AntArtifact[] antArtifacts = AntArtifactQuery.findArtifactsByType(myProject, JavaProjectConstants.ARTIFACT_TYPE_JAR);
+        AntArtifact[] antArtifacts = AntArtifactQuery.findArtifactsByType(project, JavaProjectConstants.ARTIFACT_TYPE_JAR);
         AntArtifact moduleJarTarget;
         if (antArtifacts == null || antArtifacts.length == 0) {
             moduleJarTarget = null;
@@ -126,7 +123,7 @@ public class EjbViewController {
     }
     
     private FileObject findBeanFo() {
-        return srcPath.findResource(model.getEjbClass().replace('.','/')+".java"); // NOI18N
+        return classPath.findResource(ejb.getEjbClass().replace('.','/')+".java"); // NOI18N
     }
     
     public DataObject getBeanDo() {
@@ -136,7 +133,7 @@ public class EjbViewController {
                 return DataObject.find(src);
             }
         } catch (DataObjectNotFoundException ex) {
-            // should not happen now
+            ErrorManager.getDefault().notify(ex);
         }
         return null;
     }
@@ -146,8 +143,8 @@ public class EjbViewController {
             JavaSource javaSource = JavaSource.forFileObject(findBeanFo());
             final TypeElement[] result = new TypeElement[1];
             javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
-                public void run(CompilationController cc) throws Exception {
-                    result[0] = cc.getElements().getTypeElement(model.getEjbClass());
+                public void run(CompilationController compilationController) throws Exception {
+                    result[0] = compilationController.getElements().getTypeElement(ejb.getEjbClass());
                 }
             }, true);
             return result[0];
@@ -162,34 +159,34 @@ public class EjbViewController {
      * @return the xml code corresponding to this ejb
      */
     public String getRemoteStringRepresentation(String ejbType) {
-        assert model instanceof EntityAndSession;
-        EntityAndSession refModel = (EntityAndSession)model;
-        String s ="\t<ejb-ref>\n" +
-                "\t\t<ejb-ref-name>ejb/"+model.getEjbName()+"</ejb-ref-name>\n"+
-                "\t\t<ejb-ref-type>"+ejbType+"</ejb-ref-type>\n"+
-                "\t\t<home>"+refModel.getHome()+"</home>\n"+
-                "\t\t<remote>"+refModel.getRemote()+"</remote>\n"+
+        assert ejb instanceof EntityAndSession;
+        EntityAndSession refModel = (EntityAndSession) ejb;
+        String result ="\t<ejb-ref>\n" +
+                "\t\t<ejb-ref-name>ejb/" + ejb.getEjbName() + "</ejb-ref-name>\n"+
+                "\t\t<ejb-ref-type>" + ejbType + "</ejb-ref-type>\n"+
+                "\t\t<home>" + refModel.getHome() + "</home>\n"+
+                "\t\t<remote>" + refModel.getRemote() + "</remote>\n"+
                 "\t</ejb-ref>\n";
-        return s;
+        return result;
     }
     
     public String getLocalStringRepresentation(String ejbType) {
-        assert model instanceof EntityAndSession;
-        EntityAndSession refModel = (EntityAndSession)model;
-        String s ="\t<ejb-local-ref>\n" +
-                "\t\t<ejb-ref-name>ejb/"+model.getEjbName()+"</ejb-ref-name>\n"+
-                "\t\t<ejb-ref-type>"+ejbType+"</ejb-ref-type>\n"+
-                "\t\t<local-home>"+refModel.getLocalHome()+"</local-home>\n"+
-                "\t\t<local>"+refModel.getLocal()+"</local>\n"+
+        assert ejb instanceof EntityAndSession;
+        EntityAndSession refModel = (EntityAndSession)ejb;
+        String result ="\t<ejb-local-ref>\n" +
+                "\t\t<ejb-ref-name>ejb/" + ejb.getEjbName() + "</ejb-ref-name>\n"+
+                "\t\t<ejb-ref-type>" + ejbType + "</ejb-ref-type>\n"+
+                "\t\t<local-home>" + refModel.getLocalHome() + "</local-home>\n"+
+                "\t\t<local>" + refModel.getLocal() + "</local>\n"+
                 "\t</ejb-local-ref>\n";
-        return s;
+        return result;
     }
     
     
     private void writeDD() throws IOException {
-        org.netbeans.modules.j2ee.api.ejbjar.EjbJar apiEjbJar = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(srcPath.getRoots()[0]);
-        FileObject ddFile = apiEjbJar.getDeploymentDescriptor();
-        DDProvider.getDefault().getMergedDDRoot(apiEjbJar.getMetadataUnit()).write(ddFile);
+        org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(classPath.getRoots()[0]);
+        FileObject ddFile = ejbModule.getDeploymentDescriptor();
+        DDProvider.getDefault().getMergedDDRoot(ejbModule.getMetadataUnit()).write(ddFile);
     }
     
     private boolean isEjbUsed(EjbRelationshipRole role, String ejbName) {
@@ -199,44 +196,42 @@ public class EjbViewController {
     }
     
     private void deleteRelationships(String ejbName) {
-        Relationships r = module.getSingleRelationships();
-        if (r != null) {
-            EjbRelation[] relations = r.getEjbRelation();
+        Relationships relationships = ejbJar.getSingleRelationships();
+        if (relationships != null) {
+            EjbRelation[] relations = relationships.getEjbRelation();
             if (relations != null) {
-                for (int i = 0; i < relations.length; i++) {
-                    if (isEjbUsed(relations[i].getEjbRelationshipRole(), ejbName)
-                    ||
-                            isEjbUsed(relations[i].getEjbRelationshipRole2(), ejbName)) {
-                        r.removeEjbRelation(relations[i]);
+                for (EjbRelation ejbRelation : relations) {
+                    if (isEjbUsed(ejbRelation.getEjbRelationshipRole(), ejbName) || isEjbUsed(ejbRelation.getEjbRelationshipRole2(), ejbName)) {
+                        relationships.removeEjbRelation(ejbRelation);
                     }
                 }
-                if (r.sizeEjbRelation() == 0) {
-                    module.setRelationships(null);
+                if (relationships.sizeEjbRelation() == 0) {
+                    ejbJar.setRelationships(null);
                 }
             }
         }
     }
     
     private void deleteTraces() {
-        String ejbName = model.getEjbName();
-        String ejbNameCompare = ejbName+"";
+        String ejbName = ejb.getEjbName();
+        String ejbNameCompare = ejbName + "";
         deleteRelationships(ejbName);
-        AssemblyDescriptor ad = module.getSingleAssemblyDescriptor();
-        if (ad != null) {
-            ContainerTransaction[] ct = ad.getContainerTransaction();
-            for (int i = 0; i < ct.length; i++) {
-                Method[] methods = ct[i].getMethod();
-                methods = methods== null ? new Method[0]:methods;
-                for (int method =0; method < methods.length; method++) {
-                    if (ejbNameCompare.equals(methods[method].getEjbName())) {
-                        ct[i].removeMethod(methods[method]);
-                        if (ct[i].sizeMethod() == 0) {
-                            ad.removeContainerTransaction(ct[i]);
+        AssemblyDescriptor assemblyDescriptor = ejbJar.getSingleAssemblyDescriptor();
+        if (assemblyDescriptor != null) {
+            ContainerTransaction[] containerTransactions = assemblyDescriptor.getContainerTransaction();
+            for (ContainerTransaction containerTransaction : containerTransactions) {
+                Method[] methods = containerTransaction.getMethod();
+                methods = methods == null ? new Method[0] : methods;
+                for (Method method : methods) {
+                    if (ejbNameCompare.equals(method.getEjbName())) {
+                        containerTransaction.removeMethod(method);
+                        if (containerTransaction.sizeMethod() == 0) {
+                            assemblyDescriptor.removeContainerTransaction(containerTransaction);
                         }
                     }
                 }
             }
-            MethodPermission[] permissions = ad.getMethodPermission();
+            MethodPermission[] permissions = assemblyDescriptor.getMethodPermission();
             for (int i =0; i < permissions.length; i++) {
                 Method[] methods = permissions[i].getMethod();
                 methods = methods== null ? new Method[0]:methods;
@@ -244,7 +239,7 @@ public class EjbViewController {
                     if (ejbNameCompare.equals(methods[method].getEjbName())) {
                         permissions[i].removeMethod(methods[method]);
                         if (permissions[i].sizeMethod() == 0) {
-                            ad.removeMethodPermission(permissions[i]);
+                            assemblyDescriptor.removeMethodPermission(permissions[i]);
                         }
                     }
                 }
@@ -254,14 +249,14 @@ public class EjbViewController {
     
     private FileObject getFileObject(String className) {
         assert className != null: "cannot find null className";
-        return srcPath.findResource(className.replace('.', '/') + ".java");
+        return classPath.findResource(className.replace('.', '/') + ".java");
     }
     
     private void deleteClasses() {
-        ArrayList/*<FileObject>*/ classFileObjects = new ArrayList();
-        classFileObjects.add(getFileObject(model.getEjbClass()));
-        if (model instanceof EntityAndSession) {
-            EntityAndSession entityAndSessionfModel = (EntityAndSession)model;
+        ArrayList<FileObject> classFileObjects = new ArrayList<FileObject>();
+        classFileObjects.add(getFileObject(ejb.getEjbClass()));
+        if (ejb instanceof EntityAndSession) {
+            EntityAndSession entityAndSessionfModel = (EntityAndSession) ejb;
             if (entityAndSessionfModel.getLocalHome() != null) {
                 classFileObjects.add(getFileObject(entityAndSessionfModel.getLocalHome()));
                 classFileObjects.add(getFileObject(entityAndSessionfModel.getLocal()));
@@ -273,12 +268,11 @@ public class EjbViewController {
                 classFileObjects.add(getFileObject(entityAndSessionfModel.getRemote() + "Business"));
             }
         }
-        for (int i = 0; i < classFileObjects.size(); i++) {
-            FileObject fo = (FileObject) classFileObjects.get(i);
-            if (fo != null) {
+        for (FileObject fileObject : classFileObjects) {
+            if (fileObject != null) {
                 try {
-                    DataObject dataObject = DataObject.find(fo);
-                    assert dataObject != null: ("cannot find DataObject for " + fo.getPath());
+                    DataObject dataObject = DataObject.find(fileObject);
+                    assert dataObject != null: ("cannot find DataObject for " + fileObject.getPath());
                     if (dataObject != null) {
                         dataObject.delete();
                     }
