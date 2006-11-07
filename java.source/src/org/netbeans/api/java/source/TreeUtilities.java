@@ -85,25 +85,37 @@ public final class TreeUtilities {
     }
     
     public TreePath pathFor(int pos) {
-        return pathFor(new TreePath(info.getCompilationUnit()), pos);
+        return pathFor(pos, true);
     }
-    
+
+    public TreePath pathFor(int pos, boolean backwardBias) {
+        return pathFor(new TreePath(info.getCompilationUnit()), pos, backwardBias);
+    }
+
     public TreePath pathFor(TreePath path, int pos) {
-        return pathFor(path, pos, info.getTrees().getSourcePositions());
+        return pathFor(path, pos, true);
+    }
+
+    public TreePath pathFor(TreePath path, int pos, boolean backwardBias) {
+        return pathFor(path, pos, info.getTrees().getSourcePositions(), backwardBias);
     }
 
     public TreePath pathFor(TreePath path, int pos, SourcePositions sourcePositions) {
+        return pathFor(path, pos, sourcePositions, true);
+    }
+
+    public TreePath pathFor(TreePath path, int pos, SourcePositions sourcePositions, boolean backwardBias) {
         if (info == null || path == null || sourcePositions == null)
             throw new IllegalArgumentException();
-
-        class Result extends Error {
-	    TreePath path;
-	    Result(TreePath path) {
-		this.path = path;
-	    }
-	}
         
-	class PathFinder extends TreePathScanner<Void,Void> {
+        class Result extends Error {
+            TreePath path;
+            Result(TreePath path) {
+                this.path = path;
+            }
+        }
+        
+        class PathFinder extends TreePathScanner<Void,Void> {
             private int pos;
             private SourcePositions sourcePositions;
             
@@ -111,8 +123,8 @@ public final class TreeUtilities {
                 this.pos = pos;
                 this.sourcePositions = sourcePositions;
             }
-        
-	    public Void scan(Tree tree, Void p) {
+            
+            public Void scan(Tree tree, Void p) {
                 if (tree != null) {
                     switch(tree.getKind()) {
                         case ERRONEOUS:
@@ -126,15 +138,15 @@ public final class TreeUtilities {
                 }
                 return null;
             }
-	}
-	
-	try {
-	    new PathFinder(pos, sourcePositions).scan(path, null);
-	} catch (Result result) {
-	    path = result.path;
-	}
+        }
         
-        if (path.getLeaf() == path.getCompilationUnit())
+        try {
+            new PathFinder(pos, sourcePositions).scan(path, null);
+        } catch (Result result) {
+            path = result.path;
+        }
+        
+        if (!backwardBias || path.getLeaf() == path.getCompilationUnit())
             return path;
         
         TokenSequence<JavaTokenId> tokenList = tokensFor(path.getLeaf(), sourcePositions);
@@ -165,7 +177,7 @@ public final class TreeUtilities {
                     }
                     break;
             }
-        }        
+        }
         return path;
     }
     

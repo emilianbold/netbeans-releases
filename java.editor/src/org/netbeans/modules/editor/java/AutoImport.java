@@ -26,6 +26,7 @@ import java.util.Iterator;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.*;
 
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 
 /**
@@ -34,8 +35,6 @@ import org.netbeans.api.java.source.WorkingCopy;
  */
 public class AutoImport extends TreeScanner<Void, Void> {
 
-    private static final boolean ENABLE_EXACT_AUTOIMPORT = Boolean.getBoolean("org.netbeans.modules.java.editor.exact-autoimport");
-    
     private WorkingCopy copy;
     private TypeMirror type;
 
@@ -56,25 +55,16 @@ public class AutoImport extends TreeScanner<Void, Void> {
         switch(tree.getKind()) {
             case IDENTIFIER:
             case PARAMETERIZED_TYPE:
-                if (ENABLE_EXACT_AUTOIMPORT) {
-                    this.type = type;
-                    scan(tree, null);
-                } else {
-                    try {
-                        if (type.getKind() == TypeKind.DECLARED)
-                            org.netbeans.api.java.source.SourceUtils.addImports(
-                                    copy,
-                                    java.util.Collections.singletonList(((TypeElement)((DeclaredType)type ).asElement()).getQualifiedName().toString()));
-                    } catch (Exception e) {
-                    }
-                }
+                this.type = type;
+                scan(tree, null);                
         }
     }
     
     @Override
     public Void visitIdentifier(IdentifierTree node, Void p) {
         assert type.getKind() == TypeKind.DECLARED;
-        TypeElement e = (TypeElement)((DeclaredType)type).asElement();        
+        ElementHandle<TypeElement> handle = ElementHandle.create((TypeElement)((DeclaredType)type).asElement());
+        TypeElement e = handle.resolve(copy);        
         assert node.getName().contentEquals(e.getSimpleName());
         Tree t = copy.getTreeMaker().QualIdent(e);
         copy.rewrite(node, t);
@@ -84,7 +74,7 @@ public class AutoImport extends TreeScanner<Void, Void> {
     @Override
     public Void visitParameterizedType(ParameterizedTypeTree node, Void p) {
         assert type.getKind() == TypeKind.DECLARED;
-	scan(node.getType(), null);
+	    scan(node.getType(), null);
         Iterator<? extends TypeMirror> args = ((DeclaredType)type).getTypeArguments().iterator();
         for (Tree ta : node.getTypeArguments())
             if (args.hasNext()) {
@@ -93,12 +83,33 @@ public class AutoImport extends TreeScanner<Void, Void> {
             }
         return null;
     }
-
+    
     @Override
-    public Void visitArrayType(ArrayTypeTree node, Void p) {
-        assert type.getKind() == TypeKind.ARRAY;
-        type = ((ArrayType)type).getComponentType();
-	scan(node.getType(), null);
+    public Void visitWildcard(WildcardTree node, Void p) {
+        if (type.getKind() == TypeKind.WILDCARD) {
+            TypeMirror bound = ((WildcardType) type).getExtendsBound();
+            if (bound == null)
+                bound = ((WildcardType) type).getSuperBound();
+            type = bound;
+        }
+        else if (type.getKind() == TypeKind.TYPEVAR) {
+            TypeMirror bound = ((TypeVariable) type).getLowerBound();
+            if (bound == null || bound.getKind() == TypeKind.NULL)
+                bound = ((TypeVariable) type).getUpperBound();
+            type = bound.getKind() == TypeKind.NULL ? null : bound;
+        } else {
+            type = null;
+        }
+        if (type != null)
+	        scan(node.getBound(), null);
         return null;
     }    
+
+    @Override
+    public java.lang.Void visitArrayType(ArrayTypeTree node, Void p) {
+        assert type.getKind() == TypeKind.ARRAY;
+        type = ((ArrayType) type).getComponentType();
+        scan(node.getType(), null);
+        return null;
+    }
 }

@@ -529,7 +529,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                         }
                         public void run(WorkingCopy copy) throws IOException {
                             copy.toPhase(JavaSource.Phase.RESOLVED);
-                            TreePath tp = copy.getTreeUtilities().pathFor(c.getSelectionEnd() - toAddLen);
+                            TreePath tp = copy.getTreeUtilities().pathFor(c.getSelectionEnd() - toAddLen, false);
                             AutoImport.resolveImport(copy, tp.getLeaf(), copy.getTypes().getDeclaredType(elem));
                         }
                     }).commit();

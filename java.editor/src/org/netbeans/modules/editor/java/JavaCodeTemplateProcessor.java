@@ -130,13 +130,13 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                             public void cancel() {
                             }
                             public void run(WorkingCopy copy) throws IOException {
-                                copy.toPhase(JavaSource.Phase.PARSED);
+                                copy.toPhase(JavaSource.Phase.RESOLVED);
                                 AutoImport imp = AutoImport.get(copy);
                                 for (Map.Entry<CodeTemplateParameter, TypeMirror> entry : param2types.entrySet()) {
                                     CodeTemplateParameter param = entry.getKey();
                                     TypeMirror tm = param2types.get(param);
                                     if (tm.getKind() == TypeKind.DECLARED) {
-                                        TreePath tp = copy.getTreeUtilities().pathFor(request.getInsertTextOffset() + param.getInsertTextOffset() + (INSTANCE_OF.equals(param2hints.get(param)) ? param.getValue().lastIndexOf('.') - 1 : param.getValue().length()));
+                                        TreePath tp = copy.getTreeUtilities().pathFor(request.getInsertTextOffset() + param.getInsertTextOffset() + (INSTANCE_OF.equals(param2hints.get(param)) ? param.getValue().lastIndexOf('.') - 1 : param.getValue().length()), false);
                                         imp.resolveImport(tp.getLeaf(), (DeclaredType)tm);
                                     }
                                 }
