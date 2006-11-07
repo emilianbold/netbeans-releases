@@ -33,8 +33,6 @@ import org.w3c.dom.Text;
  */
 public class DomVisitor {
    
-   private static final Logger LOG = Logger.getLogger("org.util.visitors.DomVisitor");
-   
    public void visit(Node node) {
       final Class clazz = node.getClass();
       if (Element.class.isAssignableFrom(clazz)) {
@@ -44,9 +42,7 @@ public class DomVisitor {
       } else if (Text.class.isAssignableFrom(clazz)) {
          visit((Text) node);
       } else {
-         LOG.logp(Level.SEVERE, "DomVisiter", "visit(Node node)",
-                 "Unhandled node class type " + clazz.getName());
-         throw new RuntimeException("unhandled node");
+         throw new RuntimeException("Unhandled node class type " + clazz.getName());
       }
    }
    

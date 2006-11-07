@@ -49,7 +49,6 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import org.netbeans.installer.utils.UnexpectedExceptionError;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
@@ -59,8 +58,6 @@ import org.xml.sax.SAXException;
  * @author Danila_Dugurov
  */
 public class DomUtil {
-   
-   private static final Logger LOG = Logger.getLogger("org.util.DomUtil");
    
    private static final DocumentBuilderFactory BUILDER_FACTORY;
    private static final TransformerFactory TRANSFORMER_FACTORY;
@@ -90,10 +87,9 @@ public class DomUtil {
                  xmlFile.toString().getBytes("UTF-8"));
          return parseXmlFile(in);
       } catch (UnsupportedEncodingException worntHappend) {
-         LOG.log(Level.SEVERE, "UTF-8 unsupported encoding on your system");
-         throw new RuntimeException(worntHappend);//TODO
+         throw new ParseException("utf-8 not supported!", worntHappend);
       } catch (IOException worntHappend) {
-         throw new RuntimeException(worntHappend);
+         throw new ParseException("fatal error: I/O mustn't happen here.", worntHappend);
       }
    }
    
@@ -104,10 +100,9 @@ public class DomUtil {
          final InputSource inputSource = new InputSource(reader);
          return builder.parse(inputSource);
       } catch (ParserConfigurationException worntHappend) {
-         throw new RuntimeException(worntHappend);
+         throw new ParseException("parse configuration error.", worntHappend);
       } catch (SAXException ex) {
-         LOG.log(Level.SEVERE, "error while parsing xml!", ex);
-         throw new ParseException("parsing error occuers!",ex);
+         throw new ParseException("parsing error occuers!", ex);
       }
    }
    
@@ -124,10 +119,8 @@ public class DomUtil {
          transformer.transform(domSource, output);
          writer.flush();
       } catch(TransformerConfigurationException worntHappend) {
-         LOG.log(Level.SEVERE, "error while DOM serializing!");
-         throw new UnexpectedExceptionError(worntHappend);
+         throw new IOException(worntHappend.getMessage());
       } catch(TransformerException ex) {
-         LOG.log(Level.SEVERE, "error while DOM serializing!", ex);
          throw new IOException(ex.getMessage());
       }
    }

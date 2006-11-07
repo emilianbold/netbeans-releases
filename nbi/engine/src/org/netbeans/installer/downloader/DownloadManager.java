@@ -165,7 +165,6 @@ public class DownloadManager {
     
     public void URLStatusChanged(URL url){
       if (queue.getStatus(url) == URLStatus.DOWNLOAD_FINISHED) {
-        System.out.println("ddd");
         synchronized (this) {
           notify();
         }

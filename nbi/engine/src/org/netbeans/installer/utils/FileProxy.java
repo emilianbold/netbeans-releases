@@ -146,7 +146,7 @@ public class FileProxy {
       try {
         return getFile(uri.toURL(), progress, deleteOnExit);
       } catch(MalformedURLException ex) {
-        throw new UnexpectedExceptionError(ex);
+        throw new DownloadException("malformed url: " + uri, ex);
       }
     }
     throw new DownloadException("unsupported sheme: " + uri.getScheme());
@@ -166,7 +166,7 @@ public class FileProxy {
         System.out.println("un sleep..");
       } catch (InterruptedException ex) {
         //TODO: todo todo
-        throw new UnexpectedExceptionError(ex);
+        throw new DownloadException("violation interruption", ex);
       }
     }
     if (currentURLStatus != URLStatus.DOWNLOAD_FINISHED) {
