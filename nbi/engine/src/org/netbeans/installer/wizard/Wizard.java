@@ -168,7 +168,7 @@ public class Wizard {
     private static List<WizardComponent> loadWizardComponents(Node node, ClassLoader loader) throws InitializationException {
         List<WizardComponent> wizardComponents = new ArrayList<WizardComponent>();
         
-        List <Node> nodeList = XMLUtils.getInstance().getChildList(node, "./component");
+        List <Node> nodeList = XMLUtils.getChildList(node, "./component");
         
         for (int i = 0; i < nodeList.size(); i++) {
             Node componentNode = nodeList.get(i);
@@ -183,13 +183,13 @@ public class Wizard {
         
         try {
             
-            String classname = XMLUtils.getInstance().getNodeAttribute(node,
+            String classname = XMLUtils.getNodeAttribute(node,
                     "class");
             
             component = (WizardComponent) loader.loadClass(classname).newInstance();
             
             Node componentsNode =
-                    XMLUtils.getInstance().getChildNode(node, "./components");
+                    XMLUtils.getChildNode(node, "./components");
             
             if (componentsNode != null) {
                 List<WizardComponent> childComponents =
@@ -200,7 +200,7 @@ public class Wizard {
             }
             
             Node conditionsNode =
-                    XMLUtils.getInstance().getChildNode(node, "./conditions");
+                    XMLUtils.getChildNode(node, "./conditions");
             
             if (conditionsNode != null) {
                 List<WizardCondition> conditions = loadWizardConditions(conditionsNode, loader);
@@ -210,7 +210,7 @@ public class Wizard {
             }
             
             Node propertiesNode =
-                    XMLUtils.getInstance().getChildNode(node, "./properties");
+                    XMLUtils.getChildNode(node, "./properties");
             if (propertiesNode != null) {
                 loadProperties(propertiesNode, component, loader);
             }
@@ -236,19 +236,19 @@ public class Wizard {
         
         try {
             
-            List <Node> nodeList = XMLUtils.getInstance().getChildList(node,
+            List <Node> nodeList = XMLUtils.getChildList(node,
                     "./condition");
             
             for (int i = 0; i < nodeList.size(); i++) {
                 Node conditionNode = nodeList.get(i);
                 
-                String classname = XMLUtils.getInstance().getNodeAttribute(conditionNode,
+                String classname = XMLUtils.getNodeAttribute(conditionNode,
                         "/@class");
                 
                 WizardCondition condition =
                         (WizardCondition) Class.forName(classname).newInstance();
                 
-                Node propertiesNode = XMLUtils.getInstance().getChildNode(node,
+                Node propertiesNode = XMLUtils.getChildNode(node,
                         "./properties");
                 loadProperties(propertiesNode, condition, loader);
                 wizardConditions.add(condition);
@@ -272,15 +272,15 @@ public class Wizard {
     
     private static void loadProperties(Node node, Object component, ClassLoader loader) throws InitializationException {
         
-        List <Node> nodeList = XMLUtils.getInstance().getChildList(node,
+        List <Node> nodeList = XMLUtils.getChildList(node,
                 "./property");
         
         for (int i = 0; i < nodeList.size(); i++) {
             Node propertyNode = nodeList.get(i);
             
-            String name = XMLUtils.getInstance().getNodeAttribute(propertyNode,"name");
+            String name = XMLUtils.getNodeAttribute(propertyNode,"name");
             
-            String value = XMLUtils.getInstance().getNodeTextContent(propertyNode);
+            String value = XMLUtils.getNodeTextContent(propertyNode);
             
             if (component instanceof WizardComponent) {
                 ((WizardComponent) component).setProperty(name, value);
