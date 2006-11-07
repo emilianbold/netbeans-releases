@@ -41,11 +41,6 @@ import org.openide.util.Exceptions;
 
 
 /** 
-* <i><b>Note:</b> While not formally deprecated, this class
-* should be treated as such and not used in new code.  If you
-* are looking for a way to persist settings, see 
-* <code>NbPreferences</code></i>.
-* <p>
 * Base class for all system options.
 * Provides methods for adding
 * and working with property change and guarantees
@@ -60,6 +55,7 @@ import org.openide.util.Exceptions;
 * so it is possible to use {@link BeanInfo}.
 *
 * @author Jaroslav Tulach
+ * @deprecated Use {@link org.openide.util.NbPreferences} instead.
 */
 public abstract class SystemOption extends SharedClassObject implements HelpCtx.Provider {
     /** generated Serialized Version UID */
