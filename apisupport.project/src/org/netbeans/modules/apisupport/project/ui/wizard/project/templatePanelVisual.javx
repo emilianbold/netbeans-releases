@@ -17,7 +17,6 @@ public class @@TEMPLATENAME@@PanelVisual extends JPanel implements DocumentListe
     
     private @@TEMPLATENAME@@WizardPanel panel;
     
-    /** Creates new form PanelProjectLocationVisual */
     public @@TEMPLATENAME@@PanelVisual(@@TEMPLATENAME@@WizardPanel panel) {
         initComponents();
         this.panel = panel;
@@ -25,7 +24,6 @@ public class @@TEMPLATENAME@@PanelVisual extends JPanel implements DocumentListe
         projectNameTextField.getDocument().addDocumentListener(this);
         projectLocationTextField.getDocument().addDocumentListener(this);
     }
-    
     
     public String getProjectName() {
         return this.projectNameTextField.getText();
