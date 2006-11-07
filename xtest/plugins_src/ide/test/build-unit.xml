@@ -34,6 +34,9 @@ Microsystems, Inc. All Rights Reserved.
                 <!-- Used in NoScanTest class. -->
                 <pathelement location="${xtest.home}/lib/nbjunit-ide.jar"/>
                 <pathelement location="${netbeans.dest.dir}/platform7/modules/org-netbeans-api-progress.jar"/>
+                <!-- Used in OpenCreateProjectTest. -->
+                <pathelement location="${netbeans.dest.dir}/ide8/modules/org-netbeans-modules-projectapi.jar"/>
+                <pathelement location="${netbeans.dest.dir}/ide8/modules/org-netbeans-modules-projectui.jar"/>
             </classpath>
         </buildTests>
     </target>
@@ -52,6 +55,20 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- Run tests in IDE -->
     <target name="run-ide">
+        <property name="xtest.ide.open.projects" value=""/>
+        <property name="xtest.ide.commandline.suffix" value="--nogui"/>
+        <executeTests  pluginName="ide">
+            <classpath>
+            </classpath>
+        </executeTests>
+    </target>
+    
+    <!-- Run tests in IDE with prepared projects -->
+    <target name="run-ide-projects">
+        <!-- Optional: Creates an empty Java project in IDE -->
+        <property name="xtest.ide.create.project" value="true"/>
+        <!-- Optional: Opens project at specified location -->
+        <property name="xtest.ide.open.project" location="${xtest.data}/SampleProject"/>
         <property name="xtest.ide.commandline.suffix" value="--nogui"/>
         <executeTests  pluginName="ide">
             <classpath>
@@ -61,8 +78,8 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- Run tests in IDE with -J-Dnetbeans.javacore.noscan=true -->
     <target name="run-ide-noscan">
-        <property name="xtest.ide.commandline.suffix" value="--nogui"/>
-        <property name="xtest.ide.commandline.suffix" value="-J-Dnetbeans.javacore.noscan=true"/>
+        <property name="xtest.ide.open.projects" value=""/>
+        <property name="xtest.ide.commandline.suffix" value="--nogui -J-Dnetbeans.javacore.noscan=true"/>
         <executeTests  pluginName="ide">
             <classpath>
             </classpath>

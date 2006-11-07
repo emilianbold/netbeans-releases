@@ -20,7 +20,7 @@ Microsystems, Inc. All Rights Reserved.
 
 <mconfig name="Unit config">
 
-    <testbag testattribs="stable" executor="ide" name="XTest IDE Plugin">
+    <testbag testattribs="stable" executor="ide-projects" name="XTest IDE Plugin">
         <testset dir="unit/src">
             <patternset>
                 <!-- Order of classes is significant. -->
@@ -28,6 +28,7 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="**/XTestIDEHandlerCheckTest.class"/>
                 <include name="**/XTestErrorManagerTest.class"/>
                 <include name="**/XTestErrorManagerCheckTest.class"/>
+                <include name="**/OpenCreateProjectTest.class"/>
             </patternset>
         </testset>
     </testbag>
@@ -44,7 +45,7 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="stable" executor="ide" name="Watchdog - prepare" prio="1" timeout="60000">
         <testset dir="unit/src">
             <patternset>
-		<include name="**/IdeWatchdogTest.class/testDoNotStopWatchdog"/>
+                <include name="**/IdeWatchdogTest.class/testDoNotStopWatchdog"/>
             </patternset>
         </testset>
     </testbag>
@@ -52,7 +53,7 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="stable" executor="ide" name="Watchdog" prio="2">
         <testset dir="unit/src">
             <patternset>
-		<include name="**/IdeWatchdogTest.class/testShouldNotBeKilled"/>
+                <include name="**/IdeWatchdogTest.class/testShouldNotBeKilled"/>
             </patternset>
         </testset>
     </testbag>
@@ -60,6 +61,7 @@ Microsystems, Inc. All Rights Reserved.
     <executor name="jvm" antfile="build-unit.xml" target="run-jvm" default="true"/>
     <executor name="ide" antfile="build-unit.xml" target="run-ide"/>
     <executor name="ide-noscan" antfile="build-unit.xml" target="run-ide-noscan"/>
+    <executor name="ide-projects" antfile="build-unit.xml" target="run-ide-projects"/>
     <compiler name="unit-compiler" antfile="build-unit.xml" target="unit-compiler" default="true"/>
 
 </mconfig>
