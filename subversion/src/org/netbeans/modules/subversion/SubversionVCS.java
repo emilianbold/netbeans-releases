@@ -24,20 +24,22 @@ import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.spi.OriginalContent;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.modules.versioning.util.VersioningEvent;
-import org.netbeans.modules.subversion.SvnModuleConfig;
 
 import java.io.File;
 import java.util.*;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 
 /**
  * @author Maros Sandor
  */
-public class SubversionVCS extends VersioningSystem implements VersioningListener, PreferenceChangeListener {
+public class SubversionVCS extends VersioningSystem implements VersioningListener, PreferenceChangeListener, PropertyChangeListener {
 
     public SubversionVCS() {
         Subversion.getInstance().getStatusCache().addVersioningListener(this);
+        Subversion.getInstance().addPropertyChangeListener(this);
         SvnModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
     }
 
@@ -75,6 +77,12 @@ public class SubversionVCS extends VersioningSystem implements VersioningListene
             fireStatusChanged((Set<File>) null);
         } else if (evt.getKey().startsWith(SvnModuleConfig.PROP_TEXT_ANNOTATIONS_FORMAT)) {
             fireAnnotationsChanged((Set<File>) null);
+        }
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals(Subversion.PROP_ANNOTATIONS_CHANGED)) {
+            fireAnnotationsChanged((Set<File>) evt.getNewValue());
         }
     }
 }

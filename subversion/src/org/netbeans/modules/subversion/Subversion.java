@@ -27,7 +27,6 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.tigris.subversion.svnclientadapter.*;
-import org.tigris.subversion.svnclientadapter.commandline.CmdLineClientAdapterFactory;
 import org.openide.util.RequestProcessor;
 
 import java.io.File;
@@ -37,7 +36,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Iterator;
 import java.beans.PropertyChangeListener;
-import java.lang.Boolean;
+import java.beans.PropertyChangeSupport;
 
 import org.netbeans.modules.subversion.config.ProxyDescriptor;
 import org.netbeans.modules.subversion.ui.diff.Setup;
@@ -55,6 +54,12 @@ import org.netbeans.api.queries.SharabilityQuery;
  * @author Maros Sandor
  */
 public class Subversion {
+
+    /**
+     * Fired when textual annotations and badges have changed. The NEW value is Set<File> of files that changed or NULL
+     * if all annotaions changed.
+     */
+    static final String PROP_ANNOTATIONS_CHANGED = "annotationsChanged";
     
     static final String INVALID_METADATA_MARKER = "invalid-metadata"; // NOI18N
     
@@ -78,6 +83,8 @@ public class Subversion {
 
     private SvnClient noUrlClientWithoutListeners;
     private SvnClient noUrlClientWithListeners;
+    
+    private final PropertyChangeSupport support = new PropertyChangeSupport(this);
 
     public static synchronized Subversion getInstance() {
         if (instance == null) {
@@ -434,9 +441,19 @@ public class Subversion {
         return filesystemHandler;
     }
 
+    /**
+     * Refreshes all textual annotations and badges.
+     */
     public void refreshAllAnnotations() {
-        // TODO: implement        
-        int i = 0;                                    
+        support.firePropertyChange(PROP_ANNOTATIONS_CHANGED, null, null);
+    }
+
+    void addPropertyChangeListener(PropertyChangeListener listener) {
+        support.addPropertyChangeListener(listener);
+    }
+
+    void removePropertyChangeListener(PropertyChangeListener listener) {
+        support.removePropertyChangeListener(listener);
     }
 
     public OriginalContent getVCSOriginalContent(File file) {
