@@ -56,9 +56,9 @@ import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
 import org.netbeans.installer.utils.helper.swing.NbiScrollPane;
 import org.netbeans.installer.utils.helper.swing.NbiTextPane;
-import org.netbeans.installer.utils.helper.swing.treetable.TreeColumnCellRenderer;
-import org.netbeans.installer.utils.helper.swing.treetable.TreeTable;
-import org.netbeans.installer.utils.helper.swing.treetable.TreeTableModel;
+import org.netbeans.installer.utils.helper.swing.treetable.NbiTreeColumnCellRenderer;
+import org.netbeans.installer.utils.helper.swing.treetable.NbiTreeTable;
+import org.netbeans.installer.utils.helper.swing.treetable.NbiTreeTableModel;
 
 /**
  *
@@ -66,7 +66,7 @@ import org.netbeans.installer.utils.helper.swing.treetable.TreeTableModel;
  */
 public class ComponentsSelectionPanel extends ErrorMessagePanel {
     private NbiTextPane   messagePane;
-    private TreeTable   componentsTreeTable;
+    private NbiTreeTable  componentsTreeTable;
     private NbiScrollPane treeTableScrollPane;
     
     private NbiLabel      displayNameLabel;
@@ -115,7 +115,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
     public void initComponents() {
         messagePane = new NbiTextPane();
         
-        componentsTreeTable = new TreeTable(new ComponentsTreeTableModel());
+        componentsTreeTable = new NbiTreeTable(new ComponentsTreeTableModel());
         componentsTreeTable.setShowVerticalLines(false);
         componentsTreeTable.setShowHorizontalLines(true);
         componentsTreeTable.setOpaque(false);
@@ -323,7 +323,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
         }
     }
     
-    public static class ComponentsTreeTableModel extends TreeTableModel {
+    public static class ComponentsTreeTableModel extends NbiTreeTableModel {
         public ComponentsTreeTableModel() {
             super(new ComponentsTreeModel());
         }
@@ -390,8 +390,8 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
         }
     }
     
-    public static class ComponentsTreeColumnCellRenderer extends TreeColumnCellRenderer {
-        public ComponentsTreeColumnCellRenderer(final TreeTable treeTable) {
+    public static class ComponentsTreeColumnCellRenderer extends NbiTreeColumnCellRenderer {
+        public ComponentsTreeColumnCellRenderer(final NbiTreeTable treeTable) {
             super(treeTable);
         }
         
