@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.java.editor.imports;
 
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ImportTree;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
@@ -28,6 +30,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.ListIterator;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.swing.DefaultListCellRenderer;
@@ -35,12 +38,12 @@ import javax.swing.DefaultListModel;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.KeyStroke;
-import javax.swing.text.BadLocationException;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.UiUtils;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.editor.overridden.PopupUtil;
 import org.openide.ErrorManager;
 
@@ -49,7 +52,7 @@ import org.openide.ErrorManager;
  * @author Jan Lahoda
  */
 public class ImportClassPanel extends javax.swing.JPanel {
-    
+
     private JavaSource javaSource;
     private DefaultListModel model;
     
@@ -180,31 +183,53 @@ public class ImportClassPanel extends javax.swing.JPanel {
     private void importClass( final String fqn ) {
         PopupUtil.hidePopup();
         
-        if ( fqn != null ) {
-
-            
-            CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
-                public void cancel() {}
-                public void run(final CompilationController ci) throws IOException {
-                    try {
-                        SourceUtils.addImports(ci, Collections.singletonList(fqn));
-                    }            
-                    catch (IOException ex) {
-                        ErrorManager.getDefault().notify(ex);
-                    } 
-                    catch (BadLocationException ex) {
-                        ErrorManager.getDefault().notify(ex);
-                    }            
+        if (fqn != null) {
+            CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
+                
+                public void run(final WorkingCopy wc) throws IOException {
+                    wc.toPhase(Phase.RESOLVED);
+                    TreeMaker make = wc.getTreeMaker();
+                    CompilationUnitTree cut = wc.getCompilationUnit();
+                    // make a copy of list
+                    List<ImportTree> imports = new ArrayList<ImportTree>(cut.getImports());
+                    // prepare the import tree to add
+                    ImportTree njuImport = make.Import(make.Identifier(fqn), false);
+                    for (ListIterator<ImportTree> it = imports.listIterator(); it.hasNext(); ) {
+                        ImportTree item = it.next();
+                        if (item.isStatic() || item.getQualifiedIdentifier().toString().compareTo(fqn) > 0) {
+                            it.set(njuImport);
+                            it.add(item);
+                            break;
+                        }
+                    }
+                    CompilationUnitTree cutCopy;
+                    // import was inserted somewhere to inside the list, prepare
+                    // copy of compilation unit.
+                    if (imports.contains(njuImport)) {
+                        cutCopy = make.CompilationUnit(
+                            cut.getPackageName(),
+                            imports,
+                            cut.getTypeDecls(),
+                            cut.getSourceFile()
+                        );
+                    } else {
+                        // import section was not modified by for loop,
+                        // either it means the section is empty or
+                        // the import has to be added to the end of the section.
+                        // prepare copy of compilation unit tree.
+                        cutCopy = make.addCompUnitImport(cut, njuImport);
+                    }
+                    wc.rewrite(cut, cutCopy);
+                }
+                
+                public void cancel() {
                 }
             };
-            
             try {
-                javaSource.runUserActionTask(task, true); // XXX Do it using TreeMaker
-            }
-            catch (IOException ex ) {
+                javaSource.runModificationTask(task).commit();
+            } catch (IOException ex) {
                 ErrorManager.getDefault().notify(ex);
             }
-                                    
         }
     }
             
