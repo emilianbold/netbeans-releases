@@ -21,6 +21,7 @@ package org.netbeans.modules.debugger.jpda.actions;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.IncompatibleThreadStateException;
+import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.event.LocatableEvent;
 import com.sun.jdi.request.StepRequest;
@@ -278,8 +279,9 @@ implements Executor, PropertyChangeListener {
         ThreadReference tr = ((JPDAThreadImpl) getDebuggerImpl ().
             getCurrentThread ()).getThreadReference ();
         removeStepRequests (tr);
-        stepRequest = getDebuggerImpl ().getVirtualMachine ().
-        eventRequestManager ().createStepRequest (
+        VirtualMachine vm = getDebuggerImpl ().getVirtualMachine ();
+        if (vm == null) return ;
+        stepRequest = vm.eventRequestManager ().createStepRequest (
             tr,
             StepRequest.STEP_LINE,
             step
