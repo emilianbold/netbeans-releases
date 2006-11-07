@@ -20,7 +20,7 @@ Microsystems, Inc. All Rights Reserved.
 <project xmlns="http://www.netbeans.org/ns/project/1">
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
-        <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
             <code-name-base>org.netbeans.libs.svnClientAdapter</code-name-base>
             <module-dependencies>
                 <dependency>
@@ -32,10 +32,6 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <class-path-extension>
-                <runtime-relative-path>ext/svnClientAdapter.jar</runtime-relative-path>
-                <binary-origin>../external/svnClientAdapter.jar</binary-origin>
-            </class-path-extension>
             <friend-packages>
                 <friend>org.netbeans.modules.subversion</friend>
                 <package>org.tigris.subversion.svnclientadapter</package>
@@ -43,6 +39,10 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.tigris.subversion.svnclientadapter.javahl</package>                
                 <package>org.tigris.subversion.svnclientadapter.utils</package>
             </friend-packages>
+            <class-path-extension>
+                <runtime-relative-path>ext/svnClientAdapter.jar</runtime-relative-path>
+                <binary-origin>../external/svnClientAdapter.jar</binary-origin>
+            </class-path-extension>
         </data>
     </configuration>
 </project>

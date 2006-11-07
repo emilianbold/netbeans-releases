@@ -188,13 +188,13 @@ Microsystems, Inc. All Rights Reserved.
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.java.editor</code-name-base>
-                        <compile-dependency/>
                         <recursive/>
+                        <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.html</code-name-base>
-                        <compile-dependency/>
                         <recursive/>
+                        <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.editor.fold</code-name-base>
@@ -230,28 +230,28 @@ Microsystems, Inc. All Rights Reserved.
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.openide.options</code-name-base>
-                        <compile-dependency/>
                         <recursive/>
+                        <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.editor</code-name-base>
-                        <compile-dependency/>
                         <recursive/>
+                        <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.editor.lib</code-name-base>
-                        <compile-dependency/>
                         <recursive/>
+                        <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.editor.fold</code-name-base>
-                        <compile-dependency/>
                         <recursive/>
+                        <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.editor.plain</code-name-base>
-                        <compile-dependency/>
                         <recursive/>
+                        <compile-dependency/>
                     </test-dependency>
 <!--                    <test-dependency>
                         <code-name-base>org.openide.src</code-name-base>
@@ -275,8 +275,8 @@ Microsystems, Inc. All Rights Reserved.
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.html.editor</code-name-base>
-                        <compile-dependency/>
                         <recursive/>
+                        <compile-dependency/>
                     </test-dependency>
                 </test-type>
             </test-dependencies>

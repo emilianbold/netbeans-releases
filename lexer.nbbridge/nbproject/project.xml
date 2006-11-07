@@ -4,7 +4,6 @@
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
             <code-name-base>org.netbeans.modules.lexer.nbbridge</code-name-base>
-            <public-packages/>
             <module-dependencies>
                 <dependency>
                     <code-name-base>org.netbeans.modules.editor.mimelookup</code-name-base>
@@ -82,6 +81,7 @@
                     </test-dependency>
                 </test-type>
             </test-dependencies>
+            <public-packages/>
         </data>
     </configuration>
 </project>
