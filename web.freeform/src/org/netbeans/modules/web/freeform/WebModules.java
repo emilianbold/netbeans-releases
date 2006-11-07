@@ -347,11 +347,6 @@ public class WebModules implements WebModuleProvider, AntProjectListener, ClassP
          *         </dl>
          */
         private int getType(FileObject file) {
-            //test if the file is under the web root
-            FileObject dir = getDocumentBase();
-            if (dir != null && (dir.equals(file) || FileUtil.isParentOf(dir,file))) {
-                return 1;
-            }
             //test java source roots
             for (int i=0; i < sourcesFOs.length; i++) {
                 FileObject root = sourcesFOs[i];
@@ -359,6 +354,12 @@ public class WebModules implements WebModuleProvider, AntProjectListener, ClassP
                     return 0;
                 }
             } 
+            
+            //test if the file is under the web root
+            FileObject dir = getDocumentBase();
+            if (dir != null && (dir.equals(file) || FileUtil.isParentOf(dir,file))) {
+                return 1;
+            }
             
             return -1;
         }
