@@ -69,11 +69,7 @@ public class InstallLocationPanel extends DestinationPanel {
             ProductService service = (ProductService)getService(ProductService.NAME);
             String productDestination = (String) service.getProductBeanProperty(
             ProductService.DEFAULT_PRODUCT_SOURCE, null, "installLocation");
-            String sbDestination = productDestination + File.separator + "_uninst" + File.separator + "storagebuilder"; 
             logEvent(this, Log.DBG, "exited productDestination: " + productDestination);
-            logEvent(this, Log.DBG, "exited sbDestination: " + sbDestination);
-            service.setRetainedProductBeanProperty(ProductService.DEFAULT_PRODUCT_SOURCE,
-            Names.STORAGE_BUILDER_ID, "installLocation", sbDestination);
         } catch (ServiceException e) {
             logEvent(this, Log.ERROR, e);
         }
@@ -87,11 +83,7 @@ public class InstallLocationPanel extends DestinationPanel {
             ProductService service = (ProductService)getService(ProductService.NAME);
             String productDestination = (String) service.getProductBeanProperty(
             ProductService.DEFAULT_PRODUCT_SOURCE, null, "installLocation");
-            String sbDestination = productDestination + File.separator + "_uninst" + File.separator + "storagebuilder"; 
             logEvent(this, Log.DBG, "execute productDestination: " + productDestination);
-            logEvent(this, Log.DBG, "execute sbDestination: " + sbDestination);
-            service.setRetainedProductBeanProperty(ProductService.DEFAULT_PRODUCT_SOURCE,
-            Names.STORAGE_BUILDER_ID, "installLocation", sbDestination);
         } catch (ServiceException e) {
             logEvent(this, Log.ERROR, e);
         }

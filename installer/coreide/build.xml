@@ -25,8 +25,6 @@ Microsystems, Inc. All Rights Reserved.
   <property file="build.properties" />
 
   <property name="ismp.project" value="coreide"/>
-  <property name="storage.builder" location="../../java/storagebuilder/dist/storagebuilder.jar"/>
-  <property name="preparse.files" location="../../java/storagebuilder/preparse-files.txt"/>
   <property name="nb.dir" location="../../nbbuild/netbeans" />
   <property name="nb.dir.tmp" location="build/netbeans" />
   <property name="nb.dir.test" location="build/netbeans-test" />
@@ -147,10 +145,6 @@ Microsystems, Inc. All Rights Reserved.
         <arg value="nb.dir=${nb.dir.tmp}"/>
         <arg value="-alias"/>
         <arg value="ismp.home=${ismp.home}"/>
-        <arg value="-alias"/>
-        <arg value="storage.builder=${storage.builder}"/>
-        <arg value="-alias"/>
-        <arg value="scripts.dir=build/storagebuilder"/>
         <classpath>
           <pathelement path="build/classes"/>
           <path refid="ismp.cp"/>
@@ -160,29 +154,20 @@ Microsystems, Inc. All Rights Reserved.
   </macrodef>
 
   <target name="build-win32-part" depends="init, compile, xsl-win32">
-    <copy file="${preparse.files}"
-          tofile="build/storagebuilder/preparse-files.txt"/>
     <build-installer input.ismp.project="${ismp.project}-win32"/>
-    <delete dir="build/storagebuilder"/>
     <delete file="${ismp.project}-win32.uip"/>
     <move file="build/disk1/setupwin32.exe" tofile="dist/${installer.basename}-win.exe"/>
   </target>
 
   <target name="build-win32-part-ml" depends="init-ml, compile, xsl-win32, xsl-win32-ml">
-    <copy file="${preparse.files}"
-          tofile="build/storagebuilder/preparse-files.txt"/>
     <build-installer input.ismp.project="${ismp.project}-win32-ml"/>
-    <delete dir="build/storagebuilder"/>
     <delete file="${ismp.project}-win32.uip"/>
     <delete file="${ismp.project}-win32-ml.uip"/>
     <move file="build/disk1/setupwin32.exe" tofile="dist/${installer.basename}-win-ml.exe"/>
   </target>
 
   <target name="build-unix-part" depends="init, compile, xsl-unix">
-    <copy file="${preparse.files}"
-          tofile="build/storagebuilder/preparse-files.txt"/>
     <build-installer input.ismp.project="${ismp.project}-unix"/>
-    <delete dir="build/storagebuilder"/>
     <delete file="${ismp.project}-unix.uip"/>
     <move file="build/disk1/setuplinux.bin" tofile="dist/${installer.basename}-linux.bin"/>
     <move file="build/disk1/setupsolarisSparc.bin" tofile="dist/${installer.basename}-solsparc.bin"/>
@@ -190,10 +175,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="build-unix-part-ml" depends="init-ml, compile, xsl-unix, xsl-unix-ml">
-    <copy file="${preparse.files}"
-          tofile="build/storagebuilder/preparse-files.txt"/>
     <build-installer input.ismp.project="${ismp.project}-unix-ml"/>
-    <delete dir="build/storagebuilder"/>
     <delete file="${ismp.project}-unix.uip"/>
     <delete file="${ismp.project}-unix-ml.uip"/>
     <move file="build/disk1/setuplinux.bin" tofile="dist/${installer.basename}-linux-ml.bin"/>
