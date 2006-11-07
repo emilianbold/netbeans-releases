@@ -21,11 +21,8 @@ package org.netbeans.upgrade.systemoptions;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.rmi.UnexpectedException;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author Milos Kleint
@@ -38,7 +35,6 @@ class URLProcessor extends PropertyProcessor {
     void processPropertyImpl(String propertyName, Object value) {
         StringBuffer sb = new StringBuffer();       
         if ("mainProjectURL".equals(propertyName)) {//NOI18N
-            System.out.println("here..");
             List l = ((SerParser.ObjectWrapper)value).data;
             try {
                 URL url = createURL(l);
