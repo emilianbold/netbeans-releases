@@ -62,7 +62,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     
-    <target name="runidetest" depends="ide_command_line_suffix,init-cp">
+    <target name="runidetest" depends="init-cp">
         <delete dir="${xtest.workdir}/sys/ide"/>
         <copy todir="${xtest.workdir}/sys/ide">
             <fileset dir="${xtest.workdir}/sys/ide_backup"/>
@@ -109,7 +109,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     
-    <target name="runidetest_footprint" depends="prepare_measure_footprint, ide_command_line_suffix, init-cp">
+    <target name="runidetest_footprint" depends="prepare_measure_footprint, init-cp">
         <antcall target="copy_unzip_jedit_project"/>
         <antcall target="copy_released_ide_cfg_file"/>
        
