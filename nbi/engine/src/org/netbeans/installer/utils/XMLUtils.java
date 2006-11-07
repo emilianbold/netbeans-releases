@@ -86,35 +86,39 @@ public abstract class XMLUtils {
         }
     }
     
-    public static List<Node> getChildList(Node root, String... childs) {
-        List<Node> resultList = new LinkedList<Node> ();
-        if(root != null)  {
-            if(childs.length>0) {
+    public static List<Node> getChildList(Node root, String... children) {
+        List<Node> resultList = new LinkedList<Node>();
+        
+        if (root != null)  {
+            if (children.length > 0) {
                 resultList.add(root);
-                if(childs.length==1) {
-                    if(childs[0].startsWith("./")) {
-                        childs [0] = childs [0].substring("./".length());
+                if (children.length == 1) {
+                    if (children[0].startsWith("./")) {
+                        children [0] = children [0].substring("./".length());
                     }
-                    childs = childs [0].split("/");
+                    children = children [0].split("/");
                 }
                 
-                for(String child: childs) {
-                    resultList = getChildListFromRootList(resultList,child);
+                for (String child: children) {
+                    resultList = getChildListFromRootList(resultList, child);
                 }
             }
         }
         return resultList;
     }
     
-    public static Node getChildNode(Node root, String... childs) throws ParseException {
-        List<Node> list = getChildList(root,childs);
-        if(list.size()==0) {
+    public static Node getChildNode(Node root, String... children) throws ParseException {
+        List<Node> list = getChildList(root, children);
+        
+        if (list.size() == 0) {
             return null;
         }
-        if(list.size()>1 ) {
+        
+        if (list.size() > 1 ) {
             throw new ParseException("Requested single node, returned " +
                     list.size() + " nodes");
         }
+        
         return list.get(0);
     }
     
@@ -148,10 +152,10 @@ public abstract class XMLUtils {
     
     public static Node addChildNode(Node parentNode, String tag, String textContent) {
         Node result = null;
-        if(parentNode!=null && tag!=null) {
+        if (parentNode!=null && tag!=null) {
             
             result = parentNode.getOwnerDocument().createElement(tag);
-            if(textContent!=null) {
+            if (textContent!=null) {
                 result.setTextContent(textContent);
             }
             parentNode.appendChild(result);
@@ -162,22 +166,22 @@ public abstract class XMLUtils {
     // private //////////////////////////////////////////////////////////////////////
     private static String[] getChildNamesFromString(String childname, String name) {
         String[] result;
-        if(childname!=null && childname.equals(name)) {
+        if (childname!=null && childname.equals(name)) {
             result = new String[] { childname };
-        } else if(childname.startsWith("(") && childname.endsWith(")")) {
+        } else if (childname.startsWith("(") && childname.endsWith(")")) {
             // several childs in round brackets separated by commas
             int len = childname.length();
             String[] names = childname.substring(1,len-1).split(",");
             int index =0;
-            for(String n:names) {
-                if(n!=null && name.equals(n)) {
+            for (String n:names) {
+                if (n!=null && name.equals(n)) {
                     index ++;
                 }
             }
             result = new String [index];
             index  = 0 ;
-            for(String n:names) {
-                if(n!=null && name.equals(n)) {
+            for (String n:names) {
+                if (n!=null && name.equals(n)) {
                     result[index] = n;
                     index ++;
                 }
@@ -193,14 +197,14 @@ public abstract class XMLUtils {
         
         int start = childname.indexOf(ATTR_BEGIN);
         int end = childname.indexOf(ATTR_END);
-        if(start!=-1 && end == (childname.length()-1 )) {
+        if (start!=-1 && end == (childname.length()-1 )) {
             // child with specified attribute
             String sub = childname.substring(start + ATTR_BEGIN.length(), end);
             String[] attrs = sub.split(ATTRS_DELIM);
-            for(String s: attrs) {
+            for (String s: attrs) {
                 String[] nameValue = s.split(ATTRS_DELIM);
-                if(nameValue.length==2) {
-                    if(nameValue[1].indexOf("\"")==0 && nameValue[1].lastIndexOf("\"")==(nameValue[1].length()-1)) {
+                if (nameValue.length==2) {
+                    if (nameValue[1].indexOf("\"")==0 && nameValue[1].lastIndexOf("\"")==(nameValue[1].length()-1)) {
                         nameValue[1] = nameValue[1].substring(1,nameValue[1].length()-1);
                     }
                     map.put(nameValue[0],nameValue[1]);
@@ -213,13 +217,13 @@ public abstract class XMLUtils {
     
     private static boolean hasAttributes(Node childNode, HashMap <String, String> attributes) {
         int size = attributes.size();
-        if(size==0) {
+        if (size==0) {
             return true;
         } else {
             Object [] keys = attributes.keySet().toArray();
-            for(int i=0;i<size;i++) {
-                if(keys[i] instanceof String) {
-                    if(!getNodeAttribute(childNode,(String)keys[i]).equals(attributes.get(keys[i]))) {
+            for (int i=0;i<size;i++) {
+                if (keys[i] instanceof String) {
+                    if (!getNodeAttribute(childNode,(String)keys[i]).equals(attributes.get(keys[i]))) {
                         return false;
                     }
                 }
@@ -232,23 +236,25 @@ public abstract class XMLUtils {
         String name =  childNode.getNodeName();
         String[] names = getChildNamesFromString(childnameString,name);
         HashMap <String,String> attributes = getAttributesFromChildName(childnameString);
-        for(String n:names) {
-            if(n!=null && name.equals(n) && hasAttributes(childNode,attributes)) {
+        for (String n:names) {
+            if (n!=null && name.equals(n) && hasAttributes(childNode,attributes)) {
                 result.add(childNode);
             }
         }
     }
     
     private static List<Node> getChildListFromRootList(List<Node> rootlist, String childname) {
-        List<Node> result = new LinkedList<Node> ();
-        for(int i=0;i<rootlist.size();i++) {
+        List<Node> result = new LinkedList<Node>();
+        
+        for (int i = 0; i < rootlist.size(); i++) {
             Node node = rootlist.get(i);
-            if(node==null) {
+            if (node == null) {
                 continue;
             }
+            
             NodeList childsList = node.getChildNodes();
-            for(int j=0;j<childsList.getLength();j++) {
-                processChild(result, childsList.item(j),childname);
+            for (int j = 0; j < childsList.getLength(); j++) {
+                processChild(result, childsList.item(j), childname);
             }
         }
         return result;

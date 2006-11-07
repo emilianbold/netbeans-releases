@@ -54,9 +54,6 @@ public class DownloadConfigurationLogicAction extends CompositeProgressAction {
             final ProductComponent component = components.get(i);
             final Progress childProgress = new Progress();
             
-            childProgress.setDetail("Downloading configuration logic for " + component.getDisplayName());
-            childProgress.setDetail("Loading file " + component.getConfigurationLogic().getRemoteUri());
-            
             progress.addChild(childProgress, childPercentage + (i == components.size() - 1 ? percentageLeak : 0));
             progressPanel.setCurrentProgress(childProgress);
             try {

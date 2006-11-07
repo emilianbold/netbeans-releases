@@ -54,9 +54,6 @@ public class DownloadInstallationDataAction extends CompositeProgressAction {
             final ProductComponent component = components.get(i);
             final Progress childProgress = new Progress();
             
-            childProgress.setTitle("Downloading installation data for " + component.getDisplayName());
-            childProgress.setDetail("Downloading from " + component.getInstallationData().getRemoteUri());
-            
             progress.addChild(childProgress, childPercentage + (i == components.size() - 1 ? percentageLeak : 0));
             progressPanel.setCurrentProgress(childProgress);
             try {
