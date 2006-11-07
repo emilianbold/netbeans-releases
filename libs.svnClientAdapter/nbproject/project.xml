@@ -32,16 +32,17 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <friend-packages>
-                <friend>org.netbeans.modules.subversion</friend>
-                <package>org.tigris.subversion.svnclientadapter</package>
-                <package>org.tigris.subversion.svnclientadapter.utils</package>
-                <package>org.tigris.subversion.svnclientadapter.commandline</package>
-            </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/svnClientAdapter.jar</runtime-relative-path>
                 <binary-origin>../external/svnClientAdapter.jar</binary-origin>
-            </class-path-extension>            
+            </class-path-extension>
+            <friend-packages>
+                <friend>org.netbeans.modules.subversion</friend>
+                <package>org.tigris.subversion.svnclientadapter</package>
+                <package>org.tigris.subversion.svnclientadapter.commandline</package>
+                <package>org.tigris.subversion.svnclientadapter.javahl</package>                
+                <package>org.tigris.subversion.svnclientadapter.utils</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>
