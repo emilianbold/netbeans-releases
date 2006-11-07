@@ -26,42 +26,45 @@ import java.util.Map;
 
 /**
  * Getters and setters for keymap editor profiles. Instances of this
- * class should be registerred in {@MimeLookup} for particular mime types.
+ * class should be registerred in <code>MimeLookup</code> for particular mime types.
  *
  * @author Jan Jancura
  */
 public abstract class KeyBindingSettingsFactory {
 
     /**
-     * Gets the keybindings list, where items are instances of {@link MultiKeyBinding}
+     * Gets the keybindings list, where items are instances of
+     * {@link org.netbeans.api.editor.settings.MultiKeyBinding}.
      *
-     * @return List of {@link MultiKeyBinding}
+     * @return List of <code>MultiKeyBinding</code>s.
      */
     public abstract List/*<MultiKeyBinding>*/ getKeyBindings ();
     
     /**
      * Gets the keybindings list for given keymap name, where items 
-     * are instances of {@link MultiKeyBinding}.
+     * are instances of {@link org.netbeans.api.editor.settings.MultiKeyBinding}.
      *
-     * @param keymapName a name of keymap
-     * @return List of {@link MultiKeyBinding}
+     * @param profile a name of keymap
+     * 
+     * @return List of <code>MultiKeyBinding</code>s.
      */
-    public abstract List/*<MultiKeyBinding>*/ getKeyBindings 
-            (String profile);
+    public abstract List/*<MultiKeyBinding>*/ getKeyBindings (String profile);
 
     
     /**
      * Returns default keybindings list for given keymap name, where items 
-     * are instances of {@link MultiKeyBinding}.
+     * are instances of {@link org.netbeans.api.editor.settings.MultiKeyBinding}.
      *
-     * @return List of {@link MultiKeyBinding}
+     * @return List of <code>MultiKeyBinding</code>s.
      */
     public abstract List getKeyBindingDefaults (String profile);
     
     /**
-     * Gets the keybindings list, where items are instances of {@link MultiKeyBinding}
+     * Gets the keybindings list, where items are instances of 
+     * {@link org.netbeans.api.editor.settings.MultiKeyBinding}.
      *
-     * @return List of {@link MultiKeyBinding}
+     * @param profile
+     * @param keyBindings the list of <code>MultiKeyBindings</code>
      */
     public abstract void setKeyBindings (
         String profile, 

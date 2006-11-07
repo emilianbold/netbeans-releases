@@ -36,7 +36,7 @@ import org.netbeans.modules.editor.settings.storage.*;
 
 /**
  * Getters and setters for font & color editor profiles. Instances of this 
- * class should be registerred in {@MimeLookup} for particular mime types.
+ * class should be registerred in <code>MimeLookup</code> for particular mime types.
  *
  * @author Jan Jancura
  */

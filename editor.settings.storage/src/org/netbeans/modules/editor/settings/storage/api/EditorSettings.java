@@ -166,7 +166,7 @@ public abstract class EditorSettings {
      * Sets highlighting properties for given profile.
      *
      * @param profile a profile name
-     * @param highlighting a highlighting properties to be used
+     * @param highlightings a highlighting properties to be used
      */
     public abstract void setHighlightings (
 	String profile,
