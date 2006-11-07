@@ -69,8 +69,7 @@ Microsystems, Inc. All Rights Reserved.
         <module name="core/javahelp" testtypes="unit" attributes="stable"/>
         <module name="autoupdate" testtypes="unit" attributes="stable"/>
         <module name="diff" testtypes="unit" attributes="stable"/>
-        
-        
+                
         <!-- J2EE team -->
 <!--        <module name="j2eeserver" testtypes="unit" attributes="stable"/>
         <module name="web/webapi" testtypes="unit" attributes="stable"/>
@@ -110,7 +109,7 @@ Microsystems, Inc. All Rights Reserved.
         
         
         <module name="ide/launcher/upgrade" testtypes="unit" attributes="stable" />
-        
+        <module name="apisupport/project" testtypes ="unit" attributes="stable"/>
         <!-- does not run: core/multiview -->
         <!-- other candidate modules in current default moduleconfig (except J2EE team): debuggercore debuggerjpda editor editor/fold editor/util mdr refactoring tasklist tasklist/core tasklist/docscan tasklist/suggestions tasklist/usertasks -->
     </config>
