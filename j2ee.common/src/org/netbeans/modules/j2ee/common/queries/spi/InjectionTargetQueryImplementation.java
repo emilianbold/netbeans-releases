@@ -30,7 +30,7 @@ public interface InjectionTargetQueryImplementation {
     /**
      * Decide if dependency injection can be used in given class.<br>
      * @param fileObject file of class where annotated field or method should be inserted
-     * @param typeElement fully-qualified name of class where annotated field or method should be inserted,
+     * @param fqn fully-qualified name of class where annotated field or method should be inserted,
      * if null is provided, main public class from file is taken
      * @return true if any container or environment is able to inject resources in given class, false otherwise
      */
@@ -42,7 +42,7 @@ public interface InjectionTargetQueryImplementation {
      * injected fields must be static<br>
      * Implementation 
      * @param fileObject file of class where annotated field or method should be inserted
-     * @param typeElement fully-qualified name of class where annotated field or method should be inserted,
+     * @param fqn fully-qualified name of class where annotated field or method should be inserted,
      * if null is provided, main public class from file is taken
      * @return true if static reference is required in given class, false otherwise
      */
