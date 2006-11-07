@@ -31,7 +31,9 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.lexer.TokenUtilities;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.TokenList;
+import org.netbeans.lib.lexer.test.dump.TokenDumpCheck;
 
 
 /**
@@ -39,7 +41,7 @@ import org.netbeans.lib.lexer.TokenList;
  *
  * @author mmetelka
  */
-public class LexerTestUtilities {
+public final class LexerTestUtilities {
     
     /** Flag for additional correctness checks (may degrade performance). */
     private static final boolean testing = Boolean.getBoolean("netbeans.debug.lexer.test");
@@ -421,7 +423,7 @@ public class LexerTestUtilities {
             return null; // never reached
         }
     }
-
+    
     private static String messagePrefix(String message) {
         if (message != null) {
             message = message + ": ";
@@ -437,6 +439,41 @@ public class LexerTestUtilities {
      */
     public static void setTesting(boolean testing) {
         System.setProperty("netbeans.debug.lexer.test", testing ? "true" : "false");
+    }
+    
+    /**
+     * Check whether token descriptions dump file (a file with added suffix ".tokens.txt")
+     * for the given input file exists and whether it has the same content
+     * like the one obtained by lexing the input file.
+     * <br/>
+     * It allows to test whether the tested lexer still produces the same tokens.
+     * <br/>
+     * The method will only pass successfully if both the input file and token descriptions
+     * files exist and the token descriptions file contains the same information
+     * as the generated files.
+     * <br/>
+     * If the token descriptions file does not exist the method will create it.
+     * <br/>
+     * As the lexer's behavior at the EOF is important and should be well tested
+     * there is a support for splitting input file virtually into multiple inputs
+     * by virtual EOF - see <code>TokenDumpTokenId</code> for details.
+     * <br/>
+     * Also there is possibility to specify special chars
+     * - see <code>TokenDumpTokenId</code> for details.
+     *
+     * @param test non-null test (used for calling test.getDataDir()).
+     * @param relFilePath non-null file path relative to datadir of the test.
+     *  <br/>
+     *  For example if "testfiles/testinput.mylang.txt" gets passed the test method will
+     *  search for <code>new File(test.getDataDir() + "testfiles/testinput.mylang.txt")</code>,
+     *  read its content, lex it and create token descriptions. Then it will search for 
+     *  <code>new File(test.getDataDir() + "testfiles/testinput.mylang.txt.tokens.txt")</code>
+     *  and it will compare the file content with the generated descriptions.
+     *  
+     */
+    public static void checkTokenDump(NbTestCase test, String relFilePath,
+    Language<? extends TokenId> language) throws Exception {
+        TokenDumpCheck.checkTokenDump(test, relFilePath, language);
     }
     
     private static final class TestTokenChangeListener implements TokenHierarchyListener {

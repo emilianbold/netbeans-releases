@@ -53,7 +53,7 @@ public class DefaultToken<T extends TokenId> extends AbstractToken<T> implements
      */
     public DefaultToken(T id, int length) {
         super(id);
-        assert (length > 0);
+        assert (length > 0) : "Token length=" + length + " <= 0"; // NOI18N
         this.length = length;
     }
 

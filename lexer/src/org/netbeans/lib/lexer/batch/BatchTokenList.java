@@ -47,6 +47,19 @@ public abstract class BatchTokenList extends ArrayList<Object> implements TokenL
     /** Flag for additional correctness checks (may degrade performance). */
     private static final boolean testing = Boolean.getBoolean("netbeans.debug.lexer.test");
     
+    private static boolean maintainLAState;
+    
+    /**
+     * Check whether lookaheads and states are stored for testing purposes.
+     */
+    public static boolean isMaintainLAState() {
+        return maintainLAState;
+    }
+    
+    public static void setMaintainLAState(boolean maintainLAState) {
+        BatchTokenList.maintainLAState = maintainLAState;
+    }
+    
     private final LanguagePath languagePath;
     
     private final Set<? extends TokenId> skipTokenIds;
