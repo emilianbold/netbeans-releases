@@ -35,6 +35,7 @@ import javax.swing.text.JTextComponent;
 
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.*;
 import org.netbeans.editor.ext.ExtSettingsDefaults;
@@ -89,11 +90,11 @@ public class Utilities {
         return null;        
     }        
     
-    public static boolean isJavaContext(final JTextComponent component, final int caretOffset) {
+    public static boolean isJavaContext(final JTextComponent component, final int offset) {
         TokenSequence<JavaTokenId> ts = TokenHierarchy.get(component.getDocument()).tokenSequence(JavaTokenId.language());
         if (ts == null)
             return false;
-        if (!ts.moveNext() || ts.move(caretOffset) == 0)
+        if (!ts.moveNext() || ts.move(offset) == 0)
             return true;
         switch(ts.token().id()) {
             case DOUBLE_LITERAL:
@@ -116,6 +117,17 @@ public class Utilities {
                 return false;
         }
         return true;
+    }
+    
+    public static TokenSequence<JavaTokenId> getJavaTokenSequence(final JTextComponent component, final int offset) {
+        TokenSequence<? extends TokenId> ts = TokenHierarchy.get(component.getDocument()).tokenSequence();
+        while(ts != null && ts.moveNext()) {
+            ts.move(offset);
+            if (ts.language() == JavaTokenId.language())
+                return (TokenSequence<JavaTokenId>)ts;
+            ts = ts.embedded();
+        };
+        return null;
     }
     
     public static String getTypeName(TypeMirror type, boolean fqn) {

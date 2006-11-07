@@ -40,7 +40,6 @@ import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
@@ -220,12 +219,11 @@ public abstract class JavaCompletionItem implements CompletionItem {
         String text = getInsertPrefix().toString();
         if (text != null) {
             if (toAdd != null && !toAdd.equals("\n")) {//NOI18N
-                TokenSequence<JavaTokenId> sequence = TokenHierarchy.get(doc).tokenSequence(JavaTokenId.language());
-                if (!sequence.moveNext()) {
+                TokenSequence<JavaTokenId> sequence = Utilities.getJavaTokenSequence(c, offset + len);
+                if (sequence == null) {
                     text += toAdd;
                     toAdd = null;
                 }
-                sequence.move(offset + len);
                 boolean added = false;
                 while(toAdd != null && toAdd.length() > 0) {
                     String tokenText = sequence.token().text().toString();
@@ -474,12 +472,11 @@ public abstract class JavaCompletionItem implements CompletionItem {
             }
             if (asTemplate) {
                 if (toAdd != null && !toAdd.equals("\n")) {//NOI18N
-                    TokenSequence<JavaTokenId> sequence = TokenHierarchy.get(doc).tokenSequence(JavaTokenId.language());
-                    if (!sequence.moveNext()) {
+                    TokenSequence<JavaTokenId> sequence = Utilities.getJavaTokenSequence(c, offset + len);
+                    if (sequence == null) {
                         sb.append(toAdd);
                         toAdd = null;
                     }
-                    sequence.move(offset + len);
                     boolean added = false;
                     while(toAdd != null && toAdd.length() > 0) {
                         String tokenText = sequence.token().text().toString();
@@ -986,12 +983,11 @@ public abstract class JavaCompletionItem implements CompletionItem {
             } else {                
                 BaseDocument doc = (BaseDocument)c.getDocument();
                 String text = ""; //NOI18N
-                TokenSequence<JavaTokenId> sequence = TokenHierarchy.get(doc).tokenSequence(JavaTokenId.language());
-                if (!sequence.moveNext()) {
+                TokenSequence<JavaTokenId> sequence = Utilities.getJavaTokenSequence(c, offset + len);
+                if (sequence == null) {
                     text += toAdd;
                     toAdd = null;
                 }
-                sequence.move(offset + len);
                 boolean added = false;
                 while(add != null && add.length() > 0) {
                     String tokenText = sequence.token().text().toString();
@@ -1290,12 +1286,11 @@ public abstract class JavaCompletionItem implements CompletionItem {
             if (toAdd != null && !add.startsWith(toAdd))
                 add += toAdd;            
             String text = ""; //NOI18N
-            TokenSequence<JavaTokenId> sequence = TokenHierarchy.get(doc).tokenSequence(JavaTokenId.language());
-            if (!sequence.moveNext()) {
+            TokenSequence<JavaTokenId> sequence = Utilities.getJavaTokenSequence(c, offset);
+            if (sequence == null) {
                 text += toAdd;
                 toAdd = null;
             }
-            sequence.move(offset);
             boolean added = false;
             while(add != null && add.length() > 0) {
                 String tokenText = sequence.token().text().toString();
@@ -1445,12 +1440,11 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 add += toAdd;
             BaseDocument doc = (BaseDocument)c.getDocument();
             String text = ""; //NOI18N
-            TokenSequence<JavaTokenId> sequence = TokenHierarchy.get(doc).tokenSequence(JavaTokenId.language());
-            if (!sequence.moveNext()) {
+            TokenSequence<JavaTokenId> sequence = Utilities.getJavaTokenSequence(c, offset);
+            if (sequence == null) {
                 text += toAdd;
                 toAdd = null;
             }
-            sequence.move(offset);
             boolean added = false;
             while(add != null && add.length() > 0) {
                 String tokenText = sequence.token().text().toString();
@@ -1767,12 +1761,11 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 sb.append(")");//NOI18N
             }
             if (toAdd != null && !toAdd.equals("\n")) { //NOI18N
-                TokenSequence<JavaTokenId> sequence = TokenHierarchy.get(doc).tokenSequence(JavaTokenId.language());
-                if (!sequence.moveNext()) {
+                TokenSequence<JavaTokenId> sequence = Utilities.getJavaTokenSequence(c, offset + len);
+                if (sequence == null) {
                     sb.append(toAdd);
                     toAdd = null;
                 }
-                sequence.move(offset + len);
                 boolean added = false;
                 while(toAdd != null && toAdd.length() > 0) {
                     String tokenText = sequence.token().text().toString();
