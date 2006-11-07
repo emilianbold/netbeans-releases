@@ -83,9 +83,6 @@ public class Wizard {
     private static String componentsInstanceURI = DEFAULT_COMPONENTS_INSTANCE_URI;
     private static String componentsSchemaURI = DEFAULT_COMPONENTS_SCHEMA_URI;
     
-    private static LogManager   logManager = LogManager.getInstance();
-    private static ErrorManager errorManager = ErrorManager.getInstance();
-    
     private static WizardExecutionMode executionMode = WizardExecutionMode.GUI;
     
     public static synchronized Wizard getInstance() {
@@ -112,7 +109,7 @@ public class Wizard {
             try {
                 instance.components = loadWizardComponents(componentsInstanceURI);
             } catch (InitializationException e) {
-                errorManager.notify(ErrorLevel.CRITICAL,
+                ErrorManager.notify(ErrorLevel.CRITICAL,
                         "Failed to load wizard components", e);
             }
         }
@@ -343,7 +340,7 @@ public class Wizard {
                 // we don't have to initialize anything for silent mode
                 break;
             default:
-                errorManager.notify(ERROR, "Something terrible has " +
+                ErrorManager.notify(ERROR, "Something terrible has " +
                         "happened - we have an execution mode which is not " +
                         "in its enum");
         }
@@ -358,7 +355,7 @@ public class Wizard {
                 // we don't have to initialize anything for silent mode
                 break;
             default:
-                errorManager.notify(ERROR, "Something terrible has " +
+                ErrorManager.notify(ERROR, "Something terrible has " +
                         "happened - we have an execution mode which is not " +
                         "in its enum");
         }
@@ -383,7 +380,7 @@ public class Wizard {
                     component.executeSilently(this);
                     break;
                 default:
-                    errorManager.notify(ERROR, "Something terrible has " +
+                    ErrorManager.notify(ERROR, "Something terrible has " +
                             "happened - we have an execution mode which is not " +
                             "in its enum");
             }
@@ -391,7 +388,7 @@ public class Wizard {
         } else if (parent != null) {
             parent.next();
         } else {
-            errorManager.notify(ERROR, "Cannot move to the next " +
+            ErrorManager.notify(ERROR, "Cannot move to the next " +
                     "element - the wizard is at the last element");
         }
     }
@@ -409,11 +406,11 @@ public class Wizard {
                     component.executeBackward(this);
                     break;
                 case SILENT:
-                    errorManager.notify(ERROR, "Moving backward is " +
+                    ErrorManager.notify(ERROR, "Moving backward is " +
                             "not possible in silent mode");
                     break;
                 default:
-                    errorManager.notify(ERROR, "Something terrible has " +
+                    ErrorManager.notify(ERROR, "Something terrible has " +
                             "happened - we have an execution mode which is not " +
                             "in its enum");
             }
@@ -421,7 +418,7 @@ public class Wizard {
         } else if (parent != null) {
             parent.previous();
         } else {
-            errorManager.notify(ERROR, "Cannot move to the previous " +
+            ErrorManager.notify(ERROR, "Cannot move to the previous " +
                     "component - the wizard is at the first component");
         }
     }
@@ -435,7 +432,7 @@ public class Wizard {
                 component.executeSilentlyBlocking(this);
                 break;
             default:
-                errorManager.notify(ERROR, "Something terrible has " +
+                ErrorManager.notify(ERROR, "Something terrible has " +
                         "happened - we have an execution mode which is not " +
                         "in its enum");
         }

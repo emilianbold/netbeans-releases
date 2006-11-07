@@ -89,7 +89,7 @@ public class DownloadConfigurationLogicAction extends CompositeProgressAction {
                 }
                 
                 // finally notify the user of what has happened
-                LogManager.getInstance().log(ErrorLevel.ERROR, error);
+                LogManager.log(ErrorLevel.ERROR, error);
             }
         }
     }

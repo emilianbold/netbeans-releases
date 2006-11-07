@@ -186,7 +186,7 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
         String errorMessage = validateLocation(value);
         
         if (errorMessage != null) {
-            ErrorManager.getInstance().notify(ErrorLevel.ERROR, errorMessage);
+            ErrorManager.notify(ErrorLevel.ERROR, errorMessage);
         } else {
             setLocation(location);
             super.evaluateNextButtonClick();

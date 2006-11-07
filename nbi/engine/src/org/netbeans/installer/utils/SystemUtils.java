@@ -171,7 +171,7 @@ public abstract class SystemUtils {
         try {
             Thread.sleep(millis);
         }  catch (InterruptedException e) {
-            ErrorManager.getInstance().notify(ErrorLevel.DEBUG,
+            ErrorManager.notify(ErrorLevel.DEBUG,
                     "Interrupted while sleeping", e);
         }
     }

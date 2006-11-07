@@ -100,9 +100,6 @@ public class Installer {
     // Static
     private static Installer instance;
     
-    private static LogManager   logManager   = LogManager.getInstance();
-    private static ErrorManager errorManager = ErrorManager.getInstance();
-    
     /**
      * Returns an instance of <code>Installer</code>. If the instance does not
      * exist - it is created.
@@ -128,8 +125,8 @@ public class Installer {
      * <code>Installer is a singleton.
      */
     private Installer(String[] arguments) {
-        logManager.log(MESSAGE, "initializing the installer engine");
-        logManager.indent();
+        LogManager.log(MESSAGE, "initializing the installer engine");
+        LogManager.indent();
         
         instance = this;
         
@@ -139,8 +136,8 @@ public class Installer {
         
         setLookAndFeel();
         
-        logManager.unindent();
-        logManager.log(MESSAGE, "... finished initializing the installer engine");
+        LogManager.unindent();
+        LogManager.log(MESSAGE, "... finished initializing the installer engine");
     }
     
     // Life cycle control methods ///////////////////////////////////////////////////
@@ -153,14 +150,14 @@ public class Installer {
     public void start() {
         if (!localDirectory.exists()) {
             if (!localDirectory.mkdirs()) {
-                ErrorManager.getInstance().notify(CRITICAL, "Cannot create local directory: " + localDirectory);
+                ErrorManager.notify(CRITICAL, "Cannot create local directory: " + localDirectory);
             }
         } else if (localDirectory.isFile()) {
-            ErrorManager.getInstance().notify(CRITICAL, "Local directory exists and is a file: " + localDirectory);
+            ErrorManager.notify(CRITICAL, "Local directory exists and is a file: " + localDirectory);
         } else if (!localDirectory.canRead()) {
-            ErrorManager.getInstance().notify(CRITICAL, "Cannot read local directory - not enought permissions");
+            ErrorManager.notify(CRITICAL, "Cannot read local directory - not enought permissions");
         } else if (!localDirectory.canWrite()) {
-            ErrorManager.getInstance().notify(CRITICAL, "Cannot write to local directory - not enought permissions");
+            ErrorManager.notify(CRITICAL, "Cannot write to local directory - not enought permissions");
         }
         createInstallerLockFile(localDirectory);
         
@@ -239,13 +236,13 @@ public class Installer {
      * @param arguments The command line arguments
      */
     private void parseArguments(String[] arguments) {
-        logManager.log(MESSAGE, "parsing command-line arguments");
-        logManager.indent();
+        LogManager.log(MESSAGE, "parsing command-line arguments");
+        LogManager.indent();
         
         for (int i = 0; i < arguments.length; i++) {
             if (arguments[i].equalsIgnoreCase("--look-and-feel")) {
-                logManager.log(MESSAGE, "parsing command line parameter \"--look-and-feel\"");
-                logManager.indent();
+                LogManager.log(MESSAGE, "parsing command line parameter \"--look-and-feel\"");
+                LogManager.indent();
                 
                 if (i < arguments.length - 1) {
                     String value = arguments[i + 1];
@@ -253,18 +250,18 @@ public class Installer {
                     
                     i = i + 1;
                     
-                    logManager.log(MESSAGE, "... class name: " + value);
+                    LogManager.log(MESSAGE, "... class name: " + value);
                 } else {
-                    ErrorManager.getInstance().notify(WARNING, "Required parameter missing for command line argument \"--look-and-feel\". Should be \"--look-and-feel <look-and-feel-class-name>\".");
+                    ErrorManager.notify(WARNING, "Required parameter missing for command line argument \"--look-and-feel\". Should be \"--look-and-feel <look-and-feel-class-name>\".");
                 }
                 
-                logManager.unindent();
+                LogManager.unindent();
                 continue;
             }
             
             if (arguments[i].equalsIgnoreCase(TARGET_ARG)) {
-                logManager.log(MESSAGE, "parsing command line parameter \"" + TARGET_ARG + "\"");
-                logManager.indent();
+                LogManager.log(MESSAGE, "parsing command line parameter \"" + TARGET_ARG + "\"");
+                LogManager.indent();
                 
                 if (i < arguments.length - 2) {
                     String uid = arguments[i + 1];
@@ -274,17 +271,17 @@ public class Installer {
                     
                     i = i + 2;
                     
-                    logManager.log(MESSAGE, "... uid:     " + uid);
-                    logManager.log(MESSAGE, "... version: " + version);
+                    LogManager.log(MESSAGE, "... uid:     " + uid);
+                    LogManager.log(MESSAGE, "... version: " + version);
                 }
                 
-                logManager.unindent();
+                LogManager.unindent();
                 continue;
             }
             
             if (arguments[i].equalsIgnoreCase("--locale")) {
-                logManager.log(MESSAGE, "parsing command line parameter \"--locale\"");
-                logManager.indent();
+                LogManager.log(MESSAGE, "parsing command line parameter \"--locale\"");
+                LogManager.indent();
                 
                 if (i < arguments.length - 1) {
                     String value = arguments[i + 1];
@@ -302,91 +299,91 @@ public class Installer {
                             targetLocale = new Locale(valueParts[0], valueParts[1], valueParts[2]);
                             break;
                         default:
-                            ErrorManager.getInstance().notify(WARNING, "Invalid parameter command line argument \"--locale\". Should be \"<language>[_<country>[_<variant>]]\".");
+                            ErrorManager.notify(WARNING, "Invalid parameter command line argument \"--locale\". Should be \"<language>[_<country>[_<variant>]]\".");
                     }
                     
                     if (targetLocale != null) {
                         Locale.setDefault(targetLocale);
-                        logManager.log(MESSAGE, "... locale set to: " + targetLocale);
+                        LogManager.log(MESSAGE, "... locale set to: " + targetLocale);
                     } else {
-                        logManager.log(MESSAGE, "... locale is not set, using system default: " + Locale.getDefault());
+                        LogManager.log(MESSAGE, "... locale is not set, using system default: " + Locale.getDefault());
                     }
                     
                     i = i + 1;
                 } else {
-                    ErrorManager.getInstance().notify(WARNING, "Required parameter missing for command line argument \"--locale\". Should be \"--locale <locale-name>\".");
+                    ErrorManager.notify(WARNING, "Required parameter missing for command line argument \"--locale\". Should be \"--locale <locale-name>\".");
                 }
                 
-                logManager.unindent();
+                LogManager.unindent();
                 continue;
             }
             
             if (arguments[i].equalsIgnoreCase("--state")) {
-                logManager.log(MESSAGE, "parsing command line parameter \"--state\"");
-                logManager.indent();
+                LogManager.log(MESSAGE, "parsing command line parameter \"--state\"");
+                LogManager.indent();
                 
                 if (i < arguments.length - 1) {
                     String value = arguments[i + 1];
                     
                     File stateFile = new File(value).getAbsoluteFile();
                     if (!stateFile.exists()) {
-                        ErrorManager.getInstance().notify(WARNING, "The specified state file \"" + stateFile + "\", does not exist. \"--state\" parameter is ignored.");
+                        ErrorManager.notify(WARNING, "The specified state file \"" + stateFile + "\", does not exist. \"--state\" parameter is ignored.");
                     } else {
                         System.setProperty(ProductRegistry.SOURCE_STATE_FILE_PATH_PROPERTY, stateFile.getAbsolutePath());
                     }
                     
                     i = i + 1;
                 } else {
-                    ErrorManager.getInstance().notify(WARNING, "Required parameter missing for command line argument \"--state\". Should be \"--state <state-file-path>\".");
+                    ErrorManager.notify(WARNING, "Required parameter missing for command line argument \"--state\". Should be \"--state <state-file-path>\".");
                 }
                 
-                logManager.unindent();
+                LogManager.unindent();
                 continue;
             }
             
             if (arguments[i].equalsIgnoreCase("--record")) {
-                logManager.log(MESSAGE, "parsing command line parameter \"--record\"");
-                logManager.indent();
+                LogManager.log(MESSAGE, "parsing command line parameter \"--record\"");
+                LogManager.indent();
                 
                 if (i < arguments.length - 1) {
                     String value = arguments[i + 1];
                     
                     File stateFile = new File(value).getAbsoluteFile();
                     if (stateFile.exists()) {
-                        ErrorManager.getInstance().notify(WARNING, "The specified state file \"" + stateFile + "\", exists. \"--record\" parameter is ignored.");
+                        ErrorManager.notify(WARNING, "The specified state file \"" + stateFile + "\", exists. \"--record\" parameter is ignored.");
                     } else {
                         System.setProperty(ProductRegistry.TARGET_STATE_FILE_PATH_PROPERTY, stateFile.getAbsolutePath());
                     }
                     
                     i = i + 1;
                 } else {
-                    ErrorManager.getInstance().notify(WARNING, "Required parameter missing for command line argument \"--record\". Should be \"--record <state-file-path>\".");
+                    ErrorManager.notify(WARNING, "Required parameter missing for command line argument \"--record\". Should be \"--record <state-file-path>\".");
                 }
                 
-                logManager.unindent();
+                LogManager.unindent();
                 continue;
             }
             
             if (arguments[i].equalsIgnoreCase("--silent")) {
-                logManager.log(MESSAGE, "parsing command line parameter \"--silent\"");
-                logManager.indent();
+                LogManager.log(MESSAGE, "parsing command line parameter \"--silent\"");
+                LogManager.indent();
                 
                 System.setProperty(Wizard.SILENT_MODE_ACTIVE_PROPERTY, "true");
                 
-                logManager.unindent();
+                LogManager.unindent();
                 continue;
             }
             
             if (arguments[i].equalsIgnoreCase("--create-bundle")) {
-                logManager.log(MESSAGE, "parsing command line parameter \"--create-bundle\"");
-                logManager.indent();
+                LogManager.log(MESSAGE, "parsing command line parameter \"--create-bundle\"");
+                LogManager.indent();
                 
                 if (i < arguments.length - 1) {
                     String value = arguments[i + 1];
                     
                     File targetFile = new File(value).getAbsoluteFile();
                     if (targetFile.exists()) {
-                        ErrorManager.getInstance().notify(WARNING, "The specified target file \"" + targetFile + "\", exists. \"--create-bundle\" parameter is ignored.");
+                        ErrorManager.notify(WARNING, "The specified target file \"" + targetFile + "\", exists. \"--create-bundle\" parameter is ignored.");
                     } else {
                         executionMode = InstallerExecutionMode.CREATE_BUNDLE;
                         System.setProperty(CREATE_BUNDLE_PATH_PROPERTY, targetFile.getAbsolutePath());
@@ -394,84 +391,84 @@ public class Installer {
                     
                     i = i + 1;
                 } else {
-                    ErrorManager.getInstance().notify(WARNING, "Required parameter missing for command line argument \"--create-bundle\". Should be \"--create-bundle <target-file-path>\".");
+                    ErrorManager.notify(WARNING, "Required parameter missing for command line argument \"--create-bundle\". Should be \"--create-bundle <target-file-path>\".");
                 }
                 
-                logManager.unindent();
+                LogManager.unindent();
                 continue;
             }
         }
         
         if (arguments.length == 0) {
-            logManager.log(MESSAGE, "... no command line arguments were specified");
+            LogManager.log(MESSAGE, "... no command line arguments were specified");
         }
         
         validateArguments();
         
-        logManager.unindent();
-        logManager.log(MESSAGE, "... finished parsing command line arguments");
+        LogManager.unindent();
+        LogManager.log(MESSAGE, "... finished parsing command line arguments");
     }
     
     private void validateArguments() {
         if (System.getProperty(Wizard.SILENT_MODE_ACTIVE_PROPERTY) != null) {
             if (System.getProperty(ProductRegistry.SOURCE_STATE_FILE_PATH_PROPERTY) == null) {
                 System.getProperties().remove(Wizard.SILENT_MODE_ACTIVE_PROPERTY);
-                ErrorManager.getInstance().notify(WARNING, "\"--state\" option is required when using \"--silent\". \"--silent\" will be ignored.");
+                ErrorManager.notify(WARNING, "\"--state\" option is required when using \"--silent\". \"--silent\" will be ignored.");
             }
         }
     }
     
     private void setLookAndFeel() {
-        logManager.log(MESSAGE, "setting the look and feel");
-        logManager.indent();
+        LogManager.log(MESSAGE, "setting the look and feel");
+        LogManager.indent();
         
         String className = System.getProperty(NBI_LOOK_AND_FEEL_CLASS_NAME_PROPERTY);
         if (className == null) {
-            logManager.log(MESSAGE, "custom look and feel class name was not specified, using system default");
+            LogManager.log(MESSAGE, "custom look and feel class name was not specified, using system default");
             className = DEFAULT_NBI_LOOK_AND_FEEL_CLASS_NAME;
         }
         
-        logManager.log(MESSAGE, "... class name: " + className);
+        LogManager.log(MESSAGE, "... class name: " + className);
         
         try {
             JFrame.setDefaultLookAndFeelDecorated(true);
             UIManager.setLookAndFeel(className);
         } catch (ClassNotFoundException e) {
-            ErrorManager.getInstance().notify(WARNING, "Could not set the look and feel.", e);
+            ErrorManager.notify(WARNING, "Could not set the look and feel.", e);
         } catch (InstantiationException e) {
-            ErrorManager.getInstance().notify(WARNING, "Could not set the look and feel.", e);
+            ErrorManager.notify(WARNING, "Could not set the look and feel.", e);
         } catch (IllegalAccessException e) {
-            ErrorManager.getInstance().notify(WARNING, "Could not set the look and feel.", e);
+            ErrorManager.notify(WARNING, "Could not set the look and feel.", e);
         } catch (UnsupportedLookAndFeelException e) {
-            ErrorManager.getInstance().notify(WARNING, "Could not set the look and feel.", e);
+            ErrorManager.notify(WARNING, "Could not set the look and feel.", e);
         }
         
-        logManager.unindent();
-        logManager.log(MESSAGE, "... finished setting the look and feel");
+        LogManager.unindent();
+        LogManager.log(MESSAGE, "... finished setting the look and feel");
     }
     
     private void dumpSystemInfo() {
-        logManager.log(MESSAGE, "dumping target system information");
-        logManager.indent();
+        LogManager.log(MESSAGE, "dumping target system information");
+        LogManager.indent();
         
-        logManager.log(MESSAGE, "system properties:");
-        logManager.indent();
+        LogManager.log(MESSAGE, "system properties:");
+        LogManager.indent();
         
         Properties properties = System.getProperties();
         for (Object key: properties.keySet()) {
-            logManager.log(MESSAGE, key.toString() + " => " + properties.get(key).toString());
+            LogManager.log(MESSAGE, key.toString() + " => " + properties.get(key).toString());
         }
         
-        logManager.unindent();
-        logManager.log(MESSAGE, "... end of system properties");
+        LogManager.unindent();
+        LogManager.log(MESSAGE, "... end of system properties");
         
-        logManager.unindent();
-        logManager.log(MESSAGE, "... end of target system information");
+        LogManager.unindent();
+        LogManager.log(MESSAGE, "... end of target system information");
     }
     
     private void initLocalDirectory() {
-        logManager.log(MESSAGE, "initializing the local directory");
-        logManager.indent();
+        LogManager.log(MESSAGE, "initializing the local directory");
+        LogManager.indent();
         
         if (System.getProperty(LOCAL_DIRECTORY_PATH_PROPERTY) != null) {
             localDirectory = new File(System.getProperty(
@@ -479,17 +476,17 @@ public class Installer {
         } else {
             localDirectory = new File(DEFAULT_LOCAL_DIRECTORY_PATH).getAbsoluteFile();
             
-            logManager.log(MESSAGE, "... custom local directory was not specified, using the default");
-            logManager.log(MESSAGE, "... local directory: " + localDirectory);
+            LogManager.log(MESSAGE, "... custom local directory was not specified, using the default");
+            LogManager.log(MESSAGE, "... local directory: " + localDirectory);
         }
         
-        logManager.unindent();
-        logManager.log(MESSAGE, "... finished initializing local directory");
+        LogManager.unindent();
+        LogManager.log(MESSAGE, "... finished initializing local directory");
     }
     
     private void cacheEngineLocally() {
-        logManager.log(MESSAGE, "cache engine data locally to run uninstall in the future");
-        logManager.indent();
+        LogManager.log(MESSAGE, "cache engine data locally to run uninstall in the future");
+        LogManager.indent();
         try {
             String installerResource = "org/netbeans/installer/Installer.class";
             URL url = this.getClass().getClassLoader().getResource(installerResource);
@@ -497,8 +494,8 @@ public class Installer {
                 throw new IOException("No manifest in the engine");
             }
             
-            logManager.log(DEBUG, "NBI Engine URL for Installer.Class = " + url);
-            logManager.log(DEBUG, "URL Path = " + url.getPath());
+            LogManager.log(DEBUG, "NBI Engine URL for Installer.Class = " + url);
+            LogManager.log(DEBUG, "URL Path = " + url.getPath());
             
             if("jar".equals(url.getProtocol())) {
                 // we run engine from jar, not from .class
@@ -527,12 +524,12 @@ public class Installer {
                                 path.indexOf(httpPrefix),
                                 path.indexOf(jarSep + installerResource));
                         try {
-                            logManager.log(MESSAGE,
+                            LogManager.log(MESSAGE,
                                     "Downloading engine jar file from " + jarLocation);
                             jarLocation = URLDecoder.decode(jarLocation,"UTF8");
                             jarfile = FileProxy.getInstance().getFile(jarLocation);
                         }  catch(DownloadException ex) {
-                            logManager.log(WARNING,
+                            LogManager.log(WARNING,
                                     "Could not download engine jar. \nError = " + ex );
                             jarfile = null;
                         }
@@ -548,7 +545,7 @@ public class Installer {
                         }
                     }
                     cachedEngine = (!dest.exists()) ? null : dest;
-                    logManager.log(MESSAGE, "NBI Engine jar file = [" +
+                    LogManager.log(MESSAGE, "NBI Engine jar file = [" +
                             cachedEngine + "], exist = " +
                             ((cachedEngine==null) ? false : cachedEngine.exists()));
                 }
@@ -576,25 +573,24 @@ public class Installer {
                 }
                 
                 cachedEngine = (!dest.exists()) ? null : dest;
-                logManager.log(MESSAGE, "NBI Engine jar file = [" +
+                LogManager.log(MESSAGE, "NBI Engine jar file = [" +
                         cachedEngine + "], exist = " +
                         ((cachedEngine==null) ? false : cachedEngine.exists()));
             }
         } catch (IOException ex) {
-            logManager.log(CRITICAL, "can`t cache installer engine");
-            logManager.log(CRITICAL, ex);
+            LogManager.log(CRITICAL, "can`t cache installer engine");
+            LogManager.log(CRITICAL, ex);
         }
-        logManager.unindent();
-        logManager.log(MESSAGE, "... finished caching engine data");
+        LogManager.unindent();
+        LogManager.log(MESSAGE, "... finished caching engine data");
     }
     
     private void createInstallerLockFile(File directory)  {
-        LogManager.getInstance().log(ErrorLevel.DEBUG,
-                "    creating lock file in " + directory);
+        LogManager.log(ErrorLevel.DEBUG, "    creating lock file in " + directory);
         File installerLock = new File(directory,
                 ".nbilock");
         if(installerLock.exists()) {
-            ErrorManager.getInstance().notify(CRITICAL,
+            ErrorManager.notify(CRITICAL,
                     "It seems that another instance of installer is already running!\n" +
                     "If you are sure that no other instance is running just remove the file:\n" +
                     installerLock + "\n");
@@ -603,7 +599,7 @@ public class Installer {
         try {
             fos = new FileOutputStream(installerLock);
         } catch (IOException ex) {
-            ErrorManager.getInstance().notify(CRITICAL,
+            ErrorManager.notify(CRITICAL,
                     "Can`t create lock for the local registry file!");
         } finally {
             try {
@@ -612,10 +608,10 @@ public class Installer {
                     fos.close();
                 }
             } catch (IOException ex) {
-                LogManager.getInstance().log(ErrorLevel.DEBUG,ex);
+                LogManager.log(ErrorLevel.DEBUG,ex);
             }
         }
-        LogManager.getInstance().log(ErrorLevel.DEBUG,
+        LogManager.log(ErrorLevel.DEBUG,
                 "    ... lock created " + installerLock);
     }
     

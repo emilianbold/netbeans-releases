@@ -80,7 +80,7 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
                 }
             }
         } catch (ClassCastException e) {
-            ErrorManager.getInstance().notify(ErrorLevel.ERROR, e);
+            ErrorManager.notify(ErrorLevel.ERROR, e);
         }
         
         return filteredLocations;
@@ -96,7 +96,7 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
                 locations.put(file.getAbsolutePath() + " (v. " + filteredLocations.get(file).toJdkStyle() + ")", file);
             }
         } catch (ClassCastException e) {
-            ErrorManager.getInstance().notify(ErrorLevel.ERROR, e);
+            ErrorManager.notify(ErrorLevel.ERROR, e);
         }
         
         return locations;

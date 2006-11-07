@@ -82,7 +82,7 @@ public class MainSequence extends WizardSequence {
                 addChild(new PostCreateBundleSummaryPanel());
                 break;
             default:
-                ErrorManager.getInstance().notify(ErrorLevel.CRITICAL, 
+                ErrorManager.notify(ErrorLevel.CRITICAL, 
                         "A terrible and weird error happened - installer's " +
                         "execution mode is not recognized");
         }

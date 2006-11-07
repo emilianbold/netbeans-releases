@@ -308,14 +308,14 @@ public class PostInstallSummaryPanel extends TextPanel {
     }
     
     private void viewLogButtonClicked() {
-        if (LogManager.getInstance().getLogFile() != null) {
+        if (LogManager.getLogFile() != null) {
             if (logDialog == null) {
                 logDialog = new InstallationLogDialog(getWizard().getFrame());
             }
             logDialog.setVisible(true);
             logDialog.loadLogFile();
         } else {
-            ErrorManager.getInstance().notify(ErrorLevel.ERROR, "Log file is not available.");
+            ErrorManager.notify(ErrorLevel.ERROR, "Log file is not available.");
         }
     }
     
@@ -323,7 +323,7 @@ public class PostInstallSummaryPanel extends TextPanel {
 //        try {
 //            URL url = new URL("http://glass.russia.sun.com:8080/nbi/SendLogServlet");
 //            
-//            File logFile = LogManager.getInstance().getLogFile();
+//            File logFile = LogManager.getLogFile();
 //            String logContents = fileUtils.readFile(logFile);
 //            
 //            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -344,9 +344,9 @@ public class PostInstallSummaryPanel extends TextPanel {
 //            }
 //            reader.close();
 //        } catch (IOException e) {
-//            ErrorManager.getInstance().notify(ErrorLevel.ERROR, "Cannot send log file.", e);
+//            ErrorManager.notify(ErrorLevel.ERROR, "Cannot send log file.", e);
 //        } catch (Throwable e) {
-//            ErrorManager.getInstance().notify(ErrorLevel.ERROR, "Cannot send log file.", e);
+//            ErrorManager.notify(ErrorLevel.ERROR, "Cannot send log file.", e);
 //        }
     }
     

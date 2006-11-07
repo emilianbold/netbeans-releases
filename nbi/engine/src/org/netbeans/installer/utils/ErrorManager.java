@@ -29,36 +29,25 @@ import org.netbeans.installer.utils.LogManager;
  * @author Kirill Sorokin
  */
 public class ErrorManager {
-    private static ErrorManager instance;
-    
-    public static ErrorManager getInstance() {
-        if (instance == null) {
-            instance = new ErrorManager();
-        }
-        
-        return instance;
-    }
-    
-    private ErrorManager() {
-    }
-    
-    public void notify(String message) {
+    /////////////////////////////////////////////////////////////////////////////////
+    // Static
+    public static synchronized void notify(String message) {
         notify(ErrorLevel.MESSAGE, message);
     }
     
-    public void notify(int level, String message) {
+    public static synchronized void notify(int level, String message) {
         notify(level, message, null);
     }
     
-    public void notify(Throwable exception) {
+    public static synchronized void notify(Throwable exception) {
         notify(ErrorLevel.ERROR, exception);
     }
     
-    public void notify(int level, Throwable exception) {
+    public static synchronized void notify(int level, Throwable exception) {
         notify(level, null, exception);
     }
     
-    public void notify(int level, String message, Throwable exception) {
+    public static synchronized void notify(int level, String message, Throwable exception) {
         // parameters validation
         assert (message != null) || (exception != null);
         
@@ -67,11 +56,11 @@ public class ErrorManager {
         int dialogType;
         
         if (message != null) {
-            LogManager.getInstance().log(level, message);
+            LogManager.log(level, message);
             dialogText += message + "\n";
         }
         if (exception != null) {
-            LogManager.getInstance().log(level, exception);
+            LogManager.log(level, exception);
             dialogText += StringUtils.getInstance().asString(exception);
             
             Throwable cause = exception.getCause();
@@ -99,5 +88,10 @@ public class ErrorManager {
             default:
                 return;
         }
+    }
+    
+    /////////////////////////////////////////////////////////////////////////////////
+    // Instance
+    private ErrorManager() {
     }
 }

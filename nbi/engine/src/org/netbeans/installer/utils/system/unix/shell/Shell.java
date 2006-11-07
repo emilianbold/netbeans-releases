@@ -19,7 +19,6 @@
  * $Id$
  *
  */
-
 package org.netbeans.installer.utils.system.unix.shell;
 
 import java.io.File;
@@ -57,7 +56,7 @@ public abstract class Shell {
                 file = getUserShellScript();
             }
         }
-        LogManager.getInstance().log(ErrorLevel.DEBUG,
+        LogManager.log(ErrorLevel.DEBUG,
                 "Used shell file for setting environment variable : " + file);
         return file;
     }

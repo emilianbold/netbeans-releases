@@ -35,26 +35,132 @@ import java.io.Writer;
  * @author Kirill Sorokin
  */
 public class LogManager {
-    private static LogManager instance;
+    /////////////////////////////////////////////////////////////////////////////////
+    // Constants
+    public static final String LOG_FILE_PROPERTY       = "nbi.utils.log.file";
+    public static final String LOG_LEVEL_PROPERTY      = "nbi.utils.log.level";
+    public static final String LOG_TO_CONSOLE_PROPERTY = "nbi.utils.log.to.console";
     
-    public synchronized static LogManager getInstance() {
-        if (instance == null) {
-            instance = new LogManager();
-        }
-        
-        return instance;
+    public static final String INDENT = "    ";
+    
+    public static final String  DEFAULT_LOG_FILE       = System.getProperty("user.home") + File.separator + ".nbi" + File.separator + "log" + File.separator + DateUtils.getInstance().getTimestamp() + ".log";
+    public static final int     DEFAULT_LOG_LEVEL      = ErrorLevel.DEBUG;
+    public static final boolean DEFAULT_LOG_TO_CONSOLE = true;
+    
+    /////////////////////////////////////////////////////////////////////////////////
+    // Static
+    private static File    logFile;
+    private static int     logLevel;
+    private static boolean logToConsole;
+    private static Writer  logWriter;
+    
+    private static boolean loggingAvailable;
+    
+    private static int     indent;
+    
+    private static boolean initialized;
+    
+    public static synchronized void indent() {
+        indent++;
     }
     
-    private File    logFile;
-    private int     logLevel;
-    private boolean logToConsole;
-    private Writer  logWriter;
+    public static synchronized void unindent() {
+        indent--;
+    }
     
-    private boolean loggingAvailable;
+    public static synchronized void log(int level, String message) {
+        if (!initialized) {
+            initialize();
+        }
+        
+        if (level <= logLevel) {
+            BufferedReader reader = new BufferedReader(new StringReader(message));
+            
+            try {
+                for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+                    String string = "[" + DateUtils.getInstance().getFormattedTimestamp() + "]: " + StringUtils.getInstance().pad(INDENT, indent) + line + SystemUtils.getInstance().getLineSeparator();
+                    
+                    if (loggingAvailable) {
+                        logWriter.write(string);
+                        logWriter.flush();
+                    }
+                    
+                    if (logToConsole) {
+                        System.out.print(string);
+                    }
+                }
+            } catch (IOException e) {
+                loggingAvailable = false;
+                ErrorManager.notify(ErrorLevel.WARNING, "Error writing to the log file. Logging disabled.");
+            }
+        }
+    }
     
-    private int     indent;
+    public static synchronized void log(int level, Throwable exception) {
+        log(level, StringUtils.getInstance().asString(exception));
+    }
     
-    private LogManager() {
+    public static synchronized void log(int level, Object object) {
+        log(level, object.toString());
+    }
+    
+    public static synchronized void log(String message) {
+        log(ErrorLevel.MESSAGE, message);
+    }
+    
+    public static synchronized void log(Throwable exception) {
+        log(ErrorLevel.MESSAGE, exception);
+    }
+    
+    public static synchronized void log(Object object) {
+        log(ErrorLevel.MESSAGE, object);
+    }
+    
+    public static synchronized void log(String message, Throwable exception) {
+        log(message);
+        log(exception);
+    }
+    
+    public static synchronized void logEntry(String message) {
+        StackTraceElement traceElement = new Exception().getStackTrace()[1];
+        
+        log(ErrorLevel.DEBUG, "entering -- " + 
+                (traceElement.isNativeMethod() ? "[native] " : "") + 
+                traceElement.getClassName() + "." + 
+                traceElement.getMethodName() + "():" + 
+                traceElement.getLineNumber());
+        log(ErrorLevel.MESSAGE, message);
+        indent();
+    }
+    
+    public static synchronized void logExit(String message) {
+        StackTraceElement traceElement = new Exception().getStackTrace()[1];
+        
+        unindent();
+        log(message);
+        log(ErrorLevel.DEBUG, "exiting -- " + 
+                (traceElement.isNativeMethod() ? "[native] " : "") + 
+                traceElement.getClassName() + "." + 
+                traceElement.getMethodName() + "():" + 
+                traceElement.getLineNumber());
+    }
+    
+    public static synchronized void logIndent(String message) {
+        log(message);
+        indent();
+    }
+    
+    public static synchronized void logUnindent(String message) {
+        log(message);
+        unindent();
+    }
+    
+    public static File getLogFile() {
+        return logFile;
+    }
+    
+    // private //////////////////////////////////////////////////////////////////////
+    private static synchronized void initialize() {
         // check for custom log file
         if (System.getProperty(LOG_FILE_PROPERTY) != null) {
             logFile = new File(System.getProperty(LOG_FILE_PROPERTY));
@@ -93,100 +199,14 @@ public class LogManager {
         
         // set the initial indent
         indent = 0;
-    }
-    
-    public synchronized void indent() {
-        indent++;
-    }
-    
-    public synchronized void unindent() {
-        indent--;
-    }
-    
-    public synchronized void log(int level, String message) {
-        if (level <= logLevel) {
-            BufferedReader reader = new BufferedReader(new StringReader(message));
-            
-            try {
-                for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-                    String string = "[" + DateUtils.getInstance().getFormattedTimestamp() + "]: " + StringUtils.getInstance().pad(INDENT, indent) + line + SystemUtils.getInstance().getLineSeparator();
-                    
-                    if (loggingAvailable) {
-                        logWriter.write(string);
-                        logWriter.flush();
-                    }
-                    
-                    if (logToConsole) {
-                        System.out.print(string);
-                    }
-                }
-            } catch (IOException e) {
-                loggingAvailable = false;
-                ErrorManager.getInstance().notify(ErrorLevel.WARNING, "Error writing to the log file. Logging disabled.");
-            }
-        }
-    }
-    
-    public synchronized void log(int level, Throwable exception) {
-        log(level, StringUtils.getInstance().asString(exception));
-    }
-    
-    public synchronized void log(int level, Object object) {
-        log(level, object.toString());
-    }
-    
-    public synchronized void log(String message) {
-        log(ErrorLevel.DEBUG, message);
-    }
-    
-    public synchronized void log(Throwable exception) {
-        log(ErrorLevel.DEBUG, exception);
-    }
-    
-    public synchronized void log(Object object) {
-        log(ErrorLevel.DEBUG, object);
-    }
-    
-    public synchronized void log(String message, Throwable exception) {
-        log(message);
-        log(exception);
-    }
-    
-    public synchronized void logEntry() {
-        StackTraceElement traceElement = new Exception().getStackTrace()[1];
         
-        log(ErrorLevel.DEBUG, "entering -- " + 
-                (traceElement.isNativeMethod() ? "[native] " : "") + 
-                traceElement.getClassName() + "." + 
-                traceElement.getMethodName() + "():" + 
-                traceElement.getLineNumber());
-        indent();
-    }
-    
-    public synchronized void logExit() {
-        StackTraceElement traceElement = new Exception().getStackTrace()[1];
-        
-        unindent();
-        log(ErrorLevel.DEBUG, "exiting -- " + 
-                (traceElement.isNativeMethod() ? "[native] " : "") + 
-                traceElement.getClassName() + "." + 
-                traceElement.getMethodName() + "():" + 
-                traceElement.getLineNumber());
-    }
-    
-    public File getLogFile() {
-        return logFile;
+        // set the initialization marker
+        initialized = true;
     }
     
     /////////////////////////////////////////////////////////////////////////////////
-    // Constants
-    public static final String LOG_FILE_PROPERTY       = "nbi.utils.log.file";
-    public static final String LOG_LEVEL_PROPERTY      = "nbi.utils.log.level";
-    public static final String LOG_TO_CONSOLE_PROPERTY = "nbi.utils.log.to.console";
-    
-    public static final String INDENT = "    ";
-    
-    public static final String  DEFAULT_LOG_FILE       = System.getProperty("user.home") + File.separator + ".nbi" + File.separator + "log" + File.separator + DateUtils.getInstance().getTimestamp() + ".log";
-    public static final int     DEFAULT_LOG_LEVEL      = ErrorLevel.DEBUG;
-    public static final boolean DEFAULT_LOG_TO_CONSOLE = true;
+    // Instance
+    private LogManager() {
+        // does nothing
+    }
 }

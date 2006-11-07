@@ -39,7 +39,7 @@ public class FinalizeRegistryAction extends DefaultWizardAction {
         try {
             ProductRegistry.getInstance().finalizeRegistry(new Progress(panel));
         } catch (FinalizationException e) {
-            ErrorManager.getInstance().notify(ErrorLevel.ERROR, "Cannot finalize registry", e);
+            ErrorManager.notify(ErrorLevel.ERROR, "Cannot finalize registry", e);
         }
     }
     

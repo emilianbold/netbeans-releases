@@ -450,7 +450,7 @@ public abstract class StringUtils {
             try {
                 properties.load(new ByteArrayInputStream(("key=" + string).getBytes()));
             } catch (IOException e) {
-                ErrorManager.getInstance().notify(ErrorLevel.WARNING, "Cannot parse string", e);
+                ErrorManager.notify(ErrorLevel.WARNING, "Cannot parse string", e);
                 return string;
             }
             
@@ -466,7 +466,7 @@ public abstract class StringUtils {
             try {
                 properties.store(outputStream, "");
             } catch (IOException e) {
-                ErrorManager.getInstance().notify(ErrorLevel.WARNING, "Cannot convert string", e);
+                ErrorManager.notify(ErrorLevel.WARNING, "Cannot convert string", e);
                 return string;
             }
             

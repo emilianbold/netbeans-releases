@@ -166,14 +166,14 @@ public class PostCreateBundleSummaryPanel extends TextPanel {
     }
     
     private void viewLogButtonClicked() {
-        if (LogManager.getInstance().getLogFile() != null) {
+        if (LogManager.getLogFile() != null) {
             if (logDialog == null) {
                 logDialog = new InstallationLogDialog(getWizard().getFrame());
             }
             logDialog.setVisible(true);
             logDialog.loadLogFile();
         } else {
-            ErrorManager.getInstance().notify(ErrorLevel.ERROR, "Log file is not available.");
+            ErrorManager.notify(ErrorLevel.ERROR, "Log file is not available.");
         }
     }
     

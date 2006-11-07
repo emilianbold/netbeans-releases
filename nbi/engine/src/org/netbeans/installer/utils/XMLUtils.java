@@ -63,7 +63,7 @@ public abstract class XMLUtils {
                 try {
                     output.close();
                 } catch (IOException e) {
-                    ErrorManager.getInstance().notify(ErrorLevel.DEBUG, e);
+                    ErrorManager.notify(ErrorLevel.DEBUG, e);
                 }
             }
         }

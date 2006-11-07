@@ -171,7 +171,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
         if (errorMessage == null) {
             super.evaluateNextButtonClick();
         } else {
-            ErrorManager.getInstance().notify(ErrorLevel.ERROR, errorMessage);
+            ErrorManager.notify(ErrorLevel.ERROR, errorMessage);
         }
     }
     

@@ -35,7 +35,7 @@ public class SetInstallationLocationAction extends DefaultWizardAction {
         String relativeLocation = getProperty(RELATIVE_LOCATION_PROPERTY);
         
         if (uid == null) {
-            ErrorManager.getInstance().notify(ErrorLevel.ERROR, "Required property not set");
+            ErrorManager.notify(ErrorLevel.ERROR, "Required property not set");
             return;
         }
         
@@ -43,7 +43,7 @@ public class SetInstallationLocationAction extends DefaultWizardAction {
         ProductComponent sourceComponent = targetComponent.getRequirementByUid(uid);
         
         if (sourceComponent == null) {
-            ErrorManager.getInstance().notify(ErrorLevel.ERROR, "Component with the given uid does not exist");
+            ErrorManager.notify(ErrorLevel.ERROR, "Component with the given uid does not exist");
             return;
         }
         

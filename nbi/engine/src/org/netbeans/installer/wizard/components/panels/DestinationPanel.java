@@ -142,7 +142,7 @@ public class DestinationPanel extends ErrorMessagePanel {
             getWizard().getProductComponent().setProperty(INSTALLATION_LOCATION_PROPERTY, path);
             super.evaluateNextButtonClick();
         } else {
-            ErrorManager.getInstance().notify(ErrorLevel.ERROR, errorMessage);
+            ErrorManager.notify(ErrorLevel.ERROR, errorMessage);
         }
     }
     

@@ -46,21 +46,21 @@ public class WindowsRegistry {
         return registry;
     };
     private void logStartJNI(Object args[]) {
-        LogManager.getInstance().log(ErrorLevel.DEBUG,"[JNI] [" +
+        LogManager.log(ErrorLevel.DEBUG,"[JNI] [" +
                 new Exception().getStackTrace()[1].getMethodName() +
                 "] Starting with args: {" +
                 StringUtils.getInstance().asString(args,"; ") + "}");
     }
     private void logEndJNI() {
-        LogManager.getInstance().log(ErrorLevel.DEBUG,"[JNI] [" +
+        LogManager.log(ErrorLevel.DEBUG,"[JNI] [" +
                 new Exception().getStackTrace()[1].getMethodName() +
                 "] ... end");
     }
     private void logErrJNI(Error ex) {
-        LogManager.getInstance().log(ErrorLevel.DEBUG,"[JNI] [" +
+        LogManager.log(ErrorLevel.DEBUG,"[JNI] [" +
                 new Exception().getStackTrace()[1].getMethodName() +
                 "] !! Error !!");
-        LogManager.getInstance().log(ErrorLevel.DEBUG, ex);
+        LogManager.log(ErrorLevel.DEBUG, ex);
     }
     /** Checks if the specified value exists in the registry.
      * @param registrySection The section of the registry
