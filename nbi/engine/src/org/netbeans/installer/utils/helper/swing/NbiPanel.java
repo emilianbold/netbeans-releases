@@ -20,6 +20,7 @@
  */
 package org.netbeans.installer.utils.helper.swing;
 
+import java.awt.GridBagLayout;
 import javax.swing.JPanel;
 
 /**
@@ -31,5 +32,6 @@ public class NbiPanel extends JPanel {
         super();
         
         setOpaque(false);
+        setLayout(new GridBagLayout());
     }
 }
