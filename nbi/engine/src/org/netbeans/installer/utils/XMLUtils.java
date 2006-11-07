@@ -39,6 +39,7 @@ import javax.xml.transform.stream.StreamSource;
 import org.netbeans.installer.utils.exceptions.ParseException;
 import org.netbeans.installer.utils.exceptions.XMLException;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -150,8 +151,8 @@ public abstract class XMLUtils {
         return getNodeTextContent(getChildNode(root,childs));
     }
     
-    public static Node addChildNode(Node parentNode, String tag, String textContent) {
-        Node result = null;
+    public static Element addChildNode(Node parentNode, String tag, String textContent) {
+        Element result = null;
         if (parentNode!=null && tag!=null) {
             
             result = parentNode.getOwnerDocument().createElement(tag);

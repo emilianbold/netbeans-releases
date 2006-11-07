@@ -87,6 +87,10 @@ public abstract class FileUtils {
     
     public abstract String getFileMD5String(File file) throws IOException, NoSuchAlgorithmException;
     
+    public abstract byte[] getFileSHA1(File file) throws IOException, NoSuchAlgorithmException;
+    
+    public abstract String getFileSHA1String(File file) throws IOException, NoSuchAlgorithmException;
+    
     public abstract String readFirstLine(File file) throws IOException;
     
     public abstract List<String> readStringList(File file) throws IOException;
