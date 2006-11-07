@@ -4,14 +4,14 @@
     <folder name="Editors">
         <folder name="text">
             <folder name="x-simple-char">
-                <file name="org-netbeans-modules-lexer-nbbridge-test-simple-SimpleCharLanguage.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.lexer.nbbridge.test.simple.SimpleCharLanguage.description"/>
+                <file name="language.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.lexer.nbbridge.test.simple.SimpleCharTokenId.language"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
                 </file>
             </folder>
             <folder name="x-simple-plain">
-                <file name="org-netbeans-modules-lexer-nbbridge-test-simple-SimplePlainLanguage.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.lexer.nbbridge.test.simple.SimplePlainLanguage.description"/>
+                <file name="language.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.lexer.nbbridge.test.simple.SimplePlainTokenId.language"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
                 </file>
                 

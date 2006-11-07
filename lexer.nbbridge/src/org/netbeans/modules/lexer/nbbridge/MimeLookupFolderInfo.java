@@ -115,8 +115,8 @@ public class MimeLookupFolderInfo implements Class2LayerFolder, InstanceProvider
                     String [] parts = line.split(","); //NOI18N
                     return new Object [] { 
                         parts[0], 
-                        parts.length > 1 ? toInt(parts[1], "Ignoring invalid start-skip-lenght '{0}' in " + f.getPath()) : 0, //NOI18N
-                        parts.length > 2 ? toInt(parts[2], "Ignoring invalid end-skip-lenght '{0}' in " + f.getPath()) : 0 //NOI18N
+                        parts.length > 1 ? toInt(parts[1], "Ignoring invalid start-skip-length '{0}' in " + f.getPath()) : 0, //NOI18N
+                        parts.length > 2 ? toInt(parts[2], "Ignoring invalid end-skip-length '{0}' in " + f.getPath()) : 0 //NOI18N
                     };
                 }
             }

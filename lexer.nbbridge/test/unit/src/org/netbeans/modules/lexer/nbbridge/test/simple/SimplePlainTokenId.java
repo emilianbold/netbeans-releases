@@ -13,7 +13,13 @@
 
 package org.netbeans.modules.lexer.nbbridge.test.simple;
 
+import java.util.Collection;
+import java.util.EnumSet;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenId;
+import org.netbeans.spi.lexer.LanguageHierarchy;
+import org.netbeans.spi.lexer.Lexer;
+import org.netbeans.spi.lexer.LexerRestartInfo;
 
 /**
  * Token identifications of the simple plain language.
@@ -38,5 +44,26 @@ public enum SimplePlainTokenId implements TokenId {
     public String primaryCategory() {
         return primaryCategory;
     }
+    
+    private static final Language<SimplePlainTokenId> language = new LanguageHierarchy<SimplePlainTokenId>() {
+        
+        protected Collection<SimplePlainTokenId> createTokenIds() {
+            return EnumSet.allOf(SimplePlainTokenId.class);
+        }
+        
+        public Lexer<SimplePlainTokenId> createLexer(LexerRestartInfo<SimplePlainTokenId> info) {
+            return new SimplePlainLexer(info);
+        }
+        
+        public String mimeType() {
+            return "text/x-simple-plain";
+        }
+        
+    }.language();
+    
+    public Language<SimplePlainTokenId> language() {
+        return language;
+    }
+
 
 }
