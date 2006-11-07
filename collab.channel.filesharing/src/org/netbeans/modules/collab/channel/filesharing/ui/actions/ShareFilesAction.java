@@ -19,13 +19,7 @@
 package org.netbeans.modules.collab.channel.filesharing.ui.actions;
 
 import com.sun.collablet.CollabException;
-import com.sun.collablet.CollabManager;
-import com.sun.collablet.CollabSession;
-import com.sun.collablet.Conversation;
 
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.cookies.SourceCookie;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -59,7 +53,7 @@ public class ShareFilesAction extends CookieAction {
 
     /* protected members */
     protected Class[] cookieClasses() {
-        return new Class[] { DataFolder.class, SourceCookie.class };
+        return new Class[] { DataFolder.class };
     }
 
     protected int mode() {

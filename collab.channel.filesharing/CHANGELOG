@@ -37,3 +37,6 @@
 	number tracking, perform update as an atomic edit.
 
 1.10:   Prevents NPE when strange TC is opened, #78904.
+
+1.11:   Make filesharing compatible with new Java infrastructure
+

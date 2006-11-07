@@ -20,10 +20,8 @@ package org.netbeans.modules.collab.channel.filesharing.ui.actions;
 
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.cookies.SourceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -74,7 +72,7 @@ public class NewFolderAction extends CookieAction {
 
     /* protected members */
     protected Class[] cookieClasses() {
-        return new Class[] { DataFolder.class, SourceCookie.class };
+        return new Class[] { DataFolder.class };
     }
 
     protected int mode() {

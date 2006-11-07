@@ -194,32 +194,29 @@ public class SharedNonProjectNode extends FilterNode {
          *
          *
          */
-        protected Node[] createNodes(Object key) {
+        protected Node[] createNodes(Node node) {
             Debug.out.println("In SNPN createNodes: ");
 
             Node[] result = new Node[] {  };
 
             try {
-                if (key instanceof Node) {
-                    Node node = (Node) key;
-                    DataObject d = (DataObject) node.getCookie(DataObject.class);
+                DataObject d = (DataObject) node.getCookie(DataObject.class);
 
-                    if (d != null) {
-                        if (d.getPrimaryFile().isData()) {
-                            String fileName = d.getPrimaryFile().getNameExt();
+                if (d != null) {
+                    if (d.getPrimaryFile().isData()) {
+                        String fileName = d.getPrimaryFile().getNameExt();
 
-                            if (fileName.equals(".nbattrs") || fileName.startsWith(".LCK")) {
-                                return new Node[] {  };
-                            }
-
-                            result = new Node[] {
-                                    new SharedNonProjectNode(d.getNodeDelegate(), this.isLocal, this.context, false)
-                                };
-                        } else {
-                            result = new Node[] {
-                                    new SharedNonProjectNode(d.getNodeDelegate(), this.isLocal, this.context)
-                                };
+                        if (fileName.equals(".nbattrs") || fileName.startsWith(".LCK")) {
+                            return new Node[] {  };
                         }
+
+                        result = new Node[] {
+                                new SharedNonProjectNode(d.getNodeDelegate(), this.isLocal, this.context, false)
+                            };
+                    } else {
+                        result = new Node[] {
+                                new SharedNonProjectNode(d.getNodeDelegate(), this.isLocal, this.context)
+                            };
                     }
                 }
             } catch (Exception e) {

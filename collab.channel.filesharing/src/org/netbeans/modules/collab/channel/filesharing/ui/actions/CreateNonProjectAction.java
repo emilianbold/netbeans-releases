@@ -18,10 +18,8 @@
  */
 package org.netbeans.modules.collab.channel.filesharing.ui.actions;
 
-import org.openide.cookies.SourceCookie;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.Node;
-import org.openide.src.ClassElement;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
@@ -58,7 +56,7 @@ public class CreateNonProjectAction extends CookieAction implements Presenter.Me
     }
 
     protected Class[] cookieClasses() {
-        return new Class[] { DataFolder.class, SourceCookie.class, ClassElement.class };
+        return new Class[] { DataFolder.class };
     }
 
     protected int mode() {

@@ -259,28 +259,25 @@ public class SharedProjectNode extends FilterNode implements FilesharingConstant
          *
          *
          */
-        protected Node[] createNodes(Object key) {
+        protected Node[] createNodes(Node node) {
             Debug.out.println("In SPN: createNodes");
 
             Node[] result = null;
 
             try {
-                if (key instanceof Node) {
-                    Node node = (Node) key;
-                    DataObject d = (DataObject) node.getCookie(DataObject.class);
+                DataObject d = (DataObject) node.getCookie(DataObject.class);
 
-                    if (d != null) {
-                        if (d.getPrimaryFile().isData()) {
-                            String fileName = d.getPrimaryFile().getNameExt();
+                if (d != null) {
+                    if (d.getPrimaryFile().isData()) {
+                        String fileName = d.getPrimaryFile().getNameExt();
 
-                            if (fileName.equals(".nbattrs")) {
-                                return new Node[] {  };
-                            }
-
-                            result = new Node[] { new SharedProjectNode(d.getNodeDelegate(), isLocal, context, false) };
-                        } else {
-                            result = new Node[] { new SharedProjectNode(d.getNodeDelegate(), isLocal, context) };
+                        if (fileName.equals(".nbattrs")) {
+                            return new Node[] {  };
                         }
+
+                        result = new Node[] { new SharedProjectNode(d.getNodeDelegate(), isLocal, context, false) };
+                    } else {
+                        result = new Node[] { new SharedProjectNode(d.getNodeDelegate(), isLocal, context) };
                     }
                 }
             } catch (Exception e) {

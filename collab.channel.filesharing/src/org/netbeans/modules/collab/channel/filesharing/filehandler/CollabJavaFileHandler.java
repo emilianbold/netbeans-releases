@@ -19,6 +19,7 @@
 package org.netbeans.modules.collab.channel.filesharing.filehandler;
 
 import com.sun.collablet.CollabException;
+import javax.swing.text.BadLocationException;
 
 import org.openide.cookies.*;
 import org.openide.filesystems.*;
@@ -28,8 +29,12 @@ import org.openide.text.*;
 import java.io.*;
 
 import java.util.*;
+import javax.swing.text.Position;
 
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.editor.guards.GuardedSection;
+import org.netbeans.api.editor.guards.GuardedSectionManager;
+import org.netbeans.api.editor.guards.SimpleSection;
 
 import org.netbeans.modules.collab.channel.filesharing.eventlistener.FilesharingDocumentListener;
 import org.netbeans.modules.collab.channel.filesharing.mdc.eventlistener.CollabDocumentListener;
@@ -41,9 +46,6 @@ import org.netbeans.modules.collab.channel.filesharing.msgbean.LockRegionData;
 import org.netbeans.modules.collab.channel.filesharing.msgbean.RegionChanged;
 import org.netbeans.modules.collab.channel.filesharing.msgbean.UnlockRegionData;
 import org.netbeans.modules.collab.core.Debug;
-
-import org.netbeans.modules.java.*;
-
 
 /**
  * FileHandler for Java files
@@ -77,7 +79,7 @@ public class CollabJavaFileHandler extends CollabFileHandlerSupport implements C
      */
     public boolean isDocumentModified() throws CollabException {
         boolean isModified = false;
-        JavaEditor cookie = getJavaEditorCookie();
+        EditorCookie cookie = getEditorCookie();
 
         if (cookie != null) {
             isModified = cookie.isModified();
@@ -98,7 +100,7 @@ public class CollabJavaFileHandler extends CollabFileHandlerSupport implements C
         ); //NoI18n
 
         try {
-            JavaEditor cookie = getJavaEditorCookie();
+            EditorCookie cookie = getEditorCookie();
 
             if (cookie != null) {
                 cookie.saveDocument();
@@ -312,9 +314,20 @@ public class CollabJavaFileHandler extends CollabFileHandlerSupport implements C
      */
     public boolean testOverlap(int beginOffset, int endOffset)
     throws CollabException {
-        PositionBounds bounds = getJavaEditorCookie().createBounds(beginOffset, endOffset, true);
-
-        return getJavaEditorCookie().testOverlap(bounds);
+        try {
+            StyledDocument doc = getEditorCookie().getDocument();
+            Position begin = doc.createPosition(beginOffset);
+            Position end = doc.createPosition(endOffset);
+            
+            GuardedSectionManager man = GuardedSectionManager.getInstance(doc);
+            for (GuardedSection sect : man.getGuardedSections()) {
+                if (sect.contains(begin, true) || sect.contains(end, true)) return false;
+                if (sect.getStartPosition().getOffset() > beginOffset && sect.getStartPosition().getOffset() < endOffset) return false;
+            }
+            return true;
+        } catch (BadLocationException e) {
+            throw new CollabException(e);
+        }
     }
 
     /**
@@ -445,7 +458,7 @@ public class CollabJavaFileHandler extends CollabFileHandlerSupport implements C
      */
     public String getContent(String regionName) throws CollabException {
         StyledDocument fileDocument = getDocument();
-        CollabJavaRegion region = (CollabJavaRegion) getRegion(regionName);
+        CollabRegion region = getRegion(regionName);
 
         return region.getContent();
     }
@@ -501,14 +514,14 @@ public class CollabJavaFileHandler extends CollabFileHandlerSupport implements C
             FileObject file = getFileObject();
 
             // Get the DataObject
-            DataObject dataObject = JavaDataObject.find(file);
+            DataObject dataObject = DataObject.find(file);
 
             if (dataObject == null) {
                 throw new IllegalArgumentException("No DataObject found for file \"" + getName() + "\"");
             }
 
             // Get the Swing document for the file
-            JavaEditor cookie = (JavaEditor) dataObject.getCookie(JavaEditor.class);
+            EditorCookie cookie = (EditorCookie) dataObject.getCookie(EditorCookie.class);
 
             StyledDocument document = cookie.openDocument();
 
@@ -542,15 +555,6 @@ public class CollabJavaFileHandler extends CollabFileHandlerSupport implements C
     }
 
     /**
-     * getter for JavaEditor
-     * @throws CollabException
-     * @return JavaEditor
-     */
-    public JavaEditor getJavaEditorCookie() throws CollabException {
-        return (JavaEditor) getEditorCookie();
-    }
-
-    /**
      * return editor cookie for this filehandler
      *
      * @throws CollabException
@@ -571,14 +575,14 @@ public class CollabJavaFileHandler extends CollabFileHandlerSupport implements C
                 }
 
                 // Get the DataObject
-                DataObject dataObject = JavaDataObject.find(file);
+                DataObject dataObject = DataObject.find(file);
 
                 if (dataObject == null) {
                     throw new IllegalArgumentException("No DataObject found for file \"" + getName() + "\"");
                 }
 
                 // Get the editor cookie for the file
-                editorCookie = (JavaEditor) dataObject.getCookie(JavaEditor.class);
+                editorCookie = (EditorCookie) dataObject.getCookie(EditorCookie.class);
 
                 //add reset Document Reference Listener
                 addResetDocumentRefListener(editorCookie, getEditorObservableCookie());
@@ -631,31 +635,12 @@ public class CollabJavaFileHandler extends CollabFileHandlerSupport implements C
         ); //NoI18n
 
         Iterator it = this.otherGuardedSections.values().iterator();
-
         while (it.hasNext()) {
-            Object sect = it.next();
-
-            if (sect instanceof JavaEditor.SimpleSection) {
-                JavaEditor.SimpleSection section = (JavaEditor.SimpleSection) sect;
-                String name = section.getName();
-                int beginOffset = section.getBegin().getOffset();
-                int endOffset = section.getPositionAfter().getOffset();
-
-                if ((offset >= beginOffset) && (offset <= endOffset)) {
-                    return true;
-                }
-            } else {
-                JavaEditor.InteriorSection section = (JavaEditor.InteriorSection) sect;
-                String name = section.getName();
-                int beginOffset = section.getBegin().getOffset();
-                int endOffset = section.getPositionAfter().getOffset();
-
-                if ((offset >= beginOffset) && (offset <= endOffset)) {
-                    return true;
-                }
-            }
+            GuardedSection sect = (GuardedSection)it.next();
+            int beginOffset = sect.getStartPosition().getOffset();
+            int endOffset = sect.getEndPosition().getOffset();
+            if ((offset >= beginOffset) && (offset <= endOffset)) return true;
         }
-
         return false;
     }
 
@@ -683,22 +668,19 @@ public class CollabJavaFileHandler extends CollabFileHandlerSupport implements C
     protected void findInitialGuardedSections() throws CollabException {
         Debug.log(this, "CollabJavaHandler, findInitialGuardedSections"); //NoI18n
 
-        synchronized (getDocument()) {
-            Iterator it = getJavaEditorCookie().getGuardedSections();
+        StyledDocument docu = getDocument();
+        synchronized (docu) {
+            Iterator it = GuardedSectionManager.getInstance(docu).getGuardedSections().iterator();
 
             while (it.hasNext()) {
-                Object sect = it.next();
+                GuardedSection sect = (GuardedSection)it.next();
+                String name = sect.getName();
+                this.otherGuardedSections.put(name, sect);
 
-                if (sect instanceof JavaEditor.SimpleSection) {
-                    JavaEditor.SimpleSection section = (JavaEditor.SimpleSection) sect;
-                    String name = section.getName();
+                if (sect instanceof SimpleSection) {
                     Debug.log(this, "CollabJavaHandler, simple_sect: " + name); //NoI18n
-                    this.otherGuardedSections.put(name, section);
                 } else {
-                    JavaEditor.InteriorSection section = (JavaEditor.InteriorSection) sect;
-                    String name = section.getName();
                     Debug.log(this, "CollabJavaHandler, inter_sect: " + name); //NoI18n
-                    this.otherGuardedSections.put(name, section);
                 }
             }
         }
@@ -733,14 +715,5 @@ public class CollabJavaFileHandler extends CollabFileHandlerSupport implements C
         // methods
         ////////////////////////////////////////////////////////////////////////////           
 
-        /**
-         * getter for region content
-         *
-         * @throws CollabException
-         * @return region content
-         */
-        public String getContent() throws CollabException {
-            return super.getContent();
-        }
     }
 }
