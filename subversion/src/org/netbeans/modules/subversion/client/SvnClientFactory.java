@@ -33,8 +33,8 @@ import org.tigris.subversion.svnclientadapter.SVNClientAdapterFactory;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 import org.tigris.subversion.svnclientadapter.commandline.CmdLineClientAdapterFactory;
-//import org.tigris.subversion.svnclientadapter.javahl.JhlClientAdapterFactory;
-//import org.tigris.subversion.svnclientadapter.javasvn.JavaSvnClientAdapterFactory;
+import org.tigris.subversion.svnclientadapter.javahl.JhlClientAdapterFactory;
+import org.tigris.subversion.svnclientadapter.javahl.JhlClientAdapter;
 
 /**
  * A SvnClient factory
@@ -48,8 +48,6 @@ public class SvnClientFactory {
     
     private ClientAdapterFactory factory;
         
-    private SVNClientException exception;
-    
     /** Creates a new instance of SvnClientFactory */
     private SvnClientFactory() {
 
@@ -69,106 +67,72 @@ public class SvnClientFactory {
 
     public void setup() throws SVNClientException {
         try {
-//            String factoryType = System.getProperty("svnClientAdapterFactory");
+            String factoryType = System.getProperty("svnClientAdapterFactory");
             
-            setupCommandline();
-            
-//            if(factoryType == null || 
-//               factoryType.trim().equals("") || 
-//               factoryType.equals(CmdLineClientAdapterFactory.COMMANDLINE_CLIENT)) 
-//            {                
-//                setupCommandline();
-//            } 
-//            else if(factoryType.equals(JhlClientAdapterFactory.JAVAHL_CLIENT)) {
-//                try {                    
-//                    setupJavaHl();
-//                } catch (SVNClientException ex) {
-//                    // something went wrong - fallback on the commandline
-//                    ErrorManager.getDefault().log(ErrorManager.WARNING, "Could not setup JavaHl. Trying to fallback on the commandline client");                    
-//                    setupCommandline();
-//                }
-//            }
-//            else if(factoryType.equals(JavaSvnClientAdapterFactory.JAVASVN_CLIENT)) {
-//                try {                    
-//                    setupJavaSVN();
-//                } catch (SVNClientException ex) {
-//                    ErrorManager.getDefault().log(ErrorManager.WARNING, "Could not setup JavaSVN. Trying to fallback on the commandline client");                    
-//                    setupCommandline();
-//                }
-//            } 
-//            else {                
-//                throw new SVNClientException("Unknown factory: " + factoryType);
-//            } 
-        } catch (Throwable t) {            
-            //ErrorManager.getDefault().notify(ErrorManager.WARNING, "Could not setup for the given ")
-            // XXX is this robust enought? - no! if this won't work then you'll get NPEs until the doctor comes
-            
-           factory = new ClientAdapterFactory() {
-                public ISVNClientAdapter createAdapter() {
-                    return new UnsupportedSvnClientAdapter();
+            if(factoryType == null || 
+               factoryType.trim().equals("") || 
+               factoryType.equals(CmdLineClientAdapterFactory.COMMANDLINE_CLIENT)) 
+            {                
+                setupCommandline();
+            } 
+            else if(factoryType.equals(JhlClientAdapterFactory.JAVAHL_CLIENT)) {
+                try {                    
+                    setupJavaHl();
+                } catch (Throwable t) {
+                    String jhlErorrs = JhlClientAdapter.getLibraryLoadErrors();
+                    // something went wrong - fallback on the commandline                                                            
+                    ErrorManager.getDefault().notify(ErrorManager.WARNING, t);                    
+                    ErrorManager.getDefault().log(ErrorManager.WARNING, jhlErorrs);                                                            
+                    ErrorManager.getDefault().log(ErrorManager.WARNING, "Could not setup JavaHl. Falling back on the commandline client!");                    
+                    setupCommandline();
                 }
-                public boolean isCommandLine() {
-                    return true;
-                }                        
-                protected ISVNClientAdapter createSvnClientAdapter(SVNUrl repositoryUrl, ProxyDescriptor pd, String username, String password) {
-                    return super.createSvnClientAdapter(repositoryUrl, pd, username, password);
-                }
-
-                public SvnClientInvocationHandler getInvocationHandler(ISVNClientAdapter adapter, SvnClientDescriptor desc, SvnProgressSupport support, int handledExceptions) {
-                    return new SvnCmdLineClientInvocationHandler(adapter, desc, support, handledExceptions);
-                }            
-            }; 
-            
-            if(t instanceof SVNClientException) throw (SVNClientException) t;
-            
-            throw exception;
+            } else {                
+                throw new SVNClientException("Unknown factory: " + factoryType);
+            } 
+        } catch (Throwable t) {                                    
+            setupUnsupported();            
+            if(t instanceof SVNClientException) {
+                throw (SVNClientException) t;
+            }            
+            throw new SVNClientException(t);
         }
     }
     
-//    private void setupJavaHl () throws SVNClientException {        
-//        JhlClientAdapterFactory.setup();
-//        factory = new ClientAdapterFactory() {
-//            public ISVNClientAdapter createAdapter() {
-//                ISVNClientAdapter adapter = SVNClientAdapterFactory.createSVNClient(JhlClientAdapterFactory.JAVAHL_CLIENT);               
-//                return adapter;
-//            }
-//            public boolean isCommandLine() {
-//                
-//                return false;
-//            }
-//            public SvnClientInvocationHandler getInvocationHandler(ISVNClientAdapter adapter, SvnClientDescriptor desc, SvnProgressSupport support, int handledExceptions) {
-//                return new SvnClientInvocationHandler(adapter, desc, support, handledExceptions);
-//            }
-//        };
-//        ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "svnClientAdapter running on javahl");
-//    }
+    private void setupJavaHl () throws SVNClientException {        
+        JhlClientAdapterFactory.setup();        
+        factory = new ClientAdapterFactory() {
+            public ISVNClientAdapter createAdapter() {
+                ISVNClientAdapter adapter = SVNClientAdapterFactory.createSVNClient(JhlClientAdapterFactory.JAVAHL_CLIENT);               
+                return adapter;
+            }
+            public SvnClientInvocationHandler getInvocationHandler(ISVNClientAdapter adapter, SvnClientDescriptor desc, SvnProgressSupport support, int handledExceptions) {
+                return new SvnClientInvocationHandler(adapter, desc, support, handledExceptions);
+            }
+        };
+        ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "svnClientAdapter running on javahl");
+    }
     
-//    private void setupJavaSVN () throws SVNClientException {
-//        // XXX error handling if the library isn't there
-//        JavaSvnClientAdapterFactory.setup();
-//        factory = new ClientAdapterFactory() {
-//            public ISVNClientAdapter createAdapter() {
-//                return SVNClientAdapterFactory.createSVNClient(JavaSvnClientAdapterFactory.JAVASVN_CLIENT);
-//            }
-//            public boolean isCommandLine() {
-//                return false;
-//            }            
-//            public SvnClientInvocationHandler getInvocationHandler(ISVNClientAdapter adapter, SvnClientDescriptor desc, SvnProgressSupport support, int handledExceptions) {
-//                return new SvnClientInvocationHandler(adapter, desc, support, handledExceptions);
-//            }            
-//        };                        
-//        ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "svnClientAdapter running on javasvn");        
-//    }
+    private void setupUnsupported () throws SVNClientException {                
+       factory = new ClientAdapterFactory() {
+            public ISVNClientAdapter createAdapter() {
+                return new UnsupportedSvnClientAdapter();
+            }
+            protected ISVNClientAdapter createSvnClientAdapter(SVNUrl repositoryUrl, ProxyDescriptor pd, String username, String password) {
+                return super.createSvnClientAdapter(repositoryUrl, pd, username, password);
+            }
 
+            public SvnClientInvocationHandler getInvocationHandler(ISVNClientAdapter adapter, SvnClientDescriptor desc, SvnProgressSupport support, int handledExceptions) {
+                return new SvnCmdLineClientInvocationHandler(adapter, desc, support, handledExceptions);
+            }            
+        };         
+    }
+    
     private void setupCommandline () throws SVNClientException {
         CmdLineClientAdapterFactory.setup();
         factory = new ClientAdapterFactory() {
             public ISVNClientAdapter createAdapter() {
                 return SVNClientAdapterFactory.createSVNClient(CmdLineClientAdapterFactory.COMMANDLINE_CLIENT);
             }
-            public boolean isCommandLine() {
-                return true;
-            }                        
             protected ISVNClientAdapter createSvnClientAdapter(SVNUrl repositoryUrl, ProxyDescriptor pd, String username, String password) {
                 ISVNClientAdapter adapter = super.createSvnClientAdapter(repositoryUrl, pd, username, password);
                 adapter.addPasswordCallback(new SvnClientCallback(repositoryUrl));
@@ -251,10 +215,7 @@ public class SvnClientFactory {
     private abstract class ClientAdapterFactory {
                 
         abstract public ISVNClientAdapter createAdapter();
-        abstract public boolean isCommandLine();
         abstract public SvnClientInvocationHandler getInvocationHandler(ISVNClientAdapter adapter, SvnClientDescriptor desc, SvnProgressSupport support, int handledExceptions);
-
-
     
         SvnClient createSvnClient() {            
             ISVNClientAdapter adapter = createAdapter();
