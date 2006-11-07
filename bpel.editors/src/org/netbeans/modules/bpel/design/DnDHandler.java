@@ -61,7 +61,7 @@ import org.netbeans.modules.bpel.model.api.support.TBoolean;
 import org.netbeans.modules.bpel.properties.ImportRegistrationHelper;
 import org.netbeans.modules.bpel.nodes.BpelNode;
 import org.netbeans.modules.bpel.nodes.actions.AddOnAlarmAction;
-import org.netbeans.modules.websvc.core.WebServiceReference;
+// import org.netbeans.modules.websvc.core.WebServiceReference;
 import org.openide.ErrorManager;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -348,9 +348,9 @@ public class DnDHandler implements DragSourceListener , DragGestureListener, Dro
                 } else if (Node.class.isAssignableFrom(repClass)){
                     //DnD from palette or ProjectTree
                     entity = getPaletteItem((Node)data);
-                } else if (WebServiceReference.class.isAssignableFrom(repClass)) {
-                    entity = designView.getBPELModel().getBuilder().createPartnerLink();
-                    entity.setCookie(DnDHandler.class, data);
+//                } else if (WebServiceReference.class.isAssignableFrom(repClass)) {
+//                    entity = designView.getBPELModel().getBuilder().createPartnerLink();
+//                    entity.setCookie(DnDHandler.class, data);
                 } else if (DataObject.class.isAssignableFrom(repClass)) {
                     DataObject dataObj = (DataObject) data;
                     String ext = dataObj.getPrimaryFile().getExt();

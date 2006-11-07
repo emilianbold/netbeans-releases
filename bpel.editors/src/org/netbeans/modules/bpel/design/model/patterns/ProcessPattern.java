@@ -69,7 +69,7 @@ import org.netbeans.modules.bpel.design.nodes.NodeType;
 import org.netbeans.modules.bpel.design.selection.PlaceHolder;
 import org.netbeans.modules.bpel.properties.ImportRegistrationHelper;
 import org.netbeans.modules.bpel.properties.UserNotification;
-import org.netbeans.modules.websvc.core.WebServiceReference;
+// import org.netbeans.modules.websvc.core.WebServiceReference;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -572,21 +572,21 @@ public class ProcessPattern extends CompositePattern {
                 }
                 rp.post(new AddPartnerLinkTask(pl, pattern));
                 
-            } else if (dndCookie instanceof WebServiceReference){
-                URL url = ((WebServiceReference) dndCookie).getWsdlURL();
-                String name = ((WebServiceReference) dndCookie).getWebServiceName();
-                if (url != null){
-                    rp.post(new RetrieveWSDLTask(url, name, pl, true));
-                    rp.post(new AddPartnerLinkTask(pl, pattern));
-                } else {
-                    //
-                    String messageText = NbBundle.getMessage(ProcessPattern.class,
-                            "LBL_J2EEWS_NOT_DEPLOYED", // NOI18N
-                            ""
-                            );
-                    UserNotification.showMessageAsinc(messageText);
-                    
-                }
+//            } else if (dndCookie instanceof WebServiceReference){
+//                URL url = ((WebServiceReference) dndCookie).getWsdlURL();
+//                String name = ((WebServiceReference) dndCookie).getWebServiceName();
+//                if (url != null){
+//                    rp.post(new RetrieveWSDLTask(url, name, pl, true));
+//                    rp.post(new AddPartnerLinkTask(pl, pattern));
+//                } else {
+//                    //
+//                    String messageText = NbBundle.getMessage(ProcessPattern.class,
+//                            "LBL_J2EEWS_NOT_DEPLOYED", // NOI18N
+//                            ""
+//                            );
+//                    UserNotification.showMessageAsinc(messageText);
+//                    
+//                }
             } else {
                 rp.post(new AddPartnerLinkTask(pl, pattern));
             }

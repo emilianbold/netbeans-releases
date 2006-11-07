@@ -99,6 +99,7 @@
                         <release-version>1</release-version>
                     </run-dependency>
                 </dependency>
+<!--
                 <dependency>
                     <code-name-base>org.netbeans.modules.websvc.core</code-name-base>
                     <build-prerequisite/>
@@ -107,6 +108,7 @@
                         <specification-version>1.6.20.1.4</specification-version>
                     </run-dependency>
                 </dependency>
+-->                
                 <dependency>
                     <code-name-base>org.netbeans.modules.xml.refactoring</code-name-base>
                     <build-prerequisite/>
