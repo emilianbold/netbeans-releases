@@ -20,7 +20,7 @@
 package org.netbeans.test.java.editor.completion;
 import java.io.PrintWriter;
 
-import org.openide.filesystems.*;
+//import org.openide.filesystems.*;
 
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
