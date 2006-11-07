@@ -389,7 +389,7 @@ org.my.netbeans.extramodule.ExtraTip
     <li>
         <api name="org.openide.util.SharedClassObject.initialize" category="private" group="property" type="export">
         For purposes of 
-        <a href="@org-openide-options@/org/openide/options/SystemOption.html">SystemOption</a>
+        <code>SystemOption</code>
         the
         <a href="@TOP@/org/openide/util/SharedClassObject.html">SharedClassObject</a>
         handles
