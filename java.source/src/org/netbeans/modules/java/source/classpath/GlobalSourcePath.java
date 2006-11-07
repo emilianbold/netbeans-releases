@@ -238,7 +238,7 @@ public class GlobalSourcePath {
         for (URL unknownRoot : r.unknownRoots.keySet()) {
             result.add (ClassPathSupport.createResource(unknownRoot));
         }        
-        return new Result (r.timeStamp, new ArrayList<PathResourceImplementation> (result), new ArrayList(binaryResult), newCps,newSR,translatedRoots);
+        return new Result (r.timeStamp, new ArrayList<PathResourceImplementation> (result), new ArrayList(binaryResult), newCps,newSR,translatedRoots, r.unknownRoots);
     }    
     
     /**
@@ -354,10 +354,12 @@ public class GlobalSourcePath {
         final Set<ClassPath> newCps;
         final Map<URL, SourceForBinaryQuery.Result> newSR;
         final Map<URL, URL[]> translatedRoots;
+        final Map<URL, WeakValue> unknownRoots;
         
         public Result (final long timeStamp, final List<? extends PathResourceImplementation> resources,
             final List<? extends PathResourceImplementation> binaryResources, final Set<ClassPath> newCps,
-            final Map<URL, SourceForBinaryQuery.Result> newSR, final Map<URL, URL[]> translatedRoots) {
+            final Map<URL, SourceForBinaryQuery.Result> newSR, final Map<URL, URL[]> translatedRoots,
+            final Map<URL, WeakValue> unknownRoots) {
             assert resources != null;
             assert binaryResources != null;
             assert newCps != null;
@@ -369,6 +371,7 @@ public class GlobalSourcePath {
             this.newCps = newCps;
             this.newSR = newSR;
             this.translatedRoots = translatedRoots;
+            this.unknownRoots = unknownRoots;
         }
     }
     
@@ -390,7 +393,7 @@ public class GlobalSourcePath {
                     GlobalSourcePath.this.gpr.getPaths(ClassPath.COMPILE),
                     GlobalSourcePath.this.activeCps,
                     GlobalSourcePath.this.sourceResults,
-                    GlobalSourcePath.this.unknownRoots,
+                    new HashMap<URL,WeakValue> (GlobalSourcePath.this.unknownRoots),
                     GlobalSourcePath.this.listener,
                     GlobalSourcePath.this.listener);
             }
@@ -405,7 +408,8 @@ public class GlobalSourcePath {
                         GlobalSourcePath.this.binaryResources = res.binaryResources;
                         GlobalSourcePath.this.activeCps = res.newCps;
                         GlobalSourcePath.this.sourceResults = res.newSR;
-                        GlobalSourcePath.this.translatedRoots = res.translatedRoots;                    
+                        GlobalSourcePath.this.translatedRoots = res.translatedRoots;
+                        GlobalSourcePath.this.unknownRoots = res.unknownRoots;
                     }
                     return GlobalSourcePath.this.resources;
                 }            
@@ -462,7 +466,7 @@ public class GlobalSourcePath {
                     GlobalSourcePath.this.gpr.getPaths(ClassPath.COMPILE),
                     GlobalSourcePath.this.activeCps,
                     GlobalSourcePath.this.sourceResults,
-                    GlobalSourcePath.this.unknownRoots,
+                    new HashMap<URL, WeakValue> (GlobalSourcePath.this.unknownRoots),
                     GlobalSourcePath.this.listener,
                     GlobalSourcePath.this.listener);
             }
@@ -478,6 +482,7 @@ public class GlobalSourcePath {
                         GlobalSourcePath.this.activeCps = res.newCps;
                         GlobalSourcePath.this.sourceResults = res.newSR;
                         GlobalSourcePath.this.translatedRoots = res.translatedRoots;                    
+                        GlobalSourcePath.this.unknownRoots = res.unknownRoots;
                     }
                     return GlobalSourcePath.this.binaryResources;
                 }            
