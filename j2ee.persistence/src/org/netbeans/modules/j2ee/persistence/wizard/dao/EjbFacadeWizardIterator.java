@@ -1,5 +1,34 @@
+/*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ *
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ *
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
 package org.netbeans.modules.j2ee.persistence.wizard.dao;
 
+import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.StatementTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeParameterTree;
+import com.sun.source.tree.VariableTree;
 import java.awt.Component;
 import java.io.IOException;
 import java.util.Collections;
@@ -7,26 +36,29 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import javax.lang.model.element.Modifier;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.ModificationResult;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.Project;
-import org.netbeans.jmi.javamodel.Annotation;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.Method;
-import org.netbeans.jmi.javamodel.Parameter;
-import org.netbeans.modules.j2ee.common.JMIUtils;
-import org.netbeans.modules.j2ee.common.JMIGenerationUtil;
+import org.netbeans.modules.j2ee.common.AbstractTask;
+import org.netbeans.modules.j2ee.common.source.GenerationUtils;
 import org.netbeans.modules.j2ee.persistence.action.EntityManagerGenerator;
+import org.netbeans.modules.j2ee.persistence.action.GenerationOptions;
 import org.netbeans.modules.j2ee.persistence.dd.orm.model_1_0.Entity;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.wizard.PersistenceClientEntitySelection;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.modules.j2ee.persistence.wizard.WizardProperties;
-import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -44,105 +76,235 @@ public final class EjbFacadeWizardIterator implements WizardDescriptor.Instantia
         return panels;
     }
     
+    String getUniqueClassName(String candidateName, FileObject targetFolder){
+        return candidateName; // TODO
+    }
+    
     public Set instantiate() throws IOException {
         List<Entity> entities = (List<Entity>) wizard.getProperty(WizardProperties.ENTITY_CLASS);
         Project project = Templates.getProject(wizard);
-        FileObject targetFolder = Templates.getTargetFolder(wizard);
+        final FileObject targetFolder = Templates.getTargetFolder(wizard);
         Set createdFiles = new HashSet();
-        EjbFacadeWizardPanel2 panel = (EjbFacadeWizardPanel2) panels[1];
+        final EjbFacadeWizardPanel2 panel = (EjbFacadeWizardPanel2) panels[1];
         String pkg = panel.getPackage();
-
+        
         PersistenceUnit persistenceUnit = (PersistenceUnit) wizard.getProperty(WizardProperties.PERSISTENCE_UNIT);
         if (persistenceUnit != null){
             ProviderUtil.addPersistenceUnit(persistenceUnit, Templates.getProject(wizard));
         }
         
         for (Entity entity : entities) {
-            String entityClass = entity.getClass2();
-            String simpleClassName = Util.simpleClassName(entityClass);
-            String variableName = simpleClassName.toLowerCase().charAt(0) + simpleClassName.substring(1);
+            final String entityClass = entity.getClass2();
+            final String simpleClassName = Util.simpleClassName(entityClass);
+            final String variableName = simpleClassName.toLowerCase().charAt(0) + simpleClassName.substring(1);
+            final String facadeNameBase = pkg + "." + simpleClassName;
+            //            String classBean = JMIUtils.uniqueClassName(facadeNameBase + "Facade", targetFolder);
+            final String classBean = getUniqueClassName(facadeNameBase + "Facade", targetFolder);
+            //            classBean = classBean.substring(classBean.lastIndexOf(".") + 1);
             
-            String facadeNameBase = pkg + "." + simpleClassName;
-            String classBean = JMIUtils.uniqueClassName(facadeNameBase + "Facade", targetFolder);
-            classBean = classBean.substring(classBean.lastIndexOf(".") + 1);
-            JavaClass jc = JMIGenerationUtil.createClass(targetFolder, classBean);
+            final FileObject sourceFile = GenerationUtils.createClass(targetFolder, classBean, null);// name must be made unique
             
-            boolean rollback = true;
-            JMIUtils.beginJmiTransaction(true);
-            try {
-                Annotation stateless = JMIGenerationUtil.createAnnotation(jc, "javax.ejb.Stateless", Collections.EMPTY_LIST);
-                jc.getAnnotations().add(stateless);
-                
-                JavaClass localIF = null;
-                JavaClass remoteIF = null;
-                boolean hasLocal = panel.isLocal();
-                boolean hasRemote = panel.isRemote();
-                if (hasLocal) {
-                    String classLocal = JMIUtils.uniqueClassName(facadeNameBase + "FacadeLocal", targetFolder);
-                    classLocal = classLocal.substring(classLocal.lastIndexOf(".") + 1);
-                    localIF = JMIGenerationUtil.createInterface(targetFolder, classLocal);
-                    Annotation localAnn = JMIGenerationUtil.createAnnotation(localIF, "javax.ejb.Local", Collections.EMPTY_LIST);
-                    localIF.getAnnotations().add(localAnn);
-                    JMIUtils.addInterface(jc, localIF.getName());
+            JavaSource source = JavaSource.forFileObject(sourceFile);
+            source.runModificationTask(new AbstractTask<WorkingCopy>() {
+                public void run(WorkingCopy workingCopy) throws Exception {
+                    CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                    TreeMaker make = workingCopy.getTreeMaker();
+                    
+                    for (Tree typeDeclaration : cut.getTypeDecls()){
+                        if (Tree.Kind.CLASS == typeDeclaration.getKind()){
+                            ClassTree clazz = (ClassTree) typeDeclaration;
+                            AnnotationTree annotations = make.Annotation(make.Identifier("javax.ejb.Stateless"), Collections.<ExpressionTree>emptyList());
+                            ModifiersTree modifiers = make.Modifiers(clazz.getModifiers(), Collections.<AnnotationTree>singletonList(annotations));
+                            ClassTree modifiedClass =
+                                    make.Class(modifiers, clazz.getSimpleName(), clazz.getTypeParameters(), clazz.getExtendsClause(), (List<ExpressionTree>)clazz.getImplementsClause(), Collections.<Tree>emptyList());
+                            workingCopy.rewrite(clazz, modifiedClass);
+                            
+                            boolean hasLocal = panel.isLocal();
+                            boolean hasRemote = panel.isRemote();
+                            
+                            FileObject local = null;
+                            FileObject remote = null;
+                            if (hasLocal){
+                                String classLocal = getUniqueClassName(facadeNameBase + "FacadeLocal", targetFolder);
+                                classLocal = classLocal.substring(classLocal.lastIndexOf(".") + 1);
+                                local = createInterface(classLocal, "javax.ejb.Local", targetFolder);
+                            }
+                            if (hasRemote){
+                                String classRemote = getUniqueClassName(facadeNameBase + "FacadeRemote", targetFolder);
+                                classRemote = classRemote.substring(classRemote.lastIndexOf(".") + 1);
+                                remote = createInterface(classRemote, "javax.ejb.Remote", targetFolder);
+                            }
+                            EntityManagerGenerator generator = new EntityManagerGenerator(sourceFile, "");
+                            
+                            GenerationOptions createOptions = new GenerationOptions();
+                            createOptions.setMethodName("create");
+                            createOptions.setOperation(GenerationOptions.Operation.PERSIST);
+                            createOptions.setReturnType("void");
+                            createOptions.setParameterName(variableName);
+                            createOptions.setParameterType(entityClass);
+                            createOptions.setInitialization(GenerationOptions.Initialization.INJECT);
+                            generator.generate(createOptions);
+                            addMethodToInterface("create", "void", variableName, entityClass, local);
+                            addMethodToInterface("create", "void", variableName, entityClass, remote);
+                            
+                            GenerationOptions editOptions = new GenerationOptions();
+                            editOptions.setMethodName("create");
+                            editOptions.setOperation(GenerationOptions.Operation.PERSIST);
+                            editOptions.setReturnType("void");
+                            editOptions.setParameterName(variableName);
+                            editOptions.setParameterType(entityClass);
+                            editOptions.setInitialization(GenerationOptions.Initialization.INJECT);
+                            generator.generate(editOptions);
+                            addMethodToInterface("edit", "void", variableName, entityClass, local);
+                            addMethodToInterface("edit", "void", variableName, entityClass, remote);
+                            
+                            GenerationOptions destroyOptions = new GenerationOptions();
+                            destroyOptions.setMethodName("create");
+                            destroyOptions.setOperation(GenerationOptions.Operation.REMOVE);
+                            destroyOptions.setReturnType("void");
+                            destroyOptions.setParameterName(variableName);
+                            destroyOptions.setParameterType(entityClass);
+                            destroyOptions.setInitialization(GenerationOptions.Initialization.INJECT);
+                            generator.generate(destroyOptions);
+                            addMethodToInterface("destroy", "void", variableName, entityClass, local);
+                            addMethodToInterface("destroy", "void", variableName, entityClass, remote);
+                            
+                            GenerationOptions findOptions = new GenerationOptions();
+                            findOptions.setMethodName("find");
+                            findOptions.setOperation(GenerationOptions.Operation.FIND);
+                            findOptions.setReturnType("void");
+                            findOptions.setParameterName(variableName);
+                            findOptions.setParameterType(entityClass);
+                            findOptions.setInitialization(GenerationOptions.Initialization.INJECT);
+                            generator.generate(findOptions);
+                            addMethodToInterface("find", "void", variableName, entityClass, local);
+                            addMethodToInterface("find", "void", variableName, entityClass, remote);
+                            
+                            GenerationOptions findAllOptions = new GenerationOptions();
+                            findAllOptions.setMethodName("findAll");
+                            findAllOptions.setOperation(GenerationOptions.Operation.FIND_ALL);
+                            findAllOptions.setReturnType("void");
+                            findAllOptions.setParameterName(variableName);
+                            findAllOptions.setParameterType(entityClass);
+                            findAllOptions.setInitialization(GenerationOptions.Initialization.INJECT);
+                            generator.generate(findAllOptions);
+                            addMethodToInterface("findAll", "void", variableName, entityClass, local);
+                            addMethodToInterface("findAll", "void", variableName, entityClass, remote);
+                            
+                        }
+                    }
                 }
-                if (hasRemote) {
-                    String classRemote = JMIUtils.uniqueClassName(facadeNameBase + "FacadeRemote", targetFolder);
-                    classRemote = classRemote.substring(classRemote.lastIndexOf(".") + 1);
-                    remoteIF = JMIGenerationUtil.createInterface(targetFolder, classRemote);
-                    Annotation remoteAnn = JMIGenerationUtil.createAnnotation(remoteIF, "javax.ejb.Remote", Collections.EMPTY_LIST);
-                    remoteIF.getAnnotations().add(remoteAnn);
-                    JMIUtils.addInterface(jc, remoteIF.getName());
-                }
-                
-                Parameter p = JMIGenerationUtil.createParameter(jc, variableName, entityClass);
-                EntityManagerGenerator.generate(jc, EntityManagerGenerator.OPERATION_PERSIST, "create", "void", p, null, false, false);
-                addMethodToInterface("create", "void", p, localIF, remoteIF);
-                
-                p = JMIGenerationUtil.createParameter(jc, variableName, entityClass);
-                EntityManagerGenerator.generate(jc, EntityManagerGenerator.OPERATION_MERGE, "edit", "void", p, null, false, false);
-                addMethodToInterface("edit", "void", p, localIF, remoteIF);
-                
-                p = JMIGenerationUtil.createParameter(jc, variableName, entityClass);
-                EntityManagerGenerator.generate(jc, EntityManagerGenerator.OPERATION_REMOVE, "destroy", "void", p, null, false, false);
-                addMethodToInterface("destroy", "void", p, localIF, remoteIF);
-                
-                p = JMIGenerationUtil.createParameter(jc, "pk", Object.class.getName());
-                EntityManagerGenerator.generate(jc, EntityManagerGenerator.OPERATION_FIND, "find", entityClass, p, entityClass, false, false);
-                addMethodToInterface("find", entityClass, p, localIF, remoteIF);
-                
-                EntityManagerGenerator.generate(jc, EntityManagerGenerator.OPERATION_FIND_ALL, "findAll", List.class.getName(), null, entity.getName(), false, false);
-                addMethodToInterface("findAll", List.class.getName(), null, localIF, remoteIF);
-                
-                createdFiles.add(JavaModel.getFileObject(jc.getResource()));
-                rollback = false;
-            } finally {
-                JMIUtils.endJmiTransaction(rollback);
-            }
+            });
             
-            // replace fully qualified names by simple names and add needed imports
-            // note: cannot be performed in the jmi transaction above
-            EntityManagerGenerator.fixImports(jc);
             
         }
         return createdFiles;
     }
     
-    private static void addMethodToInterface(String name, String type, Parameter p, JavaClass localIF, JavaClass remoteIF) {
-        if (localIF != null) {
-            Method m = JMIGenerationUtil.createMethod(localIF, name, 0, type);
-            if (p != null) {
-                m.getParameters().add(p.duplicate());
+    
+    
+    /**
+     * Creates an interface with the given <code>name</code>, annotated with an annotation
+     * of the given <code>annotationType</code>. <i>Package private visibility just because of tests</i>.
+     * @param
+     * @param
+     */
+    FileObject createInterface(String name, final String annotationType, FileObject targetFolder) throws IOException{
+        FileObject sourceFile = GenerationUtils.createInterface(targetFolder, name, null);
+        JavaSource source = JavaSource.forFileObject(sourceFile);
+        ModificationResult result = source.runModificationTask(new AbstractTask<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws Exception {
+                
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                
+                for (Tree typeDeclaration : cut.getTypeDecls()){
+                    if (Tree.Kind.CLASS == typeDeclaration.getKind()){
+                        ClassTree clazz = (ClassTree) typeDeclaration;
+                        AnnotationTree annotations = make.Annotation(make.Identifier(annotationType), Collections.<ExpressionTree>emptyList());
+                        ModifiersTree modifiers = make.Modifiers(clazz.getModifiers(), Collections.<AnnotationTree>singletonList(annotations));
+                        ClassTree modifiedClass =
+                                make.Class(modifiers, clazz.getSimpleName(), clazz.getTypeParameters(), clazz.getExtendsClause(), Collections.<ExpressionTree>emptyList(), Collections.<Tree>emptyList());
+                        workingCopy.rewrite(clazz, modifiedClass);
+                    }
+                }
             }
-            localIF.getFeatures().add(m);
-        }
-        if (remoteIF != null) {
-            Method m = JMIGenerationUtil.createMethod(remoteIF, name, 0, type);
-            if (p != null) {
-                m.getParameters().add(p.duplicate());
-            }
-            remoteIF.getFeatures().add(m);
-        }
+        });
+        result.commit();
+        return source.getFileObjects().iterator().next();
+        
     }
+    
+    
+    
+    void addMethodToInterface(final String name, final String returnType, final String parameterName,
+            final String parameterType, final FileObject target) throws IOException {
+        
+        if (target == null){
+            return;
+        }
+        
+        JavaSource source = JavaSource.forFileObject(target);
+        ModificationResult result = source.runModificationTask(new AbstractTask<WorkingCopy>() {
+            public void run(WorkingCopy parameter) throws Exception {
+                parameter.toPhase(Phase.RESOLVED);
+                TreeMaker make = parameter.getTreeMaker();
+                CompilationUnitTree cut = parameter.getCompilationUnit();
+                for (Tree tree : cut.getTypeDecls()){
+                    if (tree.getKind() == Tree.Kind.CLASS){
+                        ClassTree iface = (ClassTree) tree;
+                        ModifiersTree mt = make.Modifiers(Collections.<Modifier>emptySet());
+                        VariableTree vt = make.Variable(mt, parameterName, make.Identifier(parameterType), null);
+                        MethodTree method = make.Method(mt,
+                                name,
+                                make.Identifier(returnType),
+                                Collections.<TypeParameterTree>emptyList(),
+                                Collections.<VariableTree>singletonList(vt),
+                                Collections.<ExpressionTree>emptyList(),
+                                (BlockTree) null, 
+                                null);
+                        ClassTree modifiedClass = make.addClassMember(iface, method);
+                        parameter.rewrite(iface, modifiedClass);
+                    }
+                }
+            }
+        });
+        result.commit();
+        
+        //        if (localIF != null) {
+        //            Method m = JMIGenerationUtil.createMethod(localIF, name, 0, type);
+        //            if (p != null) {
+        //                m.getParameters().add(p.duplicate());
+        //            }
+        //            localIF.getFeatures().add(m);
+        //        }
+        //        if (remoteIF != null) {
+        //            Method m = JMIGenerationUtil.createMethod(remoteIF, name, 0, type);
+        //            if (p != null) {
+        //                m.getParameters().add(p.duplicate());
+        //            }
+        //            remoteIF.getFeatures().add(m);
+        //        }
+    }
+    
+    
+    //    private static void addMethodToInterface(String name, String type, Parameter p, JavaClass localIF, JavaClass remoteIF) {
+    //        if (localIF != null) {
+    //            Method m = JMIGenerationUtil.createMethod(localIF, name, 0, type);
+    //            if (p != null) {
+    //                m.getParameters().add(p.duplicate());
+    //            }
+    //            localIF.getFeatures().add(m);
+    //        }
+    //        if (remoteIF != null) {
+    //            Method m = JMIGenerationUtil.createMethod(remoteIF, name, 0, type);
+    //            if (p != null) {
+    //                m.getParameters().add(p.duplicate());
+    //            }
+    //            remoteIF.getFeatures().add(m);
+    //        }
+    //    }
     
     public void initialize(WizardDescriptor wizard) {
         this.wizard = wizard;
@@ -154,7 +316,7 @@ public final class EjbFacadeWizardIterator implements WizardDescriptor.Instantia
                 new PersistenceClientEntitySelection(
                         NbBundle.getMessage(EjbFacadeWizardIterator.class, "LBL_EntityClasses"),
                         new HelpCtx(EjbFacadeWizardIterator.class.getName() + "$PersistenceClientEntitySelection"), wizard), // NOI18N
-                new EjbFacadeWizardPanel2(project, wizard)
+                        new EjbFacadeWizardPanel2(project, wizard)
             };
             if (steps == null) {
                 mergeSteps(new String[] {

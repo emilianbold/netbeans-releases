@@ -7,11 +7,6 @@
 
 package org.netbeans.modules.j2ee.persistence.action;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.PrintStream;
-import junit.framework.TestCase;
 import junit.framework.*;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -22,8 +17,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.jackpot.test.TestUtilities;
-import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.j2ee.persistence.sourcetestsupport.SourceTestSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -31,7 +25,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Erno Mononen
  */
-public abstract class EntityManagerGenerationTestSupport  extends EntityManagerGeneratorTestSupport{
+public abstract class EntityManagerGenerationTestSupport  extends SourceTestSupport{
     
     public EntityManagerGenerationTestSupport(String testName){
         super(testName);

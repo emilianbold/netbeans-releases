@@ -19,23 +19,12 @@
 
 package org.netbeans.modules.j2ee.persistence.action;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
-import java.io.PrintStream;
-import junit.framework.TestCase;
 import junit.framework.*;
 import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.Tree;
-import java.io.IOException;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.jackpot.test.TestUtilities;
-import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
