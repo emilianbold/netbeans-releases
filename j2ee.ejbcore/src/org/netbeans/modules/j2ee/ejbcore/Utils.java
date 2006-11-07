@@ -37,6 +37,7 @@ import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Element;
@@ -46,6 +47,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -418,6 +420,30 @@ public class Utils {
     public static ExecutableElement getMethodFromNode(Node node) {
         //TODO: RETOUCHE ExecutableElement from Node
         return null;
+    }
+    
+    public static ExecutableElement[] getMethods(EjbMethodController c, boolean checkLocal, boolean checkRemote) {
+        List<ExecutableElement> methods = new ArrayList<ExecutableElement>();
+        List features;
+        for (ExecutableElement method : ElementFilter.methodsIn(c.getBeanClass().getEnclosedElements())) {
+            methods.add(method);
+        }
+        if (checkLocal) {
+            for (TypeElement interfaceCE : c.getLocalInterfaces()) {
+                for (ExecutableElement method : ElementFilter.methodsIn(interfaceCE.getEnclosedElements())) {
+                    methods.add(method);
+                }
+            }
+        }
+        if (checkRemote) {
+            for (TypeElement interfaceCE : c.getRemoteInterfaces()) {
+                for (ExecutableElement method : ElementFilter.methodsIn(interfaceCE.getEnclosedElements())) {
+                    methods.add(method);
+                }
+            }
+        }
+        ExecutableElement[] methodsArray = methods.toArray(new ExecutableElement[methods.size()]);
+        return methodsArray;
     }
     
 }

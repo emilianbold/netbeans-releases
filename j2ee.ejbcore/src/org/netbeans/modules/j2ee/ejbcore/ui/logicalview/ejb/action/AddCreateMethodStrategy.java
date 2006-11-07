@@ -19,9 +19,7 @@
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 import javax.lang.model.element.TypeElement;
-import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType;
-import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.MethodsNode;
 import org.openide.util.NbBundle;
 
 
@@ -49,7 +47,7 @@ public class AddCreateMethodStrategy extends AbstractAddMethodStrategy {
 
     //TODO: RETOUCHE
 //    protected MethodCustomizer createDialog(MethodType pType, EjbMethodController c) {
-//        Method[] methodElements = org.netbeans.modules.j2ee.ejbcore.ui.logicalview.Utils.getMethods(c, true, false);
+//        Method[] methodElements = Utils.getMethods(c, true, false);
 //	MethodsNode methodsNode = getMethodsNode();
 //	boolean local = methodsNode == null ? c.hasLocal() : (methodsNode.isLocal() && c.hasLocal());
 //	boolean remote = methodsNode == null ? c.hasRemote() : (!methodsNode.isLocal() && c.hasRemote());

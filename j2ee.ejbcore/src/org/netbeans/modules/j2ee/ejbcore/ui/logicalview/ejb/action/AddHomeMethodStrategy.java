@@ -19,10 +19,7 @@
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 import javax.lang.model.element.TypeElement;
-import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.Utils;
-import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType;
-import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.MethodsNode;
 import org.openide.util.NbBundle;
 
 
