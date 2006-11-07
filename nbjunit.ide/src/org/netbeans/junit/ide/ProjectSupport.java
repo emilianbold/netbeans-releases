@@ -53,7 +53,7 @@ public class ProjectSupport {
      * @return Project instance of opened project
      */
     public static Object openProject(File projectDir) {
-        final ProjectOpenListener listener = new ProjectOpenListener();
+        final ProjectListListener listener = new ProjectListListener();
         try {
             // open project
             final Project project = OpenProjectList.fileToProject(projectDir);
@@ -76,7 +76,7 @@ public class ProjectSupport {
             // too early and finishes immediatelly.
             Thread waitThread = new Thread(new Runnable() {
                 public void run() {
-                    while(!listener.projectOpened) {
+                    while (!listener.projectListChanged) {
                         try {
                             Thread.sleep(50);
                         } catch (Exception e) {
@@ -159,14 +159,42 @@ public class ProjectSupport {
         for(int i=0;i<projects.length;i++) {
             final Project project = projects[i];
             if(ProjectUtils.getInformation(project).getDisplayName().equals(name) ||
-               ProjectUtils.getInformation(project).getName().equals(name)) {
+                    ProjectUtils.getInformation(project).getName().equals(name)) {
+                final ProjectListListener listener = new ProjectListListener();
                 // posting the to AWT event thread
                 Mutex.EVENT.writeAccess(new Runnable() {
                     public void run() {
                         discardChanges(project);
+                        OpenProjectList.getDefault().addPropertyChangeListener(listener);
                         OpenProjectList.getDefault().close(new Project[] {project}, true);
                     }
                 });
+                // WAIT PROJECT CLOSED - start
+                Thread waitThread = new Thread(new Runnable() {
+                    public void run() {
+                        while (!listener.projectListChanged) {
+                            try {
+                                Thread.sleep(50);
+                            }
+                            catch (Exception e) {
+                                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+                            }
+                        }
+                    }
+                });
+                waitThread.start();
+                try {
+                    waitThread.join(60000L);  // wait 1 minute at the most
+                } catch (InterruptedException iex) {
+                    ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, iex);
+                }
+                if (waitThread.isAlive()) {
+                    // time-out expired, project not opened -> interrupt the wait thread
+                    ErrorManager.getDefault().log(ErrorManager.USER, "Project not closed in 60 second.");
+                    waitThread.interrupt();
+                    return false;
+                }
+                // WAIT PROJECT CLOSED - end
                 return true;
             }
         }
@@ -194,20 +222,19 @@ public class ProjectSupport {
     public static void waitScanFinished() {
         try {
             SourceUtils.waitScanFinished();
-        }
-        catch (InterruptedException ex) {
+        } catch (InterruptedException ex) {
             ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
         }
     }
-
+    
     /** Listener for project open. */
-    static class ProjectOpenListener implements PropertyChangeListener {
-        public boolean projectOpened = false;
+    static class ProjectListListener implements PropertyChangeListener {
+        public boolean projectListChanged = false;
         
         /** Listen for property which changes when project is hopefully opened. */
         public void propertyChange(PropertyChangeEvent evt) {
             if(OpenProjectList.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName())) {
-                projectOpened = true;
+                projectListChanged = true;
             }
         }
     }
