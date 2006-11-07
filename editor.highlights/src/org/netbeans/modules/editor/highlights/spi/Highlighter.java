@@ -19,8 +19,10 @@
 package org.netbeans.modules.editor.highlights.spi;
 
 import java.util.Collection;
+import java.util.ArrayList;
 import org.netbeans.modules.editor.highlights.HighlighterImpl;
 import org.openide.filesystems.FileObject;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -34,12 +36,19 @@ public final class Highlighter {
         return INSTANCE;
     }
 
+    private RequestProcessor WORKER = new RequestProcessor("Highlighter worker");
+
     /** Creates a new instance of Highlighter */
     private Highlighter() {
     }
 
-    public void setHighlights(FileObject fo, String type, Collection/*<Highlight>*/ highlights) {
-        HighlighterImpl.getDefault().setHighlights(fo, type, highlights);
+    public void setHighlights(final FileObject fo, final String type, Collection/*<Highlight>*/ highlights) {
+        final Collection highlightsCopy = new ArrayList(highlights);
+        WORKER.post(new Runnable() {
+            public void run() {
+                HighlighterImpl.getDefault().setHighlights(fo, type, highlightsCopy);
+            }
+        });
     }
     
 }

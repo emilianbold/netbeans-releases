@@ -129,7 +129,7 @@ public final class HighlighterImpl implements PropertyChangeListener, ChangeList
         return components;
     }
     
-    public void setHighlights(FileObject fo, String type, Collection/*<Highlight>*/ highlights) {
+    public synchronized void setHighlights(FileObject fo, String type, Collection/*<Highlight>*/ highlights) {
 //        for (JTextComponent c : getComponents(fo)) {
         for (Iterator i = getComponents(fo).iterator(); i.hasNext(); ) {
             JTextComponent c = (JTextComponent) i.next();

@@ -113,9 +113,11 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener 
                 
                 if (panes == null) {
                     //clear all:
-                    layer2Annotations = new HashMap<String, List<Annotation>>();
-                    annotations2Lines = new HashMap<Annotation, Integer>();
-                    openedComponents = new HashSet<JEditorPane>();
+                    synchronized (AnnotationHolder.this) {
+                        layer2Annotations = new HashMap<String, List<Annotation>>();
+                        annotations2Lines = new HashMap<Annotation, Integer>();
+                        openedComponents = new HashSet<JEditorPane>();
+                    }
                     return ;
                 }
                 
