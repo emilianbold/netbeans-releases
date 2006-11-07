@@ -21,9 +21,8 @@ package org.netbeans.modules.java.source.usages;
 
 import java.io.IOException;
 import java.util.Set;
-import javax.lang.model.element.TypeElement;
-import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ClassIndex;
+import org.netbeans.api.java.source.JavaSource;
 import org.openide.filesystems.FileObject;
 
 /** Should probably final class with private constructor.
@@ -66,6 +65,8 @@ public abstract class ClassIndexImpl {
     public abstract BinaryAnalyser getBinaryAnalyser ();
     
     public abstract SourceAnalyser getSourceAnalyser ();
+    
+    public abstract void setDirty (JavaSource js);
     
     protected abstract void close () throws IOException;
     

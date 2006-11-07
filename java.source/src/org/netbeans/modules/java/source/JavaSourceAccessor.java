@@ -54,6 +54,29 @@ public abstract class JavaSourceAccessor {
         
     public abstract JavacTaskImpl createJavacTask(ClasspathInfo cpInfo, DiagnosticListener<? super JavaFileObject> diagnosticListener, String sourceLevel);
     
-    public abstract void revalidate(JavaSource js);    
+    
+    /**
+     * Returns the JavacTaskImpl associated with given {@link CompilationInfo},
+     * when it's not available it's created.
+     * @param compilationInfo which {@link JavacTaskImpl} should be obtained.
+     * @return {@link JavacTaskImpl} never returns null
+     */
+    public abstract JavacTaskImpl getJavacTask (CompilationInfo compilationInfo);
+    
+    /**
+     * Returns a cached compilation info when available or null
+     * @param js {@link JavaSource} which {@CompilationInfo} should be returned
+     * @return {@link CompilationInfo} or null
+     */
+    public abstract CompilationInfo getCurrentCompilationInfo (JavaSource js);
+    
+    public abstract void revalidate(JavaSource js); 
+    
+    
+    /**
+     * Returns true when the caller is a {@link JavaSource} worker thread
+     * @return boolean
+     */
+    public abstract boolean isDispatchThread ();
     
 }

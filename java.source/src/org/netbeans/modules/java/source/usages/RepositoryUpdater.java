@@ -932,6 +932,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             assert "file".equals(root.getProtocol()) : "Unexpected protocol of URL: " + root;   //NOI18N
             final ClassIndexImpl uqImpl = ClassIndexManager.getDefault().createUsagesQuery(root, true);
             if (uqImpl != null) {
+                uqImpl.setDirty(null);
                 ClasspathInfo cpInfo = ClasspathInfo.create (fo);
                 final File rootFile = FileUtil.normalizeFile(new File (URI.create(root.toExternalForm())));
                 final File fileFile = FileUtil.toFile(fo);

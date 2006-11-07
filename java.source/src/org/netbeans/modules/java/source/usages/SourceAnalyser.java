@@ -134,7 +134,22 @@ public class SourceAnalyser {
                 ru.add (DocumentUtil.encodeUsage(ue.getKey(),ue.getValue()));
             }
         }
-    }        
+    }
+    
+    void analyse (final CompilationUnitTree cu, final JavacTaskImpl jt) throws IOException {
+        final Map<String,Map<String,Set<ClassIndexImpl.UsageType>>> usages = new HashMap<String,Map<String,Set<ClassIndexImpl.UsageType>>> ();
+        UsagesVisitor uv = new UsagesVisitor (jt, cu);
+        uv.scan(cu,usages);
+        for (Map.Entry<String,Map<String,Set<ClassIndexImpl.UsageType>>> oe : usages.entrySet()) {            
+            String className = oe.getKey();
+            List<String> ru = getClassReferences (className);
+            Map<String,Set<ClassIndexImpl.UsageType>> oeValue = oe.getValue();
+            for (Map.Entry<String,Set<ClassIndexImpl.UsageType>> ue : oeValue.entrySet()) {
+                ru.add (DocumentUtil.encodeUsage(ue.getKey(),ue.getValue()));
+            }
+            toDelete.add(className.substring(0, className.length()-1));
+        }
+    }
     
     public void delete (final String className) throws IOException {
         if (!this.index.isValid()) {
@@ -177,6 +192,7 @@ public class SourceAnalyser {
         private final Types types;
         private final javax.tools.JavaFileObject sibling;
         private final String sourceName;
+        private final boolean signatureFiles;
         private State state;        
         private Element enclosingElement = null;
         private Set<String> rsList;
@@ -193,14 +209,12 @@ public class SourceAnalyser {
             this.state = State.OTHER;
             this.types = com.sun.tools.javac.code.Types.instance(jt.getContext());
             this.cu = cu;
+            this.signatureFiles = true;
             this.manager = manager;
             this.sibling = sibling;
             this.sourceName = this.manager.inferBinaryName(StandardLocation.SOURCE_PATH, this.sibling);
         }
-        
-        /** 
-         * For unit tests
-         */
+                
         protected UsagesVisitor (JavacTaskImpl jt, CompilationUnitTree cu) {
             assert jt != null;
             assert cu != null;           
@@ -211,6 +225,7 @@ public class SourceAnalyser {
             this.state = State.OTHER;
             this.types = com.sun.tools.javac.code.Types.instance(jt.getContext());
             this.cu = cu;
+            this.signatureFiles = false;
             this.manager = null;
             this.sibling = null;
             this.sourceName = "";   //NOI18N
@@ -313,7 +328,7 @@ public class SourceAnalyser {
         }
         
         protected boolean shouldGenerate (final String binaryName, ClassSymbol sym) {
-            if (binaryName == null) {
+            if (!signatureFiles || binaryName == null) {
                 return false;
             }
             if  (sym.getQualifiedName().isEmpty()) {
@@ -379,7 +394,7 @@ public class SourceAnalyser {
                     className = classNameBuilder.toString();
                     classNameBuilder.append(DocumentUtil.encodeKind(sym.getKind()));
                     final String classNameType = classNameBuilder.toString();                                        
-                    if (activeClass.size() == 0 && !className.equals(sourceName)) {
+                    if (signatureFiles && activeClass.size() == 0 && !className.equals(sourceName)) {
                         rsList = new HashSet<String>();
                     }
                     activeClass.push (classNameType);

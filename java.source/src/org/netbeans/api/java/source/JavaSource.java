@@ -71,6 +71,7 @@ import javax.tools.JavaFileObject;
 import javax.tools.ToolProvider;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.queries.SourceLevelQuery;
+import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.api.timers.TimesCollector;
 import org.netbeans.editor.Registry;
@@ -79,6 +80,8 @@ import org.netbeans.modules.java.builder.Builder2;
 import org.netbeans.modules.java.builder.Scanner;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.parsing.FileObjects;
+import org.netbeans.modules.java.source.usages.ClassIndexImpl;
+import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.util.LowMemoryEvent;
 import org.netbeans.modules.java.source.util.LowMemoryListener;
 import org.netbeans.modules.java.source.util.LowMemoryNotifier;
@@ -162,6 +165,7 @@ public final class JavaSource {
     private static final int INVALID = 1;
     private static final int CHANGE_EXPECTED = INVALID<<1;
     private static final int RESCHEDULE_FINISHED_TASKS = CHANGE_EXPECTED<<1;
+    private static final int UPDATE_INDEX = RESCHEDULE_FINISHED_TASKS<<1;
     
     /**Slow task reporting*/
     private static final boolean reportSlowTasks = Boolean.getBoolean("org.netbeans.api.java.source.JavaSource.reportSlowTasks");   //NOI18N
@@ -209,10 +213,11 @@ public final class JavaSource {
     private final static ReentrantLock javacLock = new ReentrantLock (true);
     
     private final Collection<FileObject> files;
+    private final FileObject rootFo;
     private final FileChangeListener fileChangeListener;
     private DocListener listener;
     
-    private ClasspathInfo classpathInfo;
+    private final ClasspathInfo classpathInfo;    
     private CompilationInfo currentInfo;    
         
     private int flags = 0;        
@@ -335,7 +340,13 @@ public final class JavaSource {
                 }
             }
         }
-	this.classpathInfo = cpInfo;
+        this.classpathInfo = cpInfo;        
+        if (files.size() == 1) {
+            this.rootFo = classpathInfo.getClassPath(PathKind.SOURCE).findOwnerRoot(files.iterator().next());
+        }
+        else {
+            this.rootFo = null;
+        }
         this.classpathInfo.addChangeListener(WeakListeners.change(this.listener, this.classpathInfo));
     }
     
@@ -357,15 +368,15 @@ public final class JavaSource {
         
         assert !holdsDocumentWriteLock(files) : "JavaSource.runCompileControlTask called under Document write lock.";    //NOI18N
         
-        if (this.files.size()<=1) {
+        if (this.files.size()<=1) {            
             CompilationInfo currentInfo = null;
-            synchronized (this) {
+            synchronized (this) {                        
                 if (this.currentInfo != null && (this.flags & INVALID)==0) {
-                    currentInfo = this.currentInfo;
+                            currentInfo = this.currentInfo;
                 }
                 if (!shared) {
                     this.flags|=INVALID;
-                }
+                }                        
             }
             if (currentInfo == null) {
                 currentInfo = createCurrentInfo(this,this.files.isEmpty() ? null : this.files.iterator().next(), null);                
@@ -394,7 +405,7 @@ public final class JavaSource {
                     IOException ioe = new IOException ();
                     ioe.initCause(e);
                     throw ioe;
-                } finally {
+                } finally {                    
                     this.javacLock.unlock();
                 }
             } finally {
@@ -642,7 +653,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
      * probably doing something incorrect.
      */
     void revalidate () {
-	this.resetState(true);
+        this.resetState(true, false);
     }
     
     /**
@@ -854,11 +865,14 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         }
     });
     
-    private void resetState(boolean invalidate) {
+    private void resetState(boolean invalidate, boolean updateIndex) {
         synchronized (this) {
             this.flags|=CHANGE_EXPECTED;
             if (invalidate) {
                 this.flags|=(INVALID|RESCHEDULE_FINISHED_TASKS);
+            }
+            if (updateIndex) {
+                this.flags|=UPDATE_INDEX;
             }
         }
         Request r = currentRequest.getTaskToCancel (this);
@@ -879,10 +893,19 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
      */
     private void resetStateImpl() {
         synchronized (JavaSource.class) {
-            boolean reschedule;
+            boolean reschedule, updateIndex;
             synchronized (this) {
                 reschedule = (this.flags & RESCHEDULE_FINISHED_TASKS) != 0;
-                this.flags&=~(RESCHEDULE_FINISHED_TASKS|CHANGE_EXPECTED);
+                updateIndex = (this.flags & UPDATE_INDEX) != 0;
+                this.flags&=~(RESCHEDULE_FINISHED_TASKS|CHANGE_EXPECTED|UPDATE_INDEX);
+            }            
+            if (updateIndex && this.rootFo != null) {
+                try {
+                    ClassIndexImpl ciImpl = ClassIndexManager.getDefault().getUsagesQuery(this.rootFo.getURL());                
+                    ciImpl.setDirty(this);
+                } catch (IOException ioe) {
+                    Exceptions.printStackTrace(ioe);
+                }
             }
             Collection<Request> cr;            
             if (reschedule) {                
@@ -1142,14 +1165,14 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             //Has to reset cache asynchronously
             //the callback cannot be in synchronized section
             //since NbDocument.runAtomic fires under lock
-            JavaSource.this.resetState(true);
+            JavaSource.this.resetState(true, true);
         }
 
         public void removeUpdate(DocumentEvent e) {
             //Has to reset cache asynchronously
             //the callback cannot be in synchronized section
             //since NbDocument.runAtomic fires under lock
-            JavaSource.this.resetState(true);
+            JavaSource.this.resetState(true, true);
         }
 
         public void changedUpdate(DocumentEvent e) {
@@ -1170,7 +1193,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         }
 
         public void stateChanged(ChangeEvent e) {
-	    JavaSource.this.resetState(true);
+            JavaSource.this.resetState(true, false);
         }
         
     }
@@ -1202,7 +1225,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                 if (doc != null) {
                     JavaSource js = forDocument(doc);
                     if (js != null) {
-                        js.resetState(false);
+                        js.resetState(false, false);
                     }
                 }
             }
@@ -1212,11 +1235,11 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
     private class FileChangeListenerImpl extends FileChangeAdapter {                
         
         public @Override void fileChanged(final FileEvent fe) {
-            JavaSource.this.resetState(true);
+            JavaSource.this.resetState(true, false);
         }        
 
         public @Override void fileRenamed(FileRenameEvent fe) {
-            JavaSource.this.resetState(true);
+            JavaSource.this.resetState(true, false);
         }        
     }
         
@@ -1267,10 +1290,27 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                 sourceLevel = JavaPlatformManager.getDefault().getDefaultPlatform().getSpecification().getVersion().toString();
             return JavaSource.createJavacTask(cpInfo, diagnosticListener, sourceLevel, true);
         }
+        
+        @Override
+        public JavacTaskImpl getJavacTask (final CompilationInfo compilationInfo) {
+            assert compilationInfo != null;
+            return compilationInfo.getJavacTask();
+        }
+        
+        @Override
+        public CompilationInfo getCurrentCompilationInfo (final JavaSource js) {
+            assert js != null;
+            return js.currentInfo;
+        }
 
         @Override
         public void revalidate(JavaSource js) {
             js.revalidate();
+        }
+        
+        @Override
+        public boolean isDispatchThread () {
+            return factory.isDispatchThread(Thread.currentThread());
         }
     }
     
