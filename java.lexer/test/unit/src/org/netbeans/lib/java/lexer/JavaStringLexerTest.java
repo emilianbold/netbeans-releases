@@ -46,7 +46,7 @@ public class JavaStringLexerTest extends NbTestCase {
     }
     
     public void testNextToken2() {
-        String text = "\\t\\b\\b\\t \\tsddfdsffffffffff";
+        String text = "\\t\\b\\b\\t \\tabc\\rsddfdsffffffffff";
         
         TokenHierarchy hi = TokenHierarchy.create(text, JavaStringTokenId.language());
         TokenSequence ts = hi.tokenSequence();
@@ -56,6 +56,8 @@ public class JavaStringLexerTest extends NbTestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, JavaStringTokenId.TAB, "\\t");
         LexerTestUtilities.assertNextTokenEquals(ts, JavaStringTokenId.TEXT, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, JavaStringTokenId.TAB, "\\t");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavaStringTokenId.TEXT, "abc");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavaStringTokenId.CR, "\\r");
         LexerTestUtilities.assertNextTokenEquals(ts, JavaStringTokenId.TEXT, "sddfdsffffffffff");
     }
     

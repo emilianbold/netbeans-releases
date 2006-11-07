@@ -73,6 +73,8 @@ public class JavaStringLexer implements Lexer<JavaStringTokenId> {
                             return token(JavaStringTokenId.FORM_FEED);
                         case 'n':
                             return token(JavaStringTokenId.NEWLINE);
+                        case 'r':
+                            return token(JavaStringTokenId.CR);
                         case 't':
                             return token(JavaStringTokenId.TAB);
                         case '\'':
