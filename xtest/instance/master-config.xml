@@ -56,7 +56,6 @@ Microsystems, Inc. All Rights Reserved.
         <module name="java/freeform" testtypes="unit" attributes="stable"/>
         <module name="java/j2seplatform" testtypes="unit" attributes="stable"/>
         <module name="java/j2seproject" testtypes="unit" attributes="stable"/>
-        <module name="java/javacore" testtypes="unit" attributes="full"/>
         <module name="java/platform" testtypes="unit" attributes="stable"/>
         <module name="java/project" testtypes="unit" attributes="stable"/>
         <module name="projects/projectui" testtypes="unit" attributes="stable"/>
