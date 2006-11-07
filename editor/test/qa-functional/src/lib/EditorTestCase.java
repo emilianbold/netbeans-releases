@@ -56,12 +56,12 @@ public class EditorTestCase extends JellyTestCase {
     
     /** Default name of project is used if not specified in openProject method. */
     private String defaultProjectName = "editor_test";
-    private String defaultSamplePackage = "test";
+    private String defaultSamplePackage = "dummy";
     private String defaultSampleName = "sample1";
 
     private static final char treeSeparator = '|';
-    private final String defaultPackageNameTreePath = "Source packages"+treeSeparator+"test";
-    private final String defaultFileName = "sampel1";
+    private final String defaultPackageNameTreePath = "Source packages"+treeSeparator+"dummy";
+    private final String defaultFileName = "sample1";
     private String projectName = null;
     private String treeSubPackagePathToFile = null;
     private String fileName = null;
@@ -107,10 +107,10 @@ public class EditorTestCase extends JellyTestCase {
     /** Open project. Before opening the project is checked opened projects.
      * @param projectName is name of the project stored in .../editor/test/qa-functional/data/ directory.
      */
-    public void openProject(String projectName) {
+    public void openProject(String projectName) {        
         this.projectName = projectName;
         File projectPath = new File(this.getDataDir() + "/projects", projectName);
-        log("data dir = "+this.getDataDir().toString());
+        log("data dir = "+this.getDataDir().toString());        
         
         /* 1. check if project is open  */
         ProjectsTabOperator pto = new ProjectsTabOperator();
@@ -118,15 +118,15 @@ public class EditorTestCase extends JellyTestCase {
         boolean isOpen = true;
         try {
             JemmyProperties.setCurrentTimeout("JTreeOperator.WaitNextNodeTimeout", OPENED_PROJECT_ACCESS_TIMEOUT); 
-            ProjectRootNode prn = pto.getProjectRootNode(projectName);
+            ProjectRootNode prn = pto.getProjectRootNode(projectName);            
         } catch (TimeoutExpiredException ex) {
             // This excpeiton is ok, project is not open;
-            //ex.printStackTrace();
+            //ex.printStackTrace();            
             isOpen = false;
         }
         
         if ( isOpen ) {
-            log("Project is open!");
+            log("Project is open!");            
             return;
         }
         
@@ -186,7 +186,7 @@ public class EditorTestCase extends JellyTestCase {
     
     /** Open file in open project
      *  @param treeSubPath e.g. "Source Packages|test","sample1" */
-    public void openFile(String treeSubPackagePathToFile, String fileName) {
+    public void openFile(String treeSubPackagePathToFile, String fileName) {        
         // debug info, to be removed
         this.treeSubPackagePathToFile = treeSubPackagePathToFile;
         ProjectsTabOperator pto = new ProjectsTabOperator();
@@ -196,22 +196,22 @@ public class EditorTestCase extends JellyTestCase {
         
         // fix of issue #51191
         // each of nodes is checked by calling method waitForChildNode 
-        // before they are actually opened
+        // before they are actually opened              
         StringTokenizer st = new StringTokenizer(treeSubPackagePathToFile, 
                 treeSeparator+"");
         String token = "";
         String oldtoken = "";
-        // if there are more then one tokens process each of them
+        // if there are more then one tokens process each of them        
         if (st.countTokens()>1) {
             token = st.nextToken();
             String fullpath = token;
             while (st.hasMoreTokens()) {            
-                token = st.nextToken();
+                token = st.nextToken();                        
                 waitForChildNode(fullpath, token);
                 fullpath += treeSeparator+token;
             }
         } 
-        // last node
+        // last node        
         waitForChildNode(treeSubPackagePathToFile, fileName);
         // end of fix of issue #51191
         
@@ -225,11 +225,11 @@ public class EditorTestCase extends JellyTestCase {
      * @param parentPath full path for parent, | used as a delimiter
      * @param childName name of the child node
      */
-    public void waitForChildNode(String parentPath, String childName) {
-        ProjectsTabOperator pto = new ProjectsTabOperator();
+    public void waitForChildNode(String parentPath, String childName) {        
+        ProjectsTabOperator pto = new ProjectsTabOperator();        
         ProjectRootNode prn = pto.getProjectRootNode(projectName);
         prn.select();
-        Node parent = new Node(prn, parentPath);
+        Node parent = new Node(prn, parentPath);        
         final String finalFileName = childName;
         try {
             // wait for max. 30 seconds for the file node to appear
@@ -319,7 +319,7 @@ public class EditorTestCase extends JellyTestCase {
      * @param srcName source name without suffix.
      */
     protected void openSourceFile(String dir, String srcName) {
-        openFile("Source packages|" + dir, srcName);
+        openFile(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.java.j2seproject.Bundle", "NAME_src.dir")+treeSeparator+dir, srcName);
     }
     
     protected final String getDefaultSamplePackage() {
@@ -330,7 +330,7 @@ public class EditorTestCase extends JellyTestCase {
         return defaultSampleName;
     }
 
-    protected void openDefaultSampleFile() {
+    protected void openDefaultSampleFile() {    
         openSourceFile(defaultSamplePackage, defaultSampleName);
     }
 

@@ -100,4 +100,6 @@ Microsystems, Inc. All Rights Reserved.
         </executeTests>
     </target>
     
+    <property name="xtest.ide.open.project" location="${xtest.data}/projects/editor_test"/>
+    
 </project>

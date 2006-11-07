@@ -24,6 +24,8 @@
  */
 
 package lib;
+import junit.textui.TestRunner;
+import org.netbeans.junit.NbTestSuite;
 
 /**
  * Dummy test that just tries to open the default project.
@@ -40,9 +42,16 @@ public class DummyTest extends EditorTestCase {
     public DummyTest() {
         super("test");
     }
-
+       
     public void test() {
-        openDefaultProject();
+        openDefaultProject();      
+        openSourceFile("dummy","sample1");
+        
+    }
+    
+    public static void main(String[] args) {
+        TestRunner.run(new NbTestSuite(DummyTest.class));
     }
 
+  
 }
