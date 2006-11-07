@@ -33,14 +33,6 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Custom properties -->
     <property name="xtest.tmpdir.createproject" location="${xtest.tmpdir}/createdProjects"/>
 
-
-    <!-- ==================== -->
-    <!-- Setting command line -->
-    <!-- ==================== -->
-    <!-- Command line is created from this property and xtest.perf.commandline.suffix which can be set from command line of xtest -->
-    <property name="ide.commandline.suffix" value="-J-Dorg.netbeans.performance.repeat=5 -J-Dorg.netbeans.performance.memory.usage.log=true"/>
-    
-    
     <!-- ================ -->
     <!-- Global Executors -->
     <!-- ================ -->
@@ -89,6 +81,7 @@ Microsystems, Inc. All Rights Reserved.
                 <path location="${extra.test.libs.dir}"/>
             </classpath>
             
+            <property name="xtest.ide.commandline.suffix" value="-J-Dorg.netbeans.performance.repeat=5 -J-Dorg.netbeans.performance.memory.usage.log=true"/>
             <property name="xtest.enable.assertions" value="false" /> 
             <property name="xtest.ide.reuse.userdir" value="true" />
             <property name="xtest.timeout" value="3600000" />
@@ -110,6 +103,31 @@ Microsystems, Inc. All Rights Reserved.
 
             <property name="xtest.enable.assertions" value="false" />
             <property name="xtest.timeout" value="3600000" />
+        </executeTests>
+        
+        <antcall target="copy_original_ide_cfg_file"/>
+    </target>
+    
+    
+    <target name="runidetest_footprint" depends="prepare_measure_footprint, ide_command_line_suffix, init-cp">
+        <antcall target="copy_unzip_jedit_project"/>
+        <antcall target="copy_released_ide_cfg_file"/>
+       
+        <property name="test.qa-functional.run.cp.extra" value=""/>
+        
+    
+        <executeTests pluginName="ide">
+            <classpath>
+                <path refid="jemmy.and.jelly.path"/>
+                <path location="${test.qa-functional.run.cp.extra}"/>
+            </classpath>
+            
+            <property name="xtest.ide.commandline.suffix" value="-J-Dperformance.footprint.jedit.location=${xtest.tmpdir}/jEdit41 -J-Dorg.netbeans.performance.memory.repeat=1 -J-Dorg.netbeans.performance.memory.usage.log=true"/>
+            <property name="xtest.enable.assertions" value="false" /> 
+            <property name="xtest.timeout" value="3600000" />
+            <property name="xtest.test.duration" value="60min" />
+            <property name="xtest.test.timeout" value="3600000" />
+            <property name="xtest.test.one-test-timeout" value="60min" />
         </executeTests>
         
         <antcall target="copy_original_ide_cfg_file"/>
@@ -147,5 +165,19 @@ Microsystems, Inc. All Rights Reserved.
             </classpath>
         </internalExecution>
     </target>
+
+    
+    <!-- ========= -->
+    <!-- Utils     -->
+    <!-- ========= -->
+    
+    <!-- Prepare utils to be available from IDE during test -->    
+    <target name="prepare_measure_footprint">
+        <copy file="${nbextra.qa.performance.dist.dir}/pslist.exe" tofile="${xtest.tmpdir}/pslist.exe" />
+        <copy file="${nbextra.qa.performance.dist.dir}/measure_footprint" tofile="${xtest.tmpdir}/measure_footprint" />
+        <chmod perm="ugo+rx" file="${xtest.tmpdir}/measure_footprint"/>
+    </target>
+
+    
     
 </project>
