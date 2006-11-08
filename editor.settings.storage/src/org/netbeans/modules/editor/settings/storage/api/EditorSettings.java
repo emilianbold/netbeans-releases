@@ -24,6 +24,7 @@ import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.text.AttributeSet;
 import org.netbeans.modules.editor.settings.storage.EditorSettingsImpl;
 
 
@@ -36,20 +37,19 @@ import org.netbeans.modules.editor.settings.storage.EditorSettingsImpl;
 public abstract class EditorSettings {
 
 
-    private static WeakReference editorSettings;
+    private static WeakReference<EditorSettings> editorSettings;
 
     /**
      * Returns default instance of EditorSettings.
      *
      * @return default instance of EditorSettings
      */
-    public static EditorSettings getDefault () {
-        if (editorSettings != null) {
-            EditorSettings es = (EditorSettings) editorSettings.get ();
-            if (es != null) return es;
+    public static synchronized EditorSettings getDefault () {
+        EditorSettings es = editorSettings == null ? null : editorSettings.get();
+        if (es == null) {
+            es = new EditorSettingsImpl();
+            editorSettings = new WeakReference<EditorSettings>(es);
         }
-        EditorSettings es = new EditorSettingsImpl ();
-        editorSettings = new WeakReference (es);
         return es;
     }
     
@@ -58,7 +58,7 @@ public abstract class EditorSettings {
      *
      * @return set of mimetypes
      */
-    public abstract Set /*<String>*/ getMimeTypes ();
+    public abstract Set<String> getMimeTypes ();
     
     /**
      * Returns name of language for given mime type.
@@ -83,7 +83,7 @@ public abstract class EditorSettings {
      *
      * @return set of font & colors profiles
      */
-    public abstract Set /*<String>*/ getFontColorProfiles ();
+    public abstract Set<String> getFontColorProfiles ();
     
     /**
      * Returns true for user defined profile.
@@ -114,7 +114,7 @@ public abstract class EditorSettings {
      * @param profile a profile name
      * @return font & color defaults for given profile or null
      */
-    public abstract Collection /*<AttributeSet>*/ getDefaultFontColors (
+    public abstract Collection<AttributeSet> getDefaultFontColors (
 	String profile
     );
     
@@ -125,7 +125,7 @@ public abstract class EditorSettings {
      * @param profile a profile name
      * @return font & color defaults for given profile or null
      */
-    public abstract Collection /*<AttributeSet>*/ getDefaultFontColorDefaults (
+    public abstract Collection<AttributeSet> getDefaultFontColorDefaults (
 	String profile
     );
     
@@ -137,7 +137,7 @@ public abstract class EditorSettings {
      */
     public abstract void setDefaultFontColors (
 	String profile,
-	Collection /*<AttributeSet>*/ fontColors
+	Collection<AttributeSet> fontColors
     );
     
     /**
@@ -147,7 +147,7 @@ public abstract class EditorSettings {
      * @param profile a profile name
      * @return highlighting properties for given profile or null
      */
-    public abstract Map getHighlightings (
+    public abstract Map<String, AttributeSet> getHighlightings (
 	String profile
     );
     
@@ -158,7 +158,7 @@ public abstract class EditorSettings {
      * @param profile a profile name
      * @return highlighting properties for given profile or null
      */
-    public abstract Map getHighlightingDefaults (
+    public abstract Map<String, AttributeSet> getHighlightingDefaults (
 	String profile
     );
     
@@ -170,7 +170,7 @@ public abstract class EditorSettings {
      */
     public abstract void setHighlightings (
 	String profile,
-	Map highlightings
+	Map<String, AttributeSet> highlightings
     );
     
     /**
@@ -199,7 +199,7 @@ public abstract class EditorSettings {
      *
      * @return set of font & colors profiles
      */
-    public abstract Set /*<String>*/ getKeyMapProfiles ();
+    public abstract Set<String> getKeyMapProfiles ();
     
     /**
      * Returns true for user defined profile.

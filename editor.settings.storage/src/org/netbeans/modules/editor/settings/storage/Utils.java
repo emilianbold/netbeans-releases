@@ -21,13 +21,11 @@ package org.netbeans.modules.editor.settings.storage;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Hashtable;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 import javax.swing.KeyStroke;
-import javax.swing.text.AttributeSet;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -44,24 +42,26 @@ import org.openide.util.Utilities;
  */
 public class Utils {
     
-    static String keyStrokesToString (List /*<KeyStroke[]>*/ keys) {
+    static String keyStrokesToString (Collection<KeyStroke> keys) {
         StringBuffer sb = new StringBuffer ();
-        Iterator it = keys.iterator ();
+        
+        Iterator<KeyStroke> it = keys.iterator();
         if (it.hasNext ()) {
-            sb.append (Utilities.keyToString ((KeyStroke) it.next ()));
+            sb.append(Utilities.keyToString(it.next()));
             //S ystem.out.println("2 " + keys [0] + ">" + Utilities.keyToString (keys [0]));
-            while (it.hasNext ()) {
+            while (it.hasNext()) {
                 sb.append ('$').
-                    append (Utilities.keyToString ((KeyStroke) it.next ()));
+                    append(Utilities.keyToString(it.next()));
                 //S ystem.out.println("2 " + keys [i] + ">" + Utilities.keyToString (keys [i]));
             }
         }
+        
         return sb.toString ();
     }
     
     static KeyStroke[] stringToKeyStrokes (String key) {
         StringTokenizer st = new StringTokenizer (key, "$");
-        List result = new ArrayList ();
+        List<KeyStroke> result = new ArrayList<KeyStroke>();
         key = null;
         while (st.hasMoreTokens ()) {
             String ks = st.nextToken ().trim ();
@@ -76,10 +76,9 @@ public class Utils {
 //                key = Utilities.keyToString (keyStroke);
 //            else
 //                key += "$" + Utilities.keyToString (keyStroke);
-            result.add (keyStroke);
+            result.add(keyStroke);
         }
-        return (KeyStroke[]) result.toArray 
-            (new KeyStroke [result.size ()]);
+        return result.toArray(new KeyStroke[result.size ()]);
     }
     
     static FileObject getFileObject (

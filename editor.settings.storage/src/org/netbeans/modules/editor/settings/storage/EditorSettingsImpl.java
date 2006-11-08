@@ -23,20 +23,17 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.Set;
 import javax.swing.text.AttributeSet;
-import javax.swing.text.StyleConstants;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.netbeans.modules.editor.settings.storage.api.FontColorSettingsFactory;
 import org.netbeans.modules.editor.settings.storage.api.KeyBindingSettingsFactory;
@@ -72,9 +69,11 @@ public class EditorSettingsImpl extends EditorSettings {
      *
      * @return set of mimetypes
      */
-    public Set /*<String>*/ getMimeTypes () {
-	if (mimeToLanguage == null) init ();
-	return Collections.unmodifiableSet (mimeToLanguage.keySet ());
+    public Set<String> getMimeTypes () {
+	if (mimeToLanguage == null) {
+            init ();
+        }
+	return Collections.unmodifiableSet(mimeToLanguage.keySet());
     }
     
     /**
@@ -83,8 +82,10 @@ public class EditorSettingsImpl extends EditorSettings {
      * @return name of language for given mime type
      */
     public String getLanguageName (String mimeType) {
-	if (mimeToLanguage == null) init ();
-	return (String) mimeToLanguage.get (mimeType);
+	if (mimeToLanguage == null) {
+            init ();
+        }
+	return mimeToLanguage.get(mimeType);
     }
 
     
@@ -95,20 +96,22 @@ public class EditorSettingsImpl extends EditorSettings {
      *
      * @return set of font & colors profiles
      */
-    public Set /*<String>*/ getFontColorProfiles () {
-	if (fontColorProfiles == null)
+    public Set<String> getFontColorProfiles () {
+	if (fontColorProfiles == null) {
 	    init ();
-        Set result = new HashSet ();
-        Iterator it = fontColorProfiles.keySet ().iterator ();
-        while (it.hasNext ()) {
-            String profile = (String) it.next ();
-            if (!profile.startsWith ("test"))
-                result.add (profile);
         }
+        
+        Set<String> result = new HashSet<String>();
+        for(String profile : fontColorProfiles.keySet()) {
+            if (!profile.startsWith ("test")) {
+                result.add(profile);
+            }
+        }
+        
 	return result;
     }
     
-    private Set systemFontColorProfiles;
+    private Set<String> systemFontColorProfiles;
     
     /**
      * Returns true for user defined profile.
@@ -116,9 +119,12 @@ public class EditorSettingsImpl extends EditorSettings {
      * @param profile a profile name
      * @return true for user defined profile
      */
-    public boolean isCustomFontColorProfile (String profile) {
-        if (systemFontColorProfiles == null) init ();
-        return !systemFontColorProfiles.contains (profile);
+    public boolean isCustomFontColorProfile(String profile) {
+        if (systemFontColorProfiles == null) {
+            init ();
+        }
+        
+        return !systemFontColorProfiles.contains(profile);
     }
     
     private String currentFontColorProfile;
@@ -162,7 +168,7 @@ public class EditorSettingsImpl extends EditorSettings {
         }
     }
     
-    private Map defaultColors = new HashMap ();
+    private Map<String, Collection<AttributeSet>> defaultColors = new HashMap<String, Collection<AttributeSet>>();
      
     /**
      * Returns font & color defaults for given profile or null, if the profile
@@ -171,7 +177,7 @@ public class EditorSettingsImpl extends EditorSettings {
      * @param profile a profile name
      * @return font & color defaults for given profile or null
      */
-    public Collection /*<AttributeSet>*/ getDefaultFontColors (
+    public Collection<AttributeSet> getDefaultFontColors (
 	String profile
     ) {
         // 1) translate profile name
@@ -188,23 +194,24 @@ public class EditorSettingsImpl extends EditorSettings {
             } else {
 
                 // 3) load colorings
-                Map m = ColoringStorage.loadColorings 
+                Map<String, AttributeSet> m = ColoringStorage.loadColorings 
                     (new String [0], profile, ALL_LANGUAGES_FILE_NAME, false);
                 if (m != null) {
-                    Collection c = m.values ();
+                    Collection<AttributeSet> c = m.values();
                     defaultColors.put (profile, c);
                 } else
                     defaultColors.put (profile, null);
             }
         }
         
-        if (defaultColors.get (profile) == null) return null;
-	return Collections.unmodifiableCollection (
-            (Collection) defaultColors.get (profile)
-        );
+        if (defaultColors.get(profile) == null) {
+            return null;
+        } else {
+            return Collections.unmodifiableCollection(defaultColors.get(profile));
+        }
     }
     
-    private Map defaultColorDefaults = new HashMap ();
+    private Map<String, Collection<AttributeSet>> defaultColorDefaults = new HashMap<String, Collection<AttributeSet>>();
      
     /**
      * Returns default values for font & color defaults for given profile 
@@ -213,7 +220,7 @@ public class EditorSettingsImpl extends EditorSettings {
      * @param profile a profile name
      * @return font & color defaults for given profile or null
      */
-    public Collection /*<AttributeSet>*/ getDefaultFontColorDefaults (
+    public Collection<AttributeSet> getDefaultFontColorDefaults (
 	String profile
     ) {
         // 1) translate profile name
@@ -221,19 +228,21 @@ public class EditorSettingsImpl extends EditorSettings {
 
         // 2) get data from cache or disk
         if (!defaultColorDefaults.containsKey (profile)) {
-            Map m = ColoringStorage.loadColorings 
+            Map<String, AttributeSet> m = ColoringStorage.loadColorings 
                 (new String [0], profile, ALL_LANGUAGES_FILE_NAME, true);
             if (m != null) {
-                Collection c = m.values ();
-                defaultColorDefaults.put (profile, c);
-            } else
-                defaultColorDefaults.put (profile, null);
+                Collection<AttributeSet> c = m.values();
+                defaultColorDefaults.put(profile, c);
+            } else {
+                defaultColorDefaults.put(profile, null);
+            }
         }
         
-        if (defaultColorDefaults.get (profile) == null) return null;
-	return Collections.unmodifiableCollection (
-            (Collection) defaultColorDefaults.get (profile)
-        );
+        if (defaultColorDefaults.get(profile) == null) {
+            return null;
+        } else {
+            return Collections.unmodifiableCollection(defaultColorDefaults.get(profile));
+        }
     }
     
     /**
@@ -244,7 +253,7 @@ public class EditorSettingsImpl extends EditorSettings {
      */
     public void setDefaultFontColors (
 	String profile,
-	Collection /*<AttributeSet>*/ fontColors
+	Collection<AttributeSet> fontColors
     ) {
         // 1) translate name of profile
 	String internalProfile = getInternalFontColorProfile (profile); // loc name > name
@@ -280,7 +289,7 @@ public class EditorSettingsImpl extends EditorSettings {
     }
     
     // Map (String (profile) > Map (String (category) > AttributeSet)).
-    private Map highlightings = new HashMap ();
+    private Map<String, Map<String, AttributeSet>> highlightings = new HashMap<String, Map<String, AttributeSet>>();
     
     /**
      * Returns highlighting properties for given profile or null, if the 
@@ -289,7 +298,7 @@ public class EditorSettingsImpl extends EditorSettings {
      * @param profile a profile name
      * @return highlighting properties for given profile or null
      */
-    public Map getHighlightings (
+    public Map<String, AttributeSet> getHighlightings (
 	String profile
     ) {
         // 1) translate profile name
@@ -306,20 +315,21 @@ public class EditorSettingsImpl extends EditorSettings {
             } else {
                 
                 // 3) read data form disk or cache
-                Map m = ColoringStorage.loadColorings 
+                Map<String, AttributeSet> m = ColoringStorage.loadColorings 
                     (new String [0], profile, HIGHLIGHTING_FILE_NAME, false);
                 highlightings.put (profile, m);
             }
         }
         
-        if (highlightings.get (profile) == null) return null;
-	return Collections.unmodifiableMap (
-            (Map) highlightings.get (profile)
-        );
+        if (highlightings.get(profile) == null) {
+            return null;
+        } else {
+            return Collections.unmodifiableMap(highlightings.get(profile));
+        }
     }
     
     // Map (String (profile) > Map (String (category) > AttributeSet)).
-    private Map highlightingDefaults = new HashMap ();
+    private Map<String, Map<String, AttributeSet>> highlightingDefaults = new HashMap<String, Map<String, AttributeSet>>();
     
     /**
      * Returns defaults for highlighting properties for given profile,
@@ -328,7 +338,7 @@ public class EditorSettingsImpl extends EditorSettings {
      * @param profile a profile name
      * @return highlighting properties for given profile or null
      */
-    public Map getHighlightingDefaults (
+    public Map<String, AttributeSet> getHighlightingDefaults (
 	String profile
     ) {
         // 1) translate profile name
@@ -336,14 +346,16 @@ public class EditorSettingsImpl extends EditorSettings {
 
         // 2) read data form disk or cache
         if (!highlightingDefaults.containsKey (profile)) {
-            Map m = ColoringStorage.loadColorings 
+            Map<String, AttributeSet> m = ColoringStorage.loadColorings 
                 (new String [0], profile, HIGHLIGHTING_FILE_NAME, true);
             highlightingDefaults.put (profile, m);
         }
-        if (highlightingDefaults.get (profile) == null) return null;
-	return Collections.unmodifiableMap (
-            (Map) highlightingDefaults.get (profile)
-        );
+        
+        if (highlightingDefaults.get(profile) == null) {
+            return null;
+        } else {
+            return Collections.unmodifiableMap(highlightingDefaults.get(profile));
+        }
     }
     
     /**
@@ -354,7 +366,7 @@ public class EditorSettingsImpl extends EditorSettings {
      */
     public void setHighlightings (
 	String  profile,
-	Map     fontColors
+	Map<String, AttributeSet> fontColors
     ) {
         // 1) translate profile name
 	String internalProfile = getInternalFontColorProfile (profile);	
@@ -400,12 +412,12 @@ public class EditorSettingsImpl extends EditorSettings {
      *
      * @return set of font & colors profiles
      */
-    public Set /*<String>*/ getKeyMapProfiles () {
+    public Set<String> getKeyMapProfiles () {
 	if (keyMapProfiles == null) init ();
 	return Collections.unmodifiableSet (keyMapProfiles.keySet ());
     }
     
-    private Set systemKeymapProfiles;
+    private Set<String> systemKeymapProfiles;
     
     /**
      * Returns true for user defined profile.
@@ -414,7 +426,10 @@ public class EditorSettingsImpl extends EditorSettings {
      * @return true for user defined profile
      */
     public boolean isCustomKeymapProfile (String profile) {
-        if (systemKeymapProfiles == null) init ();
+        if (systemKeymapProfiles == null) {
+            init();
+        }
+        
         return !systemKeymapProfiles.contains (profile);
     }
     
@@ -508,17 +523,17 @@ public class EditorSettingsImpl extends EditorSettings {
 
     // support methods .........................................................
     
-    private Map fontColorProfiles;
-    private Map keyMapProfiles;
-    private Map mimeToLanguage;
+    private Map<String, String> fontColorProfiles;
+    private Map<String, String> keyMapProfiles;
+    private Map<String, String> mimeToLanguage;
 
     private void init () {
-	fontColorProfiles = new HashMap ();
-	keyMapProfiles = new HashMap ();
+	fontColorProfiles = new HashMap<String, String>();
+	keyMapProfiles = new HashMap<String, String>();
 	keyMapProfiles.put ("NetBeans", "NetBeans");
-	mimeToLanguage = new HashMap ();
-        systemFontColorProfiles = new HashSet ();
-        systemKeymapProfiles = new HashSet ();
+	mimeToLanguage = new HashMap<String, String>();
+        systemFontColorProfiles = new HashSet<String>();
+        systemKeymapProfiles = new HashSet<String>();
 	FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
 	FileObject fo = fs.findResource ("Editors");
 	Enumeration e = fo.getFolders (false);
@@ -574,7 +589,7 @@ public class EditorSettingsImpl extends EditorSettings {
             try {
                 languageName = NbBundle.getBundle (bundleName).getString (mimeType);
             } catch (MissingResourceException ex) {}
-        mimeToLanguage.put (mimeType, languageName);
+        mimeToLanguage.put(mimeType, languageName);
     }
     
     private void addFontColorsProfile (FileObject fo, boolean systemProfile) {
@@ -586,7 +601,9 @@ public class EditorSettingsImpl extends EditorSettings {
             try {
                 locProfile = NbBundle.getBundle (bundleName).getString (profile);
             } catch (MissingResourceException ex) {}
-        if (systemProfile) systemFontColorProfiles.add (locProfile);
+        if (systemProfile) {
+            systemFontColorProfiles.add(locProfile);
+        }
         fontColorProfiles.put (locProfile, profile);
     }
     
@@ -600,54 +617,64 @@ public class EditorSettingsImpl extends EditorSettings {
             try {
                 locProfile = NbBundle.getBundle (bundleName).getString (profile);
             } catch (MissingResourceException ex) {}
-        if (systemProfile) systemKeymapProfiles.add (locProfile);
+        if (systemProfile) {
+            systemKeymapProfiles.add(locProfile);
+        }
         keyMapProfiles.put (locProfile, profile);
     }
     
-    String getInternalFontColorProfile (String profile) {
-	if (fontColorProfiles == null)
+    String getInternalFontColorProfile(String profile) {
+	if (fontColorProfiles == null) {
 	    init ();
-	String result = (String) fontColorProfiles.get (profile);
-        if (result != null) return result;
-        return profile;
+        }
+        
+	String result = fontColorProfiles.get(profile);
+        return result != null ? result : profile;
     }
     
     String getInternalKeymapProfile (String profile) {
-	if (keyMapProfiles == null)
-	    init ();
-	String result = (String) keyMapProfiles.get (profile);
-        if (result != null) return result;
-        keyMapProfiles.put (profile, profile);
-        return profile;
+	if (keyMapProfiles == null) {
+	    init();
+        }
+        
+	String result = keyMapProfiles.get (profile);
+        if (result != null) {
+            return result;
+        } else {
+            keyMapProfiles.put(profile, profile);
+            return profile;
+        }
     }
     
-    private Map keyBindingsMap = new HashMap ();
+    private Map<List<String>, WeakReference<KeyBindingSettingsImpl>> keyBindingsMap = 
+        new HashMap<List<String>, WeakReference<KeyBindingSettingsImpl>>();
     
     public KeyBindingSettingsFactory getKeyBindingSettings (String[] mimeTypes) {
-        List key = Arrays.asList (mimeTypes);
-        WeakReference reference = (WeakReference) keyBindingsMap.get (key);
-        KeyBindingSettingsImpl result = null;
-        if (reference != null) 
-            result = (KeyBindingSettingsImpl) reference.get ();
+        List<String> key = Arrays.asList(mimeTypes);
+        WeakReference<KeyBindingSettingsImpl> reference = keyBindingsMap.get(key);
+        KeyBindingSettingsImpl result = reference == null ? null : reference.get();
+        
         if (result == null) {
-            result = new KeyBindingSettingsImpl (mimeTypes);
-            keyBindingsMap.put (key, new WeakReference (result));
+            result = new KeyBindingSettingsImpl(mimeTypes);
+            keyBindingsMap.put(key, new WeakReference<KeyBindingSettingsImpl>(result));
         }
+        
         return result;
     }
     
-    private Map fontColorsMap = new HashMap ();
+    private Map<List<String>, WeakReference<FontColorSettingsFactory>> fontColorsMap = 
+        new HashMap<List<String>, WeakReference<FontColorSettingsFactory>>();
     
     public FontColorSettingsFactory getFontColorSettings (String[] mimeTypes) {
-        List key = Arrays.asList (mimeTypes);
-        WeakReference reference = (WeakReference) fontColorsMap.get (key);
-        FontColorSettingsFactory result = null;
-        if (reference != null) 
-            result = (FontColorSettingsFactory) reference.get ();
+        List<String> key = Arrays.asList (mimeTypes);
+        WeakReference<FontColorSettingsFactory> reference = fontColorsMap.get(key);
+        FontColorSettingsFactory result = reference == null ? null : reference.get();
+        
         if (result == null) {
-            result = new FontColorSettingsImpl (mimeTypes);
-            fontColorsMap.put (key, new WeakReference (result));
+            result = new FontColorSettingsImpl(mimeTypes);
+            fontColorsMap.put(key, new WeakReference<FontColorSettingsFactory>(result));
         }
+        
         return result;
     }
 }

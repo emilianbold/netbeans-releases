@@ -19,20 +19,8 @@
 
 package org.netbeans.modules.editor.settings.storage.api;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 import javax.swing.text.AttributeSet;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
-import org.netbeans.api.editor.settings.EditorStyleConstants;
-import org.netbeans.modules.editor.settings.storage.*;
-
 
 /**
  * Getters and setters for font & color editor profiles. Instances of this 
@@ -50,7 +38,7 @@ public abstract class FontColorSettingsFactory {
      *
      * @return token font and colors
      */
-    public abstract Collection /*<AttributeSet>*/ getAllFontColors (String profile);
+    public abstract Collection<AttributeSet> getAllFontColors (String profile);
     
     /**
      * Gets default values for all font & colors for given profile, or null
@@ -60,7 +48,7 @@ public abstract class FontColorSettingsFactory {
      *
      * @return default values for all font & colors
      */
-    public abstract Collection /*<AttributeSet>*/ getAllFontColorDefaults 
+    public abstract Collection<AttributeSet> getAllFontColorDefaults 
         (String profile);
     
     /**
@@ -71,7 +59,7 @@ public abstract class FontColorSettingsFactory {
      */
     public abstract void setAllFontColors (
         String profile,
-        Collection /*<AttributeSet>*/ fontColors
+        Collection<AttributeSet> fontColors
     );
     
     /**
@@ -82,6 +70,6 @@ public abstract class FontColorSettingsFactory {
      */
     public abstract void setAllFontColorsDefaults (
         String profile,
-        Collection /*<AttributeSet>*/ fontColors
+        Collection<AttributeSet> fontColors
     );
 }

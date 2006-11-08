@@ -21,7 +21,7 @@ package org.netbeans.modules.editor.settings.storage.api;
 
 import java.beans.PropertyChangeListener;
 import java.util.List;
-import java.util.Map;
+import org.netbeans.api.editor.settings.MultiKeyBinding;
 
 
 /**
@@ -38,7 +38,7 @@ public abstract class KeyBindingSettingsFactory {
      *
      * @return List of <code>MultiKeyBinding</code>s.
      */
-    public abstract List/*<MultiKeyBinding>*/ getKeyBindings ();
+    public abstract List<MultiKeyBinding> getKeyBindings ();
     
     /**
      * Gets the keybindings list for given keymap name, where items 
@@ -48,7 +48,7 @@ public abstract class KeyBindingSettingsFactory {
      * 
      * @return List of <code>MultiKeyBinding</code>s.
      */
-    public abstract List/*<MultiKeyBinding>*/ getKeyBindings (String profile);
+    public abstract List<MultiKeyBinding> getKeyBindings (String profile);
 
     
     /**
@@ -68,7 +68,7 @@ public abstract class KeyBindingSettingsFactory {
      */
     public abstract void setKeyBindings (
         String profile, 
-        List/*<MultiKeyBinding>*/ keyBindings
+        List<MultiKeyBinding> keyBindings
     );
     
     /**
