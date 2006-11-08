@@ -17,8 +17,9 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.websvc.core.jaxws.actions;
-
-import org.netbeans.jmi.javamodel.Method;
+// Retouche
+// import org.netbeans.jmi.javamodel.Method;
+import com.sun.source.tree.MethodTree;
 import org.openide.nodes.Node;
 
 /*
@@ -30,5 +31,5 @@ public interface JaxWsClassesCookie extends Node.Cookie {
     /*
      * Adds a method definition to the SEI and the implementation bean
      */
-    public void addOperation(Method m);
+    public void addOperation(MethodTree m);
 }

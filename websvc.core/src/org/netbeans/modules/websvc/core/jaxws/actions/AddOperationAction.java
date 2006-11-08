@@ -17,13 +17,13 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.websvc.core.jaxws.actions;
-
-import org.netbeans.jmi.javamodel.ClassMember;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.Method;
-import org.netbeans.modules.j2ee.common.JMIUtils;
-import org.netbeans.modules.j2ee.common.WSUtils;
-import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
+// Retouche
+//import org.netbeans.jmi.javamodel.ClassMember;
+//import org.netbeans.jmi.javamodel.JavaClass;
+//import org.netbeans.jmi.javamodel.Method;
+//import org.netbeans.modules.j2ee.common.JMIUtils;
+//import org.netbeans.modules.j2ee.common.WSUtils;
+//import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.openide.util.actions.CookieAction;
 import org.openide.util.HelpCtx;
@@ -55,9 +55,9 @@ public class AddOperationAction extends CookieAction {
     
     protected boolean enable(Node[] activatedNodes) {
         return activatedNodes.length == 1 &&
-                ( activatedNodes[0].getLookup().lookup(ClassMember.class) != null || JMIUtils.getClassMemberFromNode(activatedNodes[0])!=null ) &&
-                JMIUtils.getJavaClassFromNode(activatedNodes[0]) != null &&
-                //isWsImplBeanOrInterface(activatedNodes[0]) &&
+                // Retouche
+                //( activatedNodes[0].getLookup().lookup(ClassMember.class) != null || JMIUtils.getClassMemberFromNode(activatedNodes[0])!=null ) &&
+                //JMIUtils.getJavaClassFromNode(activatedNodes[0]) != null &&
                 !isFromWSDL(activatedNodes[0]);
     }
 
@@ -68,13 +68,13 @@ public class AddOperationAction extends CookieAction {
     }
     
     protected void performAction(Node[] activatedNodes) {
-        
-        JavaMetamodel.getManager().waitScanFinished();
-
-        JaxWsClassesCookie cookie = JaxWsCookieFactory.getJaxWsClassesCookie((Service)activatedNodes[0].getLookup().lookup(Service.class),JMIUtils.getJavaClassFromNode(activatedNodes[0]));
-        if (cookie == null) return;
-        JavaClass javaClass = JMIUtils.getJavaClassFromNode(activatedNodes[0]);
-        Method m = WSUtils.addWsOperation(javaClass, NbBundle.getMessage(AddOperationAction.class, "TXT_DefaultOperationName"));
-        if (m!=null) JMIUtils.openInEditor(m);
+// Retouche        
+//        JavaMetamodel.getManager().waitScanFinished();
+//
+//        JaxWsClassesCookie cookie = JaxWsCookieFactory.getJaxWsClassesCookie((Service)activatedNodes[0].getLookup().lookup(Service.class),JMIUtils.getJavaClassFromNode(activatedNodes[0]));
+//        if (cookie == null) return;
+//        JavaClass javaClass = JMIUtils.getJavaClassFromNode(activatedNodes[0]);
+//        Method m = WSUtils.addWsOperation(javaClass, NbBundle.getMessage(AddOperationAction.class, "TXT_DefaultOperationName"));
+//        if (m!=null) JMIUtils.openInEditor(m);
     }
 }

@@ -19,29 +19,24 @@
 
 package org.netbeans.modules.websvc.core.jaxws.actions;
 
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.Method;
-import org.netbeans.jmi.javamodel.Resource;
-import  org.netbeans.modules.j2ee.dd.api.webservices.DDProvider;
-import org.netbeans.modules.javacore.api.JavaModel;
+// Retouche
+//import org.netbeans.jmi.javamodel.JavaClass;
+//import org.netbeans.jmi.javamodel.Method;
+//import org.netbeans.jmi.javamodel.Resource;
+//import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
-import org.netbeans.modules.j2ee.dd.api.webservices.Webservices;
-import org.netbeans.modules.j2ee.dd.api.webservices.PortComponent;
-import org.netbeans.modules.j2ee.dd.api.webservices.ServiceImplBean;
-import org.netbeans.modules.j2ee.dd.api.webservices.WebserviceDescription;
 import org.openide.loaders.*;
 
 public class JaxWsCookieFactory {
 
     private JaxWsCookieFactory() {}
 	
-    public static JaxWsClassesCookie getJaxWsClassesCookie(Service service, JavaClass ce) {
-        if (ce == null) return null;
-        Resource r = ce.getResource();
-        FileObject f = JavaModel.getFileObject(r);
+    public static JaxWsClassesCookie getJaxWsClassesCookie(Service service, /* JavaClass ce */FileObject f ) {
+// Retouche        
+//        if (ce == null) return null;
+//        Resource r = ce.getResource();
+//        FileObject f = JavaModel.getFileObject(r);
         if (f != null) {
             return new JaxWsClassesCookieImpl(service,f);
         }

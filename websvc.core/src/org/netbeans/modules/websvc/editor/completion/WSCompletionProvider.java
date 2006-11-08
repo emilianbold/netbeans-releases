@@ -22,13 +22,13 @@ package org.netbeans.modules.websvc.editor.completion;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent; 
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
+// Retouche
+//import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -76,20 +76,21 @@ public class WSCompletionProvider implements CompletionProvider {
         }        
         
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
-            if (JavaMetamodel.getManager().isScanInProgress()) {
-                resultSet.setWaitText(NbBundle.getMessage(WSCompletionProvider.class, "scanning-in-progress")); //NOI18N
-            }
-            WSCompletionQuery query = new WSCompletionQuery(true);
-            WSCompletionQuery.DefaultResult res = (WSCompletionQuery.DefaultResult)query.query(component, caretOffset, Utilities.getSyntaxSupport(component));
-            if (res != null) {
-                queryCaretOffset = caretOffset;
-                //queryAnchorOffset = res.getSubstituteOffset();
-                resultSet.setTitle(res.getTitle());
-                // resultSet.setAnchorOffset(queryAnchorOffset);
-                resultSet.addAllItems(res.getData());
-                // queryResult = res;
-            }
-            resultSet.finish();
+// Retouche            
+//            if (JavaMetamodel.getManager().isScanInProgress()) {
+//                resultSet.setWaitText(NbBundle.getMessage(WSCompletionProvider.class, "scanning-in-progress")); //NOI18N
+//            }
+//            WSCompletionQuery query = new WSCompletionQuery(true);
+//            WSCompletionQuery.DefaultResult res = (WSCompletionQuery.DefaultResult)query.query(component, caretOffset, Utilities.getSyntaxSupport(component));
+//            if (res != null) {
+//                queryCaretOffset = caretOffset;
+//                //queryAnchorOffset = res.getSubstituteOffset();
+//                resultSet.setTitle(res.getTitle());
+//                // resultSet.setAnchorOffset(queryAnchorOffset);
+//                resultSet.addAllItems(res.getData());
+//                // queryResult = res;
+//            }
+//            resultSet.finish();
         }
         
         protected void prepareQuery(JTextComponent component) {

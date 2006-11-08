@@ -21,13 +21,15 @@ package org.netbeans.modules.websvc.core;
 
 import java.util.Iterator;
 import java.util.List;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.jmi.javamodel.Annotation;
-import org.netbeans.jmi.javamodel.JavaClass;
+//import org.netbeans.jmi.javamodel.Annotation;
+//import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.common.queries.spi.InjectionTargetQueryImplementation;
-import org.netbeans.modules.javacore.api.JavaModel;
+//import org.netbeans.modules.javacore.api.JavaModel;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -39,7 +41,17 @@ public class WSInjectiontargetQueryImplementation implements InjectionTargetQuer
     /** Creates a new instance of WSInjectiontargetQueryImplementation */
     public WSInjectiontargetQueryImplementation() {
     }
-
+    
+    public boolean isInjectionTarget(TypeElement typeElement) {
+        return false;
+    }
+    
+    public boolean isStaticReferenceRequired(TypeElement typeElement) {
+        return false;
+    }
+    
+    
+/*
     public boolean isInjectionTarget(JavaClass jc) {
         if (jc == null) {
             throw new NullPointerException("Passed null to WSInjectiontargetQueryImplementation.isInjectionTarget(JavaClass)"); // NOI18N
@@ -61,5 +73,5 @@ public class WSInjectiontargetQueryImplementation implements InjectionTargetQuer
     public boolean isStaticReferenceRequired(JavaClass jc) {
         return false;
     }
-
+*/
 }

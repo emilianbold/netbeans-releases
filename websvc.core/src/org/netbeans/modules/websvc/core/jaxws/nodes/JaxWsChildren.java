@@ -25,24 +25,26 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.*;
-import javax.jmi.reflect.JmiException;
 import javax.swing.SwingUtilities;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.stream.StreamSource;
 import org.apache.tools.ant.module.api.support.ActionUtils;
-import org.netbeans.api.mdr.MDRepository;
-import org.netbeans.api.mdr.events.AttributeEvent;
-import org.netbeans.api.mdr.events.MDRChangeEvent;
-import org.netbeans.api.mdr.events.MDRChangeListener;
-import org.netbeans.api.mdr.events.MDRChangeSource;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.jmi.javamodel.Annotation;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.Method;
-import org.netbeans.modules.j2ee.common.JMIUtils;
-import org.netbeans.modules.j2ee.common.ui.nodes.MethodNode;
-import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
+// Retouche
+//import javax.jmi.reflect.JmiException;
+//import org.netbeans.api.mdr.MDRepository;
+//import org.netbeans.api.mdr.events.AttributeEvent;
+//import org.netbeans.api.mdr.events.MDRChangeEvent;
+//import org.netbeans.api.mdr.events.MDRChangeListener;
+//import org.netbeans.api.mdr.events.MDRChangeSource;
+//import org.netbeans.jmi.javamodel.Annotation;
+//import org.netbeans.jmi.javamodel.JavaClass;
+//import org.netbeans.jmi.javamodel.Method;
+//import org.netbeans.modules.j2ee.common.JMIUtils;
+//import org.netbeans.modules.j2ee.common.ui.nodes.MethodNode;
+//import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
+//import org.netbeans.modules.j2ee.common.ui.nodes.ComponentMethodViewStrategy;
 import org.netbeans.modules.websvc.api.jaxws.project.GeneratedFilesHelper;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.core.jaxws.JaxWsUtils;
@@ -70,7 +72,6 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-import org.netbeans.modules.j2ee.common.ui.nodes.ComponentMethodViewStrategy;
 import java.io.IOException;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Binding;
 import org.openide.cookies.OpenCookie;
@@ -81,9 +82,12 @@ import org.xml.sax.SAXException;
  *  the operations of the webservice
  */
 
-public class JaxWsChildren extends Children.Keys implements MDRChangeListener  {
+public class JaxWsChildren extends Children.Keys/* implements MDRChangeListener  */{
     
-    private JavaClass implClass;
+    // Retouche
+    //private JavaClass implClass;
+    private FileObject implClass;
+    //private Method[] methods;
     
     private Service service;
     private FileObject srcRoot;
@@ -91,36 +95,45 @@ public class JaxWsChildren extends Children.Keys implements MDRChangeListener  {
     private WsdlModel wsdlModel;
     private WsdlModeler wsdlModeler;
     private boolean modelGenerationFinished;
-    
-    private Method[] methods;
+
     
     public JaxWsChildren(Service service, FileObject srcRoot) {
         super();
         this.service = service;
         this.srcRoot = srcRoot;
     }
+
+// Retouche
+//    public ComponentMethodViewStrategy createViewStrategy() {
+//        WSComponentMethodViewStrategy strategy = WSComponentMethodViewStrategy.instance();
+//        return strategy;
+//    }
+//    
+//    private JavaClass getImplementationClass() {
+//        String implBean = service.getImplementationClass();
+//        if(implBean != null) {
+//            return JMIUtils.findClass(implBean, srcRoot);
+//        }
+//        return null;
+//    }
+//    
+//    private Method[] getMethods() {
+//        MDRepository repo = JavaMetamodel.getDefaultRepository();
+//        repo.beginTrans(false);
+//        try {
+//            if (implClass!=null && implClass.isValid())
+//                return JMIUtils.getMethods(implClass);
+//        } finally {
+//            repo.endTrans();
+//        }
+//        return null;
+//    }
     
-    public ComponentMethodViewStrategy createViewStrategy() {
-        WSComponentMethodViewStrategy strategy = WSComponentMethodViewStrategy.instance();
-        return strategy;
-    }
-    
-    private JavaClass getImplementationClass() {
+    private FileObject getImplementationClass() {
         String implBean = service.getImplementationClass();
         if(implBean != null) {
-            return JMIUtils.findClass(implBean, srcRoot);
-        }
-        return null;
-    }
-    
-    private Method[] getMethods() {
-        MDRepository repo = JavaMetamodel.getDefaultRepository();
-        repo.beginTrans(false);
-        try {
-            if (implClass!=null && implClass.isValid())
-                return JMIUtils.getMethods(implClass);
-        } finally {
-            repo.endTrans();
+            return srcRoot.getFileObject(implBean.replaceAll(".","/")+".java");
+            //return JMIUtils.findClass(implBean, srcRoot);
         }
         return null;
     }
@@ -168,47 +181,48 @@ public class JaxWsChildren extends Children.Keys implements MDRChangeListener  {
                 implClass = getImplementationClass();
             }
             assert(implClass != null);
-            registerListener();
-            methods = getMethods();
-            registerMethodListeners();
+            //registerListener();
+            //methods = getMethods();
+            //registerMethodListeners();
             updateKeys();
         }
     }
+
+// Retouche
+//    private void registerListener() {
+//        if (implClass!=null) ((MDRChangeSource)implClass).addListener(this);
+//    }
+//    
+//    private void registerMethodListeners() {
+//        if (methods!=null) {
+//            for (int i=0;i<methods.length;i++) {
+//                ((MDRChangeSource)methods[i]).addListener(this);
+//            }
+//        }
+//    }
+//    
+//    private void removeListener() {
+//        if (implClass!=null) ((MDRChangeSource)implClass).removeListener(this);
+//    }
+//    
+//    
+//    private void removeMethodListeners() {
+//        if (methods!=null) {
+//            for (int i=0;i<methods.length;i++) {
+//                ((MDRChangeSource)methods[i]).removeListener(this);
+//            }
+//        }
+//    }
     
-    private void registerListener() {
-        if (implClass!=null) ((MDRChangeSource)implClass).addListener(this);
-    }
-    
-    private void registerMethodListeners() {
-        if (methods!=null) {
-            for (int i=0;i<methods.length;i++) {
-                ((MDRChangeSource)methods[i]).addListener(this);
-            }
-        }
-    }
-    
-    private void removeListener() {
-        if (implClass!=null) ((MDRChangeSource)implClass).removeListener(this);
-    }
-    
-    
-    private void removeMethodListeners() {
-        if (methods!=null) {
-            for (int i=0;i<methods.length;i++) {
-                ((MDRChangeSource)methods[i]).removeListener(this);
-            }
-        }
-    }
-    
-    protected void removeNotify() {
-        setKeys(Collections.EMPTY_SET);
-        if (!isFromWsdl()) {
-            removeListener();
-            removeMethodListeners();
-            methods=null;
-        }
-        super.removeNotify();
-    }
+//    protected void removeNotify() {
+//        setKeys(Collections.EMPTY_SET);
+//        if (!isFromWsdl()) {
+//            removeListener();
+//            removeMethodListeners();
+//            methods=null;
+//        }
+//        super.removeNotify();
+//    }
     
     private void updateKeys() {
         if (isFromWsdl()) {
@@ -227,38 +241,40 @@ public class JaxWsChildren extends Children.Keys implements MDRChangeListener  {
                 public void run() {
                     List keys = new ArrayList();
                     if (implClass != null) {
-                        if (methods==null) {
-                            methods=getMethods();
-                            registerMethodListeners();
-                        }
-                        boolean foundWebMethodAnnotation=false;
-                        if (methods != null) {
-                            for(int i = 0; i < methods.length; i++) {
-                                if (!methods[i].isValid())
-                                    continue;
-                                List annotations = methods[i].getAnnotations();
-                                boolean hasWebMethodAnnotation=false;
-                                for (int j=0;j<annotations.size();j++) {
-                                    Annotation anot = (Annotation)annotations.get(j);
-                                    if ("javax.jws.WebMethod".equals(anot.getType().getName())) { //NOI18N
-                                        hasWebMethodAnnotation=true;
-                                        break;
-                                    }
-                                }
-                                if (hasWebMethodAnnotation) {
-                                    if (!foundWebMethodAnnotation) {
-                                        foundWebMethodAnnotation=true;
-                                        // remove all methods added before
-                                        // because only annotated methods should be added
-                                        if (keys.size()>0) keys.clear();
-                                    }
-                                    if (isPublic(methods[i])) keys.add(methods[i]);
-                                } else if (!foundWebMethodAnnotation) {
-                                    // there are only non-annotated methods present until now
-                                    if (isPublic(methods[i])) keys.add(methods[i]);
-                                }
-                            } // for
-                        } // if
+                        
+// Retouche
+//                        if (methods==null) {
+//                            methods=getMethods();
+//                            registerMethodListeners();
+//                        }
+//                        boolean foundWebMethodAnnotation=false;
+//                        if (methods != null) {
+//                            for(int i = 0; i < methods.length; i++) {
+//                                if (!methods[i].isValid())
+//                                    continue;
+//                                List annotations = methods[i].getAnnotations();
+//                                boolean hasWebMethodAnnotation=false;
+//                                for (int j=0;j<annotations.size();j++) {
+//                                    Annotation anot = (Annotation)annotations.get(j);
+//                                    if ("javax.jws.WebMethod".equals(anot.getType().getName())) { //NOI18N
+//                                        hasWebMethodAnnotation=true;
+//                                        break;
+//                                    }
+//                                }
+//                                if (hasWebMethodAnnotation) {
+//                                    if (!foundWebMethodAnnotation) {
+//                                        foundWebMethodAnnotation=true;
+//                                        // remove all methods added before
+//                                        // because only annotated methods should be added
+//                                        if (keys.size()>0) keys.clear();
+//                                    }
+//                                    if (isPublic(methods[i])) keys.add(methods[i]);
+//                                } else if (!foundWebMethodAnnotation) {
+//                                    // there are only non-annotated methods present until now
+//                                    if (isPublic(methods[i])) keys.add(methods[i]);
+//                                }
+//                            } // for
+//                        } // if
                     }
                     setKeys(keys);
                 }
@@ -266,19 +282,19 @@ public class JaxWsChildren extends Children.Keys implements MDRChangeListener  {
         }
     }
     
-    private boolean isPublic(Method m) {
-        if ((m.getModifiers()&Modifier.PUBLIC) !=0) return true;
-        else return false;
-    }
+//    private boolean isPublic(Method m) {
+//        if ((m.getModifiers()&Modifier.PUBLIC) !=0) return true;
+//        else return false;
+//    }
     
     protected Node[] createNodes(Object key) {
-        if(key instanceof WsdlOperation) {
-            return new Node[] {new OperationNode((WsdlOperation)key)};
-        } else if(key instanceof Method) {
-            Method method = (Method)key;
-            ComponentMethodViewStrategy cmvs = createViewStrategy();
-            return new Node[] {new MethodNode(method, implClass, new ArrayList(), cmvs)};
-        }
+//        if(key instanceof WsdlOperation) {
+//            return new Node[] {new OperationNode((WsdlOperation)key)};
+//        } else if(key instanceof Method) {
+//            Method method = (Method)key;
+//            ComponentMethodViewStrategy cmvs = createViewStrategy();
+//            return new Node[] {new MethodNode(method, implClass, new ArrayList(), cmvs)};
+//        }
         return new Node[0];
     }
     
@@ -505,107 +521,108 @@ public class JaxWsChildren extends Children.Keys implements MDRChangeListener  {
             } 
         }
     }
+
+// Retouche    
+//    public static class WSComponentMethodViewStrategy implements ComponentMethodViewStrategy {
+//        //  private Image NOT_OPERATION_BADGE = Utilities.loadImage("org/openide/src/resources/error.gif");
+//        private static WSComponentMethodViewStrategy wsmvStrategy;
+//        private WSComponentMethodViewStrategy(){
+//        }
+//        
+//        public static WSComponentMethodViewStrategy instance(){
+//            if(wsmvStrategy == null){
+//                wsmvStrategy = new WSComponentMethodViewStrategy();
+//            }
+//            return wsmvStrategy;
+//        }
+//        public Image getBadge(Method method, Collection interfaces){
+//            
+//       /* no need to badge this, it sometimes not a sign for bad operation see 55679    Set paramTypes = new HashSet();
+//            //FIX-ME:Need a better way to find out if method is in SEI
+//            MethodParameter[] parameters = method.getParameters();
+//            for(int i = 0; i < parameters.length; i++){
+//                paramTypes.add(parameters[i].getType());
+//            }
+//            Iterator iter  = interfaces.iterator();
+//            while(iter.hasNext()){
+//                ClassElement intf = (ClassElement)iter.next();
+//                if(intf.getMethod(method.getName(), (Type[])paramTypes.toArray(new Type[paramTypes.size()])) == null){
+//                    return NOT_OPERATION_BADGE;
+//                }
+//        
+//            }*/
+//            
+//            return null;
+//        }
+//        
+//        public void deleteImplMethod(Method m, JavaClass implClass, Collection interfaces) throws IOException{
+//            //delete method in the SEI
+//            Iterator iter = interfaces.iterator();
+//            while (iter.hasNext()){
+//                JavaClass intf = (JavaClass)iter.next();
+//                try {
+//                    intf.getContents().remove(m);
+//                } catch (JmiException e) {
+//                    throw new IOException(e.getMessage());
+//                }
+//            }
+//            //delete method from Impl class
+//            Method[] methods = JMIUtils.getMethods(implClass);
+//            for(int i = 0; i < methods.length; i++){
+//                Method method = methods[i];
+//                if (JMIUtils.equalMethods(m, method)) {
+//                    try {
+//                        implClass.getContents().remove(method);
+//                        break;
+//                    } catch (JmiException e) {
+//                        throw new IOException(e.getMessage());
+//                    }
+//                }
+//            }
+//        }
+//        
+//        public OpenCookie getOpenCookie(Method m, JavaClass implClass, Collection interfaces) {
+//            Method[] methods = JMIUtils.getMethods(implClass);
+//            for(int i = 0; i < methods.length; i++) {
+//                Method method = methods[i];
+//                if (JMIUtils.equalMethods(m, method)) {
+//                    return (OpenCookie)JMIUtils.getCookie(method, OpenCookie.class);
+//                }
+//            }
+//            return null;
+//        }
+//        
+//        public Image getIcon(Method me, Collection interfaces) {
+//            return Utilities.loadImage("org/openide/src/resources/methodPublic.gif");
+//        }
+//        
+//    }
     
-    public static class WSComponentMethodViewStrategy implements ComponentMethodViewStrategy {
-        //  private Image NOT_OPERATION_BADGE = Utilities.loadImage("org/openide/src/resources/error.gif");
-        private static WSComponentMethodViewStrategy wsmvStrategy;
-        private WSComponentMethodViewStrategy(){
-        }
-        
-        public static WSComponentMethodViewStrategy instance(){
-            if(wsmvStrategy == null){
-                wsmvStrategy = new WSComponentMethodViewStrategy();
-            }
-            return wsmvStrategy;
-        }
-        public Image getBadge(Method method, Collection interfaces){
-            
-       /* no need to badge this, it sometimes not a sign for bad operation see 55679    Set paramTypes = new HashSet();
-            //FIX-ME:Need a better way to find out if method is in SEI
-            MethodParameter[] parameters = method.getParameters();
-            for(int i = 0; i < parameters.length; i++){
-                paramTypes.add(parameters[i].getType());
-            }
-            Iterator iter  = interfaces.iterator();
-            while(iter.hasNext()){
-                ClassElement intf = (ClassElement)iter.next();
-                if(intf.getMethod(method.getName(), (Type[])paramTypes.toArray(new Type[paramTypes.size()])) == null){
-                    return NOT_OPERATION_BADGE;
-                }
-        
-            }*/
-            
-            return null;
-        }
-        
-        public void deleteImplMethod(Method m, JavaClass implClass, Collection interfaces) throws IOException{
-            //delete method in the SEI
-            Iterator iter = interfaces.iterator();
-            while (iter.hasNext()){
-                JavaClass intf = (JavaClass)iter.next();
-                try {
-                    intf.getContents().remove(m);
-                } catch (JmiException e) {
-                    throw new IOException(e.getMessage());
-                }
-            }
-            //delete method from Impl class
-            Method[] methods = JMIUtils.getMethods(implClass);
-            for(int i = 0; i < methods.length; i++){
-                Method method = methods[i];
-                if (JMIUtils.equalMethods(m, method)) {
-                    try {
-                        implClass.getContents().remove(method);
-                        break;
-                    } catch (JmiException e) {
-                        throw new IOException(e.getMessage());
-                    }
-                }
-            }
-        }
-        
-        public OpenCookie getOpenCookie(Method m, JavaClass implClass, Collection interfaces) {
-            Method[] methods = JMIUtils.getMethods(implClass);
-            for(int i = 0; i < methods.length; i++) {
-                Method method = methods[i];
-                if (JMIUtils.equalMethods(m, method)) {
-                    return (OpenCookie)JMIUtils.getCookie(method, OpenCookie.class);
-                }
-            }
-            return null;
-        }
-        
-        public Image getIcon(Method me, Collection interfaces) {
-            return Utilities.loadImage("org/openide/src/resources/methodPublic.gif");
-        }
-        
-    }
-    
-    public void change(MDRChangeEvent evt) {
-        if (evt.getSource() instanceof JavaClass) {
-            removeMethodListeners();
-            methods=null;
-            updateKeys();
-        } else if (evt.getSource() instanceof Method && evt instanceof AttributeEvent) {
-            AttributeEvent attrEvt = ((AttributeEvent) evt);
-            int type = attrEvt.getType();
-            if (type==AttributeEvent.EVENT_ATTRIBUTE_ADD) {
-                // annotation has been added
-                Object newElement = attrEvt.getNewElement();
-                if (newElement instanceof Annotation) {
-                    if ("javax.jws.WebMethod".equals(((Annotation)newElement).getType().getName())) //NOI18N
-                        updateKeys();
-                }
-            } else if (type == AttributeEvent.EVENT_ATTRIBUTE_REMOVE && "annotations".equals(attrEvt.getAttributeName())) { //NOI18N
-                // annotation has been removed
-                // NOTE: this may require more proper evaluation of deleted Attribute
-                updateKeys();
-            } else if (type == AttributeEvent.EVENT_ATTRIBUTE_SET && "modifiers".equals(attrEvt.getAttributeName())) { //NOI18N
-                // modifier has been changed
-                updateKeys();
-            }
-        }   
-    }
+//    public void change(MDRChangeEvent evt) {
+//        if (evt.getSource() instanceof JavaClass) {
+//            removeMethodListeners();
+//            methods=null;
+//            updateKeys();
+//        } else if (evt.getSource() instanceof Method && evt instanceof AttributeEvent) {
+//            AttributeEvent attrEvt = ((AttributeEvent) evt);
+//            int type = attrEvt.getType();
+//            if (type==AttributeEvent.EVENT_ATTRIBUTE_ADD) {
+//                // annotation has been added
+//                Object newElement = attrEvt.getNewElement();
+//                if (newElement instanceof Annotation) {
+//                    if ("javax.jws.WebMethod".equals(((Annotation)newElement).getType().getName())) //NOI18N
+//                        updateKeys();
+//                }
+//            } else if (type == AttributeEvent.EVENT_ATTRIBUTE_REMOVE && "annotations".equals(attrEvt.getAttributeName())) { //NOI18N
+//                // annotation has been removed
+//                // NOTE: this may require more proper evaluation of deleted Attribute
+//                updateKeys();
+//            } else if (type == AttributeEvent.EVENT_ATTRIBUTE_SET && "modifiers".equals(attrEvt.getAttributeName())) { //NOI18N
+//                // modifier has been changed
+//                updateKeys();
+//            }
+//        }   
+//    }
     
     private FileObject getWsdlFolderForService(JAXWSSupport support, String name) throws IOException {
         FileObject globalWsdlFolder = support.getWsdlFolder(true);

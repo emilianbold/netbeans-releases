@@ -35,20 +35,21 @@ import javax.swing.Action;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.jmi.javamodel.AnnotableElement;
-import org.netbeans.jmi.javamodel.Annotation;
-import org.netbeans.jmi.javamodel.AttributeValue;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.StringLiteral;
-import org.netbeans.modules.j2ee.common.JMIUtils;
+// Retouche
+//import org.netbeans.jmi.javamodel.AnnotableElement;
+//import org.netbeans.jmi.javamodel.Annotation;
+//import org.netbeans.jmi.javamodel.AttributeValue;
+//import org.netbeans.jmi.javamodel.JavaClass;
+//import org.netbeans.jmi.javamodel.StringLiteral;
+//import org.netbeans.modules.j2ee.common.JMIUtils;
+//import org.netbeans.modules.javacore.api.JavaModel;
+//import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import org.netbeans.modules.javacore.api.JavaModel;
-import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.api.jaxws.project.GeneratedFilesHelper;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
@@ -103,7 +104,8 @@ public class JaxWsNode extends AbstractNode implements OpenCookie, JaxWsWsdlCook
     Service service;
     FileObject srcRoot;
     JaxWsModel jaxWsModel;
-    JavaClass implBeanClass;
+    // Retouche
+    private FileObject implBeanClass;
     InstanceContent content;
     Project project;
     
@@ -121,7 +123,10 @@ public class JaxWsNode extends AbstractNode implements OpenCookie, JaxWsWsdlCook
         content.add(this);
         content.add(service);
         content.add(srcRoot);
-        addImplClassToContent(content);
+        // Retouche
+        //addImplClassToContent(content);
+        implBeanClass = getImplBeanClass();
+        content.add(implBeanClass);
         project = FileOwnerQuery.getOwner(srcRoot);
     }
     
@@ -189,9 +194,11 @@ public class JaxWsNode extends AbstractNode implements OpenCookie, JaxWsWsdlCook
     
     private OpenCookie getOpenCookie() {
         OpenCookie oc = null;
-        JavaClass ce = getImplBeanClass();
-        if (ce != null) {
-            FileObject f = JavaModel.getFileObject(ce.getResource());
+        // Retouche
+        //JavaClass ce = getImplBeanClass();
+        FileObject f = getImplBeanClass();
+        //if (ce != null) {
+            //FileObject f = JavaModel.getFileObject(ce.getResource());
             if (f != null) {
                 try {
                     DataObject d = DataObject.find(f);
@@ -200,7 +207,7 @@ public class JaxWsNode extends AbstractNode implements OpenCookie, JaxWsWsdlCook
                     ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, de.toString());
                 }
             }
-        }
+        //}
         return oc;
     }
     
@@ -335,37 +342,38 @@ public class JaxWsNode extends AbstractNode implements OpenCookie, JaxWsWsdlCook
         String serviceName=null;
         boolean isProvider = false;
         String name=null;
-        JavaClass javaClass = getImplBeanClass();
-        if (javaClass!=null) {
-            List/*Annotation*/ annotations = javaClass.getAnnotations();
-            if (annotations!=null) {
-                for (int i=0;i<annotations.size();i++) {
-                    Annotation an = (Annotation)annotations.get(i);
-                    if ("javax.jws.WebService".equals(an.getType().getName()) ||
-                            "javax.xml.ws.WebServiceProvider".equals(an.getType().getName())) { //NOI18N
-                        List/*AttributeValue*/ attrs = an.getAttributeValues();
-                        for (int j=0;j<attrs.size();j++) {
-                            AttributeValue attr = (AttributeValue)attrs.get(j);
-                            if ("serviceName".equals(attr.getName())) { //NOI18N
-                                serviceName = ((StringLiteral)attr.getValue()).getValue();
-                            } else if ("name".equals(attr.getName())) { //NOI18N
-                                name = ((StringLiteral)attr.getValue()).getValue();
-                            }
-                            if (serviceName!=null) {
-                                if (J2eeModule.WAR.equals(moduleType)) {
-                                    return URLEncoder.encode(serviceName,"UTF-8"); //NOI18N
-                                } else if (name!=null) {
-                                    return URLEncoder.encode(serviceName,"UTF-8")+"/"+URLEncoder.encode(name,"UTF-8"); //NOI18N
-                                }
-                            }
-                        }
-                        if("javax.xml.ws.WebServiceProvider".equals(an.getType().getName())){ //NOI18N
-                            isProvider = true;
-                        }
-                    }
-                }
-            }
-        }
+// Retouche
+//        JavaClass javaClass = getImplBeanClass();
+//        if (javaClass!=null) {
+//            List/*Annotation*/ annotations = javaClass.getAnnotations();
+//            if (annotations!=null) {
+//                for (int i=0;i<annotations.size();i++) {
+//                    Annotation an = (Annotation)annotations.get(i);
+//                    if ("javax.jws.WebService".equals(an.getType().getName()) ||
+//                            "javax.xml.ws.WebServiceProvider".equals(an.getType().getName())) { //NOI18N
+//                        List/*AttributeValue*/ attrs = an.getAttributeValues();
+//                        for (int j=0;j<attrs.size();j++) {
+//                            AttributeValue attr = (AttributeValue)attrs.get(j);
+//                            if ("serviceName".equals(attr.getName())) { //NOI18N
+//                                serviceName = ((StringLiteral)attr.getValue()).getValue();
+//                            } else if ("name".equals(attr.getName())) { //NOI18N
+//                                name = ((StringLiteral)attr.getValue()).getValue();
+//                            }
+//                            if (serviceName!=null) {
+//                                if (J2eeModule.WAR.equals(moduleType)) {
+//                                    return URLEncoder.encode(serviceName,"UTF-8"); //NOI18N
+//                                } else if (name!=null) {
+//                                    return URLEncoder.encode(serviceName,"UTF-8")+"/"+URLEncoder.encode(name,"UTF-8"); //NOI18N
+//                                }
+//                            }
+//                        }
+//                        if("javax.xml.ws.WebServiceProvider".equals(an.getType().getName())){ //NOI18N
+//                            isProvider = true;
+//                        }
+//                    }
+//                }
+//            }
+//        }
         String qualifiedImplClassName = service.getImplementationClass();
         String implClassName = getNameFromPackageName(qualifiedImplClassName);
         if (serviceName==null) serviceName=implClassName+"Service"; //NOI18N
@@ -494,15 +502,25 @@ public class JaxWsNode extends AbstractNode implements OpenCookie, JaxWsWsdlCook
         }
     }
     
-    private JavaClass getImplBeanClass() {
+    private FileObject getImplBeanClass() {
         String implBean = service.getImplementationClass();
         if(implBean != null) {
             //JavaClass javaClass = (JavaClass)JavaModel.getDefaultExtent().getType().resolve(implBean);
             //return javaClass;
-            return JMIUtils.findClass(implBean, srcRoot);
+            return srcRoot.getFileObject(implBean.replaceAll(".","/")+".java");
         }
         return null;
     }
+    
+//    private JavaClass getImplBeanClass() {
+//        String implBean = service.getImplementationClass();
+//        if(implBean != null) {
+//            //JavaClass javaClass = (JavaClass)JavaModel.getDefaultExtent().getType().resolve(implBean);
+//            //return javaClass;
+//            return JMIUtils.findClass(implBean, srcRoot);
+//        }
+//        return null;
+//    }
     
     /**
      * Adds possibility to display custom delete dialog
@@ -523,76 +541,76 @@ public class JaxWsNode extends AbstractNode implements OpenCookie, JaxWsWsdlCook
      */
     public void configureHandler() {
         boolean isNew = false;
-        implBeanClass = getImplBeanClass();
-        ArrayList<String> handlerClasses = new ArrayList<String>();
-        FileObject handlerFO = null;
-        HandlerChains handlerChains = null;
-        //obtain the handler config file, if any from annotation in implbean
-        String handlerFileName = null;
-        Annotation handlerAnnotation = getAnnotation(implBeanClass, "HandlerChain");
-        
-        if(handlerAnnotation != null){
-            List<AttributeValue> attrs = handlerAnnotation.getAttributeValues();
-            for(AttributeValue attr : attrs){
-                String attrName = attr.getName();
-                if(attrName.equals("file")){
-                    StringLiteral fileValue = (StringLiteral)attr.getValue();
-                    handlerFileName = fileValue.getValue();
-                    break;
-                }
-            }
-            //look for handlerFile in the same directory as the implbean
-            FileObject f = JavaModel.getFileObject(implBeanClass.getResource());
-            handlerFO = f.getParent().getFileObject(handlerFileName);
-            if(handlerFO != null){
-                try{
-                    handlerChains =
-                            HandlerChainsProvider.getDefault().getHandlerChains(handlerFO);
-                }catch(Exception e){
-                    ErrorManager.getDefault().notify(e);
-                    return; //TODO handle this
-                }
-                HandlerChain[] handlerChainArray = handlerChains.getHandlerChains();
-                //there is always only one, so get the first one
-                HandlerChain chain = handlerChainArray[0];
-                Handler[] handlers = chain.getHandlers();
-                for(int i = 0; i < handlers.length; i++){
-                    handlerClasses.add(handlers[i].getHandlerClass());
-                }
-            } else{  //unable to find the handler file, display a warning
-                NotifyDescriptor.Message dialogDesc
-                        = new NotifyDescriptor.Message(NbBundle.getMessage(JaxWsNode.class,
-                        "MSG_HANDLER_FILE_NOT_FOUND", handlerFileName), NotifyDescriptor.INFORMATION_MESSAGE);
-                DialogDisplayer.getDefault().notify(dialogDesc);
-            }
-            
-        } else{
-            isNew = true;
-        }
-        final MessageHandlerPanel panel = new MessageHandlerPanel(project,
-                (String[])handlerClasses.toArray(new String[handlerClasses.size()]), true, service.getName());
-        String title = NbBundle.getMessage(JaxWsNode.class,"TTL_MessageHandlerPanel");
-        DialogDescriptor dialogDesc = new DialogDescriptor(panel, title);
-        dialogDesc.setButtonListener(new HandlerButtonListener( panel,
-                handlerChains, handlerFO, implBeanClass, service, isNew));
-        Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDesc);
-        dialog.setVisible(true);
+//        implBeanClass = getImplBeanClass();
+//        ArrayList<String> handlerClasses = new ArrayList<String>();
+//        FileObject handlerFO = null;
+//        HandlerChains handlerChains = null;
+//        //obtain the handler config file, if any from annotation in implbean
+//        String handlerFileName = null;
+//        Annotation handlerAnnotation = getAnnotation(implBeanClass, "HandlerChain");
+//        
+//        if(handlerAnnotation != null){
+//            List<AttributeValue> attrs = handlerAnnotation.getAttributeValues();
+//            for(AttributeValue attr : attrs){
+//                String attrName = attr.getName();
+//                if(attrName.equals("file")){
+//                    StringLiteral fileValue = (StringLiteral)attr.getValue();
+//                    handlerFileName = fileValue.getValue();
+//                    break;
+//                }
+//            }
+//            //look for handlerFile in the same directory as the implbean
+//            FileObject f = JavaModel.getFileObject(implBeanClass.getResource());
+//            handlerFO = f.getParent().getFileObject(handlerFileName);
+//            if(handlerFO != null){
+//                try{
+//                    handlerChains =
+//                            HandlerChainsProvider.getDefault().getHandlerChains(handlerFO);
+//                }catch(Exception e){
+//                    ErrorManager.getDefault().notify(e);
+//                    return; //TODO handle this
+//                }
+//                HandlerChain[] handlerChainArray = handlerChains.getHandlerChains();
+//                //there is always only one, so get the first one
+//                HandlerChain chain = handlerChainArray[0];
+//                Handler[] handlers = chain.getHandlers();
+//                for(int i = 0; i < handlers.length; i++){
+//                    handlerClasses.add(handlers[i].getHandlerClass());
+//                }
+//            } else{  //unable to find the handler file, display a warning
+//                NotifyDescriptor.Message dialogDesc
+//                        = new NotifyDescriptor.Message(NbBundle.getMessage(JaxWsNode.class,
+//                        "MSG_HANDLER_FILE_NOT_FOUND", handlerFileName), NotifyDescriptor.INFORMATION_MESSAGE);
+//                DialogDisplayer.getDefault().notify(dialogDesc);
+//            }
+//            
+//        } else{
+//            isNew = true;
+//        }
+//        final MessageHandlerPanel panel = new MessageHandlerPanel(project,
+//                (String[])handlerClasses.toArray(new String[handlerClasses.size()]), true, service.getName());
+//        String title = NbBundle.getMessage(JaxWsNode.class,"TTL_MessageHandlerPanel");
+//        DialogDescriptor dialogDesc = new DialogDescriptor(panel, title);
+//        dialogDesc.setButtonListener(new HandlerButtonListener( panel,
+//                handlerChains, handlerFO, implBeanClass, service, isNew));
+//        Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDesc);
+//        dialog.setVisible(true);
         
     }
     
-    public static Annotation getAnnotation(AnnotableElement element, String annotationType) {
-        Collection<Annotation> annotations = element.getAnnotations();
-        for(Annotation annotation : annotations) {
-            if(annotation.getType() == null) {
-                continue;
-            }
-            String name = annotation.getType().getName();
-            if (name.indexOf(annotationType) != -1) {
-                return annotation;
-            }
-        }
-        return null;
-    }
+//    public static Annotation getAnnotation(AnnotableElement element, String annotationType) {
+//        Collection<Annotation> annotations = element.getAnnotations();
+//        for(Annotation annotation : annotations) {
+//            if(annotation.getType() == null) {
+//                continue;
+//            }
+//            String name = annotation.getType().getName();
+//            if (name.indexOf(annotationType) != -1) {
+//                return annotation;
+//            }
+//        }
+//        return null;
+//    }
     
     private boolean isJsr109Supported(Project project) {
         JAXWSSupport wss = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());
@@ -608,25 +626,26 @@ public class JaxWsNode extends AbstractNode implements OpenCookie, JaxWsWsdlCook
         }
         return false;
     }
-    
-    private void addImplClassToContent(final InstanceContent content) {
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                JavaMetamodel.getManager().waitScanFinished();
-                implBeanClass = getImplBeanClass();
-                if (implBeanClass != null) {
-                    content.add(implBeanClass);
-                }
-            }
-            
-        });
-    }
+// Retouche    
+//    private void addImplClassToContent(final InstanceContent content) {
+//        RequestProcessor.getDefault().post(new Runnable() {
+//            public void run() {
+//                JavaMetamodel.getManager().waitScanFinished();
+//                implBeanClass = getImplBeanClass();
+//                if (implBeanClass != null) {
+//                    content.add(implBeanClass);
+//                }
+//            }
+//            
+//        });
+//    }
     
     void refreshImplClass() {
         if (implBeanClass != null) {
             content.remove(implBeanClass);
         }
-        addImplClassToContent(content);
+        implBeanClass = getImplBeanClass();
+        content.add(implBeanClass);
     }
     
     public boolean canCopy() {

@@ -71,7 +71,7 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
+//import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.api.client.ClientStubDescriptor;
 
@@ -1026,21 +1026,21 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         } else{
             wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, ""); //NOI18N
         }
-        
-        if (JavaMetamodel.getManager().isScanInProgress()) {
-            if (!isWaitingForScan) {
-                isWaitingForScan = true;
-                RequestProcessor.getDefault().post(new Runnable() {
-                    public void run() {
-                        JavaMetamodel.getManager().waitScanFinished();
-                        isWaitingForScan = false;
-                        descriptorPanel.fireChangeEvent();
-                    }
-                });
-            }
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(ClientInfo.class, "MSG_ScanningInProgress")); //NOI18N
-            return false;
-        } else
+// Retouche        
+//        if (JavaMetamodel.getManager().isScanInProgress()) {
+//            if (!isWaitingForScan) {
+//                isWaitingForScan = true;
+//                RequestProcessor.getDefault().post(new Runnable() {
+//                    public void run() {
+//                        JavaMetamodel.getManager().waitScanFinished();
+//                        isWaitingForScan = false;
+//                        descriptorPanel.fireChangeEvent();
+//                    }
+//                });
+//            }
+//            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(ClientInfo.class, "MSG_ScanningInProgress")); //NOI18N
+//            return false;
+//        } else
             wizardDescriptor.putProperty("WizardPanel_errorMessage", ""); //NOI18N
         
         return true;

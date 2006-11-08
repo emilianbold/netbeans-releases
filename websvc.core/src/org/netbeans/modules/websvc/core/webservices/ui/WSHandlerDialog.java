@@ -25,8 +25,9 @@ import java.awt.event.ActionListener;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.api.project.Project;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.modules.j2ee.common.JMIUtils;
+// Retouche
+//import org.netbeans.jmi.javamodel.JavaClass;
+//import org.netbeans.modules.j2ee.common.JMIUtils;
 import org.netbeans.modules.websvc.core.webservices.ui.panels.SelectHandlerPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -67,8 +68,9 @@ public class WSHandlerDialog {
         Set<String> selectedClasses = new HashSet<String>();
         Node[] nodes = sPanel.getSelectedNodes();
         for(int i = 0; i < nodes.length; i++){
-            JavaClass jc = JMIUtils.getJavaClassFromNode(nodes[i]);
-            selectedClasses.add(jc.getName());
+// Retouche
+//            JavaClass jc = JMIUtils.getJavaClassFromNode(nodes[i]);
+//            selectedClasses.add(jc.getName());
         }
         return selectedClasses;
     }
@@ -97,55 +99,58 @@ public class WSHandlerDialog {
                 this.sPanel = sPanel;
             }
             public void actionPerformed(ActionEvent evt){
-                if(evt.getSource() == NotifyDescriptor.OK_OPTION){
-                    boolean accepted = true;
-                    String errMsg = null;
-                    Node[] selectedNodes = sPanel.getSelectedNodes();
-                    for(int i = 0; i < selectedNodes.length; i++){
-                        Node node = selectedNodes[i];
-                        JavaClass classElement = JMIUtils.getJavaClassFromNode(node);
-                        //FIX-ME: Improve this by filtering the Tree View to only include handlers
-                        if(classElement == null){
-                            errMsg = NbBundle.getMessage(WSHandlerDialog.class,
-                                    "NotJavaClass_msg");
-                            accepted = false;
-                            break;
-                        }
-                        
-                        if(!isHandler(classElement)) {
-                            errMsg = NbBundle.getMessage(WSHandlerDialog.class,
-                                    "NotHandlerClass_msg",
-                                    classElement.getName());
-                            accepted = false;
-                            break;
-                        }
-                    }
-                    if (!accepted) {
-                        NotifyDescriptor.Message notifyDescr =
-                                new NotifyDescriptor.Message(errMsg,
-                                NotifyDescriptor.ERROR_MESSAGE );
-                        DialogDisplayer.getDefault().notify(notifyDescr);
-                        AddMessageHandlerDialogDesc.this.setClosingOptions(closingOptionsWithoutOK);
-                    } else {
-                        // Everything was fine so allow OK
-                        AddMessageHandlerDialogDesc.this.setClosingOptions(closingOptionsWithOK);
-                    }
-                }
+// Retouche
+//                if(evt.getSource() == NotifyDescriptor.OK_OPTION){
+//                    boolean accepted = true;
+//                    String errMsg = null;
+//                    Node[] selectedNodes = sPanel.getSelectedNodes();
+//                    for(int i = 0; i < selectedNodes.length; i++){
+//                        Node node = selectedNodes[i];
+//                        JavaClass classElement = JMIUtils.getJavaClassFromNode(node);
+//                        //FIX-ME: Improve this by filtering the Tree View to only include handlers
+//                        if(classElement == null){
+//                            errMsg = NbBundle.getMessage(WSHandlerDialog.class,
+//                                    "NotJavaClass_msg");
+//                            accepted = false;
+//                            break;
+//                        }
+//                        
+//                        if(!isHandler(classElement)) {
+//                            errMsg = NbBundle.getMessage(WSHandlerDialog.class,
+//                                    "NotHandlerClass_msg",
+//                                    classElement.getName());
+//                            accepted = false;
+//                            break;
+//                        }
+//                    }
+//                    if (!accepted) {
+//                        NotifyDescriptor.Message notifyDescr =
+//                                new NotifyDescriptor.Message(errMsg,
+//                                NotifyDescriptor.ERROR_MESSAGE );
+//                        DialogDisplayer.getDefault().notify(notifyDescr);
+//                        AddMessageHandlerDialogDesc.this.setClosingOptions(closingOptionsWithoutOK);
+//                    } else {
+//                        // Everything was fine so allow OK
+//                        AddMessageHandlerDialogDesc.this.setClosingOptions(closingOptionsWithOK);
+//                    }
+//                }
             }
         }
-        private boolean isHandler(JavaClass ce) {
-            if (ce != null) {
-                if(isJaxWS){
-                    JavaClass handlerClass = JMIUtils.findClass("javax.xml.ws.handler.Handler");
-                    JavaClass logicalHandlerClass = JMIUtils.findClass("javax.xml.ws.handler.LogicalHandler");
-                    return ce.isSubTypeOf(handlerClass) || ce.isSubTypeOf(logicalHandlerClass);
-                }
-                else{
-                    JavaClass handlerClass = JMIUtils.findClass("javax.xml.rpc.handler.Handler");
-                    return ce.isSubTypeOf(handlerClass);
-                }
-            }
-            return false;
-        }
+// Retouche
+//        private boolean isHandler(JavaClass ce) {
+//
+//            if (ce != null) {
+//                if(isJaxWS){
+//                    JavaClass handlerClass = JMIUtils.findClass("javax.xml.ws.handler.Handler");
+//                    JavaClass logicalHandlerClass = JMIUtils.findClass("javax.xml.ws.handler.LogicalHandler");
+//                    return ce.isSubTypeOf(handlerClass) || ce.isSubTypeOf(logicalHandlerClass);
+//                }
+//                else{
+//                    JavaClass handlerClass = JMIUtils.findClass("javax.xml.rpc.handler.Handler");
+//                    return ce.isSubTypeOf(handlerClass);
+//                }
+//            }
+//            return false;
+//        }
     }
 }

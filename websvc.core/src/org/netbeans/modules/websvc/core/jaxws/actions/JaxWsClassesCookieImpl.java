@@ -18,17 +18,19 @@
  */
 package org.netbeans.modules.websvc.core.jaxws.actions;
 
+import com.sun.source.tree.MethodTree;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.jmi.javamodel.Array;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.Method;
-import org.netbeans.jmi.javamodel.Parameter;
-import org.netbeans.jmi.javamodel.PrimitiveType;
-import org.netbeans.jmi.javamodel.PrimitiveTypeKindEnum;
-import org.netbeans.jmi.javamodel.Type;
-import org.netbeans.modules.j2ee.common.JMIUtils;
-import org.netbeans.modules.j2ee.common.JMIGenerationUtil;
+
+//import org.netbeans.jmi.javamodel.Array;
+//import org.netbeans.jmi.javamodel.JavaClass;
+//import org.netbeans.jmi.javamodel.Method;
+//import org.netbeans.jmi.javamodel.Parameter;
+//import org.netbeans.jmi.javamodel.PrimitiveType;
+//import org.netbeans.jmi.javamodel.PrimitiveTypeKindEnum;
+//import org.netbeans.jmi.javamodel.Type;
+//import org.netbeans.modules.j2ee.common.JMIUtils;
+//import org.netbeans.modules.j2ee.common.JMIGenerationUtil;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -43,88 +45,92 @@ public class JaxWsClassesCookieImpl implements JaxWsClassesCookie {
         this.implClassFO = implClassFO;
     }
     
-    private JavaClass getImplBeanClass() {
-        String implBean = service.getImplementationClass();
-        if(implBean != null) {
-            return JMIUtils.findClass(implBean, implClassFO);
-        }
-        return null;
-    }
-    
-    private String getImplicitValue(Type t) {
-        // TODO - should enhance to enum types, annotation types
-        String ret = "return ";
+    public void addOperation(MethodTree m) {
         
-        if (t instanceof PrimitiveType) {
-            
-            if (((PrimitiveType)t).getKind().equals(PrimitiveTypeKindEnum.BOOLEAN)) {
-                return "false"; //NOI18N
-            }
-            if (((PrimitiveType)t).getKind().equals(PrimitiveTypeKindEnum.CHAR)) {
-                return "''"; //NOI18N
-            }
-            return "0"; //NOI18N
-            
-        } else if (t instanceof JavaClass) {
-            return "null"; //NOI18N
-            
-        } else if (t instanceof Array) {
-            return "new " + t.getName() + " { }"; //NOI18N
-        }
-        
-        return null;
     }
-    
-    public void addOperation(Method m) {
-        JavaClass implClass = null;
-        boolean rollback = true;
-        JMIUtils.beginJmiTransaction(true);
-        try {
-            m.setJavadocText(NbBundle.getMessage(JaxWsClassesCookieImpl.class, "TXT_WSOperation"));
-                    
-            implClass = getImplBeanClass();
-            
-            String body = NbBundle.getMessage(JaxWsClassesCookieImpl.class, "TXT_VoidOperation"); //NOI18N
-            
-            Type returnType = m.getType();
-            boolean voidType = true;
-            if (!((returnType instanceof PrimitiveType) && ((PrimitiveType) returnType).getKind().equals(PrimitiveTypeKindEnum.VOID))) {
-                voidType=false;
-                String retString = getImplicitValue(m.getType());
-                if (retString != null) {
-                    body += "return " + retString + ";"; //NOI18N
-                }
-            }
-
-            if (implClass != null) {
-                implClass.getContents().add(m);
-
-                // #61178
-                JMIUtils.fixImports(implClass);
-                //JMIUtils.fixImports(seiClass);
-
-                m.setBodyText(body);
-
-                // add javax.jws.WebMethod annotation
-                m.getAnnotations().add(JMIGenerationUtil.createAnnotation(implClass,"javax.jws.WebMethod",new ArrayList())); //NOI18N
-                if (voidType && m.getExceptionNames().size()==0) m.getAnnotations().add(JMIGenerationUtil.createAnnotation(implClass,"javax.jws.Oneway",new ArrayList())); //NOI18N
-                List parameters = m.getParameters();
-                for (int i=0;i<parameters.size();i++) {
-                    Parameter param = (Parameter)parameters.get(i);
-                    String paramName = param.getName();
-                    List attrValues = new ArrayList();
-                    attrValues.add(JMIGenerationUtil.createAttributeValue(implClass,"name",paramName));
-                    param.getAnnotations().add(JMIGenerationUtil.createAnnotation(implClass,"javax.jws.WebParam",attrValues)); //NOI18N
-                } 
-                rollback = false;
-            }
-        } catch (Exception e) {
-            ErrorManager.getDefault().notify(e);
-        } finally {
-            JMIUtils.endJmiTransaction(rollback);
-        }
-        JMIUtils.openInEditor(m);
-    }
+// Retouche    
+//    private JavaClass getImplBeanClass() {
+//        String implBean = service.getImplementationClass();
+//        if(implBean != null) {
+//            return JMIUtils.findClass(implBean, implClassFO);
+//        }
+//        return null;
+//    }
+//    
+//    private String getImplicitValue(Type t) {
+//        // TODO - should enhance to enum types, annotation types
+//        String ret = "return ";
+//        
+//        if (t instanceof PrimitiveType) {
+//            
+//            if (((PrimitiveType)t).getKind().equals(PrimitiveTypeKindEnum.BOOLEAN)) {
+//                return "false"; //NOI18N
+//            }
+//            if (((PrimitiveType)t).getKind().equals(PrimitiveTypeKindEnum.CHAR)) {
+//                return "''"; //NOI18N
+//            }
+//            return "0"; //NOI18N
+//            
+//        } else if (t instanceof JavaClass) {
+//            return "null"; //NOI18N
+//            
+//        } else if (t instanceof Array) {
+//            return "new " + t.getName() + " { }"; //NOI18N
+//        }
+//        
+//        return null;
+//    }
+//    
+//    public void addOperation(Method m) {
+//        JavaClass implClass = null;
+//        boolean rollback = true;
+//        JMIUtils.beginJmiTransaction(true);
+//        try {
+//            m.setJavadocText(NbBundle.getMessage(JaxWsClassesCookieImpl.class, "TXT_WSOperation"));
+//                    
+//            implClass = getImplBeanClass();
+//            
+//            String body = NbBundle.getMessage(JaxWsClassesCookieImpl.class, "TXT_VoidOperation"); //NOI18N
+//            
+//            Type returnType = m.getType();
+//            boolean voidType = true;
+//            if (!((returnType instanceof PrimitiveType) && ((PrimitiveType) returnType).getKind().equals(PrimitiveTypeKindEnum.VOID))) {
+//                voidType=false;
+//                String retString = getImplicitValue(m.getType());
+//                if (retString != null) {
+//                    body += "return " + retString + ";"; //NOI18N
+//                }
+//            }
+//
+//            if (implClass != null) {
+//                implClass.getContents().add(m);
+//
+//                // #61178
+//                JMIUtils.fixImports(implClass);
+//                //JMIUtils.fixImports(seiClass);
+//
+//                m.setBodyText(body);
+//
+//                // add javax.jws.WebMethod annotation
+//                m.getAnnotations().add(JMIGenerationUtil.createAnnotation(implClass,"javax.jws.WebMethod",new ArrayList())); //NOI18N
+//                if (voidType && m.getExceptionNames().size()==0) m.getAnnotations().add(JMIGenerationUtil.createAnnotation(implClass,"javax.jws.Oneway",new ArrayList())); //NOI18N
+//                List parameters = m.getParameters();
+//                for (int i=0;i<parameters.size();i++) {
+//                    Parameter param = (Parameter)parameters.get(i);
+//                    String paramName = param.getName();
+//                    List attrValues = new ArrayList();
+//                    attrValues.add(JMIGenerationUtil.createAttributeValue(implClass,"name",paramName));
+//                    param.getAnnotations().add(JMIGenerationUtil.createAnnotation(implClass,"javax.jws.WebParam",attrValues)); //NOI18N
+//                } 
+//                rollback = false;
+//            }
+//        } catch (Exception e) {
+//            ErrorManager.getDefault().notify(e);
+//        } finally {
+//            JMIUtils.endJmiTransaction(rollback);
+//        }
+//        JMIUtils.openInEditor(m);
+//    }
     
 }
 
