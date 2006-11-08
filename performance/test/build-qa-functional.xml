@@ -93,11 +93,16 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     
-    <target name="runidetest_scan" depends="copy_unzip_jedit_project,copy_unzip_test_folder_project">
+    <target name="runidetest_scan" depends="copy_unzip_jedit_project, copy_unzip_test_folder_project, init-cp">
         <antcall target="copy_released_ide_cfg_file"/>
        
+        <property name="test.qa-functional.run.cp.extra" value=""/>
+        
         <executeTests pluginName="ide">
-            <classpath refid="test.qa-functional.run.cp"/>
+            <classpath>
+                <path refid="jemmy.and.jelly.path"/>
+                <path location="${test.qa-functional.run.cp.extra}"/>
+            </classpath>
             
             <property name="xtest.ide.commandline.suffix" value="-J-Dperf.refactoring.test=true"/>
 
