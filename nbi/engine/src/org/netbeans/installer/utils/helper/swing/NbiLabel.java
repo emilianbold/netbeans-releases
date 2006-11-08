@@ -21,6 +21,7 @@
 package org.netbeans.installer.utils.helper.swing;
 
 import javax.swing.JLabel;
+import org.netbeans.installer.utils.StringUtils;
 
 /**
  *
@@ -38,7 +39,8 @@ public class NbiLabel extends JLabel {
         if ((text == null) || text.equals("")) {
             super.setText(DEFAULT_TEXT);
         } else {
-            super.setText(text);
+            super.setText(StringUtils.stripMnemonic(text));
+            super.setDisplayedMnemonic(StringUtils.fetchMnemonic(text));
         }
     }
     

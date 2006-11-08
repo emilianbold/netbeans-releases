@@ -200,15 +200,15 @@ public class WizardSequence implements WizardComponent {
     }
     
     protected String getString(final String baseName, final String key) {
-        return resourceUtils.getString(baseName, key, getCorrectClassLoader());
+        return ResourceUtils.getString(baseName, key, getCorrectClassLoader());
     }
     
     protected String getString(final String baseName, final String key, final Object... arguments) {
-        return resourceUtils.getString(baseName, key, getCorrectClassLoader(), arguments);
+        return ResourceUtils.getString(baseName, key, getCorrectClassLoader(), arguments);
     }
     
     protected InputStream getResource(final String path) {
-        return resourceUtils.getResource(path, getCorrectClassLoader());
+        return ResourceUtils.getResource(path, getCorrectClassLoader());
     }
     
     // private stuff ////////////////////////////////////////////////////////////////
@@ -222,7 +222,5 @@ public class WizardSequence implements WizardComponent {
     
     // protected area ///////////////////////////////////////////////////////////////
     protected static final SystemUtils   systemUtils   = SystemUtils.getInstance();
-    protected static final StringUtils   stringUtils   = StringUtils.getInstance();
-    protected static final ResourceUtils resourceUtils = ResourceUtils.getInstance();
     protected static final FileUtils     fileUtils     = FileUtils.getInstance();
 }

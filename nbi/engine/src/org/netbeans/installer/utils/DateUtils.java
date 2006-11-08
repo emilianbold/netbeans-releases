@@ -31,37 +31,17 @@ import java.util.Date;
 public abstract class DateUtils {
     ////////////////////////////////////////////////////////////////////////////
     // Static
-    private static DateUtils instance;
+    private static final DateFormat COMPACT_TIMESTAMP =
+            new SimpleDateFormat("yyyyMMddHHmmss");
     
-    public static synchronized DateUtils getInstance() {
-        if (instance == null) {
-            instance = new GenericDateUtils();
-        }
-        
-        return instance;
+    private static final DateFormat DETAILED_TIMESTAMP =
+            new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+    
+    public static String getTimestamp() {
+        return COMPACT_TIMESTAMP.format(new Date());
     }
     
-    ////////////////////////////////////////////////////////////////////////////
-    // Instance
-    public abstract String getTimestamp();
-    
-    public abstract String getFormattedTimestamp();
-    
-    ////////////////////////////////////////////////////////////////////////////
-    // Inner Classes
-    private static class GenericDateUtils extends DateUtils {
-        private static final DateFormat TIMESTAMP_FORMATTER =
-                new SimpleDateFormat("yyyyMMddHHmmss");
-        
-        private static final DateFormat FORMATTED_TIMESTAMP_FORMATTER =
-                new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-        
-        public String getTimestamp() {
-            return TIMESTAMP_FORMATTER.format(new Date());
-        }
-        
-        public String getFormattedTimestamp() {
-            return FORMATTED_TIMESTAMP_FORMATTER.format(new Date());
-        }
+    public static String getFormattedTimestamp() {
+        return DETAILED_TIMESTAMP.format(new Date());
     }
 }

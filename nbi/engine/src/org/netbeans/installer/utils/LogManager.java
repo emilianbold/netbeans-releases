@@ -43,7 +43,7 @@ public class LogManager {
     
     public static final String INDENT = "    ";
     
-    public static final String  DEFAULT_LOG_FILE       = System.getProperty("user.home") + File.separator + ".nbi" + File.separator + "log" + File.separator + DateUtils.getInstance().getTimestamp() + ".log";
+    public static final String  DEFAULT_LOG_FILE       = System.getProperty("user.home") + File.separator + ".nbi" + File.separator + "log" + File.separator + DateUtils.getTimestamp() + ".log";
     public static final int     DEFAULT_LOG_LEVEL      = ErrorLevel.DEBUG;
     public static final boolean DEFAULT_LOG_TO_CONSOLE = true;
     
@@ -78,7 +78,7 @@ public class LogManager {
             
             try {
                 for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-                    String string = "[" + DateUtils.getInstance().getFormattedTimestamp() + "]: " + StringUtils.getInstance().pad(INDENT, indent) + line + SystemUtils.getInstance().getLineSeparator();
+                    String string = "[" + DateUtils.getFormattedTimestamp() + "]: " + StringUtils.pad(INDENT, indent) + line + SystemUtils.getInstance().getLineSeparator();
                     
                     if (loggingAvailable) {
                         logWriter.write(string);
@@ -97,7 +97,7 @@ public class LogManager {
     }
     
     public static synchronized void log(int level, Throwable exception) {
-        log(level, StringUtils.getInstance().asString(exception));
+        log(level, StringUtils.asString(exception));
     }
     
     public static synchronized void log(int level, Object object) {

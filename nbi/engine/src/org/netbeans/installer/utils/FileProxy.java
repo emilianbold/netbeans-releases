@@ -132,7 +132,7 @@ public class FileProxy {
         final InputStream resource = (loader != null ? loader: getClass().getClassLoader()).getResourceAsStream(uri.getSchemeSpecificPart());
         out = new FileOutputStream(file);
         if (resource == null) throw new DownloadException("resource:" + uri + "not found");
-        StreamUtil.transferData(resource, out);
+        StreamUtils.transferData(resource, out);
         return file;
       } catch(IOException ex) {
         throw new DownloadException("I/O error has occures", ex);

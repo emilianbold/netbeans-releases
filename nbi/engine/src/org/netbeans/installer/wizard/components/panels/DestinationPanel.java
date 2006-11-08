@@ -34,6 +34,8 @@ import org.netbeans.installer.utils.helper.swing.NbiButton;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
 import static org.netbeans.installer.product.ProductComponent.INSTALLATION_LOCATION_PROPERTY;
 import static org.netbeans.installer.product.ProductComponent.DEFAULT_INSTALLATION_LOCATION_PROPERTY;
+import org.netbeans.installer.utils.ResourceUtils;
+import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.helper.swing.NbiPanel;
 import org.netbeans.installer.utils.helper.swing.NbiTextField;
 import org.netbeans.installer.utils.helper.swing.NbiTextPane;
@@ -67,19 +69,13 @@ public class DestinationPanel extends ErrorMessagePanel {
     }
     
     public void initialize() {
-        final String messageContentType = getProperty(MESSAGE_CONTENT_TYPE_PROPERTY);
-        messagePane.setContentType(messageContentType);
+        messagePane.setContentType(getProperty(MESSAGE_CONTENT_TYPE_PROPERTY));
         
-        final String messageText = getProperty(MESSAGE_TEXT_PROPERTY);
-        messagePane.setText(messageText);
+        messagePane.setText(getProperty(MESSAGE_TEXT_PROPERTY));
         
-        final String destinationLabelText = getProperty(DESTINATION_LABEL_TEXT_PROPERTY);
-        destinationLabel.setText(stringUtils.stripMnemonic(destinationLabelText));
-        destinationLabel.setDisplayedMnemonic(stringUtils.fetchMnemonic(destinationLabelText));
+        destinationLabel.setText(getProperty(DESTINATION_LABEL_TEXT_PROPERTY));
         
-        final String destinationButtonText = getProperty(DESTINATION_BUTTON_TEXT_PROPERTY);
-        destinationButton.setText(stringUtils.stripMnemonic(destinationButtonText));
-        destinationButton.setMnemonic(stringUtils.fetchMnemonic(destinationButtonText));
+        destinationButton.setText(getProperty(DESTINATION_BUTTON_TEXT_PROPERTY));
         
         String destination = getWizard().getProductComponent().getProperty(INSTALLATION_LOCATION_PROPERTY);
         if (destination == null) {
@@ -160,27 +156,27 @@ public class DestinationPanel extends ErrorMessagePanel {
         final String path   = file.getAbsolutePath();
         
         if (string.equals("")) {
-            return stringUtils.formatMessage(getProperty(ERROR_NULL_PROPERTY), path);
+            return StringUtils.formatMessage(getProperty(ERROR_NULL_PROPERTY), path);
         }
         
         if (!systemUtils.isPathValid(path)) {
-            return stringUtils.formatMessage(getProperty(ERROR_NOT_VALID_PROPERTY), path);
+            return StringUtils.formatMessage(getProperty(ERROR_NOT_VALID_PROPERTY), path);
         }
         
         if (file.exists() && !file.isDirectory()) {
-            return stringUtils.formatMessage(getProperty(ERROR_NOT_DIRECTORY_PROPERTY), path);
+            return StringUtils.formatMessage(getProperty(ERROR_NOT_DIRECTORY_PROPERTY), path);
         }
         
         if (!fileUtils.canRead(file)) {
-            return stringUtils.formatMessage(getProperty(ERROR_NOT_READABLE_PROPERTY), path);
+            return StringUtils.formatMessage(getProperty(ERROR_NOT_READABLE_PROPERTY), path);
         }
         
         if (!fileUtils.canWrite(file)) {
-            return stringUtils.formatMessage(getProperty(ERROR_NOT_WRITABLE_PROPERTY), path);
+            return StringUtils.formatMessage(getProperty(ERROR_NOT_WRITABLE_PROPERTY), path);
         }
         
         if (!fileUtils.isEmpty(file)) {
-            return stringUtils.formatMessage(getProperty(ERROR_NOT_EMPTY_PROPERTY), path);
+            return StringUtils.formatMessage(getProperty(ERROR_NOT_EMPTY_PROPERTY), path);
         }
         
         return null;
@@ -191,10 +187,10 @@ public class DestinationPanel extends ErrorMessagePanel {
     private static final String DESTINATION_LABEL_TEXT_PROPERTY = "destination.label.text";
     private static final String DESTINATION_BUTTON_TEXT_PROPERTY = "destination.button.text";
     
-    private static final String DEFAULT_MESSAGE_TEXT = resourceUtils.getString(DestinationPanel.class, "DestinationPanel.default.message.text");
-    private static final String DEFAULT_MESSAGE_CONTENT_TYPE = resourceUtils.getString(DestinationPanel.class, "DestinationPanel.default.message.content.type");
-    private static final String DEFAULT_DESTINATION_LABEL_TEXT = resourceUtils.getString(DestinationPanel.class, "DestinationPanel.default.destination.label.text");
-    private static final String DEFAULT_DESTINATION_BUTTON_TEXT = resourceUtils.getString(DestinationPanel.class, "DestinationPanel.default.destination.button.text");
+    private static final String DEFAULT_MESSAGE_TEXT = ResourceUtils.getString(DestinationPanel.class, "DestinationPanel.default.message.text");
+    private static final String DEFAULT_MESSAGE_CONTENT_TYPE = ResourceUtils.getString(DestinationPanel.class, "DestinationPanel.default.message.content.type");
+    private static final String DEFAULT_DESTINATION_LABEL_TEXT = ResourceUtils.getString(DestinationPanel.class, "DestinationPanel.default.destination.label.text");
+    private static final String DEFAULT_DESTINATION_BUTTON_TEXT = ResourceUtils.getString(DestinationPanel.class, "DestinationPanel.default.destination.button.text");
     
     private static final String ERROR_NULL_PROPERTY = "error.null";
     private static final String ERROR_NOT_VALID_PROPERTY = "error.not.valid";
@@ -203,12 +199,12 @@ public class DestinationPanel extends ErrorMessagePanel {
     private static final String ERROR_NOT_WRITABLE_PROPERTY = "error.not.writable";
     private static final String ERROR_NOT_EMPTY_PROPERTY = "error.not.empty";
     
-    private static final String DEFAULT_ERROR_NULL = resourceUtils.getString(DestinationPanel.class, "DestinationPanel.default.error.null");
-    private static final String DEFAULT_ERROR_NOT_VALID = resourceUtils.getString(DestinationPanel.class, "DestinationPanel.default.error.not.valid");
-    private static final String DEFAULT_ERROR_NOT_DIRECTORY = resourceUtils.getString(DestinationPanel.class, "DestinationPanel.default.error.not.directory");
-    private static final String DEFAULT_ERROR_NOT_READABLE = resourceUtils.getString(DestinationPanel.class, "DestinationPanel.default.error.not.readable");
-    private static final String DEFAULT_ERROR_NOT_WRITABLE = resourceUtils.getString(DestinationPanel.class, "DestinationPanel.default.error.not.writable");
-    private static final String DEFAULT_ERROR_NOT_EMPTY = resourceUtils.getString(DestinationPanel.class, "DestinationPanel.default.error.not.empty");
+    private static final String DEFAULT_ERROR_NULL = ResourceUtils.getString(DestinationPanel.class, "DestinationPanel.default.error.null");
+    private static final String DEFAULT_ERROR_NOT_VALID = ResourceUtils.getString(DestinationPanel.class, "DestinationPanel.default.error.not.valid");
+    private static final String DEFAULT_ERROR_NOT_DIRECTORY = ResourceUtils.getString(DestinationPanel.class, "DestinationPanel.default.error.not.directory");
+    private static final String DEFAULT_ERROR_NOT_READABLE = ResourceUtils.getString(DestinationPanel.class, "DestinationPanel.default.error.not.readable");
+    private static final String DEFAULT_ERROR_NOT_WRITABLE = ResourceUtils.getString(DestinationPanel.class, "DestinationPanel.default.error.not.writable");
+    private static final String DEFAULT_ERROR_NOT_EMPTY = ResourceUtils.getString(DestinationPanel.class, "DestinationPanel.default.error.not.empty");
     
-    private static final String DEFAULT_DESTINATION = resourceUtils.getString(DestinationPanel.class, "DestinationPanel.default.destination");
+    private static final String DEFAULT_DESTINATION = ResourceUtils.getString(DestinationPanel.class, "DestinationPanel.default.destination");
 }

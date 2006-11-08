@@ -26,6 +26,7 @@ import org.netbeans.installer.product.ProductComponent.Status;
 import org.netbeans.installer.product.ProductRegistry;
 import org.netbeans.installer.utils.ErrorLevel;
 import org.netbeans.installer.utils.LogManager;
+import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.utils.exceptions.InstallationException;
@@ -92,5 +93,5 @@ public class DownloadConfigurationLogicAction extends CompositeProgressAction {
     }
     
     public static final String DIALOG_TITLE_PROPERTY = DefaultWizardPanel.DIALOG_TITLE_PROPERTY;
-    public static final String DEFAULT_DIALOG_TITLE = resourceUtils.getString(MainSequence.class, "InstallSequence.DownloadConfigurationLogicAction.default.dialog.title");
+    public static final String DEFAULT_DIALOG_TITLE = ResourceUtils.getString(MainSequence.class, "InstallSequence.DownloadConfigurationLogicAction.default.dialog.title");
 }

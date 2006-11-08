@@ -184,15 +184,15 @@ public abstract class WizardAction implements WizardComponent {
     }
     
     protected final String getString(final String baseName, final String key) {
-        return resourceUtils.getString(baseName, key, getCorrectClassLoader());
+        return ResourceUtils.getString(baseName, key, getCorrectClassLoader());
     }
     
     protected final String getString(final String baseName, final String key, final Object... arguments) {
-        return resourceUtils.getString(baseName, key, getCorrectClassLoader(), arguments);
+        return ResourceUtils.getString(baseName, key, getCorrectClassLoader(), arguments);
     }
     
     protected final InputStream getResource(final String path) {
-        return resourceUtils.getResource(path, getCorrectClassLoader());
+        return ResourceUtils.getResource(path, getCorrectClassLoader());
     }
     
     // private stuff ////////////////////////////////////////////////////////////////
@@ -206,7 +206,5 @@ public abstract class WizardAction implements WizardComponent {
     
     // protected area ///////////////////////////////////////////////////////////////
     protected static final SystemUtils   systemUtils   = SystemUtils.getInstance();
-    protected static final StringUtils   stringUtils   = StringUtils.getInstance();
-    protected static final ResourceUtils resourceUtils = ResourceUtils.getInstance();
     protected static final FileUtils     fileUtils     = FileUtils.getInstance();
 }

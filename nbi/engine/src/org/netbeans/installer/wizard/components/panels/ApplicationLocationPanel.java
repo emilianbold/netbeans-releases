@@ -42,6 +42,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.installer.utils.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
+import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.helper.swing.NbiButton;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
@@ -78,23 +79,15 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
     }
     
     public void initialize() {
-        final String messageContentType = getProperty(MESSAGE_CONTENT_TYPE_PROPERTY);
-        messagePane.setContentType(messageContentType);
+        messagePane.setContentType(getProperty(MESSAGE_CONTENT_TYPE_PROPERTY));
         
-        final String messageText = getProperty(MESSAGE_TEXT_PROPERTY);
-        messagePane.setText(messageText);
+        messagePane.setText(getProperty(MESSAGE_TEXT_PROPERTY));
         
-        final String locationLabelText = getProperty(LOCATION_LABEL_TEXT_PROPERTY);
-        locationLabel.setText(stringUtils.stripMnemonic(locationLabelText));
-        locationLabel.setDisplayedMnemonic(stringUtils.fetchMnemonic(locationLabelText));
+        locationLabel.setText(getProperty(LOCATION_LABEL_TEXT_PROPERTY));
         
-        final String locationButtonText = getProperty(LOCATION_BUTTON_TEXT_PROPERTY);
-        locationButton.setText(stringUtils.stripMnemonic(locationButtonText));
-        locationButton.setMnemonic(stringUtils.fetchMnemonic(locationButtonText));
+        locationButton.setText(getProperty(LOCATION_BUTTON_TEXT_PROPERTY));
         
-        final String listLabelText = getProperty(LIST_LABEL_TEXT_PROPERTY);
-        listLabel.setText(stringUtils.stripMnemonic(listLabelText));
-        listLabel.setDisplayedMnemonic(stringUtils.fetchMnemonic(listLabelText));
+        listLabel.setText(getProperty(LIST_LABEL_TEXT_PROPERTY));
         
         LocationsListModel model = new LocationsListModel(getLocations());
         
@@ -264,14 +257,14 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
     public static final String LOCATION_BUTTON_TEXT_PROPERTY = "location.button.text";
     public static final String LIST_LABEL_TEXT_PROPERTY = "list.label.text";
     
-    public static final String DEFAULT_MESSAGE_TEXT = resourceUtils.getString(ApplicationLocationPanel.class, "ApplicationLocationPanel.default.message.text");
-    public static final String DEFAULT_MESSAGE_TEXT_NOTHING_FOUND = resourceUtils.getString(ApplicationLocationPanel.class, "ApplicationLocationPanel.default.message.text.nothing.found");
-    public static final String DEFAULT_MESSAGE_CONTENT_TYPE = resourceUtils.getString(ApplicationLocationPanel.class, "ApplicationLocationPanel.default.message.content.type");
-    public static final String DEFAULT_LOCATION_LABEL_TEXT = resourceUtils.getString(ApplicationLocationPanel.class, "ApplicationLocationPanel.default.location.label.text");
-    public static final String DEFAULT_LOCATION_BUTTON_TEXT = resourceUtils.getString(ApplicationLocationPanel.class, "ApplicationLocationPanel.default.location.button.text");
-    public static final String DEFAULT_LIST_LABEL_TEXT = resourceUtils.getString(ApplicationLocationPanel.class, "ApplicationLocationPanel.default.list.label.text");
+    public static final String DEFAULT_MESSAGE_TEXT = ResourceUtils.getString(ApplicationLocationPanel.class, "ApplicationLocationPanel.default.message.text");
+    public static final String DEFAULT_MESSAGE_TEXT_NOTHING_FOUND = ResourceUtils.getString(ApplicationLocationPanel.class, "ApplicationLocationPanel.default.message.text.nothing.found");
+    public static final String DEFAULT_MESSAGE_CONTENT_TYPE = ResourceUtils.getString(ApplicationLocationPanel.class, "ApplicationLocationPanel.default.message.content.type");
+    public static final String DEFAULT_LOCATION_LABEL_TEXT = ResourceUtils.getString(ApplicationLocationPanel.class, "ApplicationLocationPanel.default.location.label.text");
+    public static final String DEFAULT_LOCATION_BUTTON_TEXT = ResourceUtils.getString(ApplicationLocationPanel.class, "ApplicationLocationPanel.default.location.button.text");
+    public static final String DEFAULT_LIST_LABEL_TEXT = ResourceUtils.getString(ApplicationLocationPanel.class, "ApplicationLocationPanel.default.list.label.text");
     
-    public static final String DEFAULT_LOCATION = resourceUtils.getString(ApplicationLocationPanel.class, "ApplicationLocationPanel.default.location");
+    public static final String DEFAULT_LOCATION = ResourceUtils.getString(ApplicationLocationPanel.class, "ApplicationLocationPanel.default.location");
     
     private static class LocationsListCellRenderer extends JLabel implements ListCellRenderer {
         public LocationsListCellRenderer() {

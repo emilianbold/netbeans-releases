@@ -31,6 +31,8 @@ import org.netbeans.installer.product.ProductRegistry;
 import org.netbeans.installer.utils.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.LogManager;
+import org.netbeans.installer.utils.ResourceUtils;
+import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.helper.swing.NbiButton;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
 import org.netbeans.installer.utils.helper.swing.NbiPanel;
@@ -127,7 +129,7 @@ public class PostInstallSummaryPanel extends TextPanel {
             
             successfullyInstalledComponentsLabel.setText(getProperty(SUCCESSFULLY_INSTALLED_COMPONENTS_LABEL_TEXT_PROPERTY));
             successfullyInstalledComponentsPane.setContentType(getProperty(SUCCESSFULLY_INSTALLED_COMPONENTS_CONTENT_TYPE_PROPERTY));
-            successfullyInstalledComponentsPane.setText(stringUtils.formatMessage(getProperty(SUCCESSFULLY_INSTALLED_COMPONENTS_TEXT_PROPERTY), stringUtils.asString(components, getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY))));
+            successfullyInstalledComponentsPane.setText(StringUtils.formatMessage(getProperty(SUCCESSFULLY_INSTALLED_COMPONENTS_TEXT_PROPERTY), StringUtils.asString(components, getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY))));
         } else {
             successfullyInstalledComponentsLabel.setVisible(false);
             successfullyInstalledComponentsPane.setVisible(false);
@@ -140,7 +142,7 @@ public class PostInstallSummaryPanel extends TextPanel {
             
             componentsInstalledWithWarningsLabel.setText(getProperty(COMPONENTS_INSTALLED_WITH_WARNINGS_LABEL_TEXT_PROPERTY));
             componentsInstalledWithWarningsPane.setContentType(getProperty(COMPONENTS_INSTALLED_WITH_WARNINGS_CONTENT_TYPE_PROPERTY));
-            componentsInstalledWithWarningsPane.setText(stringUtils.formatMessage(getProperty(COMPONENTS_INSTALLED_WITH_WARNINGS_TEXT_PROPERTY), stringUtils.asString(components, getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY))));
+            componentsInstalledWithWarningsPane.setText(StringUtils.formatMessage(getProperty(COMPONENTS_INSTALLED_WITH_WARNINGS_TEXT_PROPERTY), StringUtils.asString(components, getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY))));
         } else {
             componentsInstalledWithWarningsLabel.setVisible(false);
             componentsInstalledWithWarningsPane.setVisible(false);
@@ -153,7 +155,7 @@ public class PostInstallSummaryPanel extends TextPanel {
             
             componentsFailedToInstallLabel.setText(getProperty(COMPONENTS_FAILED_TO_INSTALL_WARNINGS_LABEL_TEXT_PROPERTY));
             componentsFailedToInstallPane.setContentType(getProperty(COMPONENTS_FAILED_TO_INSTALL_CONTENT_TYPE_PROPERTY));
-            componentsFailedToInstallPane.setText(stringUtils.formatMessage(getProperty(COMPONENTS_FAILED_TO_INSTALL_TEXT_PROPERTY), stringUtils.asString(components, getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY))));
+            componentsFailedToInstallPane.setText(StringUtils.formatMessage(getProperty(COMPONENTS_FAILED_TO_INSTALL_TEXT_PROPERTY), StringUtils.asString(components, getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY))));
         } else {
             componentsFailedToInstallLabel.setVisible(false);
             componentsFailedToInstallPane.setVisible(false);
@@ -166,7 +168,7 @@ public class PostInstallSummaryPanel extends TextPanel {
             
             successfullyUninstalledComponentsLabel.setText(getProperty(SUCCESSFULLY_UNINSTALLED_COMPONENTS_LABEL_TEXT_PROPERTY));
             successfullyUninstalledComponentsPane.setContentType(getProperty(SUCCESSFULLY_UNINSTALLED_COMPONENTS_CONTENT_TYPE_PROPERTY));
-            successfullyUninstalledComponentsPane.setText(stringUtils.formatMessage(getProperty(SUCCESSFULLY_UNINSTALLED_COMPONENTS_TEXT_PROPERTY), stringUtils.asString(components, getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY))));
+            successfullyUninstalledComponentsPane.setText(StringUtils.formatMessage(getProperty(SUCCESSFULLY_UNINSTALLED_COMPONENTS_TEXT_PROPERTY), StringUtils.asString(components, getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY))));
         } else {
             successfullyUninstalledComponentsLabel.setVisible(false);
             successfullyUninstalledComponentsPane.setVisible(false);
@@ -179,7 +181,7 @@ public class PostInstallSummaryPanel extends TextPanel {
             
             componentsUninstalledWithWarningsLabel.setText(getProperty(COMPONENTS_UNINSTALLED_WITH_WARNINGS_LABEL_TEXT_PROPERTY));
             componentsUninstalledWithWarningsPane.setContentType(getProperty(COMPONENTS_UNINSTALLED_WITH_WARNINGS_CONTENT_TYPE_PROPERTY));
-            componentsUninstalledWithWarningsPane.setText(stringUtils.formatMessage(getProperty(COMPONENTS_UNINSTALLED_WITH_WARNINGS_TEXT_PROPERTY), stringUtils.asString(components, getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY))));
+            componentsUninstalledWithWarningsPane.setText(StringUtils.formatMessage(getProperty(COMPONENTS_UNINSTALLED_WITH_WARNINGS_TEXT_PROPERTY), StringUtils.asString(components, getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY))));
         } else {
             componentsUninstalledWithWarningsLabel.setVisible(false);
             componentsUninstalledWithWarningsPane.setVisible(false);
@@ -192,23 +194,23 @@ public class PostInstallSummaryPanel extends TextPanel {
             
             componentsFailedToUninstallLabel.setText(getProperty(COMPONENTS_FAILED_TO_UNINSTALL_WARNINGS_LABEL_TEXT_PROPERTY));
             componentsFailedToUninstallPane.setContentType(getProperty(COMPONENTS_FAILED_TO_UNINSTALL_CONTENT_TYPE_PROPERTY));
-            componentsFailedToUninstallPane.setText(stringUtils.formatMessage(getProperty(COMPONENTS_FAILED_TO_UNINSTALL_TEXT_PROPERTY), stringUtils.asString(components, getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY))));
+            componentsFailedToUninstallPane.setText(StringUtils.formatMessage(getProperty(COMPONENTS_FAILED_TO_UNINSTALL_TEXT_PROPERTY), StringUtils.asString(components, getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY))));
         } else {
             componentsFailedToUninstallLabel.setVisible(false);
             componentsFailedToUninstallPane.setVisible(false);
         }
         
         final String viewDetailsButtonText = getProperty(VIEW_DETAILS_BUTTON_TEXT_PROPERTY);
-        viewDetailsButton.setText(stringUtils.stripMnemonic(viewDetailsButtonText));
-        viewDetailsButton.setMnemonic(stringUtils.fetchMnemonic(viewDetailsButtonText));
+        viewDetailsButton.setText(StringUtils.stripMnemonic(viewDetailsButtonText));
+        viewDetailsButton.setMnemonic(StringUtils.fetchMnemonic(viewDetailsButtonText));
         
         final String viewLogButtonText = getProperty(VIEW_LOG_BUTTON_TEXT_PROPERTY);
-        viewLogButton.setText(stringUtils.stripMnemonic(viewLogButtonText));
-        viewLogButton.setMnemonic(stringUtils.fetchMnemonic(viewLogButtonText));
+        viewLogButton.setText(StringUtils.stripMnemonic(viewLogButtonText));
+        viewLogButton.setMnemonic(StringUtils.fetchMnemonic(viewLogButtonText));
         
         final String sendLogButtonText = getProperty(SEND_LOG_BUTTON_TEXT_PROPERTY);
-        sendLogButton.setText(stringUtils.stripMnemonic(sendLogButtonText));
-        sendLogButton.setMnemonic(stringUtils.fetchMnemonic(sendLogButtonText));
+        sendLogButton.setText(StringUtils.stripMnemonic(sendLogButtonText));
+        sendLogButton.setMnemonic(StringUtils.fetchMnemonic(sendLogButtonText));
         
     }
     
@@ -379,34 +381,34 @@ public class PostInstallSummaryPanel extends TextPanel {
     public static final String SEND_LOG_BUTTON_TEXT_PROPERTY = "send.log.button.text";
     public static final String COMPONENTS_LIST_SEPARATOR_PROPERTY = "components.list.separator";
     
-    public static final String DEFAULT_MESSAGE_SUCCESS_TEXT = resourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.message.success.text");
-    public static final String DEFAULT_MESSAGE_SUCCESS_CONTENT_TYPE = resourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.message.success.content.type");
-    public static final String DEFAULT_MESSAGE_WARNINGS_TEXT = resourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.message.warnings.text");
-    public static final String DEFAULT_MESSAGE_WARNINGS_CONTENT_TYPE = resourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.message.warnings.content.type");
-    public static final String DEFAULT_MESSAGE_ERRORS_TEXT = resourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.message.errors.text");
-    public static final String DEFAULT_MESSAGE_ERRORS_CONTENT_TYPE = resourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.message.errors.content.type");
-    public static final String DEFAULT_SUCCESSFULLY_INSTALLED_COMPONENTS_LABEL_TEXT = resourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.successfully.installed.components.label.text");
-    public static final String DEFAULT_SUCCESSFULLY_INSTALLED_COMPONENTS_TEXT = resourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.successfully.installed.components.text");
-    public static final String DEFAULT_SUCCESSFULLY_INSTALLED_COMPONENTS_CONTENT_TYPE = resourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.successfully.installed.components.content.type");
-    public static final String DEFAULT_COMPONENTS_INSTALLED_WITH_WARNINGS_LABEL_TEXT = resourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.components.installed.with.warnings.label.text");
-    public static final String DEFAULT_COMPONENTS_INSTALLED_WITH_WARNINGS_TEXT = resourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.components.installed.with.warnings.text");
-    public static final String DEFAULT_COMPONENTS_INSTALLED_WITH_WARNINGS_CONTENT_TYPE = resourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.components.installed.with.warnings.content.type");
-    public static final String DEFAULT_COMPONENTS_FAILED_TO_INSTALL_WARNINGS_LABEL_TEXT = resourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.components.failed.to.install.label.text");
-    public static final String DEFAULT_COMPONENTS_FAILED_TO_INSTALL_TEXT = resourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.components.failed.to.install.text");
-    public static final String DEFAULT_COMPONENTS_FAILED_TO_INSTALL_CONTENT_TYPE = resourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.components.failed.to.install.content.type");
-    public static final String DEFAULT_SUCCESSFULLY_UNINSTALLED_COMPONENTS_LABEL_TEXT = resourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.successfully.uninstalled.components.label.text");
-    public static final String DEFAULT_SUCCESSFULLY_UNINSTALLED_COMPONENTS_TEXT = resourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.successfully.uninstalled.components.text");
-    public static final String DEFAULT_SUCCESSFULLY_UNINSTALLED_COMPONENTS_CONTENT_TYPE = resourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.successfully.uninstalled.components.content.type");
-    public static final String DEFAULT_COMPONENTS_UNINSTALLED_WITH_WARNINGS_LABEL_TEXT = resourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.components.uninstalled.with.warnings.label.text");
-    public static final String DEFAULT_COMPONENTS_UNINSTALLED_WITH_WARNINGS_TEXT = resourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.components.uninstalled.with.warnings.text");
-    public static final String DEFAULT_COMPONENTS_UNINSTALLED_WITH_WARNINGS_CONTENT_TYPE = resourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.components.uninstalled.with.warnings.content.type");
-    public static final String DEFAULT_COMPONENTS_FAILED_TO_UNINSTALL_WARNINGS_LABEL_TEXT = resourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.components.failed.to.uninstall.label.text");
-    public static final String DEFAULT_COMPONENTS_FAILED_TO_UNINSTALL_TEXT = resourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.components.failed.to.uninstall.text");
-    public static final String DEFAULT_COMPONENTS_FAILED_TO_UNINSTALL_CONTENT_TYPE = resourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.components.failed.to.uninstall.content.type");
-    public static final String DEFAULT_VIEW_DETAILS_BUTTON_TEXT = resourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.view.details.button.text");
-    public static final String DEFAULT_VIEW_LOG_BUTTON_TEXT = resourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.view.log.button.text");
-    public static final String DEFAULT_SEND_LOG_BUTTON_TEXT = resourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.send.log.button.text");
-    public static final String DEFAULT_COMPONENTS_LIST_SEPARATOR = resourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.components.list.separator");
+    public static final String DEFAULT_MESSAGE_SUCCESS_TEXT = ResourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.message.success.text");
+    public static final String DEFAULT_MESSAGE_SUCCESS_CONTENT_TYPE = ResourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.message.success.content.type");
+    public static final String DEFAULT_MESSAGE_WARNINGS_TEXT = ResourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.message.warnings.text");
+    public static final String DEFAULT_MESSAGE_WARNINGS_CONTENT_TYPE = ResourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.message.warnings.content.type");
+    public static final String DEFAULT_MESSAGE_ERRORS_TEXT = ResourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.message.errors.text");
+    public static final String DEFAULT_MESSAGE_ERRORS_CONTENT_TYPE = ResourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.message.errors.content.type");
+    public static final String DEFAULT_SUCCESSFULLY_INSTALLED_COMPONENTS_LABEL_TEXT = ResourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.successfully.installed.components.label.text");
+    public static final String DEFAULT_SUCCESSFULLY_INSTALLED_COMPONENTS_TEXT = ResourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.successfully.installed.components.text");
+    public static final String DEFAULT_SUCCESSFULLY_INSTALLED_COMPONENTS_CONTENT_TYPE = ResourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.successfully.installed.components.content.type");
+    public static final String DEFAULT_COMPONENTS_INSTALLED_WITH_WARNINGS_LABEL_TEXT = ResourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.components.installed.with.warnings.label.text");
+    public static final String DEFAULT_COMPONENTS_INSTALLED_WITH_WARNINGS_TEXT = ResourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.components.installed.with.warnings.text");
+    public static final String DEFAULT_COMPONENTS_INSTALLED_WITH_WARNINGS_CONTENT_TYPE = ResourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.components.installed.with.warnings.content.type");
+    public static final String DEFAULT_COMPONENTS_FAILED_TO_INSTALL_WARNINGS_LABEL_TEXT = ResourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.components.failed.to.install.label.text");
+    public static final String DEFAULT_COMPONENTS_FAILED_TO_INSTALL_TEXT = ResourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.components.failed.to.install.text");
+    public static final String DEFAULT_COMPONENTS_FAILED_TO_INSTALL_CONTENT_TYPE = ResourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.components.failed.to.install.content.type");
+    public static final String DEFAULT_SUCCESSFULLY_UNINSTALLED_COMPONENTS_LABEL_TEXT = ResourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.successfully.uninstalled.components.label.text");
+    public static final String DEFAULT_SUCCESSFULLY_UNINSTALLED_COMPONENTS_TEXT = ResourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.successfully.uninstalled.components.text");
+    public static final String DEFAULT_SUCCESSFULLY_UNINSTALLED_COMPONENTS_CONTENT_TYPE = ResourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.successfully.uninstalled.components.content.type");
+    public static final String DEFAULT_COMPONENTS_UNINSTALLED_WITH_WARNINGS_LABEL_TEXT = ResourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.components.uninstalled.with.warnings.label.text");
+    public static final String DEFAULT_COMPONENTS_UNINSTALLED_WITH_WARNINGS_TEXT = ResourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.components.uninstalled.with.warnings.text");
+    public static final String DEFAULT_COMPONENTS_UNINSTALLED_WITH_WARNINGS_CONTENT_TYPE = ResourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.components.uninstalled.with.warnings.content.type");
+    public static final String DEFAULT_COMPONENTS_FAILED_TO_UNINSTALL_WARNINGS_LABEL_TEXT = ResourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.components.failed.to.uninstall.label.text");
+    public static final String DEFAULT_COMPONENTS_FAILED_TO_UNINSTALL_TEXT = ResourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.components.failed.to.uninstall.text");
+    public static final String DEFAULT_COMPONENTS_FAILED_TO_UNINSTALL_CONTENT_TYPE = ResourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.components.failed.to.uninstall.content.type");
+    public static final String DEFAULT_VIEW_DETAILS_BUTTON_TEXT = ResourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.view.details.button.text");
+    public static final String DEFAULT_VIEW_LOG_BUTTON_TEXT = ResourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.view.log.button.text");
+    public static final String DEFAULT_SEND_LOG_BUTTON_TEXT = ResourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.send.log.button.text");
+    public static final String DEFAULT_COMPONENTS_LIST_SEPARATOR = ResourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.components.list.separator");
     
-    public static final String DEFAULT_DIALOG_TITLE = resourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.dialog.title");
+    public static final String DEFAULT_DIALOG_TITLE = ResourceUtils.getString(PostInstallSummaryPanel.class, "PostInstallSummaryPanel.default.dialog.title");
 }

@@ -26,6 +26,8 @@ import java.util.List;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.installer.product.ProductComponent;
 import org.netbeans.installer.product.ProductRegistry;
+import org.netbeans.installer.utils.ResourceUtils;
+import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
 import org.netbeans.installer.utils.helper.swing.NbiPanel;
 import org.netbeans.installer.utils.helper.swing.NbiTextPane;
@@ -62,8 +64,7 @@ public class PreInstallSummaryPanel extends DefaultWizardPanel {
     }
     
     public void initialize() {
-        getNextButton().setText(stringUtils.stripMnemonic("&Install"));
-        getNextButton().setMnemonic(stringUtils.fetchMnemonic("&Install"));
+        getNextButton().setText("&Install");
         
         final String messageContentType = getProperty(MESSAGE_CONTENT_TYPE_PROPERTY);
         messagePane.setContentType(messageContentType);
@@ -84,7 +85,7 @@ public class PreInstallSummaryPanel extends DefaultWizardPanel {
             final String componentsToUninstallContentType = getProperty(COMPONENTS_TO_UNINSTALL_CONTENT_TYPE_PROPERTY);
             componentsToUninstallPane.setContentType(componentsToUninstallContentType);
             
-            final String componentsToUninstallText = stringUtils.formatMessage(getProperty(COMPONENTS_TO_UNINSTALL_TEXT_PROPERTY), stringUtils.asString(componentsToUninstall, getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY)));
+            final String componentsToUninstallText = StringUtils.formatMessage(getProperty(COMPONENTS_TO_UNINSTALL_TEXT_PROPERTY), StringUtils.asString(componentsToUninstall, getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY)));
             componentsToUninstallPane.setText(componentsToUninstallText);
         } else {
             componentsToUninstallLabel.setVisible(false);
@@ -103,7 +104,7 @@ public class PreInstallSummaryPanel extends DefaultWizardPanel {
             final String componentsToInstallContentType = getProperty(COMPONENTS_TO_INSTALL_CONTENT_TYPE_PROPERTY);
             componentsToInstallPane.setContentType(componentsToInstallContentType);
             
-            final String componentsToInstallText = stringUtils.formatMessage(getProperty(COMPONENTS_TO_INSTALL_TEXT_PROPERTY), stringUtils.asString(componentsToInstall, getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY)));
+            final String componentsToInstallText = StringUtils.formatMessage(getProperty(COMPONENTS_TO_INSTALL_TEXT_PROPERTY), StringUtils.asString(componentsToInstall, getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY)));
             componentsToInstallPane.setText(componentsToInstallText);
             
             long downloadSize = 0;
@@ -116,10 +117,10 @@ public class PreInstallSummaryPanel extends DefaultWizardPanel {
                 requiredDiskSpace += component.getRequiredDiskSpace();
             }
             
-            final String downloadSizeLabelText = stringUtils.formatMessage(getProperty(DOWNLOAD_SIZE_LABEL_TEXT_PROPERTY), stringUtils.formatSize(downloadSize));
+            final String downloadSizeLabelText = StringUtils.formatMessage(getProperty(DOWNLOAD_SIZE_LABEL_TEXT_PROPERTY), StringUtils.formatSize(downloadSize));
             downloadSizeLabel.setText(downloadSizeLabelText);
             
-            final String requiredDiskSpaceLabelText = stringUtils.formatMessage(getProperty(REQUIRED_DISK_SPACE_LABEL_TEXT_PROPERTY), stringUtils.formatSize(requiredDiskSpace));
+            final String requiredDiskSpaceLabelText = StringUtils.formatMessage(getProperty(REQUIRED_DISK_SPACE_LABEL_TEXT_PROPERTY), StringUtils.formatSize(requiredDiskSpace));
             requiredDiskSpaceLabel.setText(requiredDiskSpaceLabelText);
         } else {
             componentsToInstallLabel.setVisible(false);
@@ -185,17 +186,17 @@ public class PreInstallSummaryPanel extends DefaultWizardPanel {
     public static final String DOWNLOAD_SIZE_LABEL_TEXT_PROPERTY = "download.size.label.text";
     public static final String REQUIRED_DISK_SPACE_LABEL_TEXT_PROPERTY = "required.disk.space.label.text";
     
-    public static final String DEFAULT_MESSAGE_TEXT = resourceUtils.getString(PreInstallSummaryPanel.class, "PreInstallSummaryPanel.default.message.text");
-    public static final String DEFAULT_MESSAGE_CONTENT_TYPE = resourceUtils.getString(PreInstallSummaryPanel.class, "PreInstallSummaryPanel.default.message.content.type");
-    public static final String DEFAULT_COMPONENTS_TO_INSTALL_LABEL_TEXT = resourceUtils.getString(PreInstallSummaryPanel.class, "PreInstallSummaryPanel.default.components.to.install.label.text");
-    public static final String DEFAULT_COMPONENTS_TO_INSTALL_TEXT = resourceUtils.getString(PreInstallSummaryPanel.class, "PreInstallSummaryPanel.default.components.to.install.text");
-    public static final String DEFAULT_COMPONENTS_TO_INSTALL_CONTENT_TYPE = resourceUtils.getString(PreInstallSummaryPanel.class, "PreInstallSummaryPanel.default.components.to.install.content.type");
-    public static final String DEFAULT_COMPONENTS_TO_UNINSTALL_LABEL_TEXT = resourceUtils.getString(PreInstallSummaryPanel.class, "PreInstallSummaryPanel.default.components.to.uninstall.label.text");
-    public static final String DEFAULT_COMPONENTS_TO_UNINSTALL_TEXT = resourceUtils.getString(PreInstallSummaryPanel.class, "PreInstallSummaryPanel.default.components.to.uninstall.text");
-    public static final String DEFAULT_COMPONENTS_TO_UNINSTALL_CONTENT_TYPE = resourceUtils.getString(PreInstallSummaryPanel.class, "PreInstallSummaryPanel.default.components.to.uninstall.content.type");
-    public static final String DEFAULT_COMPONENTS_LIST_SEPARATOR = resourceUtils.getString(PreInstallSummaryPanel.class, "PreInstallSummaryPanel.default.components.list.separator");
-    public static final String DEFAULT_DOWNLOAD_SIZE_LABEL_TEXT = resourceUtils.getString(PreInstallSummaryPanel.class, "PreInstallSummaryPanel.default.download.size.label.text");
-    public static final String DEFAULT_REQUIRED_DISK_SPACE_LABEL_TEXT = resourceUtils.getString(PreInstallSummaryPanel.class, "PreInstallSummaryPanel.default.required.disk.space.label.text");
+    public static final String DEFAULT_MESSAGE_TEXT = ResourceUtils.getString(PreInstallSummaryPanel.class, "PreInstallSummaryPanel.default.message.text");
+    public static final String DEFAULT_MESSAGE_CONTENT_TYPE = ResourceUtils.getString(PreInstallSummaryPanel.class, "PreInstallSummaryPanel.default.message.content.type");
+    public static final String DEFAULT_COMPONENTS_TO_INSTALL_LABEL_TEXT = ResourceUtils.getString(PreInstallSummaryPanel.class, "PreInstallSummaryPanel.default.components.to.install.label.text");
+    public static final String DEFAULT_COMPONENTS_TO_INSTALL_TEXT = ResourceUtils.getString(PreInstallSummaryPanel.class, "PreInstallSummaryPanel.default.components.to.install.text");
+    public static final String DEFAULT_COMPONENTS_TO_INSTALL_CONTENT_TYPE = ResourceUtils.getString(PreInstallSummaryPanel.class, "PreInstallSummaryPanel.default.components.to.install.content.type");
+    public static final String DEFAULT_COMPONENTS_TO_UNINSTALL_LABEL_TEXT = ResourceUtils.getString(PreInstallSummaryPanel.class, "PreInstallSummaryPanel.default.components.to.uninstall.label.text");
+    public static final String DEFAULT_COMPONENTS_TO_UNINSTALL_TEXT = ResourceUtils.getString(PreInstallSummaryPanel.class, "PreInstallSummaryPanel.default.components.to.uninstall.text");
+    public static final String DEFAULT_COMPONENTS_TO_UNINSTALL_CONTENT_TYPE = ResourceUtils.getString(PreInstallSummaryPanel.class, "PreInstallSummaryPanel.default.components.to.uninstall.content.type");
+    public static final String DEFAULT_COMPONENTS_LIST_SEPARATOR = ResourceUtils.getString(PreInstallSummaryPanel.class, "PreInstallSummaryPanel.default.components.list.separator");
+    public static final String DEFAULT_DOWNLOAD_SIZE_LABEL_TEXT = ResourceUtils.getString(PreInstallSummaryPanel.class, "PreInstallSummaryPanel.default.download.size.label.text");
+    public static final String DEFAULT_REQUIRED_DISK_SPACE_LABEL_TEXT = ResourceUtils.getString(PreInstallSummaryPanel.class, "PreInstallSummaryPanel.default.required.disk.space.label.text");
     
-    public static final String DEFAULT_DIALOG_TITLE = resourceUtils.getString(PreInstallSummaryPanel.class, "PreInstallSummaryPanel.default.dialog.title");
+    public static final String DEFAULT_DIALOG_TITLE = ResourceUtils.getString(PreInstallSummaryPanel.class, "PreInstallSummaryPanel.default.dialog.title");
 }

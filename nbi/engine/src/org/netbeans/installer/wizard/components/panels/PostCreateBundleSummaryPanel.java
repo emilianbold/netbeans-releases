@@ -31,11 +31,12 @@ import org.netbeans.installer.product.ProductRegistry;
 import org.netbeans.installer.utils.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.LogManager;
+import org.netbeans.installer.utils.ResourceUtils;
+import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.helper.swing.NbiButton;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
 import org.netbeans.installer.utils.helper.swing.NbiPanel;
 import org.netbeans.installer.utils.helper.swing.NbiTextPane;
-import org.netbeans.installer.utils.wizard.InstallationDetailsDialog;
 import org.netbeans.installer.utils.wizard.InstallationLogDialog;
 
 /**
@@ -98,7 +99,7 @@ public class PostCreateBundleSummaryPanel extends TextPanel {
             
             successfullyBundledComponentsLabel.setText(getProperty(SUCCESSFULLY_BUNDLED_COMPONENTS_LABEL_TEXT_PROPERTY));
             successfullyBundledComponentsPane.setContentType(getProperty(SUCCESSFULLY_BUNDLED_COMPONENTS_CONTENT_TYPE_PROPERTY));
-            successfullyBundledComponentsPane.setText(stringUtils.formatMessage(getProperty(SUCCESSFULLY_BUNDLED_COMPONENTS_TEXT_PROPERTY), stringUtils.asString(components, getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY))));
+            successfullyBundledComponentsPane.setText(StringUtils.formatMessage(getProperty(SUCCESSFULLY_BUNDLED_COMPONENTS_TEXT_PROPERTY), StringUtils.asString(components, getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY))));
         } else {
             successfullyBundledComponentsLabel.setVisible(false);
             successfullyBundledComponentsPane.setVisible(false);
@@ -111,7 +112,7 @@ public class PostCreateBundleSummaryPanel extends TextPanel {
             
             componentsFailedToBundleLabel.setText(getProperty(COMPONENTS_FAILED_TO_BUNDLE_LABEL_TEXT_PROPERTY));
             componentsFailedToBundlePane.setContentType(getProperty(COMPONENTS_FAILED_TO_BUNDLE_CONTENT_TYPE_PROPERTY));
-            componentsFailedToBundlePane.setText(stringUtils.formatMessage(getProperty(COMPONENTS_FAILED_TO_BUNDLE_TEXT_PROPERTY), stringUtils.asString(components, getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY))));
+            componentsFailedToBundlePane.setText(StringUtils.formatMessage(getProperty(COMPONENTS_FAILED_TO_BUNDLE_TEXT_PROPERTY), StringUtils.asString(components, getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY))));
         } else {
             componentsFailedToBundleLabel.setVisible(false);
             componentsFailedToBundlePane.setVisible(false);
@@ -194,19 +195,19 @@ public class PostCreateBundleSummaryPanel extends TextPanel {
     public static final String SEND_LOG_BUTTON_TEXT_PROPERTY = "send.log.button.text";
     public static final String COMPONENTS_LIST_SEPARATOR_PROPERTY = "components.list.separator";
     
-    public static final String DEFAULT_MESSAGE_SUCCESS_TEXT = resourceUtils.getString(PostCreateBundleSummaryPanel.class, "PostCreateBundleSummaryPanel.default.message.success.text");
-    public static final String DEFAULT_MESSAGE_SUCCESS_CONTENT_TYPE = resourceUtils.getString(PostCreateBundleSummaryPanel.class, "PostCreateBundleSummaryPanel.default.message.success.content.type");
-    public static final String DEFAULT_MESSAGE_ERRORS_TEXT = resourceUtils.getString(PostCreateBundleSummaryPanel.class, "PostCreateBundleSummaryPanel.default.message.errors.text");
-    public static final String DEFAULT_MESSAGE_ERRORS_CONTENT_TYPE = resourceUtils.getString(PostCreateBundleSummaryPanel.class, "PostCreateBundleSummaryPanel.default.message.errors.content.type");
-    public static final String DEFAULT_SUCCESSFULLY_BUNDLED_COMPONENTS_LABEL_TEXT = resourceUtils.getString(PostCreateBundleSummaryPanel.class, "PostCreateBundleSummaryPanel.default.successfully.bundled.components.label.text");
-    public static final String DEFAULT_SUCCESSFULLY_BUNDLED_COMPONENTS_TEXT = resourceUtils.getString(PostCreateBundleSummaryPanel.class, "PostCreateBundleSummaryPanel.default.successfully.bundled.components.text");
-    public static final String DEFAULT_SUCCESSFULLY_BUNDLED_COMPONENTS_CONTENT_TYPE = resourceUtils.getString(PostCreateBundleSummaryPanel.class, "PostCreateBundleSummaryPanel.default.successfully.bundled.components.content.type");
-    public static final String DEFAULT_COMPONENTS_FAILED_TO_BUNDLE_LABEL_TEXT = resourceUtils.getString(PostCreateBundleSummaryPanel.class, "PostCreateBundleSummaryPanel.default.components.failed.to.bundle.label.text");
-    public static final String DEFAULT_COMPONENTS_FAILED_TO_BUNDLE_TEXT = resourceUtils.getString(PostCreateBundleSummaryPanel.class, "PostCreateBundleSummaryPanel.default.components.failed.to.bundle.text");
-    public static final String DEFAULT_COMPONENTS_FAILED_TO_BUNDLE_CONTENT_TYPE = resourceUtils.getString(PostCreateBundleSummaryPanel.class, "PostCreateBundleSummaryPanel.default.components.failed.to.bundle.content.type");
-    public static final String DEFAULT_VIEW_LOG_BUTTON_TEXT = resourceUtils.getString(PostCreateBundleSummaryPanel.class, "PostCreateBundleSummaryPanel.default.view.log.button.text");
-    public static final String DEFAULT_SEND_LOG_BUTTON_TEXT = resourceUtils.getString(PostCreateBundleSummaryPanel.class, "PostCreateBundleSummaryPanel.default.send.log.button.text");
-    public static final String DEFAULT_COMPONENTS_LIST_SEPARATOR = resourceUtils.getString(PostCreateBundleSummaryPanel.class, "PostCreateBundleSummaryPanel.default.components.list.separator");
+    public static final String DEFAULT_MESSAGE_SUCCESS_TEXT = ResourceUtils.getString(PostCreateBundleSummaryPanel.class, "PostCreateBundleSummaryPanel.default.message.success.text");
+    public static final String DEFAULT_MESSAGE_SUCCESS_CONTENT_TYPE = ResourceUtils.getString(PostCreateBundleSummaryPanel.class, "PostCreateBundleSummaryPanel.default.message.success.content.type");
+    public static final String DEFAULT_MESSAGE_ERRORS_TEXT = ResourceUtils.getString(PostCreateBundleSummaryPanel.class, "PostCreateBundleSummaryPanel.default.message.errors.text");
+    public static final String DEFAULT_MESSAGE_ERRORS_CONTENT_TYPE = ResourceUtils.getString(PostCreateBundleSummaryPanel.class, "PostCreateBundleSummaryPanel.default.message.errors.content.type");
+    public static final String DEFAULT_SUCCESSFULLY_BUNDLED_COMPONENTS_LABEL_TEXT = ResourceUtils.getString(PostCreateBundleSummaryPanel.class, "PostCreateBundleSummaryPanel.default.successfully.bundled.components.label.text");
+    public static final String DEFAULT_SUCCESSFULLY_BUNDLED_COMPONENTS_TEXT = ResourceUtils.getString(PostCreateBundleSummaryPanel.class, "PostCreateBundleSummaryPanel.default.successfully.bundled.components.text");
+    public static final String DEFAULT_SUCCESSFULLY_BUNDLED_COMPONENTS_CONTENT_TYPE = ResourceUtils.getString(PostCreateBundleSummaryPanel.class, "PostCreateBundleSummaryPanel.default.successfully.bundled.components.content.type");
+    public static final String DEFAULT_COMPONENTS_FAILED_TO_BUNDLE_LABEL_TEXT = ResourceUtils.getString(PostCreateBundleSummaryPanel.class, "PostCreateBundleSummaryPanel.default.components.failed.to.bundle.label.text");
+    public static final String DEFAULT_COMPONENTS_FAILED_TO_BUNDLE_TEXT = ResourceUtils.getString(PostCreateBundleSummaryPanel.class, "PostCreateBundleSummaryPanel.default.components.failed.to.bundle.text");
+    public static final String DEFAULT_COMPONENTS_FAILED_TO_BUNDLE_CONTENT_TYPE = ResourceUtils.getString(PostCreateBundleSummaryPanel.class, "PostCreateBundleSummaryPanel.default.components.failed.to.bundle.content.type");
+    public static final String DEFAULT_VIEW_LOG_BUTTON_TEXT = ResourceUtils.getString(PostCreateBundleSummaryPanel.class, "PostCreateBundleSummaryPanel.default.view.log.button.text");
+    public static final String DEFAULT_SEND_LOG_BUTTON_TEXT = ResourceUtils.getString(PostCreateBundleSummaryPanel.class, "PostCreateBundleSummaryPanel.default.send.log.button.text");
+    public static final String DEFAULT_COMPONENTS_LIST_SEPARATOR = ResourceUtils.getString(PostCreateBundleSummaryPanel.class, "PostCreateBundleSummaryPanel.default.components.list.separator");
     
-    public static final String DEFAULT_DIALOG_TITLE = resourceUtils.getString(PostCreateBundleSummaryPanel.class, "PostCreateBundleSummaryPanel.default.dialog.title");
+    public static final String DEFAULT_DIALOG_TITLE = ResourceUtils.getString(PostCreateBundleSummaryPanel.class, "PostCreateBundleSummaryPanel.default.dialog.title");
 }

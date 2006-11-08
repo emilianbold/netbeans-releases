@@ -61,12 +61,12 @@ public class ErrorManager {
         }
         if (exception != null) {
             LogManager.log(level, exception);
-            dialogText += StringUtils.getInstance().asString(exception);
+            dialogText += StringUtils.asString(exception);
             
             Throwable cause = exception.getCause();
             while (cause != null) {
                 dialogText += "\nCaused by:\n";
-                dialogText += StringUtils.getInstance().asString(cause);
+                dialogText += StringUtils.asString(cause);
                 cause = cause.getCause();
             }
         }

@@ -22,6 +22,7 @@ package org.netbeans.installer.wizard.components.panels;
 
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
+import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.helper.swing.NbiTextPane;
 
 /**
@@ -53,6 +54,6 @@ public class TextPanel extends DefaultWizardPanel {
     public static final String TEXT_PROPERTY = "text";
     public static final String CONTENT_TYPE_PROPERTY = "content.type";
     
-    public static final String DEFAULT_TEXT = resourceUtils.getString(TextPanel.class, "TextPanel.default.text");
-    public static final String DEFAULT_CONTENT_TYPE = resourceUtils.getString(TextPanel.class, "TextPanel.default.content.type");
+    public static final String DEFAULT_TEXT = ResourceUtils.getString(TextPanel.class, "TextPanel.default.text");
+    public static final String DEFAULT_CONTENT_TYPE = ResourceUtils.getString(TextPanel.class, "TextPanel.default.content.type");
 }

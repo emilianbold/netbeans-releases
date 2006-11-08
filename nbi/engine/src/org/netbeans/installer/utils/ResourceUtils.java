@@ -33,86 +33,54 @@ import java.util.ResourceBundle;
 public abstract class ResourceUtils {
     ////////////////////////////////////////////////////////////////////////////
     // Static
-    private static ResourceUtils instance;
+    private static Map<String, ResourceBundle> loadedBundles = new HashMap<String, ResourceBundle>();
     
-    public static synchronized ResourceUtils getInstance() {
-        if (instance == null) {
-            instance = new GenericResourceUtils();
+    private static ResourceBundle loadBundle(String baseName, Locale locale, ClassLoader loader) {
+        String bundleId = loader.toString() + baseName;
+        
+        ResourceBundle bundle = (ResourceBundle) loadedBundles.get(bundleId);
+        
+        if (bundle == null) {
+            bundle = ResourceBundle.getBundle(baseName, locale, loader);
+            loadedBundles.put(bundleId, bundle);
         }
         
-        return instance;
+        return bundle;
     }
     
-    ////////////////////////////////////////////////////////////////////////////
-    // Instance
-    public abstract String getString(String baseName, String key);
+    private static ResourceBundle loadBundle(Class clazz, Locale locale) {
+        return loadBundle(clazz.getPackage().getName() + "." + "Bundle", locale, clazz.getClassLoader());
+    }
     
-    public abstract String getString(String baseName, String key, ClassLoader loader);
+    public static String getString(String baseName, String key) {
+        return loadBundle(baseName, Locale.getDefault(), ResourceUtils.class.getClassLoader()).getString(key);
+    }
     
-    public abstract String getString(String baseName, String key, Object... arguments);
+    public static String getString(String baseName, String key, Object... arguments) {
+        return StringUtils.formatMessage(getString(baseName, key), arguments);
+    }
     
-    public abstract String getString(String baseName, String key, ClassLoader loader, Object... arguments);
+    public static String getString(String baseName, String key, ClassLoader loader) {
+        return loadBundle(baseName, Locale.getDefault(), loader).getString(key);
+    }
     
-    public abstract String getString(Class clazz, String key);
+    public static String getString(String baseName, String key, ClassLoader loader, Object... arguments) {
+        return StringUtils.formatMessage(getString(baseName, key, loader), arguments);
+    }
     
-    public abstract String getString(Class clazz, String key, Object... arguments);
+    public static String getString(Class clazz, String key) {
+        return loadBundle(clazz, Locale.getDefault()).getString(key);
+    }
     
-    public abstract InputStream getResource(String path);
+    public static String getString(Class clazz, String key, Object... arguments) {
+        return StringUtils.formatMessage(getString(clazz, key), arguments);
+    }
     
-    public abstract InputStream getResource(String path, ClassLoader loader);
+    public static InputStream getResource(String name) {
+        return getResource(name, ResourceUtils.class.getClassLoader());
+    }
     
-    ////////////////////////////////////////////////////////////////////////////
-    // Inner Classes
-    private static class GenericResourceUtils extends ResourceUtils {
-        private Map<String, ResourceBundle> loadedBundles = new HashMap<String, ResourceBundle>();
-        
-        private ResourceBundle loadBundle(String baseName, Locale locale, ClassLoader loader) {
-            String bundleId = loader.toString() + baseName;
-            
-            ResourceBundle bundle = (ResourceBundle) loadedBundles.get(bundleId);
-            
-            if (bundle == null) {
-                bundle = ResourceBundle.getBundle(baseName, locale, loader);
-                loadedBundles.put(bundleId, bundle);
-            }
-            
-            return bundle;
-        }
-        
-        private ResourceBundle loadBundle(Class clazz, Locale locale) {
-            return loadBundle(clazz.getPackage().getName() + "." + "Bundle", locale, clazz.getClassLoader());
-        }
-        
-        public String getString(String baseName, String key) {
-            return loadBundle(baseName, Locale.getDefault(), getClass().getClassLoader()).getString(key);
-        }
-        
-        public String getString(String baseName, String key, Object... arguments) {
-            return StringUtils.getInstance().formatMessage(getString(baseName, key), arguments);
-        }
-        
-        public String getString(String baseName, String key, ClassLoader loader) {
-            return loadBundle(baseName, Locale.getDefault(), loader).getString(key);
-        }
-        
-        public String getString(String baseName, String key, ClassLoader loader, Object... arguments) {
-            return StringUtils.getInstance().formatMessage(getString(baseName, key, loader), arguments);
-        }
-        
-        public String getString(Class clazz, String key) {
-            return loadBundle(clazz, Locale.getDefault()).getString(key);
-        }
-        
-        public String getString(Class clazz, String key, Object... arguments) {
-            return StringUtils.getInstance().formatMessage(getString(clazz, key), arguments);
-        }
-        
-        public InputStream getResource(String name) {
-            return getResource(name, getClass().getClassLoader());
-        }
-        
-        public InputStream getResource(String path, ClassLoader loader) {
-            return loader.getResourceAsStream(path);
-        }
+    public static InputStream getResource(String path, ClassLoader loader) {
+        return loader.getResourceAsStream(path);
     }
 }

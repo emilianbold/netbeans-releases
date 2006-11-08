@@ -49,7 +49,7 @@ public class WindowsRegistry {
         LogManager.log(ErrorLevel.DEBUG,"[JNI] [" +
                 new Exception().getStackTrace()[1].getMethodName() +
                 "] Starting with args: {" +
-                StringUtils.getInstance().asString(args,"; ") + "}");
+                StringUtils.asString(args,"; ") + "}");
     }
     private void logEndJNI() {
         LogManager.log(ErrorLevel.DEBUG,"[JNI] [" +

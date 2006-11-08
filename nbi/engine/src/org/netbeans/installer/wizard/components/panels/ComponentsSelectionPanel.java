@@ -54,6 +54,8 @@ import org.netbeans.installer.product.ProductTreeNode;
 import org.netbeans.installer.product.filters.TrueFilter;
 import org.netbeans.installer.utils.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
+import org.netbeans.installer.utils.ResourceUtils;
+import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
 import org.netbeans.installer.utils.helper.swing.NbiScrollPane;
 import org.netbeans.installer.utils.helper.swing.NbiTextPane;
@@ -201,13 +203,13 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
         for (ProductComponent component: componentsToInstall) {
             for (ProductComponent requirement: component.getRequirements()) {
                 if ((requirement.getStatus() != Status.TO_BE_INSTALLED) && (requirement.getStatus() != Status.INSTALLED)) {
-                    return stringUtils.formatMessage(getProperty(ERROR_REQUIREMENT_INSTALL_PROPERTY), component.getDisplayName(), requirement.getDisplayName());
+                    return StringUtils.formatMessage(getProperty(ERROR_REQUIREMENT_INSTALL_PROPERTY), component.getDisplayName(), requirement.getDisplayName());
                 }
             }
             
             for (ProductComponent conflict: component.getConflicts()) {
                 if ((conflict.getStatus() == Status.TO_BE_INSTALLED) || (conflict.getStatus() == Status.INSTALLED)) {
-                    return stringUtils.formatMessage(getProperty(ERROR_CONFLICT_INSTALL_PROPERTY), component.getDisplayName(), conflict.getDisplayName());
+                    return StringUtils.formatMessage(getProperty(ERROR_CONFLICT_INSTALL_PROPERTY), component.getDisplayName(), conflict.getDisplayName());
                 }
             }
         }
@@ -215,7 +217,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
         for (ProductComponent component: componentsToUninstall) {
             for (ProductComponent dependent: ProductRegistry.getInstance().queryComponents(new TrueFilter())) {
                 if (dependent.requires(component) && ((dependent.getStatus() == Status.INSTALLED) || (dependent.getStatus() == Status.TO_BE_INSTALLED))) {
-                    return stringUtils.formatMessage(getProperty(ERROR_REQUIREMENT_UNINSTALL_PROPERTY), component.getDisplayName(), dependent.getDisplayName());
+                    return StringUtils.formatMessage(getProperty(ERROR_REQUIREMENT_UNINSTALL_PROPERTY), component.getDisplayName(), dependent.getDisplayName());
                 }
             }
         }
@@ -240,15 +242,15 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
         } else {
             ProductTreeNode node = (ProductTreeNode) componentsTreeTable.getModel().getValueAt(selectedRow, 0);
             
-            displayNameLabel.setText(stringUtils.formatMessage(getProperty(DISPLAY_NAME_LABEL_TEXT_PROPERTY), node.getDisplayName()) + " ");
+            displayNameLabel.setText(StringUtils.formatMessage(getProperty(DISPLAY_NAME_LABEL_TEXT_PROPERTY), node.getDisplayName()) + " ");
             displayNameLabel.setEnabled(true);
             
-            descriptionPane.setText(stringUtils.formatMessage(getProperty(DESCRIPTION_TEXT_PROPERTY), node.getDescription()) + " ");
+            descriptionPane.setText(StringUtils.formatMessage(getProperty(DESCRIPTION_TEXT_PROPERTY), node.getDescription()) + " ");
             descriptionPane.setEnabled(true);
             descriptionPane.setCaretPosition(0);
             
             if ((node instanceof ProductComponent) && (((ProductComponent) node).getRequirements().size() > 0)) {
-                requirementsLabel.setText(stringUtils.formatMessage(getProperty(REQUIREMENTS_LABEL_TEXT_PROPERTY), stringUtils.asString(((ProductComponent) node).getRequirements())) + " ");
+                requirementsLabel.setText(StringUtils.formatMessage(getProperty(REQUIREMENTS_LABEL_TEXT_PROPERTY), StringUtils.asString(((ProductComponent) node).getRequirements())) + " ");
                 requirementsLabel.setEnabled(true);
             } else {
                 requirementsLabel.setText(parseString(EMPTY_REQUIREMENTS_LABEL_TEXT) + " ");
@@ -256,7 +258,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
             }
             
             if ((node instanceof ProductComponent) && (((ProductComponent) node).getConflicts().size() > 0)) {
-                conflictsLabel.setText(stringUtils.formatMessage(getProperty(CONFLICTS_LABEL_TEXT_PROPERTY), stringUtils.asString(((ProductComponent) node).getConflicts())) + " ");
+                conflictsLabel.setText(StringUtils.formatMessage(getProperty(CONFLICTS_LABEL_TEXT_PROPERTY), StringUtils.asString(((ProductComponent) node).getConflicts())) + " ");
                 conflictsLabel.setEnabled(true);
             } else {
                 conflictsLabel.setText(parseString(EMPTY_CONFLICTS_LABEL_TEXT) + " ");
@@ -275,8 +277,8 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
         }
         
         if (components.size() == 0) {
-            totalDownloadSizeLabel.setText(stringUtils.formatMessage(getProperty(TOTAL_DOWNLOAD_SIZE_LABEL_TEXT_PROPERTY), parseString(DEFAULT_TOTAL_DOWNLOAD_SIZE)) + " ");
-            totalDiskSpaceLabel.setText(stringUtils.formatMessage(getProperty(TOTAL_DISK_SPACE_LABEL_TEXT_PROPERTY), parseString(DEFAULT_TOTAL_DISK_SPACE)) + " ");
+            totalDownloadSizeLabel.setText(StringUtils.formatMessage(getProperty(TOTAL_DOWNLOAD_SIZE_LABEL_TEXT_PROPERTY), parseString(DEFAULT_TOTAL_DOWNLOAD_SIZE)) + " ");
+            totalDiskSpaceLabel.setText(StringUtils.formatMessage(getProperty(TOTAL_DISK_SPACE_LABEL_TEXT_PROPERTY), parseString(DEFAULT_TOTAL_DISK_SPACE)) + " ");
         } else {
             long totalDownloadSize = 0;
             long totalDiskSpace = 0;
@@ -285,8 +287,8 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
                 totalDiskSpace += component.getRequiredDiskSpace();
             }
             
-            totalDownloadSizeLabel.setText(stringUtils.formatMessage(getProperty(TOTAL_DOWNLOAD_SIZE_LABEL_TEXT_PROPERTY), stringUtils.formatSize(totalDownloadSize)) + " ");
-            totalDiskSpaceLabel.setText(stringUtils.formatMessage(getProperty(TOTAL_DISK_SPACE_LABEL_TEXT_PROPERTY), stringUtils.formatSize(totalDiskSpace)) + " ");
+            totalDownloadSizeLabel.setText(StringUtils.formatMessage(getProperty(TOTAL_DOWNLOAD_SIZE_LABEL_TEXT_PROPERTY), StringUtils.formatSize(totalDownloadSize)) + " ");
+            totalDiskSpaceLabel.setText(StringUtils.formatMessage(getProperty(TOTAL_DISK_SPACE_LABEL_TEXT_PROPERTY), StringUtils.formatSize(totalDiskSpace)) + " ");
         }
     }
     
@@ -574,33 +576,33 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
     public static final String TOTAL_DOWNLOAD_SIZE_LABEL_TEXT_PROPERTY = "total.download.size.label.text";
     public static final String TOTAL_DISK_SPACE_LABEL_TEXT_PROPERTY = "total.disk.space.label.text";
     
-    public static final String DEFAULT_MESSAGE_TEXT = resourceUtils.getString(ComponentsSelectionPanel.class, "ComponentsSelectionPanel.default.message.text");
-    public static final String DEFAULT_MESSAGE_CONTENT_TYPE = resourceUtils.getString(ComponentsSelectionPanel.class, "ComponentsSelectionPanel.default.message.content.type");
-    public static final String DEFAULT_DISPLAY_NAME_LABEL_TEXT = resourceUtils.getString(ComponentsSelectionPanel.class, "ComponentsSelectionPanel.default.display.name.label.text");
-    public static final String DEFAULT_DESCRIPTION_TEXT = resourceUtils.getString(ComponentsSelectionPanel.class, "ComponentsSelectionPanel.default.description.text");
-    public static final String DEFAULT_DESCRIPTION_CONTENT_TYPE = resourceUtils.getString(ComponentsSelectionPanel.class, "ComponentsSelectionPanel.default.description.content.type");
-    public static final String DEFAULT_REQUIREMENTS_LABEL_TEXT = resourceUtils.getString(ComponentsSelectionPanel.class, "ComponentsSelectionPanel.default.requirements.label.text");
-    public static final String DEFAULT_CONFLICTS_LABEL_TEXT = resourceUtils.getString(ComponentsSelectionPanel.class, "ComponentsSelectionPanel.default.conflicts.label.text");
-    public static final String DEFAULT_TOTAL_DOWNLOAD_SIZE_LABEL_TEXT = resourceUtils.getString(ComponentsSelectionPanel.class, "ComponentsSelectionPanel.default.total.download.size.label.text");
-    public static final String DEFAULT_TOTAL_DISK_SPACE_LABEL_TEXT = resourceUtils.getString(ComponentsSelectionPanel.class, "ComponentsSelectionPanel.default.total.disk.space.label.text");
+    public static final String DEFAULT_MESSAGE_TEXT = ResourceUtils.getString(ComponentsSelectionPanel.class, "ComponentsSelectionPanel.default.message.text");
+    public static final String DEFAULT_MESSAGE_CONTENT_TYPE = ResourceUtils.getString(ComponentsSelectionPanel.class, "ComponentsSelectionPanel.default.message.content.type");
+    public static final String DEFAULT_DISPLAY_NAME_LABEL_TEXT = ResourceUtils.getString(ComponentsSelectionPanel.class, "ComponentsSelectionPanel.default.display.name.label.text");
+    public static final String DEFAULT_DESCRIPTION_TEXT = ResourceUtils.getString(ComponentsSelectionPanel.class, "ComponentsSelectionPanel.default.description.text");
+    public static final String DEFAULT_DESCRIPTION_CONTENT_TYPE = ResourceUtils.getString(ComponentsSelectionPanel.class, "ComponentsSelectionPanel.default.description.content.type");
+    public static final String DEFAULT_REQUIREMENTS_LABEL_TEXT = ResourceUtils.getString(ComponentsSelectionPanel.class, "ComponentsSelectionPanel.default.requirements.label.text");
+    public static final String DEFAULT_CONFLICTS_LABEL_TEXT = ResourceUtils.getString(ComponentsSelectionPanel.class, "ComponentsSelectionPanel.default.conflicts.label.text");
+    public static final String DEFAULT_TOTAL_DOWNLOAD_SIZE_LABEL_TEXT = ResourceUtils.getString(ComponentsSelectionPanel.class, "ComponentsSelectionPanel.default.total.download.size.label.text");
+    public static final String DEFAULT_TOTAL_DISK_SPACE_LABEL_TEXT = ResourceUtils.getString(ComponentsSelectionPanel.class, "ComponentsSelectionPanel.default.total.disk.space.label.text");
     
-    public static final String EMPTY_DISPLAY_NAME_LABEL_TEXT = resourceUtils.getString(ComponentsSelectionPanel.class, "ComponentsSelectionPanel.empty.display.name.label.text");
-    public static final String EMPTY_DESCRIPTION_TEXT = resourceUtils.getString(ComponentsSelectionPanel.class, "ComponentsSelectionPanel.empty.description.text");
-    public static final String EMPTY_REQUIREMENTS_LABEL_TEXT = resourceUtils.getString(ComponentsSelectionPanel.class, "ComponentsSelectionPanel.empty.requirements.label.text");
-    public static final String EMPTY_CONFLICTS_LABEL_TEXT = resourceUtils.getString(ComponentsSelectionPanel.class, "ComponentsSelectionPanel.empty.conflicts.label.text");
+    public static final String EMPTY_DISPLAY_NAME_LABEL_TEXT = ResourceUtils.getString(ComponentsSelectionPanel.class, "ComponentsSelectionPanel.empty.display.name.label.text");
+    public static final String EMPTY_DESCRIPTION_TEXT = ResourceUtils.getString(ComponentsSelectionPanel.class, "ComponentsSelectionPanel.empty.description.text");
+    public static final String EMPTY_REQUIREMENTS_LABEL_TEXT = ResourceUtils.getString(ComponentsSelectionPanel.class, "ComponentsSelectionPanel.empty.requirements.label.text");
+    public static final String EMPTY_CONFLICTS_LABEL_TEXT = ResourceUtils.getString(ComponentsSelectionPanel.class, "ComponentsSelectionPanel.empty.conflicts.label.text");
     
-    public static final String DEFAULT_TOTAL_DOWNLOAD_SIZE = resourceUtils.getString(ComponentsSelectionPanel.class, "ComponentsSelectionPanel.default.total.download.size");
-    public static final String DEFAULT_TOTAL_DISK_SPACE = resourceUtils.getString(ComponentsSelectionPanel.class, "ComponentsSelectionPanel.default.total.disk.space");
+    public static final String DEFAULT_TOTAL_DOWNLOAD_SIZE = ResourceUtils.getString(ComponentsSelectionPanel.class, "ComponentsSelectionPanel.default.total.download.size");
+    public static final String DEFAULT_TOTAL_DISK_SPACE = ResourceUtils.getString(ComponentsSelectionPanel.class, "ComponentsSelectionPanel.default.total.disk.space");
     
     public static final String ERROR_NO_CHANGES_PROPERTY = "error.no.changes";
     public static final String ERROR_REQUIREMENT_INSTALL_PROPERTY = "error.requirement.install";
     public static final String ERROR_CONFLICT_INSTALL_PROPERTY = "error.conflict.install";
     public static final String ERROR_REQUIREMENT_UNINSTALL_PROPERTY = "error.requirement.uninstall";
     
-    public static final String DEFAULT_ERROR_NO_CHANGES = resourceUtils.getString(ComponentsSelectionPanel.class, "ComponentsSelectionPanel.default.error.no.changes");
-    public static final String DEFAULT_ERROR_REQUIREMENT_INSTALL = resourceUtils.getString(ComponentsSelectionPanel.class, "ComponentsSelectionPanel.default.error.requirement.install");
-    public static final String DEFAULT_ERROR_CONFLICT_INSTALL = resourceUtils.getString(ComponentsSelectionPanel.class, "ComponentsSelectionPanel.default.error.conflict.install");
-    public static final String DEFAULT_ERROR_REQUIREMENT_UNINSTALL = resourceUtils.getString(ComponentsSelectionPanel.class, "ComponentsSelectionPanel.default.error.requirement.uninstall");
+    public static final String DEFAULT_ERROR_NO_CHANGES = ResourceUtils.getString(ComponentsSelectionPanel.class, "ComponentsSelectionPanel.default.error.no.changes");
+    public static final String DEFAULT_ERROR_REQUIREMENT_INSTALL = ResourceUtils.getString(ComponentsSelectionPanel.class, "ComponentsSelectionPanel.default.error.requirement.install");
+    public static final String DEFAULT_ERROR_CONFLICT_INSTALL = ResourceUtils.getString(ComponentsSelectionPanel.class, "ComponentsSelectionPanel.default.error.conflict.install");
+    public static final String DEFAULT_ERROR_REQUIREMENT_UNINSTALL = ResourceUtils.getString(ComponentsSelectionPanel.class, "ComponentsSelectionPanel.default.error.requirement.uninstall");
     
-    public static final String DEFAULT_DIALOG_TITLE = resourceUtils.getString(ComponentsSelectionPanel.class, "ComponentsSelectionPanel.default.dialog.title");
+    public static final String DEFAULT_DIALOG_TITLE = ResourceUtils.getString(ComponentsSelectionPanel.class, "ComponentsSelectionPanel.default.dialog.title");
 }

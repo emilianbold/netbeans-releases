@@ -21,6 +21,7 @@
 package org.netbeans.installer.utils.helper.swing;
 
 import javax.swing.JCheckBox;
+import org.netbeans.installer.utils.StringUtils;
 
 /**
  *
@@ -31,5 +32,10 @@ public class NbiCheckBox extends JCheckBox {
         super();
         
         setOpaque(false);
+    }
+    
+    public void setText(String text) {
+        super.setText(StringUtils.stripMnemonic(text));
+        super.setMnemonic(StringUtils.fetchMnemonic(text));
     }
 }
