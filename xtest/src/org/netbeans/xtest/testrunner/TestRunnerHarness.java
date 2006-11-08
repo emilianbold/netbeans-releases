@@ -75,6 +75,10 @@ public class TestRunnerHarness {
                 if (DEBUG) dividedTestLists[i].list(System.out);
                 launchTests(dividedTestLists[i]);
             }
+            if(dividedTestLists.length == 0) {
+                // run empty list just to report it as error in JUnitTestRunner.getTestSuites().
+                launchTests(testList);
+            }
         } else if (TESTRUN_MODE_CURRENT_VM.equalsIgnoreCase(testMode)) {
             // same vm mode - not supported right now
             throw new RuntimeException("Current VM mode not yet supported by TestRunner");

@@ -20,8 +20,10 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <testconfig>
-    <!-- Test reporting of uncompilable test (http://www.netbeans.org/issues/show_bug.cgi?id=73182). -->
     <config name="uncompilable">
+        <!-- Test reporting of uncompilable test (http://www.netbeans.org/issues/show_bug.cgi?id=73182). -->
         <module name="xtest" testtypes="unit" attributes="uncompilable"/>
+        <!-- Test reporting of empty testbag (http://www.netbeans.org/issues/show_bug.cgi?id=88180). -->
+        <module name="xtest" testtypes="unit" attributes="empty"/>
     </config>
 </testconfig>

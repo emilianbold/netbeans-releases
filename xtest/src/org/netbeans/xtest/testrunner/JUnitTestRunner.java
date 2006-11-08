@@ -20,21 +20,21 @@
 
 package org.netbeans.xtest.testrunner;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.lang.reflect.Method;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-
-import junit.framework.*;
-
-import java.util.*;
-
+import java.util.ArrayList;
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestResult;
+import junit.framework.TestSuite;
 import org.netbeans.junit.Filter;
 import org.netbeans.junit.NbTest;
 import org.netbeans.junit.NbTestSuite;
-
-import org.netbeans.xtest.pe.*;
-
-import java.io.*;
 
 /**
  * @author  breh
@@ -123,7 +123,7 @@ public class JUnitTestRunner {
     public void runTests() {
         runTests(true);
     }
-    
+
     /** run the junit tests */
     protected void runTests(boolean doSetup) {
         
@@ -134,12 +134,8 @@ public class JUnitTestRunner {
         } else {
             out.println("! Results Directory is not available - not storing results to xml files");
         }
-        
+
         TestSuite[] suites = getTestSuites();
-        if (suites == null) {
-            // something is wrong - throw Exception ?
-            return;
-        }
         
         if ((doSetup) & (runnerProperties.getTestbagSetupClassName() != null)) {
             
@@ -210,6 +206,23 @@ public class JUnitTestRunner {
         // TDB !!!!
     }
     
+    /** A fake test used to report error while loading a test class.
+     * It is used in getTestSuites() method.
+     */
+    public static class FakeTest extends TestCase {
+        private Throwable throwable;
+        private String message;
+        
+        public FakeTest(String name, String message, Throwable throwable) {
+            super(name);
+            this.throwable = throwable;
+            this.message = message;
+        }
+
+        public void loadingSuites() throws Exception {
+            throw new Exception(message, throwable);
+        }
+    }
     
     // get all test suites to execute (in the case of nbtestsuites, also with filters)
     TestSuite[] getTestSuites() {
@@ -217,7 +230,7 @@ public class JUnitTestRunner {
         String[] testNames = runnerProperties.getTestNames();
         ArrayList testSuites = new ArrayList(testNames.length);
         for (int i=0; i < testNames.length; i++) {
-            String testName = testNames[i];
+            final String testName = testNames[i];
             try {
                 // get the testsuite and store it in hashmap
                 TestSuite testSuite = getTestSuiteForName(testName);
@@ -231,20 +244,24 @@ public class JUnitTestRunner {
                 }
                 // now continue with filter
                 testSuites.add(testSuite);
-            } catch (ClassNotFoundException cnfe) {
-                // Houston we have the problem - test class is not found !!!!
-                out.println("! Cannot find test class "+testName
-                + " ignoring this test");
-            } catch (ClassCastException cce) {
-                out.println("Class "+testName+" does not implement a Test interface - cannot run it as a test");
-            } catch (Throwable t) {
-                // Houston we have the problem - something even weirder happened
-                out.println("! Cannot define test class "+testName
-                + " ignoring this test. Reason = "+t.getMessage()+", Stacktrace:");
-                t.printStackTrace(out);
+            } catch (final Throwable t) {
+                // It can be ClassNotFoundException, or ClassCastException when class
+                // doesn't implement Test interface or other Throwable.
+                t.printStackTrace();
+                // Create a fake suite which reports the Throwable.
+                TestSuite suite = new TestSuite("Critical Error");
+                suite.addTest(new FakeTest("loadingSuites", "Error while loading "+testName+": "+t.getMessage(), t));
+                testSuites.add(suite);
+                break;
             }
         }
-        // reurn the array
+        if(testSuites.isEmpty()) {
+            // Create a fake suite which reports error.
+            TestSuite suite = new TestSuite("Critical Error");
+            suite.addTest(new FakeTest("loadingSuites", "No suites to be loaded. Check your config files.", null));
+            testSuites.add(suite);
+        }
+        // return the array
         return (TestSuite[])(testSuites.toArray(new TestSuite[0]));
     }
     

@@ -24,16 +24,25 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="uncompilable" compiler="unit-uncompilable-compiler" executor="jvm" name="Uncompilable tests">
         <testset dir="unit/src">
             <patternset>
-		<include name="**/UncompilableTest.class"/>
+                <include name="**/UncompilableTest.class"/>
             </patternset>
         </testset>
     </testbag>
     
+    <!-- Used in instance/master-config.xml to test reporting of empty testbag. -->
+    <testbag testattribs="empty" compiler="unit-compiler" executor="jvm" name="Empty testbag">
+        <testset dir="unit/src">
+            <patternset>
+            </patternset>
+        </testset>
+    </testbag>
+
     <!-- Test reporting of compilation errors (http://www.netbeans.org/issues/show_bug.cgi?id=73182). -->
     <testbag testattribs="stable" compiler="instance" executor="jvm" name="Uncompilable tests">
         <testset dir="unit/src">
             <patternset>
                 <include name="**/CheckUncompilableTest.class"/>
+                <include name="**/CheckEmptyTestbag.class"/>
             </patternset>
         </testset>
     </testbag>
@@ -49,10 +58,12 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="**/CheckUnfinishedWithSetupTest74360.class"/>
                 <include name="**/UnfinishedTest.class"/>
                 <include name="**/CheckUnfinishedTest.class"/>
+                <include name="**/ErrorLoadingTest.class"/>
+                <include name="**/CheckErrorLoadingTest.class"/>
             </patternset>
         </testset>
     </testbag>
-
+  
     <executor name="jvm" antfile="build-unit.xml" target="run-jvm" default="true"/>
     <executor name="ide" antfile="build-unit.xml" target="run-ide"/>
     <compiler name="instance" antfile="build-unit.xml" target="run-instance"/>
