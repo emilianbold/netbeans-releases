@@ -38,6 +38,7 @@ import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
+import org.netbeans.modules.refactoring.spi.ui.RefactoringUIBypass;
 import org.openide.awt.Mnemonics;
 import org.openide.explorer.view.NodeRenderer;
 import org.openide.filesystems.FileObject;

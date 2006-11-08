@@ -18,9 +18,9 @@
  */
 package org.netbeans.modules.refactoring.spi.impl;
 
-import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
-import org.openide.nodes.Node;
+import org.netbeans.modules.refactoring.api.impl.ActionsImplementationFactory;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -36,8 +36,8 @@ public class RenameAction extends RefactoringGlobalAction {
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
     
-    public final void performAction(final Node[] n) {
-        RefactoringActionsFactory.renameImpl(getLookup(n)).run();
+    public final void performAction(Lookup context) {
+        ActionsImplementationFactory.renameImpl(context).run();
     }
     
     public org.openide.util.HelpCtx getHelpCtx() {
@@ -48,11 +48,7 @@ public class RenameAction extends RefactoringGlobalAction {
         return false;
     }
 
-    protected boolean enable(Node[] activatedNodes) {
-        if (activatedNodes.length !=1) 
-            return false;
-        if (RefactoringActionsFactory.canRename(getLookup(activatedNodes))) 
-            return true;
-        return false;
+    protected boolean enable(Lookup context) {
+        return ActionsImplementationFactory.canRename(context);
     }
 }

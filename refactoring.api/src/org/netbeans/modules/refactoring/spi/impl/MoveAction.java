@@ -18,9 +18,9 @@
  */
 package org.netbeans.modules.refactoring.spi.impl;
 
-import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
-import org.openide.nodes.Node;
+import org.netbeans.modules.refactoring.api.impl.ActionsImplementationFactory;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -29,15 +29,15 @@ import org.openide.util.NbBundle;
 public class MoveAction extends RefactoringGlobalAction {
 
     /**
-     * Creates a new instance of RenameAction
+     * Creates a new instance of MoveAction
      */
     public MoveAction() {
         super (NbBundle.getMessage(MoveAction.class, "LBL_MoveClassAction"), null);
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
     
-    public final void performAction(final Node[] n) {
-        RefactoringActionsFactory.moveImpl(getLookup(n)).run();
+    public final void performAction(Lookup context) {
+        ActionsImplementationFactory.moveImpl(context).run();
     }
     
     public org.openide.util.HelpCtx getHelpCtx() {
@@ -48,9 +48,7 @@ public class MoveAction extends RefactoringGlobalAction {
         return false;
     }
 
-    protected boolean enable(Node[] activatedNodes) {
-        if (RefactoringActionsFactory.canMove(getLookup(activatedNodes))) 
-            return true;
-        return false;
+    protected boolean enable(Lookup context) {
+        return ActionsImplementationFactory.canMove(context);
     }
 }

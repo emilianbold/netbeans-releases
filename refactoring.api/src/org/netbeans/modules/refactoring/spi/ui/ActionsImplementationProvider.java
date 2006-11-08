@@ -16,39 +16,43 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.netbeans.modules.refactoring.spi.impl;
 
-import org.netbeans.modules.refactoring.api.impl.ActionsImplementationFactory;
-import org.openide.util.HelpCtx;
+package org.netbeans.modules.refactoring.spi.ui;
+
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
-
 /**
+ *
  * @author Jan Becicka
  */
-public class WhereUsedAction extends RefactoringGlobalAction {
-
-    /**
-     * Creates a new instance of WhereUsedAction
-     */
-    public WhereUsedAction() {
-        super(NbBundle.getMessage(WhereUsedAction.class, "LBL_WhereUsedAction"), null);
-        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
+public abstract class ActionsImplementationProvider {
+    public Runnable renameImpl(Lookup selectedNodes) {
+        return null;
     }
-    
-    public final void performAction(Lookup context) {
-        ActionsImplementationFactory.findUsagesImpl(context).run();
-    }
-    
-    public org.openide.util.HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-
-    protected boolean asynchronous() {
+    public boolean canRename(Lookup node) {
         return false;
     }
 
-    protected boolean enable(Lookup context) {
-        return ActionsImplementationFactory.canFindUsages(context);
+    public boolean canFindUsages(Lookup lookup) {
+        return false;
+    }
+
+    public Runnable findUsagesImpl(Lookup lookup) {
+        return null;
+    }
+
+    public boolean canDelete(Lookup lookup) {
+        return false;
+    }
+    
+    public Runnable deleteImpl(Lookup lookup) {
+        return null;
+    }
+
+    public Runnable moveImpl(Lookup lookup) {
+        return null;
+    }
+
+    public boolean canMove(Lookup lookup) {
+        return false;
     }
 }

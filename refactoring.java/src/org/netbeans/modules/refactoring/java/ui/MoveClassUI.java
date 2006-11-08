@@ -18,17 +18,10 @@
  */
 package org.netbeans.modules.refactoring.java.ui;
 
-import com.sun.org.apache.bcel.internal.classfile.JavaClass;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.MessageFormat;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeElement;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
@@ -36,10 +29,10 @@ import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
+import org.netbeans.modules.refactoring.spi.ui.RefactoringUIBypass;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.PasteType;
@@ -47,31 +40,15 @@ import org.openide.util.datatransfer.PasteType;
 public class MoveClassUI implements RefactoringUI, RefactoringUIBypass {
     
     private DataObject javaObject;    
-    private FileObject resource;
-    private TypeElement mainSourceClass;
     private MoveClassPanel panel;
     private MoveRefactoring refactoring;
     private String targetPkgName = "";
     private boolean disable;
-    private TypeElement clazz = null;
     private FileObject targetFolder;
     private PasteType pasteType;
     
     static final String getString(String key) {
         return NbBundle.getMessage(MoveClassUI.class, key);
-    }
-    
-    public MoveClassUI (TypeElement sourceClass) {
-        DataObject ob = null;
-        try {
-            ob = DataObject.find(resource);
-        } catch (DataObjectNotFoundException ex) {
-            ex.printStackTrace();
-        }
-        if (ob instanceof DataObject)
-            javaObject = (DataObject) ob;
-        clazz = sourceClass;
-        findMainClass ();
     }
     
     public MoveClassUI (DataObject javaObject) {
@@ -83,8 +60,6 @@ public class MoveClassUI implements RefactoringUI, RefactoringUIBypass {
         this.targetFolder = targetFolder;
         this.javaObject = javaObject;
         this.pasteType = pasteType;
-        resource = javaObject.getPrimaryFile();
-        findMainClass ();
     }
     
     public String getName() {
@@ -92,15 +67,9 @@ public class MoveClassUI implements RefactoringUI, RefactoringUIBypass {
     }
      
     public String getDescription() {
-        if (mainSourceClass == null) {
-            return new MessageFormat(getString("DSC_MoveClass")).format(
-                    new Object[] {javaObject.getName(), packageName()}
-            );
-        } else {
-            return new MessageFormat(getString("DSC_MoveClass")).format(
-                    new Object[] {mainSourceClass.getSimpleName(), packageName()}
-            );
-        }
+        return new MessageFormat(getString("DSC_MoveClass")).format(
+                new Object[] {javaObject.getName(), packageName()}
+        );
     }
     
     public boolean isQuery() {
@@ -109,16 +78,10 @@ public class MoveClassUI implements RefactoringUI, RefactoringUIBypass {
         
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         if (panel == null) {
-            String pkgName = null;
-            if (targetFolder != null) {
-                ClassPath cp = ClassPath.getClassPath(targetFolder, ClassPath.SOURCE);
-                if (cp != null)
-                    pkgName = cp.getResourceName(targetFolder, '.', false);
-            }
-            
-            panel = new MoveClassPanel (parent, pkgName != null ? pkgName: getResPackageName(mainSourceClass), 
+            String pkgName = targetFolder!=null?getPackageName(targetFolder):getPackageName(javaObject.getPrimaryFile().getParent());
+            panel = new MoveClassPanel (parent, pkgName, 
                     new MessageFormat(getString("LBL_MoveClassNamed")).format (
-                    new Object[] {mainSourceClass==null?"":mainSourceClass.getSimpleName()}
+                    new Object[] {javaObject.getPrimaryFile().getName()}
                 ),
                 targetFolder != null ? targetFolder : (javaObject != null ? javaObject.getPrimaryFile(): null)
             );
@@ -127,47 +90,11 @@ public class MoveClassUI implements RefactoringUI, RefactoringUIBypass {
         return panel;
     }
     
-    private static String getResPackageName(TypeElement cl) {
-        if (cl==null)
-            return ""; 
-        return cl.getQualifiedName().toString();
+    private static String getPackageName(FileObject file) {
+        ClassPath cp = ClassPath.getClassPath(file, ClassPath.SOURCE);
+        return cp.getResourceName(file, '.', false);
     }
 
-    private void findMainClass () {
-//        mainSourceClass = null;
-//        java.util.List list = resource.getClassifiers();
-//        int size = list.size ();
-//        if (size == 0) {
-//            return;
-//        }
-//        if (size == 1) {
-//            mainSourceClass = (JavaClass) list.get (0);
-//            return;
-//        }
-//                
-//        String resName = resource.getName();
-//        int index_1 = resName.lastIndexOf ('/');
-//        int index_2 = resName.indexOf ('.');
-//        String mainClassName = null;
-//        if (index_2 > -1) {
-//            mainClassName = resName.substring (index_1 + 1, index_2);
-//        }
-//        
-//        Iterator iter = list.iterator ();        
-//        for (int x = 0; x < size; x++) {
-//            JavaClass jc = (JavaClass) iter.next ();
-//            if ((mainClassName != null) && mainClassName.equals (jc.getName ())) {
-//                mainSourceClass = jc;
-//                return;
-//            }
-//            if ((jc.getModifiers() & Modifier.PUBLIC) > 0)
-//                mainSourceClass = jc;
-//        }
-//        if (mainSourceClass == null) {
-//            mainSourceClass = (JavaClass) list.get (0);
-//        }        
-    }
-    
     private String packageName () {
         return targetPkgName.trim().length() == 0 ? getString ("LBL_DefaultPackage") : targetPkgName.trim ();
     }
@@ -200,13 +127,7 @@ public class MoveClassUI implements RefactoringUI, RefactoringUIBypass {
     
     public AbstractRefactoring getRefactoring() {
         if (refactoring == null) {
-            List list = new LinkedList();
-            list.add(resource);
-            if (clazz != null) {
-                refactoring = new MoveRefactoring (new Object[]{clazz});
-            } else {
-                refactoring = new MoveRefactoring (list.toArray());
-            }
+            refactoring = new MoveRefactoring(javaObject.getPrimaryFile());
         }
         return refactoring;
     }

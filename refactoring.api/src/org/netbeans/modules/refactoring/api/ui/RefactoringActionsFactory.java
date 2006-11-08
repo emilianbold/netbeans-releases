@@ -20,11 +20,10 @@
 package org.netbeans.modules.refactoring.api.ui;
 
 import java.awt.event.ActionEvent;
-import javax.swing.Action;
-import org.netbeans.modules.refactoring.spi.RefactoringActionsFactoryImplementation;
-import org.openide.nodes.Node;
+import org.netbeans.modules.refactoring.spi.impl.MoveAction;
+import org.netbeans.modules.refactoring.spi.impl.RenameAction;
+import org.netbeans.modules.refactoring.spi.impl.SafeDeleteAction;
 import org.openide.util.ContextAwareAction;
-import org.openide.util.Lookup;
 
 /**
  * Factory class providing instances of refactoring actions.
@@ -46,96 +45,32 @@ public final class RefactoringActionsFactory {
     
     private RefactoringActionsFactory(){}
     
-    private static final Lookup.Result<RefactoringActionsFactoryImplementation> implementations =
-        Lookup.getDefault().lookup(new Lookup.Template(RefactoringActionsFactoryImplementation.class));
 
-    public static boolean canRename(Lookup lookup) {
-        for (RefactoringActionsFactoryImplementation rafi: implementations.allInstances()) {
-            if (rafi.canRename(lookup)) {
-                return true;
-            }
-        }
-        return false;
-    }
-    
-    public static Runnable renameImpl(Lookup lookup) {
-        for (RefactoringActionsFactoryImplementation rafi: implementations.allInstances()) {
-            if (rafi.canRename(lookup)) {
-                return rafi.renameImpl(lookup);
-            }
-        }
-        return null;
+    /**
+     * Factory method for rename action
+     * @return instance of RenameAction
+     */
+    public static ContextAwareAction renameAction() {
+        return (RenameAction) RenameAction.findObject(RenameAction.class, true);
     }
 
-    public static boolean canFindUsages(Lookup lookup) {
-        for (RefactoringActionsFactoryImplementation rafi: implementations.allInstances()) {
-            if (rafi.canFindUsages(lookup)) {
-                return true;
-            }
-        }
-        return false;
+    /**
+     * Factory method for MoveAction
+     * @return an instance of MoveAction
+     */
+    public static ContextAwareAction moveAction() {
+        return (MoveAction) MoveAction.findObject(MoveAction.class, true);
     }
     
-    public static Runnable findUsagesImpl(Lookup lookup) {
-        for (RefactoringActionsFactoryImplementation rafi: implementations.allInstances()) {
-            if (rafi.canFindUsages(lookup)) {
-                return rafi.findUsagesImpl(lookup);
-            }
-        }
-        return null;
-    }
-    public static boolean canDelete(Lookup lookup) {
-        for (RefactoringActionsFactoryImplementation rafi: implementations.allInstances()) {
-            if (rafi.canDelete(lookup)) {
-                return true;
-            }
-        }
-        return false;
+    /**
+     * Factory method for SafeDeleteAction
+     * @return an instance of SafeDeleteAction
+     */
+    public static ContextAwareAction safeDeleteAction() {
+        return (SafeDeleteAction) SafeDeleteAction.findObject(SafeDeleteAction.class, true);
     }
     
-    public static Runnable deleteImpl(Lookup lookup) {
-        for (RefactoringActionsFactoryImplementation rafi: implementations.allInstances()) {
-            if (rafi.canDelete(lookup)) {
-                return rafi.deleteImpl(lookup);
-            }
-        }
-        return null;
-    }
-    
-    public static Runnable moveImpl(Lookup lookup) {
-        for (RefactoringActionsFactoryImplementation rafi: implementations.allInstances()) {
-            if (rafi.canMove(lookup)) {
-                return rafi.moveImpl(lookup);
-            }
-        }
-        return null;
-    }
-    
-    public static boolean canMove(Lookup lookup) {
-        for (RefactoringActionsFactoryImplementation rafi: implementations.allInstances()) {
-            if (rafi.canMove(lookup)) {
-                return true;
-            }
-        }
-        return false;
-    }
 
-//    /**
-//     * Factory method for rename action
-//     * @return instance of RenameAction
-//     */
-//    public static ContextAwareAction renameImpl() {
-//        return (RenameAction) RenameAction.findObject(RenameAction.class, true);
-//    }
-//
-//    /**
-//     * Factory method for MoveClassAction
-//     * @return an instance of MoveClassAction
-//     */
-//    public static ContextAwareAction moveClassAction() {
-//        return (MoveClassAction) MoveClassAction.findObject(MoveClassAction.class, true);
-//    }
-//
 //    /**
 //     * Factory method for EncapsulateFieldsAction
 //     * @return an instance of EncapsulateFieldsAction
@@ -152,14 +87,6 @@ public final class RefactoringActionsFactory {
 //        return (ChangeParametersAction) ChangeParametersAction.findObject(ChangeParametersAction.class, true);
 //    }
 //    
-//    /**
-//     * Factory method for SafeDeleteAction2
-//     * @return an instance of SafeDeleteAction2
-//     */
-//    public static ContextAwareAction safeDeleteAction() {
-//        return (SafeDeleteAction2) SafeDeleteAction2.findObject(SafeDeleteAction2.class, true);
-//    }
-//
 //    /**
 //     * Factory method for ExtractMethodAction
 //     * @return an instance of ExtractMethodAction

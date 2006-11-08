@@ -16,38 +16,17 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.netbeans.modules.refactoring.spi.impl;
 
-import org.netbeans.modules.refactoring.api.impl.ActionsImplementationFactory;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
+package org.netbeans.modules.refactoring.spi.ui;
 
-/** 
+import java.io.IOException;
+
+/**
+ *
  * @author Jan Becicka
+ * XXX this should be improved
  */
-public class SafeDeleteAction extends RefactoringGlobalAction {
-
-    /**
-     * Creates a new instance of SafeDeleteAction
-     */
-    public SafeDeleteAction() {
-        super("SafeDelete", null);
-        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
-    }
-    
-    public final void performAction(Lookup context) {
-        ActionsImplementationFactory.deleteImpl(context).run();
-    }
-    
-    public org.openide.util.HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-
-    protected boolean asynchronous() {
-        return false;
-    }
-
-    protected boolean enable(Lookup context) {
-        return ActionsImplementationFactory.canDelete(context); 
-    }
+public interface RefactoringUIBypass {
+    boolean isRefactoringBypassRequired();
+    void doRefactoringBypass() throws IOException;
 }

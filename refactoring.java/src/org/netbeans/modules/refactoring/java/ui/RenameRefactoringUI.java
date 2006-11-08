@@ -30,6 +30,7 @@ import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
+import org.netbeans.modules.refactoring.spi.ui.RefactoringUIBypass;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -133,15 +134,15 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
 //        return new MoveClassRefactoring(folder, packageRename);
 //    }
 
-//    RenameRefactoringUI(RefObject jmiObject, String newName) {
-//        this.refactoring = new RenameRefactoring(jmiObject);
-//        this.jmiObject = jmiObject;
-//        oldName = newName;
-//        //[FIXME] this should be oldName of refactored object
-//        this.dispOldName = newName;
-//        fromListener = true;
-//    }
-//    
+    RenameRefactoringUI(FileObject jmiObject, String newName) {
+        this.refactoring = new RenameRefactoring(jmiObject);
+        //this.jmiObject = jmiObject;
+        oldName = newName;
+        //[FIXME] this should be oldName of refactored object
+        this.dispOldName = newName;
+        fromListener = true;
+    }
+    
 //    RenameRefactoringUI(FileObject folder, String newName, boolean packageRename) {
 //        this.refactoring = createMoveClassRefactoring(folder, packageRename);
 //        pkgRename = packageRename;
@@ -253,9 +254,9 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
         DataObject dob = null;
         if (byPassFolder != null) {
             dob = DataFolder.findFolder(byPassFolder);
-        }// else {
-//            dob = JMManager.getManager().getDataObject(((Element) ((RenameRefactoring)refactoring).getRefactoredObject()).getResource());
-//        }
+        } else {
+            dob = DataObject.find((FileObject)((RenameRefactoring)refactoring).getRefactoredObject());
+        }
         dob.rename(panel.getNameValue());
     }
 }

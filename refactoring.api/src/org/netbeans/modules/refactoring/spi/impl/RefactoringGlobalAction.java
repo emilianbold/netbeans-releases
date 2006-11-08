@@ -18,10 +18,17 @@
  */
 package org.netbeans.modules.refactoring.spi.impl;
 
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeListener;
+import java.lang.reflect.Method;
+import java.util.Hashtable;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JEditorPane;
+import javax.swing.JMenuItem;
 import javax.swing.text.JTextComponent;
+import org.openide.awt.Actions;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -29,7 +36,9 @@ import org.openide.text.CloneableEditorSupport;
 import org.openide.text.CloneableEditorSupport.Pane;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.actions.NodeAction;
+import org.openide.util.actions.Presenter;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.windows.TopComponent;
@@ -67,7 +76,7 @@ public abstract class RefactoringGlobalAction extends NodeAction {
         return HelpCtx.DEFAULT_HELP;
     }
 
-    protected static Lookup getLookup(Node[] n) {
+    protected Lookup getLookup(Node[] n) {
         InstanceContent ic = new InstanceContent();
         for (Node node:n)
             ic.add(node);
@@ -77,6 +86,7 @@ public abstract class RefactoringGlobalAction extends NodeAction {
                 ic.add(tc);
             }
         }
+        ic.add(new Hashtable(0));
         return new AbstractLookup(ic);
     }
 
@@ -95,5 +105,96 @@ public abstract class RefactoringGlobalAction extends NodeAction {
         }
         return null;
     }
+    
+    public abstract void performAction(Lookup context);
+    
+    protected abstract boolean enable(Lookup context);
+    
+    public final void performAction(final Node[] activatedNodes) {
+        performAction(getLookup(activatedNodes));
+    }
 
+    protected boolean enable(Node[] activatedNodes) {
+        return enable(getLookup(activatedNodes));
+    }
+    
+    
+    @Override
+    public Action createContextAwareInstance(Lookup actionContext) {
+        return new ContextAction(actionContext);
+    }
+    
+    public class ContextAction implements Action, Presenter.Menu, Presenter.Popup, Presenter.Toolbar {
+
+        Lookup context;
+
+        public ContextAction(Lookup context) {
+            this.context=context;
+        }
+        
+        public Object getValue(String arg0) {
+            return RefactoringGlobalAction.this.getValue(arg0);
+        }
+        
+        public void putValue(String arg0, Object arg1) {
+            RefactoringGlobalAction.this.putValue(arg0, arg1);
+        }
+        
+        public void setEnabled(boolean arg0) {
+            RefactoringGlobalAction.this.setEnabled(arg0);
+        }
+        
+        public boolean isEnabled() {
+            return RefactoringGlobalAction.this.isEnabled();
+        }
+        
+        public void addPropertyChangeListener(PropertyChangeListener arg0) {
+            RefactoringGlobalAction.this.addPropertyChangeListener(arg0);
+        }
+        
+        public void removePropertyChangeListener(PropertyChangeListener arg0) {
+            RefactoringGlobalAction.this.removePropertyChangeListener(arg0);
+        }
+        
+        public void actionPerformed(ActionEvent arg0) {
+            RefactoringGlobalAction.this.performAction(context);
+        }
+        public JMenuItem getMenuPresenter() {
+            if (isMethodOverridden(RefactoringGlobalAction.this, "getMenuPresenter")) { // NOI18N
+
+                return RefactoringGlobalAction.this.getMenuPresenter();
+            } else {
+                return new Actions.MenuItem(RefactoringGlobalAction.this, true);
+            }
+        }
+
+        public JMenuItem getPopupPresenter() {
+            if (isMethodOverridden(RefactoringGlobalAction.this, "getPopupPresenter")) { // NOI18N
+
+                return RefactoringGlobalAction.this.getPopupPresenter();
+            } else {
+                return new Actions.MenuItem(RefactoringGlobalAction.this, false);
+            }
+        }
+
+        public Component getToolbarPresenter() {
+            if (isMethodOverridden(RefactoringGlobalAction.this, "getToolbarPresenter")) { // NOI18N
+
+                return RefactoringGlobalAction.this.getToolbarPresenter();
+            } else {
+                return new Actions.ToolbarButton(RefactoringGlobalAction.this);
+            }
+        }
+
+        private boolean isMethodOverridden(NodeAction d, String name) {
+            try {
+                Method m = d.getClass().getMethod(name, new Class[0]);
+
+                return m.getDeclaringClass() != CallableSystemAction.class;
+            } catch (java.lang.NoSuchMethodException ex) {
+                ex.printStackTrace();
+                throw new IllegalStateException("Error searching for method " + name + " in " + d); // NOI18N
+            }
+        }        
+    }
 }

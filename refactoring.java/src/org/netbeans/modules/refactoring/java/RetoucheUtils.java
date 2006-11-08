@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Set;
+import java.util.StringTokenizer;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
@@ -36,6 +37,7 @@ import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -188,6 +190,36 @@ public class RetoucheUtils {
     public static boolean isFromLibrary(Element element, ClasspathInfo info) {
         SourceUtils.getFile(element, info);
         return FileUtil.getArchiveFile(SourceUtils.getFile(element, info))!=null;
+    }
+
+    public static boolean isValidPackageName(String name) {
+        StringTokenizer tokenizer = new StringTokenizer(name, "."); // NOI18N
+        while (tokenizer.hasMoreTokens()) {
+            if (!Utilities.isJavaIdentifier(tokenizer.nextToken())) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    public static boolean isFileInOpenProject(FileObject file) {
+        assert file != null;
+        Project p = FileOwnerQuery.getOwner(file);
+        Project[] opened = OpenProjects.getDefault().getOpenProjects();
+        for (int i = 0; i<opened.length; i++) {
+            if (p==opened[i])
+                return true;
+        }
+        return false;
+    }
+    
+    public static boolean isOnSourceClasspath(FileObject file) {
+        assert file != null;
+        return ClassPath.getClassPath(file, ClassPath.SOURCE) != null;
+    }
+    
+    public static boolean isRefactorable(FileObject file) {
+        return isJavaFile(file) && isFileInOpenProject(file) && isOnSourceClasspath(file);
     }
 }
     

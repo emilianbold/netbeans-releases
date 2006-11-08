@@ -96,7 +96,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
             if (result != null) {
                 return result;
             }
-            FileObject file = SourceUtils.getFile(el, info.getClasspathInfo());
+            FileObject file = treePathHandle.getFileObject();
             if (FileUtil.getArchiveFile(file)!= null) { //NOI18N
                 return createProblem(result, true, getCannotRename(file));
             }
