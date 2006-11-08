@@ -985,8 +985,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 String text = ""; //NOI18N
                 TokenSequence<JavaTokenId> sequence = Utilities.getJavaTokenSequence(c, offset + len);
                 if (sequence == null) {
-                    text += toAdd;
-                    toAdd = null;
+                    text += add;
+                    add = null;
                 }
                 boolean added = false;
                 while(add != null && add.length() > 0) {
@@ -1003,8 +1003,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
                         added = true;
                     } else if (sequence.token().id() == JavaTokenId.WHITESPACE && sequence.token().text().toString().indexOf('\n') < 0) {//NOI18N
                         if (!sequence.moveNext()) {
-                            text += toAdd;
-                            toAdd = null;
+                            text += add;
+                            add = null;
                         }
                     } else {
                         if (!added)
@@ -1288,8 +1288,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
             String text = ""; //NOI18N
             TokenSequence<JavaTokenId> sequence = Utilities.getJavaTokenSequence(c, offset);
             if (sequence == null) {
-                text += toAdd;
-                toAdd = null;
+                text += add;
+                add = null;
             }
             boolean added = false;
             while(add != null && add.length() > 0) {
@@ -1306,8 +1306,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     added = true;
                 } else if (sequence.token().id() == JavaTokenId.WHITESPACE && sequence.token().text().toString().indexOf('\n') < 0) {//NOI18N
                     if (!sequence.moveNext()) {
-                        text += toAdd;
-                        toAdd = null;
+                        text += add;
+                        add = null;
                     }
                 } else {
                     if (!added)
@@ -1442,8 +1442,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
             String text = ""; //NOI18N
             TokenSequence<JavaTokenId> sequence = Utilities.getJavaTokenSequence(c, offset);
             if (sequence == null) {
-                text += toAdd;
-                toAdd = null;
+                text += add;
+                add = null;
             }
             boolean added = false;
             while(add != null && add.length() > 0) {
@@ -1460,8 +1460,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     added = true;
                 } else if (sequence.token().id() == JavaTokenId.WHITESPACE && sequence.token().text().toString().indexOf('\n') < 0) {//NOI18N
                     if (!sequence.moveNext()) {
-                        text += toAdd;
-                        toAdd = null;
+                        text += add;
+                        add = null;
                     }
                 } else {
                     if (!added)
