@@ -278,6 +278,15 @@ public class BasicDataObjectTest extends NbTestCase {
         ));
     }
     
+    public void testDataObjectIsInItLookup() throws Exception {
+        DataObject obj = DataObject.find (
+            FileUtil.createData (subDir, "somedata.txt")
+        );
+        
+        DataObject query = obj.getLookup().lookup(DataObject.class);
+        assertSame("Object is in its own lookup", obj, query);
+    }
+    
     private void doSerTest (DataObject obj) throws Exception {
         org.openide.util.io.NbMarshalledObject mar = new org.openide.util.io.NbMarshalledObject (obj);
         

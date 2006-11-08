@@ -21,6 +21,7 @@ package org.openide.loaders;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import org.openide.cookies.OpenCookie;
 
 import org.openide.filesystems.*;
 import org.netbeans.junit.*;
@@ -147,7 +148,7 @@ public class MultiDataObjectTest extends NbTestCase {
             err.log(i + " end of cycle");
         }
     }
-
+    
     public void testConsistencyWithContinuousQueryingForDeletedFiles() throws Exception {
         err.log(" getting children of to");
         DataObject[] to1 = to.getChildren();
@@ -238,6 +239,23 @@ public class MultiDataObjectTest extends NbTestCase {
         
         assertEquals("Fourty deleted files:" + que.deleted, 40, que.deleted.size());
     }
+
+    public void testAdditionsToCookieSetAreVisibleInLookup() throws Exception {
+        assertTrue(this.one instanceof SimpleObject);
+        SimpleObject s = (SimpleObject)this.one;
+        
+        class Open implements OpenCookie {
+            public void open() {
+            }
+        }
+        Open openCookie = new Open();
+        
+        
+        s.getCookieSet().add(openCookie);
+        
+        assertSame("Cookie is in the lookup", openCookie, one.getLookup().lookup(OpenCookie.class));
+    }
+
     
     public static final class Pool extends DataLoaderPool {
         protected Enumeration loaders() {

@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.Set;
 import junit.textui.TestRunner;
+import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStatusEvent;
 import org.openide.filesystems.FileSystem;
@@ -102,6 +103,25 @@ public class DataNodeTest extends NbTestCase {
         }
         assertEquals ("Size is two", 2, fs.lastFiles.size ());
         assertEquals ("Now the secondary entry had to be created", 1, TwoPartLoader.get ().secondary);
+    }
+
+    
+    public void testWhatIsAddedToNodeLookupIsByDefaultVisibleInDataObjectLookup() throws Exception {
+        org.openide.filesystems.FileSystem lfs = TestUtilHid.createLocalFileSystem(getWorkDir (), new String[] {
+            "F.java", "F.form"
+        });
+        
+        FSWithStatus fs = new FSWithStatus ();
+        fs.setRootDirectory(org.openide.filesystems.FileUtil.toFile(lfs.getRoot()));
+        
+        DataObject obj = DataObject.find (fs.findResource("F.java"));
+
+        OpenCookie fromNode = obj.getNodeDelegate().getLookup().lookup(OpenCookie.class);
+        assertNotNull("There is some cookie in node", fromNode);
+        
+        OpenCookie fromObject = obj.getLookup().lookup(OpenCookie.class);
+        assertNotNull("There is a cookie in data object too", fromObject);
+        
     }
     
     public void testDataNodeGetDataFromLookup() throws Exception {
@@ -245,6 +265,26 @@ public class DataNodeTest extends NbTestCase {
     public static final class TwoPartObject extends MultiDataObject {
         public TwoPartObject(TwoPartLoader l, FileObject folder) throws DataObjectExistsException {
             super(folder, l);
+        }
+
+        protected Node createNodeDelegate() {
+            return new DN(this);
+        }
+    }
+    
+    private static final class DN extends DataNode {
+        public DN(TwoPartObject obj) {
+            super(obj, Children.LEAF);
+        }
+        
+        public <T extends Node.Cookie> T getCookie(Class<T> clazz) {
+            if (clazz.isAssignableFrom(OpenCookie.class)) {
+                return clazz.cast(new OpenCookie () {
+                    public void open() {
+                    }
+                });
+            }
+            return super.getCookie(clazz);
         }
     }
     

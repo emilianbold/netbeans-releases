@@ -30,11 +30,14 @@ import org.openide.filesystems.*;
 import org.openide.nodes.*;
 import org.openide.util.*;
 
-/** Object that represents one or more file objects, with added behavior.
+/** Object that represents one or more file objects, with added behavior 
+* accessible though {@link #getLookup} lookup pattern. Since version 6.0
+* this class implements {@link Lookup.Provider}.
 *
 * @author Jaroslav Tulach, Petr Hamernik, Jan Jancura, Ian Formanek
 */
-public abstract class DataObject extends Object implements Node.Cookie, Serializable, HelpCtx.Provider {
+public abstract class DataObject extends Object
+implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
     /** generated Serialized Version UID */
     private static final long serialVersionUID = 3328227388376142699L;
 
@@ -873,6 +876,12 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
     * <P>
     * The default implementation tests if this object is of the requested class and
     * if so, returns it.
+    * <p>
+    * <b>Warning:</b> the {@link #getCookie} method and {@link #getLookup}
+    * method are ment to be interchangable - e.g. if you override one of them
+    * be sure to override also the other and try as much as possible to 
+    * keep the same content in each of them. The default implementation tries
+    * to do that as much as possible.
     *
     * @param c class of requested cookie
     * @return a cookie or <code>null</code> if such cookies are not supported
@@ -882,6 +891,25 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
             return c.cast(this);
         }
         return null;
+    }
+    
+    /** Represents a context of the data object. This method is a more 
+     * general replacement for {@link #getCookie} and should preferably
+     * be used instead of the old method. The default implementation 
+     * inside a data object 
+     * returns the <code>getNodeDelegate().getLookup()</code>.
+     * <p>
+     * <b>Warning:</b> the {@link #getCookie} method and {@link #getLookup}
+     * method are ment to be interchangable - e.g. if you override one of them
+     * be sure to override also the other and try as much as possible to 
+     * keep the same content in each of them. The default implementation tries
+     * to do that as much as possible.
+     * 
+     * @return lookup representing this data object and its content
+     * @since 6.0
+     */
+    public Lookup getLookup() {
+        return getNodeDelegate().getLookup();
     }
     
     /** When a request for a cookie is done on a DataShadow of this DataObject
