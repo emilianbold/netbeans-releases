@@ -19,9 +19,14 @@
 
 package org.netbeans.modules.java.j2seproject;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Properties;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -30,6 +35,9 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.j2seproject.applet.AppletSupport;
 import org.netbeans.modules.java.j2seproject.ui.customizer.MainClassChooser;
+import org.netbeans.spi.project.ProjectConfiguration;
+import org.netbeans.spi.project.ProjectConfigurationProvider;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.TestUtil;
@@ -41,6 +49,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -428,8 +437,59 @@ public class J2SEActionProviderTest extends NbTestCase {
         assertEquals("There must be one target parameter", 1, p.keySet().size());
         assertEquals("There must be be target parameter", "foo.Main", p.getProperty("debug.class"));
     }
-
-    public void testIsActionEnabled() throws Exception {
+    
+    public void testGetTargetNamesFromConfig() throws Exception {
+        final FileObject projdirFO = scratch.createFolder("projectwithconfigs");
+        J2SEProjectGenerator.createProject(FileUtil.toFile(projdirFO), "projectwithconfigs", null, null);
+        final J2SEProject proj = (J2SEProject) ProjectManager.getDefault().findProject(projdirFO);
+        final ProjectConfigurationProvider pcp = proj.getLookup().lookup(ProjectConfigurationProvider.class);
+        ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+            public Void run() throws Exception {
+                Properties props = new Properties();
+                props.setProperty("main.class", "foo.Bar");
+                props.setProperty("$target.build", "");
+                props.setProperty("$target.run", "runtarget");
+                props.setProperty("$target.debug", "debugtarget1 debugtarget2");
+                write(props, projdirFO, "nbproject/configs/test.properties");
+                props = new Properties();
+                write(props, projdirFO, "nbproject/private/configs/test.properties");
+                props = new Properties();
+                props.setProperty("config", "test");
+                write(props, projdirFO, "nbproject/private/config.properties");
+                ProjectManager.getDefault().saveProject(proj);
+                List<ProjectConfiguration> configs = new ArrayList<ProjectConfiguration>(pcp.getConfigurations());
+                pcp.setActiveConfiguration(configs.get(1));
+                return null;
+            }
+        });
+        J2SEActionProvider actionProvider = (J2SEActionProvider) proj.getLookup().lookup(J2SEActionProvider.class);
+        PropertyEvaluator eval = proj.evaluator();
+        String config = eval.getProperty("config");
+        assertEquals("Name of active config from Evaluator is test", "test", config);
+        FileObject sources = projdirFO.getFileObject("src");
+        FileObject pkg = sources.createFolder("foo");
+        FileObject file = pkg.createData("Bar.java");
+        DataObject srcDO = DataObject.find(file);
+        Lookup context = Lookups.fixed(new DataObject[] { srcDO });
+        // test of targets defined in config
+        String[] targets = actionProvider.getTargetNames(ActionProvider.COMMAND_DEBUG, context, new Properties());
+        assertEquals("There must be two Debug targets in test config", 2, targets.length);
+        assertEquals("First Debug target name is debugtarget1", "debugtarget1", targets[0]);
+        assertEquals("Second Debug target name is debugtarget2", "debugtarget2", targets[1]);
+        targets = actionProvider.getTargetNames(ActionProvider.COMMAND_BUILD, context, new Properties());
+        assertEquals("There must be 1 Build target in test config", 1, targets.length);
+        // target is not in fact from the config, config contains empty string
+        assertEquals("Build target name is jar", "jar", targets[0]); 
+        targets = actionProvider.getTargetNames(ActionProvider.COMMAND_RUN, context, new Properties());
+        assertEquals("There must be 1 Run target in test config", 1, targets.length);
+        assertEquals("Run target name is runtarget", "runtarget", targets[0]);
+        // test of targets not in config
+        targets = actionProvider.getTargetNames(ActionProvider.COMMAND_CLEAN, context, new Properties());
+        assertEquals("There must be 1 Clean target", 1, targets.length);
+        assertEquals("Clean target name is runtarget", "clean", targets[0]);
+    }
+    
+    public void testIsActionEnabled() throws Exception {    
         implTestIsActionEnabled();
     }
 
@@ -702,7 +762,23 @@ public class J2SEActionProviderTest extends NbTestCase {
             return Collections.singletonMap("platform.ant.name","default_platform");
         }
         
-        
+    }
+    
+    private void write(Properties p, FileObject d, String path) throws IOException {
+        FileObject f = FileUtil.createData(d, path);
+        OutputStream os = f.getOutputStream();
+        p.store(os, null);
+        os.close();
+    }
+    
+    private static Collection<? extends ProjectConfiguration> getConfigurations(ProjectConfigurationProvider<?> pcp) {
+        return pcp.getConfigurations();
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void setActiveConfiguration(ProjectConfigurationProvider<?> pcp, ProjectConfiguration pc) throws IOException {
+        ProjectConfigurationProvider _pcp = pcp;
+        _pcp.setActiveConfiguration(pc);
     }
 
 }

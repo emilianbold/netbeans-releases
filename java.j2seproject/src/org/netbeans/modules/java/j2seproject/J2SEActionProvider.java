@@ -22,14 +22,19 @@ package org.netbeans.modules.java.j2seproject;
 import java.awt.Dialog;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
@@ -58,8 +63,6 @@ import org.openide.awt.MouseUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -122,7 +125,7 @@ class J2SEActionProvider implements ActionProvider {
     
     public J2SEActionProvider( J2SEProject project, UpdateHelper updateHelper ) {
         
-        commands = new HashMap();
+        commands = new HashMap<String,String[]>();
         commands.put(COMMAND_BUILD, new String[] {"jar"}); // NOI18N
         commands.put(COMMAND_CLEAN, new String[] {"clean"}); // NOI18N
         commands.put(COMMAND_REBUILD, new String[] {"clean", "jar"}); // NOI18N
@@ -233,13 +236,15 @@ class J2SEActionProvider implements ActionProvider {
             }
         }
         String[] targetNames = new String[0];
+        Map<String,String[]> targetsFromConfig = loadTargetsFromConfig();
         if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
             FileObject[] sourceRoots = project.getSourceRoots().getRoots();
             FileObject[] files = findSourcesAndPackages( context, sourceRoots);
             boolean recursive = (context.lookup(NonRecursiveFolder.class) == null);
             if (files != null) {
                 p.setProperty("javac.includes", ActionUtils.antIncludesList(files, getRoot(sourceRoots,files[0]), recursive)); // NOI18N
-                targetNames = new String[] {"compile-single"}; // NOI18N
+                String[] targets = targetsFromConfig.get(command);
+                targetNames = (targets != null) ? targets : commands.get(command);
             } 
             else {
                 FileObject[] testRoots = project.getTestSourceRoots().getRoots();
@@ -322,8 +327,8 @@ class J2SEActionProvider implements ActionProvider {
             if (!command.equals(COMMAND_RUN) && /* XXX should ideally look up proper mainClass in evaluator x config */ mainClass != null) {
                 p.setProperty("debug.class", mainClass); // NOI18N
             }
-            
-            targetNames = (String[])commands.get(command);
+            String[] targets = targetsFromConfig.get(command);
+            targetNames = (targets != null) ? targets : commands.get(command);
             if (targetNames == null) {
                 throw new IllegalArgumentException(command);
             }
@@ -392,15 +397,18 @@ class J2SEActionProvider implements ActionProvider {
                 } else {
                     if (command.equals (COMMAND_RUN_SINGLE)) {
                         p.setProperty("run.class", clazz); // NOI18N
-                        targetNames = (String[])commands.get(COMMAND_RUN_SINGLE);
+                        String[] targets = targetsFromConfig.get(command);
+                        targetNames = (targets != null) ? targets : commands.get(COMMAND_RUN_SINGLE);
                     } else {
                         p.setProperty("debug.class", clazz); // NOI18N
-                        targetNames = (String[])commands.get(COMMAND_DEBUG_SINGLE);
+                        String[] targets = targetsFromConfig.get(command);
+                        targetNames = (targets != null) ? targets : commands.get(COMMAND_DEBUG_SINGLE);
                     }
                 }
             }
         } else {
-            targetNames = (String[])commands.get(command);
+            String[] targets = targetsFromConfig.get(command);
+            targetNames = (targets != null) ? targets : commands.get(command);
             if (targetNames == null) {
                 throw new IllegalArgumentException(command);
             }
@@ -417,6 +425,48 @@ class J2SEActionProvider implements ActionProvider {
             p.setProperty(J2SEConfigurationProvider.PROP_CONFIG, config);
         }
         return targetNames;
+    }
+    
+    // loads targets for specific commands from shared config property file
+    // returns map; key=command name; value=array of targets for given command
+    private HashMap<String,String[]> loadTargetsFromConfig() {
+        HashMap<String,String[]> targets = new HashMap<String,String[]>(6);
+        String config = project.evaluator().getProperty(J2SEConfigurationProvider.PROP_CONFIG);
+        // load targets from shared config
+        FileObject propFO = project.getProjectDirectory().getFileObject("nbproject/configs/" + config + ".properties");
+        if (propFO == null) {
+            return targets;
+        }
+        Properties props = new Properties();
+        try {
+            InputStream is = propFO.getInputStream();
+            try {
+                props.load(is);
+            } finally {
+                is.close();
+            }
+        } catch (IOException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            return targets;
+        }
+        Enumeration propNames = props.propertyNames();
+        while (propNames.hasMoreElements()) {
+            String propName = (String) propNames.nextElement();
+            if (propName.startsWith("$target.")) {
+                String tNameVal = props.getProperty(propName);
+                String cmdNameKey = null;
+                if (tNameVal != null && !tNameVal.equals("")) {
+                    cmdNameKey = propName.substring("$target.".length());
+                    StringTokenizer stok = new StringTokenizer(tNameVal.trim(), " ");
+                    List<String> targetNames = new ArrayList<String>(3);
+                    while (stok.hasMoreTokens()) {
+                        targetNames.add(stok.nextToken());
+                    }
+                    targets.put(cmdNameKey, targetNames.toArray(new String[targetNames.size()]));
+                }
+            }
+        }
+        return targets;
     }
     
     private String[] setupTestSingle(Properties p, FileObject[] files) {
