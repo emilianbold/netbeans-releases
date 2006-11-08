@@ -19,21 +19,23 @@
 
 package org.netbeans.modules.form;
 
+import java.awt.Color;
+import java.lang.String;
+import java.lang.String;
+import java.lang.String;
 import java.util.*;
-import javax.swing.UIManager;
-import org.openide.options.SystemOption;
+import java.util.prefs.Preferences;
 import org.openide.util.HelpCtx;
-import org.openide.util.SharedClassObject;
 import org.netbeans.modules.form.codestructure.*;
+import org.openide.nodes.BeanNode;
+import org.openide.util.NbPreferences;
 
 /**
  * Settings for the form editor.
  */
 
-public class FormLoaderSettings extends SystemOption {
-    /** generated Serialized Version UID */
-    static final long serialVersionUID = 8949624818164732719L;
-
+public class FormLoaderSettings  {
+    private static final FormLoaderSettings INSTANCE = new FormLoaderSettings();
     public static final String PROP_USE_INDENT_ENGINE = "useIndentEngine"; // NOI18N
 
     /** Property name of the eventVariableName property */
@@ -106,141 +108,67 @@ public class FormLoaderSettings extends SystemOption {
 //    public static final String PROP_CONTAINER_BEANS = "containerBeans"; // NOI18N
 
     // ------------------------------------------
-    // properties
-
-    private static boolean useIndentEngine = false;
-    
-    /** The name of the Event variable generated in the event handlers. */
-    private static String eventVariableName = "evt"; // NOI18N
-
-    /** Style of code generation of event listeners. Possible values defined
-     * by JavaCodeGenerator. */
-    private static int listenerGenerationStyle;
-
-    /** The size(in pixels) of the border that marks visual components on a form
-     * as selected. */
-    private static int selectionBorderSize = 1;
-
-    /** The color of the border boxes on selection border */
-    private static java.awt.Color selectionBorderColor =
-        new java.awt.Color(255, 164, 0);
-    /** The color of the border boxes on connection border */
-    private static java.awt.Color connectionBorderColor = java.awt.Color.red;
     /** The color of the drag border on selection border */
     private static java.awt.Color dragBorderColor = java.awt.Color.gray;
-    /** The color of FormDesigner window's background */
-    private static java.awt.Color formDesignerBackgroundColor = java.awt.Color.white;
-    /** The color of border around designed component */
-    private static java.awt.Color formDesignerBorderColor =
-        new java.awt.Color(224, 224, 255);
-    /** The color of guiding lines. */
-    private static java.awt.Color guidingLineColor =
-        new java.awt.Color(143, 171, 196);
-
-    /** The grid size(in pixels) in x axis. */
-    private static int gridX = 10;
-    /** The grid size(in pixels) in y axis. */
-    private static int gridY = 10;
-    /** True if grid should be applied to position of components, false otherwise. */
-    private static boolean applyGridToPosition = true;
-    /** True if grid should be applied to size of components, false otherwise. */
-    private static boolean applyGridToSize = true;
-
-    /** The modifiers of variables generated for component in Form Editor */
-    private static int variablesModifier = java.lang.reflect.Modifier.PRIVATE;
-    /** The local variable generation state for components in Form Editor. */
-    private static boolean variablesLocal = false;
-
-    /** If true, special code using org.openide.awt.Mnemonics is generated for
-     * buttons and labels. */
-    private static boolean generateMnemonicsCode = false;
     /** Indicates whether to display automatically hint dialog advertising the
      * Mnemonics generation feature. */
     private static boolean showMnemonicsDialog = true;
-    
-    /** If true, only editable properties are displayed in the ComponentInspector */
-    private static boolean displayWritableOnly = true;
-
-    /** If true then the generated code will be folded. */
-    private static boolean foldGeneratedCode = true;
-
-    /** If true then the assistant is show in the designer. */
-    private static boolean assistantShown = true;
-
     /** Array of package names to search for property editors used in Form Editor */
-    private static String [] editorSearchPath =
-        { "org.netbeans.modules.form.editors2" }; // NOI18N
+    private static String[] editorSearchPath = null;
     /** Array of items [Class Name, Editor1, Editor2, ...] */
-    private static String [][] registeredEditors = new String [][] {{}};
-
-    private static boolean toolBarPalette = false;
-
+    private static String [][] registeredEditors;
     private static final int MIN_SELECTION_BORDER_SIZE = 1;
     private static final int MAX_SELECTION_BORDER_SIZE = 15;
 
     private static final int MIN_GRID_X = 2;
     private static final int MIN_GRID_Y = 2;
 
-    /** The style of generating layout code (GroupLayout etc). */
-    private static int layoutCodeTarget;
-
-    /** How newly created forms are set to be internationalized automatically. */
-    private static int i18nAutoMode;
-
 //    private static Map containerBeans;
 
     // --------
 
+    public static final Preferences getPreferences() {
+        return NbPreferences.forModule(FormLoaderSettings.class);
+    }
+    
     public static FormLoaderSettings getInstance() {
-        return (FormLoaderSettings)
-            SharedClassObject.findObject(FormLoaderSettings.class, true);
+        return INSTANCE;
     }
 
     // ------------------------------------------
     // property access methods
 
     public boolean getUseIndentEngine() {
-        return useIndentEngine;
+        return getPreferences().getBoolean(PROP_USE_INDENT_ENGINE, false); 
     }
 
     public void setUseIndentEngine(boolean value) {
-        if (value == useIndentEngine)
-            return;
-        useIndentEngine = value;
-        firePropertyChange(PROP_USE_INDENT_ENGINE,
-                           !value ? Boolean.TRUE : Boolean.FALSE, value ? Boolean.TRUE : Boolean.FALSE);
+        getPreferences().putBoolean(PROP_USE_INDENT_ENGINE, value);
     }
     
     /** Getter for the sortEventSets option */
     public String getEventVariableName() {
-        return eventVariableName;
+        return getPreferences().get(PROP_EVENT_VARIABLE_NAME, "evt");
     }
 
     /** Setter for the sortEventSets option */
     public void setEventVariableName(String value) {
-        if (value == eventVariableName)
-            return;
-        String oldValue = eventVariableName;
-        eventVariableName = value;
-        firePropertyChange(PROP_EVENT_VARIABLE_NAME, oldValue, eventVariableName);
+        getPreferences().put(PROP_EVENT_VARIABLE_NAME, value);
     }
 
     /** Getter for the event listener code generation style option. */
     public int getListenerGenerationStyle() {
-        return listenerGenerationStyle;
+        return getPreferences().getInt(PROP_LISTENER_GENERATION_STYLE, 0);
     }
 
     /** Setter for the event listener code generation style option. */
     public void setListenerGenerationStyle(int style) {
-        int oldValue = listenerGenerationStyle;
-        listenerGenerationStyle = style;
-        firePropertyChange(PROP_LISTENER_GENERATION_STYLE,
-                           new Integer(oldValue), new Integer(style));
+        getPreferences().putInt(PROP_LISTENER_GENERATION_STYLE, style);
     }
 
     /** Getter for the selectionBorderSize option */
     public int getSelectionBorderSize() {
-        return selectionBorderSize;
+        return getPreferences().getInt(PROP_SELECTION_BORDER_SIZE, 1);
     }
 
     /** Setter for the selectionBorderSize option */
@@ -250,374 +178,333 @@ public class FormLoaderSettings extends SystemOption {
         else if (value > MAX_SELECTION_BORDER_SIZE)
             value = MAX_SELECTION_BORDER_SIZE;
 
-        if (value == selectionBorderSize)
-            return;
-
-        int oldValue = selectionBorderSize;
-        selectionBorderSize = value;
-        firePropertyChange(PROP_SELECTION_BORDER_SIZE,
-                           new Integer(oldValue),
-                           new Integer(selectionBorderSize));
+        
+        getPreferences().putInt(PROP_SELECTION_BORDER_SIZE, value);
     }
 
     /** Getter for the selectionBorderColor option */
     public java.awt.Color getSelectionBorderColor() {
-        return selectionBorderColor;
+        int rgb = getPreferences().getInt(PROP_SELECTION_BORDER_COLOR, new Color(255, 164, 0).getRGB());                
+        return new Color(rgb);
     }
 
     /** Setter for the selectionBorderColor option */
     public void setSelectionBorderColor(java.awt.Color value) {
-        if (value.equals(selectionBorderColor))
+        if (value == null) {
             return;
-        java.awt.Color oldValue = selectionBorderColor;
-        selectionBorderColor = value;
-        firePropertyChange(PROP_SELECTION_BORDER_COLOR,
-                           oldValue,
-                           selectionBorderColor);
+        }
+        getPreferences().putInt(PROP_SELECTION_BORDER_COLOR, value.getRGB());
     }
 
     /** Getter for the connectionBorderColor option */
     public java.awt.Color getConnectionBorderColor() {
-        return connectionBorderColor;
+        int rgb = getPreferences().getInt(PROP_CONNECTION_BORDER_COLOR, Color.red.getRGB());
+        return new Color(rgb);
     }
 
     /** Setter for the connectionBorderColor option */
     public void setConnectionBorderColor(java.awt.Color value) {
-        if (value.equals(connectionBorderColor))
+        if (value == null) {
             return;
-        java.awt.Color oldValue = connectionBorderColor;
-        connectionBorderColor = value;
-        firePropertyChange(PROP_CONNECTION_BORDER_COLOR,
-                           oldValue,
-                           connectionBorderColor);
+        }
+        getPreferences().putInt(PROP_CONNECTION_BORDER_COLOR, value.getRGB());
     }
 
     /** Getter for the dragBorderColor option */
     public java.awt.Color getDragBorderColor() {
-        return dragBorderColor;
+        int rgb = getPreferences().getInt(PROP_DRAG_BORDER_COLOR, Color.gray.getRGB());
+        return new Color(rgb);        
     }
 
     /** Setter for the dragBorderColor option */
     public void setDragBorderColor(java.awt.Color value) {
-        if (value.equals(dragBorderColor))
+        if (value == null) {
             return;
-        java.awt.Color oldValue = dragBorderColor;
-        dragBorderColor = value;
-        firePropertyChange(PROP_DRAG_BORDER_COLOR, oldValue, dragBorderColor);
+        }        
+        getPreferences().putInt(PROP_DRAG_BORDER_COLOR, value.getRGB());
     }
     
     /** Getter for the guidingLineColor option */
     public java.awt.Color getGuidingLineColor() {
-        return guidingLineColor;
+        int rgb = getPreferences().getInt(PROP_GUIDING_LINE_COLOR, new Color(143, 171, 196).getRGB());
+        return new Color(rgb);        
+        
     }
 
     /** Setter for the dragBorderColor option */
     public void setGuidingLineColor(java.awt.Color value) {
-        if (value.equals(guidingLineColor))
+        if (value == null) {
             return;
-        java.awt.Color oldValue = guidingLineColor;
-        guidingLineColor = value;
-        firePropertyChange(PROP_GUIDING_LINE_COLOR, oldValue, guidingLineColor);
+        }        
+        getPreferences().putInt(PROP_GUIDING_LINE_COLOR, value.getRGB());
     }
 
     /** Getter for the gridX option */
     public int getGridX() {
-        return gridX;
+        return getPreferences().getInt(PROP_GRID_X, 10);
     }
 
     /** Setter for the gridX option */
     public void setGridX(int value) {
         if (value < MIN_GRID_X) value = MIN_GRID_X;
-        if (value == gridX)
-            return;
-        int oldValue = gridX;
-        gridX = value;
-        firePropertyChange(PROP_GRID_X, new Integer(oldValue), new Integer(gridX));
+        getPreferences().putInt(PROP_GRID_X, value);
     }
 
     /** Getter for the gridY option */
-    public int getGridY() {
-        return gridY;
+    public int getGridY() {        
+        return getPreferences().getInt(PROP_GRID_Y, 10);
     }
 
     /** Setter for the gridY option */
     public void setGridY(int value) {
         if (value < MIN_GRID_Y) value = MIN_GRID_Y;
-        if (value == gridY)
-            return;
-        int oldValue = gridY;
-        gridY = value;
-        firePropertyChange(PROP_GRID_Y, new Integer(oldValue), new Integer(gridY));
+        getPreferences().putInt(PROP_GRID_Y, value);
     }
 
     /** Getter for the applyGridToPosition option */
     public boolean getApplyGridToPosition() {
-        return applyGridToPosition;
+        return getPreferences().getBoolean(PROP_APPLY_GRID_TO_POSITION, true);
     }
 
     /** Setter for the applyGridToPosition option */
     public void setApplyGridToPosition(boolean value) {
-        if (value == applyGridToPosition)
-            return;
-        boolean oldValue = applyGridToPosition;
-        applyGridToPosition = value;
-        firePropertyChange(PROP_APPLY_GRID_TO_POSITION,
-                           oldValue ? Boolean.TRUE : Boolean.FALSE,
-                           applyGridToPosition ? Boolean.TRUE : Boolean.FALSE);
+        getPreferences().putBoolean(PROP_APPLY_GRID_TO_POSITION, value);
     }
 
     /** Getter for the applyGridToSize option */
     public boolean getApplyGridToSize() {
-        return applyGridToSize;
+        return getPreferences().getBoolean(PROP_APPLY_GRID_TO_SIZE, true);
+        
     }
 
     /** Setter for the applyGridToSize option */
     public void setApplyGridToSize(boolean value) {
-        if (value == applyGridToSize)
-            return;
-        boolean oldValue = applyGridToSize;
-        applyGridToSize = value;
-        firePropertyChange(PROP_APPLY_GRID_TO_SIZE,
-                           oldValue ? Boolean.TRUE : Boolean.FALSE,
-                           applyGridToSize ? Boolean.TRUE : Boolean.FALSE);
+        getPreferences().putBoolean(PROP_APPLY_GRID_TO_SIZE, value);    
     }
 
     /** Getter for the variablesLocal option. */
     public boolean getVariablesLocal() {
-        return variablesLocal;
+        return getPreferences().getBoolean(PROP_VARIABLES_LOCAL, false);
     }
 
     /** Setter for the variablesLocal option. */
     public void setVariablesLocal(boolean value) {
-        boolean oldValue = variablesLocal;
-        variablesLocal = value;
-
-        int varType = variablesLocal ?
+        getPreferences().putBoolean(PROP_VARIABLES_LOCAL, value);
+        int variablesModifier = getVariablesModifier();        
+        int varType = value ?
             CodeVariable.LOCAL | (variablesModifier & CodeVariable.FINAL)
                                | CodeVariable.EXPLICIT_DECLARATION
             :
             CodeVariable.FIELD | variablesModifier;
         CodeStructure.setGlobalDefaultVariableType(varType);
 
-        int oldModif = variablesModifier;
-        if (variablesLocal)
+        if (value) {            
             variablesModifier &= CodeVariable.FINAL;
+            setVariablesModifier(variablesModifier);
+        }
+            
 
-        firePropertyChange(PROP_VARIABLES_LOCAL,
-                           oldValue ? Boolean.TRUE : Boolean.FALSE,
-                           variablesLocal ? Boolean.TRUE : Boolean.FALSE);
-        firePropertyChange(PROP_VARIABLES_MODIFIER,
-                           new Integer(oldModif),
-                           new Integer(variablesModifier));
     }
 
     /** Getter for the variablesModifier option */
     public int getVariablesModifier() {
-        return variablesModifier;
+        return getPreferences().getInt(PROP_VARIABLES_MODIFIER, java.lang.reflect.Modifier.PRIVATE);
     }
 
     /** Setter for the variablesModifier option */
     public void setVariablesModifier(int value) {
-        int oldValue = variablesModifier;
-        variablesModifier = value;
+        int variablesModifier = value;
 
         int varType;
-        if (variablesLocal) {
+        if (getVariablesLocal()) {
             varType = CodeVariable.LOCAL | variablesModifier;
             if ((variablesModifier & CodeVariable.FINAL) == 0)
                 varType |= CodeVariable.EXPLICIT_DECLARATION;
         }
         else varType = CodeVariable.FIELD | variablesModifier;
         CodeStructure.setGlobalDefaultVariableType(varType);
-
-        firePropertyChange(PROP_VARIABLES_MODIFIER,
-                           new Integer(oldValue),
-                           new Integer(variablesModifier));
     }
 
     /** Getter for the generateMnemonicsCode option */
     public boolean getGenerateMnemonicsCode() {
-        return generateMnemonicsCode;
+        return getPreferences().getBoolean(PROP_GENERATE_MNEMONICS, false);
     }
 
     /** Setter for the generateMnemonicsCode option */
     public void setGenerateMnemonicsCode(boolean value) {
-        Boolean oldValue = generateMnemonicsCode ? Boolean.TRUE : Boolean.FALSE;
-        generateMnemonicsCode = value;
-        firePropertyChange(PROP_GENERATE_MNEMONICS,
-                           oldValue, 
-                           value ? Boolean.TRUE : Boolean.FALSE);
+        getPreferences().putBoolean(PROP_GENERATE_MNEMONICS, value);
     }
 
     /** Getter for the displayWritableOnly option */
     public boolean getDisplayWritableOnly() {
-        return displayWritableOnly;
+        return getPreferences().getBoolean(PROP_DISPLAY_WRITABLE_ONLY, true);
     }
 
     /** Setter for the displayWritableOnly option */
     public void setDisplayWritableOnly(boolean value) {
-        Boolean oldValue = displayWritableOnly ? Boolean.TRUE : Boolean.FALSE;
-        displayWritableOnly = value;
-        firePropertyChange(PROP_DISPLAY_WRITABLE_ONLY,
-                           oldValue,
-                           displayWritableOnly ? Boolean.TRUE : Boolean.FALSE);
+        getPreferences().putBoolean(PROP_DISPLAY_WRITABLE_ONLY, value);
     }
 
     /** Getter for the editorSearchPath option */
     public String[] getEditorSearchPath() {
+        if (editorSearchPath == null) {
+            editorSearchPath = translatedEditorSearchPath(
+                    toArray(getPreferences().get(PROP_EDITOR_SEARCH_PATH, "org.netbeans.modules.form.editors2")));
+        }
         return editorSearchPath;
     }
 
     /** Setter for the editorSearchPath option */
     public void setEditorSearchPath(String[] value) {
-        String[] oldValue = editorSearchPath;
         editorSearchPath = value;
-        FormPropertyEditorManager.clearEditorsCache(); // clear the editors cache so that the new editors can be used
-        firePropertyChange(PROP_EDITOR_SEARCH_PATH, oldValue, editorSearchPath);
+        getPreferences().put(PROP_EDITOR_SEARCH_PATH, fromArray(editorSearchPath));//NOI18N
     }
 
     /** Getter for the registeredEditors option */
     public String[][] getRegisteredEditors() {
+        if (registeredEditors == null) {
+            registeredEditors = toArray2(getPreferences().get(PROP_REGISTERED_EDITORS, ""));
+        }
+        
         return registeredEditors;
     }
 
     /** Setter for the registeredEditors option */
     public void setRegisteredEditors(String[][] value) {
-        String[][] oldValue = registeredEditors;
         registeredEditors = value;
-        FormPropertyEditorManager.clearEditorsCache(); // clear the editors cache so that the new editors can be used
-        firePropertyChange(PROP_REGISTERED_EDITORS, oldValue, registeredEditors);
+        getPreferences().put(PROP_REGISTERED_EDITORS, fromArray2(registeredEditors));//NOI18N
     }
 
     public String[] getRegisteredEditor(int index) {
-        return registeredEditors[index];
+        return getRegisteredEditors()[index];
     }
 
     public void setRegisteredEditor(int index, String[] value) {
         registeredEditors[index] = value;
         FormPropertyEditorManager.clearEditorsCache(); // clear the editors cache so that the new editors can be used
-        firePropertyChange(PROP_REGISTERED_EDITORS, null, null);
+        setRegisteredEditors(registeredEditors);
     }
 
     public boolean isPaletteInToolBar() {
-        return toolBarPalette;
+        return getPreferences().getBoolean(PROP_PALETTE_IN_TOOLBAR, false);
     }
 
     public void setPaletteInToolBar(boolean value) {
-        if (toolBarPalette == value)
-            return;
-
-        boolean oldValue = toolBarPalette;
-        toolBarPalette = value;
-
-        firePropertyChange(PROP_PALETTE_IN_TOOLBAR,
-                           oldValue ? Boolean.TRUE : Boolean.FALSE,
-                           value ?  Boolean.TRUE : Boolean.FALSE);
+        getPreferences().putBoolean(PROP_PALETTE_IN_TOOLBAR, value);    
     }
 
     /** Getter for the formDesignerBackgroundColor option */
     public java.awt.Color getFormDesignerBackgroundColor() {
-        return formDesignerBackgroundColor;
+        int rgb = getPreferences().getInt(PROP_FORMDESIGNER_BACKGROUND_COLOR , Color.white.getRGB());
+        return new Color(rgb);        
+        
     }
 
     /** Setter for the formDesignerBackgroundColor option */
     public void setFormDesignerBackgroundColor(java.awt.Color value) {
-        if (value.equals(formDesignerBackgroundColor))
+        if (value == null)
             return;
-        java.awt.Color oldValue = formDesignerBackgroundColor;
-        formDesignerBackgroundColor = value;
-        firePropertyChange(PROP_FORMDESIGNER_BACKGROUND_COLOR,
-                           oldValue,
-                           formDesignerBackgroundColor);
+        getPreferences().putInt(PROP_FORMDESIGNER_BACKGROUND_COLOR , value.getRGB());    
     }
 
     /** Getter for the formDesignerBorderColor option */
     public java.awt.Color getFormDesignerBorderColor() {
-        return formDesignerBorderColor;
+        int rgb = getPreferences().getInt(PROP_FORMDESIGNER_BORDER_COLOR , new Color(224, 224, 255).getRGB());
+        return new Color(rgb);        
+        
     }
 
     /** Setter for the formDesignerBorderColor option */
     public void setFormDesignerBorderColor(java.awt.Color value) {
-        if (value.equals(formDesignerBorderColor))
+        if (value == null)
             return;
-        java.awt.Color oldValue = formDesignerBorderColor;
-        formDesignerBorderColor = value;
-        firePropertyChange(PROP_FORMDESIGNER_BORDER_COLOR,
-                           oldValue,
-                           formDesignerBorderColor);
+        getPreferences().putInt(PROP_FORMDESIGNER_BORDER_COLOR , value.getRGB());    
     }
     
     /** Getter for the foldGeneratedCode option */
     public boolean getFoldGeneratedCode() {
-        return foldGeneratedCode;
+        return getPreferences().getBoolean(PROP_FOLD_GENERATED_CODE, true);    
     }
 
     /** Setter for the foldGeneratedCode option */
     public void setFoldGeneratedCode(boolean value) {
-        Boolean oldValue = foldGeneratedCode ? Boolean.TRUE : Boolean.FALSE;
-        foldGeneratedCode = value;
-        firePropertyChange(PROP_FOLD_GENERATED_CODE,
-                           oldValue, 
-                           value ? Boolean.TRUE : Boolean.FALSE);
+        getPreferences().putBoolean(PROP_FOLD_GENERATED_CODE, value);    
     }
 
     /** Getter for the assistantShown option */
     public boolean getAssistantShown() {
-        return assistantShown;
+        return getPreferences().getBoolean(PROP_ASSISTANT_SHOWN, true);    
     }
 
     /** Setter for the foldGeneratedCode option */
     public void setAssistantShown(boolean value) {
-        Boolean oldValue = assistantShown ? Boolean.TRUE : Boolean.FALSE;
-        assistantShown = value;
-        firePropertyChange(PROP_ASSISTANT_SHOWN,
-                           oldValue, 
-                           value ? Boolean.TRUE : Boolean.FALSE);
+        getPreferences().putBoolean(PROP_ASSISTANT_SHOWN, value);    
     }
 
     public int getLayoutCodeTarget() {
-        return layoutCodeTarget;
+        return getPreferences().getInt(PROP_LAYOUT_CODE_TARGET, 0);    
     }
 
     public void setLayoutCodeTarget(int target) {
-        int oldValue = layoutCodeTarget;
-        layoutCodeTarget = target;
-        firePropertyChange(PROP_LAYOUT_CODE_TARGET,
-                           new Integer(oldValue), new Integer(target));
+        getPreferences().putInt(PROP_LAYOUT_CODE_TARGET, target);    
     }
 
     public int getI18nAutoMode() {
-        return i18nAutoMode;
+        return getPreferences().getInt(PROP_AUTO_I18N, 0);    
     }
 
     public void setI18nAutoMode(int mode) {
-        int oldValue = i18nAutoMode;
-        i18nAutoMode = mode;
-        firePropertyChange(PROP_AUTO_I18N, new Integer(oldValue), new Integer(mode));
+        getPreferences().putInt(PROP_AUTO_I18N, mode);    
     }
 
-//    public Map getContainerBeans() {
-//        return containerBeans;
-//    }
-//
-//    public void setContainerBeans(Map map) {
-//        containerBeans = map;
-//        firePropertyChange(PROP_CONTAINER_BEANS, null, null);
-//    }
-
+    private static String[][] toArray2(String esp) {
+        List<String[]> retval = new ArrayList<String[]> ();//NOI18N
+        String[] items = esp.split(" | ");//NOI18N
+        for (int i = 0; i < items.length; i++) {
+            String s = items[i];
+            retval.add(toArray(s));
+        }        
+        return retval.toArray(new String [][] {{}});
+    }
+    
+    private static String fromArray2(String[][] items) {
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < items.length; i++) {
+            sb.append(fromArray(items[i]));
+            if (i < items.length-1) {
+                sb.append(" | ");//NOI18N
+            }
+        }
+        return sb.toString();        
+    }
+        
+    private static String[] toArray(String esp) {
+        return esp.split(" , ");//NOI18N
+    }
+    
+    private static String fromArray(String[] items) {
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < items.length; i++) {
+            sb.append(items[i]);
+            if (i < items.length-1) {
+                sb.append(" , ");//NOI18N
+            }
+        }
+        return sb.toString();        
+    }
+    
     // XXX(-tdt) Hmm, backward compatibility with com.netbeans package name
     // again. The property editor search path is stored in user settings, we
-    // must translate
-    public void readExternal(java.io.ObjectInput in)
-        throws java.io.IOException, ClassNotFoundException
-    {
-        super.readExternal(in);
-        for (int i = 0; i < editorSearchPath.length; i++) {
-            String path = editorSearchPath[i];
+    // must translate    
+    private  static String[] translatedEditorSearchPath(String[] eSearchPath) {
+        String[] retval = new String[eSearchPath.length];
+        for (int i = 0; i < eSearchPath.length; i++) {
+            String path = eSearchPath[i];
             path = org.openide.util.Utilities.translate(path + ".BogusClass"); // NOI18N
             path = path.substring(0, path.length() - ".BogusClass".length()); // NOI18N
-            editorSearchPath[i] = path;
-        }
+            retval[i] = path;
+        }        
+        return retval;
     }
 
     /** This method must be overriden. It returns display name of this options.
@@ -629,4 +516,8 @@ public class FormLoaderSettings extends SystemOption {
     public HelpCtx getHelpCtx() {
         return new HelpCtx("gui.configuring"); // NOI18N
     }
+    
+    private static BeanNode createViewNode() throws java.beans.IntrospectionException {
+        return new BeanNode(FormLoaderSettings.getInstance());
+    }         
 }

@@ -25,21 +25,11 @@ Microsystems, Inc. All Rights Reserved.
             <file name="absolutelayout.xml" url="absolutelayout.xml"/>
         </folder>
     </folder>
-
-    <folder name="Services">
-        <file name="formsettings.settings" url="formsettings.settings">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
-            <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/form/resources/formSettings.gif"/>
-        </file>
-    </folder>
-
     <folder name="UI">
-
       <folder name="Services">
-
         <folder name="Editing">
-            <file name="formsettings.shadow">
-                <attr name="originalFile" stringvalue="Services/formsettings.settings"/>
+            <file name="FormSettingsNode.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.form.FormLoaderSettings.createViewNode"/>
             </file>
         </folder> <!-- Editing -->
 

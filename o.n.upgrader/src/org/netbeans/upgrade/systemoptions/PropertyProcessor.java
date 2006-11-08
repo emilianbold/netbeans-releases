@@ -20,10 +20,7 @@
 package org.netbeans.upgrade.systemoptions;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import org.netbeans.upgrade.systemoptions.SerParser.NameValue;
-import org.netbeans.upgrade.systemoptions.SerParser.ObjectWrapper;
 
 
 abstract class PropertyProcessor  {
@@ -41,6 +38,7 @@ abstract class PropertyProcessor  {
         registerPropertyProcessor(new IntrospectedInfoProcessor());//AntSettings                
         registerPropertyProcessor(new ListProcessor());//ProjectUISettings             
         registerPropertyProcessor(new URLProcessor());//ProjectUISettings             
+        registerPropertyProcessor(new ColorProcessor());//FormLoaderSettings
     }
     
 

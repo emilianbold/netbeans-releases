@@ -24,6 +24,7 @@ import java.beans.*;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import org.netbeans.modules.form.editors.ModifierEditor;
+import org.openide.util.NbBundle;
 
 import org.openide.util.Utilities;
 
@@ -261,6 +262,13 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
                        || type == java.beans.BeanInfo.ICON_MONO_16x16 ?
                    iconURL : icon32URL);
     }
+    
+    public BeanDescriptor getBeanDescriptor() {
+        BeanDescriptor retval = new BeanDescriptor(FormLoaderSettings.class , null );
+        retval.setDisplayName(NbBundle.getMessage(FormLoaderSettings.class, "CTL_FormSettings"));//NOI18N
+        return retval;
+    }
+    
 
     // --------
 

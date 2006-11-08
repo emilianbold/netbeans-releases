@@ -23,6 +23,8 @@ import java.awt.Cursor;
 import java.beans.*;
 import java.io.IOException;
 import java.util.*;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import javax.swing.*;
 import javax.swing.text.Document;
 import org.netbeans.modules.form.assistant.AssistantModel;
@@ -90,7 +92,7 @@ public class FormEditor {
     /** The DataObject of the form */
     private FormDataObject formDataObject;
     private PropertyChangeListener dataObjectListener;
-    private static PropertyChangeListener settingsListener;
+    private static PreferenceChangeListener settingsListener;
     private PropertyChangeListener paletteListener;
     
     // listeners
@@ -790,46 +792,44 @@ public class FormEditor {
         if (settingsListener != null)
             return;
 
-        settingsListener = new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
+        settingsListener = new PreferenceChangeListener() {
+
+            public void preferenceChange(PreferenceChangeEvent evt) {
                 Iterator iter = openForms.keySet().iterator();
+
                 while (iter.hasNext()) {
                     FormModel formModel = (FormModel) iter.next();
-                    String propName = evt.getPropertyName();
+                    String propName = evt.getKey();
 
                     if (FormLoaderSettings.PROP_USE_INDENT_ENGINE.equals(propName)) {
                         formModel.fireSyntheticPropertyChanged(null, propName,
-                                        evt.getOldValue(), evt.getNewValue());
-                    } else if (FormLoaderSettings.PROP_SELECTION_BORDER_SIZE.equals(propName)                    
-                          || FormLoaderSettings.PROP_SELECTION_BORDER_COLOR.equals(propName)
-                          || FormLoaderSettings.PROP_CONNECTION_BORDER_COLOR.equals(propName)
-                          || FormLoaderSettings.PROP_FORMDESIGNER_BACKGROUND_COLOR.equals(propName)
-                          || FormLoaderSettings.PROP_FORMDESIGNER_BORDER_COLOR.equals(propName))
-                    {
+                                                               null,
+                                                               evt.getNewValue());
+                    } else if (FormLoaderSettings.PROP_SELECTION_BORDER_SIZE.equals(propName) ||
+                               FormLoaderSettings.PROP_SELECTION_BORDER_COLOR.equals(propName) ||
+                               FormLoaderSettings.PROP_CONNECTION_BORDER_COLOR.equals(propName) ||
+                               FormLoaderSettings.PROP_FORMDESIGNER_BACKGROUND_COLOR.equals(propName) ||
+                               FormLoaderSettings.PROP_FORMDESIGNER_BORDER_COLOR.equals(propName)) {
                         FormDesigner designer = getFormDesigner(formModel);
+
                         if (designer != null)
                             designer.updateVisualSettings();
-                        // PENDING all cloned designers for given form should be updated
-                    }
-                    else if (FormLoaderSettings.PROP_PALETTE_IN_TOOLBAR.equals(propName))
-                    {
+                    } else if (FormLoaderSettings.PROP_PALETTE_IN_TOOLBAR.equals(propName)) {
                         FormDesigner designer = getFormDesigner(formModel);
+
                         if (designer != null)
-                            designer.getFormToolBar().showPaletteButton(
-                                FormLoaderSettings.getInstance().isPaletteInToolBar());
-                        // PENDING all cloned designers for given form should be updated
+                            designer.getFormToolBar().showPaletteButton(FormLoaderSettings.getInstance().isPaletteInToolBar());
                     }
                 }
             }
         };
 
-        FormLoaderSettings.getInstance().addPropertyChangeListener(settingsListener);
+        FormLoaderSettings.getInstance().getPreferences().addPreferenceChangeListener(settingsListener);
     }
 
     private static void detachSettingsListener() {
         if (settingsListener != null) {
-            FormLoaderSettings.getInstance()
-                    .removePropertyChangeListener(settingsListener);
+            FormLoaderSettings.getInstance().getPreferences().removePreferenceChangeListener(settingsListener);
             settingsListener = null;
         }
     }

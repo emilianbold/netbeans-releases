@@ -154,8 +154,8 @@ class JavaCodeGenerator extends CodeGenerator {
     private static String eventDispatchCodeComment;
 
     /** The FormLoaderSettings instance */
-    private static FormLoaderSettings formSettings = (FormLoaderSettings)
-                   SharedClassObject.findObject(FormLoaderSettings.class, true);
+    private static FormLoaderSettings formSettings = FormLoaderSettings.getInstance();
+                   
 
     private FormModel formModel;
     private FormEditorSupport formEditorSupport;

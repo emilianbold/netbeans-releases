@@ -19,6 +19,7 @@
 
 package org.netbeans.upgrade.systemoptions;
 
+import java.util.Iterator;
 import java.util.List;
 import org.netbeans.upgrade.systemoptions.SerParser.ArrayWrapper;
 import org.netbeans.upgrade.systemoptions.SerParser.NameValue;
@@ -50,6 +51,28 @@ final class Utils {
             }
         }  else if (value instanceof String && !"null".equals(value)) {
             stringvalue = value.toString();
+            
+        } else if (value instanceof SerParser.ArrayWrapper && "[Ljava.lang.String;".equals(((SerParser.ArrayWrapper)value).classdesc.name)) {
+            StringBuffer sb = new StringBuffer();
+            List es = ((SerParser.ArrayWrapper)value).values;
+            for (Iterator it = es.iterator(); it.hasNext();) {
+                sb.append((String)it.next());
+                if (it.hasNext()) {
+                    sb.append(" , ");
+                }                
+            }
+            stringvalue = sb.toString();            
+        } else if (value instanceof SerParser.ArrayWrapper && "[[Ljava.lang.String;".equals(((SerParser.ArrayWrapper)value).classdesc.name)) {
+            StringBuffer sb = new StringBuffer();
+            List awl = ((SerParser.ArrayWrapper)value).values;
+            for (Iterator it = awl.iterator(); it.hasNext();) {
+                SerParser.ArrayWrapper aw = (SerParser.ArrayWrapper)it.next();
+                sb.append(valueFromObjectWrapper(aw));
+                if (it.hasNext()) {
+                    sb.append(" | ");
+                }
+            }
+            stringvalue = sb.toString();            
         } else {
             stringvalue = "unknown";//value.toString();
         }

@@ -59,7 +59,7 @@ public class AbsoluteLayoutSupport extends AbstractLayoutSupport {
     private static Constructor constrConstructor;
 
     private static FormLoaderSettings formSettings = (FormLoaderSettings)
-                   SharedClassObject.findObject(FormLoaderSettings.class, true);
+                   FormLoaderSettings.getInstance();
 
     /** Gets the supported layout manager class - AbsoluteLayout.
      * @return the class supported by this delegate

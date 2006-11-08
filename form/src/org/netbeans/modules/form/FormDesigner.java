@@ -23,9 +23,11 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
 import java.util.List;
+import java.util.prefs.PreferenceChangeEvent;
 import javax.swing.*;
 import javax.swing.border.*;
 import java.beans.*;
+import java.util.prefs.PreferenceChangeListener;
 import javax.swing.undo.UndoableEdit;
 
 import org.jdesktop.layout.Baseline;
@@ -118,7 +120,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     private FormProxyLookup lookup;
 
     private AssistantView assistantView;
-    private PropertyChangeListener settingsListener;
+    private PreferenceChangeListener settingsListener;
 
     /** The icons for FormDesigner */
     private static String iconURL =
@@ -203,14 +205,15 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
         FormLoaderSettings settings = FormLoaderSettings.getInstance();
         updateAssistant();
-        settingsListener = new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (FormLoaderSettings.PROP_ASSISTANT_SHOWN.equals(evt.getPropertyName())) {
+        settingsListener = new PreferenceChangeListener() {
+            public void preferenceChange(PreferenceChangeEvent evt) {
+                if (FormLoaderSettings.PROP_ASSISTANT_SHOWN.equals(evt.getKey())) {
                     updateAssistant();
                 }
             }
+
         };
-        settings.addPropertyChangeListener(settingsListener);
+        settings.getPreferences().addPreferenceChangeListener(settingsListener);
 
         JScrollPane scrollPane = new JScrollPane(layeredPane);
         scrollPane.setBorder(null); // disable border, winsys will handle borders itself
@@ -1664,7 +1667,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             formModel = null;
         }
         if (settingsListener != null) {
-            FormLoaderSettings.getInstance().removePropertyChangeListener(settingsListener);
+            FormLoaderSettings.getInstance().getPreferences().removePreferenceChangeListener(settingsListener);
         }
     }
 
