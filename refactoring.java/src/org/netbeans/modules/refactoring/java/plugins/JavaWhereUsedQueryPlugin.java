@@ -39,6 +39,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -165,18 +166,37 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
         }
         
         Set<FileObject> a = getRelevantFiles(mainInfo, jmiObject);
-        final JavaSource javaSource = JavaSource.create(cpInfo, a);
         fireProgressListenerStart(ProgressEvent.START, a.size());
-        
-        if (!a.isEmpty()) {
+        Iterable<? extends List<FileObject>> work = groupByRoot (a);        
+        for (List<FileObject> fos : work) {
+            final JavaSource javaSource = JavaSource.create(ClasspathInfo.create(fos.get(0)), fos);
             try {
                 javaSource.runModificationTask(new FindTask(elements, element));
             } catch (IOException ex) {
-                ex.printStackTrace();
+                Exceptions.printStackTrace(ex);
             }
-        }
+        }                                   
         fireProgressListenerStop();
         return null;
+    }
+    
+    private Iterable<? extends List<FileObject>> groupByRoot (Iterable<? extends FileObject> data) {
+        Map<FileObject,List<FileObject>> result = new HashMap<FileObject,List<FileObject>> ();
+        for (FileObject file : data) {
+            ClassPath cp = ClassPath.getClassPath(file, ClassPath.SOURCE);
+            if (cp != null) {
+                FileObject root = cp.findOwnerRoot(file);
+                if (root != null) {
+                    List<FileObject> subr = result.get (root);
+                    if (subr == null) {
+                        subr = new LinkedList<FileObject>();
+                        result.put (root,subr);
+                    }
+                    subr.add (file);
+                }
+            }
+        }
+        return result.values();
     }
     
     //@Override
