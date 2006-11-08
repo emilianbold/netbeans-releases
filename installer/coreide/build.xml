@@ -153,20 +153,20 @@ Microsystems, Inc. All Rights Reserved.
     </sequential>
   </macrodef>
 
-  <target name="build-win32-part" depends="init, compile, xsl-win32">
+  <target name="build-win32-part" depends="init, xsl-win32">
     <build-installer input.ismp.project="${ismp.project}-win32"/>
     <delete file="${ismp.project}-win32.uip"/>
     <move file="build/disk1/setupwin32.exe" tofile="dist/${installer.basename}-win.exe"/>
   </target>
 
-  <target name="build-win32-part-ml" depends="init-ml, compile, xsl-win32, xsl-win32-ml">
+  <target name="build-win32-part-ml" depends="init-ml, xsl-win32, xsl-win32-ml">
     <build-installer input.ismp.project="${ismp.project}-win32-ml"/>
     <delete file="${ismp.project}-win32.uip"/>
     <delete file="${ismp.project}-win32-ml.uip"/>
     <move file="build/disk1/setupwin32.exe" tofile="dist/${installer.basename}-win-ml.exe"/>
   </target>
 
-  <target name="build-unix-part" depends="init, compile, xsl-unix">
+  <target name="build-unix-part" depends="init, xsl-unix">
     <build-installer input.ismp.project="${ismp.project}-unix"/>
     <delete file="${ismp.project}-unix.uip"/>
     <move file="build/disk1/setuplinux.bin" tofile="dist/${installer.basename}-linux.bin"/>
@@ -174,7 +174,7 @@ Microsystems, Inc. All Rights Reserved.
     <move file="build/disk1/setupsolarisX86.bin" tofile="dist/${installer.basename}-solx86.bin"/>
   </target>
 
-  <target name="build-unix-part-ml" depends="init-ml, compile, xsl-unix, xsl-unix-ml">
+  <target name="build-unix-part-ml" depends="init-ml, xsl-unix, xsl-unix-ml">
     <build-installer input.ismp.project="${ismp.project}-unix-ml"/>
     <delete file="${ismp.project}-unix.uip"/>
     <delete file="${ismp.project}-unix-ml.uip"/>
@@ -184,32 +184,32 @@ Microsystems, Inc. All Rights Reserved.
   </target>
   
   <target name="build" 
-          depends="init, delete-netbeans-tmp, copy-netbeans, run-pack, build-win32-part, build-unix-part" 
+          depends="init, compile, delete-netbeans-tmp, copy-netbeans, run-pack, build-win32-part, build-unix-part" 
           description="build the installers">
   </target>
 
   <target name="build-ml" 
-          depends="init, delete-netbeans-tmp, copy-netbeans, run-pack, build-win32-part-ml, build-unix-part-ml" 
+          depends="init, compile, delete-netbeans-tmp, copy-netbeans, run-pack, build-win32-part-ml, build-unix-part-ml" 
           description="build the multilanguage installers">
   </target>
 
   <target name="build-win32"
-          depends="init, delete-netbeans-tmp, copy-netbeans, run-pack, build-win32-part"
+          depends="init, compile, delete-netbeans-tmp, copy-netbeans, run-pack, build-win32-part"
           description="build the installers">
   </target>
 
   <target name="build-win32-ml"
-          depends="init, delete-netbeans-tmp, copy-netbeans, run-pack, build-win32-part-ml"
+          depends="init, compile, delete-netbeans-tmp, copy-netbeans, run-pack, build-win32-part-ml"
           description="build the multilanguage installers">
   </target>
 
   <target name="build-unix"
-          depends="init, delete-netbeans-tmp, copy-netbeans, run-pack, build-unix-part"
+          depends="init, compile, delete-netbeans-tmp, copy-netbeans, run-pack, build-unix-part"
           description="build the installers">
   </target>
 
   <target name="build-unix-ml"
-          depends="init, delete-netbeans-tmp, copy-netbeans, run-pack, build-unix-part-ml"
+          depends="init, compile, delete-netbeans-tmp, copy-netbeans, run-pack, build-unix-part-ml"
           description="build the multilanguage installers">
   </target>
 
