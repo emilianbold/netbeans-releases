@@ -19,6 +19,7 @@
 
 package org.netbeans.test.junit.utils;
 
+import com.sun.org.apache.bcel.internal.generic.IFEQ;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.jellytools.Bundle;
@@ -101,13 +102,15 @@ public class Utilities {
     public static void deleteNode(String path) {
         Node pn = new ProjectsTabOperator().getProjectRootNode(
                 Utilities.TEST_PROJECT_NAME);
-        pn.select();
-        Node n = new Node(pn, path);
-        n.select();
-        JPopupMenuOperator jpmo = n.callPopup();
-        jpmo.pushMenu("Delete");
-        new NbDialogOperator(CONFIRM_OBJECT_DELETION).btYes().push(); //confirm
-        takeANap(500);
+        if(pn != null && pn.isPresent()) {
+            pn.select();
+            Node n = new Node(pn, path);
+            n.select();
+            JPopupMenuOperator jpmo = n.callPopup();
+            jpmo.pushMenu("Delete");
+            new NbDialogOperator(CONFIRM_OBJECT_DELETION).btYes().push(); //confirm
+            takeANap(500);
+        }
     }
     
     /**
