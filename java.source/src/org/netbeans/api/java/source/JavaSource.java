@@ -218,8 +218,9 @@ public final class JavaSource {
     private DocListener listener;
     
     private final ClasspathInfo classpathInfo;    
-    private CompilationInfo currentInfo;    
-        
+    private CompilationInfo currentInfo;
+    private java.util.Stack<CompilationInfo> infoStack = new java.util.Stack<CompilationInfo> ();
+            
     private int flags = 0;        
     
         
@@ -354,7 +355,7 @@ public final class JavaSource {
         }
         this.classpathInfo.addChangeListener(WeakListeners.change(this.listener, this.classpathInfo));
     }
-    
+       
     /** Runs a task which permits for controlling phases of the parsing process.
      * You probably do not want to call this method unless you are reacting to
      * some user's GUI input which requires immediate action (e.g. code completion popup). 
@@ -404,8 +405,22 @@ public final class JavaSource {
                     request.task.cancel();
                 }            
                 this.javacLock.lock();
-                try {                    
-                    task.run (new CompilationController (currentInfo));                
+                try {
+                    if (shared) {
+                        if (!infoStack.isEmpty()) {
+                            currentInfo = infoStack.peek();
+                        }
+                    }
+                    else {
+                        infoStack.push (currentInfo);
+                    }
+                    try {
+                        task.run (new CompilationController (currentInfo));
+                    } finally {
+                        if (!shared) {
+                            infoStack.pop ();
+                        }
+                    }                    
                 } catch (Exception e) {
                     IOException ioe = new IOException ();
                     ioe.initCause(e);

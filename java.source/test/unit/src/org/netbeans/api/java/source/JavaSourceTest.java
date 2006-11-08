@@ -787,6 +787,235 @@ public class JavaSourceTest extends NbTestCase {
     }
     
     
+    public void testNestedActions () throws Exception {
+        final FileObject testFile1 = createTestFile("Test1");
+        final ClassPath bootPath = createBootPath();
+        final ClassPath compilePath = createCompilePath();
+        final ClasspathInfo cpInfo = ClasspathInfo.create(bootPath,compilePath,null);
+        final JavaSource js = JavaSource.create(cpInfo,testFile1);
+        final Object[] delegateRef = new Object[1];
+        // 1)  Two consequent shared tasks have to share CompilationInfo
+        js.runUserActionTask(new CancellableTask<CompilationController>() {            
+            
+            public void run (CompilationController control) {
+                delegateRef[0] = control.delegate;
+            }            
+            public void cancel () {
+                
+            }
+        }, true);
+        
+        js.runUserActionTask(new CancellableTask<CompilationController>() {            
+            
+            public void run (CompilationController control) {
+                assertTrue(delegateRef[0] == control.delegate);
+            }            
+            public void cancel () {
+                
+            }
+        }, true);
+        
+        //2) Task following the unshared task has to have new CompilationInfo
+        js.runUserActionTask(new CancellableTask<CompilationController>() {            
+            
+            public void run (CompilationController control) {
+                delegateRef[0] = control.delegate;
+            }            
+            public void cancel () {
+                
+            }
+        }, false);
+        
+        js.runUserActionTask(new CancellableTask<CompilationController>() {            
+            
+            public void run (CompilationController control) {
+                assertTrue(delegateRef[0] != control.delegate);
+            }            
+            public void cancel () {
+                
+            }
+        }, true);
+        
+        //3) Shared task started from shared task has to have CompilationInfo from the parent
+        //   The shared task follong these tasks has to have the same CompilationInfo
+        js.runUserActionTask(new CancellableTask<CompilationController>() {            
+            
+            public void run (CompilationController control) {
+                delegateRef[0] = control.delegate;
+                final Object[] delegateRef2 = new Object[] {control.delegate};
+                try {
+                    js.runUserActionTask(new CancellableTask<CompilationController> () {
+                        public void run (CompilationController control) {
+                            assertTrue (delegateRef2[0] == control.delegate);
+                        }
+
+                        public void cancel () {}
+                    }, true);
+                } catch (IOException ioe) {
+                    RuntimeException re = new RuntimeException ();
+                    re.initCause(ioe);
+                    throw re;
+                }
+            }            
+            public void cancel () {}
+        }, true);
+        
+        js.runUserActionTask(new CancellableTask<CompilationController>() {            
+            
+            public void run (CompilationController controll) {
+                assertTrue(delegateRef[0] == controll.delegate);
+            }            
+            public void cancel () {
+                
+            }
+        }, true);
+        
+        //4) Shared task started from unshared task has to have CompilationInfo from the parent (unshared task)
+        //   The shared task follong these tasks has to have new CompilationInfo
+        js.runUserActionTask(new CancellableTask<CompilationController>() {            
+            
+            public void run (CompilationController control) {
+                delegateRef[0] = control.delegate;
+                final Object[] delegateRef2 = new Object[] {control.delegate};
+                try {
+                    js.runUserActionTask(new CancellableTask<CompilationController> () {
+                        public void run (CompilationController control) {
+                            assertTrue (delegateRef2[0] == control.delegate);
+                        }
+
+                        public void cancel () {}
+                    }, true);
+                } catch (IOException ioe) {
+                    RuntimeException re = new RuntimeException ();
+                    re.initCause(ioe);
+                    throw re;
+                }
+            }            
+            public void cancel () {}
+        }, false);
+        
+        js.runUserActionTask(new CancellableTask<CompilationController>() {            
+            
+            public void run (CompilationController controll) {
+                assertTrue(delegateRef[0] != controll.delegate);
+            }            
+            public void cancel () {
+                
+            }
+        }, true);
+        
+        //5) Unshared task started from unshared task has to have new CompilationInfo
+        //   The shared task following these tasks has to also have new CompilationInfo
+        final Object[] delegateRef2 = new Object[1];
+        js.runUserActionTask(new CancellableTask<CompilationController>() {                        
+            public void run (CompilationController control) {
+                delegateRef[0] = control.delegate;
+                try {
+                    js.runUserActionTask(new CancellableTask<CompilationController> () {
+                        public void run (CompilationController control) {
+                            assertTrue (delegateRef[0] != control.delegate);
+                            delegateRef2[0] = control.delegate;
+                        }
+
+                        public void cancel () {}
+                    }, false);
+                } catch (IOException ioe) {
+                    RuntimeException re = new RuntimeException ();
+                    re.initCause(ioe);
+                    throw re;
+                }
+            }            
+            public void cancel () {}
+        }, false);
+        
+        js.runUserActionTask(new CancellableTask<CompilationController>() {            
+            
+            public void run (CompilationController controll) {
+                assertTrue(delegateRef[0] != controll.delegate);
+                assertTrue(delegateRef2[0] != controll.delegate);
+            }            
+            public void cancel () {
+                
+            }
+        }, true);
+        
+        //6)Shared task(3) started from unshared task(2) which is started from other unshared task (1)
+        //  has to see the CompilationInfo from the task (2) which is not equal to CompilationInfo from (1)
+        js.runUserActionTask(new CancellableTask<CompilationController>() {                        
+            public void run (CompilationController control) {
+                delegateRef[0] = control.delegate;
+                try {
+                    js.runUserActionTask(new CancellableTask<CompilationController> () {
+                        public void run (CompilationController control) {
+                            assertTrue (delegateRef[0] != control.delegate);
+                            delegateRef2[0] = control.delegate;
+                            try {
+                                js.runUserActionTask(new CancellableTask<CompilationController> () {
+                                    public void run (CompilationController control) {
+                                        assertTrue (delegateRef[0] != control.delegate);
+                                        assertTrue (delegateRef2[0] == control.delegate);                            
+                                    }
+                                    public void cancel () {}
+                                }, true);
+                            } catch (IOException ioe) {
+                                RuntimeException re = new RuntimeException ();
+                                re.initCause(ioe);
+                                throw re;
+                            }
+                        }
+                        public void cancel () {}
+                    }, false);
+                } catch (IOException ioe) {
+                    RuntimeException re = new RuntimeException ();
+                    re.initCause(ioe);
+                    throw re;
+                }
+            }            
+            public void cancel () {}
+        }, false);
+        
+        //6)Task(4) started after unshared task(3) started from shared task(2) which is started from other shared task (1)
+        //  has to have new CompilationInfo but the task (1) (2) (3) have to have the same CompilationInfo.
+        js.runUserActionTask(new CancellableTask<CompilationController>() {                        
+            public void run (CompilationController control) {
+                delegateRef[0] = control.delegate;
+                try {
+                    js.runUserActionTask(new CancellableTask<CompilationController> () {
+                        public void run (CompilationController control) {
+                            assertTrue (delegateRef[0] == control.delegate);
+                            try {
+                                js.runUserActionTask(new CancellableTask<CompilationController> () {
+                                    public void run (CompilationController control) {
+                                        assertTrue (delegateRef[0] == control.delegate);
+                                    }
+                                    public void cancel () {}
+                                }, false);
+                                js.runUserActionTask(new CancellableTask<CompilationController> () {
+                                    public void run (CompilationController control) {
+                                        assertTrue (delegateRef[0] != control.delegate);
+                                    }
+                                    public void cancel () {}
+                                }, true);
+                            } catch (IOException ioe) {
+                                RuntimeException re = new RuntimeException ();
+                                re.initCause(ioe);
+                                throw re;
+                            }
+                        }
+                        public void cancel () {}
+                    }, true);
+                } catch (IOException ioe) {
+                    RuntimeException re = new RuntimeException ();
+                    re.initCause(ioe);
+                    throw re;
+                }
+            }            
+            public void cancel () {}
+        }, true);
+        
+    }
+    
+    
     private static class TestProvider implements JavaSource.JavaFileObjectProvider {
         
         private Object lock;
