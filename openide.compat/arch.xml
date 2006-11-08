@@ -277,7 +277,9 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
  <answer id="dep-nb">
-  <defaultanswer generate='here' />
+  <defaultanswer generate='none' />
+  This module has a lot of dependencies because it is obsoleted and 
+  shall not be used.
  </answer>
 
 
