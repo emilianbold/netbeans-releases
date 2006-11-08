@@ -111,7 +111,10 @@ public class JBDeploymentManager implements DeploymentManager {
     
     public synchronized Object getRMIServer() {
         if(rmiServer == null) {
+            ClassLoader oldLoader = null;
+            
             try {
+                oldLoader = Thread.currentThread().getContextClassLoader();
                 InstanceProperties ip = this.getInstanceProperties();
                 URLClassLoader loader = JBDeploymentFactory.getJBClassLoader(ip.getProperty(JBPluginProperties.PROPERTY_ROOT_DIR));
                 Thread.currentThread().setContextClassLoader(loader);
@@ -131,7 +134,12 @@ public class JBDeploymentManager implements DeploymentManager {
                 // Lookup RMI Adaptor
                 rmiServer = ctx.lookup("/jmx/invoker/RMIAdaptor");
             } catch (NameNotFoundException ex) {
-            } catch (NamingException ex) {} // Nothing to do
+            } catch (NamingException ex) {
+                // Nothing to do
+            } finally {
+                if (oldLoader != null)
+                    Thread.currentThread().setContextClassLoader(oldLoader);
+            }
         }
         
         return rmiServer;
