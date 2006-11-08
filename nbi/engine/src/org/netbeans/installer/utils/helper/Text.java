@@ -63,6 +63,17 @@ public class Text {
             throw new UnrecognizedObjectException("Cannot recognize content type");
         }
         
+        public String getExtension() {
+            switch (this) {
+                case PLAIN_TEXT:
+                    return ".txt";
+                case HTML:
+                    return ".html";
+                default:
+                    return "";
+            }
+        }
+        
         public String toString() {
             switch (this) {
                 case PLAIN_TEXT:
