@@ -25,7 +25,6 @@ import java.util.Hashtable;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
-import org.netbeans.modules.refactoring.spi.impl.MoveAction;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeTransfer;
 import org.openide.util.Lookup;
@@ -45,16 +44,16 @@ public class ClipboardConvertor implements Convertor {
     }
     
     private class RefactoringPasteType extends PasteType {
-        Node target;
         Action move;
         RefactoringPasteType(Transferable orig, Node target) {
-            this.target = target;
             Node[] nodes = NodeTransfer.nodes(orig, NodeTransfer.CLIPBOARD_CUT);
             InstanceContent ic = new InstanceContent();
             if (nodes!=null) {
                 for (Node n:nodes) {
                     ic.add((n));
                 }
+            } else {
+                return ;
             }
             Dictionary d = new Hashtable();
             d.put("target", target);

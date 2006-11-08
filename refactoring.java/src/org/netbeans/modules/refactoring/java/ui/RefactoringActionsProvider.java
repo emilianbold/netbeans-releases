@@ -44,6 +44,7 @@ import org.netbeans.modules.refactoring.api.ui.UI;
 import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.openide.ErrorManager;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -64,7 +65,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
     }
     @Override
     public Runnable renameImpl(final Lookup lookup) {
-        JTextComponent textC = lookup.lookup(JTextComponent.class);
+        EditorCookie textC = lookup.lookup(EditorCookie.class);
         final Dictionary dictionary = lookup.lookup(Dictionary.class);
         if (textC != null) {
             return new TextComponentRunnable(textC) {
@@ -126,9 +127,9 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
 
     @Override
     public Runnable findUsagesImpl(Lookup lookup) {
-        JTextComponent textC = lookup.lookup(JTextComponent.class);
-        if (textC != null) {
-            return new TextComponentRunnable(textC) {
+        EditorCookie ec = lookup.lookup(EditorCookie.class);
+        if (ec != null) {
+            return new TextComponentRunnable(ec) {
                 @Override
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info) {
                     return new WhereUsedQueryUI(selectedElement, info);
@@ -164,7 +165,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
 
     @Override
     public Runnable deleteImpl(final Lookup lookup) {
-        JTextComponent textC = lookup.lookup(JTextComponent.class);
+        EditorCookie textC = lookup.lookup(EditorCookie.class);
         if (textC != null) {
             return new TextComponentRunnable(textC) {
                 @Override
@@ -226,7 +227,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
 
     @Override
     public Runnable moveImpl(final Lookup lookup) {
-        JTextComponent textC = lookup.lookup(JTextComponent.class);
+        EditorCookie textC = lookup.lookup(EditorCookie.class);
         final Dictionary dictionary = lookup.lookup(Dictionary.class);
         if (textC != null) {
             return new TextComponentRunnable(textC) {
@@ -282,8 +283,8 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         private int end;
         private RefactoringUI ui;
         
-        public TextComponentRunnable(JTextComponent textC) {
-            this.textC = textC;
+        public TextComponentRunnable(EditorCookie ec) {
+            this.textC = ec.getOpenedPanes()[0];
             this.caret = textC.getCaretPosition();
             this.start = textC.getSelectionStart();
             this.end = textC.getSelectionEnd();

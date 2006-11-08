@@ -62,7 +62,7 @@ public class DeleteTransformer extends SearchVisitor {
             if (newOne!=null) {
                 workingCopy.rewrite(parent,newOne);
             }
-            addUsage(tree);
+            addUsage(getCurrentPath());
         }
     }
     

@@ -24,7 +24,6 @@ import com.sun.source.tree.Tree;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.WorkingCopy;
 
 /**
@@ -42,7 +41,7 @@ public class FindOverridingVisitor extends SearchVisitor {
         ExecutableElement el = (ExecutableElement) workingCopy.getTrees().getElement(getCurrentPath());
 
         if (workingCopy.getElements().overrides(el, (ExecutableElement) elementToFind, (TypeElement) el.getEnclosingElement())) {
-            addUsage(node);
+            addUsage(getCurrentPath());
         }
         return super.visitMethod(node, elementToFind);
     }

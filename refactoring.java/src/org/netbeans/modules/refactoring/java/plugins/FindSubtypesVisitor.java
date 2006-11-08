@@ -20,12 +20,7 @@
 package org.netbeans.modules.refactoring.java.plugins;
 
 import com.sun.source.tree.*;
-import com.sun.source.util.TreePath;
-import com.sun.source.util.TreePathScanner;
-import java.util.ArrayList;
-import java.util.Collection;
 import javax.lang.model.element.*;
-import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.WorkingCopy;
 
 /**
@@ -44,12 +39,12 @@ public class FindSubtypesVisitor extends SearchVisitor {
     public Tree visitClass(ClassTree node, Element elementToFind) {
         if (recursive) {
             if (workingCopy.getTypes().isSubtype(workingCopy.getTrees().getTypeMirror(getCurrentPath()), elementToFind.asType())) {
-                addUsage(node);
+                addUsage(getCurrentPath());
             }
         } else {
             TypeElement el = (TypeElement) workingCopy.getTrees().getElement(getCurrentPath());
             if (el.getSuperclass().equals(elementToFind.asType()) || el.getInterfaces().contains(elementToFind.asType())) {
-                addUsage(node);
+                addUsage(getCurrentPath());
             } 
         }
         return super.visitClass(node, elementToFind);

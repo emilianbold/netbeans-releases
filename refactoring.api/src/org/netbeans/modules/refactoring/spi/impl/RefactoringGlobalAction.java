@@ -81,7 +81,7 @@ public abstract class RefactoringGlobalAction extends NodeAction {
         for (Node node:n)
             ic.add(node);
         if (n.length>0) {
-            JTextComponent tc = getTextComponent(n[0]);
+            EditorCookie tc = getTextComponent(n[0]);
             if (tc != null) {
                 ic.add(tc);
             }
@@ -91,15 +91,14 @@ public abstract class RefactoringGlobalAction extends NodeAction {
     }
 
     
-    protected static JTextComponent getTextComponent(Node n) {
+    protected static EditorCookie getTextComponent(Node n) {
         DataObject dobj = (DataObject) n.getCookie(DataObject.class);
         if (dobj != null) {
             EditorCookie ec = (EditorCookie) dobj.getCookie(EditorCookie.class);
             if (ec != null) {
                 TopComponent activetc = TopComponent.getRegistry().getActivated();
                 if (activetc instanceof Pane) {
-                    JEditorPane pane = ((CloneableEditorSupport.Pane)activetc).getEditorPane();
-                    return pane;
+                    return ec;
                 }
             }
         }
@@ -164,7 +163,7 @@ public abstract class RefactoringGlobalAction extends NodeAction {
 
                 return RefactoringGlobalAction.this.getMenuPresenter();
             } else {
-                return new Actions.MenuItem(RefactoringGlobalAction.this, true);
+                return new Actions.MenuItem(this, true);
             }
         }
 
@@ -173,7 +172,7 @@ public abstract class RefactoringGlobalAction extends NodeAction {
 
                 return RefactoringGlobalAction.this.getPopupPresenter();
             } else {
-                return new Actions.MenuItem(RefactoringGlobalAction.this, false);
+                return new Actions.MenuItem(this, false);
             }
         }
 
@@ -182,7 +181,7 @@ public abstract class RefactoringGlobalAction extends NodeAction {
 
                 return RefactoringGlobalAction.this.getToolbarPresenter();
             } else {
-                return new Actions.ToolbarButton(RefactoringGlobalAction.this);
+                return new Actions.ToolbarButton(this);
             }
         }
 

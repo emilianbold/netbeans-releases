@@ -22,7 +22,6 @@ package org.netbeans.modules.refactoring.java.plugins;
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
 import javax.lang.model.element.*;
-import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.WorkingCopy;
 
 /**
@@ -59,12 +58,10 @@ public class RenameTransformer extends SearchVisitor {
             if (el.equals(elementToFind) || workingCopy.getElements().overrides(((ExecutableElement) el), (ExecutableElement) elementToFind, (TypeElement) elementToFind.getEnclosingElement())) {
                 Tree nju = make.setLabel(tree, newName);
                 workingCopy.rewrite(tree, nju);
-                addChange(tree, nju);
             }
         } else if (el.equals(elementToFind)) {
                 Tree nju = make.setLabel(tree, newName);
                 workingCopy.rewrite(tree, nju);
-                addChange(tree, nju);
         }
     }
 
@@ -91,7 +88,6 @@ public class RenameTransformer extends SearchVisitor {
         if (elementToFind.equals(el)) {
             Tree nju = make.setLabel(tree, newName);
             workingCopy.rewrite(tree, nju);
-            addChange(tree, nju);
         }
     }
     
