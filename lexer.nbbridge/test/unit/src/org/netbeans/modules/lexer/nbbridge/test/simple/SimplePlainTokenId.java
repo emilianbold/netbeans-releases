@@ -61,7 +61,7 @@ public enum SimplePlainTokenId implements TokenId {
         
     }.language();
     
-    public Language<SimplePlainTokenId> language() {
+    public static Language<SimplePlainTokenId> language() {
         return language;
     }
 
