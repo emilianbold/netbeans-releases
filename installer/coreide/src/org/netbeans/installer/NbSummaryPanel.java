@@ -77,13 +77,16 @@ public class NbSummaryPanel extends TextDisplayPanel {
                         String msg = resolveString(BUNDLE + "SummaryPanel.cancel)");
                         logEvent(this,Log.DBG,"msg: " + msg);
                         setText(msg);
+                    } else if (getWizard().getExitCode() == UnpackJarsAction.UNPACK_JARS_UNHANDLED_ERROR) {
+                        String msg = resolveString(BUNDLE + "SummaryPanel.errorUnpack)");
+                        logEvent(this,Log.DBG,"msg: " + msg);
+                        setText(msg);
+                    } else if (getWizard().getExitCode() == UnpackJarsAction.UNPACK_JARS_MD5_ERROR) {
+                        String msg = resolveString(BUNDLE + "SummaryPanel.errorUnpackMD5)");
+                        logEvent(this,Log.DBG,"msg: " + msg);
+                        setText(msg);
                     } else {
-                        Properties summary = service.getProductSummary(
-                        ProductService.DEFAULT_PRODUCT_SOURCE,
-                        ProductService.POST_INSTALL,
-                        ProductService.HTML);
-                        String msg = summary.getProperty(ProductService.SUMMARY_MSG);
-                        msg += resolveString(BUNDLE + "SummaryPanel.error)");
+                        String msg = resolveString(BUNDLE + "SummaryPanel.error)");
                         logEvent(this,Log.DBG,"msg: " + msg);
                         setText(msg);
                     }

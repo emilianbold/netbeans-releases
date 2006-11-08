@@ -25,11 +25,16 @@ import com.installshield.wizard.service.file.FileService;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.jar.JarOutputStream;
@@ -65,8 +70,11 @@ public class UnpackJars {
         progressInfo = new ProgressInfo();
     }
     
-    /** Unpack jars. */
-    boolean unpackJars (Log log, FileService fileService) {
+    /** 
+     * Unpack jars.
+     * @return 0 if it is successful, non zero otherwise
+     */
+    int unpackJars (Log log, FileService fileService) {
         log.logEvent(this,Log.DBG,"unpackJars ENTER");
 
         FileAttributes attrs = new FileAttributes();
@@ -77,12 +85,12 @@ public class UnpackJars {
         long completedBytes = 0L;
         for (int i = 0; i < jarList.size(); i++) {
             JarItem item = jarList.get(i);
-            File fileIn = new File(item.fileName + ".pack.gz");
+            File fileIn = new File(item.fileName + ".pack");
             File fileOut = new File(item.fileName);
             progressInfo.setFileName(fileOut.getPath());
             if (!fileIn.exists()) {
                 log.logEvent(this,Log.ERROR,"Cannot find file: " + fileIn);
-                return false;
+                return -400;
             }
             log.logEvent(this,Log.DBG,"Unpacking file: " + fileIn);
             try {
@@ -92,8 +100,16 @@ public class UnpackJars {
             } catch (IOException ex) {
                 log.logEvent(this,Log.ERROR,"Unpacking failed at item[" + i + "]: " + item.toString());
                 Util.logStackTrace(log,ex);
-                return false;
+                return -400;
             }
+            String md5 = generateKey(log,fileOut);
+            if (!md5.equals(item.md5)) {
+                log.logEvent(this,Log.ERROR,"Unpacking failed at item[" + i + "]: " + item.toString());
+                log.logEvent(this,Log.ERROR,"MD5 checksum is not the same."
+                + " Old: " + item.md5 + " New: " + md5);
+                return -401;
+            }
+                    
             try {
                 //Set for non Windows OS user+rw group+r other+r
                 if (!Util.isWindowsOS() && (fileService != null)) {
@@ -109,7 +125,7 @@ public class UnpackJars {
             progressInfo.setCompletedBytes(completedBytes);
             fileIn.delete();
         }
-        return true;
+        return 0;
     }
 
     /** Delete jars. */
@@ -129,7 +145,7 @@ public class UnpackJars {
     }
 
     /** Parse jar catalog XML file. */
-    boolean parseCatalog (String inputFileName, Log log) {
+    boolean parseCatalog (Log log, String inputFileName) {
         log.logEvent(this,Log.DBG,"parseCatalog ENTER");
         //Replace spaces in URL string
         String s;
@@ -199,6 +215,7 @@ public class UnpackJars {
                 node = nodeList.item(i);
                 String fileName;
                 long time, origSize, packedSize;
+                String md5;
 
                 attr = node.getAttributes().getNamedItem("name");
                 fileName = nbInstallDir + File.separator + attr.getNodeValue();
@@ -235,13 +252,67 @@ public class UnpackJars {
                     log.logEvent(this,Log.ERROR,"Cannot parse value of packed-size: " + s);
                     Util.logStackTrace(log,ex);
                 }
+                
+                attr = node.getAttributes().getNamedItem("md5");
+                md5 = attr.getNodeValue();
 
-                JarItem item = new JarItem(fileName,time,origSize,packedSize);
+                JarItem item = new JarItem(fileName,time,origSize,packedSize,md5);
                 jarList.add(item);
                 //System.out.println("attValue:" + attr.getNodeValue());
             }
         }
         return true;
+    }
+    
+    /** 
+     * Generate 32 byte long fingerprint of input file in string readable form
+     * the same as produced by md5sum.
+     */
+    private String generateKey (Log log, File file) {
+        String key = null;
+        MessageDigest md = null;
+        try {
+            md = MessageDigest.getInstance("MD5"); // NOI18N
+        } catch (NoSuchAlgorithmException ex) {
+            log.logEvent(this,Log.ERROR,"Cannot produce MD5 checksum.");
+            Util.logStackTrace(log,ex);
+            return key;
+        }
+
+        FileInputStream is = null;
+        try {
+            is = new FileInputStream(file);
+        } catch (IOException ex) {
+            log.logEvent(this,Log.ERROR,"Cannot produce MD5 checksum.");
+            Util.logStackTrace(log,ex);
+            return key;
+        }
+        ByteBuffer buff = null;
+        try {
+            buff = is.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, file.length());
+        } catch (IOException ex) {
+            log.logEvent(this,Log.ERROR,"Cannot produce MD5 checksum.");
+            Util.logStackTrace(log,ex);
+            return key;
+        }
+
+        md.update(buff);
+        byte [] md5sum = md.digest();
+        StringBuffer keyBuff = new StringBuffer(32);
+        //Convert byte array to hexadecimal string to be used as key
+        for (int i = 0; i < md5sum.length; i++) {
+            int val = md5sum[i];
+            if (val < 0) {
+                val = val + 256;
+            }
+            String s = Integer.toHexString(val);
+            if (s.length() == 1) {
+                keyBuff.append("0"); // NOI18N
+            }
+            keyBuff.append(Integer.toHexString(val));
+        }
+        key = keyBuff.toString();
+        return key;
     }
 
     ProgressInfo getProgressInfo () {
@@ -263,17 +334,20 @@ public class UnpackJars {
         long time;
         long origSize;
         long packedSize;
+        String md5;
 
-        public JarItem (String fileName, long time, long origSize, long packedSize) {
+        public JarItem (String fileName, long time, long origSize, long packedSize, String md5) {
             this.fileName = fileName;
             this.time = time;
             this.origSize = origSize;
             this.packedSize = packedSize;
+            this.md5 = md5;
         }
 
         public String toString() {
             return "File:" + fileName + " Time:" + time + " Original size:" + origSize
-            + " Packed size:" + packedSize;
+            + " Packed size:" + packedSize
+            + " MD5:" + md5;
         }
     }
 

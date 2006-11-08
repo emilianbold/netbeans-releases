@@ -36,6 +36,8 @@ public class UnpackJarsAction extends ProductAction {
     
     //return code incase an error returns
     public static final int UNPACK_JARS_UNHANDLED_ERROR = -400;
+    
+    public static final int UNPACK_JARS_MD5_ERROR = -401;
 
     private static final String JARS_CATALOG_FILE = "packedjars.xml";
     
@@ -119,7 +121,7 @@ public class UnpackJarsAction extends ProductAction {
             UnpackJars unpackJars = new UnpackJars();
             unpackJars.init(nbInstallDir,this);
             boolean ret;
-            ret = unpackJars.parseCatalog(catalog.getAbsolutePath(),this);
+            ret = unpackJars.parseCatalog(this, catalog.getAbsolutePath());
             if (!ret) {
                 try {
                     logEvent(this, Log.ERROR,"# # # # # # # #");
@@ -157,13 +159,13 @@ public class UnpackJarsAction extends ProductAction {
                 return;
             }
 
-            ret = unpackJars.unpackJars(this, fileService);
-            if (!ret) {
+            int retVal = unpackJars.unpackJars(this, fileService);
+            if (retVal != 0) {
                 try {
                     logEvent(this, Log.ERROR,"# # # # # # # #");
                     logEvent(this, Log.ERROR,"Fatal error: Cannot unpack jars.");
                     ExitCodeService ecservice = (ExitCodeService)getService(ExitCodeService.NAME);
-                    ecservice.setExitCode(UNPACK_JARS_UNHANDLED_ERROR);
+                    ecservice.setExitCode(retVal);
                 } catch (Exception ex) {
                     logEvent(this, Log.ERROR, "Could not set exit code.");
                 }
@@ -200,7 +202,7 @@ public class UnpackJarsAction extends ProductAction {
         UnpackJars unpackJars = new UnpackJars();
         unpackJars.init(nbInstallDir,this);
         boolean ret;
-        ret = unpackJars.parseCatalog(catalog.getAbsolutePath(),this);
+        ret = unpackJars.parseCatalog(this, catalog.getAbsolutePath());
         if (!ret) {
             try {
                 logEvent(this, Log.ERROR,"# # # # # # # #");

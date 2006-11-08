@@ -27,11 +27,18 @@ import java.util.jar.JarFile;
 import java.util.jar.Pack200;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.jar.JarOutputStream;
+import java.util.jar.Pack200.Packer;
 
 /**
  *
@@ -46,6 +53,8 @@ import java.io.Writer;
 public class PackJars {
     
     private Pack200.Packer packer = null;
+    
+    private Pack200.Unpacker unpacker = null;
 
     private static File inputDir;
 
@@ -108,13 +117,14 @@ public class PackJars {
         packer = Pack200.newPacker();
 
         Map<String, String> properties = packer.properties();
-
-        /*properties.put(Packer.SEGMENT_LIMIT, "-1");
+        properties.put(Packer.SEGMENT_LIMIT, "-1");
         properties.put(Packer.EFFORT, "5");
-        properties.put(Packer.KEEP_FILE_ORDER, Packer.TRUE);
+        /*properties.put(Packer.KEEP_FILE_ORDER, Packer.FALSE);
         properties.put(Packer.DEFLATE_HINT, Packer.KEEP);
         properties.put(Packer.MODIFICATION_TIME, Packer.KEEP);
         properties.put(Packer.UNKNOWN_ATTRIBUTE, Packer.PASS);*/
+        
+        unpacker = Pack200.newUnpacker();
     }
 
     /** Recursive method. */
@@ -139,7 +149,12 @@ public class PackJars {
                         sb.append(" original-size=\"" + arr[i].length() + "\"");
                         totalOriginalSize += arr[i].length();
                         File f = packFile(arr[i]);
+                        unpackFile(f);
+                        String md5 = generateKey(arr[i]);
+                        f = packFile(arr[i]);
+                        arr[i].deleteOnExit();
                         sb.append(" packed-size=\"" + f.length() + "\"");
+                        sb.append(" md5=\"" + md5 + "\"");
                         totalPackedSize += f.length();
                         sb.append(" />\n");
                     }
@@ -169,7 +184,7 @@ public class PackJars {
     }
     
     private File packFile (File file) {
-        File f = new File(file.getAbsolutePath() + ".pack.gz");
+        File f = new File(file.getAbsolutePath() + ".pack");
         try {
             JarFile jarFile = new JarFile(file);
             FileOutputStream outputStream = new FileOutputStream(f);
@@ -178,13 +193,79 @@ public class PackJars {
 
             jarFile.close();
             outputStream.close();
-
-            file.deleteOnExit();
         } catch (IOException exc) {
             exc.printStackTrace();
             System.exit(1);
         }
         return f;
+    }
+    
+    private void unpackFile (File file) {
+        try {
+            File outFile = new File(file.getAbsolutePath().substring(0, file.getAbsolutePath().length() - ".pack".length()));
+            JarOutputStream os = new JarOutputStream(new FileOutputStream(outFile));
+            unpacker.unpack(file, os);
+            os.close();
+        } catch (IOException exc) {
+            exc.printStackTrace();
+            System.exit(1);
+        }
+    }
+    
+    /** 
+     * Generate 32 byte long fingerprint of input file in string readable form
+     * the same as produced by md5sum.
+     */
+    private String generateKey (File file) {
+        String key = null;
+        MessageDigest md = null;
+        try {
+            md = MessageDigest.getInstance("MD5"); // NOI18N
+        } catch (NoSuchAlgorithmException ex) {
+            ex.printStackTrace();
+            System.exit(1);
+        }
+
+        FileInputStream is = null;
+        try {
+            is = new FileInputStream(file);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            System.exit(1);
+        }
+        ByteBuffer buff = null;
+        try {
+            buff = is.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, file.length());
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            System.exit(1);
+        }
+
+        md.update(buff);
+        byte [] md5sum = md.digest();
+        
+        try {
+            is.close();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            System.exit(1);
+        }
+        
+        StringBuffer keyBuff = new StringBuffer(32);
+        //Convert byte array to hexadecimal string to be used as key
+        for (int i = 0; i < md5sum.length; i++) {
+            int val = md5sum[i];
+            if (val < 0) {
+                val = val + 256;
+            }
+            String s = Integer.toHexString(val);
+            if (s.length() == 1) {
+                keyBuff.append("0"); // NOI18N
+            }
+            keyBuff.append(Integer.toHexString(val));
+        }
+        key = keyBuff.toString();
+        return key;
     }
     
 }

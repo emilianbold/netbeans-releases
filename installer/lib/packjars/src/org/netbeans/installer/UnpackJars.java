@@ -72,11 +72,12 @@ public class UnpackJars {
             if (arr[i].isDirectory()) {
                 scanDir(arr[i]);
             } else {
-                if (arr[i].getName().endsWith(".pack.gz")) {
+                if (arr[i].getName().endsWith(".pack")) {
                     String s = arr[i].getAbsolutePath();
                     s = s.substring(inputDirLength + 1, s.length());
                     System.out.println("Unpacking: " + s);
                     unpackFile(arr[i]);
+                    arr[i].deleteOnExit();
                 }
             }
         }
@@ -84,11 +85,10 @@ public class UnpackJars {
     
     private void unpackFile (File file) {
         try {
-            File outFile = new File(file.getAbsolutePath().substring(0, file.getAbsolutePath().length() - ".pack.gz".length()));
+            File outFile = new File(file.getAbsolutePath().substring(0, file.getAbsolutePath().length() - ".pack".length()));
             JarOutputStream os = new JarOutputStream(new FileOutputStream(outFile));
             unpacker.unpack(file, os);
             os.close();
-            file.deleteOnExit();
         } catch (IOException exc) {
             exc.printStackTrace();
             System.exit(1);
