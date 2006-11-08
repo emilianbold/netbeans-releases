@@ -33,8 +33,7 @@ import java.io.File;
 
 import java.util.Properties;
 
-public class NbSummaryPanel extends TextDisplayPanel
-{
+public class NbSummaryPanel extends TextDisplayPanel {
     private int type = ProductService.PRE_INSTALL;
     
     private String nbInstallDir = "";
@@ -69,11 +68,6 @@ public class NbSummaryPanel extends TextDisplayPanel
             if (type == ProductService.POST_INSTALL) {
                 logEvent(this, Log.DBG, "queryEnter POST_INSTALL PANEL");
                 logEvent(this, Log.DBG, "queryEnter exitCode: " + getWizard().getExitCode());
-                //#48305: Method GenericSoftwareObject.getInstallStatus() does not work. It returns
-                //always 0. We must use getWizard().getExitCode() as workaround.
-                //ProductTree pt = service.getSoftwareObjectTree(productURL);
-                //GenericSoftwareObject gso = (GenericSoftwareObject) pt.getRoot();
-                //if (gso.getInstallStatus() == gso.UNINSTALLED) {
                 if (getWizard().getExitCode() != -1) {
                     //Installation failed or cancelled.
                     String summaryMessage;
@@ -315,7 +309,7 @@ public class NbSummaryPanel extends TextDisplayPanel
     }
     
     /* Data installed in Documents and Settings are included in this estimate. Waiting for response
-     * from JDK team if we can safely delete it. It is about 55mB.
+     * from JDK team if we can safely delete it. It is about 55MB.
      */
     private long getJ2SESize () {
         if (Util.isWindowsOS()) {
