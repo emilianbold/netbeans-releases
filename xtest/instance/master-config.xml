@@ -133,16 +133,19 @@ Microsystems, Inc. All Rights Reserved.
         <module name="refactoring" testtypes="qa-functional" attributes="validation"/>-->
  <!--       <module name="web" testtypes="qa-functional" attributes="validation"/>
         <module name="web/jspsyntax" testtypes="qa-functional" attributes="validation"/>
-        <module name="web/jspdebug" testtypes="qa-functional" attributes="validation"/>-->
+ -->
+        <module name="web/jspdebug" testtypes="qa-functional" attributes="validation"/>
         <!-- Has to be fixed.
         <module name="form" testtypes="qa-functional" attributes="validation"/> -->
         <!-- Has to be fixed.
         <module name="java/project" testtypes="qa-functional" attributes="validation"/>
         <module name="editor" testtypes="qa-functional" attributes="validation"/>
         <module name="properties" testtypes="qa-functional" attributes="validation"/>
-        <module name="jellytools" testtypes="unit" attributes="stable"/>-->
-        <module name="xtest/plugins_src/ide" testtypes="unit" attributes="stable"/>
+-->
+        <module name="jellytools" testtypes="unit" attributes="stable"/>
         <module name="xtest" testtypes="unit" attributes="stable"/>
+        <module name="xtest/nbjunit/ide" testtypes="unit" attributes="stable"/>
+        <module name="xtest/plugins_src/ide" testtypes="unit" attributes="stable"/>
 <!--<module name="apisupport/refactoring" testtypes="qa-functional" attributes="validation"/>-->
         <module name="openide/loaders" testtypes="qa-functional" attributes="validation"/>
         <module name="junit" testtypes="qa-functional" attributes="validation"/>
