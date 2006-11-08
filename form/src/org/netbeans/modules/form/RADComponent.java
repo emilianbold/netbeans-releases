@@ -353,9 +353,12 @@ public class RADComponent /*implements FormDesignValue, java.io.Serializable*/ {
     public BeanInfo getBeanInfo() {
         if (beanInfo == null) {
             try {
-                beanInfo = BeanSupport.createBeanInfo(beanClass);        
+                beanInfo = FormUtils.getBeanInfo(beanClass);        
             } catch (Error err) { // Issue 74002
                 org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, err);
+                beanInfo = new FakeBeanInfo();
+            } catch (IntrospectionException ex) {
+                org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
                 beanInfo = new FakeBeanInfo();
             }
         }

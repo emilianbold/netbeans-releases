@@ -156,7 +156,12 @@ public class BorderDesignSupport implements FormDesignValue
     }
 
     private void createProperties() {
-        BeanInfo bInfo = BeanSupport.createBeanInfo(theBorder.getClass());
+        BeanInfo bInfo;
+        try {
+            bInfo = FormUtils.getBeanInfo(theBorder.getClass());
+        } catch (IntrospectionException ex) {
+            return;
+        }
         PropertyDescriptor[] props = bInfo.getPropertyDescriptors();
 
         ArrayList nodeProps = new ArrayList();

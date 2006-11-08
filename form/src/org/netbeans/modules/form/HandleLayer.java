@@ -2688,7 +2688,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
             g.translate(contPos.x, contPos.y);
             laysup.paintDragFeedback(cont, contDel,
                                      showingComponents[0],
-                                     constraints, index,
+                                     constraints, this.index,
                                      g);
             g.translate(-contPos.x, -contPos.y);
 //                    g.setStroke(stroke);

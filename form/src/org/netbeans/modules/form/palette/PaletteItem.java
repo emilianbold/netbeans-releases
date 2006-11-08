@@ -228,7 +228,7 @@ public final class PaletteItem implements Node.Cookie {
         Class compClass = getComponentClass();
         if (compClass != null) {
             try {
-                return Introspector.getBeanInfo(compClass);
+                return FormUtils.getBeanInfo(compClass);
             }
             catch (Exception ex) {} // ignore failure
             //catch (LinkageError ex) {}
@@ -241,7 +241,7 @@ public final class PaletteItem implements Node.Cookie {
         Class compClass = getComponentClass();
         if (compClass != null) {
             try {
-                return Introspector.getBeanInfo(compClass).getBeanDescriptor();
+                return FormUtils.getBeanInfo(compClass).getBeanDescriptor();
             }
             catch (Exception ex) {} // ignore failure
             //catch (LinkageError ex) {}

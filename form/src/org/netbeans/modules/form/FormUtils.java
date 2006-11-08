@@ -1101,5 +1101,20 @@ public class FormUtils
         } while ((superClass = superClass.getSuperclass()) != null);
         return superClasses;
     }
-    
+    /*
+     * Calls Introspector.getBeanInfo() more safely to handle 3rd party BeanInfos
+     * that may be broken or malformed. This is a replacement for Introspector.getBeanInfo().
+     * @see java.beans.Introspector.getBeanInfo(Class)
+     */
+    public static java.beans.BeanInfo getBeanInfo(Class clazz) throws java.beans.IntrospectionException {
+        try {
+            return Utilities.getBeanInfo(clazz);//, java.beans.Introspector.USE_ALL_BEANINFO);
+        } catch (Error ex1) { // why is Error thrown instead of IntrospectionException?
+            try {
+                return Introspector.getBeanInfo(clazz, java.beans.Introspector.IGNORE_IMMEDIATE_BEANINFO);
+            } catch (Error ex2) {
+                return Introspector.getBeanInfo(clazz, java.beans.Introspector.IGNORE_ALL_BEANINFO);
+            }
+        }
+    }
 }

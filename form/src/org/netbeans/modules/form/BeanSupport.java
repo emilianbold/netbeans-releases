@@ -68,20 +68,6 @@ public class BeanSupport
         }
     }
 
-    /**
-     * Utility method to obtain a BeanInfo of given JavaBean class. Returns
-     * null on error.
-     * @param beanClass the class to obtain BeanInfo for
-     * @return BeanInfo instance or null if an error occured or the BeanInfo
-     * cannot be found throughout the BeanInfoSearchPath
-     */
-    public static BeanInfo createBeanInfo(Class beanClass) {
-        try {
-            return org.openide.util.Utilities.getBeanInfo(beanClass);
-        } catch (IntrospectionException e) {
-            return null;
-        }
-    }
 
     /**
      * Utility method to obtain an instance of specified beanClass. The
@@ -205,7 +191,12 @@ public class BeanSupport
             return errorEmptyMap;
         }
 
-        BeanInfo info = createBeanInfo(beanInstance.getClass());
+        BeanInfo info;
+        try {
+            info = FormUtils.getBeanInfo(beanInstance.getClass());
+        } catch (IntrospectionException ex) {
+            return errorEmptyMap;
+        }
         PropertyDescriptor[] properties = info.getPropertyDescriptors();
         HashMap defaultValues = new HashMap(properties.length * 2);
 
