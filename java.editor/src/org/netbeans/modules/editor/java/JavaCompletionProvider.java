@@ -2855,8 +2855,18 @@ public class JavaCompletionProvider implements CompletionProvider {
             if (kinds.contains(e.getKind())) {
                 if (base == null)
                     return true;
-                TypeMirror declType = e.asType();
-                if (types.isSubtype(declType, base))
+                TypeMirror type;
+                switch(e.getKind()) {
+                    case CONSTRUCTOR:
+                        type = e.getEnclosingElement().asType();
+                        break;
+                    case METHOD:
+                        type = ((ExecutableType)e.asType()).getReturnType();
+                        break;
+                    default:
+                        type = e.asType();
+                }
+                if (types.isSubtype(type, base))
                     return true;
             }
             if (e.getKind().isClass() || e.getKind().isInterface()) {
