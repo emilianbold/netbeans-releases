@@ -182,7 +182,7 @@ class with its static methods that provide its instance for the given input sour
     It mainly needs to define token ids in
 <a href="@org-netbeans-modules-lexer@/org/netbeans/spi/lexer/LanguageHierarchy.html#createTokenIds()">LanguageHierarchy.createTokenIds()</a>
     and lexer in
-<a href="@org-netbeans-modules-lexer@/org/netbeans/spi/lexer/LanguageHierarchy.html#createLexer(org.netbeans.spi.lexer.LexerInput,%20org.netbeans.spi.lexer.TokenFactory,%20java.lang.Object,%20org.netbeans.api.lexer.LanguagePath,%20org.netbeans.api.lexer.InputAttributes)">
+<a href="@org-netbeans-modules-lexer@/org/netbeans/spi/lexer/LanguageHierarchy.html#createLexer(org.netbeans.spi.lexer.LexerRestartInfo)">
     LanguageHierarchy.createLexer(LexerInput lexerInput, TokenFactory tokenFactory, Object state, LanguagePath languagePath, InputAttributes inputAttributes)</a>.
     <br/>
 <a href="@org-netbeans-modules-lexer@/org/netbeans/spi/lexer/Lexer.html">Lexer</a>
