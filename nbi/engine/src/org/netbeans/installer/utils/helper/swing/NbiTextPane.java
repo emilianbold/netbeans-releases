@@ -22,6 +22,8 @@ package org.netbeans.installer.utils.helper.swing;
 
 import javax.swing.JTextPane;
 import javax.swing.border.EmptyBorder;
+import org.netbeans.installer.utils.helper.Text;
+import org.netbeans.installer.utils.helper.Text.ContentType;
 
 /**
  *
@@ -34,5 +36,28 @@ public class NbiTextPane extends JTextPane {
         setOpaque(false);
         setEditable(false);
         setBorder(new EmptyBorder(0, 0, 0, 0));
+        
+        putClientProperty(JTextPane.HONOR_DISPLAY_PROPERTIES, true);
+    }
+    
+    public void setText(String text) {
+        if ((text == null) || text.equals("")) {
+            if (getContentType().equals("text/plain")) {
+                super.setText(" ");
+            } else if (getContentType().equals("text/html")) {
+                super.setText("&nbsp;");
+            }
+        } else {
+            super.setText(text);
+        }
+    }
+    
+    public void setText(Text text) {
+        setContentType(text.getContentType());
+        setText(text.getText());
+    }
+    
+    public void setContentType(ContentType contentType) {
+        super.setContentType(contentType.toString());
     }
 }
