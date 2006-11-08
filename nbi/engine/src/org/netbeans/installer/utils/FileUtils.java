@@ -47,7 +47,7 @@ import java.util.zip.CRC32;
  *
  * @author ks152834
  */
-public abstract class FileUtils {
+public final class FileUtils {
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
     public static final int BUFFER_SIZE = 10240;
@@ -91,6 +91,37 @@ public abstract class FileUtils {
         try {
             output = new FileOutputStream(file, append);
             output.write(string.toString().getBytes());
+        } finally {
+            if (output != null) {
+                try {
+                    output.close();
+                } catch (IOException e) {
+                    ErrorManager.notify(ErrorLevel.DEBUG, e);
+                }
+            }
+        }
+    }
+    
+    public static void writeFile(File file, InputStream input) throws IOException {
+        writeFile(file, input, false);
+    }
+    
+    public static void appendFile(File file, InputStream input) throws IOException {
+        writeFile(file, input, true);
+    }
+    
+    public static void writeFile(File file, InputStream input, boolean append) throws IOException {
+        if (!file.exists()) {
+            if (!file.getParentFile().exists()) {
+                file.getParentFile().mkdirs();
+            }
+            file.createNewFile();
+        }
+        
+        FileOutputStream output = null;
+        try {
+            output = new FileOutputStream(file, append);
+            StreamUtils.transferData(input, output);
         } finally {
             if (output != null) {
                 try {
@@ -237,9 +268,7 @@ public abstract class FileUtils {
         String type = "";
         if (file.isDirectory()) {
             if (followLinks) {
-                File[] children = file.listFiles();
-                
-                for(File child : children) {
+                for(File child: file.listFiles()) {
                     deleteFile(child, true);
                 }
             }
@@ -258,13 +287,12 @@ public abstract class FileUtils {
         if (!file.delete()) {
             file.deleteOnExit();
         }
-    }
+}
     
     public static void deleteFile(File file, String mask) throws IOException {
         if (file.isDirectory()) {
-            File[] children = file.listFiles(new MaskFileFilter(mask));
             
-            for(File child : children) {
+            for(File child: file.listFiles(new MaskFileFilter(mask))) {
                 deleteFile(child, mask);
             }
         }  else {
@@ -334,9 +362,7 @@ public abstract class FileUtils {
         }
         
         if (file.isDirectory()) {
-            File[] children = file.listFiles();
-            
-            for(File child : children) {
+            for(File child: file.listFiles()) {
                 modifyFile(child, replacementMap, useRE);
             }
         }  else {
@@ -372,7 +398,7 @@ public abstract class FileUtils {
         }
     }
     
-    public static void modifyFiles(File[] files, Map<String, Object> replacementMap, boolean useRE) throws IOException {
+    public static void modifyFiles(List<File> files, Map<String, Object> replacementMap, boolean useRE) throws IOException {
         for(File file : files) {
             modifyFile(file, replacementMap, useRE);
         }
@@ -503,6 +529,12 @@ public abstract class FileUtils {
                 }
             }
         }
+    }
+    
+    /////////////////////////////////////////////////////////////////////////////////
+    // Instance
+    private FileUtils() {
+        // does nothing
     }
     
     /////////////////////////////////////////////////////////////////////////////////

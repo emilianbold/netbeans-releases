@@ -32,11 +32,11 @@ import org.netbeans.installer.utils.SystemUtils.EnvironmentVariableScope;
  * @author dlm198383
  */
 public class BourneShell extends Shell{
-    
     private String [] SYSTEM_PROFILE_FILES = {
         "bashrc",
         "profile"
     };
+    
     private String [] USER_PROFILE_HOMEDIRFILES = {
         ".bashrc",
         ".profile",
@@ -44,7 +44,6 @@ public class BourneShell extends Shell{
         ".bash_login",
         ".login"
     };
-    
     
     /** Creates a new instance of Bash */
     public BourneShell() {
@@ -114,6 +113,7 @@ public class BourneShell extends Shell{
     public String[] getUserShellFileNames() {
         return USER_PROFILE_HOMEDIRFILES;
     }
+    
     public String [] getAvailableNames() {
         return new String [] { "bash", "sh", "zsh", "sh5", "jsh", "pfsh" };
     }
