@@ -30,6 +30,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.installer.utils.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
+import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.helper.swing.NbiButton;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
 import static org.netbeans.installer.product.ProductComponent.INSTALLATION_LOCATION_PROPERTY;
@@ -167,15 +168,15 @@ public class DestinationPanel extends ErrorMessagePanel {
             return StringUtils.formatMessage(getProperty(ERROR_NOT_DIRECTORY_PROPERTY), path);
         }
         
-        if (!fileUtils.canRead(file)) {
+        if (!FileUtils.canRead(file)) {
             return StringUtils.formatMessage(getProperty(ERROR_NOT_READABLE_PROPERTY), path);
         }
         
-        if (!fileUtils.canWrite(file)) {
+        if (!FileUtils.canWrite(file)) {
             return StringUtils.formatMessage(getProperty(ERROR_NOT_WRITABLE_PROPERTY), path);
         }
         
-        if (!fileUtils.isEmpty(file)) {
+        if (!FileUtils.isEmpty(file)) {
             return StringUtils.formatMessage(getProperty(ERROR_NOT_EMPTY_PROPERTY), path);
         }
         

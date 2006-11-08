@@ -222,5 +222,4 @@ public class WizardSequence implements WizardComponent {
     
     // protected area ///////////////////////////////////////////////////////////////
     protected static final SystemUtils   systemUtils   = SystemUtils.getInstance();
-    protected static final FileUtils     fileUtils     = FileUtils.getInstance();
 }

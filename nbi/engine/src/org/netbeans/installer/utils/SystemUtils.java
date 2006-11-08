@@ -138,7 +138,9 @@ public abstract class SystemUtils {
      */
     public abstract boolean setEnvironmentVariable(String name, String value, EnvironmentVariableScope scope, boolean flag) throws IOException, UnsupportedActionException;
     
-    public abstract void transferStream(InputStream in, OutputStream out) throws IOException;
+    public abstract void removeIrrelevantFiles(File parent) throws IOException;
+    
+    public abstract void correctFilesPermissions(File parent) throws IOException;
     
     // some helper overloaded implementations ///////////////////////////////////////
     public String parseString(String string) {
@@ -152,6 +154,7 @@ public abstract class SystemUtils {
     public ExecutionResults executeCommand(String... command) throws IOException {
         return executeCommand(null, command);
     }
+    
     /** Get value of environment variable <i>name</i> and expand it.<br><br>
      *  The search is performed in sersies in the following scopes:
      *  <ul> <li> Current process </li><br>
@@ -164,6 +167,18 @@ public abstract class SystemUtils {
     
     public boolean setEnvironmentVariable(String name, String value) throws IOException, UnsupportedActionException {
         return setEnvironmentVariable(name, value, EnvironmentVariableScope.PROCESS,false);
+    }
+    
+    public void removeIrrelevantFiles(File... parents) throws IOException {
+        for (File file: parents) {
+            removeIrrelevantFiles(file);
+        }
+    }
+    
+    public void correctFilesPermissions(File... parents) throws IOException {
+        for (File file: parents) {
+            correctFilesPermissions(file);
+        }
     }
     
     // helper cross-platform methods ////////////////////////////////////////////////

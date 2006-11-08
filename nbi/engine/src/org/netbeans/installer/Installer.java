@@ -541,7 +541,7 @@ public class Installer {
                     
                     if(jarfile!=null) {
                         if(!jarfile.getAbsolutePath().equals(dest.getAbsolutePath()) && jarfile.exists()) {
-                            FileUtils.getInstance().copyFile(jarfile,dest);
+                            FileUtils.copyFile(jarfile,dest);
                         }
                     }
                     cachedEngine = (!dest.exists()) ? null : dest;
@@ -568,7 +568,7 @@ public class Installer {
                 
                 if (jarfile != null) {
                     if(!jarfile.getAbsolutePath().equals(dest.getAbsolutePath()) && jarfile.exists()) {
-                        FileUtils.getInstance().copyFile(jarfile, dest);
+                        FileUtils.copyFile(jarfile, dest);
                     }
                 }
                 

@@ -125,7 +125,7 @@ public abstract class Shell {
     }
     protected List<String> getList(File file) throws IOException {
         return (file.canRead()) ?
-            FileUtils.getInstance().readStringList(file) :
+            FileUtils.readStringList(file) :
             new LinkedList<String> ();
     }
     protected boolean writeList(List <String> strings, File file) throws IOException{
@@ -135,7 +135,7 @@ public abstract class Shell {
             };
         }
         if(file.canWrite()) {
-            FileUtils.getInstance().writeStringList(file,strings);
+            FileUtils.writeStringList(file,strings);
             return true;
         }
         return false;
