@@ -12,35 +12,37 @@
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * The Original Software is the LaTeX module.
- * The Initial Developer of the Original Software is Jan Lahoda.
- * Portions created by Jan Lahoda_ are Copyright (C) 2002-2004.
- * All Rights Reserved.
- *
- * Contributor(s): Jan Lahoda.
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.editor.settings.storage;
+
 
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import junit.framework.Assert;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileSystem.Status;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.filesystems.XMLFileSystem;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.FolderLookup;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
 
 /**
- * Inspired by org.netbeans.api.project.TestUtil.
+ * Inspired by org.netbeans.api.project.TestUtil and FolderLookupTest
  *
- * @author Miloslav Metelka, Jan Lahoda
+ * @author Martin Roskanin
  */
 public class EditorTestLookup extends ProxyLookup {
     
@@ -57,52 +59,142 @@ public class EditorTestLookup extends ProxyLookup {
         DEFAULT_LOOKUP = this;
     }
     
-    /**
-     * Set the global default lookup with some fixed instances including META-INF/services/*.
-     */
-    public static void setLookup(Object[] instances, ClassLoader cl) {
+    public static void setLookup(Object[] instances, ClassLoader cl, FileObject servicesFolder, Class [] exclude) {
+        Lookup metaInfServices = Lookups.metaInfServices(cl);
+        if (exclude != null && exclude.length > 0) {
+            metaInfServices = Lookups.exclude(metaInfServices, exclude);
+        }
+        
         DEFAULT_LOOKUP.setLookups(new Lookup[] {
             Lookups.fixed(instances),
-            Lookups.metaInfServices(cl),
+            metaInfServices,
             Lookups.singleton(cl),
         });
+        
+        if (servicesFolder != null) {
+            // DataSystems need default repository, which is read from the default lookup.
+            // That's why the lookup is set first without the services lookup and then again
+            // here with the FolderLookup over the Services folder.
+            Lookup services = new FolderLookup(DataFolder.findFolder(servicesFolder)).getLookup();
+            if (exclude != null && exclude.length > 0) {
+                services = Lookups.exclude(services, exclude);
+            }
+            
+            DEFAULT_LOOKUP.setLookups(new Lookup[] {
+                Lookups.fixed(instances),
+                metaInfServices,
+                Lookups.singleton(cl),
+                services
+            });
+        }
     }
     
-    /**
-     * Set the global default lookup with the specified content.
-     *
-     * @param layers xml-layer URLs to be present in the system filesystem.
-     * @param instances object instances to be present in the default lookup.
-     */
-    public static void setLookup(File workDir, URL[] layers, Object[] instances, ClassLoader cl)
+    public static void setLookup(String[] files, File workDir, Object[] instances, ClassLoader cl)
+    throws IOException, PropertyVetoException {
+        setLookup(files, workDir, instances, cl, null);
+    }
+    
+    public static void setLookup(String[] files, File workDir, Object[] instances, ClassLoader cl, Class [] exclude)
+    throws IOException, PropertyVetoException {
+        FileSystem fs = createLocalFileSystem(workDir, files);
+        setLookup(new FileSystem [] { fs }, instances, cl, exclude);
+    }
+    
+    public static void setLookup(URL[] layers, File workDir, Object[] instances, ClassLoader cl)
+    throws IOException, PropertyVetoException {
+        setLookup(layers, workDir, instances, cl, null);
+    }
+    
+    public static void setLookup(URL[] layers, File workDir, Object[] instances, ClassLoader cl, Class [] exclude)
+    throws IOException, PropertyVetoException {
+        FileSystem writeableFs = createLocalFileSystem(workDir, new String[0]);
+        XMLFileSystem layersFs = new XMLFileSystem();
+        layersFs.setXmlUrls(layers);
+        
+        setLookup(new FileSystem [] { writeableFs, layersFs }, instances, cl, exclude);
+    }
+    
+    private static void setLookup(FileSystem [] fs, Object[] instances, ClassLoader cl, Class [] exclude)
     throws IOException, PropertyVetoException {
 
-        XMLFileSystem system = new XMLFileSystem();
-        system.setXmlUrls(layers);
-        LocalFileSystem lfs = new LocalFileSystem();
-        lfs.setRootDirectory(workDir);
+        // Remember the tests run in the same VM and repository is singleton.
+        // Once it is created for the first time it will stick around forever.
+        Repository repository = (Repository) Lookup.getDefault().lookup(Repository.class);
+        if (repository == null) {
+            repository = new Repository(new SystemFileSystem(fs));
+        } else {
+            ((SystemFileSystem) repository.getDefaultFileSystem()).setOrig(fs);
+        }
         
-        FileSystem fs[] = new FileSystem[2];
-        fs[0] = lfs;
-        fs[1] = system;        
-        
-        MyFileSystem myFileSystem = new MyFileSystem(fs);
-        
-        Repository repository = new Repository(myFileSystem);
-
         Object[] lookupContent = new Object[instances.length + 1];
         lookupContent[0] = repository;
         System.arraycopy(instances, 0, lookupContent, 1, instances.length);
+
+        // Create the Services folder (if needed}
+        FileObject services = repository.getDefaultFileSystem().findResource("Services");
+        if (services == null) {
+            services = repository.getDefaultFileSystem().getRoot().createFolder("Services");
+        }
         
-        DEFAULT_LOOKUP.setLookup(lookupContent, cl);
+        DEFAULT_LOOKUP.setLookup(lookupContent, cl, services, exclude);
+    }
+
+    private static FileSystem createLocalFileSystem(File mountPoint, String[] resources) throws IOException {
+        mountPoint.mkdir();
+        
+        for (int i = 0; i < resources.length; i++) {
+            createFileOnPath(mountPoint, resources[i]);
+        }
+        
+        LocalFileSystem lfs = new StatusFileSystem();
+        try {
+        lfs.setRootDirectory(mountPoint);
+        } catch (Exception ex) {}
+        
+        return lfs;
+    }
+
+    private static void createFileOnPath(File mountPoint, String path) throws IOException{
+        mountPoint.mkdir();
+        
+        File f = new File (mountPoint, path);
+        if (f.isDirectory() || path.endsWith("/")) {
+            f.mkdirs();
+        }
+        else {
+            f.getParentFile().mkdirs();
+            try {
+                f.createNewFile();
+            } catch (IOException iex) {
+                throw new IOException ("While creating " + path + " in " + mountPoint.getAbsolutePath() + ": " + iex.toString() + ": " + f.getAbsolutePath());
+            }
+        }
     }
     
-    private static class MyFileSystem extends MultiFileSystem{
+    private static class StatusFileSystem extends LocalFileSystem {
+        Status status = new Status () {
+            public String annotateName (String name, java.util.Set files) {
+                return name;
+            }
 
-        public MyFileSystem(FileSystem[] fileSystems) {
-            super(fileSystems);
+            public java.awt.Image annotateIcon (java.awt.Image icon, int iconType, java.util.Set files) {
+                return icon;
+            }
+        };        
+        
+        public org.openide.filesystems.FileSystem.Status getStatus() {
+            return status;
         }
         
     }
     
+    private static class SystemFileSystem extends MultiFileSystem {
+        public SystemFileSystem(FileSystem [] orig) {
+            super(orig);
+        }
+        
+        public void setOrig(FileSystem [] orig) {
+            setDelegates(orig);
+        }
+    }
 }
