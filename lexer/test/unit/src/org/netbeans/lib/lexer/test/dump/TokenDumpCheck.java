@@ -123,13 +123,21 @@ public final class TokenDumpCheck {
             // Otherwise give a warning.
             File tokenDescInputFile = new File(test.getDataDir(), relFilePath + ".tokens.txt");
             String tokenDescInputFilePath = tokenDescInputFile.getAbsolutePath();
-            if (tokenDescInputFilePath.indexOf("/build/test") == -1) { // not found
+            boolean replaced = false;
+            if (tokenDescInputFilePath.indexOf("/build/test/") != -1) {
+                tokenDescInputFilePath = tokenDescInputFilePath.replace("/build/test/", "/test/");
+                replaced = true;
+            }
+            if (!replaced && tokenDescInputFilePath.indexOf("/test/work/sys/") != -1) {
+                tokenDescInputFilePath = tokenDescInputFilePath.replace("/test/work/sys/", "/test/unit/");
+                replaced = true;
+            }
+            if (!replaced) {
                 System.err.println("Warning: Attempt to use tokens dump file " +
                         "from sources instead of the generated test files failed.\n" +
-                        "Pattern /build/test/ not found in " + tokenDescInputFilePath
+                        "Patterns '/build/test/' or '/test/work/sys/' not found in " + tokenDescInputFilePath
                 );
             }
-            tokenDescInputFilePath = tokenDescInputFilePath.replace("/build/test/", "/test/");
             tokenDescInputFile = new File(tokenDescInputFilePath);
             
             String tokenDescInput = null;
@@ -143,6 +151,7 @@ public final class TokenDumpCheck {
             for (int i = 0; i < inputs.size(); i++) {
                 String input = inputs.get(i);
                 testName = testNames.get(i);
+                tdc.setTestName(testName);
                 TokenHierarchy<?> langHi = TokenHierarchy.create(input, language);
                 TokenSequence<? extends TokenId> langTS = langHi.tokenSequence();
                 tdc.compareLine(testName, -1);
@@ -202,6 +211,8 @@ public final class TokenDumpCheck {
         
         private int[] lineBoundsIndexes = new int[2 * 3]; // last three lines [start,end]
         
+        private String testName;
+        
         TokenDescCompare(String input, File outputFile) {
             this.input = input;
             this.outputFile = outputFile;
@@ -215,9 +226,11 @@ public final class TokenDumpCheck {
                 textLength = text.length();
                 if (input.length() - inputIndex < textLength || !TokenUtilities.equals(text, this)) {
                     StringBuilder msg = new StringBuilder(100);
-                    msg.append("Dump file ");
+                    msg.append("\nDump file ");
                     msg.append(outputFile);
-                    msg.append('\n');
+                    msg.append(":\n");
+                    msg.append(testName);
+                    msg.append(":\n");
                     if (tokenIndex >= 0) {
                         msg.append("Invalid token description in dump file (tokenIndex=");
                         msg.append(tokenIndex);
@@ -265,13 +278,17 @@ public final class TokenDumpCheck {
                 } finally {
                     fw.close();
                 }
-                NbTestCase.fail("Created tokens dump file " + outputFile);
+                NbTestCase.fail("Created tokens dump file " + outputFile + "\nPlease re-run the test.");
 
             } else {
                 if (inputIndex < input.length()) {
                     NbTestCase.fail("Some text left unread:" + input.substring(inputIndex));
                 }
             }
+        }
+        
+        public void setTestName(String testName) {
+            this.testName = testName;
         }
 
         public char charAt(int index) {
