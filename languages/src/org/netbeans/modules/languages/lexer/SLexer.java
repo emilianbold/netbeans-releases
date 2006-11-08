@@ -56,7 +56,11 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
         SToken token = parser.read (this, input);
         if (token == null) {
             try {
-                input.setIndex (index + 1);
+                if (input.getIndex () > (index + 1))
+                    input.setIndex (index + 1);
+                else
+                if (input.getIndex () == index)
+                    input.read ();
                 return tokenFactory.createToken ((STokenId) tokensMap.get ("error"));
             } catch (AssertionError ex) {
                 System.out.println(input.getIndex ());
