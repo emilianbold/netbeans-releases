@@ -48,7 +48,7 @@ import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 
-public class LexerLayer extends DrawLayer.AbstractLayer {
+class LexerLayer extends DrawLayer.AbstractLayer {
 
     private static final boolean debug = Boolean.getBoolean("netbeans.debug.lexer.layer");
     

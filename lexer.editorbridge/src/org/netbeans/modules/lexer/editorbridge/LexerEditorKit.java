@@ -35,10 +35,42 @@ import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.editor.ext.plain.PlainSyntax;
 import org.netbeans.modules.editor.NbEditorKit;
+import org.openide.filesystems.FileObject;
 
 public class LexerEditorKit extends NbEditorKit {
 
     public static final String tokenListDebugAction = "token-list-debug";
+    
+    public static final String UNKNOWN_MIME_TYPE = "text/x-unknown";
+    
+    public static LexerEditorKit create(FileObject fo) {
+        String mimeType = UNKNOWN_MIME_TYPE;
+        // Get mime-type from fo's name
+        fo = fo.getParent(); // get parent folder
+        String path = fo.getPath();
+        // Strip initial "Editors/"
+        if (path.startsWith("Editors/")) {
+            mimeType = path.substring("Editors/".length());
+        }
+        return new LexerEditorKit(mimeType);
+    }
+    
+    private String mimeType;
+    
+    public LexerEditorKit(String mimeType) {
+        this.mimeType = mimeType;
+    }
+    
+    /**
+     * @deprecated LexerEditorKit should not be used in longterm; it should be eliminated during 6.0 development
+     */
+    public LexerEditorKit() {
+        // Compatibility constructor - should not 
+    }
+    
+    public String getContentType() {
+        return mimeType;
+    }
 
     public void install(JEditorPane pane) {
         super.install(pane);
@@ -64,7 +96,7 @@ public class LexerEditorKit extends NbEditorKit {
         return TextAction.augmentList(super.createActions(), calcActions);
     }
 
-    public static class TokenListDebugAction extends BaseAction {
+    static class TokenListDebugAction extends BaseAction {
         
         public TokenListDebugAction() {
             super(tokenListDebugAction, 0);
