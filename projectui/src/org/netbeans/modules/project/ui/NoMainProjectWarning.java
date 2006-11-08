@@ -22,6 +22,7 @@ package org.netbeans.modules.project.ui;
 import java.awt.Component;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.Arrays;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -43,6 +44,7 @@ public class NoMainProjectWarning extends JPanel {
     public NoMainProjectWarning (Project[] projects) {
         initComponents();
 
+        Arrays.sort(projects, OpenProjectList.PROJECT_BY_DISPLAYNAME); // #88907
         ProjectsListModel model = new ProjectsListModel (projects);
         jList1.setModel (model);
         jList1.setSelectionMode (ListSelectionModel.SINGLE_SELECTION);
