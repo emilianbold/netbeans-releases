@@ -55,8 +55,13 @@ final class SceneComponent extends JComponent implements MouseListener, MouseMot
         scene.validate ();
     }
 
-    public void setSize (int width, int height) {
-        super.setSize (width, height);
+    public void setBounds (int x, int y, int width, int height) {
+        super.setBounds (x, y, width, height);
+
+        Rectangle bounds = scene.getBounds ();
+        if (bounds != null  &&  width == bounds.width  &&  height == bounds.height)
+            return;
+
         scene.revalidate ();
         scene.validate ();
     }

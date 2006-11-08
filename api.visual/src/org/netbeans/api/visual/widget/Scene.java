@@ -99,7 +99,6 @@ public class Scene extends Widget {
                 repaintSatellite ();
             }
             public void ancestorMoved (AncestorEvent event) {
-                repaintSatellite ();
             }
         });
         return component;
