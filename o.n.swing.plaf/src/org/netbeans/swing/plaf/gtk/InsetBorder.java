@@ -25,7 +25,6 @@ import java.awt.Graphics;
 import java.awt.Insets;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
-import org.netbeans.swing.plaf.util.UIUtils;
 
 /**
  * A trivial border class which centered dividers shorter than the component
@@ -55,13 +54,12 @@ public class InsetBorder implements Border {
         Color col = g.getColor();
         g.setColor (UIManager.getColor("controlShadow")); //NOI18N
         if (left) {
-            g.drawLine (x + 3, y + (h/4), x + 3, y + h - (h/4));
+            g.drawLine (x + 3, y, x + 3, y + h - 1);
         }
         if (right) {
-            g.drawLine (x + width - 3, y + (h/4), x + width - 3, y + h - (h/4));
+            g.drawLine (x + width - 3, y, x + width - 3, y + h - 1);
         }
-//        g.setColor (UIUtils.getMiddle(g.getColor(), c.getBackground()));
-//        g.drawLine (x, y, x + width, y);
+        g.drawLine (x, y, x + width - 1, y);
     }
     
 }

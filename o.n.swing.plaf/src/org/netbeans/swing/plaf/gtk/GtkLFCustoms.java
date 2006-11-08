@@ -84,10 +84,9 @@ public class GtkLFCustoms extends LFCustoms {
             EDITOR_TAB_TABS_BORDER, BorderFactory.createEmptyBorder(),
             
             EDITOR_STATUS_LEFT_BORDER, new InsetBorder (false, true),
-            EDITOR_STATUS_RIGHT_BORDER, new InsetBorder (true, false),
-            EDITOR_STATUS_ONLYONEBORDER, new InsetBorder (true, true),
-            EDITOR_STATUS_INNER_BORDER, BorderFactory.createEmptyBorder(),
-            
+            EDITOR_STATUS_RIGHT_BORDER, new InsetBorder (false, false),
+            EDITOR_STATUS_ONLYONEBORDER, new InsetBorder (false, false),
+            EDITOR_STATUS_INNER_BORDER, new InsetBorder (false, true),
             
             OUTPUT_BACKGROUND, control,
             OUTPUT_HYPERLINK_FOREGROUND, selFg,
