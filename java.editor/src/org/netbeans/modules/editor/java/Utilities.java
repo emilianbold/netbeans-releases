@@ -91,7 +91,7 @@ public class Utilities {
     }        
     
     public static boolean isJavaContext(final JTextComponent component, final int offset) {
-        TokenSequence<JavaTokenId> ts = TokenHierarchy.get(component.getDocument()).tokenSequence(JavaTokenId.language());
+        TokenSequence<JavaTokenId> ts = getJavaTokenSequence(component, offset);
         if (ts == null)
             return false;
         if (!ts.moveNext() || ts.move(offset) == 0)
@@ -120,13 +120,16 @@ public class Utilities {
     }
     
     public static TokenSequence<JavaTokenId> getJavaTokenSequence(final JTextComponent component, final int offset) {
-        TokenSequence<? extends TokenId> ts = TokenHierarchy.get(component.getDocument()).tokenSequence();
-        while(ts != null && ts.moveNext()) {
-            ts.move(offset);
-            if (ts.language() == JavaTokenId.language())
-                return (TokenSequence<JavaTokenId>)ts;
-            ts = ts.embedded();
-        };
+        TokenHierarchy hierarchy = TokenHierarchy.get(component.getDocument());
+        if (hierarchy != null) {
+            TokenSequence<? extends TokenId> ts = hierarchy.tokenSequence();
+            while(ts != null && ts.moveNext()) {
+                ts.move(offset);
+                if (ts.language() == JavaTokenId.language())
+                    return (TokenSequence<JavaTokenId>)ts;
+                ts = ts.embedded();
+            }
+        }
         return null;
     }
     

@@ -309,10 +309,15 @@ public final class JavaSource {
         if (doc == null) {
             throw new IllegalArgumentException ("doc == null");  //NOI18N
         }
-        DataObject dObj = (DataObject)doc.getProperty(Document.StreamDescriptionProperty);
-        if (dObj == null)
-            return null;        
-        return forFileObject(dObj.getPrimaryFile());
+        JavaSource js = (JavaSource)doc.getProperty(JavaSource.class);
+        if (js == null) {
+            DataObject dObj = (DataObject)doc.getProperty(Document.StreamDescriptionProperty);
+            if (dObj != null)
+                js = forFileObject(dObj.getPrimaryFile());
+            if (js != null)
+                doc.putProperty(JavaSource.class, js);
+        }
+        return js;
     }
     
     /**
