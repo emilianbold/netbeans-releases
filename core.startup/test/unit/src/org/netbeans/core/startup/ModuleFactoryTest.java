@@ -35,8 +35,10 @@ import org.netbeans.JarClassLoader;
 import org.netbeans.Module;
 import org.netbeans.ModuleFactory;
 import org.netbeans.ModuleManager;
-import org.netbeans.junit.MockServices;
+import org.openide.util.Lookup;
 import org.openide.util.Union2;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  * These tests verify that the module manager behaves basically the
@@ -45,14 +47,23 @@ import org.openide.util.Union2;
  */
 public class ModuleFactoryTest extends ModuleManagerTest {
 
-    public ModuleFactoryTest(String name) {
-        super(name);
+    // #88772: MockServices does not work here, probably because MainLookup ignores CCL.
+    static {
+        System.setProperty("org.openide.util.Lookup", L.class.getName());
+        assertTrue(Lookup.getDefault() instanceof L);
+    }
+    public static final class L extends ProxyLookup {
+        public L() {
+            super(new Lookup[] {
+                Lookups.fixed(new Object[] {
+                    new MyModuleFactory()
+                }),
+            });
+        }
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        MockServices.setServices(MyModuleFactory.class);
+    public ModuleFactoryTest(String name) {
+        super(name);
     }
 
     public static int numberOfStandard = 0;
