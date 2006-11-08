@@ -149,16 +149,17 @@ public class SourceUtils {
     private static EnumSet JAVA_JFO_KIND = EnumSet.of(Kind.CLASS, Kind.SOURCE);
         
     
-    /**XXX: probably only temporary
+    /**
+     *
+     *
      */
-    public static boolean addImports(CompilationInfo info, List<String> toImport) throws IOException, BadLocationException {
-        toImport = new ArrayList<String>(toImport); //do not modify the list given by the caller (may be reused or immutable).
+    public static CompilationUnitTree addImports(CompilationUnitTree cut, List<String> toImport, TreeMaker make)
+        throws IOException {
+        // do not modify the list given by the caller (may be reused or immutable).
+        toImport = new ArrayList<String>(toImport); 
         Collections.sort(toImport);
 
-        CompilationUnitTree cu = info.getCompilationUnit();
-        Document doc = info.getDocument();
-        
-        List<? extends ImportTree> imports = cu.getImports();
+        List<ImportTree> imports = new ArrayList<ImportTree>(cut.getImports());
         int currentToImport = toImport.size() - 1;
         int currentExisting = imports.size() - 1;
         
@@ -169,32 +170,19 @@ public class SourceUtils {
                 currentExisting--;
             
             if (currentExisting >= 0) {
-                int position = (int)info.getTrees().getSourcePositions().getEndPosition(cu, imports.get(currentExisting));
-                doc.insertString(position, "\nimport " + currentToImportText + ";", null);
+                imports.add(currentExisting+1, make.Import(make.Identifier(currentToImportText), false));
                 currentToImport--;
             }
         }
-        
-        int position;
-        boolean newlineBefore;
-        
-        if (imports.isEmpty()) {
-            position = (int)info.getTrees().getSourcePositions().getEndPosition(cu, cu.getPackageName()) + 1;
-            newlineBefore = true;
-        } else {
-            position = (int)info.getTrees().getSourcePositions().getStartPosition(cu, imports.get(0));
-            newlineBefore = false;
-        }
-        
+        // we are at the head of import section and we still have some imports
+        // to add, put them to the very beginning
         while (currentToImport >= 0) {
-            String currentToImportText = toImport.get(currentToImport);
-            
-            doc.insertString(position, (newlineBefore ? "\n" : "") + "import " + currentToImportText + ";" + (!newlineBefore ? "\n" : ""), null);
-            
+            String importText = toImport.get(currentToImport);
+            imports.add(0, make.Import(make.Identifier(importText), false));
             currentToImport--;
         }
-        
-        return true;
+        // return a copy of the unit with changed imports section
+        return make.CompilationUnit(cut.getPackageName(), imports, cut.getTypeDecls(), cut.getSourceFile());
     }
 
     /**

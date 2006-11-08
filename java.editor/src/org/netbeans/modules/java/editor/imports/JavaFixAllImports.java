@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.java.editor.imports;
 
+import com.sun.source.tree.CompilationUnitTree;
 import java.awt.Dialog;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -25,12 +26,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.TypeElement;
-import javax.swing.text.BadLocationException;
 import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -53,98 +53,100 @@ public class JavaFixAllImports {
     }
     
     public void fixAllImports(FileObject fo) {
-        try {
-            JavaSource.forFileObject(fo).runUserActionTask(new CancellableTask<CompilationController>() {
-                public void cancel() {
-                }
-                public void run(CompilationController info) {
-                    try {
-                        info.toPhase(Phase.ELEMENTS_RESOLVED);
+        CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
+            public void cancel() {
+            }
+            public void run(final WorkingCopy wc) {
+                try {
+                    wc.toPhase(Phase.ELEMENTS_RESOLVED);
 
-                        ComputeImports.Pair<Map<String, List<TypeElement>>, Map<String, List<TypeElement>>> candidates = new ComputeImports().computeCandidates(info);
+                    ComputeImports.Pair<Map<String, List<TypeElement>>, Map<String, List<TypeElement>>> candidates = new ComputeImports().computeCandidates(wc);
 
-                        Map<String, List<TypeElement>> filteredCandidates = candidates.a;
-                        Map<String, List<TypeElement>> notFilteredCandidates = candidates.b;
+                    Map<String, List<TypeElement>> filteredCandidates = candidates.a;
+                    Map<String, List<TypeElement>> notFilteredCandidates = candidates.b;
 
-                        int size = notFilteredCandidates.size();
-                        String[] names = new String[size];
-                        String[][] variants = new String[size][];
-                        String[] defaults = new String[size];
-                        Map<String, TypeElement> fqn2TE = new HashMap<String, TypeElement>();
+                    int size = notFilteredCandidates.size();
+                    String[] names = new String[size];
+                    String[][] variants = new String[size][];
+                    String[] defaults = new String[size];
+                    Map<String, TypeElement> fqn2TE = new HashMap<String, TypeElement>();
 
-                        int index = 0;
+                    int index = 0;
 
-                        for (String key : notFilteredCandidates.keySet()) {
-                            names[index] = key;
+                    for (String key : notFilteredCandidates.keySet()) {
+                        names[index] = key;
 
-                            List<TypeElement> unfilteredVars = notFilteredCandidates.get(key);
-                            List<TypeElement> filteredVars = filteredCandidates.get(key);
+                        List<TypeElement> unfilteredVars = notFilteredCandidates.get(key);
+                        List<TypeElement> filteredVars = filteredCandidates.get(key);
 
-                            if (!unfilteredVars.isEmpty()) {
-                                variants[index] = new String[unfilteredVars.size()];
+                        if (!unfilteredVars.isEmpty()) {
+                            variants[index] = new String[unfilteredVars.size()];
 
-                                int i = 0;
+                            int i = 0;
 
-                                for (TypeElement e : filteredVars) {
-                                    variants[index][i++] = e.getQualifiedName().toString();
-                                    fqn2TE.put(e.getQualifiedName().toString(), e);
-                                }
-
-                                for (TypeElement e : unfilteredVars) {
-                                    if (filteredVars.contains(e))
-                                        continue;
-
-                                    variants[index][i++] = "<html><font color='#808080'><s>" + e.getQualifiedName().toString();
-                                    fqn2TE.put(e.getQualifiedName().toString(), e);
-                                }
-                            } else {
-                                variants[index] = new String[1];
-                                variants[index][0] = "<html><font color='#FF0000'>&lt;cannot be resolved&gt;";
+                            for (TypeElement e : filteredVars) {
+                                variants[index][i++] = e.getQualifiedName().toString();
+                                fqn2TE.put(e.getQualifiedName().toString(), e);
                             }
 
-                            defaults[index] = variants[index][0];
+                            for (TypeElement e : unfilteredVars) {
+                                if (filteredVars.contains(e))
+                                    continue;
 
-                            index++;
+                                variants[index][i++] = "<html><font color='#808080'><s>" + e.getQualifiedName().toString();
+                                fqn2TE.put(e.getQualifiedName().toString(), e);
+                            }
+                        } else {
+                            variants[index] = new String[1];
+                            variants[index][0] = "<html><font color='#FF0000'>&lt;cannot be resolved&gt;";
                         }
 
-                        FixDuplicateImportStmts panel = new FixDuplicateImportStmts();
+                        defaults[index] = variants[index][0];
 
-                        panel.initPanel(names, variants, defaults);
-
-                        DialogDescriptor dd = new DialogDescriptor(panel, "Fix All Imports");
-                        Dialog d = DialogDisplayer.getDefault().createDialog(dd);
-
-                        d.setVisible(true);
-
-                        d.setVisible(false);
-                        d.dispose();
-
-                        if (dd.getValue() == DialogDescriptor.OK_OPTION) {
-                            //do imports:
-                            List<String> toImport = new ArrayList<String>();
-
-                            for (String fqn : panel.getSelections()) {
-                                TypeElement el = fqn2TE.get(fqn);
-
-                                if (el != null) {
-                                    toImport.add(el.getQualifiedName().toString());
-                                }
-                            }
-
-                            try {
-                                SourceUtils.addImports(info, toImport);
-                            } catch (BadLocationException ex) {
-                                ErrorManager.getDefault().notify(ex);
-                            } catch (IOException ex) {
-                                ErrorManager.getDefault().notify(ex);
-                            }
-                        }
-                    } catch (IOException ex) {
-                        //TODO: ErrorManager
-                        ex.printStackTrace();
+                        index++;
                     }
+
+                    FixDuplicateImportStmts panel = new FixDuplicateImportStmts();
+
+                    panel.initPanel(names, variants, defaults);
+
+                    DialogDescriptor dd = new DialogDescriptor(panel, "Fix All Imports");
+                    Dialog d = DialogDisplayer.getDefault().createDialog(dd);
+
+                    d.setVisible(true);
+
+                    d.setVisible(false);
+                    d.dispose();
+
+                    if (dd.getValue() == DialogDescriptor.OK_OPTION) {
+                        //do imports:
+                        List<String> toImport = new ArrayList<String>();
+
+                        for (String fqn : panel.getSelections()) {
+                            TypeElement el = fqn2TE.get(fqn);
+
+                            if (el != null) {
+                                toImport.add(el.getQualifiedName().toString());
+                            }
+                        }
+
+                        try {
+                            // make the changes to the source
+                            CompilationUnitTree cut = SourceUtils.addImports(wc.getCompilationUnit(), toImport, wc.getTreeMaker());
+                            wc.rewrite(wc.getCompilationUnit(), cut);
+                        } catch (IOException ex) {
+                            ErrorManager.getDefault().notify(ex);
+                        }
+                    }
+                } catch (IOException ex) {
+                    //TODO: ErrorManager
+                    ex.printStackTrace();
                 }
-            }, true);
+            }
+        };
+        try {
+            JavaSource javaSource = JavaSource.forFileObject(fo);
+            javaSource.runModificationTask(task).commit();
         } catch (IOException ioe) {
             ErrorManager.getDefault().notify(ioe);
         }
