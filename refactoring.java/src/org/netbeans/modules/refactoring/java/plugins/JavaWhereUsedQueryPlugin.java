@@ -167,36 +167,9 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
         
         Set<FileObject> a = getRelevantFiles(mainInfo, jmiObject);
         fireProgressListenerStart(ProgressEvent.START, a.size());
-        Iterable<? extends List<FileObject>> work = groupByRoot (a);        
-        for (List<FileObject> fos : work) {
-            final JavaSource javaSource = JavaSource.create(ClasspathInfo.create(fos.get(0)), fos);
-            try {
-                javaSource.runModificationTask(new FindTask(elements, element));
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }                                   
+        processFiles(a, new FindTask(elements, element));
         fireProgressListenerStop();
         return null;
-    }
-    
-    private Iterable<? extends List<FileObject>> groupByRoot (Iterable<? extends FileObject> data) {
-        Map<FileObject,List<FileObject>> result = new HashMap<FileObject,List<FileObject>> ();
-        for (FileObject file : data) {
-            ClassPath cp = ClassPath.getClassPath(file, ClassPath.SOURCE);
-            if (cp != null) {
-                FileObject root = cp.findOwnerRoot(file);
-                if (root != null) {
-                    List<FileObject> subr = result.get (root);
-                    if (subr == null) {
-                        subr = new LinkedList<FileObject>();
-                        result.put (root,subr);
-                    }
-                    subr.add (file);
-                }
-            }
-        }
-        return result.values();
     }
     
     //@Override

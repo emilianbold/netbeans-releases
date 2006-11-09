@@ -399,29 +399,28 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
         }
         
         Set<FileObject> a = getRelevantFiles(mainInfo, element);
-        final JavaSource javaSource = JavaSource.create(cpInfo, a);
         fireProgressListenerStart(ProgressEvent.START, a.size());
-        
         if (!a.isEmpty()) {
-            try {
-                final ModificationResult result = javaSource.runModificationTask(new FindTask(elements, element));
+            final Collection<ModificationResult> results = processFiles(a, new FindTask(elements, element));
+            for (ModificationResult result:results) {
                 for (FileObject jfo : result.getModifiedFileObjects()) {
                     for (Difference dif: result.getDifferences(jfo)) {
                         elements.add(refactoring,DiffElement.create(dif, jfo));
                     }
                 }
-                elements.getSession().registerCommit(new Runnable() {
-                    public void run() {
-                        try {
-                            result.commit();
-                        } catch (IOException ex) {
-                            throw (RuntimeException) new RuntimeException().initCause(ex);
-                        }
-                    }
-                });
-            } catch (IOException ex) {
-                ex.printStackTrace();
             }
+            
+            elements.getSession().registerCommit(new Runnable() {
+                public void run() {
+                    try {
+                        for (ModificationResult result:results) {
+                            result.commit();
+                        }
+                    } catch (IOException ex) {
+                        throw (RuntimeException) new RuntimeException().initCause(ex);
+                    }
+                }
+            });
         }
         fireProgressListenerStop();
         return null;
