@@ -21,19 +21,28 @@ package org.netbeans.modules.web.core;
 
 //import org.netbeans.jmi.javamodel.JavaClass;
 //import org.netbeans.modules.j2ee.common.JMIUtils;
-//import org.netbeans.modules.j2ee.common.queries.spi.InjectionTargetQueryImplementation;
+import org.netbeans.modules.j2ee.common.queries.spi.InjectionTargetQueryImplementation;
 //import org.netbeans.modules.javacore.api.JavaModel;
-import org.netbeans.modules.web.api.webmodule.WebModule;
+//import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Martin Adamek
  */
-public class WebInjectionTargetQueryImplementation /*implements InjectionTargetQueryImplementation*/ {
+public class WebInjectionTargetQueryImplementation implements InjectionTargetQueryImplementation {
     
     public WebInjectionTargetQueryImplementation() {
     }
     
+    public boolean isInjectionTarget(FileObject fileObject, String fqn) {
+        return false;
+    }
+    
+    public boolean isStaticReferenceRequired(FileObject fileObject, String fqn) {
+        return false;
+    }
+// Retouche
 //    public boolean isInjectionTarget(JavaClass jc) {
 //        if (jc == null) {
 //            throw new NullPointerException("Passed null to WebInjectionTargetQueryImplementation.isInjectionTarget(JavaClass)"); // NOI18N
