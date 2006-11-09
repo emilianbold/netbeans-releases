@@ -150,20 +150,6 @@ class TabControlButtonFactory {
                 return java.util.ResourceBundle.getBundle("org/netbeans/swing/tabcontrol/plaf/Bundle").getString("Tip_Pin");
             return java.util.ResourceBundle.getBundle("org/netbeans/swing/tabcontrol/plaf/Bundle").getString("Tip_Minimize_Window");
         }
-
-        public boolean isVisible() {
-            Component currentTab = getActiveTab( getTabDisplayer() );
-            if( null != currentTab ) {
-                WinsysInfoForTabbed winsysInfo = getTabDisplayer().getWinsysInfo();
-                if( null != winsysInfo ) {
-                    Object orientation = winsysInfo.getOrientation( currentTab );
-                    return !TabDisplayer.ORIENTATION_INVISIBLE.equals( orientation );
-                }
-            }
-            return super.isVisible();
-        }
-        
-        
     }
     
     private static class MaximizeRestoreButton extends TabControlButton {
