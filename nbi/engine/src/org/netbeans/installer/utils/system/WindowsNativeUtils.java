@@ -225,7 +225,7 @@ public class WindowsNativeUtils extends NativeUtils {
             
             addRemoveProgramsInstall(uid, displayName, icon, installPath, uninstallString, null);
         } else {
-            LogManager.log(ErrorLevel.WARNING, "Can`t find cached engine.");
+            LogManager.log(ErrorLevel.WARNING, "Can't find cached engine.");
             LogManager.log(ErrorLevel.WARNING, "The entry would not be added to the add/remove programs list");
         }
         
@@ -590,17 +590,16 @@ public class WindowsNativeUtils extends NativeUtils {
     }
     
     // native declarations //////////////////////////////////////////////////////////
-    private native boolean isCurrentUserAdmin0() throws NativeException;
+    private native boolean isCurrentUserAdmin0();
     
-    private native long getFreeSpace0(String string) throws NativeException;
+    private native long getFreeSpace0(String string);
     
-    private native void createShortcut0(Shortcut shortcut) throws NativeException;
+    private native void createShortcut0(Shortcut shortcut);
     
-    private native void deleteFileOnReboot0(String file) throws NativeException;
+    private native void deleteFileOnReboot0(String file);
     
     /////////////////////////////////////////////////////////////////////////////////
-    // Inner Classes
-    
+    // Inner classes
     /**
      *
      * @author Dmitry Lipin
@@ -643,6 +642,15 @@ public class WindowsNativeUtils extends NativeUtils {
         
         /////////////////////////////////////////////////////////////////////////////
         // Instance
+        
+        // constructor //////////////////////////////////////////////////////////////
+        /**
+         *
+         */
+        private WindowsRegistry() {
+            // does nothing
+        }
+        
         
         // queries //////////////////////////////////////////////////////////////////
         /**
@@ -1008,13 +1016,6 @@ public class WindowsNativeUtils extends NativeUtils {
         }
         
         // private //////////////////////////////////////////////////////////////////
-        /**
-         *
-         */
-        private WindowsRegistry() {
-            // does nothing
-        }
-        
         /**
          *
          * @param key
