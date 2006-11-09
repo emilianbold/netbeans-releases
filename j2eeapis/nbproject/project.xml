@@ -50,7 +50,7 @@ Microsystems, Inc. All Rights Reserved.
             <dependency>
                     <code-name-base>org.openide.explorer</code-name-base>
                     <run-dependency>
-                        <specification-version>6.2</specification-version>
+                        <specification-version>6.8</specification-version>
                     </run-dependency>
                 </dependency>
             <dependency>

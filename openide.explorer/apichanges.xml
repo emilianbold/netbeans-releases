@@ -23,6 +23,22 @@ Microsystems, Inc. All Rights Reserved.
 <apidef name="explorer">Explorer API</apidef>
 </apidefs>
 <changes>
+    <change id="deleted-PropertySheetSettings">
+        <api name="explorer"/>
+        <summary>PropertySheetSettings was deleted</summary>
+        <version major="6" minor="8"/>
+        <date day="9" month="11" year="2006"/>
+        <author login="rmatous"/>
+        <compatibility binary="compatible" source="incompatible" deprecation="no" deletion="yes"/>
+        <description>PropertySheetSettings was deleted from org.openide.explorer. 
+        To ensure binary compatibility there was added dependency transformation that ensures 
+        that for all modules that depend on org.openide.explorer with spec.version &lt; 6.8 is added additional dependency
+        on org.openide.options with spec.version 6.6 during runtime.            
+        </description>
+        <class package="org.openide.explorer.propertysheet" name="PropertySheetSettings"/>
+        <issue number="88769"/>
+    </change>
+    
     <change id="ExternalDragAndDrop">
         <api name="explorer"/>
         <summary>When an external object(s) is dragged over the Explorer, the drag
