@@ -22,11 +22,12 @@ package org.netbeans.api.java.source;
 import com.sun.source.tree.Tree;                                                                                                                                                                                               
 import com.sun.source.util.TreePath;                                                                                                                                                                                           
 import com.sun.tools.javac.tree.JCTree;                                                                                                                                                                                        
-import java.util.ArrayList;                                                                                                                                                                                                    
+import java.util.ArrayList;
+import java.util.logging.Logger;                                                                                                                                                                                                    
 import javax.lang.model.element.Element;                                                                                                                                                                                       
 import javax.swing.text.Position.Bias;                                                                                                                                                                                         
-import org.openide.ErrorManager;                                                                                                                                                                                               
-import org.openide.filesystems.FileObject;                                                                                                                                                                                     
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;                                                                                                                                                                                     
 import org.openide.loaders.DataObject;                                                                                                                                                                                         
 import org.openide.loaders.DataObjectNotFoundException;                                                                                                                                                                        
 import org.openide.text.CloneableEditorSupport;                                                                                                                                                                                
@@ -87,19 +88,21 @@ public final class TreePathHandle {
      * Resolves an {@link TreePath} from the {@link TreePathHandle}.                                                                                                                                                           
      * @param compilationInfo representing the {@link javax.tools.CompilationTask}                                                                                                                                             
      * @return resolved subclass of {@link Element} or null if the elment does not exist on                                                                                                                                    
-     * the classpath/sourcepath of {@link javax.tools.CompilationTask}.                                                                                                                                                        
+     * the classpath/sourcepath of {@link javax.tools.CompilationTask}.
+     * @throws {@link IllegalArgumentException} when this {@link TreePathHandle} is not created for a source
+     * represented by the compilationInfo.
      */                                                                                                                                                                                                                        
-    public TreePath resolve (final CompilationInfo compilationInfo) {                                                                                                                                                          
-        if (!compilationInfo.getFileObject().equals(getFileObject())) {                                                                                                                                                        
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new RuntimeException("this TreePathHandle was not created from " + compilationInfo.getFileObject().getPath()));                                       
-            return null;                                                                                                                                                                                                       
+    public TreePath resolve (final CompilationInfo compilationInfo) throws IllegalArgumentException {
+        assert compilationInfo != null;
+        if (!compilationInfo.getFileObject().equals(getFileObject())) {
+            throw new IllegalArgumentException ("TreePathHandle ["+FileUtil.getFileDisplayName(getFileObject())+"] was not created from " + FileUtil.getFileDisplayName(compilationInfo.getFileObject()));
         }                                                                                                                                                                                                                      
         Element element = enclosingElement.resolve(compilationInfo);                                                                                                                                                           
         TreePath tp = null;                                                                                                                                                                                                    
         if (element != null) {                                                                                                                                                                                                 
             TreePath startPath = compilationInfo.getTrees().getPath(element);                                                                                                                                                  
             if (startPath == null) {                                                                                                                                                                                           
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new RuntimeException("compilationInfo.getTrees().getPath(element) returned null for element " + element + "(" +file.getPath() +")"));             
+                Logger.getLogger(TreePathHandle.class.getName()).fine("compilationInfo.getTrees().getPath(element) returned null for element %s " + element + "(" +file.getPath() +")");    //NOI18N
             } else {                                                                                                                                                                                                           
                 tp = compilationInfo.getTreeUtilities().pathFor(startPath, position.getOffset()+1);
             }                                                                                                                                                                                                                  
