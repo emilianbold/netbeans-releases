@@ -21,32 +21,36 @@ package org.netbeans.swing.tabcontrol.plaf;
 
 import javax.swing.*;
 import java.awt.*;
+import javax.swing.plaf.synth.Region;
+import javax.swing.plaf.synth.SynthConstants;
+import javax.swing.plaf.synth.SynthContext;
+import javax.swing.plaf.synth.SynthLookAndFeel;
+import javax.swing.plaf.synth.SynthPainter;
+import javax.swing.plaf.synth.SynthStyle;
+import javax.swing.plaf.synth.SynthStyleFactory;
 
 /**
- * Windows classic implementation of tab renderer
+ * Gtk implementation of tab renderer
  *
- * @author Tim Boudreau
+ * @author Marek Slama
  */
 final class GtkEditorTabCellRenderer extends AbstractTabCellRenderer {
 
-    private static final TabPainter leftClip = new WinClassicLeftClipPainter();
-    private static final TabPainter rightClip = new WinClassicRightClipPainter();
-    private static final TabPainter normal = new WinClassicPainter();
-
-    private static final Color GTK_TABBED_PANE_BACKGROUND_1 = new Color(255, 255, 255);
+    private static final TabPainter leftClip = new GtkLeftClipPainter();
+    private static final TabPainter rightClip = new GtkRightClipPainter();
+    private static final TabPainter normal = new GtkPainter();
     
+    private static JTabbedPane dummyTab;
+
     static final Color ATTENTION_COLOR = new Color(255, 238, 120);
     
-    private static boolean isGenericUI = !"Windows".equals(
-        UIManager.getLookAndFeel().getID());
-
     /**
-     * Creates a new instance of WinClassicEditorTabCellRenderer
+     * Creates a new instance of GtkEditorTabCellRenderer
      */
     public GtkEditorTabCellRenderer() {
           super(leftClip, normal, rightClip, new Dimension (28, 32));
-      }
-
+    }
+    
     public Color getSelectedForeground() {
         return UIManager.getColor("textText"); //NOI18N
     }
@@ -74,8 +78,23 @@ final class GtkEditorTabCellRenderer extends AbstractTabCellRenderer {
     }
     
     private static final Insets INSETS = new Insets(0, 2, 0, 10);
-
-    private static class WinClassicPainter implements TabPainter {
+    
+    private static void paintTabBackground (Graphics g, int index, int state,
+    int x, int y, int w, int h) {
+        if (dummyTab == null) {
+            dummyTab = new JTabbedPane();
+        }
+        Region region = Region.TABBED_PANE_TAB;
+        SynthLookAndFeel laf = (SynthLookAndFeel) UIManager.getLookAndFeel();
+        SynthStyleFactory sf = laf.getStyleFactory();
+        SynthStyle style = sf.getStyle(dummyTab, region);
+        SynthContext context =
+            new SynthContext(dummyTab, region, style, state);
+        SynthPainter painter = style.getPainter(context);
+        painter.paintTabbedPaneTabBackground(context, g, x, y, w, h, index);
+    }
+    
+    private static class GtkPainter implements TabPainter {
 
         public Insets getBorderInsets(Component c) {
             return INSETS;
@@ -104,23 +123,22 @@ final class GtkEditorTabCellRenderer extends AbstractTabCellRenderer {
         }
 
         public Polygon getInteriorPolygon(Component c) {
-            WinClassicEditorTabCellRenderer ren = (WinClassicEditorTabCellRenderer) c;
+            GtkEditorTabCellRenderer ren = (GtkEditorTabCellRenderer) c;
 
             Insets ins = getBorderInsets(c);
             Polygon p = new Polygon();
             int x = ren.isLeftmost() ? 1 : 0;
-            int y = isGenericUI ? 0 : 1;
+            int y = 1;
 
             int width = ren.isLeftmost() ? c.getWidth() - 1 : c.getWidth();
             int height = ren.isSelected() ?
                     c.getHeight() + 2 : c.getHeight() - 1;
                     
-            p.addPoint(x, y + ins.top + 2);
-            p.addPoint(x + 2, y + ins.top);
-            p.addPoint(x + width - 3, y + ins.top);
-            p.addPoint(x + width - 1, y + ins.top + 2);
-            p.addPoint(x + width - 1, y + height - 2);
-            p.addPoint(x, y + height - 2);
+            //Modified to return rectangle
+            p.addPoint(x, y);
+            p.addPoint(x + width, y);
+            p.addPoint(x + width, y + height);
+            p.addPoint(x, y + height);
             return p;
         }
 
@@ -130,52 +148,23 @@ final class GtkEditorTabCellRenderer extends AbstractTabCellRenderer {
 
         public void paintBorder(Component c, Graphics g, int x, int y,
                                 int width, int height) {
-            WinClassicEditorTabCellRenderer ren = (WinClassicEditorTabCellRenderer) c;
+            GtkEditorTabCellRenderer ren = (GtkEditorTabCellRenderer) c;
             Polygon p = getInteriorPolygon(c);
-            g.setColor(ren.isSelected() ?
-                       UIManager.getColor("controlLtHighlight") :
-                       UIManager.getColor("controlHighlight")); //NOI18N
-
-            int[] xpoints = p.xpoints;
-            int[] ypoints = p.ypoints;
-
-            g.drawLine(xpoints[0], ypoints[0], xpoints[p.npoints - 1],
-                       ypoints[p.npoints - 1]);
-
-            for (int i = 0; i < p.npoints - 1; i++) {
-                g.drawLine(xpoints[i], ypoints[i], xpoints[i + 1],
-                           ypoints[i + 1]);
-                if (i == p.npoints - 4) {
-                    g.setColor(ren.isSelected() ?
-                               UIManager.getColor("controlDkShadow") :
-                               UIManager.getColor("controlShadow")); //NOI18N
-                    g.drawLine(xpoints[i] + 1, ypoints[i] + 1,
-                               xpoints[i] + 2, ypoints[i] + 2);
-                }
-            }
+            return;
         }
+        
 
         public void paintInterior(Graphics g, Component c) {
-
-            WinClassicEditorTabCellRenderer ren = (WinClassicEditorTabCellRenderer) c;
-            boolean wantGradient = ren.isSelected() && ren.isActive() || ((ren.isClipLeft()
-                    || ren.isClipRight())
-                    && ren.isPressed());
-
-            if (wantGradient) {
-                ((Graphics2D) g).setPaint(ColorUtil.getGradientPaint(0, 0, getSelGradientColor(), ren.getWidth(), 0, getSelGradientColor2()));
-            } else {
-                if (!ren.isAttention()) {
-                    g.setColor(ren.isSelected() ?
-                               UIManager.getColor("TabbedPane.background") :
-                               UIManager.getColor("tab_unsel_fill")); //NOI18N
-                } else {
-                    g.setColor(ATTENTION_COLOR);
-                }
-            }
+            GtkEditorTabCellRenderer ren = (GtkEditorTabCellRenderer) c;
             Polygon p = getInteriorPolygon(c);
-            g.fillPolygon(p);
-
+            if (ren.isSelected()) {
+                paintTabBackground(g, 0, SynthConstants.SELECTED,
+                p.getBounds().x, p.getBounds().y, p.getBounds().width, p.getBounds().height);
+            } else {
+                paintTabBackground(g, 0, 0,
+                p.getBounds().x, p.getBounds().y + 2, p.getBounds().width, p.getBounds().height - 2);
+            }
+            
             if (!supportsCloseButton((JComponent)c)) {
                 return;
             }
@@ -235,79 +224,47 @@ final class GtkEditorTabCellRenderer extends AbstractTabCellRenderer {
     }
 
 
-    private static class WinClassicLeftClipPainter implements TabPainter {
+    private static class GtkLeftClipPainter implements TabPainter {
 
         public Insets getBorderInsets(Component c) {
             return INSETS;
         }
 
         public Polygon getInteriorPolygon(Component c) {
-            WinClassicEditorTabCellRenderer ren = (WinClassicEditorTabCellRenderer) c;
+            GtkEditorTabCellRenderer ren = (GtkEditorTabCellRenderer) c;
 
             Insets ins = getBorderInsets(c);
             Polygon p = new Polygon();
             int x = -3;
-            int y = isGenericUI ? 0 : 1;
+            int y = 1;
 
             int width = c.getWidth() + 3;
             int height = ren.isSelected() ?
                     c.getHeight() + 2 : c.getHeight() - 1;
 
-            p.addPoint(x, y + ins.top + 2);
-            p.addPoint(x + 2, y + ins.top);
-            p.addPoint(x + width - 3, y + ins.top);
-            p.addPoint(x + width - 1, y + ins.top + 2);
-            p.addPoint(x + width - 1, y + height - 1);
-            p.addPoint(x, y + height - 1);
+            //Modified to return rectangle
+            p.addPoint(x, y);
+            p.addPoint(x + width, y);
+            p.addPoint(x + width, y + height);
+            p.addPoint(x, y + height);
             return p;
         }
 
         public void paintBorder(Component c, Graphics g, int x, int y,
                                 int width, int height) {
-            WinClassicEditorTabCellRenderer ren = (WinClassicEditorTabCellRenderer) c;
-            Polygon p = getInteriorPolygon(c);
-            g.setColor(ren.isSelected() ?
-                       UIManager.getColor("controlLtHighlight") :
-                       UIManager.getColor("controlHighlight")); //NOI18N
-
-            int[] xpoints = p.xpoints;
-            int[] ypoints = p.ypoints;
-
-            g.drawLine(xpoints[0], ypoints[0], xpoints[p.npoints - 1],
-                       ypoints[p.npoints - 1]);
-
-            for (int i = 0; i < p.npoints - 1; i++) {
-                g.drawLine(xpoints[i], ypoints[i], xpoints[i + 1],
-                           ypoints[i + 1]);
-                if (i == p.npoints - 4) {
-                    g.setColor(ren.isSelected() ?
-                               UIManager.getColor("controlDkShadow") :
-                               UIManager.getColor("controlShadow")); //NOI18N
-                    g.drawLine(xpoints[i] + 1, ypoints[i] + 1,
-                               xpoints[i] + 2, ypoints[i] + 2);
-                }
-            }
+            return;
         }
 
         public void paintInterior(Graphics g, Component c) {
-            WinClassicEditorTabCellRenderer ren = (WinClassicEditorTabCellRenderer) c;
-            boolean wantGradient = ren.isSelected() && ren.isActive() || ((ren.isClipLeft()
-                    || ren.isClipRight())
-                    && ren.isPressed());
-
-            if (wantGradient) {
-                ((Graphics2D) g).setPaint(ColorUtil.getGradientPaint(0, 0, getSelGradientColor(), ren.getWidth(), 0, getSelGradientColor2()));
-            } else {
-                if (!ren.isAttention()) {
-                    g.setColor(ren.isSelected() ?
-                           UIManager.getColor("TabbedPane.background") :
-                           UIManager.getColor("tab_unsel_fill")); //NOI18N
-                } else {
-                    g.setColor(ATTENTION_COLOR);
-                }
-            }
+            GtkEditorTabCellRenderer ren = (GtkEditorTabCellRenderer) c;
             Polygon p = getInteriorPolygon(c);
-            g.fillPolygon(p);
+            if (ren.isSelected()) {
+                paintTabBackground(g, 0, SynthConstants.SELECTED,
+                p.getBounds().x, p.getBounds().y, p.getBounds().width, p.getBounds().height);
+            } else {
+                paintTabBackground(g, 0, 0,
+                p.getBounds().x, p.getBounds().y + 2, p.getBounds().width, p.getBounds().height - 2);
+            }
         }
 
         public boolean isBorderOpaque() {
@@ -325,7 +282,7 @@ final class GtkEditorTabCellRenderer extends AbstractTabCellRenderer {
         }
     }
 
-    private static class WinClassicRightClipPainter implements TabPainter {
+    private static class GtkRightClipPainter implements TabPainter {
 
         public Insets getBorderInsets(Component c) {
             return INSETS;
@@ -336,75 +293,40 @@ final class GtkEditorTabCellRenderer extends AbstractTabCellRenderer {
         }
 
         public Polygon getInteriorPolygon(Component c) {
-            WinClassicEditorTabCellRenderer ren = (WinClassicEditorTabCellRenderer) c;
+            GtkEditorTabCellRenderer ren = (GtkEditorTabCellRenderer) c;
 
             Insets ins = getBorderInsets(c);
             Polygon p = new Polygon();
             int x = 0;
-            int y = isGenericUI ? 0 : 1;
+            int y = 1;
 
-            int width = c.getWidth();
+            int width = c.getWidth() + 10;
             int height = ren.isSelected() ?
                     c.getHeight() + 2 : c.getHeight() - 1;
 
-            p.addPoint(x, y + ins.top + 2);
-            p.addPoint(x + 2, y + ins.top);
-            p.addPoint(x + width - 1, y + ins.top);
-            p.addPoint(x + width - 1, y + height - 1);
-            p.addPoint(x, y + height - 1);
+            //Modified to return rectangle
+            p.addPoint(x, y);
+            p.addPoint(x + width, y);
+            p.addPoint(x + width, y + height);
+            p.addPoint(x, y + height);
             return p;
         }
 
         public void paintBorder(Component c, Graphics g, int x, int y,
                                 int width, int height) {
-            WinClassicEditorTabCellRenderer ren = (WinClassicEditorTabCellRenderer) c;
-            Polygon p = getInteriorPolygon(c);
-            g.setColor(ren.isSelected() ?
-                       UIManager.getColor("controlLtHighlight") :
-                       UIManager.getColor("controlHighlight")); //NOI18N
-
-            int[] xpoints = p.xpoints;
-            int[] ypoints = p.ypoints;
-
-            g.drawLine(xpoints[0], ypoints[0], xpoints[p.npoints - 1],
-                       ypoints[p.npoints - 1]);
-
-            for (int i = 0; i < p.npoints - 1; i++) {
-                g.drawLine(xpoints[i], ypoints[i], xpoints[i + 1],
-                           ypoints[i + 1]);
-                if (ren.isSelected() && i == p.npoints - 4) {
-                    g.setColor(ren.isActive() ?
-                               UIManager.getColor("Table.selectionBackground") :
-                               UIManager.getColor("control")); //NOI18n
-                } else if (i == p.npoints - 4) {
-                    break;
-                }
-                if (i == p.npoints - 3) {
-                    break;
-                }
-            }
         }
 
         public void paintInterior(Graphics g, Component c) {
-            WinClassicEditorTabCellRenderer ren = (WinClassicEditorTabCellRenderer) c;
-            boolean wantGradient = ren.isSelected() && ren.isActive() || ((ren.isClipLeft()
-                    || ren.isClipRight())
-                    && ren.isPressed());
-
-            if (wantGradient) {
-                ((Graphics2D) g).setPaint(ColorUtil.getGradientPaint(0, 0, getSelGradientColor(), ren.getWidth(), 0, getSelGradientColor2()));
-            } else {
-                if (!ren.isAttention()) {
-                    g.setColor(ren.isSelected() ?
-                           UIManager.getColor("TabbedPane.background") : //NOI18N
-                           UIManager.getColor("tab_unsel_fill")); //NOI18N
-                } else {
-                    g.setColor(ATTENTION_COLOR);
-                }
-            }
-
+            GtkEditorTabCellRenderer ren = (GtkEditorTabCellRenderer) c;
+            
             Polygon p = getInteriorPolygon(c);
-            g.fillPolygon(p);
+            if (ren.isSelected()) {
+                paintTabBackground(g, 0, SynthConstants.SELECTED,
+                p.getBounds().x, p.getBounds().y, p.getBounds().width, p.getBounds().height);
+            } else {
+                paintTabBackground(g, 0, 0,
+                p.getBounds().x, p.getBounds().y + 2, p.getBounds().width, p.getBounds().height - 2);
+            }
         }
 
         public boolean supportsCloseButton(JComponent renderer) {
@@ -416,18 +338,6 @@ final class GtkEditorTabCellRenderer extends AbstractTabCellRenderer {
                                             Rectangle bounds) {
             rect.setBounds(-20, -20, 0, 0);
         }
-    }
-    
-    private static final Color getSelGradientColor() {
-        if ("GTK".equals(UIManager.getLookAndFeel().getID())) { // NOI18N
-            return GTK_TABBED_PANE_BACKGROUND_1; // #68200
-        } else {
-            return UIManager.getColor("winclassic_tab_sel_gradient"); // NOI18N
-        }
-    }
-    
-    private static final Color getSelGradientColor2() {
-        return UIManager.getColor("TabbedPane.background"); // NOI18N
     }
     
 }
