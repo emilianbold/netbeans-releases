@@ -316,13 +316,13 @@ public class Controller { //XXX public only for debug access to logging code
                     boolean wasReset = io.checkReset();
                     boolean useHtml = io.isStreamClosed() && !wasReset;
                     
-                    String name = useHtml ? escaped + " " :
+                    String name = useHtml ? io.getName() + " " :
                             "<html><b>" + escaped 
                             + " </b>&nbsp;</html>";  //NOI18N
                     
                     if (LOG) log ("  set name to " + name);
-                    
-                    win.setTabTitle (t, name);
+                    //#88204 apostophes are escaped in xm but not html
+                    win.setTabTitle (t, name.replace("&apos;", "'"));
                 }
             }
             nameUpdater = null;
@@ -343,7 +343,8 @@ public class Controller { //XXX public only for debug access to logging code
                 escaped = tab.getIO().getName() + " ";
             }
             if (LOG) log ("  setting non-html name " + escaped);
-            win.setTabTitle (tab, escaped);
+            //#88204 apostophes are escaped in xm but not html
+            win.setTabTitle (tab, escaped.replace("&apos;", "'"));
         }
     }
 
