@@ -192,11 +192,11 @@ public class WizardSequence implements WizardComponent {
     
     // helper methods for SystemUtils and ResourceUtils /////////////////////////////
     protected String parseString(final String string) {
-        return systemUtils.parseString(string, getCorrectClassLoader());
+        return SystemUtils.parseString(string, getCorrectClassLoader());
     }
     
     protected File parsePath(final String path) {
-        return systemUtils.parsePath(path, getCorrectClassLoader());
+        return SystemUtils.parsePath(path, getCorrectClassLoader());
     }
     
     protected String getString(final String baseName, final String key) {
@@ -219,7 +219,4 @@ public class WizardSequence implements WizardComponent {
             return getClass().getClassLoader();
         }
     }
-    
-    // protected area ///////////////////////////////////////////////////////////////
-    protected static final SystemUtils   systemUtils   = SystemUtils.getInstance();
 }

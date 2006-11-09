@@ -38,9 +38,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.installer.product.ProductComponent;
+import org.netbeans.installer.utils.exceptions.NativeException;
 import org.netbeans.installer.utils.exceptions.UnrecognizedObjectException;
-import org.netbeans.installer.utils.exceptions.UnsupportedActionException;
-import org.netbeans.installer.utils.system.GenericSystemUtils;
 import org.netbeans.installer.utils.system.NativeUtils;
 
 /**
@@ -69,7 +68,12 @@ public final class SystemUtils {
         String parsedString = string;
         
         // N for Name
-        parsedString = parsedString.replaceAll("(?<!\\\\)\\$N\\{install\\}", StringUtils.escapeForRE(getDefaultApplicationsLocation().getAbsolutePath()));
+        try {
+            parsedString = parsedString.replaceAll("(?<!\\\\)\\$N\\{install\\}", StringUtils.escapeForRE(getDefaultApplicationsLocation().getAbsolutePath()));
+        } catch (NativeException e) {
+            ErrorManager.notify(ErrorLevel.ERROR, "Cannot obtain default applications location", e);
+        }
+        
         parsedString = parsedString.replaceAll("(?<!\\\\)\\$N\\{home\\}", StringUtils.escapeForRE(getUserHomeDirectory().getAbsolutePath()));
         parsedString = parsedString.replaceAll("(?<!\\\\)\\$N\\{temp\\}", StringUtils.escapeForRE(getTempDirectory().getAbsolutePath()));
         parsedString = parsedString.replaceAll("(?<!\\\\)\\$N\\{current\\}", StringUtils.escapeForRE(getCurrentDirectory().getAbsolutePath()));
@@ -199,7 +203,7 @@ public final class SystemUtils {
         return System.getProperty("user.name");
     }
     
-    public static boolean isCurrentUserAdmin() {
+    public static boolean isCurrentUserAdmin() throws NativeException {
         return getNativeUtils().isCurrentUserAdmin();
     }
     
@@ -211,8 +215,8 @@ public final class SystemUtils {
         return new File(System.getProperty("java.io.tmpdir"));
     }
     
-    public static File getDefaultApplicationsLocation() {
-        getNativeUtils().getDefaultApplicationsLocation();
+    public static File getDefaultApplicationsLocation() throws NativeException {
+        return getNativeUtils().getDefaultApplicationsLocation();
     }
     
     public static File getCurrentJavaHome() {
@@ -231,7 +235,7 @@ public final class SystemUtils {
         return System.getProperty("path.separator");
     }
     
-    public static long getFreeSpace(File file) {
+    public static long getFreeSpace(File file) throws NativeException {
         return getNativeUtils().getFreeSpace(file);
     }
     
@@ -352,39 +356,39 @@ public final class SystemUtils {
         return port;
     }
     
-    public static File getShortcutLocation(Shortcut shortcut, ShortcutLocationType locationType) {
+    public static File getShortcutLocation(Shortcut shortcut, ShortcutLocationType locationType) throws NativeException {
         return getNativeUtils().getShortcutLocation(shortcut, locationType);
     }
     
-    public static File createShortcut(Shortcut shortcut, ShortcutLocationType locationType) throws IOException {
+    public static File createShortcut(Shortcut shortcut, ShortcutLocationType locationType) throws NativeException {
         return getNativeUtils().createShortcut(shortcut, locationType);
     }
     
-    public static void removeShortcut(Shortcut shortcut, ShortcutLocationType locationType, boolean deleteEmptyParents) throws IOException, UnsupportedActionException {
+    public static void removeShortcut(Shortcut shortcut, ShortcutLocationType locationType, boolean deleteEmptyParents) throws NativeException {
         getNativeUtils().removeShortcut(shortcut, locationType, deleteEmptyParents);
     }
     
-    public static void addComponentToSystemInstallManager(ProductComponent comp) {
+    public static void addComponentToSystemInstallManager(ProductComponent comp) throws NativeException {
         getNativeUtils().addComponentToSystemInstallManager(comp);
     }
     
-    public static void removeComponentFromSystemInstallManager(ProductComponent comp) {
+    public static void removeComponentFromSystemInstallManager(ProductComponent comp) throws NativeException {
         getNativeUtils().removeComponentFromSystemInstallManager(comp);
     }
     
-    public static String getEnvironmentVariable(String name) throws IOException {
-        getEnvironmentVariable(name, EnvironmentVariableScope.PROCESS, true);
+    public static String getEnvironmentVariable(String name) throws NativeException {
+        return getEnvironmentVariable(name, EnvironmentScope.PROCESS, true);
     }
     
-    public static String getEnvironmentVariable(String name, EnvironmentVariableScope scope, boolean expand) throws IOException {
+    public static String getEnvironmentVariable(String name, EnvironmentScope scope, boolean expand) throws NativeException {
         return getNativeUtils().getEnvironmentVariable(name, scope, expand);
     }
     
-    public static void setEnvironmentVariable(String name, String value) throws IOException {
-        setEnvironmentVariable(name, value, EnvironmentVariableScope.PROCESS, true);
+    public static void setEnvironmentVariable(String name, String value) throws NativeException {
+        setEnvironmentVariable(name, value, EnvironmentScope.PROCESS, true);
     }
     
-    public static void setEnvironmentVariable(String name, String value, EnvironmentVariableScope scope, boolean expand) throws IOException {
+    public static void setEnvironmentVariable(String name, String value, EnvironmentScope scope, boolean expand) throws NativeException {
         getNativeUtils().setEnvironmentVariable(name, value, scope, expand);
     }
     
@@ -554,7 +558,7 @@ public final class SystemUtils {
         ALL_USERS_START_MENU
     }
     
-    public static enum EnvironmentVariableScope {
+    public static enum EnvironmentScope {
         CURRENT_USER,
         ALL_USERS,
         PROCESS

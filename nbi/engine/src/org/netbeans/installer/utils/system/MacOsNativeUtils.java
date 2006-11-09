@@ -22,20 +22,12 @@
 package org.netbeans.installer.utils.system;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 import org.netbeans.installer.download.DownloadManager;
 import org.netbeans.installer.download.DownloadOptions;
 import org.netbeans.installer.product.ProductRegistry;
@@ -44,21 +36,22 @@ import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.SystemUtils.ExecutionResults;
+import org.netbeans.installer.utils.SystemUtils.Shortcut;
 import org.netbeans.installer.utils.SystemUtils.ShortcutLocationType;
 import org.netbeans.installer.utils.XMLUtils;
 import org.netbeans.installer.utils.exceptions.DownloadException;
+import org.netbeans.installer.utils.exceptions.NativeException;
 import org.netbeans.installer.utils.exceptions.ParseException;
 import org.netbeans.installer.utils.exceptions.XMLException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 /**
  *
  * @author Dmitry Lipin
  */
-public class MacOsNativeUtils extends NativeUtils {
+public class MacOsNativeUtils extends UnixNativeUtils {
     public static final String APP_SUFFIX = ".app";
     
     private static final String DOCK_PROPERIES = "com.apple.dock.plist";
@@ -67,8 +60,7 @@ public class MacOsNativeUtils extends NativeUtils {
     private static final String PLUTILS_CONVERT = "-convert";
     private static final String PLUTILS_CONVERT_XML = "xml1";
     private static final String PLUTILS_CONVERT_BINARY = "binary1";
-    private static final String[] UPDATE_DOCK_COMMAND = new String [] {
-        "killall", "-HUP", "Dock"};
+    private static final String[] UPDATE_DOCK_COMMAND = new String[] {"killall", "-HUP", "Dock"};
     
     public File getShortcutLocation(Shortcut shortcut, ShortcutLocationType locationType) {
         String fileName = shortcut.getFileName();
@@ -82,9 +74,9 @@ public class MacOsNativeUtils extends NativeUtils {
         
         switch (locationType) {
             case CURRENT_USER_DESKTOP:
-                return new File(getUserHomeDirectory(), "Desktop/" + fileName);
+                return new File(SystemUtils.getUserHomeDirectory(), "Desktop/" + fileName);
             case ALL_USERS_DESKTOP:
-                return new File(getUserHomeDirectory(), "Desktop/" + fileName);
+                return new File(SystemUtils.getUserHomeDirectory(), "Desktop/" + fileName);
             case CURRENT_USER_START_MENU:
                 return getDockPropertiesFile();
             case ALL_USERS_START_MENU:
@@ -93,53 +85,60 @@ public class MacOsNativeUtils extends NativeUtils {
         return null;
     }
     
-    public File createShortcut(Shortcut shortcut, ShortcutLocationType locationType) throws IOException {
+    public File createShortcut(Shortcut shortcut, ShortcutLocationType locationType) throws NativeException {
         final File shortcutFile = getShortcutLocation(shortcut, locationType);
         
-        if (locationType == ShortcutLocationType.CURRENT_USER_DESKTOP ||
-                locationType == ShortcutLocationType.ALL_USERS_DESKTOP ) {
-            // create a symlink on desktop
-            if(!shortcutFile.exists()) {
-                SystemUtils.getInstance().executeCommand(null,new String [] {
-                    "ln", "-s", shortcut.getExecutablePath(),  //NOI18N
-                    shortcutFile.getPath()});
-            }
-        } else {
-            //create link in the Dock
-            if(convertDockProperties(true)==0) {
-                if(modifyDockLink(shortcut,shortcutFile,true)) {
-                    LogManager.log(ErrorLevel.DEBUG,
-                            "    Updating Dock");
-                    convertDockProperties(false);
-                    SystemUtils.getInstance().executeCommand(null,UPDATE_DOCK_COMMAND);
+        try {
+            if (locationType == ShortcutLocationType.CURRENT_USER_DESKTOP ||
+                    locationType == ShortcutLocationType.ALL_USERS_DESKTOP ) {
+                // create a symlink on desktop
+                if(!shortcutFile.exists()) {
+                    SystemUtils.executeCommand(null,new String[] {
+                        "ln", "-s", shortcut.getExecutablePath(),  //NOI18N
+                                shortcutFile.getPath()});
                 }
-            }
-        }
-        return shortcutFile;
-    }
-    
-    public void removeShortcut(Shortcut shortcut, ShortcutLocationType locationType, boolean deleteEmptyParents) throws IOException {
-        final File shortcutFile = getShortcutLocation(shortcut, locationType);
-        
-        if (locationType == ShortcutLocationType.CURRENT_USER_DESKTOP ||
-                locationType == ShortcutLocationType.ALL_USERS_DESKTOP ) {
-            // create a symlink on desktop
-            if(shortcutFile.exists()) {
-                FileUtils.deleteFile(shortcutFile,false);
-            }
-        } else {
-            //create link in the Dock
-            if(convertDockProperties(true)==0) {
-                if(modifyDockLink(shortcut,shortcutFile,false)) {
-                    LogManager.log(ErrorLevel.DEBUG,
-                            "    Updating Dock");
-                    if(convertDockProperties(false)==0) {
-                        SystemUtils.getInstance().executeCommand(null,UPDATE_DOCK_COMMAND);
+            } else {
+                //create link in the Dock
+                if(convertDockProperties(true)==0) {
+                    if(modifyDockLink(shortcut,shortcutFile,true)) {
+                        LogManager.log(ErrorLevel.DEBUG,
+                                "    Updating Dock");
+                        convertDockProperties(false);
+                        SystemUtils.executeCommand(null,UPDATE_DOCK_COMMAND);
                     }
                 }
             }
+            return shortcutFile;
+        } catch (IOException e) {
+            throw new NativeException("Cannot create shortcut", e);
         }
-        return;
+    }
+    
+    public void removeShortcut(Shortcut shortcut, ShortcutLocationType locationType, boolean cleanupParents) throws NativeException {
+        final File shortcutFile = getShortcutLocation(shortcut, locationType);
+        
+        try {
+            if (locationType == ShortcutLocationType.CURRENT_USER_DESKTOP ||
+                    locationType == ShortcutLocationType.ALL_USERS_DESKTOP ) {
+                // create a symlink on desktop
+                if(shortcutFile.exists()) {
+                    FileUtils.deleteFile(shortcutFile,false);
+                }
+            } else {
+                //create link in the Dock
+                if(convertDockProperties(true)==0) {
+                    if(modifyDockLink(shortcut,shortcutFile,false)) {
+                        LogManager.log(ErrorLevel.DEBUG,
+                                "    Updating Dock");
+                        if(convertDockProperties(false)==0) {
+                            SystemUtils.executeCommand(null,UPDATE_DOCK_COMMAND);
+                        }
+                    }
+                }
+            }
+        } catch (IOException e) {
+            throw new NativeException("Cannot remove shortcut", e);
+        }
     }
     
     private boolean modifyDockLink(Shortcut shortcut,File dockFile,boolean adding) {
@@ -310,7 +309,7 @@ public class MacOsNativeUtils extends NativeUtils {
     }
     
     private File getDockPropertiesFile() {
-        return new File(getUserHomeDirectory(),
+        return new File(SystemUtils.getUserHomeDirectory(),
                 "Library/Preferences/" + DOCK_PROPERIES);//NOI18N
     }
     
@@ -322,10 +321,10 @@ public class MacOsNativeUtils extends NativeUtils {
                 if((!decode && (isTiger() || isLeopard())) || decode) {
                     // decode for all except Cheetah and Puma
                     // code only for Tiger and Leopars
-                    ExecutionResults result = SystemUtils.getInstance().executeCommand(null,
-                            new String [] { PLUTILS,PLUTILS_CONVERT,(decode)? PLUTILS_CONVERT_XML :
+                    ExecutionResults result = SystemUtils.executeCommand(null,
+                            new String[] { PLUTILS,PLUTILS_CONVERT,(decode)? PLUTILS_CONVERT_XML :
                                 PLUTILS_CONVERT_BINARY,dockFile.getPath()});
-                    returnResult = result.getErrorCode();
+                                returnResult = result.getErrorCode();
                 }
             }
         } catch (IOException ex) {

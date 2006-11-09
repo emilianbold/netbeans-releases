@@ -62,7 +62,7 @@ public class DownloadConfigurationLogicAction extends CompositeProgressAction {
                 
                 // sleep a little so that the user can perceive that something
                 // is happening
-                SystemUtils.getInstance().sleep(200);
+                SystemUtils.sleep(200);
             }  catch (DownloadException e) {
                 // wrap the download exception with a more user-friendly one
                 InstallationException error = new InstallationException("Failed to download installation logic for " + component.getDisplayName(), e);

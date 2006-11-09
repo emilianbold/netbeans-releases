@@ -61,7 +61,7 @@ public class InstallAction extends CompositeProgressAction {
                 
                 // sleep a little so that the user can perceive that something
                 // is happening
-                SystemUtils.getInstance().sleep(200);
+                SystemUtils.sleep(200);
             }  catch (InstallationException e) {
                 // adjust the component's status and save this error - it will
                 // be reused later at the PostInstallSummary

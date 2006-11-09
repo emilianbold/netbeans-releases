@@ -78,7 +78,7 @@ public class LogManager {
             
             try {
                 for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-                    String string = "[" + DateUtils.getFormattedTimestamp() + "]: " + StringUtils.pad(INDENT, indent) + line + SystemUtils.getInstance().getLineSeparator();
+                    String string = "[" + DateUtils.getFormattedTimestamp() + "]: " + StringUtils.pad(INDENT, indent) + line + SystemUtils.getLineSeparator();
                     
                     if (loggingAvailable) {
                         logWriter.write(string);

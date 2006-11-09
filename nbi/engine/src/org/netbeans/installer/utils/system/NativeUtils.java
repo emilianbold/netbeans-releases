@@ -28,10 +28,11 @@ import org.netbeans.installer.product.ProductComponent;
 import org.netbeans.installer.utils.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.FileUtils;
-import org.netbeans.installer.utils.SystemUtils.EnvironmentVariableScope;
+import org.netbeans.installer.utils.SystemUtils.EnvironmentScope;
 import org.netbeans.installer.utils.SystemUtils.Platform;
 import org.netbeans.installer.utils.SystemUtils.Shortcut;
 import org.netbeans.installer.utils.SystemUtils.ShortcutLocationType;
+import org.netbeans.installer.utils.exceptions.NativeException;
 
 /**
  *
@@ -63,33 +64,33 @@ public abstract class NativeUtils {
     
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
-    public abstract boolean isCurrentUserAdmin();
-
-    public abstract File getDefaultApplicationsLocation();
+    public abstract boolean isCurrentUserAdmin() throws NativeException;
     
-    public abstract long getFreeSpace(File file);
+    public abstract File getDefaultApplicationsLocation() throws NativeException;
+    
+    public abstract long getFreeSpace(File file) throws NativeException;
     
     public abstract boolean isPathValid(String path);
     
-    public abstract File getShortcutLocation(Shortcut shortcut, ShortcutLocationType locationType);
+    public abstract File getShortcutLocation(Shortcut shortcut, ShortcutLocationType locationType) throws NativeException;
     
-    public abstract File createShortcut(Shortcut shortcut, ShortcutLocationType locationType) throws IOException;
+    public abstract File createShortcut(Shortcut shortcut, ShortcutLocationType locationType) throws NativeException;
     
-    public abstract void removeShortcut(Shortcut shortcut, ShortcutLocationType locationType, boolean deleteEmptyParents) throws IOException;
+    public abstract void removeShortcut(Shortcut shortcut, ShortcutLocationType locationType, boolean deleteEmptyParents) throws NativeException;
     
-    public abstract void addComponentToSystemInstallManager(ProductComponent comp);
+    public abstract void addComponentToSystemInstallManager(ProductComponent comp) throws NativeException;
     
-    public abstract void removeComponentFromSystemInstallManager(ProductComponent comp);
+    public abstract void removeComponentFromSystemInstallManager(ProductComponent comp) throws NativeException;
     
-    public abstract String getEnvironmentVariable(String name, EnvironmentVariableScope scope, boolean expand);
+    public abstract String getEnvironmentVariable(String name, EnvironmentScope scope, boolean expand) throws NativeException;
     
-    public abstract void setEnvironmentVariable(String name, String value, EnvironmentVariableScope scope, boolean expand);
-
+    public abstract void setEnvironmentVariable(String name, String value, EnvironmentScope scope, boolean expand) throws NativeException;
+    
     public abstract List<File> findIrrelevantFiles(File parent) throws IOException;
     
     public abstract List<File> findExecutableFiles(File parent) throws IOException;
     
-    public abstract void correctFilesPermissions(File parent);
+    public abstract void correctFilesPermissions(File parent) throws IOException;
     
     // protected ////////////////////////////////////////////////////////////////////
     protected NativeUtils() {
@@ -108,6 +109,7 @@ public abstract class NativeUtils {
                 FileUtils.writeFile(file, input);
                 
                 System.load(file.getAbsolutePath());
+                scheduleCleanup(file.getAbsolutePath());
             } catch (IOException e) {
                 ErrorManager.notify(ErrorLevel.CRITICAL, "Cannot load native library from path: " + libraryPath, e);
             } catch (UnsatisfiedLinkError e) {

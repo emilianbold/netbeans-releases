@@ -26,17 +26,18 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.installer.product.ProductComponent;
 import org.netbeans.installer.utils.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.SystemUtils;
-import org.netbeans.installer.utils.SystemUtils.EnvironmentVariableScope;
+import org.netbeans.installer.utils.SystemUtils.EnvironmentScope;
 import org.netbeans.installer.utils.SystemUtils.ExecutionResults;
 import org.netbeans.installer.utils.SystemUtils.Platform;
 import org.netbeans.installer.utils.SystemUtils.Shortcut;
 import org.netbeans.installer.utils.SystemUtils.ShortcutLocationType;
-import org.netbeans.installer.utils.exceptions.UnsupportedActionException;
+import org.netbeans.installer.utils.exceptions.NativeException;
 import org.netbeans.installer.utils.system.unix.shell.BourneShell;
 import org.netbeans.installer.utils.system.unix.shell.CShell;
 import org.netbeans.installer.utils.system.unix.shell.KornShell;
@@ -54,34 +55,31 @@ public class UnixNativeUtils extends NativeUtils {
     public static final String LIBRARY_PATH_SOLARIX_X86 = "native/solaris-x86.so";
     public static final String LIBRARY_PATH_MACOSX = "native/libmacosx.dylib";
     
-    public UnixNativeUtils() {
-    }
+    private boolean isUserAdminSet;
+    private boolean isUserAdmin;
     
-    protected String getNativeLibraryPath() {
+    UnixNativeUtils() {
         switch (Platform.getCurrentPlatform()) {
             case LINUX:
-                return LIBRARY_PATH_LINUX;
+                loadNativeLibrary(LIBRARY_PATH_LINUX);
+                break;
             case SOLARIS_SPARC:
-                return LIBRARY_PATH_SOLARIS_SPARC;
+                loadNativeLibrary(LIBRARY_PATH_SOLARIS_SPARC);
+                break;
             case SOLARIS_X86:
-                return LIBRARY_PATH_SOLARIX_X86;
+                loadNativeLibrary(LIBRARY_PATH_SOLARIX_X86);
+                break;
             case MACOS_X_PPC:
             case MACOS_X_X86:
-                return LIBRARY_PATH_MACOSX;
+                loadNativeLibrary(LIBRARY_PATH_MACOSX);
+                break;
             default:
-                ErrorManager.notify(ErrorLevel.CRITICAL,
-                        "Cannot load native library for UnixSystemUtils - unknown platform");
-                return null;
+                ErrorManager.notify(ErrorLevel.CRITICAL, "Unknown platform");
         }
     }
     
-    protected void scheduleCleanupNativeLibrary() {
-        if(nativeLibraryPath!=null) {
-            File file = new File(nativeLibraryPath);
-            if(file.exists()) {
-                file.deleteOnExit();
-            }
-        }
+    protected void scheduleCleanup(String libraryPath) {
+        new File(libraryPath).deleteOnExit();
     }
     
     public long getFreeSpace(File file) {
@@ -95,8 +93,8 @@ public class UnixNativeUtils extends NativeUtils {
         }
         boolean result = false;
         try {
-            ExecutionResults resRealID = executeCommand("id","-ru");
-            ExecutionResults resEffID = executeCommand("id","-u");
+            ExecutionResults resRealID = SystemUtils.executeCommand("id", "-ru");
+            ExecutionResults resEffID = SystemUtils.executeCommand("id", "-u");
             String realID = resRealID.getStdOut();
             String effID = resRealID.getStdOut();
             if(realID!=null && effID!=null) {
@@ -115,78 +113,82 @@ public class UnixNativeUtils extends NativeUtils {
     
     public void updateApplicationsMenu() {
         try {
-            SystemUtils.getInstance().executeCommand(null,new String [] {
-                "pkill", "-u", getUserName(), "panel"});
+            SystemUtils.executeCommand(null,new String [] {
+                "pkill", "-u", SystemUtils.getUserName(), "panel"});
         } catch (IOException ex) {
             LogManager.log(ErrorLevel.WARNING,ex);
         }
     }
     
-    public File getShortcutLocation(Shortcut shortcut, ShortcutLocationType locationType) {
-        try {
-            final String XDG_DATA_HOME = getEnvironmentVariable("XDG_DATA_HOME");
-            final String XDG_DATA_DIRS = getEnvironmentVariable("XDG_DATA_DIRS");
-            
-            File currentUserLocation;
-            if (XDG_DATA_HOME == null) {
-                currentUserLocation = new File(getUserHomeDirectory(), ".local/share");
-            } else {
-                currentUserLocation = new File(XDG_DATA_HOME);
-            }
-            
-            File allUsersLocation;
-            if (XDG_DATA_DIRS == null) {
-                allUsersLocation = new File("/usr/share");
-            } else {
-                allUsersLocation = new File(XDG_DATA_DIRS.split(getPathSeparator())[0]);
-            }
-            
-            String fileName = shortcut.getFileName();
-            if (fileName == null) {
-                fileName = shortcut.getExecutable().getName() + ".desktop";
-            }
-            
-            switch (locationType) {
-                case CURRENT_USER_DESKTOP:
-                    return new File(getUserHomeDirectory(), "Desktop/" + fileName);
-                case ALL_USERS_DESKTOP:
-                    return new File(getUserHomeDirectory(), "Desktop/" + fileName);
-                case CURRENT_USER_START_MENU:
-                    return new File(currentUserLocation, "applications/" + fileName);
-                case ALL_USERS_START_MENU:
-                    return new File(allUsersLocation, "applications/" + fileName);
-            }
-        } catch (IOException e) {
-            ErrorManager.notify(ErrorLevel.ERROR, "Could not obtain the value of an environment variable", e);
-        } catch (UnsupportedActionException e) {
-            ErrorManager.notify(ErrorLevel.ERROR, "Could not obtain the value of an environment variable", e);
+    public File getShortcutLocation(Shortcut shortcut, ShortcutLocationType locationType) throws NativeException {
+        final String XDG_DATA_HOME = SystemUtils.getEnvironmentVariable("XDG_DATA_HOME");
+        final String XDG_DATA_DIRS = SystemUtils.getEnvironmentVariable("XDG_DATA_DIRS");
+        
+        File currentUserLocation;
+        if (XDG_DATA_HOME == null) {
+            currentUserLocation = new File(SystemUtils.getUserHomeDirectory(), ".local/share");
+        } else {
+            currentUserLocation = new File(XDG_DATA_HOME);
         }
         
-        return null;
+        File allUsersLocation;
+        if (XDG_DATA_DIRS == null) {
+            allUsersLocation = new File("/usr/share");
+        } else {
+            allUsersLocation = new File(XDG_DATA_DIRS.split(SystemUtils.getPathSeparator())[0]);
+        }
+        
+        String fileName = shortcut.getFileName();
+        if (fileName == null) {
+            fileName = shortcut.getExecutable().getName() + ".desktop";
+        }
+        
+        switch (locationType) {
+            case CURRENT_USER_DESKTOP:
+                return new File(SystemUtils.getUserHomeDirectory(), "Desktop/" + fileName);
+            case ALL_USERS_DESKTOP:
+                return new File(SystemUtils.getUserHomeDirectory(), "Desktop/" + fileName);
+            case CURRENT_USER_START_MENU:
+                return new File(currentUserLocation, "applications/" + fileName);
+            case ALL_USERS_START_MENU:
+                return new File(allUsersLocation, "applications/" + fileName);
+            default:
+                return null;
+        }
     }
     
-    public File createShortcut(Shortcut shortcut, ShortcutLocationType locationType) throws IOException {
+    public File createShortcut(Shortcut shortcut, ShortcutLocationType locationType) throws NativeException {
         final File shortcutFile = getShortcutLocation(shortcut, locationType);
         final StringBuilder contents = new StringBuilder();
         
-        contents.append("[Desktop Entry]").append(getLineSeparator());
-        contents.append("Encoding=UTF-8").append(getLineSeparator());
+        contents.append("[Desktop Entry]").append(SystemUtils.getLineSeparator());
+        contents.append("Encoding=UTF-8").append(SystemUtils.getLineSeparator());
         
-        contents.append("Name=" + shortcut.getName()).append(getLineSeparator());
-        contents.append("Exec=" + shortcut.getExecutable()).append(getLineSeparator());
+        contents.append("Name=" + shortcut.getName()).append(SystemUtils.getLineSeparator());
+        contents.append("Exec=" + shortcut.getExecutable()).append(SystemUtils.getLineSeparator());
         
-        FileUtils.writeFile(shortcutFile, contents);
+        try {
+            FileUtils.writeFile(shortcutFile, contents);
+        } catch (IOException e) {
+            throw new NativeException("Cannot create shortcut", e);
+        }
         
         return shortcutFile;
     }
     
-    public void removeShortcut(Shortcut shortcut, ShortcutLocationType locationType, boolean deleteEmptyParents) throws IOException {
-        File shortcutFile = getShortcutLocation(shortcut, locationType);
-        FileUtils.deleteFile(shortcutFile);
-        if(deleteEmptyParents &&
-                (locationType == ShortcutLocationType.ALL_USERS_START_MENU ||
-                locationType == ShortcutLocationType.CURRENT_USER_START_MENU)) {
-            FileUtils.deleteEmptyParents(shortcutFile);
+    public void removeShortcut(Shortcut shortcut, ShortcutLocationType locationType, boolean cleanupParents) throws NativeException {
+        try {
+            File shortcutFile = getShortcutLocation(shortcut, locationType);
+            
+            FileUtils.deleteFile(shortcutFile);
+            
+            if(cleanupParents &&
+                    (locationType == ShortcutLocationType.ALL_USERS_START_MENU ||
+                    locationType == ShortcutLocationType.CURRENT_USER_START_MENU)) {
+                FileUtils.deleteEmptyParents(shortcutFile);
+            }
+        } catch (IOException e) {
+            throw new NativeException("Cannot remove shortcut", e);
         }
     }
     
@@ -230,7 +232,7 @@ public class UnixNativeUtils extends NativeUtils {
         return files;
     }
     
-    public List<File> findNonUnixFiles(File parent) throws IOException {
+    public List<File> findIrrelevantFiles(File parent) throws IOException {
         List<File> files = new ArrayList<File>();
         
         if (!parent.exists()) {
@@ -239,7 +241,7 @@ public class UnixNativeUtils extends NativeUtils {
         
         for(File child : parent.listFiles()) {
             if (child.isDirectory()) {
-                files.addAll(findNonUnixFiles(child));
+                files.addAll(findIrrelevantFiles(child));
             } else {
                 // name based analysis
                 String name = child.getName();
@@ -300,42 +302,36 @@ public class UnixNativeUtils extends NativeUtils {
             File   directory = file.getParentFile();
             String name      = file.getName();
             
-            SystemUtils.getInstance().executeCommand(directory,
-                    "chmod",
-                    mode,
-                    name);
+            SystemUtils.executeCommand(directory, "chmod", mode, name);
         }
     }
     
     public void removeIrrelevantFiles(File parent) throws IOException {
-        FileUtils.deleteFiles(findNonUnixFiles(parent));
+        FileUtils.deleteFiles(findIrrelevantFiles(parent));
     }
     
     public void correctFilesPermissions(File parent) throws IOException {
         chmod(findExecutableFiles(parent), "ugo+x");
     }
     
-    // native //////////////////////////////////////////////////////////////////
+    // native declarations //////////////////////////////////////////////////////////
     private native long getFreeSpace0(String s);
     
-    public String getEnvironmentVariable(String name, EnvironmentVariableScope scope, boolean flag) throws IOException, UnsupportedActionException {
-        if(EnvironmentVariableScope.PROCESS == scope) {
-            return super.getEnvironmentVariable(name,scope,flag);
-        } else {
-            return System.getenv(name);
-        }
+    // other ... //////////////////////////
+    
+    public String getEnvironmentVariable(String name, EnvironmentScope scope, boolean flag) {
+        return System.getenv(name);
     }
     
-    public boolean setEnvironmentVariable(String name, String value, EnvironmentVariableScope scope, boolean flag) throws IOException, UnsupportedActionException {
-        if(EnvironmentVariableScope.PROCESS == scope) {
-            return super.setEnvironmentVariable(name,value,scope,flag);
+    public void setEnvironmentVariable(String name, String value, EnvironmentScope scope, boolean flag) throws NativeException {
+        if(EnvironmentScope.PROCESS == scope) {
+            SystemUtils.getEnvironment().put(name, value);
         } else {
-            boolean  result = getCurrentShell().setVar(name,value,scope);
-            LogManager.log(ErrorLevel.DEBUG,
-                    "... the setting of environment variable " +
-                    (result ? "was successfull" : "failed"));
-            return result;
-            
+            try {
+                getCurrentShell().setVar(name, value, scope);
+            } catch (IOException e) {
+                throw new NativeException("Cannot set the environment variable value", e);
+            }
         }
     }
     
@@ -345,9 +341,9 @@ public class UnixNativeUtils extends NativeUtils {
         LogManager.indent();
         Shell [] avaliableShells =  {
             new BourneShell(),
-            new CShell() ,
-            new TCShell(),
-            new KornShell()
+                    new CShell() ,
+                    new TCShell(),
+                    new KornShell()
         };
         String shell = System.getenv("SHELL");
         Shell result = null;
@@ -383,5 +379,19 @@ public class UnixNativeUtils extends NativeUtils {
         LogManager.log(ErrorLevel.DEBUG,
                 "... finished detecting shell");
         return result;
+    }
+    
+    public File getDefaultApplicationsLocation() {
+        return SystemUtils.getUserHomeDirectory();
+    }
+    
+    public boolean isPathValid(String path) {
+        return true;
+    }
+    
+    public void addComponentToSystemInstallManager(ProductComponent comp) {
+    }
+    
+    public void removeComponentFromSystemInstallManager(ProductComponent comp) {
     }
 }

@@ -206,11 +206,11 @@ public abstract class WizardPanel extends JPanel implements WizardComponent {
     
     // helper methods for SystemUtils and ResourceUtils /////////////////////////////
     protected final String parseString(final String string) {
-        return systemUtils.parseString(string, getCorrectClassLoader());
+        return SystemUtils.parseString(string, getCorrectClassLoader());
     }
     
     protected final File parsePath(final String path) {
-        return systemUtils.parsePath(path, getCorrectClassLoader());
+        return SystemUtils.parsePath(path, getCorrectClassLoader());
     }
     
     protected final String getString(final String baseName, final String key) {
@@ -233,7 +233,4 @@ public abstract class WizardPanel extends JPanel implements WizardComponent {
             return getClass().getClassLoader();
         }
     }
-    
-    // protected area ///////////////////////////////////////////////////////////////
-    protected static final SystemUtils   systemUtils   = SystemUtils.getInstance();
 }
