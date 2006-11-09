@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.logging.Logger;
 import javax.swing.KeyStroke;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -41,6 +42,8 @@ import org.openide.util.Utilities;
  * @author Jan Jancura
  */
 public class Utils {
+    
+    private static final Logger LOG = Logger.getLogger(Utils.class.getName());
     
     static String keyStrokesToString (Collection<KeyStroke> keys) {
         StringBuffer sb = new StringBuffer ();
@@ -68,8 +71,7 @@ public class Utils {
             KeyStroke keyStroke = Utilities.stringToKey (ks);
             //S ystem.out.println("1 " + ks + ">" + keyStroke);
             if (keyStroke == null) {
-                if (System.getProperty ("org.netbeans.optionsDialog") != null)
-                    System.out.println("no key stroke for:" + key);
+                LOG.fine("no key stroke for:" + key);
                 continue;
             }
 //            if (key == null)
