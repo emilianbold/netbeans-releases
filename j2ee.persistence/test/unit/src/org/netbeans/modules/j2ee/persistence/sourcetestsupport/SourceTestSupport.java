@@ -19,27 +19,18 @@
 package org.netbeans.modules.j2ee.persistence.sourcetestsupport;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintStream;
-import java.util.Enumeration;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.java.JavaDataLoader;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.Repository;
-import org.openide.filesystems.XMLFileSystem;
-import org.openide.loaders.DataLoader;
-import org.openide.loaders.DataLoaderPool;
-import org.openide.util.Enumerations;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
-import org.xml.sax.SAXException;
 
 /**
  *
@@ -54,9 +45,33 @@ public abstract class SourceTestSupport extends NbTestCase {
     protected void setUp() throws Exception {
         MockServices.setServices(FakeJavaDataLoaderPool.class, RepositoryImpl.class);
         clearWorkDir();
+        initTemplates();
     }
     
-   // temporary methods for debugging
+    protected void tearDown() throws Exception{
+        super.tearDown();
+        getSystemFs().reset();
+    }
+    
+    private RepositoryImpl.MultiFileSystemImpl getSystemFs(){
+        return (RepositoryImpl.MultiFileSystemImpl)Repository.getDefault().getDefaultFileSystem();
+    }
+    
+    private void initTemplates() throws Exception{
+        RepositoryImpl.MultiFileSystemImpl systemFS = getSystemFs();
+        FileObject interfaceTemplate = systemFS.getRoot().getFileObject("Templates/Classes/Interface.java");
+        copyStringToFileObject(interfaceTemplate,
+                "package Templates.Classes;" +
+                "public interface Interface {\n" +
+                "}");
+        FileObject classTemplate = systemFS.getRoot().getFileObject("Templates/Classes/Class.java");
+        copyStringToFileObject(classTemplate,
+                "package Templates.Classes;" +
+                "public class Class {\n" +
+                "}");
+    }
+    
+    // temporary methods for debugging
     
     protected void print(FileObject fo) throws IOException {
         print(FileUtil.toFile(fo));
@@ -70,6 +85,17 @@ public abstract class SourceTestSupport extends NbTestCase {
             out.println(str);
         }
         in.close();
+    }
+    
+    protected FileObject copyStringToFileObject(FileObject fo, String content) throws Exception {
+        OutputStream os = fo.getOutputStream();
+        try {
+            InputStream is = new ByteArrayInputStream(content.getBytes("UTF-8"));
+            FileUtil.copy(is, os);
+            return fo;
+        } finally {
+            os.close();
+        }
     }
     
 }

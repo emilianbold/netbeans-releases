@@ -25,6 +25,7 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import java.io.File;
 import java.io.IOException;
+import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
@@ -34,13 +35,15 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.jackpot.test.TestUtilities;
+import org.netbeans.modules.j2ee.persistence.sourcetestsupport.RepositoryImpl;
 import org.netbeans.modules.j2ee.persistence.sourcetestsupport.SourceTestSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
 
 /**
  * Tests for <code>EjbFacadeWizardIterator</code>.
- * 
+ *
  * @author Erno Mononen
  */
 public class EjbFacadeWizardIteratorTest extends SourceTestSupport {
@@ -48,6 +51,12 @@ public class EjbFacadeWizardIteratorTest extends SourceTestSupport {
     public EjbFacadeWizardIteratorTest(String testName) {
         super(testName);
     }
+    
+    
+    public void setUp() throws Exception{
+        super.setUp();
+    }
+    
     
     
     public void testInstantiate() throws Exception {
@@ -60,26 +69,12 @@ public class EjbFacadeWizardIteratorTest extends SourceTestSupport {
         final String annotationType = "javax.ejb.Remote";
         EjbFacadeWizardIterator wizardIterator = new EjbFacadeWizardIterator();
         
+        String golden =
+                "@" + annotationType + "\n" +
+                "public interface " + name + " {\n" +
+                "}\n";
         FileObject result = wizardIterator.createInterface(name, annotationType, FileUtil.toFileObject(getWorkDir()));
-        print(result);
-        
-        JavaSource javaSource = JavaSource.forFileObject(result);
-        javaSource.runUserActionTask(new CancellableTask<CompilationController>() {
-            public void cancel() {
-            }
-            public void run(CompilationController parameter) throws Exception {
-                parameter.toPhase(Phase.RESOLVED);
-                for (Tree tree : parameter.getCompilationUnit().getTypeDecls()){
-                    ClassTree iface = (ClassTree) tree;
-                    assertTrue(iface.getSimpleName().contentEquals(name));
-                    TreePath path = parameter.getTrees().getPath(parameter.getCompilationUnit(), iface);
-                    for (AnnotationMirror mirror : parameter.getElements().getAllAnnotationMirrors(parameter.getTrees().getElement(path))){
-                        assertTrue(((TypeElement)mirror.getAnnotationType().asElement()).getQualifiedName().contentEquals(annotationType));
-                    }
-                }
-                
-            }
-        }, true);
+        assertEquals(golden, TestUtilities.copyFileToString(FileUtil.toFile(result)));
     }
     
     public void testAddMethodToInterface() throws Exception {
@@ -111,6 +106,7 @@ public class EjbFacadeWizardIteratorTest extends SourceTestSupport {
         
         EjbFacadeWizardIterator wizardIterator = new EjbFacadeWizardIterator();
         String result = wizardIterator.getUniqueClassName("Test", FileUtil.toFileObject(getWorkDir()));
+        System.out.println("Result: " + result);
         assertEquals("Test2", result);
         
         File testFile2 = new File(getWorkDir(), "Test2.java");
@@ -118,6 +114,29 @@ public class EjbFacadeWizardIteratorTest extends SourceTestSupport {
         assertEquals("Test3", result);
     }
     
-    
+    public void testGenerate() throws Exception {
+        File testFile = new File(getWorkDir(), "Test.java");
+        String originalContent =
+                "package org.netbeans.test;\n\n" +
+                "import java.util.*;\n\n" +
+                "@javax.persistence.Entity\n" +
+                "public class Test {\n" +
+                "}";
+        
+        TestUtilities.copyStringToFile(testFile, originalContent);
+        EjbFacadeWizardIterator wizardIterator = new EjbFacadeWizardIterator();
+        Set<FileObject> result =
+                wizardIterator.generate(FileUtil.toFileObject(testFile), FileUtil.toFileObject(getWorkDir()), "Test", "org.netbeans.test", true, true);
+        
+        
+        assertEquals(3, result.size());
+        
+        for (FileObject each : result){
+            assertFile(FileUtil.toFile(each), getGoldenFile(each.getNameExt()));
+        }
+        
+        fail("Test is not complete");
+        
+    }
     
 }

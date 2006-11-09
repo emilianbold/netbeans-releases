@@ -29,7 +29,7 @@ import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.common.AbstractTask;
+import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
@@ -88,6 +88,7 @@ public class EntityManagerGenerator {
      * @return the modified file object of the target java class.
      */
     public FileObject generate(final GenerationOptions options) throws IOException{
+        
         AbstractTask task = new AbstractTask<WorkingCopy>() {
             
             public void run(WorkingCopy workingCopy) throws Exception {
@@ -110,13 +111,11 @@ public class EntityManagerGenerator {
                         }
                     }
                 }
-                
             }
         };
         targetSource.runModificationTask(task).commit();
         
         return targetFo;
-        
     }
     
     
@@ -125,16 +124,19 @@ public class EntityManagerGenerator {
         
         // try to get J2eeModule
         Project project = FileOwnerQuery.getOwner(targetFo);
-        J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+        J2eeModuleProvider j2eeModuleProvider = null;
+        if (project != null){
+            j2eeModuleProvider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+        }
         if (j2eeModuleProvider != null) {
             j2eeModule = j2eeModuleProvider.getJ2eeModule();
         }
         
-        PersistenceUnit pu = getPersistenceUnit();
         if (j2eeModule == null) {
             // Application-managed persistence context in J2SE project (Resource-transaction)
             return new ApplicationManagedResourceTransactionInJ2SE(workingCopy, make, clazz, options);
         } else {
+            PersistenceUnit pu = getPersistenceUnit();
             // it is Web or EJB, let's get all needed information
             String jtaDataSource = pu.getJtaDataSource();
             String nonJtaDataSource = pu.getNonJtaDataSource();

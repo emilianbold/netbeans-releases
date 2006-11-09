@@ -45,7 +45,7 @@ import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.common.AbstractTask;
+import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.common.source.GenerationUtils;
 import org.netbeans.modules.j2ee.persistence.action.EntityManagerGenerator;
 import org.netbeans.modules.j2ee.persistence.action.GenerationOptions;
@@ -76,15 +76,12 @@ public final class EjbFacadeWizardIterator implements WizardDescriptor.Instantia
         return panels;
     }
     
-    String getUniqueClassName(String candidateName, FileObject targetFolder){
-        return candidateName; // TODO
-    }
     
     public Set instantiate() throws IOException {
         List<Entity> entities = (List<Entity>) wizard.getProperty(WizardProperties.ENTITY_CLASS);
         Project project = Templates.getProject(wizard);
         final FileObject targetFolder = Templates.getTargetFolder(wizard);
-        Set createdFiles = new HashSet();
+        final Set createdFiles = new HashSet();
         final EjbFacadeWizardPanel2 panel = (EjbFacadeWizardPanel2) panels[1];
         String pkg = panel.getPackage();
         
@@ -103,104 +100,123 @@ public final class EjbFacadeWizardIterator implements WizardDescriptor.Instantia
             //            classBean = classBean.substring(classBean.lastIndexOf(".") + 1);
             
             final FileObject sourceFile = GenerationUtils.createClass(targetFolder, classBean, null);// name must be made unique
-            
-            JavaSource source = JavaSource.forFileObject(sourceFile);
-            source.runModificationTask(new AbstractTask<WorkingCopy>() {
-                public void run(WorkingCopy workingCopy) throws Exception {
-                    CompilationUnitTree cut = workingCopy.getCompilationUnit();
-                    TreeMaker make = workingCopy.getTreeMaker();
-                    
-                    for (Tree typeDeclaration : cut.getTypeDecls()){
-                        if (Tree.Kind.CLASS == typeDeclaration.getKind()){
-                            ClassTree clazz = (ClassTree) typeDeclaration;
-                            AnnotationTree annotations = make.Annotation(make.Identifier("javax.ejb.Stateless"), Collections.<ExpressionTree>emptyList());
-                            ModifiersTree modifiers = make.Modifiers(clazz.getModifiers(), Collections.<AnnotationTree>singletonList(annotations));
-                            ClassTree modifiedClass =
-                                    make.Class(modifiers, clazz.getSimpleName(), clazz.getTypeParameters(), clazz.getExtendsClause(), (List<ExpressionTree>)clazz.getImplementsClause(), Collections.<Tree>emptyList());
-                            workingCopy.rewrite(clazz, modifiedClass);
-                            
-                            boolean hasLocal = panel.isLocal();
-                            boolean hasRemote = panel.isRemote();
-                            
-                            FileObject local = null;
-                            FileObject remote = null;
-                            if (hasLocal){
-                                String classLocal = getUniqueClassName(facadeNameBase + "FacadeLocal", targetFolder);
-                                classLocal = classLocal.substring(classLocal.lastIndexOf(".") + 1);
-                                local = createInterface(classLocal, "javax.ejb.Local", targetFolder);
-                            }
-                            if (hasRemote){
-                                String classRemote = getUniqueClassName(facadeNameBase + "FacadeRemote", targetFolder);
-                                classRemote = classRemote.substring(classRemote.lastIndexOf(".") + 1);
-                                remote = createInterface(classRemote, "javax.ejb.Remote", targetFolder);
-                            }
-                            EntityManagerGenerator generator = new EntityManagerGenerator(sourceFile, "");
-                            
-                            GenerationOptions createOptions = new GenerationOptions();
-                            createOptions.setMethodName("create");
-                            createOptions.setOperation(GenerationOptions.Operation.PERSIST);
-                            createOptions.setReturnType("void");
-                            createOptions.setParameterName(variableName);
-                            createOptions.setParameterType(entityClass);
-                            createOptions.setInitialization(GenerationOptions.Initialization.INJECT);
-                            generator.generate(createOptions);
-                            addMethodToInterface("create", "void", variableName, entityClass, local);
-                            addMethodToInterface("create", "void", variableName, entityClass, remote);
-                            
-                            GenerationOptions editOptions = new GenerationOptions();
-                            editOptions.setMethodName("create");
-                            editOptions.setOperation(GenerationOptions.Operation.PERSIST);
-                            editOptions.setReturnType("void");
-                            editOptions.setParameterName(variableName);
-                            editOptions.setParameterType(entityClass);
-                            editOptions.setInitialization(GenerationOptions.Initialization.INJECT);
-                            generator.generate(editOptions);
-                            addMethodToInterface("edit", "void", variableName, entityClass, local);
-                            addMethodToInterface("edit", "void", variableName, entityClass, remote);
-                            
-                            GenerationOptions destroyOptions = new GenerationOptions();
-                            destroyOptions.setMethodName("create");
-                            destroyOptions.setOperation(GenerationOptions.Operation.REMOVE);
-                            destroyOptions.setReturnType("void");
-                            destroyOptions.setParameterName(variableName);
-                            destroyOptions.setParameterType(entityClass);
-                            destroyOptions.setInitialization(GenerationOptions.Initialization.INJECT);
-                            generator.generate(destroyOptions);
-                            addMethodToInterface("destroy", "void", variableName, entityClass, local);
-                            addMethodToInterface("destroy", "void", variableName, entityClass, remote);
-                            
-                            GenerationOptions findOptions = new GenerationOptions();
-                            findOptions.setMethodName("find");
-                            findOptions.setOperation(GenerationOptions.Operation.FIND);
-                            findOptions.setReturnType("void");
-                            findOptions.setParameterName(variableName);
-                            findOptions.setParameterType(entityClass);
-                            findOptions.setInitialization(GenerationOptions.Initialization.INJECT);
-                            generator.generate(findOptions);
-                            addMethodToInterface("find", "void", variableName, entityClass, local);
-                            addMethodToInterface("find", "void", variableName, entityClass, remote);
-                            
-                            GenerationOptions findAllOptions = new GenerationOptions();
-                            findAllOptions.setMethodName("findAll");
-                            findAllOptions.setOperation(GenerationOptions.Operation.FIND_ALL);
-                            findAllOptions.setReturnType("void");
-                            findAllOptions.setParameterName(variableName);
-                            findAllOptions.setParameterType(entityClass);
-                            findAllOptions.setInitialization(GenerationOptions.Initialization.INJECT);
-                            generator.generate(findAllOptions);
-                            addMethodToInterface("findAll", "void", variableName, entityClass, local);
-                            addMethodToInterface("findAll", "void", variableName, entityClass, remote);
-                            
-                        }
-                    }
-                }
-            });
-            
+            createdFiles.add(sourceFile);
+            createdFiles.addAll(generate(sourceFile, targetFolder, classBean, pkg, panel.isRemote(), panel.isLocal()));
             
         }
         return createdFiles;
     }
     
+    
+    Set<FileObject> generate(final FileObject sourcexFile, final FileObject targetFolder, final String classBean, String pkg, final boolean hasRemote, final boolean hasLocal) throws IOException{
+        
+        final Set<FileObject> createdFiles = new HashSet<FileObject>();
+        final String entityClass = classBean;
+        final String simpleClassName = Util.simpleClassName(entityClass);
+        final String variableName = simpleClassName.toLowerCase().charAt(0) + simpleClassName.substring(1);
+        final String facadeNameBase = pkg + "." + simpleClassName;
+        //            String classBean = JMIUtils.uniqueClassName(facadeNameBase + "Facade", targetFolder);
+        //        final String classBean = getUniqueClassName(facadeNameBase + "Facade", targetFolder);
+        
+        final FileObject facade = GenerationUtils.createClass(targetFolder, classBean + "Facade", null);
+        createdFiles.add(facade);
+        JavaSource source = JavaSource.forFileObject(facade);
+        source.runModificationTask(new AbstractTask<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws Exception {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                
+                for (Tree typeDeclaration : cut.getTypeDecls()){
+                    if (Tree.Kind.CLASS == typeDeclaration.getKind()){
+                        ClassTree clazz = (ClassTree) typeDeclaration;
+                        AnnotationTree annotations = make.Annotation(make.Identifier("javax.ejb.Stateless"), Collections.<ExpressionTree>emptyList());
+                        ModifiersTree modifiers = make.Modifiers(clazz.getModifiers(), Collections.<AnnotationTree>singletonList(annotations));
+                        ClassTree modifiedClass =
+                                make.Class(modifiers, clazz.getSimpleName(), clazz.getTypeParameters(), clazz.getExtendsClause(), (List<ExpressionTree>)clazz.getImplementsClause(), Collections.<Tree>emptyList());
+                        workingCopy.rewrite(clazz, modifiedClass);
+                        
+                        FileObject local = null;
+                        FileObject remote = null;
+                        if (hasLocal){
+                            String classLocal = getUniqueClassName(facadeNameBase + "FacadeLocal", targetFolder);
+                            classLocal = Util.simpleClassName(classLocal);
+                            local = createInterface(classLocal, "javax.ejb.Local", targetFolder);
+                            createdFiles.add(local);
+                        }
+                        if (hasRemote){
+                            String classRemote = getUniqueClassName(facadeNameBase + "FacadeRemote", targetFolder);
+                            classRemote = Util.simpleClassName(classRemote);
+                            remote = createInterface(classRemote, "javax.ejb.Remote", targetFolder);
+                            createdFiles.add(remote);
+                        }
+                        EntityManagerGenerator generator = new EntityManagerGenerator(facade, classBean);
+                        
+                        GenerationOptions createOptions = new GenerationOptions();
+                        createOptions.setMethodName("create");
+                        createOptions.setOperation(GenerationOptions.Operation.PERSIST);
+                        createOptions.setReturnType("void");
+                        createOptions.setParameterName(variableName);
+                        createOptions.setParameterType(entityClass);
+                        createOptions.setInitialization(GenerationOptions.Initialization.INJECT);
+                        generator.generate(createOptions);
+                        addMethodToInterface("create", "void", variableName, entityClass, local);
+                        addMethodToInterface("create", "void", variableName, entityClass, remote);
+                        
+                        GenerationOptions editOptions = new GenerationOptions();
+                        editOptions.setMethodName("edit");
+                        editOptions.setOperation(GenerationOptions.Operation.PERSIST);
+                        editOptions.setReturnType("void");
+                        editOptions.setParameterName(variableName);
+                        editOptions.setParameterType(entityClass);
+                        editOptions.setInitialization(GenerationOptions.Initialization.INJECT);
+                        generator.generate(editOptions);
+                        addMethodToInterface("edit", "void", variableName, entityClass, local);
+                        addMethodToInterface("edit", "void", variableName, entityClass, remote);
+                        
+                        GenerationOptions destroyOptions = new GenerationOptions();
+                        destroyOptions.setMethodName("create");
+                        destroyOptions.setOperation(GenerationOptions.Operation.REMOVE);
+                        destroyOptions.setReturnType("void");
+                        destroyOptions.setParameterName(variableName);
+                        destroyOptions.setParameterType(entityClass);
+                        destroyOptions.setInitialization(GenerationOptions.Initialization.INJECT);
+                        generator.generate(destroyOptions);
+                        addMethodToInterface("destroy", "void", variableName, entityClass, local);
+                        addMethodToInterface("destroy", "void", variableName, entityClass, remote);
+                        
+                        GenerationOptions findOptions = new GenerationOptions();
+                        findOptions.setMethodName("find");
+                        findOptions.setOperation(GenerationOptions.Operation.FIND);
+                        findOptions.setReturnType("void");
+                        findOptions.setParameterName(variableName);
+                        findOptions.setParameterType(entityClass);
+                        findOptions.setInitialization(GenerationOptions.Initialization.INJECT);
+                        generator.generate(findOptions);
+                        addMethodToInterface("find", "void", variableName, entityClass, local);
+                        addMethodToInterface("find", "void", variableName, entityClass, remote);
+                        
+                        GenerationOptions findAllOptions = new GenerationOptions();
+                        findAllOptions.setMethodName("findAll");
+                        findAllOptions.setOperation(GenerationOptions.Operation.FIND_ALL);
+                        findAllOptions.setReturnType("void");
+                        findAllOptions.setParameterName(variableName);
+                        findAllOptions.setParameterType(entityClass);
+                        findAllOptions.setInitialization(GenerationOptions.Initialization.INJECT);
+                        generator.generate(findAllOptions);
+                        addMethodToInterface("findAll", "void", variableName, entityClass, local);
+                        addMethodToInterface("findAll", "void", variableName, entityClass, remote);
+                        
+                    }
+                }
+            }
+        });
+        return createdFiles;
+    }
+    
+    String getUniqueClassName(String candidateName, FileObject targetFolder){
+        return candidateName; // TODO: RETOUCHE
+    }
     
     
     /**
@@ -236,8 +252,6 @@ public final class EjbFacadeWizardIterator implements WizardDescriptor.Instantia
         
     }
     
-    
-    
     void addMethodToInterface(final String name, final String returnType, final String parameterName,
             final String parameterType, final FileObject target) throws IOException {
         
@@ -262,7 +276,7 @@ public final class EjbFacadeWizardIterator implements WizardDescriptor.Instantia
                                 Collections.<TypeParameterTree>emptyList(),
                                 Collections.<VariableTree>singletonList(vt),
                                 Collections.<ExpressionTree>emptyList(),
-                                (BlockTree) null, 
+                                (BlockTree) null,
                                 null);
                         ClassTree modifiedClass = make.addClassMember(iface, method);
                         parameter.rewrite(iface, modifiedClass);
@@ -272,39 +286,7 @@ public final class EjbFacadeWizardIterator implements WizardDescriptor.Instantia
         });
         result.commit();
         
-        //        if (localIF != null) {
-        //            Method m = JMIGenerationUtil.createMethod(localIF, name, 0, type);
-        //            if (p != null) {
-        //                m.getParameters().add(p.duplicate());
-        //            }
-        //            localIF.getFeatures().add(m);
-        //        }
-        //        if (remoteIF != null) {
-        //            Method m = JMIGenerationUtil.createMethod(remoteIF, name, 0, type);
-        //            if (p != null) {
-        //                m.getParameters().add(p.duplicate());
-        //            }
-        //            remoteIF.getFeatures().add(m);
-        //        }
     }
-    
-    
-    //    private static void addMethodToInterface(String name, String type, Parameter p, JavaClass localIF, JavaClass remoteIF) {
-    //        if (localIF != null) {
-    //            Method m = JMIGenerationUtil.createMethod(localIF, name, 0, type);
-    //            if (p != null) {
-    //                m.getParameters().add(p.duplicate());
-    //            }
-    //            localIF.getFeatures().add(m);
-    //        }
-    //        if (remoteIF != null) {
-    //            Method m = JMIGenerationUtil.createMethod(remoteIF, name, 0, type);
-    //            if (p != null) {
-    //                m.getParameters().add(p.duplicate());
-    //            }
-    //            remoteIF.getFeatures().add(m);
-    //        }
-    //    }
     
     public void initialize(WizardDescriptor wizard) {
         this.wizard = wizard;

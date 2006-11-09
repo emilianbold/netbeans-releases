@@ -19,8 +19,10 @@
 
 package org.netbeans.modules.j2ee.persistence.action;
 
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.modules.j2ee.common.JMIUtils;
+import java.io.IOException;
+import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -35,9 +37,33 @@ public final class UseEntityManagerAction extends NodeAction {
         if (activatedNodes.length != 1) {
             return;
         }
-        JavaClass javaClass = JMIUtils.getJavaClassFromNode(activatedNodes[0]);
-        EntityManagerGenerator emGenerator = new EntityManagerGenerator();
-        emGenerator.generate(javaClass);
+        
+        //        JavaClass javaClass = JMIUtils.getJavaClassFromNode(activatedNodes[0]);
+        FileObject target = activatedNodes[0].getCookie(DataObject.class).getPrimaryFile();
+        
+        EntityManagerGenerator emGenerator = new EntityManagerGenerator(target, target.getName());
+        GenerationOptions options = new GenerationOptions();
+        options.setParameterName("object");
+        options.setParameterType("Object");
+        options.setMethodName("persist");
+        options.setOperation(GenerationOptions.Operation.PERSIST);
+        options.setReturnType("void");
+        options.setInitialization(GenerationOptions.Initialization.INJECT);
+        try {
+//        Parameter p = JMIGenerationUtil.createParameter(javaClass, "object", Object.class.getName());
+//        String methodName = computeMethodName(javaClass, "persist", p);
+//        generate(javaClass, OPERATION_PERSIST, methodName, "void", p, null, true);
+            
+            //        options.
+            emGenerator.generate(options);
+        } catch (IOException ex) {
+            ErrorManager.getDefault().notify(ex);
+        }
+    }
+    
+    private FileObject getTarget(Node node){
+        DataObject dObj = node.getCookie(DataObject.class);
+        return dObj.getPrimaryFile();
     }
     
     public String getName() {
@@ -58,7 +84,7 @@ public final class UseEntityManagerAction extends NodeAction {
     protected boolean asynchronous() {
         return false;
     }
-
+    
     protected boolean enable(Node[] activatedNodes) {
         return true;
     }
