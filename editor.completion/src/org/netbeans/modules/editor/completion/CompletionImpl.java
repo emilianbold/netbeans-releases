@@ -74,6 +74,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
     
     private static final boolean debug = Boolean.getBoolean("org.netbeans.modules.editor.completion.debug");
     private static final boolean allowFallbacks = !Boolean.getBoolean("org.netbeans.modules.editor.completion.noFallbacks");
+    private static final boolean alphaSort = Boolean.getBoolean("org.netbeans.modules.editor.completion.alphabeticalSort"); // [TODO] create an option
 
     private static CompletionImpl singleton = null;
 
@@ -156,6 +157,8 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
     private boolean tabCompletionWaiting = false;
     private LinkedList<KeyEvent> waitingEvents = new LinkedList<KeyEvent>();
     
+    private WeakReference<CompletionItem> lastSelectedItem = null;
+    
     /** Ending offset of the recent insertion or removal. */
     private int modEndOffset;
 
@@ -178,7 +181,8 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
         
         docAutoPopupTimer = new Timer(0, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                showDocumentation(true);
+                if (lastSelectedItem == null || lastSelectedItem.get() != layout.getSelectedCompletionItem())
+                    showDocumentation(true);
             }
         });
         docAutoPopupTimer.setRepeats(false);
@@ -216,7 +220,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
     }
     
     public int getSortType() {
-        return CompletionResultSet.PRIORITY_SORT_TYPE; // [TODO] create an option
+        return alphaSort ? CompletionResultSet.TEXT_SORT_TYPE : CompletionResultSet.PRIORITY_SORT_TYPE;
     }
     
     public void insertUpdate(javax.swing.event.DocumentEvent e) {
@@ -835,6 +839,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         CompletionTask docTask;
         CompletionItem selectedItem = layout.getSelectedCompletionItem();
         if (selectedItem != null) {
+            lastSelectedItem = new WeakReference<CompletionItem>(selectedItem);
             docTask = selectedItem.createDocumentationTask();
             if (docTask != null) { // attempt the documentation for selected item
                 CompletionResultSetImpl resultSet = new CompletionResultSetImpl(
@@ -842,6 +847,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                 documentationResultSets.add(resultSet);
             }
         } else { // No item selected => Query all providers
+            lastSelectedItem = null;
             for (int i = 0; i < activeProviders.length; i++) {
                 docTask = activeProviders[i].createTask(
                         CompletionProvider.DOCUMENTATION_QUERY_TYPE, getActiveComponent());
@@ -858,7 +864,6 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
             newDocumentationResult.queryInvoked();
         } else {
             documentationCancel();
-            docAutoPopupTimer.stop();
             layout.hideDocumentation();            
         }
     }
