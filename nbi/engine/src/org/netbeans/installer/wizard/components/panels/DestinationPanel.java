@@ -37,6 +37,7 @@ import static org.netbeans.installer.product.ProductComponent.INSTALLATION_LOCAT
 import static org.netbeans.installer.product.ProductComponent.DEFAULT_INSTALLATION_LOCATION_PROPERTY;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
+import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.helper.swing.NbiPanel;
 import org.netbeans.installer.utils.helper.swing.NbiTextField;
 import org.netbeans.installer.utils.helper.swing.NbiTextPane;
@@ -160,7 +161,7 @@ public class DestinationPanel extends ErrorMessagePanel {
             return StringUtils.formatMessage(getProperty(ERROR_NULL_PROPERTY), path);
         }
         
-        if (!systemUtils.isPathValid(path)) {
+        if (!SystemUtils.isPathValid(path)) {
             return StringUtils.formatMessage(getProperty(ERROR_NOT_VALID_PROPERTY), path);
         }
         

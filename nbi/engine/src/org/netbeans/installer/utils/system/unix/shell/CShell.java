@@ -25,7 +25,7 @@ package org.netbeans.installer.utils.system.unix.shell;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import org.netbeans.installer.utils.SystemUtils.EnvironmentVariableScope;
+import org.netbeans.installer.utils.SystemUtils.EnvironmentScope;
 
 /**
  *
@@ -49,7 +49,7 @@ public class CShell extends Shell{
     public CShell() {
     }
     
-    public boolean setVar(String name, String value, EnvironmentVariableScope scope) throws IOException {
+    public boolean setVar(String name, String value, EnvironmentScope scope) throws IOException {
         File file = getShellScript(scope);
         if(file==null)  {
             return false;

@@ -109,7 +109,7 @@ public abstract class NativeUtils {
                 FileUtils.writeFile(file, input);
                 
                 System.load(file.getAbsolutePath());
-                scheduleCleanup(file.getAbsolutePath());
+//                scheduleCleanup(file.getAbsolutePath());
             } catch (IOException e) {
                 ErrorManager.notify(ErrorLevel.CRITICAL, "Cannot load native library from path: " + libraryPath, e);
             } catch (UnsatisfiedLinkError e) {

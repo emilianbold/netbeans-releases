@@ -435,6 +435,7 @@ public class WindowsNativeUtils extends NativeUtils {
     }
     
     // private //////////////////////////////////////////////////////////////////////
+    
     /**
      * Add new entry in Add/Remove programs.<br>
      *
@@ -599,6 +600,7 @@ public class WindowsNativeUtils extends NativeUtils {
     
     /////////////////////////////////////////////////////////////////////////////////
     // Inner Classes
+    
     /**
      *
      * @author Dmitry Lipin

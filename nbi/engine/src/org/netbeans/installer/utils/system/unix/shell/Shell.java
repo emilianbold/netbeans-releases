@@ -29,7 +29,7 @@ import org.netbeans.installer.utils.ErrorLevel;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.SystemUtils;
-import org.netbeans.installer.utils.SystemUtils.EnvironmentVariableScope;
+import org.netbeans.installer.utils.SystemUtils.EnvironmentScope;
 
 /**
  *
@@ -43,16 +43,16 @@ public abstract class Shell {
     protected String EXPORT = "export ";
     protected String SET = "set ";
     
-    protected  File getShellScript(EnvironmentVariableScope scope) {
+    protected  File getShellScript(EnvironmentScope scope) {
         File file =  null;
-        if(scope!=null && EnvironmentVariableScope.PROCESS != scope) {
+        if(scope!=null && EnvironmentScope.PROCESS != scope) {
             
             
-            if(EnvironmentVariableScope.ALL_USERS==scope) {
+            if(EnvironmentScope.ALL_USERS==scope) {
                 file = getSystemShellScript();
             }
             
-            if(EnvironmentVariableScope.CURRENT_USER==scope || file==null) {
+            if(EnvironmentScope.CURRENT_USER==scope || file==null) {
                 file = getUserShellScript();
             }
         }
@@ -63,7 +63,7 @@ public abstract class Shell {
     
     protected abstract String [] getSystemShellFileNames();
     protected abstract String [] getUserShellFileNames();
-    public abstract boolean setVar(String name, String value, EnvironmentVariableScope scope)  throws IOException;
+    public abstract boolean setVar(String name, String value, EnvironmentScope scope)  throws IOException;
     protected abstract String [] getAvailableNames();
     
     public boolean isCurrentShell(String name) {
@@ -82,7 +82,7 @@ public abstract class Shell {
     
     protected File getUserShellScript() {
         return getSh(getUserShellFileNames(),
-                SystemUtils.getInstance().getUserHomeDirectory().getPath());
+                SystemUtils.getUserHomeDirectory().getPath());
     }
     protected File getSystemShellScript() {
         return getSh(getSystemShellFileNames(),

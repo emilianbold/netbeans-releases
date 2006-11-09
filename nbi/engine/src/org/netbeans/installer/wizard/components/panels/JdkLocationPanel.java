@@ -27,6 +27,7 @@ import org.netbeans.installer.utils.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
+import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.applications.JDKUtils;
 import org.netbeans.installer.utils.helper.Version;
 import org.netbeans.installer.wizard.components.actions.SearchForJdkAction;
@@ -108,7 +109,7 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
             return StringUtils.formatMessage(getProperty(ERROR_NULL_PROPERTY));
         }
         
-        if (!systemUtils.isPathValid(path)) {
+        if (!SystemUtils.isPathValid(path)) {
             return StringUtils.formatMessage(getProperty(ERROR_NOT_VALID_PATH_PROPERTY), path);
         }
         

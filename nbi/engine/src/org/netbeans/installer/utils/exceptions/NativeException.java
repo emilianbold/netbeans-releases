@@ -15,47 +15,30 @@
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
+ *  
  * $Id$
- *
  */
-
-package org.netbeans.installer.utils.system.unix.shell;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-import org.netbeans.installer.utils.FileUtils;
-import org.netbeans.installer.utils.SystemUtils.EnvironmentScope;
+package org.netbeans.installer.utils.exceptions;
 
 /**
  *
- * @author dlm198383
+ * @author Kirill Sorokin
  */
-public class TCShell extends CShell{    
-    private String [] SYSTEM_PROFILE_FILES = {
-        "tcsh.cshrc",
-        "tcsh.login",
-        "profile"
-    };
-    
-    private String [] USER_PROFILE_HOMEDIRFILES = {
-        ".tcshrc.user",
-        ".tcshrc",
-        ".cshrc.user",
-        ".cshrc",
-        ".profile",
-        ".login"        
-    };    
-    
-    public String [] getSystemShellFileNames() {
-        return SYSTEM_PROFILE_FILES;
+public class NativeException extends Exception {
+    /**
+     * 
+     * @param message 
+     */
+    public NativeException(String message) {
+        super(message);
     }
     
-    public String[] getUserShellFileNames() {
-        return USER_PROFILE_HOMEDIRFILES;
-    }
-    public String [] getAvailableNames() {
-        return new String [] { "tcsh"};
+    /**
+     * 
+     * @param message 
+     * @param cause 
+     */
+    public NativeException(String message, Throwable cause) {
+        super(message, cause);
     }
 }
