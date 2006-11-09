@@ -96,9 +96,9 @@ public class GtkLFCustoms extends LFCustoms {
 
             //UI Delegates for the tab control
             EDITOR_TAB_DISPLAYER_UI, 
-                "org.netbeans.swing.tabcontrol.plaf.WinClassicEditorTabDisplayerUI", //NOI18N
+                "org.netbeans.swing.tabcontrol.plaf.GtkEditorTabDisplayerUI", //NOI18N
             VIEW_TAB_DISPLAYER_UI, 
-                "org.netbeans.swing.tabcontrol.plaf.WinClassicViewTabDisplayerUI", //NOI18N
+                "org.netbeans.swing.tabcontrol.plaf.GtkViewTabDisplayerUI", //NOI18N
             SLIDING_TAB_BUTTON_UI, "org.netbeans.swing.tabcontrol.plaf.SlidingTabDisplayerButtonUI", //NOI18N
             SLIDING_BUTTON_UI, "org.netbeans.swing.tabcontrol.plaf.GtkSlidingButtonUI", //NOI18N
 
