@@ -833,14 +833,18 @@ public final class AntBridge {
             }
             PrintStream ps = delegates.get(tg);
             if (ps != null && !suspendedDelegationTasks.contains(t)) {
+                assert !(ps instanceof MultiplexPrintStream);
                 return ps;
             } else if (delegating > 0) {
                 PrintStream orig = err ? origErr : origOut;
                 assert orig != null;
+                assert !(orig instanceof MultiplexPrintStream);
                 return orig;
             } else {
                 // Probably should not happen? But not sure.
-                return err ? System.err : System.out;
+                PrintStream stream = err ? System.err : System.out;
+                assert !(stream instanceof MultiplexPrintStream); // #89020
+                return stream;
             }
         }
         
