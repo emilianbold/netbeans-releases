@@ -19,18 +19,17 @@
 
 package org.netbeans.modules.websvc.core;
 
-import java.util.Iterator;
-import java.util.List;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.TypeElement;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
+//import java.util.Iterator;
+//import java.util.List;
+//import org.netbeans.api.project.FileOwnerQuery;
+//import org.netbeans.api.project.Project;
 //import org.netbeans.jmi.javamodel.Annotation;
 //import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.modules.j2ee.common.Util;
+//import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.common.queries.spi.InjectionTargetQueryImplementation;
-//import org.netbeans.modules.javacore.api.JavaModel;
 import org.openide.filesystems.FileObject;
+//import org.netbeans.modules.javacore.api.JavaModel;
+//import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -42,11 +41,11 @@ public class WSInjectiontargetQueryImplementation implements InjectionTargetQuer
     public WSInjectiontargetQueryImplementation() {
     }
     
-    public boolean isInjectionTarget(TypeElement typeElement) {
+    public boolean isInjectionTarget(FileObject fileObject, String fqn) {
         return false;
     }
     
-    public boolean isStaticReferenceRequired(TypeElement typeElement) {
+    public boolean isStaticReferenceRequired(FileObject fileObject, String fqn) {
         return false;
     }
     
