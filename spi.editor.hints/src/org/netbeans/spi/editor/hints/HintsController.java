@@ -19,9 +19,11 @@
 package org.netbeans.spi.editor.hints;
 
 import java.util.Collection;
+import java.util.ArrayList;
 import javax.swing.text.Document;
 import org.netbeans.modules.editor.hints.HintsControllerImpl;
 import org.openide.filesystems.FileObject;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -41,8 +43,14 @@ public final class HintsController {
      * @param layer unique layer ID
      * @param errors to use
      */
-    public static void setErrors(Document doc, String layer, Collection<? extends ErrorDescription> errors) {
-        HintsControllerImpl.setErrors(doc, layer, errors);
+    public static void setErrors(final Document doc, final String layer, Collection<? extends ErrorDescription> errors) {
+        final Collection<? extends ErrorDescription> errorsCopy = new ArrayList<ErrorDescription>(errors);
+
+        WORKER.post(new Runnable() {
+            public void run() {
+                HintsControllerImpl.setErrors(doc, layer, errorsCopy);
+            }
+        });
     }
     
     /**Assign given list of errors to a given file. This removes any errors that were assigned to this
@@ -52,8 +60,16 @@ public final class HintsController {
      * @param layer unique layer ID
      * @param errors to use
      */
-    public static void setErrors(FileObject file, String layer, Collection<? extends ErrorDescription> errors) {
-        HintsControllerImpl.setErrors(file, layer, errors);
+    public static void setErrors(final FileObject file, final String layer, Collection<? extends ErrorDescription> errors) {
+        final Collection<? extends ErrorDescription> errorsCopy = new ArrayList<ErrorDescription>(errors);
+
+        WORKER.post(new Runnable() {
+            public void run() {
+                HintsControllerImpl.setErrors(file, layer, errorsCopy);
+            }
+        });
     }
+    
+    private static RequestProcessor WORKER = new RequestProcessor("HintsController worker");
     
 }
