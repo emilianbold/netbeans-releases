@@ -35,20 +35,18 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
                 <pathelement location="${cluster}/${module.jar}"/>
             </classpath>
         </javac>
-        <mkdir dir="${cluster}/modules/ext/bpel"/>
        <copy todir="build/antclasses">
-    <fileset dir="antsrc">
-      <include name="**/*.xml"/>
-    </fileset>
-  </copy>
-    <mkdir dir="${cluster}/ant/nblib/"/>
-        <jar jarfile="${cluster}/ant/nblib/org-netbeans-modules-bpel-project.jar" compress="false">
-            <fileset dir="build/antclasses"/>
-        </jar>
-      
+         <fileset dir="antsrc">
+           <include name="**/*.xml"/>
+         </fileset>
+       </copy>
+   
+       <mkdir dir="${cluster}/ant/nblib/"/>
+
+       <jar jarfile="${cluster}/ant/nblib/org-netbeans-modules-bpel-project.jar" compress="false">
+         <fileset dir="build/antclasses"/>
+       </jar>
     </target>
 
     <target name="netbeans-extra" depends="ant-extra"/>
-
-    
 </project>
