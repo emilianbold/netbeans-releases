@@ -46,6 +46,8 @@ import org.openide.filesystems.*;
 import javax.swing.*;
 import java.io.*;
 import java.util.*;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.beans.PropertyChangeListener;
@@ -378,14 +380,25 @@ public class CvsVersioningSystem {
      * @return true if the file is under CVS management, false otherwise
      */ 
     boolean isManaged(File file) {
-        if (file.isDirectory() && file.getName().equals(FILENAME_CVS)) return false;
+        return getTopmostManagedParent(file) != null;
+    }
+
+    /**
+     * Tests whether the file is managed by this versioning system. If it is, the method should return the topmost 
+     * parent of the file that is still versioned.
+     *  
+     * @param file a file
+     * @return File the file itself or one of its parents or null if the supplied file is NOT managed by this versioning system
+     */
+    File getTopmostManagedParent(File file) {
+        if (file.isDirectory() && file.getName().equals(FILENAME_CVS)) return null;
         if (file.isFile()) file = file.getParentFile();
         for (; file != null; file = file.getParentFile()) {
             File repository = new File(file, FILENAME_CVS_REPOSITORY);
             File entries = new File(file, FILENAME_CVS_ENTRIES);
-            if (repository.canRead() && entries.canRead()) return true;
+            if (repository.canRead() && entries.canRead()) return file;
         }
-        return false;
+        return null;
     }
 
     private void addCvsIgnorePatterns(Set patterns, File file) {
@@ -689,6 +702,7 @@ public class CvsVersioningSystem {
 
         public Reader getText() {
             try {
+                // TODO: it is not easy to tell whether the file is not yet versioned OR some real error occurred   
                 File f = VersionsCache.getInstance().getRemoteFile(workingCopy, VersionsCache.REVISION_BASE, null, true);
                 String name = f.getName();
                 return createReader(f, name.substring(0, name.indexOf('#')));

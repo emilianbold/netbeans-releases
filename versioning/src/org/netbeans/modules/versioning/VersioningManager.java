@@ -54,12 +54,12 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
     /**
      * What file is versioned by what versioning system. Files stored here are only topmost versioned folders. 
      */
-    private final Map<File, VersioningSystem> managedRoots = new HashMap<File, VersioningSystem>();  
+    private final Map<File, VersioningSystem> managedRoots = new HashMap<File, VersioningSystem>(20);  
     
     /**
      * Holds all registered versioning systems.
      */
-    private Collection<? extends VersioningSystem> versioningSystems = new ArrayList<VersioningSystem>(0);
+    private final Collection<VersioningSystem> versioningSystems = new ArrayList<VersioningSystem>(2);
 
     private VersioningManager() {
         filesystemInterceptor = new FilesystemInterceptor();
@@ -82,12 +82,14 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
      * @param systems new list of versioning systems
      */
     private void refreshVersioningSystems(Collection<? extends VersioningSystem> systems) {
-        unloadVersioningSystems();
-        loadVersioningSystems(systems);
+        synchronized(versioningSystems) {
+            unloadVersioningSystems();
+            loadVersioningSystems(systems);
+        }
     }
 
     private void loadVersioningSystems(Collection<? extends VersioningSystem> systems) {
-        versioningSystems = systems;
+        versioningSystems.addAll(systems);
         for (VersioningSystem system : versioningSystems) {
             system.addPropertyChangeListener(this);
         }
@@ -97,13 +99,18 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
         for (VersioningSystem system : versioningSystems) {
             system.removePropertyChangeListener(this);
         }
+        versioningSystems.clear();
     }
 
     InterceptionListener getInterceptionListener() {
         return filesystemInterceptor;
     }
 
-    public VersioningSystem getOwner(File file) {
+    private synchronized void flushFileOwnerCache() {
+        managedRoots.clear();
+    }
+    
+    public synchronized VersioningSystem getOwner(File file) {
         for (Map.Entry<File, VersioningSystem> entry : managedRoots.entrySet()) {
             if (Utils.isParentOrEqual(entry.getKey(), file)) {
                 return entry.getValue();
@@ -111,14 +118,20 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
         }
         
         // we do not know yet whom the file belongs to
+        File closestParent = null;
+        VersioningSystem owner = null; 
         for (VersioningSystem system : versioningSystems) {
             File topmost = system.getTopmostManagedParent(file);
-            if (topmost != null) {
-                removeDescendants(topmost, system);
-                return system;
+            if (topmost != null && (closestParent == null || Utils.isParentOrEqual(closestParent, topmost))) {
+                owner = system;
+                closestParent = topmost;
             }
         }
-        return null;
+        
+        if (owner != null) {
+            removeDescendants(closestParent, owner);
+        }
+        return owner;
     }
 
     private void removeDescendants(File topmost, VersioningSystem system) {
@@ -151,6 +164,8 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
         } else if (VersioningSystem.PROP_ANNOTATIONS_CHANGED.equals(evt.getPropertyName())) {
             Set<File> files = (Set<File>) evt.getNewValue();
             VersioningAnnotationProvider.instance.refreshAnnotations(files);
+        } else if (VersioningSystem.PROP_VERSIONED_ROOTS.equals(evt.getPropertyName())) {
+            flushFileOwnerCache();
         }
     }
 }

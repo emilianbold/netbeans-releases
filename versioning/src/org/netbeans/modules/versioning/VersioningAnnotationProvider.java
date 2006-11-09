@@ -26,10 +26,17 @@ import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.FlatFolder;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.openide.filesystems.*;
+import org.openide.util.actions.SystemAction;
+import org.openide.util.actions.Presenter;
+import org.openide.util.ContextAwareAction;
+import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
+import org.openide.awt.Mnemonics;
 
 import javax.swing.*;
 import java.util.*;
 import java.awt.Image;
+import java.awt.event.ActionEvent;
 import java.io.File;
 
 /**
@@ -55,7 +62,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
                 roots.add(FileUtil.toFile(fo));
             }
         }
-        return new VCSContext(roots);
+        return VCSContext.forFiles(roots);
     }
 
     public Image annotateIcon(Image icon, int iconType, Set files) {
@@ -90,8 +97,84 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
         VCSAnnotator an = vs.getVCSAnnotator();
         if (an == null) return null;
 
-        VCSContext context = createContext(files);
-        return an.getActions(context);
+        VersioningSystemActions action = SystemAction.get(VersioningSystemActions.class);
+        action.setVersioninSystem(vs);
+        return new Action [] {
+            action                
+        };
+    }
+    
+    public static class VersioningSystemActions extends SystemAction implements ContextAwareAction {
+        
+        private VersioningSystem system;
+
+        public String getName() {
+            return system.getDisplayName();
+        }
+
+        public HelpCtx getHelpCtx() {
+            return new HelpCtx(system.getClass());
+        }
+
+        public void actionPerformed(ActionEvent ev) {
+            // this item does nothing, this is not a real action
+        }
+
+        public Action createContextAwareInstance(Lookup actionContext) {
+            return new RealVersioningSystemActions(system, VCSContext.forLookup(actionContext));
+        }
+
+        public void setVersioninSystem(VersioningSystem system) {
+            this.system = system;
+        }
+    }
+    
+    private static class RealVersioningSystemActions extends AbstractAction implements Presenter.Popup {
+
+        private final VersioningSystem system;
+        private final VCSContext context;
+
+        public RealVersioningSystemActions(VersioningSystem system, VCSContext context) {
+            super(system.getDisplayName());
+            this.system = system;
+            this.context = context;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            // this item does also nothing, it displays a popup ;)
+        }
+
+        public JMenuItem getPopupPresenter() {
+            return new VersioningSystemMenuItem();
+        }
+        
+        private class VersioningSystemMenuItem extends JMenu {
+        
+            private boolean popupContructed;
+
+            public VersioningSystemMenuItem() {
+                Mnemonics.setLocalizedText(this, system.getDisplayName());
+            }
+
+            public void setSelected(boolean selected) {
+                if (selected && popupContructed == false) {
+                    // lazy submenu construction
+                    Action [] actions = system.getVCSAnnotator().getActions(context);
+                    for (int i = 0; i < actions.length; i++) {
+                        Action action = actions[i];
+                        if (action == null) {
+                            add(new JSeparator());    // workaround openide bug
+                        } else {
+                            JMenuItem item = new JMenuItem(actions[i]);
+                            Mnemonics.setLocalizedText(item, item.getText());
+                            add(item);
+                        }
+                    }
+                    popupContructed = true;
+                }
+                super.setSelected(selected);
+            }
+        }
     }
 
     public InterceptionListener getInterceptionListener() {

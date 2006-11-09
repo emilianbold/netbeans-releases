@@ -24,7 +24,6 @@ import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.spi.OriginalContent;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.modules.versioning.util.VersioningEvent;
-import org.netbeans.modules.versioning.system.cvss.CvsModuleConfig;
 
 import java.io.File;
 import java.util.*;
@@ -44,6 +43,10 @@ public class CVS extends VersioningSystem implements VersioningListener, Prefere
         CvsModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
     }
     
+    public String getDisplayName() {
+        return "CVS";
+    }
+
     /**
      * Returns the topmost parent folder of the given file that is managed by this versioning system.
      * 
@@ -51,13 +54,7 @@ public class CVS extends VersioningSystem implements VersioningListener, Prefere
      * @return null if this file is not managed by this versioning system or a topmpost File (folder) that is still versioned but its parent is not
      */
     public File getTopmostManagedParent(File file) {
-        FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
-        if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_MANAGED) == 0) return null;
-        for (;;) {
-            File parent = file.getParentFile();
-            if (parent == null || (cache.getStatus(parent).getStatus() & FileInformation.STATUS_MANAGED) == 0) return file;
-            file = parent;
-        }
+        return CvsVersioningSystem.getInstance().getTopmostManagedParent(file);
     }
 
     public VCSAnnotator getVCSAnnotator() {

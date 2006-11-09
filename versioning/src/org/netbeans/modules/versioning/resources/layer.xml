@@ -50,6 +50,12 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>
     
+    <folder name="Projects">
+        <folder name="Actions">
+            <file name="org-netbeans-modules-versioning-ProjectMenuItem.instance"/>
+        </folder>
+    </folder>
+    
     <folder name="Menu">
         <folder name="View">
             <file name="org-netbeans-modules-versioning-diff-ShowDiffSidebarAction.shadow">

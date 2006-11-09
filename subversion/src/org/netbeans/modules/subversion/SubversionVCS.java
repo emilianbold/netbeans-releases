@@ -43,14 +43,12 @@ public class SubversionVCS extends VersioningSystem implements VersioningListene
         SvnModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
     }
 
+    public String getDisplayName() {
+        return "Subversion";
+    }
+
     public File getTopmostManagedParent(File file) {
-        FileStatusCache cache = Subversion.getInstance().getStatusCache();
-        if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_MANAGED) == 0) return null;
-        for (;;) {
-            File parent = file.getParentFile();
-            if (parent == null || (cache.getStatus(parent).getStatus() & FileInformation.STATUS_MANAGED) == 0) return file;
-            file = parent;
-        }
+        return Subversion.getInstance().getTopmostManagedParent(file);
     }
 
     public VCSAnnotator getVCSAnnotator() {

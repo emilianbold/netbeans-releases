@@ -258,12 +258,6 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>
 
-    <folder name="Projects">
-        <folder name="Actions">
-            <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-ProjectCvsMenuItem.instance"/>
-        </folder>
-    </folder>
-
     <folder name="Editors">
         <folder name="SideBar">
             <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-annotate-AnnotationBarManager.instance"/>

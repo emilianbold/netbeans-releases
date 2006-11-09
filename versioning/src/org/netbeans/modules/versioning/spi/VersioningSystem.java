@@ -37,9 +37,10 @@ public abstract class VersioningSystem {
 
     /**
      * Indicates to the Versioning manager that the layout of versioned files may have changed. Previously unversioned 
-     * files became versioned, versioned files became unversioned or the versioning system for some files changed. 
+     * files became versioned, versioned files became unversioned or the versioning system for some files changed.
+     * The manager will flush any caches that may be holding such information.  
      */
-    public static final String PROP_VERSIONED_ROOTS = "VersioningSystem.VersionedFilesChanged";
+    public static final String PROP_VERSIONED_ROOTS = "null VCS.VersionedFilesChanged";
 
     /**
      * The NEW value is a Set of Files whose versioning status changed. This event is used to re-annotate files, re-fetch
@@ -58,11 +59,21 @@ public abstract class VersioningSystem {
     protected final PropertyChangeSupport support = new PropertyChangeSupport(this);
 
     /**
+     * Short name of the versioning system, it will be used as popup menu label, label in tooltips, etc.
+     * Examples: CVS, Subversion, Mercurial, Teamware, SourceSafe, VSS, Clearcase, Local History
      * 
-     * @param query
-     * @return
+     * @return String short display name of the versioning system.
      */
-    public File getTopmostManagedParent(File query) {
+    public abstract String getDisplayName();
+    
+    /**
+     * Tests whether the file is managed by this versioning system. If it is, the method should return the topmost 
+     * parent of the file that is still versioned.
+     *  
+     * @param file a file
+     * @return File the file itself or one of its parents or null if the supplied file is NOT managed by this versioning system
+     */
+    public File getTopmostManagedParent(File file) {
         return null;
     }
     

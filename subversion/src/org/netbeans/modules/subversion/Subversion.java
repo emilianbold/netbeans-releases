@@ -35,6 +35,8 @@ import java.io.Reader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Iterator;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
@@ -308,14 +310,25 @@ public class Subversion {
      * @return true if the file is under WC management, false otherwise
      */
     public boolean isManaged(File file) {
-        if (isAdministrative(file)) return false;
+        return getTopmostManagedParent(file) != null;
+    }
+
+    /**
+     * Tests whether the file is managed by this versioning system. If it is, the method should return the topmost 
+     * parent of the file that is still versioned.
+     *  
+     * @param file a file
+     * @return File the file itself or one of its parents or null if the supplied file is NOT managed by this versioning system
+     */
+    File getTopmostManagedParent(File file) {
+        if (isAdministrative(file)) return null;
         if (file.isFile()) file = file.getParentFile();
         for (; file != null; file = file.getParentFile()) {
             if (new File(file, ".svn/entries").canRead() || new File(file, "_svn/entries").canRead()) { // NOI18N
-                return true;
+                return file;
             }
         }
-        return false;
+        return null;
     }
     
     /**

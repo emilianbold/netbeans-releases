@@ -27,14 +27,17 @@ import org.netbeans.modules.subversion.ui.commit.CommitAction;
 import org.netbeans.modules.subversion.ui.update.UpdateAction;
 import org.netbeans.modules.subversion.ui.update.RevertModificationsAction;
 import org.netbeans.modules.subversion.ui.update.ResolveConflictsAction;
+import org.netbeans.modules.subversion.ui.update.UpdateWithDependenciesAction;
 import org.netbeans.modules.subversion.ui.diff.DiffAction;
 import org.netbeans.modules.subversion.ui.blame.BlameAction;
 import org.netbeans.modules.subversion.ui.history.SearchHistoryAction;
+import org.netbeans.modules.subversion.ui.project.ImportAction;
 import org.openide.filesystems.*;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.ErrorManager;
@@ -43,9 +46,11 @@ import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.util.FlatFolder;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.spi.VCSContext;
+import org.netbeans.api.project.Project;
 
 import javax.swing.*;
 import java.util.*;
+import java.util.List;
 import java.util.regex.Pattern;
 import java.text.MessageFormat;
 import java.io.File;
@@ -362,45 +367,6 @@ public class Annotator {
                 annotateNameHtml(name, mostImportantInfo, mostImportantFile);
     }
     
-    /**
-     * Annotates given name by HTML markup.
-     * 
-     * @param name original name of the file
-     * @param files set of files comprising the name
-     * @param includeStatus only files having one of statuses specified will be annotated
-     * @return String HTML-annotated name of the file (without HTML prolog)
-     */ 
-    String annotateNameHtml(String name, Set<FileObject> files, int includeStatus) {
-        if (files.size() == 0) return name;
-        
-        FileInformation mostImportantInfo = null;
-        File mostImportantFile = null;
-        boolean folderAnnotation = false;
-        
-        for (Iterator i = files.iterator(); i.hasNext();) {
-            FileObject fo = (FileObject) i.next();
-            File file = FileUtil.toFile(fo);
-            FileInformation info = cache.getStatus(file);
-            int status = info.getStatus();
-            if ((status & includeStatus) == 0) continue;
-            
-            if (isMoreImportant(info, mostImportantInfo)) {
-                mostImportantInfo = info;
-                mostImportantFile = file;
-                folderAnnotation = fo.isFolder();
-            }
-        }
-
-        if (folderAnnotation == false && files.size() > 1) {
-            folderAnnotation = looksLikeLogicalFolder2(files);
-        }
-
-        if (mostImportantInfo == null) return null;
-        return folderAnnotation ? 
-                annotateFolderNameHtml(name, mostImportantInfo, mostImportantFile) : 
-                annotateNameHtml(name, mostImportantInfo, mostImportantFile);
-    }
-
     private boolean isMoreImportant(FileInformation a, FileInformation b) {
         if (b == null) return true;
         if (a == null) return false;
@@ -412,131 +378,74 @@ public class Annotator {
     }
 
     /**
-     * Annotates icon of a node based on its versioning status.
+     * Returns array of versioning actions that may be used to construct a popup menu. These actions
+     * will act on the supplied context.
      *
-     * @param roots files that the node represents
-     * @param icon original node icon
-     * @return Image newly annotated icon or the original one
-     */
-    Image annotateFolderIcon(Set roots, Image icon) {
-        SvnModuleConfig config = SvnModuleConfig.getDefault();
-        boolean allExcluded = true;
-        boolean modified = false;
-
-        Map<File, FileInformation>  map = cache.getAllModifiedFiles();
-        Map<File, FileInformation> modifiedFiles = new HashMap<File, FileInformation>();
-        for (Iterator i = map.keySet().iterator(); i.hasNext();) {
-            File file = (File) i.next();
-            FileInformation info = map.get(file);
-            if ((info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) modifiedFiles.put(file, info);
-        }
-
-        for (Iterator i = roots.iterator(); i.hasNext();) {
-            File file = (File) i.next();  
-            if (file instanceof FlatFolder) {
-                for (Iterator j = modifiedFiles.keySet().iterator(); j.hasNext();) {
-                    File mf = (File) j.next();
-                    if (mf.getParentFile().equals(file) || mf.equals(file)) {
-                        FileInformation info = modifiedFiles.get(mf);
-                        if (info.isDirectory() && !mf.equals(file)) continue;
-                        int status = info.getStatus();
-                        if (status == FileInformation.STATUS_VERSIONED_CONFLICT) {
-                            Image badge = Utilities.loadImage("org/netbeans/modules/subversion/resources/icons/conflicts-badge.png", true);  // NOI18N
-                            return Utilities.mergeImages(icon, badge, 16, 9);
-                        }
-                        modified = true;
-                        allExcluded &= config.isExcludedFromCommit(mf.getAbsolutePath());
-                    }
-                }
-            } else {  
-                for (Iterator j = modifiedFiles.keySet().iterator(); j.hasNext();) {
-                    File mf = (File) j.next();                
-                    if (SvnUtils.isParentOrEqual(file, mf)) {
-                        FileInformation info = modifiedFiles.get(mf);
-                        int status = info.getStatus();
-                        if (file.equals(mf) && (status == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY || status == FileInformation.STATUS_VERSIONED_ADDEDLOCALLY)) {
-                            // special case, a new empty folder should not be badged
-                            continue;
-                        }
-                        if (status == FileInformation.STATUS_VERSIONED_CONFLICT) {
-                            Image badge = Utilities.loadImage("org/netbeans/modules/subversion/resources/icons/conflicts-badge.png", true); // NOI18N
-                            return Utilities.mergeImages(icon, badge, 16, 9);
-                        }
-                        modified = true;
-                        allExcluded &= config.isExcludedFromCommit(mf.getAbsolutePath());
-                    }
-                }
-            }
-        }
-
-        if (modified && !allExcluded) {
-            Image badge = Utilities.loadImage("org/netbeans/modules/subversion/resources/icons/modified-badge.png", true); // NOI18N
-            return Utilities.mergeImages(icon, badge, 16, 9);
-        } else {
-            return icon;
-        }
-    }
-
-    /**
-     * Returns array of versioning actions that may be used to construct a {@link org.openide.actions.FileSystemAction}
-     * popup menu. These actions will act on the supplied Lookup context.
-     *
-     * @param context context similar to {@link org.openide.util.ContextAwareAction#createContextAwareInstance(org.openide.util.Lookup)}   
+     * @param ctx context similar to {@link org.openide.util.ContextAwareAction#createContextAwareInstance(org.openide.util.Lookup)}   
      * @return Action[] array of versioning actions that may be used to construct a popup menu. These actions
      * will act on currently activated nodes.
      */ 
-    public static Action [] getActions(Lookup context) {
+    public static Action [] getActions(VCSContext ctx) {
         ResourceBundle loc = NbBundle.getBundle(Annotator.class);
-        Node [] nodes = context.lookup(new Lookup.Template<Node>(Node.class)).allInstances().toArray(new Node[0]);
-        File [] files = SvnUtils.getCurrentContext(nodes).getRootFiles();
-        if (onlyFolders(files)) {
-            return new Action [] {
-                SystemActionBridge.createAction(SystemAction.get(StatusAction.class), loc.getString("CTL_PopupMenuItem_Status"), context),
-                SystemActionBridge.createAction(SystemAction.get(DiffAction.class), loc.getString("CTL_PopupMenuItem_Diff"), context),
-                SystemActionBridge.createAction(SystemAction.get(UpdateAction.class), loc.getString("CTL_PopupMenuItem_Update"), context),
-                SystemActionBridge.createAction(SystemAction.get(CommitAction.class), loc.getString("CTL_PopupMenuItem_Commit"), context),
-                null,
-                SystemActionBridge.createAction(SystemAction.get(CreateCopyAction.class), loc.getString("CTL_PopupMenuItem_Copy"), context),
-                SystemActionBridge.createAction(SystemAction.get(SwitchToAction.class), loc.getString("CTL_PopupMenuItem_Switch"), context),
-                SystemActionBridge.createAction(SystemAction.get(MergeAction.class), loc.getString("CTL_PopupMenuItem_Merge"), context),
-                null,
-                SystemActionBridge.createAction(SystemAction.get(SearchHistoryAction.class), loc.getString("CTL_PopupMenuItem_SearchHistory"), context),
-                null,
-                SystemActionBridge.createAction(SystemAction.get(RevertModificationsAction.class), loc.getString("CTL_PopupMenuItem_GetClean"), context),
-                SystemActionBridge.createAction(SystemAction.get(ResolveConflictsAction.class), loc.getString("CTL_PopupMenuItem_ResolveConflicts"), context),
-                SystemActionBridge.createAction(SystemAction.get(IgnoreAction.class),
-                                       ((IgnoreAction)SystemAction.get(IgnoreAction.class)).getActionStatus(nodes) == IgnoreAction.UNIGNORING ? 
-                                       loc.getString("CTL_PopupMenuItem_Unignore") : 
-                                       loc.getString("CTL_PopupMenuItem_Ignore"), context),
-
-            };
+        Node [] nodes = ctx.getNodes();
+        File [] files = ctx.getRootFiles().toArray(new File[ctx.getRootFiles().size()]);
+        Lookup context = Lookups.fixed(ctx.getNodes());
+        boolean noneVersioned = isNothingVersioned(files);
+        boolean onlyFolders = onlyFolders(files);
+        boolean onlyProjects = onlyProjects(ctx.getNodes());
+        
+        List<Action> actions = new ArrayList<Action>(20);
+        if (noneVersioned) {
+            actions.add(SystemActionBridge.createAction(SystemAction.get(ImportAction.class).createContextAwareInstance(context), loc.getString("CTL_PopupMenuItem_Import"), context));
         } else {
-            return new Action [] {
-                SystemActionBridge.createAction(SystemAction.get(StatusAction.class), loc.getString("CTL_PopupMenuItem_Status"), context),
-                SystemActionBridge.createAction(SystemAction.get(DiffAction.class), loc.getString("CTL_PopupMenuItem_Diff"), context),
-                SystemActionBridge.createAction(SystemAction.get(UpdateAction.class), loc.getString("CTL_PopupMenuItem_Update"), context),
-                SystemActionBridge.createAction(SystemAction.get(CommitAction.class), loc.getString("CTL_PopupMenuItem_Commit"), context),
-                null,
-                SystemActionBridge.createAction(SystemAction.get(CreateCopyAction.class), loc.getString("CTL_PopupMenuItem_Copy"), context),
-                SystemActionBridge.createAction(SystemAction.get(SwitchToAction.class), loc.getString("CTL_PopupMenuItem_Switch"), context),
-                SystemActionBridge.createAction(SystemAction.get(MergeAction.class), loc.getString("CTL_PopupMenuItem_Merge"), context),
-                null,
-                SystemActionBridge.createAction(SystemAction.get(BlameAction.class),
-                                        ((BlameAction)SystemAction.get(BlameAction.class)).visible(nodes) ? 
-                                        loc.getString("CTL_PopupMenuItem_HideAnnotations") : 
-                                        loc.getString("CTL_PopupMenuItem_ShowAnnotations"), context),
-                SystemActionBridge.createAction(SystemAction.get(SearchHistoryAction.class), loc.getString("CTL_PopupMenuItem_SearchHistory"), context),
-                null,
-                SystemActionBridge.createAction(SystemAction.get(RevertModificationsAction.class), loc.getString("CTL_PopupMenuItem_GetClean"), context),
-                SystemActionBridge.createAction(SystemAction.get(ResolveConflictsAction.class), loc.getString("CTL_PopupMenuItem_ResolveConflicts"), context),
-                SystemActionBridge.createAction(SystemAction.get(IgnoreAction.class), 
-                                       ((IgnoreAction)SystemAction.get(IgnoreAction.class)).getActionStatus(nodes) == IgnoreAction.UNIGNORING ? 
-                                       loc.getString("CTL_PopupMenuItem_Unignore") : 
-                                       loc.getString("CTL_PopupMenuItem_Ignore"), context)
-            };
+            actions.add(SystemActionBridge.createAction(SystemAction.get(StatusAction.class), loc.getString("CTL_PopupMenuItem_Status"), context));
+            actions.add(SystemActionBridge.createAction(SystemAction.get(DiffAction.class), loc.getString("CTL_PopupMenuItem_Diff"), context));
+            actions.add(SystemActionBridge.createAction(SystemAction.get(UpdateAction.class), loc.getString("CTL_PopupMenuItem_Update"), context));
+            if (onlyProjects) {
+                actions.add(new SystemActionBridge(SystemAction.get(UpdateWithDependenciesAction.class), loc.getString("CTL_PopupMenuItem_UpdateWithDeps")));
+            }
+            actions.add(SystemActionBridge.createAction(SystemAction.get(CommitAction.class), loc.getString("CTL_PopupMenuItem_Commit"), context));
+            actions.add(null);
+            actions.add(SystemActionBridge.createAction(SystemAction.get(CreateCopyAction.class), loc.getString("CTL_PopupMenuItem_Copy"), context));
+            actions.add(SystemActionBridge.createAction(SystemAction.get(SwitchToAction.class), loc.getString("CTL_PopupMenuItem_Switch"), context));
+            actions.add(SystemActionBridge.createAction(SystemAction.get(MergeAction.class), loc.getString("CTL_PopupMenuItem_Merge"), context));
+            actions.add(null);
+            if (!onlyFolders) {
+                actions.add(SystemActionBridge.createAction(SystemAction.get(BlameAction.class),
+                                                            ((BlameAction)SystemAction.get(BlameAction.class)).visible(nodes) ? 
+                                                                    loc.getString("CTL_PopupMenuItem_HideAnnotations") : 
+                                                                    loc.getString("CTL_PopupMenuItem_ShowAnnotations"), context));            
+            }
+            actions.add(SystemActionBridge.createAction(SystemAction.get(SearchHistoryAction.class), loc.getString("CTL_PopupMenuItem_SearchHistory"), context));
+            actions.add(null);
+            actions.add(SystemActionBridge.createAction(SystemAction.get(RevertModificationsAction.class), loc.getString("CTL_PopupMenuItem_GetClean"), context));
+            actions.add(SystemActionBridge.createAction(SystemAction.get(ResolveConflictsAction.class), loc.getString("CTL_PopupMenuItem_ResolveConflicts"), context));
+            if (!onlyProjects) {
+                actions.add(SystemActionBridge.createAction(SystemAction.get(IgnoreAction.class),
+                                                            ((IgnoreAction)SystemAction.get(IgnoreAction.class)).getActionStatus(nodes) == IgnoreAction.UNIGNORING ? 
+                                                                    loc.getString("CTL_PopupMenuItem_Unignore") : 
+                                                                    loc.getString("CTL_PopupMenuItem_Ignore"), context));
+            }
         }
+        return actions.toArray(new Action[actions.size()]);
     }
-
+    
+    private static boolean isNothingVersioned(File[] files) {
+        FileStatusCache cache = Subversion.getInstance().getStatusCache();
+        for (File file : files) {
+            if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_MANAGED) != 0) return false;
+        }
+        return true;
+    }
+    
+    private static boolean onlyProjects(Node[] nodes) {
+        if (nodes == null) return false;
+        for (Node node : nodes) {
+            if (node.getLookup().lookup(Project.class) == null) return false;
+        }
+        return true;
+    }
+    
     private static boolean onlyFolders(File[] files) {
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
         for (int i = 0; i < files.length; i++) {

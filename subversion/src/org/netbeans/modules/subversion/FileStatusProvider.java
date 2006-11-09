@@ -19,10 +19,8 @@
 
 package org.netbeans.modules.subversion;
 
-import org.openide.util.actions.SystemAction;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSContext;
-import org.netbeans.modules.subversion.ui.actions.SvnCommandsMenuItem;
 
 import javax.swing.*;
 import java.awt.Image;
@@ -48,7 +46,7 @@ class FileStatusProvider extends VCSAnnotator {
     }
 
     public Action[] getActions(VCSContext context) {
-        return new Action[] { SystemAction.get(SvnCommandsMenuItem.class) };
+        return Annotator.getActions(context);
     }
 
     void shutdown() {
