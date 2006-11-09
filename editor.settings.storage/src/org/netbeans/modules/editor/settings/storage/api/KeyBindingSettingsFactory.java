@@ -57,7 +57,7 @@ public abstract class KeyBindingSettingsFactory {
      *
      * @return List of <code>MultiKeyBinding</code>s.
      */
-    public abstract List getKeyBindingDefaults (String profile);
+    public abstract List<MultiKeyBinding> getKeyBindingDefaults (String profile);
     
     /**
      * Gets the keybindings list, where items are instances of 

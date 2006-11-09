@@ -285,9 +285,9 @@ public class EditorSettingsStorageTest extends NbTestCase {
     private void setOneColoring(String mimeType, AttributeSet coloring) {
         String coloringName = (String) coloring.getAttribute(StyleConstants.NameAttribute);
         FontColorSettingsFactory fcsf = EditorSettingsImpl.getDefault().getFontColorSettings(new String [] { mimeType });
-        Collection all = new ArrayList(fcsf.getAllFontColors(DEFAULT_PROFILE));
+        Collection<AttributeSet> all = new ArrayList<AttributeSet>(fcsf.getAllFontColors(DEFAULT_PROFILE));
         
-        for(Iterator i = all.iterator(); i.hasNext(); ) {
+        for(Iterator<AttributeSet> i = all.iterator(); i.hasNext(); ) {
             AttributeSet attribs = (AttributeSet) i.next();
             String name = (String) attribs.getAttribute(StyleConstants.NameAttribute);
             if (Utilities.compareObjects(name, coloringName)) {
@@ -302,9 +302,9 @@ public class EditorSettingsStorageTest extends NbTestCase {
 
     private void setOneKeyBinding(String mimeType, MultiKeyBinding keyBinding) {
         KeyBindingSettingsFactory kbsf = EditorSettingsImpl.getDefault().getKeyBindingSettings(new String [] { mimeType });
-        List all = new ArrayList(kbsf.getKeyBindingDefaults(DEFAULT_PROFILE));
+        List<MultiKeyBinding> all = new ArrayList<MultiKeyBinding>(kbsf.getKeyBindingDefaults(DEFAULT_PROFILE));
 
-        for(Iterator i = all.iterator(); i.hasNext(); ) {
+        for(Iterator<MultiKeyBinding> i = all.iterator(); i.hasNext(); ) {
             MultiKeyBinding kb = (MultiKeyBinding) i.next();
             if (Utilities.compareObjects(kb.getActionName(), keyBinding.getActionName())) {
                 i.remove();
