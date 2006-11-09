@@ -20,22 +20,20 @@
 package gui.action;
 
 import java.io.File;
+import java.io.PrintStream;
 import org.netbeans.jellytools.Bundle;
 
-import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 
 import org.netbeans.jellytools.actions.DeleteAction;
 import org.netbeans.jellytools.actions.MaximizeWindowAction;
-//import org.netbeans.jellytools.actions.RefreshFolderAction;
 import org.netbeans.jellytools.actions.RestoreWindowAction;
 
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.operators.JMenuBarOperator;
 
 /**
  * Test of Delete nodes/folders in the Explorer.
@@ -191,6 +189,20 @@ public class DeleteFolder extends org.netbeans.performance.test.utilities.Perfor
      */
     protected void turnBadgesOn() {
         System.setProperty("perf.dont.resolve.java.badges", "false");
+    }
+    
+    
+    /** Test could be executed internaly in IDE without XTest
+     * @param args arguments from command line
+     */
+    public static void main(String[] args) {
+        System.setProperty("xtest.tmpdir", "/local_export/sources/nb_all/performance/test/qa-functional/data");
+        junit.textui.TestRunner.run(new DeleteFolder("testDeleteFolderWith50JavaFiles"));
+    }
+    
+    @Override
+    public PrintStream getLog() {
+        return System.out;
     }
     
 }
