@@ -20,6 +20,7 @@
 package org.netbeans.modules.j2ee.common.source;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import org.openide.filesystems.FileObject;
@@ -36,7 +37,7 @@ public class TestUtilities {
     private TestUtilities() {
     }
     
-    public static final FileObject copyStringToFileObject(FileObject fo, String content) throws Exception {
+    public static final FileObject copyStringToFileObject(FileObject fo, String content) throws IOException {
         OutputStream os = fo.getOutputStream();
         try {
             InputStream is = new ByteArrayInputStream(content.getBytes("UTF-8"));

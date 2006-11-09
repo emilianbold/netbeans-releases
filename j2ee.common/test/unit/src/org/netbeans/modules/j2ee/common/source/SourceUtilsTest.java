@@ -52,6 +52,19 @@ public class SourceUtilsTest extends NbTestCase {
         testFO = workDir.createData("TestClass.java");
     }
 
+    public void testPhase() throws Exception {
+        TestUtilities.copyStringToFileObject(testFO,
+                "package foo;" +
+                "public class TestClass {" +
+                "}");
+        runUserActionTask(testFO, new AbstractTask<CompilationController>() {
+            public void run(CompilationController controller) throws Exception {
+                SourceUtils srcUtils = SourceUtils.newInstance(controller);
+                assertEquals(JavaSource.Phase.ELEMENTS_RESOLVED, controller.getPhase());
+            }
+        });
+    }
+
     public void testMainTypeElement() throws Exception {
         TestUtilities.copyStringToFileObject(testFO,
                 "package foo;" +
@@ -59,7 +72,7 @@ public class SourceUtilsTest extends NbTestCase {
                 "}" +
                 "class AnotherClass {" +
                 "}");
-        runInUserAction(testFO, new AbstractTask<CompilationController>() {
+        runUserActionTask(testFO, new AbstractTask<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 TypeElement typeElement = SourceUtils.newInstance(controller).getTypeElement();
                 assertTrue(typeElement.getQualifiedName().contentEquals("foo.TestClass"));
@@ -70,7 +83,7 @@ public class SourceUtilsTest extends NbTestCase {
                 "package foo;" +
                 "public class AnotherClass {" +
                 "}");
-        runInUserAction(testFO, new AbstractTask<CompilationController>() {
+        runUserActionTask(testFO, new AbstractTask<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 assertNull(SourceUtils.newInstance(controller));
             }
@@ -84,7 +97,7 @@ public class SourceUtilsTest extends NbTestCase {
                 "   public TestClass() {" +
                 "   }" +
                 "}");
-        runInUserAction(testFO, new AbstractTask<CompilationController>() {
+        runUserActionTask(testFO, new AbstractTask<CompilationController>() {
             public void run(CompilationController controller) throws Exception {
                 SourceUtils srcUtils = SourceUtils.newInstance(controller);
                 ExecutableElement constructor = srcUtils.getDefaultConstructor();
@@ -97,7 +110,7 @@ public class SourceUtilsTest extends NbTestCase {
                 "package foo;" +
                 "public class TestClass {" +
                 "}");
-        runInUserAction(testFO, new AbstractTask<CompilationController>() {
+        runUserActionTask(testFO, new AbstractTask<CompilationController>() {
             public void run(CompilationController controller) throws Exception {
                 SourceUtils srcUtils = SourceUtils.newInstance(controller);
                 assertNull(srcUtils.getDefaultConstructor());
@@ -205,7 +218,7 @@ public class SourceUtilsTest extends NbTestCase {
         assertFalse(SourceUtils.hasMainMethod(testFO));
     }
 
-    private static void runInUserAction(FileObject javaFile, CancellableTask<CompilationController> taskToTest) throws Exception {
+    private static void runUserActionTask(FileObject javaFile, CancellableTask<CompilationController> taskToTest) throws Exception {
         JavaSource javaSource = JavaSource.forFileObject(javaFile);
         javaSource.runUserActionTask(taskToTest, true);
     }
