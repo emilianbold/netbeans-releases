@@ -1,7 +1,10 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
 
 <fontscolors>
     <fontcolor name="java-annotation" foreColor="ff006f00" default="default"/>
+    
+    <!-- JavaTokenId categories -->
     <fontcolor name="character" default="char"/>
     <fontcolor name="errors" default="error"/>
     <fontcolor name="identifier" default="identifier"/>
@@ -13,17 +16,22 @@
     <fontcolor name="string" default="string"/>
     <fontcolor name="whitespace" default="whitespace"/>
     
+    <!-- JavaStringTokenId categories -->
     <fontcolor name="string-escape" default="string">
         <font style="bold" />
     </fontcolor>
     <fontcolor name="string-escape-invalid" default="string">
         <font style="italic" />
     </fontcolor>
-    
+   
+    <!-- JavadocTokenId categories -->
     <fontcolor name="javadoc-tag" foreColor="0000CC" default="comment">
         <font style="bold" />
     </fontcolor>
-    
+    <fontcolor name="html-tag" foreColor="blue" default="default"/>
+
+<!-- XXX: should java module really define these colorings ??
+
     <fontcolor name="html-argument" foreColor="ff007c00" default="identifier"/>
     <fontcolor name="html-block-comment" foreColor="gray" default="comment"/>
     <fontcolor name="html-character" foreColor="ffb20000" default="char"/>
@@ -31,9 +39,8 @@
     <fontcolor name="html-operator" foreColor="ff007c00" default="operator"/>
     <fontcolor name="html-sgml-comment" foreColor="gray" default="comment"/>
     <fontcolor name="html-sgml-declaration" foreColor="ffbf9221" default="default"/>
-    <fontcolor name="html-tag" foreColor="blue" default="default"/>
     <fontcolor name="html-text" default="default"/>
     <fontcolor name="html-value" foreColor="ff99006b" default="default"/>
     <fontcolor name="html-ws" default="whitespace"/>
-    
+-->
 </fontscolors>
