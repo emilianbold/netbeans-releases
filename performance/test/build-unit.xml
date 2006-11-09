@@ -19,17 +19,17 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="Measure startup time and memory usage" basedir="." default="all">
-
+    
     <!-- Root folders -->
     <property name="nball.dir" location="../.."/>
     <property name="nbextra.dir" location="../../../nbextra"/>
-
+    
     <!-- Import defaults for Unit tests -->
     <import file="../../nbbuild/templates/xtest-unit.xml"/>
-
+    
     <!-- Import defaults for Performance testing.  -->
     <import file="../performancetestutilities/dist/build-performance-tests.xml"/>
-
+    
     <!-- ========= -->
     <!-- Compilers -->
     <!-- ========= -->
@@ -47,8 +47,15 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Executor - Prepare IDE for complex measurements -->
     <target name="prepare_ide_for_complex_measurements" depends="copy_unzip_jedit_project">
         <antcall target="copy_released_ide_cfg_file"/>
+        
+        <property name="test.qa-functional.run.cp.extra" value=""/>
+        
         <executeTests pluginName="ide">
-            <classpath/>
+            <classpath>
+                <pathelement location="${nb_all}/jellytools/builds/jelly2-nb.jar"/>
+                <pathelement location="${nb_all}/jemmy/builds/jemmy.jar"/>
+                <path location="${test.qa-functional.run.cp.extra}"/>
+            </classpath>
             
             <property name="xtest.enable.assertions" value="false" /> 
             
@@ -60,12 +67,19 @@ Microsystems, Inc. All Rights Reserved.
         
         <antcall target="copy_original_ide_cfg_file"/>
     </target>
-
+    
     <!-- Executor - Prepare IDE for complex measurements -->
     <target name="prepare_ide_for_complex_measurements_nb_project" depends="copy_unzip_nb_project">
         <antcall target="copy_released_ide_cfg_file"/>
+        
+        <property name="test.qa-functional.run.cp.extra" value=""/>
+        
         <executeTests pluginName="ide">
-            <classpath/>
+            <classpath>
+                <pathelement location="${nb_all}/jellytools/builds/jelly2-nb.jar"/>
+                <pathelement location="${nb_all}/jemmy/builds/jemmy.jar"/>
+                <path location="${test.qa-functional.run.cp.extra}"/>
+            </classpath>
             
             <property name="xtest.enable.assertions" value="false" /> 
             
@@ -77,7 +91,7 @@ Microsystems, Inc. All Rights Reserved.
         
         <antcall target="copy_original_ide_cfg_file"/>
     </target>
-
+    
     <!-- Executor for Measure Startup Time with empty userdir -->
     <target name="runcodetest_measure_startup" depends="make_netbeans_executable">
         <antcall target="copy_released_ide_cfg_file"/>
@@ -95,7 +109,7 @@ Microsystems, Inc. All Rights Reserved.
         </executeTests>
         <antcall target="copy_original_ide_cfg_file"/>
     </target>
-
+    
     <!-- Executor for Measure Complex Startup Time -->
     <target name="runcodetest_measure_complex_startup" depends="make_netbeans_executable">
         <antcall target="copy_released_ide_cfg_file"/>
@@ -106,7 +120,7 @@ Microsystems, Inc. All Rights Reserved.
             <property name="xtest.userdata|userdir.prepared" value="${xtest.workdir}"/>
             <property name="xtest.userdata|performance.testutilities.dist.jar" value="${performance.testutilities.dist.jar}"/>
             <property name="xtest.userdata|xtest.perf.commandline.suffix" value="${xtest.perf.commandline.suffix}"/>
-
+            
             <!-- Property for repeatedly used userdir with opened files -->
             <property name="xtest.userdata|org.netbeans.performance.repeat" value="5"/>
         </executeTests>
@@ -117,7 +131,7 @@ Microsystems, Inc. All Rights Reserved.
         
         <antcall target="copy_original_ide_cfg_file"/>
     </target>
-
+    
     <!-- Executor for Measure Complex NB Project Startup Time -->
     <target name="runcodetest_measure_complex_startup_nb_project" depends="make_netbeans_executable">
         <antcall target="copy_released_ide_cfg_file"/>
@@ -139,7 +153,7 @@ Microsystems, Inc. All Rights Reserved.
         
         <antcall target="copy_original_ide_cfg_file"/>
     </target>
-
+    
     <!-- Executor for Measure Warm Up -->
     <target name="runcodetest_measure_warmup" depends="make_netbeans_executable">
         <antcall target="copy_released_ide_cfg_file"/>
@@ -156,7 +170,7 @@ Microsystems, Inc. All Rights Reserved.
         </executeTests>
         <antcall target="copy_original_ide_cfg_file"/>
     </target>
-
+    
     <!-- ========= -->
     <!-- Utils     -->
     <!-- ========= -->
@@ -166,5 +180,5 @@ Microsystems, Inc. All Rights Reserved.
         <chmod perm="ugo+rx" file="${netbeans.dest.dir}/bin/netbeans"/>
         <chmod perm="ugo+rx" dir="${netbeans.dest.dir}" includes="platform?/lib/nbexec"/>
     </target>
-        
+    
 </project>
