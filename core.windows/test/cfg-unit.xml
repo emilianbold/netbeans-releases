@@ -52,10 +52,10 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="stable" executor="ide" name="testbag_2">
         <testset dir="unit/src">
             <patternset>
-                <include name="org/netbeans/core/windows/persistence/*.class"/>
-                <include name="org/netbeans/core/windows/*.class"/>
-                <include name="org/netbeans/core/windows/services/*.class"/>
-                <include name="org/netbeans/core/windows/view/ui/*.class"/>
+                <include name="org/netbeans/core/windows/persistence/*Test.class"/>
+                <include name="org/netbeans/core/windows/*Test.class"/>
+                <include name="org/netbeans/core/windows/services/*Test.class"/>
+                <include name="org/netbeans/core/windows/view/ui/*Test.class"/>
                 <exclude name="org/netbeans/core/windows/persistence/WindowManagerParserTest.class"/>
                 <exclude name="org/netbeans/core/windows/view/ui/StatusLineElementProviderTest.class"/>
             </patternset>
