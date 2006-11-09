@@ -57,45 +57,16 @@ public class JavaJSPCompletionProvider implements CompletionProvider {
             TokenItem ti = sup.getItemAtOrBefore(component.getCaret().getDot());
             //delegate to java cc provider if the context is really java code
             if(ti != null && ti.getTokenContextPath().contains(JavaTokenContext.contextPath)){
-                VirtualJavaFromJSPCreator javaCreator = new VirtualJavaFromJSPCreator(sup, Utilities.getDocument(component));
-                javaCreator.process(component.getSelectionStart());
-                String dummyJavaClass = javaCreator.getDummyJavaClassBody();
                 
-                FileSystem fs = FileUtil.createMemoryFileSystem();
-                FileObject fileDummyJava = fs.getRoot().createData("DummyJSP", "java"); //NOI18N
-                PrintStream ps = new PrintStream(fileDummyJava.getOutputStream());
-                ps.print(dummyJavaClass);
-                ps.close();
-                
-                Document doc = component.getDocument();
-                FileObject jspFile = NbEditorUtilities.getFileObject(doc);
-                //Project project = FileOwnerQuery.getOwner(jspFile);
-                
-                //Sources sources = ProjectUtils.getSources(project);
-                //SourceGroup[] sg = sources.getSourceGroups("doc_root"); // doc_root
-                //FileObject sourceRoot = sg != null && sg.length > 0 ? sourceRoot = sg[0].getRootFolder() : null;
-                
-                
-                //ClassPathProvider cpProvider = (ClasspathProvider)project.getLookup().lookup(ClassPathProvider.class);
-                //cpProvider.findClassPath(fileDummyJava, ClassPath.COMPILE);
-                
-                ClasspathInfo cpInfo = ClasspathInfo.create(jspFile);
-                JavaSource source = JavaSource.create(cpInfo, fileDummyJava);
-                int shiftedOffset = javaCreator.getShiftedOffset();
-                //System.err.println(javaCreator.getTestSting());
-                
-                doc.putProperty(JavaSource.class, source);
                 
                 if ((queryType & COMPLETION_QUERY_TYPE) != 0){
-                    return new AsyncCompletionTask(new ScriptletCompletionQuery(source, queryType, shiftedOffset), component);
+                    return new AsyncCompletionTask(new ScriptletCompletionQuery(component, queryType), component);
                 }
                 
-                return null;          
+                return null;
             }
             
         }catch(BadLocationException ex) {
-            ex.printStackTrace();
-        } catch (IOException ex){
             ex.printStackTrace();
         }
         
@@ -117,28 +88,59 @@ public class JavaJSPCompletionProvider implements CompletionProvider {
     }
     
     static class ScriptletCompletionQuery extends AsyncCompletionQuery {
-        private JavaSource js;
         private int queryType;
-        private int shiftedOffset;
+        private JTextComponent component;
         
-        public ScriptletCompletionQuery(JavaSource js, int queryType, int caretOffset){
+        public ScriptletCompletionQuery(JTextComponent component, int queryType){
             this.queryType = queryType;
-            this.js = js;
-            this.shiftedOffset = caretOffset;
+            this.component = component;
         }
         
         @Override protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
             try {
+                JspSyntaxSupport sup = (JspSyntaxSupport)Utilities.getSyntaxSupport(component);
+                VirtualJavaFromJSPCreator javaCreator = new VirtualJavaFromJSPCreator(sup, Utilities.getDocument(component));
+                javaCreator.process(component.getSelectionStart());
+                String dummyJavaClass = javaCreator.getDummyJavaClassBody();
+                
+                FileSystem fs = FileUtil.createMemoryFileSystem();
+                FileObject fileDummyJava = fs.getRoot().createData("DummyJSP", "java"); //NOI18N
+                PrintStream ps = new PrintStream(fileDummyJava.getOutputStream());
+                ps.print(dummyJavaClass);
+                ps.close();
+                
+                FileObject jspFile = NbEditorUtilities.getFileObject(doc);
+                //Project project = FileOwnerQuery.getOwner(jspFile);
+                
+                //Sources sources = ProjectUtils.getSources(project);
+                //SourceGroup[] sg = sources.getSourceGroups("doc_root"); // doc_root
+                //FileObject sourceRoot = sg != null && sg.length > 0 ? sourceRoot = sg[0].getRootFolder() : null;
+                
+                
+                //ClassPathProvider cpProvider = (ClasspathProvider)project.getLookup().lookup(ClassPathProvider.class);
+                //cpProvider.findClassPath(fileDummyJava, ClassPath.COMPILE);
+                
+                ClasspathInfo cpInfo = ClasspathInfo.create(jspFile);
+                JavaSource source = JavaSource.create(cpInfo, fileDummyJava);
+                int shiftedOffset = javaCreator.getShiftedOffset();
+                //System.err.println(javaCreator.getTestSting());
+                
+                doc.putProperty(JavaSource.class, source);
+                      
                 List<? extends CompletionItem> javaCompletionItems = JavaCompletionProvider.query(
-                        js, queryType, shiftedOffset, caretOffset);
+                        source, queryType, shiftedOffset, caretOffset);
                 
                 resultSet.addAllItems(javaCompletionItems);
                 resultSet.finish();
-            }
-            catch (IOException ex) {
+            } catch (IOException ex) {
                 java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE,
-                                                                 ex.getMessage(),
-                                                                 ex);
+                        ex.getMessage(),
+                        ex);
+            }
+            catch (BadLocationException ex){
+                java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE,
+                        ex.getMessage(),
+                        ex);
             }
         }
     }
