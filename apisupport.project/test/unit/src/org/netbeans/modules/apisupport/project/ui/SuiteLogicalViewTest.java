@@ -65,8 +65,8 @@ public class SuiteLogicalViewTest extends TestBase {
         waitForGUIUpdate();
         assertEquals("two children", 2, children.getNodes(true).length);
         TestBase.generateSuiteComponent(suite1, "module1c");
-        ProjectManager.mutex().writeAccess(new Mutex.Action() {
-            public Object run() {
+        ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
+            public Void run() {
                 children.stateChanged(null); // #70914
                 return null; // #70914
             }
@@ -77,7 +77,7 @@ public class SuiteLogicalViewTest extends TestBase {
     
     public void testNameAndDisplayName() throws Exception {
         SuiteProject p = generateSuite("Sweet Stuff");
-        Node n = ((LogicalViewProvider) p.getLookup().lookup(LogicalViewProvider.class)).createLogicalView();
+        Node n = p.getLookup().lookup(LogicalViewProvider.class).createLogicalView();
         assertEquals("Sweet Stuff", n.getName());
         assertEquals("Sweet Stuff", n.getDisplayName());
         NL nl = new NL();
@@ -86,7 +86,7 @@ public class SuiteLogicalViewTest extends TestBase {
         ep.setProperty("app.name", "sweetness");
         ep.setProperty("app.title", "Sweetness is Now!");
         p.getHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
-        assertEquals(new HashSet(Arrays.asList(new String[] {Node.PROP_NAME, Node.PROP_DISPLAY_NAME})), nl.changed);
+        assertEquals(new HashSet<String>(Arrays.asList(Node.PROP_NAME, Node.PROP_DISPLAY_NAME)), nl.changed);
         assertEquals("Sweetness is Now!", n.getName());
         assertEquals("Sweetness is Now!", n.getDisplayName());
     }
@@ -95,13 +95,10 @@ public class SuiteLogicalViewTest extends TestBase {
         SuiteProject suite = generateSuite("suite");
         TestBase.generateSuiteComponent(suite, "module");
         SuiteProjectTest.openSuite(suite);
-        SuiteLogicalView.SuiteRootNode rootNode = (SuiteRootNode) ((LogicalViewProvider)
-        suite.getLookup().lookup(LogicalViewProvider.class)).createLogicalView();
-        Set expected = new HashSet(Arrays.asList(
-                new FileObject[] {
+        SuiteRootNode rootNode = (SuiteRootNode) suite.getLookup().lookup(LogicalViewProvider.class).createLogicalView();
+        Set<FileObject> expected = new HashSet<FileObject>(Arrays.asList(
             suite.getProjectDirectory().getFileObject("nbproject"),
             suite.getProjectDirectory().getFileObject("build.xml")
-        }
         ));
         assertTrue(expected.equals(rootNode.getProjectFiles()));
     }
@@ -113,7 +110,7 @@ public class SuiteLogicalViewTest extends TestBase {
         SuiteProject suite = generateSuite("sweet");
         FileObject master = suite.getProjectDirectory().createData("master.jnlp");
         
-        LogicalViewProvider viewProv = (LogicalViewProvider) suite.getLookup().lookup(LogicalViewProvider.class);
+        LogicalViewProvider viewProv = suite.getLookup().lookup(LogicalViewProvider.class);
         Node n = viewProv.createLogicalView();
         
         Node[] nodes = n.getChildren().getNodes(true);
@@ -142,7 +139,7 @@ public class SuiteLogicalViewTest extends TestBase {
     }
     
     private static final class NL extends NodeAdapter {
-        public final Set/*<String>*/ changed = new HashSet();
+        public final Set<String> changed = new HashSet<String>();
         public void propertyChange(PropertyChangeEvent evt) {
             changed.add(evt.getPropertyName());
         }
