@@ -199,7 +199,13 @@ public class Utils {
         // wait breakpoint established
         new Waiter(new Waitable() {
             public Object actionProduced(Object editorOper) {
-                return ((EditorOperator)editorOper).getAnnotations(line).length == 1 ? Boolean.TRUE : null;
+                Object[] annotations = ((EditorOperator)editorOper).getAnnotations(line);
+                for (int i = 0; i < annotations.length; i++) {
+                    if("Breakpoint".equals(((EditorOperator)editorOper).getAnnotationType(annotations[i]))) { // NOI18N
+                        return Boolean.TRUE;
+                    }
+                }
+                return null;
             }
             public String getDescription() {
                 return("Wait breakpoint established on line "+line); // NOI18N
