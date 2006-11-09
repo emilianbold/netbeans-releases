@@ -702,7 +702,12 @@ public final class IntrospectedInfo {
                         String[] ss = k.split("\\.", 2);
                         if (ss[0].equals("class")) {
                             Matcher m = p.matcher(ss[1]);
-                            assert m.matches() : k;
+                            boolean match = m.matches();
+                            if (!match) {
+                                LOG.log(Level.WARNING, "malformed key: {0}", k);
+                                continue;
+                            }
+                            assert match : k;
                             String c = m.group(1);
                             IntrospectedClass ic = assureDefined(ii, c);
                             String tail = m.group(2);
