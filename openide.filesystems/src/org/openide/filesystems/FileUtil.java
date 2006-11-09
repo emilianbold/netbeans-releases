@@ -64,9 +64,6 @@ public final class FileUtil extends Object {
     /** Also seems to be used at least in apisupport/project/test/unit/data/example-external-projects/suite3/nbplatform/random/modules/ext/stuff.jar; not known why */
     private static byte[] ZIP_HEADER_2 = {0x50, 0x4b, 0x05, 0x06};
     
-    private static final FileSystemView fsv = FileSystemView.getFileSystemView();
-    
-
     /** transient attributes which should not be copied
     * of type Set<String>
     */
@@ -1293,7 +1290,7 @@ public final class FileUtil extends Object {
         boolean canBeCanonizalized = true;
 
         if (file.getParent() == null) { //for File.listRoots should be true
-            canBeCanonizalized = !fsv.isFloppyDrive(file) && file.exists();
+            canBeCanonizalized = !FileSystemView.getFileSystemView().isFloppyDrive(file) && file.exists();
         }
 
         return canBeCanonizalized;
