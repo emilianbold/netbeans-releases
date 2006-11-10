@@ -67,7 +67,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
     public Runnable renameImpl(final Lookup lookup) {
         EditorCookie textC = lookup.lookup(EditorCookie.class);
         final Dictionary dictionary = lookup.lookup(Dictionary.class);
-        if (textC != null) {
+        if (textC != null && textC.getOpenedPanes() != null) {
             return new TextComponentRunnable(textC) {
                 @Override
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info) {
@@ -128,7 +128,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
     @Override
     public Runnable findUsagesImpl(Lookup lookup) {
         EditorCookie ec = lookup.lookup(EditorCookie.class);
-        if (ec != null) {
+        if (ec != null && ec.getOpenedPanes() != null) {
             return new TextComponentRunnable(ec) {
                 @Override
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info) {
@@ -166,7 +166,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
     @Override
     public Runnable deleteImpl(final Lookup lookup) {
         EditorCookie textC = lookup.lookup(EditorCookie.class);
-        if (textC != null) {
+        if (textC != null  && textC.getOpenedPanes() != null ) {
             return new TextComponentRunnable(textC) {
                 @Override
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info) {
@@ -229,7 +229,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
     public Runnable moveImpl(final Lookup lookup) {
         EditorCookie textC = lookup.lookup(EditorCookie.class);
         final Dictionary dictionary = lookup.lookup(Dictionary.class);
-        if (textC != null) {
+        if (textC != null && textC.getOpenedPanes() != null) {
             return new TextComponentRunnable(textC) {
                 @Override
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info) {
