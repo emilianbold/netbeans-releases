@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.xml.xam.dom;
 
-import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xml.xam.NamedReferenceable;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.xml.xam.AbstractReference;

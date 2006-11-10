@@ -21,8 +21,6 @@ package org.netbeans.modules.xml.xam;
 
 import java.util.Collection;
 import java.util.List;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 /**
  * A component in model.

@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.xml.xam.spi;
 
-import java.util.Collection;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
@@ -66,7 +65,6 @@ public interface Validator {
         private ResultType type;
         private Component component = null;
         private String description;
-        private String correction;
         private int lineNumber = -1;
         private int columnNumber = -1;
         private Model model;

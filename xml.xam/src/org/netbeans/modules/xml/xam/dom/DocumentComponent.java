@@ -19,8 +19,6 @@
 
 package org.netbeans.modules.xml.xam.dom;
 
-import java.util.Collection;
-import java.util.List;
 import org.netbeans.modules.xml.xam.*;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;

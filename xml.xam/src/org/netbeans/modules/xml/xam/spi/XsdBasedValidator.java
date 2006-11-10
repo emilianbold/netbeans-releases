@@ -347,7 +347,7 @@ public abstract class XsdBasedValidator implements Validator {
                         XsdBasedValidator.this, resultType, component, errorDescription));
             } else {
                 resultItems.add(new ResultItem(XsdBasedValidator.this, resultType,
-                        errorDescription, lineNumber, columnNumber, model));;
+                        errorDescription, lineNumber, columnNumber, model));
             }
         }
         

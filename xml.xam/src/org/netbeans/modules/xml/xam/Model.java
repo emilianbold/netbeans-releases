@@ -20,9 +20,7 @@
 package org.netbeans.modules.xml.xam;
 
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
 import javax.swing.event.UndoableEditListener;
-import org.netbeans.modules.xml.xam.ModelSource;
 
 /**
  * Interface describing an abstract model. The model is based on a
