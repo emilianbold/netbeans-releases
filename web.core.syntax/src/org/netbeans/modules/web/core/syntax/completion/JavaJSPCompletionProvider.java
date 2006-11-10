@@ -27,10 +27,12 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.editor.TokenItem;
+import org.netbeans.editor.TokenID;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.java.JavaTokenContext;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.editor.java.JavaCompletionProvider;
+import org.netbeans.modules.web.core.syntax.JspDirectiveTokenContext;
 import org.netbeans.modules.web.core.syntax.JspSyntaxSupport;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionProvider;
@@ -52,61 +54,56 @@ public class JavaJSPCompletionProvider implements CompletionProvider {
     private JavaCompletionProvider javaCompletionProvider = new JavaCompletionProvider();
     
     public CompletionTask createTask(int queryType, final JTextComponent component) {
+        if ((queryType & COMPLETION_QUERY_TYPE) == 0){
+            return null;
+        }
+        
         try {
             JspSyntaxSupport sup = (JspSyntaxSupport)Utilities.getSyntaxSupport(component);
             TokenItem ti = sup.getItemAtOrBefore(component.getCaret().getDot());
             //delegate to java cc provider if the context is really java code
             if(ti != null && ti.getTokenContextPath().contains(JavaTokenContext.contextPath)){
-                
-                
-                if ((queryType & COMPLETION_QUERY_TYPE) != 0){
-                    return new AsyncCompletionTask(new ScriptletCompletionQuery(component, queryType), component);
-                }
-                
-                return null;
+                return new AsyncCompletionTask(new EmbeddedJavaCompletionQuery(component, queryType), component);
             }
             
         }catch(BadLocationException ex) {
             ex.printStackTrace();
         }
         
-        //not java context => return empty result
-        return new AsyncCompletionTask(new EmptyQuery(), component);
-    }
-    
-    private static final class EmptyQuery extends AsyncCompletionQuery {
-        public EmptyQuery() {}
-        
-        protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
-            resultSet.finish();
-        }
-        
+        //not java context =>
+        return new AsyncCompletionTask(new ImportCompletionQuery(component, queryType), component);
     }
     
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
         return javaCompletionProvider.getAutoQueryTypes(component, typedText);
     }
     
-    static class ScriptletCompletionQuery extends AsyncCompletionQuery {
-        private int queryType;
-        private JTextComponent component;
+    static abstract class DelegatedQuery extends AsyncCompletionQuery {
+        protected int queryType;
+        protected JTextComponent component;
         
-        public ScriptletCompletionQuery(JTextComponent component, int queryType){
+        DelegatedQuery(JTextComponent component, int queryType){
             this.queryType = queryType;
             this.component = component;
         }
         
+        protected abstract FakedJavaClass getFakedJavaClass(Document doc, int caretOffset);
+        
         @Override protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
+            FileObject fileDummyJava = null;
+            
             try {
-                JspSyntaxSupport sup = (JspSyntaxSupport)Utilities.getSyntaxSupport(component);
-                VirtualJavaFromJSPCreator javaCreator = new VirtualJavaFromJSPCreator(sup, Utilities.getDocument(component));
-                javaCreator.process(component.getSelectionStart());
-                String dummyJavaClass = javaCreator.getDummyJavaClassBody();
+                FakedJavaClass fakedJavaClass = getFakedJavaClass(doc, caretOffset);
+                
+                if (fakedJavaClass == null){
+                    resultSet.finish();
+                    return;
+                }
                 
                 FileSystem fs = FileUtil.createMemoryFileSystem();
-                FileObject fileDummyJava = fs.getRoot().createData("DummyJSP", "java"); //NOI18N
+                fileDummyJava = fs.getRoot().createData("DummyJSP", "java"); //NOI18N
                 PrintStream ps = new PrintStream(fileDummyJava.getOutputStream());
-                ps.print(dummyJavaClass);
+                ps.print(fakedJavaClass.getBody());
                 ps.close();
                 
                 FileObject jspFile = NbEditorUtilities.getFileObject(doc);
@@ -122,11 +119,11 @@ public class JavaJSPCompletionProvider implements CompletionProvider {
                 
                 ClasspathInfo cpInfo = ClasspathInfo.create(jspFile);
                 JavaSource source = JavaSource.create(cpInfo, fileDummyJava);
-                int shiftedOffset = javaCreator.getShiftedOffset();
+                int shiftedOffset = fakedJavaClass.getOffset();
                 //System.err.println(javaCreator.getTestSting());
                 
                 doc.putProperty(JavaSource.class, source);
-                      
+                
                 List<? extends CompletionItem> javaCompletionItems = JavaCompletionProvider.query(
                         source, queryType, shiftedOffset, caretOffset);
                 
@@ -136,12 +133,130 @@ public class JavaJSPCompletionProvider implements CompletionProvider {
                 java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE,
                         ex.getMessage(),
                         ex);
-            }
-            catch (BadLocationException ex){
-                java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE,
-                        ex.getMessage(),
-                        ex);
+            } finally{
+                if (fileDummyJava != null){
+                    try{
+                        fileDummyJava.delete();
+                        
+                    } catch (IOException e){
+                        e.printStackTrace();
+                    }
+                }
             }
         }
     }
+    
+    static class FakedJavaClass{
+        int offset;
+        String body;
+        
+        FakedJavaClass(String body, int offset){
+            this.offset = offset;
+            this.body = body;
+        }
+        
+        String getBody(){
+            return body;
+        }
+        
+        int getOffset(){
+            return offset;
+        }
+    }
+    
+    static class ImportCompletionQuery extends DelegatedQuery {
+        public ImportCompletionQuery(JTextComponent component, int queryType){
+            super(component, queryType);
+        }
+        
+        private TokenItem findFirstOnTheLeft(TokenItem tknStart, TokenID tknID){
+            TokenItem tkn = tknStart;
+            
+            while (tkn != null && tkn.getTokenID() != tknID){
+                tkn = tkn.getPrevious();
+            }
+            
+            return tkn;
+        }
+        
+        // TODO: lexerize me
+        private String getImport(int caretOffset) throws BadLocationException {
+            JspSyntaxSupport sup = (JspSyntaxSupport)Utilities.getSyntaxSupport(component);
+            TokenItem tokenAtCaretPos = sup.getTokenChain(caretOffset, caretOffset + 1);
+            
+            if (tokenAtCaretPos.getTokenID() != JspDirectiveTokenContext.ATTR_VALUE){
+                return null;
+            }
+            
+            TokenItem tknImportAttr = findFirstOnTheLeft(tokenAtCaretPos, JspDirectiveTokenContext.ATTRIBUTE);
+            
+            if (tknImportAttr == null || !"import".equalsIgnoreCase(tknImportAttr.getImage())){ //NOI18N
+                return null;
+            }
+            
+            TokenItem tknPageTag = findFirstOnTheLeft(tknImportAttr, JspDirectiveTokenContext.TAG);
+            
+            if (tknPageTag == null || !"page".equalsIgnoreCase(tknPageTag.getImage())){ //NOI18N
+                return null;
+            }
+            
+            String imprt = tokenAtCaretPos.getImage().trim();
+            
+            // trim quotes
+            
+            if (!(imprt.startsWith("\"") && imprt.endsWith("\"") && imprt.length() > 1)){
+                return null;
+            }
+            
+            return imprt.substring(1, imprt.length() - 1);
+        }
+        
+        protected FakedJavaClass getFakedJavaClass(Document doc, int caretOffset){
+            try {
+                String prefix = getImport(caretOffset);
+                
+                if (prefix != null){
+                    String fakedClassBody = "import " + prefix; //NOI18N
+                    FakedJavaClass fakedJavaClass = new FakedJavaClass(fakedClassBody, fakedClassBody.length());
+                    
+                    return fakedJavaClass;
+                }
+            } catch (BadLocationException ex) {
+                java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE,
+                        ex.getMessage(),
+                        ex);
+            };
+            
+            return null;
+        }
+        
+    }
+    
+    static class EmbeddedJavaCompletionQuery extends DelegatedQuery {
+        public EmbeddedJavaCompletionQuery(JTextComponent component, int queryType){
+            super(component, queryType);
+        }
+        
+        protected FakedJavaClass getFakedJavaClass(Document doc, int caretOffset){
+            JspSyntaxSupport sup = (JspSyntaxSupport)Utilities.getSyntaxSupport(component);
+            VirtualJavaFromJSPCreator javaCreator = new VirtualJavaFromJSPCreator(sup, doc);
+            
+            try{
+                javaCreator.process(caretOffset);
+                String dummyJavaClass = javaCreator.getDummyJavaClassBody();
+                
+                FakedJavaClass fakedJavaClass = new FakedJavaClass(dummyJavaClass, javaCreator.getShiftedOffset());
+                
+                return fakedJavaClass;
+            } catch (BadLocationException ex) {
+                java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE,
+                        ex.getMessage(),
+                        ex);
+            };
+            
+            return null;
+        }
+    }
+    
 }
+
