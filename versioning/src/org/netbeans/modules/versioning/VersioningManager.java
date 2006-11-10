@@ -19,6 +19,7 @@
 package org.netbeans.modules.versioning;
 
 import org.netbeans.modules.versioning.spi.VersioningSystem;
+import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.masterfs.providers.InterceptionListener;
 import org.openide.util.Lookup;
@@ -108,6 +109,27 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
 
     private synchronized void flushFileOwnerCache() {
         managedRoots.clear();
+    }
+
+    synchronized VersioningSystem[] getVersioningSystems() {
+        return versioningSystems.toArray(new VersioningSystem[versioningSystems.size()]);
+    }
+
+    /**
+     * 
+     * @param ctx VCSContext to examine
+     * @return VersioningSystem systems that manage this context or an empty array if the context is not versioned
+     */
+    public VersioningSystem[] getOwners(VCSContext ctx) {
+        Set<File> files = ctx.getRootFiles();
+        Set<VersioningSystem> owners = new HashSet<VersioningSystem>();
+        for (File file : files) {
+            VersioningSystem vs = getOwner(file);
+            if (vs != null) {
+                owners.add(vs);
+            }
+        }
+        return (VersioningSystem[]) owners.toArray(new VersioningSystem[owners.size()]);
     }
     
     public synchronized VersioningSystem getOwner(File file) {

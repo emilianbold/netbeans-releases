@@ -47,8 +47,8 @@ class FileStatusProvider extends VCSAnnotator {
         return CvsVersioningSystem.getInstance().getAnnotator().annotateIcon(icon, context);
     }
 
-    public Action[] getActions(VCSContext context) {
-        return Annotator.getActions(context);
+    public Action[] getActions(VCSContext context, int destination) {
+        return Annotator.getActions(context, destination);
     }
     
     void shutdown() {

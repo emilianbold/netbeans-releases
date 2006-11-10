@@ -23,15 +23,17 @@ import org.netbeans.modules.subversion.ui.actions.*;
 import org.netbeans.modules.subversion.ui.copy.*;
 import org.netbeans.modules.subversion.ui.ignore.IgnoreAction;
 import org.netbeans.modules.subversion.ui.status.StatusAction;
+import org.netbeans.modules.subversion.ui.status.ShowAllChangesAction;
 import org.netbeans.modules.subversion.ui.commit.CommitAction;
-import org.netbeans.modules.subversion.ui.update.UpdateAction;
-import org.netbeans.modules.subversion.ui.update.RevertModificationsAction;
-import org.netbeans.modules.subversion.ui.update.ResolveConflictsAction;
-import org.netbeans.modules.subversion.ui.update.UpdateWithDependenciesAction;
+import org.netbeans.modules.subversion.ui.commit.CommitAllAction;
+import org.netbeans.modules.subversion.ui.update.*;
 import org.netbeans.modules.subversion.ui.diff.DiffAction;
+import org.netbeans.modules.subversion.ui.diff.DiffAllAction;
+import org.netbeans.modules.subversion.ui.diff.ExportDiffAction;
 import org.netbeans.modules.subversion.ui.blame.BlameAction;
 import org.netbeans.modules.subversion.ui.history.SearchHistoryAction;
 import org.netbeans.modules.subversion.ui.project.ImportAction;
+import org.netbeans.modules.subversion.ui.checkout.CheckoutAction;
 import org.openide.filesystems.*;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
@@ -46,6 +48,7 @@ import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.util.FlatFolder;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.spi.VCSContext;
+import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.api.project.Project;
 
 import javax.swing.*;
@@ -382,10 +385,11 @@ public class Annotator {
      * will act on the supplied context.
      *
      * @param ctx context similar to {@link org.openide.util.ContextAwareAction#createContextAwareInstance(org.openide.util.Lookup)}   
+     * @param destination
      * @return Action[] array of versioning actions that may be used to construct a popup menu. These actions
      * will act on currently activated nodes.
      */ 
-    public static Action [] getActions(VCSContext ctx) {
+    public static Action [] getActions(VCSContext ctx, int destination) {
         ResourceBundle loc = NbBundle.getBundle(Annotator.class);
         Node [] nodes = ctx.getNodes();
         File [] files = ctx.getRootFiles().toArray(new File[ctx.getRootFiles().size()]);
@@ -395,36 +399,66 @@ public class Annotator {
         boolean onlyProjects = onlyProjects(ctx.getNodes());
         
         List<Action> actions = new ArrayList<Action>(20);
-        if (noneVersioned) {
-            actions.add(SystemActionBridge.createAction(SystemAction.get(ImportAction.class).createContextAwareInstance(context), loc.getString("CTL_PopupMenuItem_Import"), context));
+        if (destination == VCSAnnotator.DEST_MAINMENU) {
+            actions.add(SystemAction.get(ShowAllChangesAction.class));
+            actions.add(SystemAction.get(DiffAllAction.class));
+            actions.add(SystemAction.get(UpdateAllAction.class));
+            actions.add(SystemAction.get(CommitAllAction.class));
+            actions.add(null);
+            actions.add(SystemAction.get(CheckoutAction.class));
+            actions.add(SystemAction.get(ImportAction.class));
+            actions.add(null);
+            actions.add(SystemAction.get(UpdateWithDependenciesAction.class));
+            actions.add(null);
+            actions.add(SystemAction.get(StatusAction.class));
+            actions.add(SystemAction.get(DiffAction.class));
+            actions.add(SystemAction.get(UpdateAction.class));
+            actions.add(SystemAction.get(CommitAction.class));
+            actions.add(null);
+            actions.add(SystemAction.get(ExportDiffAction.class));
+            actions.add(null);
+            actions.add(SystemAction.get(CreateCopyAction.class));
+            actions.add(SystemAction.get(SwitchToAction.class));
+            actions.add(SystemAction.get(MergeAction.class));
+            actions.add(null);
+            actions.add(SystemAction.get(BlameAction.class));
+            actions.add(SystemAction.get(SearchHistoryAction.class));
+            actions.add(null);
+            actions.add(SystemAction.get(RevertModificationsAction.class));
+            actions.add(SystemAction.get(ResolveConflictsAction.class));
+            actions.add(SystemAction.get(IgnoreAction.class));
         } else {
-            actions.add(SystemActionBridge.createAction(SystemAction.get(StatusAction.class), loc.getString("CTL_PopupMenuItem_Status"), context));
-            actions.add(SystemActionBridge.createAction(SystemAction.get(DiffAction.class), loc.getString("CTL_PopupMenuItem_Diff"), context));
-            actions.add(SystemActionBridge.createAction(SystemAction.get(UpdateAction.class), loc.getString("CTL_PopupMenuItem_Update"), context));
-            if (onlyProjects) {
-                actions.add(new SystemActionBridge(SystemAction.get(UpdateWithDependenciesAction.class), loc.getString("CTL_PopupMenuItem_UpdateWithDeps")));
-            }
-            actions.add(SystemActionBridge.createAction(SystemAction.get(CommitAction.class), loc.getString("CTL_PopupMenuItem_Commit"), context));
-            actions.add(null);
-            actions.add(SystemActionBridge.createAction(SystemAction.get(CreateCopyAction.class), loc.getString("CTL_PopupMenuItem_Copy"), context));
-            actions.add(SystemActionBridge.createAction(SystemAction.get(SwitchToAction.class), loc.getString("CTL_PopupMenuItem_Switch"), context));
-            actions.add(SystemActionBridge.createAction(SystemAction.get(MergeAction.class), loc.getString("CTL_PopupMenuItem_Merge"), context));
-            actions.add(null);
-            if (!onlyFolders) {
-                actions.add(SystemActionBridge.createAction(SystemAction.get(BlameAction.class),
-                                                            ((BlameAction)SystemAction.get(BlameAction.class)).visible(nodes) ? 
-                                                                    loc.getString("CTL_PopupMenuItem_HideAnnotations") : 
-                                                                    loc.getString("CTL_PopupMenuItem_ShowAnnotations"), context));            
-            }
-            actions.add(SystemActionBridge.createAction(SystemAction.get(SearchHistoryAction.class), loc.getString("CTL_PopupMenuItem_SearchHistory"), context));
-            actions.add(null);
-            actions.add(SystemActionBridge.createAction(SystemAction.get(RevertModificationsAction.class), loc.getString("CTL_PopupMenuItem_GetClean"), context));
-            actions.add(SystemActionBridge.createAction(SystemAction.get(ResolveConflictsAction.class), loc.getString("CTL_PopupMenuItem_ResolveConflicts"), context));
-            if (!onlyProjects) {
-                actions.add(SystemActionBridge.createAction(SystemAction.get(IgnoreAction.class),
-                                                            ((IgnoreAction)SystemAction.get(IgnoreAction.class)).getActionStatus(nodes) == IgnoreAction.UNIGNORING ? 
-                                                                    loc.getString("CTL_PopupMenuItem_Unignore") : 
-                                                                    loc.getString("CTL_PopupMenuItem_Ignore"), context));
+            if (noneVersioned) {
+                actions.add(SystemActionBridge.createAction(SystemAction.get(ImportAction.class).createContextAwareInstance(context), loc.getString("CTL_PopupMenuItem_Import"), context));
+            } else {
+                actions.add(SystemActionBridge.createAction(SystemAction.get(StatusAction.class), loc.getString("CTL_PopupMenuItem_Status"), context));
+                actions.add(SystemActionBridge.createAction(SystemAction.get(DiffAction.class), loc.getString("CTL_PopupMenuItem_Diff"), context));
+                actions.add(SystemActionBridge.createAction(SystemAction.get(UpdateAction.class), loc.getString("CTL_PopupMenuItem_Update"), context));
+                if (onlyProjects) {
+                    actions.add(new SystemActionBridge(SystemAction.get(UpdateWithDependenciesAction.class), loc.getString("CTL_PopupMenuItem_UpdateWithDeps")));
+                }
+                actions.add(SystemActionBridge.createAction(SystemAction.get(CommitAction.class), loc.getString("CTL_PopupMenuItem_Commit"), context));
+                actions.add(null);
+                actions.add(SystemActionBridge.createAction(SystemAction.get(CreateCopyAction.class), loc.getString("CTL_PopupMenuItem_Copy"), context));
+                actions.add(SystemActionBridge.createAction(SystemAction.get(SwitchToAction.class), loc.getString("CTL_PopupMenuItem_Switch"), context));
+                actions.add(SystemActionBridge.createAction(SystemAction.get(MergeAction.class), loc.getString("CTL_PopupMenuItem_Merge"), context));
+                actions.add(null);
+                if (!onlyFolders) {
+                    actions.add(SystemActionBridge.createAction(SystemAction.get(BlameAction.class),
+                                                                ((BlameAction)SystemAction.get(BlameAction.class)).visible(nodes) ? 
+                                                                        loc.getString("CTL_PopupMenuItem_HideAnnotations") : 
+                                                                        loc.getString("CTL_PopupMenuItem_ShowAnnotations"), context));            
+                }
+                actions.add(SystemActionBridge.createAction(SystemAction.get(SearchHistoryAction.class), loc.getString("CTL_PopupMenuItem_SearchHistory"), context));
+                actions.add(null);
+                actions.add(SystemActionBridge.createAction(SystemAction.get(RevertModificationsAction.class), loc.getString("CTL_PopupMenuItem_GetClean"), context));
+                actions.add(SystemActionBridge.createAction(SystemAction.get(ResolveConflictsAction.class), loc.getString("CTL_PopupMenuItem_ResolveConflicts"), context));
+                if (!onlyProjects) {
+                    actions.add(SystemActionBridge.createAction(SystemAction.get(IgnoreAction.class),
+                                                                ((IgnoreAction)SystemAction.get(IgnoreAction.class)).getActionStatus(nodes) == IgnoreAction.UNIGNORING ? 
+                                                                        loc.getString("CTL_PopupMenuItem_Unignore") : 
+                                                                        loc.getString("CTL_PopupMenuItem_Ignore"), context));
+                }
             }
         }
         return actions.toArray(new Action[actions.size()]);

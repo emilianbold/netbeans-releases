@@ -99,14 +99,10 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-subversion-ui-ignore-IgnoreAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.ignore.IgnoreAction"/>
             </file>
-            -->
+
         </folder>
     </folder>
     <folder name="Menu"> 
-        <attr name="SVN/Tools" boolvalue="true"/>
-        <attr name="RunProject/SVN" boolvalue="true"/>
-        <attr name="Refactoring/SVN" boolvalue="true"/>
-        <attr name="CVS/SVN" boolvalue="true"/>
 
         <folder name="View">
             <file name="org-netbeans-modules-subversion-ui-status-ShowTextAnnotationsAction.shadow">
@@ -114,170 +110,6 @@ Microsystems, Inc. All Rights Reserved.
             </file>            
         </folder>
         
-        <folder name="SVN">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.subversion.resources.Bundle"/>
-
-            <file name="org-netbeans-modules-subversion-ui-status-ShowAllChangesAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-status-ShowAllChangesAction.instance"/>
-            </file>
-            <attr name="org-netbeans-modules-subversion-ui-status-ShowAllChangesAction.shadow/org-netbeans-modules-subversion-ui-diff-DiffAllAction.shadow" boolvalue="true"/>
-                        
-            <file name="org-netbeans-modules-subversion-ui-diff-DiffAllAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-diff-DiffAllAction.instance"/>
-            </file>
-            <attr name="org-netbeans-modules-subversion-ui-diff-DiffAllAction.shadow/org-netbeans-modules-subversion-ui-update-UpdateAllAction.shadow" boolvalue="true"/>
-            
-            <file name="org-netbeans-modules-subversion-ui-update-UpdateAllAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-update-UpdateAllAction.instance"/>
-            </file>
-            <attr name="org-netbeans-modules-subversion-ui-update-UpdateAllAction.shadow/org-netbeans-modules-subversion-ui-commit-CommitAllAction.shadow" boolvalue="true"/>
-            
-            <file name="org-netbeans-modules-subversion-ui-commit-CommitAllAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-commit-CommitAllAction.instance"/>
-            </file>
-            <attr name="org-netbeans-modules-subversion-ui-commit-CommitAllAction.shadow/Separator2.instance" boolvalue="true"/>
-            
-            <file name="Separator2.instance">
-       		<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-     	    </file>
-            
-            <attr name="Separator2.instance/org-netbeans-modules-subversion-ui-checkout-CheckoutAction.shadow" boolvalue="true"/>
-
-            <file name="org-netbeans-modules-subversion-ui-checkout-CheckoutAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-checkout-CheckoutAction.instance"/>
-            </file>
-            <attr name="org-netbeans-modules-subversion-ui-checkout-CheckoutAction.shadow/org-netbeans-modules-subversion-ui-project-ImportAction.shadow" boolvalue="true"/>
-
-            <file name="org-netbeans-modules-subversion-ui-project-ImportAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-project-ImportAction.instance"/>
-            </file>
-            <attr name="org-netbeans-modules-subversion-ui-project-ImportAction.shadow/Separator3.instance" boolvalue="true"/>
-
-            <file name="Separator3.instance">
-       		<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-            </file>
-            <attr name="Separator3.instance/org-netbeans-modules-subversion-ui-UpdateWithDependenciesAction.shadow" boolvalue="true"/>
-
-            <file name="org-netbeans-modules-subversion-ui-UpdateWithDependenciesAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-UpdateWithDependenciesAction.instance"/>
-            </file>
-            <attr name="org-netbeans-modules-subversion-ui-UpdateWithDependenciesAction.shadow/Separator9.instance" boolvalue="true"/>
-            <file name="Separator9.instance">
-           		<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-            </file>
-            <attr name="Separator9.instance/org-netbeans-modules-subversion-ui-status-StatusAction.shadow" boolvalue="true"/>
-            
-            <file name="org-netbeans-modules-subversion-ui-status-StatusAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-status-StatusAction.instance"/>
-            </file>
-            <attr name="org-netbeans-modules-subversion-ui-status-StatusAction.shadow/org-netbeans-modules-subversion-ui-diff-DiffAction.shadow" boolvalue="true"/>
-            
-            <file name="org-netbeans-modules-subversion-ui-diff-DiffAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-diff-DiffAction.instance"/>
-            </file>
-            <attr name="org-netbeans-modules-subversion-ui-diff-DiffAction.shadow/org-netbeans-modules-subversion-ui-commit-CommitAction.shadow" boolvalue="true"/>            
-            <attr name="org-netbeans-modules-subversion-ui-diff-DiffAction.shadow/org-netbeans-modules-subversion-ui-update-UpdateAction.shadow" boolvalue="true"/>
-            
-            <file name="org-netbeans-modules-subversion-ui-update-UpdateAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-update-UpdateAction.instance"/>
-            </file>
-            <attr name="org-netbeans-modules-subversion-ui-update-UpdateAction.shadow/org-netbeans-modules-subversion-ui-commit-CommitAction.shadow" boolvalue="true"/>
-            <attr name="org-netbeans-modules-subversion-ui-status-StatusAction.shadow/org-netbeans-modules-subversion-ui-commit-CommitAction.shadow" boolvalue="true"/>
-            
-            <file name="org-netbeans-modules-subversion-ui-commit-CommitAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-commit-CommitAction.instance"/>
-            </file>
-            <attr name="org-netbeans-modules-subversion-ui-commit-CommitAction.shadow/Separator5.instance" boolvalue="true"/>
-
-            <file name="Separator5.instance">
-       		<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-            </file>
-            <attr name="Separator5.instance/org-netbeans-modules-subversion-ui-diff-ExportDiffAction.shadow" boolvalue="true"/>
-            
-            <file name="org-netbeans-modules-subversion-ui-diff-ExportDiffAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-diff-ExportDiffAction.instance"/>
-            </file>
-            <attr name="org-netbeans-modules-subversion-ui-diff-ExportDiffAction.shadow/Separator8.instance" boolvalue="true"/>
-            <file name="Separator8.instance">
-           		<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-            </file>
-            <attr name="Separator8.instance/org-netbeans-modules-subversion-ui-copy-CreateCopyAction.shadow" boolvalue="true"/>
-
-            <file name="org-netbeans-modules-subversion-ui-copy-CreateCopyAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-copy-CreateCopyAction.instance"/>
-            </file>            
-            <attr name="org-netbeans-modules-subversion-ui-copy-CreateCopyAction.shadow/org-netbeans-modules-subversion-ui-copy-SwitchAction.shadow" boolvalue="true"/>
-
-            <file name="org-netbeans-modules-subversion-ui-copy-SwitchAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-copy-SwitchToAction.instance"/>
-            </file>            
-            <attr name="org-netbeans-modules-subversion-ui-copy-SwitchAction.shadow/org-netbeans-modules-subversion-ui-copy-MergeAction.shadow" boolvalue="true"/>            
-
-            <file name="org-netbeans-modules-subversion-ui-copy-MergeAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-copy-MergeAction.instance"/>
-            </file>
-            <attr name="org-netbeans-modules-subversion-ui-copy-MergeAction.shadow/Separator6.instance" boolvalue="true"/>                        
-            
-            <file name="Separator6.instance">
-        		<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-	    </file>
-            <attr name="Separator6.instance/org-netbeans-modules-subversion-ui-blame-BlameAction.shadow" boolvalue="true"/>
-
-            <file name="org-netbeans-modules-subversion-ui-blame-BlameAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-blame-BlameAction.instance"/>
-            </file>
-            <attr name="org-netbeans-modules-subversion-ui-blame-BlameAction.shadow/org-netbeans-modules-subversion-ui-history-SearchHistoryAction.shadow" boolvalue="true"/>
-
-            <file name="org-netbeans-modules-subversion-ui-history-SearchHistoryAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-history-SearchHistoryAction.instance"/>
-            </file>
-            <attr name="org-netbeans-modules-subversion-ui-history-SearchHistoryAction.shadow/Separator7.instance" boolvalue="true"/>
-            
-            <file name="Separator7.instance">
-        		<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-	    </file>            
-            <attr name="Separator7.instance/org-netbeans-modules-subversion-ui-update-RevertModificationsAction.shadow" boolvalue="true"/>
-
-            <file name="org-netbeans-modules-subversion-ui-update-RevertModificationsAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-update-RevertModificationsAction.instance"/>
-            </file>
-            <attr name="org-netbeans-modules-subversion-ui-update-RevertModificationsAction.shadow/org-netbeans-modules-subversion-ui-update-ResolveConflictsAction.shadow" boolvalue="true"/>
-            
-            <file name="org-netbeans-modules-subversion-ui-update-ResolveConflictsAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-update-ResolveConflictsAction.instance"/>
-            </file>
-            <attr name="org-netbeans-modules-subversion-ui-update-ResolveConflictsAction.shadow/org-netbeans-modules-subversion-ui-ignore-IgnoreAction.shadow" boolvalue="true"/>
-            
-            <file name="org-netbeans-modules-subversion-ui-ignore-IgnoreAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-ignore-IgnoreAction.instance"/>
-            </file>
-            
-            <!--
-            <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-log-SearchHistoryAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-versioning-system-cvss-ui-actions-log-SearchHistoryAction.instance"/>
-            </file>            
-            <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-log-AnnotationsAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-versioning-system-cvss-ui-actions-log-AnnotationsAction.instance"/>
-            </file>
-            <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-update-GetCleanAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-versioning-system-cvss-ui-actions-update-GetCleanAction.instance"/>
-            </file>
-            <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-diff-ResolveConflictsAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-versioning-system-cvss-ui-actions-diff-ResolveConflictsAction.instance"/>
-            </file>
-            -->
-
-             <!--
-            <file name="Separator4.instance">
-        		<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-	        </file>
-            <file name="Separator7.instance">
-        		<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-	        </file>
-
-
-            -->
-        </folder>
         <folder name="Window">
             <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-status-OpenVersioningAction.shadow/org-netbeans-modules-subversion-ui-status-OpenVersioningAction.shadow" boolvalue="true"/>
             <attr name="org-netbeans-modules-subversion-ui-status-OpenVersioningAction.shadow/InspectorAction.shadow" boolvalue="true"/>
@@ -286,13 +118,6 @@ Microsystems, Inc. All Rights Reserved.
             </file>
         </folder>
     </folder>
-<!--
-    <folder name="Shortcuts">
-        <file name="D-8.instance">
-            <attr name="instanceClass" stringvalue="org.netbeans.modules.versioning.system.cvss.ui.actions.status.OpenVersioningAction" />
-        </file>
-    </folder>
--->
 
     <folder name="Services">
         <folder name="JavaHelp">

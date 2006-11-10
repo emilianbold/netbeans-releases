@@ -43,7 +43,20 @@ public abstract class VCSAnnotator {
         return icon;
     }
 
-    public Action[] getActions(VCSContext context) {
+    /**
+     * Indicates that returned actions will be used to construct the main menu.
+     */
+    public static final int DEST_MAINMENU = 1;
+
+    public static final int DEST_POPUPMENU = 2;
+    
+    /**
+     * 
+     * @param context
+     * @param destinationFlags
+     * @return
+     */
+    public Action[] getActions(VCSContext context, int destination) {
         return new Action[0];
     }
 }
