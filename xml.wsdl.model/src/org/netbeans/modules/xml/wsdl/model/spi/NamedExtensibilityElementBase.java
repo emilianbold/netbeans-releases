@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.xml.wsdl.model.spi;
 
-import javax.xml.namespace.QName;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.impl.*;

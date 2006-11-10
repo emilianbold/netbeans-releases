@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.xml.wsdl.model;
 
-import java.io.IOException;
 import javax.swing.text.Document;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.wsdl.model.impl.WSDLModelImpl;

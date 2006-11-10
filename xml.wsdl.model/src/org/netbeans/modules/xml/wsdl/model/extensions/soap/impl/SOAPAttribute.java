@@ -21,7 +21,6 @@ package org.netbeans.modules.xml.wsdl.model.extensions.soap.impl;
 
 import java.util.Collection;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPMessageBase;
-import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPOperation;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPBinding;
 import org.netbeans.modules.xml.xam.dom.Attribute;
 

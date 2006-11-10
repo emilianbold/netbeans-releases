@@ -19,8 +19,6 @@
 
 package org.netbeans.modules.xml.wsdl.model.extensions.soap.impl;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 import javax.xml.namespace.QName;

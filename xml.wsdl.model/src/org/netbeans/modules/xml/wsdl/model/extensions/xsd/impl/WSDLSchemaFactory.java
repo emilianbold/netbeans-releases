@@ -19,15 +19,11 @@
 
 package org.netbeans.modules.xml.wsdl.model.extensions.xsd.impl;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
-import org.netbeans.modules.xml.wsdl.model.extensions.xsd.WSDLSchema;
-import org.netbeans.modules.xml.wsdl.model.impl.Util;
 import org.netbeans.modules.xml.wsdl.model.spi.ElementFactory;
 import org.w3c.dom.Element;
 

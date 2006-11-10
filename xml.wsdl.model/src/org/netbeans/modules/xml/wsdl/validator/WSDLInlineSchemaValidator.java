@@ -103,14 +103,14 @@ public class WSDLInlineSchemaValidator extends XsdBasedValidator {
                                 Map<String, String> schemaPrefixes = ((AbstractDocumentComponent)schema.getSchemaModel().getSchema()).getPrefixes();
                                 for (String prefix : prefixes.keySet()) {
                                     if (!(prefix == null || prefix.length() == 0 || schemaPrefixes.containsKey(prefix))) {
-                                        strBuf.append(" ").append("xmlns:").append(prefix).append("=\"").append(prefixes.get(prefix)).append("\"");
+                                        strBuf.append(" xmlns:").append(prefix).append("=\"").append(prefixes.get(prefix)).append('\"');
                                     }
                                 }
                                 
                                 for (int i = 1; i < splits.length; i++) {
-                                    strBuf.append(">").append(splits[i]);
+                                    strBuf.append('>').append(splits[i]);
                                 }
-                                strBuf.append(">");
+                                strBuf.append('>');
                                 strBuf.append(schemaString).append(getEndTag(splits[0]));
                                 schemaString = null;
                                 splits = null;

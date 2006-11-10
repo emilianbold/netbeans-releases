@@ -21,7 +21,6 @@ package org.netbeans.modules.xml.wsdl.model.extensions.soap;
 
 import java.util.Collection;
 import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
-import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 
 /**
  * Represents a header element under the wsdl:input or wsdl:output element for SOAP binding

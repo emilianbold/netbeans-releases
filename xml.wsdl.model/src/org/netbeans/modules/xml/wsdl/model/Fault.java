@@ -19,8 +19,6 @@
 
 package org.netbeans.modules.xml.wsdl.model;
 
-import org.netbeans.modules.xml.xam.Referenceable;
-
 /**
  *
  * @author rico

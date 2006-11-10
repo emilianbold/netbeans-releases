@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.xml.wsdl.model.impl;
 
-import java.util.Collection;
 import org.netbeans.modules.xml.xam.dom.Attribute;
 
 /**

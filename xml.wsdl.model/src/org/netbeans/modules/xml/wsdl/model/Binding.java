@@ -21,7 +21,6 @@ package org.netbeans.modules.xml.wsdl.model;
 
 import java.util.Collection;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
-import org.netbeans.modules.xml.xam.NamedReferenceable;
 
 /**
  *

@@ -18,9 +18,7 @@
  */
 package org.netbeans.modules.xml.wsdl.validator.visitor;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.StringTokenizer;
 
 import javax.xml.namespace.QName;
@@ -489,8 +487,8 @@ public class ValidateSupport  {
                 source,
                /* category,
                 Severity.ERROR,*/
-                mMsg.getString(VAL_MIN_ELEM_NOT_MET, new Integer(min), name, new Integer(num)),
-                mMsg.getString(FIX_MIN_ELEM_NOT_MET, new Integer(min - num), name)
+                mMsg.getString(VAL_MIN_ELEM_NOT_MET, Integer.valueOf(min), name, Integer.valueOf(num)),
+                mMsg.getString(FIX_MIN_ELEM_NOT_MET, Integer.valueOf(min - num), name)
             );
         }
         return true;

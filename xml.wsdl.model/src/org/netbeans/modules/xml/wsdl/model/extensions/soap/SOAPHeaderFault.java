@@ -19,8 +19,6 @@
 
 package org.netbeans.modules.xml.wsdl.model.extensions.soap;
 
-import java.util.Collection;
-
 /**
  *
  * @author rico

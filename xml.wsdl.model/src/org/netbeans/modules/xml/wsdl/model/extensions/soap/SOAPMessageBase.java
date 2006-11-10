@@ -20,7 +20,6 @@
 package org.netbeans.modules.xml.wsdl.model.extensions.soap;
 
 import java.util.Collection;
-import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 
 /**
  *

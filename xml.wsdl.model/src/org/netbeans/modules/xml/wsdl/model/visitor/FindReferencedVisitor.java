@@ -28,13 +28,11 @@ import org.netbeans.modules.xml.wsdl.model.OneWayOperation;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.model.Port;
 import org.netbeans.modules.xml.wsdl.model.PortType;
-import org.netbeans.modules.xml.wsdl.model.ReferenceableExtensibilityElement;
 import org.netbeans.modules.xml.wsdl.model.ReferenceableWSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.RequestResponseOperation;
 import org.netbeans.modules.xml.wsdl.model.Service;
 import org.netbeans.modules.xml.wsdl.model.SolicitResponseOperation;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
-import org.netbeans.modules.xml.xam.NamedReferenceable;
 
 /**
  *

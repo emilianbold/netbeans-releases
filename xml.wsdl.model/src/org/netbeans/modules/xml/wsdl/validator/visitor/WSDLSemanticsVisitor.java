@@ -27,7 +27,6 @@ import java.util.Properties;
 import java.util.Vector;
 
 import org.netbeans.modules.xml.schema.model.Annotation;
-import org.netbeans.modules.xml.schema.model.GlobalComplexType;
 import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
@@ -195,10 +194,6 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
 
     private static final String FIX_SCHEMA_TARGETNAMESPACE_DOES_NOT_EXIST = "FIX_SCHEMA_TARGETNAMESPACE_DOES_NOT_EXIST";
 
-    private static final String VAL_IMPORT_SCHEMA_TARGETNAMESPACE_DOES_NOT_EXIST = "VAL_IMPORT_SCHEMA_TARGETNAMESPACE_DOES_NOT_EXIST";
-
-    private static final String FIX_IMPORT_SCHEMA_TARGETNAMESPACE_DOES_NOT_EXIST = "FIX_IMPORT_SCHEMA_TARGETNAMESPACE_DOES_NOT_EXIST";
-    
     
     public List<ResultItem> mResultItems;
     private Validation mValidation;

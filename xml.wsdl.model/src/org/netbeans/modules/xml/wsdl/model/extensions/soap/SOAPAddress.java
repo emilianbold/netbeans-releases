@@ -19,8 +19,6 @@
 
 package org.netbeans.modules.xml.wsdl.model.extensions.soap;
 
-import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
-
 /**
  *
  * @author rico

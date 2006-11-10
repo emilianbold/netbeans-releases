@@ -24,7 +24,6 @@ import org.netbeans.modules.xml.wsdl.model.ReferenceableWSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.spi.WSDLComponentBase;
 import org.netbeans.modules.xml.wsdl.model.visitor.FindReferencedVisitor;
-import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.dom.AbstractNamedComponentReference;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 

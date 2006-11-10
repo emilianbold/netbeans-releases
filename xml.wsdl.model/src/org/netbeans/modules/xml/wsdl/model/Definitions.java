@@ -21,9 +21,7 @@ package org.netbeans.modules.xml.wsdl.model;
 
 import java.util.Collection;
 import javax.xml.namespace.QName;
-import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.xam.Nameable;
-import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 
 /**
  *

@@ -23,7 +23,6 @@ import org.netbeans.modules.xml.wsdl.model.Fault;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPFault;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPQName;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.netbeans.modules.xml.xam.Reference;
 import org.w3c.dom.Element;
 
