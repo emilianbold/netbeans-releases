@@ -22,22 +22,23 @@ package org.netbeans.modules.j2ee.common.source;
 import com.sun.source.tree.*;
 import java.io.IOException;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.j2ee.common.source.SourceUtils.Parameters;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -196,7 +197,7 @@ public final class GenerationUtils extends SourceUtils {
         Parameters.notNull("annotationType", annotationType); // NOI18N
         Parameters.notNull("arguments", arguments); // NOI18N
 
-        ExpressionTree annotationTree = createAnnotationQualIdent(annotationType);
+        ExpressionTree annotationTree = createQualIdent(annotationType);
         List<? extends ExpressionTree> realArguments = arguments != null ? arguments : Collections.<ExpressionTree>emptyList();
         return getTreeMaker().Annotation(annotationTree, realArguments);
     }
@@ -209,11 +210,43 @@ public final class GenerationUtils extends SourceUtils {
      * @return the new annotation argument; never null.
      */
     public ExpressionTree createAnnotationArgument(String argumentName, String argumentValue) {
-        Parameters.javaIdentifier("argumentName", argumentName); // NOI18N
+        Parameters.javaIdentifierOrNull("argumentName", argumentName); // NOI18N
         Parameters.notNull("argumentValue", argumentValue); // NOI18N
 
         TreeMaker make = getTreeMaker();
-        return make.Assignment(make.Identifier(argumentName), make.Literal(argumentValue));
+        ExpressionTree argumentValueTree = make.Literal(argumentValue);
+        if (argumentName == null) {
+            return argumentValueTree;
+        } else {
+            return make.Assignment(make.Identifier(argumentName), argumentValueTree);
+        }
+    }
+
+    public ExpressionTree createAnnotationArgument(String argumentName, boolean argumentValue) {
+        Parameters.javaIdentifierOrNull("argumentName", argumentName); // NOI18N
+        Parameters.notNull("argumentValue", argumentValue); // NOI18N
+
+        TreeMaker make = getTreeMaker();
+        ExpressionTree argumentValueTree = make.Literal(argumentValue);
+        if (argumentName == null) {
+            return argumentValueTree;
+        } else {
+            return make.Assignment(make.Identifier(argumentName), argumentValueTree);
+        }
+    }
+
+    public ExpressionTree createAnnotationArgument(String argumentName, String argumentType, String argumentTypeField) {
+        Parameters.javaIdentifierOrNull("argumentName", argumentName); // NOI18N
+        Parameters.notNull("argumentType", argumentType); // NOI18N
+        Parameters.javaIdentifier("argumentTypeField", argumentTypeField); // NOI18N
+
+        TreeMaker make = getTreeMaker();
+        ExpressionTree argumentValueTree = make.MemberSelect(createQualIdent(argumentType), argumentTypeField);
+        if (argumentName == null) {
+            return argumentValueTree;
+        } else {
+            return make.Assignment(make.Identifier(argumentName), argumentValueTree);
+        }
     }
 
     /**
@@ -243,9 +276,10 @@ public final class GenerationUtils extends SourceUtils {
      * @param  propertyName the property name; cannot be null.
      * @return the new method; never null.
      */
-    public MethodTree createPropertyGetterMethod(String propertyType, String propertyName) {
+    public MethodTree createPropertyGetterMethod(String propertyType, String propertyName) throws IOException {
         Parameters.notNull("propertyType", propertyType); // NOI18N
         Parameters.javaIdentifier("propertyName", propertyName); // NOI18N
+        getWorkingCopy().toPhase(Phase.RESOLVED);
 
         TreeMaker make = getTreeMaker();
         return make.Method(
@@ -266,9 +300,10 @@ public final class GenerationUtils extends SourceUtils {
      * @param  propertyName the property name; cannot be null.
      * @return the new method; never null.
      */
-    public MethodTree createPropertySetterMethod(String propertyType, String propertyName) {
+    public MethodTree createPropertySetterMethod(String propertyType, String propertyName) throws IOException {
         Parameters.notNull("propertyType", propertyType); // NOI18N
         Parameters.javaIdentifier("propertyName", propertyName); // NOI18N
+        getWorkingCopy().toPhase(Phase.RESOLVED);
 
         TreeMaker make = getTreeMaker();
         return make.Method(
@@ -354,7 +389,7 @@ public final class GenerationUtils extends SourceUtils {
             throw new IllegalStateException("Cannot add an implements clause to the non-class type " + getTypeElement().getQualifiedName()); // NOI18N
         }
 
-        ExpressionTree interfaceTree = createInterfaceQualIdent(interfaceType);
+        ExpressionTree interfaceTree = createQualIdent(interfaceType);
         return getTreeMaker().addClassImplementsClause(classTree, interfaceTree);
     }
 
@@ -374,13 +409,11 @@ public final class GenerationUtils extends SourceUtils {
         if (constructor != null) {
             if (!constructor.getModifiers().contains(Modifier.PUBLIC)) {
                 ModifiersTree oldModifiersTree = getWorkingCopy().getTrees().getTree(constructor).getModifiers();
-                Set<Modifier> newModifiers = new HashSet<Modifier>();
-                newModifiers.add(Modifier.PUBLIC);
+                Set<Modifier> newModifiers = EnumSet.of(Modifier.PUBLIC);
                 for (Modifier modifier : oldModifiersTree.getFlags()) {
-                    if (Modifier.PROTECTED.equals(modifier) || Modifier.PRIVATE.equals(modifier)) {
-                        continue;
+                    if (!Modifier.PROTECTED.equals(modifier) && !Modifier.PRIVATE.equals(modifier)) {
+                        newModifiers.add(modifier);
                     }
-                    newModifiers.add(modifier);
                 }
                 TreeMaker make = getTreeMaker();
                 ModifiersTree newModifiersTree = make.Modifiers(newModifiers, oldModifiersTree.getAnnotations());
@@ -388,17 +421,15 @@ public final class GenerationUtils extends SourceUtils {
                 modified = true;
             }
         } else {
+            getWorkingCopy().toPhase(Phase.RESOLVED);
             TreeMaker make = getTreeMaker();
             ClassTree oldClassTree = getClassTree();
-            MethodTree method = make.Method(
+            MethodTree method = make.Constructor(
                     make.Modifiers(Collections.singleton(Modifier.PUBLIC)),
-                    "<init>", // NOI18N
-                    null,
                     Collections.<TypeParameterTree>emptyList(),
                     Collections.<VariableTree>emptyList(),
                     Collections.<ExpressionTree>emptyList(),
-                    "{ }", // NOI18N
-                    null
+                    make.Block(Collections.<StatementTree>emptyList(), false)
             );
             ClassTree newClassTree = make.addClassMember(oldClassTree, method);
             getWorkingCopy().rewrite(oldClassTree, newClassTree);
@@ -437,65 +468,11 @@ public final class GenerationUtils extends SourceUtils {
         return getTreeMaker().QualIdent(typeElement);
     }
 
-    private ExpressionTree createAnnotationQualIdent(String annotationName) {
-        TypeElement annotationElement = getWorkingCopy().getElements().getTypeElement(annotationName);
-        if (annotationElement == null) {
-            throw new IllegalArgumentException("Type " + annotationName + " cannot be found"); // NOI18N
-        }
-        if (annotationElement.getKind() != ElementKind.ANNOTATION_TYPE) {
-            throw new IllegalArgumentException("Type " + annotationName + " is not an annotation"); // NOI18N
-        }
-        return getTreeMaker().QualIdent(annotationElement);
-    }
-
-    private ExpressionTree createInterfaceQualIdent(String interfaceName) {
-        TypeElement interfaceElement = getWorkingCopy().getElements().getTypeElement(interfaceName);
-        if (interfaceElement == null) {
-            throw new IllegalArgumentException("Type " + interfaceName + " cannot be found"); // NOI18N
-        }
-        if (interfaceElement.getKind() != ElementKind.INTERFACE) {
-            throw new IllegalArgumentException("Type " + interfaceName + " is not an interface"); // NOI18N
-        }
-        return getTreeMaker().QualIdent(interfaceElement);
-    }
-
     private String createPropertyAccessorName(String propertyName, boolean getter) {
         assert propertyName.length() > 0;
         StringBuffer pascalCaseName = new StringBuffer(propertyName);
         pascalCaseName.setCharAt(0, Character.toUpperCase(pascalCaseName.charAt(0)));
         return (getter ? "get" : "set") + pascalCaseName; // NOI18N
-    }
-
-    // </editor-fold>
-
-    // <editor-fold defaultstate="collapsed" desc="Inner classes">
-
-    private static final class Parameters {
-
-        public static void notNull(String name, Object value) {
-            if (value == null) {
-                throw new NullPointerException("The " + name + " parameter cannot be null"); // NOI18N
-            }
-        }
-
-        public static void notEmpty(String name, String value) {
-            notNull(name, value);
-            if (value.length() == 0) {
-                throw new IllegalArgumentException("The " + name + " parameter cannot be null"); // NOI18N
-            }
-        }
-
-        public static void notWhitespace(String name, String value) {
-            notNull(name, value);
-            notEmpty(name, value.trim());
-        }
-
-        public static void javaIdentifier(String name, String value) {
-            notNull(name, value);
-            if (!Utilities.isJavaIdentifier(value)) {
-                throw new IllegalArgumentException("The " + name + " parameter is not a valid Java identifier"); // NOI18N
-            }
-        }
     }
 
     // </editor-fold>

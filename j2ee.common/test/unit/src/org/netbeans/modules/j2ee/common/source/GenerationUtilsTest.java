@@ -21,6 +21,8 @@ package org.netbeans.modules.j2ee.common.source;
 
 import com.sun.source.tree.*;
 import java.io.IOException;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.Collections;
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
@@ -150,18 +152,24 @@ public class GenerationUtilsTest extends NbTestCase {
             public void run(WorkingCopy copy) throws Exception {
                 GenerationUtils genUtils = GenerationUtils.newInstance(copy);
                 AnnotationTree annotationTree = genUtils.createAnnotation("java.lang.SuppressWarnings",
-                        Collections.singletonList(genUtils.createAnnotationArgument("value", "foo")));
+                        Collections.singletonList(genUtils.createAnnotationArgument(null, "foo")));
                 ClassTree newClassTree = genUtils.addAnnotation(annotationTree, genUtils.getClassTree());
+                annotationTree = genUtils.createAnnotation("java.lang.annotation.Retention",
+                        Collections.singletonList(genUtils.createAnnotationArgument(null, "java.lang.annotation.RetentionPolicy", "RUNTIME")));
+                newClassTree = genUtils.addAnnotation(annotationTree, newClassTree);
                 copy.rewrite(genUtils.getClassTree(), newClassTree);
             }
         }).commit();
         runUserActionTask(testFO, new AbstractTask<CompilationController>() {
             public void run(CompilationController controller) throws Exception {
                 SourceUtils srcUtils = SourceUtils.newInstance(controller);
-                SuppressWarnings annotation = srcUtils.getTypeElement().getAnnotation(SuppressWarnings.class);
-                assertNotNull(annotation);
-                assertEquals(1, annotation.value().length);
-                assertEquals("foo", annotation.value()[0]);
+                SuppressWarnings suppressWarnings = srcUtils.getTypeElement().getAnnotation(SuppressWarnings.class);
+                assertNotNull(suppressWarnings);
+                assertEquals(1, suppressWarnings.value().length);
+                assertEquals("foo", suppressWarnings.value()[0]);
+                Retention retention = srcUtils.getTypeElement().getAnnotation(Retention.class);
+                assertNotNull(retention);
+                assertEquals(RetentionPolicy.RUNTIME, retention.value());
             }
         });
     }

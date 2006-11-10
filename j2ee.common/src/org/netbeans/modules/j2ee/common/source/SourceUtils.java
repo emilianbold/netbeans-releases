@@ -32,6 +32,7 @@ import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -67,20 +68,14 @@ public class SourceUtils {
     }
 
     public static SourceUtils newInstance(CompilationController controller, ClassTree classTree) {
-        if (controller == null) {
-            throw new IllegalArgumentException("The controller argument cannot be null"); // NOI18N
-        }
-        if (classTree == null) {
-            throw new IllegalArgumentException("The classTree argument cannot be null"); // NOI18N
-        }
+        Parameters.notNull("controller", controller); // NOI18N
+        Parameters.notNull("classTree", classTree); // NOI18N
 
         return new SourceUtils(controller, classTree);
     }
 
     public static SourceUtils newInstance(CompilationController controller) throws IOException {
-        if (controller == null) {
-            throw new IllegalArgumentException("The controller argument cannot be null"); // NOI18N
-        }
+        Parameters.notNull("controller", controller); // NOI18N
 
         ClassTree classTree = findPublicTopLevelClass(controller);
         if (classTree != null) {
@@ -101,12 +96,16 @@ public class SourceUtils {
      * @return true if a main method was found, false otherwise.
      */
     public static boolean hasMainMethod(FileObject fileObject) throws IOException {
+        Parameters.notNull("fileObject", fileObject);
+
         JavaSource javaSource = JavaSource.forFileObject(fileObject);
         final boolean[] result = { false };
         javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
             public void run(CompilationController controller) throws Exception {
                 SourceUtils sourceUtils = SourceUtils.newInstance(controller);
-                result[0] = sourceUtils.hasMainMethod();
+                if (sourceUtils != null) {
+                    result[0] = sourceUtils.hasMainMethod();
+                }
             }
         }, true);
         return result[0];
@@ -205,8 +204,6 @@ public class SourceUtils {
      * Returns true if {@link #getTypeElement} has a main method.
      */
     private boolean hasMainMethod() throws IOException {
-        controller.toPhase(Phase.ELEMENTS_RESOLVED);
-
         for (ExecutableElement method : ElementFilter.methodsIn(getTypeElement().getEnclosedElements())) {
             if (isMainMethod(method)) {
                 return true;
@@ -220,7 +217,7 @@ public class SourceUtils {
      */
     private boolean isMainMethod(ExecutableElement method) {
         // check method name
-        if (!method.getSimpleName().contentEquals("main")) {
+        if (!method.getSimpleName().contentEquals("main")) { // NOI18N
             return false;
         }
         // check modifiers
@@ -251,6 +248,42 @@ public class SourceUtils {
             return false;
         }
         return true;
+    }
+
+    // </editor-fold>
+
+    // <editor-fold defaultstate="collapsed" desc="Inner classes">
+
+    static final class Parameters {
+
+        public static void notNull(String name, Object value) {
+            if (value == null) {
+                throw new NullPointerException("The " + name + " parameter cannot be null"); // NOI18N
+            }
+        }
+
+        public static void notEmpty(String name, String value) {
+            notNull(name, value);
+            if (value.length() == 0) {
+                throw new IllegalArgumentException("The " + name + " parameter cannot be an empty string"); // NOI18N
+            }
+        }
+
+        public static void notWhitespace(String name, String value) {
+            notNull(name, value);
+            notEmpty(name, value.trim());
+        }
+
+        public static void javaIdentifier(String name, String value) {
+            notNull(name, value);
+            javaIdentifierOrNull(name, value);
+        }
+
+        public static void javaIdentifierOrNull(String name, String value) {
+            if (value != null && !Utilities.isJavaIdentifier(value)) {
+                throw new IllegalArgumentException("The " + name + " parameter is not a valid Java identifier"); // NOI18N
+            }
+        }
     }
 
     // </editor-fold>
