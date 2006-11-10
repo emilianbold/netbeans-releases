@@ -181,7 +181,7 @@ public final class FileUtil extends Object {
         while (!stack.isEmpty()) {
             retval.append(stack.pop());
             if (!stack.isEmpty()) {
-                retval.append("/");//NOI18N
+                retval.append('/');//NOI18N
             }
         }                        
         return retval.toString();
