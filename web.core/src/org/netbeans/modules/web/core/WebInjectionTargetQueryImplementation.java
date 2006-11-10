@@ -19,12 +19,20 @@
 
 package org.netbeans.modules.web.core;
 
-//import org.netbeans.jmi.javamodel.JavaClass;
-//import org.netbeans.modules.j2ee.common.JMIUtils;
-import org.netbeans.modules.j2ee.common.queries.spi.InjectionTargetQueryImplementation;
-//import org.netbeans.modules.javacore.api.JavaModel;
-//import org.netbeans.modules.web.api.webmodule.WebModule;
+import java.io.IOException;
+
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.Elements;
+
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
+        
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+
+import org.netbeans.modules.j2ee.common.queries.spi.InjectionTargetQueryImplementation;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 
 /**
  *
@@ -35,29 +43,42 @@ public class WebInjectionTargetQueryImplementation implements InjectionTargetQue
     public WebInjectionTargetQueryImplementation() {
     }
     
-    public boolean isInjectionTarget(FileObject fileObject, String fqn) {
-        return false;
+    public boolean isInjectionTarget(final FileObject fileObject, final String fqn) {
+        if (fileObject == null) {
+            throw new NullPointerException("Passed null FileObject to WebInjectionTargetQueryImplementation.isInjectionTarget(FileObject, String)"); // NOI18N
+        }
+        
+        final boolean[] ret = new boolean[] {false};
+        WebModule webModule = WebModule.getWebModule(fileObject);
+        if (webModule != null &&
+                !webModule.getJ2eePlatformVersion().equals("1.3") &&
+                !webModule.getJ2eePlatformVersion().equals("1.4")) {
+            
+            JavaSource src = JavaSource.forFileObject(fileObject);
+                        
+            CancellableTask task = new CancellableTask<CompilationController>() {
+                public void run(CompilationController compilationController) throws IOException {
+                    compilationController.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                    final Elements elements = compilationController.getElements();
+                    final TypeElement servletElement = elements.getTypeElement("javax.servlet.Servlet");
+                    final TypeElement thisElement = elements.getTypeElement(fqn);
+                    ret[0] = compilationController.getTypes().isSubtype(thisElement.asType(),servletElement.asType());
+                }
+
+                public void cancel() {
+                }
+            };
+            try {
+                src.runUserActionTask(task, true);
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            }
+        }
+        return ret[0];
     }
-    
+
     public boolean isStaticReferenceRequired(FileObject fileObject, String fqn) {
         return false;
     }
-// Retouche
-//    public boolean isInjectionTarget(JavaClass jc) {
-//        if (jc == null) {
-//            throw new NullPointerException("Passed null to WebInjectionTargetQueryImplementation.isInjectionTarget(JavaClass)"); // NOI18N
-//        }
-//        WebModule webModule = WebModule.getWebModule(JavaModel.getFileObject(jc.getResource()));
-//        if (webModule != null &&
-//                !webModule.getJ2eePlatformVersion().equals("1.3") &&
-//                !webModule.getJ2eePlatformVersion().equals("1.4")) {
-//            return jc.isSubTypeOf(JMIUtils.findClass("javax.servlet.Servlet"));
-//        }
-//        return false;
-//    }
-//
-//    public boolean isStaticReferenceRequired(JavaClass jc) {
-//        return false;
-//    }
-    
+
 }
