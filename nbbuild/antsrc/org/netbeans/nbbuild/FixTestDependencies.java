@@ -92,7 +92,7 @@ public class FixTestDependencies extends Task {
                 if (xml.contains("<suite-component/>")) {
                     projectType = ParseProjectXml.TYPE_SUITE;
                 } else if (xml.contains("<standalone/>")) {
-                    projectType = ParseProjectXml.TYPE_NB_ORG;
+                    projectType = ParseProjectXml.TYPE_STANDALONE;
                 } 
                 //grrr
                 int typeStart = xml.indexOf("<code-name-base>");
