@@ -96,7 +96,8 @@ public class LLSyntaxAnalyser {
                 if (embeded)
                     return root;
                 ASTNode n = read (input, true, skipErrors);
-                node.addNode ((ASTNodeImpl) n);
+                if (n != null) // embeded language without grammer definition
+                    node.addNode ((ASTNodeImpl) n);
             }
             while (!it.hasNext ()) {
                 if (stack.empty ()) break;
@@ -193,15 +194,24 @@ public class LLSyntaxAnalyser {
     // helper methods ..........................................................
     
     private ASTNodeImpl getErrorNode (ASTNodeImpl node, int offset) {
-        List l = node.getChildren ();
-        if (l.size () > 0) {
-            Object possibleErrorNode = l.get (l.size () - 1);
-            if (possibleErrorNode instanceof ASTNodeImpl)
-                if (((ASTNodeImpl) possibleErrorNode).getNT ().equals ("ERROR"))
-                    return (ASTNodeImpl) possibleErrorNode;
+        if (node != null) {
+            List l = node.getChildren ();
+            if (l.size () > 0) {
+                Object possibleErrorNode = l.get (l.size () - 1);
+                if (possibleErrorNode instanceof ASTNodeImpl)
+                    if (((ASTNodeImpl) possibleErrorNode).getNT ().equals ("ERROR"))
+                        return (ASTNodeImpl) possibleErrorNode;
+            }
         }
-        ASTNodeImpl errorNode = new ASTNodeImpl (node.getMimeType (), "ERROR", -2, node, offset);
-        node.addNode (errorNode);
+        ASTNodeImpl errorNode = new ASTNodeImpl (
+            node == null ? "?" : node.getMimeType (), 
+            "ERROR", 
+            -2, 
+            node, 
+            offset
+        );
+        if (node != null)
+            node.addNode (errorNode);
         return errorNode;
     }
     
