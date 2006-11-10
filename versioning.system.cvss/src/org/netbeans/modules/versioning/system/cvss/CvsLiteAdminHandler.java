@@ -23,7 +23,7 @@ import org.netbeans.lib.cvsclient.admin.StandardAdminHandler;
 import org.netbeans.lib.cvsclient.admin.AdminHandler;
 import org.netbeans.lib.cvsclient.admin.Entry;
 import org.netbeans.lib.cvsclient.command.GlobalOptions;
-import org.netbeans.modules.versioning.system.cvss.util.Utils;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.filesystems.FileUtil;
 
 import java.io.*;

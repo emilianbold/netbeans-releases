@@ -29,6 +29,7 @@ import java.util.List;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.openide.awt.StatusDisplayer;
@@ -89,7 +90,7 @@ public class UpdateAction extends ContextAction {
         
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
         cache.refreshCached(ctx);
-        File[][] split = SvnUtils.splitFlatOthers(roots);
+        File[][] split = Utils.splitFlatOthers(roots);
         final List<File> recursiveFiles = new ArrayList<File>();
         final List<File> flatFiles = new ArrayList<File>();
         

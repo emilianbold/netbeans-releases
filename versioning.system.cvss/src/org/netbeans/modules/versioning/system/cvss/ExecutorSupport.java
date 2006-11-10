@@ -309,7 +309,7 @@ public abstract class ExecutorSupport implements CVSListener, ExecutorGroup.Grou
         FileInfoContainer fic = e.getInfoContainer();
         if (fic.getFile() == null) {
             // this probably indicates a bug in the library but is usually harmless, log it just for reference
-            ErrorManager.getDefault().log(ErrorManager.WARNING, Utils.getStackTrace());
+            ErrorManager.getDefault().log(ErrorManager.WARNING, org.netbeans.modules.versioning.util.Utils.getStackTrace());
             return;
         }
         if (fic instanceof DefaultFileInfoContainer) {
@@ -654,7 +654,7 @@ public abstract class ExecutorSupport implements CVSListener, ExecutorGroup.Grou
             File commonParent = null;
             for (Iterator j = fileBuckets.keySet().iterator(); j.hasNext();) {
                 File key = (File) j.next();
-                commonParent = Utils.getCommonParent(parent, key);
+                commonParent = org.netbeans.modules.versioning.util.Utils.getCommonParent(parent, key);
                 if (commonParent != null) {
                     fileset = (Set) fileBuckets.get(key);
                     j.remove();

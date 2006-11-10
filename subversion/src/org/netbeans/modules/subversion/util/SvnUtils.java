@@ -25,7 +25,6 @@ import org.openide.*;
 import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
 import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
 import org.openide.util.Lookup;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
@@ -41,10 +40,6 @@ import org.netbeans.modules.subversion.SvnFileNode;
 
 import java.io.*;
 import java.util.*;
-import java.awt.Window;
-import java.awt.KeyboardFocusManager;
-import java.awt.Dialog;
-import java.awt.Frame;
 import java.text.ParseException;
 import org.netbeans.modules.subversion.client.ExceptionHandler;
 import org.netbeans.modules.versioning.util.FlatFolder;
@@ -275,23 +270,6 @@ public class SvnUtils {
         return files.toArray(new File[files.size()]);
     }
 
-    public static Window getCurrentWindow() {
-        Window wnd = KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow();
-        if (wnd instanceof Dialog || wnd instanceof Frame) {
-            return wnd;
-        } else {
-            return WindowManager.getDefault().getMainWindow();
-        }
-    }
-
-    public static String getStackTrace() {
-        Exception e = new Exception();
-        e.fillInStackTrace();
-        StringWriter sw = new StringWriter();
-        e.printStackTrace(new PrintWriter(sw));
-        return sw.toString();
-    }
-
     /**
      * Tests parent/child relationship of files.
      * 
@@ -314,41 +292,6 @@ public class SvnUtils {
      */
     public static String previousRevision(String revision) {
         return revision == null ? null : Long.toString(Long.parseLong(revision) - 1);
-    }
-
-    /**
-     * Determines parent project for a file.
-     *
-     * @param file file to examine
-     * @return Project owner of the file or null if the file does not belong to a project
-     */
-    public static Project getProject(File file) {
-        if (file == null) return null;
-        FileObject fo = FileUtil.toFileObject(file);
-        if (fo == null) return getProject(file.getParentFile());
-        return FileOwnerQuery.getOwner(fo);
-    }
-    
-    /**
-     * Searches for common filesystem parent folder for given files.
-     * 
-     * @param a first file
-     * @param b second file
-     * @return File common parent for both input files with the longest filesystem path or null of these files
-     * have not a common parent
-     */ 
-    public static File getCommonParent(File a, File b) {
-        for (;;) {
-            if (a.equals(b)) {
-                return a;
-            } else if (a.getAbsolutePath().length() > b.getAbsolutePath().length()) {
-                a = a.getParentFile();
-                if (a == null) return null;
-            } else {
-                b = b.getParentFile();
-                if (b == null) return null;
-            }
-        }
     }
 
     /**
@@ -390,7 +333,8 @@ public class SvnUtils {
                     StringBuffer sb = new StringBuffer();
                     while (it.hasNext()) {
                         String segment = (String) it.next();
-                        sb.append("/" + segment); // NOI18N
+                        sb.append("/"); // NOI18N
+                        sb.append(segment);
                     }
                     repositoryPath += sb.toString();
                     break;
@@ -443,7 +387,8 @@ public class SvnUtils {
                     StringBuffer sb = new StringBuffer();
                     while (it.hasNext()) {
                         String segment = (String) it.next();
-                        sb.append("/" + segment); // NOI18N
+                        sb.append("/"); // NOI18N
+                        sb.append(segment);
                     }
                     repositoryPath += sb.toString();
                     break;
@@ -482,7 +427,6 @@ public class SvnUtils {
             }
 
             if (info != null && info.getUrl() != null) {
-                SVNUrl fileURL = info.getUrl();
                 repositoryURL = info.getRepository();
                 if (repositoryURL != null) {
                     break;
@@ -602,16 +546,6 @@ public class SvnUtils {
         }
         return false;
     }
-    
-    public static void deleteRecursively(File file) {
-        if (file.isDirectory()) {
-            File [] files = file.listFiles();
-            for (int i = 0; i < files.length; i++) {
-                deleteRecursively(files[i]);
-            }
-        }
-        file.delete();
-    }
 
     /**
      * Compares two {@link FileInformation} objects by importance of statuses they represent.
@@ -619,32 +553,6 @@ public class SvnUtils {
     public static class ByImportanceComparator<T> implements Comparator<FileInformation> {
         public int compare(FileInformation i1, FileInformation i2) {
             return getComparableStatus(i1.getStatus()) - getComparableStatus(i2.getStatus());
-        }
-    }
-    
-    /**
-     * Splits files/folders into 2 groups: flat folders and other files
-     * 
-     * @param files array of files to split
-     * @return File[][] the first array File[0] contains flat folders (@see #flatten for their direct descendants),
-     * File[1] contains all other files
-     */ 
-    public static File[][] splitFlatOthers(File [] files) {
-        Set<File> flat = new HashSet<File>(1);
-        for (int i = 0; i < files.length; i++) {
-            if (files[i] instanceof FlatFolder) {
-                flat.add(files[i]);
-            }
-        }
-        if (flat.size() == 0) {
-            return new File[][] { new File[0], files };
-        } else {
-            Set<File> allFiles = new HashSet<File>(Arrays.asList(files));
-            allFiles.removeAll(flat);
-            return new File[][] {
-                flat.toArray(new File[flat.size()]),
-                allFiles.toArray(new File[allFiles.size()])
-            };
         }
     }
 

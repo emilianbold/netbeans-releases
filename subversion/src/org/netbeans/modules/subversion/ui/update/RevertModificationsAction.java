@@ -30,9 +30,8 @@ import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.*;
 import org.netbeans.modules.subversion.util.Context;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileStateInvalidException;
@@ -96,7 +95,7 @@ public class RevertModificationsAction extends ContextAction {
 
         Set filesystems = new HashSet(2);
         File files[] = ctx.getFiles();
-        File[][] split = SvnUtils.splitFlatOthers(files);
+        File[][] split = Utils.splitFlatOthers(files);
         for (int c = 0; c<split.length; c++) {
             if(support.isCanceled()) {
                 return;

@@ -24,7 +24,7 @@ import org.netbeans.modules.versioning.system.cvss.ui.actions.add.AddExecutor;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.update.UpdateExecutor;
 import org.netbeans.modules.versioning.system.cvss.*;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
-import org.netbeans.modules.versioning.system.cvss.util.Utils;
+import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.lib.cvsclient.command.update.UpdateCommand;
 import org.netbeans.lib.cvsclient.command.add.AddCommand;
 import org.netbeans.lib.cvsclient.command.GlobalOptions;

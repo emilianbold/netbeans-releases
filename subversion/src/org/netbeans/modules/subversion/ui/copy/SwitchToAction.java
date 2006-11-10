@@ -29,6 +29,7 @@ import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
@@ -89,7 +90,7 @@ public class SwitchToAction extends ContextAction {
     }
 
     static void performSwitch(RepositoryFile toRepositoryFile, File root, SvnProgressSupport support) {
-        File[][] split = SvnUtils.splitFlatOthers(new File[] {root} );
+        File[][] split = Utils.splitFlatOthers(new File[] {root} );
         boolean recursive;
         // there can be only 1 root file
         if(split[0].length > 0) {

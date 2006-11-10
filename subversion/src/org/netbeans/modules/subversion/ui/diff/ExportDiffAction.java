@@ -28,6 +28,7 @@ import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
+import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.api.diff.Difference;
 import org.netbeans.spi.diff.DiffProvider;
 import org.openide.windows.TopComponent;
@@ -291,7 +292,7 @@ public class ExportDiffAction extends ContextAction {
         File root = files[0];
         if (root.isFile()) root = root.getParentFile();
         for (int i = 1; i < files.length; i++) {
-            root = SvnUtils.getCommonParent(root, files[i]);
+            root = Utils.getCommonParent(root, files[i]);
             if (root == null) return null;
         }
         return root;

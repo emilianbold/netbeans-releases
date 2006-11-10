@@ -336,14 +336,6 @@ public class Utils {
         }
     }
 
-    public static String getStackTrace() {
-        Exception e = new Exception();
-        e.fillInStackTrace();
-        StringWriter sw = new StringWriter();
-        e.printStackTrace(new PrintWriter(sw));
-        return sw.toString();
-    }
-
     /**
      * Tests parent/child relationship of files.
      * 
@@ -449,43 +441,6 @@ public class Utils {
     }
 
     /**
-     * Recursively deletes all files and directories under a given file/directory.
-     *
-     * @param file file/directory to delete
-     */
-    public static void deleteRecursively(File file) {
-        if (file.isDirectory()) {
-            File [] files = file.listFiles();
-            for (int i = 0; i < files.length; i++) {
-                deleteRecursively(files[i]);
-            }
-        }
-        file.delete();
-    }
-    
-    /**
-     * Searches for common filesystem parent folder for given files.
-     * 
-     * @param a first file
-     * @param b second file
-     * @return File common parent for both input files with the longest filesystem path or null of these files
-     * have not a common parent
-     */ 
-    public static File getCommonParent(File a, File b) {
-        for (;;) {
-            if (a.equals(b)) {
-                return a;
-            } else if (a.getAbsolutePath().length() > b.getAbsolutePath().length()) {
-                a = a.getParentFile();
-                if (a == null) return null;
-            } else {
-                b = b.getParentFile();
-                if (b == null) return null;
-            }
-        }
-    }
-
-    /**
      * Compares two {@link FileInformation} objects by importance of statuses they represent.
      */ 
     public static class ByImportanceComparator implements Comparator {
@@ -493,28 +448,6 @@ public class Utils {
             FileInformation i1 = (FileInformation) o1;
             FileInformation i2 = (FileInformation) o2;
             return getComparableStatus(i1.getStatus()) - getComparableStatus(i2.getStatus());
-        }
-    }
-    
-    /**
-     * Splits files/folders into 2 groups: flat folders and other files
-     * 
-     * @param files array of files to split
-     * @return File[][] the first array File[0] contains flat folders, File[1] contains all other files 
-     */ 
-    public static File[][] splitFlatOthers(File [] files) {
-        Set flat = new HashSet(1);
-        for (int i = 0; i < files.length; i++) {
-            if (files[i] instanceof FlatFolder) {
-                flat.add(files[i]);
-            }
-        }
-        if (flat.size() == 0) {
-            return new File[][] { new File[0], files };
-        } else {
-            Set allFiles = new HashSet(Arrays.asList(files));
-            allFiles.removeAll(flat);
-            return new File[][] { (File[]) flat.toArray(new File[flat.size()]), (File[]) allFiles.toArray(new File[allFiles.size()]) };
         }
     }
     

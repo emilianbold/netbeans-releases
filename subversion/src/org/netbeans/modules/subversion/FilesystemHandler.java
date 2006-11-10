@@ -218,7 +218,7 @@ class FilesystemHandler extends VCSInterceptor {
     void removeInvalidMetadata() {
         synchronized(invalidMetadata) {
             for (File file : invalidMetadata) {
-                SvnUtils.deleteRecursively(file);
+                Utils.deleteRecursively(file);
             }
             invalidMetadata.clear();
         }

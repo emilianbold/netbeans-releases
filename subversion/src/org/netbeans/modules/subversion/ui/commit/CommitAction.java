@@ -41,6 +41,7 @@ import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.modules.versioning.util.VersioningEvent;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
@@ -85,7 +86,7 @@ public class CommitAction extends ContextAction {
             
         }
         
-        File[][] split = SvnUtils.splitFlatOthers(roots);
+        File[][] split = Utils.splitFlatOthers(roots);
         List<File> fileList = new ArrayList<File>();
         for (int c = 0; c < split.length; c++) {
             roots = split[c];
