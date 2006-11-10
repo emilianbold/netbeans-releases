@@ -41,6 +41,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -237,7 +238,7 @@ public final class JavaSource {
      * @return a new {@link JavaSource}
      * @throws {@link IllegalArgumentException} if fileObject or cpInfo is null
      */
-    public static JavaSource create(final ClasspathInfo cpInfo, final Collection<FileObject> files) throws IllegalArgumentException {
+    public static JavaSource create(final ClasspathInfo cpInfo, final Collection<? extends FileObject> files) throws IllegalArgumentException {
         if (files == null || cpInfo == null) {
             throw new IllegalArgumentException ();
         }
@@ -326,11 +327,11 @@ public final class JavaSource {
      * @param files to create JavaSource for
      * @param cpInfo classpath info
      */
-    private JavaSource (ClasspathInfo cpInfo, Collection<FileObject> files) throws IOException {
-        this.files = files;  
+    private JavaSource (ClasspathInfo cpInfo, Collection<? extends FileObject> files) throws IOException {
+        this.files = Collections.unmodifiableSet(new HashSet (files));   //Create a defensive copy, prevent modification
         this.fileChangeListener = new FileChangeListenerImpl ();
-        boolean multipleSources = files.size() > 1;
-        for (Iterator<FileObject> it = files.iterator(); it.hasNext();) {
+        boolean multipleSources = this.files.size() > 1;
+        for (Iterator<? extends FileObject> it = this.files.iterator(); it.hasNext();) {
             FileObject file = it.next();
             try {
                 TimesCollector.getDefault().reportReference( file, JavaSource.class.toString(), "[M] JavaSource", this );       //NOI18N
@@ -347,8 +348,8 @@ public final class JavaSource {
             }
         }
         this.classpathInfo = cpInfo;        
-        if (files.size() == 1) {
-            this.rootFo = classpathInfo.getClassPath(PathKind.SOURCE).findOwnerRoot(files.iterator().next());
+        if (this.files.size() == 1) {
+            this.rootFo = classpathInfo.getClassPath(PathKind.SOURCE).findOwnerRoot(this.files.iterator().next());
         }
         else {
             this.rootFo = null;
@@ -686,10 +687,10 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
     }
     
     /**
-     * Returns the {@link FileObject}s used by this {@link JavaSource}
+     * Returns unmodifiable {@link Collection} of {@link FileObject}s used by this {@link JavaSource}
      * @return the {@link FileObject}s
      */
-    public Iterable<FileObject> getFileObjects() {
+    public Collection<FileObject> getFileObjects() {
         return files;
     }
     
