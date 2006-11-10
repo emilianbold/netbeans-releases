@@ -68,7 +68,11 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-quality">
   <p>
-   XXX no answer for arch-quality
+      
+      <api name="UIGestureCollectorLibrary" group="java" type="export" category="devel">
+          Library with utilities for UI Gesture Collector module as well as 
+          for the server processing the results.
+      </api>
   </p>
  </answer>
 

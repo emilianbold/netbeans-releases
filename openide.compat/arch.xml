@@ -47,7 +47,9 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-overall">
   <p>
-   This module is deprecated, do not use any classes herein.
+      <api name="CompatibilityAPIs" category="deprecated" group="java" type="export">
+    This module is deprecated, do not use any classes herein.
+    </api>
   </p>
  </answer>
 

@@ -35,7 +35,7 @@ Microsystems, Inc. All Rights Reserved.
         that for all modules that depend on org.openide.explorer with spec.version &lt; 6.8 is added additional dependency
         on org.openide.options with spec.version 6.6 during runtime.            
         </description>
-        <class package="org.openide.explorer.propertysheet" name="PropertySheetSettings"/>
+        <class package="org.openide.explorer.propertysheet" name="PropertySheetSettings" link="no"/>
         <issue number="88769"/>
     </change>
     
