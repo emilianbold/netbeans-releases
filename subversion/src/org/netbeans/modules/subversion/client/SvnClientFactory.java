@@ -23,12 +23,12 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
 import org.netbeans.modules.subversion.config.ProxyDescriptor;
 import org.netbeans.modules.subversion.config.SvnConfigFiles;
-import org.netbeans.modules.subversion.config.PasswordFile;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.subversion.Subversion;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
+import org.tigris.subversion.svnclientadapter.ISVNPromptUserPassword;
 import org.tigris.subversion.svnclientadapter.SVNClientAdapterFactory;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
@@ -50,7 +50,6 @@ public class SvnClientFactory {
         
     /** Creates a new instance of SvnClientFactory */
     private SvnClientFactory() {
-
     }
 
     /**
@@ -65,6 +64,44 @@ public class SvnClientFactory {
         return instance;
     }
 
+    /**
+     * Returns a SvnClient, which isn't configured in any way.
+     * Knows no username, password, has no SvnProgressSupport<br/>
+     * Such an instance isn't supposed to work properly when calling remote svn commands.
+     *
+     * @return the SvnClient
+     */
+    public SvnClient createSvnClient() {    
+        return factory.createSvnClient();
+    }
+
+    /**
+     *
+     * Returns a SvnClient which is configured with the given <tt>username</tt>,
+     * <tt>password</tt>, <tt>repositoryUrl</tt> and the <tt>support</tt>.<br>
+     * In case a http proxy was given via <tt>pd</tt> an according entry for the <tt>repositoryUrl</tt> 
+     * will be created in the svn config file. 
+     * The mask <tt>handledExceptions</tt> specifies which exceptions are to be handled.
+     *
+     * @param repositoryUrl
+     * @param pd
+     * @param support
+     * @param username
+     * @param password
+     * @param handledExceptions
+     *
+     * @return the configured SvnClient
+     *
+     */    
+    public SvnClient createSvnClient(SVNUrl repositoryUrl, SvnProgressSupport support, ProxyDescriptor pd, String username, String password, int handledExceptions) {
+        return factory.createSvnClient(repositoryUrl, support, pd, username, password, handledExceptions);
+    }
+    
+    /**
+     * A SVNClientAdapterFactory will be setup, according to the svnClientAdapterFactory property.<br>
+     * The CommandlineClientAdapterFactory is default as long no value is set for svnClientAdapterFactory.
+     *
+     */ 
     public void setup() throws SVNClientException {
         try {
             String factoryType = System.getProperty("svnClientAdapterFactory");
@@ -100,13 +137,15 @@ public class SvnClientFactory {
     
     private void setupJavaHl () throws SVNClientException {        
         JhlClientAdapterFactory.setup();        
-        factory = new ClientAdapterFactory() {
-            public ISVNClientAdapter createAdapter() {
-                ISVNClientAdapter adapter = SVNClientAdapterFactory.createSVNClient(JhlClientAdapterFactory.JAVAHL_CLIENT);               
-                return adapter;
+        factory = new ClientAdapterFactory() {            
+            protected ISVNClientAdapter createAdapter() {
+                return SVNClientAdapterFactory.createSVNClient(JhlClientAdapterFactory.JAVAHL_CLIENT);           
             }
-            public SvnClientInvocationHandler getInvocationHandler(ISVNClientAdapter adapter, SvnClientDescriptor desc, SvnProgressSupport support, int handledExceptions) {
+            protected SvnClientInvocationHandler getInvocationHandler(ISVNClientAdapter adapter, SvnClientDescriptor desc, SvnProgressSupport support, int handledExceptions) {
                 return new SvnClientInvocationHandler(adapter, desc, support, handledExceptions);
+            }
+            protected ISVNPromptUserPassword createCallback(SVNUrl repositoryUrl, int handledExceptions) {
+                return new SvnClientCallback(repositoryUrl, handledExceptions);
             }
         };
         ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "svnClientAdapter running on javahl");
@@ -114,15 +153,14 @@ public class SvnClientFactory {
     
     private void setupUnsupported () throws SVNClientException {                
        factory = new ClientAdapterFactory() {
-            public ISVNClientAdapter createAdapter() {
+            protected ISVNClientAdapter createAdapter() {
                 return new UnsupportedSvnClientAdapter();
             }
-            protected ISVNClientAdapter createSvnClientAdapter(SVNUrl repositoryUrl, ProxyDescriptor pd, String username, String password) {
-                return super.createSvnClientAdapter(repositoryUrl, pd, username, password);
-            }
-
-            public SvnClientInvocationHandler getInvocationHandler(ISVNClientAdapter adapter, SvnClientDescriptor desc, SvnProgressSupport support, int handledExceptions) {
+            protected SvnClientInvocationHandler getInvocationHandler(ISVNClientAdapter adapter, SvnClientDescriptor desc, SvnProgressSupport support, int handledExceptions) {
                 return new SvnCmdLineClientInvocationHandler(adapter, desc, support, handledExceptions);
+            }   
+            protected ISVNPromptUserPassword createCallback(SVNUrl repositoryUrl, int handledExceptions) {
+                return null;
             }            
         };         
     }
@@ -130,122 +168,29 @@ public class SvnClientFactory {
     private void setupCommandline () throws SVNClientException {
         CmdLineClientAdapterFactory.setup();
         factory = new ClientAdapterFactory() {
-            public ISVNClientAdapter createAdapter() {
+            protected ISVNClientAdapter createAdapter() {
                 return SVNClientAdapterFactory.createSVNClient(CmdLineClientAdapterFactory.COMMANDLINE_CLIENT);
-            }
-            protected ISVNClientAdapter createSvnClientAdapter(SVNUrl repositoryUrl, ProxyDescriptor pd, String username, String password) {
-                ISVNClientAdapter adapter = super.createSvnClientAdapter(repositoryUrl, pd, username, password);
-                adapter.addPasswordCallback(new SvnClientCallback(repositoryUrl));
-                return adapter;
-            }
-        
-            public SvnClientInvocationHandler getInvocationHandler(ISVNClientAdapter adapter, SvnClientDescriptor desc, SvnProgressSupport support, int handledExceptions) {
+            }        
+            protected SvnClientInvocationHandler getInvocationHandler(ISVNClientAdapter adapter, SvnClientDescriptor desc, SvnProgressSupport support, int handledExceptions) {
                 return new SvnCmdLineClientInvocationHandler(adapter, desc, support, handledExceptions);
+            }
+            protected ISVNPromptUserPassword createCallback(SVNUrl repositoryUrl, int handledExceptions) {
+                return null;
             }            
         };       
         ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "svnClientAdapter running on commandline client");        
-    }   
-        
-    /**
-     * Returns a SvnClientInvocationHandler instance, which doesn't know anything about the remote repository,
-     * has no username, password and SvnProgressSupport<br/>
-     * It's not supposed to work when calling svn commands which interact wiht the remote repository.
-     *
-     * @return the SvnClient
-     */
-    public SvnClient createSvnClient() {    
-        return factory.createSvnClient();
-    }
-
-    /**
-     *
-     * Returns a SvnClientInvocationHandler instance which is configured with the given <tt>support</tt>
-     * and a <tt>username</tt> and <tt>password</tt> if there is a file in the [SVN_CONFIG_DIR]/auth folder
-     * for the given <tt>repositoryUrl</tt>. 
-     *
-     * @param repositoryUrl
-     * @param support    
-     *
-     * @return the configured SvnClient
-     *
-     */
-    public SvnClient createSvnClient(SVNUrl repositoryUrl, SvnProgressSupport support) {
-        return factory.createSvnClient(repositoryUrl, support);
-    } 
-
-    /**
-     *
-     * Returns a SvnClientInvocationHandler instance which is configured with the given <tt>username</tt>,
-     * <tt>password</tt> and a SvnClientDescriptor for <tt>repository</tt>. In case the proxy given via
-     * <tt>pd</tt> is http, an according entry for the <tt>repositoryUrl</tt> will be created in the svn config file.
-     *
-     *
-     * @param repositoryUrl
-     * @param pd
-     * @param username
-     * @param password
-     *
-     * @return the configured SvnClient
-     *
-     */
-    public SvnClient createSvnClient(SVNUrl repositoryUrl, ProxyDescriptor pd, String username, String password) {
-        return factory.createSvnClient(repositoryUrl, pd, username, password);
-    }
-
-    /**
-     *
-     * Returns a SvnClientInvocationHandler instance which is configured with the given <tt>username</tt>,
-     * <tt>password</tt> and a SvnClientDescriptor for <tt>repository</tt>. In case the proxy given via
-     * <tt>pd</tt> is http, an according entry for the <tt>repositoryUrl</tt> will be created in the svn config file.
-     * The mask <tt>handledExceptions</tt> specifies which exceptions are to be handled.
-     *
-     * @param repositoryUrl
-     * @param pd
-     * @param username
-     * @param password
-     * @param handledExceptions
-     *
-     * @return the configured SvnClient
-     *
-     */    
-    public SvnClient createSvnClient(SVNUrl repositoryUrl, ProxyDescriptor pd, String username, String password, int handledExceptions) {
-        return factory.createSvnClient(repositoryUrl, pd, username, password, handledExceptions);
-    }
+    }           
                
     private abstract class ClientAdapterFactory {
                 
-        abstract public ISVNClientAdapter createAdapter();
-        abstract public SvnClientInvocationHandler getInvocationHandler(ISVNClientAdapter adapter, SvnClientDescriptor desc, SvnProgressSupport support, int handledExceptions);
-    
-        SvnClient createSvnClient() {            
-            ISVNClientAdapter adapter = createAdapter();
-            return createSvnClient(adapter, null, null, SvnClientExceptionHandler.EX_DEFAULT_HANDLED_EXCEPTIONS);
-        }
+        abstract protected ISVNClientAdapter createAdapter();
+        abstract protected SvnClientInvocationHandler getInvocationHandler(ISVNClientAdapter adapter, SvnClientDescriptor desc, SvnProgressSupport support, int handledExceptions);
+        abstract protected ISVNPromptUserPassword createCallback(SVNUrl repositoryUrl, int handledExceptions);
         
-        public SvnClient createSvnClient(SVNUrl repositoryUrl, SvnProgressSupport support) {                                                
-            String username = ""; // NOI18N
-            String password = ""; // NOI18N
-            PasswordFile passwordFile = PasswordFile.findFileForUrl(repositoryUrl);
-            if(passwordFile!=null) {
-                username = passwordFile.getUsername();
-                password = passwordFile.getPassword();            
-            }        
-            ISVNClientAdapter adapter = createSvnClientAdapter(repositoryUrl, null, username, password);
-            return createSvnClient(adapter, support, repositoryUrl, SvnClientExceptionHandler.EX_DEFAULT_HANDLED_EXCEPTIONS);
-        }    
-        
-        public SvnClient createSvnClient(SVNUrl repositoryUrl,
-                                         ProxyDescriptor pd,
-                                         String username, 
-                                         String password) 
-        {                                                                                   
-            return createSvnClient(repositoryUrl, pd, username, password, SvnClientExceptionHandler.EX_DEFAULT_HANDLED_EXCEPTIONS) ;
-        }
-        
-        public SvnClient createSvnClient(SVNUrl repositoryUrl, ProxyDescriptor pd, String username, String password, int handledExceptions) {
-            ISVNClientAdapter adapter = createSvnClientAdapter(repositoryUrl, pd, username, password);
-            return createSvnClient(adapter, null, repositoryUrl, handledExceptions);
-        }
+        SvnClient createSvnClient() {                        
+            SvnClientInvocationHandler handler = getInvocationHandler(createAdapter(), createDescriptor(null), null, -1);
+            return createSvnClient(handler);  
+        }              
         
         /**
          *
@@ -258,20 +203,25 @@ public class SvnClientFactory {
          *
          * @return the created SvnClientInvocationHandler instance
          *
-         */
-        private SvnClient createSvnClient(ISVNClientAdapter adapter, SvnProgressSupport support, final SVNUrl repository, int handledExceptions) {
-            Class proxyClass = Proxy.getProxyClass(SvnClient.class.getClassLoader(), new Class[]{ SvnClient.class } );
-
-            SvnClientInvocationHandler handler;
-            Subversion.getInstance().cleanupFilesystem();
-
-            SvnClientDescriptor desc = new SvnClientDescriptor() {
+         */        
+        public SvnClient createSvnClient(SVNUrl repositoryUrl, SvnProgressSupport support, ProxyDescriptor pd, String username, String password, int handledExceptions) {
+            ISVNClientAdapter adapter = createAdapter();
+            SvnClientInvocationHandler handler = getInvocationHandler(adapter, createDescriptor(repositoryUrl), support, handledExceptions);            
+            setupAdapter(adapter, repositoryUrl, pd, username, password, createCallback(repositoryUrl, handledExceptions));
+            return createSvnClient(handler);
+        }
+        
+        private SvnClientDescriptor createDescriptor(final SVNUrl repositoryUrl) {
+            return new SvnClientDescriptor() {
                 public SVNUrl getSvnUrl() {
-                    return repository;
+                    return repositoryUrl;
                 }
-            };     
-
-            handler = getInvocationHandler(adapter, desc, support, handledExceptions);
+            };                 
+        }
+        
+        private SvnClient createSvnClient(SvnClientInvocationHandler handler) {
+            Class proxyClass = Proxy.getProxyClass(SvnClient.class.getClassLoader(), new Class[]{ SvnClient.class } );
+            Subversion.getInstance().cleanupFilesystem();                       
             try {
                return (SvnClient) proxyClass.getConstructor( new Class[] { InvocationHandler.class } ).newInstance( new Object[] { handler } );
             } catch (Exception e) {
@@ -279,38 +229,29 @@ public class SvnClientFactory {
             }
             return null;
         }   
-           
-        /**
-         * Creates a new CommandlineClientAdapter instance, configures it with the given <tt>username</tt> and <tt>password</tt>, and
-         * in case the proxy given via <tt>pd</tt> is http, an according entry for the <tt>repositoryUrl</tt>
-         * will be created in the svn config file.
-         *
-         * @param repositoryUrl
-         * @param pd
-         * @param username
-         * @param password
-         *
-         * @return the configured ISVNClientAdapter
-         */
-        protected ISVNClientAdapter createSvnClientAdapter(SVNUrl repositoryUrl,
-                                                         ProxyDescriptor pd,
-                                                         String username,
-                                                         String password)
-        {        
-            ISVNClientAdapter adapter = createAdapter();
+                  
+        protected void setupAdapter(ISVNClientAdapter adapter, SVNUrl repositoryUrl, ProxyDescriptor pd, 
+                                    String username, String password, ISVNPromptUserPassword callback) {                    
+            
             if(pd != null && pd.getType() == ProxyDescriptor.TYPE_HTTP) {
+                // if there is a http proxy descriptor, then write the proxy into the 
+                // subversions 'servers' file 
                 SvnConfigFiles.getInstance().setProxy(pd, SvnUtils.ripUserFromHost(repositoryUrl.getHost()));
             }        
+            
+            if(callback != null) {
+                adapter.addPasswordCallback(callback);
+            }
+            
             try {
                 File configDir = FileUtil.normalizeFile(new File(SvnConfigFiles.getNBConfigPath()));
                 adapter.setConfigDirectory(configDir);
-                // XXX do we need this for javahL ???
                 adapter.setUsername(username);
                 adapter.setPassword(password);
             } catch (SVNClientException ex) {
                 ErrorManager.getDefault().notify(ex); // should not happen
             }        
-            return adapter;
+            
         }                    
     }
     

@@ -35,20 +35,26 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 public class SvnClientCallback implements ISVNPromptUserPassword {
     
     private final SVNUrl url;
+    private final int handledExceptions;
     
     private String username = null;
-    private String password = null;
-            
+    private String password = null;        
+
     /** Creates a new instance of SvnClientCallback */
-    public SvnClientCallback(SVNUrl url) {
+    public SvnClientCallback(SVNUrl url, int handledExceptions) {
         this.url = url;
+        this.handledExceptions = handledExceptions;
     }
 
     public boolean askYesNo(String string, String string0, boolean b) {
-        throw new UnsupportedOperationException();
+        // TODO implement me
+        return false;
     }
 
     public String getUsername() {
+        if((SvnClientExceptionHandler.EX_AUTHENTICATION & handledExceptions) != SvnClientExceptionHandler.EX_AUTHENTICATION) {
+            return null;
+        }
         if(username == null) {
             getAuthData();
         }
@@ -58,6 +64,9 @@ public class SvnClientCallback implements ISVNPromptUserPassword {
     }
 
     public String getPassword() {
+        if((SvnClientExceptionHandler.EX_AUTHENTICATION & handledExceptions) != SvnClientExceptionHandler.EX_AUTHENTICATION) {
+            return null;
+        }        
         if(password == null) {
             getAuthData();
         }
@@ -67,14 +76,22 @@ public class SvnClientCallback implements ISVNPromptUserPassword {
     }
 
     public int askTrustSSLServer(String certMessage, boolean b) {
+        
+        if((SvnClientExceptionHandler.EX_NO_CERTIFICATE & handledExceptions) != SvnClientExceptionHandler.EX_NO_CERTIFICATE) {
+            return -1; // XXX test me
+        }
+        
         AcceptCertificatePanel acceptCertificatePanel = new AcceptCertificatePanel();
         acceptCertificatePanel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Error_CertFailed"));
         acceptCertificatePanel.certificatePane.setText(certMessage);
+        
         DialogDescriptor dialogDescriptor = new DialogDescriptor(acceptCertificatePanel, org.openide.util.NbBundle.getMessage(SvnClientCallback.class, "CTL_Error_CertFailed")); // NOI18N        
+        
         JButton permanentlyButton = new JButton(org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Cert_AcceptPermanently")); // NOI18N
         JButton temporarilyButton = new JButton(org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Cert_AcceptTemp")); // NOI18N
         JButton rejectButton = new JButton(org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Cert_Reject")); // NOI18N
-        dialogDescriptor.setOptions(new Object[] {permanentlyButton, temporarilyButton, rejectButton}); 
+        
+        dialogDescriptor.setOptions(new Object[] { permanentlyButton, temporarilyButton, rejectButton }); 
 
         showDialog(dialogDescriptor);
 
@@ -87,12 +104,13 @@ public class SvnClientCallback implements ISVNPromptUserPassword {
         }
     }
 
-    public boolean prompt(String string, String string0, boolean b) {
+    public boolean prompt(String string, String string0, boolean b) {        
         return true;
     }
 
     public String askQuestion(String string, String string0, boolean b, boolean b0) {
-        throw new UnsupportedOperationException();
+        // TODO implement me
+        return null;
     }
 
     public boolean userAllowedSave() {
@@ -100,31 +118,38 @@ public class SvnClientCallback implements ISVNPromptUserPassword {
     }
 
     public boolean promptSSH(String string, String string0, int i, boolean b) {
-        throw new UnsupportedOperationException();
+        // TODO implement me
+        return false;
     }
 
     public String getSSHPrivateKeyPath() {
-        throw new UnsupportedOperationException();
+        // TODO implement me
+        return null;
     }
 
     public String getSSHPrivateKeyPassphrase() {
-        throw new UnsupportedOperationException();
+        // TODO implement me
+        return null;
     }
 
     public int getSSHPort() {
-        throw new UnsupportedOperationException();
+        // TODO implement me
+        return -1;
     }
 
     public boolean promptSSL(String string, boolean b) {
-        throw new UnsupportedOperationException();
+        // TODO implement me
+        return false;
     }
 
     public String getSSLClientCertPassword() {
-        throw new UnsupportedOperationException();
+        // TODO implement me
+        return null;
     }
 
     public String getSSLClientCertPath() {
-        throw new UnsupportedOperationException();
+        // TODO implement me
+        return null;
     }
 
     private void showDialog(DialogDescriptor dialogDescriptor) {
@@ -152,12 +177,10 @@ public class SvnClientCallback implements ISVNPromptUserPassword {
         if(ret) {
             username = repository.getUserName();
             password = repository.getPassword();
-            
             // XXX we don't need this and it also should be assured that the adapter isn't precofigured with auth data as long it's not the commandline ...
 //            adapter.setUsername(username);
 //            adapter.setPassword(password);
-            
-            
         }                
     }
+
 }

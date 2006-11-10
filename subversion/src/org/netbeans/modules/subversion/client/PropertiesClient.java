@@ -22,7 +22,7 @@ package org.netbeans.modules.subversion.client;
 import java.io.*;
 import java.util.*;
 import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.client.parser.LocalSvnInfoImpl;
+import org.netbeans.modules.subversion.client.parser.ParserSvnInfo;
 import org.netbeans.modules.subversion.config.KVFile;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
@@ -108,14 +108,14 @@ public final class PropertiesClient {
         } catch (SVNClientException ex) {
             throw ex;
         }
-        if(info instanceof LocalSvnInfoImpl) {
+        if(info instanceof ParserSvnInfo) {
             if(base) {
-                return ((LocalSvnInfoImpl) info).getBasePropertyFile();
+                return ((ParserSvnInfo) info).getBasePropertyFile();
             } else {
-                return ((LocalSvnInfoImpl) info).getPropertyFile();                
+                return ((ParserSvnInfo) info).getPropertyFile();                
             }
         } else {
-            throw new SVNClientException("Unexpected value:" + info + " should be from type " + LocalSvnInfoImpl.class);
+            throw new SVNClientException("Unexpected value:" + info + " should be from type " + ParserSvnInfo.class);
         }         
     }
     

@@ -76,12 +76,20 @@ public class SvnClientInvocationHandler implements InvocationHandler {
      *
      */
     public SvnClientInvocationHandler (ISVNClientAdapter adapter, SvnClientDescriptor desc, int handledExceptions) {
+        
+        assert adapter  != null;
+        assert desc     != null;
+        
         this.adapter = adapter;
         this.desc = desc;
         this.handledExceptions = handledExceptions;
     }
 
     public SvnClientInvocationHandler (ISVNClientAdapter adapter, SvnClientDescriptor desc, SvnProgressSupport support, int handledExceptions) {
+        
+        assert adapter  != null;
+        assert desc     != null;
+        
         this.adapter = adapter;
         this.desc = desc;
         this.support = support;
@@ -173,7 +181,12 @@ public class SvnClientInvocationHandler implements InvocationHandler {
             ret = cancellable.getClass().getMethod(proxyMethod.getName(), parameters).invoke(cancellable, args);
         } else if( SvnClientDescriptor.class.isAssignableFrom(declaringClass) ) {            
             // Client Descriptor
-            ret = desc.getClass().getMethod(proxyMethod.getName(), parameters).invoke(desc, args);
+            if(desc != null) {
+                ret = desc.getClass().getMethod(proxyMethod.getName(), parameters).invoke(desc, args);    
+            } else {
+                // when there is no descriptor, then why has the method been called
+                throw new NoSuchMethodException(proxyMethod.getName());
+            }            
         } else {
             // try to take care for hashCode, equals & co. -> fallback to clientadapter
             ret = adapter.getClass().getMethod(proxyMethod.getName(), parameters).invoke(adapter, args);

@@ -31,7 +31,7 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  *
  * @author Ed Hillmann
  */
-public class ParserSvnInfo implements ISVNInfo {
+public class ParserSvnInfo implements ISVNInfo{
     
     private final File file;
     private final SVNUrl url;
@@ -51,15 +51,16 @@ public class ParserSvnInfo implements ISVNInfo {
     private final String lockOwner;
     private final String lockComment;
     private final SVNNodeKind nodeKind;
-//    private final File propertiesFile;
-//    private final File basePropertiesFile; 
+    private final File propertiesFile;
+    private final File basePropertiesFile;
     
     /** Creates a new instance of LocalSvnInfoImpl */
     public ParserSvnInfo(File file, String url, String reposUrl, String reposUuid,
         String schedule, long revision, boolean isCopied, String urlCopiedFrom, 
         long revisionCopiedFrom, Date lastChangedDate, long lastChangedRevision,
         String lastCommitAuthor, Date lastDatePropsUpdate, Date lastDateTextUpdate,
-        Date lockCreationDate, String lockOwner, String lockComment, String nodeKind) {
+        Date lockCreationDate, String lockOwner, String lockComment, String nodeKind, 
+        File propertiesFile, File basePropertiesFile) {
         this.file = file;
         try {
             this.url = url != null ? new SVNUrl(url) : null;
@@ -96,6 +97,8 @@ public class ParserSvnInfo implements ISVNInfo {
         this.lockComment = lockComment;
         
         this.nodeKind = SVNNodeKind.fromString(nodeKind);
+        this.propertiesFile = propertiesFile;
+        this.basePropertiesFile = basePropertiesFile;
     }
 
     public boolean isCopied() {
@@ -172,5 +175,13 @@ public class ParserSvnInfo implements ISVNInfo {
 
     public String getUrlString() {
         return url.toString();
+    }
+
+    public File getPropertyFile() {
+        return propertiesFile;
+    }
+    
+    public File getBasePropertyFile() {
+        return basePropertiesFile;        
     }
 }

@@ -34,11 +34,13 @@ import org.netbeans.modules.versioning.util.TableSorter;
  */
 public class SvnModuleConfig {
     
-    public static final String PROP_IGNORED_FILEPATTERNS    = "ignoredFilePatterns";  // NOI18N
-    public static final String PROP_COMMIT_EXCLUSIONS       = "commitExclusions";  // NOI18N
-    public static final String PROP_DEFAULT_VALUES          = "defaultValues";  // NOI18N
-    public static final String PROP_TEXT_ANNOTATIONS_FORMAT = "textAnnotations";  // NOI18N
-    public static final String TEXT_ANNOTATIONS_FORMAT_DEFAULT = "{DEFAULT}"; // NOI18N
+    public static final String PROP_IGNORED_FILEPATTERNS    = "ignoredFilePatterns";    // NOI18N
+    public static final String PROP_COMMIT_EXCLUSIONS       = "commitExclusions";       // NOI18N
+    public static final String PROP_DEFAULT_VALUES          = "defaultValues";          // NOI18N
+    public static final String PROP_TEXT_ANNOTATIONS_FORMAT = "textAnnotations";        // NOI18N
+    public static final String KEY_EXECUTABLE_BINARY        = "svnExecBinary";          // NOI18N
+    
+    public static final String TEXT_ANNOTATIONS_FORMAT_DEFAULT = "{DEFAULT}";           // NOI18N
 
     private static final SvnModuleConfig INSTANCE = new SvnModuleConfig();    
     
@@ -82,6 +84,14 @@ public class SvnModuleConfig {
         }
     }
 
+    public String getExecutableBinaryPath() {
+        return (String) getPreferences().get(KEY_EXECUTABLE_BINARY, "");        
+    }
+    
+    public void setExecutableBinaryPath(String path) {
+        getPreferences().put(KEY_EXECUTABLE_BINARY, path);        
+    }
+    
     // TODO: persist state
 
     private TableSorter importTableSorter;

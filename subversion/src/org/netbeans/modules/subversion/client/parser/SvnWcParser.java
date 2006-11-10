@@ -234,7 +234,7 @@ public class SvnWcParser {
                 if (isCopied) {
                     urlCopiedFrom = wcDetails.getValue("copyfrom-url");  // NOI18N
                     revisionCopiedFrom = wcDetails.getLongValue("copyfrom-rev");      // NOI18N               
-                }
+                } 
 
                 Date lastCommittedDate = wcDetails.getDateValue("committed-date");  // NOI18N
                 long lastChangedRevision = wcDetails.getLongValue("committed-rev");     // NOI18N             
@@ -255,14 +255,14 @@ public class SvnWcParser {
                     schedule, revision, isCopied, urlCopiedFrom, revisionCopiedFrom,
                     lastCommittedDate, lastChangedRevision, lastCommitAuthor,
                     lastDatePropsUpdate, lastDateTextUpdate, lockCreationDate,
-                    lockOwner, lockComment, nodeKind);
+                    lockOwner, lockComment, nodeKind, wcDetails.getPropertiesFile(), wcDetails.getBasePropertiesFile());
             } else {
                 String fileUrl = wcDetails.getValue("url");  // NOI18N
                 String reposUrl = wcDetails.getValue("repos");  // NOI18N
                 String reposUuid = wcDetails.getValue("uuid");  // NOI18N
                 returnValue = new ParserSvnInfo(file, fileUrl, reposUrl, reposUuid,
                     SVNScheduleKind.NORMAL.toString(), 0, false, null, 0, null, 0, null,
-                    null, null, null, null, null, SVNNodeKind.UNKNOWN.toString());
+                    null, null, null, null, null, SVNNodeKind.UNKNOWN.toString(), null, null);
             }
         } catch (IOException ex) {
             throw new LocalSubversionException(ex);

@@ -65,7 +65,7 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  *
  * @author Tomas Stupka
  */
-class SvnClientExceptionHandler extends ExceptionHandler {
+public class SvnClientExceptionHandler extends ExceptionHandler {
     
     private final ISVNClientAdapter adapter;
     private final SvnClient client;
@@ -111,7 +111,7 @@ class SvnClientExceptionHandler extends ExceptionHandler {
         }
         throw getException();
     }
-    
+        
     private boolean handleRepositoryConnectError(boolean urlEditable) {
         SVNUrl url = client.getSvnUrl();
         Repository repository = new Repository(url, urlEditable, false, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_ConnectionParameters")); // NOI18N
