@@ -28,6 +28,7 @@ import org.openide.util.Lookup;
 /**
  * Base class for scripting interpreters.
  * @author dstrupl
+ * @deprecated Was used only in obsolete modules.
  */
 public abstract class ScriptType extends org.openide.ServiceType {
 
