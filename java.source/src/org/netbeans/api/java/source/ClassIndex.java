@@ -95,7 +95,13 @@ public final class ClassIndex {
          * The name parameter of the {@link ClassIndex#getDeclaredTypes} is 
          * an regular expression of the declared type name.
          */
-        REGEXP
+        REGEXP,
+        
+        /**
+         * The name parameter of the {@link ClassIndex#getDeclaredTypes} is 
+         * an case insensitive regular expression of the declared type name.
+         */
+        CASE_INSENSITIVE_REGEXP
     };
     
     

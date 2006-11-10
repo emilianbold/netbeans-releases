@@ -256,8 +256,18 @@ class LuceneIndex extends Index {
                     }
                 }
                 final Pattern pattern = Pattern.compile(patternString.toString());
-                regExpSearch(pattern,startChar,in,toSearch);
+                regExpSearch(pattern,DocumentUtil.simpleNameTerm(Character.toString(startChar)),in,toSearch);
                 break;
+                }
+            case CASE_INSENSITIVE_REGEXP:
+                if (name.length() == 0 || !Character.isJavaIdentifierStart(name.charAt(0))) {
+                    throw new IllegalArgumentException ();
+                }
+                {   
+                    final Pattern pattern = Pattern.compile(name,Pattern.CASE_INSENSITIVE);
+                    char startChar = Character.toLowerCase(name.charAt(0));
+                    regExpSearch(pattern, DocumentUtil.caseInsensitiveNameTerm(Character.toString(startChar)), in, toSearch);
+                    break;
                 }
             case REGEXP:
                 if (name.length() == 0 || !Character.isJavaIdentifierStart(name.charAt(0))) {
@@ -266,7 +276,7 @@ class LuceneIndex extends Index {
                 {   
                     final Pattern pattern = Pattern.compile(name);
                     char startChar = name.charAt(0);                    
-                    regExpSearch(pattern, startChar, in, toSearch);
+                    regExpSearch(pattern, DocumentUtil.simpleNameTerm(Character.toString(startChar)), in, toSearch);
                     break;
                 }
             default:
@@ -286,8 +296,8 @@ class LuceneIndex extends Index {
         }
     }
     
-    private void regExpSearch (final Pattern pattern, final char startChar, final IndexReader in, final Set<Term> toSearch) throws IOException {        
-        final Term startTerm = DocumentUtil.simpleNameTerm(Character.toString(startChar));
+    private void regExpSearch (final Pattern pattern, final Term startTerm, final IndexReader in, final Set<Term> toSearch) throws IOException {        
+        char startChar = startTerm.text().charAt(0);
         final String camelField = startTerm.field();
         final TermEnum en = in.terms(startTerm);
         try {
