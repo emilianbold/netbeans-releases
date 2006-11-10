@@ -50,6 +50,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Lookup;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.windows.TopComponent;
@@ -65,10 +66,10 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
     }
     @Override
     public Runnable renameImpl(final Lookup lookup) {
-        EditorCookie textC = lookup.lookup(EditorCookie.class);
+        EditorCookie ec = lookup.lookup(EditorCookie.class);
         final Dictionary dictionary = lookup.lookup(Dictionary.class);
-        if (textC != null && textC.getOpenedPanes() != null) {
-            return new TextComponentRunnable(textC) {
+        if (isFromEditor(ec)) {
+            return new TextComponentRunnable(ec) {
                 @Override
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info) {
                     Element selected = selectedElement.resolveElement(info);
@@ -128,7 +129,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
     @Override
     public Runnable findUsagesImpl(Lookup lookup) {
         EditorCookie ec = lookup.lookup(EditorCookie.class);
-        if (ec != null && ec.getOpenedPanes() != null) {
+        if (isFromEditor(ec)) {
             return new TextComponentRunnable(ec) {
                 @Override
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info) {
@@ -165,9 +166,9 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
 
     @Override
     public Runnable deleteImpl(final Lookup lookup) {
-        EditorCookie textC = lookup.lookup(EditorCookie.class);
-        if (textC != null  && textC.getOpenedPanes() != null ) {
-            return new TextComponentRunnable(textC) {
+        EditorCookie ec = lookup.lookup(EditorCookie.class);
+        if (isFromEditor(ec)) {
+            return new TextComponentRunnable(ec) {
                 @Override
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info) {
                     Element selected = selectedElement.resolveElement(info);
@@ -227,10 +228,10 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
 
     @Override
     public Runnable moveImpl(final Lookup lookup) {
-        EditorCookie textC = lookup.lookup(EditorCookie.class);
+        EditorCookie ec = lookup.lookup(EditorCookie.class);
         final Dictionary dictionary = lookup.lookup(Dictionary.class);
-        if (textC != null && textC.getOpenedPanes() != null) {
-            return new TextComponentRunnable(textC) {
+        if (isFromEditor(ec)) {
+            return new TextComponentRunnable(ec) {
                 @Override
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info) {
                     if (selectedElement.resolve(info).getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT) {
@@ -375,4 +376,14 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
 
         protected abstract RefactoringUI createRefactoringUI(FileObject[] selectedElement);
     }    
+    
+    private boolean isFromEditor(EditorCookie ec) {
+        if (ec != null && ec.getOpenedPanes() != null) {
+            TopComponent activetc = TopComponent.getRegistry().getActivated();
+            if (activetc instanceof CloneableEditorSupport.Pane) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
