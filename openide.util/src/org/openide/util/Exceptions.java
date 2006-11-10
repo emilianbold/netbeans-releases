@@ -137,7 +137,7 @@ public final class Exceptions extends Object {
     
     /** Notifies an exception with a severe level. Such exception is going
      * to be printed to log file and possibly also notified to alarm the
-     * user somethow.
+     * user somehow.
      *
      * @param t the exception to notify
      */
