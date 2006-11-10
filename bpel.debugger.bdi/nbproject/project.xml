@@ -22,11 +22,11 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
-            <code-name-base>org.netbeans.modules.bpel.debuggerbdi</code-name-base>
+            <code-name-base>org.netbeans.modules.bpel.debugger.bdi</code-name-base>
             <suite-component/>
             <module-dependencies/>
             <friend-packages>
-                <friend>org.netbeans.modules.bpel.debuggerse</friend>
+                <friend>org.netbeans.modules.bpel.debugger.se</friend>
                 <package>org.netbeans.modules.bpel.debuggerbdi.rmi.api</package>
                 <package>org.netbeans.modules.bpel.debuggerbdi.rmi.wp</package>
                 <package>org.netbeans.modules.bpel.debuggerbdi.rmi.wp.impl</package>

@@ -23,7 +23,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 <project name="org.netbeans.modules.bpel.debugger.ui" default="netbeans" basedir=".">
     <import file="nbproject/build-impl.xml"/>
 
-    <property name="ex.classpath" value="${netbeans.dest.dir}/ide8/modules/org-netbeans-spi-debugger-ui.jar:${netbeans.dest.dir}/ide8/modules/org-netbeans-spi-viewmodel.jar"/>
+    <property name="ex.classpath" value="${netbeans.dest.dir}/ide7/modules/org-netbeans-spi-debugger-ui.jar:${netbeans.dest.dir}/ide7/modules/org-netbeans-spi-viewmodel.jar"/>
 
     <target name="check">
         <ant dir="../../../_codereview" inheritAll="true">

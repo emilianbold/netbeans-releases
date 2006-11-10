@@ -42,7 +42,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
                 </dependency>
             </module-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.bpel.debuggerse</friend>
+                <friend>org.netbeans.modules.bpel.debugger.se</friend>
                 <friend>org.netbeans.modules.bpel.debugger.ui</friend>
                 <package>org.netbeans.modules.bpel.debugger.api</package>
                 <package>org.netbeans.modules.bpel.debugger.api.breakpoints</package>
