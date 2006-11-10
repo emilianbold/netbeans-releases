@@ -387,20 +387,21 @@ public class NBSLanguageReader {
             } else
             if (feature instanceof StringEvaluator) {
                 Object ov = language.getProperty (language.getMimeType (), featureName);
-                if (ov != null && !(ov instanceof List[]))
+                if (ov != null && !(ov instanceof Object[]))
                     throw new ParseException ("Syntax error.");
-                List[] ss = (List[]) ov;
+                Object[] ss = (Object[]) ov;
                 if (ss == null) {
-                    ss = new List [] {new ArrayList (), new ArrayList (), new ArrayList ()};
+                    ss = new Object [] {new ArrayList (), new HashSet (), new HashSet (), new HashMap ()};
                     language.addProperty (featureName, ss);
                 }
                 String s = (String) ((StringEvaluator) feature).evaluate ();
                 int i = s.indexOf (':');
                 if (i < 1) 
-                    ss [0].add (s);
+                    ((List) ss [0]).add (java.util.regex.Pattern.compile (c (s)));
                 else {
-                    ss [2].add (s.substring (0, i));
-                    ss [3].add (s.substring (i + 1));
+                    ((Set) ss [1]).add (s.substring (0, i));
+                    ((Set) ss [2]).add (s.substring (i + 1));
+                    ((Map) ss [3]).put (s.substring (i + 1), s.substring (0, i));
                 } 
             } else
                 throw new ParseException ("Syntax error.");
@@ -572,6 +573,7 @@ public class NBSLanguageReader {
         s = s.replace ("\\t", "\t");
         s = s.replace ("\\\"", "\"");
         s = s.replace ("\\\'", "\'");
+        s = s.replace ("\\\\", "\\");
         return s;
     }
 }

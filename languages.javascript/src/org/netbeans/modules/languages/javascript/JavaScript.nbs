@@ -349,12 +349,15 @@ COMPLETE "\":\""
 COMPLETE "':'"
 COMPLETE "[:]"
 
+INDENT "(:)"
+INDENT "{:}"
+INDENT "[:]"
+INDENT "\\s*(((if|while)\\s*\\(|else\\s*|else\\s+if\\s*\\(|for\\s*\\(.*\\))[^{;]*)"
+
 PROPERTIES {
     #traceSteps:"true";
     #printRules:"true";
     #printFirst:"true";
-    bracketCompletion:org.netbeans.modules.languages.javascript.JavaScript.bracketCompletion;
-    onEnter:org.netbeans.modules.languages.javascript.JavaScript.onEnter;
     projectsViewIcon:"org/netbeans/modules/languages/javascript/JavaScript.jpg";
 }
 

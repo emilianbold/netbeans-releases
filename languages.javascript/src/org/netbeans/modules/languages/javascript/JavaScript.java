@@ -36,61 +36,6 @@ import org.openide.text.NbDocument;
  */
 public class JavaScript {
     
-    public static String bracketCompletion (TokenSequence ts) {
-        String id = ts.token ().text ().toString ();
-        //System.out.println("bracketCompletion " + ts.token ().id ().name ());
-        if (id.equals ("("))
-            return ")";
-        if (id.equals ("\""))
-            return "\"";
-        if (id.equals ("\'"))
-            return "\'";
-        return null;
-    }
-    
-    public static void onEnter (Document doc, Caret caret) {
-        try {
-            TokenSequence ts = getTokenSequence (doc, caret);
-            int originalIndent = getIndent (ts);
-            int i = 0;
-            boolean ai = false, ai2 = true, lch = false;
-            do {
-                Token t = ts.token ();
-                String id = t.text ().toString ();
-                if (!t.id ().name ().equals ("js-whitespace"))
-                    lch = false;
-                if (id.equals ("{")) {
-                    i++;
-                    ai2 = false;
-                    lch = true;
-                } else
-                if (id.equals ("("))
-                    i++;
-                else
-                if (id.equals ("}") || id.equals (")"))
-                    i--;
-                else
-                if (id.equals ("if") || id.equals ("while") || id.equals ("for"))
-                    ai = true;
-            } while (ts.moveNext () && ts.offset () < caret.getDot ());
-            if (i == 0 && ai2 && ai)
-                i++;
-            int indent = originalIndent;
-            if (i > 0) indent+=4;
-            if (i < 0) indent-=4;
-            indent (doc, caret, indent);
-            int pos = caret.getDot ();
-            if (lch) {
-                doc.insertString (caret.getDot (), "\n", null);
-                indent (doc, caret, originalIndent);
-                doc.insertString (caret.getDot (), "}", null);
-                caret.setDot (pos);
-            }
-        } catch (Exception ex) {
-            ErrorManager.getDefault ().notify (ex);
-        }
-    }
-    
     public static ASTNode parseRegularExpression (
         TokenInput input, 
         Stack stack, 

@@ -145,6 +145,14 @@ TOOLTIP:selectors:org.netbeans.modules.languages.css.CSS.tooltip
  
 HYPERLINK:string:org.netbeans.modules.languages.css.CSS.hyperlink  
 
+COMPLETE "(:)"
+COMPLETE "{:}"
+COMPLETE "\":\""
+COMPLETE "':'"
+
+INDENT "(:)"
+INDENT "{:}"
+
 REFORMAT:rule:"i"
 REFORMAT:declarations:"++i"
 REFORMAT:css-key:"i"
