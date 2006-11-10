@@ -78,6 +78,7 @@ public class NBSLanguage {
                         "'MARK' | " +
                         "'NAVIGATOR' |" +
                         "'PARSE' |" +
+                        "'ANALYZE' |" +
                         "'PROPERTIES' |" +
                         "'REFORMAT' |" +
                         "'SKIP' |" +

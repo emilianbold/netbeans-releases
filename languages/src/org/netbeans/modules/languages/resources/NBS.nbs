@@ -14,6 +14,7 @@ TOKEN:keyword:(
     "MARK" | 
     "NAVIGATOR" | 
     "PARSE" | 
+    "ANALYZE" |
     "PROPERTIES" | 
     "REFORMAT" |
     "SKIP" | 

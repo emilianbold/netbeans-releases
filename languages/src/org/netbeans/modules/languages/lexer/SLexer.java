@@ -12,6 +12,7 @@ package org.netbeans.modules.languages.lexer;
 import java.util.Map;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.modules.languages.Language;
+import org.netbeans.modules.languages.Language.MethodEvaluator;
 import org.netbeans.modules.languages.parser.Input;
 import org.netbeans.modules.languages.parser.Parser;
 import org.netbeans.modules.languages.parser.SToken;
@@ -53,7 +54,18 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
     public Token<STokenId> nextToken () {
         if (input.eof ()) return null;
         int index = input.getIndex ();
-        SToken token = parser.read (this, input);
+        SToken token = null;
+        String stateName = parser.getState(state); // [PENDING] improve performance of parser.getState()
+        MethodEvaluator evaluator = null;
+        
+        if (language != null) {
+            evaluator = (MethodEvaluator) language.getFeature(language.ANALYZE, language.getMimeType(), stateName);
+        }
+        if (evaluator != null) {
+            token = (SToken) evaluator.evaluate(new Object[] {this, language, input});
+        } else {
+            token = parser.read (this, input);
+        }
         if (token == null) {
             try {
                 if (input.getIndex () > (index + 1))

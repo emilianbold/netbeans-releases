@@ -203,6 +203,7 @@
                 <package>org.netbeans.modules.languages</package>
                 <package>org.netbeans.modules.languages.fold</package>
                 <package>org.netbeans.modules.languages.parser</package>
+                <package>org.netbeans.modules.languages.lexer</package>
             </public-packages>
         </data>
     </configuration>

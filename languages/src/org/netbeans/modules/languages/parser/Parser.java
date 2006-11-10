@@ -40,7 +40,7 @@ public class Parser {
     public static Rule create (
         String      startState,
         Pattern     pattern,
-        SToken       token,
+        SToken      token,
         String      endState
     ) {
         return new Rule (

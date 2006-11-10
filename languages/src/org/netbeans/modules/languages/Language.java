@@ -42,6 +42,7 @@ public class Language {
     public static final String MARK = "MARK";
     public static final String NAVIGATOR = "NAVIGATOR";
     public static final String PARSE = "PARSE";
+    public static final String ANALYZE = "ANALYZE";
     public static final String PROPERTIES = "PROPERTIES";
     public static final String REFORMAT = "REFORMAT";
     public static final String SKIP = "SKIP";
@@ -224,6 +225,7 @@ public class Language {
         importFeature (MARK, l);
         importFeature (NAVIGATOR, l);
         importFeature (PARSE, l);
+        importFeature (ANALYZE, l);
         // import properties
         this.properties.putAll (l.properties);
         importFeature (REFORMAT, l);
