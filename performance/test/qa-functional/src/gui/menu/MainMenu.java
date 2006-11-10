@@ -75,7 +75,7 @@ public class MainMenu extends org.netbeans.performance.test.utilities.Performanc
         suite.addTest(new MainMenu("testSourceMenu", "Source main menu"));
         suite.addTest(new MainMenu("testBuildMenu", "Build main menu"));
         suite.addTest(new MainMenu("testRunMenu", "Run main menu"));
-        suite.addTest(new MainMenu("testRefactoringMenu", "Refactoring main menu"));
+        suite.addTest(new MainMenu("testRefactorMenu", "Refactor main menu"));
         suite.addTest(new MainMenu("testVersioningMenu", "CVS main menu"));
         suite.addTest(new MainMenu("testWindowMenu", "Window main menu"));
         suite.addTest(new MainMenu("testHelpMenu", "Help main menu"));
@@ -112,7 +112,7 @@ public class MainMenu extends org.netbeans.performance.test.utilities.Performanc
     }
     
     public void testRefactoringMenu(){
-        testMenuWithJava("org.netbeans.modules.refactoring.ui.Bundle","LBL_Action");
+        testMenuWithJava("org.netbeans.modules.refactoring.java.ui.Bundle","LBL_Action");
     }
     
     public void testVersioningMenu(){
