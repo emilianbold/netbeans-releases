@@ -270,6 +270,24 @@ public final class TreeMaker {
     }
     
     /**
+     * Creates a new MethodTree representing constructor.
+     * 
+     * @param modifiers the modifiers of this method.
+     * @param typeParameters the list of generic type parameters, or an empty list.
+     * @param parameters the list of parameters, or an empty list.
+     * @param throwsList the list of throws clauses, or an empty list.
+     * @param bodyText the method's code block provided as a plain text
+     * @see com.sun.source.tree.MethodTree
+     */
+    public MethodTree Constructor(ModifiersTree modifiers,
+                             List<? extends TypeParameterTree> typeParameters,
+                             List<? extends VariableTree> parameters,
+                             List<? extends ExpressionTree> throwsList,
+                             String bodyText) {
+        return Method(modifiers, "<init>", null, typeParameters, parameters, throwsList, bodyText, null);
+    }
+    
+    /**
      * Creates a new ContinueTree.
      *
      * @param label the label to break to, or null if there is no label.
