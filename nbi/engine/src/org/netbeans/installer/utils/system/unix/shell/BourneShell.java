@@ -63,15 +63,11 @@ public class BourneShell extends Shell{
             str = strings.get(i);
             if(str!=null) {
                 str = str.trim();
-                if(str == null) {
-                    continue;
-                }
+                
                 if(str.startsWith(EXPORT)) {
                     substr = str.substring(EXPORT.length());
                     substr = substr.trim();                    
-                    if(substr == null) {
-                        continue;
-                    }
+                    
                     
                     if(substr.startsWith(name + sg) || substr.equals(name)) {
                         if(value==null) {

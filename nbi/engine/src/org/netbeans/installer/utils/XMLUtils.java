@@ -166,52 +166,52 @@ public abstract class XMLUtils {
     
     // private //////////////////////////////////////////////////////////////////////
     private static String[] getChildNamesFromString(String childname, String name) {
-        String[] result;
-        if (childname!=null && childname.equals(name)) {
-            result = new String[] { childname };
-        } else if (childname.startsWith("(") && childname.endsWith(")")) {
-            // several childs in round brackets separated by commas
-            int len = childname.length();
-            String[] names = childname.substring(1,len-1).split(",");
-            int index =0;
-            for (String n:names) {
-                if (n!=null && name.equals(n)) {
-                    index ++;
+        String[] result = new String[] {};
+        if(childname!=null) {
+            if (childname.equals(name)) {
+                result = new String[] { childname };
+            } else if (childname.startsWith("(") && childname.endsWith(")")) {
+                // several childs in round brackets separated by commas
+                int len = childname.length();
+                String[] names = childname.substring(1,len-1).split(",");
+                int index =0;
+                for (String n:names) {
+                    if (name.equals(n)) {
+                        index ++;
+                    }
+                }
+                result = new String [index];
+                index  = 0 ;
+                for (String n:names) {
+                    if (name.equals(n)) {
+                        result[index] = n;
+                        index ++;
+                    }
                 }
             }
-            result = new String [index];
-            index  = 0 ;
-            for (String n:names) {
-                if (n!=null && name.equals(n)) {
-                    result[index] = n;
-                    index ++;
-                }
-            }
-        }  else {
-            result = new String[] {};
         }
         return result;
     }
     
     private static HashMap <String,String> getAttributesFromChildName(String childname) {
         HashMap <String,String> map = new HashMap <String,String> ();
-        
-        int start = childname.indexOf(ATTR_BEGIN);
-        int end = childname.indexOf(ATTR_END);
-        if (start!=-1 && end == (childname.length()-1 )) {
-            // child with specified attribute
-            String sub = childname.substring(start + ATTR_BEGIN.length(), end);
-            String[] attrs = sub.split(ATTRS_DELIM);
-            for (String s: attrs) {
-                String[] nameValue = s.split(ATTRS_DELIM);
-                if (nameValue.length==2) {
-                    if (nameValue[1].indexOf("\"")==0 && nameValue[1].lastIndexOf("\"")==(nameValue[1].length()-1)) {
-                        nameValue[1] = nameValue[1].substring(1,nameValue[1].length()-1);
+        if(childname!=null) {
+            int start = childname.indexOf(ATTR_BEGIN);
+            int end = childname.indexOf(ATTR_END);
+            if (start!=-1 && end == (childname.length()-1 )) {
+                // child with specified attribute
+                String sub = childname.substring(start + ATTR_BEGIN.length(), end);
+                String[] attrs = sub.split(ATTRS_DELIM);
+                for (String s: attrs) {
+                    String[] nameValue = s.split(ATTRS_DELIM);
+                    if (nameValue.length==2) {
+                        if (nameValue[1].indexOf("\"")==0 && nameValue[1].lastIndexOf("\"")==(nameValue[1].length()-1)) {
+                            nameValue[1] = nameValue[1].substring(1,nameValue[1].length()-1);
+                        }
+                        map.put(nameValue[0],nameValue[1]);
                     }
-                    map.put(nameValue[0],nameValue[1]);
                 }
             }
-            
         }
         return map;
     }
@@ -238,7 +238,7 @@ public abstract class XMLUtils {
         String[] names = getChildNamesFromString(childnameString,name);
         HashMap <String,String> attributes = getAttributesFromChildName(childnameString);
         for (String n:names) {
-            if (n!=null && name.equals(n) && hasAttributes(childNode,attributes)) {
+            if (name.equals(n) && hasAttributes(childNode,attributes)) {
                 result.add(childNode);
             }
         }

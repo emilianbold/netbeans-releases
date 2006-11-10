@@ -64,18 +64,11 @@ public class CShell extends Shell{
             str = strings.get(i);
             if(str!=null) {
                 str = str.trim();
-                if(str == null) {
-                    continue;
-                }
-                
+               
                 if(str.startsWith(SETENV)) {
                     substr = str.substring(SETENV.length());
                     substr = substr.trim();
-                    
-                    if(substr == null) {
-                        continue;
-                    }
-                    
+                                        
                     if(substr.startsWith(name + sg) || substr.startsWith(name + sp) || substr.equals(name)) {
                         if(value==null) {                            
                             strings.remove(i);
