@@ -566,12 +566,10 @@ public class Installer {
                 
                 File dest = new File(getLocalDirectory().getPath() + File.separator + name);
                 
-                if (jarfile != null) {
-                    if(!jarfile.getAbsolutePath().equals(dest.getAbsolutePath()) && jarfile.exists()) {
+                if(!jarfile.getAbsolutePath().equals(dest.getAbsolutePath()) && jarfile.exists()) {
                         FileUtils.copyFile(jarfile, dest);
                     }
-                }
-                
+                                
                 cachedEngine = (!dest.exists()) ? null : dest;
                 LogManager.log(MESSAGE, "NBI Engine jar file = [" +
                         cachedEngine + "], exist = " +
