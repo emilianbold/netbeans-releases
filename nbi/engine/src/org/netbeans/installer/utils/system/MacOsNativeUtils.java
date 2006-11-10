@@ -52,15 +52,37 @@ import org.xml.sax.SAXException;
  * @author Dmitry Lipin
  */
 public class MacOsNativeUtils extends UnixNativeUtils {
-    public static final String APP_SUFFIX = ".app";
+    /////////////////////////////////////////////////////////////////////////////////
+    // Constants
+    public static final String    LIBRARY_PATH_MACOSX     = "native/libmacosx.dylib";
     
-    private static final String DOCK_PROPERIES = "com.apple.dock.plist";
+    public static final String    APP_SUFFIX              = ".app";
     
-    private static final String PLUTILS = "plutil";
-    private static final String PLUTILS_CONVERT = "-convert";
-    private static final String PLUTILS_CONVERT_XML = "xml1";
-    private static final String PLUTILS_CONVERT_BINARY = "binary1";
-    private static final String[] UPDATE_DOCK_COMMAND = new String[] {"killall", "-HUP", "Dock"};
+    private static final String   DOCK_PROPERIES         = "com.apple.dock.plist";
+    
+    private static final String   PLUTILS                = "plutil";
+    private static final String   PLUTILS_CONVERT        = "-convert";
+    private static final String   PLUTILS_CONVERT_XML    = "xml1";
+    private static final String   PLUTILS_CONVERT_BINARY = "binary1";
+    
+    private static final String[] UPDATE_DOCK_COMMAND  = new String[] {"killall", "-HUP", "Dock"};
+    
+    /////////////////////////////////////////////////////////////////////////////////
+    // Instance
+    
+    // constructor //////////////////////////////////////////////////////////////////
+    MacOsNativeUtils() {
+        loadNativeLibrary(LIBRARY_PATH_MACOSX);
+    }
+    
+    // NativeUtils implementation/override //////////////////////////////////////////
+    public long getFreeSpace(File file) {
+        if ((file == null) || file.getPath().equals("")) {
+            return 0;
+        } else {
+            return getFreeSpace0(file.getPath());
+        }
+    }
     
     public File getShortcutLocation(Shortcut shortcut, ShortcutLocationType locationType) {
         String fileName = shortcut.getFileName();
@@ -141,7 +163,37 @@ public class MacOsNativeUtils extends UnixNativeUtils {
         }
     }
     
-    private boolean modifyDockLink(Shortcut shortcut,File dockFile,boolean adding) {
+    // mac os x specific ////////////////////////////////////////////////////////////
+    public boolean isCheetah() {
+        return (getOSVersion().startsWith("10.0"));
+    }
+    
+    public boolean isPuma() {
+        return (getOSVersion().startsWith("10.1"));
+    }
+    
+    public boolean isJaguar() {
+        return (getOSVersion().startsWith("10.2"));
+    }
+    
+    public boolean isPanther() {
+        return (getOSVersion().startsWith("10.3"));
+    }
+    
+    public boolean isTiger() {
+        return (getOSVersion().startsWith("10.4"));
+    }
+    
+    public boolean isLeopard() {
+        return (getOSVersion().startsWith("10.5"));
+    }
+    
+    // private //////////////////////////////////////////////////////////////////////
+    private String getOSVersion() {
+        return System.getProperty("os.version");
+    }
+    
+    private boolean modifyDockLink(Shortcut shortcut, File dockFile, boolean adding) {
         OutputStream outputStream = null;
         try {
             DocumentBuilderFactory documentBuilderFactory =
@@ -333,32 +385,7 @@ public class MacOsNativeUtils extends UnixNativeUtils {
         }
         return returnResult;
     }
-    
-    private String getOSVersion() {
-        return System.getProperty("os.version");
-    }
-    
-    public boolean isCheetah() {
-        return (getOSVersion().startsWith("10.0"));
-    }
-    
-    public boolean isPuma() {
-        return (getOSVersion().startsWith("10.1"));
-    }
-    
-    public boolean isJaguar() {
-        return (getOSVersion().startsWith("10.2"));
-    }
-    
-    public boolean isPanther() {
-        return (getOSVersion().startsWith("10.3"));
-    }
-    
-    public boolean isTiger() {
-        return (getOSVersion().startsWith("10.4"));
-    }
-    
-    public boolean isLeopard() {
-        return (getOSVersion().startsWith("10.5"));
-    }
+
+    // native declarations //////////////////////////////////////////////////////////
+    private native long getFreeSpace0(String s);
 }

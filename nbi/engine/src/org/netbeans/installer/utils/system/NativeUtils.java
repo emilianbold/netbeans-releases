@@ -49,9 +49,13 @@ public abstract class NativeUtils {
                 instance = new WindowsNativeUtils();
                 break;
             case LINUX:
+                instance = new LinuxNativeUtils();
+                break;
             case SOLARIS_X86:
+                instance = new SolarisX86NativeUtils();
+                break;
             case SOLARIS_SPARC:
-                instance = new UnixNativeUtils();
+                instance = new SolarisSparcNativeUtils();
                 break;
             case MACOS_X_PPC:
             case MACOS_X_X86:
@@ -64,6 +68,12 @@ public abstract class NativeUtils {
     
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
+    // constructor //////////////////////////////////////////////////////////////////
+    protected NativeUtils() {
+        // does nothing
+    }
+    
+    // abstract /////////////////////////////////////////////////////////////////////
     public abstract boolean isCurrentUserAdmin() throws NativeException;
     
     public abstract File getDefaultApplicationsLocation() throws NativeException;
@@ -92,11 +102,10 @@ public abstract class NativeUtils {
     
     public abstract void correctFilesPermissions(File parent) throws IOException;
     
-    // protected ////////////////////////////////////////////////////////////////////
-    protected NativeUtils() {
-        // does nothing
-    }
+    // protected abstract ///////////////////////////////////////////////////////////
+    protected abstract void scheduleCleanup(String libraryPath);
     
+    // protected ////////////////////////////////////////////////////////////////////
     protected void loadNativeLibrary(String libraryPath) {
         if (libraryPath != null) {
             InputStream input = null;
@@ -125,6 +134,4 @@ public abstract class NativeUtils {
             }
         }
     }
-    
-    protected abstract void scheduleCleanup(String libraryPath);
 }

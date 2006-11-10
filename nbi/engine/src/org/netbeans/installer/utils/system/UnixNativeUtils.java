@@ -18,7 +18,6 @@
  *
  * $Id$
  */
-
 package org.netbeans.installer.utils.system;
 
 import java.io.File;
@@ -48,43 +47,12 @@ import org.netbeans.installer.utils.system.unix.shell.TCShell;
  *
  * @author Dmitry Lipin
  */
-
-public class UnixNativeUtils extends NativeUtils {
-    public static final String LIBRARY_PATH_LINUX = "native/linux.so";
-    public static final String LIBRARY_PATH_SOLARIS_SPARC = "native/solaris-sparc.so";
-    public static final String LIBRARY_PATH_SOLARIX_X86 = "native/solaris-x86.so";
-    public static final String LIBRARY_PATH_MACOSX = "native/libmacosx.dylib";
-    
+public abstract class UnixNativeUtils extends NativeUtils {
     private boolean isUserAdminSet;
     private boolean isUserAdmin;
     
-    UnixNativeUtils() {
-        switch (Platform.getCurrentPlatform()) {
-            case LINUX:
-                loadNativeLibrary(LIBRARY_PATH_LINUX);
-                break;
-            case SOLARIS_SPARC:
-                loadNativeLibrary(LIBRARY_PATH_SOLARIS_SPARC);
-                break;
-            case SOLARIS_X86:
-                loadNativeLibrary(LIBRARY_PATH_SOLARIX_X86);
-                break;
-            case MACOS_X_PPC:
-            case MACOS_X_X86:
-                loadNativeLibrary(LIBRARY_PATH_MACOSX);
-                break;
-            default:
-                ErrorManager.notify(ErrorLevel.CRITICAL, "Unknown platform");
-        }
-    }
-    
     protected void scheduleCleanup(String libraryPath) {
         new File(libraryPath).deleteOnExit();
-    }
-    
-    public long getFreeSpace(File file) {
-        return (file==null || file.getPath().equals("")) ? 0 :
-            getFreeSpace0(file.getPath());
     }
     
     public boolean isCurrentUserAdmin() {
@@ -313,9 +281,6 @@ public class UnixNativeUtils extends NativeUtils {
     public void correctFilesPermissions(File parent) throws IOException {
         chmod(findExecutableFiles(parent), "ugo+x");
     }
-    
-    // native declarations //////////////////////////////////////////////////////////
-    private native long getFreeSpace0(String s);
     
     // other ... //////////////////////////
     
