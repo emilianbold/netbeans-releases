@@ -62,12 +62,11 @@ public class WebModuleTest extends NbTestCase {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite("WebModuleTest");
-        // TODO : Retouche Migration
-//        suite.addTest(new AddRemoveSjsasInstanceTest("addSjsasInstance"));
-//        suite.addTest(new WebModuleTest("deployWebModule"));
-//        suite.addTest(new WebModuleTest("undeployWebModule"));
-//        suite.addTest(new StartStopServerTest("stopServer"));
-//        suite.addTest(new AddRemoveSjsasInstanceTest("removeSjsasInstance"));
+        suite.addTest(new AddRemoveSjsasInstanceTest("addSjsasInstance"));
+        suite.addTest(new WebModuleTest("deployWebModule"));
+        suite.addTest(new WebModuleTest("undeployWebModule"));
+        suite.addTest(new StartStopServerTest("stopServer"));
+        suite.addTest(new AddRemoveSjsasInstanceTest("removeSjsasInstance"));
         return suite;
     }
 }

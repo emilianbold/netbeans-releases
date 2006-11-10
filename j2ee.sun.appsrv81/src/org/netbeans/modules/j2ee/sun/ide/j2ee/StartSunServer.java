@@ -36,7 +36,6 @@ import javax.enterprise.deploy.spi.status.ProgressEvent;
 import org.netbeans.modules.derby.spi.support.DerbySupport;
 import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerServerSettings;
 import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerSupport;
-import org.netbeans.modules.j2ee.sun.api.Asenv;
 import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
 
 import javax.enterprise.deploy.shared.ActionType;
@@ -116,10 +115,13 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
     
     private String installRoot;
     private final DeploymentManagerProperties dmProps;
+    private String domain;
+    private String domainDir;
     
     private StartSunServer(DeploymentManager deploymentManager) {
         this.dm = deploymentManager;
         this.dmProps = new DeploymentManagerProperties(deploymentManager);
+        
         File irf = ((SunDeploymentManagerInterface)dm).getPlatformRoot();
         if (null != irf && irf.exists()) {
             installRoot = irf.getAbsolutePath();
@@ -251,6 +253,7 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
         pes.fireHandleProgressEvent(null, new Status(ActionType.EXECUTE,
                 ct, "",
                 StateType.RUNNING));
+        debug=false;
         RequestProcessor.getDefault().post(this, 0, Thread.NORM_PRIORITY);
 //        }
         
@@ -329,10 +332,13 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
         int errorCode=-1;
         
         SunDeploymentManagerInterface sunDm = (SunDeploymentManagerInterface)dm;
-        DeploymentManagerProperties dmProps = new DeploymentManagerProperties(dm);
         
-        String domain = dmProps.getDomainName();
-        String domainDir = dmProps.getLocation();
+        if (null == domain) {
+            domain = dmProps.getDomainName();
+        }
+        if (null == domainDir) {
+            domainDir = dmProps.getLocation();
+        }
         
         if (cmd == CMD_STOP || cmd == CMD_RESTART) {
             

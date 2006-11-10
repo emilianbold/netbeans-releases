@@ -91,7 +91,6 @@ import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.DomainEditor;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -131,8 +130,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
     private boolean maybeRunningButWrongUserName =false;
     private long timeStampCheckingRunning =0;
     private File platformRoot  =null;
-    //are we java ee 5 or only 8.x? Needed for testing the secure mode.
-    private boolean isGlassFish = false;
+    private String domainDir = null;
     
     /* cache for local value. Sometimes, the islocal() call can be very long for IP that changed
      * usually when dhcp is used. So we calculate the value in a thread at construct time
@@ -156,7 +154,6 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         this.df= df;
         this.uri =uri;
         this.platformRoot =  platformRootDir;
-        isGlassFish= ServerLocationManager.isGlassFish(platformRootDir);
         secure = uri.endsWith(SECURESTRINGDETECTION);
         String uriNonSecure =uri;
         if (secure){
@@ -181,7 +178,9 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
                 passwordForURI.put(uri+platformRoot,this.password);
             } else {
                 this.password = (String) passwordForURI.get(uri+platformRoot);
-                if (this.password==null) this.password="";
+                if (this.password==null) {
+                    this.password="";
+                }
                 
             }
             
@@ -600,9 +599,11 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
                         File domainLocationAsReturnedByTheServer = new File(dir).getParentFile().getParentFile();
                         
                         String l1 =  domainLocationAsReturnedByTheServer.getCanonicalPath();
-                        DeploymentManagerProperties dmProps = new DeploymentManagerProperties(this);
-                        String domainDir =  dmProps.getLocation();
-                        domainDir = new File(domainDir).getCanonicalPath();
+                        if (null == domainDir) {
+                            DeploymentManagerProperties dmProps = new DeploymentManagerProperties(this);
+                            domainDir =  dmProps.getLocation();
+                            domainDir = new File(domainDir).getCanonicalPath();
+                        }
                         
                         if (l1.equals(domainDir)==false){ //not the same location, so let's make sure we do not reutrn an invalid target
                             
@@ -990,10 +991,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
             // long current=System.currentTimeMillis();
             mmm=null;
             try{
-                //if(isGlassFish)
-                //    secure=PortDetector.isSecurePortGlassFish(getHost(),getPort());
-                //else
-                    secure=PortDetector.isSecurePort(getHost(),getPort());
+                secure=PortDetector.isSecurePort(getHost(),getPort());
                 
                 if (secure==true){
                     if (!uri.endsWith(SECURESTRINGDETECTION)){
@@ -1263,7 +1261,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         antProps.setProperty("sjsas.password", getPassword());         // NOI18N
         antProps.setProperty("sjsas.host",getHost());
         antProps.setProperty("sjsas.port",getPort()+"");
-        file.createNewFile();
+        boolean ret = file.createNewFile();
         FileObject fo = FileUtil.toFileObject(file);
         FileLock lock = null;
         try {

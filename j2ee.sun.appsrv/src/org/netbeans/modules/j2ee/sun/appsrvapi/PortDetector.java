@@ -37,68 +37,6 @@ import java.net.SocketTimeoutException;
  **/
 
 public class PortDetector {
-
-    /**
-     *	This method accepts a hostname and port #.  It uses this information
-     *	to attempt to connect to the port, send a test query, analyze the
-     *	result to determine if the port is secure or unsecure (currently only
-     *	http / https is supported).
-     */
-    public static boolean isSecurePortGlassFish(String host, int port) throws ConnectException {
-        boolean isSecure = false;
-        
-        int i =0;
-        
-        try {
-            Socket socket = new Socket(host,port);
-            socket.setSoTimeout(5000); // 5 seconds
-            OutputStream os = socket.getOutputStream();
-            os.write("GET / HTTP/1.1\n".getBytes()); //NOI18N
-            os.write( ("host: " + host + "\n").getBytes() ); //NOI18N
-            os.write("\n".getBytes()); //NOI18N
-            
-            InputStream is = socket.getInputStream();
-            BufferedReader bis = new BufferedReader(new InputStreamReader(is));
-            
-             while (( bis.readLine()) != null) {
-                i++;
-                if ( i > 5 ) {
-                    break; //we have the header
-                
-                }
-            }
-            
-            // We are reading the certificate.
-            if ( i == 1 ){
-                isSecure = true;
-            }
-        } catch (ConnectException ex){
-            //      ex.printStackTrace();
-            throw ex; //Status is unknown
-        } catch (SocketTimeoutException ex){
-           // ex.printStackTrace();
-             ConnectException ce = new ConnectException();
-            ce.initCause(ex);
-             throw ce; //status unknow at this point
-        } catch (SocketException ex){
-           // ex.printStackTrace();
-            if (ex.getMessage().indexOf("broken pipe") != -1){ //NOI18N
-                isSecure = true;
-            }
-        } catch (IOException ex) {
-           // ex.printStackTrace();
-            if (ex.getMessage().indexOf("end of file") != -1){ //NOI18N
-                isSecure = true;
-            }
-        } catch (Throwable ex) {
-            ex.printStackTrace();
-            ConnectException ce = new ConnectException();
-            ce.initCause(ex);
-             throw ce; //status unknow at this point
-        }
-       // System.out.println("is secure"+isSecure);
-        return isSecure;
-    }
     
     /**
      *	This method accepts a hostname and port #.  It uses this information

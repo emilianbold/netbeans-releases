@@ -69,11 +69,23 @@ public class AddRemoveSjsasInstanceTest extends NbTestCase {
             Util.sleep(SLEEP);
             
             ServerInstance inst = ServerRegistry.getInstance().getServerInstance(Util._URL);
+            boolean wasRunning = inst.isRunning();
+            
             inst.remove();
             
+            if (wasRunning) {
+                Util.sleep(SLEEP);
+            }
+
             try {
                 ServerRegistry.getInstance().checkInstanceExists(Util._URL);
             } catch(Exception e) {
+                if (wasRunning && inst.isRunning())
+                    fail("remove did not stop the instance");
+                String instances[] = ServerRegistry.getInstance().getInstanceURLs();
+                if (null != instances) 
+                    if (instances.length > 1)
+                        fail("too many instances");
                 return;
             }
             

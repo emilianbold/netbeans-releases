@@ -52,6 +52,9 @@ public class StartStopServerTest extends NbTestCase {
             if(!inst.isRunning())
                 throw new Exception("Sjsas server start failed");
             
+            if (inst.isDebuggable(null)) 
+                fail("Server started in debug... it should not have done that");
+            
             Util.sleep(SLEEP);
         } catch(Exception e) {
             fail(e.getMessage());
@@ -115,6 +118,9 @@ public class StartStopServerTest extends NbTestCase {
             if(!inst.isRunning())
                 throw new Exception("Sjsas server start debug failed");
             
+            if (!inst.isDebuggable(null)) 
+                fail("server isn't debuggable...");
+            
             Util.sleep(SLEEP);
         } catch(Exception e) {
             fail(e.getMessage());
@@ -124,12 +130,15 @@ public class StartStopServerTest extends NbTestCase {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite("StartStopServerTest");
         suite.addTest(new AddRemoveSjsasInstanceTest("addSjsasInstance"));
-        suite.addTest(new StartStopServerTest("startServer"));
-        suite.addTest(new StartStopServerTest("restartServer"));
-        suite.addTest(new StartStopServerTest("stopServer"));
+        // detect 88916 regression
         suite.addTest(new StartStopServerTest("startDebugServer"));
         suite.addTest(new StartStopServerTest("restartServer"));
         suite.addTest(new StartStopServerTest("stopServer"));
+        suite.addTest(new StartStopServerTest("startServer"));
+        suite.addTest(new StartStopServerTest("restartServer"));
+        suite.addTest(new StartStopServerTest("stopServer"));
+        // detect 88608 regression
+        suite.addTest(new StartStopServerTest("startServer"));
         suite.addTest(new AddRemoveSjsasInstanceTest("removeSjsasInstance"));
         return suite;
     }
