@@ -129,7 +129,7 @@ public class PostInstallSummaryPanel extends TextPanel {
             
             successfullyInstalledComponentsLabel.setText(getProperty(SUCCESSFULLY_INSTALLED_COMPONENTS_LABEL_TEXT_PROPERTY));
             successfullyInstalledComponentsPane.setContentType(getProperty(SUCCESSFULLY_INSTALLED_COMPONENTS_CONTENT_TYPE_PROPERTY));
-            successfullyInstalledComponentsPane.setText(StringUtils.formatMessage(getProperty(SUCCESSFULLY_INSTALLED_COMPONENTS_TEXT_PROPERTY), StringUtils.asString(components, getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY))));
+            successfullyInstalledComponentsPane.setText(StringUtils.format(getProperty(SUCCESSFULLY_INSTALLED_COMPONENTS_TEXT_PROPERTY), StringUtils.asString(components, getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY))));
         } else {
             successfullyInstalledComponentsLabel.setVisible(false);
             successfullyInstalledComponentsPane.setVisible(false);
@@ -142,7 +142,7 @@ public class PostInstallSummaryPanel extends TextPanel {
             
             componentsInstalledWithWarningsLabel.setText(getProperty(COMPONENTS_INSTALLED_WITH_WARNINGS_LABEL_TEXT_PROPERTY));
             componentsInstalledWithWarningsPane.setContentType(getProperty(COMPONENTS_INSTALLED_WITH_WARNINGS_CONTENT_TYPE_PROPERTY));
-            componentsInstalledWithWarningsPane.setText(StringUtils.formatMessage(getProperty(COMPONENTS_INSTALLED_WITH_WARNINGS_TEXT_PROPERTY), StringUtils.asString(components, getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY))));
+            componentsInstalledWithWarningsPane.setText(StringUtils.format(getProperty(COMPONENTS_INSTALLED_WITH_WARNINGS_TEXT_PROPERTY), StringUtils.asString(components, getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY))));
         } else {
             componentsInstalledWithWarningsLabel.setVisible(false);
             componentsInstalledWithWarningsPane.setVisible(false);
@@ -155,7 +155,7 @@ public class PostInstallSummaryPanel extends TextPanel {
             
             componentsFailedToInstallLabel.setText(getProperty(COMPONENTS_FAILED_TO_INSTALL_WARNINGS_LABEL_TEXT_PROPERTY));
             componentsFailedToInstallPane.setContentType(getProperty(COMPONENTS_FAILED_TO_INSTALL_CONTENT_TYPE_PROPERTY));
-            componentsFailedToInstallPane.setText(StringUtils.formatMessage(getProperty(COMPONENTS_FAILED_TO_INSTALL_TEXT_PROPERTY), StringUtils.asString(components, getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY))));
+            componentsFailedToInstallPane.setText(StringUtils.format(getProperty(COMPONENTS_FAILED_TO_INSTALL_TEXT_PROPERTY), StringUtils.asString(components, getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY))));
         } else {
             componentsFailedToInstallLabel.setVisible(false);
             componentsFailedToInstallPane.setVisible(false);
@@ -168,7 +168,7 @@ public class PostInstallSummaryPanel extends TextPanel {
             
             successfullyUninstalledComponentsLabel.setText(getProperty(SUCCESSFULLY_UNINSTALLED_COMPONENTS_LABEL_TEXT_PROPERTY));
             successfullyUninstalledComponentsPane.setContentType(getProperty(SUCCESSFULLY_UNINSTALLED_COMPONENTS_CONTENT_TYPE_PROPERTY));
-            successfullyUninstalledComponentsPane.setText(StringUtils.formatMessage(getProperty(SUCCESSFULLY_UNINSTALLED_COMPONENTS_TEXT_PROPERTY), StringUtils.asString(components, getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY))));
+            successfullyUninstalledComponentsPane.setText(StringUtils.format(getProperty(SUCCESSFULLY_UNINSTALLED_COMPONENTS_TEXT_PROPERTY), StringUtils.asString(components, getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY))));
         } else {
             successfullyUninstalledComponentsLabel.setVisible(false);
             successfullyUninstalledComponentsPane.setVisible(false);
@@ -181,7 +181,7 @@ public class PostInstallSummaryPanel extends TextPanel {
             
             componentsUninstalledWithWarningsLabel.setText(getProperty(COMPONENTS_UNINSTALLED_WITH_WARNINGS_LABEL_TEXT_PROPERTY));
             componentsUninstalledWithWarningsPane.setContentType(getProperty(COMPONENTS_UNINSTALLED_WITH_WARNINGS_CONTENT_TYPE_PROPERTY));
-            componentsUninstalledWithWarningsPane.setText(StringUtils.formatMessage(getProperty(COMPONENTS_UNINSTALLED_WITH_WARNINGS_TEXT_PROPERTY), StringUtils.asString(components, getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY))));
+            componentsUninstalledWithWarningsPane.setText(StringUtils.format(getProperty(COMPONENTS_UNINSTALLED_WITH_WARNINGS_TEXT_PROPERTY), StringUtils.asString(components, getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY))));
         } else {
             componentsUninstalledWithWarningsLabel.setVisible(false);
             componentsUninstalledWithWarningsPane.setVisible(false);
@@ -194,7 +194,7 @@ public class PostInstallSummaryPanel extends TextPanel {
             
             componentsFailedToUninstallLabel.setText(getProperty(COMPONENTS_FAILED_TO_UNINSTALL_WARNINGS_LABEL_TEXT_PROPERTY));
             componentsFailedToUninstallPane.setContentType(getProperty(COMPONENTS_FAILED_TO_UNINSTALL_CONTENT_TYPE_PROPERTY));
-            componentsFailedToUninstallPane.setText(StringUtils.formatMessage(getProperty(COMPONENTS_FAILED_TO_UNINSTALL_TEXT_PROPERTY), StringUtils.asString(components, getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY))));
+            componentsFailedToUninstallPane.setText(StringUtils.format(getProperty(COMPONENTS_FAILED_TO_UNINSTALL_TEXT_PROPERTY), StringUtils.asString(components, getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY))));
         } else {
             componentsFailedToUninstallLabel.setVisible(false);
             componentsFailedToUninstallPane.setVisible(false);

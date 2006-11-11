@@ -158,27 +158,27 @@ public class DestinationPanel extends ErrorMessagePanel {
         final String path   = file.getAbsolutePath();
         
         if (string.equals("")) {
-            return StringUtils.formatMessage(getProperty(ERROR_NULL_PROPERTY), path);
+            return StringUtils.format(getProperty(ERROR_NULL_PROPERTY), path);
         }
         
         if (!SystemUtils.isPathValid(path)) {
-            return StringUtils.formatMessage(getProperty(ERROR_NOT_VALID_PROPERTY), path);
+            return StringUtils.format(getProperty(ERROR_NOT_VALID_PROPERTY), path);
         }
         
         if (file.exists() && !file.isDirectory()) {
-            return StringUtils.formatMessage(getProperty(ERROR_NOT_DIRECTORY_PROPERTY), path);
+            return StringUtils.format(getProperty(ERROR_NOT_DIRECTORY_PROPERTY), path);
         }
         
         if (!FileUtils.canRead(file)) {
-            return StringUtils.formatMessage(getProperty(ERROR_NOT_READABLE_PROPERTY), path);
+            return StringUtils.format(getProperty(ERROR_NOT_READABLE_PROPERTY), path);
         }
         
         if (!FileUtils.canWrite(file)) {
-            return StringUtils.formatMessage(getProperty(ERROR_NOT_WRITABLE_PROPERTY), path);
+            return StringUtils.format(getProperty(ERROR_NOT_WRITABLE_PROPERTY), path);
         }
         
         if (!FileUtils.isEmpty(file)) {
-            return StringUtils.formatMessage(getProperty(ERROR_NOT_EMPTY_PROPERTY), path);
+            return StringUtils.format(getProperty(ERROR_NOT_EMPTY_PROPERTY), path);
         }
         
         return null;

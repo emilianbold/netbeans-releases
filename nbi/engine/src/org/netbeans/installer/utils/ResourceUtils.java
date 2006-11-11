@@ -57,7 +57,7 @@ public abstract class ResourceUtils {
     }
     
     public static String getString(String baseName, String key, Object... arguments) {
-        return StringUtils.formatMessage(getString(baseName, key), arguments);
+        return StringUtils.format(getString(baseName, key), arguments);
     }
     
     public static String getString(String baseName, String key, ClassLoader loader) {
@@ -65,7 +65,7 @@ public abstract class ResourceUtils {
     }
     
     public static String getString(String baseName, String key, ClassLoader loader, Object... arguments) {
-        return StringUtils.formatMessage(getString(baseName, key, loader), arguments);
+        return StringUtils.format(getString(baseName, key, loader), arguments);
     }
     
     public static String getString(Class clazz, String key) {
@@ -73,7 +73,7 @@ public abstract class ResourceUtils {
     }
     
     public static String getString(Class clazz, String key, Object... arguments) {
-        return StringUtils.formatMessage(getString(clazz, key), arguments);
+        return StringUtils.format(getString(clazz, key), arguments);
     }
     
     public static InputStream getResource(String name) {

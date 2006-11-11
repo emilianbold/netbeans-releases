@@ -99,7 +99,7 @@ public class PostCreateBundleSummaryPanel extends TextPanel {
             
             successfullyBundledComponentsLabel.setText(getProperty(SUCCESSFULLY_BUNDLED_COMPONENTS_LABEL_TEXT_PROPERTY));
             successfullyBundledComponentsPane.setContentType(getProperty(SUCCESSFULLY_BUNDLED_COMPONENTS_CONTENT_TYPE_PROPERTY));
-            successfullyBundledComponentsPane.setText(StringUtils.formatMessage(getProperty(SUCCESSFULLY_BUNDLED_COMPONENTS_TEXT_PROPERTY), StringUtils.asString(components, getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY))));
+            successfullyBundledComponentsPane.setText(StringUtils.format(getProperty(SUCCESSFULLY_BUNDLED_COMPONENTS_TEXT_PROPERTY), StringUtils.asString(components, getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY))));
         } else {
             successfullyBundledComponentsLabel.setVisible(false);
             successfullyBundledComponentsPane.setVisible(false);
@@ -112,7 +112,7 @@ public class PostCreateBundleSummaryPanel extends TextPanel {
             
             componentsFailedToBundleLabel.setText(getProperty(COMPONENTS_FAILED_TO_BUNDLE_LABEL_TEXT_PROPERTY));
             componentsFailedToBundlePane.setContentType(getProperty(COMPONENTS_FAILED_TO_BUNDLE_CONTENT_TYPE_PROPERTY));
-            componentsFailedToBundlePane.setText(StringUtils.formatMessage(getProperty(COMPONENTS_FAILED_TO_BUNDLE_TEXT_PROPERTY), StringUtils.asString(components, getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY))));
+            componentsFailedToBundlePane.setText(StringUtils.format(getProperty(COMPONENTS_FAILED_TO_BUNDLE_TEXT_PROPERTY), StringUtils.asString(components, getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY))));
         } else {
             componentsFailedToBundleLabel.setVisible(false);
             componentsFailedToBundlePane.setVisible(false);

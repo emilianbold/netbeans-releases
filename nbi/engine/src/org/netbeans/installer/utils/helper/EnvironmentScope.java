@@ -17,44 +17,11 @@
  * Microsystems, Inc. All Rights Reserved.
  *
  * $Id$
- *
  */
+package org.netbeans.installer.utils.helper;
 
-package org.netbeans.installer.utils.system.unix.shell;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-import org.netbeans.installer.utils.FileUtils;
-
-/**
- *
- * @author dlm198383
- */
-public class TCShell extends CShell{    
-    private String [] SYSTEM_PROFILE_FILES = {
-        "tcsh.cshrc",
-        "tcsh.login",
-        "profile"
-    };
-    
-    private String [] USER_PROFILE_HOMEDIRFILES = {
-        ".tcshrc.user",
-        ".tcshrc",
-        ".cshrc.user",
-        ".cshrc",
-        ".profile",
-        ".login"        
-    };    
-    
-    public String [] getSystemShellFileNames() {
-        return SYSTEM_PROFILE_FILES;
-    }
-    
-    public String[] getUserShellFileNames() {
-        return USER_PROFILE_HOMEDIRFILES;
-    }
-    public String [] getAvailableNames() {
-        return new String [] { "tcsh"};
-    }
+public enum EnvironmentScope {
+    PROCESS,
+    CURRENT_USER,
+    ALL_USERS
 }

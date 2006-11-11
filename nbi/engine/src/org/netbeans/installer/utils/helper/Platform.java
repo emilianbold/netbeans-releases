@@ -17,44 +17,44 @@
  * Microsystems, Inc. All Rights Reserved.
  *
  * $Id$
- *
  */
+package org.netbeans.installer.utils.helper;
 
-package org.netbeans.installer.utils.system.unix.shell;
-
-import java.io.File;
-import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import org.netbeans.installer.utils.FileUtils;
+import org.netbeans.installer.utils.exceptions.UnrecognizedObjectException;
 
-/**
- *
- * @author dlm198383
- */
-public class TCShell extends CShell{    
-    private String [] SYSTEM_PROFILE_FILES = {
-        "tcsh.cshrc",
-        "tcsh.login",
-        "profile"
-    };
+public enum Platform {
+    WINDOWS("windows", "Windows"),
+    LINUX("linux", "Linux"),
+    SOLARIS_X86("solaris-x86", "Solaris X86"),
+    SOLARIS_SPARC("solaris-sparc", "Solaris Sparc"),
+    MACOS_X_PPC("macos-x-ppc", "MacOS X (PPC)"),
+    MACOS_X_X86("macos-x-x86", "MacOS X (Intel)");
     
-    private String [] USER_PROFILE_HOMEDIRFILES = {
-        ".tcshrc.user",
-        ".tcshrc",
-        ".cshrc.user",
-        ".cshrc",
-        ".profile",
-        ".login"        
-    };    
+    private String name;
+    private String displayName;
     
-    public String [] getSystemShellFileNames() {
-        return SYSTEM_PROFILE_FILES;
+    private Platform(final String name, final String displayName) {
+        this.name = name;
+        this.displayName = displayName;
     }
     
-    public String[] getUserShellFileNames() {
-        return USER_PROFILE_HOMEDIRFILES;
+    public boolean equals(Platform platform) {
+        return name.equals(platform.name);
     }
-    public String [] getAvailableNames() {
-        return new String [] { "tcsh"};
+    
+    public String getName() {
+        return name;
+    }
+    
+    public String getDisplayName() {
+        return displayName;
+    }
+    
+    public String toString() {
+        return name;
     }
 }
+

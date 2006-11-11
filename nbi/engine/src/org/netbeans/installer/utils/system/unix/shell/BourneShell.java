@@ -25,7 +25,7 @@ package org.netbeans.installer.utils.system.unix.shell;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import org.netbeans.installer.utils.SystemUtils.EnvironmentScope;
+import org.netbeans.installer.utils.helper.EnvironmentScope;
 
 /**
  *

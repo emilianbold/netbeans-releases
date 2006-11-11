@@ -49,7 +49,14 @@ import org.w3c.dom.NodeList;
  * @author Dmitry Lipin
  */
 public abstract class XMLUtils {
-    ////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////
+    // Constants
+    private static final String ATTR_BEGIN  = "[@";
+    private static final String ATTR_END    = "]";
+    private static final String ATTR_DELIM  = "=";
+    private static final String ATTRS_DELIM = " and ";
+    
+    /////////////////////////////////////////////////////////////////////////////////
     // Static
     public static void saveXMLDocument(Document document, File file, File xslt) throws XMLException {
         FileOutputStream output = null;
@@ -260,10 +267,4 @@ public abstract class XMLUtils {
         }
         return result;
     }
-    
-    
-    private static final String ATTR_BEGIN  = "[@";
-    private static final String ATTR_END    = "]";
-    private static final String ATTR_DELIM  = "=";
-    private static final String ATTRS_DELIM = " and ";
 }

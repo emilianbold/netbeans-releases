@@ -28,13 +28,21 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.installer.utils.exceptions.ParseException;
+import org.netbeans.installer.utils.helper.ExtendedURI;
+import org.netbeans.installer.utils.helper.Platform;
+import org.w3c.dom.Element;
 
 /**
  *
@@ -94,7 +102,7 @@ public abstract class StringUtils {
     
     ////////////////////////////////////////////////////////////////////////////
     // Static
-    public static String formatMessage(String message, Object... arguments) {
+    public static String format(String message, Object... arguments) {
         return MessageFormat.format(message, arguments);
     }
     
@@ -361,18 +369,6 @@ public abstract class StringUtils {
         return builder.toString();
     }
     
-    public static Locale parseLocale(String string) {
-        String[] parts = string.split("_");
-        switch (parts.length) {
-            case 1:
-                return new Locale(parts[0]);
-            case 2:
-                return new Locale(parts[0], parts[1]);
-            default:
-                return new Locale(parts[0], parts[1], parts[2]);
-        }
-    }
-    
     public static String parseAscii(String string) {
         Properties properties = new Properties();
         
@@ -410,12 +406,67 @@ public abstract class StringUtils {
         }
     }
     
-    public static URL parseUrl(String url) {
+    // parsing //////////////////////////////////////////////////////////////////////
+    public static Locale parseLocale(String string) {
+        String[] parts = string.split("_");
+        switch (parts.length) {
+            case 1:
+                return new Locale(parts[0]);
+            case 2:
+                return new Locale(parts[0], parts[1]);
+            default:
+                return new Locale(parts[0], parts[1], parts[2]);
+        }
+    }
+    
+    public static URL parseUrl(String string) throws ParseException {
         try {
-            return new URL(url);
+            return new URL(string);
         } catch (MalformedURLException e) {
-            ErrorManager.notify(ErrorLevel.DEBUG, e);
-            return null;
+            throw new ParseException("Cannot parse URL", e);
+        }
+    }
+    
+    public static Platform parsePlatform(String string) throws ParseException {
+        for (Platform platform: Platform.values()) {
+            if (platform.getName().equals(string)) {
+                return platform;
+            }
+        }
+        
+        throw new ParseException("Platform \"" + string + "\" is not recognized.");
+    }
+    
+    public static List<Platform> parsePlatforms(String string) throws ParseException {
+        if (string.equals("all")) {
+            return Arrays.asList(Platform.values());
+        } else {
+            List<Platform> platforms = new ArrayList<Platform>();
+            
+            for (String name: string.split(" ")) {
+                Platform platform = parsePlatform(name);
+                if (!platforms.contains(platform)) {
+                    platforms.add(platform);
+                }
+            }
+            return platforms;
+        }
+    }
+    
+    public static ExtendedURI parseExtendedUri(Element element) throws ParseException {
+        try {
+            URI    uri           = new URI(XMLUtils.getChildNodeTextContent(element, "default-uri"));
+            long   estimatedSize = Long.parseLong(XMLUtils.getNodeAttribute(element, "estimated-size"));
+            String md5           = XMLUtils.getNodeAttribute(element, "md5");
+            String crc32         = XMLUtils.getNodeAttribute(element, "crc32");
+            
+            if (uri.getScheme().equals("file")) {
+                return new ExtendedURI(uri, uri, estimatedSize, md5, crc32);
+            } else {
+                return new ExtendedURI(uri, estimatedSize, md5, crc32);
+            }
+        } catch (URISyntaxException e) {
+            throw new ParseException("Cannot parse extended URI", e);
         }
     }
 }

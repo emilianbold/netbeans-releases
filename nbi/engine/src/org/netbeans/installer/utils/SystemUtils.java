@@ -40,6 +40,11 @@ import java.util.regex.Pattern;
 import org.netbeans.installer.product.ProductComponent;
 import org.netbeans.installer.utils.exceptions.NativeException;
 import org.netbeans.installer.utils.exceptions.UnrecognizedObjectException;
+import org.netbeans.installer.utils.helper.EnvironmentScope;
+import org.netbeans.installer.utils.helper.ExecutionResults;
+import org.netbeans.installer.utils.helper.Platform;
+import org.netbeans.installer.utils.helper.Shortcut;
+import org.netbeans.installer.utils.helper.ShortcutLocationType;
 import org.netbeans.installer.utils.system.NativeUtils;
 
 /**
@@ -56,8 +61,8 @@ public final class SystemUtils {
     /////////////////////////////////////////////////////////////////////////////////
     // Static
     private static Map<String, String> environment = new ProcessBuilder().environment();
-    
-    private static NativeUtils nativeUtils;
+    private static NativeUtils nativeUtils = null;
+    private static Platform currentPlatform = null;
     
     // string resolution ////////////////////////////////////////////////////////////
     public static String parseString(String string) {
@@ -453,6 +458,40 @@ public final class SystemUtils {
         return environment;
     }
     
+    public static Platform getCurrentPlatform() {
+        if (currentPlatform == null) {
+            if (System.getProperty("os.name").contains("Windows")) {
+                currentPlatform = Platform.WINDOWS;
+            }
+            if (System.getProperty("os.name").contains("Linux")) {
+                currentPlatform = Platform.LINUX;
+            }
+            if (System.getProperty("os.name").contains("Mac OS X") && System.getProperty("os.arch").contains("ppc")) {
+                currentPlatform = Platform.MACOS_X_PPC;
+            }
+            if (System.getProperty("os.name").contains("Mac OS X") && System.getProperty("os.arch").contains("i386")) {
+                currentPlatform = Platform.MACOS_X_X86;
+            }
+            if (System.getProperty("os.name").contains("SunOS") && System.getProperty("os.arch").contains("sparc")) {
+                currentPlatform = Platform.SOLARIS_SPARC;
+            }
+            if (System.getProperty("os.name").contains("SunOS") && System.getProperty("os.arch").contains("x86")) {
+                currentPlatform = Platform.SOLARIS_X86;
+            }
+        }
+        
+        return currentPlatform;
+    }
+    
+    public static boolean isWindows() {
+        return getCurrentPlatform() == Platform.WINDOWS;
+    }
+    
+    public static boolean isMacOS() {
+        return (getCurrentPlatform() == Platform.MACOS_X_X86) ||
+                (getCurrentPlatform() == Platform.MACOS_X_PPC);
+    }
+    
     // native accessor //////////////////////////////////////////////////////////////
     public static synchronized NativeUtils getNativeUtils() {
         if (nativeUtils == null) {
@@ -460,331 +499,5 @@ public final class SystemUtils {
         }
         
         return nativeUtils;
-    }
-    
-    /////////////////////////////////////////////////////////////////////////////////
-    // Inner Classes
-    public static enum Platform {
-        WINDOWS("windows", "Windows"),
-        LINUX("linux", "Linux"),
-        SOLARIS_X86("solaris-x86", "Solaris X86"),
-        SOLARIS_SPARC("solaris-sparc", "Solaris Sparc"),
-        MACOS_X_PPC("macos-x-ppc", "MacOS X (PPC)"),
-        MACOS_X_X86("macos-x-x86", "MacOS X (Intel)");
-        
-        public static Platform parsePlatform(String name) throws UnrecognizedObjectException {
-            for (Platform platform: Platform.values()) {
-                if (platform.name.equals(name)) {
-                    return platform;
-                }
-            }
-            
-            throw new UnrecognizedObjectException("Platform \"" + name + "\" is not recognized.");
-        }
-        
-        public static List<Platform> parsePlatforms(String platformsString) throws UnrecognizedObjectException {
-            if (platformsString.equals("all")) {
-                return Arrays.asList(Platform.values());
-            } else {
-                List<Platform> platforms = new ArrayList<Platform>();
-                
-                for (String name: platformsString.split(" ")) {
-                    Platform platform = parsePlatform(name);
-                    if (!platforms.contains(platform)) {
-                        platforms.add(platform);
-                    }
-                }
-                return platforms;
-            }
-        }
-        
-        public static Platform getCurrentPlatform() {
-            if (System.getProperty("os.name").contains("Windows")) {
-                return Platform.WINDOWS;
-            }
-            if (System.getProperty("os.name").contains("Linux")) {
-                return Platform.LINUX;
-            }
-            if (System.getProperty("os.name").contains("Mac OS X") && System.getProperty("os.arch").contains("ppc")) {
-                return Platform.MACOS_X_PPC;
-            }
-            if (System.getProperty("os.name").contains("Mac OS X") && System.getProperty("os.arch").contains("i386")) {
-                return Platform.MACOS_X_X86;
-            }
-            if (System.getProperty("os.name").contains("SunOS") && System.getProperty("os.arch").contains("sparc")) {
-                return Platform.SOLARIS_SPARC;
-            }
-            if (System.getProperty("os.name").contains("SunOS") && System.getProperty("os.arch").contains("x86")) {
-                return Platform.SOLARIS_X86;
-            }
-            
-            return null;
-        }
-        
-        public static boolean isWindows() {
-            return Platform.getCurrentPlatform() == Platform.WINDOWS;
-        }
-        
-        public static boolean isMacOS() {
-            return (Platform.getCurrentPlatform() == Platform.MACOS_X_X86) ||
-                    (Platform.getCurrentPlatform() == Platform.MACOS_X_PPC);
-        }
-        
-        private String name;
-        private String displayName;
-        
-        private Platform(String aName, String aDisplayName) {
-            name = aName;
-            displayName = aDisplayName;
-        }
-        
-        public boolean equals(Platform platform) {
-            return name.equals(platform.name);
-        }
-        
-        public String getName() {
-            return name;
-        }
-        
-        public String toString() {
-            return name;
-        }
-    }
-    
-    public static enum ShortcutLocationType {
-        CURRENT_USER_DESKTOP,
-        ALL_USERS_DESKTOP,
-        CURRENT_USER_START_MENU,
-        ALL_USERS_START_MENU
-    }
-    
-    public static enum EnvironmentScope {
-        CURRENT_USER,
-        ALL_USERS,
-        PROCESS
-    }
-    
-    public static class ExecutionResults {
-        public static final int TIMEOUT_ERRORCODE = Integer.MAX_VALUE;
-        
-        private int    errorCode = TIMEOUT_ERRORCODE;
-        private String stdOut    = "";
-        private String stdErr    = "";
-        
-        public ExecutionResults() {
-            // do nothing
-        }
-        
-        public ExecutionResults(final int errorCode, final String stdOut, final String stdErr) {
-            this.errorCode = errorCode;
-            this.stdOut    = stdOut;
-            this.stdErr    = stdErr;
-        }
-        
-        public int getErrorCode() {
-            return errorCode;
-        }
-        
-        public String getStdOut() {
-            return stdOut;
-        }
-        
-        public String getStdErr() {
-            return stdErr;
-        }
-    }
-    
-    public static class Shortcut {
-        private Map<Locale, String> names = new HashMap<Locale, String>();
-        private Map<Locale, String> descriptions = new HashMap<Locale, String>();
-        
-        private String relativePath;
-        private String fileName;
-        
-        private File executable;
-        private File workingDirectory;
-        private List<String> arguments = new ArrayList<String>();
-        
-        private File icon;
-        
-        private String[] categories;
-        
-        private String path;
-        
-        public Shortcut(final String name, final File executable) {
-            this.names.put(Locale.getDefault(), name);
-            
-            this.executable = executable;
-        }
-        
-        public Map<Locale, String> getNames() {
-            return names;
-        }
-        
-        public void setNames(final Map<Locale, String> names) {
-            this.names = names;
-        }
-        
-        public String getName(final Locale locale) {
-            return names.get(locale);
-        }
-        
-        public String getName() {
-            return getName(Locale.getDefault());
-        }
-        
-        public void addName(final String name, final Locale locale) {
-            names.put(locale, name);
-        }
-        
-        public void setName(final String name) {
-            addName(name, Locale.getDefault());
-        }
-        
-        public void removeName(final Locale locale) {
-            if (locale.equals(Locale.getDefault())) {
-                throw new IllegalArgumentException("Removing of name for default locale is not supported");
-            } else {
-                names.remove(locale);
-            }
-        }
-        
-        public Map<Locale, String> getDescriptions() {
-            return descriptions;
-        }
-        
-        public void setDescriptions(final Map<Locale, String> comments) {
-            this.descriptions = comments;
-        }
-        
-        public String getDescription(final Locale locale) {
-            return descriptions.get(locale);
-        }
-        
-        public String getDescription() {
-            return descriptions.get(Locale.getDefault());
-        }
-        
-        public void addDescription(final String description, final Locale locale) {
-            descriptions.put(locale, description);
-        }
-        
-        public void setDescription(final String description) {
-            addDescription(description, Locale.getDefault());
-        }
-        
-        public void removeDescription(final Locale locale) {
-            descriptions.remove(locale);
-        }
-        
-        public String getRelativePath() {
-            return relativePath;
-        }
-        
-        public void setRelativePath(final String relativePath) {
-            this.relativePath = relativePath;
-        }
-        
-        public String getFileName() {
-            return fileName;
-        }
-        
-        public void setFileName(final String fileName) {
-            this.fileName = fileName;
-        }
-        
-        public File getExecutable() {
-            return executable;
-        }
-        
-        public String getExecutablePath() {
-            return executable.getAbsolutePath();
-        }
-        
-        public void setExecutable(final File executable) {
-            this.executable = executable;
-        }
-        
-        public List<String> getArguments() {
-            return arguments;
-        }
-        
-        public String getArgumentsString() {
-            if (arguments.size() == 0) {
-                StringBuilder builder = new StringBuilder();
-                
-                for (int i = 0; i < arguments.size(); i++) {
-                    builder.append(arguments.get(i));
-                    
-                    if (i != arguments.size() - 1) {
-                        builder.append(" ");
-                    }
-                }
-                
-                return builder.toString();
-            } else {
-                return null;
-            }
-        }
-        
-        public void setArguments(final List<String> arguments) {
-            this.arguments = arguments;
-        }
-        
-        public void addArgument(final String argument) {
-            arguments.add(argument);
-        }
-        
-        public void removeArgument(final String argument) {
-            arguments.remove(argument);
-        }
-        
-        public File getWorkingDirectory() {
-            return workingDirectory;
-        }
-        
-        public String getWorkingDirectoryPath() {
-            if (workingDirectory != null) {
-                return workingDirectory.getAbsolutePath();
-            } else {
-                return null;
-            }
-        }
-        
-        public void setWorkingDirectory(final File workingDirectory) {
-            this.workingDirectory = workingDirectory;
-        }
-        
-        public File getIcon() {
-            return icon;
-        }
-        
-        public String getIconPath() {
-            if (icon != null) {
-                return icon.getAbsolutePath();
-            } else {
-                return null;
-            }
-        }
-        
-        public void setIcon(final File icon) {
-            this.icon = icon;
-        }
-        
-        public String[] getCategories() {
-            return categories;
-        }
-        
-        public void setCategories(final String[] categories) {
-            this.categories = categories;
-        }
-        
-        public String getPath() {
-            return path;
-        }
-        
-        public void setPath(final String path) {
-            this.path = path;
-        }
     }
 }

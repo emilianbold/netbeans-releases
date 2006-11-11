@@ -80,7 +80,7 @@ public class PreCreateBundleSummaryPanel extends DefaultWizardPanel {
         final String componentsToInstallContentType = getProperty(COMPONENTS_TO_BUNDLE_CONTENT_TYPE_PROPERTY);
         componentsToBundlePane.setContentType(componentsToInstallContentType);
         
-        final String componentsToInstallText = StringUtils.formatMessage(getProperty(COMPONENTS_TO_BUNDLE_TEXT_PROPERTY), StringUtils.asString(componentsToBundle, getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY)));
+        final String componentsToInstallText = StringUtils.format(getProperty(COMPONENTS_TO_BUNDLE_TEXT_PROPERTY), StringUtils.asString(componentsToBundle, getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY)));
         componentsToBundlePane.setText(componentsToInstallText);
         
         long downloadSize = 0;
@@ -93,10 +93,10 @@ public class PreCreateBundleSummaryPanel extends DefaultWizardPanel {
             requiredDiskSpace += component.getRequiredDiskSpace();
         }
         
-        final String downloadSizeLabelText = StringUtils.formatMessage(getProperty(DOWNLOAD_SIZE_LABEL_TEXT_PROPERTY), StringUtils.formatSize(downloadSize));
+        final String downloadSizeLabelText = StringUtils.format(getProperty(DOWNLOAD_SIZE_LABEL_TEXT_PROPERTY), StringUtils.formatSize(downloadSize));
         downloadSizeLabel.setText(downloadSizeLabelText);
         
-        final String requiredDiskSpaceLabelText = StringUtils.formatMessage(getProperty(REQUIRED_DISK_SPACE_LABEL_TEXT_PROPERTY), StringUtils.formatSize(requiredDiskSpace));
+        final String requiredDiskSpaceLabelText = StringUtils.format(getProperty(REQUIRED_DISK_SPACE_LABEL_TEXT_PROPERTY), StringUtils.formatSize(requiredDiskSpace));
         requiredDiskSpaceLabel.setText(requiredDiskSpaceLabelText);
     }
     

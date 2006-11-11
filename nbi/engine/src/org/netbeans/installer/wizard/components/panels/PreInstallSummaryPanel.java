@@ -85,7 +85,7 @@ public class PreInstallSummaryPanel extends DefaultWizardPanel {
             final String componentsToUninstallContentType = getProperty(COMPONENTS_TO_UNINSTALL_CONTENT_TYPE_PROPERTY);
             componentsToUninstallPane.setContentType(componentsToUninstallContentType);
             
-            final String componentsToUninstallText = StringUtils.formatMessage(getProperty(COMPONENTS_TO_UNINSTALL_TEXT_PROPERTY), StringUtils.asString(componentsToUninstall, getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY)));
+            final String componentsToUninstallText = StringUtils.format(getProperty(COMPONENTS_TO_UNINSTALL_TEXT_PROPERTY), StringUtils.asString(componentsToUninstall, getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY)));
             componentsToUninstallPane.setText(componentsToUninstallText);
         } else {
             componentsToUninstallLabel.setVisible(false);
@@ -104,7 +104,7 @@ public class PreInstallSummaryPanel extends DefaultWizardPanel {
             final String componentsToInstallContentType = getProperty(COMPONENTS_TO_INSTALL_CONTENT_TYPE_PROPERTY);
             componentsToInstallPane.setContentType(componentsToInstallContentType);
             
-            final String componentsToInstallText = StringUtils.formatMessage(getProperty(COMPONENTS_TO_INSTALL_TEXT_PROPERTY), StringUtils.asString(componentsToInstall, getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY)));
+            final String componentsToInstallText = StringUtils.format(getProperty(COMPONENTS_TO_INSTALL_TEXT_PROPERTY), StringUtils.asString(componentsToInstall, getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY)));
             componentsToInstallPane.setText(componentsToInstallText);
             
             long downloadSize = 0;
@@ -117,10 +117,10 @@ public class PreInstallSummaryPanel extends DefaultWizardPanel {
                 requiredDiskSpace += component.getRequiredDiskSpace();
             }
             
-            final String downloadSizeLabelText = StringUtils.formatMessage(getProperty(DOWNLOAD_SIZE_LABEL_TEXT_PROPERTY), StringUtils.formatSize(downloadSize));
+            final String downloadSizeLabelText = StringUtils.format(getProperty(DOWNLOAD_SIZE_LABEL_TEXT_PROPERTY), StringUtils.formatSize(downloadSize));
             downloadSizeLabel.setText(downloadSizeLabelText);
             
-            final String requiredDiskSpaceLabelText = StringUtils.formatMessage(getProperty(REQUIRED_DISK_SPACE_LABEL_TEXT_PROPERTY), StringUtils.formatSize(requiredDiskSpace));
+            final String requiredDiskSpaceLabelText = StringUtils.format(getProperty(REQUIRED_DISK_SPACE_LABEL_TEXT_PROPERTY), StringUtils.formatSize(requiredDiskSpace));
             requiredDiskSpaceLabel.setText(requiredDiskSpaceLabelText);
         } else {
             componentsToInstallLabel.setVisible(false);

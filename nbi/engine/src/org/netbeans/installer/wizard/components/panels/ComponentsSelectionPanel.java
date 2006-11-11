@@ -203,13 +203,13 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
         for (ProductComponent component: componentsToInstall) {
             for (ProductComponent requirement: component.getRequirements()) {
                 if ((requirement.getStatus() != Status.TO_BE_INSTALLED) && (requirement.getStatus() != Status.INSTALLED)) {
-                    return StringUtils.formatMessage(getProperty(ERROR_REQUIREMENT_INSTALL_PROPERTY), component.getDisplayName(), requirement.getDisplayName());
+                    return StringUtils.format(getProperty(ERROR_REQUIREMENT_INSTALL_PROPERTY), component.getDisplayName(), requirement.getDisplayName());
                 }
             }
             
             for (ProductComponent conflict: component.getConflicts()) {
                 if ((conflict.getStatus() == Status.TO_BE_INSTALLED) || (conflict.getStatus() == Status.INSTALLED)) {
-                    return StringUtils.formatMessage(getProperty(ERROR_CONFLICT_INSTALL_PROPERTY), component.getDisplayName(), conflict.getDisplayName());
+                    return StringUtils.format(getProperty(ERROR_CONFLICT_INSTALL_PROPERTY), component.getDisplayName(), conflict.getDisplayName());
                 }
             }
         }
@@ -217,7 +217,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
         for (ProductComponent component: componentsToUninstall) {
             for (ProductComponent dependent: ProductRegistry.getInstance().queryComponents(new TrueFilter())) {
                 if (dependent.requires(component) && ((dependent.getStatus() == Status.INSTALLED) || (dependent.getStatus() == Status.TO_BE_INSTALLED))) {
-                    return StringUtils.formatMessage(getProperty(ERROR_REQUIREMENT_UNINSTALL_PROPERTY), component.getDisplayName(), dependent.getDisplayName());
+                    return StringUtils.format(getProperty(ERROR_REQUIREMENT_UNINSTALL_PROPERTY), component.getDisplayName(), dependent.getDisplayName());
                 }
             }
         }
@@ -242,15 +242,15 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
         } else {
             ProductTreeNode node = (ProductTreeNode) componentsTreeTable.getModel().getValueAt(selectedRow, 0);
             
-            displayNameLabel.setText(StringUtils.formatMessage(getProperty(DISPLAY_NAME_LABEL_TEXT_PROPERTY), node.getDisplayName()) + " ");
+            displayNameLabel.setText(StringUtils.format(getProperty(DISPLAY_NAME_LABEL_TEXT_PROPERTY), node.getDisplayName()) + " ");
             displayNameLabel.setEnabled(true);
             
-            descriptionPane.setText(StringUtils.formatMessage(getProperty(DESCRIPTION_TEXT_PROPERTY), node.getDescription()) + " ");
+            descriptionPane.setText(StringUtils.format(getProperty(DESCRIPTION_TEXT_PROPERTY), node.getDescription()) + " ");
             descriptionPane.setEnabled(true);
             descriptionPane.setCaretPosition(0);
             
             if ((node instanceof ProductComponent) && (((ProductComponent) node).getRequirements().size() > 0)) {
-                requirementsLabel.setText(StringUtils.formatMessage(getProperty(REQUIREMENTS_LABEL_TEXT_PROPERTY), StringUtils.asString(((ProductComponent) node).getRequirements())) + " ");
+                requirementsLabel.setText(StringUtils.format(getProperty(REQUIREMENTS_LABEL_TEXT_PROPERTY), StringUtils.asString(((ProductComponent) node).getRequirements())) + " ");
                 requirementsLabel.setEnabled(true);
             } else {
                 requirementsLabel.setText(parseString(EMPTY_REQUIREMENTS_LABEL_TEXT) + " ");
@@ -258,7 +258,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
             }
             
             if ((node instanceof ProductComponent) && (((ProductComponent) node).getConflicts().size() > 0)) {
-                conflictsLabel.setText(StringUtils.formatMessage(getProperty(CONFLICTS_LABEL_TEXT_PROPERTY), StringUtils.asString(((ProductComponent) node).getConflicts())) + " ");
+                conflictsLabel.setText(StringUtils.format(getProperty(CONFLICTS_LABEL_TEXT_PROPERTY), StringUtils.asString(((ProductComponent) node).getConflicts())) + " ");
                 conflictsLabel.setEnabled(true);
             } else {
                 conflictsLabel.setText(parseString(EMPTY_CONFLICTS_LABEL_TEXT) + " ");
@@ -277,8 +277,8 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
         }
         
         if (components.size() == 0) {
-            totalDownloadSizeLabel.setText(StringUtils.formatMessage(getProperty(TOTAL_DOWNLOAD_SIZE_LABEL_TEXT_PROPERTY), parseString(DEFAULT_TOTAL_DOWNLOAD_SIZE)) + " ");
-            totalDiskSpaceLabel.setText(StringUtils.formatMessage(getProperty(TOTAL_DISK_SPACE_LABEL_TEXT_PROPERTY), parseString(DEFAULT_TOTAL_DISK_SPACE)) + " ");
+            totalDownloadSizeLabel.setText(StringUtils.format(getProperty(TOTAL_DOWNLOAD_SIZE_LABEL_TEXT_PROPERTY), parseString(DEFAULT_TOTAL_DOWNLOAD_SIZE)) + " ");
+            totalDiskSpaceLabel.setText(StringUtils.format(getProperty(TOTAL_DISK_SPACE_LABEL_TEXT_PROPERTY), parseString(DEFAULT_TOTAL_DISK_SPACE)) + " ");
         } else {
             long totalDownloadSize = 0;
             long totalDiskSpace = 0;
@@ -287,8 +287,8 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
                 totalDiskSpace += component.getRequiredDiskSpace();
             }
             
-            totalDownloadSizeLabel.setText(StringUtils.formatMessage(getProperty(TOTAL_DOWNLOAD_SIZE_LABEL_TEXT_PROPERTY), StringUtils.formatSize(totalDownloadSize)) + " ");
-            totalDiskSpaceLabel.setText(StringUtils.formatMessage(getProperty(TOTAL_DISK_SPACE_LABEL_TEXT_PROPERTY), StringUtils.formatSize(totalDiskSpace)) + " ");
+            totalDownloadSizeLabel.setText(StringUtils.format(getProperty(TOTAL_DOWNLOAD_SIZE_LABEL_TEXT_PROPERTY), StringUtils.formatSize(totalDownloadSize)) + " ");
+            totalDiskSpaceLabel.setText(StringUtils.format(getProperty(TOTAL_DISK_SPACE_LABEL_TEXT_PROPERTY), StringUtils.formatSize(totalDiskSpace)) + " ");
         }
     }
     

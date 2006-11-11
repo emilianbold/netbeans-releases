@@ -17,44 +17,34 @@
  * Microsystems, Inc. All Rights Reserved.
  *
  * $Id$
- *
  */
+package org.netbeans.installer.utils.helper;
 
-package org.netbeans.installer.utils.system.unix.shell;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-import org.netbeans.installer.utils.FileUtils;
-
-/**
- *
- * @author dlm198383
- */
-public class TCShell extends CShell{    
-    private String [] SYSTEM_PROFILE_FILES = {
-        "tcsh.cshrc",
-        "tcsh.login",
-        "profile"
-    };
+public class ExecutionResults {
+    public static final int TIMEOUT_ERRORCODE = Integer.MAX_VALUE;
     
-    private String [] USER_PROFILE_HOMEDIRFILES = {
-        ".tcshrc.user",
-        ".tcshrc",
-        ".cshrc.user",
-        ".cshrc",
-        ".profile",
-        ".login"        
-    };    
-    
-    public String [] getSystemShellFileNames() {
-        return SYSTEM_PROFILE_FILES;
+    private int errorCode = TIMEOUT_ERRORCODE;
+    private String stdOut = "";
+    private String stdErr = "";    
+    public ExecutionResults() {
+        // do nothing
     }
     
-    public String[] getUserShellFileNames() {
-        return USER_PROFILE_HOMEDIRFILES;
+    public ExecutionResults(final int errorCode, final String stdOut, final String stdErr) {
+        this.errorCode = errorCode;
+        this.stdOut    = stdOut;
+        this.stdErr    = stdErr;
     }
-    public String [] getAvailableNames() {
-        return new String [] { "tcsh"};
+    
+    public int getErrorCode() {
+        return errorCode;
+    }
+    
+    public String getStdOut() {
+        return stdOut;
+    }
+    
+    public String getStdErr() {
+        return stdErr;
     }
 }
