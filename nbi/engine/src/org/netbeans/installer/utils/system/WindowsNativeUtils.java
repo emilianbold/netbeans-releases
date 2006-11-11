@@ -774,6 +774,17 @@ public class WindowsNativeUtils extends NativeUtils {
             }
         }
         
+        public String[] getSubKeys(int section, String key) throws NativeException {
+            String[] names   = getSubKeyNames(section, key);
+            String[] subkeys = new String[names.length];
+            
+            for (int i = 0; i < names.length; i++) {
+                subkeys[i] = constructKey(key, names[i]);
+            }
+            
+            return subkeys;
+        }
+        
         /**
          * Get the array of subkey names of the specified key.
          *
@@ -1003,6 +1014,10 @@ public class WindowsNativeUtils extends NativeUtils {
             }
         }
         
+        public void setStringValue(int section, String key, String name, Object value) throws NativeException {
+            setStringValue(section, key, name, value.toString());
+        }
+        
         /**
          *
          * @param section
@@ -1011,11 +1026,6 @@ public class WindowsNativeUtils extends NativeUtils {
          * @param value
          */
         public void setStringValue(int section, String key, String name, String value) throws NativeException {
-            validateSection(section);
-            validateKey(key);
-            validateValueName(name);
-            validateStringValue(value);
-            
             setStringValue(section, key, name, value, false);
         }
         
@@ -1202,13 +1212,17 @@ public class WindowsNativeUtils extends NativeUtils {
             }
         }
         
-        // private //////////////////////////////////////////////////////////////////
+        // miscellanea //////////////////////////////////////////////////////////////
+        public String constructKey(String parent, String child) {
+            return parent + SEPARATOR + child;
+        }
+        
         /**
          *
          * @param key
          * @return
          */
-        private String getKeyParent(String key) {
+        public String getKeyParent(String key) {
             String temp = key;
             
             // strip the trailing separators
@@ -1216,7 +1230,7 @@ public class WindowsNativeUtils extends NativeUtils {
                 temp = temp.substring(0, temp.length() - 1);
             }
             
-            int index = temp.indexOf(SEPARATOR);
+            int index = temp.lastIndexOf(SEPARATOR);
             if (index != -1) {
                 return temp.substring(0, index);
             } else {
@@ -1229,7 +1243,7 @@ public class WindowsNativeUtils extends NativeUtils {
          * @param key
          * @return
          */
-        private String getKeyName(String key) {
+        public String getKeyName(String key) {
             String temp = key;
             
             // strip the trailing separators
@@ -1237,7 +1251,7 @@ public class WindowsNativeUtils extends NativeUtils {
                 temp = temp.substring(0, temp.length() - 1);
             }
             
-            int index = temp.indexOf(SEPARATOR);
+            int index = temp.lastIndexOf(SEPARATOR);
             if (index != -1) {
                 return temp.substring(index + 1);
             } else {
@@ -1245,6 +1259,7 @@ public class WindowsNativeUtils extends NativeUtils {
             }
         }
         
+        // private //////////////////////////////////////////////////////////////////
         private void validateSection(int section) throws NativeException {
             if ((section < HKEY_CLASSES_ROOT) || (section > HKEY_PERFORMANCE_TEXT)) {
                 throw new NativeException("Section \"" + section + "\" is " +

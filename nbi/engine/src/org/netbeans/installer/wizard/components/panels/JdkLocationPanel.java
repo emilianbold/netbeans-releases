@@ -117,7 +117,7 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
             return StringUtils.formatMessage(getProperty(ERROR_NOT_JAVAHOME_PROPERTY), path);
         }
         
-        if (!JDKUtils.isJDK(file)) {
+        if (!JDKUtils.isJdk(file)) {
             return StringUtils.formatMessage(getProperty(ERROR_NOT_JDK_PROPERTY), path);
         }
         
