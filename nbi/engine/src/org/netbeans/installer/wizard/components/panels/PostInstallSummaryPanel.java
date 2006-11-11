@@ -37,8 +37,8 @@ import org.netbeans.installer.utils.helper.swing.NbiButton;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
 import org.netbeans.installer.utils.helper.swing.NbiPanel;
 import org.netbeans.installer.utils.helper.swing.NbiTextPane;
-import org.netbeans.installer.utils.wizard.InstallationDetailsDialog;
-import org.netbeans.installer.utils.wizard.InstallationLogDialog;
+import org.netbeans.installer.wizard.utils.InstallationDetailsDialog;
+import org.netbeans.installer.wizard.utils.InstallationLogDialog;
 
 /**
  *

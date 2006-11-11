@@ -36,12 +36,12 @@ import org.netbeans.installer.wizard.WizardFrame;
  * @author ks152834
  */
 public class NbiDialog extends JDialog {
-    private WizardFrame wizardFrame;
+    private NbiFrame owner;
     
-    public NbiDialog(WizardFrame owner) {
+    public NbiDialog(NbiFrame owner) {
         super(owner);
         
-        wizardFrame = owner;
+        this.owner = owner;
         
         initComponents();
     }
@@ -63,7 +63,7 @@ public class NbiDialog extends JDialog {
         private Image backgroundImage;
         
         public ContentPane() {
-            backgroundImage = wizardFrame.getBackgroundImage();
+            backgroundImage = org.netbeans.installer.utils.helper.swing.NbiDialog.this.owner.getBackgroundImage();
         }
         
         protected void paintComponent(Graphics graphics) {
