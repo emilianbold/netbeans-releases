@@ -223,7 +223,7 @@ public class WindowsNativeUtils extends NativeUtils {
             LogManager.log("uninstallString = " + uninstallString);
             LogManager.logUnindent("");
             
-            addRemoveProgramsInstall(uid, displayName, icon, installPath, uninstallString, null);
+            addRemoveProgramsInstall(uid, displayName, icon, installPath, uninstallString, new HashMap<String, Object>());
         } else {
             LogManager.log(ErrorLevel.WARNING, "Can't find cached engine.");
             LogManager.log(ErrorLevel.WARNING, "The entry would not be added to the add/remove programs list");
@@ -651,7 +651,6 @@ public class WindowsNativeUtils extends NativeUtils {
             // does nothing
         }
         
-        
         // queries //////////////////////////////////////////////////////////////////
         /**
          * Checks whether the specified key exists in the registry.
@@ -661,8 +660,24 @@ public class WindowsNativeUtils extends NativeUtils {
          * @return <i>true</i> if the specified key exists, <i>false</i> otherwise
          */
         public boolean keyExists(int section, String key) throws NativeException {
+            validateSection(section);
+            validateKey(key);
+            
             try {
                 return keyExists0(section, key);
+            } catch (UnsatisfiedLinkError e) {
+                throw new NativeException("Cannot access native method", e);
+            }
+        }
+        
+        public boolean keyExists(int section, String parent, String child) throws NativeException {
+            validateSection(section);
+            validateKey(parent);
+            validateKeyName(child);
+            validateParenthood(parent, child);
+            
+            try {
+                return keyExists(section, parent + SEPARATOR + child);
             } catch (UnsatisfiedLinkError e) {
                 throw new NativeException("Cannot access native method", e);
             }
@@ -676,11 +691,19 @@ public class WindowsNativeUtils extends NativeUtils {
          * @param value The specified value
          * @return <i>true</i> if the specified value exists, <i>false</i> otherwise
          */
-        public boolean valueExists(int section, String key, String value) throws NativeException {
-            try {
-                return valueExists0(section, key, value);
-            } catch (UnsatisfiedLinkError e) {
-                throw new NativeException("Cannot access native method", e);
+        public boolean valueExists(int section, String key, String name) throws NativeException {
+            validateSection(section);
+            validateKey(key);
+            validateValueName(name);
+            
+            if (keyExists(section, key)) {
+                try {
+                    return valueExists0(section, key, name);
+                } catch (UnsatisfiedLinkError e) {
+                    throw new NativeException("Cannot access native method", e);
+                }
+            } else {
+                throw new NativeException("Cannot check for value existance - key does not exist");
             }
         }
         
@@ -693,10 +716,17 @@ public class WindowsNativeUtils extends NativeUtils {
          * @return <i>true</i> if the specified value exists, <i>false</i> otherwise
          */
         public boolean keyEmpty(int section, String key) throws NativeException {
-            try {
-                return keyEmpty0(section, key);
-            } catch (UnsatisfiedLinkError e) {
-                throw new NativeException("Cannot access native method", e);
+            validateSection(section);
+            validateKey(key);
+            
+            if (keyExists(section, key)) {
+                try {
+                    return keyEmpty0(section, key);
+                } catch (UnsatisfiedLinkError e) {
+                    throw new NativeException("Cannot access native method", e);
+                }
+            } else {
+                throw new NativeException("Cannot check -- key does not exist");
             }
         }
         
@@ -709,10 +739,17 @@ public class WindowsNativeUtils extends NativeUtils {
          * <br>Otherwise return the number of subkeys
          */
         public int countSubKeys(int section, String key) throws NativeException {
-            try {
-                return countSubKeys0(section, key);
-            } catch (UnsatisfiedLinkError e) {
-                throw new NativeException("Cannot access native method", e);
+            validateSection(section);
+            validateKey(key);
+            
+            if (keyExists(section, key)) {
+                try {
+                    return countSubKeys0(section, key);
+                } catch (UnsatisfiedLinkError e) {
+                    throw new NativeException("Cannot access native method", e);
+                }
+            } else {
+                throw new NativeException("Cannot count subkeys -- key does not exist");
             }
         }
         
@@ -723,10 +760,17 @@ public class WindowsNativeUtils extends NativeUtils {
          * <br>Otherwise return the number of values
          */
         public int countValues(int section, String key) throws NativeException {
-            try {
-                return countValues0(section, key);
-            } catch (UnsatisfiedLinkError e) {
-                throw new NativeException("Cannot access native method", e);
+            validateSection(section);
+            validateKey(key);
+            
+            if (keyExists(section, key)) {
+                try {
+                    return countValues0(section, key);
+                } catch (UnsatisfiedLinkError e) {
+                    throw new NativeException("Cannot access native method", e);
+                }
+            } else {
+                throw new NativeException("Cannot count values -- key does not exist");
             }
         }
         
@@ -739,10 +783,17 @@ public class WindowsNativeUtils extends NativeUtils {
          * <br>Otherwise return the array of subkey names
          */
         public String[] getSubKeyNames(int section, String key) throws NativeException {
-            try {
-                return getSubkeyNames0(section, key);
-            } catch (UnsatisfiedLinkError e) {
-                throw new NativeException("Cannot access native method", e);
+            validateSection(section);
+            validateKey(key);
+            
+            if (keyExists(section, key)) {
+                try {
+                    return getSubkeyNames0(section, key);
+                } catch (UnsatisfiedLinkError e) {
+                    throw new NativeException("Cannot access native method", e);
+                }
+            } else {
+                throw new NativeException("Cannot get subkey names -- key does not exist");
             }
         }
         
@@ -753,10 +804,17 @@ public class WindowsNativeUtils extends NativeUtils {
          * <br>Otherwise return the array of value names
          */
         public String[] getValueNames(int section, String key) throws NativeException {
-            try {
-                return getValueNames0(section, key);
-            } catch (UnsatisfiedLinkError e) {
-                throw new NativeException("Cannot access native method", e);
+            validateSection(section);
+            validateKey(key);
+            
+            if (keyExists(section, key)) {
+                try {
+                    return getValueNames0(section, key);
+                } catch (UnsatisfiedLinkError e) {
+                    throw new NativeException("Cannot access native method", e);
+                }
+            } else {
+                throw new NativeException("Cannot list value names -- key does not exist");
             }
         }
         
@@ -782,11 +840,23 @@ public class WindowsNativeUtils extends NativeUtils {
          * <code>REG_RESOURCE_REQUIREMENTS_LIST</code><br>
          * <code>REG_QWORD</code>=<code>REG_QWORD_LITTLE_ENDIAN</code>
          */
-        public int getValueType(int section, String key, String value) throws NativeException {
-            try {
-                return getValueType0(section, key, value);
-            } catch (UnsatisfiedLinkError e) {
-                throw new NativeException("Cannot access native method", e);
+        public int getValueType(int section, String key, String name) throws NativeException {
+            validateSection(section);
+            validateKey(key);
+            validateValueName(name);
+            
+            if (keyExists(section, key)) {
+                if (valueExists(section, key, name)) {
+                    try {
+                        return getValueType0(section, key, name);
+                    } catch (UnsatisfiedLinkError e) {
+                        throw new NativeException("Cannot access native method", e);
+                    }
+                } else {
+                    throw new NativeException("Cannot get value type -- value does not exist");
+                }
+            } else {
+                throw new NativeException("Cannot get value type -- key does not exist");
             }
         }
         
@@ -800,7 +870,7 @@ public class WindowsNativeUtils extends NativeUtils {
          * <br> <i>false</i> otherwise
          */
         public void createKey(int section, String key) throws NativeException {
-            createKey(section, getParentKey(key), getChildKey(key));
+            createKey(section, getKeyParent(key), getKeyName(key));
         }
         
         /**
@@ -813,10 +883,21 @@ public class WindowsNativeUtils extends NativeUtils {
          * <br> <i>false</i> otherwise
          */
         public void createKey(int section, String parent, String child) throws NativeException {
-            try {
-                createKey0(section, parent, child);
-            } catch (UnsatisfiedLinkError e) {
-                throw new NativeException("Cannot access native method", e);
+            validateSection(section);
+            validateKey(parent);
+            validateKeyName(child);
+            validateParenthood(parent, child);
+            
+            if (!keyExists(section, parent, child)) {
+                if (!keyExists(section, parent)) {
+                    createKey(section, getKeyParent(parent), getKeyName(parent));
+                }
+                
+                try {
+                    createKey0(section, parent, child);
+                } catch (UnsatisfiedLinkError e) {
+                    throw new NativeException("Cannot access native method", e);
+                }
             }
         }
         
@@ -829,7 +910,7 @@ public class WindowsNativeUtils extends NativeUtils {
          * @return <i>true</i> if the specified key was deleted, <i>false</i> otherwise
          */
         public void deleteKey(int section, String key) throws NativeException {
-            deleteKey(section, getParentKey(key), getChildKey(key));
+            deleteKey(section, getKeyParent(key), getKeyName(key));
         }
         
         /**
@@ -841,10 +922,17 @@ public class WindowsNativeUtils extends NativeUtils {
          * @return <i>true</i> if the specified key was deleted, <i>false</i> otherwise
          */
         public void deleteKey(int section, String parent, String child) throws NativeException {
-            try {
-                deleteKey0(section, parent, child);
-            } catch (UnsatisfiedLinkError e) {
-                throw new NativeException("Cannot access native method", e);
+            validateSection(section);
+            validateKey(parent);
+            validateKeyName(child);
+            validateParenthood(parent, child);
+            
+            if (keyExists(section, parent, child)) {
+                try {
+                    deleteKey0(section, parent, child);
+                } catch (UnsatisfiedLinkError e) {
+                    throw new NativeException("Cannot access native method", e);
+                }
             }
         }
         
@@ -857,11 +945,21 @@ public class WindowsNativeUtils extends NativeUtils {
          * @param value The specified value
          * @return <i>true</i> if the specified value was deleted, <i>false</i> otherwise
          */
-        public void deleteValue(int section, String key, String value) throws NativeException {
-            try {
-                deleteValue0(section, key, value);
-            } catch (UnsatisfiedLinkError e) {
-                throw new NativeException("Cannot access native method", e);
+        public void deleteValue(int section, String key, String name) throws NativeException {
+            validateSection(section);
+            validateKey(key);
+            validateValueName(name);
+            
+            if (keyExists(section, key)) {
+                if (valueExists(section, key, name)) {
+                    try {
+                        deleteValue0(section, key, name);
+                    } catch (UnsatisfiedLinkError e) {
+                        throw new NativeException("Cannot access native method", e);
+                    }
+                }
+            } else {
+                throw new NativeException("Cannot delete value -- key does not exist");
             }
         }
         
@@ -886,10 +984,22 @@ public class WindowsNativeUtils extends NativeUtils {
          * @return The value of the name, <i>null</i> in case of any error
          */
         public String getStringValue(int section, String key, String name, boolean expand) throws NativeException {
-            try {
-                return getStringValue0(section, key, name, expand);
-            } catch (UnsatisfiedLinkError e) {
-                throw new NativeException("Cannot access native method", e);
+            validateSection(section);
+            validateKey(key);
+            validateValueName(name);
+            
+            if (keyExists(section, key)) {
+                if (valueExists(section, key, name)) {
+                    try {
+                        return getStringValue0(section, key, name, expand);
+                    } catch (UnsatisfiedLinkError e) {
+                        throw new NativeException("Cannot access native method", e);
+                    }
+                } else {
+                    throw new NativeException("Cannot get string value -- value does not exist");
+                }
+            } else {
+                throw new NativeException("Cannot get string value -- key does not exist");
             }
         }
         
@@ -901,6 +1011,11 @@ public class WindowsNativeUtils extends NativeUtils {
          * @param value
          */
         public void setStringValue(int section, String key, String name, String value) throws NativeException {
+            validateSection(section);
+            validateKey(key);
+            validateValueName(name);
+            validateStringValue(value);
+            
             setStringValue(section, key, name, value, false);
         }
         
@@ -916,10 +1031,19 @@ public class WindowsNativeUtils extends NativeUtils {
          * <br> <i>false</i> otherwise
          */
         public void setStringValue(int section, String key, String name, String value, boolean expandable) throws NativeException {
-            try {
-                setStringValue0(section, key, name, value, expandable);
-            } catch (UnsatisfiedLinkError e) {
-                throw new NativeException("Cannot access native method", e);
+            validateSection(section);
+            validateKey(key);
+            validateValueName(name);
+            validateStringValue(value);
+            
+            if (keyExists(section, key)) {
+                try {
+                    setStringValue0(section, key, name, value, expandable);
+                } catch (UnsatisfiedLinkError e) {
+                    throw new NativeException("Cannot access native method", e);
+                }
+            } else {
+                throw new NativeException("Cannot set string value -- key does not exist");
             }
         }
         
@@ -930,10 +1054,22 @@ public class WindowsNativeUtils extends NativeUtils {
          * @return The value of the name, <i>-1</i> in case of any error
          */
         public int get32BitValue(int section, String key, String name) throws NativeException {
-            try {
-                return get32BitValue0(section, key, name);
-            } catch (UnsatisfiedLinkError e) {
-                throw new NativeException("Cannot access native method", e);
+            validateSection(section);
+            validateKey(key);
+            validateValueName(name);
+            
+            if (keyExists(section, key)) {
+                if (valueExists(section, key, name)) {
+                    try {
+                        return get32BitValue0(section, key, name);
+                    } catch (UnsatisfiedLinkError e) {
+                        throw new NativeException("Cannot access native method", e);
+                    }
+                } else {
+                    throw new NativeException("Cannot get 32-bit value -- value does not exist");
+                }
+            } else {
+                throw new NativeException("Cannot get 32-bit value -- key does not exist");
             }
         }
         
@@ -946,10 +1082,19 @@ public class WindowsNativeUtils extends NativeUtils {
          * <br> <i>false</i> otherwise
          */
         public void set32BitValue(int section, String key, String name, int value) throws NativeException {
-            try {
-                set32BitValue0(section, key, name, value);
-            } catch (UnsatisfiedLinkError e) {
-                throw new NativeException("Cannot access native method", e);
+            validateSection(section);
+            validateKey(key);
+            validateValueName(name);
+            validate32BitValue(value);
+            
+            if (keyExists(section, key)) {
+                try {
+                    set32BitValue0(section, key, name, value);
+                } catch (UnsatisfiedLinkError e) {
+                    throw new NativeException("Cannot access native method", e);
+                }
+            } else {
+                throw new NativeException("Cannot set 32-bit value -- key does not exist");
             }
         }
         
@@ -960,10 +1105,22 @@ public class WindowsNativeUtils extends NativeUtils {
          * @return The multri-string value of the name, <i>null</i> in case of any error
          */
         public String[] getMultiStringValue(int section, String key, String name) throws NativeException {
-            try {
-                return getMultiStringValue0(section, key, name);
-            } catch (UnsatisfiedLinkError e) {
-                throw new NativeException("Cannot access native method", e);
+            validateSection(section);
+            validateKey(key);
+            validateValueName(name);
+            
+            if (keyExists(section, key)) {
+                if (valueExists(section, key, name)) {
+                    try {
+                        return getMultiStringValue0(section, key, name);
+                    } catch (UnsatisfiedLinkError e) {
+                        throw new NativeException("Cannot access native method", e);
+                    }
+                } else {
+                    throw new NativeException("Cannot get multistring value -- value does not exist");
+                }
+            } else {
+                throw new NativeException("Cannot get multistring value -- key does not exist");
             }
         }
         
@@ -976,10 +1133,19 @@ public class WindowsNativeUtils extends NativeUtils {
          * <br> <i>false</i> otherwise
          */
         public void setMultiStringValue(int section, String key, String name, String[] value) throws NativeException {
-            try {
-                setMultiStringValue0(section, key, name, value);
-            } catch (UnsatisfiedLinkError e) {
-                throw new NativeException("Cannot access native method", e);
+            validateSection(section);
+            validateKey(key);
+            validateValueName(name);
+            validateMultiStringValue(value);
+            
+            if (keyExists(section, key)) {
+                try {
+                    setMultiStringValue0(section, key, name, value);
+                } catch (UnsatisfiedLinkError e) {
+                    throw new NativeException("Cannot access native method", e);
+                }
+            } else {
+                throw new NativeException("Cannot set multistring value -- key does not exist");
             }
         }
         
@@ -992,10 +1158,22 @@ public class WindowsNativeUtils extends NativeUtils {
          * @return The binary value of the name, <i>null</i> in case of any error
          */
         public byte[] getBinaryValue(int section, String key, String name) throws NativeException {
-            try {
-                return getBinaryValue0(section, key, name);
-            } catch (UnsatisfiedLinkError e) {
-                throw new NativeException("Cannot access native method", e);
+            validateSection(section);
+            validateKey(key);
+            validateValueName(name);
+            
+            if (keyExists(section, key)) {
+                if (valueExists(section, key, name)) {
+                    try {
+                        return getBinaryValue0(section, key, name);
+                    } catch (UnsatisfiedLinkError e) {
+                        throw new NativeException("Cannot access native method", e);
+                    }
+                } else {
+                    throw new NativeException("Cannot get binary value -- value does not exist");
+                }
+            } else {
+                throw new NativeException("Cannot get binary value -- key does not exist");
             }
         }
         
@@ -1008,10 +1186,19 @@ public class WindowsNativeUtils extends NativeUtils {
          * <br> <i>false</i> otherwise
          */
         public void setBinaryValue(int section, String key, String name, byte[] value) throws NativeException {
-            try {
-                setBinaryValue0(section, key, name, value);
-            } catch (UnsatisfiedLinkError e) {
-                throw new NativeException("Cannot access native method", e);
+            validateSection(section);
+            validateKey(key);
+            validateValueName(name);
+            validateBinaryValue(value);
+            
+            if (keyExists(section, key)) {
+                try {
+                    setBinaryValue0(section, key, name, value);
+                } catch (UnsatisfiedLinkError e) {
+                    throw new NativeException("Cannot access native method", e);
+                }
+            } else {
+                throw new NativeException("Cannot set binary value -- key does not exist");
             }
         }
         
@@ -1021,7 +1208,7 @@ public class WindowsNativeUtils extends NativeUtils {
          * @param key
          * @return
          */
-        private String getParentKey(String key) {
+        private String getKeyParent(String key) {
             String temp = key;
             
             // strip the trailing separators
@@ -1042,7 +1229,7 @@ public class WindowsNativeUtils extends NativeUtils {
          * @param key
          * @return
          */
-        private String getChildKey(String key) {
+        private String getKeyName(String key) {
             String temp = key;
             
             // strip the trailing separators
@@ -1055,6 +1242,60 @@ public class WindowsNativeUtils extends NativeUtils {
                 return temp.substring(index + 1);
             } else {
                 return null;
+            }
+        }
+        
+        private void validateSection(int section) throws NativeException {
+            if ((section < HKEY_CLASSES_ROOT) || (section > HKEY_PERFORMANCE_TEXT)) {
+                throw new NativeException("Section \"" + section + "\" is " +
+                        "invalid, should be between " + HKEY_CLASSES_ROOT + " " +
+                        "and " + HKEY_PERFORMANCE_TEXT);
+            }
+        }
+        
+        private void validateKey(String key) throws NativeException {
+            if (key == null) {
+                throw new NativeException("Key cannot be null");
+            }
+        }
+        
+        private void validateKeyName(String name) throws NativeException {
+            if (name == null) {
+                throw new NativeException("Key name cannot be null");
+            }
+        }
+        
+        private void validateParenthood(String parent, String child) throws NativeException {
+            if (parent.equals(child)) {
+                throw new NativeException("Parent cannot be equal to child");
+            }
+        }
+        
+        private void validateValueName(String name) throws NativeException {
+            if (name == null) {
+                throw new NativeException("Value name cannot be null");
+            }
+        }
+        
+        private void validateStringValue(String value) throws NativeException {
+            if (value == null) {
+                throw new NativeException("Strign value cannot be null");
+            }
+        }
+        
+        private void validate32BitValue(int value) throws NativeException {
+            // it cannot be wrong, but just in case
+        }
+        
+        private void validateMultiStringValue(String[] value) throws NativeException {
+            if (value == null) {
+                throw new NativeException("Multistring value cannot be null");
+            }
+        }
+        
+        private void validateBinaryValue(byte[] value) throws NativeException {
+            if (value == null) {
+                throw new NativeException("Binary value cannot be null");
             }
         }
         
