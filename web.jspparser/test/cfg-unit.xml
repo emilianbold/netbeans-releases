@@ -21,18 +21,18 @@ Microsystems, Inc. All Rights Reserved.
 
 <mconfig name="{template test config}">
 
-	<testbag testattribs="stable" executor="ide" compiler="unit-compiler" name="jspparser tests">
- 		<testset dir="unit/src">
-			<patternset>
-				<include name="**/*.class"/>
-				<exclude name="**/data/**"/>
-			</patternset>
- 		</testset>
-	</testbag>
+    <testbag testattribs="stable" executor="ide" compiler="unit-compiler" name="jspparser tests">
+        <testset dir="unit/src">
+            <patternset>
+                <include name="**/*Test.class"/>
+                <exclude name="**/data/**"/>
+            </patternset>
+        </testset>
+    </testbag>
 
 <!--	<executor name="jvm" antfile="build-{testtype}.xml" target="run-in-jvm"/> -->
         <executor name="ide" antfile="build-unit.xml" target="run-in-ide"/> 
 
-	<compiler name="unit-compiler" default="true" antfile="build-unit.xml" target="unit-compiler"/>
+    <compiler name="unit-compiler" default="true" antfile="build-unit.xml" target="unit-compiler"/>
 
 </mconfig>
