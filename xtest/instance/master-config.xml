@@ -89,11 +89,12 @@ Microsystems, Inc. All Rights Reserved.
         <module name="xml/multiview" testtypes="unit" attributes="stable"/>
         <module name="xml/tageditorsupport" testtypes="unit" attributes="stable"/>
         <module name="xml/text-edit" testtypes="unit" attributes="stable"/>
+
+        <!--web/core test for DDDataObject was moved to j2ee/ddloaders -->
 <!-- 
         <module name="j2ee/refactoring" testtypes="unit" attributes="stable"/>
         <module name="debuggerjpda" testtypes="unit" attributes="stable"/>
-        <!--web/core test for DDDataObject was moved to j2ee/ddloaders -->
-<!--        <module name="j2ee/ddloaders" testtypes="unit" attributes="stable"/>
+        <module name="j2ee/ddloaders" testtypes="unit" attributes="stable"/>
         <module name="j2ee/ejbfreeform" testtypes="unit" attributes="stable"/>
         <module name="web/freeform" testtypes="unit" attributes="stable"/>
         <module name="tomcatint/tomcat5" testtypes="unit" attributes="stable"/>
