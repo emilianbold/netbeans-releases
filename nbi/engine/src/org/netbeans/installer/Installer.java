@@ -38,6 +38,7 @@ import org.netbeans.installer.utils.FileProxy;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
+import org.netbeans.installer.utils.UiUtils;
 import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.wizard.components.actions.FinalizeRegistryAction;
 import org.netbeans.installer.wizard.components.actions.InitalizeRegistryAction;
@@ -181,8 +182,14 @@ public class Installer {
      * @see #criticalExit()
      */
     public void cancel() {
-        // exit with the cancel error code
+        if (!UiUtils.showYesNoDialog("Are you shure you want to cancel?")) {
+            return;
+        }
+        
+        // shut down everything that needs it
         DownloadManager.getInstance().shutdown();
+        
+        // exit with the cancel error code
         System.exit(CANCEL_ERRORCODE);
     }
     

@@ -15,29 +15,29 @@
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
- *  
+ *
  * $Id$
  */
-package org.netbeans.installer.wizard.components.actions;
+package org.netbeans.installer.utils;
 
-import org.netbeans.installer.product.ProductRegistry;
-import org.netbeans.installer.utils.ErrorLevel;
-import org.netbeans.installer.utils.ErrorManager;
-import org.netbeans.installer.utils.exceptions.FinalizationException;
-import org.netbeans.installer.utils.progress.Progress;
-import org.netbeans.installer.wizard.components.WizardPanel;
-import org.netbeans.installer.wizard.components.panels.ProgressPanel;
+import javax.swing.JOptionPane;
+import static javax.swing.JOptionPane.YES_NO_OPTION;
+import static javax.swing.JOptionPane.YES_OPTION;
+import static javax.swing.JOptionPane.NO_OPTION;
 
 /**
  *
  * @author Kirill Sorokin
  */
-public class FinalizeRegistryAction extends ProgressAction {
-    public void execute() {
-        try {
-            ProductRegistry.getInstance().finalizeRegistry(new Progress(progressPanel));
-        } catch (FinalizationException e) {
-            ErrorManager.notify(ErrorLevel.ERROR, "Cannot finalize registry", e);
-        }
+public class UiUtils {
+    public static boolean showYesNoDialog(String message) {
+        int result = JOptionPane.showConfirmDialog(null, message, "", YES_NO_OPTION);
+        
+        return result == YES_OPTION;
     }
+    
+    
+    private UiUtils() {
+    }
+    
 }

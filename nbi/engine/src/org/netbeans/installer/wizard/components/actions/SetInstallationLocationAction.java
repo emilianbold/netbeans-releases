@@ -57,6 +57,10 @@ public class SetInstallationLocationAction extends DefaultWizardAction {
         targetComponent.setInstallationLocation(newLocation.getAbsoluteFile());
     }
     
+    public void cancel() {
+        // does nothing
+    }
+    
     private static final String SOURCE_COMPONENT_UID_PROPERTY = "source.component";
     private static final String RELATIVE_LOCATION_PROPERTY = "relative.location";
 }

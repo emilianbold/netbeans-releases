@@ -42,10 +42,12 @@ public class DownloadInstallationDataAction extends CompositeProgressAction {
     }
     
     public void execute() {
-        final List<ProductComponent> components = ProductRegistry.getInstance().getComponentsToInstall();
+        final ProductRegistry registry = ProductRegistry.getInstance();
         
-        final int childPercentage = Progress.COMPLETE / components.size();
-        final int percentageLeak = Progress.COMPLETE - (components.size() * childPercentage);
+        final List<ProductComponent> components = registry.getComponentsToInstall();
+        
+        final int percentageChunk = Progress.COMPLETE / components.size();
+        final int percentageLeak = Progress.COMPLETE % components.size();
         
         final CompositeProgress progress = new CompositeProgress();
         
@@ -55,7 +57,7 @@ public class DownloadInstallationDataAction extends CompositeProgressAction {
             final ProductComponent component = components.get(i);
             final Progress childProgress = new Progress();
             
-            progress.addChild(childProgress, childPercentage + (i == components.size() - 1 ? percentageLeak : 0));
+            progress.addChild(childProgress, percentageChunk + (i == components.size() - 1 ? percentageLeak : 0));
             progressPanel.setCurrentProgress(childProgress);
             try {
                 component.downloadInstallationData(childProgress);
@@ -75,7 +77,7 @@ public class DownloadInstallationDataAction extends CompositeProgressAction {
                 // since the component failed to download and hence failed to
                 // install - we should remove the depending components from
                 // our plans to install
-                for(ProductComponent dependent : ProductRegistry.getInstance().getDependingComponents(component)) {
+                for(ProductComponent dependent: registry.getDependingComponents(component)) {
                     if (dependent.getStatus()  == Status.TO_BE_INSTALLED) {
                         InstallationException dependentError = new InstallationException("Could not install " + dependent.getDisplayName() + ", since the installation of " + component.getDisplayName() + "failed", error);
                         

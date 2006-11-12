@@ -25,15 +25,14 @@ import org.netbeans.installer.product.ProductComponent;
 import org.netbeans.installer.product.ProductComponent.Status;
 import org.netbeans.installer.product.ProductRegistry;
 import org.netbeans.installer.utils.ErrorLevel;
-import org.netbeans.installer.utils.LogManager;
+import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.exceptions.UninstallationException;
 import org.netbeans.installer.utils.progress.CompositeProgress;
 import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.wizard.components.panels.DefaultWizardPanel;
-import org.netbeans.installer.wizard.components.sequences.*;
-
+import org.netbeans.installer.wizard.components.sequences.MainSequence;
 
 public class UninstallAction extends CompositeProgressAction {
     public UninstallAction() {
@@ -42,8 +41,8 @@ public class UninstallAction extends CompositeProgressAction {
     
     public void execute() {
         final List<ProductComponent> components = ProductRegistry.getInstance().getComponentsToUninstall();
-        final int childPercentage = Progress.COMPLETE / components.size();
-        final int percentageLeak = Progress.COMPLETE - (components.size() * childPercentage);
+        final int percentageChunk = Progress.COMPLETE / components.size();
+        final int percentageLeak = Progress.COMPLETE % components.size();
         
         final CompositeProgress progress = new CompositeProgress();
         
@@ -55,7 +54,7 @@ public class UninstallAction extends CompositeProgressAction {
             
             childProgress.setTitle("Uninstalling " + component.getDisplayName());
             progressPanel.setCurrentProgress(childProgress);
-            progress.addChild(childProgress, childPercentage + (i == components.size() - 1 ? percentageLeak : 0));
+            progress.addChild(childProgress, percentageChunk + (i == components.size() - 1 ? percentageLeak : 0));
             try {
                 component.uninstall(childProgress);
                 
@@ -82,7 +81,7 @@ public class UninstallAction extends CompositeProgressAction {
                 }
                 
                 // finally notify the user of what has happened
-                LogManager.log(ErrorLevel.ERROR, e);
+                ErrorManager.notify(ErrorLevel.ERROR, e);
             }
         }
     }

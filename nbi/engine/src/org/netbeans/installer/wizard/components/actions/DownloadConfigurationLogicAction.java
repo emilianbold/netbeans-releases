@@ -43,8 +43,8 @@ public class DownloadConfigurationLogicAction extends CompositeProgressAction {
     
     public void execute() {
         final List<ProductComponent> components = ProductRegistry.getInstance().getComponentsToInstall();
-        final int childPercentage = Progress.COMPLETE / components.size();
-        final int percentageLeak = Progress.COMPLETE - (components.size() * childPercentage);
+        final int percentageChunk = Progress.COMPLETE / components.size();
+        final int percentageLeak = Progress.COMPLETE % components.size();
         
         final CompositeProgress progress = new CompositeProgress();
         
@@ -55,7 +55,7 @@ public class DownloadConfigurationLogicAction extends CompositeProgressAction {
             final ProductComponent component = components.get(i);
             final Progress childProgress = new Progress();
             
-            progress.addChild(childProgress, childPercentage + (i == components.size() - 1 ? percentageLeak : 0));
+            progress.addChild(childProgress, percentageChunk + (i == components.size() - 1 ? percentageLeak : 0));
             progressPanel.setCurrentProgress(childProgress);
             try {
                 component.downloadConfigurationLogic(childProgress);

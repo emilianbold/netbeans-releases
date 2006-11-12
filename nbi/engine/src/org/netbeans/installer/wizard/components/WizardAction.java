@@ -133,6 +133,8 @@ public abstract class WizardAction implements WizardComponent {
     
     public abstract WizardPanel getUI();
     
+    public abstract void cancel();
+    
     /////////////////////////////////////////////////////////////////////////////////
     private void executeComponent(final Wizard wizard, final boolean showUi) {
         this.wizard = wizard;
