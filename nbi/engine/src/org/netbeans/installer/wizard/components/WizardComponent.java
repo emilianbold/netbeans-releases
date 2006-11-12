@@ -42,17 +42,15 @@ public interface WizardComponent {
     
     public abstract void addChild(WizardComponent component);
     
+    public abstract void addChildren(List<WizardComponent> components);
+    
     public abstract void removeChild(WizardComponent component);
     
     public abstract List<WizardComponent> getChildren();
     
-    public abstract boolean evaluateConditions();
+    public abstract WizardCondition getCondition();
     
-    public abstract void addCondition(WizardCondition condition);
-    
-    public abstract void removeCondition(WizardCondition condition);
-    
-    public abstract List<WizardCondition> getConditions();
+    public abstract void setCondition(WizardCondition condition);
     
     public abstract boolean canExecuteForward();
     

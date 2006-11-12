@@ -456,9 +456,9 @@ public abstract class StringUtils {
     public static ExtendedURI parseExtendedUri(Element element) throws ParseException {
         try {
             URI    uri           = new URI(XMLUtils.getChildNodeTextContent(element, "default-uri"));
-            long   estimatedSize = Long.parseLong(XMLUtils.getNodeAttribute(element, "estimated-size"));
-            String md5           = XMLUtils.getNodeAttribute(element, "md5");
-            String crc32         = XMLUtils.getNodeAttribute(element, "crc32");
+            long   estimatedSize = Long.parseLong(XMLUtils.getAttribute(element, "estimated-size"));
+            String md5           = XMLUtils.getAttribute(element, "md5");
+            String crc32         = XMLUtils.getAttribute(element, "crc32");
             
             if (uri.getScheme().equals("file")) {
                 return new ExtendedURI(uri, uri, estimatedSize, md5, crc32);

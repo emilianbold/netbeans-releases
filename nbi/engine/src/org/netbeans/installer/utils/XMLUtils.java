@@ -27,6 +27,7 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
@@ -36,6 +37,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
+import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.exceptions.ParseException;
 import org.netbeans.installer.utils.exceptions.XMLException;
 import org.w3c.dom.Document;
@@ -115,6 +117,40 @@ public abstract class XMLUtils {
         return resultList;
     }
     
+    public static List<Element> getChildren(Element element, String... names) {
+        List<Element> resultList = new LinkedList<Element>();
+        
+        NodeList children = element.getChildNodes();
+        for (int i = 0; i < children.getLength(); i++) {
+            Node node = children.item(i);
+            if (node instanceof Element) {
+                for (int j = 0; j < names.length; j++) {
+                    if (node.getNodeName().equals(names[j])) {
+                        resultList.add((Element) node);
+                        break;
+                    }
+                }
+            }
+        }
+        
+        return resultList;
+    }
+    
+    public static Element getChild(Element element, String name) {
+        Element child = null;
+        
+        NodeList nodes = element.getChildNodes();
+        for (int i = 0; i < nodes.getLength(); i++) {
+            Node node = nodes.item(i);
+            if ((node instanceof Element) && node.getNodeName().equals(name)) {
+                child = (Element) node;
+                break;
+            }
+        }
+        
+        return child;
+    }
+    
     public static Node getChildNode(Node root, String... children) throws ParseException {
         List<Node> list = getChildList(root, children);
         
@@ -130,7 +166,7 @@ public abstract class XMLUtils {
         return list.get(0);
     }
     
-    public static String getNodeAttribute(Node node, String name) {
+    public static String getAttribute(Node node, String name) {
         String value = null;
         
         if ((node != null) && (name != null)) {
@@ -150,12 +186,12 @@ public abstract class XMLUtils {
         return value;
     }
     
-    public static String getNodeTextContent(Node node) {
+    public static String getTextContent(Node node) {
         return (node == null) ? null : node.getTextContent();
     }
     
     public static String getChildNodeTextContent(Node root, String... childs) throws ParseException {
-        return getNodeTextContent(getChildNode(root,childs));
+        return getTextContent(getChildNode(root,childs));
     }
     
     public static Element addChildNode(Node parentNode, String tag, String textContent) {
@@ -169,6 +205,19 @@ public abstract class XMLUtils {
             parentNode.appendChild(result);
         }
         return result;
+    }
+    
+    public static Map<String, String> loadProperties(Element element) {
+        Map<String, String> properties = new HashMap<String, String>();
+        
+        for (Element child: XMLUtils.getChildren(element, "property")) {
+            String name  = XMLUtils.getAttribute(child, "name");
+            String value = XMLUtils.getTextContent(child);
+            
+            properties.put(name, value);
+        }
+        
+        return properties;
     }
     
     // private //////////////////////////////////////////////////////////////////////
@@ -231,7 +280,7 @@ public abstract class XMLUtils {
             Object [] keys = attributes.keySet().toArray();
             for (int i=0;i<size;i++) {
                 if (keys[i] instanceof String) {
-                    if (!getNodeAttribute(childNode,(String)keys[i]).equals(attributes.get(keys[i]))) {
+                    if (!getAttribute(childNode,(String)keys[i]).equals(attributes.get(keys[i]))) {
                         return false;
                     }
                 }

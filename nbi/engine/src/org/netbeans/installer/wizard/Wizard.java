@@ -23,7 +23,10 @@ package org.netbeans.installer.wizard;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import javax.swing.SwingUtilities;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
@@ -34,7 +37,6 @@ import javax.xml.validation.SchemaFactory;
 import org.netbeans.installer.download.DownloadOptions;
 import org.netbeans.installer.product.ProductComponent;
 import org.netbeans.installer.utils.ErrorLevel;
-import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.wizard.components.WizardComponent;
 import static org.netbeans.installer.utils.ErrorLevel.DEBUG;
 import static org.netbeans.installer.utils.ErrorLevel.MESSAGE;
@@ -46,11 +48,10 @@ import org.netbeans.installer.utils.FileProxy;
 import org.netbeans.installer.utils.XMLUtils;
 import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.utils.exceptions.InitializationException;
-import org.netbeans.installer.utils.exceptions.ParseException;
-import org.netbeans.installer.wizard.components.WizardAction;
+import org.netbeans.installer.wizard.conditions.AndCondition;
 import org.netbeans.installer.wizard.conditions.WizardCondition;
 import org.w3c.dom.Document;
-import org.w3c.dom.Node;
+import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
 /**
@@ -162,129 +163,48 @@ public class Wizard {
         }
     }
     
-    private static List<WizardComponent> loadWizardComponents(Node node, ClassLoader loader) throws InitializationException {
-        List<WizardComponent> wizardComponents = new ArrayList<WizardComponent>();
+    private static List<WizardComponent> loadWizardComponents(Element element, ClassLoader loader) throws InitializationException {
+        List<WizardComponent> components = new ArrayList<WizardComponent>();
         
-        List <Node> nodeList = XMLUtils.getChildList(node, "./component");
-        
-        for (int i = 0; i < nodeList.size(); i++) {
-            Node componentNode = nodeList.get(i);
-            wizardComponents.add(loadWizardComponent(componentNode, loader));
+        for (Element child: XMLUtils.getChildren(element, "component")) {
+            components.add(loadWizardComponent(child, loader));
         }
         
-        return wizardComponents;
+        return components;
     }
     
-    private static WizardComponent loadWizardComponent(Node node, ClassLoader loader) throws InitializationException {
+    private static WizardComponent loadWizardComponent(Element element, ClassLoader loader) throws InitializationException {
         WizardComponent component = null;
+        Element         child     = null;
         
         try {
-            
-            String classname = XMLUtils.getNodeAttribute(node,
-                    "class");
+            String classname = XMLUtils.getAttribute(element, "class");
             
             component = (WizardComponent) loader.loadClass(classname).newInstance();
             
-            Node componentsNode =
-                    XMLUtils.getChildNode(node, "./components");
-            
-            if (componentsNode != null) {
-                List<WizardComponent> childComponents =
-                        loadWizardComponents(componentsNode, loader);
-                for (WizardComponent childComponent: childComponents) {
-                    component.addChild(childComponent);
-                }
+            child = XMLUtils.getChild(element, "components");
+            if (child != null) {
+                component.addChildren(loadWizardComponents(child, loader));
             }
             
-            Node conditionsNode =
-                    XMLUtils.getChildNode(node, "./conditions");
-            
-            if (conditionsNode != null) {
-                List<WizardCondition> conditions = loadWizardConditions(conditionsNode, loader);
-                for (WizardCondition condition: conditions) {
-                    component.addCondition(condition);
-                }
+            child = XMLUtils.getChild(element, "conditions");
+            if (child != null) {
+                component.setCondition(new AndCondition(WizardCondition.loadWizardConditions(child, loader)));
             }
             
-            Node propertiesNode =
-                    XMLUtils.getChildNode(node, "./properties");
-            if (propertiesNode != null) {
-                loadProperties(propertiesNode, component, loader);
+            child = XMLUtils.getChild(element, "properties");
+            if (child != null) {
+                component.getProperties().putAll(XMLUtils.loadProperties(child));
             }
         } catch (ClassNotFoundException e) {
-            throw new InitializationException(
-                    "Could not load component", e);
+            throw new InitializationException("Could not load component", e);
         } catch (IllegalAccessException e) {
-            throw new InitializationException(
-                    "Could not load component", e);
+            throw new InitializationException("Could not load component", e);
         } catch (InstantiationException e) {
-            throw new InitializationException(
-                    "Could not load component", e);
-        } catch (ParseException e) {
-            throw new InitializationException(
-                    "Could not load component", e);
+            throw new InitializationException("Could not load component", e);
         }
         
         return component;
-    }
-    
-    private static List<WizardCondition> loadWizardConditions(Node node, ClassLoader loader) throws InitializationException {
-        List<WizardCondition> wizardConditions = new ArrayList<WizardCondition>();
-        
-        try {
-            
-            List <Node> nodeList = XMLUtils.getChildList(node,
-                    "./condition");
-            
-            for (int i = 0; i < nodeList.size(); i++) {
-                Node conditionNode = nodeList.get(i);
-                
-                String classname = XMLUtils.getNodeAttribute(conditionNode,
-                        "/@class");
-                
-                WizardCondition condition =
-                        (WizardCondition) Class.forName(classname).newInstance();
-                
-                Node propertiesNode = XMLUtils.getChildNode(node,
-                        "./properties");
-                loadProperties(propertiesNode, condition, loader);
-                wizardConditions.add(condition);
-            }
-        }  catch (ClassNotFoundException e) {
-            throw new InitializationException(
-                    "Could not load conditions", e);
-        } catch (IllegalAccessException e) {
-            throw new InitializationException(
-                    "Could not load conditions", e);
-        } catch (InstantiationException e) {
-            throw new InitializationException(
-                    "Could not load conditions", e);
-        }  catch (ParseException e) {
-            throw new InitializationException(
-                    "Could not load conditions", e);
-        }
-        
-        return wizardConditions;
-    }
-    
-    private static void loadProperties(Node node, Object component, ClassLoader loader) throws InitializationException {
-        
-        List <Node> nodeList = XMLUtils.getChildList(node,
-                "./property");
-        
-        for (int i = 0; i < nodeList.size(); i++) {
-            Node propertyNode = nodeList.get(i);
-            
-            String name = XMLUtils.getNodeAttribute(propertyNode,"name");
-            
-            String value = XMLUtils.getNodeTextContent(propertyNode);
-            
-            if (component instanceof WizardComponent) {
-                ((WizardComponent) component).setProperty(name, value);
-            } else if (component instanceof WizardCondition) {
-                ((WizardCondition) component).setProperty(name, value);
-            }
-        }
     }
     
     /////////////////////////////////////////////////////////////////////////////////
@@ -439,59 +359,6 @@ public class Wizard {
     }
     
     // informational methods ////////////////////////////////////////////////////////
-    private WizardComponent getCurrent() {
-        if ((currentIndex > -1) && (currentIndex < components.size())) {
-            return components.get(currentIndex);
-        } else {
-            return null;
-        }
-    }
-    
-    private WizardComponent getPrevious() {
-        // if current component is a point of no return - we cannot move backwards,
-        // i.e. there is no previous component
-        if ((getCurrent() != null) && getCurrent().isPointOfNoReturn()) {
-            return null;
-        }
-        
-        for (int i = currentIndex - 1; i > -1; i--) {
-            WizardComponent component = components.get(i);
-            
-            // if the component can be executed backward and its conditions are met,
-            // it is the previous one
-            if (component.canExecuteBackward() && component.evaluateConditions()) {
-                return component;
-            }
-            
-            // if the currently examined component is a point of no return and it
-            // cannot be executed (since we passed the previous statement) - we have
-            // no previous component
-            if (component.isPointOfNoReturn()) {
-                return null;
-            }
-        }
-        
-        // if we reached the before-first index and yet could not find a previous
-        // component, then there is no previous component
-        return null;
-    }
-    
-    private WizardComponent getNext() {
-        for (int i = currentIndex + 1; i < components.size(); i++) {
-            WizardComponent component = components.get(i);
-            
-            // if the component can be executed forward and its conditions are met,
-            // it is the next one
-            if (component.canExecuteForward() && component.evaluateConditions()) {
-                return component;
-            }
-        }
-        
-        // if we reached the after-last index and yet could not find a next
-        // component, then there is no next component
-        return null;
-    }
-    
     public boolean hasPrevious() {
         // if current component is a point of no return - we cannot move backwards,
         // i.e. there is no previous component
@@ -504,7 +371,7 @@ public class Wizard {
             
             // if the component can be executed backward and its conditions are met,
             // it is the previous one
-            if (component.canExecuteBackward() && component.evaluateConditions()) {
+            if (component.canExecuteBackward() && component.getCondition().evaluate()) {
                 return true;
             }
             
@@ -550,10 +417,57 @@ public class Wizard {
         return new Wizard(components, this, index);
     }
     
-    /////////////////////////////////////////////////////////////////////////////////
-    // Inner Classes
-    public static enum WizardExecutionMode {
-        GUI,
-        SILENT
+    // private //////////////////////////////////////////////////////////////////////
+    private WizardComponent getCurrent() {
+        if ((currentIndex > -1) && (currentIndex < components.size())) {
+            return components.get(currentIndex);
+        } else {
+            return null;
+        }
+    }
+    
+    private WizardComponent getPrevious() {
+        // if current component is a point of no return - we cannot move backwards,
+        // i.e. there is no previous component
+        if ((getCurrent() != null) && getCurrent().isPointOfNoReturn()) {
+            return null;
+        }
+        
+        for (int i = currentIndex - 1; i > -1; i--) {
+            WizardComponent component = components.get(i);
+            
+            // if the component can be executed backward and its conditions are met,
+            // it is the previous one
+            if (component.canExecuteBackward() && component.getCondition().evaluate()) {
+                return component;
+            }
+            
+            // if the currently examined component is a point of no return and it
+            // cannot be executed (since we passed the previous statement) - we have
+            // no previous component
+            if (component.isPointOfNoReturn()) {
+                return null;
+            }
+        }
+        
+        // if we reached the before-first index and yet could not find a previous
+        // component, then there is no previous component
+        return null;
+    }
+    
+    private WizardComponent getNext() {
+        for (int i = currentIndex + 1; i < components.size(); i++) {
+            WizardComponent component = components.get(i);
+            
+            // if the component can be executed forward and its conditions are met,
+            // it is the next one
+            if (component.canExecuteForward() && component.getCondition().evaluate()) {
+                return component;
+            }
+        }
+        
+        // if we reached the after-last index and yet could not find a next
+        // component, then there is no next component
+        return null;
     }
 }

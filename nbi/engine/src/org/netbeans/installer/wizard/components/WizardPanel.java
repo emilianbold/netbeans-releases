@@ -34,6 +34,7 @@ import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.helper.swing.NbiButton;
 
 import org.netbeans.installer.wizard.Wizard;
+import org.netbeans.installer.wizard.conditions.TrueCondition;
 import org.netbeans.installer.wizard.conditions.WizardCondition;
 
 /**
@@ -43,11 +44,10 @@ import org.netbeans.installer.wizard.conditions.WizardCondition;
 public abstract class WizardPanel extends JPanel implements WizardComponent {
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
-    private Wizard  wizard;
-    private boolean    initialized = false;
-    
-    private List<WizardCondition> conditions = new ArrayList<WizardCondition>();
-    private Properties properties = new Properties();
+    private Wizard          wizard      = null;
+    private WizardCondition condition   = new TrueCondition();
+    private Properties      properties  = new Properties();
+    private boolean         initialized = false;
     
     // WizardComponent implementation ///////////////////////////////////////////////
     public final void executeForward(final Wizard wizard) {
@@ -84,31 +84,22 @@ public abstract class WizardPanel extends JPanel implements WizardComponent {
                 "This component does not support child components");
     }
     
+    public final void addChildren(List<WizardComponent> component) {
+        throw new UnsupportedOperationException(
+                "This component does not support child components");
+    }
+    
     public final List<WizardComponent> getChildren() {
         throw new UnsupportedOperationException(
                 "This component does not support child components");
     }
     
-    public final boolean evaluateConditions() {
-        for (WizardCondition condition: conditions) {
-            if (condition.evaluate() == false) {
-                return false;
-            }
-        }
-        
-        return true;
+    public final void setCondition(final WizardCondition condition) {
+        this.condition = condition;
     }
     
-    public final void addCondition(final WizardCondition condition) {
-        conditions.add(condition);
-    }
-    
-    public final void removeCondition(final WizardCondition condition) {
-        conditions.remove(condition);
-    }
-    
-    public final List<WizardCondition> getConditions() {
-        return conditions;
+    public final WizardCondition getCondition() {
+        return condition;
     }
     
     public boolean canExecuteForward() {

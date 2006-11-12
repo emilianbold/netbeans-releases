@@ -30,6 +30,7 @@ import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.wizard.Wizard;
+import org.netbeans.installer.wizard.conditions.TrueCondition;
 import org.netbeans.installer.wizard.conditions.WizardCondition;
 
 /**
@@ -41,7 +42,7 @@ public class WizardSequence implements WizardComponent {
     private Wizard childWizard;
     
     private List<WizardComponent> components = new ArrayList<WizardComponent>();
-    private List<WizardCondition> conditions = new ArrayList<WizardCondition>();
+    private WizardCondition condition = new TrueCondition();
     private Properties properties = new Properties();
     
     public void executeForward(final Wizard wizard) {
@@ -78,30 +79,20 @@ public class WizardSequence implements WizardComponent {
         components.remove(component);
     }
     
+    public final void addChildren(List<WizardComponent> components) {
+        this.components.addAll(components);
+    }
+    
     public final List<WizardComponent> getChildren() {
         return components;
     }
     
-    public final boolean evaluateConditions() {
-        for (WizardCondition condition: conditions) {
-            if (condition.evaluate() == false) {
-                return false;
-            }
-        }
-        
-        return true;
+    public final void setCondition(final WizardCondition condition) {
+        this.condition = condition;
     }
     
-    public final void addCondition(final WizardCondition condition) {
-        conditions.add(condition);
-    }
-    
-    public final void removeCondition(final WizardCondition condition) {
-        conditions.remove(condition);
-    }
-    
-    public final List<WizardCondition> getConditions() {
-        return conditions;
+    public final WizardCondition getCondition() {
+        return condition;
     }
     
     public boolean canExecuteForward() {
@@ -110,7 +101,7 @@ public class WizardSequence implements WizardComponent {
             
             // if the component can be executed forward and its conditions are met,
             // the whole sequence cna be executed as well
-            if (component.canExecuteForward() && component.evaluateConditions()) {
+            if (component.canExecuteForward() && component.getCondition().evaluate()) {
                 return true;
             }
         }
@@ -126,7 +117,7 @@ public class WizardSequence implements WizardComponent {
             
             // if the component can be executed backward and its conditions are met,
             // it is the previous one
-            if (component.canExecuteBackward() && component.evaluateConditions()) {
+            if (component.canExecuteBackward() && component.getCondition().evaluate()) {
                 return true;
             }
             
