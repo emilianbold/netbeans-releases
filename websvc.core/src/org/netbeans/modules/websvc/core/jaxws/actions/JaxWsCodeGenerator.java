@@ -817,7 +817,7 @@ public class JaxWsCodeGenerator {
         
         JavaSource targetSource = JavaSource.forFileObject(targetFo);
         final String respType = responseType;
-        final boolean[] insertServiceDef = {false};
+        boolean insertServiceDef = false;
         final String[] printerName = {"System.out"}; // NOI18N
         final String[] argumentInitPart = {argumentInitializationPart};
         final String[] argumentDeclPart = {argumentDeclarationPart};
@@ -825,7 +825,6 @@ public class JaxWsCodeGenerator {
         // PENDING compute this from using InjectionTargetQuery.isInjectionTarget 
         //System.out.println("Is InjectionTarget? " + InjectionTargetQuery.isInjectionTarget(targetFo, null));
         final boolean[] generateWsRefInjection = {false};
-        insertServiceDef[0] = !generateWsRefInjection[0];
         CancellableTask task = new CancellableTask<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(Phase.ELEMENTS_RESOLVED);
@@ -837,7 +836,7 @@ public class JaxWsCodeGenerator {
                         SourceUtils srcUtils = SourceUtils.newInstance(controller, javaClass);
                         TypeElement thisTypeEl = srcUtils.getTypeElement();
                         generateWsRefInjection[0] = InjectionTargetQuery.isInjectionTarget(controller, thisTypeEl);
-                        
+
                         if (isServletClass(controller, javaClass)) {
                             printerName[0]="out";
                             argumentInitPart[0] = fixNamesInInitializationPart(argumentInitPart[0]);
@@ -890,6 +889,7 @@ public class JaxWsCodeGenerator {
             //   - argument initialization part
             targetSource.runUserActionTask(task, true);
             
+            insertServiceDef = !generateWsRefInjection[0];
             // create & format inserted text
             IndentEngine eng = IndentEngine.find(document);
             StringWriter textWriter = new StringWriter();
@@ -898,7 +898,7 @@ public class JaxWsCodeGenerator {
             // create the inserted text
             String invocationBody = getJavaInvocationBody(
                     operation,
-                    insertServiceDef[0],
+                    insertServiceDef,
                     serviceJavaName,
                     portJavaName,
                     portGetterMethod,

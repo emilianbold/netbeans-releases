@@ -19,21 +19,21 @@
 
 package org.netbeans.modules.websvc.core;
 
-//import java.util.Iterator;
-//import java.util.List;
-//import org.netbeans.api.project.FileOwnerQuery;
-//import org.netbeans.api.project.Project;
-//import org.netbeans.jmi.javamodel.Annotation;
-//import org.netbeans.jmi.javamodel.JavaClass;
-//import org.netbeans.modules.j2ee.common.Util;
+import java.util.List;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Name;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.common.Util;
+import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.modules.j2ee.common.queries.spi.InjectionTargetQueryImplementation;
 import org.openide.filesystems.FileObject;
-//import org.netbeans.modules.javacore.api.JavaModel;
-//import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Martin Adamek
+ * @author Martin Adamek, Milan Kuchtiak
  */
 public class WSInjectiontargetQueryImplementation implements InjectionTargetQueryImplementation {
     
@@ -41,36 +41,35 @@ public class WSInjectiontargetQueryImplementation implements InjectionTargetQuer
     public WSInjectiontargetQueryImplementation() {
     }
     
-    public boolean isInjectionTarget(FileObject fileObject, String fqn) {
-        return false;
-    }
-    
-    public boolean isStaticReferenceRequired(FileObject fileObject, String fqn) {
-        return false;
-    }
-    
-    
-/*
-    public boolean isInjectionTarget(JavaClass jc) {
-        if (jc == null) {
-            throw new NullPointerException("Passed null to WSInjectiontargetQueryImplementation.isInjectionTarget(JavaClass)"); // NOI18N
+    public boolean isInjectionTarget(CompilationController controller, TypeElement typeElement) {
+        if (controller == null || typeElement==null) {
+            throw new NullPointerException("Passed null to WSInjectionTargetQueryImplementation.isInjectionTarget(CompilationController, TypeElement)"); // NOI18N
         }
-        FileObject fo = JavaModel.getFileObject(jc.getResource());
+        FileObject fo = controller.getFileObject();
         Project project = FileOwnerQuery.getOwner(fo);
-        if (Util.isJavaEE5orHigher(project) && !jc.isInterface()) {
-            List l = jc.getAnnotations();
-            for (Iterator it = l.iterator(); it.hasNext();) {
-                Annotation an = (Annotation) it.next();
-                if ("WebService".equals(an.getTypeName().getName()) || "WebServiceProvider".equals(an.getTypeName().getName())) { 
-                    return true;
+        if (Util.isJavaEE5orHigher(project) && !(ElementKind.INTERFACE==typeElement.getKind())) {
+            
+            List<? extends AnnotationMirror> annotations = typeElement.getAnnotationMirrors();
+            boolean found = false;
+
+            for (AnnotationMirror m : annotations) {
+                Name qualifiedName = ((TypeElement)m.getAnnotationType().asElement()).getQualifiedName();
+                if (qualifiedName.contentEquals("javax.jws.WebService")) { //NOI18N
+                    found = true;
+                    break;
+                }
+                if (qualifiedName.contentEquals("javax.jws.WebServiceProvider")) { //NOI18N
+                    found = true;
+                    break;
                 }
             }
+            if (found) return true;
         }
         return false;
     }
-
-    public boolean isStaticReferenceRequired(JavaClass jc) {
+    
+    public boolean isStaticReferenceRequired(CompilationController controller, TypeElement typeElement) {
         return false;
     }
-*/
+    
 }
