@@ -27,11 +27,10 @@ import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.modules.j2ee.metadata.Utils;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-
+import org.netbeans.modules.j2ee.common.Util;
 /**
  *
  * @author Martin Adamek
@@ -141,11 +140,11 @@ public class PersistenceLibraryPanel extends javax.swing.JPanel {
     }
     
     private boolean containsEntityManager() {
-        return Utils.containsClass(libImpl, "javax.persistence.EntityManager"); //NOI18N
+        return Util.containsClass(libImpl, "javax.persistence.EntityManager"); //NOI18N
     }
     
     private boolean containsPersistenceProvider() {
-        return Utils.containsService(libImpl, "javax.persistence.spi.PersistenceProvider"); //NOI18N
+        return Util.containsService(libImpl, "javax.persistence.spi.PersistenceProvider"); //NOI18N
     }
     
     /** This method is called from within the constructor to
