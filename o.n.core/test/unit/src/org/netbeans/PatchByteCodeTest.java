@@ -48,7 +48,7 @@ public class PatchByteCodeTest extends NbTestCase {
             "org.openide.explorer.view.BeanTreeView", 
             "data/BeanTreeView.clazz",
             null, null
-        );
+        , null);
     }
 
     /* XXX This module is obsolete. Does the test do anything else useful?
@@ -87,7 +87,20 @@ public class PatchByteCodeTest extends NbTestCase {
             Sample.class.getName (),
             "Sample.class",
             "java.lang.Throwable", 
+            null,
             null
+        );
+        
+        c.newInstance ();
+    }
+
+    public void testConstructorCanBeAlsoInstantiated () throws Exception {
+        Class c = checkPatching (
+            Sample2.class.getName (),
+            "Sample2.class",
+            "java.lang.Throwable", 
+            null,
+            new String[] { "<init>" }
         );
         
         c.newInstance ();
@@ -99,7 +112,7 @@ public class PatchByteCodeTest extends NbTestCase {
             "Sample.class",
             "java.lang.Throwable", 
             new String[] { "org.openide.nodes.Node$Cookie", "java.lang.Cloneable" }
-        );
+        , null);
         
         assertEquals ("Super class is throwable", Throwable.class, c.getSuperclass());
         Class[] ifaces = c.getInterfaces();
@@ -198,7 +211,11 @@ public class PatchByteCodeTest extends NbTestCase {
     }
         
     private Class checkPatching (
-        String className, String resource, String superclass, String[] interfaces
+        String className, 
+        String resource, 
+        String superclass, 
+        String[] interfaces, 
+        String[] publc
     ) throws Exception {
         if (superclass == null) {
             superclass = PatchByteCodeTest.class.getName ();
@@ -223,6 +240,10 @@ public class PatchByteCodeTest extends NbTestCase {
                 ap = ",";
             }
             args.put ("netbeans.interfaces", sb.toString().replace('.', '/'));
+        }
+        
+        if (publc != null) {
+            args.put ("netbeans.public", Arrays.asList(publc));
         }
         
         byte[] res = PatchByteCode.enhanceClass(arr, args);
