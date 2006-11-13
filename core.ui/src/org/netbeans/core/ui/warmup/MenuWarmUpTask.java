@@ -99,7 +99,6 @@ public final class MenuWarmUpTask implements Runnable {
         private RequestProcessor.Task task = null;
         
         public void windowActivated(WindowEvent e) {
-            super.windowActivated(e);
             synchronized (rp) {
                 if (task != null) {
                     task.cancel();
@@ -111,7 +110,6 @@ public final class MenuWarmUpTask implements Runnable {
         }
 
         public void windowDeactivated(WindowEvent e) {
-            super.windowDeactivated(e);
             synchronized (rp) {
                 if (task != null) {
                     task.cancel();
