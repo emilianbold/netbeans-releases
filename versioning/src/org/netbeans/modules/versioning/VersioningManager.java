@@ -53,15 +53,21 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
     private final FilesystemInterceptor filesystemInterceptor;
 
     /**
-     * What file is versioned by what versioning system. Files stored here are only topmost versioned folders. 
-     */
-    private final Map<File, VersioningSystem> managedRoots = new HashMap<File, VersioningSystem>(20);  
-    
-    /**
      * Holds all registered versioning systems.
      */
     private final Collection<VersioningSystem> versioningSystems = new ArrayList<VersioningSystem>(2);
 
+    /**
+     * What folder is versioned by what versioning system. 
+     */
+    private Map<File, VersioningSystem> folderOwners = new WeakHashMap<File, VersioningSystem>(100);
+    
+    private final VersioningSystem NULL_OWNER = new VersioningSystem() {
+        public String getDisplayName() {
+            return null;
+        }
+    };
+    
     private VersioningManager() {
         filesystemInterceptor = new FilesystemInterceptor();
     }
@@ -108,7 +114,7 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
     }
 
     private synchronized void flushFileOwnerCache() {
-        managedRoots.clear();
+        folderOwners.clear();
     }
 
     synchronized VersioningSystem[] getVersioningSystems() {
@@ -131,44 +137,39 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
         }
         return (VersioningSystem[]) owners.toArray(new VersioningSystem[owners.size()]);
     }
-    
+
+    /**
+     * Determines the versioning system that manages given file.
+     * 
+     * @param file a file
+     * @return VersioningSystem owner of the file or null if the file is not under version control
+     */
     public synchronized VersioningSystem getOwner(File file) {
-        for (Map.Entry<File, VersioningSystem> entry : managedRoots.entrySet()) {
-            if (Utils.isParentOrEqual(entry.getKey(), file)) {
-                return entry.getValue();
-            }
+        File folder = file;
+        if (file.isFile()) {
+            folder = file.getParentFile();
+            if (folder == null) return null;
         }
         
-        // we do not know yet whom the file belongs to
+        VersioningSystem owner = folderOwners.get(folder);
+        if (owner == NULL_OWNER) return null;
+        if (owner != null) return owner;
+        
         File closestParent = null;
-        VersioningSystem owner = null; 
         for (VersioningSystem system : versioningSystems) {
-            File topmost = system.getTopmostManagedParent(file);
+            File topmost = system.getTopmostManagedParent(folder);
             if (topmost != null && (closestParent == null || Utils.isParentOrEqual(closestParent, topmost))) {
                 owner = system;
                 closestParent = topmost;
             }
         }
-        
+
         if (owner != null) {
-            removeDescendants(closestParent, owner);
+            folderOwners.put(folder, owner);
+        } else {
+            folderOwners.put(folder, NULL_OWNER);
         }
         return owner;
-    }
-
-    private void removeDescendants(File topmost, VersioningSystem system) {
-        for (Iterator<Map.Entry<File, VersioningSystem>> i = managedRoots.entrySet().iterator(); i.hasNext(); ) {
-            Map.Entry<File, VersioningSystem> entry = i.next();
-            if (system == entry.getValue()) {
-                if (Utils.isParentOrEqual(entry.getKey(), topmost)) {
-                    return;
-                }
-                if (Utils.isParentOrEqual(topmost, entry.getKey())) {
-                    i.remove();
-                }
-            }
-        }
-        managedRoots.put(topmost, system);
     }
 
     public void resultChanged(LookupEvent ev) {

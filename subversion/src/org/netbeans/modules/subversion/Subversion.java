@@ -45,6 +45,7 @@ import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.spi.OriginalContent;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.modules.versioning.util.VersioningEvent;
+import org.netbeans.modules.versioning.VersioningManager;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.subversion.config.PasswordFile;
 
@@ -61,6 +62,8 @@ public class Subversion {
      * if all annotaions changed.
      */
     static final String PROP_ANNOTATIONS_CHANGED = "annotationsChanged";
+
+    static final String PROP_VERSIONED_FILES_CHANGED = "versionedFilesChanged";
     
     static final String INVALID_METADATA_MARKER = "invalid-metadata"; // NOI18N
     
@@ -313,9 +316,13 @@ public class Subversion {
      * @return true if the file is under WC management, false otherwise
      */
     public boolean isManaged(File file) {
-        return getTopmostManagedParent(file) != null;
+        return VersioningManager.getInstance().getOwner(file) instanceof SubversionVCS;
     }
 
+    public void versionedFilesChanged() {
+        support.firePropertyChange(PROP_VERSIONED_FILES_CHANGED, null, null);
+    }
+    
     /**
      * Tests whether the file is managed by this versioning system. If it is, the method should return the topmost 
      * parent of the file that is still versioned.

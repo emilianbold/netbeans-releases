@@ -227,6 +227,7 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
 
                     RepositoryFile[] repositoryFiles = new RepositoryFile[] { repositoryFile };
                     CheckoutAction.checkout(client, repositoryUrl, repositoryFiles, importDirectory, true, this);
+                    Subversion.getInstance().versionedFilesChanged();
                     SvnUtils.refreshRecursively(importDirectory);
                     // XXX this is ugly and expensive! the client should notify (onNotify()) the cache. find out why it doesn't work...
                     forceStatusRefresh(importDirectory);  // XXX the same for another implementations like this in the code.... (see SvnUtils.refreshRecursively() )

@@ -75,6 +75,8 @@ public class CVS extends VersioningSystem implements VersioningListener, Prefere
             fireStatusChanged(file);
         } else if (event.getId() == CvsVersioningSystem.EVENT_REFRESH_ANNOTATIONS) {
             fireStatusChanged((Set<File>) null);
+        } else if (event.getId() == CvsVersioningSystem.EVENT_VERSIONED_FILES_CHANGED) {
+            fireVersionedFilesChanged();
         }
     }
 

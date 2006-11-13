@@ -39,6 +39,7 @@ public abstract class VersioningSystem {
      * Indicates to the Versioning manager that the layout of versioned files may have changed. Previously unversioned 
      * files became versioned, versioned files became unversioned or the versioning system for some files changed.
      * The manager will flush any caches that may be holding such information.  
+     * A versioning system usually needs to fire this after an Import action. 
      */
     public static final String PROP_VERSIONED_ROOTS = "null VCS.VersionedFilesChanged";
 
@@ -115,6 +116,10 @@ public abstract class VersioningSystem {
     
     protected final void fireStatusChanged(Set<File> files) {
         support.firePropertyChange(PROP_STATUS_CHANGED, null, files);
+    }
+
+    protected final void fireVersionedFilesChanged() {
+        support.firePropertyChange(PROP_VERSIONED_ROOTS, null, null);
     }
     
     protected final void fireStatusChanged(File file) {

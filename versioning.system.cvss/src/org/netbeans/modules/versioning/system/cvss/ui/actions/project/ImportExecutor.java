@@ -92,6 +92,7 @@ final class ImportExecutor extends ExecutorSupport implements Runnable {
      * @thread called asynchrously from random thread (ClientRuntime)
      */
     public void run() {
+        CvsVersioningSystem.getInstance().versionedFilesChanged();
         if (checkoutExecutor.isSuccessful()) {
             copyMetadata();
         }

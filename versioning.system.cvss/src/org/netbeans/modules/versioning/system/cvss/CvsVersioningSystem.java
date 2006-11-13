@@ -35,6 +35,7 @@ import org.netbeans.modules.versioning.system.cvss.ui.syncview.CvsSynchronizeTop
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.spi.OriginalContent;
+import org.netbeans.modules.versioning.VersioningManager;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
@@ -67,6 +68,7 @@ public class CvsVersioningSystem {
 
     public static final Object EVENT_PARAM_CHANGED = new Object();
     public static final Object PARAM_BATCH_REFRESH_RUNNING = new Object();
+    public static final Object EVENT_VERSIONED_FILES_CHANGED = new Object();
 
     public static final Object EVENT_REFRESH_ANNOTATIONS = new Object();    
 
@@ -380,9 +382,13 @@ public class CvsVersioningSystem {
      * @return true if the file is under CVS management, false otherwise
      */ 
     boolean isManaged(File file) {
-        return getTopmostManagedParent(file) != null;
+        return VersioningManager.getInstance().getOwner(file) instanceof CVS;
     }
 
+    public void versionedFilesChanged() {
+        listenerSupport.fireVersioningEvent(EVENT_VERSIONED_FILES_CHANGED);
+    }
+        
     /**
      * Tests whether the file is managed by this versioning system. If it is, the method should return the topmost 
      * parent of the file that is still versioned.
