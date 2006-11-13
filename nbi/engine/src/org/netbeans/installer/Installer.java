@@ -598,10 +598,13 @@ public class Installer {
         File installerLock = new File(directory,
                 ".nbilock");
         if(installerLock.exists()) {
-            ErrorManager.notify(CRITICAL,
+            LogManager.log(ErrorLevel.WARNING, "    lock file already exists");
+            if(!UiUtils.showYesNoDialog(
                     "It seems that another instance of installer is already running!\n" +
-                    "If you are sure that no other instance is running just remove the file:\n" +
-                    installerLock + "\n");
+                    "It can be dangerous running another one in the same time.\n" + 
+                    "Are you sure you want to run one more instance?\n\n")) {
+                        criticalExit();
+                    } 
         }
         FileOutputStream fos = null;
         try {
