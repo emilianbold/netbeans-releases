@@ -150,27 +150,39 @@ implements org.openide.util.LookupListener {
         assertEquals ("Our action is in second map", sampleAction, m2.get (this));
 
         assertActionMap ();
+        
+        res.removeLookupListener(myListener);
+        
     }
     
     public void testComponentChangeActionMapIsPropagatedToGlobalLookup() throws Exception {
+        assertEquals("test1", 0, cnt);
+
+        
         InstanceContent ic = new InstanceContent();
         AbstractLookup al = new AbstractLookup(ic);
         tc = new TopComponent (al);
+
+        assertEquals("test2", 0, cnt);
+        
         
         ActionMap myMap = new ActionMap();
         myMap.put (this, sampleAction);
+        assertEquals("test3", 0, cnt);
+
         tc.requestActive();
         
+        assertEquals("test4", 1, cnt);
         
         result = lookup.lookup (new Lookup.Template (ActionMap.class));
         result.addLookupListener (this);
         result.allItems();
         
-        assertEquals(0, cnt);
+        assertEquals("test5", 1, cnt);
         
         ic.set(Collections.singleton(new ActionMap()), null);
         
-        assertEquals("One change in ActiomMap delivered", 1, cnt);
+        assertEquals("One change in ActiomMap delivered", 2, cnt);
     }
     
     
