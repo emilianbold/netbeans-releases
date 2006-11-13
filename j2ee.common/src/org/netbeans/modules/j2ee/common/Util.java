@@ -49,7 +49,10 @@ import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
 import org.openide.ErrorManager;
 
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.spi.project.libraries.LibraryImplementation;
 
 public class Util {
     
@@ -119,7 +122,7 @@ public class Util {
      */
     public static SourceGroup[] getJavaSourceGroups(Project project) {
         SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(
-                                    JavaProjectConstants.SOURCES_TYPE_JAVA);
+                JavaProjectConstants.SOURCES_TYPE_JAVA);
         Set<SourceGroup> testGroups = getTestSourceGroups(sourceGroups);
         List<SourceGroup> result = new ArrayList<SourceGroup>();
         for (int i = 0; i < sourceGroups.length; i++) {
@@ -129,7 +132,7 @@ public class Util {
         }
         return result.toArray(new SourceGroup[result.size()]);
     }
-
+    
     private static Set<SourceGroup> getTestSourceGroups(SourceGroup[] sourceGroups) {
         Map<FileObject, SourceGroup> foldersToSourceGroupsMap = createFoldersToSourceGroupsMap(sourceGroups);
         Set<SourceGroup> testGroups = new HashSet<SourceGroup>();
@@ -152,7 +155,7 @@ public class Util {
         }
         return result;
     }
-
+    
     private static List<FileObject> getFileObjects(URL[] urls) {
         List<FileObject> result = new ArrayList<FileObject>();
         for (int i = 0; i < urls.length; i++) {
@@ -163,7 +166,7 @@ public class Util {
                 int severity = ErrorManager.INFORMATIONAL;
                 if (ErrorManager.getDefault().isNotifiable(severity)) {
                     ErrorManager.getDefault().notify(severity, new IllegalStateException(
-                       "No FileObject found for the following URL: " + urls[i])); //NOI18N
+                            "No FileObject found for the following URL: " + urls[i])); //NOI18N
                 }
             }
         }
@@ -192,12 +195,12 @@ public class Util {
             return null;
         }
         return ClassPathSupport.createProxyClassPath(new ClassPath[]{
-                ClassPath.getClassPath(fo, ClassPath.SOURCE),
-                ClassPath.getClassPath(fo, ClassPath.BOOT),
-                ClassPath.getClassPath(fo, ClassPath.COMPILE)
+            ClassPath.getClassPath(fo, ClassPath.SOURCE),
+            ClassPath.getClassPath(fo, ClassPath.BOOT),
+            ClassPath.getClassPath(fo, ClassPath.COMPILE)
         });
     }
-
+    
     /**
      * Is J2EE version of a given project JavaEE 5 or higher?
      *
@@ -227,7 +230,7 @@ public class Util {
         }
         return false;
     }
-
+    
     /**
      * Returns source level of a given project
      *
@@ -270,7 +273,7 @@ public class Util {
     }
     
     /**
-     * Checks whether the given <code>project</code>'s target server instance 
+     * Checks whether the given <code>project</code>'s target server instance
      * is present.
      *
      * @param  project the project to check; can not be null.
@@ -288,7 +291,7 @@ public class Util {
     }
     
     /**
-     * Checks whether the given <code>provider</code>'s target server instance 
+     * Checks whether the given <code>provider</code>'s target server instance
      * is present.
      *
      * @param  provider the provider to check; can not be null.
@@ -317,6 +320,73 @@ public class Util {
             }
         }
         return new File[0];
+    }
+    
+
+    // methods from org.netbeans.modules.j2ee.metadata.Utils which was removed
+    // as a part of the migration to retouche
+    
+    public static boolean containsClass(Library library, String className) {
+        List roots = library.getContent("classpath"); //NOI18N
+        for (Iterator it = roots.iterator(); it.hasNext();) {
+            URL rootUrl = (URL) it.next();
+            FileObject root = URLMapper.findFileObject(rootUrl);
+            if (root != null && "jar".equals(rootUrl.getProtocol())) {  //NOI18N
+                FileObject archiveRoot = FileUtil.getArchiveRoot(FileUtil.getArchiveFile(root));
+                String classRelativePath = className.replace('.', '/') + ".class"; //NOI18N
+                if (archiveRoot.getFileObject(classRelativePath) != null) {
+                    return true;
+                };
+            }
+        }
+        return false;
+    }
+    public static boolean containsService(Library library, String serviceName) {
+        List roots = library.getContent("classpath"); //NOI18N
+        for (Iterator it = roots.iterator(); it.hasNext();) {
+            URL rootUrl = (URL) it.next();
+            FileObject root = URLMapper.findFileObject(rootUrl);
+            if (root != null && "jar".equals(rootUrl.getProtocol())) {  //NOI18N
+                FileObject archiveRoot = FileUtil.getArchiveRoot(FileUtil.getArchiveFile(root));
+                String serviceRelativePath = "META-INF/services/" + serviceName; //NOI18N
+                if (archiveRoot.getFileObject(serviceRelativePath) != null) {
+                    return true;
+                };
+            }
+        }
+        return false;
+    }
+    
+    public static boolean containsClass(LibraryImplementation library, String className) {
+        List roots = library.getContent("classpath"); //NOI18N
+        for (Iterator it = roots.iterator(); it.hasNext();) {
+            URL rootUrl = (URL) it.next();
+            FileObject root = URLMapper.findFileObject(rootUrl);
+            if (root != null && "jar".equals(rootUrl.getProtocol())) {  //NOI18N
+                FileObject archiveRoot = FileUtil.getArchiveRoot(FileUtil.getArchiveFile(root));
+                String classRelativePath = className.replace('.', '/') + ".class"; //NOI18N
+                if (archiveRoot.getFileObject(classRelativePath) != null) {
+                    return true;
+                };
+            }
+        }
+        return false;
+    }
+    
+    public static boolean containsService(LibraryImplementation library, String serviceName) {
+        List roots = library.getContent("classpath"); //NOI18N
+        for (Iterator it = roots.iterator(); it.hasNext();) {
+            URL rootUrl = (URL) it.next();
+            FileObject root = URLMapper.findFileObject(rootUrl);
+            if (root != null && "jar".equals(rootUrl.getProtocol())) {  //NOI18N
+                FileObject archiveRoot = FileUtil.getArchiveRoot(FileUtil.getArchiveFile(root));
+                String serviceRelativePath = "META-INF/services/" + serviceName; //NOI18N
+                if (archiveRoot.getFileObject(serviceRelativePath) != null) {
+                    return true;
+                };
+            }
+        }
+        return false;
     }
     
 }
