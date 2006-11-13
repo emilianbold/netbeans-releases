@@ -64,7 +64,7 @@ public abstract class EntityManagerGenerationTestSupport  extends SourceTestSupp
     }
 
     protected void assertFile(FileObject result){
-        assertFile(FileUtil.toFile(result), getGoldenFile());
+        assertFile( getGoldenFile(), FileUtil.toFile(result));
     }
     
     protected abstract EntityManagerGenerationStrategy getStrategy(WorkingCopy workingCopy, TreeMaker make, ClassTree clazz, GenerationOptions options);

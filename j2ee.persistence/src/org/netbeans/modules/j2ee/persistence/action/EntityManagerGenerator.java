@@ -89,6 +89,8 @@ public class EntityManagerGenerator {
      */
     public FileObject generate(final GenerationOptions options) throws IOException{
         
+        final boolean[] success = new boolean[1];
+        
         AbstractTask task = new AbstractTask<WorkingCopy>() {
             
             public void run(WorkingCopy workingCopy) throws Exception {
@@ -102,18 +104,23 @@ public class EntityManagerGenerator {
                         ClassTree clazz = (ClassTree) typeDeclaration;
                         EntityManagerGenerationStrategy strategy = getStrategy(workingCopy, make, clazz, options);
                         if (strategy != null){
-                            ClassTree modifiedClazz = getStrategy(workingCopy, make, clazz, options).generate();
+                            ClassTree modifiedClazz = strategy.generate();
                             workingCopy.rewrite(clazz, modifiedClazz);
-                        } else {
-                            NotifyDescriptor d = new NotifyDescriptor.Message(
-                                    NbBundle.getMessage(EntityManagerGenerator.class, "ERR_NotSupportedAMJTA"), NotifyDescriptor.INFORMATION_MESSAGE);
-                            DialogDisplayer.getDefault().notify(d);
+                            success[0] = true;
                         }
                     }
                 }
             }
         };
-        targetSource.runModificationTask(task).commit();
+        
+        if (success[0]) {
+            targetSource.runModificationTask(task).commit();
+        } else {
+            // TODO: RETOUCHE display notification
+//            NotifyDescriptor d = new NotifyDescriptor.Message(
+//                    NbBundle.getMessage(EntityManagerGenerator.class, "ERR_NotSupportedAMJTA"), NotifyDescriptor.INFORMATION_MESSAGE);
+//            DialogDisplayer.getDefault().notify(d);
+        }
         
         return targetFo;
     }

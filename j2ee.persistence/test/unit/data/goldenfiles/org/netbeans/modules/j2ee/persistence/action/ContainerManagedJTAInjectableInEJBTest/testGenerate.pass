@@ -15,7 +15,7 @@ public void destroy() {
     em.close();
 }
 
-public void create() {
+public void create(Object object) {
     em.persist(object);
 }
 }

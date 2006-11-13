@@ -48,7 +48,6 @@ public final class UseEntityManagerAction extends NodeAction {
         options.setMethodName("persist");
         options.setOperation(GenerationOptions.Operation.PERSIST);
         options.setReturnType("void");
-        options.setInitialization(GenerationOptions.Initialization.INJECT);
         try {
 //        Parameter p = JMIGenerationUtil.createParameter(javaClass, "object", Object.class.getName());
 //        String methodName = computeMethodName(javaClass, "persist", p);

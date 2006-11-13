@@ -2,10 +2,10 @@ package org.netbeans.test;
 
 import java.util.*;
 
+@javax.persistence.PersistenceContext(name = "persistence/LogicalName", unitName = "puName")
 public class Test {
 
-@javax.persistence.PersistenceContext(name = "persistence/LogicalName", unitName = "puName")
-protected void create() {
+protected void create(Object object) {
     try {
         javax.naming.Context ctx = (javax.naming.Context) new javax.naming.InitialContext().lookup("java:comp/env");
         javax.persistence.EntityManager em = (javax.persistence.EntityManager) ctx.lookup("persistence/LogicalName");

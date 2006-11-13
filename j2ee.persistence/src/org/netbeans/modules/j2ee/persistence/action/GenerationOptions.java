@@ -27,8 +27,6 @@ package org.netbeans.modules.j2ee.persistence.action;
  */
 public class GenerationOptions {
     
-    public enum Initialization {INJECT, EMF, INIT}
-    
     public enum Operation {
         PERSIST("em.persist({0});"),
         MERGE("em.merge({0});"),
@@ -48,9 +46,9 @@ public class GenerationOptions {
     }
     
     private Operation operation;
-    private Initialization initialization;
     private String methodName;
     private String returnType;
+//    private Parameter parameter;
     private String parameterName;
     private String parameterType;
     private String queryAttribute;
@@ -66,15 +64,23 @@ public class GenerationOptions {
     public Operation getOperation() {
         return operation;
     }
-    
+
     public String getParameterName() {
         return parameterName;
     }
-    
+
     public String getParameterType() {
         return parameterType;
     }
-    
+
+    public void setParameterName(String parameterName) {
+        this.parameterName = parameterName;
+    }
+
+    public void setParameterType(String parameterType) {
+        this.parameterType = parameterType;
+    }
+
     public String getQueryAttribute() {
         return queryAttribute;
     }
@@ -90,14 +96,7 @@ public class GenerationOptions {
     public void setOperation(Operation operation) {
         this.operation = operation;
     }
-    
-    public void setParameterName(String parameterName) {
-        this.parameterName = parameterName;
-    }
-    
-    public void setParameterType(String parameterType) {
-        this.parameterType = parameterType;
-    }
+
     
     public void setQueryAttribute(String queryAttribute) {
         this.queryAttribute = queryAttribute;
@@ -106,13 +105,5 @@ public class GenerationOptions {
     public void setReturnType(String returnType) {
         this.returnType = returnType;
     }
-    
-    public GenerationOptions.Initialization getInitialization() {
-        return initialization;
-    }
-    
-    public void setInitialization(GenerationOptions.Initialization initialization) {
-        this.initialization = initialization;
-    }
-    
+ 
 }

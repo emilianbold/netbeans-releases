@@ -48,13 +48,12 @@ public class ContainerManagedJTANonInjectableInWebTest extends EntityManagerGene
                 "}"
                 );
         GenerationOptions options = new GenerationOptions();
-        options.setInitialization(GenerationOptions.Initialization.INIT);
         options.setMethodName("create");
         options.setOperation(GenerationOptions.Operation.PERSIST);
         options.setParameterName("object");
-        options.setParameterType("java.lang.Object");
+        options.setParameterType("Object");
         options.setQueryAttribute("");
-        options.setReturnType("java.lang.Object");
+        options.setReturnType("Object");
         
         FileObject result = generate(FileUtil.toFileObject(testFile), options);
         print(result);

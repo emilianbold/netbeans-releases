@@ -1,19 +1,14 @@
 package org.netbeans.modules.j2ee.persistence.wizard.dao;
 
 import java.awt.Component;
-import java.util.ArrayList;
+
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.common.JMIUtils;
-import org.netbeans.modules.j2ee.persistence.dd.orm.model_1_0.Entity;
-import org.netbeans.modules.j2ee.persistence.wizard.WizardProperties;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 

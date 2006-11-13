@@ -4,7 +4,7 @@ import java.util.*;
 
 public class Test {
 
-public void create() {
+public void create(Object object) {
     try {
         javax.naming.Context ctx = new javax.naming.InitialContext();
         javax.persistence.EntityManager em = (javax.persistence.EntityManager) ctx.lookup("java:comp/env/persistence/LogicalName");

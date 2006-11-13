@@ -158,7 +158,6 @@ public final class EjbFacadeWizardIterator implements WizardDescriptor.Instantia
                         createOptions.setReturnType("void");
                         createOptions.setParameterName(variableName);
                         createOptions.setParameterType(entityClass);
-                        createOptions.setInitialization(GenerationOptions.Initialization.INJECT);
                         generator.generate(createOptions);
                         addMethodToInterface("create", "void", variableName, entityClass, local);
                         addMethodToInterface("create", "void", variableName, entityClass, remote);
@@ -169,18 +168,16 @@ public final class EjbFacadeWizardIterator implements WizardDescriptor.Instantia
                         editOptions.setReturnType("void");
                         editOptions.setParameterName(variableName);
                         editOptions.setParameterType(entityClass);
-                        editOptions.setInitialization(GenerationOptions.Initialization.INJECT);
                         generator.generate(editOptions);
                         addMethodToInterface("edit", "void", variableName, entityClass, local);
                         addMethodToInterface("edit", "void", variableName, entityClass, remote);
                         
                         GenerationOptions destroyOptions = new GenerationOptions();
-                        destroyOptions.setMethodName("create");
+                        destroyOptions.setMethodName("remove");
                         destroyOptions.setOperation(GenerationOptions.Operation.REMOVE);
                         destroyOptions.setReturnType("void");
                         destroyOptions.setParameterName(variableName);
                         destroyOptions.setParameterType(entityClass);
-                        destroyOptions.setInitialization(GenerationOptions.Initialization.INJECT);
                         generator.generate(destroyOptions);
                         addMethodToInterface("destroy", "void", variableName, entityClass, local);
                         addMethodToInterface("destroy", "void", variableName, entityClass, remote);
@@ -191,7 +188,6 @@ public final class EjbFacadeWizardIterator implements WizardDescriptor.Instantia
                         findOptions.setReturnType("void");
                         findOptions.setParameterName(variableName);
                         findOptions.setParameterType(entityClass);
-                        findOptions.setInitialization(GenerationOptions.Initialization.INJECT);
                         generator.generate(findOptions);
                         addMethodToInterface("find", "void", variableName, entityClass, local);
                         addMethodToInterface("find", "void", variableName, entityClass, remote);
@@ -202,7 +198,6 @@ public final class EjbFacadeWizardIterator implements WizardDescriptor.Instantia
                         findAllOptions.setReturnType("void");
                         findAllOptions.setParameterName(variableName);
                         findAllOptions.setParameterType(entityClass);
-                        findAllOptions.setInitialization(GenerationOptions.Initialization.INJECT);
                         generator.generate(findAllOptions);
                         addMethodToInterface("findAll", "void", variableName, entityClass, local);
                         addMethodToInterface("findAll", "void", variableName, entityClass, remote);
