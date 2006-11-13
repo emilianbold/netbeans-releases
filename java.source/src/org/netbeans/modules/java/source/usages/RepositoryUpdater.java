@@ -112,6 +112,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     private static final Logger LOGGER = Logger.getLogger(RepositoryUpdater.class.getName());
     private static final Set<String> ignoredDirectories = parseSet("org.netbeans.javacore.ignoreDirectories", "SCCS CVS .svn"); // NOI18N
     private static final boolean noscan = Boolean.getBoolean("netbeans.javacore.noscan");   //NOI18N
+    public static final boolean PERF_TEST = Boolean.getBoolean("perf.refactoring.test");
     private static final String PACKAGE_INFO = "package-info.java";  //NOI18N
     
     private static final int DELAY = Utilities.isWindows() ? 2000 : 1000;
@@ -793,7 +794,18 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     handle.setDisplayName(message);
                     RepositoryUpdater.this.scannedBinaries.add (rootURL);
                     if (rootFile.canRead()) {                        
+                        long startT = System.currentTimeMillis();
                         ci.getBinaryAnalyser().analyse(rootFile, handle);
+                        long endT = System.currentTimeMillis();
+                        if (PERF_TEST) {
+                            try {
+                                Class c = Class.forName("org.netbeans.performance.test.utilities.LoggingScanClasspath",true,Thread.currentThread().getContextClassLoader()); // NOI18N
+                                java.lang.reflect.Method m = c.getMethod("reportScanOfFile", new Class[] {String.class, Long.class}); // NOI18N
+                                m.invoke(c.newInstance(), new Object[] {rootURL.toExternalForm(), new Long(endT - startT)});
+                            } catch (Exception e) {
+                                    Exceptions.printStackTrace(e);
+                            }                            
+                        }
                     }
                 } catch (Throwable e) {
                     if (e instanceof ThreadDeath) {
@@ -812,7 +824,18 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     final URL rootURL = it.previous();
                     it.remove();                                                                                
                     if (!oldRoots.remove(rootURL)) {
+                        long startT = System.currentTimeMillis();
                         updateFolder (rootURL,rootURL, handle);
+                        long endT = System.currentTimeMillis();
+                        if (PERF_TEST) {
+                            try {
+                                Class c = Class.forName("org.netbeans.performance.test.utilities.LoggingScanClasspath",true,Thread.currentThread().getContextClassLoader()); // NOI18N
+                                java.lang.reflect.Method m = c.getMethod("reportScanOfFile", new Class[] {String.class, Long.class}); // NOI18N
+                                m.invoke(c.newInstance(), new Object[] {rootURL.toExternalForm(), new Long(endT - startT)});
+                            } catch (Exception e) {
+                                    Exceptions.printStackTrace(e);
+                            }
+                        }
                     }
                 } catch (Throwable e) {
                     if (e instanceof ThreadDeath) {
