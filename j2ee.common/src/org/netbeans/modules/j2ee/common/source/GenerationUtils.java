@@ -203,18 +203,23 @@ public final class GenerationUtils extends SourceUtils {
     }
 
     /**
-     * Creates a new annotation argument whose value is a string literal.
+     * Creates a new annotation argument whose value is a literal.
      *
      * @param  argumentName the argument name; cannot be null.
-     * @param  argumentValue the argument value; cannot be null.
+     * @param  argumentValue the argument value; cannot be null. The semantics
+     *         of this parameter is the same as of the parameters of
+     *         {@link TreeMaker#Literal(Object)}.
      * @return the new annotation argument; never null.
      */
-    public ExpressionTree createAnnotationArgument(String argumentName, String argumentValue) {
+    public ExpressionTree createAnnotationArgument(String argumentName, Object argumentValue) {
         Parameters.javaIdentifierOrNull("argumentName", argumentName); // NOI18N
         Parameters.notNull("argumentValue", argumentValue); // NOI18N
 
         TreeMaker make = getTreeMaker();
-        ExpressionTree argumentValueTree = make.Literal(argumentValue);
+        // workaround for issue 89230
+        ExpressionTree argumentValueTree = argumentValue instanceof Boolean ?
+                make.Identifier(Boolean.TRUE.equals(argumentValue) ? "true" : "false") : // NOI18N
+                make.Literal(argumentValue); // NOI18N
         if (argumentName == null) {
             return argumentValueTree;
         } else {
@@ -222,19 +227,39 @@ public final class GenerationUtils extends SourceUtils {
         }
     }
 
-    public ExpressionTree createAnnotationArgument(String argumentName, boolean argumentValue) {
+    /**
+     * Creates a new annotation argument whose value is an array.
+     * 
+     * @param argumentName the argument name; cannot be null.
+     * @param argumentValue the argument value; cannot be null.
+     * @return the new annotation argument; never null.
+     */
+    public ExpressionTree createAnnotationArgument(String argumentName, List<? extends ExpressionTree> argumentValues) {
         Parameters.javaIdentifierOrNull("argumentName", argumentName); // NOI18N
-        Parameters.notNull("argumentValue", argumentValue); // NOI18N
+        Parameters.notNull("argumentValues", argumentValues); // NOI18N
 
         TreeMaker make = getTreeMaker();
-        ExpressionTree argumentValueTree = make.Literal(argumentValue);
+        ExpressionTree argumentValuesTree = make.NewArray(null, Collections.<ExpressionTree>emptyList(), argumentValues);
         if (argumentName == null) {
-            return argumentValueTree;
+            return argumentValuesTree;
         } else {
-            return make.Assignment(make.Identifier(argumentName), argumentValueTree);
+            return make.Assignment(make.Identifier(argumentName), argumentValuesTree);
         }
     }
 
+    /**
+     * Creates a new annotation argument whose value is a member of a type, e.g.
+     * <code>@Target(ElementType.CONSTRUCTOR)</code>.
+     * 
+     * @param  argumentName the argument name; cannot be null.
+     * @param  argumentType the fully-qualified name of the type whose member is to be invoked 
+     *         (e.g. <code>java.lang.annotations.ElementType</code> in the previous
+     *         example); cannot be null.
+     * @param  argumentTypeField a field of <code>argumentType</code> 
+     *         (e.g. <code>CONSTRUCTOR</code> in the previous example); 
+     *         cannot be null.
+     * @return the new annotation argument; never null.
+     */
     public ExpressionTree createAnnotationArgument(String argumentName, String argumentType, String argumentTypeField) {
         Parameters.javaIdentifierOrNull("argumentName", argumentName); // NOI18N
         Parameters.notNull("argumentType", argumentType); // NOI18N
@@ -429,8 +454,7 @@ public final class GenerationUtils extends SourceUtils {
                     Collections.<TypeParameterTree>emptyList(),
                     Collections.<VariableTree>emptyList(),
                     Collections.<ExpressionTree>emptyList(),
-                    make.Block(Collections.<StatementTree>emptyList(), false)
-            );
+                    "{ }");
             ClassTree newClassTree = make.addClassMember(oldClassTree, method);
             getWorkingCopy().rewrite(oldClassTree, newClassTree);
             modified = true;

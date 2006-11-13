@@ -23,7 +23,10 @@ import com.sun.source.tree.*;
 import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
 import org.netbeans.api.java.source.CancellableTask;
@@ -152,7 +155,7 @@ public class GenerationUtilsTest extends NbTestCase {
             public void run(WorkingCopy copy) throws Exception {
                 GenerationUtils genUtils = GenerationUtils.newInstance(copy);
                 AnnotationTree annotationTree = genUtils.createAnnotation("java.lang.SuppressWarnings",
-                        Collections.singletonList(genUtils.createAnnotationArgument(null, "foo")));
+                        Collections.singletonList(genUtils.createAnnotationArgument(null, "unchecked")));
                 ClassTree newClassTree = genUtils.addAnnotation(annotationTree, genUtils.getClassTree());
                 annotationTree = genUtils.createAnnotation("java.lang.annotation.Retention",
                         Collections.singletonList(genUtils.createAnnotationArgument(null, "java.lang.annotation.RetentionPolicy", "RUNTIME")));
@@ -163,13 +166,104 @@ public class GenerationUtilsTest extends NbTestCase {
         runUserActionTask(testFO, new AbstractTask<CompilationController>() {
             public void run(CompilationController controller) throws Exception {
                 SourceUtils srcUtils = SourceUtils.newInstance(controller);
+                assertEquals(2, srcUtils.getTypeElement().getAnnotationMirrors().size());
                 SuppressWarnings suppressWarnings = srcUtils.getTypeElement().getAnnotation(SuppressWarnings.class);
                 assertNotNull(suppressWarnings);
                 assertEquals(1, suppressWarnings.value().length);
-                assertEquals("foo", suppressWarnings.value()[0]);
+                assertEquals("unchecked", suppressWarnings.value()[0]);
                 Retention retention = srcUtils.getTypeElement().getAnnotation(Retention.class);
                 assertNotNull(retention);
                 assertEquals(RetentionPolicy.RUNTIME, retention.value());
+            }
+        });
+    }
+
+    @SuppressWarnings("unchecked")
+    public void testCreateAnnotationArrayArgument() throws Exception {
+        TestUtilities.copyStringToFileObject(testFO,
+                "package foo;" +
+                "@interface NamedQueries {" +
+                "   NamedQuery[] value();" +
+                "}" +
+                "@interface NamedQuery {" +
+                "   String name();" +
+                "   String query();" +
+                "}" +
+                "public class TestClass {" +
+                "}");
+        runModificationTask(testFO, new AbstractTask<WorkingCopy>() {
+            public void run(WorkingCopy copy) throws Exception {
+                GenerationUtils genUtils = GenerationUtils.newInstance(copy);
+                ExpressionTree namedQueryAnnotation0 = genUtils.createAnnotation("foo.NamedQuery", Arrays.asList(
+                        genUtils.createAnnotationArgument("name", "foo0"),
+                        genUtils.createAnnotationArgument("query", "q0")));
+                ExpressionTree namedQueryAnnotation1 = genUtils.createAnnotation("foo.NamedQuery", Arrays.asList(
+                        genUtils.createAnnotationArgument("name", "foo1"),
+                        genUtils.createAnnotationArgument("query", "q1")));
+                ExpressionTree namedQueriesAnnValue = genUtils.createAnnotationArgument("value", Arrays.asList(namedQueryAnnotation0, namedQueryAnnotation1));
+                AnnotationTree namedQueriesAnnotation = genUtils.createAnnotation("foo.NamedQueries", Collections.singletonList(namedQueriesAnnValue));
+                ClassTree newClassTree = genUtils.addAnnotation(namedQueriesAnnotation, genUtils.getClassTree());
+                copy.rewrite(genUtils.getClassTree(), newClassTree);
+            }
+        }).commit();
+        runUserActionTask(testFO, new AbstractTask<CompilationController>() {
+            public void run(CompilationController controller) throws Exception {
+                SourceUtils srcUtils = SourceUtils.newInstance(controller);
+                List<? extends AnnotationMirror> annotations = srcUtils.getTypeElement().getAnnotationMirrors();
+                Map<? extends ExecutableElement, ? extends AnnotationValue> namedQueriesAnnElements = annotations.get(0).getElementValues();
+                List<? extends AnnotationMirror> namedQueriesAnnValue = (List<? extends AnnotationMirror>)namedQueriesAnnElements.values().iterator().next().getValue();
+                assertEquals(2, namedQueriesAnnValue.size());
+                int outer = 0;
+                for (AnnotationMirror namedQueryAnn : namedQueriesAnnValue) {
+                    int inner = 0;
+                    for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> namedQueryAnnElement : namedQueryAnn.getElementValues().entrySet()) {
+                        String namedQueryAnnElementName = namedQueryAnnElement.getKey().getSimpleName().toString();
+                        String namedQueryAnnElementValue = (String)namedQueryAnnElement.getValue().getValue();
+                        switch (inner) {
+                            case 0:
+                                assertEquals("name", namedQueryAnnElementName);
+                                assertEquals("foo" + outer, namedQueryAnnElementValue);
+                                break;
+                            case 1:
+                                assertEquals("query", namedQueryAnnElementName);
+                                assertEquals("q" + outer, namedQueryAnnElementValue);
+                                break;
+                            default:
+                                fail();
+                        }
+                        inner++;
+                    }
+                    outer++;
+                }
+            }
+        });
+    }
+
+    public void testCreateAnnotationBooleanArgumentIssue89230() throws Exception {
+        TestUtilities.copyStringToFileObject(testFO,
+                "package foo;" +
+                "@interface Column {" +
+                "   boolean nullable();" +
+                "}" +
+                "public class TestClass {" +
+                "}");
+        runModificationTask(testFO, new AbstractTask<WorkingCopy>() {
+            public void run(WorkingCopy copy) throws Exception {
+                GenerationUtils genUtils = GenerationUtils.newInstance(copy);
+                AnnotationTree annotationTree = genUtils.createAnnotation("foo.Column", Collections.singletonList(genUtils.createAnnotationArgument("nullable", true)));
+                ClassTree newClassTree = genUtils.addAnnotation(annotationTree, genUtils.getClassTree());
+                copy.rewrite(genUtils.getClassTree(), newClassTree);
+            }
+        }).commit();
+        runUserActionTask(testFO, new AbstractTask<CompilationController>() {
+            public void run(CompilationController controller) throws Exception {
+                SourceUtils srcUtils = SourceUtils.newInstance(controller);
+                assertEquals(1, srcUtils.getTypeElement().getAnnotationMirrors().size());
+                AnnotationMirror columnAnn = srcUtils.getTypeElement().getAnnotationMirrors().get(0);
+                assertEquals(1, columnAnn.getElementValues().size());
+                Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> columnAnnNullableElement = columnAnn.getElementValues().entrySet().iterator().next();
+                assertEquals("nullable", columnAnnNullableElement.getKey().getSimpleName().toString());
+                assertEquals(true, columnAnn.getElementValues().values().iterator().next().getValue());
             }
         });
     }

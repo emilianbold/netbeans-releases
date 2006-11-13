@@ -36,8 +36,7 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author Andrei Badea
- * @author Martin Adamek
+ * @author Andrei Badea, Martin Adamek
  */
 public class SourceUtils {
 
@@ -96,7 +95,7 @@ public class SourceUtils {
      * @return true if a main method was found, false otherwise.
      */
     public static boolean hasMainMethod(FileObject fileObject) throws IOException {
-        Parameters.notNull("fileObject", fileObject);
+        Parameters.notNull("fileObject", fileObject); // NOI18N
 
         JavaSource javaSource = JavaSource.forFileObject(fileObject);
         final boolean[] result = { false };
@@ -146,6 +145,7 @@ public class SourceUtils {
     // </editor-fold>
 
     // <editor-fold desc="Public methods">
+
     /**
      * Returns the type element that this instance works with
      * (corresponding to {@link #getClassTree}.
@@ -161,12 +161,36 @@ public class SourceUtils {
         return typeElement;
     }
 
+    /**
+     * Returns the class tree that this instance works with
+     * (corresponding to {@link #getTypeElement}.
+     *
+     * @return the class tree that this instance works with; never null.
+     */
     public ClassTree getClassTree() {
         if (classTree == null) {
             assert typeElement != null;
             classTree = controller.getTrees().getTree(typeElement);
         }
         return classTree;
+    }
+
+    /**
+     * Returns true if the given type is a subtype of {@link #getTypeElement}.
+     *
+     * @param  typeName the fully-qualified name of a type.
+     * @returns true if the passed type is a subtype of {@link #getTypeElement},
+     *         false otherwise (including when the type given by the
+     *         <code>typeName</code> parameter could not be found).
+     */
+    public boolean isSubtype(String typeName) {
+        Parameters.notNull("typeName", typeName); // NOI18N
+
+        TypeElement typeElement = getCompilationController().getElements().getTypeElement(typeName);
+        if (typeElement != null) {
+            return getCompilationController().getTypes().isSubtype(getTypeElement().asType(), typeElement.asType());
+        }
+        return false;
     }
 
     // </editor-fold>

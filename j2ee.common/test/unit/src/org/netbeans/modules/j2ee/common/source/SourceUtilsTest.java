@@ -33,8 +33,7 @@ import org.openide.filesystems.URLMapper;
 
 /**
  *
- * @author Andrei Badea
- * @author Martin Adamek
+ * @author Andrei Badea, Martin Adamek
  */
 public class SourceUtilsTest extends NbTestCase {
 
@@ -216,6 +215,21 @@ public class SourceUtilsTest extends NbTestCase {
                 "   }" +
                 "}");
         assertFalse(SourceUtils.hasMainMethod(testFO));
+    }
+
+    public void testIsSubtype() throws Exception {
+        TestUtilities.copyStringToFileObject(testFO,
+                "package foo;" +
+                "public class TestClass implements java.io.Serializable {" +
+                "}");
+        runUserActionTask(testFO, new AbstractTask<CompilationController>() {
+            public void run(CompilationController controller) throws Exception {
+                SourceUtils srcUtils = SourceUtils.newInstance(controller);
+                assertTrue(srcUtils.isSubtype("java.io.Serializable"));
+                assertFalse(srcUtils.isSubtype("java.lang.Cloneable"));
+                assertFalse(srcUtils.isSubtype("not.likely.to.exist.Type"));
+            }
+        });
     }
 
     private static void runUserActionTask(FileObject javaFile, CancellableTask<CompilationController> taskToTest) throws Exception {
