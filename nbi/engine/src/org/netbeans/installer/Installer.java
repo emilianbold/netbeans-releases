@@ -513,11 +513,14 @@ public class Installer {
                 String name = "nbi-engine.jar";
                 File dest = null;
                 File jarfile = null;
+                String jarLocation;
                 if (path != null) {
                     if (path.startsWith(filePrefix)) {
                         if (path.indexOf(jarSep) != -1) {
-                            jarfile = new File(path.substring(filePrefix.length(),
-                                    path.indexOf(jarSep + installerResource)));
+                            jarLocation = path.substring(filePrefix.length(),
+                                    path.indexOf(jarSep + installerResource));
+                            jarLocation = URLDecoder.decode(jarLocation,"UTF8");
+                            jarfile = new File(jarLocation);
                         } else {
                             // a quick hack to allow caching engine when run from
                             // the IDE (i.e. as a .class) - probably to be removed
@@ -527,7 +530,7 @@ public class Installer {
                             jarfile = new File(root, "dist/nbi-engine.jar");
                         }
                     } else if (path.startsWith(httpPrefix)) {
-                        String jarLocation = path.substring(
+                        jarLocation = path.substring(
                                 path.indexOf(httpPrefix),
                                 path.indexOf(jarSep + installerResource));
                         try {
