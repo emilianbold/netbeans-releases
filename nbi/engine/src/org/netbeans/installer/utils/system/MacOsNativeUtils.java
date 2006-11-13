@@ -76,14 +76,6 @@ public class MacOsNativeUtils extends UnixNativeUtils {
     }
     
     // NativeUtils implementation/override //////////////////////////////////////////
-    public long getFreeSpace(File file) {
-        if ((file == null) || file.getPath().equals("")) {
-            return 0;
-        } else {
-            return getFreeSpace0(file.getPath());
-        }
-    }
-    
     public File getShortcutLocation(Shortcut shortcut, ShortcutLocationType locationType) {
         String fileName = shortcut.getFileName();
         
@@ -385,7 +377,4 @@ public class MacOsNativeUtils extends UnixNativeUtils {
         }
         return returnResult;
     }
-
-    // native declarations //////////////////////////////////////////////////////////
-    private native long getFreeSpace0(String s);
 }

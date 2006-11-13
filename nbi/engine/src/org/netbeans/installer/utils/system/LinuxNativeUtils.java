@@ -32,15 +32,4 @@ public class LinuxNativeUtils extends UnixNativeUtils {
     LinuxNativeUtils() {
         loadNativeLibrary(LIBRARY_PATH_LINUX);
     }
-    
-    public long getFreeSpace(File file) {
-        if ((file == null) || file.getPath().equals("")) {
-            return 0;
-        } else {
-            return getFreeSpace0(file.getPath());
-        }
-    }
-    
-    // native declarations //////////////////////////////////////////////////////////
-    private native long getFreeSpace0(String s);
 }

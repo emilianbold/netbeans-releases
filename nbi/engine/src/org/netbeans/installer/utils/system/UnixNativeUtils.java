@@ -280,6 +280,14 @@ public abstract class UnixNativeUtils extends NativeUtils {
         chmod(findExecutableFiles(parent), "ugo+x");
     }
     
+    public long getFreeSpace(File file) {
+        if ((file == null) || file.getPath().equals("")) {
+            return 0;
+        } else {
+            return getFreeSpace0(file.getPath());
+        }
+    }
+    
     // other ... //////////////////////////
     
     public String getEnvironmentVariable(String name, EnvironmentScope scope, boolean flag) {
@@ -357,4 +365,7 @@ public abstract class UnixNativeUtils extends NativeUtils {
     
     public void removeComponentFromSystemInstallManager(ProductComponent comp) {
     }
+    
+    // native declarations //////////////////////////////////////////////////////////
+    private native long getFreeSpace0(String s);
 }
