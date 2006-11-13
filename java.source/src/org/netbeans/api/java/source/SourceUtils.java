@@ -26,8 +26,6 @@ import java.net.URI;
 import java.util.*;
 
 import javax.lang.model.element.*;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import javax.tools.JavaFileObject;
 import javax.tools.JavaFileObject.Kind;
 
@@ -56,19 +54,19 @@ import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.modules.java.JavaDataLoader;
+import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author Dusan Balek
- */
-public class SourceUtils {    
+ */public class SourceUtils {    
     
     private SourceUtils() {}
     
@@ -284,13 +282,82 @@ public class SourceUtils {
             }
         }
         } catch (MalformedURLException e) {
-            ErrorManager.getDefault().notify(e);
+            Exceptions.printStackTrace(e);
         }
         catch (FileStateInvalidException e) {
-            ErrorManager.getDefault().notify(e);
+            Exceptions.printStackTrace(e);
         }
         return null;
-    }        
+    }
+    
+    /**
+     * Returns a {@link FileObject} of the source file in which the handle is declared.
+     * @param handle to find the {@link FileObject} for
+     * @param cpInfo classpaths for resolving handle
+     * @return {@link FileObject} or null when the source file cannot be found
+     */
+    public static FileObject getFile (final ElementHandle<? extends Element> handle, final ClasspathInfo cpInfo) {
+        if (handle == null || cpInfo == null) {
+            throw new IllegalArgumentException ("Cannot pass null as an argument of the SourceUtils.getFile");  //NOI18N
+        }
+        try {
+            boolean pkg = handle.getKind() == ElementKind.PACKAGE;
+            String[] signature = handle.getSignature();
+            assert signature.length >= 1;
+            ClassPath cp = ClassPathSupport.createProxyClassPath(
+                new ClassPath[] {
+                    createClassPath(cpInfo,ClasspathInfo.PathKind.BOOT),
+                    createClassPath(cpInfo,ClasspathInfo.PathKind.OUTPUT),
+                    createClassPath(cpInfo,ClasspathInfo.PathKind.COMPILE),
+                });
+            String pkgName, className = null;
+            if (pkg) {
+                pkgName = FileObjects.convertPackage2Folder(signature[0]);
+            }
+            else {
+                int index = signature[0].lastIndexOf('.');                          //NOI18N
+                if (index<0) {
+                    pkgName = "";                                             //NOI18N
+                    className = signature[0];
+                }
+                else {
+                    pkgName = FileObjects.convertPackage2Folder(signature[0].substring(0,index));
+                    className = signature[0].substring(index+1);
+                }
+            }
+            List<FileObject> fos = cp.findAllResources(pkgName);
+            for (FileObject fo : fos) {
+                FileObject root = cp.findOwnerRoot(fo);
+                assert root != null;
+                FileObject[] sourceRoots = SourceForBinaryQuery.findSourceRoots(root.getURL()).getRoots();                        
+                ClassPath sourcePath = ClassPathSupport.createClassPath(sourceRoots);
+                List<FileObject> folders = (List<FileObject>) sourcePath.findAllResources(pkgName);
+                if (pkg) {
+                    return folders.isEmpty() ? null : folders.get(0);
+                }
+                else {               
+                    boolean caseSensitive = isCaseSensitive ();
+                    String sourceFileName = getSourceFileName (className);
+                    for (FileObject folder : folders) {
+                        FileObject[] children = folder.getChildren();
+                        for (FileObject child : children) {
+                            if (((caseSensitive && child.getName().equals (sourceFileName)) ||
+                                (!caseSensitive && child.getName().equalsIgnoreCase (sourceFileName))) &&
+                                (child.isData() && JavaDataLoader.JAVA_EXTENSION.equalsIgnoreCase(child.getExt()))) {
+                                return child;
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (MalformedURLException e) {
+            Exceptions.printStackTrace(e);
+        }
+        catch (FileStateInvalidException e) {
+            Exceptions.printStackTrace(e);
+        }
+        return null;        
+    }
     
     /**
      * Waits for the end of the initial scan, this helper method 
@@ -336,7 +403,7 @@ public class SourceUtils {
                 }
             }
         } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);
+            Exceptions.printStackTrace(ex);
         }
         return null;
     }

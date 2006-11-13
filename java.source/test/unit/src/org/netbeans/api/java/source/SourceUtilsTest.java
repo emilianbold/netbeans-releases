@@ -20,15 +20,27 @@
 package org.netbeans.api.java.source;
 
 import java.io.File;
-import java.util.ArrayList;
+import java.io.IOException;
+import java.net.URL;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.ElementFilter;
+import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.queries.SourceForBinaryQuery.Result;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.TestUtil;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
+import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -36,7 +48,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Jan Lahoda
  */
-public class SourceUtilsTest extends NbTestCase {
+public class SourceUtilsTest extends NbTestCase {       
     
     private JavaSource js;
     private CompilationInfo info;
@@ -46,7 +58,8 @@ public class SourceUtilsTest extends NbTestCase {
     }
 
     protected void setUp() throws Exception {
-        SourceUtilsTestUtil.prepareTest(new String[0], new Object[0]);
+        clearWorkDir();
+        SourceUtilsTestUtil.prepareTest(new String[0], new Object[] {SFBQImpl.getDefault()});
     }
 
     private void prepareTest() throws Exception {
@@ -267,6 +280,85 @@ public class SourceUtilsTest extends NbTestCase {
 //        assertEquals(fqns.toString(), 0, fqns.size());
         
         //XXX: onlyExact
+    }
+    
+    
+    public void testGetFile () throws Exception {
+        File workDir = getWorkDir();
+        FileObject workFo = FileUtil.toFileObject(workDir);
+        assertNotNull (workFo);
+        FileObject src = workFo.createFolder("src");
+        FileObject srcInDefPkg = src.createData("Foo","java");
+        assertNotNull(srcInDefPkg);
+        FileObject sourceFile = src.createFolder("org").createFolder("me").createData("Test", "java");
+        assertNotNull(sourceFile);
+        ClasspathInfo cpInfo = ClasspathInfo.create(ClassPathSupport.createClassPath(new FileObject[0]), ClassPathSupport.createClassPath(new FileObject[0]),
+            ClassPathSupport.createClassPath(new FileObject[]{src}));
+        FileObject cls = cpInfo.getClassPath(PathKind.OUTPUT).getRoots()[0];
+        FileObject classInDefPkg = cls.createData("Foo","class");
+        assertNotNull(classInDefPkg);
+        FileObject classPkg = cls.createFolder("org").createFolder("me");
+        assertNotNull(classPkg);
+        FileObject classFile = classPkg.createData("Test", "class");
+        assertNotNull(classFile);
+        FileObject classFileInnder = classPkg.createData("Test$Inner", "class");
+        assertNotNull(classFileInnder);        
+        SFBQImpl.getDefault().register(cls, src);
+        ElementHandle<? extends Element> handle = ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, new String[] {"org.me.Test"});
+        assertNotNull (handle);        
+        FileObject result = SourceUtils.getFile(handle, cpInfo);
+        assertNotNull(result);
+        handle = ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, new String[] {"org.me.Test$Inner"});
+        result = SourceUtils.getFile(handle,cpInfo);
+        assertNotNull(result);
+        handle = ElementHandleAccessor.INSTANCE.create(ElementKind.PACKAGE, new String[] {"org.me"});
+        result = SourceUtils.getFile(handle,cpInfo);
+        assertNotNull(result);
+        handle = ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, new String[] {"Foo"});
+        result = SourceUtils.getFile(handle,cpInfo);
+        assertNotNull(result);
+    }
+    
+    
+    private static class SFBQImpl implements SourceForBinaryQueryImplementation {
+        
+        private static SFBQImpl instance;
+        
+        private final Map<URL, FileObject> map = new HashMap<URL, FileObject> ();
+        
+        private SFBQImpl () {
+            
+        }
+        
+        public void register (FileObject bin, FileObject src) throws IOException {
+            map.put(bin.getURL(), src);
+        }
+            
+        public Result findSourceRoots(URL binaryRoot) {
+            final FileObject src = map.get (binaryRoot);
+            if (src != null) {
+                return new Result() {
+
+                    public FileObject[] getRoots() {
+                        return new FileObject[] {src};
+                    }
+
+                    public void addChangeListener(ChangeListener l) {                        
+                    }
+
+                    public void removeChangeListener(ChangeListener l) {                        
+                    }
+                };
+            }
+            return null;
+        }
+        
+        public static synchronized SFBQImpl getDefault () {
+            if (instance == null) {
+                instance = new SFBQImpl ();
+            }
+            return instance;
+        }
     }
     
 }
