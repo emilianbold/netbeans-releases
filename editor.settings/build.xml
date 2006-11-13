@@ -19,4 +19,30 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <project name="editor/settings" default="netbeans" basedir=".">
     <import file="../../nbbuild/templates/projectized.xml"/>
+    
+    <!-- Patching FontColorNames and SimpleValueNames for binary compatibility -->
+    <target name="compile" depends="projectized-common.compile">
+       <taskdef name="enhanceclass" classname="org.netbeans.nbbuild.NbEnhanceClass" classpath="${nb_all}/nbbuild/nbantext.jar"/>
+
+       <echo message="openide/util.dir = '${openide/util.dir}'"/>
+
+       <enhanceclass basedir="${build.classes.dir}" >
+           <classpath>
+               <pathelement location="${core/bootstrap.dir}/lib/boot.jar"/>
+<!-- I have absolutely no idea why this is not working!
+               <pathelement location="${openide/util.dir}/modules/org-openide-util.jar"/>
+-->
+               <pathelement location="${nb_all}/nbbuild/build/public-package-jars/org-openide-util.jar"/>
+           </classpath>
+
+           <patch class="org/netbeans/api/editor/settings/FontColorNames" >
+               <member name="&lt;init&gt;" />
+           </patch>
+
+           <patch class="org/netbeans/api/editor/settings/SimpleValueNames" >
+               <member name="&lt;init&gt;" />
+           </patch>
+
+       </enhanceclass>
+   </target>
 </project>
