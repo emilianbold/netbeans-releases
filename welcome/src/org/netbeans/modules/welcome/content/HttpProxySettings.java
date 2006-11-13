@@ -97,7 +97,7 @@ class HttpProxySettings {
         
         try {
             ClassLoader l = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
-            Class clazz = l.loadClass("org.netbeans.core.IDESettings"); // NOI18N
+            Class<? extends SharedClassObject> clazz = l.loadClass("org.netbeans.core.IDESettings").asSubclass(SharedClassObject.class); // NOI18N
             settingsInstance = SharedClassObject.findObject(clazz, true);
             mGetProxyType = clazz.getMethod ("getProxyType"); // NOI18N
             mSetProxyType = clazz.getMethod ("setProxyType", Integer.TYPE); // NOI18N
