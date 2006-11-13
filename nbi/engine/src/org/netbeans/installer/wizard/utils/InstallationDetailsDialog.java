@@ -85,7 +85,7 @@ public class InstallationDetailsDialog extends NbiDialog {
         detailsTreeTable.setRowSelectionAllowed(false);
         detailsTreeTable.setColumnSelectionAllowed(false);
         detailsTreeTable.setCellSelectionEnabled(false);
-
+        
         detailsScrollPane = new NbiScrollPane(detailsTreeTable);
         
         add(detailsScrollPane, new GridBagConstraints(0, 0, 1, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(11, 11, 11, 11), 0, 0));
@@ -173,11 +173,7 @@ public class InstallationDetailsDialog extends NbiDialog {
         }
         
         public boolean isLeaf(Object node) {
-            if ((node.equals(root)) || (node instanceof ProductComponent)) {
-                return false;
-            } else {
-                return true;
-            }
+            return !((node.equals(root)) || (node instanceof ProductComponent));
         }
         
         public void valueForPathChanged(TreePath path, Object newValue) {
@@ -284,13 +280,8 @@ public class InstallationDetailsDialog extends NbiDialog {
                 
                 setBorder(EMPTY_BORDER);
             } else {
-                setIcon(null);
-                
-                if (value != null) {
-                    setText(value.toString());
-                } else {
-                    setText("");
-                }
+                setIcon(null);                
+                setText((value != null) ? value.toString() : "");
                 
                 setBorder(PADDED_BORDER);
             }
@@ -308,12 +299,7 @@ public class InstallationDetailsDialog extends NbiDialog {
             setOpaque(false);
             setBackground(table.getBackground());
             setForeground(table.getForeground());
-            
-            if (value instanceof InstallationStatus) {
-                setText(value.toString());
-            } else {
-                setText(" ");
-            }
+            setText((value instanceof InstallationStatus) ? value.toString() : "");
             
             return this;
         }
