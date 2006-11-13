@@ -90,10 +90,10 @@ public class SourceLevelQueryImplTest extends NbTestCase {
         EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         props.setProperty("javac.source", "${def}");
         props.setProperty ("platform.active",platformName);
-        props.setProperty("def", "1.2.3.4");
+        props.setProperty("def", "1.2");
         helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
         props = PropertyUtils.getGlobalProperties();
-        props.put("default.javac.source","4.3.2.1");
+        props.put("default.javac.source","4.3");
         PropertyUtils.putGlobalProperties(props);
         sources = projdir.createFolder("src");
     }
@@ -105,7 +105,7 @@ public class SourceLevelQueryImplTest extends NbTestCase {
         assertEquals("Non-project Java file does not have any source level", null, sl);
         file = sources.createData("a.java");
         sl = SourceLevelQuery.getSourceLevel(file);
-        assertEquals("Project's Java file must have project's source", "1.2.3.4", sl);        
+        assertEquals("Project's Java file must have project's source", "1.2", sl);        
     }
     
     public void testGetSourceLevelWithBrokenPlatform() throws Exception {
@@ -115,7 +115,7 @@ public class SourceLevelQueryImplTest extends NbTestCase {
         assertEquals("Non-project Java file does not have any source level", null, sl);
         file = sources.createData("a.java");
         sl = SourceLevelQuery.getSourceLevel(file);
-        assertEquals("Project's Java file must have project's source", "4.3.2.1", sl);        
+        assertEquals("Project's Java file must have project's source", "4.3", sl);        
     }
     
     private static class TestPlatformProvider implements JavaPlatformProvider {
