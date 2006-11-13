@@ -824,7 +824,7 @@ public class JaxWsCodeGenerator {
         final String[] serviceFName = {serviceFieldName};
         // PENDING compute this from using InjectionTargetQuery.isInjectionTarget 
         //System.out.println("Is InjectionTarget? " + InjectionTargetQuery.isInjectionTarget(targetFo, null));
-        final boolean[] generateWsRefInjection = {true};
+        final boolean[] generateWsRefInjection = {false};
         insertServiceDef[0] = !generateWsRefInjection[0];
         CancellableTask task = new CancellableTask<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
@@ -833,6 +833,11 @@ public class JaxWsCodeGenerator {
                 for (Tree typeDecl : cut.getTypeDecls()) {
                     if (Tree.Kind.CLASS == typeDecl.getKind()) {
                         ClassTree javaClass = (ClassTree) typeDecl;
+                        // find if class is Injection Target
+                        SourceUtils srcUtils = SourceUtils.newInstance(controller, javaClass);
+                        TypeElement thisTypeEl = srcUtils.getTypeElement();
+                        generateWsRefInjection[0] = InjectionTargetQuery.isInjectionTarget(controller, thisTypeEl);
+                        
                         if (isServletClass(controller, javaClass)) {
                             printerName[0]="out";
                             argumentInitPart[0] = fixNamesInInitializationPart(argumentInitPart[0]);
