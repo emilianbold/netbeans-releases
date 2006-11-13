@@ -149,6 +149,7 @@ public final class CompletionLayout {
     public boolean hideDocumentation() {
         if (docPopup.isVisible()) {
             docPopup.getDocumentationScrollPane().currentDocumentation = null;
+            docPopup.clearHistory();
             docPopup.hide();
             visiblePopups.remove(docPopup);
             return true;

@@ -182,7 +182,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
         docAutoPopupTimer = new Timer(0, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if (lastSelectedItem == null || lastSelectedItem.get() != layout.getSelectedCompletionItem())
-                    showDocumentation(true);
+                    showDocumentation();
             }
         });
         docAutoPopupTimer.setRepeats(false);
@@ -783,14 +783,10 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         return hidePerformed;
     }
     
-    public void showDocumentation() {
-        showDocumentation(false);
-    }
-    
     /**
      * May be called from any thread but it will be rescheduled into AWT.
      */
-    void showDocumentation(boolean clearHistory) {
+    public void showDocumentation() {
         if (!SwingUtilities.isEventDispatchThread()) {
             // Re-call this method in AWT if necessary
             SwingUtilities.invokeLater(new ParamRunnable(ParamRunnable.SHOW_DOCUMENTATION));
@@ -799,9 +795,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
 
         if (activeProviders != null) {
             documentationCancel();
-            if (clearHistory) {
-                layout.clearDocumentationHistory();
-            }
+            layout.clearDocumentationHistory();
             documentationQuery();
         }
     }
@@ -1229,7 +1223,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
 
     private final class DocShowAction extends AbstractAction {
         public void actionPerformed(ActionEvent e) {
-            showDocumentation(false);
+            showDocumentation();
         }
     }
 
