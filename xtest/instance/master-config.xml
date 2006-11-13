@@ -81,6 +81,7 @@ Microsystems, Inc. All Rights Reserved.
         <module name="j2ee/ejbapi" testtypes="unit" attributes="stable"/>
         <module name="j2eeserver" testtypes="unit" attributes="stable"/>
         <module name="web/core" testtypes="unit" attributes="stable"/>
+        <module name="web/freeform" testtypes="unit" attributes="stable"/>
         <module name="web/jspparser" testtypes="unit" attributes="stable"/>
         <module name="web/jspsyntax" testtypes="unit" attributes="stable"/>
         <module name="web/project" testtypes="unit" attributes="stable"/>
@@ -96,7 +97,6 @@ Microsystems, Inc. All Rights Reserved.
         <module name="debuggerjpda" testtypes="unit" attributes="stable"/>
         <module name="j2ee/ddloaders" testtypes="unit" attributes="stable"/>
         <module name="j2ee/ejbfreeform" testtypes="unit" attributes="stable"/>
-        <module name="web/freeform" testtypes="unit" attributes="stable"/>
         <module name="tomcatint/tomcat5" testtypes="unit" attributes="stable"/>
         <module name="schema2beans" testtypes="unit" attributes="stable"/>
         <module name="html/editor/lib" testtypes="unit" attributes="stable"/>
