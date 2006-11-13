@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-
 The contents of this file are subject to the terms of the Common Development
 and Distribution License (the License). You may not use this file except in
 compliance with the License.
@@ -18,25 +17,13 @@ The Original Software is NetBeans. The Initial Developer of the Original
 Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-<mconfig name="websvc/websvcapi">
+<project name="websvc/clientapi/test" basedir="." default="all">
     
-    <testbag testattribs="stable" executor="unit-executor" name="websvc/websvcapi">
-        <testset dir="unit/src">
-            <patternset>
-                <include name="**/*Test.class"/>
-            </patternset>
-        </testset>
-    </testbag>
+    <property name="xtest.module" value="websvc/clientapi"/>
     
-    <testbag testattribs="commit" executor="unit-executor" name="websvc/websvcapi">
-        <testset dir="unit/src">
-            <patternset>
-                <include name="**/*Test.class"/>
-            </patternset>
-        </testset>
-    </testbag>
+    <import file="../../../nbbuild/templates/xtest.xml"/>
     
-    <compiler name="default-compiler" antfile="build-unit.xml" target="default-compiler" default="true"/>
-    <executor name="unit-executor" antfile="build-unit.xml" target="run-unit-test"/>
+    <property name="xtest.testtype" value="unit"/>
+    <property name="xtest.attribs" value="stable"/>
     
-</mconfig>
+</project>

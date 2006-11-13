@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE jax-ws PUBLIC "-//NetBeans//DTD JAX-WS 1.0//EN" "http://www.netbeans.org/ns/jax-ws/1">
+
+<jax-ws>
+    <services>
+        <service name="AA">
+            <implementation-class>a.AImpl</implementation-class>
+            <wsdl-file>A.wsdl</wsdl-file>
+            <package-name>generated.a</package-name>
+            <bindings>
+                <binding>b1.xml</binding>
+                <binding>b2.xml</binding>
+            </bindings>
+        </service>
+        <service name="B">
+            <implementation-class>b.BImpl</implementation-class>
+            <wsdl-file>B.wsdl</wsdl-file>
+            <package-name>generated.b</package-name>
+            <bindings>
+                <binding>b1.xml</binding>
+                <binding>b2.xml</binding>
+            </bindings>
+        </service>
+    </services>
+    <clients>
+        <client name="A">
+            <wsdl-file>A.wsdl</wsdl-file>
+            <url-mapping>/A</url-mapping>
+            <package-name>generated.a</package-name>
+            <bindings>
+                <binding>b1.xml</binding>
+                <binding>b2.xml</binding>
+            </bindings>
+        </client>
+        <client name="B">
+            <wsdl-file>B.wsdl</wsdl-file>
+            <url-mapping>/B</url-mapping>
+            <package-name>generated.b</package-name>
+            <bindings>
+                <binding>b1.xml</binding>
+                <binding>b2.xml</binding>
+            </bindings>
+        </client>
+    </clients>
+</jax-ws>
