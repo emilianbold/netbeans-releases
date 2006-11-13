@@ -31,7 +31,12 @@ public abstract class WebServicesClientSupportAccessor {
     
     // force loading of WebServicesClientSupport class. That will set DEFAULT variable.
     static {
-        Object o = WebServicesClientSupport.class;
+        Class c = WebServicesClientSupport.class;
+        try {
+            Class.forName(c.getName(), true, c.getClassLoader());
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
     
     public abstract WebServicesClientSupport createWebServicesClientSupport(WebServicesClientSupportImpl spiWebServicesClientSupport);

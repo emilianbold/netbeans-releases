@@ -31,7 +31,12 @@ public abstract class JAXWSClientSupportAccessor {
     
     // force loading of JAXWSClientSupport class. That will set DEFAULT variable.
     static {
-        Object o = JAXWSClientSupport.class;
+        Class c = JAXWSClientSupport.class;
+        try {
+            Class.forName(c.getName(), true, c.getClassLoader());
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
     
     public abstract JAXWSClientSupport createJAXWSClientSupport(JAXWSClientSupportImpl spiJAXWSClientSupport);

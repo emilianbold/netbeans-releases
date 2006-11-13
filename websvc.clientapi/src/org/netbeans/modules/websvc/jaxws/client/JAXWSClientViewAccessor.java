@@ -31,7 +31,12 @@ public abstract class JAXWSClientViewAccessor {
     
     // force loading of WebServicesClientView class. That will set DEFAULT variable.
     static {
-        Object o = JAXWSClientView.class;
+        Class c = JAXWSClientView.class;
+        try {
+            Class.forName(c.getName(), true, c.getClassLoader());
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
     
     public abstract JAXWSClientView createJAXWSClientView(JAXWSClientViewImpl spiJAXWSClientView);

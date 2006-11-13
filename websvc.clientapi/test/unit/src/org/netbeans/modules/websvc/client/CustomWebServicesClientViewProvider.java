@@ -17,7 +17,7 @@ import org.openide.nodes.Node;
  */
 public class CustomWebServicesClientViewProvider implements WebServicesClientViewProvider {
     
-    private Map/*<FileObject, WebServicesClientView>*/ cache = new HashMap/*<FileObject, WebServicesClientView>*/();
+    private Map<FileObject, WebServicesClientView> cache = new HashMap<FileObject, WebServicesClientView>();
     
     /** Creates a new instance of WebServicesClientViewProvider */
     public CustomWebServicesClientViewProvider() {
@@ -25,7 +25,7 @@ public class CustomWebServicesClientViewProvider implements WebServicesClientVie
     
     public WebServicesClientView findWebServicesClientView(FileObject file) {
         if (file.getExt().equals("ws")) {
-            WebServicesClientView em  = (WebServicesClientView) cache.get(file.getParent());
+            WebServicesClientView em = cache.get(file.getParent());
             if (em == null) {
                 em = WebServicesClientViewFactory.createWebServicesClientView(new CustomWebServicesClientViewImpl(file));
                 cache.put(file.getParent(), em);
