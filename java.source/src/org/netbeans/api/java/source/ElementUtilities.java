@@ -18,23 +18,31 @@
  */
 package org.netbeans.api.java.source;
 
+import com.sun.javadoc.Doc;
 import com.sun.source.tree.Scope;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Source;
 import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.code.Symbol.ClassSymbol;
+import com.sun.tools.javac.code.Symbol.MethodSymbol;
+import com.sun.tools.javac.code.Symbol.PackageSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.ClassType;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Name;
+import com.sun.tools.javadoc.DocEnv;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import javax.lang.model.element.*;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeMirror;
@@ -42,6 +50,7 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
 import org.netbeans.modules.java.builder.ElementsService;
+import org.netbeans.modules.java.source.JavadocEnv;
 
 /**
  *
@@ -87,6 +96,33 @@ public final class ElementUtilities {
         else {
             throw new IllegalArgumentException ();
         } 
+    }
+    
+    public Doc javaDocFor(Element element) {
+        if (element != null) {
+            DocEnv env = DocEnv.instance(info.getJavacTask().getContext());
+            switch (element.getKind()) {
+                case ANNOTATION_TYPE:
+                case CLASS:
+                case ENUM:
+                case INTERFACE:
+                    return env.getClassDoc((ClassSymbol)element);
+                case ENUM_CONSTANT:
+                case FIELD:
+                    return env.getFieldDoc((VarSymbol)element);
+                case METHOD:
+                    return env.getMethodDoc((MethodSymbol)element);
+                case CONSTRUCTOR:
+                    return env.getConstructorDoc((MethodSymbol)element);
+                case PACKAGE:
+                    return env.getPackageDoc((PackageSymbol)element);
+            }
+        }
+        return null;
+    }
+    
+    public Element elementFor(Doc doc) {
+        return (doc instanceof JavadocEnv.ElementHolder) ? ((JavadocEnv.ElementHolder)doc).getElement() : null;
     }
     
     public Iterable<? extends Element> getMembers(TypeMirror type, ElementAcceptor acceptor) {
@@ -246,5 +282,5 @@ public final class ElementUtilities {
             }
         }
         return false;
-    }    
+    }
 }

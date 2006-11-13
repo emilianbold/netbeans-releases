@@ -27,6 +27,7 @@ import java.util.*;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import javax.lang.model.element.*;
+import org.openide.filesystems.FileObject;
 import static javax.lang.model.element.ElementKind.*;
 import static javax.lang.model.element.Modifier.*;
 import javax.lang.model.type.*;
@@ -225,6 +226,11 @@ public class JavaCompletionProvider implements CompletionProvider {
                     toolTip = null;
                     anchorOffset = -1;
                     JavaSource js = JavaSource.forDocument(doc);
+                    if (queryType == DOCUMENTATION_QUERY_TYPE && element != null) {
+                        FileObject fo = SourceUtils.getFile(element, js.getClasspathInfo());
+                        if (fo != null)
+                            js = JavaSource.forFileObject(fo);
+                    }
                     js.runUserActionTask(this, (queryType & COMPLETION_QUERY_TYPE) == 0);
                     if ((queryType & COMPLETION_QUERY_TYPE) != 0) {
                         if (results != null)
@@ -417,10 +423,16 @@ public class JavaCompletionProvider implements CompletionProvider {
             }
         }
         
-        private void resolveDocumentation(CompilationController controller) throws IOException {
-            Element el = element != null ? element.resolve(controller) : controller.getTrees().getElement(getCompletionEnvironment(controller, false).getPath());
+        private void resolveDocumentation(CompilationController controller) throws IOException {            
+            Element el = null;
+            if (element != null) {
+                controller.toPhase(Phase.ELEMENTS_RESOLVED);
+                el = element.resolve(controller);
+            } else {
+                el = controller.getTrees().getElement(getCompletionEnvironment(controller, false).getPath());
+            }
             if (el != null) {
-                documentation = JavaCompletionDoc.create(SourceUtils.javaDocFor(controller, el));
+                documentation = JavaCompletionDoc.create(controller.getElementUtilities().javaDocFor(el), controller);
             }
         }
         

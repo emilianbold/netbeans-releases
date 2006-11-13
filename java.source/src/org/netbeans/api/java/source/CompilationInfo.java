@@ -73,7 +73,6 @@ public class CompilationInfo {
         this.jfo = fo != null ? javaSource.jfoProvider.createJavaFileObject(fo) : null;
         this.javacTask = javacTask;        
         this.errors = new ArrayList<Diagnostic>();
-        SourceUtils.JavaDocEnv.registerSource(this);
     }
              
     // API of the class --------------------------------------------------------

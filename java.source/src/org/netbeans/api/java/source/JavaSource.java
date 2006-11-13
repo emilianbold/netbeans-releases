@@ -80,6 +80,7 @@ import org.netbeans.modules.java.builder.ASTService;
 import org.netbeans.modules.java.builder.Builder2;
 import org.netbeans.modules.java.builder.Scanner;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
+import org.netbeans.modules.java.source.JavadocEnv;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
@@ -707,7 +708,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         Messager.preRegister(context, null);
         ErrorHandlingJavadocEnter.preRegister(context);
         JavadocMemberEnter.preRegister(context);       
-        SourceUtils.JavaDocEnv.preRegister(context, getClasspathInfo());
+        JavadocEnv.preRegister(context, getClasspathInfo());
         Scanner.Factory.instance(context);
         Builder2.instance(context).keepComments = true;
         return javacTask;

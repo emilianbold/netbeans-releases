@@ -19,11 +19,26 @@
 
 package org.netbeans.modules.editor.java;
 
+import java.awt.event.ActionEvent;
+import java.io.IOException;
 import java.net.URL;
 import java.util.Hashtable;
+import javax.lang.model.element.Element;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import com.sun.javadoc.*;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.ElementUtilities;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.UiUtils;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -32,10 +47,12 @@ import org.openide.util.NbBundle;
  */
 public class JavaCompletionDoc implements CompletionDocumentation {
 
+    private ClasspathInfo cpInfo;
     private Doc doc;
     private String content = null;
-    private Hashtable<String, Doc> links = new Hashtable<String, Doc>();
+    private Hashtable<String, ElementHandle<? extends Element>> links = new Hashtable<String, ElementHandle<? extends Element>>();
     private int linkCounter = 0;
+    private AbstractAction goToSource = null;
 
     private static final String PARAM_TAG = "@param"; //NOI18N
     private static final String RETURN_TAG = "@return"; //NOI18N
@@ -44,13 +61,27 @@ public class JavaCompletionDoc implements CompletionDocumentation {
     private static final String SINCE_TAG = "@since"; //NOI18N
     private static final String INHERIT_DOC_TAG = "@inheritDoc"; //NOI18N
     
-    public static final JavaCompletionDoc create(Doc doc) {
-        return new JavaCompletionDoc(doc);
+    public static final JavaCompletionDoc create(Doc doc, CompilationController controller) {
+        return new JavaCompletionDoc(doc, controller);
     }
     
-    private JavaCompletionDoc(Doc doc) {
+    private JavaCompletionDoc(Doc doc, CompilationController controller) {
+        this.cpInfo = controller.getClasspathInfo();
         this.doc = doc;
-        this.content = prepareContent();
+        ElementUtilities eu = controller.getElementUtilities();
+        this.content = prepareContent(eu);
+        Element element = eu.elementFor(doc);
+        if (element != null) {
+            final FileObject fo = SourceUtils.getFile(element, controller.getClasspathInfo());
+            if (fo != null) {
+                final ElementHandle<? extends Element> handle = ElementHandle.create(element);
+                goToSource = new AbstractAction() {
+                    public void actionPerformed(ActionEvent arg0) {
+                        UiUtils.open(fo, handle);
+                    }
+                };
+            }
+        }
     }
 
     public String getText() {
@@ -61,32 +92,50 @@ public class JavaCompletionDoc implements CompletionDocumentation {
         return null;
     }
 
-    public CompletionDocumentation resolveLink(String link) {
-        Doc linkDoc = links.get(link);
-        return linkDoc != null ? JavaCompletionDoc.create(linkDoc) : null;
+    public CompletionDocumentation resolveLink(final String link) {
+        final CompletionDocumentation[] ret = new CompletionDocumentation[1];
+        try {
+            final ElementHandle<? extends Element> linkDoc = links.get(link);
+            if (linkDoc != null) {
+                FileObject fo = SourceUtils.getFile(linkDoc, cpInfo);
+                if (fo != null) {
+                    JavaSource.forFileObject(fo).runUserActionTask(new CancellableTask<CompilationController>() {
+                        public void run(CompilationController controller) throws IOException {
+                            controller.toPhase(Phase.ELEMENTS_RESOLVED);
+                            ret[0] = JavaCompletionDoc.create(controller.getElementUtilities().javaDocFor(linkDoc.resolve(controller)), controller);
+                        }
+                        public void cancel() {
+                        }
+                    }, true);
+                }
+            }
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+        }
+        return ret[0];
     }
 
     public Action getGotoSourceAction() {
-        return null;
+        return goToSource;
     }
     
-    private String prepareContent() {
+    private String prepareContent(ElementUtilities eu) {
         StringBuilder sb = new StringBuilder();
         if (doc != null) {
             if (doc instanceof ProgramElementDoc) {
-                sb.append(getContainingClassOrPacakgeHeader((ProgramElementDoc)doc));
+                sb.append(getContainingClassOrPacakgeHeader(eu, (ProgramElementDoc)doc));
             }
             if (doc.isMethod() || doc.isConstructor()) {
-                sb.append(getMethodHeader((ExecutableMemberDoc)doc));
+                sb.append(getMethodHeader(eu, (ExecutableMemberDoc)doc));
             } else if (doc.isField() || doc.isEnumConstant()) {
-                sb.append(getFieldHeader((FieldDoc)doc));
+                sb.append(getFieldHeader(eu, (FieldDoc)doc));
             } else if (doc.isClass() || doc.isInterface()) {
-                sb.append(getClassHeader((ClassDoc)doc));
+                sb.append(getClassHeader(eu, (ClassDoc)doc));
             }
             sb.append("<p>"); //NOI18N
-            sb.append(inlineTags(doc.inlineTags()));
+            sb.append(inlineTags(eu, doc.inlineTags()));
             sb.append("</p><p>"); //NOI18N
-            sb.append(getTags(doc));
+            sb.append(getTags(eu, doc));
             sb.append("</p>"); //NOI18N
         } else {
             sb.append(NbBundle.getMessage(JavaCompletionDoc.class, "javadoc_content_not_found")); //NOI18N
@@ -94,25 +143,25 @@ public class JavaCompletionDoc implements CompletionDocumentation {
         return sb.toString();
     }
     
-    private String getContainingClassOrPacakgeHeader(ProgramElementDoc peDoc) {
+    private String getContainingClassOrPacakgeHeader(ElementUtilities eu, ProgramElementDoc peDoc) {
         StringBuilder sb = new StringBuilder();
         ClassDoc cls = peDoc.containingClass();
         if (cls != null) {
             sb.append("<font size='+0'><b>"); //NOI18N
-            createLink(sb, cls, cls.qualifiedName());
+            createLink(sb, eu.elementFor(cls), cls.qualifiedName());
             sb.append("</b></font>"); //NOI18N)
         } else {
             PackageDoc pkg = peDoc.containingPackage();
             if (pkg != null) {
                 sb.append("<font size='+0'><b>"); //NOI18N
-                createLink(sb, pkg, pkg.name());
+                createLink(sb, eu.elementFor(pkg), pkg.name());
                 sb.append("</b></font>"); //NOI18N)
             }
         }
         return sb.toString();
     }
     
-    private String getMethodHeader(ExecutableMemberDoc mdoc) {
+    private String getMethodHeader(ElementUtilities eu, ExecutableMemberDoc mdoc) {
         StringBuilder sb = new StringBuilder();
         sb.append("<pre>"); //NOI18N
         sb.append(mdoc.modifiers());
@@ -122,7 +171,7 @@ public class JavaCompletionDoc implements CompletionDocumentation {
                 sb.append(' '); //NOI18N
                 len++;
             }
-            len += appendType(sb, ((MethodDoc)mdoc).returnType(), false);
+            len += appendType(eu, sb, ((MethodDoc)mdoc).returnType(), false);
         }
         String name = mdoc.name();
         len += name.length();
@@ -130,7 +179,7 @@ public class JavaCompletionDoc implements CompletionDocumentation {
         len++;
         Parameter[] params = mdoc.parameters();
         for(int i = 0; i < params.length; i++) {
-            appendType(sb, params[i].type(), i == params.length - 1 && mdoc.isVarArgs());
+            appendType(eu, sb, params[i].type(), i == params.length - 1 && mdoc.isVarArgs());
             sb.append(' ').append(params[i].name()); //NOI18N
             if (i < params.length - 1) {
                 sb.append(",\n"); //NOI18N
@@ -142,7 +191,7 @@ public class JavaCompletionDoc implements CompletionDocumentation {
         if (exs.length > 0) {
             sb.append("\nthrows "); //NOI18N
             for (int i = 0; i < exs.length; i++) {
-                appendType(sb, exs[i], false);
+                appendType(eu, sb, exs[i], false);
                 if (i < exs.length - 1)
                     sb.append(", "); //NOI18N
             }
@@ -151,19 +200,19 @@ public class JavaCompletionDoc implements CompletionDocumentation {
         return sb.toString();
     }
     
-    private String getFieldHeader(FieldDoc fdoc) {
+    private String getFieldHeader(ElementUtilities eu, FieldDoc fdoc) {
         StringBuilder sb = new StringBuilder();
         sb.append("<pre>"); //NOI18N
         sb.append(fdoc.modifiers());
         if (sb.length() > 0)
             sb.append(' '); //NOI18N
-        appendType(sb, fdoc.type(), false);
+        appendType(eu, sb, fdoc.type(), false);
         sb.append(" <b>").append(fdoc.name()).append("</b>"); //NOI18N
         sb.append("</pre>"); //NOI18N
         return sb.toString();
     }
     
-    private String getClassHeader(ClassDoc cdoc) {
+    private String getClassHeader(ElementUtilities eu, ClassDoc cdoc) {
         StringBuilder sb = new StringBuilder();
         sb.append("<pre>"); //NOI18N
         sb.append(cdoc.modifiers());
@@ -177,13 +226,13 @@ public class JavaCompletionDoc implements CompletionDocumentation {
         Type supercls = cdoc.superclassType();
         if (supercls != null) {
             sb.append("\nextends "); //NOI18N
-            appendType(sb, supercls, false);
+            appendType(eu, sb, supercls, false);
         }
         Type[] ifaces = cdoc.interfaceTypes();
         if (ifaces.length > 0) {
             sb.append("\nimplements "); //NOI18N
             for (int i = 0; i < ifaces.length; i++) {
-                appendType(sb, ifaces[i], false);
+                appendType(eu, sb, ifaces[i], false);
                 if (i < ifaces.length - 1)
                     sb.append(", "); //NOI18N
             }
@@ -192,7 +241,7 @@ public class JavaCompletionDoc implements CompletionDocumentation {
         return sb.toString();
     }
     
-    private String getTags(Doc doc) {
+    private String getTags(ElementUtilities eu, Doc doc) {
         StringBuilder see = new StringBuilder();
         StringBuilder par = new StringBuilder();
         StringBuilder thr = new StringBuilder();
@@ -204,42 +253,42 @@ public class JavaCompletionDoc implements CompletionDocumentation {
                 Tag[] its = tag.inlineTags();
                 if (its.length > 0) {
                     par.append(" - "); //NOI18N
-                    par.append(inlineTags(its));                    
+                    par.append(inlineTags(eu, its));
                 }
                 par.append("<br>"); //NOI18N
             } else if (THROWS_TAG.equals(tag.kind())) {
                 thr.append("<code>"); //NOI18N
                 Type exType = ((ThrowsTag)tag).exceptionType();
                 if (exType != null)
-                    createLink(thr, exType.asClassDoc(), exType.qualifiedTypeName());
+                    createLink(thr, eu.elementFor(exType.asClassDoc()), exType.qualifiedTypeName());
                 else
                     thr.append(((ThrowsTag)tag).exceptionName());
                 thr.append("</code>"); //NOI18N
                 Tag[] its = tag.inlineTags();
                 if (its.length > 0) {
                     thr.append(" - "); //NOI18N
-                    thr.append(inlineTags(its));                    
+                    thr.append(inlineTags(eu, its));
                 }
                 thr.append("<br>"); //NOI18N
             } else if (RETURN_TAG.equals(tag.kind())) {
-                ret.append(inlineTags(tag.inlineTags()));
+                ret.append(inlineTags(eu, tag.inlineTags()));
                 ret.append("<br>"); //NOI18N
             } else if (SEE_TAG.equals(tag.kind())) {
                 SeeTag stag = (SeeTag)tag;
                 String className = stag.referencedClassName();
                 String memberName = stag.referencedMemberName();
                 if (memberName != null) {
-                    createLink(see, stag.referencedMember(), className + "." + memberName); //NOI18N
+                    createLink(see, eu.elementFor(stag.referencedMember()), className + "." + memberName); //NOI18N
                     see.append("<br>"); //NOI18N
                 } else if (className != null) {
-                    createLink(see, stag.referencedClass(), className);
+                    createLink(see, eu.elementFor(stag.referencedClass()), className);
                     see.append("<br>"); //NOI18N
                 }
             } else if (SINCE_TAG.equals(tag.kind())) {
                 since = tag.text();
-            }            
+            }
         }
-        StringBuilder sb = new StringBuilder();        
+        StringBuilder sb = new StringBuilder();
         if (par.length() > 0) {
             sb.append("<b>").append(NbBundle.getMessage(JavaCompletionDoc.class, "JCD-params")).append("</b><blockquote>").append(par).append("</blockquote>"); //NOI18N
         }
@@ -258,7 +307,7 @@ public class JavaCompletionDoc implements CompletionDocumentation {
         return sb.toString();
     }
     
-    private String inlineTags(Tag[] tags) {
+    private String inlineTags(ElementUtilities eu, Tag[] tags) {
         StringBuilder sb = new StringBuilder();
         for (Tag tag : tags) {
             if (SEE_TAG.equals(tag.kind())) {
@@ -266,19 +315,19 @@ public class JavaCompletionDoc implements CompletionDocumentation {
                 String className = stag.referencedClassName();
                 String memberName = stag.referencedMemberName();
                 if (memberName != null) {
-                    createLink(sb, stag.referencedMember(), className + "." + memberName); //NOI18N
+                    createLink(sb, eu.elementFor(stag.referencedMember()), className + "." + memberName); //NOI18N
                 } else if (className != null) {
-                    createLink(sb, stag.referencedClass(), className);
+                    createLink(sb, eu.elementFor(stag.referencedClass()), className);
                 }
             } else if (INHERIT_DOC_TAG.equals(tag.kind())) {
                 if (doc.isMethod()) {
                     MethodDoc mdoc = ((MethodDoc)doc).overriddenMethod();
                     if (mdoc != null)
-                        sb.append(inlineTags(mdoc.inlineTags()));
+                        sb.append(inlineTags(eu, mdoc.inlineTags()));
                 } else if (doc.isClass() || doc.isInterface()) {
                     ClassDoc cdoc = ((ClassDoc)doc).superclass();
                     if (cdoc != null)
-                        sb.append(inlineTags(cdoc.inlineTags()));
+                        sb.append(inlineTags(eu, cdoc.inlineTags()));
                 }
             } else {
                 sb.append(tag.text());
@@ -292,15 +341,15 @@ public class JavaCompletionDoc implements CompletionDocumentation {
             sb.append(' '); //NOI18N            
     }
     
-    private int appendType(StringBuilder sb, Type type, boolean varArg) {
-        int len = createLink(sb, type.asClassDoc(), type.simpleTypeName());
+    private int appendType(ElementUtilities eu, StringBuilder sb, Type type, boolean varArg) {
+        int len = createLink(sb, eu.elementFor(type.asClassDoc()), type.simpleTypeName());
         ParameterizedType pt = type.asParameterizedType();
         if (pt != null) {
             Type[] targs = pt.typeArguments();
             if (targs.length > 0) {
                 sb.append("&lt;"); //NOI18N
                 for (int j = 0; j < targs.length; j++) {
-                    len += appendType(sb, targs[j], false);
+                    len += appendType(eu, sb, targs[j], false);
                     if (j < targs.length - 1) {
                         sb.append(", "); //NOI18N
                         len += 2;
@@ -310,7 +359,7 @@ public class JavaCompletionDoc implements CompletionDocumentation {
                 len += 2;
             }
         }
-        String dim = type.dimension();        
+        String dim = type.dimension();
         if (dim.length() > 0) {
             if (varArg)
                 dim = dim.substring(2) + "..."; //NOI18N
@@ -320,14 +369,14 @@ public class JavaCompletionDoc implements CompletionDocumentation {
         return len;
     }
     
-    private int createLink(StringBuilder sb, Doc doc, String text) {
-        if (doc != null) {
+    private int createLink(StringBuilder sb, Element e, String text) {
+        if (e != null) {
             String link = "*" + linkCounter++; //NOI18N
-            links.put(link, doc);
+            links.put(link, ElementHandle.create(e));
             sb.append("<a href='").append(link).append("'>"); //NOI18N
         }
         sb.append(text);
-        if (doc != null)
+        if (e != null)
             sb.append("</a>"); //NOI18N
         return text.length();
     }

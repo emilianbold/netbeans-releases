@@ -26,11 +26,8 @@ import java.net.URI;
 import java.util.*;
 
 import javax.lang.model.element.*;
-import javax.tools.JavaFileObject;
 import javax.tools.JavaFileObject.Kind;
 
-import com.sun.javadoc.ClassDoc;
-import com.sun.javadoc.Doc;
 import com.sun.source.tree.*;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Flags;
@@ -41,13 +38,6 @@ import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.model.JavacElements;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Name;
-import com.sun.tools.javadoc.ClassDocImpl;
-import com.sun.tools.javadoc.ConstructorDocImpl;
-import com.sun.tools.javadoc.DocEnv;
-import com.sun.tools.javadoc.FieldDocImpl;
-import com.sun.tools.javadoc.MethodDocImpl;
-import com.sun.tools.javadoc.ModifierFilter;
-import com.sun.tools.javadoc.PackageDocImpl;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
@@ -70,16 +60,6 @@ import org.openide.util.Exceptions;
     
     private SourceUtils() {}
     
-    public static JavaSource javaSourceFor(CompilationInfo info, Element element) {
-        FileObject fo = getFile(element, info.getClasspathInfo());
-        return fo != null ? JavaSource.forFileObject(fo) : null;
-    }
-    
-    public static Element sourceElementFor(CompilationInfo info, Element element) {
-        Context ctx = getSourceContextFor(info.getClasspathInfo(), Phase.ELEMENTS_RESOLVED, element);
-        return ctx != null ? getSourceElementFor(element, ctx) : null;
-    }
-    
     public static Tree treeFor(CompilationInfo info, Element element) {
         Context ctx = getSourceContextFor(info.getClasspathInfo(), Phase.ELEMENTS_RESOLVED, element);
         if (ctx != null) {
@@ -89,11 +69,7 @@ import org.openide.util.Exceptions;
         }
         return null;
     }
-    
-    public static Doc javaDocFor(CompilationInfo info, Element element) {
-        return JavaDocEnv.getDoc(info.getClasspathInfo(), element);
-    }
-    
+
     public static Element getImplementationOf(CompilationInfo info, ExecutableElement method, TypeElement origin) {
         Context c = ((JavacTaskImpl) info.getJavacTask()).getContext();
         return ((MethodSymbol)method).implementation((TypeSymbol)origin, com.sun.tools.javac.code.Types.instance(c), true);
@@ -451,166 +427,5 @@ import org.openide.util.Exceptions;
             }
         }
         return null;
-    }
-        
-    static class JavaDocEnv extends DocEnv {
-                
-        static void preRegister(final Context context, final ClasspathInfo cpInfo) {
-            context.put(docEnvKey, new Context.Factory<DocEnv>() {
-                public DocEnv make() {
-                    return new JavaDocEnv(context, cpInfo);
-                }
-            });
-        }
-        
-        private ClasspathInfo cpInfo;
-        private List<JavaFileObject> jfos;
-        private Context ctx;
-        
-        private JavaDocEnv(Context context, ClasspathInfo cpInfo) {
-            super(context);
-            this.ctx = context;
-            this.cpInfo = cpInfo;
-            this.jfos = new ArrayList<JavaFileObject>();
-            this.showAccess = new ModifierFilter(ModifierFilter.ALL_ACCESS);
-            this.legacyDoclet = false;
-        }
-        
-        static void registerSource(CompilationInfo info) {
-            JavaDocEnv jdoc = (JavaDocEnv)JavaDocEnv.instance(info.getJavacTask().getContext());
-            jdoc.jfos.add(info.jfo);
-        }
-        
-        static Doc getDoc(ClasspathInfo cpInfo, Element element) {
-            Context ctx = getSourceContextFor(cpInfo, Phase.ELEMENTS_RESOLVED, element);
-            if (ctx == null)
-                return null;
-            DocEnv delegate = DocEnv.instance(ctx);
-            if (delegate == null)
-                return null;
-            element = getSourceElementFor(element, ctx);
-            if (element == null)
-                return null;
-            switch (element.getKind()) {
-                case ANNOTATION_TYPE:
-                case CLASS:
-                case ENUM:
-                case INTERFACE:
-                    return delegate.getClassDoc((ClassSymbol)element);
-                case CONSTRUCTOR:
-                    return delegate.getConstructorDoc((MethodSymbol)element);
-                case ENUM_CONSTANT:
-                case FIELD:
-                    return delegate.getFieldDoc((VarSymbol)element);
-                case METHOD:
-                    return delegate.getMethodDoc((MethodSymbol)element);
-                default:
-                    return null;
-            }
-        }
-        
-        public PackageDocImpl getPackageDoc(PackageSymbol pack) {
-            PackageDocImpl result = packageMap.get(pack);
-            if (result != null) return result;
-            result = new JavaDocPackage(this, pack, ctx);
-            packageMap.put(pack, result);
-            return result;
-        }
-        
-        public FieldDocImpl getFieldDoc(VarSymbol var) {
-            if (isFromClassFile(var)) {
-                Context ctx = getSourceContextFor(cpInfo, Phase.ELEMENTS_RESOLVED, var);
-                if (ctx != null && ctx != this.ctx) {
-                    Element e = getSourceElementFor(var, ctx);
-                    if (e != null)
-                        return DocEnv.instance(ctx).getFieldDoc((VarSymbol)e);
-                }
-            }
-            return super.getFieldDoc(var);
-        }
-
-        public ClassDocImpl getClassDoc(ClassSymbol clazz) {
-            if (isFromClassFile(clazz)) {
-                Context ctx = getSourceContextFor(cpInfo, Phase.ELEMENTS_RESOLVED, clazz);
-                if (ctx != null && ctx != this.ctx) {
-                    Element e = getSourceElementFor(clazz, ctx);
-                    if (e != null)
-                        return DocEnv.instance(ctx).getClassDoc((ClassSymbol)e);
-                }
-            }
-            return super.getClassDoc(clazz);
-        }
-
-        public MethodDocImpl getMethodDoc(MethodSymbol meth) {
-            if (isFromClassFile(meth)) {
-                Context ctx = getSourceContextFor(cpInfo, Phase.ELEMENTS_RESOLVED, meth);
-                if (ctx != null && ctx != this.ctx) {
-                    Element e = getSourceElementFor(meth, ctx);
-                    if (e != null)
-                        return DocEnv.instance(ctx).getMethodDoc((MethodSymbol)e);
-                }
-            }
-            return super.getMethodDoc(meth);
-        }
-
-        public ConstructorDocImpl getConstructorDoc(MethodSymbol meth) {
-            if (isFromClassFile(meth)) {
-                Context ctx = getSourceContextFor(cpInfo, Phase.ELEMENTS_RESOLVED, meth);
-                if (ctx != null && ctx != this.ctx) {
-                    Element e = getSourceElementFor(meth, ctx);
-                    if (e != null)
-                        return DocEnv.instance(ctx).getConstructorDoc((MethodSymbol)e);
-                }
-            }
-            return super.getConstructorDoc(meth);
-        }
-        
-        public ClassDocImpl lookupClass(String name) {
-            ClassDocImpl cls = super.lookupClass(name);
-            if (cls == null)
-                cls = loadClass(name);
-            return cls;
-        }        
-        
-        private boolean isFromClassFile(Symbol sym) {
-            if (sym.kind == Kinds.ERR)
-                return false;
-            JavaFileObject jfo = sym.outermostClass().sourcefile;
-            if (jfo != null) {
-                for (JavaFileObject tmpJfo : jfos)
-                    if (jfo.equals(tmpJfo))
-                        return false;
-            }
-            return true;
-        }
-        
-        private static class JavaDocPackage extends PackageDocImpl {
-            
-            private Context ctx;
-
-            private JavaDocPackage(DocEnv env, PackageSymbol sym, Context ctx) {
-                super(env, sym);
-                this.ctx = ctx;
-            }
-
-            public ClassDoc findClass(String className) {
-                Name.Table nameTable = Name.Table.instance(ctx);
-                StringTokenizer st = new StringTokenizer(className, "."); //NOI18N
-                TypeSymbol s = sym;
-                while(s != null && st.hasMoreTokens()) {
-                    Name clsName = nameTable.fromString(st.nextToken());
-                    com.sun.tools.javac.code.Scope.Entry e = s.members().lookup(clsName);
-                    s = null;
-                    while (e.scope != null) {
-                        if (e.sym.kind == Kinds.TYP && (e.sym.flags_field & Flags.SYNTHETIC) == 0) {
-                            s = (TypeSymbol)e.sym;
-                            break;
-                        }
-                        e = e.next();
-                    }
-                }
-                return s instanceof ClassSymbol ? env.getClassDoc((ClassSymbol)s) : null;
-            }
-        }
     }
 }
