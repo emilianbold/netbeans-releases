@@ -76,7 +76,9 @@ public class DomUtil {
       try {
          return parseXmlFile(in, charset);
       } finally {
-         in.close();
+          try {
+            in.close();
+          } catch (IOException ignord) {}
       }
    }
    
@@ -138,7 +140,9 @@ public class DomUtil {
          writeXmlFile(document, out, charset);
          out.flush();
       } finally {
-         out.close();
+          try {
+            out.close();
+          } catch (IOException ignord) {}
       }
    }
    
