@@ -29,9 +29,9 @@ public interface AcceptProvider {
      * @param widget the widget could be dropped
      * @param point the drop location in local coordination system of the widget
      * @param transferable the transferable
-     * @return true, if it can be dropped; false, if it cannot
+     * @return the state
      */
-    boolean isAcceptable (Widget widget, Point point, Transferable transferable);
+    ConnectorState isAcceptable (Widget widget, Point point, Transferable transferable);
 
     /**
      * Handles the drop of a transferable.

@@ -127,8 +127,7 @@ public class ObjectScene extends Scene {
      * Sets a set of selected objects.
      * @param selectedObjects the set of selected objects
      */
-    // TODO - could be final?
-    public void setSelectedObjects (Set<?> selectedObjects) {
+    public final void setSelectedObjects (Set<?> selectedObjects) {
         ObjectSceneListener[] listeners = getListeners (ObjectSceneEventType.OBJECT_STATE_CHANGED);
         ObjectSceneListener[] selectionListeners = getListeners (ObjectSceneEventType.OBJECT_SELECTION_CHANGED);
         Set<Object> previouslySelectedObject = selectionListeners.length != 0 ? Collections.unmodifiableSet (new HashSet<Object> (this.selectedObjects)) : EMPTY_SET;
@@ -178,8 +177,7 @@ public class ObjectScene extends Scene {
      * Sets a set of highlighted objects.
      * @param highlightedObjects the set of highlighted objects
      */
-    // TODO - could be final?
-    public void setHighlightedObjects (Set<?> highlightedObjects) {
+    public final void setHighlightedObjects (Set<?> highlightedObjects) {
         ObjectSceneListener[] listeners = getListeners (ObjectSceneEventType.OBJECT_STATE_CHANGED);
         ObjectSceneListener[] highlightingListeners = getListeners (ObjectSceneEventType.OBJECT_HIGHLIGHTING_CHANGED);
         Set<Object> previouslyHighlightedObject = highlightingListeners.length != 0 ? Collections.unmodifiableSet (new HashSet<Object> (this.highlightedObjects)) : EMPTY_SET;
@@ -229,8 +227,7 @@ public class ObjectScene extends Scene {
      * Sets a hovered object.
      * @param hoveredObject the hovered object; if null, then the scene does not have hovered object
      */
-    // TODO - could be final?
-    public void setHoveredObject (Object hoveredObject) {
+    public final void setHoveredObject (Object hoveredObject) {
         if (hoveredObject != null) {
             if (hoveredObject.equals (this.hoveredObject))
                 return;
