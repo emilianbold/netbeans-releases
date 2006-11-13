@@ -138,10 +138,7 @@ public abstract class AbstractFileSystem extends FileSystem {
      * Actually implements contract of FileSystem.refresh().
      */
     public void refresh(boolean expected) {
-        Enumeration<AbstractFolder> en = getAbstractRoot().existingSubFiles(true);
-
-        while (en.hasMoreElements()) {
-            FileObject fo = en.nextElement();
+        for (FileObject fo : NbCollections.iterable(getAbstractRoot().existingSubFiles(true))) {
             fo.refresh(expected);
         }
     }

@@ -33,10 +33,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -62,6 +60,7 @@ import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInstall;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
+import org.openide.util.NbCollections;
 import org.openide.util.SharedClassObject;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.InstanceContent;
@@ -493,7 +492,6 @@ final class NbInstaller extends ModuleInstaller {
                     ext = s.substring(idx);
                 }
                 ClassLoader cl = m.getClassLoader();
-                Iterator<String> locit = NbBundle.getLocalizingSuffixes();
                 ModuleLayeredFileSystem host;
                 // #19458: only put reloadables into the "session layer"
                 // (where they will not have their layers cached). All others
@@ -510,8 +508,7 @@ final class NbInstaller extends ModuleInstaller {
                     urls.put(host, theseurls);
                 }
                 boolean foundSomething = false;
-                while (locit.hasNext()) {
-                    String suffix = locit.next();
+                for (String suffix : NbCollections.iterable(NbBundle.getLocalizingSuffixes())) {
                     String resource = base + suffix + ext;
                     URL u = cl.getResource(resource);
                     if (u != null) {
@@ -1354,9 +1351,7 @@ final class NbInstaller extends ModuleInstaller {
             try {
                 JarFile j = new JarFile(jar, true);
                 try {
-                    Enumeration e = j.entries();
-                    while (e.hasMoreElements()) {
-                        JarEntry entry = (JarEntry)e.nextElement();
+                    for (JarEntry entry : NbCollections.iterable(j.entries())) {
                         String name = entry.getName();
                         if (name.endsWith(".class")) { // NOI18N
                             String clazz = name.substring(0, name.length() - 6).replace('/', '.'); // NOI18N

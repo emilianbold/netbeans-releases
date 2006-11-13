@@ -36,6 +36,7 @@ import java.util.Set;
  * @since 4.37
  * @author Jaroslav Tulach
  * @see NbCollections#checkedEnumerationByFilter
+ * @see NbCollections#iterable(Enumeration)
  */
 public final class Enumerations extends Object {
     /** No instances */

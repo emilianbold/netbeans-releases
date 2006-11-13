@@ -28,22 +28,22 @@ Microsystems, Inc. All Rights Reserved.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.1</specification-version>
+                        <specification-version>7.5</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-          <test-dependencies>
-              <test-type>
-                  <name>unit</name>
-                  <test-dependency>
-                      <code-name-base>org.openide.filesystems</code-name-base>
-                      <recursive/>
-                      <compile-dependency/>
-                  </test-dependency>
-              </test-type>
-              <test-type>
-                  <name>qa-functional</name>
-              </test-type>
+            <test-dependencies>
+                <test-type>
+                    <name>unit</name>
+                    <test-dependency>
+                        <code-name-base>org.openide.filesystems</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                </test-type>
+                <test-type>
+                    <name>qa-functional</name>
+                </test-type>
             </test-dependencies>
             <public-packages>
                 <package>org.openide.filesystems</package>

@@ -24,6 +24,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -35,6 +36,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Scanner;
 import java.util.Set;
 import org.netbeans.junit.NbTestCase;
 
@@ -418,6 +420,35 @@ public class NbCollectionsTest extends NbTestCase {
         oos.close();
         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
         return new ObjectInputStream(bais).readObject();
+    }
+
+    public void testIterable() throws Exception {
+        String text = "hello kitty!";
+        List<String> l1 = new ArrayList<String>();
+        for (String token : NbCollections.iterable(new Scanner(text))) {
+            l1.add(token);
+        }
+        assertEquals(Arrays.asList("hello", "kitty!"), l1);
+        for (String token : NbCollections.iterable(new Scanner(""))) {
+            fail();
+        }
+        try {
+            NbCollections.iterable((Iterator<?>) null);
+            fail();
+        } catch (NullPointerException x) {/* OK */}
+        List<URL> l2 = new ArrayList<URL>();
+        for (URL u : NbCollections.iterable(NbCollections.class.getClassLoader().getResources(NbCollections.class.getName().replace('.', '/') + ".class"))) {
+            assertNotNull(u);
+            l2.add(u);
+        }
+        assertFalse(l2.isEmpty()); // permissible to have >1 element in case JAR doubly added to CP
+        for (URL u : NbCollections.iterable(NbCollections.class.getClassLoader().getResources("nonexistent"))) {
+            fail();
+        }
+        try {
+            NbCollections.iterable((Enumeration<?>) null);
+            fail();
+        } catch (NullPointerException x) {/* OK */}
     }
 
 }

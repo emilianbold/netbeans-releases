@@ -265,10 +265,8 @@ public class NbBundle extends Object {
     * @return the localized object or <code>null</code> if no key matches
     */
     public static <T> T getLocalizedValue(Map<String,T> table, String key, Locale locale) {
-        Iterator<String> it = new LocaleIterator(locale);
-
-        while (it.hasNext()) {
-            String physicalKey = key + it.next();
+        for (String suffix : NbCollections.iterable(new LocaleIterator(locale))) {
+            String physicalKey = key + suffix;
             T v = table.get(physicalKey);
 
             if (v != null) {
