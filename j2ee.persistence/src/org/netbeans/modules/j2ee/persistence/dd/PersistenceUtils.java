@@ -36,7 +36,6 @@ import java.util.WeakHashMap;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.modules.j2ee.metadata.MetadataUnit;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScopes;
@@ -56,24 +55,24 @@ import org.openide.util.WeakListeners;
  * @author Marek Fukala, Andrei Badea
  */
 public class PersistenceUtils {
-
+    
     // TODO multiple mapping files
-
+    
     /**
      * Maps persistence.xml files to instances of EntityMappingCache, which
      * cache MetadataUnits for persistence units.
      */
     private static final Map<FileObject, EntityMappingsCache> persistence2EMCache = new WeakHashMap<FileObject, EntityMappingsCache>();
-
+    
     /**
      * Maps projects to MetadataUnit containing the classpath with entity
      * classes for those projects.
      */
     private static final WeakHashMap<Project, MetadataUnit> project2MUCache = new WeakHashMap<Project, MetadataUnit>();
-
+    
     private PersistenceUtils() {
     }
-
+    
     /**
      * Returns an EntityMappings instance containing the entity classes in
      * the given persistence unit of the given persistence scope.
@@ -93,14 +92,14 @@ public class PersistenceUtils {
         if (persistenceUnitName == null) {
             throw new NullPointerException("The persistenceUnitName parameter cannot be null"); // NOI18N
         }
-
+        
         EntityMappingsCache emCache = getEntityMappingsCache(persistenceScope);
         if (emCache != null) {
             return emCache.getEntityMappings(persistenceUnitName);
         }
         return null;
     }
-
+    
     /**
      * Returns the EntityMappings instances containing the entity classes in
      * all persistence units of all persistence scopes in the given project.
@@ -114,7 +113,7 @@ public class PersistenceUtils {
         if (project == null) {
             throw new NullPointerException("The project parameter cannot be null"); // NOI18N
         }
-
+        
         List<EntityMappings> result = new ArrayList<EntityMappings>();
         for (PersistenceScope persistenceScope : getPersistenceScopes(project)) {
             EntityMappingsCache emCache = getEntityMappingsCache(persistenceScope);
@@ -122,10 +121,10 @@ public class PersistenceUtils {
                 result.addAll(emCache.getEntityMappings());
             }
         }
-
+        
         return Collections.unmodifiableList(result);
     }
-
+    
     /**
      * Returns an EntityMappingsCache for the given persistence.xml file.
      * Not private because used in tests.
@@ -139,7 +138,7 @@ public class PersistenceUtils {
         if (persistenceXml == null) {
             return null;
         }
-
+        
         EntityMappingsCache emCache = null;
         synchronized (persistence2EMCache) {
             emCache = persistence2EMCache.get(persistenceXml);
@@ -150,7 +149,7 @@ public class PersistenceUtils {
         }
         return emCache;
     }
-
+    
     /**
      * Removes the given persistence.xml file from the cache of
      * EntityMappingCache instances.
@@ -160,7 +159,7 @@ public class PersistenceUtils {
             persistence2EMCache.remove(persistenceXml);
         }
     }
-
+    
     /**
      * Returns the set of entity classes in the given persistence scope as
      * defined by the persistence.xml file of that persistence scope.
@@ -174,12 +173,12 @@ public class PersistenceUtils {
         if (persistenceScope == null) {
             throw new NullPointerException("The persistenceScope parameter cannot be null"); // NOI18N
         }
-
+        
         FileObject persistenceXml = persistenceScope.getPersistenceXml();
         if (persistenceXml == null) {
             return Collections.emptySet();
         }
-
+        
         Set<Entity> result = new HashSet<Entity>();
         Persistence persistence = PersistenceMetadata.getDefault().getRoot(persistenceXml);
         for (PersistenceUnit persistenceUnit : persistence.getPersistenceUnit()) {
@@ -187,15 +186,15 @@ public class PersistenceUtils {
             if (entityMappings == null) {
                 continue;
             }
-
+            
             for (Entity entity : entityMappings.getEntity()) {
                 result.add(entity);
             }
         }
-
+        
         return Collections.unmodifiableSet(result);
     }
-
+    
     /**
      * Returns the set of entity classes in the given project as defined by
      * the persistence units in the project's persistence.xml file(s). If
@@ -211,7 +210,7 @@ public class PersistenceUtils {
         if (project == null) {
             throw new NullPointerException("The project parameter cannot be null"); // NOI18N
         }
-
+        
         Set<Entity> result = new HashSet<Entity>();
         Set<String> entityNames = new HashSet<String>();
         for (PersistenceScope persistenceScope : getPersistenceScopes(project)) {
@@ -224,10 +223,10 @@ public class PersistenceUtils {
                 }
             }
         }
-
+        
         return Collections.unmodifiableSet(result);
     }
-
+    
     /**
      * Returns the set of entity classes in the given list of EntityMappings.
      * If there are duplicate entity classes (according to their name), only
@@ -240,7 +239,7 @@ public class PersistenceUtils {
         if (entityMappingsList == null) {
             throw new NullPointerException("The entityMappingsList parameter cannot be null"); // NOI18N
         }
-
+        
         Set<Entity> result = new HashSet<Entity>();
         Set<String> entityNames = new HashSet<String>();
         for (EntityMappings em : entityMappingsList) {
@@ -253,10 +252,10 @@ public class PersistenceUtils {
                 }
             }
         }
-
+        
         return Collections.unmodifiableSet(result);
     }
-
+    
     /**
      * Returns an EntityMappings instance containing the entity classes in the given project
      * defined by annotations. The return value
@@ -271,7 +270,7 @@ public class PersistenceUtils {
         if (project == null) {
             throw new NullPointerException("The project parameter cannot be null"); // NOI18N
         }
-
+        
         try {
             return ORMMetadata.getDefault().getRoot(getPersistenceMetadataUnit(project));
         } catch (IOException e) {
@@ -280,7 +279,7 @@ public class PersistenceUtils {
             return new EntityMappings();
         }
     }
-
+    
     /**
      * Returns the set of entity classes in the given project
      * defined by annotations. The return value
@@ -298,7 +297,7 @@ public class PersistenceUtils {
         }
         return result;
     }
-
+    
     /**
      * Returns a MetadataUnit that represents entity classes in a project as
      * specified by the {@org.netbeans.modules.j2ee.persistence.spi.PersistenceClassPathProvider}
@@ -323,7 +322,7 @@ public class PersistenceUtils {
         }
         return mu;
     }
-
+    
     /**
      * Returns the persistence unit(s) the given entity class belongs to. Since
      * an entity class can belong to any persistence unit, this returns all
@@ -337,12 +336,12 @@ public class PersistenceUtils {
         if (sourceFile == null) {
             throw new NullPointerException("The sourceFile parameter cannot be null"); // NOI18N
         }
-
+        
         Project project = FileOwnerQuery.getOwner(sourceFile);
         if (project == null) {
             return new PersistenceUnit[0];
         }
-
+        
         List<PersistenceUnit> result = new ArrayList<PersistenceUnit>();
         for (PersistenceScope persistenceScope : getPersistenceScopes(project)) {
             Persistence persistence = PersistenceMetadata.getDefault().getRoot(persistenceScope.getPersistenceXml());
@@ -350,10 +349,10 @@ public class PersistenceUtils {
                 result.add(persistenceUnit);
             }
         }
-
+        
         return (PersistenceUnit[])result.toArray(new PersistenceUnit[result.size()]);
     }
-
+    
     /**
      * Returns the entity mappings corresponding to sibling entity classes
      * of the passed entity class.
@@ -372,15 +371,15 @@ public class PersistenceUtils {
         if (sourceFile == null) {
             throw new NullPointerException("The sourceFile parameter cannot be null"); // NOI18N
         }
-
+        
         Project project = FileOwnerQuery.getOwner(sourceFile);
         if (project == null) {
             return null;
         }
-
+        
         return getAnnotationEntityMappings(project);
     }
-
+    
     /**
      * Sorts a set of entity classes using the entity names as the key.
      *
@@ -397,27 +396,8 @@ public class PersistenceUtils {
         Collections.sort(entityList, new EntityComparator());
         return entityList;
     }
-
-    /**
-     * Searches the given entity mappings for the specified entity class.
-     *
-     * @param  javaClass the Java class to search for.
-     * @param  entityMappings the entity mappings to be searched.
-     * @return the entity class or null if it could not be found.
-     * @throws NullPointerException if <code>javaClass</code> or
-     *         <code>entityMappings</code> were null.
-     */
-    public static Entity getEntity(JavaClass javaClass, EntityMappings entityMappings) {
-        if (javaClass == null) {
-            throw new NullPointerException("The javaClass parameter cannot be null"); // NOI18N
-        }
-        if (entityMappings == null) {
-            throw new NullPointerException("The entityMappings parameter cannot be null"); // NOI18N
-        }
-
-        return getEntity(javaClass.getName(), entityMappings);
-    }
-
+    
+    
     /**
      * Searches the given entity mappings for the specified entity class.
      *
@@ -434,7 +414,7 @@ public class PersistenceUtils {
         if (entityMappings == null) {
             throw new NullPointerException("The entityMappings parameter cannot be null"); // NOI18N
         }
-
+        
         for (Entity entity : entityMappings.getEntity()) {
             if (className.equals(entity.getClass2())) {
                 return entity;
@@ -442,7 +422,7 @@ public class PersistenceUtils {
         }
         return null;
     }
-
+    
     /**
      * Returns an array containing all persistence scopes provided by the
      * given project. This is just an utility method which does:
@@ -464,24 +444,24 @@ public class PersistenceUtils {
         if (project == null) {
             throw new NullPointerException("The project parameter cannot be null"); // NOI18N
         }
-
+        
         PersistenceScopes persistenceScopes = PersistenceScopes.getPersistenceScopes(project);
         if (persistenceScopes != null) {
             return persistenceScopes.getPersistenceScopes();
         }
         return new PersistenceScope[0];
     }
-
+    
     /**
      * Maintains a cache of metadata units for persistence units in a persistence scope.
      * Not private because used in tests.
      */
     static final class EntityMappingsCache implements PropertyChangeListener {
-
+        
         private final WeakReference<PersistenceScope> persistenceScopeRef;
-
+        
         private final Map<String, WeakMetadataUnit> metadataUnitCache = new HashMap<String, WeakMetadataUnit>();
-
+        
         /**
          * Creates a new EntityMappingsCache. A factory method is needed in order
          * to avoid starting listening in the constructor, making the newly
@@ -493,18 +473,18 @@ public class PersistenceUtils {
             result.startListening();
             return result;
         }
-
+        
         private EntityMappingsCache(PersistenceScope persistenceScope) {
             persistenceScopeRef = new WeakReference<PersistenceScope>(persistenceScope);
         }
-
+        
         private void startListening() {
             PUDataObject pudo = getPUDataObject();
             if (pudo != null) {
                 pudo.addPropertyChangeListener(WeakListeners.propertyChange(this, pudo));
             }
         }
-
+        
         public EntityMappings getEntityMappings(String persistenceUnitName) throws IOException {
             MetadataUnit mu = getMetadataUnit(persistenceUnitName);
             if (mu != null) {
@@ -513,7 +493,7 @@ public class PersistenceUtils {
                 return null;
             }
         }
-
+        
         /**
          * Returns the list of EntityMappings (one for each persistence unit).
          */
@@ -522,9 +502,9 @@ public class PersistenceUtils {
             if (pudo == null) {
                 return Collections.emptyList();
             }
-
+            
             List<EntityMappings> entityMappingsList = new ArrayList<EntityMappings>();
-
+            
             Persistence persistence = pudo.getPersistence();
             synchronized (this) {
                 for (PersistenceUnit persistenceUnit : persistence.getPersistenceUnit()) {
@@ -534,10 +514,10 @@ public class PersistenceUtils {
                     }
                 }
             }
-
+            
             return Collections.unmodifiableList(entityMappingsList);
         }
-
+        
         /**
          * Finds a metadata unit for a persistence unit, creating a new one if
          * not found in cache. Not private because of tests.
@@ -547,7 +527,7 @@ public class PersistenceUtils {
             if (persistenceScope == null) {
                 return null;
             }
-
+            
             WeakMetadataUnit metadataUnit = null;
             synchronized (this) {
                 metadataUnit = metadataUnitCache.get(persistenceUnitName);
@@ -561,13 +541,13 @@ public class PersistenceUtils {
                     }
                 }
             }
-
+            
             return metadataUnit;
         }
-
+        
         private WeakMetadataUnit createMetadataUnit(PUDataObject pudo, ClassPath classPath, String persistenceUnitName) {
             assert Thread.holdsLock(this);
-
+            
             Persistence persistence = pudo.getPersistence();
             for (PersistenceUnit unit : persistence.getPersistenceUnit()) {
                 if (persistenceUnitName.equals(unit.getName())) {
@@ -576,7 +556,7 @@ public class PersistenceUtils {
             }
             return null;
         }
-
+        
         /**
          * Called when the persistence.xml file changed. Removes the metadata
          * units corresponding to removed persistence units and refreshes the
@@ -588,21 +568,21 @@ public class PersistenceUtils {
             if (pudo == null) {
                 return;
             }
-
+            
             Persistence persistence = pudo.getPersistence();
             synchronized (this) {
                 Set<String> persistenceUnitNames = new HashSet<String>();
                 for (PersistenceUnit persistenceUnit : persistence.getPersistenceUnit()) {
                     persistenceUnitNames.add(persistenceUnit.getName());
                 }
-
+                
                 // remove persistence units no longer in persistence.xml
                 for (Iterator<Map.Entry<String, WeakMetadataUnit>> i = metadataUnitCache.entrySet().iterator(); i.hasNext();) {
                     if (!persistenceUnitNames.contains(i.next().getKey())) {
                         i.remove();
                     }
                 }
-
+                
                 // refresh the remaining persistence units
                 for (PersistenceUnit persistenceUnit : persistence.getPersistenceUnit()) {
                     // if (!metadataUnitCache.containsKey(persistenceUnit.get))
@@ -611,20 +591,20 @@ public class PersistenceUtils {
                         // we don't cache a MU for this PU yet
                         continue;
                     }
-
+                    
                     refreshMetadataUnit(metadataUnit, pudo);
                 }
             }
         }
-
+        
         private static void refreshMetadataUnit(WeakMetadataUnit metadataUnit, PUDataObject pudo) {
             metadataUnit.setDeploymentDescriptor(getMappingFile(pudo));
         }
-
+        
         private static FileObject getMappingFile(PUDataObject pudo) {
             // XXX for now there can only be one deployment descriptor in MetadataUnit
             // using META-INF/orm.xml for that and ignoring mapping-file elements in the persistence unit
-
+            
             FileObject persistenceXml = pudo.getPrimaryFile();
             FileObject ormXml = null;
             if (persistenceXml != null) {
@@ -635,25 +615,25 @@ public class PersistenceUtils {
             }
             return ormXml;
         }
-
+        
         PUDataObject getPUDataObject() {
             PersistenceScope persistenceScope = persistenceScopeRef.get();
             FileObject persistenceXml = null;
             if (persistenceScope != null) {
                 persistenceXml = persistenceScope.getPersistenceXml();
             }
-
+            
             if (persistenceXml == null) {
                 return null;
             }
-
+            
             try {
                 return (PUDataObject)DataObject.find(persistenceXml);
             } catch (DataObjectNotFoundException e) {
                 return null;
             }
         }
-
+        
         public void propertyChange(PropertyChangeEvent evt) {
             if (DataObject.PROP_VALID.equals(evt.getPropertyName())) {
                 removeFromCache(((DataObject)evt.getSource()).getPrimaryFile());
@@ -662,12 +642,12 @@ public class PersistenceUtils {
             }
         }
     }
-
+    
     /**
      * Compares entity classes lexicographically by fully qualified names.
      */
     private static final class EntityComparator implements Comparator<Entity> {
-
+        
         public int compare(Entity o1, Entity o2) {
             String name1 = o1.getClass2();
             String name2 = o2.getClass2();
