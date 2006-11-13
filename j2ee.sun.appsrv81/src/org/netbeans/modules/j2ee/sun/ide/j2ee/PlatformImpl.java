@@ -47,6 +47,7 @@ public class PlatformImpl extends J2eePlatformImpl {
     private static final Set/*<String>*/ SPEC_VERSIONS = new HashSet();
     private static final Set/*<String>*/ SPEC_VERSIONS_WITH_5 = new HashSet();
     // Appserver version strings.
+    private static final String APPSERVER_VERSION_9_1 = "9.1"; // NOI18N
     private static final String APPSERVER_VERSION_9 = "9.0"; // NOI18N
     private static final String APPSERVER_VERSION_8_1 = "8.1"; // NOI18N
     private static final String APPSERVER_VERSION_8_2 = "8.2"; // NOI18N
@@ -56,7 +57,6 @@ public class PlatformImpl extends J2eePlatformImpl {
     private static final String JAVA_EE_JAR = "lib/javaee.jar"; //NOI18N
     private static final String JSF_API_JAR = "lib/jsf-api.jar"; //NOI18N
     private static final String JSF_IMPL_JAR = "lib/jsf-impl.jar"; //NOI18N
-////    private static final String COMMON_LOGGING_JAR = "lib/commons-logging.jar"; //NOI18N
     private static final String JAX_QNAME_JAR = "lib/jax-qname.jar"; //NOI18N
     private static final String JAXRPC_API_JAR = "lib/jaxrpc-api.jar"; //NOI18N
     private static final String JAXRPC_IMPL_JAR = "lib/jaxrpc-impl.jar"; //NOI18N
@@ -83,10 +83,6 @@ public class PlatformImpl extends J2eePlatformImpl {
     private static final String WEBSERVICES_JAR = "lib/webservices.jar"; //NOI18N
     private static final String WEBSERVICES_RT_JAR = "lib/webservices-rt.jar"; //NOI18N
     private static final String WEBSERVICES_TOOLS_JAR = "lib/webservices-tools.jar"; //NOI18N
-                
-    private static final String[] KEYSTORE_LOCATION = new String[] {
-        "config/keystore.jks"  //NOI18N
-    };
     
     private static final String[] TRUSTSTORE_LOCATION = new String[] {
         "config/cacerts.jks"  //NOI18N
@@ -103,6 +99,9 @@ public class PlatformImpl extends J2eePlatformImpl {
     private static final String PERSISTENCE_PROV_TOPLINK = "oracle.toplink.essentials.ejb.cmp3.EntityManagerFactoryProvider"; //NOI18N
     private static final String PERSISTENCE_PROV_TOPLINK_DEFAULT = "toplinkPersistenceProviderIsDefault"; //NOI18N
             
+    private static String CONST_LOCATION = "LOCATION"; // NOI18N
+    private static String CONST_DOMAIN = "DOMAIN"; // NOI18N
+    
     static {
         MODULE_TYPES.add(J2eeModule.WAR);
         MODULE_TYPES.add(J2eeModule.EAR);
@@ -254,7 +253,7 @@ public class PlatformImpl extends J2eePlatformImpl {
                 lib.setName(NbBundle.getMessage(PlatformImpl.class, "jaxrpc11")); // NOI18N
                 
                 l = new ArrayList();
-                l.add(fileToUrl(new File(root, "lib/appserv-ws.jar")));
+                l.add(fileToUrl(new File(root, APPSERV_WS_JAR)));
                 l.add(fileToUrl(new File(root, JAXRPC_API_JAR)));
                 l.add(fileToUrl(new File(root, JAXRPC_IMPL_JAR)));
                 //          l.add(fileToUrl(new File(root, COMMON_LOGGING_JAR)));
@@ -300,7 +299,7 @@ public class PlatformImpl extends J2eePlatformImpl {
         if (libraries == null) {
             initLibraries();
         }
-        return libraries;
+        return libraries.clone();
     }
     
     public void notifyLibrariesChanged() {
@@ -352,7 +351,7 @@ public class PlatformImpl extends J2eePlatformImpl {
                     new File(root, "lib/jaxrpc-api.jar"),       //NOI18N
                     new File(root, "lib/jaxrpc-impl.jar"),      //NOI18N
                     new File(root, "lib/endorsed/jaxp-api.jar"),//NOI18N
-                    new File(root, "lib/appserv-ws.jar")        //NOI18N  possibly for AS 9
+                    new File(root, APPSERV_WS_JAR)        //NOI18N  possibly for AS 9
                 };
             }
         }
@@ -363,7 +362,7 @@ public class PlatformImpl extends J2eePlatformImpl {
                     new File(root, "lib/appserv-cmp.jar"),      //NOI18N
                     new File(root, "lib/appserv-ext.jar"),      //NOI18N
                     new File(root, "lib/appserv-rt.jar"),       //NOI18N
-                    new File(root, "lib/appserv-ws.jar"),       //NOI18N
+                    new File(root, APPSERV_WS_JAR),       //NOI18N
                     new File(root, "lib/dbschema.jar"),         //NOI18N
                     new File(root, "lib/fscontext.jar"),        //NOI18N
                     new File(root, "lib/j2ee.jar"),             //NOI18N
@@ -377,8 +376,8 @@ public class PlatformImpl extends J2eePlatformImpl {
         }
         if (J2eePlatform.TOOL_KEYSTORE.equals(toolName)) {
             if (isValidPlatformRoot(root).equals("")) {        //NOI18N
-                File keyStoreLoc = new File(new File(dmProps.getInstanceProperties().getProperty("LOCATION")),      //NOI18N
-                        dmProps.getInstanceProperties().getProperty("DOMAIN") + File.separator + KEYSTORE_CLIENT_LOCATION[0]);  //NOI18N
+                File keyStoreLoc = new File(new File(dmProps.getInstanceProperties().getProperty(CONST_LOCATION)),      //NOI18N
+                        dmProps.getInstanceProperties().getProperty(CONST_DOMAIN) + File.separator + KEYSTORE_CLIENT_LOCATION[0]);  //NOI18N
                 return new File[] {
                     keyStoreLoc
                 };
@@ -386,8 +385,8 @@ public class PlatformImpl extends J2eePlatformImpl {
         }
         if (J2eePlatform.TOOL_KEYSTORE_CLIENT.equals(toolName)) {
             if (isValidPlatformRoot(root).equals("")) {        //NOI18N
-                File keyStoreClientLoc = new File(new File(dmProps.getInstanceProperties().getProperty("LOCATION")),            //NOI18N
-                        dmProps.getInstanceProperties().getProperty("DOMAIN") + File.separator + KEYSTORE_CLIENT_LOCATION[0]);  //NOI18N
+                File keyStoreClientLoc = new File(new File(dmProps.getInstanceProperties().getProperty(CONST_LOCATION)),            //NOI18N
+                        dmProps.getInstanceProperties().getProperty(CONST_DOMAIN) + File.separator + KEYSTORE_CLIENT_LOCATION[0]);  //NOI18N
                 return new File[] {
                     keyStoreClientLoc
                 };
@@ -395,8 +394,8 @@ public class PlatformImpl extends J2eePlatformImpl {
         }
         if (J2eePlatform.TOOL_TRUSTSTORE.equals(toolName)) {
             if (isValidPlatformRoot(root).equals("")) {        //NOI18N
-                File trustStoreLoc = new File(new File(dmProps.getInstanceProperties().getProperty("LOCATION")),            //NOI18N
-                        dmProps.getInstanceProperties().getProperty("DOMAIN") + File.separator + TRUSTSTORE_LOCATION[0]);   //NOI18N
+                File trustStoreLoc = new File(new File(dmProps.getInstanceProperties().getProperty(CONST_LOCATION)),            //NOI18N
+                        dmProps.getInstanceProperties().getProperty(CONST_DOMAIN) + File.separator + TRUSTSTORE_LOCATION[0]);   //NOI18N
                 return new File[] {
                     trustStoreLoc
                 };
@@ -404,8 +403,8 @@ public class PlatformImpl extends J2eePlatformImpl {
         }
         if (J2eePlatform.TOOL_TRUSTSTORE_CLIENT.equals(toolName)) {
             if (isValidPlatformRoot(root).equals("")) {        //NOI18N
-                File trustStoreClientLoc = new File(new File(dmProps.getInstanceProperties().getProperty("LOCATION")),              //NOI18N
-                        dmProps.getInstanceProperties().getProperty("DOMAIN") + File.separator + TRUSTSTORE_CLIENT_LOCATION[0]);    //NOI18N
+                File trustStoreClientLoc = new File(new File(dmProps.getInstanceProperties().getProperty(CONST_LOCATION)),              //NOI18N
+                        dmProps.getInstanceProperties().getProperty(CONST_DOMAIN) + File.separator + TRUSTSTORE_CLIENT_LOCATION[0]);    //NOI18N
                 return new File[] {
                     trustStoreClientLoc
                 };

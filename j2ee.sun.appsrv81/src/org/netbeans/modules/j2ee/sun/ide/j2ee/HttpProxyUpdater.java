@@ -38,16 +38,17 @@ import org.netbeans.modules.j2ee.sun.ide.j2ee.mbmapping.JvmOptions;
  * Requires app server to be running before this class can be used.
  */
 public class HttpProxyUpdater {
+    public static final String HTTP_PROXY_HOST = "-Dhttp.proxyHost=";
+    public static final String HTTP_PROXY_PORT = "-Dhttp.proxyPort=";
+    public static final String HTTPS_PROXY_HOST = "-Dhttps.proxyHost=";
+    public static final String HTTPS_PROXY_PORT = "-Dhttps.proxyPort=";
+    public static final String HTTP_PROXY_NO_HOST = "-Dhttp.nonProxyHosts=";
+
     private String httpProxyPort;
     private String httpProxyHost;
     private String httpsProxyPort;
     private String httpsProxyHost;
     private String httpProxyNoHost;
-    private static String HTTP_PROXY_HOST = "-Dhttp.proxyHost=";
-    private static String HTTP_PROXY_PORT = "-Dhttp.proxyPort=";
-    private static String HTTPS_PROXY_HOST = "-Dhttps.proxyHost=";
-    private static String HTTPS_PROXY_PORT = "-Dhttps.proxyPort=";
-    private static String HTTP_PROXY_NO_HOST = "-Dhttp.nonProxyHosts=";
     private static String JVM_OPTIONS = "jvm-options";
     private ObjectName jvmOptionsObjectName;
 

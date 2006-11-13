@@ -25,6 +25,7 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/modules/j2ee/sun/test/AddRemoveSjsasInstanceTest.class"/>
+                <include name="org/netbeans/modules/j2ee/sun/test/DomainEditorTest.class"/>
                 <include name="org/netbeans/modules/j2ee/sun/test/StartStopServerTest.class"/>
                 <include name="org/netbeans/modules/j2ee/sun/test/WebModuleTest.class"/>
                 <include name="org/netbeans/modules/j2ee/sun/test/EjbModuleTest.class"/>

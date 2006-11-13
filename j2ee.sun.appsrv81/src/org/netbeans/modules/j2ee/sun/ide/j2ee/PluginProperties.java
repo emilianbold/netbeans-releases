@@ -21,33 +21,29 @@ package org.netbeans.modules.j2ee.sun.ide.j2ee;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Method;
-import org.netbeans.modules.j2ee.sun.api.Asenv;
-import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
-import org.netbeans.modules.j2ee.sun.api.SunURIManager;
-import org.netbeans.modules.j2ee.sun.ide.Installer;
-import org.netbeans.modules.j2ee.sun.ide.j2ee.ui.Util;
-import org.openide.ErrorManager;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
-
-import org.openide.modules.InstalledFileLocator;
-
 import java.io.FileInputStream;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Properties;
-import org.netbeans.modules.j2ee.sun.share.SecurityMasterListModel;
-import org.netbeans.modules.j2ee.sun.share.CharsetMapping;
 import java.util.logging.Level;
 
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileLock;
-import org.netbeans.modules.j2ee.sun.ide.editors.CharsetDisplayPreferenceEditor;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.modules.j2ee.sun.api.Asenv;
+import org.netbeans.modules.j2ee.sun.ide.Installer;
+import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
+import org.netbeans.modules.j2ee.sun.api.SunURIManager;
+import org.netbeans.modules.j2ee.sun.ide.editors.CharsetDisplayPreferenceEditor;
+import org.netbeans.modules.j2ee.sun.ide.j2ee.ui.Util;
+import org.netbeans.modules.j2ee.sun.share.SecurityMasterListModel;
+import org.netbeans.modules.j2ee.sun.share.CharsetMapping;
+import org.openide.ErrorManager;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -57,9 +53,6 @@ public class PluginProperties  {
     
     java.util.logging.Logger jsr88Logger =
         java.util.logging.Logger.getLogger("com.sun.enterprise.tools.jsr88.spi");
-    
-    /** Holds value of property userList. */
-    private  String[] userList = new String[0];
     
     private  String logLevel = null;
     private  boolean incrementalDeployPossible = true; //now on by default
@@ -80,26 +73,23 @@ public class PluginProperties  {
     private static final String CHARSET_DISP_PREF_KEY = "charsetDisplayPreference"; // NOI18N
     public static final String INSTALL_ROOT_PROP_NAME = "com.sun.aas.installRoot"; //NOI18N
     
-    public static String COBUNDLE_DEFAULT_INSTALL_PATH ="AS9.0";  //NOI18N
-    public static String COBUNDLE_DEFAULT_INSTALL_PATH2 ="AS8.2";  //NOI18N
+    public static final String COBUNDLE_DEFAULT_INSTALL_PATH ="AS9.0";  //NOI18N
+    public static final String COBUNDLE_DEFAULT_INSTALL_PATH2 ="AS8.2";  //NOI18N
     
 
     
     static private PluginProperties thePluginProperties=null;
-    private String ideHomeLocation;
-    
-    private File rootInstallCandidate =null;
+
     public static PluginProperties getDefault(){
-        if (thePluginProperties==null)
+        if (thePluginProperties==null) {
             thePluginProperties= new PluginProperties();
+        }
         return thePluginProperties;
     }
     
     
     
     private  PluginProperties(){
-	ideHomeLocation = new File(Installer.ideHomeLocation).getParentFile().getAbsolutePath();
-
         java.io.InputStream inStream = null;
         try {
             try {
@@ -122,6 +112,7 @@ public class PluginProperties  {
                 loadPluginProperties(inProps);
             }
         } catch (java.io.IOException ioe) {
+            ErrorManager.getDefault().notify(ErrorManager.WARNING,ioe);
         }
         
     }
@@ -152,7 +143,6 @@ public class PluginProperties  {
         incrementalDeployPossible = b.equals("true");
         String version = inProps.getProperty(PLUGIN_PROPERTIES_VERSION);//old style 5.0: we need to import and refresh
         boolean needToRegisterDefaultServer = false;
-        rootInstallCandidate = new File(getDefaultInstallRoot());
 
         if ((version==null)||(version!=PLUGIN_CURRENT_VERSION)){ //we are currently on a 5.5
             needToRegisterDefaultServer = true;
@@ -202,7 +192,7 @@ public class PluginProperties  {
         
     }
     public Boolean getIncrementalDeploy(){
-        return new Boolean(incrementalDeployPossible);
+        return Boolean.valueOf(incrementalDeployPossible);
         
     }
     
@@ -255,8 +245,9 @@ public class PluginProperties  {
     }
     
     public void setUserList(String [] list) {
-        if (setUserListStatic(list))
+        if (setUserListStatic(list)) {
             saveProperties();
+        }
     }
     
     public  boolean setGroupListStatic(String [] list) {
@@ -271,8 +262,9 @@ public class PluginProperties  {
     }
     
     public void setGroupList(String [] list) {
-        if (setGroupListStatic(list))
+        if (setGroupListStatic(list)) {
             saveProperties();
+        }
     }
     
     
@@ -282,8 +274,9 @@ public class PluginProperties  {
             return false;
         else
             for (int i = 0; i < len; i++) {
-            if (!pModel.contains(list[i]))
-                return false;
+                if (!pModel.contains(list[i])) {
+                    return false;
+                }
             }
         return true;
     }
@@ -296,8 +289,9 @@ public class PluginProperties  {
             pModel.removeElementAt(i);
         }
         for (int i = 0; i < len; i++) {
-            if (!pModel.contains(values[i]))
+            if (!pModel.contains(values[i])) {
                 pModel.addElement(values[i]);
+            }
         }
     }
     
@@ -352,7 +346,6 @@ public class PluginProperties  {
         Integer oldDisplayPreference = getCharsetDisplayPreferenceStatic();
         if(!displayPreference.equals(oldDisplayPreference)) {
             setCharsetDisplayPreferenceStatic(displayPreference);
-            Integer newDisplayPreference = getCharsetDisplayPreferenceStatic();
             saveProperties();
         }
     }
@@ -415,26 +408,25 @@ public class PluginProperties  {
     public  static String getDefaultInstallRoot() {
         String candidate = System.getProperty(INSTALL_ROOT_PROP_NAME); //NOI18N
         if (null != candidate){
-
+            
             File f = new File(candidate);
             if (f.exists()){
                 return candidate;
             }
             
         }
-        InstalledFileLocator fff= InstalledFileLocator.getDefault();
         
-	File ff = new File(Installer.ideHomeLocation);
-
-	File f3 = new File(ff.getParentFile(),COBUNDLE_DEFAULT_INSTALL_PATH);
+        File ff = new File(Installer.ideHomeLocation);
+        
+        File f3 = new File(ff.getParentFile(),COBUNDLE_DEFAULT_INSTALL_PATH);
         if ((f3!=null)&&(f3.exists())){
             return f3.getAbsolutePath();
-        } 
+        }
         f3 = new File(ff.getParentFile(),COBUNDLE_DEFAULT_INSTALL_PATH2);
         if ((f3!=null)&&(f3.exists())){
             return f3.getAbsolutePath();
-        } 
-                        
+        }
+        
         
         return "";
     }
@@ -442,13 +434,16 @@ public class PluginProperties  {
     
     
     static boolean  hasRequiredChildren(File candidate, Collection requiredChildren) {
-        if (null == candidate)
+        if (null == candidate) {
             return false;
+        }
         String[] children = candidate.list();
-        if (null == children)
+        if (null == children) {
             return false;
-        if (null == requiredChildren)
+        }
+        if (null == requiredChildren) {
             return true;
+        }
         java.util.List kidsList = java.util.Arrays.asList(children);
         return kidsList.containsAll(requiredChildren);
     }
@@ -487,25 +482,37 @@ public class PluginProperties  {
         
         //try to read real password default:
         File f = new File(System.getProperty("user.home")+"/.asadminprefs"); //NOI18N
-        try{
-            
-            FileInputStream fis = new FileInputStream(f);
-            Properties p = new Properties();
-            p.load(fis);
-            fis.close();
-            
-            Enumeration e = p.propertyNames() ;
-            for ( ; e.hasMoreElements() ;) {
-                String v = (String)e.nextElement();
-                if (v.equals("AS_ADMIN_USER"))//admin user//NOI18N
-                    username = p.getProperty(v );
-                else if (v.equals("AS_ADMIN_PASSWORD")){ // admin password//NOI18N
-                    password = p.getProperty(v );
+        FileInputStream fis = null;
+        if (f.exists()) {
+            try{
+                
+                Properties p = new Properties();
+                fis = new FileInputStream(f);
+                p.load(fis);
+                
+                Enumeration e = p.propertyNames() ;
+                for ( ; e.hasMoreElements() ;) {
+                    String v = (String)e.nextElement();
+                    if (v.equals("AS_ADMIN_USER"))//admin user//NOI18N
+                        username = p.getProperty(v );
+                    else if (v.equals("AS_ADMIN_PASSWORD")){ // admin password//NOI18N
+                        password = p.getProperty(v );
+                    }
+                }
+                
+            } catch (Exception e){
+                //either the file does not exist or not available. No big deal, we continue ands NB will popup the request dialog.
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,e);
+            } finally {
+                if (null != fis) {
+                    try {
+                        fis.close();
+                    } catch (IOException e) {
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,e);                        
+                    }
                 }
             }
             
-        } catch (Exception e){
-            //either the file does not exist or not available. No big deal, we continue ands NB will popup the request dialog.
         }
         // Go to the conf dir
         String ext = (File.separatorChar == '/' ? "conf" : "bat");          // NOI18N
@@ -515,8 +522,9 @@ public class PluginProperties  {
         File domains = new File(defDomainsDirName);//NOI18N
         if (domains.exists() && domains.isDirectory() ) {
             File[] domainsList= domains.listFiles();
-            if(domainsList==null)
+            if(domainsList==null) {
                 return;
+            }
             for (int i=0;i<domainsList.length;i++){
                 
                 try {
@@ -610,8 +618,9 @@ public class PluginProperties  {
      */    
     private static void setArrayPropertyValue(Properties props, String prefix, String[] values) {
         int len = 0;
-        if (null != values) 
+        if (null != values)  {
             len = values.length;
+        }
         int index = 0;
         for (int i = 0; i < len; i++) {
             if (null != values[i]) {

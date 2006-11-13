@@ -63,17 +63,24 @@ import org.xml.sax.SAXException;
 public class DomainEditor {
     
     private static DeploymentManager dm;
-    private static String HTTP_PROXY_HOST = "-Dhttp.proxyHost="; //NOI18N
-    private static String HTTP_PROXY_PORT = "-Dhttp.proxyPort="; //NOI18N
-    private static String HTTPS_PROXY_HOST = "-Dhttps.proxyHost="; //NOI18N
-    private static String HTTPS_PROXY_PORT = "-Dhttps.proxyPort="; //NOI18N
-    private static String HTTP_PROXY_NO_HOST = "-Dhttp.nonProxyHosts="; //NOI18N
     
     private static String SAMPLE_DATASOURCE = "jdbc/sample"; //NOI18N
     private static String SAMPLE_CONNPOOL = "SamplePool"; //NOI18N
     
     private static String NBPROFILERNAME = "NetBeansProfiler"; //NOI18N
     
+    private static String CONST_USER = "User"; // NOI18N
+    private static String CONST_PASSWORD = "Password"; // NOI18N
+    private static String CONST_URL = "URL"; // NOI18N
+    private static String CONST_LOWER_DATABASE_NAME = "databaseName"; // NOI18N
+    private static String CONST_LOWER_PORT_NUMBER = "portNumber"; // NOI18N
+    private static String CONST_DATABASE_NAME = "DatabaseName"; // NOI18N
+    private static String CONST_PORT_NUMBER = "PortNumber"; // NOI18N
+    private static String CONST_SID = "SID"; // NOI18N
+    private static String CONST_SERVER_NAME = "serverName"; // NOI18N
+    static private String CONST_NAME = "name"; // NOI18N
+    static private String CONST_JVM_OPTIONS = "jvm-options"; // NOI18N
+
     /**
      * Creates a new instance of DomainEditor
      * @param dm Deployment Manager of Target Server
@@ -111,8 +118,6 @@ public class DomainEditor {
      * @return Document object representing given domain.xml
      */
     public Document getDomainDocument(String domainLoc){
-        File domainScriptFile = new File(domainLoc);
-        
         // Load domain.xml
         Document domainScriptDocument = loadDomainScriptFile(domainLoc);
         return domainScriptDocument;
@@ -139,15 +144,16 @@ public class DomainEditor {
             // Create "profiler" element
             Element profilerElement = domainDoc.createElement("profiler");//NOI18N
             profilerElement.setAttribute("enabled", "true");//NOI18N
-            profilerElement.setAttribute("name", NBPROFILERNAME);//NOI18N
-            if (nativeLibraryPath != null) 
+            profilerElement.setAttribute(CONST_NAME, NBPROFILERNAME);//NOI18N
+            if (nativeLibraryPath != null) {
                 profilerElement.setAttribute("native-library-path", nativeLibraryPath);//NOI18N
+            }
             
             File appServerLocation = ((SunDeploymentManagerInterface)getDeploymentManager()).getPlatformRoot();
             // Create "jvm-options" element
             if (jvmOptions != null) {
                 for (int i = 0; i < jvmOptions.length; i++) {
-                    Element jvmOptionsElement = domainDoc.createElement("jvm-options");
+                    Element jvmOptionsElement = domainDoc.createElement(CONST_JVM_OPTIONS);
                     Text tt = domainDoc.createTextNode(formatJvmOption(jvmOptions[i] ,  appServerLocation));
                     jvmOptionsElement.appendChild(tt);
                     profilerElement.appendChild(jvmOptionsElement);
@@ -198,7 +204,7 @@ public class DomainEditor {
             // otherwise, see bug # 77026
             for (int i = 0; i < profilerElementNodeList.getLength(); i++) {
                 Node n= profilerElementNodeList.item(i);                
-                Node a= n.getAttributes().getNamedItem("name");//NOI18N
+                Node a= n.getAttributes().getNamedItem(CONST_NAME);//NOI18N
                 if ((a!=null)&&(a.getNodeValue().equals(NBPROFILERNAME))){//NOI18N
                     nodes.add(n);
                 }                              
@@ -218,20 +224,20 @@ public class DomainEditor {
         Document domainDoc = getDomainDocument();
         NodeList javaConfigNodeList = domainDoc.getElementsByTagName("java-config");
         if (javaConfigNodeList == null || javaConfigNodeList.getLength() == 0) {
-            return (String[])httpProxyOptions.toArray();
+            return (String[])httpProxyOptions.toArray(new String[httpProxyOptions.size()]);
         }
         
-        NodeList jvmOptionNodeList = domainDoc.getElementsByTagName("jvm-options");
+        NodeList jvmOptionNodeList = domainDoc.getElementsByTagName(CONST_JVM_OPTIONS);
         for(int i=0; i<jvmOptionNodeList.getLength(); i++){
             Node nd = jvmOptionNodeList.item(i);
             if(nd.hasChildNodes())  {
                 Node childNode = nd.getFirstChild();
                 String childValue = childNode.getNodeValue();
-                if(childValue.indexOf(HTTP_PROXY_HOST) != -1
-                        || childValue.indexOf(HTTP_PROXY_PORT) != -1
-                        || childValue.indexOf(HTTPS_PROXY_HOST) != -1
-                        || childValue.indexOf(HTTPS_PROXY_PORT) != -1
-                        || childValue.indexOf(HTTP_PROXY_NO_HOST) != -1){
+                if(childValue.indexOf(HttpProxyUpdater.HTTP_PROXY_HOST) != -1
+                        || childValue.indexOf(HttpProxyUpdater.HTTP_PROXY_PORT) != -1
+                        || childValue.indexOf(HttpProxyUpdater.HTTPS_PROXY_HOST) != -1
+                        || childValue.indexOf(HttpProxyUpdater.HTTPS_PROXY_PORT) != -1
+                        || childValue.indexOf(HttpProxyUpdater.HTTP_PROXY_NO_HOST) != -1){
                     httpProxyOptions.add(childValue);
                 }
             }
@@ -255,7 +261,7 @@ public class DomainEditor {
         //Add new set of proxy options
         for(int j=0; j<httpProxyOptions.length; j++){
             String option = httpProxyOptions[j];
-            Element jvmOptionsElement = domainDoc.createElement("jvm-options");
+            Element jvmOptionsElement = domainDoc.createElement(CONST_JVM_OPTIONS);
             Text proxyOption = domainDoc.createTextNode(option);
             jvmOptionsElement.appendChild(proxyOption);
             javaConfigNodeList.item(0).appendChild(jvmOptionsElement);
@@ -265,7 +271,7 @@ public class DomainEditor {
     }
       
     private boolean removeProxyOptions(Document domainDoc, Node javaConfigNode){
-        NodeList jvmOptionNodeList = domainDoc.getElementsByTagName("jvm-options");
+        NodeList jvmOptionNodeList = domainDoc.getElementsByTagName(CONST_JVM_OPTIONS);
         
         Vector nodes = new Vector();
         for(int i=0; i<jvmOptionNodeList.getLength(); i++){
@@ -273,17 +279,16 @@ public class DomainEditor {
             if(nd.hasChildNodes())  {
                 Node childNode = nd.getFirstChild();
                 String childValue = childNode.getNodeValue();
-                if(childValue.indexOf(HTTP_PROXY_HOST) != -1
-                        || childValue.indexOf(HTTP_PROXY_PORT) != -1
-                        || childValue.indexOf(HTTPS_PROXY_HOST) != -1
-                        || childValue.indexOf(HTTPS_PROXY_PORT) != -1
-                        || childValue.indexOf(HTTP_PROXY_NO_HOST) != -1){
+                if(childValue.indexOf(HttpProxyUpdater.HTTP_PROXY_HOST) != -1
+                        || childValue.indexOf(HttpProxyUpdater.HTTP_PROXY_PORT) != -1
+                        || childValue.indexOf(HttpProxyUpdater.HTTPS_PROXY_HOST) != -1
+                        || childValue.indexOf(HttpProxyUpdater.HTTPS_PROXY_PORT) != -1
+                        || childValue.indexOf(HttpProxyUpdater.HTTP_PROXY_NO_HOST) != -1){
                    nodes.add(nd);
                 }
             }
         }
         for(int i=0; i<nodes.size(); i++){
-            Node nd = (Node)nodes.get(i);
             javaConfigNode.removeChild((Node)nodes.get(i));
         }
         
@@ -295,7 +300,6 @@ public class DomainEditor {
      * @param domainScriptFilePath Path to domain.xml
      */
     private Document loadDomainScriptFile(String domainScriptFilePath) {
-        Document document = null;
         try {
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             dbFactory.setValidating(false);
@@ -334,8 +338,9 @@ public class DomainEditor {
             try {
                 TransformerFactory transformerFactory = TransformerFactory.newInstance();
                 Transformer transformer = transformerFactory.newTransformer();
-                if(indent)
+                if(indent) {
                     transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+                }
                 transformer.setOutputProperty(OutputKeys.METHOD, "xml");
                 transformer.setOutputProperty(OutputKeys.DOCTYPE_PUBLIC, domainScriptDocument.getDoctype().getPublicId());
                 transformer.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM, domainScriptDocument.getDoctype().getSystemId());
@@ -355,8 +360,9 @@ public class DomainEditor {
             result = false;
         } finally {
             try { 
-                if (domainScriptFileWriter != null) 
+                if (domainScriptFileWriter != null)  {
                     domainScriptFileWriter.close(); 
+                }
             } catch (IOException ioex2) {
                 System.err.println("SunAS8IntegrationProvider: cannot close output stream for " + domainScriptFilePath); 
             };
@@ -436,28 +442,28 @@ public class DomainEditor {
                 NamedNodeMap propsMap = propNode.getAttributes();
                 
                 for(int m=0; m<propsMap.getLength(); m++){
-                    String mkey = propsMap.getNamedItem("name").getNodeValue();
+                    String mkey = propsMap.getNamedItem(CONST_NAME).getNodeValue();
                     String mkeyValue = propsMap.getNamedItem("value").getNodeValue();
                     map.put(mkey, mkeyValue);
                 }
             } // connection-pool properties
 
-            pValues.put("User", (String)map.get("User"));
-            pValues.put("Password", (String)map.get("Password"));
-            pValues.put("URL", (String)map.get("URL"));
-            pValues.put("databaseName", (String)map.get("databaseName"));
-            pValues.put("serverName", (String)map.get("serverName"));
-            pValues.put("PortNumber", (String)map.get("PortNumber"));
-            pValues.put("portNumber", (String)map.get("portNumber"));
-            pValues.put("DatabaseName", (String)map.get("DatabaseName"));
-            pValues.put("SID", (String)map.get("SID"));
+            pValues.put(CONST_USER, (String)map.get(CONST_USER));
+            pValues.put(CONST_PASSWORD, (String)map.get(CONST_PASSWORD));
+            pValues.put(CONST_URL, (String)map.get(CONST_URL));
+            pValues.put(CONST_LOWER_DATABASE_NAME, (String)map.get(CONST_LOWER_DATABASE_NAME));
+            pValues.put(CONST_SERVER_NAME, (String)map.get(CONST_SERVER_NAME));
+            pValues.put(CONST_PORT_NUMBER, (String)map.get(CONST_PORT_NUMBER));
+            pValues.put(CONST_LOWER_PORT_NUMBER, (String)map.get(CONST_LOWER_PORT_NUMBER));
+            pValues.put(CONST_DATABASE_NAME, (String)map.get(CONST_DATABASE_NAME));
+            pValues.put(CONST_SID, (String)map.get(CONST_SID));
             pValues.put("dsClassName", dsClassName);
             
             dSources.put(jndiName, pValues);
         } // for each jdbc-resource
         return dSources;
     }
-
+    
     public HashMap getConnPoolsFromXml(){
         HashMap pools = new HashMap();
         Document domainDoc = getDomainDocument();
@@ -482,21 +488,21 @@ public class DomainEditor {
                 NamedNodeMap propsMap = propNode.getAttributes();
                 
                 for(int m=0; m<propsMap.getLength(); m++){
-                    String mkey = propsMap.getNamedItem("name").getNodeValue();
+                    String mkey = propsMap.getNamedItem(CONST_NAME).getNodeValue();
                     String mkeyValue = propsMap.getNamedItem("value").getNodeValue();
                     map.put(mkey, mkeyValue);
                 }
             } // connection-pool properties
             
-            pValues.put("User", (String)map.get("User"));
-            pValues.put("Password", (String)map.get("Password"));
-            pValues.put("URL", (String)map.get("URL"));
-            pValues.put("databaseName", (String)map.get("databaseName"));
-            pValues.put("serverName", (String)map.get("serverName"));
-            pValues.put("PortNumber", (String)map.get("PortNumber"));
-            pValues.put("portNumber", (String)map.get("portNumber"));
-            pValues.put("DatabaseName", (String)map.get("DatabaseName"));
-            pValues.put("SID", (String)map.get("SID"));
+            pValues.put(CONST_USER, (String)map.get(CONST_USER));
+            pValues.put(CONST_PASSWORD, (String)map.get(CONST_PASSWORD));
+            pValues.put(CONST_URL, (String)map.get(CONST_URL));
+            pValues.put(CONST_LOWER_DATABASE_NAME, (String)map.get(CONST_LOWER_DATABASE_NAME));
+            pValues.put(CONST_SERVER_NAME, (String)map.get(CONST_SERVER_NAME));
+            pValues.put(CONST_PORT_NUMBER, (String)map.get(CONST_PORT_NUMBER));
+            pValues.put(CONST_LOWER_PORT_NUMBER, (String)map.get(CONST_LOWER_PORT_NUMBER));
+            pValues.put(CONST_DATABASE_NAME, (String)map.get(CONST_DATABASE_NAME));
+            pValues.put(CONST_SID, (String)map.get(CONST_SID));
             pValues.put("dsClassName", dsClassName);
             
             pools.put(name, pValues);
@@ -525,11 +531,13 @@ public class DomainEditor {
             Node dsNode = dataSourceNodeList.item(i);
             NamedNodeMap dsAttrMap = dsNode.getAttributes();
             String jndiName = dsAttrMap.getNamedItem("jndi-name").getNodeValue();
-            if(jndiName.equals(SAMPLE_DATASOURCE))
+            if(jndiName.equals(SAMPLE_DATASOURCE)) {
                 sampleExists = true;
+            }
         }
-        if(!sampleExists)
+        if(!sampleExists) {
             return createSampleDatasource(domainDoc);
+        }
         return true;
     }
     
@@ -539,7 +547,7 @@ public class DomainEditor {
         for(int i=0; i<connPoolNodeList.getLength(); i++){
             Node cpNode = connPoolNodeList.item(i);
             NamedNodeMap cpAttrMap = cpNode.getAttributes();
-            String cpName = cpAttrMap.getNamedItem("name").getNodeValue();
+            String cpName = cpAttrMap.getNamedItem(CONST_NAME).getNodeValue();
             connPoolMap.put(cpName, cpNode);
         }    
         return connPoolMap;
@@ -559,19 +567,19 @@ public class DomainEditor {
             Node oldNode = (Node)cpMap.get("DerbyPool");
             Node cpNode = oldNode.cloneNode(false);
             NamedNodeMap cpAttrMap = cpNode.getAttributes();
-            cpAttrMap.getNamedItem("name").setNodeValue(SAMPLE_CONNPOOL);
+            cpAttrMap.getNamedItem(CONST_NAME).setNodeValue(SAMPLE_CONNPOOL);
             HashMap poolProps = new HashMap();
-            poolProps.put("serverName", "localhost");
-            poolProps.put("Password", "app");
-            poolProps.put("User", "app");
-            poolProps.put("DatabaseName", "sample");
-            poolProps.put("PortNumber", "1527");
+            poolProps.put(CONST_SERVER_NAME, "localhost");
+            poolProps.put(CONST_PASSWORD, "app");
+            poolProps.put(CONST_USER, "app");
+            poolProps.put(CONST_DATABASE_NAME, "sample");
+            poolProps.put(CONST_PORT_NUMBER, "1527");
             
             Object[] propNames = poolProps.keySet().toArray();
             for(int i=0; i<propNames.length; i++){
                 String keyName = (String)propNames[i];
                 Element propElement = domainDoc.createElement("property");
-                propElement.setAttribute("name", keyName);
+                propElement.setAttribute(CONST_NAME, keyName);
                 propElement.setAttribute("value", (String)poolProps.get(keyName));
                 cpNode.appendChild(propElement);
             }

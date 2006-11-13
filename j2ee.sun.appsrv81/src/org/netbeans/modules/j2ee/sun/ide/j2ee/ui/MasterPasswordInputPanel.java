@@ -41,7 +41,7 @@ public class MasterPasswordInputPanel extends javax.swing.JPanel {
      * @return the text entered by the user
      */
     public String getMasterPassword() {
-        return jPasswordField1.getText();
+        return String.valueOf(jPasswordField1.getPassword());
     }    
     /** This method is called from within the constructor to
      * initialize the form.

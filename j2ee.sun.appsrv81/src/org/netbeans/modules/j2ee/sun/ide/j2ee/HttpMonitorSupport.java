@@ -81,7 +81,6 @@ public class HttpMonitorSupport {
     public static void setMonitorFlag(DeploymentManager tm, boolean enable) {
         DeploymentManagerProperties ip = new DeploymentManagerProperties(tm);
         ip.setHttpMonitorOn( Boolean.toString(enable));
-        setMonitorFlag(tm, enable);
     }
     
 
@@ -104,24 +103,27 @@ public class HttpMonitorSupport {
         }
         boolean needsSave = false;
         boolean result;
-        if (shouldInstall) {
-             addMonitorJars(tm);
-            result = changeFilterMonitor(webApp, true);
-            needsSave = needsSave || result;
-            result = specifyFilterPortParameter(webApp);
-            needsSave = needsSave || result;
-
-        }
-        else {                               
-            result = changeFilterMonitor(webApp, false);
-            needsSave = needsSave || result; 
+        try {
+            if (shouldInstall) {
+                addMonitorJars(tm);
+                result = changeFilterMonitor(webApp, true);
+                needsSave = needsSave || result;
+                result = specifyFilterPortParameter(webApp);
+                needsSave = needsSave || result;
+                
+            } else {
+                result = changeFilterMonitor(webApp, false);
+                needsSave = needsSave || result;
+            }
+        } catch (ClassNotFoundException cnfe) {
+            needsSave = false;
+            ErrorManager.getDefault().notify(ErrorManager.ERROR, cnfe);
         }
         if (needsSave) {
             OutputStream os = new FileOutputStream(webXML);
             try {
                 webApp.write(os);
-            }
-            finally {
+            } finally {
                 os.close();
             }
         }
@@ -134,8 +136,9 @@ public class HttpMonitorSupport {
         //String loc = dmProps.getLocation()+"/domains/"+dmProps.getDomainName()+"/config/default-web.xml";
         String loc = dmProps.getLocation()+"/"+dmProps.getDomainName()+"/config/default-web.xml";
         File webXML = new File(loc);
-        if (webXML.exists())
+        if (webXML.exists()) {
             return webXML;
+        }
         return null;
     }
     
@@ -146,13 +149,15 @@ public class HttpMonitorSupport {
 //        String loc = dmProps.getLocation()+"/domains/"+dmProps.getDomainName();
         String loc = dmProps.getLocation()+"/"+dmProps.getDomainName();
         File instDir = new File(loc);
-        if (instDir==null) return;
+        if (instDir==null) {
+            return;
+        }
         
         copyFromIDEInstToDir("modules/ext/org-netbeans-modules-web-httpmonitor.jar"  , instDir, "lib/org-netbeans-modules-web-httpmonitor.jar");  // NOI18N
         
     }
     
-    private static boolean changeFilterMonitor(WebApp webApp,boolean full) {
+    private static boolean changeFilterMonitor(WebApp webApp,boolean full) throws ClassNotFoundException {
         boolean filterWasChanged=false;
         if (full) { // adding monitor filter/filter-mapping element
             boolean isFilter=false;
@@ -164,13 +169,11 @@ public class HttpMonitorSupport {
                 }
             }
             if (!isFilter) {
-                try {
                     Filter filter = (Filter)webApp.createBean("Filter"); //NOI18N
                     filter.setFilterName(MONITOR_FILTER_NAME);
                     filter.setFilterClass(MONITOR_FILTER_CLASS);
                     webApp.addFilter(filter);
                     filterWasChanged=true;
-                }catch (ClassNotFoundException ex) {}
             }
             
             boolean isMapping=false;
@@ -182,7 +185,6 @@ public class HttpMonitorSupport {
                 }
             }
             if (!isMapping) {
-                try {
                     FilterMapping filterMapping = (FilterMapping)webApp.createBean("FilterMapping"); //NOI18N
                     
                     // setting the dispatcher values even for Servlet2.3 web.xml
@@ -201,7 +203,6 @@ public class HttpMonitorSupport {
                     filterMapping.setUrlPattern(MONITOR_FILTER_PATTERN);
                     webApp.addFilterMapping(filterMapping);
                     filterWasChanged=true;
-                } catch (ClassNotFoundException ex) {}
             }
             //}
         } else { // removing monitor filter/filter-mapping element
@@ -271,7 +272,7 @@ public class HttpMonitorSupport {
      *  @param webApp deployment descriptor in which to do the changes
      *  @return true if the default deployment descriptor was modified
      */
-    private static boolean specifyFilterPortParameter(WebApp webApp) {
+    private static boolean specifyFilterPortParameter(WebApp webApp) throws ClassNotFoundException {
         Filter[] filters = webApp.getFilter();
         Filter myFilter = null;
         for(int i=0; i<filters.length; i++) {
@@ -281,8 +282,9 @@ public class HttpMonitorSupport {
             }
         }
         // see if we found it
-        if (myFilter == null)
+        if (myFilter == null) {
             return false;
+        }
         
         // look for the parameter
         InitParam[] params = myFilter.getInitParam();
@@ -300,12 +302,10 @@ public class HttpMonitorSupport {
         // insert or correct the param
         if (myParam == null) {
             // add it
-            try {
                 InitParam init = (InitParam)myFilter.createBean("InitParam"); //NOI18N
                 init.setParamName(MONITOR_INTERNALPORT_PARAM_NAME);
                 init.setParamValue(correctParamValue);
                 myFilter.addInitParam(init);
-            } catch (ClassNotFoundException ex){}
             return true;
         }
         else {

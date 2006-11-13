@@ -25,7 +25,6 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.Customizer;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -342,6 +341,8 @@ public final class CustomizerSupport {
                 URL url = f.toURI().toURL();
                 return this.addPath(url);
             } catch (MalformedURLException mue) {
+                ErrorManager.getDefault().log(ErrorManager.WARNING, f.getAbsolutePath());
+                ErrorManager.getDefault().notify(ErrorManager.WARNING, mue);
                 return false;
             }
         }
@@ -382,7 +383,6 @@ public final class CustomizerSupport {
         
         private JList resources;
         private JButton addButton;
-        private JButton addURLButton;
         private JButton removeButton;
         private JButton moveUpButton;
         private JButton moveDownButton;
@@ -398,9 +398,9 @@ public final class CustomizerSupport {
         private void initComponents(PathModel model) {
             setLayout(new GridBagLayout());
             JLabel label = new JLabel ();
-            String key = null;
-            String mneKey = null;
-            String ad = null;
+            String key;
+            String mneKey;
+            String ad;
             if (type.equals(CLASSPATH)) {
                 key = "TXT_Classes";       // NOI18N
                 mneKey = "MNE_Classes";    // NOI18N
@@ -451,11 +451,11 @@ public final class CustomizerSupport {
             c.weighty = 1.0;
             ((GridBagLayout)this.getLayout()).setConstraints(spane,c);
             add(spane);
-            if (type == SOURCES || type == JAVADOC) {
+            if (SOURCES.equals(type) || JAVADOC.equals(type)) {
                 this.addButton = new JButton ();
                 String text;
                 char mne;
-                if (type == SOURCES) {
+                if (SOURCES.equals(type)) {
                     text = NbBundle.getMessage(CustomizerSupport.class, "CTL_Add");
                     mne = NbBundle.getMessage(CustomizerSupport.class, "MNE_Add").charAt(0);
                     ad = NbBundle.getMessage(CustomizerSupport.class, "AD_Add");
@@ -482,24 +482,6 @@ public final class CustomizerSupport {
                 c.insets = new Insets (0,6,0,6);
                 ((GridBagLayout)this.getLayout()).setConstraints(addButton,c);
                 this.add (addButton);
-//                if (this.type == JAVADOC) {
-//                    addURLButton  = new JButton (NbBundle.getMessage(CustomizerSupport.class, "CTL_AddURL"));
-//                    addURLButton.setMnemonic(NbBundle.getMessage(CustomizerSupport.class, "MNE_AddURL").charAt(0));
-//                    addURLButton.addActionListener(new ActionListener () {
-//                        public void actionPerformed(ActionEvent e) {
-//                            addURLElement ();
-//                        }
-//                    });
-//                    c = new GridBagConstraints();
-//                    c.gridx = 1;
-//                    c.gridy = 2;
-//                    c.gridwidth = GridBagConstraints.REMAINDER;
-//                    c.fill = GridBagConstraints.HORIZONTAL;
-//                    c.anchor = GridBagConstraints.NORTHWEST;
-//                    c.insets = new Insets (0,6,6,12);
-//                    ((GridBagLayout)this.getLayout()).setConstraints(addURLButton,c);
-//                    this.add (addURLButton);
-//                }
                 removeButton = new JButton (NbBundle.getMessage(CustomizerSupport.class, "CTL_Remove"));
                 removeButton.setMnemonic(NbBundle.getMessage(CustomizerSupport.class, "MNE_Remove").charAt(0));
                 removeButton.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage(CustomizerSupport.class,"AD_Remove"));
@@ -615,13 +597,13 @@ public final class CustomizerSupport {
             String message = null;
             String approveButtonName = null;
             String approveButtonNameMne = null;
-            if (this.type == SOURCES) {
+            if (SOURCES.equals(this.type)) {
                 title = NbBundle.getMessage (CustomizerSupport.class,"TXT_OpenSources");
                 message = NbBundle.getMessage (CustomizerSupport.class,"TXT_Sources");
                 approveButtonName = NbBundle.getMessage (CustomizerSupport.class,"TXT_OpenSources");
                 approveButtonNameMne = NbBundle.getMessage (CustomizerSupport.class,"MNE_OpenSources");
             }
-            else if (this.type == JAVADOC) {
+            else if (JAVADOC.equals(this.type)) {
                 title = NbBundle.getMessage (CustomizerSupport.class,"TXT_OpenJavadoc");
                 message = NbBundle.getMessage (CustomizerSupport.class,"TXT_Javadoc");
                 approveButtonName = NbBundle.getMessage (CustomizerSupport.class,"TXT_OpenJavadoc");
@@ -629,7 +611,9 @@ public final class CustomizerSupport {
             }
             chooser.setDialogTitle(title);
             chooser.setApproveButtonText(approveButtonName);
-            chooser.setApproveButtonMnemonic (approveButtonNameMne.charAt(0));
+            if (null != approveButtonNameMne) {
+                chooser.setApproveButtonMnemonic (approveButtonNameMne.charAt(0));
+            }
             chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
             //#61789 on old macosx (jdk 1.4.1) these two method need to be called in this order.
             chooser.setAcceptAllFileFilterUsed( false );
@@ -713,7 +697,7 @@ public final class CustomizerSupport {
         }
 
         private void selectionChanged () {
-            if (this.type == CLASSPATH) {
+            if (CLASSPATH.equals(this.type)) {
                 return;
             }
             int indices[] = this.resources.getSelectedIndices();
@@ -735,12 +719,14 @@ public final class CustomizerSupport {
         }
 
         public boolean accept(File f) {
-            if (f.isDirectory())
+            if (f.isDirectory()) {
                 return true;
+            }
             String name = f.getName();
             int index = name.lastIndexOf('.');   //NOI18N
-            if (index <= 0 || index==name.length()-1)
+            if (index <= 0 || index==name.length()-1) {
                 return false;
+            }
             String extension = name.substring (index+1).toUpperCase();
             return this.extensions.contains(extension);
         }
