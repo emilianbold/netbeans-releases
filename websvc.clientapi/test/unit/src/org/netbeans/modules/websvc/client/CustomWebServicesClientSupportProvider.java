@@ -41,8 +41,8 @@ import org.openide.nodes.Node;
  */
 public class CustomWebServicesClientSupportProvider implements WebServicesClientSupportProvider {
     
-    private Map<FileObject, WebServicesClientSupport> cache = new HashMap<FileObject, WebServicesClientSupport>();
-    private Map<FileObject, JAXWSClientSupport> cache2 = new HashMap<FileObject, JAXWSClientSupport>();
+    private Map/*<FileObject, WebServicesClientSupport>*/ cache = new HashMap/*<FileObject, WebServicesClientSupport>*/();
+    private Map/*<FileObject, JAXWSClientSupport>*/ cache2 = new HashMap/*<FileObject, JAXWSClientSupport>*/();
     
     /** Creates a new instance of CustomWebServicesSupportProvider */
     public CustomWebServicesClientSupportProvider() {
@@ -50,7 +50,7 @@ public class CustomWebServicesClientSupportProvider implements WebServicesClient
     
     public WebServicesClientSupport findWebServicesClientSupport(FileObject file) {
         if (file.getExt().equals("ws") || file.getExt().equals("both")) {
-            WebServicesClientSupport em  =  cache.get(file.getParent());
+            WebServicesClientSupport em  =  (WebServicesClientSupport) cache.get(file.getParent());
             if (em == null) {
                 em = WebServicesClientSupportFactory.createWebServicesClientSupport(new CustomWebServicesClientSupportImpl(file));
                 cache.put(file.getParent(), em);
@@ -62,7 +62,7 @@ public class CustomWebServicesClientSupportProvider implements WebServicesClient
     
     public JAXWSClientSupport findJAXWSClientSupport(FileObject file) {
         if (file.getExt().equals("jaxws") || file.getExt().equals("both")) {
-            JAXWSClientSupport em  =  cache2.get(file.getParent());
+            JAXWSClientSupport em  =  (JAXWSClientSupport) cache2.get(file.getParent());
             if (em == null) {
                 em = JAXWSClientSupportFactory.createJAXWSClientSupport(new CustomJAXWSClientSupportImpl(file));
                 cache2.put(file.getParent(), em);
