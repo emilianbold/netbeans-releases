@@ -62,6 +62,7 @@ public class VersionsCache {
                 File svnDir = getMetadataDir(base.getParentFile());
                 if (svnDir == null) return null;
                 File svnBase = new File(svnDir, "text-base/" + base.getName() + ".svn-base");
+                if (!svnBase.exists()) return null;
                 File expanded = new File(svnDir, "text-base/" + base.getName() + ".netbeans-base");
                 if (expanded.canRead() && svnBase.isFile() && expanded.lastModified() > svnBase.lastModified()) {
                     return expanded;

@@ -68,6 +68,8 @@ public class Subversion {
     static final String INVALID_METADATA_MARKER = "invalid-metadata"; // NOI18N
     
     private static final int STATUS_DIFFABLE = 
+            FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | 
+            FileInformation.STATUS_VERSIONED_ADDEDLOCALLY | 
             FileInformation.STATUS_VERSIONED_UPTODATE | 
             FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY |
             FileInformation.STATUS_VERSIONED_MODIFIEDINREPOSITORY |
@@ -495,6 +497,7 @@ public class Subversion {
         public Reader getText() {
             try {
                 File f = VersionsCache.getInstance().getFileRevision(workingCopy, Setup.REVISION_BASE);
+                if (f == null) return null;
                 String name = f.getName();
                 return createReader(f, name.substring(0, name.indexOf(".netbeans-base")));
             } catch (IOException e) {
