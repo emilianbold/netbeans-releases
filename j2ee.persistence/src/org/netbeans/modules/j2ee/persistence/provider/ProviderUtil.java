@@ -37,7 +37,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.metadata.Utils;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceLocation;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
@@ -80,8 +79,9 @@ public class ProviderUtil {
      *  there was no matching provider.
      */
     public static Provider getProvider(Library library){
+        
         for (int i = 0; i < PROVIDERS.length; i++) {
-            if (Utils.containsClass(library, PROVIDERS[i].getProviderClass())){
+            if (org.netbeans.modules.j2ee.common.Util.containsClass(library, PROVIDERS[i].getProviderClass())){
                 return PROVIDERS[i];
             }
         }
@@ -498,11 +498,11 @@ public class ProviderUtil {
     }
     
     /**
-     * Gets the PUDataObject associated with the given <code>project</code>. If there 
+     * Gets the PUDataObject associated with the given <code>project</code>. If there
      * was no PUDataObject (i.e. no persistence.xml) in the project, a new one
      * will be created. Use
      * {@link #getDDFile} for testing whether a project has a persistence.xml file.
-     *@param project the project whose PUDataObject is to be get. 
+     *@param project the project whose PUDataObject is to be get.
      *@return <code>PUDataObject</code> associated with the given project; never null.
      */
     public static PUDataObject getPUDataObject(Project project) {
@@ -568,7 +568,7 @@ public class ProviderUtil {
         List<Library> providerLibs = new ArrayList<Library>();
         Library[] libs = LibraryManager.getDefault().getLibraries();
         for (int i = 0; i < libs.length; i++) {
-            if (Utils.containsClass(libs[i], "javax.persistence.EntityManager") && (extractProvider(libs[i]) != null)) {
+            if (org.netbeans.modules.j2ee.common.Util.containsClass(libs[i], "javax.persistence.EntityManager") && (extractProvider(libs[i]) != null)) {
                 providerLibs.add(libs[i]);
             }
         }
@@ -590,7 +590,7 @@ public class ProviderUtil {
         List<Provider> providerLibs = new ArrayList<Provider>();
         Library[] libs = LibraryManager.getDefault().getLibraries();
         for (int i = 0; i < libs.length; i++) {
-            if (Utils.containsClass(libs[i], "javax.persistence.EntityManager") && (extractProvider(libs[i]) != null)) {
+            if (org.netbeans.modules.j2ee.common.Util.containsClass(libs[i], "javax.persistence.EntityManager") && (extractProvider(libs[i]) != null)) {
                 providerLibs.add(getProvider(libs[i]));
             }
         }
@@ -607,7 +607,7 @@ public class ProviderUtil {
     
     private static String extractProvider(Library library) {
         for (int i = 0; i < PROVIDERS.length; i++) {
-            if (Utils.containsClass(library, PROVIDERS[i].getProviderClass())){
+            if (org.netbeans.modules.j2ee.common.Util.containsClass(library, PROVIDERS[i].getProviderClass())){
                 return PROVIDERS[i].getProviderClass();
             }
         }
@@ -641,7 +641,7 @@ public class ProviderUtil {
         Provider defaultProvider = getContainerManagedProvider(project);
         
         if (defaultProvider.getProviderClass().equals(persistenceUnit.getProvider())
-        && persistenceUnit.getProperties().sizeProperty2() == 0){
+                && persistenceUnit.getProperties().sizeProperty2() == 0){
             
             persistenceUnit.setProvider(null);
             return true;
@@ -651,11 +651,11 @@ public class ProviderUtil {
     }
     
     /**
-     * Checks whether the given <code>project</code>'s target server is present. 
+     * Checks whether the given <code>project</code>'s target server is present.
      *
      * @param project the project whose target server's presence is checked; must not be null.
      * @return true if the given <code>project</code> has its target server present or
-     *  if the project does not need a target server (i.e. it is not a J2EE project), false otherwise. 
+     *  if the project does not need a target server (i.e. it is not a J2EE project), false otherwise.
      * @throws NullPointerException if the given <code>project</code> was null.
      */
     public static boolean isValidServerInstanceOrNone(Project project){
