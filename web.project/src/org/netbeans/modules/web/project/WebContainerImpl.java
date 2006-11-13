@@ -22,7 +22,9 @@ package org.netbeans.modules.web.project;
 import java.io.IOException;
 import java.util.Collections;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -164,7 +166,15 @@ class WebContainerImpl implements EnterpriseReferenceContainer {
         );
         JavaSource javaSource = JavaSource.create(classpathInfo, Collections.<FileObject>emptyList());
         WebModuleImplementation jp = (WebModuleImplementation) webProject.getLookup().lookup(WebModuleImplementation.class);
-        boolean shouldWrite = isDescriptorMandatory(jp.getJ2eePlatformVersion()) || !InjectionTargetQuery.isInjectionTarget(referencingFile, referencingClass);
+        final boolean[] isInjectionTarget = {false};
+        CancellableTask task = new CancellableTask<CompilationController>() {
+                public void run(CompilationController controller) throws IOException {
+                    
+                }
+                public void cancel() {}
+        };
+        
+        boolean shouldWrite = isDescriptorMandatory(jp.getJ2eePlatformVersion());// || !InjectionTargetQuery.isInjectionTarget(referencingFile, referencingClass);
         if (shouldWrite) {
             FileObject fo = jp.getDeploymentDescriptor();
             getWebApp().write(fo);

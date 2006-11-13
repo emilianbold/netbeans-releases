@@ -19,8 +19,16 @@
 
 package org.netbeans.modules.web.core;
 
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
 import java.io.File;
 import java.io.IOException;
+import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import static org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.modules.j2ee.common.source.SourceUtils;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -68,8 +76,8 @@ public class WebInjectionTargetQueryImplementationTest extends NbTestCase {
     public void testIsInjectionTarget() {
         System.out.println("isInjectionTarget");
         
-        boolean result;        
-        WebInjectionTargetQueryImplementation instance = new WebInjectionTargetQueryImplementation();
+        final boolean[] result = {false};        
+        final WebInjectionTargetQueryImplementation instance = new WebInjectionTargetQueryImplementation();
 
         //J2EE 1.4 project
         File f = new File(getDataDir().getAbsolutePath(), "projects/WebApplication_j2ee14");
@@ -80,32 +88,61 @@ public class WebInjectionTargetQueryImplementationTest extends NbTestCase {
         directServletSubclass = projdir.getFileObject("src/java/org/test/NewServlet.java");
         secondLevelServletSubclass = projdir.getFileObject("src/java/org/test/NewServletSubclass.java");
         
-        result = instance.isInjectionTarget(ordinaryClass, "org.test.NewClass");
-        assertEquals(false, result);
-        result = instance.isInjectionTarget(fileSubclass, "org.test.FileSubclass");
-        assertEquals(false, result);
-        result = instance.isInjectionTarget(directServletSubclass, "org.test.NewServlet");
-        assertEquals(false, result);
-        result = instance.isInjectionTarget(secondLevelServletSubclass, "org.test.NewServletSubclass");
-        assertEquals(false, result);
-        
-        //Java EE 5 project
-        f = new File(getDataDir().getAbsolutePath(), "projects/WebApplication_jee5");
-        projdir = FileUtil.toFileObject(f);
+        CancellableTask task = new CancellableTask<CompilationController>() {
+                public void run(CompilationController controller) throws IOException {
+                    controller.toPhase(Phase.ELEMENTS_RESOLVED);
+                    CompilationUnitTree cut = controller.getCompilationUnit();
+                    ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                    SourceUtils srcUtils = SourceUtils.newInstance(controller, clazz);
+                    TypeElement thisTypeEl = srcUtils.getTypeElement();
+                    System.out.println("type el = "+thisTypeEl);
+                    result[0] = instance.isInjectionTarget(controller, thisTypeEl);
+                    System.out.println("aaa result[0] = "+result[0]);
+                }
+                public void cancel() {}
+        };
+        try {
+            JavaSource javaSrc = JavaSource.forFileObject(ordinaryClass);
+            javaSrc.runUserActionTask(task, true);
+            assertEquals(false, result[0]);
+            javaSrc = JavaSource.forFileObject(fileSubclass);
+            javaSrc.runUserActionTask(task, true);
+            assertEquals(false, result[0]);
+            javaSrc = JavaSource.forFileObject(directServletSubclass);
+            javaSrc.runUserActionTask(task, true);
+            assertEquals(false, result[0]);
+            javaSrc = JavaSource.forFileObject(secondLevelServletSubclass);
+            javaSrc.runUserActionTask(task, true);
+            assertEquals(false, result[0]);
 
-        ordinaryClass = projdir.getFileObject("src/java/org/test/NewClass.java");
-        fileSubclass = projdir.getFileObject("src/java/org/test/FileSubclass.java");
-        directServletSubclass = projdir.getFileObject("src/java/org/test/NewServlet.java");
-        secondLevelServletSubclass = projdir.getFileObject("src/java/org/test/NewServletSubclass.java");
-        
-        result = instance.isInjectionTarget(ordinaryClass, "org.test.NewClass");
-        assertEquals(false, result);
-        result = instance.isInjectionTarget(fileSubclass, "org.test.FileSubclass");
-        assertEquals(false, result);
-        result = instance.isInjectionTarget(directServletSubclass, "org.test.NewServlet");
-        assertEquals(true, result);
-        result = instance.isInjectionTarget(secondLevelServletSubclass, "org.test.NewServletSubclass");
-        assertEquals(true, result);
-    }
+            //Java EE 5 project
+            f = new File(getDataDir().getAbsolutePath(), "projects/WebApplication_jee5");
+            projdir = FileUtil.toFileObject(f);
+
+            ordinaryClass = projdir.getFileObject("src/java/org/test/NewClass.java");
+            fileSubclass = projdir.getFileObject("src/java/org/test/FileSubclass.java");
+            directServletSubclass = projdir.getFileObject("src/java/org/test/NewServlet.java");
+            secondLevelServletSubclass = projdir.getFileObject("src/java/org/test/NewServletSubclass.java");
+
+            javaSrc = JavaSource.forFileObject(ordinaryClass);
+            javaSrc.runUserActionTask(task, true);
+            assertEquals(false, result[0]);
+            javaSrc = JavaSource.forFileObject(fileSubclass);
+            javaSrc.runUserActionTask(task, true);
+            assertEquals(false, result[0]);
+            javaSrc = JavaSource.forFileObject(directServletSubclass);
+            javaSrc.runUserActionTask(task, true);
+            System.out.println("11111");
+            assertEquals(true, result[0]);
+            System.out.println("22222");
+            javaSrc = JavaSource.forFileObject(secondLevelServletSubclass);
+            javaSrc.runUserActionTask(task, true);
+            assertEquals(true, result[0]);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            System.out.println("ex="+ex);
+            throw new AssertionError(ex);
+        }
+    } 
     
 }

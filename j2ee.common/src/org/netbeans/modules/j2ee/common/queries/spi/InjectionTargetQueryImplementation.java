@@ -18,7 +18,8 @@
  */
 
 package org.netbeans.modules.j2ee.common.queries.spi;
-import org.openide.filesystems.FileObject;
+import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.source.CompilationController;
 
 /**
  * Knowledge of ability to use resouce injection in Java class and the way the injection is generated
@@ -29,23 +30,23 @@ public interface InjectionTargetQueryImplementation {
     
     /**
      * Decide if dependency injection can be used in given class.<br>
-     * @param fileObject file of class where annotated field or method should be inserted
-     * @param fqn fully-qualified name of class where annotated field or method should be inserted,
+     * @param controller CompilationController related to JavaSource
+     * @param typeElement class where annotated field or method should be inserted,
      * if null is provided, main public class from file is taken
      * @return true if any container or environment is able to inject resources in given class, false otherwise
      */
-    boolean isInjectionTarget(FileObject fileObject, String fqn);
+    boolean isInjectionTarget(CompilationController controller, TypeElement typeElement);
     
     /**
      * Decide if injected reference must be static in given class. 
      * For example, in application client injection can be used only in class with main method and all
      * injected fields must be static<br>
      * Implementation 
-     * @param fileObject file of class where annotated field or method should be inserted
-     * @param fqn fully-qualified name of class where annotated field or method should be inserted,
+     * @param controller CompilationController related to JavaSource
+     * @param typeElement class where annotated field or method should be inserted,
      * if null is provided, main public class from file is taken
      * @return true if static reference is required in given class, false otherwise
      */
-    boolean isStaticReferenceRequired(FileObject fileObject, String fqn);
+    boolean isStaticReferenceRequired(CompilationController controller, TypeElement typeElement);
     
 }

@@ -18,19 +18,9 @@
  */
 
 package org.netbeans.modules.web.core;
-
-import java.io.IOException;
-
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
-
-import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
-        
-import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.JavaSource;
-
 import org.netbeans.modules.j2ee.common.queries.spi.InjectionTargetQueryImplementation;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 
@@ -42,42 +32,28 @@ public class WebInjectionTargetQueryImplementation implements InjectionTargetQue
     
     public WebInjectionTargetQueryImplementation() {
     }
-    
-    public boolean isInjectionTarget(final FileObject fileObject, final String fqn) {
-        if (fileObject == null) {
-            throw new NullPointerException("Passed null FileObject to WebInjectionTargetQueryImplementation.isInjectionTarget(FileObject, String)"); // NOI18N
+
+    public boolean isInjectionTarget(CompilationController controller, TypeElement typeElement) {
+        if (controller == null || typeElement==null) {
+            throw new NullPointerException("Passed null to WebInjectionTargetQueryImplementation.isInjectionTarget(CompilationController, TypeElement)"); // NOI18N
         }
         
-        final boolean[] ret = new boolean[] {false};
-        WebModule webModule = WebModule.getWebModule(fileObject);
+        boolean ret = false;
+        WebModule webModule = WebModule.getWebModule(controller.getFileObject());
         if (webModule != null &&
-                !webModule.getJ2eePlatformVersion().equals("1.3") &&
-                !webModule.getJ2eePlatformVersion().equals("1.4")) {
+                !webModule.getJ2eePlatformVersion().equals("1.3") && // NOI18N
+                !webModule.getJ2eePlatformVersion().equals("1.4")) { // NOI18N
             
-            JavaSource src = JavaSource.forFileObject(fileObject);
-                        
-            CancellableTask task = new CancellableTask<CompilationController>() {
-                public void run(CompilationController compilationController) throws IOException {
-                    compilationController.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                    final Elements elements = compilationController.getElements();
-                    final TypeElement servletElement = elements.getTypeElement("javax.servlet.Servlet");
-                    final TypeElement thisElement = elements.getTypeElement(fqn);
-                    ret[0] = compilationController.getTypes().isSubtype(thisElement.asType(),servletElement.asType());
-                }
-
-                public void cancel() {
-                }
-            };
-            try {
-                src.runUserActionTask(task, true);
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
+            Elements elements = controller.getElements();
+            TypeElement servletElement = elements.getTypeElement("javax.servlet.Servlet"); //NOI18N
+            if (servletElement!=null) {
+                ret = controller.getTypes().isSubtype(typeElement.asType(),servletElement.asType());
             }
-        }
-        return ret[0];
+         }
+        return ret;
     }
-
-    public boolean isStaticReferenceRequired(FileObject fileObject, String fqn) {
+    
+    public boolean isStaticReferenceRequired(CompilationController controller, TypeElement typeElement) {
         return false;
     }
 

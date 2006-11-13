@@ -24,14 +24,13 @@ import java.util.List;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.modules.j2ee.common.queries.spi.InjectionTargetQueryImplementation;
-import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 
 /**
  * Ask whether it is possible to use dependency injection in some class
- * @author Martin Adamek
+ * @author Martin Adamek, Milan Kuchtiak
  */
 public class InjectionTargetQuery {
     
@@ -44,17 +43,17 @@ public class InjectionTargetQuery {
     
     /**
      * Decide if dependency injection can be used in given class
-     * @param fileObject file of class where annotated field or method should be inserted
-     * @param typeElement fully-qualified name of class where annotated field or method should be inserted,
+     * @param controller CompilationController related to JavaSource
+     * @param typeElement class where annotated field or method should be inserted,
      * if null is provided, main public class from file is taken
      * @return true if any container or environment is able to inject resources in given class, false otherwise
      */
-    public static boolean isInjectionTarget(FileObject fileObject, String fqn) {
-        if (fileObject == null) {
-            throw new NullPointerException("Passed null FileObject to InjectionTargetQuery.isInjectionTarget(FileObject, String)"); // NOI18N
+    public static boolean isInjectionTarget(CompilationController controller, TypeElement typeElement) {
+        if (typeElement == null || controller==null) {
+            throw new NullPointerException("Passed null to InjectionTargetQuery.isInjectionTarget(CompilationController, TypeElement)"); // NOI18N
         }
         for (InjectionTargetQueryImplementation elem : getInstances()) {
-            if (elem.isInjectionTarget(fileObject, fqn)) {
+            if (elem.isInjectionTarget(controller, typeElement)) {
                 return true;
             }
         }
@@ -66,17 +65,17 @@ public class InjectionTargetQuery {
      * For example, in application client injection can be used only in class with main method and all
      * injected fields must be static<br>
      * Implementation 
-     * @param fileObject file of class where annotated field or method should be inserted
-     * @param typeElement fully-qualified name of class where annotated field or method should be inserted,
+     * @param controller CompilationController related to JavaSource
+     * @param typeElement class where annotated field or method should be inserted,rted,
      * if null is provided, main public class from file is taken
      * @return true if static reference is required in given class, false otherwise
      */
-    public static boolean isStaticReferenceRequired(FileObject fileObject, String fqn) {
-        if (fileObject == null) {
-            throw new NullPointerException("Passed null FileObject to InjectionTargetQuery.isStaticReferenceRequired(FileObject, String)"); // NOI18N
+    public static boolean isStaticReferenceRequired(CompilationController controller, TypeElement typeElement) {
+        if (typeElement == null || controller==null) {
+            throw new NullPointerException("Passed null to InjectionTargetQuery.isStaticReferenceRequired(CompilationController, TypeElement)"); // NOI18N
         }
         for (InjectionTargetQueryImplementation elem : getInstances()) {
-            if (elem.isStaticReferenceRequired(fileObject, fqn)) {
+            if (elem.isStaticReferenceRequired(controller, typeElement)) {
                 return true;
             }
         }
