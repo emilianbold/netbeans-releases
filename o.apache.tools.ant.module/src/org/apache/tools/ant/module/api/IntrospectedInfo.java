@@ -707,7 +707,6 @@ public final class IntrospectedInfo {
                                 LOG.log(Level.WARNING, "malformed key: {0}", k);
                                 continue;
                             }
-                            assert match : k;
                             String c = m.group(1);
                             IntrospectedClass ic = assureDefined(ii, c);
                             String tail = m.group(2);
