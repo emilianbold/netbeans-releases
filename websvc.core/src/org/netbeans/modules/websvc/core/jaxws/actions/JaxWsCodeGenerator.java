@@ -19,10 +19,17 @@
 
 package org.netbeans.modules.websvc.core.jaxws.actions;
 
+import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.lang.reflect.Modifier;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,41 +39,25 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
 import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.TreeMaker;
+import static org.netbeans.api.java.source.JavaSource.Phase;
+import static com.sun.source.tree.Tree.Kind.*;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-// Retouche 
-//import javax.jmi.reflect.RefFeatured;
-//import org.netbeans.api.mdr.MDRepository;
-//import org.netbeans.jmi.javamodel.Annotation;
-//import org.netbeans.jmi.javamodel.BehavioralFeature;
-//import org.netbeans.jmi.javamodel.ClassDefinition;
-//import org.netbeans.jmi.javamodel.ClassMember;
-//import org.netbeans.jmi.javamodel.Constructor;
-//import org.netbeans.jmi.javamodel.Element;
-//import org.netbeans.jmi.javamodel.Field;
-//import org.netbeans.jmi.javamodel.JavaClass;
-//import org.netbeans.jmi.javamodel.JavaEnum;
-//import org.netbeans.jmi.javamodel.JavaModelPackage;
-//import org.netbeans.jmi.javamodel.LocalVarDeclaration;
-//import org.netbeans.jmi.javamodel.Method;
-//import org.netbeans.jmi.javamodel.Parameter;
-//import org.netbeans.jmi.javamodel.PrimaryExpression;
-//import org.netbeans.jmi.javamodel.Resource;
-//import org.netbeans.jmi.javamodel.Statement;
-//import org.netbeans.jmi.javamodel.StatementBlock;
-//import org.netbeans.jmi.javamodel.Type;
-//import org.netbeans.jmi.javamodel.Variable;
-//import org.netbeans.modules.j2ee.common.JMIUtils;
-//import org.netbeans.modules.j2ee.common.JMIGenerationUtil;
-//import org.netbeans.modules.javacore.JMManager;
-//import org.netbeans.modules.javacore.api.JavaModel;
-//import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
+
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.j2ee.common.queries.api.InjectionTargetQuery;
+import org.netbeans.modules.j2ee.common.source.SourceUtils;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
@@ -706,9 +697,10 @@ public class JaxWsCodeGenerator {
         // First, collect name of method, port, and service:
         
         Node serviceNode, portNode, wsdlNode;
-        String wsdlUrl;
+        final String wsdlUrl;
+        final String serviceJavaName;
         String serviceFieldName;
-        String serviceJavaName, portJavaName, portGetterMethod, operationJavaName, returnTypeName;
+        String portJavaName, portGetterMethod, operationJavaName, returnTypeName;
         String responseType="Object"; //NOI18N
         String callbackHandlerName = "javax.xml.ws.AsyncHandler"; //NOI18N
         String argumentInitializationPart, argumentDeclarationPart;
@@ -821,121 +813,165 @@ public class JaxWsCodeGenerator {
         }
         
         // including code to java class
-// Retouche        
-//        boolean generateWsRefInjection=false;
-//        boolean insertServiceDef = true;
-//        String printerName="System.out"; //NOI18N
-//        FileObject targetFo = NbEditorUtilities.getFileObject(document);
-//        
-//        try {
-//            JavaClass javaClass = getJavaClass(targetFo);
-//            if (javaClass!=null) {
-//                
-//                // test if target can accept injections
-//                generateWsRefInjection = InjectionTargetQuery.isInjectionTarget(javaClass);
-//                insertServiceDef=!generateWsRefInjection;
-//                
-//                // test if in servlet
-//                JavaClass superClass = javaClass.getSuperClass();
-//                if ("javax.servlet.http.HttpServlet".equals(superClass.getName())) { //NOI18N
-//                    printerName="out";
-//                    argumentInitializationPart = fixNamesInInitializationPart(argumentInitializationPart);
-//                    argumentDeclarationPart = fixNamesInDeclarationPart(argumentDeclarationPart);
-//                }
-//                // compute the service field name
-//                if (generateWsRefInjection) {
-//                    Set serviceFieldNames = new HashSet();
-//                    List contents = javaClass.getContents();
-//                    boolean injectionExists=false;
-//                    for (int i=0;i<contents.size();i++) {
-//                        Object obj = contents.get(i);
-//                        if (obj instanceof Field) {
-//                            String fieldTypeName = ((Field)obj).getType().getName();
-//                            if (serviceJavaName.equals(fieldTypeName)) {
-//                                serviceFieldName=((Field)obj).getName();
-//                                generateWsRefInjection=false;
-//                                injectionExists=true;
-//                                break;
-//                            } else {
-//                                serviceFieldNames.add(((Field)obj).getName());
-//                            }
-//                        }
-//                    }
-//                    if (!injectionExists) {
-//                        serviceFieldName = findProperServiceFieldName(serviceFieldNames);
-//                    }
-//                }
-//            }
-//            
-//            // create & format inserted text
-//            IndentEngine eng = IndentEngine.find(document);
-//            StringWriter textWriter = new StringWriter();
-//            Writer indentWriter = eng.createWriter(document, pos, textWriter);
-//            
-//            // create the inserted text
-//            String invocationBody = getJavaInvocationBody(
-//                    operation,
-//                    insertServiceDef,
-//                    serviceJavaName,
-//                    portJavaName,
-//                    portGetterMethod,
-//                    argumentInitializationPart,
-//                    returnTypeName,
-//                    operationJavaName,
-//                    argumentDeclarationPart,
-//                    serviceFieldName,
-//                    printerName,
-//                    responseType);
-//            
-//            indentWriter.write(invocationBody);
-//            indentWriter.close();
-//            String textToInsert = textWriter.toString();
-//            
-//            try {
-//                document.insertString(pos, textToInsert, null);
-//            } catch (BadLocationException badLoc) {
-//                document.insertString(pos + 1, textToInsert, null);
-//            }
-//            
-//            // generate WebServiceRef injection
-//            if (generateWsRefInjection && javaClass!=null) {
-//                if (wsdlUrl.startsWith("file:") && targetFo!=null) { //NOI18N
-//                    wsdlUrl = findWsdlLocation(client,targetFo);
-//                }
-//                generateServiceRefInjection(javaClass, serviceFieldName, serviceJavaName, wsdlUrl);
-//            }
-//            
-//        } catch (BadLocationException badLoc) {
-//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, badLoc);
-//            
-//        } catch (IOException ioe) {
-//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
-//        }
-    }
+        FileObject targetFo = NbEditorUtilities.getFileObject(document);
+        
+        JavaSource targetSource = JavaSource.forFileObject(targetFo);
+        final String respType = responseType;
+        final boolean[] insertServiceDef = {false};
+        final String[] printerName = {"System.out"}; // NOI18N
+        final String[] argumentInitPart = {argumentInitializationPart};
+        final String[] argumentDeclPart = {argumentDeclarationPart};
+        final String[] serviceFName = {serviceFieldName};
+        // PENDING compute this from using InjectionTargetQuery.isInjectionTarget 
+        //System.out.println("Is InjectionTarget? " + InjectionTargetQuery.isInjectionTarget(targetFo, null));
+        final boolean[] generateWsRefInjection = {true};
+        insertServiceDef[0] = !generateWsRefInjection[0];
+        CancellableTask task = new CancellableTask<CompilationController>() {
+            public void run(CompilationController controller) throws IOException {
+                controller.toPhase(Phase.ELEMENTS_RESOLVED);
+                CompilationUnitTree cut = controller.getCompilationUnit();
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                        ClassTree javaClass = (ClassTree) typeDecl;
+                        if (isServletClass(controller, javaClass)) {
+                            printerName[0]="out";
+                            argumentInitPart[0] = fixNamesInInitializationPart(argumentInitPart[0]);
+                            argumentDeclPart[0] = fixNamesInDeclarationPart(argumentDeclPart[0]);
+                        }
+                        // compute the service field name
+                        if (generateWsRefInjection[0]) {
+                            Set serviceFieldNames = new HashSet();
+                            boolean injectionExists=false;
+                            int memberOrder=0;
+                            for (Tree member : javaClass.getMembers()) {
+                                // for the first inner class in top level
+                                ++memberOrder;
+                                if (VARIABLE == member.getKind()) {
+                                    // get variable type
+                                    VariableTree var = (VariableTree)member;
+                                    Tree typeTree = var.getType();
+                                    TreePath typeTreePath = controller.getTrees().getPath(cut, typeTree);
+                                    TypeElement typeEl = (TypeElement)controller.getTrees().getElement(typeTreePath);
+                                    if (typeEl!=null) {
+                                        String variableType = typeEl.getQualifiedName().toString(); 
+                                        if (serviceJavaName.equals(variableType)) {
+                                            serviceFName[0]=var.getName().toString();
+                                            generateWsRefInjection[0]=false;
+                                            injectionExists=true;
+                                            break;
+                                        }
+                                    }
+                                    serviceFieldNames.add(var.getName().toString());
+                                }
+                            }
+                            if (!injectionExists) {
+                                serviceFName[0] = findProperServiceFieldName(serviceFieldNames);
+                            }
+                        }
+                        break;
+                    } 
+                }
+            }
+            public void cancel() {}
+        };
+        
 
-// Retouche    
-//    private static void generateServiceRefInjection(JavaClass javaClass, String fieldName, String fieldType, String wsdlUrl) {
-//        boolean rollback = true;
-//        JMIUtils.beginJmiTransaction(true);
-//        try {
-//            Field newField = JMIUtils.createField(javaClass,fieldName,fieldType);
-//            if (InjectionTargetQuery.isStaticReferenceRequired(javaClass)) {
-//                newField.setModifiers(Modifier.PRIVATE|Modifier.STATIC);
-//            } else {
-//                newField.setModifiers(Modifier.PRIVATE);
-//            }
-//            List attrValues = new ArrayList();
-//            attrValues.add(JMIGenerationUtil.createAttributeValue(javaClass,"wsdlLocation",wsdlUrl)); //NOI18N
-//            newField.getAnnotations().add(
-//                    JMIGenerationUtil.createAnnotation(javaClass,"javax.xml.ws.WebServiceRef",attrValues)); //NOI18N
-//            javaClass.getContents().add(0,newField);
-//            rollback=false;
-//        } catch (Exception e) {
-//            ErrorManager.getDefault().notify(e);
-//        } finally {
-//            JMIUtils.endJmiTransaction(rollback);
-//        }
-//    }
+
+        try {
+            // find proper values for 
+            //   - printer name 
+            //   - service variable name 
+            //   - argument declaration part
+            //   - argument initialization part
+            targetSource.runUserActionTask(task, true);
+            
+            // create & format inserted text
+            IndentEngine eng = IndentEngine.find(document);
+            StringWriter textWriter = new StringWriter();
+            Writer indentWriter = eng.createWriter(document, pos, textWriter);
+
+            // create the inserted text
+            String invocationBody = getJavaInvocationBody(
+                    operation,
+                    insertServiceDef[0],
+                    serviceJavaName,
+                    portJavaName,
+                    portGetterMethod,
+                    argumentInitPart[0],
+                    returnTypeName,
+                    operationJavaName,
+                    argumentDeclPart[0],
+                    serviceFName[0],
+                    printerName[0],
+                    respType);
+
+            indentWriter.write(invocationBody);
+            indentWriter.close();
+            String textToInsert = textWriter.toString();
+
+            try {
+                document.insertString(pos, textToInsert, null);
+            } catch (BadLocationException badLoc) {
+                document.insertString(pos + 1, textToInsert, null);
+            }
+            
+            // @insert WebServiceRef injection
+            if (generateWsRefInjection[0]) {
+                CancellableTask modificationTask = new CancellableTask<WorkingCopy>() {
+                    public void run(WorkingCopy workingCopy) throws IOException {
+                        workingCopy.toPhase(Phase.RESOLVED);
+
+                        CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                        TreeMaker make = workingCopy.getTreeMaker();
+                        for (Tree typeDecl : cut.getTypeDecls()) {
+                            if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                                ClassTree javaClass = (ClassTree) typeDecl;
+                                VariableTree serviceRefInjection = generateServiceRefInjection(workingCopy, make, serviceFName[0], serviceJavaName, wsdlUrl);
+                                // Not working properly : See the Issue 89116
+                                ClassTree modifiedClass = make.insertClassMember(javaClass, 0, serviceRefInjection);
+                                workingCopy.rewrite(javaClass, modifiedClass);
+                                break;
+                            } 
+                        }
+
+                    }
+                    public void cancel() {}
+                };
+                targetSource.runModificationTask(modificationTask).commit();
+            }         
+        } catch (BadLocationException badLoc) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, badLoc);
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+        }
+    }
+    
+    private static VariableTree generateServiceRefInjection(
+            WorkingCopy workingCopy,
+            TreeMaker make,
+            String fieldName,
+            String fieldType,
+            String wsdlUrl) {
+        TypeElement wsRefElement = workingCopy.getElements().getTypeElement("javax.xml.ws.WebServiceRef"); //NOI18N
+
+        AnnotationTree wsRefAnnotation = make.Annotation(
+                make.QualIdent(wsRefElement), 
+                Collections.<ExpressionTree>singletonList(make.Assignment(make.Identifier("wsdlLocation"), make.Literal(wsdlUrl)))
+        );
+        // create method modifier: public and no annotation
+        ModifiersTree methodModifiers = make.Modifiers(
+            Collections.<Modifier>singleton(Modifier.PUBLIC),
+            Collections.<AnnotationTree>singletonList(wsRefAnnotation)
+        );
+        TypeElement typeElement = workingCopy.getElements().getTypeElement(fieldType);
+        return make.Variable(
+            methodModifiers,
+            fieldName,
+            make.Type(typeElement.asType()),
+            null
+        );
+    }
+//      
 //    
 //    private static boolean inSessionBean(JavaClass javaClass) {
 //        List annotations = javaClass.getAnnotations();
@@ -954,6 +990,16 @@ public class JaxWsCodeGenerator {
             name="service_"+String.valueOf(++i);
         }
         return name; //NOI18N
+    }
+    
+    private static boolean isServletClass(CompilationController controller, ClassTree classTree) {
+        SourceUtils srcUtils = SourceUtils.newInstance(controller, classTree);
+        TypeElement thisTypeEl = srcUtils.getTypeElement();
+        TypeElement servletElement = controller.getElements().getTypeElement("javax.servlet.http.HttpServlet");
+        if (servletElement!=null) {
+            return controller.getTypes().isAssignable(thisTypeEl.asType(), servletElement.asType());
+        }
+        return false;
     }
 
 // Retouche    
