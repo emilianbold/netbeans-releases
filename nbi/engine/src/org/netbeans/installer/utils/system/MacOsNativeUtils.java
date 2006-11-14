@@ -311,10 +311,7 @@ public class MacOsNativeUtils extends UnixNativeUtils {
             }
             LogManager.log(ErrorLevel.DEBUG,
                     "    Saving XML");
-            XMLUtils.saveXMLDocument(document,dockFile,
-                    DownloadManager.getInstance().download(
-                    ProductRegistry.DEFAULT_PRODUCT_REGISTRY_STYLESHEET_URI,
-                    DownloadOptions.getDefaults()));
+            XMLUtils.saveXMLDocument(document,dockFile);
             LogManager.log(ErrorLevel.DEBUG,
                     "    Done (saving xml)");
             
@@ -322,9 +319,6 @@ public class MacOsNativeUtils extends UnixNativeUtils {
             LogManager.log(ErrorLevel.WARNING,e);
             return false;
         }  catch (ParseException e) {
-            LogManager.log(ErrorLevel.WARNING,e);
-            return false;
-        } catch (DownloadException e) {
             LogManager.log(ErrorLevel.WARNING,e);
             return false;
         } catch (XMLException e) {

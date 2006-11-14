@@ -37,7 +37,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-import org.netbeans.installer.utils.exceptions.InitializationException;
+import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.utils.exceptions.ParseException;
 import org.netbeans.installer.utils.exceptions.XMLException;
 import org.w3c.dom.Document;
@@ -58,14 +58,16 @@ public abstract class XMLUtils {
     private static final String ATTR_DELIM  = "=";
     private static final String ATTRS_DELIM = " and ";
     
+    public static final String XSLT_REFORMAT_URI =
+            "resource:org/netbeans/installer/utils/xml/reformat.xslt";
+    
     /////////////////////////////////////////////////////////////////////////////////
     // Static
-    public static void saveXMLDocument(Document document, File file, File xslt) throws XMLException {
+    public static void saveXMLDocument(Document document, File file) throws XMLException {
         FileOutputStream output = null;
         try {
             output = new FileOutputStream(file);
-            
-            saveXMLDocument(document, output, xslt);
+            saveXMLDocument(document, output);
         } catch (IOException e) {
             throw new XMLException("Cannot save XML document", e);
         } finally {
@@ -79,12 +81,14 @@ public abstract class XMLUtils {
         }
     }
     
-    public static void saveXMLDocument(Document document, OutputStream output, File xslt) throws XMLException {
-        Source xsltSource = new StreamSource(xslt);
+    public static void saveXMLDocument(Document document, OutputStream output) throws XMLException {
+        
         Source domSource = new DOMSource(document);
         Result streamResult = new StreamResult(output);
         
         try {
+            File xslt = FileProxy.getInstance().getFile(XSLT_REFORMAT_URI);
+            Source xsltSource = new StreamSource(xslt);
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
             Transformer transformer = transformerFactory.newTransformer(xsltSource);
             
@@ -93,7 +97,9 @@ public abstract class XMLUtils {
             throw new XMLException("Cannot save XML document", e);
         } catch (TransformerException e) {
             throw new XMLException("Cannot save XML document", e);
-        }
+        }  catch (DownloadException e) {
+            throw new XMLException("Cannot save XML document", e);
+        } 
     }
     
     public static List<Node> getChildList(Node root, String... children) {
