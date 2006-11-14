@@ -829,51 +829,49 @@ public class JaxWsCodeGenerator {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(Phase.ELEMENTS_RESOLVED);
                 CompilationUnitTree cut = controller.getCompilationUnit();
-                for (Tree typeDecl : cut.getTypeDecls()) {
-                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
-                        ClassTree javaClass = (ClassTree) typeDecl;
-                        // find if class is Injection Target
-                        SourceUtils srcUtils = SourceUtils.newInstance(controller, javaClass);
-                        TypeElement thisTypeEl = srcUtils.getTypeElement();
-                        generateWsRefInjection[0] = InjectionTargetQuery.isInjectionTarget(controller, thisTypeEl);
+                
+                SourceUtils srcUtils = SourceUtils.newInstance(controller);
+                if (srcUtils!=null) {
+                    ClassTree javaClass = srcUtils.getClassTree();
+                    // find if class is Injection Target
+                    TypeElement thisTypeEl = srcUtils.getTypeElement();
+                    generateWsRefInjection[0] = InjectionTargetQuery.isInjectionTarget(controller, thisTypeEl);
 
-                        if (isServletClass(controller, javaClass)) {
-                            printerName[0]="out";
-                            argumentInitPart[0] = fixNamesInInitializationPart(argumentInitPart[0]);
-                            argumentDeclPart[0] = fixNamesInDeclarationPart(argumentDeclPart[0]);
-                        }
-                        // compute the service field name
-                        if (generateWsRefInjection[0]) {
-                            Set serviceFieldNames = new HashSet();
-                            boolean injectionExists=false;
-                            int memberOrder=0;
-                            for (Tree member : javaClass.getMembers()) {
-                                // for the first inner class in top level
-                                ++memberOrder;
-                                if (VARIABLE == member.getKind()) {
-                                    // get variable type
-                                    VariableTree var = (VariableTree)member;
-                                    Tree typeTree = var.getType();
-                                    TreePath typeTreePath = controller.getTrees().getPath(cut, typeTree);
-                                    TypeElement typeEl = (TypeElement)controller.getTrees().getElement(typeTreePath);
-                                    if (typeEl!=null) {
-                                        String variableType = typeEl.getQualifiedName().toString(); 
-                                        if (serviceJavaName.equals(variableType)) {
-                                            serviceFName[0]=var.getName().toString();
-                                            generateWsRefInjection[0]=false;
-                                            injectionExists=true;
-                                            break;
-                                        }
+                    if (isServletClass(controller, javaClass)) {
+                        printerName[0]="out";
+                        argumentInitPart[0] = fixNamesInInitializationPart(argumentInitPart[0]);
+                        argumentDeclPart[0] = fixNamesInDeclarationPart(argumentDeclPart[0]);
+                    }
+                    // compute the service field name
+                    if (generateWsRefInjection[0]) {
+                        Set serviceFieldNames = new HashSet();
+                        boolean injectionExists=false;
+                        int memberOrder=0;
+                        for (Tree member : javaClass.getMembers()) {
+                            // for the first inner class in top level
+                            ++memberOrder;
+                            if (VARIABLE == member.getKind()) {
+                                // get variable type
+                                VariableTree var = (VariableTree)member;
+                                Tree typeTree = var.getType();
+                                TreePath typeTreePath = controller.getTrees().getPath(cut, typeTree);
+                                TypeElement typeEl = (TypeElement)controller.getTrees().getElement(typeTreePath);
+                                if (typeEl!=null) {
+                                    String variableType = typeEl.getQualifiedName().toString(); 
+                                    if (serviceJavaName.equals(variableType)) {
+                                        serviceFName[0]=var.getName().toString();
+                                        generateWsRefInjection[0]=false;
+                                        injectionExists=true;
+                                        break;
                                     }
-                                    serviceFieldNames.add(var.getName().toString());
                                 }
-                            }
-                            if (!injectionExists) {
-                                serviceFName[0] = findProperServiceFieldName(serviceFieldNames);
+                                serviceFieldNames.add(var.getName().toString());
                             }
                         }
-                        break;
-                    } 
+                        if (!injectionExists) {
+                            serviceFName[0] = findProperServiceFieldName(serviceFieldNames);
+                        }
+                    }
                 }
             }
             public void cancel() {}
@@ -926,19 +924,15 @@ public class JaxWsCodeGenerator {
                     public void run(WorkingCopy workingCopy) throws IOException {
                         workingCopy.toPhase(Phase.RESOLVED);
 
-                        CompilationUnitTree cut = workingCopy.getCompilationUnit();
                         TreeMaker make = workingCopy.getTreeMaker();
-                        for (Tree typeDecl : cut.getTypeDecls()) {
-                            if (Tree.Kind.CLASS == typeDecl.getKind()) {
-                                ClassTree javaClass = (ClassTree) typeDecl;
-                                VariableTree serviceRefInjection = generateServiceRefInjection(workingCopy, make, serviceFName[0], serviceJavaName, wsdlUrl);
-                                // Not working properly : See the Issue 89116
-                                ClassTree modifiedClass = make.insertClassMember(javaClass, 0, serviceRefInjection);
-                                workingCopy.rewrite(javaClass, modifiedClass);
-                                break;
-                            } 
+                        
+                        SourceUtils srcUtils = SourceUtils.newInstance(workingCopy);
+                        if (srcUtils!=null) {
+                            ClassTree javaClass = srcUtils.getClassTree();
+                            VariableTree serviceRefInjection = generateServiceRefInjection(workingCopy, make, serviceFName[0], serviceJavaName, wsdlUrl);
+                            ClassTree modifiedClass = make.insertClassMember(javaClass, 0, serviceRefInjection);
+                            workingCopy.rewrite(javaClass, modifiedClass);
                         }
-
                     }
                     public void cancel() {}
                 };
@@ -999,12 +993,7 @@ public class JaxWsCodeGenerator {
     
     private static boolean isServletClass(CompilationController controller, ClassTree classTree) {
         SourceUtils srcUtils = SourceUtils.newInstance(controller, classTree);
-        TypeElement thisTypeEl = srcUtils.getTypeElement();
-        TypeElement servletElement = controller.getElements().getTypeElement("javax.servlet.http.HttpServlet");
-        if (servletElement!=null) {
-            return controller.getTypes().isAssignable(thisTypeEl.asType(), servletElement.asType());
-        }
-        return false;
+        return srcUtils.isSubtype("javax.servlet.http.HttpServlet");
     }
 
 // Retouche    
