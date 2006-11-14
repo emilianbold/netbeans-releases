@@ -34,7 +34,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- 1st round -->    
     <testbag testattribs="all or actions" prio="2"
-             executor="ide_performance" name="Actions - UI responsiveness" >
+             executor="ide_performance" name="UI responsiveness - Actions" >
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/MeasureActions.class"/>
@@ -42,7 +42,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     <testbag testattribs="all or dialogs" prio="3"
-             executor="ide_performance" name="Dialogs - UI responsiveness" >
+             executor="ide_performance" name="UI responsiveness - Dialogs" >
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/MeasureDialogs.class"/>
@@ -50,7 +50,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     <testbag testattribs="all or menus" prio="4"
-             executor="ide_performance" name="Menus - UI responsiveness" >
+             executor="ide_performance" name="UI responsiveness - Menus" >
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/MeasureMenus.class"/>
@@ -60,7 +60,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- 2nd round -->    
     <testbag testattribs="(all or actions) and NOT once" prio="5"
-             executor="ide_performance" name="Actions - UI responsiveness" >
+             executor="ide_performance" name="UI responsiveness - Actions" >
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/MeasureActions.class"/>
@@ -68,7 +68,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     <testbag testattribs="(all or dialogs) and NOT once" prio="6"
-             executor="ide_performance" name="Dialogs - UI responsiveness" >
+             executor="ide_performance" name="UI responsiveness - Dialogs" >
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/MeasureDialogs.class"/>
@@ -76,7 +76,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     <testbag testattribs="(all or menus) and NOT once" prio="7"
-             executor="ide_performance" name="Menus - UI responsiveness" >
+             executor="ide_performance" name="UI responsiveness - Menus" >
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/MeasureMenus.class"/>
@@ -86,7 +86,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- 3rd round -->    
     <testbag testattribs="(all or actions) and NOT once" prio="8"
-             executor="ide_performance" name="Actions - UI responsiveness" >
+             executor="ide_performance" name="UI responsiveness - Actions" >
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/MeasureActions.class"/>
@@ -94,7 +94,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     <testbag testattribs="(all or dialogs) and NOT once" prio="9"
-             executor="ide_performance" name="Dialogs - UI responsiveness" >
+             executor="ide_performance" name="UI responsiveness - Dialogs" >
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/MeasureDialogs.class"/>
@@ -102,7 +102,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     <testbag testattribs="(all or menus) and NOT once" prio="10"
-             executor="ide_performance" name="Menus - UI responsiveness" >
+             executor="ide_performance" name="UI responsiveness - Menus" >
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/MeasureMenus.class"/>
@@ -112,7 +112,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- Memory usage -->
     <testbag testattribs="memory_usage or memory_dialog" prio="2"
-             executor="ide_performance_memory_usage" name="Dialogs - Memory Usage" >
+             executor="ide_performance_memory_usage" name="Memory Usage - Dialogs" >
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/memory_usage/MeasureMemoryUsage_dialog_1.class"/>
@@ -121,7 +121,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
     <testbag testattribs="memory_usage or memory_dialog" prio="3"
-             executor="ide_performance_memory_usage" name="Dialogs - Memory Usage" >
+             executor="ide_performance_memory_usage" name="Memory Usage - Dialogs" >
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/memory_usage/MeasureMemoryUsage_dialog_2.class"/>
@@ -130,7 +130,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
     <testbag testattribs="memory_usage or memory_dialog" prio="4"
-             executor="ide_performance_memory_usage" name="Dialogs - Memory Usage" >
+             executor="ide_performance_memory_usage" name="Memory Usage - Dialogs" >
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/memory_usage/MeasureMemoryUsage_dialog_3.class"/>
@@ -139,7 +139,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
     <testbag testattribs="memory_usage or memory_dialog" prio="5"
-             executor="ide_performance_memory_usage" name="Dialogs - Memory Usage" >
+             executor="ide_performance_memory_usage" name="Memory Usage - Dialogs" >
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/memory_usage/MeasureMemoryUsage_dialog_4.class"/>
@@ -148,7 +148,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
     <testbag testattribs="memory_usage or memory_dialog" prio="6"
-             executor="ide_performance_memory_usage" name="Dialogs - Memory Usage" >
+             executor="ide_performance_memory_usage" name="Memory Usage - Dialogs" >
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/memory_usage/MeasureMemoryUsage_dialog_5.class"/>
@@ -157,7 +157,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
     <testbag testattribs="memory_usage or memory_dialog" prio="7"
-             executor="ide_performance_memory_usage" name="Dialogs - Memory Usage" >
+             executor="ide_performance_memory_usage" name="Memory Usage - Dialogs" >
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/memory_usage/MeasureMemoryUsage_dialog_6.class"/>
@@ -166,7 +166,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
     <testbag testattribs="memory_usage or memory_dialog" prio="8"
-             executor="ide_performance_memory_usage" name="Dialogs - Memory Usage" >
+             executor="ide_performance_memory_usage" name="Memory Usage - Dialogs" >
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/memory_usage/MeasureMemoryUsage_dialog_7.class"/>
@@ -175,7 +175,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
     <testbag testattribs="memory_usage or memory_action" prio="9"
-             executor="ide_performance_memory_usage" name="Actions - Memory Usage" >
+             executor="ide_performance_memory_usage" name="Memory Usage - Actions" >
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/memory_usage/MeasureMemoryUsage_action_1.class"/>
@@ -184,7 +184,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
     <testbag testattribs="memory_usage or memory_action" prio="10"
-             executor="ide_performance_memory_usage" name="Actions - Memory Usage" >
+             executor="ide_performance_memory_usage" name="Memory Usage - Actions" >
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/memory_usage/MeasureMemoryUsage_action_2.class"/>
@@ -193,7 +193,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
     <testbag testattribs="memory_usage or memory_action" prio="11"
-             executor="ide_performance_memory_usage" name="Actions - Memory Usage" >
+             executor="ide_performance_memory_usage" name="Memory Usage - Actions" >
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/memory_usage/MeasureMemoryUsage_action_3.class"/>
@@ -202,7 +202,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
     <testbag testattribs="memory_usage or memory_action" prio="12"
-             executor="ide_performance_memory_usage" name="Actions - Memory Usage" >
+             executor="ide_performance_memory_usage" name="Memory Usage - Actions" >
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/memory_usage/MeasureMemoryUsage_action_4.class"/>
@@ -211,7 +211,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
     <testbag testattribs="memory_usage or memory_action" prio="13"
-             executor="ide_performance_memory_usage" name="Actions - Memory Usage" >
+             executor="ide_performance_memory_usage" name="Memory Usage - Actions" >
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/memory_usage/MeasureMemoryUsage_action_5.class"/>
@@ -220,7 +220,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
     <testbag testattribs="memory_usage or memory_action" prio="14"
-             executor="ide_performance_memory_usage" name="Actions - Memory Usage" >
+             executor="ide_performance_memory_usage" name="Memory Usage - Actions" >
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/memory_usage/MeasureMemoryUsage_action_6.class"/>
@@ -229,7 +229,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
     <testbag testattribs="memory_usage or memory_action" prio="15"
-             executor="ide_performance_memory_usage" name="Actions - Memory Usage" >
+             executor="ide_performance_memory_usage" name="Memory Usage - Actions" >
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/memory_usage/MeasureMemoryUsage_action_7.class"/>
@@ -238,7 +238,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
     <testbag testattribs="memory_usage or memory_menu" prio="16"
-             executor="ide_performance_memory_usage" name="Menus - Memory Usage" >
+             executor="ide_performance_memory_usage" name="Memory Usage - Menus" >
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/memory_usage/MeasureMemoryUsage_menu_1.class"/>
@@ -247,7 +247,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
     <testbag testattribs="memory_usage or memory_menu" prio="17"
-             executor="ide_performance_memory_usage" name="Menus - Memory Usage" >
+             executor="ide_performance_memory_usage" name="Memory Usage - Menus" >
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/memory_usage/MeasureMemoryUsage_menu_2.class"/>
@@ -256,7 +256,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
     <testbag testattribs="memory_usage or memory_menu" prio="18"
-             executor="ide_performance_memory_usage" name="Menus - Memory Usage" >
+             executor="ide_performance_memory_usage" name="Memory Usage - Menus" >
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/memory_usage/MeasureMemoryUsage_menu_3.class"/>
@@ -265,7 +265,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
     <testbag testattribs="memory_usage or memory_menu" prio="19"
-             executor="ide_performance_memory_usage" name="Menus - Memory Usage" >
+             executor="ide_performance_memory_usage" name="Memory Usage - Menus" >
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/memory_usage/MeasureMemoryUsage_menu_4.class"/>
@@ -274,7 +274,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
     <testbag testattribs="memory_usage or memory_menu" prio="20"
-             executor="ide_performance_memory_usage" name="Menus - Memory Usage" >
+             executor="ide_performance_memory_usage" name="Memory Usage - Menus" >
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/memory_usage/MeasureMemoryUsage_menu_5.class"/>
@@ -283,7 +283,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
     <testbag testattribs="memory_usage or memory_menu" prio="21"
-             executor="ide_performance_memory_usage" name="Menus - Memory Usage" >
+             executor="ide_performance_memory_usage" name="Memory Usage - Menus" >
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/memory_usage/MeasureMemoryUsage_menu_6.class"/>
@@ -292,7 +292,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
     <testbag testattribs="memory_usage or memory_menu" prio="22"
-             executor="ide_performance_memory_usage" name="Menus - Memory Usage" >
+             executor="ide_performance_memory_usage" name="Memory Usage - Menus" >
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/memory_usage/MeasureMemoryUsage_menu_7.class"/>
@@ -302,6 +302,7 @@ Microsystems, Inc. All Rights Reserved.
     
     
     <!-- Scan Classpath test bag -->    
+    <!-- temporary disbaled - no support in Java/Source
     <testbag testattribs="all or classpath_scan" prio="100"
              executor="ide_performance_scan" name="Classpath Scan" >
         <testset dir="qa-functional/src">
@@ -311,6 +312,7 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </testset>
     </testbag>
+    -->
     
     <!-- Custom / Module test bags -->    
     <testbag testattribs="java_related" prio="100"
@@ -362,7 +364,7 @@ Microsystems, Inc. All Rights Reserved.
 <!-- Memory Footprint Testbags -->
     <!-- Out Of The Box -->
     <testbag testattribs="footprint_all or out_of_the_box_startup or footprint_temp" prio="300"
-             executor="ide_footprint" name="Out Of The Box Startup" >
+             executor="ide_footprint" name="Footprint - Out Of The Box Startup" >
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="footprint/FootprintTests.class/testOutOfTheBoxStartup"/>
@@ -371,7 +373,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
     <testbag testattribs="(footprint_all or out_of_the_box_startup) and NOT once" prio="301"
-             executor="ide_footprint" name="Out Of The Box Startup" >
+             executor="ide_footprint" name="Footprint - Out Of The Box Startup" >
         <testset dir="footprint/src">
             <patternset>
                 <include name="footprint/FootprintTests.class/testOutOfTheBoxStartup"/>
@@ -380,7 +382,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
     <testbag testattribs="(footprint_all or out_of_the_box_startup) and NOT once" prio="302"
-             executor="ide_footprint" name="Out Of The Box Startup" >
+             executor="ide_footprint" name="Footprint - Out Of The Box Startup" >
         <testset dir="footprint/src">
             <patternset>
                 <include name="footprint/FootprintTests.class/testOutOfTheBoxStartup"/>
@@ -390,7 +392,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- J2SE Project workflow -->
     <testbag testattribs="footprint_all or j2se_project" prio="310"
-             executor="ide_footprint" name="J2SE project workflow" >
+             executor="ide_footprint" name="Footprint - J2SE project workflow" >
         <testset dir="footprint/src">
             <patternset>
                 <include name="footprint/FootprintTests.class/testJ2SEProjectWorkflow"/>
@@ -399,7 +401,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
     <testbag testattribs="(footprint_all or j2se_project) and NOT once" prio="311"
-             executor="ide_footprint" name="J2SE project workflow" >
+             executor="ide_footprint" name="Footprint - J2SE project workflow" >
         <testset dir="footprint/src">
             <patternset>
                 <include name="footprint/FootprintTests.class/testJ2SEProjectWorkflow"/>
@@ -408,7 +410,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
     <testbag testattribs="(footprint_all or j2se_project) and NOT once" prio="312"
-             executor="ide_footprint" name="J2SE project workflow" >
+             executor="ide_footprint" name="Footprint - J2SE project workflow" >
         <testset dir="footprint/src">
             <patternset>
                 <include name="footprint/FootprintTests.class/testJ2SEProjectWorkflow"/>
@@ -418,7 +420,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- Web Project workflow -->
     <testbag testattribs="footprint_all or web_project" prio="320"
-             executor="ide_footprint" name="Web project workflow" >
+             executor="ide_footprint" name="Footprint - Web project workflow" >
         <testset dir="footprint/src">
             <patternset>
                 <include name="footprint/FootprintTests.class/testWebProjectWorkflow"/>
@@ -427,7 +429,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
     <testbag testattribs="(footprint_all or web_project) and NOT once" prio="321"
-             executor="ide_footprint" name="Web project workflow" >
+             executor="ide_footprint" name="Footprint - Web project workflow" >
         <testset dir="footprint/src">
             <patternset>
                 <include name="footprint/FootprintTests.class/testWebProjectWorkflow"/>
@@ -436,7 +438,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
     <testbag testattribs="(footprint_all or web_project) and NOT once" prio="322"
-             executor="ide_footprint" name="Web project workflow" >
+             executor="ide_footprint" name="Footprint - Web project workflow" >
         <testset dir="footprint/src">
             <patternset>
                 <include name="footprint/FootprintTests.class/testWebProjectWorkflow"/>
@@ -446,7 +448,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- Find Usages -->
     <testbag testattribs="footprint_all or find_usages" prio="330"
-             executor="ide_footprint" name="Find usages" >
+             executor="ide_footprint" name="Footprint - Find usages" >
         <testset dir="footprint/src">
             <patternset>
                 <include name="footprint/FootprintTests.class/testFindUsages"/>
@@ -455,7 +457,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
     <testbag testattribs="(footprint_all or find_usages) and NOT once" prio="331"
-             executor="ide_footprint" name="Find usages" >
+             executor="ide_footprint" name="Footprint - Find usages" >
         <testset dir="footprint/src">
             <patternset>
                 <include name="footprint/FootprintTests.class/testFindUsages"/>
@@ -464,7 +466,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
     <testbag testattribs="(footprint_all or find_usages) and NOT once" prio="332"
-             executor="ide_footprint" name="Find usages" >
+             executor="ide_footprint" name="Footprint - Find usages" >
         <testset dir="footprint/src">
             <patternset>
                 <include name="footprint/FootprintTests.class/testFindUsages"/>
@@ -474,7 +476,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- Refactor Rename -->
     <testbag testattribs="footprint_all or rename_class" prio="340"
-             executor="ide_footprint" name="Rename class" >
+             executor="ide_footprint" name="Footprint - Rename class" >
         <testset dir="footprint/src">
             <patternset>
                 <include name="footprint/FootprintTests.class/testRefactoringRename"/>
@@ -483,7 +485,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
     <testbag testattribs="(footprint_all or rename_class)) and NOT once" prio="341"
-             executor="ide_footprint" name="Rename class" >
+             executor="ide_footprint" name="Footprint - Rename class" >
         <testset dir="footprint/src">
             <patternset>
                 <include name="footprint/FootprintTests.class/testRefactoringRename"/>
@@ -492,7 +494,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
     <testbag testattribs="(footprint_all or rename_class) and NOT once" prio="342"
-             executor="ide_footprint" name="Rename class" >
+             executor="ide_footprint" name="Footprint - Rename class" >
         <testset dir="footprint/src">
             <patternset>
                 <include name="footprint/FootprintTests.class/testRefactoringRename"/>

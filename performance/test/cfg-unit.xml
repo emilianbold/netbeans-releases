@@ -23,7 +23,7 @@ Microsystems, Inc. All Rights Reserved.
 <mconfig name="Performance unit tests config">
 
 
-    <testbag testattribs="all or startup" prio="1" executor="execute_startup" name="IDE startup time">
+    <testbag testattribs="all or startup" prio="1" executor="execute_startup" name="Startup time">
 	<testset dir="unit/src">
 	    <patternset>
 		<include name="startup/MeasureIDEStartupTime.class/testStartIDE"/>
@@ -31,7 +31,7 @@ Microsystems, Inc. All Rights Reserved.
 	</testset>
     </testbag>
 
-    <testbag testattribs="all or startup_complex" prio="10" executor="prepare_ide" name="Prepare IDE for complex startup time measurement">
+    <testbag testattribs="all or startup_complex" prio="10" executor="prepare_ide" name="Startup time - Complex - prepare">
 	<testset dir="unit/src">
 	    <patternset>
 		<include name="prepare/PrepareIDEForComplexMeasurements.class"/>
@@ -39,7 +39,7 @@ Microsystems, Inc. All Rights Reserved.
 	</testset>
     </testbag>
     
-    <testbag testattribs="all or startup_complex" prio="11" executor="execute_complex_startup" name="IDE complex startup time">
+    <testbag testattribs="all or startup_complex" prio="11" executor="execute_complex_startup" name="Startup time - Complex">
 	<testset dir="unit/src">
 	    <patternset>
 		<include name="startup/MeasureIDEStartupTime.class/testStartIDEWithOpenedFiles"/>
@@ -47,7 +47,7 @@ Microsystems, Inc. All Rights Reserved.
 	</testset>
     </testbag>
 
-    <testbag testattribs="all or startup_complex_nb_project" prio="20" executor="prepare_ide_nb_project" name="Prepare IDE for complex startup time measurement - NB project">
+    <testbag testattribs="all or startup_complex_nb_project" prio="20" executor="prepare_ide_nb_project" name="Startup time - Complex NB project - prepare">
 	<testset dir="unit/src">
 	    <patternset>
 		<include name="prepare/PrepareIDEForPluginComplexMeasurements.class"/>
@@ -55,7 +55,7 @@ Microsystems, Inc. All Rights Reserved.
 	</testset>
     </testbag>
     
-    <testbag testattribs="all or startup_complex_nb_project" prio="21" executor="execute_complex_startup_nb_project" name="IDE complex startup time - NB project">
+    <testbag testattribs="all or startup_complex_nb_project" prio="21" executor="execute_complex_startup_nb_project" name="Startup time - Complex NB project">
 	<testset dir="unit/src">
 	    <patternset>
 		<include name="startup/MeasureIDEStartupTime.class/testStartIDEWithOpenedFilesNBproject"/>
