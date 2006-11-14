@@ -38,7 +38,7 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 import org.netbeans.installer.product.ProductComponent;
-import org.netbeans.installer.product.ProductComponent.InstallationStatus;
+import org.netbeans.installer.product.ProductComponent.DetailedStatus;
 import org.netbeans.installer.product.ProductRegistry;
 import org.netbeans.installer.utils.ErrorLevel;
 import org.netbeans.installer.utils.LogManager;
@@ -144,7 +144,7 @@ public class InstallationDetailsDialog extends NbiDialog {
             if (properties == null) {
                 properties = new ArrayList<String>();
                 
-                switch (component.getInstallationStatus()) {
+                switch (component.getDetailedStatus()) {
                     case INSTALLED_WITH_WARNINGS:
                         for (Throwable warning: component.getInstallationWarnings()) {
                             properties.add("<html><b>Warning:</b> " + warning.getMessage());
@@ -245,7 +245,7 @@ public class InstallationDetailsDialog extends NbiDialog {
                     return node;
                 case 1:
                     if (node instanceof ProductComponent) {
-                        return ((ProductComponent) node).getInstallationStatus();
+                        return ((ProductComponent) node).getDetailedStatus();
                     } else {
                         return null;
                     }
@@ -299,7 +299,7 @@ public class InstallationDetailsDialog extends NbiDialog {
             setOpaque(false);
             setBackground(table.getBackground());
             setForeground(table.getForeground());
-            setText((value instanceof InstallationStatus) ? value.toString() : "");
+            setText((value instanceof DetailedStatus) ? value.toString() : "");
             
             return this;
         }
