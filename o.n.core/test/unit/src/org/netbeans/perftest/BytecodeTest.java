@@ -30,9 +30,13 @@ import junit.framework.*;
 import com.sun.org.apache.bcel.internal.classfile.ClassParser;
 import com.sun.org.apache.bcel.internal.classfile.DescendingVisitor;
 import com.sun.org.apache.bcel.internal.classfile.EmptyVisitor;
+import com.sun.org.apache.bcel.internal.classfile.Field;
 import com.sun.org.apache.bcel.internal.classfile.JavaClass;
 import com.sun.org.apache.bcel.internal.classfile.LineNumberTable;
 import com.sun.org.apache.bcel.internal.classfile.LocalVariableTable;
+import com.sun.org.apache.bcel.internal.classfile.Method;
+import com.sun.org.apache.bcel.internal.generic.Type;
+import java.beans.BeanDescriptor;
 import org.netbeans.*;
 import org.netbeans.core.startup.ModuleSystem;
 import org.netbeans.junit.NbTestCase;
@@ -66,6 +70,11 @@ public class BytecodeTest extends NbTestCase {
         assertNotNull("classfile of Main parsed");
         
         Set<Violation> violations = new HashSet<Violation>();
+        MyVisitor v = new MyVisitor();
+        new DescendingVisitor(clz,v).visit();
+        if (v.foundLocalVarTable()) {
+            violations.add(new Violation(Main.class.getName(), "startup classpath", "local var table found"));
+        }
         for (File f: org.netbeans.core.startup.Main.getModuleSystem().getModuleJars()) {
             if (!f.getName().endsWith(".jar"))
                 continue;
@@ -87,6 +96,8 @@ public class BytecodeTest extends NbTestCase {
             ||  "persistence-tool-support.jar".equals(f.getName())
             ||  "ini4j.jar".equals(f.getName())
             ||  "svnClientAdapter.jar".equals(f.getName())
+            ||  "lucene-core-2.0.0.jar".equals(f.getName())
+            ||  "javac-impl.jar".equals(f.getName())
             ||  "java-parser.jar".equals(f.getName())) 
                 continue;
             
@@ -100,10 +111,10 @@ public class BytecodeTest extends NbTestCase {
                     clz = new ClassParser(jar.getInputStream(entry), entry.getName()).parse();
                     assertNotNull("classfile of "+entry.toString()+" parsed");
                     
-                    MyVisitor v = new MyVisitor();
+                    v = new MyVisitor();
                     new DescendingVisitor(clz,v).visit();
                     if (v.foundLocalVarTable()) {
-                        violations.add(new Violation(entry.toString(), jar.getName()));
+                        violations.add(new Violation(entry.toString(), jar.getName(), "local var table found"));
                     }
                     
                     break;
@@ -113,8 +124,8 @@ public class BytecodeTest extends NbTestCase {
         if (!violations.isEmpty()) {
             StringBuilder msg = new StringBuilder();
             msg.append("Some classes in IDE contain variable table information:\n");
-            for (Violation v: violations) {
-                msg.append(v.entry).append(" in ").append(v.jarFile).append('\n');
+            for (Violation viol: violations) {
+                msg.append(viol.entry).append(" in ").append(viol.jarFile).append('\n');
             }
             fail(msg.toString());
         }
@@ -124,9 +135,11 @@ public class BytecodeTest extends NbTestCase {
     private static class Violation {
         String entry;
         String jarFile;
-        Violation(String entry, String jarFile) {
+        String comment;
+        Violation(String entry, String jarFile, String comment) {
             this.entry = entry;
             this.jarFile = jarFile;
+            this.comment = comment;
         }
     }
 
@@ -150,5 +163,91 @@ public class BytecodeTest extends NbTestCase {
             return lineNumberTable;
         }
 
+    }
+
+    private static class BIVisitor extends EmptyVisitor {
+        
+        private static Type pdType = Type.getType("[Ljava/beans/PropertyDescriptor;");
+        private static Type bdType = Type.getType("Ljava/beans/BeanDescriptor;");
+        private static Type mdType = Type.getType("[Ljava/beans/MethodDescriptor;");
+        private static Type edType = Type.getType("[Ljava/beans/EventSetDescriptor;");
+        private boolean hasDescFields;
+        private boolean hasStaticMethods;
+        
+        public void visitField(Field obj) {
+            if (obj.isStatic()) {
+//                System.out.println("signature "+obj.getSignature());
+                Type name = Type.getReturnType(obj.getSignature());
+                if (pdType.equals(name) ||
+                        bdType.equals(name) ||
+                        mdType.equals(name) ||
+                        edType.equals(name)) {
+                    hasDescFields = true;
+                }
+            }
+        }
+
+        public void visitMethod(Method obj) {
+            if (obj.isStatic()) { // && obj.getArgumentTypes().length == 0) {
+                String name = obj.getName();
+                if ("getBdescriptor".equals(name) ||
+                        "getMdescriptor".equals(name) ||
+                        "getEdescriptor".equals(name) ||
+                        "getPdescriptor".equals(name)) {
+                    hasStaticMethods = true;
+                }
+            }
+        }
+        
+        public boolean foundDescFields() {
+            return hasDescFields;
+        }
+
+        public boolean foundStaticMethods() {
+            return hasStaticMethods;
+        }
+
+    }
+
+    /** Scan of BeanInfo classes to check if they held descriptors statically
+     */
+    public void testBeanInfos() throws Exception {
+        JavaClass clz;
+        assertNotNull("classfile of Main parsed");
+        
+        Set<Violation> violations = new HashSet<Violation>();
+        for (File f: org.netbeans.core.startup.Main.getModuleSystem().getModuleJars()) {
+            if (!f.getName().endsWith(".jar"))
+                continue;
+            
+            JarFile jar = new JarFile(f);
+            Enumeration<JarEntry> entries = jar.entries();
+            JarEntry entry;
+            while (entries.hasMoreElements()) {
+                entry = entries.nextElement();
+                if (entry.getName().endsWith("BeanInfo.class")) {
+                    System.out.println("testing entry "+entry);
+                    clz = new ClassParser(jar.getInputStream(entry), entry.getName()).parse();
+                    assertNotNull("classfile of "+entry.toString()+" parsed");
+                    
+                    BIVisitor v = new BIVisitor();
+                    new DescendingVisitor(clz,v).visit();
+                    if (v.foundDescFields()) {
+                        violations.add(new Violation(entry.toString(), jar.getName(), " found fields that should be avoided"));
+                    }
+                    if (v.foundStaticMethods()) {
+                        violations.add(new Violation(entry.toString(), jar.getName(), " found methods that should be avoided"));
+                    }
+                }
+            }
+        }
+        if (!violations.isEmpty()) {
+            StringBuilder msg = new StringBuilder();
+            msg.append("Some BeanInfo classes should be more optimized:\n");
+            for (Violation v: violations) {
+                msg.append(v.entry).append(" in ").append(v.jarFile).append(v.comment).append('\n');
+            }
+            fail(msg.toString());
+        }
     }
 }
