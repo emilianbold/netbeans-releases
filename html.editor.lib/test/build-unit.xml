@@ -18,41 +18,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<project name="jspsyntax/test-unit" basedir="." default="all">
-
-    <!-- Imports default qa-functional-compiler and runidetest executor.
-    jemmy and jellytools jars are on classpath for both. -->
+<project name="html/editor/lib/test-unit" basedir="." default="all">
     <import file="../../../../nbbuild/templates/xtest-unit.xml"/>
-
-
-    <!-- Adds property to IDE command line: suppress scanning of classpath -->
-    <property name="noscan" value="-J-Dnetbeans.javacore.noscan=true"/>
-
-    <!-- Creates an empty Java project in IDE -->
-    <!-- <property name="xtest.ide.create.project" value="true"/> -->
-    <!-- Opens project at specified location -->
-    <!--property name="xtest.ide.open.project" location="${xtest.data}/SampleProject"/-->
-
-    <!--property name="xtest.ide.exit" value="false"/-->
-    <target name="unit-compiler">
-        <buildTests srcDir="unit/src" compileExcludes="**/data/**">
-        
-            <classpath>
-                <pathelement location="${html/editor.dir}/modules/org-netbeans-modules-html-editor.jar"/>
-                <pathelement location="${html/editor/lib.dir}/modules/org-netbeans-modules-html-editor-lib.jar"/>
-                                
-                <pathelement location="${openide/fs.dir}/core/org-openide-filesystems.jar"/>
-                <pathelement location="${openide/loaders.dir}/core/openide-loaders.jar"/>
-                <pathelement location="${openide/util.dir}/lib/org-openide-util.jar"/>
-                
-                <pathelement location="${editor/lib.dir}/modules/org-netbeans-modules-editor-lib.jar"/>
-                <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor-util.jar"/>
-                <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor.jar"/>
-                <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor-fold.jar"/>
-                <pathelement location="${xml/tageditorsupport.dir}/modules/org-netbeans-modules-editor-structure.jar"/>
-            </classpath>
-        
-        </buildTests>
-    </target>
 </project>
 
