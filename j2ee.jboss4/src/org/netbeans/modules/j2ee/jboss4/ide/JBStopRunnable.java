@@ -97,12 +97,15 @@ class JBStopRunnable implements Runnable {
             startServer.fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.FAILED, NbBundle.getMessage(JBStopRunnable.class, "MSG_STOP_SERVER_FAILED_FNF", serverName)));//NOI18N
             return;
         }
-
+        
+        JBProperties properties = dm.getProperties();
+        StringBuilder credentialsParams = new StringBuilder(32);
+        credentialsParams.append(" -u ").append(properties.getUsername()).append(" -p ").append(properties.getPassword()); // NOI18N
         // Currently there is a problem stopping JBoss when Profiler agent is loaded.
         // As a workaround for now, --halt parameter has to be used for stopping the server.
         NbProcessDescriptor pd = (startServer.getMode() == JBStartServer.MODE.PROFILE ? 
-                                  new NbProcessDescriptor(serverStopFileName, "--halt=0") :   // NOI18N
-                                  new NbProcessDescriptor(serverStopFileName, "--shutdown")); // NOI18N
+                                  new NbProcessDescriptor(serverStopFileName, "--halt=0 " + credentialsParams) :   // NOI18N
+                                  new NbProcessDescriptor(serverStopFileName, "--shutdown " + credentialsParams)); // NOI18N
 
         Process stoppingProcess = null;
         try {

@@ -119,17 +119,29 @@ public class JBDeploymentManager implements DeploymentManager {
                 URLClassLoader loader = JBDeploymentFactory.getJBClassLoader(ip.getProperty(JBPluginProperties.PROPERTY_ROOT_DIR));
                 Thread.currentThread().setContextClassLoader(loader);
                 
+                JBProperties props = getProperties();
                 Hashtable env = new Hashtable();
                 
                 // Sets the jboss naming environment
-                env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jnp.interfaces.NamingContextFactory");
+                env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.security.jndi.LoginInitialContextFactory");
                 env.put(Context.PROVIDER_URL, "jnp://localhost:"+JBPluginUtils.getJnpPort(ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR)));
+                env.put(Context.SECURITY_PRINCIPAL, props.getUsername());
+                env.put(Context.SECURITY_CREDENTIALS, props.getPassword());
                 env.put(Context.OBJECT_FACTORIES, "org.jboss.naming");
                 env.put(Context.URL_PKG_PREFIXES, "org.jboss.naming:org.jnp.interfaces" );
                 env.put("jnp.disableDiscovery", Boolean.TRUE);
                 
+                // set the java.security.auth.login.config system property needed by InitialContext 
+                final String JAVA_SEC_AUTH_LOGIN_CONF = "java.security.auth.login.config"; // NOI18N
+                String oldAuthConf = System.getProperty(JAVA_SEC_AUTH_LOGIN_CONF);
+                System.setProperty(JAVA_SEC_AUTH_LOGIN_CONF, props.getRootDir() + "/client/auth.conf"); // NOI18N
                 // Gets naming context
                 InitialContext ctx = new InitialContext(env);
+                if (oldAuthConf != null) {
+                    System.setProperty(JAVA_SEC_AUTH_LOGIN_CONF, oldAuthConf);
+                } else {
+                    System.clearProperty(JAVA_SEC_AUTH_LOGIN_CONF);
+                }
                 
                 // Lookup RMI Adaptor
                 rmiServer = ctx.lookup("/jmx/invoker/RMIAdaptor");

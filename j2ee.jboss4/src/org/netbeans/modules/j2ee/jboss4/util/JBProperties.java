@@ -18,12 +18,21 @@
  */
 package org.netbeans.modules.j2ee.jboss4.util;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
@@ -33,6 +42,7 @@ import org.netbeans.modules.j2ee.jboss4.customizer.CustomizerSupport;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.NbCollections;
 
 /**
  * Helper class that makes it easier to access and set JBoss instance properties.
@@ -59,6 +69,15 @@ public class JBProperties {
     
     private final InstanceProperties ip;
     private final JBDeploymentManager manager;
+    
+    // credentials initialized with default values
+    private String username = "admin"; // NOI18N 
+    private String password = "admin"; // NOI18N
+    
+    /** timestamp of the jmx-console-users.properties file when it was parsed for the last time */
+    private long updateCredentialsTimestamp;
+    
+    private static final Logger LOGGER = Logger.getLogger(JBProperties.class.getName());
     
     
     /** Creates a new instance of JBProperties */
@@ -214,7 +233,49 @@ public class JBProperties {
         manager.getJBPlatform().notifyLibrariesChanged();
     }
     
+    public synchronized String getUsername() {
+        updateCredentials();
+        return username;
+    }
+    
+    public synchronized String getPassword() {
+        updateCredentials();
+        return password;
+    }
+    
     // private helper methods -------------------------------------------------
+    
+    private synchronized void updateCredentials() {
+        File usersPropFile = new File(getServerDir(), "/conf/props/jmx-console-users.properties");
+        long lastModified = usersPropFile.lastModified();
+        if (lastModified == updateCredentialsTimestamp) {
+            LOGGER.log(Level.FINER, "Credentials are up-to-date.");
+            return;
+        }
+        Properties usersProps = new Properties();
+        try {
+            InputStream is = new BufferedInputStream(new FileInputStream(usersPropFile));
+            try {
+                usersProps.load(is);
+            } finally {
+                is.close();
+            }
+        } catch (FileNotFoundException e) {
+            LOGGER.log(Level.WARNING, usersPropFile + " not found.", e);
+            return;
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, "Error while reading " + usersPropFile, e);
+            return;
+        }
+
+        Enumeration<String> names = NbCollections.checkedEnumerationByFilter(usersProps.propertyNames(), String.class, false);
+        if (names.hasMoreElements()) {
+            username = names.nextElement();
+            password = usersProps.getProperty(username);
+        }
+        
+        updateCredentialsTimestamp = lastModified;
+    }
     
     /** Return URL representation of the specified file. */
     private static URL fileToUrl(File file) throws MalformedURLException {
