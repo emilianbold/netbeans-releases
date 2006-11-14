@@ -67,7 +67,7 @@ public abstract class XMLUtils {
         FileOutputStream output = null;
         try {
             output = new FileOutputStream(file);
-            saveXMLDocument(document, output);
+            saveXMLDocument(document, output);            
         } catch (IOException e) {
             throw new XMLException("Cannot save XML document", e);
         } finally {
@@ -85,21 +85,29 @@ public abstract class XMLUtils {
         
         Source domSource = new DOMSource(document);
         Result streamResult = new StreamResult(output);
-        
+        Source xsltSource = null;
         try {
             File xslt = FileProxy.getInstance().getFile(XSLT_REFORMAT_URI);
-            Source xsltSource = new StreamSource(xslt);
+            xsltSource = new StreamSource(xslt);
+        } catch (DownloadException e) {
+            LogManager.log(ErrorLevel.MESSAGE, 
+                    "Cannot load XSLT file, so save XML without formatting");
+            LogManager.log(ErrorLevel.MESSAGE, e);
+        }
+        
+        try {
+            
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
-            Transformer transformer = transformerFactory.newTransformer(xsltSource);
+            Transformer transformer = (xsltSource!=null) ?
+                transformerFactory.newTransformer(xsltSource) :
+                transformerFactory.newTransformer();
             
             transformer.transform(domSource, streamResult);
         } catch (TransformerConfigurationException e) {
             throw new XMLException("Cannot save XML document", e);
         } catch (TransformerException e) {
             throw new XMLException("Cannot save XML document", e);
-        }  catch (DownloadException e) {
-            throw new XMLException("Cannot save XML document", e);
-        } 
+        }
     }
     
     public static List<Node> getChildList(Node root, String... children) {
