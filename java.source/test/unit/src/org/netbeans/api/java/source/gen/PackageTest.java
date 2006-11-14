@@ -20,21 +20,38 @@ package org.netbeans.api.java.source.gen;
 
 import com.sun.source.tree.CompilationUnitTree;
 import java.io.File;
+import java.io.IOException;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.jackpot.test.TestUtilities;
 import org.netbeans.jackpot.transform.Transformer;
+import org.netbeans.junit.NbTestSuite;
 
 /**
  * Test packages.
  * 
  * @author Pavel Flaska
  */
-public class PackageTest extends GeneratorTest {
+public class PackageTest extends GeneratorTestMDRCompat {
     
     /** Creates a new instance of PackageTest */
     public PackageTest(String testName) {
         super(testName);
     }
 
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        // suite.addTestSuite(PackageTest.class);
+        suite.addTest(new PackageTest("testChangePackage"));
+        suite.addTest(new PackageTest("testChangeDefToNamedPackage"));
+        suite.addTest(new PackageTest("testChangeDefToNamedPackageWithImport"));
+        suite.addTest(new PackageTest("testChangeToDefPackage"));
+        return suite;
+    }
+    
     /**
      * Change package declaration 'package org.nothing;' to
      * 'package com.unit;'.
@@ -56,22 +73,27 @@ public class PackageTest extends GeneratorTest {
             "package com.unit;\n\n" +
             "class Test {\n" +
             "}\n";
+        
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
 
-        process(
-            new Transformer<Void, Object>() {
-                public Void visitCompilationUnit(CompilationUnitTree node, Object p) {
-                    super.visitCompilationUnit(node, p);
-                    CompilationUnitTree copy = make.CompilationUnit(
-                        make.Identifier("com.unit"),
-                        node.getImports(),
-                        node.getTypeDecls(),
-                        node.getSourceFile()
-                    );
-                    changes.rewrite(node, copy);
-                    return null;
-                }
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                CompilationUnitTree copy = make.CompilationUnit(
+                    make.Identifier("com.unit"),
+                    cut.getImports(),
+                    cut.getTypeDecls(),
+                    cut.getSourceFile()
+                );
+                workingCopy.rewrite(cut, copy);
             }
-        );  
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
         assertEquals(golden, res);
     }
@@ -98,21 +120,26 @@ public class PackageTest extends GeneratorTest {
             "class Test {\n" +
             "}\n";
 
-        process(
-            new Transformer<Void, Object>() {
-                public Void visitCompilationUnit(CompilationUnitTree node, Object p) {
-                    super.visitCompilationUnit(node, p);
-                    CompilationUnitTree copy = make.CompilationUnit(
-                        null,
-                        node.getImports(),
-                        node.getTypeDecls(),
-                        node.getSourceFile()
-                    );
-                    changes.rewrite(node, copy);
-                    return null;
-                }
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                CompilationUnitTree copy = make.CompilationUnit(
+                    null,
+                    cut.getImports(),
+                    cut.getTypeDecls(),
+                    cut.getSourceFile()
+                );
+                workingCopy.rewrite(cut, copy);
             }
-        );  
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
         assertEquals(golden, res);
     }
@@ -138,21 +165,26 @@ public class PackageTest extends GeneratorTest {
             "class Test {\n" +
             "}\n";
 
-        process(
-            new Transformer<Void, Object>() {
-                public Void visitCompilationUnit(CompilationUnitTree node, Object p) {
-                    super.visitCompilationUnit(node, p);
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
                     CompilationUnitTree copy = make.CompilationUnit(
                         make.Identifier("gro.snaebten.seludom.avaj"),
-                        node.getImports(),
-                        node.getTypeDecls(),
-                        node.getSourceFile()
+                        cut.getImports(),
+                        cut.getTypeDecls(),
+                        cut.getSourceFile()
                     );
-                    changes.rewrite(node, copy);
-                    return null;
-                }
+                workingCopy.rewrite(cut, copy);
             }
-        );  
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
         assertEquals(golden, res);
     }
@@ -180,21 +212,26 @@ public class PackageTest extends GeneratorTest {
             "class Test {\n" +
             "}\n";
 
-        process(
-            new Transformer<Void, Object>() {
-                public Void visitCompilationUnit(CompilationUnitTree node, Object p) {
-                    super.visitCompilationUnit(node, p);
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
                     CompilationUnitTree copy = make.CompilationUnit(
                         make.Identifier("gro.snaebten.seludom.avaj"),
-                        node.getImports(),
-                        node.getTypeDecls(),
-                        node.getSourceFile()
+                        cut.getImports(),
+                        cut.getTypeDecls(),
+                        cut.getSourceFile()
                     );
-                    changes.rewrite(node, copy);
-                    return null;
-                }
+                workingCopy.rewrite(cut, copy);
             }
-        );  
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
         assertEquals(golden, res);
     }
