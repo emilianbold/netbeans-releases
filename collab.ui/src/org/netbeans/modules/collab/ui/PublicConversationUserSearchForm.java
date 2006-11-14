@@ -455,17 +455,18 @@ public class PublicConversationUserSearchForm extends javax.swing.JPanel impleme
 
         FormListener formListener = new FormListener();
 
-        setLayout(new java.awt.GridBagLayout());
-
         setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5), null));
         setMinimumSize(new java.awt.Dimension(600, 400));
         setPreferredSize(new java.awt.Dimension(440, 400));
+        setLayout(new java.awt.GridBagLayout());
+
+        searchPanel.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(PublicConversationUserSearchForm.class, "KEY_PublicConversationUserSearchForm_SearchPanelTitle")), javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5))); // NOI18N
         searchPanel.setLayout(new java.awt.GridBagLayout());
 
-        searchPanel.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(PublicConversationUserSearchForm.class, "KEY_PublicConversationUserSearchForm_SearchPanelTitle")), javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5)));
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
-        findContactLb.setText(org.openide.util.NbBundle.getMessage(PublicConversationUserSearchForm.class, "LBL_AddContactForm_FindContact"));
+        findContactLb.setLabelFor(findContactTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(findContactLb, org.openide.util.NbBundle.getMessage(PublicConversationUserSearchForm.class, "LBL_AddContactForm_FindContact")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -474,7 +475,6 @@ public class PublicConversationUserSearchForm extends javax.swing.JPanel impleme
 
         findContactTextField.setColumns(32);
         findContactTextField.addActionListener(formListener);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.RELATIVE;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -483,16 +483,15 @@ public class PublicConversationUserSearchForm extends javax.swing.JPanel impleme
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 5);
         jPanel2.add(findContactTextField, gridBagConstraints);
 
-        findBtn.setText(org.openide.util.NbBundle.getMessage(PublicConversationUserSearchForm.class, "BTN_AddContactForm_Find"));
+        org.openide.awt.Mnemonics.setLocalizedText(findBtn, org.openide.util.NbBundle.getMessage(PublicConversationUserSearchForm.class, "BTN_AddContactForm_Find")); // NOI18N
         findBtn.setEnabled(false);
         findBtn.addActionListener(formListener);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         jPanel2.add(findBtn, gridBagConstraints);
 
-        optionsLb.setText(org.openide.util.NbBundle.getMessage(PublicConversationUserSearchForm.class, "LBL_AddContactForm_Options"));
+        org.openide.awt.Mnemonics.setLocalizedText(optionsLb, org.openide.util.NbBundle.getMessage(PublicConversationUserSearchForm.class, "LBL_AddContactForm_Options")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -501,18 +500,15 @@ public class PublicConversationUserSearchForm extends javax.swing.JPanel impleme
 
         optionsButtonGroup.add(containsOptionRadioButton);
         containsOptionRadioButton.setSelected(true);
-        containsOptionRadioButton.setText(org.openide.util.NbBundle.getMessage(PublicConversationUserSearchForm.class, "LBL_AddContactForm_Contains"));
-        containsOptionRadioButton.setPreferredSize(null);
+        org.openide.awt.Mnemonics.setLocalizedText(containsOptionRadioButton, org.openide.util.NbBundle.getMessage(PublicConversationUserSearchForm.class, "LBL_AddContactForm_Contains")); // NOI18N
         optionsPanel.add(containsOptionRadioButton);
 
         optionsButtonGroup.add(startsOptionRadioButton);
-        startsOptionRadioButton.setText(org.openide.util.NbBundle.getMessage(PublicConversationUserSearchForm.class, "LBL_AddContactForm_Starts"));
-        startsOptionRadioButton.setPreferredSize(null);
+        org.openide.awt.Mnemonics.setLocalizedText(startsOptionRadioButton, org.openide.util.NbBundle.getMessage(PublicConversationUserSearchForm.class, "LBL_AddContactForm_Starts")); // NOI18N
         optionsPanel.add(startsOptionRadioButton);
 
         optionsButtonGroup.add(endsOptionRadioButton);
-        endsOptionRadioButton.setText(org.openide.util.NbBundle.getMessage(PublicConversationUserSearchForm.class, "LBL_AddContactForm_Ends"));
-        endsOptionRadioButton.setPreferredSize(null);
+        org.openide.awt.Mnemonics.setLocalizedText(endsOptionRadioButton, org.openide.util.NbBundle.getMessage(PublicConversationUserSearchForm.class, "LBL_AddContactForm_Ends")); // NOI18N
         optionsPanel.add(endsOptionRadioButton);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -522,7 +518,7 @@ public class PublicConversationUserSearchForm extends javax.swing.JPanel impleme
         gridBagConstraints.weighty = 1.0;
         jPanel2.add(optionsPanel, gridBagConstraints);
 
-        TypeLb.setText(org.openide.util.NbBundle.getMessage(PublicConversationUserSearchForm.class, "LBL_AddContactForm_Type"));
+        org.openide.awt.Mnemonics.setLocalizedText(TypeLb, org.openide.util.NbBundle.getMessage(PublicConversationUserSearchForm.class, "LBL_AddContactForm_Type")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -531,11 +527,11 @@ public class PublicConversationUserSearchForm extends javax.swing.JPanel impleme
 
         typeButtonGroup.add(nameTypeRadioButton);
         nameTypeRadioButton.setSelected(true);
-        nameTypeRadioButton.setText(org.openide.util.NbBundle.getMessage(PublicConversationUserSearchForm.class, "LBL_AddContactForm_Name"));
+        org.openide.awt.Mnemonics.setLocalizedText(nameTypeRadioButton, org.openide.util.NbBundle.getMessage(PublicConversationUserSearchForm.class, "LBL_AddContactForm_Name")); // NOI18N
         typePanel.add(nameTypeRadioButton);
 
         typeButtonGroup.add(userIDTypeRadioButton);
-        userIDTypeRadioButton.setText(org.openide.util.NbBundle.getMessage(PublicConversationUserSearchForm.class, "LBL_AddContactForm_UserID"));
+        org.openide.awt.Mnemonics.setLocalizedText(userIDTypeRadioButton, org.openide.util.NbBundle.getMessage(PublicConversationUserSearchForm.class, "LBL_AddContactForm_UserID")); // NOI18N
         typePanel.add(userIDTypeRadioButton);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -564,9 +560,9 @@ public class PublicConversationUserSearchForm extends javax.swing.JPanel impleme
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         add(searchPanel, gridBagConstraints);
 
+        resultsPanel1.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(PublicConversationUserSearchForm.class, "LBL_PublicConversationUserSearchForm_searchResultLabel")), javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5))); // NOI18N
         resultsPanel1.setLayout(new java.awt.GridBagLayout());
 
-        resultsPanel1.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(PublicConversationUserSearchForm.class, "LBL_PublicConversationUserSearchForm_searchResultLabel")), javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5)));
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
         contactJList.setMaximumSize(null);
@@ -590,10 +586,9 @@ public class PublicConversationUserSearchForm extends javax.swing.JPanel impleme
         gridBagConstraints.weighty = 1.0;
         resultsPanel1.add(jPanel1, gridBagConstraints);
 
-        removeBtn.setText(org.openide.util.NbBundle.getMessage(PublicConversationUserSearchForm.class, "BTN_AddContactForm_Remove"));
+        org.openide.awt.Mnemonics.setLocalizedText(removeBtn, org.openide.util.NbBundle.getMessage(PublicConversationUserSearchForm.class, "BTN_AddContactForm_Remove")); // NOI18N
         removeBtn.setEnabled(false);
         removeBtn.addActionListener(formListener);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
@@ -608,25 +603,24 @@ public class PublicConversationUserSearchForm extends javax.swing.JPanel impleme
         gridBagConstraints.weighty = 1.0;
         add(resultsPanel1, gridBagConstraints);
 
-        accessLabel.setText(org.openide.util.NbBundle.getMessage(PublicConversationUserSearchForm.class, "LBL_PublicConversationUserSearchForm_Access"));
+        org.openide.awt.Mnemonics.setLocalizedText(accessLabel, org.openide.util.NbBundle.getMessage(PublicConversationUserSearchForm.class, "LBL_PublicConversationUserSearchForm_Access")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 3, 0, 5);
         add(accessLabel, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 3);
         add(accessComboBox, gridBagConstraints);
-
     }
 
     // Code for dispatching events from components to event handlers.
 
     private class FormListener implements java.awt.event.ActionListener {
+        FormListener() {}
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             if (evt.getSource() == findContactTextField) {
                 PublicConversationUserSearchForm.this.findContactTextFieldActionPerformed(evt);
@@ -638,8 +632,7 @@ public class PublicConversationUserSearchForm extends javax.swing.JPanel impleme
                 PublicConversationUserSearchForm.this.removeBtnActionPerformed(evt);
             }
         }
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 
     private void findContactTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_findContactTextFieldActionPerformed
         search();

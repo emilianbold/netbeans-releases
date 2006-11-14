@@ -38,4 +38,6 @@
 1.4:	Fix #71923: correctly show management dialog after creating a pubconv.
 
 1.5:	I18N of Collab toolbar (#71993)
+
+1.6:    Accessibility fixes
  
