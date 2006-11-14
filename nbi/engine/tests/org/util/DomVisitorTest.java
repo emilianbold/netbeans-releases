@@ -24,13 +24,13 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.MyTestCase;
-import org.netbeans.installer.xml.visitors.DomVisitor;
-import org.netbeans.installer.xml.visitors.RecursiveDomVisitor;
-import org.netbeans.installer.xml.DomExternalizable;
+import org.netbeans.installer.utils.exceptions.ParseException;
+import org.netbeans.installer.utils.xml.DomExternalizable;
+import org.netbeans.installer.utils.xml.DomUtil;
+import org.netbeans.installer.utils.xml.visitors.DomVisitor;
+import org.netbeans.installer.utils.xml.visitors.RecursiveDomVisitor;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.netbeans.installer.xml.DomUtil;
-import org.netbeans.installer.xml.ParseException;
 
 /**
  *
