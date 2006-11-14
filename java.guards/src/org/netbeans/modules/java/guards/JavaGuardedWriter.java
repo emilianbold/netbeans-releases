@@ -159,12 +159,13 @@ final class JavaGuardedWriter {
         if (b==' ')
             spaces++;
         else {
-            char[] sp = new char[spaces];
-            
-            Arrays.fill(sp,' ');
-            writer.write(sp);
+            if (spaces > 0) {
+                char[] sp = new char[spaces];
+                Arrays.fill(sp,' ');
+                writer.write(sp);
+                spaces=0;
+            }
             writer.write(b);
-            spaces=0;
         }
         offsetCounter++;
     }
@@ -197,7 +198,6 @@ final class JavaGuardedWriter {
     */
     private List<SectionDescriptor> prepareSections(List<? extends GuardedSection> list) {
         List<SectionDescriptor> dest = new ArrayList<SectionDescriptor>(list.size());
-        Collections.sort(list, new GuardedPositionComparator());
 
         for (GuardedSection o: list) {
             if (o instanceof SimpleSection) {
@@ -213,14 +213,14 @@ final class JavaGuardedWriter {
                         GuardTag.HEADER,
                         o.getName(),
                         o.getStartPosition().getOffset(),
-                        ((InteriorSection) o).getBodyStartPosition().getOffset()
+                        ((InteriorSection) o).getBodyStartPosition().getOffset() - 1
                         );
                 dest.add(desc);
 
                 desc = new SectionDescriptor(
                         GuardTag.END,
                         o.getName(),
-                        ((InteriorSection) o).getBodyEndPosition().getOffset(),
+                        ((InteriorSection) o).getBodyEndPosition().getOffset() + 1,
                         o.getEndPosition().getOffset()
                         );
                 dest.add(desc);

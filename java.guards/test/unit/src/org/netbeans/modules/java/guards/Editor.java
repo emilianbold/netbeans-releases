@@ -25,20 +25,21 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Date;
-import javax.swing.text.DefaultStyledDocument;
-import javax.swing.text.Position;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
 import org.netbeans.spi.editor.guards.GuardedEditorSupport;
 import org.openide.text.CloneableEditorSupport;
-import org.openide.text.PositionRef;
 import org.openide.windows.CloneableOpenSupport;
 
-
+/**
+ * minimal impl of an editor support
+ */
 final class Editor implements GuardedEditorSupport {
     
     CloneableEditorSupport support = new EditorSupport();
     InputStream is = null;
-    StyledDocument doc = new DefaultStyledDocument();
+    StyledDocument doc = null;
     
     /**
      * here you can pass document content
@@ -75,6 +76,12 @@ final class Editor implements GuardedEditorSupport {
         
         protected String messageOpened() {
             throw new UnsupportedOperationException();
+        }
+        
+        protected void loadFromStreamToKit(StyledDocument doc, InputStream stream, EditorKit kit)
+        throws IOException, BadLocationException {
+            Editor.this.doc = doc;
+            kit.read(stream, doc, 0);
         }
         
     }

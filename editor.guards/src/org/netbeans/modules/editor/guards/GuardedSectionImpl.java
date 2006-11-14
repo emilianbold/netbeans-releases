@@ -128,26 +128,6 @@ public abstract class GuardedSectionImpl {
         }
     }
     
-    /** Delete one new-line character before the specified offset.
-     * This method is used when guarded blocks are deleted. When new guarded block is created,
-     * there is added one more new-line before it, so this method remove this char in the end of
-     * guarded block life cycle.
-     * It works only when there is "\n" char before the offset and no problem occured (IOException...)
-     * @param offset The begin of removed guarded block.
-     */
-    void deleteNewLineBeforeBlock(int offset) {
-        if (offset > 1) {
-            try {
-                PositionBounds b = PositionBounds.create(offset - 1, offset, guards);
-                String s = b.getText();
-                if (s.equals("\n")) { // NOI18N
-                    b.setText(""); // NOI18N
-                }
-            } catch (BadLocationException e) {
-            }
-        }
-    }
-    
     /** Set the text contained in this section.
      * Newlines are automatically added to all text segments handled,
      * unless there was already one.
@@ -162,17 +142,15 @@ public abstract class GuardedSectionImpl {
         if (!valid)
             return false;
         
-        // modify the text - has to end with new line and the length
-        // has to be more then 2 characters
+        // modify the text - has to contain at least a space and the length
+        // has to be at least 1 character
         if (minLen) {
-            if (text.length() == 0)
-                text = " \n"; // NOI18N
-            else if (text.length() == 1)
-                text = text.equals("\n") ? " \n" : text + "\n"; // NOI18N
+            if (text.length() == 0 || text.length() == 1 && text.equals("\n"))
+                text = " "; // NOI18N
         }
         
-        if (!text.endsWith("\n")) // NOI18N
-            text = text + "\n"; // NOI18N
+        if (text.endsWith("\n")) // NOI18N
+            text = text.substring(0, text.length() - 1);
         
         try {
             bounds.setText(text);
@@ -191,9 +169,9 @@ public abstract class GuardedSectionImpl {
         int begin = bounds.getBegin().getOffset();
         int end = bounds.getEnd().getOffset();
         if (mark) {
-            NbDocument.markGuarded(doc, begin, end - begin);
+            NbDocument.markGuarded(doc, begin, end - begin + 1);
         } else
-            NbDocument.unmarkGuarded(doc, begin, end - begin);
+            NbDocument.unmarkGuarded(doc, begin, end - begin + 1);
     }
     
     /** Marks the section as guarded.
@@ -209,7 +187,29 @@ public abstract class GuardedSectionImpl {
     /** Deletes the text in the section.
      * @exception BadLocationException
      */
-    abstract void deleteText() throws BadLocationException;
+    final void deleteText() throws BadLocationException {
+        if (valid) {
+            final StyledDocument doc = guards.getDocument();
+            final BadLocationException[] blex = new BadLocationException[1];
+            NbDocument.runAtomic(doc, new Runnable() {
+                public void run() {
+                    try {
+                        int start = getStartPosition().getOffset();
+                        if (start > 0 && "\n".equals(doc.getText(start - 1, 1))) { // NOI18N
+                            start--;
+                        }
+                        doc.remove(start, getEndPosition().getOffset() - start + 1);
+                    } catch (BadLocationException ex) {
+                        blex[0] = ex;
+                    }
+                }
+            });
+            
+            if (blex[0] != null) {
+                throw blex[0];
+            }
+        }
+    }
     
     /** Gets the begin of section. To this position is set the caret
      * when section is open in the editor.

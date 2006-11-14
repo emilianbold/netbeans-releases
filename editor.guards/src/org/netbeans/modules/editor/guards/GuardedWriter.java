@@ -25,7 +25,6 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
-import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.editor.guards.GuardedSection;
 import org.netbeans.spi.editor.guards.support.AbstractGuardedSectionsProvider;
@@ -49,15 +48,13 @@ final class GuardedWriter extends Writer {
     * @param os Encapsulated output stream.
     * @param list The list of the guarded sections.
     */
-    public GuardedWriter(AbstractGuardedSectionsProvider gw, OutputStream os, List<? extends GuardedSectionImpl> list, String encoding) throws UnsupportedEncodingException {
+    public GuardedWriter(AbstractGuardedSectionsProvider gw, OutputStream os, List<GuardedSection> list, String encoding) throws UnsupportedEncodingException {
         if (encoding == null)
             writer = new OutputStreamWriter(os);
-//            writer = new BufferedWriter(new OutputStreamWriter(os));
         else
             writer = new OutputStreamWriter(os, encoding);
-//            writer = new BufferedWriter(new OutputStreamWriter(os, encoding));
         this.gw = gw;
-        sections = prepareSections(list);
+        sections = list;
     }
 
     /** Writes chars to underlying writer */
@@ -68,10 +65,6 @@ final class GuardedWriter extends Writer {
         }
         
         buffer.write(cbuf, off, len);
-        
-//        for (int i = 0; i < len; i++) {
-//            writeOneChar(cbuf[i + off]);
-//        }
     }
 
     /** Calls underlying writer flush */
@@ -89,19 +82,6 @@ final class GuardedWriter extends Writer {
 
     /** Calls underlying writer flush */
     public void flush() throws IOException {
-//        writer.flush();
-    }
-
-    /** This method prepares the iterator of the SectionDesc classes
-    * @param list The list of the GuardedSection classes.
-    * @return iterator of the SectionDesc
-    */
-    private List<GuardedSection> prepareSections(List<? extends GuardedSectionImpl> list) {
-        List<GuardedSection> dest = new ArrayList<GuardedSection>(list.size());
-        for(GuardedSectionImpl gsi: list) {
-            dest.add(gsi.guard);
-        }
-        return dest;
     }
     
 }

@@ -19,21 +19,12 @@
 
 package org.netbeans.modules.java.guards;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.Reader;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.StyledDocument;
 import junit.framework.TestCase;
 import org.netbeans.api.editor.guards.GuardedSection;
-import org.netbeans.api.editor.guards.GuardedSectionManager;
-import org.netbeans.api.editor.guards.InteriorSection;
-import org.netbeans.api.editor.guards.SimpleSection;
-
 
 /**
  *
@@ -50,21 +41,6 @@ public class JavaGuardedWriterTest extends TestCase {
     
     protected void tearDown() throws Exception {
     }
-    
-    //    /**
-    //     * Test of setGuardedSection method, of class org.netbeans.modules.java.guards.JavaGuardedWriter.
-    //     */
-    //    public void testSetGuardedSection() {
-    //        System.out.println("setGuardedSection");
-    //
-    //        List<GuardedSection> sections = null;
-    //        JavaGuardedWriter instance = new JavaGuardedWriter();
-    //
-    //        instance.setGuardedSection(sections);
-    //
-    //        // TODO review the generated test code and remove the default call to fail.
-    //        fail("The test case is a prototype.");
-    //    }
     
     /**
      * Test of translate method, of class org.netbeans.modules.java.guards.JavaGuardedWriter.
@@ -83,52 +59,147 @@ public class JavaGuardedWriterTest extends TestCase {
     }
     
     public void testTranslateLINE() throws BadLocationException {
-        System.out.println("write//" + "GEN-LINE:");
+        System.out.println("write //" + "GEN-LINE:");
         
+        String writeStr = "\nclass A {" +              "\n}\n";
         String expStr =   "\nclass A {//" + "GEN-LINE:hu\n}\n";
-        String writeStr = "\nclass A {             \n}\n";
         char[] writeBuff = writeStr.toCharArray();
-        char[] expResult = expStr.toCharArray();
         
         JavaGuardedWriter instance = new JavaGuardedWriter();
         JavaGuardedSectionsProvider provider = new JavaGuardedSectionsProvider(new Editor());
         List<GuardedSection> sections = new ArrayList<GuardedSection>();
-        int index = expStr.indexOf('\n', 2);
-        sections.add(provider.createSimpleSection("hu", 1, index));
+        sections.add(provider.createSimpleSection("hu", 1, writeStr.indexOf("\n}")));
         
         instance.setGuardedSection(sections);
         char[] result = instance.translate(writeBuff);
         assertEquals(expStr, String.valueOf(result));
-        
     }
     
-    public void testCreateSections() throws Exception {
-        Editor editor = new Editor();
-        JavaGuardedSectionsProvider provider = new JavaGuardedSectionsProvider(editor);
-        Reader r = provider.createGuardedReader(new ByteArrayInputStream(new byte[0]), null);
-        while (r.read() > 0);
-        r.close();
-        GuardedSectionManager manager = GuardedSectionManager.getInstance(editor.getDocument());
-        assertNotNull(manager);
-        StyledDocument doc = editor.getDocument();
+    public void testTranslateLINEWithSpaces() throws BadLocationException {
+        System.out.println("write with spaces //" + "GEN-LINE:");
         
-        SimpleSection ss = manager.createSimpleSection(doc.createPosition(0), "simpletest");
-        System.out.println("simplepos1: " + ss.getStartPosition().getOffset() + ", " + ss.getEndPosition().getOffset());
-        ss.setText("  simpletext;");
-        System.out.println("simplepos2: " + ss.getStartPosition().getOffset() + ", " + ss.getEndPosition().getOffset());
+        String writeStr = "\nclass A {  " + "           \n}\n";
+        String expStr =   "\nclass A {//" + "GEN-LINE:hu\n}\n";
+        char[] writeBuff = writeStr.toCharArray();
         
-        InteriorSection is = manager.createInteriorSection(doc.createPosition(ss.getEndPosition().getOffset() + 1), "intertest");
-        System.out.println("interpos 1: " + is.getStartPosition().getOffset() + ", " + is.getEndPosition().getOffset());
-        is.setHeader("public void addListener() {");
-        is.setBody("tady pis;");
-        is.setFooter("}");
-        System.out.println("interpos 2: " + is.getStartPosition().getOffset() + ", " + is.getEndPosition().getOffset());
+        JavaGuardedWriter instance = new JavaGuardedWriter();
+        JavaGuardedSectionsProvider provider = new JavaGuardedSectionsProvider(new Editor());
+        List<GuardedSection> sections = new ArrayList<GuardedSection>();
+        sections.add(provider.createSimpleSection("hu", 1, writeStr.indexOf("\n}")));
         
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        Writer w = provider.createGuardedWriter(baos, null);
-        w.write(doc.getText(0, doc.getLength()));
-        w.close();
-        System.out.println("output: '" + baos.toString() + "'");
+        instance.setGuardedSection(sections);
+        char[] result = instance.translate(writeBuff);
+        assertEquals(expStr, String.valueOf(result));
+    }
+    
+    public void testTranslateBEGIN_END() throws BadLocationException {
+        System.out.println("write //" + "GEN-BEGIN_END:");
+        
+        String writeStr = "\nclass A {" +               "\n\n}" +             "\n";
+        String expStr =   "\nclass A {//" + "GEN-BEGIN:hu\n\n}//" + "GEN-END:hu\n";
+        char[] writeBuff = writeStr.toCharArray();
+        
+        JavaGuardedWriter instance = new JavaGuardedWriter();
+        JavaGuardedSectionsProvider provider = new JavaGuardedSectionsProvider(new Editor());
+        List<GuardedSection> sections = new ArrayList<GuardedSection>();
+        sections.add(provider.createSimpleSection("hu", 1, writeStr.length() - 1));
+        
+        instance.setGuardedSection(sections);
+        char[] result = instance.translate(writeBuff);
+        assertEquals(expStr, String.valueOf(result));
+    }
+    
+    public void testTranslateBEGIN_ENDWithSpaces() throws BadLocationException {
+        System.out.println("write with spaces //" + "GEN-BEGIN_END:");
+        
+        String writeStr = "\nclass A {  " + "            \n\n}  " + "          \n";
+        String expStr =   "\nclass A {//" + "GEN-BEGIN:hu\n\n}//" + "GEN-END:hu\n";
+        char[] writeBuff = writeStr.toCharArray();
+        
+        JavaGuardedWriter instance = new JavaGuardedWriter();
+        JavaGuardedSectionsProvider provider = new JavaGuardedSectionsProvider(new Editor());
+        List<GuardedSection> sections = new ArrayList<GuardedSection>();
+        sections.add(provider.createSimpleSection("hu", 1, writeStr.length() - 1));
+        
+        instance.setGuardedSection(sections);
+        char[] result = instance.translate(writeBuff);
+        assertEquals(expStr, String.valueOf(result));
+    }
+    
+    public void testTranslateFIRST_LAST() throws BadLocationException {
+        System.out.println("write //" + "GEN-FIRST_LAST:");
+        
+        String writeStr = "\nclass A {  " +             "\n  statement;\n}" +              "\n";
+        String expStr =   "\nclass A {//" + "GEN-FIRST:hu\n  statement;\n}//" + "GEN-LAST:hu\n";
+        char[] writeBuff = writeStr.toCharArray();
+        
+        JavaGuardedWriter instance = new JavaGuardedWriter();
+        JavaGuardedSectionsProvider provider = new JavaGuardedSectionsProvider(new Editor());
+        List<GuardedSection> sections = new ArrayList<GuardedSection>();
+        sections.add(provider.createInteriorSection("hu",
+                1, writeStr.indexOf("\n  statement;"),
+                writeStr.indexOf("}"), writeStr.length() - 1));
+        
+        instance.setGuardedSection(sections);
+        char[] result = instance.translate(writeBuff);
+        assertEquals(expStr, String.valueOf(result));
+    }
+    
+    public void testTranslateFIRST_LASTWithSpaces() throws BadLocationException {
+        System.out.println("write with spaces //" + "GEN-FIRST_LAST:");
+        
+        String writeStr = "\nclass A {  " + "            \n  statement;\n}  " + "           \n";
+        String expStr =   "\nclass A {//" + "GEN-FIRST:hu\n  statement;\n}//" + "GEN-LAST:hu\n";
+        char[] writeBuff = writeStr.toCharArray();
+        
+        JavaGuardedWriter instance = new JavaGuardedWriter();
+        JavaGuardedSectionsProvider provider = new JavaGuardedSectionsProvider(new Editor());
+        List<GuardedSection> sections = new ArrayList<GuardedSection>();
+        sections.add(provider.createInteriorSection("hu",
+                1, writeStr.indexOf("\n  statement;"),
+                writeStr.indexOf("}"), writeStr.length() - 1));
+        
+        instance.setGuardedSection(sections);
+        char[] result = instance.translate(writeBuff);
+        assertEquals(expStr, String.valueOf(result));
+    }
+    
+    public void testTranslateFIRST_HEADEREND_LAST() throws BadLocationException {
+        System.out.println("write //" + "GEN-FIRST_HEADEREND_LAST:");
+        
+        String writeStr = "\nclass A  " + "            \n{  " + "                \n  statement;\n}  " + "           \n";
+        String expStr =   "\nclass A//" + "GEN-FIRST:hu\n{//" + "GEN-HEADEREND:hu\n  statement;\n}//" + "GEN-LAST:hu\n";
+        char[] writeBuff = writeStr.toCharArray();
+        
+        JavaGuardedWriter instance = new JavaGuardedWriter();
+        JavaGuardedSectionsProvider provider = new JavaGuardedSectionsProvider(new Editor());
+        List<GuardedSection> sections = new ArrayList<GuardedSection>();
+        sections.add(provider.createInteriorSection("hu",
+                1, writeStr.indexOf("\n  statement;"),
+                writeStr.indexOf("}"), writeStr.length() - 1));
+        
+        instance.setGuardedSection(sections);
+        char[] result = instance.translate(writeBuff);
+        assertEquals(expStr, String.valueOf(result));
+    }
+    
+    public void testTranslateFIRST_HEADEREND_LASTWithSpaces() throws BadLocationException {
+        System.out.println("write with spaces //" + "GEN-FIRST_HEADEREND_LAST:");
+        
+        String writeStr = "\nclass A" +               "\n{" +                   "\n  statement;\n}" +              "\n";
+        String expStr =   "\nclass A//" + "GEN-FIRST:hu\n{//" + "GEN-HEADEREND:hu\n  statement;\n}//" + "GEN-LAST:hu\n";
+        char[] writeBuff = writeStr.toCharArray();
+        
+        JavaGuardedWriter instance = new JavaGuardedWriter();
+        JavaGuardedSectionsProvider provider = new JavaGuardedSectionsProvider(new Editor());
+        List<GuardedSection> sections = new ArrayList<GuardedSection>();
+        sections.add(provider.createInteriorSection("hu",
+                1, writeStr.indexOf("\n  statement;"),
+                writeStr.indexOf("}"), writeStr.length() - 1));
+        
+        instance.setGuardedSection(sections);
+        char[] result = instance.translate(writeBuff);
+        assertEquals(expStr, String.valueOf(result));
     }
     
 }

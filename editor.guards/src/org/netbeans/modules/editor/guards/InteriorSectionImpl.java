@@ -143,17 +143,6 @@ public final class InteriorSectionImpl extends GuardedSectionImpl {
     }
 
     /**
-     * Deletes the text in the section.
-     * @exception BadLocationException
-     */
-    void deleteText() throws BadLocationException {
-        header.setText(""); // NOI18N
-        body.setText(""); // NOI18N
-        footer.setText(""); // NOI18N
-        deleteNewLineBeforeBlock(header.getBegin().getOffset());
-    }
-
-    /**
      * Marks the section as guarded.
      * @param doc The styled document where this section placed in.
      */
@@ -242,4 +231,16 @@ public final class InteriorSectionImpl extends GuardedSectionImpl {
         footer.resolvePositions();
     }
 
+    // just for to unit testing purposes
+    public PositionBounds getHeaderBounds() {
+        return this.header;
+    }
+    
+    public PositionBounds getBodyBounds() {
+        return this.body;
+    }
+    
+    public PositionBounds getFooterBounds() {
+        return this.footer;
+    }
 }

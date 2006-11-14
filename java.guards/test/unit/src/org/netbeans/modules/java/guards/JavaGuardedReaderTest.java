@@ -22,6 +22,7 @@ package org.netbeans.modules.java.guards;
 import java.util.List;
 import junit.framework.TestCase;
 import org.netbeans.api.editor.guards.GuardedSection;
+import org.netbeans.api.editor.guards.InteriorSection;
 import org.netbeans.api.editor.guards.SimpleSection;
 
 /**
@@ -72,9 +73,8 @@ public class JavaGuardedReaderTest extends TestCase {
         
         String readStr = "\nclass A {//" + "GEN-LINE:hu\n}\n";
         editor.setStringContent(readStr);
-        String expStr =  "\nclass A {             \n}\n";
+        String expStr =  "\nclass A {  " + "           \n}\n";
         char[] readBuff = readStr.toCharArray();
-        char[] expResult = expStr.toCharArray();
         
         char[] result = instance.translateToCharBuff(readBuff);
         List<GuardedSection> sections = instance.getGuardedSections();
@@ -87,7 +87,79 @@ public class JavaGuardedReaderTest extends TestCase {
         assertEquals("section valid", true, expSection.isValid());
         assertEquals("section name", "hu", expSection.getName());
         assertEquals("begin", 1, expSection.getStartPosition().getOffset());
-        System.out.println('\'' + expSection.getText() + '\'');
+        assertEquals("end", expStr.indexOf("}") - 1, expSection.getEndPosition().getOffset());
+    }
+    
+    public void testTranslateBEGIN_END() {
+        System.out.println("read //" + "GEN-BEGIN_END:");
+        
+        String readStr = "\nclass A {//" + "GEN-BEGIN:hu\n\n}//" + "GEN-END:hu\n";
+        editor.setStringContent(readStr);
+        String expStr =  "\nclass A {  " + "            \n\n}  " + "          \n";
+        char[] readBuff = readStr.toCharArray();
+        
+        char[] result = instance.translateToCharBuff(readBuff);
+        List<GuardedSection> sections = instance.getGuardedSections();
+        
+        assertEquals(expStr, String.valueOf(result));
+        assertEquals("sections", 1, sections.size());
+        
+        GuardedSection expSection = sections.get(0);
+        assertEquals(SimpleSection.class, expSection.getClass());
+        assertEquals("section valid", true, expSection.isValid());
+        assertEquals("section name", "hu", expSection.getName());
+        assertEquals("begin", 1, expSection.getStartPosition().getOffset());
+        assertEquals("end", expStr.length() - 1, expSection.getEndPosition().getOffset());
+    }
+    
+    public void testTranslateFIRST_LAST() {
+        System.out.println("read //" + "GEN-FIRST_LAST:");
+        
+        String readStr = "\nclass A {//" + "GEN-FIRST:hu\n  statement;\n}//" + "GEN-LAST:hu\n";
+        editor.setStringContent(readStr);
+        String expStr =  "\nclass A {  " + "            \n  statement;\n}  " + "           \n";
+        char[] readBuff = readStr.toCharArray();
+        
+        char[] result = instance.translateToCharBuff(readBuff);
+        List<GuardedSection> sections = instance.getGuardedSections();
+        
+        assertEquals(expStr, String.valueOf(result));
+        assertEquals("sections", 1, sections.size());
+        
+        GuardedSection expSection = sections.get(0);
+        assertEquals(InteriorSection.class, expSection.getClass());
+        assertEquals("section valid", true, expSection.isValid());
+        assertEquals("section name", "hu", expSection.getName());
+        assertEquals("begin", 1, expSection.getStartPosition().getOffset());
+        assertEquals("end", expStr.length() - 1, expSection.getEndPosition().getOffset());
+        InteriorSection iSection = (InteriorSection) expSection;
+        assertEquals("body.begin", expStr.indexOf("  statement;"), iSection.getBodyStartPosition().getOffset());
+        assertEquals("body.end", expStr.indexOf("\n}"), iSection.getBodyEndPosition().getOffset());
+    }
+    
+    public void testTranslateFIRST_HEADEREND_LAST() {
+        System.out.println("read //" + "GEN-FIRST_HEADEREND_LAST:");
+        
+        String readStr = "\nclass A //" + "GEN-FIRST:hu\n{//" + "GEN-HEADEREND:hu\n  statement;\n}//" + "GEN-LAST:hu\n";
+        editor.setStringContent(readStr);
+        String expStr =  "\nclass A   " + "            \n{  " + "                \n  statement;\n}  " + "           \n";
+        char[] readBuff = readStr.toCharArray();
+        
+        char[] result = instance.translateToCharBuff(readBuff);
+        List<GuardedSection> sections = instance.getGuardedSections();
+        
+        assertEquals(expStr, String.valueOf(result));
+        assertEquals("sections", 1, sections.size());
+        
+        GuardedSection expSection = sections.get(0);
+        assertEquals(InteriorSection.class, expSection.getClass());
+        assertEquals("section valid", true, expSection.isValid());
+        assertEquals("section name", "hu", expSection.getName());
+        assertEquals("begin", 1, expSection.getStartPosition().getOffset());
+        assertEquals("end", expStr.length() - 1, expSection.getEndPosition().getOffset());
+        InteriorSection iSection = (InteriorSection) expSection;
+        assertEquals("body.begin", expStr.indexOf("  statement;"), iSection.getBodyStartPosition().getOffset());
+        assertEquals("body.end", expStr.indexOf("\n}"), iSection.getBodyEndPosition().getOffset());
     }
     
 }

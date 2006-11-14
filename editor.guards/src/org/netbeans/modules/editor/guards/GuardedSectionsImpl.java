@@ -30,6 +30,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
@@ -78,10 +80,9 @@ public final class GuardedSectionsImpl {
     public Writer createGuardedWriter(AbstractGuardedSectionsProvider gw, OutputStream stream, String encoding) throws UnsupportedEncodingException {
         OutputStream os = new NewLineOutputStream(stream, newLineType);
         if (sections != null) {
-            List<GuardedSectionImpl> list = new ArrayList<GuardedSectionImpl>(sections.values());
+            List<GuardedSection> list = new ArrayList<GuardedSection>(getGuardedSections());
             if (list.size() > 0) {
                 GuardedWriter writer = new GuardedWriter(gw, os, list, encoding);
-//                kit.write(writer, doc, 0, doc.getLength());
                 return writer;
             }
         }
@@ -114,15 +115,14 @@ public final class GuardedSectionsImpl {
         return null;
     }
 
-    public Iterable<GuardedSection> getGuardedSections() {
+    public Set<GuardedSection> getGuardedSections() {
         StyledDocument doc = this.editor.getDocument();
         synchronized(this.sections) {
-            List<GuardedSection> gss;
-            gss = new ArrayList<GuardedSection>(this.sections.size());
+            Set<GuardedSection> sortedGuards =  new TreeSet<GuardedSection>(new GuardedPositionComparator());
             for (GuardedSectionImpl gsi: this.sections.values()) {
-                gss.add(gsi.guard);
+                sortedGuards.add(gsi.guard);
             }
-            return gss;
+            return sortedGuards;
         }
     }
     
@@ -135,12 +135,12 @@ public final class GuardedSectionsImpl {
     }
 
     public SimpleSection createSimpleSection(Position pos, String name) throws BadLocationException {
-// XXX        checkOverlap(pos);
+        checkNewSection(pos, name);
         return doCreateSimpleSection(pos, name);
     }
 
     public InteriorSection createInteriorSection(Position pos, String name) throws BadLocationException {
-// XXX        checkOverlap(pos);
+        checkNewSection(pos, name);
         return doCreateInteriorSection(pos, name);
     }
     
@@ -158,7 +158,7 @@ public final class GuardedSectionsImpl {
                 try {
                     int where = pos.getOffset();
                     doc.insertString(where, "\n \n", null); // NOI18N
-                    sect[0] = createSimpleSectionImpl(name, PositionBounds.create(where + 1, where + 3, GuardedSectionsImpl.this));
+                    sect[0] = createSimpleSectionImpl(name, PositionBounds.create(where + 1, where + 2, GuardedSectionsImpl.this));
                     sect[0].markGuarded(doc);
                 } catch (BadLocationException ex) {
                     blex[0] = ex;
@@ -203,9 +203,9 @@ public final class GuardedSectionsImpl {
                     doc.insertString(where, "\n \n \n \n", null); // NOI18N
                     sect[0] = createInteriorSectionImpl(
                             name,
-                            PositionBounds.create(where + 1, where + 3, GuardedSectionsImpl.this),
-                            PositionBounds.create(where + 3, where + 5, GuardedSectionsImpl.this),
-                            PositionBounds.create(where + 5, where + 7, GuardedSectionsImpl.this)
+                            PositionBounds.create(where + 1, where + 2, GuardedSectionsImpl.this),
+                            PositionBounds.create(where + 3, where + 4, GuardedSectionsImpl.this),
+                            PositionBounds.create(where + 5, where + 6, GuardedSectionsImpl.this)
                             );
                     sections.put(sect[0].getName(), sect[0]);
                     sect[0].markGuarded(doc);
@@ -272,6 +272,23 @@ public final class GuardedSectionsImpl {
         return sect;
     }
 
+    private void checkNewSection(Position p, String name) {
+        synchronized (sections) {
+            checkOverlap(p);
+            GuardedSectionImpl gs = sections.get(name);
+            if (gs != null) {
+                throw new IllegalArgumentException("name exists"); // NOI18N
+            }
+        }
+    }
+    
+    private void checkOverlap(Position p) throws IllegalArgumentException {
+        for (GuardedSectionImpl gs: this.sections.values()) {
+            if (gs.contains(p, false))
+                throw new IllegalArgumentException("Sections overlap"); // NOI18N
+        }
+    }
+    
     /** This stream is used for changing the new line delimiters.
      * It replaces the '\n' by '\n', '\r' or "\r\n"
      */

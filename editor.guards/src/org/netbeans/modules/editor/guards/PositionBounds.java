@@ -124,7 +124,7 @@ public final class PositionBounds {
 
                             int docLen = doc.getLength();
 
-                            if ((p2 - p1) >= 2) {
+                            if ((p2 - p1) >= 1) {
                                 doc.insertString(p1 + 1, text, null);
 
                                 // [MaM] compute length of inserted string

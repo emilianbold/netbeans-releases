@@ -51,15 +51,6 @@ public final class SimpleSectionImpl extends GuardedSectionImpl {
         setText(bounds, text, true);
     }
 
-    /**
-     * Deletes the text in the section.
-     * @exception BadLocationException
-     */
-    void deleteText() throws BadLocationException {
-        bounds.setText(""); // NOI18N
-        deleteNewLineBeforeBlock(bounds.getBegin().getOffset());
-    }
-
     void markGuarded(StyledDocument doc) {
         markGuarded(doc, bounds, true);
     }

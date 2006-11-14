@@ -49,6 +49,40 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
             </module-dependencies>
+            <test-dependencies>
+                <test-type>
+                    <name>unit</name>
+                    <test-dependency>
+                        <code-name-base>org.openide.text</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.editor.lib</code-name-base>
+                        <compile-dependency/>
+                        <run-dependency>
+                            <release-version>1</release-version>
+                            <specification-version>1.10</specification-version>
+                        </run-dependency>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.editor.util</code-name-base>
+                        <compile-dependency/>
+                        <run-dependency>
+                            <release-version>1</release-version>
+                            <specification-version>1.13</specification-version>
+                        </run-dependency>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.editor</code-name-base>
+                        <compile-dependency/>
+                        <recursive/>
+                    </test-dependency>
+                </test-type>
+                <test-type>
+                    <name>qa-functional</name>
+                </test-type>
+            </test-dependencies>
             <public-packages>
                 <package>org.netbeans.api.editor.guards</package>
                 <package>org.netbeans.spi.editor.guards</package>

@@ -164,7 +164,7 @@ final class JavaGuardedReader {
                                 GuardTag.valueOf(match.substring(0, match.length() - 1)), //XXX catch IAE
                                 String.valueOf(readBuff, i, toNl),
                                 lastNewLine + 1,
-                                charBuffPtr + sectionSize + 1
+                                charBuffPtr + sectionSize
                                 );
 //                                new SectionDescriptor(GuardTag.valueOf(match.substring(0, match.length() - 1))); //XXX catch IAE
 //                        desc.begin = lastNewLine;
