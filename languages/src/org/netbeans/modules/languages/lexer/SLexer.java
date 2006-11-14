@@ -55,17 +55,17 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
         if (input.eof ()) return null;
         int index = input.getIndex ();
         SToken token = null;
-        String stateName = parser.getState(state); // [PENDING] improve performance of parser.getState()
         MethodEvaluator evaluator = null;
-        
+        token = parser.read(this, input);
+        String stateName = parser.getState(state); // [PENDING] improve performance of parser.getState()
         if (language != null) {
             evaluator = (MethodEvaluator) language.getFeature(language.ANALYZE, language.getMimeType(), stateName);
         }
         if (evaluator != null) {
+            input.setIndex(index);
             token = (SToken) evaluator.evaluate(new Object[] {this, language, input});
-        } else {
-            token = parser.read (this, input);
         }
+        
         if (token == null) {
             try {
                 if (input.getIndex () > (index + 1))
