@@ -20,6 +20,7 @@
 package org.netbeans.modules.web.core.syntax.completion;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.lang.ref.WeakReference;
 import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -118,11 +119,15 @@ public class JavaJSPCompletionProvider implements CompletionProvider {
                 //cpProvider.findClassPath(fileDummyJava, ClassPath.COMPILE);
 
                 ClasspathInfo cpInfo = ClasspathInfo.create(jspFile);
-                JavaSource source = JavaSource.create(cpInfo, fileDummyJava);
+                final JavaSource source = JavaSource.create(cpInfo, fileDummyJava);
                 int shiftedOffset = fakedJavaClass.getOffset();
                 //System.err.println(javaCreator.getTestSting());
 
-                doc.putProperty(JavaSource.class, source);
+                doc.putProperty(JavaSource.class, new WeakReference<JavaSource>(null) {
+                    public JavaSource get() {
+                        return source;
+                    }
+                });
 
                 List<? extends CompletionItem> javaCompletionItems = JavaCompletionProvider.query(
                         source, queryType, shiftedOffset, caretOffset);
