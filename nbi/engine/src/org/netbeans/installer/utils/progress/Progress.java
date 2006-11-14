@@ -27,14 +27,24 @@ import java.util.Vector;
  * @author ks152834
  */
 public class Progress {
-    private String title;
-    private String detail;
-    private int percentage;
+    /////////////////////////////////////////////////////////////////////////////////
+    // Constants
+    public static final int START    = 0;
+    public static final int COMPLETE = 100;
     
-    private Vector<ProgressListener> listeners;
+    /////////////////////////////////////////////////////////////////////////////////
+    // Instance
+    protected String  title      = "";
+    protected String  detail     = "";
+    protected int     percentage = START;
     
+    protected boolean canceled   = false;
+    
+    private Vector<ProgressListener> listeners = new Vector<ProgressListener>();
+    
+    // constructors /////////////////////////////////////////////////////////////////
     public Progress() {
-        listeners = new Vector<ProgressListener>();
+        // does nothing
     }
     
     public Progress(ProgressListener initialListener) {
@@ -43,24 +53,7 @@ public class Progress {
         addProgressListener(initialListener);
     }
     
-    public void addProgressListener(ProgressListener listener) {
-        synchronized (listeners) {
-            listeners.add(listener);
-        }
-    }
-    
-    public void removeProgressListener(ProgressListener listener) {
-        synchronized (listeners) {
-            listeners.remove(listener);
-        }
-    }
-    
-    protected void notifyListeners() {
-        for (ProgressListener listener: listeners.toArray(new ProgressListener[0])) {
-            listener.progressUpdated(this);
-        }
-    }
-    
+    // properties accessors/mutators ////////////////////////////////////////////////
     public String getTitle() {
         return title;
     }
@@ -95,16 +88,6 @@ public class Progress {
         notifyListeners();
     }
     
-    public void setPercentage(final double percentage) {
-        if ((percentage < 0.0) || (percentage > 1.0)) {
-            throw new IllegalArgumentException("The percentage should be between 0.0 and 1.0 inclusive");
-        }
-        
-        this.percentage = (int) (100.0 * percentage);
-        
-        notifyListeners();
-    }
-    
     public void addPercentage(final int percentage) {
         int result = this.percentage + percentage;
         
@@ -117,10 +100,34 @@ public class Progress {
         notifyListeners();
     }
     
-    public boolean isComplete() {
-        return percentage == COMPLETE;
+    public void setCanceled(final boolean canceled) {
+        this.canceled = canceled;
+        
+        notifyListeners();
     }
     
-    public static final int START = 0;
-    public static final int COMPLETE = 100;
+    public boolean isCanceled() {
+        return canceled;
+    }
+    
+    // listeners ////////////////////////////////////////////////////////////////////
+    public void addProgressListener(ProgressListener listener) {
+        synchronized (listeners) {
+            listeners.add(listener);
+        }
+    }
+    
+    public void removeProgressListener(ProgressListener listener) {
+        synchronized (listeners) {
+            listeners.remove(listener);
+        }
+    }
+    
+    protected void notifyListeners() {
+        ProgressListener[] clone = listeners.toArray(new ProgressListener[0]);
+        
+        for (ProgressListener listener: clone) {
+            listener.progressUpdated(this);
+        }
+    }
 }

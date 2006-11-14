@@ -28,69 +28,78 @@ import java.util.Map;
  * @author ks152834
  */
 public class CompositeProgress extends Progress implements ProgressListener {
-    Map<Progress, Integer> children;
+    /////////////////////////////////////////////////////////////////////////////////
+    // Instance
+    Map<Progress, Integer> children = new HashMap<Progress, Integer>();
     
+    // constructors /////////////////////////////////////////////////////////////////
     public CompositeProgress() {
-        children = new HashMap<Progress, Integer>();
+        // does nothing
     }
     
     public CompositeProgress(ProgressListener initialListener) {
         this();
+        
         addProgressListener(initialListener);
     }
     
-    public CompositeProgress(final Map<Progress, Integer> children) {
-        this.children = children;
+    // progress overrides ///////////////////////////////////////////////////////////
+    public int getPercentage() {
+        int totalPercentage = 0;
         
-        if (!evaluateChildren()) {
+        for (Progress child: children.keySet()) {
+            totalPercentage += child.getPercentage() * children.get(child);
+        }
+        
+        totalPercentage = (totalPercentage / COMPLETE) + percentage;
+        
+        return totalPercentage;
+    }
+    
+    public void setPercentage(final int percentage) {
+        if (!evaluateChildren(percentage)) {
             throw new IllegalArgumentException("The sum of percentages for children cannot exceed" + COMPLETE);
         }
         
-        for (Progress child: children.keySet()) {
-            child.addProgressListener(this);
+        this.percentage = percentage;
+    }
+    
+    public void addPercentage(final int addition) {
+        if (!evaluateChildren(percentage + addition)) {
+            throw new IllegalArgumentException("The sum of percentages for children cannot exceed" + COMPLETE);
         }
+        
+        percentage += addition;
     }
     
-    public CompositeProgress(final Map<Progress, Integer> children, final ProgressListener initialListener) {
-        this(children);
-        addProgressListener(initialListener);
-    }
-    
-    public void addChild(Progress progress, int percentage) {
-        children.put(progress, percentage);
+    // composite-specific methods ///////////////////////////////////////////////////
+    public void addChild(Progress progress, int percentageChunk) {
+        children.put(progress, percentageChunk);
         
         progress.addProgressListener(this);
         
-        if (!evaluateChildren()) {
+        if (!evaluateChildren(percentage)) {
             throw new IllegalArgumentException("The sum of percentages for children cannot exceed" + COMPLETE);
         }
     }
     
-    private boolean evaluateChildren() {
-        int percentageSum = 0;
+    // progress listener implementation /////////////////////////////////////////////
+    public void progressUpdated(Progress progress) {
+        notifyListeners();
+    }
+    
+    // private //////////////////////////////////////////////////////////////////////
+    private boolean evaluateChildren(final int percentage) {
+        int totalPercentage = percentage;
         
         for (Integer value: children.values()) {
-            percentageSum += value;
+            totalPercentage += value;
         }
         
-        if (percentageSum > COMPLETE) {
+        if (totalPercentage > COMPLETE) {
             return false;
         }
         
         return true;
-    }
-    
-    public int getPercentage() {
-        double percentage = 0.;
-        
-        for (Progress child: children.keySet()) {
-            percentage += (double) child.getPercentage() * children.get(child) / COMPLETE;
-        }
-        
-        return (int) percentage;
-    }
-    
-    public void progressUpdated(Progress progress) {
-        notifyListeners();
     }
 }

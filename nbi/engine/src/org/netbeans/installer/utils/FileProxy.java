@@ -37,6 +37,7 @@ import org.netbeans.installer.Installer;
 import org.netbeans.installer.downloader.DownloadFilesBase;
 import org.netbeans.installer.downloader.DownloadManager;
 import org.netbeans.installer.downloader.queue.EmptyQueueListener;
+import org.netbeans.installer.downloader.queue.URLQueue;
 import org.netbeans.installer.downloader.queue.URLStatus;
 import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.utils.progress.Progress;
@@ -231,9 +232,14 @@ public class FileProxy {
         public void chunkDownloaded(URL url, int length) {
             //       System.out.print("chunk downloaded - length" + length + ": " + url + " T:");
             //       System.out.println(Thread.currentThread().getName());
-            if (progress == null) return;
-            double per = (double)manager.getURLQueue().getCurrentSize(url) / manager.getURLQueue().getSize(url);
-            progress.setPercentage(per);
+            if (progress == null) {
+                return;
+            }
+            
+            URLQueue queue = manager.getURLQueue();
+            
+            int percentage = (queue.getCurrentSize(url) * Progress.COMPLETE) / queue.getSize(url);
+            progress.setPercentage(percentage);
         }
     }
 }
