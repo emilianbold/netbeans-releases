@@ -20,14 +20,10 @@
 package org.netbeans.modules.xml.xsd;
 
 import java.util.*;
-import javax.swing.Icon;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.EntityResolver;
 
-import org.netbeans.modules.xml.api.model.GrammarQuery;
-import org.netbeans.modules.xml.api.model.GrammarResult;
-import org.netbeans.modules.xml.api.model.HintContext;
 
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.xml.api.model.*;
@@ -209,10 +205,6 @@ class XSDGrammarResolver implements GrammarQuery {
     
     private Namespace findNamespaceByURI(String uri) {
         return (Namespace) uri2Namespace.get(uri);
-    }
-    
-    private Namespace findNamespaceByPrefix(String prefix) {
-        return (Namespace) prefix2Namespace .get(prefix);
     }
     
     private Namespace findNamespace(Node node) {

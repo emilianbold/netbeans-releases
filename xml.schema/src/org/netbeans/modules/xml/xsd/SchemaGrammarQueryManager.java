@@ -22,7 +22,6 @@ import java.util.Enumeration;
 import org.w3c.dom.*;
 import org.xml.sax.InputSource;
 import org.netbeans.modules.xml.api.model.DTDUtil;
-import org.netbeans.api.xml.services.UserCatalog;
 import java.io.*;
 
 /** XML Schema Grammar provided code completion for XML Schema file.
@@ -78,7 +77,7 @@ public class SchemaGrammarQueryManager extends org.netbeans.modules.xml.api.mode
     public org.netbeans.modules.xml.api.model.GrammarQuery getGrammar(org.netbeans.modules.xml.api.model.GrammarEnvironment ctx) {
         if (prefix==null) return null;
         InputSource inputSource = null;
-        StringBuffer buffer=new StringBuffer();
+        StringBuffer buffer=new StringBuffer(512);
         if (prefix.length()==0) {
             buffer.append("<!ENTITY % p ''><!ENTITY % s ''>"); //NOI18N
         } else {

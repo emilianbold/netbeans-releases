@@ -24,7 +24,6 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 
-import org.netbeans.modules.xml.api.model.GrammarQuery;
 import org.netbeans.api.xml.services.UserCatalog;
 
 /**

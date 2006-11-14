@@ -22,14 +22,7 @@ package org.netbeans.modules.xml.xsd;
 import java.beans.FeatureDescriptor;
 import java.util.Enumeration;
 import java.util.WeakHashMap;
-import org.w3c.dom.Node;
-import org.xml.sax.InputSource;
-import org.xml.sax.EntityResolver;
-
-import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
 import org.netbeans.modules.xml.api.model.*;
-import org.netbeans.api.xml.services.UserCatalog;
 
 /**
  * Provide XSD grammar. It must be registered at layer.

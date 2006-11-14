@@ -28,8 +28,6 @@ import org.netbeans.spi.xml.cookies.*;
 import org.netbeans.api.xml.parsers.SAXEntityParser;
 import org.netbeans.api.xml.services.UserCatalog;
 import org.openide.xml.XMLUtil;
-import org.xml.sax.EntityResolver;
-import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
@@ -98,16 +96,16 @@ public final class ValidateSchemaSupport extends ValidateXMLSupport {
         protected InputSource wrapInputSource(InputSource inputSource) {
             String targetNamespace = getTargetNamespace();
             String url = inputSource.getSystemId();
-            StringBuffer buffer = new StringBuffer();
+            StringBuffer buffer = new StringBuffer(256);
             String namespace = "http://www.w3.org/2001/XMLSchema-instance";     // NOI18N
             buffer.append("<schemaWrapper xmlns:xsi='" + namespace + "' ");     // NOI18N
             
             
             if (targetNamespace != null) {
-                buffer.append("xmlns='" + targetNamespace + "' ");              // NOI18N
-                buffer.append("xsi:schemaLocation='" + targetNamespace + " " + url + "'/>");    // NOI18N
+                buffer.append("xmlns='").append(targetNamespace).append("' ");              // NOI18N
+                buffer.append("xsi:schemaLocation='").append(targetNamespace).append(' ').append(url).append("'/>");    // NOI18N
             } else {
-                buffer.append("xsi:noNamespaceSchemaLocation='" + url + "'/>"); // NOI18N
+                buffer.append("xsi:noNamespaceSchemaLocation='").append(url).append("'/>"); // NOI18N
             }
             StringReader reader = new StringReader(buffer.toString());
             InputSource input = new InputSource();

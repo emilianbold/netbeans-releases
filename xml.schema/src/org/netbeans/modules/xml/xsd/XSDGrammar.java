@@ -20,12 +20,10 @@
 package org.netbeans.modules.xml.xsd;
 
 import java.util.*;
-import javax.swing.Icon;
 
 import org.netbeans.modules.xml.api.model.GrammarQuery;
 import org.netbeans.modules.xml.api.model.GrammarResult;
 import org.netbeans.modules.xml.api.model.HintContext;
-import org.netbeans.modules.xml.spi.dom.AbstractNode;
 
 
 

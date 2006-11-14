@@ -100,9 +100,14 @@ class SchemaElement extends AbstractResultNode implements Element {
         sb.append("SchemaElement ").append(qname);
         
         if (attributes != null) {
-            sb.append("Attrs size: " + attributes.getLength());
+            sb.append("Attrs size: ").append(attributes.getLength());
             for (int i = 0; i < attributes.getLength(); i++) {
-                sb.append("\n Attr[" + i + "] localname: " + attributes.getLocalName(i) + " qname: " + attributes.getQName(i) + " value: " + attributes.getValue(i) + " URI: " + attributes.getURI(i) + " type: " + attributes.getType(i));
+                sb.append("\n Attr[").append(i).append("] localname: ").
+                        append(attributes.getLocalName(i)).
+                        append(" qname: ").append(attributes.getQName(i)).
+                        append(" value: ").append(attributes.getValue(i)).
+                        append(" URI: ").append(attributes.getURI(i)).
+                        append(" type: ").append(attributes.getType(i));
             }
         }
         

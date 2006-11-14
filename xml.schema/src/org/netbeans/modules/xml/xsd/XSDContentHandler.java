@@ -65,28 +65,6 @@ class XSDContentHandler implements ContentHandler {
         return new XSDGrammar(elements, types, targetNamespace, schemaNamespace);
     }
     
-    private void println(String s) {
-        ps.println(s);
-    }
-    
-    private void printlnAttributes(Attributes atts) {
-        println("START Attributes");
-        for (int i = 0; i < atts.getLength(); i++) {
-            println("Attr[" + i + "] localname: " + atts.getLocalName(i) + " qname: " + atts.getQName(i) + " value: " + atts.getValue(i) + " URI: " + atts.getURI(i) + " type: " + atts.getType(i));
-        }
-        println("END Attributes");
-    }
-    
-    
-    private static void printlnElement(SchemaElement e, String prefix) {
-        System.out.println(prefix + e.toString());
-        Iterator it = e.getSubelements();
-        while (it.hasNext()) {
-            printlnElement((SchemaElement) it.next(), prefix + "    ");
-        }
-        
-    }
-    
     public void characters(char[] ch, int start, int length) throws org.xml.sax.SAXException {
     //    println("characters: " + new String(ch, start, length));
     }
