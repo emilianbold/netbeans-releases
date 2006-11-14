@@ -22,8 +22,8 @@ package org.netbeans.installer.wizard.components.actions;
 
 import java.util.List;
 import org.netbeans.installer.product.ProductComponent;
-import org.netbeans.installer.product.ProductComponent.Status;
 import org.netbeans.installer.product.ProductRegistry;
+import org.netbeans.installer.product.utils.Status;
 import org.netbeans.installer.utils.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.ResourceUtils;

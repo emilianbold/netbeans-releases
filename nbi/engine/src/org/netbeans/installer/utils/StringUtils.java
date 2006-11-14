@@ -39,7 +39,9 @@ import java.util.Locale;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.installer.product.utils.Status;
 import org.netbeans.installer.utils.exceptions.ParseException;
+import org.netbeans.installer.utils.exceptions.UnrecognizedObjectException;
 import org.netbeans.installer.utils.helper.ExtendedURI;
 import org.netbeans.installer.utils.helper.Platform;
 import org.w3c.dom.Element;
@@ -468,5 +470,15 @@ public abstract class StringUtils {
         } catch (URISyntaxException e) {
             throw new ParseException("Cannot parse extended URI", e);
         }
+    }
+    
+    public static Status parseStatus(final String string) throws ParseException {
+        for (Status status: Status.values()) {
+            if (status.getName().equals(string)) {
+                return status;
+            }
+        }
+        
+        throw new ParseException("Cannot parse status: " + string);
     }
 }
