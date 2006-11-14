@@ -21,7 +21,6 @@ package org.netbeans.modules.xml.retriever.catalog.impl;
 
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.retriever.catalog.CatalogEntry;

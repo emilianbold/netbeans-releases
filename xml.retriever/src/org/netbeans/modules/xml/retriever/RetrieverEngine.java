@@ -20,7 +20,6 @@
 package org.netbeans.modules.xml.retriever;
 
 import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -37,7 +36,6 @@ import java.util.Map;
 import java.util.Stack;
 import java.util.StringTokenizer;
 import javax.swing.AbstractAction;
-import javax.swing.Action;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;

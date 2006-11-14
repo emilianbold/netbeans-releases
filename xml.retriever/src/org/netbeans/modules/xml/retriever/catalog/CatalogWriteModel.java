@@ -32,8 +32,6 @@ import java.util.Collection;
 import org.netbeans.modules.xml.xam.dom.DocumentModel;
 import org.netbeans.modules.xml.xam.locator.*;
 import org.openide.filesystems.FileObject;
-import org.w3c.dom.ls.LSResourceResolver;
-import org.xml.sax.EntityResolver;
 
 /**
  * API interface for all the operations exposed

@@ -24,10 +24,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -45,7 +42,6 @@ import javax.swing.text.StyledDocument;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
@@ -55,14 +51,12 @@ import org.netbeans.modules.xml.xam.dom.DocumentModel;
 import org.netbeans.modules.xml.retriever.catalog.CatalogAttribute;
 import org.netbeans.modules.xml.retriever.catalog.CatalogElement;
 import org.netbeans.modules.xml.retriever.catalog.CatalogEntry;
-import org.netbeans.modules.xml.xam.locator.CatalogModelFactory;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -82,7 +76,7 @@ public class CatalogFileWrapperDOMImpl  implements EntityResolver, CatalogFileWr
     private Element catalog = null;
     private boolean isItMyOwnEvent = false;
     public static javax.swing.text.Document backendCatalogSwingDocument = null;
-    private static Logger logger = Utilities.getLogger();
+    private static final Logger logger = Utilities.getLogger();
     
     private DocumentModel.State currentStateOfCatalog = null;
     
@@ -302,7 +296,7 @@ public class CatalogFileWrapperDOMImpl  implements EntityResolver, CatalogFileWr
         bootstrap();
         
         Object obj[] = {
-            new Integer(index), catEnt.toString(), mappingEntityKey.toString(), mappedEntityKey.toString()
+            Integer.valueOf(index), catEnt.toString(), mappingEntityKey.toString(), mappedEntityKey.toString()
         };
         logger.entering("CatalogModelWrapperDOMImpl", "setEntryInCatalogFile", obj);
         
@@ -440,7 +434,6 @@ public class CatalogFileWrapperDOMImpl  implements EntityResolver, CatalogFileWr
         logger.finer("ENTER");
         isItMyOwnEvent = true;
         try {
-            int i = 1;
             TransformerFactory trFactory = TransformerFactory.newInstance();
             Transformer transformer = trFactory.newTransformer();
             DOMSource domSource = new DOMSource(catDoc);
@@ -617,7 +610,6 @@ public class CatalogFileWrapperDOMImpl  implements EntityResolver, CatalogFileWr
     
     
     void saveByDocumentEditorCookie(){
-        boolean exception = false;
         try {
             DataObject dobj = DataObject.find(backendCatalogFileObj);
             EditorCookie thisDocumentEditorCookie = (EditorCookie)dobj.getCookie(EditorCookie.class);

@@ -50,8 +50,6 @@ import org.w3c.dom.ls.LSResourceResolver;
  */
 public class LSResourceResolverImpl implements LSResourceResolver {
     
-    private FileObject someFileInThisProject;
-    
     /** Creates a new instance of LSResourceResolverImpl */
     public LSResourceResolverImpl() {
     }

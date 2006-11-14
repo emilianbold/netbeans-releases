@@ -225,7 +225,7 @@ public class Utilities {
         //collect rest of slave tokens
         StringBuilder slaveResult = new StringBuilder(slaveLast);
         while(slaveTok.hasMoreTokens()) {
-            slaveResult.append("/");
+            slaveResult.append('/');
             slaveResult.append(slaveTok.nextToken());
         }
         //add prefix to slaveStr

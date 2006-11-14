@@ -23,9 +23,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collection;
@@ -33,7 +31,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.xml.retriever.XMLCatalogProvider;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.xam.dom.DocumentModel;
 import org.netbeans.modules.xml.retriever.catalog.CatalogElement;
@@ -42,9 +39,6 @@ import org.netbeans.modules.xml.retriever.catalog.CatalogWriteModel;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.w3c.dom.ls.LSInput;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
 /**
  *
@@ -56,7 +50,7 @@ public class CatalogWriteModelImpl extends CatalogModelImpl implements CatalogWr
     
     PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     
-    private static Logger logger = Utilities.getLogger();
+    private static final Logger logger = Utilities.getLogger();
     
     private DocumentModel.State currentStateOfCatalog;
     

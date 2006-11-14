@@ -40,7 +40,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.text.Document;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.apache.xml.resolver.Catalog;
@@ -49,7 +48,6 @@ import org.apache.xml.resolver.helpers.Debug;
 import org.apache.xml.resolver.tools.CatalogResolver;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.xml.retriever.XMLCatalogProvider;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.xam.locator.CatalogModel;
@@ -57,7 +55,6 @@ import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.netbeans.modules.xml.retriever.catalog.CatalogWriteModel;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.spi.xml.cookies.DataObjectAdapters;
-import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -76,7 +73,7 @@ public class CatalogModelImpl implements CatalogModel {
     
     protected FileObject catalogFileObject = null;
     
-    private static Logger logger = Utilities.getLogger();
+    private static final Logger logger = Utilities.getLogger();
     
     /** Creates a new instance of CatalogModelImpl */
     public CatalogModelImpl(Project myProject) throws IOException{
@@ -174,25 +171,6 @@ public class CatalogModelImpl implements CatalogModel {
         }
         //just look in to the project catalog
         return getModelSource(locationURI, null);
-    }
-    
-    
-    /**
-     * This method must be overridden by the Unit testcase to return a special
-     * Document object for a FileObject.
-     */
-    private Document getDocument(FileObject modelSourceFileObject) throws CatalogModelException{
-        Document result = null;
-        try {
-            DataObject dObject = DataObject.find(modelSourceFileObject);
-            EditorCookie ec = (EditorCookie)dObject.getCookie(EditorCookie.class);
-            Document doc = ec.openDocument();
-            assert(doc instanceof BaseDocument);
-            result = doc;
-        } catch (Exception dObjEx) {
-            throw new CatalogModelException(dObjEx);
-        }
-        return result;
     }
     
     
