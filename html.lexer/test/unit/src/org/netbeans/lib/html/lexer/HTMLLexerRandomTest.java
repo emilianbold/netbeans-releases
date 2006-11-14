@@ -55,11 +55,17 @@ public class HTMLLexerRandomTest extends TestCase {
 
         // Explicit inserts/removals checks
         randomModify.insertText(0, "<a>");
-        randomModify.insertText(2, " ");
+        randomModify.insertText(2, " "); //mfukala - IMO it will be broken even here
         randomModify.removeText(2, 1);
         
         randomModify.clearDocument();
 
+        //mfukala - temp. test
+        randomModify.insertText(0, "<body>");
+        randomModify.insertText(5, " "); // error: '>' is text here
+        randomModify.insertText(6, "bgcolor='red'");  //error: attr name and value are lexed incorrectly
+        randomModify.clearDocument();
+        
         // Begin really randomized testing
         FixedTextDescriptor[] fixedTexts = new FixedTextDescriptor[] {
             FixedTextDescriptor.create("/>", 0.2),
