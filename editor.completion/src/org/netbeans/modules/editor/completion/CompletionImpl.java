@@ -536,13 +536,18 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
             }
         }
         
-        // Query the tasks
-        if (delayQuery) {
-            restartCompletionAutoPopupTimer();
+        if (completionResultSets.size() > 0) {
+            // Query the tasks
+            if (delayQuery) {
+                restartCompletionAutoPopupTimer();
+            } else {
+                pleaseWaitTimer.restart();
+                queryResultSets(completionResultSets);
+                newCompletionResult.queryInvoked();
+            }
         } else {
-            pleaseWaitTimer.restart();
-            queryResultSets(completionResultSets);
-            newCompletionResult.queryInvoked();
+            completionCancel();
+            layout.showCompletion(Collections.singletonList(NO_SUGGESTIONS), null, -1, CompletionImpl.this, false);
         }
     }
 
