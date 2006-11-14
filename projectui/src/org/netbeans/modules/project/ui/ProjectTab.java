@@ -49,6 +49,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.project.ui.groups.Group;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -95,7 +96,7 @@ public class ProjectTab extends TopComponent
     public ProjectTab( String id ) {
         this();
         this.id = id;
-        initValues( id );
+        initValues();
     }
     
     public ProjectTab() {
@@ -123,13 +124,27 @@ public class ProjectTab extends TopComponent
         
     }
 
-    private void initValues( String tcID ) {
+    /**
+     * Update display to reflect {@link org.netbeans.modules.project.ui.groups.Group#getActiveGroup}.
+     * @param group current group, or null
+     */
+    public void setGroup(Group g) {
+        if (id.equals(ID_LOGICAL)) {
+            if (g != null) {
+                setName(NbBundle.getMessage(ProjectTab.class, "LBL_projectTabLogical_tc_with_group", g.getName()));
+            } else {
+                setName(NbBundle.getMessage(ProjectTab.class, "LBL_projectTabLogical_tc"));
+            }
+        } else {
+            setName(NbBundle.getMessage(ProjectTab.class, "LBL_projectTab_tc"));
+        }
+        // Seems to be useless: setToolTipText(getName());
+    }
+
+    private void initValues() {
+        setGroup(Group.getActiveGroup());
         
-        String name = NbBundle.getMessage(ProjectTab.class, "LBL_" + tcID ); // NOI18N
-        setName( name );
-        setToolTipText( name );
-        
-        if ( tcID.equals( ID_LOGICAL ) ) {
+        if (id.equals(ID_LOGICAL)) {
             setIcon( ICON_LOGICAL ); 
         }
         else {
@@ -138,7 +153,7 @@ public class ProjectTab extends TopComponent
             
         if ( rootNode == null ) {
             // Create the node which lists open projects      
-            rootNode = new ProjectsRootNode( tcID.equals( ID_LOGICAL ) ? ProjectsRootNode.LOGICAL_VIEW : ProjectsRootNode.PHYSICAL_VIEW );
+            rootNode = new ProjectsRootNode(id.equals(ID_LOGICAL) ? ProjectsRootNode.LOGICAL_VIEW : ProjectsRootNode.PHYSICAL_VIEW);
         }
         manager.setRootContext( rootNode );
     }
@@ -196,7 +211,7 @@ public class ProjectTab extends TopComponent
      * to get correctly deserialized instance of ProjectTab */
     public static synchronized ProjectTab getDefault( String tcID ) {
         
-        ProjectTab tab = (ProjectTab)tabs.get( tcID );
+        ProjectTab tab = tabs.get(tcID);
         
         if ( tab == null ) {
             tab = new ProjectTab( tcID );            
@@ -285,7 +300,7 @@ public class ProjectTab extends TopComponent
         catch ( java.io.OptionalDataException e ) {
             // Sel paths missing
         }
-        initValues( id );
+        initValues();
 // fix for #55701 (Expanding of previously expanded folder in explorer slows down startup)
 // the expansion scales very bad now and can prolong startup up to several minutes
 // disabling the expansion of nodes after start altogether
@@ -567,7 +582,7 @@ public class ProjectTab extends TopComponent
         public void actionPerformed(ActionEvent e) {
             if (isProject()) {
                 Node[] nodes = manager.getSelectedNodes();
-                Project p = (Project) nodes[0].getLookup().lookup(Project.class);
+                Project p = nodes[0].getLookup().lookup(Project.class);
                 
                 assert p != null;
                 
@@ -582,7 +597,7 @@ public class ProjectTab extends TopComponent
         public void updateIsEnabled() {
             if (isProject()) {
                 Node[] nodes = manager.getSelectedNodes();
-                Project p = (Project) nodes[0].getLookup().lookup(Project.class);
+                Project p = nodes[0].getLookup().lookup(Project.class);
                 
                 if (p == null) {
                     setEnabled(false);

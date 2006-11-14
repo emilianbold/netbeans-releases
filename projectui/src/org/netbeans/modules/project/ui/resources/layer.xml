@@ -133,6 +133,7 @@ Microsystems, Inc. All Rights Reserved.
             </file>
             
             <file name="org-netbeans-modules-project-ui-actions-ActiveConfigAction.instance"/>
+            <file name="org-netbeans-modules-project-ui-groups-GroupsMenu.instance"/>
                                                             
         </folder>
         
@@ -294,7 +295,11 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>                 
             </file>
             
-            <attr name="SeparatorOpen.instance/org-netbeans-modules-project-ui-SetMainProject.shadow" boolvalue="true" />
+            <attr name="SeparatorOpen.instance/org-netbeans-modules-project-ui-groups-GroupsMenu.shadow" boolvalue="true"/>
+            <file name="org-netbeans-modules-project-ui-groups-GroupsMenu.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-groups-GroupsMenu.instance"/>
+            </file>
+            <attr name="org-netbeans-modules-project-ui-groups-GroupsMenu.shadow/org-netbeans-modules-project-ui-SetMainProject.shadow" boolvalue="true"/>
             
             <!-- SetMain and customize -->
             
@@ -659,7 +664,11 @@ Microsystems, Inc. All Rights Reserved.
         <file name="org-netbeans-modules-project-ui-RecentProjects.shadow">
             <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RecentProjects.instance"/>
         </file>
-        <attr name="org-netbeans-modules-project-ui-RecentProjects.shadow/sep-2.instance" boolvalue="true"/>
+        <attr name="org-netbeans-modules-project-ui-RecentProjects.shadow/org-netbeans-modules-project-ui-groups-GroupsMenu.shadow" boolvalue="true"/>
+        <file name="org-netbeans-modules-project-ui-groups-GroupsMenu.shadow">
+            <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-groups-GroupsMenu.instance"/>
+        </file>
+        <attr name="org-netbeans-modules-project-ui-groups-GroupsMenu.shadow/sep-2.instance" boolvalue="true"/>
         <file name="sep-2.instance">
             <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
         </file>

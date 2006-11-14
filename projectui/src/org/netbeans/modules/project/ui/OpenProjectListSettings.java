@@ -30,7 +30,6 @@ import java.util.prefs.Preferences;
 import javax.swing.filechooser.FileSystemView;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
-import org.openide.util.NbCollections;
 import org.openide.util.NbPreferences;
 
 /** SystemOption to store the list of open projects
@@ -59,10 +58,6 @@ public class OpenProjectListSettings {
     public static OpenProjectListSettings getInstance() {
         return INSTANCE;
     }
-    
-    public String displayName() {
-        return NbBundle.getMessage (OpenProjectListSettings.class,"TXT_UISettings"); //NOI18N
-    }        
     
     protected final String putProperty(String key, String value, boolean notify) {
         String retval = getProperty(key);

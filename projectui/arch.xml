@@ -22,7 +22,7 @@ Microsystems, Inc. All Rights Reserved.
 ]>
 
 <api-answers
-  question-version="1.27"
+  question-version="1.29"
   author="jglick@netbeans.org,mkubec@netbeans.org"
 >
 
@@ -1190,6 +1190,39 @@ Microsystems, Inc. All Rights Reserved.
   <p>
    No APIs are planned to be deprecated/removed/changed.
   </p>
+ </answer>
+
+
+
+
+<!--
+        <question id="resources-preferences" when="final">
+            Does your module uses preferences via Preferences API? Does your module use NbPreferences or
+            or regular JDK Preferences ? Does it read, write or both ? 
+            Does it share preferences with other modules ? If so, then why ?
+            <hint>
+                You may use
+                <pre xml:space="preserve">
+                    &lt;api type="export" group="preferences"
+                    name="preference node's absolute path name" category="private" url="http://..."&gt;
+                    description of individual keys, where it is used, what it
+                    influence, whether the module reads/write it, etc.
+                    &lt;/api&gt;            
+                </pre>
+            </hint>
+        </question>
+-->
+ <answer id="resources-preferences">
+     <api type="export" group="preferences" category="private" name="org.netbeans.modules.projectui">
+         <p>
+             List of open projects. See <code>OpenProjectListSettings</code>.
+         </p>
+     </api>
+     <api type="export" group="preferences" category="private" name="org.netbeans.modules.projectui.groups">
+         <p>
+             Project groups. See <code>Group</code>.
+         </p>
+     </api>
  </answer>
 
 </api-answers>
