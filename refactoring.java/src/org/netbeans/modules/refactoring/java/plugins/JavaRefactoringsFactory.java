@@ -51,6 +51,8 @@ public class JavaRefactoringsFactory implements RefactoringPluginFactory {
             if (checkSafeDelete(((SafeDeleteRefactoring)refactoring).getRefactoredObjects())) {
                 return new SafeDeleteRefactoringPlugin((SafeDeleteRefactoring)refactoring);
             }
+        } else if (refactoring instanceof MoveRefactoring) {
+            return new MoveRefactoringPlugin((MoveRefactoring) refactoring);
         }
         return null;
     }

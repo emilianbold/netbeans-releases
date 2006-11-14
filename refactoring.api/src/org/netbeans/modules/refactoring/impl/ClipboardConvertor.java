@@ -56,10 +56,10 @@ public class ClipboardConvertor implements Convertor {
                 return ;
             }
             Dictionary d = new Hashtable();
-            d.put("target", target);
+            d.put("target", target); //NOI18N
             PasteType[] types = target.getPasteTypes(orig);
             if (types.length>0)
-                d.put("paste", types[0]);
+                d.put("paste", types[0]); //NOI18N
             ic.add(d);
             Lookup l = new AbstractLookup(ic);
             this.move = RefactoringActionsFactory.moveAction().createContextAwareInstance(l);

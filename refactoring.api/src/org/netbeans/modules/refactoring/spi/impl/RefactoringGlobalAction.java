@@ -144,7 +144,7 @@ public abstract class RefactoringGlobalAction extends NodeAction {
         }
         
         public boolean isEnabled() {
-            return RefactoringGlobalAction.this.isEnabled();
+            return enable(context);
         }
         
         public void addPropertyChangeListener(PropertyChangeListener arg0) {

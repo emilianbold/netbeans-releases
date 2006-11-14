@@ -19,8 +19,6 @@
 package org.netbeans.modules.refactoring.plugins;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.URL;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
@@ -28,7 +26,6 @@ import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImpl;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -90,7 +87,7 @@ public class FileMovePlugin implements RefactoringPlugin {
             session.registerFileChange(new Runnable() {
                 public void run() {
                     try {
-                        FileObject target = URLMapper.findFileObject((URL) refactoring.getTarget());
+                        FileObject target = (FileObject) refactoring.getTarget();
                         DataFolder targetFolder = DataFolder.findFolder(target);
                         DataObject.find(fo).move(targetFolder);
                     } catch (DataObjectNotFoundException ex) {
@@ -103,11 +100,11 @@ public class FileMovePlugin implements RefactoringPlugin {
          }
 
         public Object getComposite() {
-            return fo.getParent();
+            return fo;
         }
 
         public FileObject getParentFile() {
-            return fo.getParent();
+            return fo;
         }
 
         public PositionBounds getPosition() {

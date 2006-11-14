@@ -197,33 +197,55 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
     @Override
     public boolean canMove(Lookup lookup) {
         Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
-        
-        Set<DataFolder> folders = new HashSet();
-        boolean jdoFound = false;
-        for (Node n:nodes) {
-            DataObject dob = n.getCookie(DataObject.class);
-            if (dob==null) {
-                return false;
-            }
-            if (!RetoucheUtils.isOnSourceClasspath(dob.getPrimaryFile())) {
-                return false;
-            }
-            if (dob instanceof DataFolder) {
-                folders.add((DataFolder)dob);
-            } else if (RetoucheUtils.isJavaFile(dob.getPrimaryFile())) {
-                jdoFound = true;
-            }
-        }
-        if (jdoFound)
-            return true;
-        for (DataFolder fold:folders) {
-            for (Enumeration<DataObject> e = (fold).children(true); e.hasMoreElements();) {
-                if (RetoucheUtils.isJavaFile(e.nextElement().getPrimaryFile())) {
-                    return true;
+        Dictionary dict = lookup.lookup(Dictionary.class);
+        if (dict.get("target") != null) {
+            //it is drag and drop
+            Set<DataFolder> folders = new HashSet();
+            boolean jdoFound = false;
+            for (Node n:nodes) {
+                DataObject dob = n.getCookie(DataObject.class);
+                if (dob==null) {
+                    return false;
+                }
+                if (!RetoucheUtils.isOnSourceClasspath(dob.getPrimaryFile())) {
+                    return false;
+                }
+                if (dob instanceof DataFolder) {
+                    folders.add((DataFolder)dob);
+                } else if (RetoucheUtils.isJavaFile(dob.getPrimaryFile())) {
+                    jdoFound = true;
                 }
             }
+            if (jdoFound)
+                return true;
+            for (DataFolder fold:folders) {
+                for (Enumeration<DataObject> e = (fold).children(true); e.hasMoreElements();) {
+                    if (RetoucheUtils.isJavaFile(e.nextElement().getPrimaryFile())) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        } else {
+            //regular invokation
+            boolean result = false;
+            for (Node n:nodes) {
+                DataObject dob = n.getCookie(DataObject.class);
+                if (dob==null) {
+                    return false;
+                }
+                if (dob instanceof DataFolder) {
+                    return false;
+                }
+                if (!RetoucheUtils.isOnSourceClasspath(dob.getPrimaryFile())) {
+                    return false;
+                }
+                if (RetoucheUtils.isJavaFile(dob.getPrimaryFile())) {
+                    result = true;
+                }
+            }
+            return result;
         }
-        return false;
     }
 
     @Override
