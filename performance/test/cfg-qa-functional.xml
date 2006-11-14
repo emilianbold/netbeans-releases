@@ -302,7 +302,6 @@ Microsystems, Inc. All Rights Reserved.
     
     
     <!-- Scan Classpath test bag -->    
-    <!-- temporary disbaled - no support in Java/Source
     <testbag testattribs="all or classpath_scan" prio="100"
              executor="ide_performance_scan" name="Classpath Scan" >
         <testset dir="qa-functional/src">
@@ -312,7 +311,6 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </testset>
     </testbag>
-    -->
     
     <!-- Custom / Module test bags -->    
     <testbag testattribs="java_related" prio="100"
