@@ -816,10 +816,11 @@
     <property name="outputDirectory">build</property>
     <property array="True" length="3" name="support" type="com.installshield.isje.build.BuildConfigurationSupport">
         <arrayItem type="com.installshield.isje.wizard.PlatformSupport">
-            <property array="True" length="1" name="builders" type="com.installshield.isje.build.ExtendedWizardBuilder">
+            <property array="True" length="2" name="builders" type="com.installshield.isje.build.ExtendedWizardBuilder">
                 <arrayItem type="com.ibm.wizard.platform.linux.LinuxBuilder">
                     <property name="rpmIntegrationEnabled">False</property>
                 </arrayItem>
+                <arrayItem type="com.installshield.wizard.platform.win32.Win32Builder"/>
             </property>
         </arrayItem>
         <arrayItem type="com.installshield.isje.build.LanguageSupport">
