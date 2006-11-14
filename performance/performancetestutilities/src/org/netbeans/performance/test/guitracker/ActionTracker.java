@@ -176,7 +176,6 @@ public class ActionTracker {
     long awt_event_mask = -1;
     
     
-    
     /**
      * Retrieves the ActionTracker instance for this application.  Rather
      * than constructing your own ActionTracker (note that the constructor
@@ -238,7 +237,7 @@ public class ActionTracker {
     /**
      * Get the <i>current</i> <code>EventList</code> into which events
      * are being recorded.
-     * @return 
+     * @return
      */
     public EventList getCurrentEvents() {
         return currentEvents;
@@ -274,7 +273,7 @@ public class ActionTracker {
      * Record a TRACK_START event.  This causes a clean, fresh, and new
      * EventList to be begun (with the previous current EventList to be
      * saved away).
-     * @param name 
+     * @param name
      */
     public void startNewEventList(String name) {
         if (eventLists == null)
@@ -338,7 +337,7 @@ public class ActionTracker {
     /**
      * Add a <code>Tuple</code> matching these parameters
      * to the current EventList.
-     * @param code 
+     * @param code
      * @param name
      * @param millies
      */
@@ -500,17 +499,17 @@ public class ActionTracker {
     }
     
     TransformerFactory getTransformerFactory() throws TransformerConfigurationException {
-        if (tfactory == null) 
+        if (tfactory == null)
             tfactory = TransformerFactory.newInstance();
         
         return tfactory;
     }
     
     DocumentBuilder getDocumentBuilder() throws ParserConfigurationException {
-        if (dbfactory == null) 
+        if (dbfactory == null)
             dbfactory = DocumentBuilderFactory.newInstance();
         
-        if (dbld == null)      
+        if (dbld == null)
             dbld = dbfactory.newDocumentBuilder();
         
         return dbld;
@@ -524,7 +523,7 @@ public class ActionTracker {
      * @throws javax.xml.transform.TransformerException
      */
     public void exportAsXML()
-            throws ParserConfigurationException, TransformerConfigurationException,
+    throws ParserConfigurationException, TransformerConfigurationException,
             TransformerException {
         PrintStream out = System.out; // Default
         if (fnActionOutput != null) {
@@ -551,7 +550,7 @@ public class ActionTracker {
      * @throws javax.xml.transform.TransformerException
      */
     public void exportAsXML(PrintStream out)
-            throws ParserConfigurationException, TransformerConfigurationException,
+    throws ParserConfigurationException, TransformerConfigurationException,
             TransformerException {
         exportAsXML(null, out);
     }
@@ -568,11 +567,11 @@ public class ActionTracker {
      * @throws javax.xml.transform.TransformerException
      */
     public void exportAsXML(Document style, PrintStream out)
-            throws ParserConfigurationException, TransformerConfigurationException,
+    throws ParserConfigurationException, TransformerConfigurationException,
             TransformerException {
         Document doc = getDocumentBuilder()
-                .getDOMImplementation()
-                .createDocument(null, TN_ROOT_ELEMENT, null);
+        .getDOMImplementation()
+        .createDocument(null, TN_ROOT_ELEMENT, null);
         Element root = doc.getDocumentElement();
         
         // Construct the DOM contents by scanning through all EventLists,
@@ -708,7 +707,7 @@ public class ActionTracker {
          */
         public String toString() {
             return getName()
-                    + " (" + this.size() + ") "
+            + " (" + this.size() + ") "
                     + new Date(getStartMillis()).toString();
         }
     }
@@ -796,25 +795,28 @@ public class ActionTracker {
          * @return string presentation of tuple
          */
         public String toString() {
-            return getCodeName()
-                    + " " + name
-                    + " " + Long.toString(millies)
-                    + " " + Long.toString(diffies);
+            return this.getCodeName() +
+                    " " + this.getName() +
+                    " " + Long.toString(this.getTimeMillis()) +
+                    " " + Long.toString(this.getTimeDifference());
         }
         
         /**
-         * Compare two tuples, they are equals if : 
+         * Compare two tuples, they are equals if :
          * <li> code is the same
          * <li> name is the same
          * <li> time of occurence is the same
          * <li> difference to start time is the same
-         * 
+         *
          * @param obj tuple to be compared with <i>this</i>
          * @return true if are equals, false else
          */
         public boolean equals(Object obj) {
             Tuple t = (Tuple) obj;
-            return this.code==t.code && this.name.equalsIgnoreCase(t.name) && this.millies==t.millies && this.diffies==t.diffies;
+            return this.getCode()==t.getCode() &&
+                    this.getName().equalsIgnoreCase(t.getName()) &&
+                    this.getTimeMillis()==t.getTimeMillis() &&
+                    this.getTimeDifference()==t.getTimeDifference();
         }
         
     }
