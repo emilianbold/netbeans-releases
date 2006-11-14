@@ -195,9 +195,10 @@ Microsystems, Inc. All Rights Reserved.
                     <name>qa-functional</name>
                 </test-type>
             </test-dependencies>
-            <public-packages>
+            <friend-packages>
+                <friend>org.netbeans.modules.web.core.syntax</friend>
                 <package>org.netbeans.modules.editor.html</package>
-            </public-packages>
+            </friend-packages>
         </data>
     </configuration>
 </project>
