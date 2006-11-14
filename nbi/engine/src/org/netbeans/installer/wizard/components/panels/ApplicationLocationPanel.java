@@ -80,17 +80,12 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
     
     public void initialize() {
         messagePane.setContentType(getProperty(MESSAGE_CONTENT_TYPE_PROPERTY));
-        
         messagePane.setText(getProperty(MESSAGE_TEXT_PROPERTY));
-        
         locationLabel.setText(getProperty(LOCATION_LABEL_TEXT_PROPERTY));
-        
         locationButton.setText(getProperty(LOCATION_BUTTON_TEXT_PROPERTY));
-        
         listLabel.setText(getProperty(LIST_LABEL_TEXT_PROPERTY));
         
         LocationsListModel model = new LocationsListModel(getLocations());
-        
         list.setModel(model);
         
         File selectedLocation = getSelectedLocation();
@@ -233,10 +228,15 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
     }
     
     public String validateInput() {
-        final LocationsListModel model = (LocationsListModel) list.getModel();
-        final String value = locationField.getText().trim();
+        if (list.getModel() instanceof LocationsListModel) {
+            final LocationsListModel model = 
+                    (LocationsListModel) list.getModel();
+            final String value = locationField.getText().trim();
+            
+            return validateLocation(value);
+        }
         
-        return validateLocation(value);
+        return null;
     }
     
     private void setListVisibility(boolean state) {
