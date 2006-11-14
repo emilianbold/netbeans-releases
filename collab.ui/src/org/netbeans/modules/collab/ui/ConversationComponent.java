@@ -27,6 +27,7 @@ import javax.swing.*;
 import javax.swing.border.*;
 
 import org.openide.*;
+import org.openide.awt.Mnemonics;
 import org.openide.explorer.view.*;
 import org.openide.nodes.*;
 import org.openide.util.*;
@@ -184,7 +185,7 @@ public class ConversationComponent extends CloneableTopComponent implements Prop
         //		participantContainerPanel.add(
         //			new ParticipantSearchPanel(getConversation()),BorderLayout.SOUTH);
         JButton inviteButton = new JButton(new ImageIcon(Utilities.loadImage(INVITE_ICON)));
-        inviteButton.setText(NbBundle.getMessage(ConversationComponent.class, "BTN_ConversationComponent_Invite")); // NOI18N
+        Mnemonics.setLocalizedText(inviteButton, NbBundle.getMessage(ConversationComponent.class, "BTN_ConversationComponent_Invite")); // NOI18N
         inviteButton.addActionListener(
             new ActionListener() {
                 public void actionPerformed(ActionEvent evt) {
