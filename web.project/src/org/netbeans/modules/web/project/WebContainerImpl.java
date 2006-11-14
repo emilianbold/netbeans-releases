@@ -21,6 +21,8 @@ package org.netbeans.modules.web.project;
 
 import java.io.IOException;
 import java.util.Collections;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.Elements;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -157,7 +159,7 @@ class WebContainerImpl implements EnterpriseReferenceContainer {
         return webApp;
     }
     
-    private void writeDD(FileObject referencingFile, String referencingClass) throws IOException {
+    private void writeDD(FileObject referencingFile, final String referencingClass) throws IOException {
         ClassPathProviderImpl cppImpl = webProject.getLookup().lookup(ClassPathProviderImpl.class);
         ClasspathInfo classpathInfo = ClasspathInfo.create(
             cppImpl.getProjectSourcesClassPath(ClassPath.BOOT), 
@@ -166,15 +168,24 @@ class WebContainerImpl implements EnterpriseReferenceContainer {
         );
         JavaSource javaSource = JavaSource.create(classpathInfo, Collections.<FileObject>emptyList());
         WebModuleImplementation jp = (WebModuleImplementation) webProject.getLookup().lookup(WebModuleImplementation.class);
+        
+        // test if referencing class is injection target
         final boolean[] isInjectionTarget = {false};
         CancellableTask task = new CancellableTask<CompilationController>() {
                 public void run(CompilationController controller) throws IOException {
-                    
+                    Elements elements = controller.getElements();
+                    TypeElement thisElement = elements.getTypeElement(referencingClass);
+                    if (thisElement!=null)
+                        isInjectionTarget[0] = InjectionTargetQuery.isInjectionTarget(controller, thisElement);
                 }
                 public void cancel() {}
         };
+        JavaSource refFile = JavaSource.forFileObject(referencingFile);
+        if (refFile!=null) {
+            refFile.runUserActionTask(task, true);
+        }
         
-        boolean shouldWrite = isDescriptorMandatory(jp.getJ2eePlatformVersion());// || !InjectionTargetQuery.isInjectionTarget(referencingFile, referencingClass);
+        boolean shouldWrite = isDescriptorMandatory(jp.getJ2eePlatformVersion()) || !isInjectionTarget[0];
         if (shouldWrite) {
             FileObject fo = jp.getDeploymentDescriptor();
             getWebApp().write(fo);
