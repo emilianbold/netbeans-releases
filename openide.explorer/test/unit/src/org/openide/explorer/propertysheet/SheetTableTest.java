@@ -744,4 +744,11 @@ public class SheetTableTest extends NbTestCase {
     private static String initPropertyValue;
     private static String postChangePropertyValue;
     private static String postChangeEditorValue;
+
+    public boolean canRun() {
+        if( !ExtTestCase.canSafelyRunFocusTests() )
+            return false;
+        
+        return super.canRun();
+    }
 }

@@ -74,6 +74,9 @@ public class NonEditabilityTest extends ExtTestCase {
     }
 
     public void testClickInvokesCustomEditor() throws Exception {
+        if( !ExtTestCase.canSafelyRunFocusTests() )
+            return;
+        
         Node n = new ANode();
         setCurrentNode (n, sheet);
 
