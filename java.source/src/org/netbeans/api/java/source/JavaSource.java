@@ -312,13 +312,12 @@ public final class JavaSource {
         if (doc == null) {
             throw new IllegalArgumentException ("doc == null");  //NOI18N
         }
-        JavaSource js = (JavaSource)doc.getProperty(JavaSource.class);
+        Reference<JavaSource> ref = (Reference<JavaSource>)doc.getProperty(JavaSource.class);
+        JavaSource js = ref != null ? ref.get() : null;
         if (js == null) {
             DataObject dObj = (DataObject)doc.getProperty(Document.StreamDescriptionProperty);
             if (dObj != null)
                 js = forFileObject(dObj.getPrimaryFile());
-            if (js != null)
-                doc.putProperty(JavaSource.class, js);
         }
         return js;
     }
