@@ -90,6 +90,7 @@ class DiffTooltipActionsPanel extends JToolBar implements ActionListener {
         Difference [] diffs = master.getMaster().getCurrentDiff();
         prevButton.setEnabled(diffs[0] != diff);
         nextButton.setEnabled(diffs[diffs.length - 1] != diff);
+        rollButton.setEnabled(master.getMaster().canRollback(diff));
         
         setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createMatteBorder(1, 1, 1, 1, Color.BLACK),

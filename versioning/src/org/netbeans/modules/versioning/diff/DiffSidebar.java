@@ -194,6 +194,19 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
             ErrorManager.getDefault().notify(e);
         }
     }
+
+    boolean canRollback(Difference diff) {
+        if (!(document instanceof GuardedDocument)) return true;
+        int start, end;
+        if (diff.getType() == Difference.DELETE) {
+            start = end = Utilities.getRowStartFromLineOffset(document, diff.getSecondStart());
+        } else {
+            start = Utilities.getRowStartFromLineOffset(document, diff.getSecondStart() - 1);
+            end = Utilities.getRowStartFromLineOffset(document, diff.getSecondEnd());
+        }
+        MarkBlockChain mbc = ((GuardedDocument) document).getGuardedBlockChain();
+        return (mbc.compareBlock(start, end) & MarkBlock.OVERLAP) == 0;
+    }
     
     void onPrevious(Difference diff) {
         diff = currentDiff[getDiffIndex(diff) - 1];
