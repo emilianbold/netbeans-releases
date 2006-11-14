@@ -2,69 +2,57 @@
 ########### tokens #############################################################
 
 TOKEN:css-comment:( "/*" - "*/" )
+TOKEN:css-comment:( "<!--" | "-->" )
 TOKEN:css-whitespace: ([" " "\t" "\n" "\r"]+)
 
-# selector
-TOKEN:css-operator:( [ "*" "#" "." "," ":" "+" ">"] )
-TOKEN:css-separator:( ";" )
+TOKEN:css-operator:( ["*" "#" "." "," ":" "-" "+" ">" "(" ")" "{" "}" ";" "[" "]" "!" "/"] )
 TOKEN:css-identifier: (
     "-"? ["a"-"z" "A"-"Z" "_"]
          ["a"-"z" "A"-"Z" "_" "0" - "9" "-"]*
 )
-TOKEN:css-hash: (
-    "#" ["a"-"z" "A"-"Z" "_" "0" - "9" "-"]+
+TOKEN:css-keyword: (
+    "@charset" |
+    "@import" |
+    "@media" |
+    "@page" |
+    "important" |
+    "url"
 )
 
-TOKEN:css-separator:( "{" ):<IN_PROPERTY>
+TOKEN:css-url: (
+    "url" [" " "\t" "\n" "\r"]* ("(" - ")")
+)
 
-<IN_PROPERTY> {
+TOKEN:css-number:( 
+    ["0"-"9"]+ 
+    ( "pt" | "pc" | "in" | "mm" | "cm" | "em" |
+      "ex" | "px" | "ms" | "s" | "%"
+    )?
+)
 
-    TOKEN:css-key: (
-	["a"-"z" "A"-"Z" "_"]
-	["a"-"z" "A"-"Z" "0"-"9" "-" "_"]*
-    )
-    TOKEN:css-operator:( ":" ):<IN_VALUE>
-    TOKEN:css-separator:( "}" ):<DEFAULT>
-    TOKEN:css-whitespace: ([" " "\t" "\n" "\r"]+)
-    TOKEN:css-comment:( "/*" - "*/" )
+TOKEN:css-number:(
+    ["0"-"9"]* "." ["0"-"9"]+
+    ( "pt" | "pc" | "in" | "mm" | "cm" | "em" |
+      "ex" | "px" | "ms" | "s" | "%"
+    )?
+)
 
-}
+TOKEN:css-hash:( "#" ["a"-"z" "A"-"Z" "0"-"9" "-" "_"]+)
 
-<IN_VALUE> {
-
-    TOKEN:css-number:(
-	"#"? ["0"-"9" "A"-"F" "a"-"f"]+
-    )
-    TOKEN:css-number:(
-	"-"? ["0"-"9"]* "."? ["0"-"9"]*
-	( "pt" | "pc" | "in" | "mm" | "cm" | "em" |
-          "ex" | "px" | "ms" | "s" | "%"
-	)?
-    )
-    TOKEN:css-string: (
-	"\""
-	    ( [^ "\"" "\n" "\r"] |
-	      ("\\" ["r" "n" "t" "\\" "\'" "\""])
-	    )*
-	"\""
-    )
-    TOKEN:css-string: (
-	"\'"
-	    ( [^ "\"" "\n" "\r"] |
-	      ("\\" ["r" "n" "t" "\\" "\'" "\""])
-	    )*
-	"\'"
-    )
-    TOKEN:css-value: (
-	["a"-"z" "A"-"Z" "_"]
-	["a"-"z" "A"-"Z" "0"-"9" "-" "_"]*
-    )
-    TOKEN:css-whitespace: ([" " "\t" "\n" "\r"]+)
-    TOKEN:css-operator:( ["," "(" ")"] )
-    TOKEN:css-separator:( ";" ):<IN_PROPERTY>
-    TOKEN:css-separator:( "}" ):<DEFAULT>
-    TOKEN:css-comment:( "/*" - "*/" )
-}
+TOKEN:css-string: (
+    "\""
+        ( [^ "\"" "\n" "\r"] |
+          ("\\" ["r" "n" "t" "\\" "\'" "\""])
+        )*
+    "\""
+)
+TOKEN:css-string: (
+    "\'"
+        ( [^ "\"" "\n" "\r"] |
+          ("\\" ["r" "n" "t" "\\" "\'" "\""])
+        )*
+    "\'"
+)
 
 
 ########### grammar ############################################################
@@ -73,69 +61,64 @@ SKIP:css-comment
 SKIP:css-whitespace
 SKIP:css-error
 
-S = ruleset;
-ruleset = rule ruleset;
-ruleset = ;
-rule = selectors body;
-body = <css-separator,'{'> declarations <css-separator,'}'>;
-selectors = selector <css-operator,','> selectors;
-selectors = selector;
+S = [charset] (import)* (ruleset | media | page)*;
+charset = "@charset"  <css-string> ";";
+import = "@import" (<css-string> | <css-url>) (<css-identifier>)* ";";
+media = "@media" mediaName mediaBody;
+mediaName = <css-identifier> ("," <css-identifier>)*;
+mediaBody = "{" (ruleset)* "}";
+page = "@page" [":" <css-indentifier>] body;
+
+ruleset = selectors body;
+body = "{" declarations "}";
+selectors = selector ("," selector)*;
 selector = simple_selector (combinator simple_selector)*;
-combinator = <css-operator,'>'> | <css-operator,'+'> | ;
+combinator = ">" | "+" | ;
 #attrib removed!!!
-simple_selector = element_name (hash | class | pseudo)* |
-                  (hash | class | pseudo)+;
-element_name = <css-identifier> | <css-operator,'*'>;
+simple_selector = element_name (hash | class | attrib | pseudo)* |
+                  (hash | class | attrib | pseudo)+;
+element_name = <css-identifier> | "*";
 hash = <css-hash>;
-class = <css-operator,'.'> <css-identifier>;
-pseudo = <css-operator,':'> <css-identifier>;
+class = "." <css-identifier>;
+attrib = "[" <css-identifier> [ ("=" | "~=" | "|=") (<css-identifier> | <css-string>) ] "]";
+pseudo = ":" [ <css-identifier> ["(" <css-identifier> ")"] ];
 
-declarations = <css-key> <css-operator,':'> values <css-separator,';'> declarations1;
-declarations = <css-key> <css-operator,':'> values;
+declarations = declaration ";" declarations;
+declarations = declaration;
 declarations = ;
-declarations1 = <css-key> <css-operator,':'> values <css-separator,';'> declarations1;
-declarations1 = <css-key> <css-operator,':'> values;
-declarations1 = ;
-
-values = <css-number> values1;
-values = <css-value> values1;
-values = <css-string> values1;
-values = <css-operator> values1;
-values = ;
-values1 = <css-number> values1;
-values1 = <css-value> values1;
-values1 = <css-string> values1;
-values1 = <css-operator> values1;
-values1 = ;
-
+declaration = key ":" expr [prio];
+key = <css-identifier>;
+expr = term (operator term)*;
+term = ["-" | "+"] (<css-number> | <css-identifier> | <css-string> | <css-url> | <css-hash> | function);
+operator = "/" | "," |;
+function = <css-identifier> "(" expr ")";
+prio = "!" "important";
 
 ########### color ##############################################################
  
 COLOR:selector {
     default-coloring: "identifier";
 } 
-
-COLOR:css-separator {
-    default-coloring: "operator";
-} 
-
-COLOR:css-key {
+ 
+COLOR:key {
     default-coloring: "keyword";
-}
-
-COLOR:css-value {
-    default-coloring: "identifier";
-}
-
+    foreground-color:"#000099";
+    font-type:"bold";
+} 
 
 ########### code folding #######################################################
 
 FOLD:body
-
+FOLD:mediaBody
 
 ########### navigator ##########################################################
 
-NAVIGATOR:rule {
+NAVIGATOR:media {
+    display-name: "@media $mediaName$";
+    icon: "/org/netbeans/modules/languages/resources/css.gif";
+}
+
+NAVIGATOR:ruleset {
     display-name: "$selectors$";
     tooltip: org.netbeans.modules.languages.css.CSS.navigatorTooltip;
     icon: "/org/netbeans/modules/languages/resources/css.gif";
@@ -153,11 +136,11 @@ COMPLETE "':'"
 INDENT "(:)"
 INDENT "{:}"
 
-REFORMAT:rule:"i"
+REFORMAT:ruleset:"i"
 REFORMAT:declarations:"++i"
 REFORMAT:css-key:"i"
 REFORMAT:body:" "
-REFORMAT:values:" "
+REFORMAT:value:" "
 
 
 ########### completion #########################################################
