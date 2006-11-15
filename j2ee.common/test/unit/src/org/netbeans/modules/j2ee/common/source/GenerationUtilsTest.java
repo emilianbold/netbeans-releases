@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
+import javax.lang.model.util.*;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -174,6 +175,26 @@ public class GenerationUtilsTest extends NbTestCase {
         }
     }
 
+    public void testPrimitiveTypes() throws Exception {
+        TestUtilities.copyStringToFileObject(testFO,
+                "package foo;" +
+                "public class TestClass {" +
+                "}");
+        runModificationTask(testFO, new AbstractTask<WorkingCopy>() {
+            public void run(WorkingCopy copy) throws Exception {
+                GenerationUtils genUtils = GenerationUtils.newInstance(copy);
+                assertEquals(TypeKind.BOOLEAN, ((PrimitiveTypeTree)genUtils.getTypeTree("boolean")).getPrimitiveTypeKind());
+                assertEquals(TypeKind.BYTE, ((PrimitiveTypeTree)genUtils.getTypeTree("byte")).getPrimitiveTypeKind());
+                assertEquals(TypeKind.SHORT, ((PrimitiveTypeTree)genUtils.getTypeTree("short")).getPrimitiveTypeKind());
+                assertEquals(TypeKind.INT, ((PrimitiveTypeTree)genUtils.getTypeTree("int")).getPrimitiveTypeKind());
+                assertEquals(TypeKind.LONG, ((PrimitiveTypeTree)genUtils.getTypeTree("long")).getPrimitiveTypeKind());
+                assertEquals(TypeKind.CHAR, ((PrimitiveTypeTree)genUtils.getTypeTree("char")).getPrimitiveTypeKind());
+                assertEquals(TypeKind.FLOAT, ((PrimitiveTypeTree)genUtils.getTypeTree("float")).getPrimitiveTypeKind());
+                assertEquals(TypeKind.DOUBLE, ((PrimitiveTypeTree)genUtils.getTypeTree("double")).getPrimitiveTypeKind());
+            }
+        });
+    }
+
     public void testCreateAnnotation() throws Exception {
         TestUtilities.copyStringToFileObject(testFO,
                 "package foo;" +
@@ -294,6 +315,31 @@ public class GenerationUtilsTest extends NbTestCase {
                 assertEquals(true, columnAnn.getElementValues().values().iterator().next().getValue());
             }
         });
+    }
+
+    public void testCreateAnnotationArgumentWithNullName() throws Exception {
+        FileObject annotationFO = workDir.createData("Annotations.java");
+        TestUtilities.copyStringToFileObject(testFO,
+                "package foo;" +
+                "public class TestClass {" +
+                "}");
+        runModificationTask(testFO, new AbstractTask<WorkingCopy>() {
+            public void run(WorkingCopy copy) throws Exception {
+                GenerationUtils genUtils = GenerationUtils.newInstance(copy);
+                TreeMaker make = copy.getTreeMaker();
+                AnnotationTree annWithLiteralArgument = genUtils.createAnnotation("java.lang.SuppressWarnings",
+                        Collections.singletonList(genUtils.createAnnotationArgument(null, "unchecked")));
+                AnnotationTree annWithArrayArgument = genUtils.createAnnotation("java.lang.annotation.Target",
+                        Collections.singletonList(genUtils.createAnnotationArgument(null, Collections.<ExpressionTree>emptyList())));
+                AnnotationTree annWithMemberSelectArgument = genUtils.createAnnotation("java.lang.annotation.Retention",
+                        Collections.singletonList(genUtils.createAnnotationArgument(null, "java.lang.annotation.RetentionPolicy", "RUNTIME")));
+                ClassTree newClassTree = genUtils.addAnnotation(annWithLiteralArgument, genUtils.getClassTree());
+                newClassTree = genUtils.addAnnotation(annWithArrayArgument, newClassTree);
+                newClassTree = genUtils.addAnnotation(annWithMemberSelectArgument, newClassTree);
+                copy.rewrite(genUtils.getClassTree(), newClassTree);
+            }
+        }).commit();
+        assertFalse(TestUtilities.copyFileObjectToString(testFO).contains("value"));
     }
 
     public void testCreateProperty() throws Exception {

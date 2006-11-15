@@ -208,9 +208,9 @@ public final class GenerationUtils extends SourceUtils {
         Parameters.notNull("annotationType", annotationType); // NOI18N
         Parameters.notNull("arguments", arguments); // NOI18N
 
-        ExpressionTree annotationTree = createQualIdent(annotationType);
+        ExpressionTree annotationTypeTree = createQualIdent(annotationType);
         List<? extends ExpressionTree> realArguments = arguments != null ? arguments : Collections.<ExpressionTree>emptyList();
-        return getTreeMaker().Annotation(annotationTree, realArguments);
+        return getTreeMaker().Annotation(annotationTypeTree, realArguments);
     }
 
     /**
@@ -277,7 +277,7 @@ public final class GenerationUtils extends SourceUtils {
         Parameters.javaIdentifier("argumentTypeField", argumentTypeField); // NOI18N
 
         TreeMaker make = getTreeMaker();
-        ExpressionTree argumentValueTree = make.MemberSelect(createQualIdent(argumentType), argumentTypeField);
+        MemberSelectTree argumentValueTree = make.MemberSelect(createQualIdent(argumentType), argumentTypeField);
         if (argumentName == null) {
             return argumentValueTree;
         } else {
@@ -301,7 +301,7 @@ public final class GenerationUtils extends SourceUtils {
         return make.Variable(
                 make.Modifiers(Collections.singleton(modifier)),
                 fieldName,
-                createQualIdent(fieldType),
+                getTypeTree(fieldType),
                 null);
     }
 
@@ -321,7 +321,7 @@ public final class GenerationUtils extends SourceUtils {
         return make.Method(
                 make.Modifiers(Collections.singleton(Modifier.PUBLIC)),
                 createPropertyAccessorName(propertyName, true),
-                createQualIdent(propertyType),
+                getTypeTree(propertyType),
                 Collections.<TypeParameterTree>emptyList(),
                 Collections.<VariableTree>emptyList(),
                 Collections.<ExpressionTree>emptyList(),
@@ -491,8 +491,35 @@ public final class GenerationUtils extends SourceUtils {
         return make.Variable(
                 make.Modifiers(Collections.<Modifier>emptySet()),
                 fieldName,
-                createQualIdent(fieldType),
+                getTypeTree(fieldType),
                 null);
+    }
+
+    Tree getTypeTree(String typeName) {
+        TreeMaker make = getTreeMaker();
+        TypeKind primitiveTypeKind = null;
+        if ("boolean".equals(typeName)) {           // NOI18N
+            primitiveTypeKind = TypeKind.BOOLEAN;
+        } else if ("byte".equals(typeName)) {       // NOI18N
+            primitiveTypeKind = TypeKind.BYTE;
+        } else if ("short".equals(typeName)) {      // NOI18N
+            primitiveTypeKind = TypeKind.SHORT;
+        } else if ("int".equals(typeName)) {        // NOI18N
+            primitiveTypeKind = TypeKind.INT;
+        } else if ("long".equals(typeName)) {       // NOI18N
+            primitiveTypeKind = TypeKind.LONG;
+        } else if ("char".equals(typeName)) {       // NOI18N
+            primitiveTypeKind = TypeKind.CHAR;
+        } else if ("float".equals(typeName)) {      // NOI18N
+            primitiveTypeKind = TypeKind.FLOAT;
+        } else if ("double".equals(typeName)) {     // NOI18N
+            primitiveTypeKind = TypeKind.DOUBLE;
+        }
+        if (primitiveTypeKind != null) {
+            return getTreeMaker().PrimitiveType(primitiveTypeKind);
+        } else {
+            return createQualIdent(typeName);
+        }
     }
 
     private ExpressionTree createQualIdent(String typeName) {

@@ -20,6 +20,7 @@
 package org.netbeans.modules.j2ee.common.source;
 
 import java.io.ByteArrayInputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -29,14 +30,14 @@ import org.openide.filesystems.FileUtil;
 /**
  * Copied from java/source TestUtilities. To be removed when SourceUtils
  * is moved to java/source.
- * 
+ *
  * @author Andrei Badea
  */
 public class TestUtilities {
-    
+
     private TestUtilities() {
     }
-    
+
     public static final FileObject copyStringToFileObject(FileObject fo, String content) throws IOException {
         OutputStream os = fo.getOutputStream();
         try {
@@ -45,6 +46,21 @@ public class TestUtilities {
             return fo;
         } finally {
             os.close();
+        }
+    }
+
+    public static final String copyFileObjectToString (FileObject fo) throws java.io.IOException {
+        int s = (int)FileUtil.toFile(fo).length();
+        byte[] data = new byte[s];
+        InputStream stream = fo.getInputStream();
+        try {
+            int len = stream.read(data);
+            if (len != s) {
+                throw new EOFException("truncated file");
+            }
+            return new String (data);
+        } finally {
+            stream.close();
         }
     }
 }
