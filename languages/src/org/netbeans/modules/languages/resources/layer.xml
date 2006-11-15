@@ -20,9 +20,6 @@
             <file name="Deprecation.xml" url="Deprecation.xml"/>
         </folder>
         <folder name="text">
-            <folder name="languages">
-                <file name="Settings.settings" url="LanguagesOptions.settings"/>
-            </folder>
             <folder name="x-nbs">
                 <file name="language.nbs" url="NBS.nbs"/>
             </folder>

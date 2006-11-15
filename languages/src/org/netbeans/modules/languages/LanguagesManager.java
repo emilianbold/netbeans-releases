@@ -9,6 +9,7 @@
 
 package org.netbeans.modules.languages;
 
+import java.io.OutputStream;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.netbeans.modules.editor.settings.storage.api.FontColorSettingsFactory;
@@ -25,12 +26,12 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
-import org.openide.util.NbBundle;
 
 import javax.swing.text.AttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 
 
@@ -143,13 +144,23 @@ public class LanguagesManager {
         
         // init old options
         if (root.getFileObject ("Settings.settings") == null) {
-            //FileObject fo = fs.findResource ("Languages/Settings.settings");
-            final FileObject fo = fs.findResource ("Editors/text/languages/Settings.settings");
             try {
                 fs.runAtomicAction (new AtomicAction () {
                     public void run () {
                         try {
-                            FileUtil.copyFile (fo, root, "Settings");
+                            InputStream is = getClass().getClassLoader().getResourceAsStream("org/netbeans/modules/languages/resources/LanguagesOptions.settings");
+                            try {
+                                FileObject fo = root.createData("Settings.settings");
+                                OutputStream os = fo.getOutputStream();
+                                try {
+                                    FileUtil.copy(is, os);
+//                                    System.out.println("@@@ Successfully created " + fo.getPath());
+                                } finally {
+                                    os.close();
+                                }
+                            } finally {
+                                is.close();
+                            }
                         } catch (IOException ex) {
                             ErrorManager.getDefault ().notify (ex);
                         }
