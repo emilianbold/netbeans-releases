@@ -83,10 +83,45 @@ import org.openide.util.WeakListeners;
 
 
 /**
- * Options for the base editor kit
+ * Options for the base editor kit.
+ * 
+ * <b>Mime type vs editor kit class</b>
+ * 
+ * <p>The <code>BaseOptions</code> class suffers the conceptual problem introduced
+ * in the editor infrastructure in early days of the Netbeans project. The problem
+ * is that an implementation class of an editor kit is used for determining the
+ * mime type of a file being edited. Following this concept a lot of other stuff
+ * in the editor infrastructure tied up its initialization or registration with
+ * editor kit implementation classes. While in many situations this only causes
+ * efficiency problems or coding annoyances it is disasterous for modules that
+ * need to provide dynamic support for many mime types.
+ * 
+ * <p>The following description tries to remedy the situation by providing guidelines
+ * for writing <code>BaseOptions<code> subclasses that are nearly editor kit
+ * independent.
+ * 
+ * <p>First, use <code>MimeLookup</code> whenever you can and avoid using static
+ * getters such as <code>getOptions(Class editorKitClass)</code>. Although the
+ * current <code>MimeLookup</code> infrastructure allows registering editor related
+ * classes in a declrative way based on a mime type the <code>getOptions</code> method
+ * can't simply query <code>MimeLookup</code>, because it doesn't know the mime type!
+ * The correct way of retrieving an instance of your options class from
+ * <code>MimeLookup</code> is this:
+ * 
+ * <pre>
+ *     MimePath mimePath = MimePath.parse("your-mime-type-here");
+ *     YourOptions options = MimeLookup.getLookup(mimePath).lookup(YourOptions.class);
+ * </pre>
+ * 
+ * <p>When implementing <code>BaseOptions</code> for a specific mime type override
+ * the <code>getContentType</code> method and return your mime type. Besides the
+ * <code>getOptions</code> method this is currently the only place in this class
+ * where an editor kit implementation class is used.
+ * 
  *
  * @author Miloslav Metelka
- * @version 1.00
+ * @author Vita Stejskal
+ * @version 1.1
  */
 public class BaseOptions extends OptionSupport {
     
@@ -194,13 +229,13 @@ public class BaseOptions extends OptionSupport {
     private transient Map defaultMacrosMap;
     private transient Map defaultKeyBindingsMap;
     private transient MIMEOptionFolder settingsFolder;
-    private transient boolean usingNewOptions = false;
+    private transient Boolean usingNewOptions = null;
     private transient FontColorSettings fontColorSettings;    
     private transient KeyBindingSettings keyBindingsSettings;    
     private transient LookupListener lookupListener;
     
     /** Map of Kit to Options */
-    private static final HashMap kitClass2Options = new HashMap();
+//    private static final HashMap kitClass2Options = new HashMap();
     
     /** Code template expand key setting name */
     public static final String CODE_TEMPLATE_EXPAND_KEY = "code-template-expand-key"; // NOI18N
@@ -216,23 +251,26 @@ public class BaseOptions extends OptionSupport {
     
     public BaseOptions(Class kitClass, String typeName) {
         super(kitClass, typeName);
-        
-        kitClass2Options.put(kitClass, this);
-        if (!BASE.equals(typeName)){
-            BaseKit kit = BaseKit.getKit(kitClass);
-            FontColorSettings fcs = getFontColorSettings();
-            usingNewOptions = false;
-            if (fcs != null){
-                AttributeSet as = fcs.getTokenFontColors(FontColorNames.DEFAULT_COLORING);
-                if (as !=null){
-                    usingNewOptions = true;
-                }
-            }
-        }
+//        kitClass2Options.put(kitClass, this);
     }
     
-    public boolean usesNewOptionsDialog(){
-        return usingNewOptions;
+    public boolean usesNewOptionsDialog() {
+        if (usingNewOptions == null) {
+            boolean b = false;
+            if (!BASE.equals(getTypeName())){
+                FontColorSettings fcs = getFontColorSettings();
+                if (fcs != null){
+                    AttributeSet as = fcs.getTokenFontColors(FontColorNames.DEFAULT_COLORING);
+                    if (as !=null){
+                        b = true;
+                    }
+                }
+            }
+            
+            usingNewOptions = b ? Boolean.TRUE : Boolean.FALSE;
+        }
+        
+        return usingNewOptions.booleanValue();
     }
 
     protected String getContentType(){
@@ -241,25 +279,38 @@ public class BaseOptions extends OptionSupport {
     }
     
     public static BaseOptions getOptions(Class kitClass) {
-        //check also all superclasses whether they are not in the 
-        //kitClass2Options map
-        Class c = kitClass;
-        BaseOptions option = null;
-        
-        while (option == null && c != null) {
-            option = (BaseOptions)kitClass2Options.get(c);
-            if (option != null) 
-                break;
-            
-            AllOptionsFolder.getDefault().loadMIMEOption(c, false);
-            option = (BaseOptions)kitClass2Options.get(c);
-            if (option != null)
-                break;
-            
-            c = c.getSuperclass();
+//        //check also all superclasses whether they are not in the 
+//        //kitClass2Options map
+//        Class c = kitClass;
+//        BaseOptions option = null;
+//        
+//        while (option == null && c != null) {
+//            option = (BaseOptions)kitClass2Options.get(c);
+//            if (option != null) 
+//                break;
+//            
+//            AllOptionsFolder.getDefault().loadMIMEOption(c, false);
+//            option = (BaseOptions)kitClass2Options.get(c);
+//            if (option != null)
+//                break;
+//            
+//            c = c.getSuperclass();
+//        }
+//        
+//        return option;
+    
+        // XXX: improve this by implementing BaseKit.guessMimeTypeFromKitClass
+        // it can lookup a kit class in all registered mime types and collect
+        // mime types where the kit class matches the one we are looking for
+        // this way there would be no need for kitClass.newInstance() ...
+        BaseKit kit = BaseKit.getKit(kitClass);
+        if (kit != null) {
+            String mimeType = kit.getContentType();
+            Lookup lookup = MimeLookup.getLookup(MimePath.parse(mimeType));
+            return (BaseOptions) lookup.lookup(BaseOptions.class);
+        } else {
+            return null;
         }
-        
-        return option;
     }
 
     /** Listening for Settings.settings creation.*/
@@ -273,8 +324,7 @@ public class BaseOptions extends OptionSupport {
          * is first obtained and then the synchronization is done
          * to avoid the deadlock caused by locking in opposite order.
          */
-        BaseKit kit = BaseKit.getKit(getKitClass());
-        String name = kit.getContentType();
+        String name = getContentType();
         if (name == null) {
             return null;
         }
@@ -713,7 +763,7 @@ public class BaseOptions extends OptionSupport {
             defaultKeyBindingsMap = new HashMap(file.getAllProperties());
         }
         //#68762 - Basic keybinding broken for old editor kits
-        if (!usingNewOptions && !BASE.equals(getTypeName())){
+        if (!usesNewOptionsDialog() && !BASE.equals(getTypeName())){
                 super.setSettingValue(SettingsNames.KEY_BINDING_LIST,
                         new ArrayList(defaultKeyBindingsMap.values()),
                         KEY_BINDING_LIST_PROP);        
@@ -721,7 +771,7 @@ public class BaseOptions extends OptionSupport {
     }
     
     private List getKBList(){
-        if (!usingNewOptions){
+        if (!usesNewOptionsDialog()){
             loadDefaultKeyBindings();
             loadSettings(KeyBindingsMIMEProcessor.class);
         } 
@@ -990,7 +1040,7 @@ public class BaseOptions extends OptionSupport {
     }
     
     public Map getColoringMap() {
-        if (!usingNewOptions){
+        if (!usesNewOptionsDialog()){
             loadSettings(FontsColorsMIMEProcessor.class);
         } 
         Map settingsMap = SettingsUtil.getColoringMap(getKitClass(), false, true); // !!! !evaluateEvaluators
@@ -1027,7 +1077,7 @@ public class BaseOptions extends OptionSupport {
                 //coloringMap = UpgradeOptions.patchColorings(getKitClass(), coloringMap);
 //            }
             
-            if (!usingNewOptions && saveToXML){
+            if (!usesNewOptionsDialog() && saveToXML){
                 diffMap = OptionUtilities.getMapDiff(getColoringMap(),coloringMap,false);
                 if (diffMap.size()>0){
                     // settings has changed, write changed settings to XML file
@@ -1721,7 +1771,7 @@ public class BaseOptions extends OptionSupport {
      *  @param useRequestProcessorForSaving if true settings will be saved in RequestProcessor thread.
      */
     private void updateSettings(Class processor, Map settings, boolean useRequestProcessorForSaving){
-        if (usingNewOptions && processor == FontsColorsMIMEProcessor.class){
+        if (usesNewOptionsDialog() && processor == FontsColorsMIMEProcessor.class){
             return;
         }
         MIMEOptionFile fileX;
@@ -1799,14 +1849,14 @@ public class BaseOptions extends OptionSupport {
     
     /** Load all available settings from XML files and initialize them */
     protected void loadXMLSettings(){
-        if (usingNewOptions){
+        if (usesNewOptionsDialog()){
             updateKeybindingsFromNewOptionsDialogAttributes();
         } else {
             getKeyBindingList();
         }
         getAbbrevMap();
         getMacroMap();
-        if (usingNewOptions){
+        if (usesNewOptionsDialog()){
             updateColoringsFromNewOptionsDialogAttributes();
         } else {
             loadSettings(FontsColorsMIMEProcessor.class);
