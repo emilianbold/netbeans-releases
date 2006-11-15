@@ -20,8 +20,13 @@ package org.netbeans.api.java.source.gen;
 
 import com.sun.source.tree.CompilationUnitTree;
 import java.io.File;
+import java.io.IOException;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TestUtilities;
-import org.netbeans.jackpot.transform.Transformer;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.junit.NbTestSuite;
 
 /**
@@ -72,20 +77,24 @@ public class ImportsTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
 
-        process(
-            new Transformer<Void, Object>() {
-            
-                public Void visitCompilationUnit(CompilationUnitTree node, Object p) {
-                    super.visitCompilationUnit(node, p);
-                    CompilationUnitTree copy = make.addCompUnitImport(
-                            node, 
-                            make.Import(make.Identifier("java.io.IOException"), false)
-                    );
-                    changes.rewrite(node, copy);
-                    return null;
-                }
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree node = workingCopy.getCompilationUnit();
+                CompilationUnitTree copy = make.addCompUnitImport(
+                       node, 
+                       make.Import(make.Identifier("java.io.IOException"), false)
+                );
+                workingCopy.rewrite(node, copy);
             }
-        );
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);
@@ -108,20 +117,24 @@ public class ImportsTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
 
-        process(
-            new Transformer<Void, Object>() {
-            
-                public Void visitCompilationUnit(CompilationUnitTree node, Object p) {
-                    super.visitCompilationUnit(node, p);
-                    CompilationUnitTree copy = make.addCompUnitImport(
-                            node, 
-                            make.Import(make.Identifier("java.io.IOException"), false)
-                    );
-                    changes.rewrite(node, copy);
-                    return null;
-                }
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree node = workingCopy.getCompilationUnit();
+                CompilationUnitTree copy = make.addCompUnitImport(
+                        node, 
+                        make.Import(make.Identifier("java.io.IOException"), false)
+                );
+                workingCopy.rewrite(node, copy);
             }
-        );
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);
@@ -146,21 +159,25 @@ public class ImportsTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
 
-        process(
-            new Transformer<Void, Object>() {
-            
-                public Void visitCompilationUnit(CompilationUnitTree node, Object p) {
-                    super.visitCompilationUnit(node, p);
-                    CompilationUnitTree copy = make.insertCompUnitImport(
-                            node, 
-                            0,
-                            make.Import(make.Identifier("java.io.IOException"), false)
-                    );
-                    changes.rewrite(node, copy);
-                    return null;
-                }
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree node = workingCopy.getCompilationUnit();
+                CompilationUnitTree copy = make.insertCompUnitImport(
+                        node, 
+                        0,
+                        make.Import(make.Identifier("java.io.IOException"), false)
+                );
+                workingCopy.rewrite(node, copy);
             }
-        );
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);
@@ -184,24 +201,28 @@ public class ImportsTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
 
-        process(
-            new Transformer<Void, Object>() {
-            
-                public Void visitCompilationUnit(CompilationUnitTree node, Object p) {
-                    super.visitCompilationUnit(node, p);
-                    CompilationUnitTree copy = make.addCompUnitImport(
-                            node,
-                            make.Import(make.Identifier("java.io.IOException"), false)
-                    );
-                    copy = make.addCompUnitImport(
-                            copy, 
-                            make.Import(make.Identifier("java.util.List"), false)
-                    );
-                    changes.rewrite(node, copy);
-                    return null;
-                }
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree node = workingCopy.getCompilationUnit();
+                CompilationUnitTree copy = make.addCompUnitImport(
+                        node,
+                        make.Import(make.Identifier("java.io.IOException"), false)
+                );
+                copy = make.addCompUnitImport(
+                        copy, 
+                        make.Import(make.Identifier("java.util.List"), false)
+                );
+                workingCopy.rewrite(node, copy);
             }
-        );
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);
@@ -227,24 +248,28 @@ public class ImportsTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
 
-        process(
-            new Transformer<Void, Object>() {
-            
-                public Void visitCompilationUnit(CompilationUnitTree node, Object p) {
-                    super.visitCompilationUnit(node, p);
-                    CompilationUnitTree copy = make.addCompUnitImport(
-                            node,
-                            make.Import(make.Identifier("java.io.IOException"), false)
-                    );
-                    copy = make.addCompUnitImport(
-                            copy, 
-                            make.Import(make.Identifier("java.util.List"), false)
-                    );
-                    changes.rewrite(node, copy);
-                    return null;
-                }
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree node = workingCopy.getCompilationUnit();
+                CompilationUnitTree copy = make.addCompUnitImport(
+                        node,
+                        make.Import(make.Identifier("java.io.IOException"), false)
+                );
+                copy = make.addCompUnitImport(
+                        copy, 
+                        make.Import(make.Identifier("java.util.List"), false)
+                );
+                workingCopy.rewrite(node, copy);
             }
-        );
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);
@@ -269,20 +294,24 @@ public class ImportsTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
 
-        process(
-            new Transformer<Void, Object>() {
-            
-                public Void visitCompilationUnit(CompilationUnitTree node, Object p) {
-                    super.visitCompilationUnit(node, p);
-                    CompilationUnitTree copy = make.addCompUnitImport(
-                            node, 
-                            make.Import(make.Identifier("java.util.List"), false)
-                    );
-                    changes.rewrite(node, copy);
-                    return null;
-                }
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree node = workingCopy.getCompilationUnit();
+                CompilationUnitTree copy = make.addCompUnitImport(
+                        node, 
+                        make.Import(make.Identifier("java.util.List"), false)
+                );
+                workingCopy.rewrite(node, copy);
             }
-        );
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
         assertEquals(golden, res);
     }
@@ -306,20 +335,24 @@ public class ImportsTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
 
-        process(
-            new Transformer<Void, Object>() {
-            
-                public Void visitCompilationUnit(CompilationUnitTree node, Object p) {
-                    super.visitCompilationUnit(node, p);
-                    CompilationUnitTree copy = make.addCompUnitImport(
-                            node, 
-                            make.Import(make.Identifier("java.util.List"), false)
-                    );
-                    changes.rewrite(node, copy);
-                    return null;
-                }
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree node = workingCopy.getCompilationUnit();
+                CompilationUnitTree copy = make.addCompUnitImport(
+                        node, 
+                        make.Import(make.Identifier("java.util.List"), false)
+                );
+                workingCopy.rewrite(node, copy);
             }
-        );
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
         assertEquals(golden, res);
     }
@@ -344,24 +377,28 @@ public class ImportsTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
 
-        process(
-            new Transformer<Void, Object>() {
-            
-                public Void visitCompilationUnit(CompilationUnitTree node, Object p) {
-                    super.visitCompilationUnit(node, p);
-                    CompilationUnitTree copy = make.addCompUnitImport(
-                            node, 
-                            make.Import(make.Identifier("java.util.List"), false)
-                    );
-                    copy = make.addCompUnitImport(
-                            copy, 
-                            make.Import(make.Identifier("java.util.Collections"), false)
-                    );
-                    changes.rewrite(node, copy);
-                    return null;
-                }
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree node = workingCopy.getCompilationUnit();
+                CompilationUnitTree copy = make.addCompUnitImport(
+                        node, 
+                        make.Import(make.Identifier("java.util.List"), false)
+                );
+                copy = make.addCompUnitImport(
+                        copy, 
+                        make.Import(make.Identifier("java.util.Collections"), false)
+                );
+                workingCopy.rewrite(node, copy);
             }
-        );
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);
@@ -390,24 +427,28 @@ public class ImportsTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
 
-        process(
-            new Transformer<Void, Object>() {
-            
-                public Void visitCompilationUnit(CompilationUnitTree node, Object p) {
-                    super.visitCompilationUnit(node, p);
-                    CompilationUnitTree copy = make.insertCompUnitImport(
-                            node, 1,
-                            make.Import(make.Identifier("java.util.ArrayList"), false)
-                    );
-                    copy = make.insertCompUnitImport(
-                            copy, 3,
-                            make.Import(make.Identifier("java.util.LinkedList"), false)
-                    );
-                    changes.rewrite(node, copy);
-                    return null;
-                }
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree node = workingCopy.getCompilationUnit();
+                CompilationUnitTree copy = make.insertCompUnitImport(
+                        node, 1,
+                        make.Import(make.Identifier("java.util.ArrayList"), false)
+                );
+                copy = make.insertCompUnitImport(
+                        copy, 3,
+                        make.Import(make.Identifier("java.util.LinkedList"), false)
+                );
+                workingCopy.rewrite(node, copy);
             }
-        );
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);
@@ -437,17 +478,21 @@ public class ImportsTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
 
-        process(
-            new Transformer<Void, Object>() {
-            
-                public Void visitCompilationUnit(CompilationUnitTree node, Object p) {
-                    super.visitCompilationUnit(node, p);
-                    CompilationUnitTree copy = make.removeCompUnitImport(node, 2);
-                    changes.rewrite(node, copy);
-                    return null;
-                }
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree node = workingCopy.getCompilationUnit();
+                CompilationUnitTree copy = make.removeCompUnitImport(node, 2);
+                workingCopy.rewrite(node, copy);
             }
-        );
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);
@@ -477,17 +522,21 @@ public class ImportsTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
 
-        process(
-            new Transformer<Void, Object>() {
-            
-                public Void visitCompilationUnit(CompilationUnitTree node, Object p) {
-                    super.visitCompilationUnit(node, p);
-                    CompilationUnitTree copy = make.removeCompUnitImport(node, 2);
-                    changes.rewrite(node, copy);
-                    return null;
-                }
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree node = workingCopy.getCompilationUnit();
+                CompilationUnitTree copy = make.removeCompUnitImport(node, 2);
+                workingCopy.rewrite(node, copy);
             }
-        );
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);
@@ -511,19 +560,23 @@ public class ImportsTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
 
-        process(
-            new Transformer<Void, Object>() {
-            
-                public Void visitCompilationUnit(CompilationUnitTree node, Object p) {
-                    super.visitCompilationUnit(node, p);
-                    CompilationUnitTree copy = make.removeCompUnitImport(node, 0);
-                    copy = make.removeCompUnitImport(copy, 0);
-                    copy = make.removeCompUnitImport(copy, 0);
-                    changes.rewrite(node, copy);
-                    return null;
-                }
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree node = workingCopy.getCompilationUnit();
+                CompilationUnitTree copy = make.removeCompUnitImport(node, 0);
+                copy = make.removeCompUnitImport(copy, 0);
+                copy = make.removeCompUnitImport(copy, 0);
+                workingCopy.rewrite(node, copy);
             }
-        );
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);
@@ -550,18 +603,22 @@ public class ImportsTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
 
-        process(
-            new Transformer<Void, Object>() {
-            
-                public Void visitCompilationUnit(CompilationUnitTree node, Object p) {
-                    super.visitCompilationUnit(node, p);
-                    CompilationUnitTree copy = make.removeCompUnitImport(node, 0);
-                    copy = make.addCompUnitImport(copy, make.Import(make.Identifier("java.util.Arrays"), true));
-                    changes.rewrite(node, copy);
-                    return null;
-                }
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree node = workingCopy.getCompilationUnit();
+                CompilationUnitTree copy = make.removeCompUnitImport(node, 0);
+                copy = make.addCompUnitImport(copy, make.Import(make.Identifier("java.util.Arrays"), true));
+                workingCopy.rewrite(node, copy);
             }
-        );
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);
