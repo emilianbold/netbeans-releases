@@ -2338,6 +2338,8 @@ public class WizardDescriptor extends DialogDescriptor {
             scroll.getViewport().setOpaque(false);
             scroll.setBorder(null);
             scroll.setOpaque(false);
+            // #89392: remove GTK's viewport border
+            scroll.setViewportBorder(null);
 
             label = new JLabel(NbBundle.getMessage(WizardDescriptor.class, "CTL_ContentName"));
             label.setForeground(Color.white);
