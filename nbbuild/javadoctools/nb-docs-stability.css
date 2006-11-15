@@ -1,0 +1,13 @@
+/* Adding special left-hand-side border showing the API stability level. */
+
+/* Standard things for Netbeans API documentation: */
+@import "nb-docs.css";
+
+body {
+    margin : 0px 0px 0px 12px;
+    padding : 5px;
+    background-image: url('@api-stability-image@');
+    background-repeat: no-repeat;
+    background-position: 0px 0px;
+    background-attachment: fixed;
+}

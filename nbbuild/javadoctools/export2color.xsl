@@ -22,13 +22,34 @@ Microsystems, Inc. All Rights Reserved.
 
     <xsl:template match="/" >
         <xsl:choose>
-            <xsl:when test="descendant::api[@category='stable' and @group='java' and @type='export']">#ffffff</xsl:when>
-            <xsl:when test="descendant::api[@category='official' and @group='java' and @type='export']">#ffffff</xsl:when>
-            <xsl:when test="descendant::api[@category='devel' and @group='java' and @type='export']">#dfdfdf</xsl:when>
-            <xsl:when test="descendant::api[@category='deprecated' and @group='java' and @type='export']">#afafaf</xsl:when>
-            <xsl:otherwise>#c00000</xsl:otherwise>
+            <xsl:when test="descendant::api[@category='stable' and @group='java' and @type='export']"><![CDATA[
+stability.color=#ffffff
+stability.title=Stable
+stability.definition.url=http://openide.netbeans.org/tutorial/api-design.html#category-stable
+]]></xsl:when>
+            <xsl:when test="descendant::api[@category='official' and @group='java' and @type='export']"><![CDATA[
+stability.color=#ffffff
+stability.title=Official
+stability.definition.url=http://openide.netbeans.org/tutorial/api-design.html#category-official
+]]></xsl:when>
+            <xsl:when test="descendant::api[@category='devel' and @group='java' and @type='export']"><![CDATA[
+stability.color=#ddcc80
+stability.image=resources/stability-devel.png
+stability.title=Under Development
+stability.definition.url=http://openide.netbeans.org/tutorial/api-design.html#category-devel
+]]></xsl:when>
+            <xsl:when test="descendant::api[@category='deprecated' and @group='java' and @type='export']"><![CDATA[
+stability.color=#afafaf
+stability.image=resources/stability-deprecated.png
+stability.title=Deprecated
+stability.definition.url=http://openide.netbeans.org/tutorial/api-design.html#category-deprecated
+]]></xsl:when>
+            <xsl:otherwise><![CDATA[
+stability.color=#e0a0a0
+stability.image=resources/stability-friend.png
+stability.title=Friend, Private or Third Party
+stability.definition.url=http://openide.netbeans.org/tutorial/api-design.html#category-friend
+]]></xsl:otherwise>
         </xsl:choose>
     </xsl:template>
 </xsl:stylesheet>
-
-

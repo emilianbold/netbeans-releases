@@ -91,12 +91,30 @@ cause it to fail.
         <fileset id="javadoc.css.files" dir="${javadoc.css.dir}">
             <include name="*.css"/>
         </fileset>
+        <property name="javadoc.resources.dir" location="resources"/>
+        <fileset id="javadoc.resources.files" dir="${javadoc.resources.dir}">
+            <include name="**/*"/>
+            <exclude name="**/*.xcf"/> <!-- GIMP versions of the images -->
+        </fileset>
         <property name="javadoc.check.external.links" value="false"/>
             <property name="javadoc.check.failonerror" value="false"/>
         <property name="javadoc.header" value="&amp;nbsp;"/>
+
+        <!-- Determine API stability -->
         <mkdir dir="../build/tmp/javadoc-colors"/>
-        <arch answers="${javadoc.arch}" xsl="export2color.xsl" output="../build/tmp/javadoc-colors/${javadoc.name}.txt"/>
-        <loadfile property="stability.color" srcfile="../build/tmp/javadoc-colors/${javadoc.name}.txt"/>
+        <delete file="../build/tmp/javadoc-colors/${javadoc.name}.txt" failonerror="false"/>
+        <arch answers="${javadoc.arch}" xsl="export2color.xsl" output="../build/tmp/javadoc-colors/${javadoc.name}.txt" />
+        <property file="../build/tmp/javadoc-colors/${javadoc.name}.txt"/>
+        <property name="javadoc.stability.label" value="&lt;span style='font-style:normal; font-size:medium; font-weight:normal; background-color:${stability.color};'&gt;&lt;a href='${stability.definition.url}' target='_blank'&gt;${stability.title}&lt;/a&gt;&lt;/span&gt;"/>
+
+        <condition property="nb-docs.css" value="nb-docs-stability.css">
+            <isset property="stability.image"/>
+        </condition>
+        <condition property="nb-docs.css" value="nb-docs.css">
+            <not>
+                <isset property="stability.image"/>
+            </not>
+        </condition>
         
         <mkdir dir="${javadoc.out.dir}"/>
         
@@ -119,7 +137,7 @@ cause it to fail.
         <!-- Make sure XHTML DTDs exist: -->
         <ant dir="../../libs/external" target="unzip"/>
     </target>
-    
+
     <target name="javadoc-generate-references" depends="javadoc-init" unless="javadoc.reference.generated" >
         <!-- Add these files to the generated ones -->
         <concat append="true" destfile="properties.xml" ><![CDATA[<property name="javadoc.docs.${javadoc.name}" value="$${javadoc.web.root}/${javadoc.name}"/>]]>
@@ -169,6 +187,7 @@ cause it to fail.
             </srcfiles>
             <srcfiles dir="${javadoc.docfiles}"/>
             <srcfiles refid="javadoc.css.files"/>
+            <srcfiles refid="javadoc.resources.files"/>
             <srcfiles dir=".">
                 <include name="apichanges.xsl"/>
             </srcfiles>
@@ -232,9 +251,14 @@ cause it to fail.
         </copy>
         <replace dir="${javadoc.out.dir}" >
             <include name="javadoc*.css"/>
-            <replacefilter token="background-color: #FFFFFF" value="background-color: ${stability.color}"/>
-            <replacefilter token="background: #FFFFFF" value="background: ${stability.color}"/>
+            <include name="nb-docs-stability.css"/>
+            <replacefilter token="@nb-docs-css@" value="${nb-docs.css}"/>
+            <replacefilter token="@api-stability-image@" value="${stability.image}"/>
         </replace>
+        <mkdir dir="${javadoc.out.dir}/resources"/>
+        <copy todir="${javadoc.out.dir}/resources">
+            <fileset refid="javadoc.resources.files"/>
+        </copy>
     </target>
     
     <target name="javadoc-exec-condition" depends="javadoc-check-timestamps" >
@@ -261,7 +285,7 @@ cause it to fail.
             </group>
             <link href="${javadoc.docs.jdk}" offline="true" packagelistloc="."/>
             &links;
-            <doctitle>${javadoc.title}</doctitle>
+            <doctitle>${javadoc.title}&lt;br/&gt;${javadoc.stability.label}</doctitle>
             <header>${javadoc.header}</header>
             <bottom>${javadoc.footer}</bottom>
         </javadoc>
@@ -285,7 +309,7 @@ cause it to fail.
             </group>
             <link href="${javadoc.docs.jdk}" offline="true" packagelistloc="."/>
             &links;
-            <doctitle>${javadoc.title}</doctitle>
+            <doctitle>${javadoc.title}&lt;br/&gt;${javadoc.stability.label}</doctitle>
             <header>${javadoc.header}</header>
             <bottom>${javadoc.footer}</bottom>
         </javadoc>

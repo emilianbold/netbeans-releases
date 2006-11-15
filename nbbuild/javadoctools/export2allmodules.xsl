@@ -89,9 +89,9 @@ Microsystems, Inc. All Rights Reserved.
                 <xsl:choose>
                     <xsl:when test="descendant::api[@category='stable' and @group='java']">background:#ffffff</xsl:when>
                     <xsl:when test="descendant::api[@category='official' and @group='java']">background:#ffffff</xsl:when>
-                    <xsl:when test="descendant::api[@category='devel' and @group='java']">background:#dfdfdf</xsl:when>
+                    <xsl:when test="descendant::api[@category='devel' and @group='java']">background:#ddcc80</xsl:when>
                     <xsl:when test="descendant::api[@category='deprecated' and @group='java']">text-decoration: line-through</xsl:when>
-                    <xsl:otherwise>background:#c00000</xsl:otherwise>
+                    <xsl:otherwise>background:#e0c0c0</xsl:otherwise>
                 </xsl:choose>
             </xsl:attribute>
             <a>

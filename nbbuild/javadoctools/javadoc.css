@@ -1,7 +1,7 @@
 /* Stylesheet used for NetBeans API Javadoc. */
 
 /* Special things for API documentation: */
-@import "nb-docs.css";
+@import "@nb-docs-css@";
 /* Only basic syntax coloration etc. from normal netbeans.css: */
 @import "netbeans-lite.css";
 /* The rest is the default stylesheet produced by Javadoc 1.4.2: */

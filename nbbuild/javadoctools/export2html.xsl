@@ -56,9 +56,9 @@ Microsystems, Inc. All Rights Reserved.
         (see <a href="http://openide.netbeans.org/tutorial/api-design.html#api">What is
         an API?</a> to understand why we list DTDs, file formats, etc.) and with
         a stability category (<span style="background:#ffffff">stable and official</span>,
-        <span style="background:#efefef">under development</span>,
-        <span style="background:#efefef;text-decoration:line-through">deprecated</span>,
-        <span style="background:#c00000">friend or private</span>;
+        <span style="background:#ddcc80">under development</span>,
+        <span style="background:#afafaf;text-decoration:line-through">deprecated</span>,
+        <span style="background:#e0c0c0">friend or private</span>;
         see <a
         href="http://openide.netbeans.org/tutorial/api-design.html#life">API
         life-cycle</a> for more info).
@@ -129,9 +129,9 @@ Microsystems, Inc. All Rights Reserved.
                                 <xsl:choose>
                                     <xsl:when test="descendant::api[@category='stable' and @group='java']">background:#ffffff</xsl:when>
                                     <xsl:when test="descendant::api[@category='official' and @group='java']">background:#ffffff</xsl:when>
-                                    <xsl:when test="descendant::api[@category='devel' and @group='java']">background:#dfdfdf</xsl:when>
+                                    <xsl:when test="descendant::api[@category='devel' and @group='java']">background:#ddcc80</xsl:when>
                                     <xsl:when test="descendant::api[@category='deprecated' and @group='java']">text-decoration: line-through</xsl:when>
-                                    <xsl:otherwise>background:#c00000</xsl:otherwise>
+                                    <xsl:otherwise>background:#e0c0c0</xsl:otherwise>
                                 </xsl:choose>
                             </xsl:attribute>
                            <a>
