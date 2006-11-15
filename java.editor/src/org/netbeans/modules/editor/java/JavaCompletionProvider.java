@@ -2324,7 +2324,8 @@ public class JavaCompletionProvider implements CompletionProvider {
             if (fqnPrefix == null)
                 fqnPrefix = ""; //NOI18N
             for (String pkgName : env.getController().getClasspathInfo().getClassIndex().getPackageNames(fqnPrefix, true,EnumSet.allOf(ClassIndex.SearchScope.class)))
-                results.add(JavaCompletionItem.createPackageItem(pkgName, offset, false));
+                if (pkgName.length() > 0)
+                    results.add(JavaCompletionItem.createPackageItem(pkgName, offset, false));
         }
         
         private void addTypes(Env env, EnumSet<ElementKind> kinds, DeclaredType baseType, Element toExclude) throws IOException {
