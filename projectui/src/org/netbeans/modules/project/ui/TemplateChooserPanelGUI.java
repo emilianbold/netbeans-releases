@@ -34,6 +34,7 @@ import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.plaf.UIResource;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ProjectInformation;
@@ -391,8 +392,8 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         
     }
     
-    
-    private static class ProjectCellRenderer extends JLabel implements ListCellRenderer  {
+    // #89393: GTK needs cell renderer to implement UIResource to look "natively"
+    private static class ProjectCellRenderer extends JLabel implements ListCellRenderer, UIResource  {
         
         
         public ProjectCellRenderer() {
@@ -406,6 +407,9 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
             int index,
             boolean isSelected,
             boolean cellHasFocus) {
+            
+            // #89393: GTK needs name to render cell renderer "natively"
+            setName("ComboBox.listRenderer"); // NOI18N
                     
             if ( value instanceof Project ) {
                 ProjectInformation pi = ProjectUtils.getInformation((Project)value);
@@ -423,12 +427,19 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
             else {
                 setBackground(list.getBackground());
                 setForeground(list.getForeground());
-             
             }
+            
             return this;                    
+        }
+
+        // #89393: GTK needs name to render cell renderer "natively"
+        public String getName() {
+            String name = super.getName();
+            return name == null ? "ComboBox.renderer" : name;  // NOI18N
         }
         
     }
+    
     
     private static boolean isTemplate (DataObject dobj) {
         if (dobj.isTemplate())
