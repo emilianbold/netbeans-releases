@@ -91,7 +91,6 @@ public class ClientRuntime {
             // should not happen but is harmless here
         }
         requestProcessor = new RequestProcessor("CVS: " + cvsRootDisplay);  // NOI18N
-        log = IOProvider.getDefault().getIO(cvsRootDisplay, false);
     }
 
     private void ensureValidCommand(File [] files) throws IllegalCommandException {
@@ -161,8 +160,7 @@ public class ClientRuntime {
                 } catch (Throwable e) {
                     ErrorManager.getDefault().notify(ErrorManager.WARNING, e);                    
                 } finally {
-                    log.getOut().close();
-                    log = IOProvider.getDefault().getIO(cvsRootDisplay, false);
+                    flushLog();
                 }
             }
         });
@@ -182,17 +180,7 @@ public class ClientRuntime {
      * is appended at the end.
      */
     public void log(String message, OutputListener hyperlinkListener) {
-        if (log.isClosed()) {
-            log = IOProvider.getDefault().getIO(cvsRootDisplay, false);
-            try {
-                // XXX workaround, otherwise it writes to nowhere
-                log.getOut().reset();
-            } catch (IOException e) {
-                ErrorManager err = ErrorManager.getDefault();
-                err.notify(e);
-            }
-            //log.select();
-        }
+        openLog();
         if (hyperlinkListener != null) {
             try {
                 log.getOut().println(message, hyperlinkListener);
@@ -204,7 +192,22 @@ public class ClientRuntime {
         }
     }    
 
+    private void openLog() {
+        if (log == null || log.isClosed()) {
+            log = IOProvider.getDefault().getIO(cvsRootDisplay, false);
+            try {
+                // XXX workaround, otherwise it writes to nowhere
+                log.getOut().reset();
+            } catch (IOException e) {
+                ErrorManager err = ErrorManager.getDefault();
+                err.notify(e);
+            }
+            //log.select();
+        }
+    }
+
     public void logError(Throwable e) {
+        openLog();        
         e.printStackTrace(log.getOut());
     }
 
@@ -212,11 +215,11 @@ public class ClientRuntime {
      * Makes sure output from this command is visible.
      */ 
     void focusLog() {
-        log.select();
+        if (log != null) log.select();
     }
 
     public void flushLog() {
-        log.getOut().close();
+        if (log != null) log.getOut().close();
     }
 
 

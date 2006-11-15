@@ -383,8 +383,10 @@ public abstract class ExecutorSupport implements CVSListener, ExecutorGroup.Grou
                         clientRuntime.log(msg + "\n"); // NOI18N
                         executeImpl();
                     } else {
-                        String msg = NbBundle.getMessage(ExecutorSupport.class, "BK1005", new Date(), getDisplayName());
-                        clientRuntime.log(msg + "\n");  // NOI18N
+                        if (!nonInteractive) {                        
+                            String msg = NbBundle.getMessage(ExecutorSupport.class, "BK1005", new Date(), getDisplayName());
+                            clientRuntime.log(msg + "\n");  // NOI18N
+                        }
                         internalError = result.getError();
                         group.fail();
                         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, internalError);
