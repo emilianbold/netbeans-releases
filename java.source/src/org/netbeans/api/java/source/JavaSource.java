@@ -922,8 +922,10 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             }            
             if (updateIndex && this.rootFo != null) {
                 try {
-                    ClassIndexImpl ciImpl = ClassIndexManager.getDefault().getUsagesQuery(this.rootFo.getURL());                
-                    ciImpl.setDirty(this);
+                    ClassIndexImpl ciImpl = ClassIndexManager.getDefault().getUsagesQuery(this.rootFo.getURL());
+                    if (ciImpl != null) {
+                        ciImpl.setDirty(this);
+                    }
                 } catch (IOException ioe) {
                     Exceptions.printStackTrace(ioe);
                 }
