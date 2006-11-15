@@ -496,7 +496,7 @@ final class RendererFactory {
 
         /** Overridden to clear state after painting once */
         public void paintComponent(Graphics g) {
-            setEnabled(isEnabled() && PropUtils.checkEnabled(this, editor, this.env));
+            setEnabled(isEnabled() && env.isEditable());
 
             //We may paint without a parent in PropertyPanel, so do a layout to
             //ensure there's something to paint

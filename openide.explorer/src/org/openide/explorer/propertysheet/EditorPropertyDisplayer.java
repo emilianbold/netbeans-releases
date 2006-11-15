@@ -398,7 +398,10 @@ class EditorPropertyDisplayer extends JComponent implements PropertyDisplayer_In
             }
         }
 
-        comp.setEnabled(isEnabled() && PropUtils.checkEnabled(this, inplace.getPropertyEditor(), getPropertyEnv()));
+        if( comp instanceof ComboInplaceEditor )
+            comp.setEnabled( isEnabled() && getPropertyEnv().isEditable() );
+        else
+            comp.setEnabled(isEnabled() && PropUtils.checkEnabled(this, inplace.getPropertyEditor(), getPropertyEnv()));
     }
 
     @SuppressWarnings("deprecation")
