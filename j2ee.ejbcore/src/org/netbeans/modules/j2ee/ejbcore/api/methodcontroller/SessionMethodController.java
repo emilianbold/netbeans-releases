@@ -81,9 +81,9 @@ public final class SessionMethodController extends AbstractMethodController {
         return new SessionGenerateFromIntfVisitor(workingCopy);
     }
 
-    public boolean supportsMethodType(int methodType) {
+    public boolean supportsMethodType(MethodType.Kind methodType) {
         boolean stateless = Session.SESSION_TYPE_STATELESS.equals(model.getSessionType());
         boolean simplified = model.getRoot().getVersion().doubleValue() > 2.1;
-        return  methodType == MethodType.METHOD_TYPE_BUSINESS || (!simplified && !stateless && (methodType == MethodType.METHOD_TYPE_CREATE));
+        return  methodType == MethodType.Kind.BUSINESS || (!simplified && !stateless && (methodType == MethodType.Kind.CREATE));
     }
 }

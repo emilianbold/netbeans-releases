@@ -20,6 +20,8 @@
 package org.netbeans.modules.j2ee.ejbcore;
 
 import java.io.IOException;
+import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.modules.j2ee.common.queries.spi.InjectionTargetQueryImplementation;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
@@ -27,7 +29,6 @@ import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.j2ee.dd.api.ejb.MessageDriven;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -38,11 +39,9 @@ public class EjbInjectionTargetQueryImplementation implements InjectionTargetQue
     public EjbInjectionTargetQueryImplementation() {
     }
     
-    public boolean isInjectionTarget(FileObject fileObject, String fqn) {
-        if (fileObject == null) {
-            throw new NullPointerException("Passed null FileObject to EjbInjectionTargetQueryImplementation.isInjectionTarget(FileObject, String)"); // NOI18N
-        }
-        org.netbeans.modules.j2ee.api.ejbjar.EjbJar apiEjbJar = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(fileObject);
+    public boolean isInjectionTarget(CompilationController controller, TypeElement typeElement) {
+        org.netbeans.modules.j2ee.api.ejbjar.EjbJar apiEjbJar = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(controller.getFileObject());
+        String fqn = typeElement.getQualifiedName().toString();
         if (apiEjbJar != null && 
                 !apiEjbJar.getJ2eePlatformVersion().equals("1.3") && 
                 !apiEjbJar.getJ2eePlatformVersion().equals("1.4")) {
@@ -63,7 +62,7 @@ public class EjbInjectionTargetQueryImplementation implements InjectionTargetQue
         return false;
     }
 
-    public boolean isStaticReferenceRequired(FileObject fileObject, String fqn) {
+    public boolean isStaticReferenceRequired(CompilationController controller, TypeElement typeElement) {
         return false;
     }
     

@@ -28,12 +28,8 @@ import org.netbeans.api.java.source.ElementHandle;
  */
 public abstract class MethodType {
 
-    public static final int METHOD_TYPE_BUSINESS = 1;
-    public static final int METHOD_TYPE_SELECT = 2;
-    public static final int METHOD_TYPE_CREATE = 3;
-    public static final int METHOD_TYPE_FINDER = 4;
-    public static final int METHOD_TYPE_HOME = 5;
-
+    public enum Kind {BUSINESS, SELECT, CREATE, FINDER, HOME}
+    
     private final ElementHandle<ExecutableElement> methodHandle;
     
     public MethodType(ElementHandle<ExecutableElement> methodHandle) {
@@ -41,6 +37,8 @@ public abstract class MethodType {
     }
     
     public abstract void accept(MethodTypeVisitor visitor);
+    
+    public abstract Kind getKind();
     
     public final ElementHandle<ExecutableElement> getMethodElement() {
         return methodHandle;
@@ -61,6 +59,10 @@ public abstract class MethodType {
         public void accept(MethodTypeVisitor visitor) {
             visitor.visit(this);
         }
+        
+        public Kind getKind() {
+            return Kind.BUSINESS;
+        }
     }
     
     public static class SelectMethodType extends MethodType {
@@ -72,6 +74,9 @@ public abstract class MethodType {
             assert false:"select methods are not intended to be visited";
         }
         
+        public Kind getKind() {
+            return Kind.SELECT;
+        }
     }
     
     public static class CreateMethodType extends MethodType {
@@ -81,6 +86,10 @@ public abstract class MethodType {
         
         public void accept(MethodTypeVisitor visitor) {
             visitor.visit(this);
+        }
+
+        public Kind getKind() {
+            return Kind.CREATE;
         }
     }
     
@@ -92,6 +101,10 @@ public abstract class MethodType {
         public void accept(MethodTypeVisitor visitor) {
             visitor.visit(this);
         }
+
+        public Kind getKind() {
+            return Kind.HOME;
+        }
     }
     
     public static class FinderMethodType extends MethodType {
@@ -101,6 +114,10 @@ public abstract class MethodType {
         
         public void accept(MethodTypeVisitor visitor) {
             visitor.visit(this);
+        }
+        
+        public Kind getKind() {
+            return Kind.FINDER;
         }
     }
 }

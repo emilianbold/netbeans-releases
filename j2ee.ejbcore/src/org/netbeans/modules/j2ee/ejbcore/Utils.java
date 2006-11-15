@@ -37,7 +37,6 @@ import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Element;
@@ -207,7 +206,7 @@ public class Utils {
             if (ejbRefName != null) {
                 ejbRef.setEjbRefName(ejbRefName);
             }
-            if (enterpriseProjectIsJavaEE5 && InjectionTargetQuery.isInjectionTarget(srcFile, beanClass.getQualifiedName().toString())) {
+            if (enterpriseProjectIsJavaEE5 && InjectionTargetQuery.isInjectionTarget(workingCopy, beanClass)) {
                 addProjectToClassPath(enterpriseProject, ref);
             } else if (nodeProjectIsJavaEE5 == enterpriseProjectIsJavaEE5){ // see #75876
                 erc.addEjbReference(ejbRef, srcFile, beanClass.getQualifiedName().toString(), ref.getClientJarTarget());
@@ -223,7 +222,7 @@ public class Utils {
             if (ejbRefName != null) {
                 ejbLocalRef.setEjbRefName(ejbRefName);
             }
-            if (enterpriseProjectIsJavaEE5 && InjectionTargetQuery.isInjectionTarget(srcFile, beanClass.getQualifiedName().toString())) {
+            if (enterpriseProjectIsJavaEE5 && InjectionTargetQuery.isInjectionTarget(workingCopy, beanClass)) {
                 addProjectToClassPath(enterpriseProject, ref);
             } else if (nodeProjectIsJavaEE5 == enterpriseProjectIsJavaEE5){ // see #75876
                 erc.addEjbLocalReference(ejbLocalRef, srcFile, beanClass.getQualifiedName().toString(), ref.getClientJarTarget());

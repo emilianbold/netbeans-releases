@@ -38,6 +38,7 @@ import org.netbeans.modules.j2ee.common.ui.nodes.MethodCustomizer;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.AbstractMethodController;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType;
+import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.MethodsNode;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -104,8 +105,8 @@ public class AddCreateMethodStrategy extends AbstractAddMethodStrategy {
         return workingCopy.getElements().getTypeElement(ejbMethodController.getLocal()).asType();
     }
     
-    public int prototypeMethod() {
-        return MethodType.METHOD_TYPE_CREATE;
+    public MethodType.Kind getPrototypeMethodKind() {
+        return MethodType.Kind.CREATE;
     }
     
 }

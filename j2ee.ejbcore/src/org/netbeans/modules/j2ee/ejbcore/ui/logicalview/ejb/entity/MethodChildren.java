@@ -90,7 +90,7 @@ public class MethodChildren /*extends ComponentMethodModel*/ {
 //        }
 //
 //        public OpenCookie getOpenCookie(Method me, JavaClass implClass, Collection interfaces) {
-//            if (controller.getMethodTypeFromInterface(me) instanceof MethodType.FinderMethodType) {
+//            if (controller.getMethodTypeFromInterface(me).getKind() == MethodType.Kind.FINDER) {
 //                return new FinderOpenCookie(me);
 //            }
 //            Method impl = controller.getPrimaryImplementation(me);

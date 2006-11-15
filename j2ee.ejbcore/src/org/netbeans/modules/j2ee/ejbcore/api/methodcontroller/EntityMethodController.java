@@ -215,7 +215,7 @@ public final class EntityMethodController extends AbstractMethodController {
     }
 
     public boolean hasJavaImplementation(MethodType methodType) {
-        return !(isCMP() && (isFinder(methodType) || isSelect(methodType)));
+        return !(isCMP() && (isFinder(methodType.getKind()) || isSelect(methodType.getKind())));
     }
 
     public MethodType getMethodTypeFromImpl(ExecutableElement implView) {
@@ -410,33 +410,21 @@ public final class EntityMethodController extends AbstractMethodController {
         return !isBMP();
     }
 
-    /** @deprecated
-     */
-    private boolean isFinder(MethodType methodType) {
-        return methodType instanceof MethodType.FinderMethodType;
+    private boolean isFinder(MethodType.Kind methodType) {
+        return methodType == MethodType.Kind.FINDER;
     }
 
-    /** @deprecated
-     */
-    private boolean isSelect(MethodType methodType) {
-        return methodType instanceof MethodType.SelectMethodType;
-    }
-
-    private boolean isFinder(int methodType) {
-        return methodType == MethodType.METHOD_TYPE_FINDER;
-    }
-
-    private boolean isSelect(int methodType) {
-        return methodType == MethodType.METHOD_TYPE_SELECT;
+    private boolean isSelect(MethodType.Kind methodType) {
+        return methodType == MethodType.Kind.SELECT;
     }
 
     public String createDefaultQL(MethodType methodType) {
         String ejbql = null;
-        if (isFinder(methodType) && isCMP()) {
+        if (isFinder(methodType.getKind()) && isCMP()) {
             ejbql = "SELECT OBJECT(o) \nFROM " + model.getAbstractSchemaName() + " o";
         }
 
-        if (isSelect(methodType)) {
+        if (isSelect(methodType.getKind())) {
             ejbql = "SELECT COUNT(o) \nFROM " + model.getAbstractSchemaName() + " o";
         }
 
@@ -599,7 +587,7 @@ public final class EntityMethodController extends AbstractMethodController {
         return findInClass(classElement, (ExecutableElement) element);
     }
 
-    public boolean supportsMethodType(int methodType) {
+    public boolean supportsMethodType(MethodType.Kind methodType) {
         return !isSelect(methodType) || isCMP();
     }
 

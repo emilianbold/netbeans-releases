@@ -115,8 +115,8 @@ public class AddFinderMethodStrategy extends AbstractAddMethodStrategy {
         return workingCopy.getElements().getTypeElement(fullName).asType();
     }
     
-    public int prototypeMethod() {
-        return MethodType.METHOD_TYPE_FINDER;
+    public MethodType.Kind getPrototypeMethodKind() {
+        return MethodType.Kind.FINDER;
     }
     
 }

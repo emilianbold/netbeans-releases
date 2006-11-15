@@ -77,8 +77,8 @@ public class AddBusinessMethodStrategy extends AbstractAddMethodStrategy {
         return result[0];
     }
 
-    public int prototypeMethod() {
-        return MethodType.METHOD_TYPE_BUSINESS;
+    public MethodType.Kind getPrototypeMethodKind() {
+        return MethodType.Kind.BUSINESS;
     }
 
 }

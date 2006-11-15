@@ -115,7 +115,7 @@ public class AddSelectMethodStrategy extends AbstractAddMethodStrategy {
         });
     }
     
-    public int prototypeMethod() {
-        return MethodType.METHOD_TYPE_SELECT;
+    public MethodType.Kind getPrototypeMethodKind() {
+        return MethodType.Kind.SELECT;
     }
 }

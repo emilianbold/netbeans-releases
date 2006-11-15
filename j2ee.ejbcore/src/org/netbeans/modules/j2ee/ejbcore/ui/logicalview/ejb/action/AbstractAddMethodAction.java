@@ -31,6 +31,7 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.common.source.SourceUtils;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
+import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
@@ -71,7 +72,7 @@ public abstract class AbstractAddMethodAction extends AbstractAction implements 
         FileObject fileObject = activatedNodes[0].getLookup().lookup(FileObject.class);
         JavaSource javaSource = JavaSource.forFileObject(fileObject);
         final boolean[] result = new boolean[] {false};
-        final int prototypeMethodType = strategy.prototypeMethod();
+        final MethodType.Kind prototypeMethodType = strategy.getPrototypeMethodKind();
         try {
             javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
                 public void run(WorkingCopy workingCopy) throws Exception {

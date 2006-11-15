@@ -153,6 +153,6 @@ public abstract class EjbMethodController {
     /** Checks if given method type is supported by controller.
      * @param type One of <code>METHOD_</code> constants in @link{MethodType}
      */
-    public abstract boolean supportsMethodType(int type);
+    public abstract boolean supportsMethodType(MethodType.Kind type);
     public abstract void createAndAdd(ExecutableElement clientView, boolean local, boolean component);
 }

@@ -198,9 +198,9 @@ public abstract class AbstractMethodController extends EjbMethodController {
     public boolean hasMethodInInterface(ExecutableElement method, MethodType methodType, boolean local) {
         TypeElement intf = null;
         ExecutableElement wantedMethod = createMethodCopy(workingCopy, method);
-        if (methodType instanceof MethodType.BusinessMethodType) {
+        if (methodType.getKind() == MethodType.Kind.BUSINESS) {
             intf = findBusinessInterface(local ? model.getLocal() : model.getRemote());
-        } else if (methodType instanceof MethodType.CreateMethodType) {
+        } else if (methodType.getKind() == MethodType.Kind.CREATE) {
             String name = chopAndUpper(method.getSimpleName().toString(), "ejb"); //NOI18N
             TypeElement type = workingCopy.getElements().getTypeElement(local ? model.getLocal() : model.getRemote());
             modifyMethod(workingCopy, wantedMethod, null, name, workingCopy.getTrees().getTree(type), null, null, null);

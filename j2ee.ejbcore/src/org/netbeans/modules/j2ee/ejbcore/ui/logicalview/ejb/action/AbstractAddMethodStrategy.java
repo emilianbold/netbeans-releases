@@ -64,7 +64,7 @@ public abstract class AbstractAddMethodStrategy {
     protected abstract MethodType getPrototypeMethod(FileObject fileObject, ElementHandle<TypeElement> methodHandle) throws IOException;
     
     /** Describes method type handled by this action. */
-    public abstract int prototypeMethod();
+    public abstract MethodType.Kind getPrototypeMethodKind();
     
     public String getTitle() {
         return name;
@@ -134,7 +134,7 @@ public abstract class AbstractAddMethodStrategy {
                 ProgressHandle handle = ProgressHandleFactory.createHandle("Adding method");
                 try {
                     handle.start(100);
-                    boolean isComponent = methodType instanceof MethodType.BusinessMethodType;
+                    boolean isComponent = methodType.getKind() == MethodType.Kind.BUSINESS;
                     boolean isOneReturn = methodCustomizer.finderReturnIsSingle();
                     handle.progress(10);
                     TypeElement clazz = classHandle.resolve(workingCopy);

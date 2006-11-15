@@ -81,7 +81,7 @@ public class AddHomeMethodStrategy extends AbstractAddMethodStrategy {
         return result[0];
     }
     
-    public int prototypeMethod() {
-        return MethodType.METHOD_TYPE_HOME;
+    public MethodType.Kind getPrototypeMethodKind() {
+        return MethodType.Kind.HOME;
     }
 }
