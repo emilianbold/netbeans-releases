@@ -21,6 +21,7 @@ package org.netbeans.modules.subversion.client;
 import java.awt.BorderLayout;
 import java.awt.Dialog;
 import javax.swing.JButton;
+import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.ui.repository.Repository;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -162,7 +163,8 @@ public class SvnClientCallback implements ISVNPromptUserPassword {
     }    
     
     private void getAuthData() {
-        Repository repository = new Repository(url, false, false, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_ConnectionParameters")); // NOI18N
+        Repository repository = new Repository(SvnModuleConfig.getDefault().getRecentUrls(), url, false, false, 
+                                               org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_ConnectionParameters")); // NOI18N
         CorrectAuthPanel corectPanel = new CorrectAuthPanel();
         corectPanel.panel.setLayout(new BorderLayout());
         corectPanel.panel.add(repository.getPanel(), BorderLayout.NORTH);

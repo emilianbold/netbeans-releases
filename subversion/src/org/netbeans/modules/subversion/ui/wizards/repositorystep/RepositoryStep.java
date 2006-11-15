@@ -27,6 +27,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.client.ExceptionHandler;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.WizardStepProgressSupport;
@@ -73,7 +74,8 @@ public class RepositoryStep
 
     protected JComponent createComponent() {
         if (repository == null) {
-            repository = new Repository(true, acceptRevision, org.openide.util.NbBundle.getMessage(RepositoryStep.class, "CTL_Repository_Location")); // NOI18N
+            repository = new Repository(SvnModuleConfig.getDefault().getRecentUrls(), true, acceptRevision, 
+                                        null, org.openide.util.NbBundle.getMessage(RepositoryStep.class, "CTL_Repository_Location")); // NOI18N
             repository.addPropertyChangeListener(this);
             panel = new RepositoryStepPanel();            
             panel.repositoryPanel.setLayout(new BorderLayout());
@@ -105,8 +107,11 @@ public class RepositoryStep
         support.startProgress();
     }
 
-    private void storeHistory() {
-        repository.storeHistory();
+    private void storeHistory() {        
+        Repository.SelectedRepository selection = getSelectedRepository();
+        if(selection != null) {  
+            SvnModuleConfig.getDefault().insertRecentUrl(getSelectedRepository().getUrl().toString());           
+        }        
     }
     
     public RepositoryFile getRepositoryFile() {

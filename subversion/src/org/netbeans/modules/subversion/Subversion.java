@@ -104,23 +104,28 @@ public class Subversion {
     }
     
     private void init() {
-        try {
-            Diagnostics.init();
-            loadIniParserClassesWorkaround();
-            SvnClientFactory.getInstance().setup();
-        } catch (SVNClientException ex) {
-            ErrorManager.getDefault().annotate(ex, UnsupportedSvnClientAdapter.getMessage());
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-            // TODO: #78951 hotfix
-//            ErrorManager.getDefault().notify(ErrorManager.USER, ex);
-        }
-
+        Diagnostics.init();
+        loadIniParserClassesWorkaround();
+        setupSvnClientFactory();
+        
         fileStatusCache = new FileStatusCache();
         annotator = new Annotator(this);
         fileStatusProvider = new FileStatusProvider();
         filesystemHandler  = new FilesystemHandler(this);
         cleanup();
     }
+    
+    public static void setupSvnClientFactory() {
+        try {
+            SvnClientFactory.getInstance().setup();
+        } catch (SVNClientException ex) {
+            ErrorManager.getDefault().annotate(ex, UnsupportedSvnClientAdapter.getMessage());
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            // TODO: #78951 hotfix
+//            ErrorManager.getDefault().notify(ErrorManager.USER, ex);
+        }        
+    }
+    
     
     /**
      * Ini4j uses context classloader to load classes, use this as a workaround. 

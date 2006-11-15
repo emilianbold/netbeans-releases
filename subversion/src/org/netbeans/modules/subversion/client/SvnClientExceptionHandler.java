@@ -46,6 +46,7 @@ import javax.net.ssl.X509TrustManager;
 import javax.swing.JButton;
 import org.netbeans.modules.proxy.ConnectivitySettings;
 import org.netbeans.modules.subversion.Diagnostics;
+import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.config.CertificateFile;
 import org.netbeans.modules.subversion.config.ProxyDescriptor;
 import org.netbeans.modules.subversion.config.SvnConfigFiles;
@@ -114,7 +115,8 @@ public class SvnClientExceptionHandler extends ExceptionHandler {
         
     private boolean handleRepositoryConnectError(boolean urlEditable) {
         SVNUrl url = client.getSvnUrl();
-        Repository repository = new Repository(url, urlEditable, false, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_ConnectionParameters")); // NOI18N
+        Repository repository = new Repository(SvnModuleConfig.getDefault().getRecentUrls(), url, urlEditable, false, 
+                                               org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_ConnectionParameters")); // NOI18N
         CorrectAuthPanel corectPanel = new CorrectAuthPanel();
         corectPanel.panel.setLayout(new BorderLayout());
         corectPanel.panel.add(repository.getPanel(), BorderLayout.NORTH);

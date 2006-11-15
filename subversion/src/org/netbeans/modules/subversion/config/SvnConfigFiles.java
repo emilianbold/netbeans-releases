@@ -102,7 +102,7 @@ public class SvnConfigFiles {
         servers = loadNetbeansIniFile("servers");                                       // NOI18N
         
         // and store it so any commnand against the repository may use it
-        storeServers();
+        storeIni(servers, "servers");
     }
     
     /**
@@ -249,14 +249,29 @@ public class SvnConfigFiles {
                 group.put("http-proxy-exceptions", exceptions);
             }
         }
-        storeServers();
+        // XXX call store from outside, who knows what else is goint to be stored into the files...
+        storeIni(servers, "servers");                                                    // NOI18N    
     }
     
-    private void storeServers() {
+    public void setExternalCommand(String tunnelName, String command) {
+        Ini.Section tunnels = getSection(config, "tunnels", true);
+        tunnels.put(tunnelName, command);
+        storeIni(config, "config");                                                     // NOI18N
+    }
+    
+    private Ini.Section getSection(Ini ini, String key, boolean create) {
+        Ini.Section section = ini.get(key);
+        if(section == null) {
+            return ini.add(key);
+        }
+        return section;
+    }
+    
+    private void storeIni(Ini ini, String iniFile) {
         try {
-            File file = FileUtil.normalizeFile(new File(getNBConfigPath() + "/servers"));   // NOI18N
+            File file = FileUtil.normalizeFile(new File(getNBConfigPath() + "/" + iniFile));   // NOI18N
             file.getParentFile().mkdirs();
-            servers.store(FileUtils.createOutputStream(file));
+            ini.store(FileUtils.createOutputStream(file));
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }

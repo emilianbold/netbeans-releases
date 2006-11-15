@@ -59,6 +59,7 @@ import java.text.MessageFormat;
 import java.io.File;
 import java.awt.*;
 import java.lang.reflect.Field;
+import org.netbeans.modules.subversion.client.SvnClient;
 import org.tigris.subversion.svnclientadapter.*;
 
 /**
@@ -90,8 +91,12 @@ public class Annotator {
 
     private static final Pattern lessThan = Pattern.compile("<");  // NOI18N
     
+    public static String[] LABELS = new String[] { "revision", "status", "folder", "mime_type" };
+    
     private final FileStatusCache cache;
     private MessageFormat format;
+
+    private boolean mimeTypeFlag;
 
     Annotator(Subversion svn) {
         this.cache = svn.getStatusCache();
@@ -106,18 +111,29 @@ public class Annotator {
                 initDefaultColor(name.substring(0, name.length() - 6)); 
             }
         }
-
-        String string = System.getProperty("netbeans.experimental.svn.ui.statusLabelFormat");  // NOI18N
-        if (string != null) {
-            ErrorManager.getDefault().log(ErrorManager.WARNING, "SVN status labels use format \"" + string + "\" where:"); // NOI18N
-            ErrorManager.getDefault().log(ErrorManager.WARNING, "\t{0} stays for revision"); // NOI18N
-            ErrorManager.getDefault().log(ErrorManager.WARNING, "\t{1} stays for status"); // NOI18N
-            ErrorManager.getDefault().log(ErrorManager.WARNING, "\t{2} stays for branch or sticky tag"); // NOI18N
-            ErrorManager.getDefault().log(ErrorManager.WARNING, "\t{3} stays for binary flag"); // NOI18N
-            format = new MessageFormat(string);
-        }
+        refreshFormat();
     }
 
+    public void refreshFormat() {
+        String string = SvnModuleConfig.getDefault().getAnnotationFormat(); //System.getProperty("netbeans.experimental.svn.ui.statusLabelFormat");  // NOI18N
+        if (string != null) {
+            ErrorManager.getDefault().log(ErrorManager.WARNING, "SVN status labels use format \"" + string + "\" where:");              // NOI18N
+            ErrorManager.getDefault().log(ErrorManager.WARNING, "\t{revision} stays for revision");                                     // NOI18N
+            ErrorManager.getDefault().log(ErrorManager.WARNING, "\t{status} stays for status");                                         // NOI18N
+            ErrorManager.getDefault().log(ErrorManager.WARNING, "\t{folder} stays for the annotain of a specific repository folder");   // NOI18N
+            ErrorManager.getDefault().log(ErrorManager.WARNING, "\t{mime_type} stays for binary flag");                                    // NOI18N
+                        
+            mimeTypeFlag = string.indexOf("{binary}") > -1;
+            
+            string = string.replaceAll("\\{revision\\}",  "\\{0\\}");           // NOI18N    
+            string = string.replaceAll("\\{status\\}",    "\\{1\\}");           // NOI18N
+            string = string.replaceAll("\\{folder\\}",    "\\{2\\}");           // NOI18N
+            string = string.replaceAll("\\{mime_type\\}", "\\{3\\}");           // NOI18N
+            
+            format = new MessageFormat(string);
+        }        
+    }
+    
     private void initDefaultColor(String name) {
         String color = System.getProperty("svn.color." + name);  // NOI18N
         if (color == null) return;
@@ -143,8 +159,8 @@ public class Annotator {
     }
     
     /**
-     * Adds rendering attributes to an arbitrary String based on a CVS status. The name is usually a file or folder
-     * display name and status is usually its CVS status as reported by FileStatusCache. 
+     * Adds rendering attributes to an arbitrary String based on a SVN status. The name is usually a file or folder
+     * display name and status is usually its SVN status as reported by FileStatusCache. 
      * 
      * @param name name to annotate
      * @param info status that an object with the given name has
@@ -233,18 +249,17 @@ public class Annotator {
             statusString = info.getShortStatusText();
         }
 
-        String revisionString = ""; // NOI18N
-        String binaryString = ""; // NOI18N
-/*
-        Entry entry = info.getEntry(file);
-        if (entry != null) {
-            revisionString = entry.getRevision();
-            binaryString = entry.getOptions();
-            if ("-kb".equals(binaryString) == false) { // NOI18N
-                binaryString = ""; // NOI18N
+        String revisionString = "";     // NOI18N
+        String binaryString = "";       // NOI18N
+
+                
+        ISVNStatus snvStatus = info.getEntry(file);
+        if (snvStatus != null) {
+            revisionString = snvStatus.getRevision().toString();
+            if(mimeTypeFlag) {
+                binaryString = getMimeType(file);                
             }
         }
-*/
 
         String stickyString = SvnUtils.getCopy(file);
         if (stickyString == null) {
@@ -260,6 +275,21 @@ public class Annotator {
         return format.format(arguments, new StringBuffer(), null).toString().trim();
     }
 
+    private String getMimeType(File file) {
+        try {
+            SvnClient client = Subversion.getInstance().getClient(false);
+            ISVNProperty prop = client.propertyGet(file, ISVNProperty.MIME_TYPE);        
+            if(prop != null) {
+                String mime = prop.getValue();    
+                return mime != null ? mime : "";
+            }            
+        } catch (SVNClientException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); // should not hapen
+            return "";
+        }                
+        return "";
+    }
+    
     private String annotateFolderNameHtml(String name, FileInformation info, File file) {
         name = htmlEncode(name);
         int status = info.getStatus();
@@ -623,4 +653,5 @@ public class Annotator {
             return null;
         }
     }
+
 }

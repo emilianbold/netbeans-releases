@@ -21,6 +21,7 @@ package org.netbeans.modules.subversion.client;
 import java.io.File;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
+import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.config.ProxyDescriptor;
 import org.netbeans.modules.subversion.config.SvnConfigFiles;
 import org.netbeans.modules.subversion.util.SvnUtils;
@@ -166,7 +167,8 @@ public class SvnClientFactory {
     }
     
     private void setupCommandline () throws SVNClientException {
-        CmdLineClientAdapterFactory.setup();
+        String subversionPath = SvnModuleConfig.getDefault().getExecutableBinaryPath();
+        CmdLineClientAdapterFactory.setup(subversionPath);
         factory = new ClientAdapterFactory() {
             protected ISVNClientAdapter createAdapter() {
                 return SVNClientAdapterFactory.createSVNClient(CmdLineClientAdapterFactory.COMMANDLINE_CLIENT);

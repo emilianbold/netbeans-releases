@@ -24,8 +24,8 @@ import java.util.regex.Pattern;
 import java.util.*;
 import java.util.prefs.Preferences;
 import org.openide.util.NbPreferences;
-import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.TableSorter;
+import org.netbeans.modules.versioning.util.Utils;
 
 /**
  * Stores Subversion module configuration.
@@ -39,7 +39,10 @@ public class SvnModuleConfig {
     public static final String PROP_DEFAULT_VALUES          = "defaultValues";          // NOI18N
     public static final String PROP_TEXT_ANNOTATIONS_FORMAT = "textAnnotations";        // NOI18N
     public static final String KEY_EXECUTABLE_BINARY        = "svnExecBinary";          // NOI18N
-    
+    public static final String KEY_ANNOTATION_FORMAT        = "annotationFormat";       // NOI18N
+            
+    private static final String RECENT_URL = "repository.recentURL";                                // NOI18N
+
     public static final String TEXT_ANNOTATIONS_FORMAT_DEFAULT = "{DEFAULT}";           // NOI18N
 
     private static final SvnModuleConfig INSTANCE = new SvnModuleConfig();    
@@ -91,7 +94,27 @@ public class SvnModuleConfig {
     public void setExecutableBinaryPath(String path) {
         getPreferences().put(KEY_EXECUTABLE_BINARY, path);        
     }
+
+    public String getAnnotationFormat() {
+        return (String) getPreferences().get(KEY_ANNOTATION_FORMAT, "");        
+    }
     
+    public void setAnnotationFormat(String annotationFormat) {
+        getPreferences().put(KEY_ANNOTATION_FORMAT, annotationFormat);        
+    }
+            
+    public void insertRecentUrl(String url) {
+        Utils.insert(SvnModuleConfig.getDefault().getPreferences(), RECENT_URL, url, -1);        
+    }
+    
+    public void removeFromRecentUrls(String[] toRemove) {
+        Utils.removeFromArray(SvnModuleConfig.getDefault().getPreferences(), RECENT_URL, toRemove);        
+    }
+
+    public List<String> getRecentUrls() {
+        return Utils.getStringList(SvnModuleConfig.getDefault().getPreferences(), RECENT_URL);
+    }            
+            
     // TODO: persist state
 
     private TableSorter importTableSorter;
