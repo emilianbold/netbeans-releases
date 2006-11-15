@@ -34,6 +34,7 @@ import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.filesystems.FileStateInvalidException;
@@ -64,100 +65,111 @@ public class J2SEProjectGenerator {
      * @return the helper object permitting it to be further customized
      * @throws IOException in case something went wrong
      */
-    public static AntProjectHelper createProject(File dir, String name, String mainClass, String manifestFile) throws IOException {
-        FileObject dirFO = createProjectDir (dir);
+    public static AntProjectHelper createProject(final File dir, final String name, final String mainClass, final String manifestFile) throws IOException {
+        final FileObject dirFO = createProjectDir (dir);
         // if manifestFile is null => it's TYPE_LIB
-        AntProjectHelper h = createProject(dirFO, name, "src", "test", mainClass, manifestFile, manifestFile == null); //NOI18N
-        Project p = ProjectManager.getDefault().findProject(dirFO);
-        ProjectManager.getDefault().saveProject(p);
-        FileObject srcFolder = dirFO.createFolder("src"); // NOI18N
-        dirFO.createFolder("test"); // NOI18N
-        if ( mainClass != null ) {
-            createMainClass( mainClass, srcFolder );
-        }
-        return h;
+        final AntProjectHelper[] h = new AntProjectHelper[1];
+        dirFO.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+            public void run() throws IOException {
+                h[0] = createProject(dirFO, name, "src", "test", mainClass, manifestFile, manifestFile == null); //NOI18N
+                Project p = ProjectManager.getDefault().findProject(dirFO);
+                ProjectManager.getDefault().saveProject(p);
+                FileObject srcFolder = dirFO.createFolder("src"); // NOI18N
+                dirFO.createFolder("test"); // NOI18N
+                if ( mainClass != null ) {
+                    createMainClass( mainClass, srcFolder );
+                }
+            }
+        });
+        
+        return h[0];
     }
 
     public static AntProjectHelper createProject(final File dir, final String name,
                                                   final File[] sourceFolders, final File[] testFolders, final String manifestFile) throws IOException {
         assert sourceFolders != null && testFolders != null: "Package roots can't be null";   //NOI18N
         final FileObject dirFO = createProjectDir (dir);
+        final AntProjectHelper[] h = new AntProjectHelper[1];
         // this constructor creates only java application type
-        final AntProjectHelper h = createProject(dirFO, name, null, null, null, manifestFile, false);
-        final J2SEProject p = (J2SEProject) ProjectManager.getDefault().findProject(dirFO);
-        final ReferenceHelper refHelper = p.getReferenceHelper();
-        try {
-        ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
-            public Void run() throws Exception {
-                Element data = h.getPrimaryConfigurationData(true);
-                Document doc = data.getOwnerDocument();
-                NodeList nl = data.getElementsByTagNameNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"source-roots");
-                assert nl.getLength() == 1;
-                Element sourceRoots = (Element) nl.item(0);
-                nl = data.getElementsByTagNameNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"test-roots");  //NOI18N
-                assert nl.getLength() == 1;
-                Element testRoots = (Element) nl.item(0);
-                for (int i=0; i<sourceFolders.length; i++) {
-                    String propName;
-                    if (i == 0) {
-                        //Name the first src root src.dir to be compatible with NB 4.0
-                        propName = "src.dir";       //NOI18N
+        dirFO.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+            public void run () throws IOException {
+                h[0] = createProject(dirFO, name, null, null, null, manifestFile, false);
+                final J2SEProject p = (J2SEProject) ProjectManager.getDefault().findProject(dirFO);
+                final ReferenceHelper refHelper = p.getReferenceHelper();
+                try {
+                    ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                    public Void run() throws Exception {
+                        Element data = h[0].getPrimaryConfigurationData(true);
+                        Document doc = data.getOwnerDocument();
+                        NodeList nl = data.getElementsByTagNameNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"source-roots");
+                        assert nl.getLength() == 1;
+                        Element sourceRoots = (Element) nl.item(0);
+                        nl = data.getElementsByTagNameNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"test-roots");  //NOI18N
+                        assert nl.getLength() == 1;
+                        Element testRoots = (Element) nl.item(0);
+                        for (int i=0; i<sourceFolders.length; i++) {
+                            String propName;
+                            if (i == 0) {
+                                //Name the first src root src.dir to be compatible with NB 4.0
+                                propName = "src.dir";       //NOI18N
+                            }
+                            else {
+                                String name = sourceFolders[i].getName();
+                                propName = name + ".dir";    //NOI18N
+                            }
+
+                            int rootIndex = 1;
+                            EditableProperties props = h[0].getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                            while (props.containsKey(propName)) {
+                                rootIndex++;
+                                propName = name + rootIndex + ".dir";   //NOI18N
+                            }
+                            String srcReference = refHelper.createForeignFileReference(sourceFolders[i], JavaProjectConstants.SOURCES_TYPE_JAVA);
+                            Element root = doc.createElementNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
+                            root.setAttribute ("id",propName);   //NOI18N
+                            sourceRoots.appendChild(root);
+                            props = h[0].getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                            props.put(propName,srcReference);
+                            h[0].putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props); // #47609
+                        }                 
+                        for (int i = 0; i < testFolders.length; i++) {
+                            if (!testFolders[i].exists()) {
+                                testFolders[i].mkdirs();
+                            }
+                            String propName;
+                            if (i == 0) {
+                                //Name the first test root test.src.dir to be compatible with NB 4.0
+                                propName = "test.src.dir";  //NOI18N
+                            }
+                            else {
+                                String name = testFolders[i].getName();
+                                propName = "test." + name + ".dir"; // NOI18N
+                            }                    
+                            int rootIndex = 1;
+                            EditableProperties props = h[0].getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                            while (props.containsKey(propName)) {
+                                rootIndex++;
+                                propName = "test." + name + rootIndex + ".dir"; // NOI18N
+                            }
+                            String testReference = refHelper.createForeignFileReference(testFolders[i], JavaProjectConstants.SOURCES_TYPE_JAVA);
+                            Element root = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "root"); // NOI18N
+                            root.setAttribute("id", propName); // NOI18N
+                            testRoots.appendChild(root);
+                            props = h[0].getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH); // #47609
+                            props.put(propName, testReference);
+                            h[0].putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+                        }
+                        h[0].putPrimaryConfigurationData(data,true);
+                        ProjectManager.getDefault().saveProject (p);
+                        return null;
                     }
-                    else {
-                        String name = sourceFolders[i].getName();
-                        propName = name + ".dir";    //NOI18N
-                    }
-                    
-                    int rootIndex = 1;
-                    EditableProperties props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                    while (props.containsKey(propName)) {
-                        rootIndex++;
-                        propName = name + rootIndex + ".dir";   //NOI18N
-                    }
-                    String srcReference = refHelper.createForeignFileReference(sourceFolders[i], JavaProjectConstants.SOURCES_TYPE_JAVA);
-                    Element root = doc.createElementNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
-                    root.setAttribute ("id",propName);   //NOI18N
-                    sourceRoots.appendChild(root);
-                    props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                    props.put(propName,srcReference);
-                    h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props); // #47609
-                }                 
-                for (int i = 0; i < testFolders.length; i++) {
-                    if (!testFolders[i].exists()) {
-                        testFolders[i].mkdirs();
-                    }
-                    String propName;
-                    if (i == 0) {
-                        //Name the first test root test.src.dir to be compatible with NB 4.0
-                        propName = "test.src.dir";  //NOI18N
-                    }
-                    else {
-                        String name = testFolders[i].getName();
-                        propName = "test." + name + ".dir"; // NOI18N
-                    }                    
-                    int rootIndex = 1;
-                    EditableProperties props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                    while (props.containsKey(propName)) {
-                        rootIndex++;
-                        propName = "test." + name + rootIndex + ".dir"; // NOI18N
-                    }
-                    String testReference = refHelper.createForeignFileReference(testFolders[i], JavaProjectConstants.SOURCES_TYPE_JAVA);
-                    Element root = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "root"); // NOI18N
-                    root.setAttribute("id", propName); // NOI18N
-                    testRoots.appendChild(root);
-                    props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH); // #47609
-                    props.put(propName, testReference);
-                    h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+                });
+                } catch (MutexException me ) {
+                    ErrorManager.getDefault().notify (me);
                 }
-                h.putPrimaryConfigurationData(data,true);
-                ProjectManager.getDefault().saveProject (p);
-                return null;
             }
-        });
-        } catch (MutexException me ) {
-            ErrorManager.getDefault().notify (me);
-        }
-        return h;
+        });        
+        return h[0];
     }
 
     private static AntProjectHelper createProject(FileObject dirFO, String name,
