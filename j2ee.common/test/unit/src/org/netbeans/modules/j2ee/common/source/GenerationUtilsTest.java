@@ -20,6 +20,7 @@
 package org.netbeans.modules.j2ee.common.source;
 
 import com.sun.source.tree.*;
+import com.sun.source.util.*;
 import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -60,6 +61,33 @@ public class GenerationUtilsTest extends NbTestCase {
         clearWorkDir();
         workDir = FileUtil.toFileObject(getWorkDir());
         testFO = workDir.createData("TestClass.java");
+    }
+
+    public void testNewInstance() throws Exception {
+        TestUtilities.copyStringToFileObject(testFO,
+                "package foo;" +
+                "public class TestClass {" +
+                "}");
+        runModificationTask(testFO, new AbstractTask<WorkingCopy>() {
+            public void run(WorkingCopy copy) throws Exception {
+                copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                TypeElement typeElement = copy.getElements().getTypeElement("foo.TestClass");
+                GenerationUtils genUtils = GenerationUtils.newInstance(copy, typeElement);
+                assertSame(typeElement, genUtils.getTypeElement());
+                assertEquals(copy.getTrees().getTree(typeElement), genUtils.getClassTree());
+
+                ClassTree classTree = (ClassTree)copy.getCompilationUnit().getTypeDecls().get(0);
+                genUtils = GenerationUtils.newInstance(copy, classTree);
+                assertSame(classTree, genUtils.getClassTree());
+                TreePath classTreePath = copy.getTrees().getPath(copy.getCompilationUnit(), classTree);
+                typeElement = (TypeElement)copy.getTrees().getElement(classTreePath);
+                assertEquals(typeElement, genUtils.getTypeElement());
+
+                genUtils = GenerationUtils.newInstance(copy);
+                assertSame(genUtils.getTypeElement(), typeElement);
+                assertSame(genUtils.getClassTree(), classTree);
+            }
+        });
     }
 
     public void testPhase() throws Exception {

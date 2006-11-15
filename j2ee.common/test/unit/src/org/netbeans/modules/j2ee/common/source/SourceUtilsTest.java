@@ -19,8 +19,10 @@
 
 package org.netbeans.modules.j2ee.common.source;
 
-import java.io.File;
+import com.sun.source.tree.*;
+import com.sun.source.util.*;
 import java.io.IOException;
+import java.lang.annotation.ElementType;
 import javax.lang.model.element.*;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
@@ -29,7 +31,6 @@ import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.URLMapper;
 
 /**
  *
@@ -49,6 +50,33 @@ public class SourceUtilsTest extends NbTestCase {
         clearWorkDir();
         FileObject workDir = FileUtil.toFileObject(getWorkDir());
         testFO = workDir.createData("TestClass.java");
+    }
+
+    public void testNewInstance() throws Exception {
+        TestUtilities.copyStringToFileObject(testFO,
+                "package foo;" +
+                "public class TestClass {" +
+                "}");
+        runUserActionTask(testFO, new AbstractTask<CompilationController>() {
+            public void run(CompilationController controller) throws Exception {
+                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                TypeElement typeElement = controller.getElements().getTypeElement("foo.TestClass");
+                SourceUtils srcUtils = SourceUtils.newInstance(controller, typeElement);
+                assertSame(typeElement, srcUtils.getTypeElement());
+                assertEquals(controller.getTrees().getTree(typeElement), srcUtils.getClassTree());
+
+                ClassTree classTree = (ClassTree)controller.getCompilationUnit().getTypeDecls().get(0);
+                srcUtils = SourceUtils.newInstance(controller, classTree);
+                assertSame(classTree, srcUtils.getClassTree());
+                TreePath classTreePath = controller.getTrees().getPath(controller.getCompilationUnit(), classTree);
+                typeElement = (TypeElement)controller.getTrees().getElement(classTreePath);
+                assertEquals(typeElement, srcUtils.getTypeElement());
+
+                srcUtils = SourceUtils.newInstance(controller);
+                assertSame(srcUtils.getTypeElement(), typeElement);
+                assertSame(srcUtils.getClassTree(), classTree);
+            }
+        });
     }
 
     public void testPhase() throws Exception {

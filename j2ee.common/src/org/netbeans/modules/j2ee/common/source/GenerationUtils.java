@@ -54,8 +54,19 @@ public final class GenerationUtils extends SourceUtils {
 
     // <editor-fold desc="Constructors and factory methods">
 
+    private GenerationUtils(WorkingCopy copy, TypeElement typeElement) {
+        super(copy, typeElement);
+    }
+
     private GenerationUtils(WorkingCopy copy, ClassTree classTree) {
         super(copy, classTree);
+    }
+
+    public static GenerationUtils newInstance(WorkingCopy copy, TypeElement typeElement) {
+        Parameters.notNull("copy", copy); // NOI18N
+        Parameters.notNull("typeElement", typeElement); // NOI18N
+
+        return new GenerationUtils(copy, typeElement);
     }
 
     public static GenerationUtils newInstance(WorkingCopy copy, ClassTree classTree) {
@@ -229,7 +240,7 @@ public final class GenerationUtils extends SourceUtils {
 
     /**
      * Creates a new annotation argument whose value is an array.
-     * 
+     *
      * @param argumentName the argument name; cannot be null.
      * @param argumentValue the argument value; cannot be null.
      * @return the new annotation argument; never null.
@@ -250,13 +261,13 @@ public final class GenerationUtils extends SourceUtils {
     /**
      * Creates a new annotation argument whose value is a member of a type, e.g.
      * <code>@Target(ElementType.CONSTRUCTOR)</code>.
-     * 
+     *
      * @param  argumentName the argument name; cannot be null.
-     * @param  argumentType the fully-qualified name of the type whose member is to be invoked 
+     * @param  argumentType the fully-qualified name of the type whose member is to be invoked
      *         (e.g. <code>java.lang.annotations.ElementType</code> in the previous
      *         example); cannot be null.
-     * @param  argumentTypeField a field of <code>argumentType</code> 
-     *         (e.g. <code>CONSTRUCTOR</code> in the previous example); 
+     * @param  argumentTypeField a field of <code>argumentType</code>
+     *         (e.g. <code>CONSTRUCTOR</code> in the previous example);
      *         cannot be null.
      * @return the new annotation argument; never null.
      */

@@ -61,9 +61,21 @@ public class SourceUtils {
 
     // <editor-fold defaultstate="collapsed" desc="Constructors and factory methods">
 
+    SourceUtils(CompilationController controller, TypeElement typeElement) {
+        this.controller = controller;
+        this.typeElement = typeElement;
+    }
+
     SourceUtils(CompilationController controller, ClassTree classTree) {
         this.controller = controller;
         this.classTree = classTree;
+    }
+
+    public static SourceUtils newInstance(CompilationController controller, TypeElement typeElement) {
+        Parameters.notNull("controller", controller); // NOI18N
+        Parameters.notNull("typeElement", typeElement); // NOI18N
+
+        return new SourceUtils(controller, typeElement);
     }
 
     public static SourceUtils newInstance(CompilationController controller, ClassTree classTree) {
