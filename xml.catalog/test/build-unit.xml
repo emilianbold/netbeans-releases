@@ -26,11 +26,9 @@ Microsystems, Inc. All Rights Reserved.
     <import file="../../../nbbuild/templates/xtest-unit.xml"/>
 
     <target name="myunit-compiler" depends="init,init-cp">
-       <ant dir=".." target="compile" />
        <buildTests srcdir="unit/src" compileexcludes="**/data/**">
             <classpath>
                 <path refid="test.unit.compile.cp"/>
-                <pathelement location="../build/classes"/>
             </classpath>
         </buildTests>
     </target>
@@ -39,7 +37,6 @@ Microsystems, Inc. All Rights Reserved.
         <executeTests pluginname="jvm">
             <classpath>
                 <path refid="test.unit.run.cp"/>
-                <pathelement location="../build/classes"/>
             </classpath>
         </executeTests>
     </target>
