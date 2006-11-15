@@ -71,11 +71,17 @@ public class JspUtils {
     }
     
     public static JSPColoringData getJSPColoringData (Document doc, FileObject fo) {
-        return JspContextInfo.getContextInfo ().getJSPColoringData (doc, fo);
+        JSPColoringData result = null;
+        if (doc != null && fo != null && fo.isValid()){
+            JspContextInfo context = JspContextInfo.getContextInfo (fo);
+            if (context != null)
+                result = context.getJSPColoringData (doc, fo);
+        }
+        return result;
     }
     
     public static JspParserAPI.ParseResult getCachedParseResult(Document doc, FileObject fo, boolean successfulOnly, boolean preferCurrent, boolean forceParse) {
-        return JspContextInfo.getContextInfo ().getCachedParseResult (doc, fo, successfulOnly, preferCurrent);
+        return JspContextInfo.getContextInfo (fo).getCachedParseResult (doc, fo, successfulOnly, preferCurrent);
     }
     
     public static JspParserAPI.ParseResult getCachedParseResult(Document doc, FileObject fo, boolean successfulOnly, boolean preferCurrent) {
@@ -83,7 +89,7 @@ public class JspUtils {
     }
     
     public static URLClassLoader getModuleClassLoader(Document doc, FileObject fo) {
-        return JspContextInfo.getContextInfo ().getModuleClassLoader (doc, fo);
+        return JspContextInfo.getContextInfo (fo).getModuleClassLoader (doc, fo);
     }
     
     /** Returns the root of the web module containing the given file object.
@@ -98,14 +104,14 @@ public class JspUtils {
      *   is not on the path from resource to the root
      */
     public static FileObject guessWebModuleRoot (Document doc, FileObject fo) {
-        return JspContextInfo.getContextInfo ().guessWebModuleRoot (doc, fo);
+        return JspContextInfo.getContextInfo (fo).guessWebModuleRoot (doc, fo);
     }
     
     /** Returns the taglib map as returned by the parser, taking data from the editor as parameters.
      * Returns null in case of a failure (exception, no web module, no parser etc.)
      */
     public static Map getTaglibMap(Document doc, FileObject fo) {
-        return JspContextInfo.getContextInfo ().getTaglibMap (doc, fo);
+        return JspContextInfo.getContextInfo (fo).getTaglibMap (doc, fo);
     }
     
     /** This method returns an image, which is displayed for the FileObject in the explorer.
@@ -114,7 +120,7 @@ public class JspUtils {
      * @return an Image which is dislayed in the explorer for the file. 
      */
     public static java.awt.Image getIcon(Document doc, FileObject fo){
-        return JspContextInfo.getContextInfo ().getIcon (doc, fo);
+        return JspContextInfo.getContextInfo (fo).getIcon (doc, fo);
     }
     
     /** Returns an absolute context URL (starting with '/') for a relative URL and base URL.

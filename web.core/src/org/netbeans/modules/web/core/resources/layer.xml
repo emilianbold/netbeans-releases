@@ -170,9 +170,18 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="JSPCompilation">
     </folder>
     <folder name="JSPSyntaxColoring">
-        <file name="org-netbeans-modules-web-core-jsploader-JspContextInfoImpl.instance">
-            <attr name="instanceCreate" newvalue="org.netbeans.modules.web.core.jsploader.JspContextInfoImpl" />
-        </file>
+        <folder name="text">
+            <folder name="x-jsp">
+                <file name="org-netbeans-modules-web-core-jsploader-JspContextInfoImpl.instance">
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.web.core.jsploader.JspContextInfoImpl" />
+                </file>
+            </folder>
+            <folder name="x-tag">
+                <file name="org-netbeans-modules-web-core-jsploader-JspContextInfoImpl.instance">
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.web.core.jsploader.JspContextInfoImpl" />
+                </file>
+            </folder>
+        </folder>
     </folder>
   </folder>
   

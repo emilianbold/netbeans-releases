@@ -22,8 +22,6 @@ package org.netbeans.modules.web.core.syntax.completion;
 
 import java.awt.Graphics;
 import java.io.IOException;
-import java.util.*;
-import javax.swing.ImageIcon;
 import javax.swing.text.*;
 import java.awt.Color;
 import java.awt.Component;
@@ -37,8 +35,16 @@ import javax.servlet.jsp.tagext.*;
 import org.netbeans.editor.*;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtFormatter;
+import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.web.core.syntax.spi.AutoTagImporterProvider;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.web.core.syntax.*;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.Repository;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.FolderLookup;
+import org.openide.util.Lookup;
+
 
 
 /**
@@ -278,6 +284,30 @@ public class JspCompletionItem {
                 return substituteText(c, offset, len, getItemText().substring(1) + ">", 0);  // NOI18N
         }
         
+        protected boolean substituteText( JTextComponent c, int offset, int len, String fill, int moveBack) {
+            BaseDocument doc = (BaseDocument)c.getDocument();
+            boolean value = false;
+            try {
+                doc.atomicLock();
+                value = super.substituteText(c, offset, len, fill, moveBack);
+                FileObject f = Repository.getDefault().getDefaultFileSystem().
+                        findResource("Editors/" + NbEditorUtilities.getFileObject(c.getDocument()).getMIMEType()+"/AutoTagImportProviders");
+                if (f != null){
+                    DataFolder folder = DataFolder.findFolder(f);
+                    FolderLookup l = new FolderLookup(folder);
+                    Lookup.Result result = l.getLookup().lookup(new Lookup.Template(AutoTagImporterProvider.class));
+                    if (result != null){
+                        for(Object instance : result.allInstances()){
+                            ((AutoTagImporterProvider)instance).importLibrary(c.getDocument(),
+                                    tagInfo.getTagLibrary().getPrefixString(), tagInfo.getTagLibrary().getURI());
+                        }
+                    }
+                }
+            } finally {
+                doc.atomicUnlock();
+            }
+            return value;
+        }
     }
     
     /** Item representing a JSP tag (without prefix) or JSP directive. */
@@ -305,7 +335,7 @@ public class JspCompletionItem {
             component.setString(text);
             return component;
         }
-
+        
         
     }
     
@@ -378,18 +408,17 @@ public class JspCompletionItem {
         }
         
         public boolean substituteText( JTextComponent c, int offset, int len, boolean shift ) {
-            if (!getItemText ().startsWith ("/"))   // NOI18N
+            if (!getItemText().startsWith("/"))   // NOI18N
                 return substituteText(c, offset, len, getItemText() + " ", 0);  // NOI18N
             else
-                return substituteText(c, offset, len, getItemText().substring (1) + ">", 0);    // NOI18N
+                return substituteText(c, offset, len, getItemText().substring(1) + ">", 0);    // NOI18N
         }
-
+        
         public boolean substituteCommonText( JTextComponent c, int offset, int len, int subLen ) {
-            if (!getItemText ().startsWith ("/")) {  // NOI18N
-                return substituteText(c, offset, len, getItemText().substring (subLen), 0);  // NOI18N
-            }
-            else {
-                return substituteText(c, offset, len, getItemText().substring (1, subLen), 0);  // NOI18N
+            if (!getItemText().startsWith("/")) {  // NOI18N
+                return substituteText(c, offset, len, getItemText().substring(subLen), 0);  // NOI18N
+            } else {
+                return substituteText(c, offset, len, getItemText().substring(1, subLen), 0);  // NOI18N
             }
         }
     }
@@ -752,7 +781,7 @@ public class JspCompletionItem {
             paintComponent.setType(type);
             return paintComponent;
         }
-
+        
         public String getItemText() {
             String result = text;
             if (type == org.netbeans.modules.web.core.syntax.completion.ELImplicitObjects.MAP_TYPE)
@@ -765,10 +794,10 @@ public class JspCompletionItem {
                 return substituteText(c, offset, len, getItemText(), 1);
             else
                 return substituteText(c, offset, len, getItemText(), 0);
-        }       
+        }
     }
     
-  
+    
     public static class ELBean extends JspResultItem implements ELItem {
         
         private static ResultItemPaintComponent.ELBeanPaintComponent paintComponent = null;
@@ -781,7 +810,7 @@ public class JspCompletionItem {
                 this.type = type.substring(type.lastIndexOf('.')+1);
             else
                 this.type = type;
-        }        
+        }
         
         public int getSortPriority() {
             return 10;
@@ -802,8 +831,8 @@ public class JspCompletionItem {
         
         public ELProperty( String text, String type ) {
             super(text, type);
-        }        
-                
+        }
+        
         public Component getPaintComponent(boolean isSelected) {
             if (paintComponent == null)
                 paintComponent = new ResultItemPaintComponent.ELPropertyPaintComponent();
@@ -819,14 +848,14 @@ public class JspCompletionItem {
         
         private String prefix;
         private String parameters;
-                
+        
         
         public ELFunction( String prefix, String name, String type, String parameters) {
             super(name, type);
             this.prefix = prefix;
             this.parameters = parameters;
-        }        
-                
+        }
+        
         public Component getPaintComponent(boolean isSelected) {
             if (paintComponent == null)
                 paintComponent = new ResultItemPaintComponent.ELFunctionPaintComponent();
@@ -846,8 +875,8 @@ public class JspCompletionItem {
         }
         
         public boolean substituteText( JTextComponent c, int offset, int len, boolean shift ) {
-            return substituteText(c, offset, len, getItemText(), 1); 
+            return substituteText(c, offset, len, getItemText(), 1);
         }
     }
-
+    
 }

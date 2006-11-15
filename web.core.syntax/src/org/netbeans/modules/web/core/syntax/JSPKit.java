@@ -207,8 +207,9 @@ public class JSPKit extends LexerEditorKit implements org.openide.util.HelpCtx.P
     public SyntaxSupport createSyntaxSupport(BaseDocument doc) {
         DataObject dobj = NbEditorUtilities.getDataObject(doc);
         if (dobj != null) {
-            return new JspSyntaxSupport(doc,
-                    JspContextInfo.getContextInfo().getCachedOpenInfo(doc, dobj.getPrimaryFile(), false).isXmlSyntax());
+            if (dobj.getPrimaryFile() != null)
+                return new JspSyntaxSupport(doc,
+                    JspContextInfo.getContextInfo(dobj.getPrimaryFile()).getCachedOpenInfo(doc, dobj.getPrimaryFile(), false).isXmlSyntax());
         }
         return new JspSyntaxSupport(doc, false);
         

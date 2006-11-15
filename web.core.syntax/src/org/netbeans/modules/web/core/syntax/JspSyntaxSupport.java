@@ -978,16 +978,20 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
     
     private TagInfo[] getTagInfos(){
         TagInfo[] rValue;
-        if ( isXmlSyntax()){
-            if (NbEditorUtilities.getMimeType(getDocument()).equals(JspUtils.TAG_MIME_TYPE))
-                rValue = xmlTagFileTagDatas;
-            else
-                rValue = xmlJspTagDatas;
-        } else
-            if (NbEditorUtilities.getMimeType(getDocument()).equals(JspUtils.TAG_MIME_TYPE))
-                rValue = standardTagTagDatas;
-            else
-                rValue = standardJspTagDatas;
+        if ("text/x-jsp".equals(fobj.getMIMEType()) || "text/x-tag".equals(fobj.getMIMEType())){
+            if ( isXmlSyntax()){
+                if (NbEditorUtilities.getMimeType(getDocument()).equals(JspUtils.TAG_MIME_TYPE))
+                    rValue = xmlTagFileTagDatas;
+                else
+                    rValue = xmlJspTagDatas;
+            } else
+                if (NbEditorUtilities.getMimeType(getDocument()).equals(JspUtils.TAG_MIME_TYPE))
+                    rValue = standardTagTagDatas;
+                else
+                    rValue = standardJspTagDatas;
+        }
+        else 
+            rValue = new TagInfo[0];
         return rValue;
     }
     

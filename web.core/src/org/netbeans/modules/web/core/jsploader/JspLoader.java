@@ -72,15 +72,8 @@ public class JspLoader extends UniFileLoader {
     
     protected void initialize () {
         super.initialize();
-        ExtensionList ext = new ExtensionList();
-        ext.addExtension(JSP_EXTENSION);
-        ext.addExtension(JSPF_EXTENSION);
-        ext.addExtension(JSF_EXTENSION);
-        ext.addExtension(JSPX_EXTENSION);
-        ext.addExtension(TAG_FILE_EXTENSION);
-        ext.addExtension(TAGF_FILE_EXTENSION);
-        ext.addExtension(TAGX_FILE_EXTENSION);
-        setExtensions(ext);
+        getExtensions().addMimeType(JSP_MIME_TYPE);
+        getExtensions().addMimeType(TAG_MIME_TYPE);
 
     }
 

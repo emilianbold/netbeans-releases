@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.web.core.syntax.spi;
 
+import java.util.Hashtable;
 import javax.swing.text.Document;
 import java.net.URLClassLoader;
 import java.util.Map;
@@ -39,13 +40,18 @@ import org.openide.util.NbBundle;
 public abstract class JspContextInfo {
     
     /** Name of the settings context where an instance of this class should be registered */
-    public static final String CONTEXT_NAME = "/J2EE/JSPSyntaxColoring"; //NOI18N
+    public static final String CONTEXT_NAME = "/J2EE/JSPSyntaxColoring/"; //NOI18N
     
-    private static JspContextInfo instance = null;
+    private static Hashtable <String, JspContextInfo> instances = new Hashtable();
     
-    public static synchronized JspContextInfo getContextInfo () {
+    public static synchronized JspContextInfo getContextInfo( FileObject fo ) {
+        if (fo == null){
+            return null;
+        }
+        JspContextInfo instance = instances.get(fo.getMIMEType());
+        
         if (instance == null) {
-            FileObject f = Repository.getDefault().getDefaultFileSystem().findResource(CONTEXT_NAME); // NOI18N
+            FileObject f = Repository.getDefault().getDefaultFileSystem().findResource(CONTEXT_NAME + fo.getMIMEType()); // NOI18N
             if (f != null) {
                 try {
                     DataFolder folder = (DataFolder)DataObject.find(f).getCookie(DataFolder.class);
@@ -56,40 +62,27 @@ public abstract class JspContextInfo {
                         Object o = ic.instanceCreate();
                         if (o instanceof JspContextInfo){
                             instance = (JspContextInfo)o;
+                            instances.put(fo.getMIMEType(), instance);
                             continue;
                         }
                     }
-                                        
-                } 
-                catch (DataObjectNotFoundException ex) {
+                } catch (DataObjectNotFoundException ex) {
                     ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
-                }
-                catch (java.io.IOException ex) {
+                } catch (java.io.IOException ex) {
                     ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
-                }
-                catch (java.lang.ClassNotFoundException ex){
+                } catch (java.lang.ClassNotFoundException ex){
                     ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
                 }
             }
-            /*Context ctx = Context.getDefault().getSubcontext(CONTEXT_NAME);
-            Iterator bindings = ctx.getBindingNames().iterator();
-            while (bindings.hasNext()) {
-                String b = (String)bindings.next();
-                Object o = ctx.getObject(b, null);
-                if (o instanceof JspContextInfo) {
-                    instance = (JspContextInfo)o;
-                    break;
-                }
-            }*/
             if (instance == null) {
-                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, 
-                    new Exception(NbBundle.getBundle(JspContextInfo.class).getString("EXC_JspContextInfoNotInstalled")));
+                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION,
+                        new Exception(NbBundle.getBundle(JspContextInfo.class).getString("EXC_JspContextInfoNotInstalled")));
             }
         }
         return instance;
     }
-
-    public abstract JSPColoringData getJSPColoringData (Document doc, FileObject fo);
+    
+    public abstract JSPColoringData getJSPColoringData(Document doc, FileObject fo);
     
     public abstract JspParserAPI.ParseResult getCachedParseResult(Document doc, FileObject fo, boolean successfulOnly, boolean preferCurrent, boolean forceReload);
     
@@ -107,11 +100,11 @@ public abstract class JspContextInfo {
      *
      * @param fo the resource for which to find the web module root
      * @param doc document in which is fileobject editted.
-     * @return the root of the web module, or null if a directory containing WEB-INF 
+     * @return the root of the web module, or null if a directory containing WEB-INF
      *   is not on the path from resource to the root
      */
-    public abstract FileObject guessWebModuleRoot (Document doc, FileObject fo);
-   
+    public abstract FileObject guessWebModuleRoot(Document doc, FileObject fo);
+    
     /** Returns the taglib map as returned by the parser, taking data from the editor as parameters.
      * Returns null in case of a failure (exception, no web module, no parser etc.)
      */
@@ -121,7 +114,7 @@ public abstract class JspContextInfo {
      * It is used to display objects in editor (e.g. in code completion).
      * @param doc This is the documet, in which the icon will be used (for exmaple for completion).
      * @param fo file object for which the icon is looking for
-     * @return an Image which is dislayed in the explorer for the file. 
+     * @return an Image which is dislayed in the explorer for the file.
      */
     public abstract java.awt.Image getIcon(Document doc, FileObject fo);
     
