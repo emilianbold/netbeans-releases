@@ -21,34 +21,6 @@ Microsystems, Inc. All Rights Reserved.
 
 <project name="xml/catalog/test-unit" basedir="." default="all">
 
-    <property name="module.jar.basename" value="xml-catalog.jar"/>
-
     <import file="../../../nbbuild/templates/xtest-unit.xml"/>
-
-    <target name="myunit-compiler" depends="init,init-cp">
-       <ant dir=".." target="compile" />
-       <buildTests srcdir="unit/src" compileexcludes="**/data/**">
-            <classpath>
-                <path refid="test.unit.compile.cp"/>
-                <pathelement location="../build/classes"/>
-            </classpath>
-        </buildTests>
-    </target>
-
-    <target name="myrun-unit-test" depends="init,init-cp">
-        <executeTests pluginname="jvm">
-            <classpath>
-                <path refid="test.unit.run.cp"/>
-                <pathelement location="../build/classes"/>
-            </classpath>
-        </executeTests>
-    </target>
-
-    <target name="pre-init-cp">
-        <!-- Extra classpath for compilation: -->
-        <!-- <property name="cp.compile.extra" value=""/> -->
-        <!-- Extra classpath for execution: -->
-        <!-- <property name="cp.run.extra" value=""/> -->
-    </target>
 
 </project>

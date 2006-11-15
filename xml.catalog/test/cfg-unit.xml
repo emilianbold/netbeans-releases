@@ -24,7 +24,7 @@ Microsystems, Inc. All Rights Reserved.
 
 <mconfig name="xml-catalog">
 
-    <testbag testattribs="stable" compiler="myunit-compiler" executor="myunit-executor" name="xml-catalog">
+    <testbag testattribs="stable" executor="unit-executor" name="xml-catalog">
         <testset dir="unit/src">
             <patternset>
                 <include name="**/*Test.class"/>
@@ -33,10 +33,6 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
 
     <compiler name="default-compiler" antfile="build-unit.xml" target="default-compiler" default="true"/>
-    <compiler name="myunit-compiler" antfile="build-unit.xml" target="myunit-compiler"/>
-
-
-    <executor name="unit-executor" antfile="build-unit.xml" target="run-unit-test"/>
-    <executor name="myunit-executor" antfile="build-unit.xml" target="myrun-unit-test"/>
+    <executor name="unit-executor" antfile="build-unit.xml" target="run-unit-test" default="true"/>
 
 </mconfig>
