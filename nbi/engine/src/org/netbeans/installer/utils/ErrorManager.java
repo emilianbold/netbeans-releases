@@ -23,6 +23,7 @@ package org.netbeans.installer.utils;
 import javax.swing.JOptionPane;
 import org.netbeans.installer.Installer;
 import org.netbeans.installer.utils.LogManager;
+import org.netbeans.installer.utils.helper.ErrorLevel;
 
 /**
  *

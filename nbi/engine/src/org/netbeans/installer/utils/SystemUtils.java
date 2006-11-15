@@ -41,6 +41,7 @@ import org.netbeans.installer.product.ProductComponent;
 import org.netbeans.installer.utils.exceptions.NativeException;
 import org.netbeans.installer.utils.exceptions.UnrecognizedObjectException;
 import org.netbeans.installer.utils.helper.EnvironmentScope;
+import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.helper.ExecutionResults;
 import org.netbeans.installer.utils.helper.Platform;
 import org.netbeans.installer.utils.helper.Shortcut;

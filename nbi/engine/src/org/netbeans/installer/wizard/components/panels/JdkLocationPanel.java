@@ -23,7 +23,7 @@ package org.netbeans.installer.wizard.components.panels;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
-import org.netbeans.installer.utils.ErrorLevel;
+import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;

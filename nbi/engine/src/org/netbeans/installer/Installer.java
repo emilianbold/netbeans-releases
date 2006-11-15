@@ -33,7 +33,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 import org.netbeans.installer.downloader.DownloadManager;
 import org.netbeans.installer.downloader.DownloaderConsts;
 import org.netbeans.installer.product.ProductRegistry;
-import org.netbeans.installer.utils.ErrorLevel;
+import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.FileProxy;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.FileUtils;
@@ -42,11 +42,11 @@ import org.netbeans.installer.utils.UiUtils;
 import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.wizard.components.actions.FinalizeRegistryAction;
 import org.netbeans.installer.wizard.components.actions.InitalizeRegistryAction;
-import static org.netbeans.installer.utils.ErrorLevel.DEBUG;
-import static org.netbeans.installer.utils.ErrorLevel.MESSAGE;
-import static org.netbeans.installer.utils.ErrorLevel.WARNING;
-import static org.netbeans.installer.utils.ErrorLevel.ERROR;
-import static org.netbeans.installer.utils.ErrorLevel.CRITICAL;
+import static org.netbeans.installer.utils.helper.ErrorLevel.DEBUG;
+import static org.netbeans.installer.utils.helper.ErrorLevel.MESSAGE;
+import static org.netbeans.installer.utils.helper.ErrorLevel.WARNING;
+import static org.netbeans.installer.utils.helper.ErrorLevel.ERROR;
+import static org.netbeans.installer.utils.helper.ErrorLevel.CRITICAL;
 import org.netbeans.installer.wizard.Wizard;
 
 /**

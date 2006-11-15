@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.zip.CRC32;
+import org.netbeans.installer.utils.helper.ErrorLevel;
 
 /**
  *

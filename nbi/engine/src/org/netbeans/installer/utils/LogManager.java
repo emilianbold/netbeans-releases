@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.StringReader;
 import java.io.Writer;
+import org.netbeans.installer.utils.helper.ErrorLevel;
 
 /**
  *

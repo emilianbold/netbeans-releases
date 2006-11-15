@@ -31,7 +31,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.installer.download.DownloadManager;
 import org.netbeans.installer.download.DownloadOptions;
 import org.netbeans.installer.product.ProductRegistry;
-import org.netbeans.installer.utils.ErrorLevel;
+import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.helper.ExecutionResults;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;

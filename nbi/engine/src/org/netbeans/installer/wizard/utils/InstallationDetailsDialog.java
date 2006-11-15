@@ -40,7 +40,7 @@ import javax.swing.tree.TreePath;
 import org.netbeans.installer.product.utils.DetailedStatus;
 import org.netbeans.installer.product.ProductComponent;
 import org.netbeans.installer.product.ProductRegistry;
-import org.netbeans.installer.utils.ErrorLevel;
+import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.helper.swing.NbiDialog;
 import org.netbeans.installer.utils.helper.swing.NbiScrollPane;

@@ -18,26 +18,19 @@
  *  
  * $Id$
  */
-package org.netbeans.installer.wizard.components.actions;
-
-import org.netbeans.installer.product.ProductRegistry;
-import org.netbeans.installer.utils.helper.ErrorLevel;
-import org.netbeans.installer.utils.ErrorManager;
-import org.netbeans.installer.utils.exceptions.FinalizationException;
-import org.netbeans.installer.utils.progress.Progress;
-import org.netbeans.installer.wizard.components.WizardPanel;
-import org.netbeans.installer.wizard.components.panels.ProgressPanel;
+package org.netbeans.installer.utils.helper;
 
 /**
  *
  * @author Kirill Sorokin
  */
-public class FinalizeRegistryAction extends ProgressAction {
-    public void execute() {
-        try {
-            ProductRegistry.getInstance().finalizeRegistry(new Progress(progressPanel));
-        } catch (FinalizationException e) {
-            ErrorManager.notify(ErrorLevel.ERROR, "Cannot finalize registry", e);
-        }
+public final class ErrorLevel {
+    public static final int DEBUG    = 4;
+    public static final int MESSAGE  = 3;
+    public static final int WARNING  = 2;
+    public static final int ERROR    = 1;
+    public static final int CRITICAL = 0;
+    
+    private ErrorLevel() {
     }
 }

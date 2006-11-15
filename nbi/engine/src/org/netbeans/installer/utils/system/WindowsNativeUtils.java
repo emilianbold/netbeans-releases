@@ -29,7 +29,7 @@ import java.util.Map;
 import org.netbeans.installer.Installer;
 import org.netbeans.installer.product.ProductComponent;
 import org.netbeans.installer.utils.helper.EnvironmentScope;
-import org.netbeans.installer.utils.ErrorLevel;
+import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;

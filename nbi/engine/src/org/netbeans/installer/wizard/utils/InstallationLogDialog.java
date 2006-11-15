@@ -29,7 +29,7 @@ import java.io.File;
 import java.io.IOException;
 import javax.swing.JScrollPane;
 import javax.swing.border.EmptyBorder;
-import org.netbeans.installer.utils.ErrorLevel;
+import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;

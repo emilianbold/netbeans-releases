@@ -24,7 +24,7 @@ import java.util.List;
 import org.netbeans.installer.Installer;
 import org.netbeans.installer.product.ProductComponent;
 import org.netbeans.installer.product.ProductRegistry;
-import org.netbeans.installer.utils.ErrorLevel;
+import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.wizard.Wizard;
 import org.netbeans.installer.wizard.components.*;

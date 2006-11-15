@@ -42,6 +42,7 @@ import java.util.regex.Pattern;
 import org.netbeans.installer.product.utils.Status;
 import org.netbeans.installer.utils.exceptions.ParseException;
 import org.netbeans.installer.utils.exceptions.UnrecognizedObjectException;
+import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.helper.ExtendedURI;
 import org.netbeans.installer.utils.helper.Platform;
 import org.w3c.dom.Element;

@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.installer.utils.helper.EnvironmentScope;
-import org.netbeans.installer.utils.ErrorLevel;
+import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.SystemUtils;

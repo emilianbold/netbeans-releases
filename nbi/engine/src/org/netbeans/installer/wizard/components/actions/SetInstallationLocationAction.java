@@ -22,7 +22,7 @@ package org.netbeans.installer.wizard.components.actions;
 
 import java.io.File;
 import org.netbeans.installer.product.ProductComponent;
-import org.netbeans.installer.utils.ErrorLevel;
+import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
 
 /**

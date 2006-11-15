@@ -52,7 +52,7 @@ import org.netbeans.installer.product.ProductRegistry;
 import org.netbeans.installer.product.ProductTreeNode;
 import org.netbeans.installer.product.utils.Status;
 import org.netbeans.installer.product.filters.TrueFilter;
-import org.netbeans.installer.utils.ErrorLevel;
+import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
