@@ -24,8 +24,6 @@
  */
 package org.netbeans.modules.mobility.editor.pub;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import org.netbeans.api.java.loaders.JavaDataSupport;
 import org.netbeans.modules.mobility.editor.J2MENode;
 import org.netbeans.modules.mobility.project.ApplicationDescriptorHandler;
@@ -36,14 +34,7 @@ import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.nodes.Node;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.ObjectInput;
-import java.io.OutputStreamWriter;
-import java.io.Reader;
-import java.io.StringReader;
-import java.io.Writer;
+import java.io.*;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import javax.swing.text.BadLocationException;
@@ -60,7 +51,6 @@ import org.netbeans.modules.mobility.project.TextSwitcher;
 import org.netbeans.modules.mobility.snippets.SnippetsPaletteSupport;
 import org.netbeans.spi.palette.PaletteController;
 import org.netbeans.spi.project.ProjectConfiguration;
-import org.omg.CORBA.portable.OutputStream;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.OpenCookie;
@@ -121,14 +111,14 @@ public class J2MEDataObject extends MultiDataObject {
         return super.getCookie(type);
     }
     
-    private synchronized J2MEEditorSupport createJavaEditorSupport() {
+    protected synchronized J2MEEditorSupport createJavaEditorSupport() {
         if (jes == null) {
-            jes = new J2MEEditorSupport(this);
+            jes = new J2MEEditorSupport (this);
         }
         return jes;
     }
-    
-    public static final class J2MEEditorSupport extends DataEditorSupport implements OpenCookie, EditCookie, EditorCookie, PrintCookie, EditorCookie.Observable {
+
+    public static class J2MEEditorSupport extends DataEditorSupport implements OpenCookie, EditCookie, EditorCookie, PrintCookie, EditorCookie.Observable {
         
         final private ProjectConfigurationsHelper pch;
         private static Method setAlreadyModified = null;
@@ -213,9 +203,8 @@ public class J2MEDataObject extends MultiDataObject {
         protected void saveFromKitToStream(final StyledDocument doc, final EditorKit kit, final OutputStream stream) throws IOException, BadLocationException {
             // super.saveFromKitToStream called to handled guarded sections -- store the results in memory
             final ByteArrayOutputStream myStream = new ByteArrayOutputStream();
-            super.saveFromKitToStream(doc,kit,myStream);
-            final String enc = getFileEncoding(getDataObject().getPrimaryFile());
-            final String encoding = enc == null ? System.getProperty("file.encoding") : enc; //NOI18N
+            saveFromKitToStreamHook (doc,kit,myStream);
+            final String encoding = getEncoding ();
             final CommentingPreProcessor.Source ppSource = new CommentingPreProcessor.Source() {
                 public Reader createReader() throws IOException {
                     return new StringReader(myStream.toString(encoding));
@@ -229,7 +218,7 @@ public class J2MEDataObject extends MultiDataObject {
                 public Writer createWriter( boolean validOutput) throws IOException {
                     return new OutputStreamWriter(stream, encoding);
                 }
-                
+
             };
             final ProjectConfiguration defCfg = pch == null ? null : pch.getDefaultConfiguration();
             final HashMap<String,String> identifiers = new HashMap<String,String>();
@@ -244,10 +233,20 @@ public class J2MEDataObject extends MultiDataObject {
                 ErrorManager.getDefault().notify(pe);
             }
         }
-        
-        protected void loadFromStreamToKit(final StyledDocument doc, final InputStream stream, final EditorKit kit) throws IOException, BadLocationException {
+
+        protected final String getEncoding () {
             final String enc = getFileEncoding(getDataObject().getPrimaryFile());
             final String encoding = enc == null ? System.getProperty("file.encoding") : enc; //NOI18N
+            return encoding;
+        }
+
+        protected void saveFromKitToStreamHook (StyledDocument doc, EditorKit kit, OutputStream stream) throws IOException, BadLocationException {
+            super.saveFromKitToStream (doc, kit, stream);
+        }
+
+        protected void loadFromStreamToKit(final StyledDocument doc, final InputStream stream, final EditorKit kit) throws IOException, BadLocationException {
+            final String encoding = getEncoding ();
+
             final CommentingPreProcessor.Source ppSource = new CommentingPreProcessor.Source() {
                 public Reader createReader() throws IOException {
                     return new InputStreamReader(stream, encoding);
@@ -257,13 +256,13 @@ public class J2MEDataObject extends MultiDataObject {
             final OutputStreamWriter osw = new OutputStreamWriter(out, encoding);
             final CommentingPreProcessor.Destination ppDestination = new CommentingPreProcessor.Destination() {
                 public void doInsert( int line,  String s)  {}
-                
+
                 public void doRemove( int line,  int column,  int length)  {}
-                
+
                 public Writer createWriter( boolean validOutput) {
                     return osw;
                 }
-                
+
             };
             final ProjectConfiguration conf = pch == null ? null : pch.getActiveConfiguration();
             final HashMap<String,String> identifiers=new HashMap<String,String>();
@@ -273,12 +272,16 @@ public class J2MEDataObject extends MultiDataObject {
             }
             final CommentingPreProcessor cpp =new CommentingPreProcessor(ppSource, ppDestination, identifiers);
             cpp.run();
-            super.loadFromStreamToKit(doc, new ByteArrayInputStream(out.toByteArray()), kit);
+            loadFromStreamToKitHook (doc, new ByteArrayInputStream(out.toByteArray()), kit);
         }
 
-        /** override to return j2me editor kit
-         * @return editor kit
-         */
+        protected void loadFromStreamToKitHook (StyledDocument doc, InputStream stream, EditorKit kit) throws IOException, BadLocationException {
+            super.loadFromStreamToKit (doc, stream, kit);
+        }
+
+            /** override to return j2me editor kit
+            * @return editor kit
+            */
         protected EditorKit createEditorKit() {
             if (kit == null) kit = new J2MEKit();
             return kit;
@@ -312,7 +315,7 @@ public class J2MEDataObject extends MultiDataObject {
         
     }
     
-    private static final class J2MEEditor extends CloneableEditor {
+    public static class J2MEEditor extends CloneableEditor {
         
         private static final long serialVersionUID = -1;
         

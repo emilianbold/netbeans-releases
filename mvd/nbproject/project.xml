@@ -23,74 +23,14 @@ Microsystems, Inc. All Rights Reserved.
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
             <code-name-base>org.netbeans.modules.mvd</code-name-base>
             <javadoc/>
-            <friend-packages>
-                <friend>org.netbeans.modules.mobility.end2end</friend>
-                <friend>org.netbeans.modules.vmd.components.nbmidp</friend>
-                <friend>org.netbeans.modules.vmd.components.svg</friend>
-                <package>org.netbeans.modules.graph</package>
-                <package>org.netbeans.modules.graph.api</package>
-                <package>org.netbeans.modules.graph.api.control</package>
-                <package>org.netbeans.modules.graph.api.control.builtin</package>
-                <package>org.netbeans.modules.graph.api.control.editor</package>
-                <package>org.netbeans.modules.graph.api.model</package>
-                <package>org.netbeans.modules.graph.api.model.ability</package>
-                <package>org.netbeans.modules.graph.api.model.builtin</package>
-                <package>org.netbeans.modules.graph.vmd</package>
-                <package>org.netbeans.modules.mvd.codegenerator</package>
-                <package>org.netbeans.modules.mvd.io</package>
-                <package>org.netbeans.modules.mvd.jazz</package>
-                <package>org.netbeans.modules.mvd.jazz.basiclook</package>
-                <package>org.netbeans.modules.mvd.jazz.midp</package>
-                <package>org.netbeans.modules.mvd.jazz.midp.basiclook</package>
-                <package>org.netbeans.modules.mvd.jazz.midp2</package>
-                <package>org.netbeans.modules.mvd.jazz.midp2.basiclook</package>
-                <package>org.netbeans.modules.mvd.model</package>
-                <package>org.netbeans.modules.mvd.model.actions</package>
-                <package>org.netbeans.modules.mvd.model.helpers</package>
-                <package>org.netbeans.modules.mvd.model.midp</package>
-                <package>org.netbeans.modules.mvd.model.midp.propertyeditor</package>
-                <package>org.netbeans.modules.mvd.model.midp2</package>
-                <package>org.netbeans.modules.mvd.model.midp2.commands</package>
-                <package>org.netbeans.modules.mvd.model.midp2.propertyeditor</package>
-                <package>org.netbeans.modules.mvd.model.presenters</package>
-                <package>org.netbeans.modules.mvd.model.registry</package>
-                <package>org.netbeans.modules.mvd.ui.components</package>
-                <package>org.netbeans.modules.mvd.ui.dnd</package>
-                <package>org.netbeans.modules.mvd.ui.editors</package>
-                <package>org.netbeans.modules.mvd.ui.editors.flow</package>
-                <package>org.netbeans.modules.mvd.ui.inspector</package>
-                <package>org.netbeans.modules.mvd.util</package>
-            </friend-packages>
-            <class-path-extension>
-                <runtime-relative-path>ext/graphlib.jar</runtime-relative-path>
-                <binary-origin>lib/graphlib.jar</binary-origin>
-            </class-path-extension>
-            <suite-component/>
             <module-dependencies>
-                <dependency>
-                    <code-name-base>javax.jmi.reflect</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                    </run-dependency>
-                </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.api.java</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.7.1</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.api.mdr</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.1.1</specification-version>
+                        <specification-version>1.11</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -109,11 +49,20 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.jmi.javamodel</code-name-base>
+                    <code-name-base>org.netbeans.libs.javacapi</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>2</release-version>
+                        <specification-version>0.5.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.editor.guards</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>0-1</release-version>
+                        <specification-version>0.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -123,15 +72,6 @@ Microsystems, Inc. All Rights Reserved.
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.19</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.java</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.20.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -153,21 +93,11 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.javacore</code-name-base>
+                    <code-name-base>org.netbeans.modules.java.source</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.5.1</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.jmiutils</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.4.0.2</specification-version>
+                        <specification-version>0.2.1.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -309,14 +239,6 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.openide.src</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>1.5.1</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.openide.text</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -341,6 +263,49 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
             </module-dependencies>
+            <friend-packages>
+                <friend>org.netbeans.modules.mobility.end2end</friend>
+                <friend>org.netbeans.modules.vmd.components.nbmidp</friend>
+                <friend>org.netbeans.modules.vmd.components.svg</friend>
+                <package>org.netbeans.modules.graph</package>
+                <package>org.netbeans.modules.graph.api</package>
+                <package>org.netbeans.modules.graph.api.control</package>
+                <package>org.netbeans.modules.graph.api.control.builtin</package>
+                <package>org.netbeans.modules.graph.api.control.editor</package>
+                <package>org.netbeans.modules.graph.api.model</package>
+                <package>org.netbeans.modules.graph.api.model.ability</package>
+                <package>org.netbeans.modules.graph.api.model.builtin</package>
+                <package>org.netbeans.modules.graph.vmd</package>
+                <package>org.netbeans.modules.mvd.codegenerator</package>
+                <package>org.netbeans.modules.mvd.io</package>
+                <package>org.netbeans.modules.mvd.jazz</package>
+                <package>org.netbeans.modules.mvd.jazz.basiclook</package>
+                <package>org.netbeans.modules.mvd.jazz.midp</package>
+                <package>org.netbeans.modules.mvd.jazz.midp.basiclook</package>
+                <package>org.netbeans.modules.mvd.jazz.midp2</package>
+                <package>org.netbeans.modules.mvd.jazz.midp2.basiclook</package>
+                <package>org.netbeans.modules.mvd.model</package>
+                <package>org.netbeans.modules.mvd.model.actions</package>
+                <package>org.netbeans.modules.mvd.model.helpers</package>
+                <package>org.netbeans.modules.mvd.model.midp</package>
+                <package>org.netbeans.modules.mvd.model.midp.propertyeditor</package>
+                <package>org.netbeans.modules.mvd.model.midp2</package>
+                <package>org.netbeans.modules.mvd.model.midp2.commands</package>
+                <package>org.netbeans.modules.mvd.model.midp2.propertyeditor</package>
+                <package>org.netbeans.modules.mvd.model.presenters</package>
+                <package>org.netbeans.modules.mvd.model.registry</package>
+                <package>org.netbeans.modules.mvd.ui.components</package>
+                <package>org.netbeans.modules.mvd.ui.dnd</package>
+                <package>org.netbeans.modules.mvd.ui.editors</package>
+                <package>org.netbeans.modules.mvd.ui.editors.flow</package>
+                <package>org.netbeans.modules.mvd.ui.inspector</package>
+                <package>org.netbeans.modules.mvd.util</package>
+            </friend-packages>
+            <class-path-extension>
+                <runtime-relative-path>ext/graphlib.jar</runtime-relative-path>
+                <binary-origin>lib/graphlib.jar</binary-origin>
+            </class-path-extension>
+            <suite-component/>
         </data>
     </configuration>
 </project>
