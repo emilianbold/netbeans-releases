@@ -20,16 +20,15 @@
  */
 package org.netbeans.installer.utils.system;
 
-import java.io.File;
-
 /**
  *
  * @author Kirill Sorokin
  */
 public class LinuxNativeUtils extends UnixNativeUtils {
     public static final String LIBRARY_PATH_LINUX = "native/linux.so";
-
+    public static final String[] FORBIDDEN_DELETING_FILES_LINUX = {};
     LinuxNativeUtils() {
         loadNativeLibrary(LIBRARY_PATH_LINUX);
+        initializeForbiddenFiles(FORBIDDEN_DELETING_FILES_LINUX);
     }
 }

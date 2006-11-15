@@ -23,7 +23,10 @@ package org.netbeans.installer.utils.system;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.installer.product.ProductComponent;
 import org.netbeans.installer.utils.helper.EnvironmentScope;
 import org.netbeans.installer.utils.helper.ErrorLevel;
@@ -42,6 +45,7 @@ public abstract class NativeUtils {
     /////////////////////////////////////////////////////////////////////////////////
     // Static
     private static NativeUtils instance;
+    private static HashSet <File> forbiddenDeletingFiles = new HashSet <File>();
     
     public static synchronized NativeUtils getInstance() {
         switch (SystemUtils.getCurrentPlatform()) {
@@ -133,5 +137,19 @@ public abstract class NativeUtils {
                 }
             }
         }
+    }
+    
+    protected void initializeForbiddenFiles(String ... filepaths) {
+        for (String path : filepaths) {
+            if(path!=null) {
+                File file = new File(path);
+                if(file.exists()) {
+                    forbiddenDeletingFiles.add(file);
+                }
+            }
+        }
+    }
+    public boolean isDeletingAllowed(File file) {
+        return !(forbiddenDeletingFiles.contains(file));
     }
 }

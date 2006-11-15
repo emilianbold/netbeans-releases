@@ -284,11 +284,12 @@ public final class FileUtils {
         if (!file.exists()) {
             LogManager.log(ErrorLevel.MESSAGE, "    ... " + type + " does not exist"); //NOI18N
         }
-        
-        if (!file.delete()) {
-            file.deleteOnExit();
+       if(SystemUtils.isDeletingAllowed(file)) {
+            if (!file.delete()) {
+                file.deleteOnExit();
+            }
         }
-}
+    }
     
     public static void deleteFile(File file, String mask) throws IOException {
         if (file.isDirectory()) {

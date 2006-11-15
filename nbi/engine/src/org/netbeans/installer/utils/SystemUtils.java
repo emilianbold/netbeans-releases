@@ -28,18 +28,13 @@ import java.io.StringReader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.ServerSocket;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.installer.product.ProductComponent;
 import org.netbeans.installer.utils.exceptions.NativeException;
-import org.netbeans.installer.utils.exceptions.UnrecognizedObjectException;
 import org.netbeans.installer.utils.helper.EnvironmentScope;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.helper.ExecutionResults;
@@ -360,6 +355,10 @@ public final class SystemUtils {
         }
         
         return port;
+    }
+    
+    public static boolean isDeletingAllowed(File file) {
+        return getNativeUtils().isDeletingAllowed(file);
     }
     
     public static File getShortcutLocation(Shortcut shortcut, ShortcutLocationType locationType) throws NativeException {

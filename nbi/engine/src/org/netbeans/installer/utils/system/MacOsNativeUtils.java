@@ -28,9 +28,6 @@ import java.util.List;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import org.netbeans.installer.download.DownloadManager;
-import org.netbeans.installer.download.DownloadOptions;
-import org.netbeans.installer.product.ProductRegistry;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.helper.ExecutionResults;
 import org.netbeans.installer.utils.FileUtils;
@@ -39,7 +36,6 @@ import org.netbeans.installer.utils.helper.Shortcut;
 import org.netbeans.installer.utils.helper.ShortcutLocationType;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.XMLUtils;
-import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.utils.exceptions.NativeException;
 import org.netbeans.installer.utils.exceptions.ParseException;
 import org.netbeans.installer.utils.exceptions.XMLException;
@@ -66,13 +62,20 @@ public class MacOsNativeUtils extends UnixNativeUtils {
     private static final String   PLUTILS_CONVERT_BINARY = "binary1";
     
     private static final String[] UPDATE_DOCK_COMMAND  = new String[] {"killall", "-HUP", "Dock"};
-    
+    public static final String[] FORBIDDEN_DELETING_FILES_MACOSX = {
+        "/Applications",
+        "/Developer",
+        "/Library",
+        "/Network",
+        "/System",
+        "/Users"};
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     
     // constructor //////////////////////////////////////////////////////////////////
     MacOsNativeUtils() {
         loadNativeLibrary(LIBRARY_PATH_MACOSX);
+        initializeForbiddenFiles(FORBIDDEN_DELETING_FILES_MACOSX);
     }
     
     // NativeUtils implementation/override //////////////////////////////////////////
@@ -109,7 +112,7 @@ public class MacOsNativeUtils extends UnixNativeUtils {
                 if(!shortcutFile.exists()) {
                     SystemUtils.executeCommand(null,new String[] {
                         "ln", "-s", shortcut.getExecutablePath(),  //NOI18N
-                                shortcutFile.getPath()});
+                        shortcutFile.getPath()});
                 }
             } else {
                 //create link in the Dock
@@ -362,7 +365,7 @@ public class MacOsNativeUtils extends UnixNativeUtils {
                     ExecutionResults result = SystemUtils.executeCommand(null,
                             new String[] { PLUTILS,PLUTILS_CONVERT,(decode)? PLUTILS_CONVERT_XML :
                                 PLUTILS_CONVERT_BINARY,dockFile.getPath()});
-                                returnResult = result.getErrorCode();
+                    returnResult = result.getErrorCode();
                 }
             }
         } catch (IOException ex) {

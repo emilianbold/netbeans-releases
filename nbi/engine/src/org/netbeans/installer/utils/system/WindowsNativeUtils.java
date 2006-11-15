@@ -75,6 +75,12 @@ public class WindowsNativeUtils extends NativeUtils {
     
     private static final WindowsRegistry registry = new WindowsRegistry();
     
+    private static final String[] FORBIDDEN_DELETING_FILES_WINDOWS = {
+        System.getenv("ProgramFiles"),
+        System.getenv("SystemRoot"),
+        System.getenv("USERPROFILE"),
+        System.getenv("SystemDrive") + File.separator
+    };
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     private File defaultApplicationsLocation;
@@ -82,6 +88,8 @@ public class WindowsNativeUtils extends NativeUtils {
     // constructor //////////////////////////////////////////////////////////////////
     WindowsNativeUtils() {
         loadNativeLibrary(LIBRARY_PATH);
+        //initializeForbiddenFiles(FORBIDDEN_DELETING_FILES_WINDOWS);
+        initializeForbiddenFiles();
     }
     
     // parent implementation ////////////////////////////////////////////////////////

@@ -48,6 +48,26 @@ import org.netbeans.installer.utils.system.unix.shell.TCShell;
 public abstract class UnixNativeUtils extends NativeUtils {
     private boolean isUserAdminSet;
     private boolean isUserAdmin;
+    private static final String [] FORBIDDEN_DELETING_FILES_UNIX = {
+        System.getProperty("user.home"),
+        "/",
+        "/bin",
+        "/boot",
+        "/dev",
+        "/etc",
+        "/home",
+        "/lib",
+        "/mnt",
+        "/opt",
+        "/sbin",
+        "/share",
+        "/usr",
+        "/usr/bin",
+        "/usr/include",
+        "/usr/lib",
+        "/usr/man",
+        "/usr/sbin",
+        "/var" };
     
     protected void scheduleCleanup(String libraryPath) {
         new File(libraryPath).deleteOnExit();
@@ -312,9 +332,9 @@ public abstract class UnixNativeUtils extends NativeUtils {
         LogManager.indent();
         Shell [] avaliableShells =  {
             new BourneShell(),
-                    new CShell() ,
-                    new TCShell(),
-                    new KornShell()
+            new CShell() ,
+            new TCShell(),
+            new KornShell()
         };
         String shell = System.getenv("SHELL");
         Shell result = null;
@@ -368,4 +388,9 @@ public abstract class UnixNativeUtils extends NativeUtils {
     
     // native declarations //////////////////////////////////////////////////////////
     private native long getFreeSpace0(String s);
+    
+    protected void initializeForbiddenFiles(String ... files) {
+        super.initializeForbiddenFiles(FORBIDDEN_DELETING_FILES_UNIX);
+        super.initializeForbiddenFiles(files);
+    }
 }
