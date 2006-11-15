@@ -24,7 +24,7 @@ Microsystems, Inc. All Rights Reserved.
 <!--
     <testbag testattribs="stable" executor="ide" name="web/project">
 -->
-    <testbag testattribs="stable" executor="unit-executor" name="web/core">
+    <testbag testattribs="unstable" executor="unit-executor" name="web/core">
         <testset dir="unit/src">
             <patternset>
                 <include name="**/*Test.class"/>
