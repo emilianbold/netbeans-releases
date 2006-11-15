@@ -266,25 +266,25 @@ public final class FileUtils {
     }
     
     public static void deleteFile(File file, boolean followLinks) throws IOException {
-        String type = "";
-        if (file.isDirectory()) {
-            if (followLinks) {
-                for(File child: file.listFiles()) {
-                    deleteFile(child, true);
+        if(SystemUtils.isDeletingAllowed(file)) {
+            String type = "";
+            if (file.isDirectory()) {
+                if (followLinks) {
+                    for(File child: file.listFiles()) {
+                        deleteFile(child, true);
+                    }
                 }
+                
+                type = "directory"; //NOI18N
+            }  else {
+                type = "file"; //NOI18N
             }
             
-            type = "directory"; //NOI18N
-        }  else {
-            type = "file"; //NOI18N
-        }
-        
-        LogManager.log(ErrorLevel.MESSAGE, "    deleting " + type + ": " + file); //NOI18N
-        
-        if (!file.exists()) {
-            LogManager.log(ErrorLevel.MESSAGE, "    ... " + type + " does not exist"); //NOI18N
-        }
-       if(SystemUtils.isDeletingAllowed(file)) {
+            LogManager.log(ErrorLevel.MESSAGE, "    deleting " + type + ": " + file); //NOI18N
+            
+            if (!file.exists()) {
+                LogManager.log(ErrorLevel.MESSAGE, "    ... " + type + " does not exist"); //NOI18N
+            }
             if (!file.delete()) {
                 file.deleteOnExit();
             }
