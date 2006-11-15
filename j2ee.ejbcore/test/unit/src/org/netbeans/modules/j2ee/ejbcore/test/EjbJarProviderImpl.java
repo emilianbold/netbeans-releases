@@ -17,26 +17,30 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
+package org.netbeans.modules.j2ee.ejbcore.test;
 
-import org.openide.util.HelpCtx;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
+import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarFactory;
+import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarProvider;
+import org.openide.filesystems.FileObject;
 
 /**
- * @author Chris Webster
+ *
  * @author Martin Adamek
  */
-public class AddBusinessMethodAction extends AbstractAddMethodAction {
+public class EjbJarProviderImpl implements EjbJarProvider {
 
-    public AddBusinessMethodAction() {
-        super(new AddBusinessMethodStrategy());
+    private EjbJar ejbModule;
+    
+    public EjbJarProviderImpl() {
     }
-
-    public AddBusinessMethodAction(String name) {
-        super(new AddBusinessMethodStrategy(name));
+    
+    public EjbJar findEjbJar(FileObject fileObject) {
+        return ejbModule;
     }
-
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
+    
+    public void setEjbModule(String j2eePlatformVersion, FileObject ddFileObject, FileObject[] sources) {
+        ejbModule = EjbJarFactory.createEjbJar(new EjbJarImplementationImpl(j2eePlatformVersion, ddFileObject, sources));
     }
     
 }

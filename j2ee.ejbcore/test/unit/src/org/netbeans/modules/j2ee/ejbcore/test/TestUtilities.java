@@ -17,26 +17,34 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
+package org.netbeans.modules.j2ee.ejbcore.test;
 
-import org.openide.util.HelpCtx;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
- * @author Chris Webster
- * @author Martin Adamek
+ * Copied from java/source TestUtilities. To be removed when SourceUtils
+ * is moved to java/source.
+ * 
+ * @author Andrei Badea
  */
-public class AddBusinessMethodAction extends AbstractAddMethodAction {
-
-    public AddBusinessMethodAction() {
-        super(new AddBusinessMethodStrategy());
-    }
-
-    public AddBusinessMethodAction(String name) {
-        super(new AddBusinessMethodStrategy(name));
-    }
-
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
+public class TestUtilities {
+    
+    private TestUtilities() {
     }
     
+    public static final FileObject copyStringToFileObject(FileObject fo, String content) throws IOException {
+        OutputStream os = fo.getOutputStream();
+        try {
+            InputStream is = new ByteArrayInputStream(content.getBytes("UTF-8"));
+            FileUtil.copy(is, os);
+            return fo;
+        } finally {
+            os.close();
+        }
+    }
 }

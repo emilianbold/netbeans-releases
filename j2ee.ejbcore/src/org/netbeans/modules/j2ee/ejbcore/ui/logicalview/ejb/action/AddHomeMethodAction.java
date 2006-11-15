@@ -18,10 +18,7 @@
  */
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
-import javax.swing.Action;
-import org.netbeans.api.java.source.WorkingCopy;
 import org.openide.util.HelpCtx;
-
 
 /**
  * Action that can always be invoked and work procedurally.
@@ -29,12 +26,12 @@ import org.openide.util.HelpCtx;
  */
 public class AddHomeMethodAction extends AbstractAddMethodAction {
 
-    public AddHomeMethodAction(WorkingCopy workingCopy) {
-        super(workingCopy, new AddHomeMethodStrategy());
+    public AddHomeMethodAction() {
+        super(new AddHomeMethodStrategy());
     }
 
-    public AddHomeMethodAction(WorkingCopy workingCopy, String name) {
-        super(workingCopy, new AddHomeMethodStrategy(name));
+    public AddHomeMethodAction(String name) {
+        super(new AddHomeMethodStrategy(name));
     }
 
     public HelpCtx getHelpCtx() {

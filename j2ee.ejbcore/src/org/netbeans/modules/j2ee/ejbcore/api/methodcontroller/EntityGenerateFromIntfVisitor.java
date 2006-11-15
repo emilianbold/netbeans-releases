@@ -44,19 +44,19 @@ import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType.HomeMet
  */
 class EntityGenerateFromIntfVisitor implements MethodType.MethodTypeVisitor, AbstractMethodController.GenerateFromIntf {
 
-    private WorkingCopy workingCopy;
+    private final WorkingCopy workingCopy;
     private ExecutableElement implMethod;
     private ExecutableElement secondaryMethod;
-    private Entity dd;
+    private final Entity entity;
     private static final String TODO = "//TODO implement "; //NOI18N
     
-    public EntityGenerateFromIntfVisitor(WorkingCopy workingCopy, Entity dd) {
+    public EntityGenerateFromIntfVisitor(WorkingCopy workingCopy, Entity entity) {
         this.workingCopy = workingCopy;
-        this.dd = dd;
+        this.entity = entity;
     }
     
-    public void getInterfaceMethodFromImpl(MethodType m) {
-        m.accept(this);
+    public void getInterfaceMethodFromImpl(MethodType methodType) {
+        methodType.accept(this);
     }
     
     public ExecutableElement getImplMethod() {
@@ -68,14 +68,14 @@ class EntityGenerateFromIntfVisitor implements MethodType.MethodTypeVisitor, Abs
     }
     
     public void visit(BusinessMethodType bmt) {
-        implMethod = bmt.getMethodElement();
+        implMethod = bmt.getMethodElement().resolve(workingCopy);
         
         SourcePositions[] positions = new SourcePositions[1];
-        TreeUtilities tu = workingCopy.getTreeUtilities();
+        TreeUtilities treeUtilities = workingCopy.getTreeUtilities();
         String body = TODO + implMethod.getSimpleName();
         TypeMirror type = implMethod.getReturnType();
         body += getReturnStatement(type);
-        StatementTree bodyTree = tu.parseStatement(body, positions);
+        StatementTree bodyTree = treeUtilities.parseStatement(body, positions);
         
         MethodTree resultTree = AbstractMethodController.modifyMethod(
                 workingCopy, 
@@ -90,16 +90,16 @@ class EntityGenerateFromIntfVisitor implements MethodType.MethodTypeVisitor, Abs
     }
     
     public void visit(CreateMethodType cmt) {
-        implMethod = cmt.getMethodElement();
+        implMethod = cmt.getMethodElement().resolve(workingCopy);
         String origName = implMethod.getSimpleName().toString();
         String newName = prependAndUpper(origName,"ejb"); //NOI18N
-        TypeElement type = workingCopy.getElements().getTypeElement(dd.getPrimKeyClass());
+        TypeElement type = workingCopy.getElements().getTypeElement(entity.getPrimKeyClass());
         
         SourcePositions[] positions = new SourcePositions[1];
-        TreeUtilities tu = workingCopy.getTreeUtilities();
+        TreeUtilities treeUtilities = workingCopy.getTreeUtilities();
         TypeMirror typeMirror = type.asType();
         String body = TODO + newName + getReturnStatement(typeMirror);
-        StatementTree bodyTree = tu.parseStatement(body, positions);
+        StatementTree bodyTree = treeUtilities.parseStatement(body, positions);
         
         MethodTree resultTree = AbstractMethodController.modifyMethod(
                 workingCopy, 
@@ -114,13 +114,13 @@ class EntityGenerateFromIntfVisitor implements MethodType.MethodTypeVisitor, Abs
         TreePath treePath = trees.getPath(workingCopy.getCompilationUnit(), resultTree);
         implMethod = (ExecutableElement) trees.getElement(treePath);
         
-        secondaryMethod = cmt.getMethodElement();
+        secondaryMethod = cmt.getMethodElement().resolve(workingCopy);
         origName = secondaryMethod.getSimpleName().toString();
         newName = prependAndUpper(origName,"ejbPost"); //NOI18N
         
         positions = new SourcePositions[1];
         body = TODO + newName;
-        bodyTree = tu.parseStatement(body, positions);
+        bodyTree = treeUtilities.parseStatement(body, positions);
         
         resultTree = AbstractMethodController.modifyMethod(
                 workingCopy, 
@@ -136,14 +136,14 @@ class EntityGenerateFromIntfVisitor implements MethodType.MethodTypeVisitor, Abs
     }
     
     public void visit(HomeMethodType hmt) {
-        implMethod = hmt.getMethodElement();
+        implMethod = hmt.getMethodElement().resolve(workingCopy);
         String origName = implMethod.getSimpleName().toString();
         String newName = prependAndUpper(origName,"ejbHome"); //NOI18N
         
         SourcePositions[] positions = new SourcePositions[1];
-        TreeUtilities tu = workingCopy.getTreeUtilities();
+        TreeUtilities treeUtilities = workingCopy.getTreeUtilities();
         String body = TODO + implMethod.getSimpleName() + getReturnStatement(implMethod.asType());
-        StatementTree bodyTree = tu.parseStatement(body, positions);
+        StatementTree bodyTree = treeUtilities.parseStatement(body, positions);
         
         MethodTree resultTree = AbstractMethodController.modifyMethod(
                 workingCopy, 
@@ -159,18 +159,18 @@ class EntityGenerateFromIntfVisitor implements MethodType.MethodTypeVisitor, Abs
     }
     
     public void visit(FinderMethodType fmt) {
-        implMethod = fmt.getMethodElement();
+        implMethod = fmt.getMethodElement().resolve(workingCopy);
         String origName = implMethod.getSimpleName().toString();
         String newName = prependAndUpper(origName,"ejb"); //NOI18N
         
         SourcePositions[] positions = new SourcePositions[1];
-        TreeUtilities tu = workingCopy.getTreeUtilities();
+        TreeUtilities treeUtilities = workingCopy.getTreeUtilities();
         String body = TODO + implMethod.getSimpleName() + getReturnStatement(implMethod.asType());
-        StatementTree bodyTree = tu.parseStatement(body, positions);
+        StatementTree bodyTree = treeUtilities.parseStatement(body, positions);
         
         TypeElement collectionType = workingCopy.getElements().getTypeElement(java.util.Collection.class.getName());
         boolean isAssignable = workingCopy.getTypes().isSubtype(implMethod.asType(), collectionType.asType());
-        TypeElement pkType = workingCopy.getElements().getTypeElement(dd.getPrimKeyClass());
+        TypeElement pkType = workingCopy.getElements().getTypeElement(entity.getPrimKeyClass());
         
         MethodTree resultTree = AbstractMethodController.modifyMethod(
                 workingCopy, 
@@ -187,9 +187,9 @@ class EntityGenerateFromIntfVisitor implements MethodType.MethodTypeVisitor, Abs
     }
     
     private String prependAndUpper(String fullName, String prefix) {
-        StringBuffer sb = new StringBuffer(fullName);
-        sb.setCharAt(0, Character.toUpperCase(sb.charAt(0)));
-        return prefix+sb.toString();
+        StringBuffer stringBuffer = new StringBuffer(fullName);
+        stringBuffer.setCharAt(0, Character.toUpperCase(stringBuffer.charAt(0)));
+        return prefix+stringBuffer.toString();
     }
     
     public static String getReturnStatement(TypeMirror type) {

@@ -21,6 +21,7 @@ package org.netbeans.modules.j2ee.ejbcore.api.ui;
 
 import java.io.IOException;
 import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.AddCmpFieldAction;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.AddFinderMethodStrategy;
@@ -48,11 +49,11 @@ public final class CallEjb {
         return AddCmpFieldAction.addCmpField(beanClass, ddFile);
     }
     
-    public static void addFinderMethod(TypeElement beanClass) {
-        new AddFinderMethodStrategy().addMethod(beanClass);
+    public static void addFinderMethod(FileObject fileObject, ElementHandle<TypeElement> beanClass) throws IOException {
+        new AddFinderMethodStrategy().addMethod(fileObject, beanClass);
     }
     
-    public static void addSelectMethod(TypeElement beanClass) {
-        new AddSelectMethodStrategy().addMethod(beanClass);
+    public static void addSelectMethod(FileObject fileObject, ElementHandle<TypeElement> beanClass) throws IOException {
+        new AddSelectMethodStrategy().addMethod(fileObject, beanClass);
     }
 }

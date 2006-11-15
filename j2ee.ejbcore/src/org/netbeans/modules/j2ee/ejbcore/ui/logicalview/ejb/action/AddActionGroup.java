@@ -31,18 +31,17 @@ import org.openide.util.actions.SystemAction;
 public class AddActionGroup extends EJBActionGroup {
 
     public String getName() {
-        return NbBundle.getMessage(EJBActionGroup.class, "LBL_AddActionGroup");
+        return NbBundle.getMessage(AddActionGroup.class, "LBL_AddActionGroup");
     }
 
     /** List of system actions to be displayed within this one's toolbar or submenu. */
     protected Action[] grouped() {
         return new Action[] {
-            //TODO: RETOUCHE
-//            new AddBusinessMethodAction(NbBundle.getMessage(AddBusinessMethodAction.class, "LBL_BusinessMethodAction")),
-//            new AddCreateMethodAction(NbBundle.getMessage(AddCreateMethodAction.class, "LBL_CreateMethodAction")),
-//            new AddFinderMethodAction(NbBundle.getMessage(AddCreateMethodAction.class, "LBL_FinderMethodAction")),
-//            new AddHomeMethodAction(NbBundle.getMessage(AddHomeMethodAction.class, "LBL_HomeMethodAction")),
-//            new AddSelectMethodAction(NbBundle.getMessage(AddSelectMethodAction.class, "LBL_SelectMethodAction")),
+            new AddBusinessMethodAction(NbBundle.getMessage(AddActionGroup.class, "LBL_BusinessMethodAction")),
+            new AddCreateMethodAction(NbBundle.getMessage(AddActionGroup.class, "LBL_CreateMethodAction")),
+            new AddFinderMethodAction(NbBundle.getMessage(AddActionGroup.class, "LBL_FinderMethodAction")),
+            new AddHomeMethodAction(NbBundle.getMessage(AddActionGroup.class, "LBL_HomeMethodAction")),
+            new AddSelectMethodAction(NbBundle.getMessage(AddActionGroup.class, "LBL_SelectMethodAction")),
             SystemAction.get(AddCmpFieldAction.class)
         };
     }

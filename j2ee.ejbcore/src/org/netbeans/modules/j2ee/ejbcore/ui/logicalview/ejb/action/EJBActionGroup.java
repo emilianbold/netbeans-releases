@@ -19,17 +19,28 @@
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 
+import java.io.IOException;
 import javax.lang.model.element.TypeElement;
-import javax.swing.*;
+import javax.swing.Action;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
-import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
-
-import org.openide.util.*;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.ejbcore.Utils;
+import org.netbeans.modules.j2ee.common.source.AbstractTask;
+import org.netbeans.modules.j2ee.common.source.SourceUtils;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
+import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
+import org.openide.util.ContextAwareAction;
+import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.actions.Presenter;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.actions.SystemAction;
@@ -53,22 +64,22 @@ public class EJBActionGroup extends NodeAction implements Presenter.Popup {
             SystemAction.get(ExposeInRemoteAction.class),
             null,
             //TODO: RETOUCHE
-//            new AddBusinessMethodAction(),
-//            new AddCreateMethodAction(),
-//            new AddFinderMethodAction(),
-//            new AddHomeMethodAction(),
-//            new AddSelectMethodAction(),
+            new AddBusinessMethodAction(),
+            new AddCreateMethodAction(),
+            new AddFinderMethodAction(),
+            new AddHomeMethodAction(),
+            new AddSelectMethodAction(),
             SystemAction.get(AddCmpFieldAction.class)
         };
     }
     
     public JMenuItem getPopupPresenter() {
-        if (isEnabled() && isEjbProject()) {
+        if (isEnabled() && isEjbProject(getActivatedNodes())) {
             return getMenu();
         }
-        JMenuItem i = super.getPopupPresenter();
-        i.setVisible(false);
-        return i;
+        JMenuItem jMenuItem = super.getPopupPresenter();
+        jMenuItem.setVisible(false);
+        return jMenuItem;
     }
     
     protected JMenu getMenu() {
@@ -85,36 +96,43 @@ public class EJBActionGroup extends NodeAction implements Presenter.Popup {
         if (activatedNodes.length != 1) {
             return false;
         }
-        TypeElement jc = Utils.getJavaClassFromNode(activatedNodes[0]);
-        boolean result = false;
-        //TODO: RETOUCHE
-//        if (jc != null) {
-//            EjbMethodController c = EjbMethodController.createFromClass(jc);
-//            result = (c != null);
-//        }
-        return result;
+        FileObject fileObject = activatedNodes[0].getLookup().lookup(FileObject.class);
+        JavaSource javaSource = JavaSource.forFileObject(fileObject);
+        final boolean[] result = new boolean[] {false};
+        try {
+            javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
+                public void run(WorkingCopy workingCopy) throws Exception {
+                    workingCopy.toPhase(Phase.ELEMENTS_RESOLVED);
+                    //TODO: RETOUCHE get selected class from Node
+                    TypeElement typeElement = SourceUtils.newInstance(workingCopy).getTypeElement();
+                    EjbMethodController ejbMethodController = EjbMethodController.createFromClass(workingCopy, typeElement);
+                    result[0] = (ejbMethodController != null);
+                }
+            });
+        } catch (IOException ex) {
+            ErrorManager.getDefault().notify(ex);
+        }
+        return result[0];
     }
     
     protected void performAction(org.openide.nodes.Node[] activatedNodes) {
         // do nothing -- should never be called
     }
     
-    public boolean isEjbProject() { 
-        Node[] activatedNodes = getActivatedNodes();
+    public boolean isEjbProject(Node[] activatedNodes) { 
         return activatedNodes.length == 1 &&
-               isContainingProjectEjb((DataObject)
-                activatedNodes[0].getLookup().lookup(DataObject.class));
+               isContainingProjectEjb(activatedNodes[0].getLookup().lookup(FileObject.class));
     }
     
-    private static boolean isContainingProjectEjb(DataObject dobj) {
-        if (dobj == null) {
+    private static boolean isContainingProjectEjb(FileObject fileObject) {
+        if (fileObject == null) {
             return false;
         }
-        Project p = FileOwnerQuery.getOwner(dobj.getPrimaryFile());
-	if (p==null) {
+        Project project = FileOwnerQuery.getOwner(fileObject);
+        if (project == null) {
             return false;
         }
-        return EjbJar.getEjbJars(p).length > 0;
+        return EjbJar.getEjbJars(project).length > 0;
     }
     
     /** Implements <code>ContextAwareAction</code> interface method. */
@@ -122,18 +140,17 @@ public class EJBActionGroup extends NodeAction implements Presenter.Popup {
         this.actionContext = actionContext;
         return super.createContextAwareInstance(actionContext);
     }
-    
 
     /**
      * Avoids constructing submenu until it will be needed.
      */
     private final class LazyMenu extends JMenu {
         
-        private Lookup l;
+        private final Lookup lookup;
         
         public LazyMenu(Lookup lookup) {
             super(EJBActionGroup.this.getName());
-            l = lookup;
+            this.lookup = lookup;
         }
         
         public JPopupMenu getPopupMenu() {
@@ -145,7 +162,7 @@ public class EJBActionGroup extends NodeAction implements Presenter.Popup {
                         addSeparator();
                     } else {
                         if (action instanceof ContextAwareAction) {
-                            action = ((ContextAwareAction)action).createContextAwareInstance(l);
+                            action = ((ContextAwareAction)action).createContextAwareInstance(lookup);
                         }
                         if (action instanceof Presenter.Popup) {
                             add(((Presenter.Popup)action).getPopupPresenter());

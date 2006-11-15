@@ -17,26 +17,30 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
+package org.netbeans.modules.j2ee.ejbcore.test;
 
-import org.openide.util.HelpCtx;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
 
 /**
- * @author Chris Webster
+ *
  * @author Martin Adamek
  */
-public class AddBusinessMethodAction extends AbstractAddMethodAction {
-
-    public AddBusinessMethodAction() {
-        super(new AddBusinessMethodStrategy());
+public class ClassPathProviderImpl implements ClassPathProvider {
+    
+    private ClassPath classPath;
+    
+    public ClassPath findClassPath(FileObject file, String type) {
+        if (type == ClassPath.SOURCE) {
+            return classPath;
+        }
+        return null;
     }
-
-    public AddBusinessMethodAction(String name) {
-        super(new AddBusinessMethodStrategy(name));
-    }
-
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
+    
+    public void setClassPath(FileObject[] sources) {
+        classPath = ClassPathSupport.createClassPath(sources);
     }
     
 }

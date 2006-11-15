@@ -20,6 +20,7 @@
 package org.netbeans.modules.j2ee.ejbcore.api.methodcontroller;
 
 import javax.lang.model.element.ExecutableElement;
+import org.netbeans.api.java.source.ElementHandle;
 
 /**
  * Provide simple instance of the visitor pattern to use for code generation.
@@ -33,14 +34,16 @@ public abstract class MethodType {
     public static final int METHOD_TYPE_FINDER = 4;
     public static final int METHOD_TYPE_HOME = 5;
 
-    private ExecutableElement me;
-    public MethodType(ExecutableElement me) {
-        this.me = me;
+    private final ElementHandle<ExecutableElement> methodHandle;
+    
+    public MethodType(ElementHandle<ExecutableElement> methodHandle) {
+        this.methodHandle = methodHandle;
     }
     
     public abstract void accept(MethodTypeVisitor visitor);
-    public final ExecutableElement getMethodElement() {
-        return me;
+    
+    public final ElementHandle<ExecutableElement> getMethodElement() {
+        return methodHandle;
     }
     
     public interface MethodTypeVisitor {
@@ -51,8 +54,8 @@ public abstract class MethodType {
     }
     
     public static class BusinessMethodType extends MethodType {
-        public BusinessMethodType(ExecutableElement me) {
-            super(me);
+        public BusinessMethodType(ElementHandle<ExecutableElement> methodHandle) {
+            super(methodHandle);
         }
         
         public void accept(MethodTypeVisitor visitor) {
@@ -61,8 +64,8 @@ public abstract class MethodType {
     }
     
     public static class SelectMethodType extends MethodType {
-        public SelectMethodType(ExecutableElement me) {
-            super(me);
+        public SelectMethodType(ElementHandle<ExecutableElement> methodHandle) {
+            super(methodHandle);
         }
         
         public void accept(MethodTypeVisitor visitor) {
@@ -72,8 +75,8 @@ public abstract class MethodType {
     }
     
     public static class CreateMethodType extends MethodType {
-        public CreateMethodType(ExecutableElement me) {
-            super(me);
+        public CreateMethodType(ElementHandle<ExecutableElement> methodHandle) {
+            super(methodHandle);
         }
         
         public void accept(MethodTypeVisitor visitor) {
@@ -82,8 +85,8 @@ public abstract class MethodType {
     }
     
     public static class HomeMethodType extends MethodType {
-        public HomeMethodType(ExecutableElement me) {
-            super(me);
+        public HomeMethodType(ElementHandle<ExecutableElement> methodHandle) {
+            super(methodHandle);
         }
         
         public void accept(MethodTypeVisitor visitor) {
@@ -92,8 +95,8 @@ public abstract class MethodType {
     }
     
     public static class FinderMethodType extends MethodType {
-        public FinderMethodType(ExecutableElement me) {
-            super(me);
+        public FinderMethodType(ElementHandle<ExecutableElement> methodHandle) {
+            super(methodHandle);
         }
         
         public void accept(MethodTypeVisitor visitor) {

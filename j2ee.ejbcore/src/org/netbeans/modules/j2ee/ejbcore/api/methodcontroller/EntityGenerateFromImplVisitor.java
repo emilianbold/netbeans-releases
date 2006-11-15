@@ -29,9 +29,6 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
-import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.AbstractMethodController;
-import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType.BusinessMethodType;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType.CreateMethodType;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType.FinderMethodType;
@@ -44,22 +41,20 @@ import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType.HomeMet
  */
 class EntityGenerateFromImplVisitor implements MethodType.MethodTypeVisitor, AbstractMethodController.GenerateFromImpl {
     
-    private WorkingCopy workingCopy;
+    private final WorkingCopy workingCopy;
     private ExecutableElement intfMethod;
     private TypeElement destination;
     private TypeElement home;
     private TypeElement component;
-    private Entity e;
     
-    public EntityGenerateFromImplVisitor(WorkingCopy workingCopy, Entity e) {
+    public EntityGenerateFromImplVisitor(WorkingCopy workingCopy) {
         this.workingCopy = workingCopy;
-        this.e = e;
     }
     
-    public void getInterfaceMethodFromImpl(MethodType m, TypeElement home, TypeElement component) {
+    public void getInterfaceMethodFromImpl(MethodType methodType, TypeElement home, TypeElement component) {
         this.home = home;
         this.component = component;
-        m.accept(this);
+        methodType.accept(this);
     }
     
     public ExecutableElement getInterfaceMethod() {
@@ -71,12 +66,12 @@ class EntityGenerateFromImplVisitor implements MethodType.MethodTypeVisitor, Abs
     }
     
     public void visit(BusinessMethodType bmt) {
-        intfMethod = bmt.getMethodElement();
+        intfMethod = bmt.getMethodElement().resolve(workingCopy);
         destination = component;
     }
     
     public void visit(CreateMethodType cmt) {
-        intfMethod = cmt.getMethodElement();
+        intfMethod = cmt.getMethodElement().resolve(workingCopy);
         String origName = intfMethod.getSimpleName().toString();
         String newName = null;
         if (origName.startsWith("ejbPostCreate")) {
@@ -92,7 +87,7 @@ class EntityGenerateFromImplVisitor implements MethodType.MethodTypeVisitor, Abs
     }
     
     public void visit(HomeMethodType hmt) {
-        intfMethod = hmt.getMethodElement();
+        intfMethod = hmt.getMethodElement().resolve(workingCopy);
         String origName = intfMethod.getSimpleName().toString();
         String newName = chopAndUpper(origName,"ejbHome"); //NOI18N
         MethodTree resultTree = AbstractMethodController.modifyMethod(workingCopy, intfMethod, null, newName, null, null, null, null);
@@ -103,7 +98,7 @@ class EntityGenerateFromImplVisitor implements MethodType.MethodTypeVisitor, Abs
     }
     
     public void visit(FinderMethodType fmt) {
-        intfMethod = fmt.getMethodElement();
+        intfMethod = fmt.getMethodElement().resolve(workingCopy);
         String origName = intfMethod.getSimpleName().toString();
         String newName = chopAndUpper(origName,"ejb"); //NOI18N
         MethodTree resultTree = AbstractMethodController.modifyMethod(workingCopy, intfMethod, null, newName, null, null, null, null);
@@ -113,8 +108,8 @@ class EntityGenerateFromImplVisitor implements MethodType.MethodTypeVisitor, Abs
         TypeMirror returnType = intfMethod.getReturnType();
         if (TypeKind.DECLARED == returnType.getKind()) {
             DeclaredType declaredType = (DeclaredType) returnType;
-            String rv = ((TypeElement) declaredType.asElement()).getQualifiedName().toString();
-            if (!rv.equals(Collection.class.getName()) || !rv.equals(Set.class.getName())) {
+            String fqn = ((TypeElement) declaredType.asElement()).getQualifiedName().toString();
+            if (!fqn.equals(Collection.class.getName()) || !fqn.equals(Set.class.getName())) {
                 resultTree = AbstractMethodController.modifyMethod(workingCopy, intfMethod, null, null, trees.getTree(component), null, null, null);
                 treePath = trees.getPath(workingCopy.getCompilationUnit(), resultTree);
                 intfMethod =  (ExecutableElement) trees.getElement(treePath);
@@ -126,9 +121,9 @@ class EntityGenerateFromImplVisitor implements MethodType.MethodTypeVisitor, Abs
     }
     
     private String chopAndUpper(String fullName, String chop) {
-        StringBuffer sb = new StringBuffer(fullName);
-        sb.delete(0, chop.length());
-        sb.setCharAt(0, Character.toLowerCase(sb.charAt(0)));
-        return sb.toString();
+        StringBuffer stringBuffer = new StringBuffer(fullName);
+        stringBuffer.delete(0, chop.length());
+        stringBuffer.setCharAt(0, Character.toLowerCase(stringBuffer.charAt(0)));
+        return stringBuffer.toString();
     }
 }

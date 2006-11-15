@@ -28,25 +28,19 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import java.rmi.RemoteException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Types;
@@ -61,10 +55,10 @@ import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
  */
 public abstract class AbstractMethodController extends EjbMethodController {
     
-    private WorkingCopy workingCopy;
-    private EntityAndSession model;
+    private final WorkingCopy workingCopy;
+    private final EntityAndSession model;
     protected Set classesForSave;
-    private boolean simplified = false;
+    private final boolean simplified;
     
     public AbstractMethodController(WorkingCopy workingCopy, EntityAndSession model) {
         this.workingCopy = workingCopy;
@@ -73,13 +67,13 @@ public abstract class AbstractMethodController extends EjbMethodController {
     }
     
     public interface GenerateFromImpl {
-        void getInterfaceMethodFromImpl(MethodType t, TypeElement home, TypeElement component);
+        void getInterfaceMethodFromImpl(MethodType methodType, TypeElement homeClass, TypeElement componentClass);
         TypeElement getDestinationInterface();
         ExecutableElement getInterfaceMethod();
     }
     
     public interface GenerateFromIntf {
-        void getInterfaceMethodFromImpl(MethodType t);
+        void getInterfaceMethodFromImpl(MethodType methodType);
         ExecutableElement getImplMethod();
         ExecutableElement getSecondaryMethod();
     }
@@ -103,11 +97,11 @@ public abstract class AbstractMethodController extends EjbMethodController {
         } else {
             addMethodToClass(home, clientView);
         }
-        TypeElement bc = workingCopy.getElements().getTypeElement(model.getEjbClass());
+        TypeElement ejbClass = workingCopy.getElements().getTypeElement(model.getEjbClass());
         if (hasJavaImplementation(clientView)) {
             for (ExecutableElement me : getImplementationMethods(clientView)) {
-                if (findInClass(bc, me) == null) {
-                    addMethodToClass(bc, me);
+                if (findInClass(ejbClass, me) == null) {
+                    addMethodToClass(ejbClass, me);
                     methodToOpen = me;
                 }
             }
@@ -126,8 +120,8 @@ public abstract class AbstractMethodController extends EjbMethodController {
     }
     
     public final void createAndAddInterface(ExecutableElement beanImpl, boolean local) {
-        MethodType t = getMethodTypeFromImpl(beanImpl);
-        GenerateFromImpl v = createGenerateFromImpl();
+        MethodType methodType = getMethodTypeFromImpl(beanImpl);
+        GenerateFromImpl generateFromImpl = createGenerateFromImpl();
         TypeElement home = null;
         TypeElement component = null;
         if (local) {
@@ -137,53 +131,53 @@ public abstract class AbstractMethodController extends EjbMethodController {
             home = workingCopy.getElements().getTypeElement(model.getHome());
             component = businessInterface(model.getRemote());
         }
-        v.getInterfaceMethodFromImpl(t,home,component);
-        ExecutableElement me = v.getInterfaceMethod();
+        generateFromImpl.getInterfaceMethodFromImpl(methodType, home, component);
+        ExecutableElement method = generateFromImpl.getInterfaceMethod();
         if (!local && !simplified) {
-            addExceptionIfNecessary(me, RemoteException.class.getName());
+            addExceptionIfNecessary(method, RemoteException.class.getName());
         }
-        modifyMethod(workingCopy, me, Collections.<Modifier>emptySet(), null, null, null, null, null);
-        TypeElement destinationInterface = v.getDestinationInterface();
-        addMethodToClass(destinationInterface, me);
+        modifyMethod(workingCopy, method, Collections.<Modifier>emptySet(), null, null, null, null, null);
+        TypeElement destinationInterface = generateFromImpl.getDestinationInterface();
+        addMethodToClass(destinationInterface, method);
     }
     
     public final void createAndAddImpl(ExecutableElement intfView) {
-        MethodType t = getMethodTypeFromInterface(intfView);
-        GenerateFromIntf v = createGenerateFromIntf();
-        v.getInterfaceMethodFromImpl(t);
-        ExecutableElement bcm = v.getImplMethod();
-        TypeElement bc = workingCopy.getElements().getTypeElement(model.getEjbClass());
-        addMethodToClass(bc, bcm);
+        MethodType methodType = getMethodTypeFromInterface(intfView);
+        GenerateFromIntf generateFromIntf = createGenerateFromIntf();
+        generateFromIntf.getInterfaceMethodFromImpl(methodType);
+        ExecutableElement method = generateFromIntf.getImplMethod();
+        TypeElement ejbClass = workingCopy.getElements().getTypeElement(model.getEjbClass());
+        addMethodToClass(ejbClass, method);
     }
     
     private List<ExecutableElement> getImplementationMethods(ExecutableElement intfView) {
-        MethodType t = getMethodTypeFromInterface(intfView);
-        GenerateFromIntf v = createGenerateFromIntf();
-        v.getInterfaceMethodFromImpl(t);
-        ExecutableElement primary = v.getImplMethod();
-        ExecutableElement secondary = v.getSecondaryMethod();
-        List<ExecutableElement> rv = null;
+        MethodType methodType = getMethodTypeFromInterface(intfView);
+        GenerateFromIntf generateFromIntf = createGenerateFromIntf();
+        generateFromIntf.getInterfaceMethodFromImpl(methodType);
+        ExecutableElement primary = generateFromIntf.getImplMethod();
+        ExecutableElement secondary = generateFromIntf.getSecondaryMethod();
+        List<ExecutableElement> methods = null;
         if (secondary != null) {
-            rv = Arrays.asList(new ExecutableElement[] {primary,secondary});
+            methods = Arrays.asList(new ExecutableElement[] {primary,secondary});
         } else {
-            rv = Collections.singletonList(primary);
+            methods = Collections.singletonList(primary);
         }
-        return rv;
+        return methods;
     }
     
     public final List<ExecutableElement> getImplementation(ExecutableElement intfView) {
         List<ExecutableElement> methods = getImplementationMethods(intfView);
-        List<ExecutableElement> l = new ArrayList<ExecutableElement>(methods.size());
+        List<ExecutableElement> result = new ArrayList<ExecutableElement>(methods.size());
         for (ExecutableElement method : methods) {
-            l.add(findInClass(getBeanClass(), method));
+            result.add(findInClass(getBeanClass(), method));
         }
-        return l;
+        return result;
     }
     
     public final ExecutableElement getInterface(ExecutableElement beanImpl, boolean local) {
-        MethodType t = getMethodTypeFromImpl(beanImpl);
-        assert t != null: "method cannot be used in interface";
-        GenerateFromImpl v = createGenerateFromImpl();
+        MethodType methodType = getMethodTypeFromImpl(beanImpl);
+        assert methodType != null: "method cannot be used in interface";
+        GenerateFromImpl generateFromImpl = createGenerateFromImpl();
         TypeElement home = null;
         TypeElement component = null;
         if (local) {
@@ -193,21 +187,21 @@ public abstract class AbstractMethodController extends EjbMethodController {
             home = workingCopy.getElements().getTypeElement(model.getHome());
             component = businessInterface(model.getRemote());
         }
-        v.getInterfaceMethodFromImpl(t,home,component);
-        return findInClass(v.getDestinationInterface(), v.getInterfaceMethod());
+        generateFromImpl.getInterfaceMethodFromImpl(methodType,home,component);
+        return findInClass(generateFromImpl.getDestinationInterface(), generateFromImpl.getInterfaceMethod());
     }
     
     
     /** Performs the check if the method is defined in apporpriate interface
      * @return false if the interface is found but does not contain matching method.
      */
-    public boolean hasMethodInInterface(ExecutableElement m, MethodType methodType, boolean local) {
+    public boolean hasMethodInInterface(ExecutableElement method, MethodType methodType, boolean local) {
         TypeElement intf = null;
-        ExecutableElement wantedMethod = createMethodCopy(m);
+        ExecutableElement wantedMethod = createMethodCopy(workingCopy, method);
         if (methodType instanceof MethodType.BusinessMethodType) {
             intf = findBusinessInterface(local ? model.getLocal() : model.getRemote());
         } else if (methodType instanceof MethodType.CreateMethodType) {
-            String name = chopAndUpper(m.getSimpleName().toString(), "ejb"); //NOI18N
+            String name = chopAndUpper(method.getSimpleName().toString(), "ejb"); //NOI18N
             TypeElement type = workingCopy.getElements().getTypeElement(local ? model.getLocal() : model.getRemote());
             modifyMethod(workingCopy, wantedMethod, null, name, workingCopy.getTrees().getTree(type), null, null, null);
             intf = workingCopy.getElements().getTypeElement(local ? model.getLocalHome() : model.getHome());
@@ -222,10 +216,10 @@ public abstract class AbstractMethodController extends EjbMethodController {
     }
     
     private String chopAndUpper(String fullName, String chop) {
-        StringBuffer sb = new StringBuffer(fullName);
-        sb.delete(0, chop.length());
-        sb.setCharAt(0, Character.toLowerCase(sb.charAt(0)));
-        return sb.toString();
+        StringBuffer stringBuffer = new StringBuffer(fullName);
+        stringBuffer.delete(0, chop.length());
+        stringBuffer.setCharAt(0, Character.toLowerCase(stringBuffer.charAt(0)));
+        return stringBuffer.toString();
     }
     
     private void addExceptionIfNecessary(ExecutableElement method, String exceptionName) {
@@ -301,29 +295,29 @@ public abstract class AbstractMethodController extends EjbMethodController {
         if (!hasLocal()) {
             return Collections.<TypeElement>emptyList();
         }
-        List<TypeElement> l = new ArrayList<TypeElement>(2);
+        List<TypeElement> resultList = new ArrayList<TypeElement>(2);
         if (model.getLocalHome() != null) {
-            l.add(workingCopy.getElements().getTypeElement(model.getLocalHome()));
+            resultList.add(workingCopy.getElements().getTypeElement(model.getLocalHome()));
         }
         if (model.getLocal() != null) {
-            l.add(businessInterface(model.getLocal()));
+            resultList.add(businessInterface(model.getLocal()));
         }
         
-        return l;
+        return resultList;
     }
     
     public final List<TypeElement> getRemoteInterfaces() {
         if (!hasRemote()) {
             return Collections.<TypeElement>emptyList();
         }
-        List<TypeElement> l = new ArrayList<TypeElement>(2);
+        List<TypeElement> resultList = new ArrayList<TypeElement>(2);
         if (model.getHome() != null) {
-            l.add(workingCopy.getElements().getTypeElement(model.getHome()));
+            resultList.add(workingCopy.getElements().getTypeElement(model.getHome()));
         }
         if (model.getRemote() != null) {
-            l.add(businessInterface(model.getRemote()));
+            resultList.add(businessInterface(model.getRemote()));
         }
-        return l;
+        return resultList;
     }
     
     public final void delete(ExecutableElement interfaceMethod, boolean local) {
@@ -515,7 +509,7 @@ public abstract class AbstractMethodController extends EjbMethodController {
                 );
     }
     
-    private ExecutableElement createMethodCopy(ExecutableElement method) {
+    public static ExecutableElement createMethodCopy(WorkingCopy workingCopy, ExecutableElement method) {
         Trees trees = workingCopy.getTrees();
         MethodTree methodTree = trees.getTree(method);
         MethodTree resultTree = workingCopy.getTreeMaker().Method(
@@ -532,7 +526,7 @@ public abstract class AbstractMethodController extends EjbMethodController {
         return (ExecutableElement) trees.getElement(treePath);
     }
     
-    protected ExecutableElement createMethod(CharSequence name) {
+    public static ExecutableElement createMethod(WorkingCopy workingCopy, CharSequence name) {
         TreeMaker treeMaker = workingCopy.getTreeMaker();
         MethodTree resultTree = treeMaker.Method(
                 treeMaker.Modifiers(Collections.<Modifier>emptySet()),

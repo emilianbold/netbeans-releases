@@ -18,12 +18,21 @@
  */
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
-//import org.netbeans.modules.j2ee.common.ui.nodes.MethodCollectorFactory;
-//import org.netbeans.modules.j2ee.common.ui.nodes.MethodCustomizer;
+import java.io.IOException;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.j2ee.common.source.AbstractTask;
+import org.netbeans.modules.j2ee.common.source.SourceUtils;
+import org.netbeans.modules.j2ee.common.ui.nodes.MethodCollectorFactory;
+import org.netbeans.modules.j2ee.common.ui.nodes.MethodCustomizer;
+import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.AbstractMethodController;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.MethodsNode;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**
@@ -36,24 +45,37 @@ public class AddBusinessMethodStrategy extends AbstractAddMethodStrategy {
         super (name);
     }
     public AddBusinessMethodStrategy () {
-        super (NbBundle.getMessage(AddBusinessMethodAction.class, "LBL_AddBusinessMethodAction"));
+        super (NbBundle.getMessage(AddBusinessMethodStrategy.class, "LBL_AddBusinessMethodAction"));
     }
     
-    protected MethodType getPrototypeMethod(TypeElement jc) {
-        //TODO: RETOUCHE
-        return null;
-//        Method method = JMIUtils.createMethod(jc);
-//        method.setName("businessMethod");
-//        return new MethodType.BusinessMethodType(method);
+    protected MethodType getPrototypeMethod(FileObject fileObject, ElementHandle<TypeElement> classHandle) throws IOException {
+        final MethodType[] result = new MethodType[1];
+        JavaSource javaSource = JavaSource.forFileObject(fileObject);
+        javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws Exception {
+                ExecutableElement method = AbstractMethodController.createMethod(workingCopy, "businessMethod");
+                ElementHandle<ExecutableElement> methodHandle = ElementHandle.create(method);
+                result[0] = new MethodType.BusinessMethodType(methodHandle);
+            }
+        });
+        return result[0];
     }
 
-    //TODO: RETOUCHE
-//    protected MethodCustomizer createDialog(MethodType pType, EjbMethodController c) {
-//	MethodsNode methodsNode = getMethodsNode();
-//	boolean local = methodsNode == null ? c.hasLocal() : (methodsNode.isLocal() && c.hasLocal());
-//	boolean remote = methodsNode == null ? c.hasRemote() : (!methodsNode.isLocal() && c.hasRemote());
-//        return MethodCollectorFactory.businessCollector(pType.getMethodElement(), c.hasRemote(), c.hasLocal(), JMIUtils.getMethods(c.getBeanClass()), remote, local);
-//    }
+    protected MethodCustomizer createDialog(FileObject fileObject, final MethodType pType) throws IOException {
+        JavaSource javaSource = JavaSource.forFileObject(fileObject);
+        final MethodCustomizer[] result = new MethodCustomizer[1];
+        javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws Exception {
+                MethodsNode methodsNode = getMethodsNode();
+                TypeElement clazz = SourceUtils.newInstance(workingCopy).getTypeElement();
+                EjbMethodController ejbMethodController = EjbMethodController.createFromClass(workingCopy, clazz);
+                boolean local = methodsNode == null ? ejbMethodController.hasLocal() : (methodsNode.isLocal() && ejbMethodController.hasLocal());
+                boolean remote = methodsNode == null ? ejbMethodController.hasRemote() : (!methodsNode.isLocal() && ejbMethodController.hasRemote());
+                result[0] = MethodCollectorFactory.businessCollector(pType.getMethodElement(), ejbMethodController.hasRemote(), ejbMethodController.hasLocal(), remote, local);
+            }
+        });
+        return result[0];
+    }
 
     public int prototypeMethod() {
         return MethodType.METHOD_TYPE_BUSINESS;

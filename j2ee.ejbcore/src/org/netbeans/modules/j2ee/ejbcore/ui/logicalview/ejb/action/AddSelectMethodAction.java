@@ -18,10 +18,7 @@
  */
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
-import javax.swing.Action;
-import org.netbeans.api.java.source.WorkingCopy;
 import org.openide.util.HelpCtx;
-
 
 /**
  * @author Chris Webster
@@ -29,12 +26,12 @@ import org.openide.util.HelpCtx;
  */
 public class AddSelectMethodAction extends AbstractAddMethodAction {
 
-    public AddSelectMethodAction(WorkingCopy workingCopy) {
-        super(workingCopy, new AddSelectMethodStrategy());
+    public AddSelectMethodAction() {
+        super(new AddSelectMethodStrategy());
     }
 
-    public AddSelectMethodAction(WorkingCopy workingCopy, String name) {
-        super(workingCopy, new AddSelectMethodStrategy(name));
+    public AddSelectMethodAction(String name) {
+        super(new AddSelectMethodStrategy(name));
     }
 
     public HelpCtx getHelpCtx() {

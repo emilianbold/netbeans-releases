@@ -22,7 +22,6 @@ package org.netbeans.modules.j2ee.ejbcore.api.methodcontroller;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
@@ -50,10 +49,10 @@ public abstract class EjbMethodController {
     }
     
     public static EjbMethodController createFromClass(WorkingCopy workingCopy, TypeElement clazz) {
-        FileObject fo = workingCopy.getFileObject();
-        assert fo != null : "Cannot find FileObject for " + clazz.getQualifiedName();
+        FileObject fileObject = workingCopy.getFileObject();
+        assert fileObject != null : "Cannot find FileObject for " + clazz.getQualifiedName();
 
-        org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(fo);
+        org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(fileObject);
         if (ejbModule == null) {
             return null;
         }
@@ -64,18 +63,18 @@ public abstract class EjbMethodController {
             ejbJar = provider.getMergedDDRoot(ejbModule.getMetadataUnit());
             EnterpriseBeans beans = ejbJar.getEnterpriseBeans();
             if (beans != null) {
-                Session s = (Session) beans.findBeanByName(EnterpriseBeans.SESSION, Ejb.EJB_CLASS, clazz.getQualifiedName().toString());
-                if (s != null) {
-                    controller = new SessionMethodController(workingCopy, s);
+                Session session = (Session) beans.findBeanByName(EnterpriseBeans.SESSION, Ejb.EJB_CLASS, clazz.getQualifiedName().toString());
+                if (session != null) {
+                    controller = new SessionMethodController(workingCopy, session);
                     // TODO EJB3: on Java EE 5.0 this always sets controller to null
                     if (!controller.hasLocal() && !controller.hasRemote()) {
                         // this is either an error or a web service 
                         controller = null;
                     }
                 } else {
-                    Entity e = (Entity) beans.findBeanByName(EnterpriseBeans.ENTITY, Ejb.EJB_CLASS, clazz.getQualifiedName().toString());
-                    if (e != null) {
-                        controller = new EntityMethodController(workingCopy, e, ejbJar);
+                    Entity entity = (Entity) beans.findBeanByName(EnterpriseBeans.ENTITY, Ejb.EJB_CLASS, clazz.getQualifiedName().toString());
+                    if (entity != null) {
+                        controller = new EntityMethodController(workingCopy, entity, ejbJar);
                     }
                 }
             }
@@ -95,7 +94,7 @@ public abstract class EjbMethodController {
      * @return true if intfView has a java implementation.
      */
     public abstract boolean hasJavaImplementation(ExecutableElement intfView);
-    public abstract boolean hasJavaImplementation(MethodType mt);
+    public abstract boolean hasJavaImplementation(MethodType methodType);
     
     /**
      * return interface method in the requested interface. 
@@ -112,7 +111,7 @@ public abstract class EjbMethodController {
      *              if <code>false</code> the remote interface is searched.
      */
 //    public abstract boolean hasMethodInInterface(Method m, int methodType, boolean local);
-    public abstract boolean hasMethodInInterface(ExecutableElement m, MethodType methodType, boolean local);
+    public abstract boolean hasMethodInInterface(ExecutableElement method, MethodType methodType, boolean local);
     
     /**
      * @param clientView of the method
@@ -128,11 +127,11 @@ public abstract class EjbMethodController {
     public abstract Collection<TypeElement> getRemoteInterfaces();
     public abstract boolean hasLocal();
     public abstract boolean hasRemote();
-    public void addEjbQl(ExecutableElement clientView, String ejbql, FileObject dd) throws IOException {
+    public void addEjbQl(ExecutableElement clientView, String ejbql, FileObject ddFileObject) throws IOException {
         assert false: "ejbql not supported for this bean type";
     }
     
-    public String createDefaultQL(MethodType mt) {
+    public String createDefaultQL(MethodType methodType) {
         return null;
     }
     

@@ -30,8 +30,6 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.AbstractMethodController;
-import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType.BusinessMethodType;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType.CreateMethodType;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType.FinderMethodType;
@@ -44,7 +42,7 @@ import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType.HomeMet
  */
 class SessionGenerateFromIntfVisitor implements MethodType.MethodTypeVisitor, AbstractMethodController.GenerateFromIntf {
 
-    private WorkingCopy workingCopy;
+    private final WorkingCopy workingCopy;
     private ExecutableElement implMethod;
     private static final String TODO = "//TODO implement "; //NOI18N
     
@@ -52,8 +50,8 @@ class SessionGenerateFromIntfVisitor implements MethodType.MethodTypeVisitor, Ab
         this.workingCopy = workingCopy;
     }
     
-    public void getInterfaceMethodFromImpl(MethodType m) {
-        m.accept(this);
+    public void getInterfaceMethodFromImpl(MethodType methodType) {
+        methodType.accept(this);
     }
     
     public ExecutableElement getImplMethod() {
@@ -65,13 +63,13 @@ class SessionGenerateFromIntfVisitor implements MethodType.MethodTypeVisitor, Ab
     }
     
     public void visit(BusinessMethodType bmt) {
-        implMethod = bmt.getMethodElement();
+        implMethod = bmt.getMethodElement().resolve(workingCopy);
         TypeMirror type= implMethod.getReturnType();
 
         SourcePositions[] positions = new SourcePositions[1];
-        TreeUtilities tu = workingCopy.getTreeUtilities();
+        TreeUtilities treeUtilities = workingCopy.getTreeUtilities();
         String body = TODO + implMethod.getSimpleName() + EntityGenerateFromIntfVisitor.getReturnStatement(type);
-        StatementTree bodyTree = tu.parseStatement(body, positions);
+        StatementTree bodyTree = treeUtilities.parseStatement(body, positions);
         
         MethodTree resultTree = AbstractMethodController.modifyMethod(
                 workingCopy, 
@@ -86,14 +84,14 @@ class SessionGenerateFromIntfVisitor implements MethodType.MethodTypeVisitor, Ab
     }
        
     public void visit(CreateMethodType cmt) {
-        implMethod = cmt.getMethodElement();
+        implMethod = cmt.getMethodElement().resolve(workingCopy);
         String origName = implMethod.getSimpleName().toString();
         String newName = prependAndUpper(origName,"ejb"); //NOI18N
         
         SourcePositions[] positions = new SourcePositions[1];
-        TreeUtilities tu = workingCopy.getTreeUtilities();
+        TreeUtilities treeUtilities = workingCopy.getTreeUtilities();
         String body = TODO + newName;
-        StatementTree bodyTree = tu.parseStatement(body, positions);
+        StatementTree bodyTree = treeUtilities.parseStatement(body, positions);
         
         MethodTree resultTree = AbstractMethodController.modifyMethod(
                 workingCopy, 
@@ -118,8 +116,8 @@ class SessionGenerateFromIntfVisitor implements MethodType.MethodTypeVisitor, Ab
     }
     
     private String prependAndUpper(String fullName, String prefix) {
-         StringBuffer sb = new StringBuffer(fullName);
-         sb.setCharAt(0, Character.toUpperCase(sb.charAt(0)));
-         return prefix+sb.toString();
+         StringBuffer buffer = new StringBuffer(fullName);
+         buffer.setCharAt(0, Character.toUpperCase(buffer.charAt(0)));
+         return prefix+buffer.toString();
     }
 }

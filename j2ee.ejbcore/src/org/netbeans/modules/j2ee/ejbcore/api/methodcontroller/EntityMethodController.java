@@ -23,9 +23,12 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.Trees;
 import java.io.IOException;
-import java.util.*;
 import java.rmi.RemoteException;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -35,6 +38,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.j2ee.dd.api.ejb.CmpField;
@@ -44,8 +48,6 @@ import org.netbeans.modules.j2ee.dd.api.ejb.EjbRelation;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbRelationshipRole;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.dd.api.ejb.MethodParams;
-import org.netbeans.modules.j2ee.dd.api.ejb.Query;
-import org.netbeans.modules.j2ee.dd.api.ejb.Query;
 import org.netbeans.modules.j2ee.dd.api.ejb.Query;
 import org.netbeans.modules.j2ee.dd.api.ejb.QueryMethod;
 import org.netbeans.modules.j2ee.dd.api.ejb.Relationships;
@@ -59,10 +61,10 @@ import org.openide.util.NbBundle;
  */
 public final class EntityMethodController extends AbstractMethodController {
     
-    private WorkingCopy workingCopy;
-    private Entity model;
-    private EjbJar parent;
-    private Set<Modifier> modifiersPublicAbstract = new HashSet(2);
+    private final WorkingCopy workingCopy;
+    private final Entity model;
+    private final EjbJar parent;
+    private final Set<Modifier> modifiersPublicAbstract = new HashSet(2);
 
     public EntityMethodController(WorkingCopy workingCopy, Entity model, EjbJar parent) {
         super(workingCopy, model);
@@ -81,13 +83,13 @@ public final class EntityMethodController extends AbstractMethodController {
         return getMethods(field.getCmrFieldName());
     }
 
-    public void deleteQueryMapping(ExecutableElement method, FileObject dd) throws IOException {
+    public void deleteQueryMapping(ExecutableElement method, FileObject ddFileObject) throws IOException {
         Query[] queries = model.getQuery();
         for (Query query : queries) {
             String methodName = query.getQueryMethod().getMethodName();
             if (method.getSimpleName().contentEquals(methodName)) {
                 model.removeQuery(query);
-                parent.write(dd);
+                parent.write(ddFileObject);
                 return;
             }
         }
@@ -107,25 +109,25 @@ public final class EntityMethodController extends AbstractMethodController {
      * @param dd
      * @throws java.io.IOException
      */
-    public void deleteField(CmpField field, FileObject dd) throws IOException {
+    public void deleteField(CmpField field, FileObject ddFileObject) throws IOException {
         Query query = null;
         String fieldName = field.getFieldName();
         // find findBy<field> query in DD
         query = findQueryByCmpField(fieldName);
         // remove findBy<field> method from local interfaces (should be only in local home)
-        for (TypeElement ce : getLocalInterfaces()) {
-            ExecutableElement me = getFinderMethod(ce, fieldName, getGetterMethod(getBeanClass(), fieldName));
-            if (me != null) {
-                TypeElement declaringClass = (TypeElement) me.getEnclosingElement();
-                removeMethodFromClass(declaringClass, me);
+        for (TypeElement clazz : getLocalInterfaces()) {
+            ExecutableElement method = getFinderMethod(clazz, fieldName, getGetterMethod(getBeanClass(), fieldName));
+            if (method != null) {
+                TypeElement declaringClass = (TypeElement) method.getEnclosingElement();
+                removeMethodFromClass(declaringClass, method);
             }
         }
         // remove findBy<field> method from remote interfaces (should be only in remote home)
-        for (TypeElement ce : getRemoteInterfaces()) {
-            ExecutableElement me = getFinderMethod(ce, fieldName, getGetterMethod(getBeanClass(), fieldName));
-            if (me != null) {
-                TypeElement declaringClass = (TypeElement) me.getEnclosingElement();
-                removeMethodFromClass(declaringClass, me);
+        for (TypeElement clazz : getRemoteInterfaces()) {
+            ExecutableElement method = getFinderMethod(clazz, fieldName, getGetterMethod(getBeanClass(), fieldName));
+            if (method != null) {
+                TypeElement declaringClass = (TypeElement) method.getEnclosingElement();
+                removeMethodFromClass(declaringClass, method);
             }
         }
         removeMethodsFromBean(getMethods(fieldName));
@@ -136,7 +138,7 @@ public final class EntityMethodController extends AbstractMethodController {
         }
         // remove CMP field from DD
         model.removeCmpField(field);
-        parent.write(dd);
+        parent.write(ddFileObject);
     }
 
     private Query findQueryByCmpField(String fieldName) {
@@ -154,17 +156,17 @@ public final class EntityMethodController extends AbstractMethodController {
         for (ExecutableElement method : methods) {
             // remove get/set<field> from local/remote/business interfaces
             if (hasLocal()) {
-                ExecutableElement me = getInterface(method, true);
-                if (me != null) {
-                    TypeElement declaringClass = (TypeElement) me.getEnclosingElement();
-                    removeMethodFromClass(declaringClass, me);
+                ExecutableElement methodToRemove = getInterface(method, true);
+                if (methodToRemove != null) {
+                    TypeElement declaringClass = (TypeElement) methodToRemove.getEnclosingElement();
+                    removeMethodFromClass(declaringClass, methodToRemove);
                 }
             }
             if (hasRemote()) {
-                ExecutableElement me = getInterface(method, false);
-                if (me != null) {
-                    TypeElement declaringClass = (TypeElement) me.getEnclosingElement();
-                    removeMethodFromClass(declaringClass, me);
+                ExecutableElement methodToRemove = getInterface(method, false);
+                if (methodToRemove != null) {
+                    TypeElement declaringClass = (TypeElement) methodToRemove.getEnclosingElement();
+                    removeMethodFromClass(declaringClass, methodToRemove);
                 }
             }
             // remove get/set<field> from main bean class
@@ -184,12 +186,12 @@ public final class EntityMethodController extends AbstractMethodController {
      * @param dd
      * @throws java.io.IOException
      */
-    public void deleteField(CmrField field, FileObject dd) throws IOException {
+    public void deleteField(CmrField field, FileObject ddFileObject) throws IOException {
         List methods = getMethods(field.getCmrFieldName());
         removeMethodsFromBean(methods);
         // remove relation from DD
         deleteRelationships(field.getCmrFieldName());
-        parent.write(dd);
+        parent.write(ddFileObject);
     }
 
     public static String getMethodName(String fieldName, boolean get) {
@@ -197,77 +199,77 @@ public final class EntityMethodController extends AbstractMethodController {
         return prependAndUpper(fieldName, prefix);
     }
 
-    private static String getFieldName(String methodName) {
-        if (methodName.length() < 3) {
-            return null;
-        }
-        String prefix = methodName.substring(0, 3);
-        if (prefix.equals("set") || prefix.equals("get")) {
-            return lower(methodName.substring(3, methodName.length()));
-        }
-        return null;
-    }
+//    private static String getFieldName(String methodName) {
+//        if (methodName.length() < 3) {
+//            return null;
+//        }
+//        String prefix = methodName.substring(0, 3);
+//        if (prefix.equals("set") || prefix.equals("get")) {
+//            return lower(methodName.substring(3, methodName.length()));
+//        }
+//        return null;
+//    }
     
     public boolean hasJavaImplementation(ExecutableElement intfView) {
         return hasJavaImplementation(getMethodTypeFromInterface(intfView));
     }
 
-    public boolean hasJavaImplementation(MethodType mt) {
-        return !(isCMP() && (isFinder(mt) || isSelect(mt)));
+    public boolean hasJavaImplementation(MethodType methodType) {
+        return !(isCMP() && (isFinder(methodType) || isSelect(methodType)));
     }
 
     public MethodType getMethodTypeFromImpl(ExecutableElement implView) {
-        MethodType mt = null;
+        MethodType methodType = null;
         if (implView.getSimpleName().toString().startsWith("ejbCreate") || implView.getSimpleName().toString().startsWith("ejbPostCreate")) { //NOI18N
-            mt = new MethodType.CreateMethodType(implView);
+            methodType = new MethodType.CreateMethodType(ElementHandle.create(implView));
         } else if (!implView.getSimpleName().toString().startsWith("ejb")) { //NOI18N
-            mt = new MethodType.BusinessMethodType(implView);
+            methodType = new MethodType.BusinessMethodType(ElementHandle.create(implView));
         } else if (implView.getSimpleName().toString().startsWith("ejbFind")) { //NOI18N
-            mt = new MethodType.FinderMethodType(implView);
+            methodType = new MethodType.FinderMethodType(ElementHandle.create(implView));
         } else if (implView.getSimpleName().toString().startsWith("ejbHome")) { //NOI18N
-            mt = new MethodType.HomeMethodType(implView);
+            methodType = new MethodType.HomeMethodType(ElementHandle.create(implView));
         }
-        return mt;
+        return methodType;
     }
 
     public MethodType getMethodTypeFromInterface(ExecutableElement clientView) {
         assert clientView.getEnclosingElement() != null: "declaring class cannot be null";
         String cName = ((TypeElement) clientView.getEnclosingElement()).getQualifiedName().toString();
-        MethodType mt;
+        MethodType methodType;
         if (cName.equals(model.getLocalHome()) ||
             cName.equals(model.getHome())) {
             if (clientView.getSimpleName().toString().startsWith("create")) { //NOI18N
-                mt = new MethodType.CreateMethodType(clientView);
+                methodType = new MethodType.CreateMethodType(ElementHandle.create(clientView));
             } else if (clientView.getSimpleName().toString().startsWith("find")) { //NOI18N
-                mt = new MethodType.FinderMethodType(clientView);
+                methodType = new MethodType.FinderMethodType(ElementHandle.create(clientView));
             } else {
-                mt = new MethodType.HomeMethodType(clientView);
+                methodType = new MethodType.HomeMethodType(ElementHandle.create(clientView));
             }
         } else {
-            mt = new MethodType.BusinessMethodType(clientView);
+            methodType = new MethodType.BusinessMethodType(ElementHandle.create(clientView));
         }
-        return mt;
+        return methodType;
     }
 
     public AbstractMethodController.GenerateFromImpl createGenerateFromImpl() {
-        return new EntityGenerateFromImplVisitor(workingCopy, model);
+        return new EntityGenerateFromImplVisitor(workingCopy);
     }
 
     public AbstractMethodController.GenerateFromIntf createGenerateFromIntf() {
         return new EntityGenerateFromIntfVisitor(workingCopy, model);
     }
 
-    public void addSelectMethod(ExecutableElement selectMethod, String ql, FileObject dd) throws IOException {
+    public void addSelectMethod(ExecutableElement selectMethod, String ejbql, FileObject ddFileObject) throws IOException {
         addMethodToClass(getBeanClass(), selectMethod);
-        addEjbQl(selectMethod,ql, dd);
+        addEjbQl(selectMethod,ejbql, ddFileObject);
     }
 
-    public void addEjbQl(ExecutableElement clientView, String ejbql, FileObject dd) throws IOException {
+    public void addEjbQl(ExecutableElement clientView, String ejbql, FileObject ddFileObject) throws IOException {
         if (isBMP()) {
-            super.addEjbQl(clientView, ejbql, dd);
+            super.addEjbQl(clientView, ejbql, ddFileObject);
         }
         model.addQuery(buildQuery(clientView, ejbql));
-        parent.write(dd);
+        parent.write(ddFileObject);
     }
 
     public void addField(VariableElement field, FileObject ddFile, boolean localGetter, boolean localSetter,
@@ -277,10 +279,10 @@ public final class EntityMethodController extends AbstractMethodController {
         addGetterMethod(beanClass, field, modifiersPublicAbstract, false, model);
         final String fieldName = field.getSimpleName().toString();
         updateFieldAccessors(fieldName, localGetter, localSetter, remoteGetter, remoteSetter);
-        CmpField f = model.newCmpField();
-        f.setFieldName(field.getSimpleName().toString());
-        f.setDescription(description);
-        model.addCmpField(f);
+        CmpField cmpField = model.newCmpField();
+        cmpField.setFieldName(field.getSimpleName().toString());
+        cmpField.setDescription(description);
+        model.addCmpField(cmpField);
         parent.write(ddFile);
     }
 
@@ -295,19 +297,19 @@ public final class EntityMethodController extends AbstractMethodController {
         }
     }
 
-    private ExecutableElement addSetterMethod(TypeElement javaClass, VariableElement field, Set<Modifier> modifiers, boolean remote, Entity e) {
+    private ExecutableElement addSetterMethod(TypeElement javaClass, VariableElement field, Set<Modifier> modifiers, boolean remote, Entity entity) {
         ExecutableElement method = createSetterMethod(javaClass, field, modifiers, remote);
-        addMethod(javaClass, method, e);
+        addMethod(javaClass, method, entity);
         return method;
     }
 
-    private ExecutableElement addGetterMethod(TypeElement javaClass, VariableElement fe, Set<Modifier> modifiers, boolean remote, Entity e) {
-        ExecutableElement method = createGetterMethod(javaClass, fe, modifiers, remote);
-        addMethod(javaClass, method, e);
+    private ExecutableElement addGetterMethod(TypeElement javaClass, VariableElement variable, Set<Modifier> modifiers, boolean remote, Entity entity) {
+        ExecutableElement method = createGetterMethod(javaClass, variable, modifiers, remote);
+        addMethod(javaClass, method, entity);
         return method;
     }
 
-    private void addMethod(TypeElement javaClass, ExecutableElement method, Entity e) {
+    private void addMethod(TypeElement javaClass, ExecutableElement method, Entity entity) {
         // try to add method as the last CMP field getter/setter in class
         addMethodToClass(javaClass, method);
         //TODO: RETOUCHE insert into specified position
@@ -336,7 +338,7 @@ public final class EntityMethodController extends AbstractMethodController {
 
     private ExecutableElement createGetterMethod(TypeElement javaClass, VariableElement field, Set<Modifier> modifiers, boolean remote) {
         final String fieldName = field.getSimpleName().toString();
-        ExecutableElement method = createMethod(getMethodName(fieldName, true));
+        ExecutableElement method = createMethod(workingCopy, getMethodName(fieldName, true));
         MethodTree methodTree = null;
         if (remote) {
             TypeElement element = workingCopy.getElements().getTypeElement(RemoteException.class.getName());
@@ -369,7 +371,7 @@ public final class EntityMethodController extends AbstractMethodController {
 
     private ExecutableElement createSetterMethod(TypeElement javaClass, VariableElement field, Set<Modifier> modifiers, boolean remote) {
         final String fieldName = field.getSimpleName().toString();
-        ExecutableElement method = createMethod(getMethodName(fieldName, false));
+        ExecutableElement method = createMethod(workingCopy, getMethodName(fieldName, false));
         MethodTree methodTree = null;
         if (remote) {
             TypeElement element = workingCopy.getElements().getTypeElement(RemoteException.class.getName());
@@ -410,42 +412,42 @@ public final class EntityMethodController extends AbstractMethodController {
 
     /** @deprecated
      */
-    private boolean isFinder(MethodType mt) {
-        return mt instanceof MethodType.FinderMethodType;
+    private boolean isFinder(MethodType methodType) {
+        return methodType instanceof MethodType.FinderMethodType;
     }
 
     /** @deprecated
      */
-    private boolean isSelect(MethodType mt) {
-        return mt instanceof MethodType.SelectMethodType;
+    private boolean isSelect(MethodType methodType) {
+        return methodType instanceof MethodType.SelectMethodType;
     }
 
-    private boolean isFinder(int mt) {
-        return mt == MethodType.METHOD_TYPE_FINDER;
+    private boolean isFinder(int methodType) {
+        return methodType == MethodType.METHOD_TYPE_FINDER;
     }
 
-    private boolean isSelect(int mt) {
-        return mt == MethodType.METHOD_TYPE_SELECT;
+    private boolean isSelect(int methodType) {
+        return methodType == MethodType.METHOD_TYPE_SELECT;
     }
 
-    public String createDefaultQL(MethodType mt) {
-        String ql = null;
-        if (isFinder(mt) && isCMP()) {
-            ql = "SELECT OBJECT(o) \nFROM " + model.getAbstractSchemaName() + " o";
+    public String createDefaultQL(MethodType methodType) {
+        String ejbql = null;
+        if (isFinder(methodType) && isCMP()) {
+            ejbql = "SELECT OBJECT(o) \nFROM " + model.getAbstractSchemaName() + " o";
         }
 
-        if (isSelect(mt)) {
-            ql = "SELECT COUNT(o) \nFROM " + model.getAbstractSchemaName() + " o";
+        if (isSelect(methodType)) {
+            ejbql = "SELECT COUNT(o) \nFROM " + model.getAbstractSchemaName() + " o";
         }
 
-        return ql;
+        return ejbql;
     }
 
     private Query buildQuery(ExecutableElement clientView, String ejbql) {
-        Query q = model.newQuery();
-        QueryMethod qm = q.newQueryMethod();
-        qm.setMethodName(clientView.getSimpleName().toString());
-        MethodParams mParams = qm.newMethodParams();
+        Query query = model.newQuery();
+        QueryMethod queryMethod = query.newQueryMethod();
+        queryMethod.setMethodName(clientView.getSimpleName().toString());
+        MethodParams mParams = queryMethod.newMethodParams();
         Types types = workingCopy.getTypes();
         for (VariableElement param : clientView.getParameters()) {
             TypeMirror typeMirror = param.asType();
@@ -456,23 +458,23 @@ public final class EntityMethodController extends AbstractMethodController {
                 mParams.addMethodParam(element.getSimpleName().toString());
             }
         }
-        qm.setMethodParams(mParams);
-        q.setQueryMethod(qm);
-        q.setEjbQl(ejbql);
-        return q;
+        queryMethod.setMethodParams(mParams);
+        query.setQueryMethod(queryMethod);
+        query.setEjbQl(ejbql);
+        return query;
     }
 
     private static String prependAndUpper(String fullName, String prefix) {
-        StringBuffer sb = new StringBuffer(fullName);
-        sb.setCharAt(0, Character.toUpperCase(sb.charAt(0)));
-        return prefix+sb.toString();
+        StringBuffer buffer = new StringBuffer(fullName);
+        buffer.setCharAt(0, Character.toUpperCase(buffer.charAt(0)));
+        return prefix+buffer.toString();
     }
 
-    private static String lower(String fullName) {
-        StringBuffer sb = new StringBuffer(fullName);
-        sb.setCharAt(0, Character.toLowerCase(sb.charAt(0)));
-        return sb.toString();
-    }
+//    private static String lower(String fullName) {
+//        StringBuffer buffer = new StringBuffer(fullName);
+//        buffer.setCharAt(0, Character.toLowerCase(buffer.charAt(0)));
+//        return buffer.toString();
+//    }
 
     private boolean isEjbUsed(EjbRelationshipRole role, String ejbName, String fieldName) {
         return role != null &&
@@ -489,9 +491,9 @@ public final class EntityMethodController extends AbstractMethodController {
 
     private void deleteRelationships(String fieldName) {
         String ejbName = model.getEjbName();
-        Relationships r = parent.getSingleRelationships();
-        if (r != null) {
-            EjbRelation[] relations = r.getEjbRelation();
+        Relationships relationships = parent.getSingleRelationships();
+        if (relationships != null) {
+            EjbRelation[] relations = relationships.getEjbRelation();
             if (relations != null) {
                 for (int i = 0; i < relations.length; i++) {
                     if (relationContainsField(relations[i], ejbName, fieldName)) {
@@ -509,11 +511,11 @@ public final class EntityMethodController extends AbstractMethodController {
                             uniDirectional = role.getCmrField()==null;
                         }
                         if (uniDirectional) {
-                            r.removeEjbRelation(relations[i]);
+                            relationships.removeEjbRelation(relations[i]);
                         }
                     }
                 }
-                if (r.sizeEjbRelation() == 0) {
+                if (relationships.sizeEjbRelation() == 0) {
                     parent.setRelationships(null);
                 }
             }
@@ -522,24 +524,24 @@ public final class EntityMethodController extends AbstractMethodController {
 
     private List<ExecutableElement> getMethods(String propName) {
         assert propName != null;
-        List<ExecutableElement> l = new LinkedList<ExecutableElement>();
-        TypeElement ce = getBeanClass();
-        ExecutableElement getMethod = getGetterMethod(ce, propName);
+        List<ExecutableElement> resultList = new LinkedList<ExecutableElement>();
+        TypeElement ejbClass = getBeanClass();
+        ExecutableElement getMethod = getGetterMethod(ejbClass, propName);
         if (getMethod != null) {
-            l.add(getMethod);
-            ExecutableElement setMethod = getSetterMethod(ce, propName, getMethod.getReturnType());
+            resultList.add(getMethod);
+            ExecutableElement setMethod = getSetterMethod(ejbClass, propName, getMethod.getReturnType());
             if (setMethod != null) {
-                l.add(setMethod);
+                resultList.add(setMethod);
             }
         }
-        return l;
+        return resultList;
     }
 
     public ExecutableElement getGetterMethod(TypeElement javaClass, String fieldName) {
         if (javaClass == null || fieldName == null) {
             return null;
         }
-        ExecutableElement method = createMethod(getMethodName(fieldName, true));
+        ExecutableElement method = createMethod(workingCopy, getMethodName(fieldName, true));
         MethodTree methodTree = modifyMethod(workingCopy, method, null, null, null, Collections.<TypeMirror>emptyList(), null, null);
         Trees trees = workingCopy.getTrees();
         Element element = trees.getElement(trees.getPath(workingCopy.getCompilationUnit(), methodTree));
@@ -561,9 +563,8 @@ public final class EntityMethodController extends AbstractMethodController {
         if (type == null) {
             return null;
         }
-        String methodName = getMethodName(fieldName, false);
         List<TypeMirror> parameters = Collections.singletonList(type);
-        ExecutableElement method = createMethod(getMethodName(fieldName, true));
+        ExecutableElement method = createMethod(workingCopy, getMethodName(fieldName, true));
         MethodTree methodTree = modifyMethod(workingCopy, method, null, null, null, parameters, null, null);
         Trees trees = workingCopy.getTrees();
         Element element = trees.getElement(trees.getPath(workingCopy.getCompilationUnit(), methodTree));
@@ -590,17 +591,16 @@ public final class EntityMethodController extends AbstractMethodController {
         if (getterMethod == null) {
             return null;
         }
-        String name = prependAndUpper(fieldName, "findBy");
         List<TypeMirror> params = Collections.singletonList(getterMethod.getReturnType());
-        ExecutableElement method = createMethod(getMethodName(fieldName, true));
+        ExecutableElement method = createMethod(workingCopy, getMethodName(fieldName, true));
         MethodTree methodTree = modifyMethod(workingCopy, method, null, null, null, params, null, null);
         Trees trees = workingCopy.getTrees();
         Element element = trees.getElement(trees.getPath(workingCopy.getCompilationUnit(), methodTree));
         return findInClass(classElement, (ExecutableElement) element);
     }
 
-    public boolean supportsMethodType(int mt) {
-        return !isSelect(mt) || isCMP();
+    public boolean supportsMethodType(int methodType) {
+        return !isSelect(methodType) || isCMP();
     }
 
     private void updateFieldAccessors(String fieldName, boolean localGetter, boolean localSetter, boolean remoteGetter,

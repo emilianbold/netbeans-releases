@@ -26,8 +26,6 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.AbstractMethodController;
-import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType.BusinessMethodType;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType.CreateMethodType;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType.FinderMethodType;
@@ -40,7 +38,7 @@ import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType.HomeMet
  */
 class SessionGenerateFromImplVisitor implements MethodType.MethodTypeVisitor, AbstractMethodController.GenerateFromImpl {
 
-    private WorkingCopy workingCopy;
+    private final WorkingCopy workingCopy;
     private ExecutableElement intfMethod;
     private TypeElement destination;
     private TypeElement home;
@@ -50,10 +48,10 @@ class SessionGenerateFromImplVisitor implements MethodType.MethodTypeVisitor, Ab
         this.workingCopy = workingCopy;
     }
     
-    public void getInterfaceMethodFromImpl(MethodType m, TypeElement home, TypeElement component) {
+    public void getInterfaceMethodFromImpl(MethodType methodType, TypeElement home, TypeElement component) {
         this.home = home;
         this.component = component;
-        m.accept(this);
+        methodType.accept(this);
     }
     
     public ExecutableElement getInterfaceMethod() {
@@ -65,12 +63,12 @@ class SessionGenerateFromImplVisitor implements MethodType.MethodTypeVisitor, Ab
     }
     
     public void visit(BusinessMethodType bmt) {
-        intfMethod = bmt.getMethodElement();
+        intfMethod = bmt.getMethodElement().resolve(workingCopy);
         destination = component;
     }
        
     public void visit(CreateMethodType cmt) {
-        intfMethod = cmt.getMethodElement();
+        intfMethod = cmt.getMethodElement().resolve(workingCopy);
         String origName = intfMethod.getSimpleName().toString();
         String newName = chopAndUpper(origName,"ejb"); //NOI18N
         
@@ -98,9 +96,9 @@ class SessionGenerateFromImplVisitor implements MethodType.MethodTypeVisitor, Ab
     }
     
     private String chopAndUpper(String fullName, String chop) {
-         StringBuffer sb = new StringBuffer(fullName);
-         sb.delete(0, chop.length());
-         sb.setCharAt(0, Character.toLowerCase(sb.charAt(0)));
-         return sb.toString();
+         StringBuffer buffer = new StringBuffer(fullName);
+         buffer.delete(0, chop.length());
+         buffer.setCharAt(0, Character.toLowerCase(buffer.charAt(0)));
+         return buffer.toString();
     }
 }

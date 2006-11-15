@@ -17,26 +17,18 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
+package org.netbeans.modules.java.source.usages;
 
-import org.openide.util.HelpCtx;
+import java.io.File;
 
 /**
- * @author Chris Webster
- * @author Martin Adamek
+ *
+ * @author Tomas Zezula
  */
-public class AddBusinessMethodAction extends AbstractAddMethodAction {
+public class IndexUtil {
 
-    public AddBusinessMethodAction() {
-        super(new AddBusinessMethodStrategy());
+    public static void setCacheFolder (final File cacheFolder) {
+        Index.setCacheFolder(cacheFolder);
     }
 
-    public AddBusinessMethodAction(String name) {
-        super(new AddBusinessMethodStrategy(name));
-    }
-
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-    
 }

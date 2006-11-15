@@ -294,6 +294,7 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.netbeans.modules.j2ee.common.queries.spi</package>
                 <package>org.netbeans.modules.j2ee.common.source</package>
                 <package>org.netbeans.modules.j2ee.common.ui</package>
+                <package>org.netbeans.modules.j2ee.common.ui.nodes</package>
             </friend-packages>
         </data>
     </configuration>

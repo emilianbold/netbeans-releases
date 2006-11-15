@@ -18,8 +18,6 @@
  */
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
-import javax.swing.Action;
-import org.netbeans.api.java.source.WorkingCopy;
 import org.openide.util.HelpCtx;
 
 
@@ -29,12 +27,12 @@ import org.openide.util.HelpCtx;
  */
 public class AddFinderMethodAction extends AbstractAddMethodAction {
 
-    public AddFinderMethodAction(WorkingCopy workingCopy) {
-        super(workingCopy, new AddFinderMethodStrategy());
+    public AddFinderMethodAction() {
+        super(new AddFinderMethodStrategy());
     }
 
-    public AddFinderMethodAction(WorkingCopy workingCopy, String name) {
-        super(workingCopy, new AddFinderMethodStrategy(name));
+    public AddFinderMethodAction(String name) {
+        super(new AddFinderMethodStrategy(name));
     }
 
     public HelpCtx getHelpCtx() {

@@ -18,8 +18,22 @@
  */
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
+import java.io.IOException;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.j2ee.common.source.AbstractTask;
+import org.netbeans.modules.j2ee.common.source.SourceUtils;
+import org.netbeans.modules.j2ee.common.ui.nodes.MethodCollectorFactory;
+import org.netbeans.modules.j2ee.common.ui.nodes.MethodCustomizer;
+import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.AbstractMethodController;
+import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType;
+import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.MethodsNode;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 
@@ -33,24 +47,39 @@ public class AddHomeMethodStrategy extends AbstractAddMethodStrategy {
         super (name);
     }
     public AddHomeMethodStrategy () {
-        super(NbBundle.getMessage(AddHomeMethodAction.class, "LBL_AddHomeMethodAction"));
+        super(NbBundle.getMessage(AddHomeMethodStrategy.class, "LBL_AddHomeMethodAction"));
     }
     
-    protected MethodType getPrototypeMethod(TypeElement jc) {
-        //TODO: RETOUCHE
-        return null;
-//        Method me = JMIUtils.createMethod(jc);
-//        me.setName("homeMethod"); //NOI18N
-//        return new MethodType.HomeMethodType(me);
+    protected MethodType getPrototypeMethod(FileObject fileObject, ElementHandle<TypeElement> classHandle) throws IOException {
+        final MethodType[] result = new MethodType[1];
+        JavaSource javaSource = JavaSource.forFileObject(fileObject);
+        javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws Exception {
+                workingCopy.toPhase(Phase.ELEMENTS_RESOLVED);
+                ExecutableElement method = AbstractMethodController.createMethod(workingCopy, "homeMethod");
+                ElementHandle<ExecutableElement> methodHandle = ElementHandle.create(method);
+                result[0] = new MethodType.HomeMethodType(methodHandle);
+            }
+        });
+        return result[0];
     }
 
-//    protected MethodCustomizer createDialog(MethodType pType, EjbMethodController c) {
-//        Method[] methodElements = Utils.getMethods(c, true, false);
-//	MethodsNode methodsNode = getMethodsNode();
-//	boolean local = methodsNode == null ? c.hasLocal() : (methodsNode.isLocal() && c.hasLocal());
-//	boolean remote = methodsNode == null ? c.hasRemote() : (!methodsNode.isLocal() && c.hasRemote());
-//        return MethodCollectorFactory.homeCollector(pType.getMethodElement(), c.hasRemote(), c.hasLocal(), methodElements, remote, local);
-//    }
+    protected MethodCustomizer createDialog(FileObject fileObject, final MethodType pType) throws IOException{
+        final MethodCustomizer[] result = new MethodCustomizer[1];
+        JavaSource javaSource = JavaSource.forFileObject(fileObject);
+        javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws Exception {
+                workingCopy.toPhase(Phase.ELEMENTS_RESOLVED);
+                MethodsNode methodsNode = getMethodsNode();
+                TypeElement clazz = SourceUtils.newInstance(workingCopy).getTypeElement();
+                EjbMethodController ejbMethodController = EjbMethodController.createFromClass(workingCopy, clazz);
+                boolean local = methodsNode == null ? ejbMethodController.hasLocal() : (methodsNode.isLocal() && ejbMethodController.hasLocal());
+                boolean remote = methodsNode == null ? ejbMethodController.hasRemote() : (!methodsNode.isLocal() && ejbMethodController.hasRemote());
+                result[0] = MethodCollectorFactory.homeCollector(pType.getMethodElement(), ejbMethodController.hasRemote(), ejbMethodController.hasLocal(), remote, local);
+            }
+        });
+        return result[0];
+    }
     
     public int prototypeMethod() {
         return MethodType.METHOD_TYPE_HOME;
