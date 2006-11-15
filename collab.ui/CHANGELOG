@@ -40,4 +40,5 @@
 1.5:	I18N of Collab toolbar (#71993)
 
 1.6:    Accessibility fixes
- 
+
+1.7:    Logged exception removed - proper escape of '&' when not marking mnemonic
