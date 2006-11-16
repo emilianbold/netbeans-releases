@@ -97,8 +97,16 @@ TODO:
         <property name="module.jar.basename" value="${code.name.base.dashes}.jar"/>
         <property name="module.jar" value="${module.jar.dir}/${module.jar.basename}"/>
         <property name="coverage.path" location="${cluster}/${module.jar}"/>
-        <echo>coverage.path=${coverage.path}</echo>
-        <path id="coverage.path" path="${coverage.path}"/>
+        <!-- only when is emma.disable.backup -->
+        <property name="backup.netbeans.dest.dir" location="${netbeans.dest.dir}"/>
+        <pathconvert property="backup.coverage.path" targetos="unix">
+            <path path="${coverage.path}"/>
+            <mapper>
+              <globmapper from="${netbeans.dest.dir}*" to="${backup.netbeans.dest.dir}*" />
+            </mapper>
+        </pathconvert>
+        <echo>coverage.path=${backup.coverage.path}</echo>
+        <path id="coverage.path.id" path="${backup.coverage.path}"/>
     </target>
     
     <target name="emma-init-coverage-source-path">
@@ -115,7 +123,7 @@ TODO:
             
     <target name="emma-instrument"  if="available.coverage.filter">
         <emma enabled="${emma.enabled}">
-            <instr instrpathref="coverage.path"
+            <instr instrpathref="coverage.path.id"
                 metadatafile="${coverage.dir}/metadata.emma"
                 mode="overwrite" merge="true">
                 <filter file="coverage.filter"/>
@@ -125,7 +133,7 @@ TODO:
     
     <target name="emma-instrument-no-filter" unless="available.coverage.filter">
         <emma enabled="${emma.enabled}">
-            <instr instrpathref="coverage.path"
+            <instr instrpathref="coverage.path.id"
                 metadatafile="${coverage.dir}/metadata.emma"
                 mode="overwrite" merge="true">
             </instr>
@@ -150,23 +158,20 @@ TODO:
 
     <target name="emma-build-backup" if="nb_all" unless="emma.disable.backup">
         <echo>Creating backup for ${netbeans.dest.dir} because some jars are instrumented.</echo>
-        <echo>It can be ignored by seting property emma.disable.backup.</echo>
-        <mkdir dir="${nb_all}/build/emma-backup"/>
-        <copy  todir="${nb_all}/build/emma-backup" >
+        <echo>It can be ignored by setting property emma.disable.backup.</echo>
+        <property name="backup.netbeans.dest.dir" location="${nb_all}/build/emma-backup"/>
+        <mkdir dir="${backup.netbeans.dest.dir}"/>
+        <copy  todir="${backup.netbeans.dest.dir}" >
             <fileset dir="${netbeans.dest.dir}" />
         </copy>    
     </target>    
     
     
-    <target name="emma-build-restore" if="nb_all" unless="emma.disable.backup">
-        <delete dir="${netbeans.dest.dir}"/>
-        <copy  todir="${netbeans.dest.dir}">
-            <fileset dir="${nb_all}/build/emma-backup" />
-        </copy>    
-        <delete dir="${nb_all}/build/emma-backup"/>
+    <target name="emma-delete-backup" if="nb_all" unless="emma.disable.backup">
+        <delete dir="${backup.netbeans.dest.dir}"/>
     </target>    
         
-    <target name="coverage" depends="emma-build-backup,emma,emma-init,emma-instrument,emma-instrument-no-filter,coverage-runtests,emma-report,emma-build-restore"/>
+    <target name="coverage" depends="emma-build-backup,emma,emma-init,emma-instrument,emma-instrument-no-filter,coverage-runtests,emma-report,emma-delete-backup"/>
     
     <!--
     following must be passed to running measured process:
@@ -182,6 +187,7 @@ TODO:
             <param name="xtest.ide.coverage.args" value="-J-Dnetbeans.security.nocheck=true -J-Demma.coverage.out.file=${coverage.dir}/coverage.emma"/>
             <!-- code coverage needs to parse project.xml in everytime -->
             <param name="do.we.need.to.parse.project.xml.file" value="true"/>
+            <param name="netbeans.dest.dir" location="${backup.netbeans.dest.dir}"/>
         </antcall>
     </target>
     
