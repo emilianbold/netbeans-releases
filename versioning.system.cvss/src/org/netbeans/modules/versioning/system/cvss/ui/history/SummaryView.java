@@ -19,10 +19,8 @@
 
 package org.netbeans.modules.versioning.system.cvss.ui.history;
 
-import java.io.*;
 import org.netbeans.lib.cvsclient.command.log.LogInformation;
 import org.netbeans.lib.cvsclient.command.update.UpdateCommand;
-import org.netbeans.modules.versioning.system.cvss.*;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.log.SearchHistoryAction;
@@ -45,6 +43,8 @@ import javax.swing.*;
 import javax.swing.text.*;
 import java.util.*;
 import java.util.List;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.event.*;
@@ -57,6 +57,8 @@ import java.io.File;
  * @author Maros Sandor
  */
 class SummaryView implements MouseListener, ComponentListener, MouseMotionListener {
+
+    private static final double DARKEN_FACTOR = 0.95;    
 
     private final SearchHistoryPanel master;
     
@@ -111,15 +113,20 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 SearchHistoryPanel.ResultsContainer container = (SearchHistoryPanel.ResultsContainer) o;
                 for (Iterator j = container.getRevisions().iterator(); j.hasNext();) {
                     SearchHistoryPanel.DispRevision revision = (SearchHistoryPanel.DispRevision) j.next();
-                    newResults.add(revision);
+                    if (!revision.isBranchRoot()) {
+                        newResults.add(revision);
+                    }
                 }
                 for (Iterator j = container.getRevisions().iterator(); j.hasNext();) {
                     SearchHistoryPanel.DispRevision revision = (SearchHistoryPanel.DispRevision) j.next();
                     addResults(newResults, revision, 1);
                 }
             } else {
-                newResults.add(o);
-                addResults(newResults, (SearchHistoryPanel.DispRevision) o, 0);
+                SearchHistoryPanel.DispRevision revision = (SearchHistoryPanel.DispRevision) o;
+                if (!revision.isBranchRoot()) {
+                    newResults.add(revision);
+                }
+                addResults(newResults, revision, 0);
             }
         }
         return newResults;
@@ -131,7 +138,9 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         if (children != null) {
             for (Iterator i = children.iterator(); i.hasNext();) {
                 SearchHistoryPanel.DispRevision revision = (SearchHistoryPanel.DispRevision) i.next();
-                newResults.add(revision);
+                if (!revision.isBranchRoot()) {
+                    newResults.add(revision);
+                }
             }
             for (Iterator i = children.iterator(); i.hasNext();) {
                 SearchHistoryPanel.DispRevision revision = (SearchHistoryPanel.DispRevision) i.next();
@@ -156,6 +165,81 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         diffBounds = (Rectangle) resultsList.getClientProperty("Summary-Acop-" + idx); // NOI18N
         if (diffBounds != null && diffBounds.contains(p)) {
             associatedChangesInOpenProjects(idx);
+        }
+        diffBounds = (Rectangle) resultsList.getClientProperty("Summary-tagsLink-" + idx); // NOI18N
+        if (diffBounds != null && diffBounds.contains(p)) {
+            showAlltags(e.getPoint(), idx);
+        }
+    }
+
+    public static void showAllTags(Window w, Point p, SearchHistoryPanel.DispRevision drev) {
+
+        final JTextPane tp = new JTextPane();
+        tp.setBackground(darker(UIManager.getColor("List.background"))); // NOI18N
+        tp.setBorder(BorderFactory.createEmptyBorder(6, 8, 0, 0));
+        tp.setEditable(false);
+
+        Style headerStyle = tp.addStyle("headerStyle", null); // NOI18N
+        StyleConstants.setBold(headerStyle, true);
+        Style unmodifiedBranchStyle = tp.addStyle("unmodifiedBranchStyle", null); // NOI18N
+        StyleConstants.setForeground(unmodifiedBranchStyle, Color.GRAY);
+            
+        String modifiedBranches = drev.getRevision().getBranches();
+                    
+        Document doc = tp.getDocument();
+        try {
+            List<String> tags;
+                
+            doc.insertString(doc.getLength(), NbBundle.getMessage(SummaryView.class, "CTL_TagsWindow_BranchesLabel") + "\n", headerStyle);
+            tags = drev.getBranches();
+            for (String tag : tags) {
+                if (modifiedBranches == null || (modifiedBranches.indexOf(tag.substring(tag.indexOf("(") + 1, tag.indexOf(")")))) == -1) { // NOI18N
+                    doc.insertString(doc.getLength(), tag + "\n", unmodifiedBranchStyle); // NOI18N
+                } else {
+                    doc.insertString(doc.getLength(), tag + "\n", null); // NOI18N
+                }
+            }
+            if (tags.size() == 0) {
+                doc.insertString(doc.getLength(), NbBundle.getMessage(SummaryView.class, "CTL_TagsWindow_NoBranchesLabel") + "\n", unmodifiedBranchStyle);
+            }
+
+            doc.insertString(doc.getLength(), "\n" + NbBundle.getMessage(SummaryView.class, "CTL_TagsWindow_TagsLabel") + "\n", headerStyle);
+            StringBuilder sb = new StringBuilder();
+            tags = drev.getTags();
+            for (String tag : tags) {
+                sb.append(tag);
+                sb.append('\n'); // NOI18N
+            }
+            doc.insertString(doc.getLength(), sb.toString(), null);
+
+            if (tags.size() == 0) {
+                doc.insertString(doc.getLength(), NbBundle.getMessage(SummaryView.class, "CTL_TagsWindow_NoTagsLabel"), unmodifiedBranchStyle);
+            }
+                
+        } catch (BadLocationException e) {
+            Logger.getLogger(SummaryView.class.getName()).log(Level.WARNING, "Internal error creating tag list", e); // NOI18N
+        }
+            
+        Dimension dim = tp.getPreferredSize();
+        tp.setPreferredSize(new Dimension(dim.width * 7 / 6, dim.height));
+        final JScrollPane jsp = new JScrollPane(tp);
+        jsp.setBorder(BorderFactory.createMatteBorder(1, 1, 1, 1, Color.BLACK));
+
+        TooltipWindow ttw = new TooltipWindow(w, jsp);
+        ttw.addComponentListener(new ComponentAdapter() {
+            public void componentShown(ComponentEvent e) {
+                tp.scrollRectToVisible(new Rectangle(0, 0, 1, 1));
+            }
+        });
+        ttw.show(p);
+    }
+    
+    private void showAlltags(Point p, int idx) {
+        Object o = dispResults.get(idx);
+        if (o instanceof SearchHistoryPanel.DispRevision) {
+            SwingUtilities.convertPointToScreen(p, resultsList);
+            p.x += 10;
+            showAllTags(SwingUtilities.windowForComponent(scrollPane), p, (SearchHistoryPanel.DispRevision) o);
         }
     }
 
@@ -198,6 +282,11 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             return;
         }
         diffBounds = (Rectangle) resultsList.getClientProperty("Summary-Acop-" + idx); // NOI18N
+        if (diffBounds != null && diffBounds.contains(p)) {
+            resultsList.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            return;
+        }
+        diffBounds = (Rectangle) resultsList.getClientProperty("Summary-tagsLink-" + idx); // NOI18N
         if (diffBounds != null && diffBounds.contains(p)) {
             resultsList.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             return;
@@ -420,13 +509,19 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         }
     }
     
+    private static Color darker(Color c) {
+        return new Color(Math.max((int)(c.getRed() * DARKEN_FACTOR), 0), 
+             Math.max((int)(c.getGreen() * DARKEN_FACTOR), 0),
+             Math.max((int)(c.getBlue() * DARKEN_FACTOR), 0));
+    }    
+    
     private class SummaryCellRenderer extends JPanel implements ListCellRenderer {
 
         private static final String FIELDS_SEPARATOR = "        "; // NOI18N
-        private static final double DARKEN_FACTOR = 0.95;
 
         private Style selectedStyle;
         private Style normalStyle;
+        private Style branchStyle;
         private Style filenameStyle;
         private Style indentStyle;
         private Style noindentStyle;
@@ -434,14 +529,18 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         
         private JTextPane textPane = new JTextPane();
         private JPanel    actionsPane = new JPanel();
+        private final JPanel    tagsPanel;
+        private final JPanel actionsPanel;
         
         private DateFormat defaultFormat;
         
         private int             index;
-        private HyperlinkLabel  diffLink;
-        private HyperlinkLabel  acpLink;
-        private HyperlinkLabel  acopLink;
+        private final HyperlinkLabel  tagsLink;
+        private final HyperlinkLabel  diffLink;
+        private final HyperlinkLabel  acpLink;
+        private final HyperlinkLabel  acopLink;
         
+        private final JLabel    tagsLabel;
         private final JLabel    diffToLabel;
         private final JLabel    findCommitInLabel;
         private final JLabel    commaLabel;
@@ -451,6 +550,8 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             StyleConstants.setForeground(selectedStyle, UIManager.getColor("List.selectionForeground")); // NOI18N
             normalStyle = textPane.addStyle("normal", null); // NOI18N
             StyleConstants.setForeground(normalStyle, UIManager.getColor("List.foreground")); // NOI18N
+            branchStyle = textPane.addStyle("normal", null); // NOI18N
+            StyleConstants.setForeground(branchStyle, Color.GRAY); // NOI18N
             filenameStyle = textPane.addStyle("filename", normalStyle); // NOI18N
             StyleConstants.setBold(filenameStyle, true);
             indentStyle = textPane.addStyle("indent", null); // NOI18N
@@ -468,34 +569,43 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             setLayout(new BorderLayout());
             add(textPane);
             add(actionsPane, BorderLayout.PAGE_END);
-            actionsPane.setLayout(new FlowLayout(FlowLayout.TRAILING, 2, 5));
             
-            diffToLabel = new JLabel(NbBundle.getMessage(SummaryView.class, "CTL_Action_DiffTo"));
-            actionsPane.add(diffToLabel);
+            actionsPane.setLayout(new BorderLayout());
+            actionsPane.setBorder(BorderFactory.createEmptyBorder(5, 0, 0, 0));
+            
+            tagsPanel = new JPanel(); 
+            tagsPanel.setLayout(new FlowLayout(FlowLayout.LEADING, 2, 5));
+            actionsPanel = new JPanel();
+            actionsPanel.setLayout(new FlowLayout(FlowLayout.TRAILING, 2, 5));
+            actionsPane.add(tagsPanel, BorderLayout.WEST);
+            actionsPane.add(actionsPanel);
+            
+            tagsLabel = new JLabel();
+            tagsLink = new HyperlinkLabel();
+            tagsPanel.add(tagsLabel);
+            tagsLabel.setBorder(BorderFactory.createEmptyBorder(0, 50 - 2, 0, 0));  // -2 flowlayout hgap
+            tagsPanel.add(tagsLink);
+            
+            diffToLabel = new JLabel(NbBundle.getMessage(SummaryView.class, "CTL_Action_DiffTo")); // NOI18N
+            actionsPanel.add(diffToLabel);
             diffLink = new HyperlinkLabel();
             diffLink.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 8));
-            actionsPane.add(diffLink);
+            actionsPanel.add(diffLink);
 
             acopLink = new HyperlinkLabel();
             acpLink = new HyperlinkLabel();
 
             findCommitInLabel = new JLabel(NbBundle.getMessage(SummaryView.class, "CTL_Action_FindCommitIn"));
-            actionsPane.add(findCommitInLabel);
-            actionsPane.add(acpLink);
+            actionsPanel.add(findCommitInLabel);
+            actionsPanel.add(acpLink);
             
             commaLabel = new JLabel(","); // NOI18N
-            actionsPane.add(commaLabel);
-            actionsPane.add(acopLink);
+            actionsPanel.add(commaLabel);
+            actionsPanel.add(acopLink);
             
-            textPane.setBorder(null);
+            textPane.setBorder(BorderFactory.createEmptyBorder(4, 0, 0, 0));
         }
-        
-        public Color darker(Color c) {
-            return new Color(Math.max((int)(c.getRed() * DARKEN_FACTOR), 0), 
-                 Math.max((int)(c.getGreen() * DARKEN_FACTOR), 0),
-                 Math.max((int)(c.getBlue() * DARKEN_FACTOR), 0));
-        }
-        
+                
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             if (value instanceof SearchHistoryPanel.ResultsContainer) {
                 renderContainer((SearchHistoryPanel.ResultsContainer) value, index, isSelected);
@@ -556,6 +666,8 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             }
             textPane.setBackground(backgroundColor);
             actionsPane.setBackground(backgroundColor);
+            tagsPanel.setBackground(backgroundColor);
+            actionsPanel.setBackground(backgroundColor);
             
             LogInformation.Revision revision = dispRevision.getRevision();
             String commitMessage = revision.getMessage();
@@ -565,19 +677,30 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 sd.remove(0, sd.getLength());
                 sd.setCharacterAttributes(0, Integer.MAX_VALUE, style, true);
                 if (indentation == 0) {
-                    sd.insertString(0, dispRevision.getRevision().getLogInfoHeader().getFile().getName(), null);
+                    sd.insertString(0, dispRevision.getRevision().getLogInfoHeader().getFile().getName(), style);
                     sd.setCharacterAttributes(0, sd.getLength(), filenameStyle, false);
-                    sd.insertString(sd.getLength(), FIELDS_SEPARATOR + dispRevision.getName().substring(0, dispRevision.getName().lastIndexOf('/')) + "\n", null); // NOI18N
+                    sd.insertString(sd.getLength(), FIELDS_SEPARATOR + dispRevision.getName().substring(0, dispRevision.getName().lastIndexOf('/')) + "\n", style); // NOI18N
                 }
-                sd.insertString(sd.getLength(), revision.getNumber() + FIELDS_SEPARATOR, null);
-                sd.insertString(sd.getLength(), defaultFormat.format(revision.getDate()) + FIELDS_SEPARATOR, null);
-                sd.insertString(sd.getLength(), revision.getAuthor(), null);
+                StringBuilder headerMessageBuilder = new StringBuilder();
+                headerMessageBuilder.append(revision.getNumber());
+                headerMessageBuilder.append(FIELDS_SEPARATOR);
+                headerMessageBuilder.append(defaultFormat.format(revision.getDate()));
+                headerMessageBuilder.append(FIELDS_SEPARATOR);
+                headerMessageBuilder.append(revision.getAuthor());
+                String branch = getBranch(dispRevision);
+                
+                String headerMessage = headerMessageBuilder.toString();
+                sd.insertString(sd.getLength(), headerMessage, style);
+
+                if (branch != null) {
+                    sd.insertString(sd.getLength(), FIELDS_SEPARATOR + branch, branchStyle);
+                }
                 if ("dead".equalsIgnoreCase(dispRevision.getRevision().getState())) { // NOI18N
-                    sd.insertString(sd.getLength(), FIELDS_SEPARATOR + NbBundle.getMessage(SummaryView.class, "MSG_SummaryView_DeadState"), null);
+                    sd.insertString(sd.getLength(), FIELDS_SEPARATOR + NbBundle.getMessage(SummaryView.class, "MSG_SummaryView_DeadState"), style);
                 }
-                sd.insertString(sd.getLength(), "\n", null); // NOI18N
-                sd.insertString(sd.getLength(), commitMessage, null);
-                sd.setCharacterAttributes(0, Integer.MAX_VALUE, style, false);
+                sd.insertString(sd.getLength(), "\n", style); // NOI18N
+                
+                sd.insertString(sd.getLength(), commitMessage, style);
                 if (message != null && !isSelected) {
                     int idx = revision.getMessage().indexOf(message);
                     if (idx != -1) {
@@ -601,15 +724,35 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                     FontMetrics fm = list.getFontMetrics(list.getFont());
                     Rectangle2D rect = fm.getStringBounds(commitMessage, textPane.getGraphics());
                     int nlc, i;
-                    for (nlc = -1, i = 0; i != -1 ; i = commitMessage.indexOf('\n', i + 1), nlc++);
+                    for (nlc = -1, i = 0; i != -1 ; i = commitMessage.indexOf('\n', i + 1), nlc++); // NOI18N
                     if (indentation == 0) nlc++;
                     int lines = (int) (rect.getWidth() / (width - 80) + 1);
-                    int ph = fm.getHeight() * (lines + nlc + 1) + 0;
+                    int ph = fm.getHeight() * (lines + nlc + 1) + 4;        // + 4 text pane border
                     textPane.setPreferredSize(new Dimension(width - 50, ph));
                 }
             }
             
             actionsPane.setVisible(true);
+
+            List<String> tags = new ArrayList<String>(dispRevision.getBranches());
+            tags.addAll(dispRevision.getTags());
+            if (tags.size() > 0) {
+                tagsLabel.setVisible(true);
+                String tagInfo = tags.get(0);
+                tagsLabel.setForeground(isSelected ? foregroundColor : Color.GRAY);
+                if (tags.size() > 1) {
+                    tagInfo += ","; // NOI18N
+                    tagsLink.setVisible(true);                    
+                    tagsLink.set("...", foregroundColor, backgroundColor); // NOI18N
+                } else {
+                    tagsLink.setVisible(false);
+                }
+                tagsLabel.setText(tagInfo); 
+            } else {
+                tagsLabel.setVisible(false);
+                tagsLink.setVisible(false);
+            }
+
             String prev = Utils.previousRevision(dispRevision.getRevision().getNumber());
             if (prev != null) {
                 diffToLabel.setVisible(true);
@@ -656,24 +799,42 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
             Rectangle apb = actionsPane.getBounds();
-            if (diffLink != null) {
+            Rectangle lkb = actionsPanel.getBounds();
+            if (diffLink.isVisible()) {
                 Rectangle bounds = diffLink.getBounds();
-                bounds.setBounds(bounds.x, bounds.y + apb.y, bounds.width, bounds.height);
+                bounds.setBounds(bounds.x + lkb.x, bounds.y + apb.y + lkb.y, bounds.width, bounds.height);
                 resultsList.putClientProperty("Summary-Diff-" + index, bounds); // NOI18N
             }
-            if (acpLink != null) {
+            if (acpLink.isVisible()) {
                 Rectangle bounds = acpLink.getBounds();
-                bounds.setBounds(bounds.x, bounds.y + apb.y, bounds.width, bounds.height);
+                bounds.setBounds(bounds.x + lkb.x, bounds.y + apb.y + lkb.y, bounds.width, bounds.height);
                 resultsList.putClientProperty("Summary-Acp-" + index, bounds); // NOI18N
             }
-            if (acopLink != null) {
+            if (acopLink.isVisible()) {
                 Rectangle bounds = acopLink.getBounds();
-                bounds.setBounds(bounds.x, bounds.y + apb.y, bounds.width, bounds.height);
+                bounds.setBounds(bounds.x + lkb.x, bounds.y + apb.y + lkb.y, bounds.width, bounds.height);
                 resultsList.putClientProperty("Summary-Acop-" + index, bounds); // NOI18N
+            }
+            if (tagsLink.isVisible()) {
+                Rectangle tpb = tagsPanel.getBounds();
+                Rectangle bounds = tagsLink.getBounds();
+                bounds.setBounds(bounds.x + tpb.x, bounds.y + apb.y + tpb.y, bounds.width, bounds.height);
+                resultsList.putClientProperty("Summary-tagsLink-" + index, bounds); // NOI18N
             }
         }
     }
     
+    private String getBranch(SearchHistoryPanel.DispRevision revision) {
+        String number = revision.getRevision().getNumber();
+        int idx = number.lastIndexOf('.');
+        if (idx == number.indexOf('.')) return null;
+        int idx2 = number.lastIndexOf('.', idx - 1);
+        String branchNumber = number.substring(0, idx2) + ".0" + number.substring(idx2, idx);
+        List<LogInformation.SymName> names = revision.getRevision().getLogInfoHeader().getSymNamesForRevision(branchNumber);
+        if (names.size() != 1) return null;
+        return names.get(0).getName();
+    }
+
     private static class HyperlinkLabel extends JLabel {
 
         public HyperlinkLabel() {

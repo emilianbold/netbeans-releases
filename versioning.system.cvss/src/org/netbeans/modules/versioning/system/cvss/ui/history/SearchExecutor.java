@@ -27,6 +27,7 @@ import org.netbeans.modules.versioning.system.cvss.ui.actions.log.LogExecutor;
 import org.netbeans.modules.versioning.system.cvss.ExecutorGroup;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.netbeans.modules.versioning.system.cvss.ClientRuntime;
+import org.netbeans.modules.versioning.system.cvss.CvsModuleConfig;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 
 import java.io.File;
@@ -136,7 +137,8 @@ class SearchExecutor implements Runnable {
             lcmd.setRevisionFilter(revFilter);
         }
         
-        rcmd.setNoTags(true);
+        rcmd.setNoTags(!CvsModuleConfig.getDefault().getPreferences().getBoolean(CvsModuleConfig.PROP_SEARCHHISTORY_FETCHTAGS, true));
+        lcmd.setNoTags(!CvsModuleConfig.getDefault().getPreferences().getBoolean(CvsModuleConfig.PROP_SEARCHHISTORY_FETCHTAGS, true));
         rcmd.setUserFilter(criteria.getUsername());
         lcmd.setUserFilter(criteria.getUsername());
 

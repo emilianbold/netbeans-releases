@@ -270,26 +270,50 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         currentSearchTask.schedule(0);
     }
     
-    private List createDisplayList(List list) {
+    private List createDisplayList(List<LogInformation.Revision> inputList) {
         List dispResults = new ArrayList();
-        List results = new ArrayList(list);
-        Collections.sort(results, new ByRemotePathRevisionNumberComparator());
-
-        int n = results.size();
-        if (n == 0) return dispResults;
+        if (inputList.isEmpty()) return dispResults;
         
-        for (int i = 0; i < n; i++) {
-            LogInformation.Revision revision = (LogInformation.Revision) results.get(i);
-            results.set(i, new DispRevision(revision));
+        List<LogInformation.Revision> list = new ArrayList(inputList);
+        Collections.sort(list, new ByRemotePathRevisionNumberComparator());
+
+        List<DispRevision> rs = new ArrayList<DispRevision>(list.size());
+        Set<String> addedBranchNumbers = new HashSet<String>(10);
+        for (LogInformation.Revision revision : list) {
+            String branchNumber = getBranchName(revision);
+            if (branchNumber != null && addedBranchNumbers.add(branchNumber)) {
+                List<LogInformation.SymName> symNames = revision.getLogInfoHeader().getSymNamesForRevision(Utils.createBranchRevisionNumber(branchNumber));
+                String branchName = null;
+                if (symNames.size() > 0) {
+                    branchName = symNames.get(0).getName();
+                }
+                LogInformation.Revision aRev = revision.getLogInfoHeader().new Revision();
+                aRev.setNumber(branchNumber);
+                rs.add(new DispRevision(branchNumber, branchName, aRev));
+            }
+            List<LogInformation.SymName> allTtags = revision.getLogInfoHeader().getAllSymbolicNames();
+            List<String> revisionTags = new ArrayList<String>(2);
+            List<String> revisionBranches = new ArrayList<String>(2);
+            String aBranch = revision.getNumber() + ".0."; // NOI18N
+            for (LogInformation.SymName name : allTtags) {
+                String nameRevision = name.getRevision();
+                if (revision.getNumber().equals(nameRevision)) {
+                    revisionTags.add(name.getName());
+                }
+                if (nameRevision.startsWith(aBranch)) {
+                    int idx = nameRevision.lastIndexOf('.'); // NOI18N
+                    revisionBranches.add(name.getName() + " (" + nameRevision.substring(0, idx - 1) + nameRevision.substring(idx + 1) + ")"); // NOI18N
+                }
+            }
+            rs.add(new DispRevision(revision, revisionTags, revisionBranches));
         }
         
         ResultsContainer currentContainer = null;
         
-        currentContainer = new ResultsContainer(((DispRevision) results.get(0)).getRevision().getLogInfoHeader());
+        currentContainer = new ResultsContainer(((DispRevision) rs.get(0)).getRevision().getLogInfoHeader());
         dispResults.add(currentContainer);
         
-        for (int i = 0; i < n; i++) {
-            DispRevision revision = (DispRevision) results.get(i);
+        for (DispRevision revision : rs) {
             if (currentContainer.getHeader() != revision.getRevision().getLogInfoHeader()) {
                 getProject(currentContainer.getHeader().getFile()); // precache outside AWT
                 if (currentContainer.getRevisions().size() < 1) {
@@ -301,7 +325,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
                 currentContainer = new ResultsContainer(revision.getRevision().getLogInfoHeader());
                 dispResults.add(currentContainer);
             }
-            DispRevision parent = getParentRevision(results, revision);
+            DispRevision parent = getParentRevision(rs, revision);
             if (parent != null) {
                 parent.addRevision(revision);
             } else {
@@ -317,15 +341,21 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         return dispResults;
     }
 
+    private String getBranchName(LogInformation.Revision rev) {
+        String number = rev.getNumber();          
+        int idx = number.lastIndexOf('.', number.lastIndexOf('.') - 1); // NOI18N
+        return (idx == -1) ? null : number.substring(0, number.lastIndexOf('.'));  // NOI18N
+    }
+
     private static DispRevision getParentRevision(List results, DispRevision revision) {
         String number = revision.getRevision().getNumber();
         for (;;) {
-            int idx = number.lastIndexOf('.', number.lastIndexOf('.') - 1);
+            int idx = number.lastIndexOf('.');
             if (idx == -1) return null;
             number = number.substring(0, idx);
             LogInformation.Revision parentRev = revision.getRevision().getLogInfoHeader().new Revision();
             parentRev.setNumber(number);
-            int index = Collections.binarySearch(results, new DispRevision(parentRev), revisionsComparator);
+            int index = Collections.binarySearch(results, new DispRevision(parentRev, null, null), revisionsComparator);
             if (index >= 0) return (DispRevision) results.get(index);
         }
     }
@@ -465,9 +495,29 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         private List  children;
         private String path;
         private int indentation;
+        
+        private final String branchNumber;
+        private final String branchName;
+        private final int hashCode;
+        private final List<String> tags;
+        private final List<String> branches;
 
-        public DispRevision(LogInformation.Revision revision) {
+        public DispRevision(String branchNumber, String branchName, LogInformation.Revision revision) {
+            this.branchNumber = branchNumber;
+            this.branchName = branchName;
             this.revision = revision;
+            this.hashCode = branchNumber.hashCode();
+            tags = null;
+            branches = null;
+        }
+        
+        public DispRevision(LogInformation.Revision revision, List<String> tags, List<String> branches) {
+            this.revision = revision;
+            this.tags = tags == null ? null : Collections.unmodifiableList(tags);
+            this.branches = branches == null ? null : Collections.unmodifiableList(branches);
+            this.hashCode = revision.hashCode();
+            this.branchNumber = null;
+            this.branchName = null;
             File file = revision.getLogInfoHeader().getFile();
             try {
                 name = CvsVersioningSystem.getInstance().getAdminHandler().getRepositoryForDirectory(file.getParentFile().getAbsolutePath(), "") + "/" + file.getName(); // NOI18N
@@ -476,6 +526,18 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
                 if (name.endsWith(",v")) name = name.substring(0, name.lastIndexOf(",v")); // NOI18N
             }
             path = name.substring(0, name.lastIndexOf('/'));            
+        }
+
+        public List<String> getTags() {
+            return tags;
+        }
+
+        public List<String> getBranches() {
+            return branches;
+        }
+
+        public String getBranchName() {
+            return branchName;
         }
 
         public String getName() {
@@ -504,11 +566,14 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         public boolean equals(Object o) {
             if (this == o) return true;
             if (!(o instanceof DispRevision)) return false;
+            if (branchNumber != null) {
+                return branchNumber.equals(((DispRevision) o).branchNumber);
+            }
             return revision.equals(((DispRevision) o).revision);
         }
 
         public int hashCode() {
-            return revision.hashCode();
+            return hashCode;
         }
 
         public int getIndentation() {
@@ -533,6 +598,9 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
             return text.toString();
         }
 
+        public boolean isBranchRoot() {
+            return branchNumber != null;
+        }
     }
 
     /**

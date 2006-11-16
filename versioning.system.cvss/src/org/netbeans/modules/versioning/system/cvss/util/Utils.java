@@ -28,18 +28,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -47,6 +39,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.lib.cvsclient.admin.Entry;
+import org.netbeans.lib.cvsclient.command.log.LogInformation;
 import org.netbeans.modules.versioning.system.cvss.CvsFileNode;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.netbeans.modules.versioning.system.cvss.FileInformation;
@@ -438,6 +431,45 @@ public class Utils {
         FileObject fo = FileUtil.toFileObject(file);
         if (fo == null) return getProject(file.getParentFile());
         return FileOwnerQuery.getOwner(fo);
+    }
+
+    public static String createBranchRevisionNumber(String branchNumber) {
+        StringBuilder sb = new StringBuilder();
+        int idx = branchNumber.lastIndexOf('.'); // NOI18N
+        sb.append(branchNumber.substring(0, idx));
+        sb.append(".0"); // NOI18N
+        sb.append(branchNumber.substring(idx));
+        return sb.toString();
+    }
+
+    public static String formatBranches(LogInformation.Revision revision, boolean useNumbersIfNamesNotAvailable) {
+        String branches = revision.getBranches();
+        if (branches == null) return ""; // NOI18N
+        
+        boolean branchNamesAvailable = true;
+        StringBuilder branchNames = new StringBuilder();
+        StringTokenizer st = new StringTokenizer(branches, ";"); // NOI18N
+        while (st.hasMoreTokens()) {
+            String branchNumber = st.nextToken().trim();
+            List<LogInformation.SymName> names = revision.getLogInfoHeader().getSymNamesForRevision(createBranchRevisionNumber(branchNumber));
+            if (names.size() > 0) {
+                branchNames.append(names.get(0).getName());
+            } else {
+                branchNamesAvailable = false;
+                if (useNumbersIfNamesNotAvailable) {
+                    branchNames.append(branchNumber);
+                } else {
+                    break;
+                }
+            }
+            branchNames.append("; "); // NOI18N
+        }
+        if (branchNamesAvailable || useNumbersIfNamesNotAvailable) {
+            branchNames.delete(branchNames.length() - 2, branchNames.length());
+        } else {
+            branchNames.delete(0, branchNames.length());
+        }
+        return branchNames.toString();
     }
 
     /**

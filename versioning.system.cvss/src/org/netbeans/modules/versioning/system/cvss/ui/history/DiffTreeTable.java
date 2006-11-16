@@ -28,19 +28,26 @@ import org.openide.nodes.Children;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.NbBundle;
 import org.openide.ErrorManager;
+import org.netbeans.modules.versioning.system.cvss.CvsModuleConfig;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.beans.PropertyVetoException;
+import java.awt.Window;
+import java.awt.Point;
+import java.awt.Cursor;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionListener;
 
 /**
  * Treetable to show results of Search History action.
  * 
  * @author Maros Sandor
  */
-class DiffTreeTable extends TreeTableView {
+class DiffTreeTable extends TreeTableView implements MouseListener, MouseMotionListener {
     
     private RevisionsRootNode rootNode;
     private List results;
@@ -58,16 +65,76 @@ class DiffTreeTable extends TreeTableView {
         renderer.setClosedIcon(null);
         renderer.setLeafIcon(null);
         tree.setCellRenderer(renderer);
+        
+        treeTable.addMouseListener(this);
+        treeTable.addMouseMotionListener(this);
+    }
+
+    private SearchHistoryPanel.DispRevision getRevisionWithTagsAt(Point p) {
+        int row = treeTable.rowAtPoint(p);
+        int column = treeTable.columnAtPoint(p);
+        if (row == -1 || column == -1) return null;
+        Object o = treeTable.getValueAt(row, column);
+        if (o instanceof Node.Property) {
+            Node.Property tags = (Node.Property) o;
+            SearchHistoryPanel.DispRevision drev = (SearchHistoryPanel.DispRevision) tags.getValue("dispRevision");
+            if (drev != null && drev.getBranches() != null && drev.getBranches().size() + drev.getTags().size() > 1) {
+                return drev;
+            }
+        }
+        return null;
     }
     
+    public void mouseClicked(MouseEvent e) {
+        Point p = e.getPoint();
+        SearchHistoryPanel.DispRevision drev = getRevisionWithTagsAt(p);
+        if (drev != null) {
+            Window w = SwingUtilities.windowForComponent(treeTable);
+            SwingUtilities.convertPointToScreen(p, treeTable);
+            p.x += 10;
+            p.y += 10;
+            SummaryView.showAllTags(w, p, drev);
+        }
+    }
+
+    public void mouseDragged(MouseEvent e) {
+    }
+
+    public void mouseMoved(MouseEvent e) {
+        if (getRevisionWithTagsAt(e.getPoint()) != null) {
+            treeTable.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        } else {
+            treeTable.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        }
+    }
+
+    public void mousePressed(MouseEvent e) {
+    }
+
+    public void mouseReleased(MouseEvent e) {
+    }
+
+    public void mouseEntered(MouseEvent e) {
+    }
+
+    public void mouseExited(MouseEvent e) {
+    }
+
     private void setupColumns() {
-        Node.Property [] columns = new Node.Property[4];
         ResourceBundle loc = NbBundle.getBundle(DiffTreeTable.class);
+        Node.Property [] columns;
+        if (CvsModuleConfig.getDefault().getPreferences().getBoolean(CvsModuleConfig.PROP_SEARCHHISTORY_FETCHTAGS, true)) {
+            columns = new Node.Property[5];
+            columns[3] = new ColumnDescriptor(RevisionNode.COLUMN_NAME_TAGS, List.class, loc.getString("LBL_DiffTree_Column_Tags"), loc.getString("LBL_DiffTree_Column_Tags_Desc"));
+            columns[4] = new ColumnDescriptor(RevisionNode.COLUMN_NAME_MESSAGE, String.class, loc.getString("LBL_DiffTree_Column_Message"), loc.getString("LBL_DiffTree_Column_Message_Desc"));
+        } else {
+            columns = new Node.Property[4];
+            columns[3] = new ColumnDescriptor(RevisionNode.COLUMN_NAME_MESSAGE, String.class, loc.getString("LBL_DiffTree_Column_Message"), loc.getString("LBL_DiffTree_Column_Message_Desc"));
+        }
         columns[0] = new ColumnDescriptor(RevisionNode.COLUMN_NAME_NAME, String.class, "", "");  // NOI18N
         columns[0].setValue("TreeColumnTTV", Boolean.TRUE); // NOI18N
         columns[1] = new ColumnDescriptor(RevisionNode.COLUMN_NAME_DATE, String.class, loc.getString("LBL_DiffTree_Column_Time"), loc.getString("LBL_DiffTree_Column_Time_Desc"));
         columns[2] = new ColumnDescriptor(RevisionNode.COLUMN_NAME_USERNAME, String.class, loc.getString("LBL_DiffTree_Column_Username"), loc.getString("LBL_DiffTree_Column_Username_Desc"));
-        columns[3] = new ColumnDescriptor(RevisionNode.COLUMN_NAME_MESSAGE, String.class, loc.getString("LBL_DiffTree_Column_Message"), loc.getString("LBL_DiffTree_Column_Message_Desc"));
         setProperties(columns);
     }
     
@@ -75,10 +142,18 @@ class DiffTreeTable extends TreeTableView {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 int width = getWidth();
-                treeTable.getColumnModel().getColumn(0).setPreferredWidth(width * 25 / 100);
-                treeTable.getColumnModel().getColumn(1).setPreferredWidth(width * 15 / 100);
-                treeTable.getColumnModel().getColumn(2).setPreferredWidth(width * 10 / 100);
-                treeTable.getColumnModel().getColumn(3).setPreferredWidth(width * 50 / 100);
+                if (CvsModuleConfig.getDefault().getPreferences().getBoolean(CvsModuleConfig.PROP_SEARCHHISTORY_FETCHTAGS, true)) {
+                    treeTable.getColumnModel().getColumn(0).setPreferredWidth(width * 20 / 100);
+                    treeTable.getColumnModel().getColumn(1).setPreferredWidth(width * 15 / 100);
+                    treeTable.getColumnModel().getColumn(2).setPreferredWidth(width * 10 / 100);
+                    treeTable.getColumnModel().getColumn(3).setPreferredWidth(width * 10 / 100);
+                    treeTable.getColumnModel().getColumn(4).setPreferredWidth(width * 45 / 100);
+                } else {
+                    treeTable.getColumnModel().getColumn(0).setPreferredWidth(width * 25 / 100);
+                    treeTable.getColumnModel().getColumn(1).setPreferredWidth(width * 15 / 100);
+                    treeTable.getColumnModel().getColumn(2).setPreferredWidth(width * 10 / 100);
+                    treeTable.getColumnModel().getColumn(3).setPreferredWidth(width * 50 / 100);
+                }
             }
         });
     }

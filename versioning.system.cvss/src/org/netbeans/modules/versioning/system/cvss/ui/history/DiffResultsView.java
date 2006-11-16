@@ -115,25 +115,31 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
             // invoked asynchronously becase treeView.getSelection() may not be ready yet
             Runnable runnable = new Runnable() {
                 public void run() {
+                    if (treeView.getSelection().length == 0) return;
                     SearchHistoryPanel.ResultsContainer container1 = (SearchHistoryPanel.ResultsContainer) nodes[0].getLookup().lookup(SearchHistoryPanel.ResultsContainer.class);
                     SearchHistoryPanel.DispRevision r1 = (SearchHistoryPanel.DispRevision) nodes[0].getLookup().lookup(SearchHistoryPanel.DispRevision.class);
                     try {
-                        currentIndex = treeView.getSelection()[0];
-                        if (nodes.length == 1) {
-                            if (container1 != null) {
-                                showContainerDiff(container1, onSelectionshowLastDifference);
+                        if (!r1.isBranchRoot()) {
+                            currentIndex = treeView.getSelection()[0];
+                            if (nodes.length == 1) {
+                                if (container1 != null) {
+                                    showContainerDiff(container1, onSelectionshowLastDifference);
+                                }
+                                else if (r1 != null) {
+                                    showRevisionDiff(r1, onSelectionshowLastDifference);
+                                }
+                            } else if (nodes.length == 2) {
+                                SearchHistoryPanel.DispRevision r2 = (SearchHistoryPanel.DispRevision) nodes[1].getLookup().lookup(SearchHistoryPanel.DispRevision.class);
+                                if (r2.isBranchRoot()) throw new Exception();
+                                if (r2.getRevision().getLogInfoHeader() != r1.getRevision().getLogInfoHeader()) {
+                                    throw new Exception();
+                                }
+                                String revision2 = r1.getRevision().getNumber();
+                                String revision1 = r2.getRevision().getNumber();
+                                showDiff(r1.getRevision().getLogInfoHeader(), revision1, revision2, false);
                             }
-                            else if (r1 != null) {
-                                showRevisionDiff(r1, onSelectionshowLastDifference);
-                            }
-                        } else if (nodes.length == 2) {
-                            SearchHistoryPanel.DispRevision r2 = (SearchHistoryPanel.DispRevision) nodes[1].getLookup().lookup(SearchHistoryPanel.DispRevision.class);
-                            if (r2.getRevision().getLogInfoHeader() != r1.getRevision().getLogInfoHeader()) {
-                                throw new Exception();
-                            }
-                            String revision2 = r1.getRevision().getNumber();
-                            String revision1 = r2.getRevision().getNumber();
-                            showDiff(r1.getRevision().getLogInfoHeader(), revision1, revision2, false);
+                        } else {
+                            showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_IllegalSelection"));
                         }
                     } catch (Exception e) {
                         showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_IllegalSelection"));

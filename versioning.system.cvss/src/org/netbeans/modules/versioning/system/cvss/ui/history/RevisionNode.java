@@ -28,15 +28,10 @@ import org.openide.text.*;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.NbBundle;
 import org.netbeans.lib.cvsclient.command.log.LogInformation;
-import org.netbeans.lib.cvsclient.command.CommandException;
-import org.netbeans.lib.cvsclient.connection.AuthenticationException;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.log.SearchHistoryAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.update.GetCleanAction;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
-import org.netbeans.modules.versioning.system.cvss.VersionsCache;
-import org.netbeans.modules.versioning.system.cvss.IllegalCommandException;
-import org.netbeans.modules.versioning.system.cvss.NotVersionedException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -46,11 +41,11 @@ import java.lang.reflect.InvocationTargetException;
 import java.awt.event.ActionEvent;
 import java.awt.*;
 import java.io.File;
-import java.io.IOException;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
-import java.net.URL;
-import java.net.MalformedURLException;
+import java.util.*;
+import java.util.List;
+import java.text.DateFormat;
 
 /**
  * Visible in the Search History Diff view.
@@ -62,9 +57,10 @@ class RevisionNode extends AbstractNode {
     static final String COLUMN_NAME_NAME        = "name"; // NOI18N
     static final String COLUMN_NAME_DATE        = "date"; // NOI18N
     static final String COLUMN_NAME_USERNAME    = "username"; // NOI18N
+    static final String COLUMN_NAME_TAGS        = "tags"; // NOI18N
     static final String COLUMN_NAME_MESSAGE     = "message"; // NOI18N
         
-    private LogInformation.Revision                 revision;
+    private SearchHistoryPanel.DispRevision         revision;
     private SearchHistoryPanel.ResultsContainer     container;
     private String                                  path;
 
@@ -78,15 +74,23 @@ class RevisionNode extends AbstractNode {
     }
 
     public RevisionNode(SearchHistoryPanel.DispRevision revision) {
-        super(revision.getChildren() == null ? Children.LEAF : new RevisionNodeChildren(revision), Lookups.fixed(new Object [] { revision }));
+        super(revision.getChildren() == null ? Children.LEAF : new RevisionNodeChildren(revision), Lookups.fixed(revision));
         this.path = revision.getPath();
-        this.revision = revision.getRevision();
-        setName(revision.getRevision().getNumber());
+        this.revision = revision;
+        if (revision.isBranchRoot()) {
+            if (revision.getBranchName() != null) {
+                setName(revision.getRevision().getNumber() + " - " + revision.getBranchName());
+            } else {
+                setName(revision.getRevision().getNumber());
+            }
+        } else {
+            setName(revision.getRevision().getNumber());
+        }
         initProperties();
     }
 
     LogInformation.Revision getRevision() {
-        return revision;
+        return revision.getRevision();
     }
 
     SearchHistoryPanel.ResultsContainer getContainer() {
@@ -112,17 +116,17 @@ class RevisionNode extends AbstractNode {
         }
     }
     
-    public Node.Cookie getCookie(Class clazz) {
+    public ViewCookie getCookie(Class<ViewCookie> clazz) {
         
         if (ViewCookie.class.equals(clazz)) {
-            File file = revision.getLogInfoHeader().getFile();
+            File file = revision.getRevision().getLogInfoHeader().getFile();
 
             String mime = null;
             FileObject fo = FileUtil.toFileObject(file);
             if (fo != null) {
                 mime = fo.getMIMEType();
             }
-            ViewEnv env = new ViewEnv(file, revision.getNumber().trim(), mime);
+            ViewEnv env = new ViewEnv(file, revision.getRevision().getNumber().trim(), mime);
             return new ViewCookieImpl(env);
         } else {
             return super.getCookie(clazz);
@@ -135,6 +139,7 @@ class RevisionNode extends AbstractNode {
         
         ps.put(new DateProperty());
         ps.put(new UsernameProperty());
+        ps.put(new TagsProperty());
         ps.put(new MessageProperty());
         
         sheet.put(ps);
@@ -152,19 +157,19 @@ class RevisionNode extends AbstractNode {
         }
                                 
         protected String messageName() {
-            return revision.getLogInfoHeader().getFile().getName() + " " + getName();
+            return revision.getRevision().getLogInfoHeader().getFile().getName() + " " + getName();
         }
         
         protected String messageSave() {
-            return revision.getLogInfoHeader().getFile().getName() + " " + getName();
+            return revision.getRevision().getLogInfoHeader().getFile().getName() + " " + getName();
         }
         
         protected java.lang.String messageToolTip() {
-            return revision.getLogInfoHeader().getFile().getName() + " " + getName();
+            return revision.getRevision().getLogInfoHeader().getFile().getName() + " " + getName();
         }
 
         protected java.lang.String messageOpening() {
-            return  NbBundle.getMessage(RevisionNode.class, "CTL_Action_Opening", revision.getLogInfoHeader().getFile().getName() + " " + getName());
+            return  NbBundle.getMessage(RevisionNode.class, "CTL_Action_Opening", revision.getRevision().getLogInfoHeader().getFile().getName() + " " + getName());
         }
         
         protected java.lang.String messageOpened() {
@@ -230,7 +235,7 @@ class RevisionNode extends AbstractNode {
 
         public Object getValue() throws IllegalAccessException, InvocationTargetException {
             if (revision != null) {
-                return revision.getAuthor();
+                return revision.getRevision().getAuthor();
             } else {
                 return ""; // NOI18N
             }
@@ -238,20 +243,39 @@ class RevisionNode extends AbstractNode {
     }
 
     private class DateProperty extends CommitNodeProperty {
+        
+        private String dateString;
 
         public DateProperty() {
             super(COLUMN_NAME_DATE, String.class, COLUMN_NAME_DATE, COLUMN_NAME_DATE);
+            dateString = (revision == null || revision.getRevision().getDate() == null) ? "" : DateFormat.getDateTimeInstance().format(revision.getRevision().getDate()); // NOI18N
         }
 
         public Object getValue() throws IllegalAccessException, InvocationTargetException {
-            if (revision != null) {
-                return revision.getDateString();
-            } else {
-                return ""; // NOI18N
-            }
+            return dateString;
         }
     }
 
+    private class TagsProperty extends CommitNodeProperty {
+
+        public TagsProperty() {
+            super(COLUMN_NAME_TAGS, List.class, COLUMN_NAME_TAGS, COLUMN_NAME_TAGS);
+            if (revision != null) setValue("dispRevision", revision);
+        }
+
+        public Object getValue() throws IllegalAccessException, InvocationTargetException {
+            return null; // nobody reads this, the custom editor handles painting, see below
+        }
+
+        public PropertyEditor getPropertyEditor() {
+            try {
+                return new TagsPropertyEditor(revision);
+            } catch (Exception e) {
+                return super.getPropertyEditor();
+            }
+        }        
+    }
+    
     private class MessageProperty extends CommitNodeProperty {
 
         public MessageProperty() {
@@ -260,7 +284,7 @@ class RevisionNode extends AbstractNode {
 
         public Object getValue() throws IllegalAccessException, InvocationTargetException {
             if (revision != null) {
-                return revision.getMessage();
+                return revision.getRevision().getMessage();
             } else {
                 return ""; // NOI18N
             }
@@ -276,7 +300,7 @@ class RevisionNode extends AbstractNode {
             if (allProjects) {
                 putValue(Action.NAME, NbBundle.getMessage(RevisionNode.class, "CTL_Action_FindCommitInProjects"));
             } else {
-                File file = revision.getLogInfoHeader().getFile();
+                File file = revision.getRevision().getLogInfoHeader().getFile();
                 Project project = Utils.getProject(file);
                 if (project != null) {
                     String prjName = ProjectUtils.getInformation(project).getDisplayName();
@@ -289,21 +313,21 @@ class RevisionNode extends AbstractNode {
         }
 
         public void actionPerformed(ActionEvent e) {
-            File file = revision.getLogInfoHeader().getFile();
+            File file = revision.getRevision().getLogInfoHeader().getFile();
             if (allProjects) {
                 Project [] projects  = OpenProjects.getDefault().getOpenProjects();
                 int n = projects.length;
                 SearchHistoryAction.openSearch(
                         (n == 1) ? ProjectUtils.getInformation(projects[0]).getDisplayName() : 
                         NbBundle.getMessage(SummaryView.class, "CTL_FindAssociateChanges_OpenProjects_Title", Integer.toString(n)),
-                        revision.getMessage().trim(), revision.getAuthor(), revision.getDate());
+                        revision.getRevision().getMessage().trim(), revision.getRevision().getAuthor(), revision.getRevision().getDate());
             } else {
                 Project project = Utils.getProject(file);                
                 Context context = Utils.getProjectsContext(new Project[] { project });
                 SearchHistoryAction.openSearch(
                         context, 
                         ProjectUtils.getInformation(project).getDisplayName(),
-                        revision.getMessage().trim(), revision.getAuthor(), revision.getDate());
+                        revision.getRevision().getMessage().trim(), revision.getRevision().getAuthor(), revision.getRevision().getDate());
             }
         }
     }
@@ -311,12 +335,12 @@ class RevisionNode extends AbstractNode {
     private class RollbackAction extends AbstractAction {
 
         public RollbackAction() {
-            putValue(Action.NAME, NbBundle.getMessage(RevisionNode.class, "CTL_Action_RollbackTo", revision.getNumber()));
+            putValue(Action.NAME, NbBundle.getMessage(RevisionNode.class, "CTL_Action_RollbackTo", revision.getRevision().getNumber()));
         }
 
         public void actionPerformed(ActionEvent e) {
-            File file = revision.getLogInfoHeader().getFile();
-            GetCleanAction.rollback(file, revision.getNumber());
+            File file = revision.getRevision().getLogInfoHeader().getFile();
+            GetCleanAction.rollback(file, revision.getRevision().getNumber());
         }
     }
 
@@ -324,11 +348,11 @@ class RevisionNode extends AbstractNode {
 
         public RollbackChangeAction() {
             putValue(Action.NAME, NbBundle.getMessage(RevisionNode.class, "CTL_Action_RollbackChange"));
-            setEnabled(Utils.previousRevision(revision.getNumber()) != null);
+            setEnabled(Utils.previousRevision(revision.getRevision().getNumber()) != null);
         }
 
         public void actionPerformed(ActionEvent e) {
-            SummaryView.rollbackChanges(new LogInformation.Revision [] { revision });
+            SummaryView.rollbackChanges(new LogInformation.Revision [] { revision.getRevision() });
         }
     }
     
@@ -353,6 +377,65 @@ class RevisionNode extends AbstractNode {
 
         public boolean isPaintable() {
             return true;
+        }
+    }
+    
+    private static class TagsPropertyEditor extends PropertyEditorSupport {
+
+        private static final JLabel renderer = new JLabel();
+        
+        private SearchHistoryPanel.DispRevision dispRevision;
+
+        static {
+            renderer.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 2));
+        }
+        
+        public TagsPropertyEditor(SearchHistoryPanel.DispRevision revision) {
+            this.dispRevision = revision;
+        }
+
+        public boolean isPaintable() {
+            return true;
+        }
+
+        public void paintValue(Graphics gfx, Rectangle box) {
+            renderer.setForeground(gfx.getColor());
+            renderer.setBounds(box);
+
+            if (dispRevision == null || dispRevision.getBranches() == null) {
+                renderer.setText(""); // NOI18N
+            } else {
+                List<String> tags = new ArrayList<String>(dispRevision.getBranches());
+                tags.addAll(dispRevision.getTags());
+                if (tags.size() > 0) {
+                    String tagInfo = "<html>" + tags.get(0); // NOI18N
+                    if (tags.size() > 1) {
+                        tagInfo += ","; // NOI18N
+                        Color foreground = UIManager.getColor("List.selectionForeground"); // NOI18N
+                        if (!gfx.getColor().equals(foreground)) {
+                            tagInfo += " <a href=\"\">...</a>"; // NOI  18N
+                        } else {
+                            StringBuilder sb = new StringBuilder();
+                            sb.append(" <a href=\"\" style=\"color:"); // NOI18N
+                            sb.append("rgb("); // NOI18N
+                            sb.append(foreground.getRed());
+                            sb.append(","); // NOI18N
+                            sb.append(foreground.getGreen());
+                            sb.append(","); // NOI18N
+                            sb.append(foreground.getBlue());
+                            sb.append(")"); // NOI18N
+                            sb.append("\">"); // NOI18N
+                            sb.append("...");
+                            sb.append("</a>"); // NOI18N
+                            tagInfo += sb.toString();
+                        }
+                    }
+                    renderer.setText(tagInfo);
+                } else {
+                    renderer.setText("");
+                }
+            }
+            renderer.paint(gfx);
         }
     }
 }
