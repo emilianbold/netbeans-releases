@@ -24,6 +24,7 @@ import java.util.List;
 import org.netbeans.installer.product.ProductComponent;
 import org.netbeans.installer.product.ProductRegistry;
 import org.netbeans.installer.product.utils.Status;
+import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
@@ -37,28 +38,44 @@ import org.netbeans.installer.wizard.components.sequences.*;
 
 
 public class DownloadConfigurationLogicAction extends CompositeProgressAction {
+    /////////////////////////////////////////////////////////////////////////////////
+    // Constants
+    public static final Class CLASS = DownloadConfigurationLogicAction.class;
+    
+    public static final String DIALOG_TITLE_PROPERTY = DefaultWizardPanel.DIALOG_TITLE_PROPERTY;
+    public static final String DEFAULT_DIALOG_TITLE = ResourceUtils.getString(CLASS, "DownloadConfigurationLogicAction.default.dialog.title");
+    
+    /////////////////////////////////////////////////////////////////////////////////
+    // Instance
+    private CompositeProgress overallProgress;
+    private Progress          currentProgress;
+    
     public DownloadConfigurationLogicAction() {
         setProperty(DIALOG_TITLE_PROPERTY, DEFAULT_DIALOG_TITLE);
     }
     
     public void execute() {
-        final List<ProductComponent> components = ProductRegistry.getInstance().getComponentsToInstall();
+        final ProductRegistry registry = ProductRegistry.getInstance();
+        final List<ProductComponent> components = registry.getComponentsToInstall();
         final int percentageChunk = Progress.COMPLETE / components.size();
         final int percentageLeak  = Progress.COMPLETE % components.size();
         
-        final CompositeProgress compositeProgress = new CompositeProgress();
+        overallProgress = new CompositeProgress();
+        overallProgress.setTitle("Downloading configuration logic for selected components");
+        overallProgress.setPercentage(percentageLeak);
         
-        progressPanel.setOverallProgress(compositeProgress);
-        
-        compositeProgress.setTitle("Downloading configuration logic for selected components");
-        for (int i = 0; i < components.size(); i++) {
-            final ProductComponent component = components.get(i);
-            final Progress childProgress = new Progress();
+        progressPanel.setOverallProgress(overallProgress);
+        for (ProductComponent component: components) {
+            // initiate the progress for the current element
+            currentProgress = new Progress();
+            progressPanel.setCurrentProgress(currentProgress);
             
-            compositeProgress.addChild(childProgress, percentageChunk);
-            progressPanel.setCurrentProgress(childProgress);
+            overallProgress.addChild(currentProgress, percentageChunk);            
             try {
-                component.downloadConfigurationLogic(childProgress);
+                component.downloadConfigurationLogic(currentProgress);
+                
+                // check for cancel status
+                if (canceled) return;
                 
                 // sleep a little so that the user can perceive that something
                 // is happening
@@ -75,7 +92,7 @@ public class DownloadConfigurationLogicAction extends CompositeProgressAction {
                 // since the component failed to download and hence failed to
                 // install - we should remove the depending components from
                 // our plans to install
-                for(ProductComponent dependent : ProductRegistry.getInstance().getDependingComponents(component)) {
+                for(ProductComponent dependent: registry.getDependingComponents(component)) {
                     if (dependent.getStatus()  == Status.TO_BE_INSTALLED) {
                         InstallationException dependentError = new InstallationException("Could not install " + dependent.getDisplayName() + ", since the installation of " + component.getDisplayName() + "failed", error);
                         
@@ -87,11 +104,24 @@ public class DownloadConfigurationLogicAction extends CompositeProgressAction {
                 }
                 
                 // finally notify the user of what has happened
-                LogManager.log(ErrorLevel.ERROR, error);
+                ErrorManager.notify(ErrorLevel.ERROR, error);
             }
         }
     }
     
-    public static final String DIALOG_TITLE_PROPERTY = DefaultWizardPanel.DIALOG_TITLE_PROPERTY;
-    public static final String DEFAULT_DIALOG_TITLE = ResourceUtils.getString(MainSequence.class, "InstallSequence.DownloadConfigurationLogicAction.default.dialog.title");
+    public void cancel() {
+        if (currentProgress != null) {
+            currentProgress.setCanceled(true);
+        }
+        
+        if (overallProgress != null) {
+            overallProgress.setCanceled(true);
+        }
+        
+        super.cancel();
+    }
+    
+    public boolean canExecuteForward() {
+        return ProductRegistry.getInstance().getComponentsToInstall().size() > 0;
+    }
 }

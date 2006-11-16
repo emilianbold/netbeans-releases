@@ -43,24 +43,31 @@ public abstract class WizardAction implements WizardComponent {
     private WizardCondition condition  = new TrueCondition();
     private Properties      properties = new Properties();
     
+    protected boolean       finished   = false;
+    protected boolean       canceled   = false;
+    
     public final void executeForward(final Wizard wizard) {
-        Thread workerThread = new Thread() {
+        Thread worker = new Thread() {
             public void run() {
                 executeComponent(wizard, true);
-                wizard.next();
+                if (!canceled) {
+                    wizard.next();
+                }
             }
         };
-        workerThread.start();
+        worker.start();
     }
     
     public final void executeBackward(final Wizard wizard) {
-        Thread workerThread = new Thread() {
+        Thread worker = new Thread() {
             public void run() {
                 executeComponent(wizard, true);
-                wizard.previous();
+                if (!canceled) {
+                    wizard.previous();
+                }
             }
         };
-        workerThread.start();
+        worker.start();
     }
     
     public final void executeBlocking(final Wizard wizard) {
@@ -133,11 +140,15 @@ public abstract class WizardAction implements WizardComponent {
     
     public abstract WizardPanel getUI();
     
-    public abstract void cancel();
+    public void cancel() {
+        canceled = true;
+    }
     
     /////////////////////////////////////////////////////////////////////////////////
     private void executeComponent(final Wizard wizard, final boolean showUi) {
         this.wizard = wizard;
+        
+        finished = false;
         
         // first initialize and show the UI
         if (showUi) {
@@ -151,6 +162,8 @@ public abstract class WizardAction implements WizardComponent {
             }
         }
         execute();
+        
+        finished = true;
     }
     
     protected final Wizard getWizard() {
@@ -190,7 +203,7 @@ public abstract class WizardAction implements WizardComponent {
     }
     
     // private stuff ////////////////////////////////////////////////////////////////
-    private ClassLoader getCorrectClassLoader() {
+    private final ClassLoader getCorrectClassLoader() {
         if (wizard.getProductComponent() != null) {
             return wizard.getProductComponent().getClassLoader();
         } else {

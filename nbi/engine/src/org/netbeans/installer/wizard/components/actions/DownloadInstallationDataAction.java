@@ -37,30 +37,44 @@ import org.netbeans.installer.wizard.components.sequences.*;
 
 
 public class DownloadInstallationDataAction extends CompositeProgressAction {
+    /////////////////////////////////////////////////////////////////////////////////
+    // Constants
+    public static final Class CLASS = DownloadInstallationDataAction.class;
+    
+    public static final String DIALOG_TITLE_PROPERTY = DefaultWizardPanel.DIALOG_TITLE_PROPERTY;
+    public static final String DEFAULT_DIALOG_TITLE = ResourceUtils.getString(CLASS, "DownloadInstallationDataAction.default.dialog.title");
+    
+    /////////////////////////////////////////////////////////////////////////////////
+    // Instance
+    private CompositeProgress overallProgress;
+    private Progress          currentProgress;
+    
     public DownloadInstallationDataAction() {
         setProperty(DIALOG_TITLE_PROPERTY, DEFAULT_DIALOG_TITLE);
     }
     
     public void execute() {
         final ProductRegistry registry = ProductRegistry.getInstance();
-        
         final List<ProductComponent> components = registry.getComponentsToInstall();
-        
         final int percentageChunk = Progress.COMPLETE / components.size();
         final int percentageLeak = Progress.COMPLETE % components.size();
         
-        final CompositeProgress progress = new CompositeProgress();
+        overallProgress = new CompositeProgress();
+        overallProgress.setTitle("Downloading installation data for selected components");
+        overallProgress.setPercentage(percentageLeak);
         
-        progress.setTitle("Downloading installation data for selected components");
-        progressPanel.setOverallProgress(progress);
-        for (int i = 0; i < components.size(); i++) {
-            final ProductComponent component = components.get(i);
-            final Progress childProgress = new Progress();
+        progressPanel.setOverallProgress(overallProgress);
+        for (ProductComponent component: components) {
+            // initiate the progress for the current element
+            currentProgress = new Progress();
+            progressPanel.setCurrentProgress(currentProgress);
             
-            progress.addChild(childProgress, percentageChunk + (i == components.size() - 1 ? percentageLeak : 0));
-            progressPanel.setCurrentProgress(childProgress);
+            overallProgress.addChild(currentProgress, percentageChunk);
             try {
-                component.downloadInstallationData(childProgress);
+                component.downloadInstallationData(currentProgress);
+                
+                // check for cancel status
+                if (canceled) return;
                 
                 // sleep a little so that the user can perceive that something
                 // is happening
@@ -94,14 +108,23 @@ public class DownloadInstallationDataAction extends CompositeProgressAction {
         }
     }
     
+    public void cancel() {
+        if (currentProgress != null) {
+            currentProgress.setCanceled(true);
+        }
+        
+        if (overallProgress != null) {
+            overallProgress.setCanceled(true);
+        }
+        
+        super.cancel();
+    }
+    
     public boolean canExecuteForward() {
-        return ProductRegistry.getInstance().getComponentsToInstall().size()  > 0;
+        return ProductRegistry.getInstance().getComponentsToInstall().size() > 0;
     }
     
     public boolean isPointOfNoReturn() {
         return true;
     }
-    
-    public static final String DIALOG_TITLE_PROPERTY = DefaultWizardPanel.DIALOG_TITLE_PROPERTY;
-    public static final String DEFAULT_DIALOG_TITLE = ResourceUtils.getString(MainSequence.class, "InstallSequence.DownloadInstallationDataAction.default.dialog.title");
 }

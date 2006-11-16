@@ -32,6 +32,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.nio.charset.Charset;
+import org.netbeans.installer.utils.helper.ErrorLevel;
 
 /**
  * @author Danila_Dugurov
@@ -42,13 +43,26 @@ public class StreamUtils {
     
     public static void transferData(InputStream in, OutputStream out) throws IOException {
         final byte[] buffer = new byte[BUFFER_SIZE];
-        final BufferedInputStream bufferedIn = new BufferedInputStream(in);
-        final BufferedOutputStream bufferedOut = new BufferedOutputStream(out);
-        int readLength;
-        while ((readLength = bufferedIn.read(buffer)) != -1) {
-            bufferedOut.write(buffer, 0, readLength);
+        
+        while (in.available() > 0) {
+            out.write(buffer, 0, in.read(buffer));
         }
-        bufferedOut.flush();
+    }
+    
+    public static void transferFile(File file, OutputStream out) throws IOException {
+        FileInputStream in = null;
+        
+        try {
+            transferData(in = new FileInputStream(file), out);
+        } finally {
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    ErrorManager.notify(ErrorLevel.DEBUG, e);
+                }
+            }
+        }
     }
     
     public static CharSequence readStream(InputStream input) throws IOException {

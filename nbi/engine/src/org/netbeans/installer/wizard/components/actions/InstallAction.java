@@ -34,30 +34,44 @@ import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.wizard.components.panels.DefaultWizardPanel;
 import org.netbeans.installer.wizard.components.sequences.*;
 
-
 public class InstallAction extends CompositeProgressAction {
+    /////////////////////////////////////////////////////////////////////////////////
+    // Constants
+    public static final Class CLASS = InstallAction.class;
+    
+    public static final String DIALOG_TITLE_PROPERTY = DefaultWizardPanel.DIALOG_TITLE_PROPERTY;
+    public static final String DEFAULT_DIALOG_TITLE = ResourceUtils.getString(CLASS, "InstallAction.default.dialog.title");
+    
+    /////////////////////////////////////////////////////////////////////////////////
+    // Instance
+    private CompositeProgress overallProgress;
+    private Progress          currentProgress;
+    
     public InstallAction() {
         setProperty(DIALOG_TITLE_PROPERTY, DEFAULT_DIALOG_TITLE);
     }
     
     public void execute() {
-        final List<ProductComponent> components = ProductRegistry.getInstance().getComponentsToInstall();
+        final ProductRegistry registry = ProductRegistry.getInstance();
+        final List<ProductComponent> components = registry.getComponentsToInstall();
         final int percentageChunk = Progress.COMPLETE / components.size();
         final int percentageLeak = Progress.COMPLETE % components.size();
         
-        final CompositeProgress progress = new CompositeProgress();
+        overallProgress = new CompositeProgress();
+        overallProgress.setTitle("Installing selected components");
+        overallProgress.setPercentage(percentageLeak);
         
-        progress.setTitle("Installing selected components");
-        progressPanel.setOverallProgress(progress);
-        for (int i = 0; i < components.size(); i++) {
-            final ProductComponent component = components.get(i);
-            final Progress childProgress = new Progress();
+        progressPanel.setOverallProgress(overallProgress);
+        for (ProductComponent component:components) {
+            currentProgress = new Progress();
+            currentProgress.setTitle("Installing " + component.getDisplayName());
+            progressPanel.setCurrentProgress(currentProgress);
             
-            childProgress.setTitle("Installing " + component.getDisplayName());
-            progressPanel.setCurrentProgress(childProgress);
-            progress.addChild(childProgress, percentageChunk + (i == components.size() - 1 ? percentageLeak : 0));
+            overallProgress.addChild(currentProgress, percentageChunk);
             try {
-                component.install(childProgress);
+                component.install(currentProgress);
+                
+                if (canceled) return;
                 
                 // sleep a little so that the user can perceive that something
                 // is happening
@@ -87,14 +101,23 @@ public class InstallAction extends CompositeProgressAction {
         }
     }
     
+    public void cancel() {
+        if (currentProgress != null) {
+            currentProgress.setCanceled(true);
+        }
+        
+        if (overallProgress != null) {
+            overallProgress.setCanceled(true);
+        }
+        
+        super.cancel();
+    }
+    
     public boolean canExecuteForward() {
-        return ProductRegistry.getInstance().getComponentsToInstall().size()  > 0;
+        return ProductRegistry.getInstance().getComponentsToInstall().size() > 0;
     }
     
     public boolean isPointOfNoReturn() {
         return true;
     }
-    
-    public static final String DIALOG_TITLE_PROPERTY = DefaultWizardPanel.DIALOG_TITLE_PROPERTY;
-    public static final String DEFAULT_DIALOG_TITLE = ResourceUtils.getString(MainSequence.class, "InstallSequence.InstallAction.default.dialog.title");
 }

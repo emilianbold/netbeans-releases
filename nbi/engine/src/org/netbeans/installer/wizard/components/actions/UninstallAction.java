@@ -35,28 +35,41 @@ import org.netbeans.installer.wizard.components.panels.DefaultWizardPanel;
 import org.netbeans.installer.wizard.components.sequences.MainSequence;
 
 public class UninstallAction extends CompositeProgressAction {
+    /////////////////////////////////////////////////////////////////////////////////
+    // Constants
+    public static final Class CLASS = UninstallAction.class;
+    
+    public static final String DIALOG_TITLE_PROPERTY = DefaultWizardPanel.DIALOG_TITLE_PROPERTY;
+    public static final String DEFAULT_DIALOG_TITLE = ResourceUtils.getString(CLASS, "UninstallAction.default.dialog.title");
+    
+    /////////////////////////////////////////////////////////////////////////////////
+    // Instance
+    private CompositeProgress overallProgress;
+    private Progress          currentProgress;
+    
     public UninstallAction() {
         setProperty(DIALOG_TITLE_PROPERTY, DEFAULT_DIALOG_TITLE);
     }
     
     public void execute() {
-        final List<ProductComponent> components = ProductRegistry.getInstance().getComponentsToUninstall();
+        final ProductRegistry registry = ProductRegistry.getInstance();
+        final List<ProductComponent> components = registry.getComponentsToUninstall();
         final int percentageChunk = Progress.COMPLETE / components.size();
         final int percentageLeak = Progress.COMPLETE % components.size();
         
-        final CompositeProgress progress = new CompositeProgress();
+        overallProgress = new CompositeProgress();
+        overallProgress.setTitle("Uninstalling selected components");
+        overallProgress.setPercentage(percentageLeak);
         
-        progress.setTitle("Uninstalling selected components");
-        progressPanel.setOverallProgress(progress);
-        for (int i = 0; i < components.size(); i++) {
-            final ProductComponent component = components.get(i);
-            final Progress childProgress = new Progress();
+        progressPanel.setOverallProgress(overallProgress);
+        for (ProductComponent component: components) {
+            currentProgress = new Progress();
+            currentProgress.setTitle("Uninstalling " + component.getDisplayName());
+            progressPanel.setCurrentProgress(currentProgress);
             
-            childProgress.setTitle("Uninstalling " + component.getDisplayName());
-            progressPanel.setCurrentProgress(childProgress);
-            progress.addChild(childProgress, percentageChunk + (i == components.size() - 1 ? percentageLeak : 0));
+            overallProgress.addChild(currentProgress, percentageChunk);
             try {
-                component.uninstall(childProgress);
+                component.uninstall(currentProgress);
                 
                 // sleep a little so that the user can perceive that something
                 // is happening
@@ -70,7 +83,7 @@ public class UninstallAction extends CompositeProgressAction {
                 // since the component failed to uninstall  - we should remove
                 // the components it depends on from our plans to uninstall
                 for(ProductComponent requirement : ProductRegistry.getInstance().getRequiredComponents(component)) {
-                    if (requirement.getStatus()  == Status.TO_BE_UNINSTALLED) {
+                    if (requirement.getStatus() == Status.TO_BE_UNINSTALLED) {
                         UninstallationException requirementError = new UninstallationException("Could not uninstall " + requirement.getDisplayName() + ", since the uninstallation of " + component.getDisplayName() + "failed", e);
                         
                         requirement.setStatus(Status.INSTALLED);
@@ -87,13 +100,10 @@ public class UninstallAction extends CompositeProgressAction {
     }
     
     public boolean canExecuteForward() {
-        return ProductRegistry.getInstance().getComponentsToUninstall().size()  > 0;
+        return ProductRegistry.getInstance().getComponentsToUninstall().size() > 0;
     }
     
     public boolean isPointOfNoReturn() {
         return true;
     }
-    
-    public static final String DIALOG_TITLE_PROPERTY = DefaultWizardPanel.DIALOG_TITLE_PROPERTY;
-    public static final String DEFAULT_DIALOG_TITLE = ResourceUtils.getString(MainSequence.class, "InstallSequence.UninstallAction.default.dialog.title");
 }

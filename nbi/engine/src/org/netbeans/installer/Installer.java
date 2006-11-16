@@ -182,10 +182,6 @@ public class Installer {
      * @see #criticalExit()
      */
     public void cancel() {
-        if (!UiUtils.showYesNoDialog("Are you shure you want to cancel?")) {
-            return;
-        }
-        
         // shut down everything that needs it
         DownloadManager.getInstance().shutdown();
         
