@@ -19,7 +19,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
-
+    
     <folder name="WarmUp">
         <file name="org-netbeans-core-ui-warmup-MenuWarmUpTask.instance"/>
         <file name="org-netbeans-core-ui-warmup-ContextMenuWarmUpTask.instance"/>
@@ -27,7 +27,7 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
     <folder name="Actions">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
-
+        
         <folder name="Edit">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
             <file name="org-netbeans-core-ui-sysopen-SystemOpenAction.instance"/>
@@ -74,7 +74,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-openide-actions-CustomizeAction.instance"/>
             <file name="org-netbeans-core-actions-HTMLViewAction.instance"/>
         </folder>        
-
+        
         <folder name="Tools">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
         </folder>
@@ -91,9 +91,19 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-core-actions-AboutAction.instance"/>
         </folder>
         
+       <folder name="Other">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+            <file name="org-netbeans-core-actions-CopyProductInfoAction.instance"/>
+        </folder> 
+        
     </folder>
     
-        
+    <folder name="Shortcuts">
+        <file name="O-F3.shadow">
+            <attr name="originalFile" stringvalue="Actions/Other/org-netbeans-core-actions-CopyProductInfoAction.instance"/>
+        </file>
+    </folder>
+    
     <folder name="Menu">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
         <folder name="File">
@@ -198,10 +208,10 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="org-netbeans-core-actions-ConfigureShortcutsAction.instance/org-netbeans-core-actions-OptionsAction.instance" boolvalue="true"/>
             <file name="org-netbeans-core-actions-OptionsAction.instance"/>
         </folder> 
-
+        
         <folder name="Window">
             <file name="org-netbeans-core-actions-GlobalPropertiesAction.shadow">
-              <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-actions-GlobalPropertiesAction.instance"/>
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-actions-GlobalPropertiesAction.instance"/>
             </file>
             <attr name="org-netbeans-core-actions-GlobalPropertiesAction.shadow/oldRootsStart.txt" boolvalue="true"/>
             <file name="oldRootsStart.txt"/>
@@ -219,7 +229,7 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="Separator1.instance/org-netbeans-core-actions-AboutAction.instance" boolvalue="true"/>
             <file name="org-netbeans-core-actions-AboutAction.instance"/>
         </folder>
-              
+        
     </folder>
     
     <folder name="Toolbars">
@@ -253,7 +263,7 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
             <file name="org-openide-actions-GarbageCollectAction.instance"/>
         </folder>
-
+        
         <!-- specify toolbar configuration for platform ui. -->
         <file name="Standard.xml" url="Standard.xml">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
@@ -271,9 +281,9 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/webbrowsercateg.gif"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
             </folder>
-
+            
         </folder>    
-
+        
         <!-- XXX these two should be elsewhere, probably (core/favorites?): -->
         
         <!-- folder for all privileged templates -->
@@ -291,7 +301,7 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
         
     </folder>
-              
+    
     <folder name="Services">
         <folder name="Browsers">
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/webbrowsercateg.gif"/>
@@ -302,7 +312,7 @@ Microsystems, Inc. All Rights Reserved.
             </file>
             <attr name="helpID" stringvalue="org.netbeans.core.services.Browsers"/>
         </folder>
-
+        
         <file name="org-netbeans-core-IDESettings.settings" url="IDESettings.settings">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/ideSettings.gif"/>
@@ -323,20 +333,20 @@ Microsystems, Inc. All Rights Reserved.
             
             <folder name="IDEConfiguration"> <!-- PENDING rename to somethink like APP Settings or so -->
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
-
+                
                 <folder name="LookAndFeel"> 
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
-
+                    
                     <file name="Actions.instance">
                         <attr name="instanceCreate" newvalue="org.netbeans.core.ActionsPoolNode"/>
                         <attr name="instanceClass" stringvalue="org.openide.nodes.Node"/>
                     </file>
-
+                    
                     <file name="Menu.instance">
                         <attr name="instanceCreate" newvalue="org.netbeans.core.windows.services.MenuFolderNode"/>
                         <attr name="instanceClass" stringvalue="org.openide.nodes.Node"/>
                     </file>
-
+                    
                     <file name="Toolbar.instance">
                         <attr name="instanceCreate" newvalue="org.netbeans.core.windows.services.ToolbarFolderNode"/>
                         <attr name="instanceClass" stringvalue="org.openide.nodes.Node"/>
@@ -345,29 +355,29 @@ Microsystems, Inc. All Rights Reserved.
 
                 <folder name="System">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
-
+                    
                     <file name="ObjectTypes.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.core.ui.UINodes.createObjectTypes"/>
                         <attr name="instanceClass" stringvalue="org.openide.nodes.Node"/>
                     </file>
-
+                    
                     <file name="org-openide-text-PrintSettings.shadow">
                         <attr name="originalFile" stringvalue="Services/org-openide-text-PrintSettings.settings"/>
                     </file>
-
+                    
                     <file name="org-netbeans-core-IDESettings.shadow">
                         <attr name="originalFile" stringvalue="Services/org-netbeans-core-IDESettings.settings"/>
                     </file>
-
+                    
                     <file name="MIMEResolver.shadow">
                         <attr name="originalFile" stringvalue="Services/MIMEResolver"/>
                     </file>
-
+                    
                 </folder> <!-- System -->
 
                 <folder name="ServerAndExternalToolSettings">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
-
+                    
                     <!-- link to HTML browsers -->
                     <file name="Browsers.shadow">
                         <attr name="originalFile" stringvalue="Services/Browsers"/>
@@ -379,31 +389,31 @@ Microsystems, Inc. All Rights Reserved.
     </folder>  <!-- UI -->
 
     <folder name="Windows2">
-        <!--
+    <!--
         <file name="WindowManager.wswmgr" url="windowmanager/windowmanager.wswmgr" />
         -->
-        <folder name="Modes">
-        
-            <!-- Note, editor mode defined directly in core/windows, to allow
+    <folder name="Modes">
+    
+    <!-- Note, editor mode defined directly in core/windows, to allow
             winsys run correctly in platform use, without core/ui -->
             
-            <file name="explorer.wsmode" url="windowmanager/explorer.wsmode"/>
-            <folder name="explorer"/>
-                
-            <file name="properties.wsmode" url="windowmanager/properties.wsmode"/>
-            <folder name="properties">
-                <file name="properties.wstcref" url="windowmanager/properties/properties.wstcref"/>
-            </folder>
+    <file name="explorer.wsmode" url="windowmanager/explorer.wsmode"/>
+    <folder name="explorer"/>
+    
+    <file name="properties.wsmode" url="windowmanager/properties.wsmode"/>
+    <folder name="properties">
+        <file name="properties.wstcref" url="windowmanager/properties/properties.wstcref"/>
+    </folder>
+    
+    <file name="leftSlidingSide.wsmode" url="windowmanager/leftside.wsmode"/>
+    <folder name="leftSlidingSide"/>
+    
+    <file name="rightSlidingSide.wsmode" url="windowmanager/rightside.wsmode"/>
+    <folder name="rightSlidingSide"/>
+        
+        <file name="bottomSlidingSide.wsmode" url="windowmanager/bottomside.wsmode"/>
+        <folder name="bottomSlidingSide"/>
             
-            <file name="leftSlidingSide.wsmode" url="windowmanager/leftside.wsmode"/>
-            <folder name="leftSlidingSide"/>
-            
-            <file name="rightSlidingSide.wsmode" url="windowmanager/rightside.wsmode"/>
-            <folder name="rightSlidingSide"/>
-            
-            <file name="bottomSlidingSide.wsmode" url="windowmanager/bottomside.wsmode"/>
-            <folder name="bottomSlidingSide"/>
-                
         </folder>
         
         <folder name="Groups">
@@ -411,13 +421,13 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="properties.wstcgrp" url="groups/form/properties.wstcgrp"/>
             </folder>
         </folder>
-
+        
         <folder name="Components">
             <file name="properties.settings" url="components/properties.settings"/>
         </folder>
-
+        
     </folder>
-
+    
     
     <folder name="Loaders">
         <folder name="folder">
@@ -474,12 +484,12 @@ Microsystems, Inc. All Rights Reserved.
                     <file name="PropertiesAction.instance">
                         <attr name="instanceClass" stringvalue="org.openide.actions.PropertiesAction"/>
                     </file>
-
+                    
                 </folder>
             </folder>
         </folder>
-
-  
+        
+        
         <folder name="content">
             <folder name="unknown">
                 <folder name="Actions">
@@ -545,7 +555,7 @@ Microsystems, Inc. All Rights Reserved.
                 </folder>
             </folder>
         </folder>
-    
+        
         <folder name="application">
             <folder name="x-nbsettings">
                 <folder name="Actions">
@@ -600,12 +610,12 @@ Microsystems, Inc. All Rights Reserved.
                     <file name="PropertiesAction.instance">
                         <attr name="instanceClass" stringvalue="org.openide.actions.PropertiesAction"/>
                     </file>
-
+                    
                 </folder>
             </folder>
         </folder>
-
-    
+        
+        
         <folder name="text">
             <folder name="xml">
                 <folder name="Actions">
@@ -667,7 +677,7 @@ Microsystems, Inc. All Rights Reserved.
                 </folder>
             </folder>
         </folder>
-    
+        
     </folder>
-  
+    
 </filesystem>
