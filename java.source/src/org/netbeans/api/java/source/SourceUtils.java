@@ -29,7 +29,9 @@ import javax.lang.model.element.*;
 import javax.tools.JavaFileObject.Kind;
 
 import com.sun.source.tree.*;
+import com.sun.source.util.TreePath;
 import com.sun.tools.javac.api.JavacTaskImpl;
+import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Kinds;
 import com.sun.tools.javac.code.Symbol;
@@ -69,6 +71,17 @@ import org.openide.util.Exceptions;
         }
         return null;
     }
+
+    public static TreePath pathFor(CompilationInfo info, Element element) {
+        Context ctx = getSourceContextFor(info.getClasspathInfo(), Phase.ELEMENTS_RESOLVED, element);
+        if (ctx != null) {
+            Element e = getSourceElementFor(element, ctx);
+            if (e != null)
+                return JavacTrees.instance(ctx).getPath(e);
+        }
+        return null;
+    }
+    
 
     public static Element getImplementationOf(CompilationInfo info, ExecutableElement method, TypeElement origin) {
         Context c = ((JavacTaskImpl) info.getJavacTask()).getContext();
