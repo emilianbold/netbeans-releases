@@ -227,6 +227,9 @@ public final class ElementHandle<T extends Element> {
      * in the same {@link javax.tools.JavaCompiler} task.
      */
     public boolean signatureEquals (final T element) {
+        if (!element.getKind().equals(getKind())) {
+            return false;
+        }
         final ElementHandle<T> handle = create (element);
         return signatureEquals (handle);
     }
