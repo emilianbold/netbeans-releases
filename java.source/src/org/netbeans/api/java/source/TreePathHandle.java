@@ -124,14 +124,21 @@ public final class TreePathHandle {
      */                                                                                                                                                                                                                        
     public Element resolveElement(final CompilationInfo info) {                                                                                                                                                                
         TreePath tp = null;                                                                                                                                                                                                    
-        if (info.getFileObject().equals(this.file)) {                                                                                                                                                                          
-            tp = this.resolve(info);                                                                                                                                                                                           
-        }                                                                                                                                                                                                                      
+        IllegalStateException ise = null;
+        try {
+            if (info.getFileObject().equals(this.file)) {
+                tp = this.resolve(info);
+            }
+        } catch (IllegalStateException i) {
+            ise=i;
+        }
         if (tp==null) {                                                                                                                                                                                                        
             if (enclElIsCorrespondingEl) {                                                                                                                                                                                     
                 return enclosingElement.resolve(info);                                                                                                                                                                         
-            } else {                                                                                                                                                                                                           
-                return null;                                                                                                                                                                                                   
+            } else {
+                if (ise==null)
+                    return null;
+                throw ise;                                                                                                                                                                                                   
             }                                                                                                                                                                                                                  
         }                                                                                                                                                                                                                      
         return info.getTrees().getElement(tp);                                                                                                                                                                                 
@@ -191,7 +198,8 @@ public final class TreePathHandle {
             case CONSTRUCTOR:                                                                                                                                                                                                  
             case INSTANCE_INIT:                                                                                                                                                                                                
             case STATIC_INIT:                                                                                                                                                                                                  
-            case FIELD:                                                                                                                                                                                                        
+            case FIELD:
+            case ANNOTATION_TYPE:    
             case ENUM_CONSTANT: return true;                                                                                                                                                                                   
             default: return false;                                                                                                                                                                                             
         }                                                                                                                                                                                                                      
