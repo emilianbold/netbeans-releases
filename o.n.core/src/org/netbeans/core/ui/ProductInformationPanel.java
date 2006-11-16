@@ -25,7 +25,6 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
 import java.awt.event.FocusEvent;
 import java.io.File;
 import java.text.MessageFormat;
@@ -39,13 +38,12 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
+import org.netbeans.core.actions.CopyProductInfoAction;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Enumerations;
-import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.datatransfer.ExClipboard;
 
 public class ProductInformationPanel extends JPanel {
@@ -139,7 +137,7 @@ public class ProductInformationPanel extends JPanel {
         add(ideImageLabel, gridBagConstraints);
 
         productVersionLabel.setLabelFor(productVersionValueLabel);
-        productVersionLabel.setText(org.openide.util.NbBundle.getMessage(ProductInformationPanel.class, "LBL_ProductVersion"));
+        productVersionLabel.setText(org.openide.util.NbBundle.getMessage(ProductInformationPanel.class, "LBL_ProductVersion")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -148,7 +146,7 @@ public class ProductInformationPanel extends JPanel {
         add(productVersionLabel, gridBagConstraints);
 
         operatingSystemLabel.setLabelFor(operatingSystemValueLabel);
-        operatingSystemLabel.setText(org.openide.util.NbBundle.getMessage(ProductInformationPanel.class, "LBL_OperationgSystem"));
+        operatingSystemLabel.setText(org.openide.util.NbBundle.getMessage(ProductInformationPanel.class, "LBL_OperationgSystem")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -157,7 +155,7 @@ public class ProductInformationPanel extends JPanel {
         add(operatingSystemLabel, gridBagConstraints);
 
         javaLabel.setLabelFor(javaValueLabel);
-        javaLabel.setText(org.openide.util.NbBundle.getMessage(ProductInformationPanel.class, "LBL_Java"));
+        javaLabel.setText(org.openide.util.NbBundle.getMessage(ProductInformationPanel.class, "LBL_Java")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
@@ -166,7 +164,7 @@ public class ProductInformationPanel extends JPanel {
         add(javaLabel, gridBagConstraints);
 
         vmLabel.setLabelFor(vmValueLabel);
-        vmLabel.setText(org.openide.util.NbBundle.getMessage(ProductInformationPanel.class, "LBL_VM"));
+        vmLabel.setText(org.openide.util.NbBundle.getMessage(ProductInformationPanel.class, "LBL_VM")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
@@ -175,7 +173,7 @@ public class ProductInformationPanel extends JPanel {
         add(vmLabel, gridBagConstraints);
 
         vendorLabel.setLabelFor(vendorValueLabel);
-        vendorLabel.setText(org.openide.util.NbBundle.getMessage(ProductInformationPanel.class, "LBL_Vendor"));
+        vendorLabel.setText(org.openide.util.NbBundle.getMessage(ProductInformationPanel.class, "LBL_Vendor")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
@@ -184,7 +182,7 @@ public class ProductInformationPanel extends JPanel {
         add(vendorLabel, gridBagConstraints);
 
         javaHomeLabel.setLabelFor(javaHomeValueLabel);
-        javaHomeLabel.setText(org.openide.util.NbBundle.getMessage(ProductInformationPanel.class, "LBL_JavaHome"));
+        javaHomeLabel.setText(org.openide.util.NbBundle.getMessage(ProductInformationPanel.class, "LBL_JavaHome")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 6;
@@ -193,7 +191,7 @@ public class ProductInformationPanel extends JPanel {
         add(javaHomeLabel, gridBagConstraints);
 
         systemLocaleLabel.setLabelFor(systemLocaleValueLabel);
-        systemLocaleLabel.setText(org.openide.util.NbBundle.getMessage(ProductInformationPanel.class, "LBL_SystemLocale"));
+        systemLocaleLabel.setText(org.openide.util.NbBundle.getMessage(ProductInformationPanel.class, "LBL_SystemLocale")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 7;
@@ -202,7 +200,7 @@ public class ProductInformationPanel extends JPanel {
         add(systemLocaleLabel, gridBagConstraints);
 
         homeDirLabel.setLabelFor(homeDirValueLabel);
-        homeDirLabel.setText(org.openide.util.NbBundle.getMessage(ProductInformationPanel.class, "LBL_HomeDir"));
+        homeDirLabel.setText(org.openide.util.NbBundle.getMessage(ProductInformationPanel.class, "LBL_HomeDir")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 8;
@@ -211,7 +209,7 @@ public class ProductInformationPanel extends JPanel {
         add(homeDirLabel, gridBagConstraints);
 
         currentDirLabel.setLabelFor(currentDirValueLabel);
-        currentDirLabel.setText(org.openide.util.NbBundle.getMessage(ProductInformationPanel.class, "LBL_CurrentDir"));
+        currentDirLabel.setText(org.openide.util.NbBundle.getMessage(ProductInformationPanel.class, "LBL_CurrentDir")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 9;
@@ -220,7 +218,7 @@ public class ProductInformationPanel extends JPanel {
         add(currentDirLabel, gridBagConstraints);
 
         ideInstallLabel.setLabelFor(ideInstallValueField);
-        ideInstallLabel.setText(org.openide.util.NbBundle.getMessage(ProductInformationPanel.class, "LBL_IDEInstall"));
+        ideInstallLabel.setText(org.openide.util.NbBundle.getMessage(ProductInformationPanel.class, "LBL_IDEInstall")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 11;
@@ -231,14 +229,13 @@ public class ProductInformationPanel extends JPanel {
         add(ideInstallLabel, gridBagConstraints);
 
         userDirLabel.setLabelFor(userDirValueLabel);
-        userDirLabel.setText(org.openide.util.NbBundle.getMessage(ProductInformationPanel.class, "LBL_UserDir"));
+        userDirLabel.setText(org.openide.util.NbBundle.getMessage(ProductInformationPanel.class, "LBL_UserDir")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 10;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
         add(userDirLabel, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 15;
@@ -267,7 +264,7 @@ public class ProductInformationPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 5, 11);
         add(ideInstallValueField, gridBagConstraints);
 
-        copyButton.setAction(getCopyAction());
+        copyButton.setAction(CopyProductInfoAction.findObject(CopyProductInfoAction.class, true));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 0;
@@ -383,7 +380,6 @@ public class ProductInformationPanel extends JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 11);
         add(userDirValueLabel, gridBagConstraints);
-
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -452,24 +448,24 @@ public class ProductInformationPanel extends JPanel {
         return NbBundle.getMessage(ProductInformationPanel.class, "LBL_ProductInformation");
     }
 
-    private static String getProductVersionValue () {
+    public static String getProductVersionValue () {
         return MessageFormat.format(
             NbBundle.getBundle("org.netbeans.core.startup.Bundle").getString("currentVersion"),
             new Object[] {System.getProperty("netbeans.buildnumber")});
     }
 
-    private static String getOperatingSystemValue () {
+    public static String getOperatingSystemValue () {
         return NbBundle.getMessage(ProductInformationPanel.class, "Format_OperatingSystem_Value",
             System.getProperty("os.name", "unknown"),
             System.getProperty("os.version", "unknown"),
             System.getProperty("os.arch", "unknown"));
     }
 
-    private static String getJavaValue () {
+    public static String getJavaValue () {
         return System.getProperty("java.version", "unknown");
     }
 
-    private static String getVMValue () {
+    public static String getVMValue () {
         return System.getProperty("java.vm.name", "unknown") + " " + System.getProperty("java.vm.version", "");
     }
 
@@ -481,7 +477,7 @@ public class ProductInformationPanel extends JPanel {
         return System.getProperty("java.home", "unknown");
     }
 
-    private static String getSystemLocaleValue () {
+    public static String getSystemLocaleValue () {
         String branding;
         return Locale.getDefault().toString() + ((branding = NbBundle.getBranding()) == null ? "" : (" (" + branding + ")")); // NOI18N
     }
@@ -531,11 +527,11 @@ public class ProductInformationPanel extends JPanel {
         return System.getProperty("netbeans.user");
     }
 
-    private static String getEncodingValue() {
+    public static String getEncodingValue() {
         return System.getProperty("file.encoding", "unknown");
     }
      
-    private static Clipboard getExClipboard() {
+    public static Clipboard getExClipboard() {
        if (clipboard == null) {
            clipboard = Lookup.getDefault().lookup(ExClipboard.class);
            if (clipboard == null) {
@@ -545,63 +541,6 @@ public class ProductInformationPanel extends JPanel {
         return clipboard;
     }
 
-    private static Action getCopyAction () {
-        if (copyAction == null) {
-            copyAction = new CopyProductInfoAction();
-        }
-        return copyAction;
-    }
-
-    /** Copies product information into clipboard */
-    private static class CopyProductInfoAction extends CallableSystemAction { // XXX why not pure Swing action
-
-        public void performAction() {
-            StringBuilder sb = new StringBuilder();
-            sb.append(getProductVersionValue());
-            sb.append('\n');
-            sb.append(getJavaValue());
-            sb.append("; ");
-            sb.append(getVMValue());
-            sb.append('\n');
-            sb.append(getOperatingSystemValue());
-            sb.append('\n');
-            sb.append(getSystemLocaleValue());
-            sb.append("; ");
-            sb.append(getEncodingValue());
-            StringSelection stringSel = new StringSelection(sb.toString());
-            Clipboard cb = getExClipboard();
-            if (cb != null) {
-                cb.setContents(stringSel, null);
-            }
-        }
-        
-        public String getName() {
-            return NbBundle.getMessage(ProductInformationPanel.class, 
-                "CTL_CopyButton"); // NOI18N;
-        }
-        
-        public HelpCtx getHelpCtx() {
-            return HelpCtx.DEFAULT_HELP;
-        }
-        
-        protected String iconResource() {
-            return "org/netbeans/core/resources/copy.gif"; // NOI18N
-        }
-        
-        protected void initialize() {
-            super.initialize();
-            String tooltip = NbBundle.getMessage(ProductInformationPanel.class, 
-                "CTL_CopyButton_tooltip"); // NOI18N
-            putValue(javax.swing.Action.SHORT_DESCRIPTION, tooltip);
-        }
-
-        protected boolean asynchronous() {
-            return false;
-        }
-        
-    }
-    
-    
     /**
      */
     static class FocusableLabel extends JLabel {
