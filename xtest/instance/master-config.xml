@@ -82,7 +82,7 @@ Microsystems, Inc. All Rights Reserved.
         <module name="html/lexer" testtypes="unit" attributes="stable"/>
         <module name="httpserver" testtypes="unit" attributes="stable"/>
 <!--        <module name="j2ee/clientproject" testtypes="unit" attributes="stable"/> -->
-        <module name="j2ee/ddapi" testtypes="unit" attributes="stable"/>-->
+        <module name="j2ee/ddapi" testtypes="unit" attributes="stable"/>
 <!--        <module name="j2ee/ddloaders" testtypes="unit" attributes="stable"/> -->
 <!--        <module name="j2ee/earproject" testtypes="unit" attributes="stable"/> -->
         <module name="j2ee/ejbapi" testtypes="unit" attributes="stable"/>
