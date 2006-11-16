@@ -49,7 +49,18 @@ public class FixTestDependenciesTest extends NbTestCase {
           File propertiesFile = copyFile("FixTestDependencies.properties");
           doFixProjectXml(propertiesFile, prjFile);
           doFixProjectXml(propertiesFile, copyFile("FixTestDependenciesProject2.xml"));
-
+    }
+    
+    public void testStandalone() throws IOException, Exception {
+        File prjFile = copyFile("FixTestDependenciesProjectStandalone.xml");
+        File propertiesFile = copyFile("FixTestDependencies.properties");
+        FixTestDependencies ftd = newFixTestDependencies();
+        ftd.setPropertiesFile(propertiesFile);
+        ftd.setProjectXml(prjFile);
+        ftd.cachedEntries = getEntries();
+        ftd.execute();
+        assertFile(copyFile("FixTestDependenciesProjectStandalonePass.xml"),prjFile);
+        assertFile(copyFile("FixTestDependenciesPass.properties"),propertiesFile);
     }
 
     public void testWrongBuilClassDep() throws IOException {
