@@ -42,3 +42,5 @@
 1.6:    Accessibility fixes
 
 1.7:    Logged exception removed - proper escape of '&' when not marking mnemonic
+
+1.8:    OK, Mnemonics doesn't support escapes, just get rid of unnecessary &nbsp;
