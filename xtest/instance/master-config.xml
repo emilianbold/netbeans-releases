@@ -72,7 +72,7 @@ Microsystems, Inc. All Rights Reserved.
         <!-- J2EE team -->
         <module name="db" testtypes="unit" attributes="stable"/>
         <module name="db/core" testtypes="unit" attributes="stable"/>
-<!--        <module name="db/dbapi" testtypes="unit" attributes="stable"/> -->
+        <module name="db/dbapi" testtypes="unit" attributes="stable"/>
         <module name="db/derby" testtypes="unit" attributes="stable"/>
         <module name="db/sqleditor" testtypes="unit" attributes="stable"/>
         <module name="extbrowser" testtypes="unit" attributes="stable"/>
