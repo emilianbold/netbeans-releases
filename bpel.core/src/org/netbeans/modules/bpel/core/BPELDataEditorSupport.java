@@ -34,11 +34,10 @@ import org.netbeans.core.spi.multiview.CloseOperationHandler;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.modules.bpel.core.multiview.BPELSourceMultiViewElementDesc;
 import org.netbeans.modules.bpel.core.multiview.BpelMultiViewSupport;
-import org.netbeans.modules.bpel.core.multiview.spi.MultiviewId;
 import org.netbeans.modules.bpel.core.validation.BPELValidationController;
 import org.netbeans.modules.bpel.core.validation.SelectBpelElement;
-import org.netbeans.modules.bpel.editors.canvas.Canvas;
-import org.netbeans.modules.bpel.editors.canvas.CanvasManagerAccess;
+import org.netbeans.modules.bpel.editors.api.Diagram;
+import org.netbeans.modules.bpel.editors.api.DiagramManagerAccess;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.spi.BpelModelFactory;
@@ -91,10 +90,10 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
      * PrintProviderCookie interface {@inheritDoc}
      */
     public PrintProvider getPrintProvider() {
-        final Canvas canvas = CanvasManagerAccess.getManager().getCanvas(
+        final Diagram diagram = DiagramManagerAccess.getManager().getDiagram(
                 getDataObject());
         
-        if (canvas == null) {
+        if (diagram == null) {
             return null;
         }
         final BpelModel model = getBpelModel();
@@ -102,7 +101,7 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
         return new PrintProvider.Component() {
             
             public JComponent getComponent() {
-                return canvas.getComponent();
+                return diagram.getComponent();
             }
             
             public Date getLastModifiedDate() {
@@ -181,20 +180,24 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
         if ( task == prepareTask ){
             return task;
         }
-        prepareTask = task;
         task.addTaskListener(new TaskListener() {
             public void taskFinished(Task task) {
                 // The superclass prepareDocument() adds the undo/redo
                 // manager as a listener -- we need to remove it since
                 // the views will add and remove it as needed.
-                QuietUndoManager qum = (QuietUndoManager) getUndoRedo();
+                QuietUndoManager undo = (QuietUndoManager) getUndoRedo();
                 StyledDocument doc = getDocument();
-                synchronized ( qum ) {
-                    if (!qum.isCompound()) {
-                        doc.removeUndoableEditListener(qum);
-                    }
+                synchronized (undo) {
                     // Now that the document is ready, pass it to the manager.
-                    qum.setDocument((AbstractDocument) doc);
+                    undo.setDocument((AbstractDocument) doc);
+                    if (!undo.isCompound()) {
+                        // The superclass prepareDocument() adds the undo/redo
+                        // manager as a listener -- we need to remove it since
+                        // we will initially listen to the model instead.
+                        doc.removeUndoableEditListener(undo);
+                        // If not listening to document, then listen to model.
+                        addUndoManagerToModel(undo);
+                    }
                 }
             }
         });
@@ -225,60 +228,79 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
     }
     
     /**
-     * Adds the undo/redo manager to the bpel model as an undoable
-     * edit listener, so it receives the edits onto the queue.
-     * 
-     * I suppose that those methods are called always in one thread.
-     * Currently this is true. They are always called from AWT thread.
-     * 
-     * @param id Id of mutiview element for which we add undo/redo manager.
+     * Adds the undo/redo manager to the document as an undoable edit
+     * listener, so it receives the edits onto the queue. The manager
+     * will be removed from the model as an undoable edit listener.
+     *
+     * <p>This method may be called repeatedly.</p>
      */
-    public void addUndoManager( MultiviewId id ) 
-    {
+    public void addUndoManagerToDocument() {
+        // This method may be called repeatedly.
+        // Stop the undo manager from listening to the model, as it will
+        // be listening to the document now.
+        QuietUndoManager undo = getUndoManager();
+        StyledDocument doc = getDocument();
+        synchronized (undo) {
+
+            removeUndoManagerFromModel();
+
+            // Document may be null if the cloned views are not behaving
+            // correctly.
+            if (doc != null) {
+                // Ensure the listener is not added twice.
+                doc.removeUndoableEditListener(undo);
+                doc.addUndoableEditListener(undo);
+                // Start the compound mode of the undo manager, such that when
+                // we are hidden, we will treat all of the edits as a single
+                // compound edit. This avoids having the user invoke undo
+                // numerous times when in the model view.
+                undo.beginCompound();
+            }
+        }
+    }
+    
+    /**
+     * Add the undo/redo manager undoable edit listener to the model.
+     *
+     * <p>Caller should synchronize on the undo manager prior to calling
+     * this method, to avoid thread concurrency issues.</p>
+     *
+     * @param  undo  the undo manager.
+     */
+    public void addUndoManagerToModel(QuietUndoManager undo) {
         BpelModel model = getBpelModel();
         if (model != null) {
-            QuietUndoManager undo = getUndoManager();
             // Ensure the listener is not added twice.
-            removeUndoManager();
+            removeUndoManagerFromModel();
             model.addUndoableEditListener(undo);
             // Ensure the model is sync'd when undo/redo is invoked,
             // otherwise the edits are added to the queue and eventually
             // cause exceptions.
             undo.setModel(model);
-            
-            // keep id of multiview 
-            setId(id);
+
         }
     }
-
+    
     /**
      * Removes the undo/redo manager undoable edit listener from the
-     * bpel model, to stop receiving undoable edits.
-     * 
-     * I suppose that those methods are called always in one thread.
-     * Currently this is true. They are always called from AWT thread.
-     * 
-     * @param id Id of mutiview element for which we remove undo/redo manager.
+     * document, to stop receiving undoable edits. The manager will
+     * be added to the model as an undoable edit listener.
+     *
+     * <p>This method may be called repeatedly.</p>
      */
-    public void removeUndoManager( MultiviewId id )
-    {
-        /*
-         *  we prevent deleting undo/redo manager if it was added by multiview
-         *  with different id. 
-         */ 
-        if ( id!= getId()) {
-            return;
-        }
-        
-        BpelModel model = getBpelModel();
-        if (model != null) {
-            QuietUndoManager undo = getUndoManager();
-            model.removeUndoableEditListener(undo);
-            // Must unset the model when leaving model view.
-            undo.setModel(null);
-            
-            // remove id
-            setId( null );
+    public void removeUndoManagerFromDocument() {
+        // This method may be called repeatedly.
+        QuietUndoManager undo = getUndoManager();
+        StyledDocument doc = getDocument();
+        synchronized (undo) {
+            // May be null when closing the editor.
+            if (doc != null) {
+                doc.removeUndoableEditListener(undo);
+                undo.endCompound();
+            }
+            // Have the undo manager listen to the model when it is not
+            // listening to the document.
+            addUndoManagerToModel(undo);
         }
     }
     
@@ -495,19 +517,12 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
     
     ValidationAnnotation annotation = new ValidationAnnotation();
     
-    private void setId( MultiviewId id) {
-        myMultiviewId = id;
-    }
-    
-    private MultiviewId getId() {
-        return myMultiviewId;
-    }
     
     /**
      * Removes the undo/redo manager undoable edit listener from the
      * bpel model, to stop receiving undoable edits.
      */
-    private void removeUndoManager( ) {
+    private void removeUndoManagerFromModel( ) {
         BpelModel model = getBpelModel();
         if (model != null) {
             QuietUndoManager undo = getUndoManager();
@@ -632,6 +647,5 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
     /** Used for managing the prepareTask listener. */
     private transient Task prepareTask;
     
-    private transient MultiviewId myMultiviewId;
     
 }
