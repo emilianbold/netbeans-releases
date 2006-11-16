@@ -424,13 +424,8 @@ public class JavaCompletionProvider implements CompletionProvider {
         }
         
         private void resolveDocumentation(CompilationController controller) throws IOException {            
-            Element el = null;
-            if (element != null) {
-                controller.toPhase(Phase.ELEMENTS_RESOLVED);
-                el = element.resolve(controller);
-            } else {
-                el = controller.getTrees().getElement(getCompletionEnvironment(controller, false).getPath());
-            }
+            controller.toPhase(Phase.ELEMENTS_RESOLVED);
+            Element el = element != null ? element.resolve(controller) : controller.getTrees().getElement(getCompletionEnvironment(controller, false).getPath());
             if (el != null) {
                 documentation = JavaCompletionDoc.create(controller.getElementUtilities().javaDocFor(el), controller);
             }
@@ -526,6 +521,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                     break;
                 case ARRAY_ACCESS:
                     insideArrayAccess(env);
+                    break;
+                case NEW_ARRAY:
+                    insideNewArray(env);
                     break;
                 case ASSIGNMENT:
                     insideAssignment(env);
@@ -1539,6 +1537,45 @@ public class JavaCompletionProvider implements CompletionProvider {
             }
         }
         
+        private void insideNewArray(Env env) throws IOException {
+            int offset = env.getOffset();
+            TreePath path = env.getPath();
+            NewArrayTree nat = (NewArrayTree)path.getLeaf();
+            if (nat.getInitializers() != null) { // UFFF!!!!
+                SourcePositions sourcePositions = env.getSourcePositions();
+                CompilationUnitTree root = env.getRoot();
+                Tree last = null;
+                int lastPos = offset;
+                for (Tree init : nat.getInitializers()) {
+                    int pos = (int)sourcePositions.getEndPosition(root, init);
+                    if (pos == Diagnostic.NOPOS || offset <= pos)
+                        break;
+                    last = init;
+                    lastPos = pos;
+                }
+                if (last != null) {
+                    String text = env.getController().getText().substring(lastPos, offset).trim();
+                    if (",".equals(text)) { //NOI18N
+                        localResult(env);
+                        addValueKeywords(env);
+                    }
+                    return;
+                }
+            }
+            TokenSequence<JavaTokenId> ts = findLastNonWhitespaceToken(env, nat, offset);
+            switch (ts.token().id()) {
+                case LBRACKET:
+                case LBRACE:
+                    localResult(env);
+                    addValueKeywords(env);
+                    break;
+                case RBRACKET:
+                    if (nat.getDimensions().size() > 0)
+                        insideExpression(env, path);
+                    break;
+            }
+        }
+        
         private void insideAssignment(Env env) throws IOException {
             int offset = env.getOffset();
             TreePath path = env.getPath();
@@ -1703,6 +1740,11 @@ public class JavaCompletionProvider implements CompletionProvider {
             Tree et = exPath.getLeaf();
             Tree parent = exPath.getParentPath().getLeaf();
             CompilationController controller = env.getController();
+            int endPos = (int)env.getSourcePositions().getEndPosition(env.getRoot(), et);
+            if (endPos != Diagnostic.NOPOS && endPos < offset) {
+                if (controller.getText().substring(endPos, offset).trim().length() > 0)
+                    return;
+            }
             controller.toPhase(Phase.ELEMENTS_RESOLVED);
             boolean isConst = parent.getKind() == Tree.Kind.VARIABLE && ((VariableTree)parent).getModifiers().getFlags().containsAll(EnumSet.of(FINAL, STATIC));
             if ((parent == null || parent.getKind() != Tree.Kind.PARENTHESIZED) &&
@@ -1854,13 +1896,14 @@ public class JavaCompletionProvider implements CompletionProvider {
                 return;
             }
             Element e = controller.getTrees().getElement(exPath);
+            TypeMirror tm = controller.getTrees().getTypeMirror(exPath);
             if (e == null) {
-                if (et.getKind() == Tree.Kind.TYPE_CAST && Utilities.startsWith(INSTANCEOF_KEYWORD, prefix)) {
-                    addKeyword(env, INSTANCEOF_KEYWORD, SPACE);                    
+                if (tm.getKind() == TypeKind.DECLARED || tm.getKind() == TypeKind.ARRAY || tm.getKind() == TypeKind.ERROR) {
+                    if (Utilities.startsWith(INSTANCEOF_KEYWORD, prefix))
+                        addKeyword(env, INSTANCEOF_KEYWORD, SPACE);
                 }
                 return;
             }
-            TypeMirror tm = controller.getTrees().getTypeMirror(exPath);
             switch (e.getKind()) {
                 case ANNOTATION_TYPE:
                 case CLASS:
