@@ -87,6 +87,72 @@ class SplitSubModel {
         return modeNode.getNodeConstraints();
     }
     
+    /**
+     * Find the side (LEFT/RIGHT/BOTTOM) where the TopComponent from the given
+     * mode should slide to. The position is deducted from mode's position relative
+     * to the editor mode in the split hierarchy.
+     * 
+     * @param mode Mode
+     * @return The slide side for TopComponents from the given mode.
+     */
+    public String getSlideSideForMode( ModeImpl mode ) {
+        ModeNode modeNode = getModeNode( mode );
+        return getPositionRelativeToEditor( modeNode, modeNode.getParent() );
+    }
+    
+    /**
+     * Find recursively the position of the given Node relative to editor node.
+     * 
+     * @param node The Node who's position is being compared with editor node's position.
+     * @param parent Node's split parent.
+     * @return LEFT/RIGHT/BOTTOM/TOP according to Node's position in the hierarchy.
+     */
+    private String getPositionRelativeToEditor( Node node, SplitNode parent ) {
+        if( null == parent )
+            return Constants.LEFT; //fallback - we're at the top level of the hierarchy
+        
+        Node editorNode = getEditorChildNode( parent );
+        if( null != editorNode ) {
+            //the split parent contains a node or sub-tree with editor node
+            //so let's compare their positions
+            int orientation = parent.getOrientation();
+            int nodeIndex = parent.getChildIndex( node );
+            int editorIndex = parent.getChildIndex( editorNode );
+            if( orientation == Constants.VERTICAL ) {
+                if( nodeIndex > editorIndex )
+                    return Constants.BOTTOM;
+                return Constants.TOP; //TODO: is this really OK?
+            } else {
+                if( nodeIndex < editorIndex )
+                    return Constants.LEFT;
+                return Constants.RIGHT;
+            }
+        }
+        //try one level up in the tree hierarchy
+        return getPositionRelativeToEditor( parent, parent.getParent() );
+    }
+    
+    /**
+     * Find the child node that contains the editor node or the child that has the editor
+     * node in its sub-tree.
+     * 
+     * @param split SplitNode searched for editor node.
+     * @return Node which is the editor node or which has the editor node in its sub-tree.
+     */
+    private Node getEditorChildNode( SplitNode split ) {
+        List<Node> children = split.getChildren();
+        for( Iterator<Node> i=children.iterator(); i.hasNext(); ) {
+            Node node = i.next();
+            if( node instanceof EditorSplitSubModel.EditorNode 
+                ||
+                node instanceof SplitNode && null != getEditorChildNode( (SplitNode)node ) ) {
+                return node;
+            }
+        }
+        return null;
+    }
+    
+    
     /** Adds mode which is <code>Node</code>
      * with specified constraints designating the path in model.
      * <em>Note: It is important to know that adding of mode can affect the structure
@@ -1018,6 +1084,12 @@ class SplitSubModel {
 
             if(mode.getState() == Constants.MODE_STATE_SEPARATED) {
                 return false;
+            }
+            
+            if(mode.getKind() == Constants.MODE_KIND_EDITOR ) {
+                WindowManagerImpl wm = WindowManagerImpl.getInstance();
+                if( null != wm.getEditorMaximizedMode() && wm.getEditorMaximizedMode() != mode )
+                    return false;
             }
 
             return true;

@@ -319,8 +319,8 @@ public class DocumentsDlg extends JPanel implements PropertyChangeListener, Expl
                 // #37226-41075 Unmaximized the other mode if needed.
                 WindowManagerImpl wm = WindowManagerImpl.getInstance();
                 ModeImpl mode = (ModeImpl)wm.findMode(tc);
-                if(mode != null && mode != wm.getMaximizedMode()) {
-                    wm.setMaximizedMode(null);
+                if(mode != null && mode != wm.getCurrentMaximizedMode()) {
+                    wm.switchMaximizedMode(null);
                 }
                 tc.requestActive();
             }

@@ -341,6 +341,10 @@ public final class TabbedHandler implements ChangeListener, ActionListener {
             } else if (SlideBar.COMMAND_DISABLE_AUTO_HIDE.equals(cmd)) {
                 TopComponent tc = (TopComponent) tabbed.getTopComponentAt(sbe.getTabIndex());
                 modeView.getController().userDisabledAutoHide(modeView, tc);
+            } else if( SlideBar.COMMAND_MAXIMIZE == cmd ) {
+                TopComponent tc = (TopComponent) tabbed.getTopComponentAt(sbe.getTabIndex());
+                MaximizeWindowAction mwa = new MaximizeWindowAction(tc);
+                mwa.actionPerformed(e);
             }
         }
     }
@@ -518,7 +522,6 @@ public final class TabbedHandler implements ChangeListener, ActionListener {
         public void setStartBounds(Rectangle bounds) {
             original.setStartBounds(bounds);
         }
-        
     }
 
 }

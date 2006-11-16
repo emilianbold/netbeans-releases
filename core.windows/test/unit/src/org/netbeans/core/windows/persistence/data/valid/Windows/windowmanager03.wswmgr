@@ -40,6 +40,6 @@
     </editor-area>
     <screen width="640" height="480" />
     <active-mode name="editor" />
-    <maximized-mode view="explorer" />
+    <maximized-mode editor="editor" />
     <toolbar configuration="Standard" />
 </windowmanager>

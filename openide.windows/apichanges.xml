@@ -24,6 +24,36 @@ Microsystems, Inc. All Rights Reserved.
 </apidefs>
 <changes>
 
+<change id="maximizedMode">
+    <api name="winsys"/>
+    <summary>Enhanced logic for maximized mode</summary>
+    <version major="6" minor="11"/>
+    <date day="10" month="11" year="2006"/>
+    <author login="saubrecht"/>
+    <compatibility addition="yes" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+    <description>
+        When switching an editor TopComponent to maximized mode other components slide out while
+        some components (e.g. palette) stay docked. It's also possible to maximize
+        slided-in windows. Full description in http://ui.netbeans.org/docs/ui/fullscreen/fullscreen.html
+    </description>
+    <issue number="73766"/>
+</change>
+
+<change id="slideInSize">
+    <api name="winsys"/>
+    <summary>Slided-in windows remember their size</summary>
+    <version major="6" minor="10"/>
+    <date day="17" month="10" year="2006"/>
+    <author login="saubrecht"/>
+    <compatibility addition="yes" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+    <description>
+        Each TopComponent in a sliding mode (left/right/bottom) can now have a different width/height when slided-in. These user defined sizes are
+        stored in sliding mode's properties.
+    </description>
+    <issue number="87143"/>
+</change>
+     
+
 <change id="tcOpenedClosed">
     <api name="winsys"/>
     <summary>New constants PROP_TC_OPENED and PROP_TC_CLOSED in TopComponent.Registry</summary>

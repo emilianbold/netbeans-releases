@@ -239,6 +239,9 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="DTD_Top_Component_in_Mode_Properties_2_1" url="nbres:/org/netbeans/core/windows/resources/tc-ref2_1.dtd">
                     <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Top Component in Mode Properties 2.1//EN"/>
                 </file>
+                <file name="DTD_Top_Component_in_Mode_Properties_2_2" url="nbres:/org/netbeans/core/windows/resources/tc-ref2_2.dtd">
+                    <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Top Component in Mode Properties 2.2//EN"/>
+                </file>
 
                 <file name="DTD_Group_Properties_2_0" url="nbres:/org/netbeans/core/windows/resources/group-properties2_0.dtd">
                     <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Group Properties 2.0//EN"/>
@@ -256,6 +259,9 @@ Microsystems, Inc. All Rights Reserved.
                 </file>
                 <file name="DTD_Window_Manager_2_0" url="nbres:/org/netbeans/core/windows/resources/windowmanager-properties2_0.dtd">
                     <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Window Manager 2.0//EN"/>
+                </file>
+                <file name="DTD_Window_Manager_2_2" url="nbres:/org/netbeans/core/windows/resources/windowmanager-properties2_2.dtd">
+                    <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Window Manager 2.2//EN"/>
                 </file>
             </folder>
     	</folder>

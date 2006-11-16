@@ -1553,11 +1553,18 @@ public class WindowManagerParser {
         
         /** Reads element "maximized-mode" and updates window manager config content */
         private void handleMaximizedMode (Attributes attrs) {
-            String name = attrs.getValue("name"); // NOI18N
+            String name = attrs.getValue("editor"); // NOI18N
             if (name != null) {
-                winMgrConfig.maximizedModeName = name;
+                winMgrConfig.editorMaximizedModeName = name;
             } else {
-                winMgrConfig.maximizedModeName = ""; // NOI18N
+                winMgrConfig.editorMaximizedModeName = ""; // NOI18N
+            }
+            
+            name = attrs.getValue("view"); // NOI18N
+            if (name != null) {
+                winMgrConfig.viewMaximizedModeName = name;
+            } else {
+                winMgrConfig.viewMaximizedModeName = ""; // NOI18N
             }
         }
         
@@ -1800,8 +1807,14 @@ public class WindowManagerParser {
         }
         
         private void appendMaximizedMode (WindowManagerConfig wmc, StringBuffer buff) {
-            if ((wmc.maximizedModeName != null) && !"".equals(wmc.maximizedModeName)) {
-                buff.append("    <maximized-mode name=\"").append(wmc.maximizedModeName).append("\"/>\n"); // NOI18N
+            if ((wmc.editorMaximizedModeName != null && !"".equals(wmc.editorMaximizedModeName))
+                || (wmc.viewMaximizedModeName != null && !"".equals(wmc.viewMaximizedModeName))) {
+                buff.append("    <maximized-mode");
+                if (wmc.editorMaximizedModeName != null && !"".equals(wmc.editorMaximizedModeName))
+                    buff.append( " editor=\"").append(wmc.editorMaximizedModeName).append("\""); // NOI18N
+                if (wmc.viewMaximizedModeName != null && !"".equals(wmc.viewMaximizedModeName))
+                    buff.append( " view=\"").append(wmc.viewMaximizedModeName).append("\""); // NOI18N
+                buff.append("/>\n"); // NOI18N
             }
         }
         

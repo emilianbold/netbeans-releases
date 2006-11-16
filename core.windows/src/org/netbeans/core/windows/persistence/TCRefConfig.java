@@ -37,10 +37,25 @@ public class TCRefConfig {
     public boolean opened;
 
     public String previousMode;
+    /** tab index in the previous mode */
+    public int previousIndex;
+    
+    /** True if this TopComponent is docked when the editor is maximized, 
+     * false (default) if it should slide out */
+    public boolean dockedInMaximizedMode;
+    /** True (default) if this TopComponent is docked in the default mode, 
+     * false if it is slided out */
+    public boolean dockedInDefaultMode;
+    /** True if this TopComponent is maximized when slided-in (covers the whole main window) */
+    public boolean slidedInMaximized;
 
     /** Creates a new instance of TCRefConfig */
     public TCRefConfig() {
         tc_id = ""; // NOI18N
+        dockedInMaximizedMode = false;
+        dockedInDefaultMode = true;
+        slidedInMaximized = false;
+        previousIndex = -1;
     }
     
     public boolean equals (Object obj) {
@@ -49,8 +64,12 @@ public class TCRefConfig {
         }
         if (obj instanceof TCRefConfig) {
             TCRefConfig tcRefCfg = (TCRefConfig) obj;
-            return (tc_id.equals(tcRefCfg.tc_id) &&
-                   (opened == tcRefCfg.opened));
+            return (tc_id.equals(tcRefCfg.tc_id)
+                   && (opened == tcRefCfg.opened)
+                   && (dockedInMaximizedMode == tcRefCfg.dockedInMaximizedMode)
+                   && (dockedInDefaultMode == tcRefCfg.dockedInDefaultMode)
+                   && (slidedInMaximized == tcRefCfg.slidedInMaximized)
+                   && (previousIndex == tcRefCfg.previousIndex));
         }
         return false;
     }
@@ -59,11 +78,18 @@ public class TCRefConfig {
         int hash = 17;
         hash = 37 * hash + tc_id.hashCode();
         hash = 37 * hash + (opened ? 0 : 1);
+        hash = 37 * hash + (dockedInMaximizedMode ? 0 : 1);
+        hash = 37 * hash + (dockedInDefaultMode ? 0 : 1);
+        hash = 37 * hash + (slidedInMaximized ? 0 : 1);
+        hash = 37 * hash + previousIndex;
         return hash;
     }
     
     public String toString () {
-        return "TCRefConfig: tc_id=" + tc_id + ", opened=" + opened;
+        return "TCRefConfig: tc_id=" + tc_id + ", opened=" + opened 
+                + ", maximizedMode=" + dockedInMaximizedMode
+                + ", defaultMode=" + dockedInDefaultMode
+                + ", slidedInMaximized=" + slidedInMaximized;
     }
     
 }

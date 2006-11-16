@@ -333,6 +333,12 @@ public class ModeStructureSnapshot {
             if(getState() == Constants.MODE_STATE_SEPARATED) {
                 return false;
             }
+            
+            if(mode.getKind() == Constants.MODE_KIND_EDITOR ) {
+                WindowManagerImpl wm = WindowManagerImpl.getInstance();
+                if( null != wm.getEditorMaximizedMode() && wm.getEditorMaximizedMode() != mode )
+                    return false;
+            }
 
             return true;
         }

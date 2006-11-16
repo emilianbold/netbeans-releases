@@ -98,6 +98,32 @@ public class TCRefParserTest extends NbTestCase {
         System.out.println("TCRefParserTest.testLoadTCRef01 FINISH");
     }
     
+    /** Test of loaded data
+     */
+    public void testLoadTCRef03 () throws Exception {
+        System.out.println("");
+        System.out.println("TCRefParserTest.testLoadTCRef03 START");
+        
+        TCRefParser tcRefParser = createRefParser("data/valid/Windows/Modes/mode00","tcref03");
+        
+        TCRefConfig tcRefCfg = tcRefParser.load();
+        
+        //Check loaded data
+        assertNotNull("Could not load data.", tcRefCfg);
+        
+        assertFalse("TopComponent is closed.", tcRefCfg.opened);
+        
+        assertEquals("Previous mode.", "explorer", tcRefCfg.previousMode);
+        assertEquals("Tab index in previous mode.", 2, tcRefCfg.previousIndex);
+        
+        assertTrue("TopComponent is docked in maximized mode.", tcRefCfg.dockedInMaximizedMode);
+        assertFalse("TopComponent is slided-out in default mode.", tcRefCfg.dockedInDefaultMode);
+        
+        assertTrue("TopComponent is maximized when slided-in.", tcRefCfg.slidedInMaximized);
+        
+        System.out.println("TCRefParserTest.testLoadTCRef03 FINISH");
+    }
+    
     /** Test of saving
      */
     public void testSaveTCRef00 () throws Exception {
@@ -159,6 +185,23 @@ System.out.println("tcrefcfg2: " + tcRefCfg2);
         System.out.println("TCRefParserTest.testSaveTCRef02 FINISH");
     }
     
+    public void testSaveTCRef03 () throws Exception {
+        System.out.println("");
+        System.out.println("TCRefParserTest.testSaveTCRef03 START");
+        
+        TCRefParser tcRefParser = createRefParser("data/valid/Windows/Modes/mode00","tcref03");
+        
+        TCRefConfig tcRefCfg1 = tcRefParser.load();
+        
+        tcRefParser.save(tcRefCfg1);
+        
+        TCRefConfig tcRefCfg2 = tcRefParser.load();
+        
+        //Compare data
+        assertTrue("Compare configuration data",tcRefCfg1.equals(tcRefCfg2));
+        
+        System.out.println("TCRefParserTest.testSaveTCRef03 FINISH");
+    }
     
     ////////////////////////////////
     //Testing INCORRECT data

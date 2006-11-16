@@ -114,6 +114,8 @@ public class ModeParserTest extends NbTestCase {
         
         assertNotNull("Active TC is null",modeCfg.selectedTopComponentID);
         assertEquals("Active TC is not empty","",modeCfg.selectedTopComponentID);
+        assertNotNull("Previous active TC is null",modeCfg.previousSelectedTopComponentID);
+        assertEquals("Previous active TC is not empty","",modeCfg.previousSelectedTopComponentID);
         assertTrue("Permanent",modeCfg.permanent);
         
         System.out.println("ModeParserTest.testLoadMode01 FINISH");
@@ -296,6 +298,35 @@ public class ModeParserTest extends NbTestCase {
         
         System.out.println("ModeParserTest.testLoadMode06 FINISH");
     }
+
+    /** Test of a mode with with previously active tc 
+     */
+    public void testLoadMode07 () throws Exception {
+        System.out.println("");
+        System.out.println("ModeParserTest.testLoadMode07 START");
+        
+        ModeParser modeParser = createModeParser("data/valid/Windows/Modes","mode07");
+        
+        ModeConfig modeCfg = modeParser.load();
+        
+        //Check loaded data
+        assertNotNull("Could not load data.",modeCfg);
+        
+        InternalConfig internalCfg = modeParser.getInternalConfig();
+        
+        assertNotNull("Could not load internal data.",internalCfg);
+        
+        //Check data
+        assertEquals("Mode state",Constants.MODE_STATE_JOINED,modeCfg.state);
+        
+        assertEquals("Mode type",Constants.MODE_KIND_VIEW,modeCfg.kind);
+        
+        assertEquals("Active TC","filesystems",modeCfg.selectedTopComponentID);
+        assertEquals("Previous active TC","explorer",modeCfg.previousSelectedTopComponentID);
+        assertTrue("Permanent",modeCfg.permanent);
+        
+        System.out.println("ModeParserTest.testLoadMode07 FINISH");
+    }
     
     /** Test of saving
      */
@@ -396,6 +427,26 @@ public class ModeParserTest extends NbTestCase {
         assertTrue("Compare configuration data",modeCfg1.equals(modeCfg2));
                 
         System.out.println("ModeParserTest.testSaveMode06 FINISH");
+    }
+    
+    /** Test of saving a mode with previously active tc.
+     */
+    public void testSaveMode07 () throws Exception {
+        System.out.println("");
+        System.out.println("ModeParserTest.testSaveMode07 START");
+        
+        ModeParser modeParser = createModeParser("data/valid/Windows/Modes","mode07");
+        
+        ModeConfig modeCfg1 = modeParser.load();
+        
+        modeParser.save(modeCfg1);
+        
+        ModeConfig modeCfg2 = modeParser.load();
+        
+        //Compare data
+        assertTrue("Compare configuration data",modeCfg1.equals(modeCfg2));
+                
+        System.out.println("ModeParserTest.testSaveMode07 FINISH");
     }
     
     ////////////////////////////////

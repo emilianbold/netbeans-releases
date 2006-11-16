@@ -61,6 +61,8 @@ class ModeParser {
         = "-//NetBeans//DTD Mode Properties 2.1//EN"; // NOI18N
     public static final String INSTANCE_DTD_ID_2_2
         = "-//NetBeans//DTD Mode Properties 2.2//EN"; // NOI18N
+    public static final String INSTANCE_DTD_ID_2_3
+        = "-//NetBeans//DTD Mode Properties 2.3//EN"; // NOI18N
     
     /** Name of extended attribute for order of children */
     private static final String EA_ORDER = "WinSys-TCRef-Order"; // NOI18N
@@ -1031,7 +1033,7 @@ class ModeParser {
                     handleKind(attrs);
                 } else if ("slidingSide".equals(qname)) { // NOI18N
                     handleSlidingSide(attrs);
-                } else if ("slideInSize".equals(qname)) { // NOI18N
+                } else if ("slide-in-size".equals(qname)) { // NOI18N
                     handleSlideInSize(attrs);
                 } else if ("state".equals(qname)) { // NOI18N
                     handleState(attrs);
@@ -1183,7 +1185,7 @@ class ModeParser {
                 try {
                     Integer intSize = Integer.valueOf( size );
                     if( null == modeConfig.slideInSizes )
-                        modeConfig.slideInSizes = new HashMap(5);
+                        modeConfig.slideInSizes = new HashMap<String, Integer>(5);
                     modeConfig.slideInSizes.put( tcId, intSize );
                     return;
                 } catch( NumberFormatException nfE ) {
@@ -1406,6 +1408,12 @@ class ModeParser {
             } else {
                 modeConfig.selectedTopComponentID = ""; // NOI18N
             }
+            String prevId = attrs.getValue("prev-id"); // NOI18N
+            if (prevId != null) {
+                modeConfig.previousSelectedTopComponentID = prevId;
+            } else {
+                modeConfig.previousSelectedTopComponentID = ""; // NOI18N
+            }
         }
         
         /** Reads element "empty-behavior" */
@@ -1460,9 +1468,9 @@ class ModeParser {
             // header
             buff.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\n"). // NOI18N
             /*buff.append("<!DOCTYPE mode PUBLIC\n"); // NOI18N
-            buff.append("          \"-//NetBeans//DTD Mode Properties 2.1//EN\"\n"); // NOI18N
-            buff.append("          \"http://www.netbeans.org/dtds/mode-properties2_1.dtd\">\n\n"); // NOI18N*/
-                append("<mode version=\"2.1\">\n"); // NOI18N
+            buff.append("          \"-//NetBeans//DTD Mode Properties 2.3//EN\"\n"); // NOI18N
+            buff.append("          \"http://www.netbeans.org/dtds/mode-properties2_3.dtd\">\n\n"); // NOI18N*/
+                append("<mode version=\"2.3\">\n"); // NOI18N
             
             appendModule(ic, buff);
             appendName(mc, buff);
@@ -1536,7 +1544,7 @@ class ModeParser {
                     String tcId = i.next();
                     Integer size = mc.slideInSizes.get(tcId);
                     
-                    buff.append("  <slideInSize tc-id=\"");
+                    buff.append("  <slide-in-size tc-id=\"");
                     buff.append(tcId);
                     buff.append("\" size=\"");
                     buff.append(size.intValue());
@@ -1598,16 +1606,26 @@ class ModeParser {
         }
         
         private void appendActiveTC (ModeConfig mc, StringBuffer buff) {
-            if ((mc.selectedTopComponentID != null) && !"".equals(mc.selectedTopComponentID)) {
-                String tcName = PersistenceManager.escapeTcId4XmlContent(mc.selectedTopComponentID);
-                buff.append("    <active-tc id=\"").append(tcName).append("\"/>\n"); // NOI18N
+            if ((mc.selectedTopComponentID != null && !"".equals(mc.selectedTopComponentID)) 
+                || (mc.previousSelectedTopComponentID != null && !"".equals(mc.previousSelectedTopComponentID)) ) {
+                buff.append("    <active-tc ");
+                
+                if (mc.selectedTopComponentID != null && !"".equals(mc.selectedTopComponentID)) {
+                    String tcName = PersistenceManager.escapeTcId4XmlContent(mc.selectedTopComponentID);
+                    buff.append( " id=\"").append(tcName).append("\" "); // NOI18N
+                }
+                
+                if (mc.previousSelectedTopComponentID != null && !"".equals(mc.previousSelectedTopComponentID)) {
+                    String tcName = PersistenceManager.escapeTcId4XmlContent(mc.previousSelectedTopComponentID);
+                    buff.append( " prev-id=\"").append(tcName).append("\" "); // NOI18N
+                }
+                buff.append("/>\n"); // NOI18N
             }
         }
         
         private void appendEmptyBehavior (ModeConfig mc, StringBuffer buff) {
             buff.append("    <empty-behavior permanent=\"").append(mc.permanent).append("\"/>\n"); // NOI18N
         }
-        
     }
     
 }

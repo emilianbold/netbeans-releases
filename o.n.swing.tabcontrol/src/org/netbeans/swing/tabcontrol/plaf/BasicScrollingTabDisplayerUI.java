@@ -162,14 +162,14 @@ public abstract class BasicScrollingTabDisplayerUI extends BasicTabDisplayerUI {
             height = icon.getIconHeight();
             
             //maximize / restore button
-//            if( null != displayer.getWinsysInfo() ) {
-//                width += 3;
-//                btnMaximizeRestore = TabControlButtonFactory.createMaximizeRestoreButton( displayer );
-//                buttonsPanel.add( btnMaximizeRestore );
-//                icon = btnMaximizeRestore.getIcon();
-//                btnMaximizeRestore.setBounds( width, 0, icon.getIconWidth(), icon.getIconHeight() );
-//                width += icon.getIconWidth();
-//            }
+            if( null != displayer.getWinsysInfo() ) {
+                width += 3;
+                btnMaximizeRestore = TabControlButtonFactory.createMaximizeRestoreButton( displayer );
+                buttonsPanel.add( btnMaximizeRestore );
+                icon = btnMaximizeRestore.getIcon();
+                btnMaximizeRestore.setBounds( width, 0, icon.getIconWidth(), icon.getIconHeight() );
+                width += icon.getIconWidth();
+            }
             
             Dimension size = new Dimension( width, height );
             buttonsPanel.setMinimumSize( size );

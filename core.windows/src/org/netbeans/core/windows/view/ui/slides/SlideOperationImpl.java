@@ -57,7 +57,7 @@ class SlideOperationImpl implements SlideOperation, ChangeListener {
     private JLayeredPane pane;
     /** layer of layered pane to draw into */
     private Integer layer;
-
+    
     /** Creates a new instance of SlideInOperation */
     SlideOperationImpl(int type, Component component, int orientation, 
          SlidingFx effect, boolean requestsActivation) {
@@ -163,5 +163,15 @@ class SlideOperationImpl implements SlideOperation, ChangeListener {
         }
     }        
 
-    
+    static int side2Orientation(String side) {
+        int orientation = SlideBarDataModel.WEST; 
+        if (Constants.LEFT.equals(side)) {
+            orientation = SlideBarDataModel.WEST;
+        } else if (Constants.RIGHT.equals(side)) {
+            orientation = SlideBarDataModel.EAST;
+        } else if (Constants.BOTTOM.equals(side)) {
+            orientation = SlideBarDataModel.SOUTH;
+        }
+        return orientation;
+    }
 }

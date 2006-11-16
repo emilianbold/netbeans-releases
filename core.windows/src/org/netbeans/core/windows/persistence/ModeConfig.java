@@ -69,12 +69,16 @@ public class ModeConfig {
     /** TopComponent ID -> slided-in size (width or height) - applies to sliding modes only*/
     public Map<String,Integer> slideInSizes;
     
+    /** ID of top component that was selected before switching to/from maximized mode */
+    public String previousSelectedTopComponentID;
+    
     /** Creates a new instance of ModeConfig */
     public ModeConfig() {
         name = ""; // NOI18N
         constraints = new SplitConstraint[0];
         selectedTopComponentID = ""; // NOI18N
         tcRefConfigs = new TCRefConfig[0];
+        previousSelectedTopComponentID = ""; // NOI18N
     }
     
     public boolean equals (Object obj) {
@@ -148,6 +152,9 @@ public class ModeConfig {
         } else if( null != slideInSizes || null != modeCfg.slideInSizes ) {
             return false;
         }
+        if (!previousSelectedTopComponentID.equals(modeCfg.previousSelectedTopComponentID)) {
+            return false;
+        }
         return true;
     }
     
@@ -181,6 +188,7 @@ public class ModeConfig {
                 hash = 37 * hash + slideInSizes.get(key).hashCode();
             }
         }
+        hash = 37 * hash + previousSelectedTopComponentID.hashCode();
         return hash;
     }
     

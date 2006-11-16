@@ -84,7 +84,12 @@ final class DefaultModel implements Model {
     private int editorAreaFrameState = Frame.NORMAL;
     /** Name of toolbars configuration. */
     private String toolbarConfigName = "Standard"; // NOI18N
-
+    /** The docking status (slided-out/docked) for TopComponents in maximized editor mode */
+    private DockingStatus maximizedDockingStatus = new DockingStatus( this );
+    /** The docking status (slided-out/docked) for TopComponents in the default mode (nothing is maximized)*/
+    private DockingStatus defaultDockingStatus = new DefaultDockingStatus( this );
+    /** TopComponents that are maximized when slided-in. */
+    private Set<String> slideInMaximizedTopComponents = new HashSet<String>( 3 );
     
     /** Modes structure. */
     private ModesSubModel modesSubModel = new ModesSubModel(this);
@@ -274,11 +279,20 @@ final class DefaultModel implements Model {
             }
         }
     }
-    
-    /** Sets maximized mode. */
-    public void setMaximizedMode(ModeImpl maximizedMode) {
+
+    /** Sets editor mode that is currenlty maximized */
+    public void setEditorMaximizedMode(ModeImpl maximizedMode) {
+        assert null == maximizedMode || maximizedMode.getKind() == Constants.MODE_KIND_EDITOR;
         synchronized(LOCK_MODES) {
-            modesSubModel.setMaximizedMode(maximizedMode);
+            modesSubModel.setEditorMaximizedMode(maximizedMode);
+        }
+    }
+    
+    /** Sets view mode that is currenlty maximized */
+    public void setViewMaximizedMode(ModeImpl maximizedMode) {
+        assert null == maximizedMode || maximizedMode.getKind() == Constants.MODE_KIND_VIEW;
+        synchronized(LOCK_MODES) {
+            modesSubModel.setViewMaximizedMode(maximizedMode);
         }
     }
 
@@ -312,7 +326,9 @@ final class DefaultModel implements Model {
         toolbarConfigName = "Standard"; // NOI18N
         modesSubModel = new ModesSubModel(this);
         topComponentGroups.clear();
-        
+        maximizedDockingStatus.clear();
+        defaultDockingStatus.clear();
+        slideInMaximizedTopComponents.clear();
     }
     
     /////////////////////////////////////
@@ -434,11 +450,46 @@ final class DefaultModel implements Model {
             return modesSubModel.getActiveMode();
         }
     }
+
+    /**
+     * @return The docking status (docked/slided) of TopComponents before the window system
+     * switched to maximized mode.
+     */
+    public DockingStatus getDefaultDockingStatus() {
+        return defaultDockingStatus;
+    }
+
+    /**
+     * @return The docking status (docked/slided) of TopComponents in maximized editor mode.
+     */
+    public DockingStatus getMaximizedDockingStatus() {
+        return maximizedDockingStatus;
+    }
     
-    /** Gets maximized mode. */
-    public ModeImpl getMaximizedMode() {
+    /** Gets editor maximized mode. */
+    public ModeImpl getEditorMaximizedMode() {
         synchronized(LOCK_MODES) {
-            return modesSubModel.getMaximizedMode();
+            return modesSubModel.getEditorMaximizedMode();
+        }
+    }
+    
+    /** Gets view maximized mode. */
+    public ModeImpl getViewMaximizedMode() {
+        synchronized(LOCK_MODES) {
+            return modesSubModel.getViewMaximizedMode();
+        }
+    }
+    
+    /**
+     * Find the side (LEFT/RIGHT/BOTTOM) where the TopComponent from the given
+     * mode should slide to.
+     * 
+     * @param mode Mode
+     * @return The slide side for TopComponents from the given mode.
+     */
+    public String getSlideSideForMode( ModeImpl mode ) {
+        synchronized(LOCK_MODES) {
+            return modesSubModel.getSlideSideForMode( mode );
         }
     }
     
@@ -449,17 +500,42 @@ final class DefaultModel implements Model {
         }
     }
     
+    /** 
+     * Gets the sizes (width or height) of TopComponents in the given sliding 
+     * side, the key in the Map is TopComponent's ID 
+     */
     public Map<String,Integer> getSlideInSizes(String side) {
         synchronized(LOCK_MODES) {
             return modesSubModel.getSlideInSizes( side );
         }
     }
     
+    /** Set the size (width or height of the given TopComponent when it is slided in */
     public void setSlideInSize(String side, TopComponent tc, int size) {
         synchronized(LOCK_MODES) {
             modesSubModel.setSlideInSize(side, tc, size);
         }
     }
+    
+    /**
+     * @return True if the given TopComponent is maximized when it is slided-in.
+     */
+    public boolean isTopComponentMaximizedWhenSlidedIn( String tcid ) {
+        return null != tcid && slideInMaximizedTopComponents.contains( tcid );
+    }
+    
+    /**
+     * Set whether the given TopComponent is maximized when it is slided-in.
+     */
+    public void setTopComponentMaximizedWhenSlidedIn( String tcid, boolean maximized ) {
+        if( null != tcid ) {
+            if( maximized )
+                slideInMaximizedTopComponents.add( tcid );
+            else
+                slideInMaximizedTopComponents.remove( tcid );
+        }
+    }
+
     /////////////////////////////////////
     // Accessor methods <<
     /////////////////////////////////////
@@ -514,6 +590,14 @@ final class DefaultModel implements Model {
         }
     }
     
+    /** Remember which top component was the selected one before switching to/from maximized mode */
+    public void setModePreviousSelectedTopComponent(ModeImpl mode, TopComponent prevSelected) {
+        ModeModel modeModel = getModelForMode(mode);
+        if(modeModel != null) {
+            modeModel.setPreviousSelectedTopComponent(prevSelected);
+        }
+    }
+    
     /** Adds opened TopComponent. */
     public void addModeOpenedTopComponent(ModeImpl mode, TopComponent tc) {
         ModeModel modeModel = getModelForMode(mode);
@@ -554,6 +638,13 @@ final class DefaultModel implements Model {
         }
     }
     
+    public void setModeUnloadedPreviousSelectedTopComponent(ModeImpl mode, String tcID) {
+        ModeModel modeModel = getModelForMode(mode);
+        if(modeModel != null) {
+            modeModel.setUnloadedPreviousSelectedTopComponent(tcID);
+        }
+    }
+    
     /** */
     public void removeModeTopComponent(ModeImpl mode, TopComponent tc) {
         ModeModel modeModel = getModelForMode(mode);
@@ -584,11 +675,12 @@ final class DefaultModel implements Model {
     /**
      * @param mode - sliding mode
      * @param previousMode - the original mode.
+     * @param prevIndex - the tab index in the original mode
      */
-    public void setModeTopComponentPreviousMode(ModeImpl mode, String tcID, ModeImpl previousMode) {
+    public void setModeTopComponentPreviousMode(ModeImpl mode, String tcID, ModeImpl previousMode, int prevIndex) {
         ModeModel modeModel = getModelForMode(mode);
         if(modeModel != null) {
-            modeModel.setTopComponentPreviousMode(tcID, previousMode);
+            modeModel.setTopComponentPreviousMode(tcID, previousMode, prevIndex);
         }
     }
     
@@ -698,6 +790,16 @@ final class DefaultModel implements Model {
         }
     }
     
+    /** Get the top component that had been the selected one before switching to/from maximzied mode */
+    public TopComponent getModePreviousSelectedTopComponent(ModeImpl mode) {
+        ModeModel modeModel = getModelForMode(mode);
+        if(modeModel != null) {
+            return modeModel.getPreviousSelectedTopComponent();
+        } else {
+            return null;
+        }
+    }
+    
     /** Gets list of top components. */
     public List<TopComponent> getModeTopComponents(ModeImpl mode) {
         ModeModel modeModel = getModelForMode(mode);
@@ -754,6 +856,12 @@ final class DefaultModel implements Model {
     public ModeImpl getModeTopComponentPreviousMode(ModeImpl mode, String tcID) {
         ModeModel modeModel = getModelForMode(mode);
         return modeModel == null ? null : modeModel.getTopComponentPreviousMode(tcID);
+    }
+    
+    /** Gets the tab index of the given top component before it was moved to sliding/separate mode */
+    public int getModeTopComponentPreviousIndex(ModeImpl mode, String tcID) {
+        ModeModel modeModel = getModelForMode(mode);
+        return modeModel == null ? null : modeModel.getTopComponentPreviousIndex(tcID);
     }
     
     // End of mode specific.
@@ -1034,6 +1142,7 @@ final class DefaultModel implements Model {
             modesSubModel.setSplitWeights(snapshots, splitWeights);
         }
     }
+    
     // Controller updates <<
     /////////////////////////
 
@@ -1048,7 +1157,7 @@ final class DefaultModel implements Model {
         ModeImpl activeMode = getActiveMode();
         wsms.setActiveModeSnapshot(activeMode == null ? null : mss.findModeSnapshot(activeMode.getName()));
         
-        ModeImpl maximizedMode = getMaximizedMode();
+        ModeImpl maximizedMode = null != getViewMaximizedMode() ? getViewMaximizedMode() : null;
         wsms.setMaximizedModeSnapshot(maximizedMode == null ? null : mss.findModeSnapshot(maximizedMode.getName()));
 
         wsms.setMainWindowBoundsJoined(getMainWindowBoundsJoined());
@@ -1104,6 +1213,41 @@ final class DefaultModel implements Model {
         }
     }
 
-    
+    /**
+     * A special subclass of DockingStatus for default mode when no TopComponent is maximized.
+     */
+    private static class DefaultDockingStatus extends DockingStatus {
+        public DefaultDockingStatus( Model model ) {
+            super( model );
+        }
+        
+        /**
+         * When switching back to default mode, only slide those TopComponents 
+         * there were slided-out before.
+         */
+        public boolean shouldSlide( String tcID ) {
+            return null != tcID && slided.contains( tcID );
+        }
+
+        /**
+         * In default mode all TopComponents are docked by default.
+         */
+        public boolean shouldDock( String tcID ) {
+            return null != tcID && (docked.contains( tcID ) || (!docked.contains( tcID ) && !slided.contains( tcID )));
+        }
+        
+        public void mark() {
+            super.mark();
+            Set<ModeImpl> modes = model.getModes();
+            for( Iterator<ModeImpl> i=modes.iterator(); i.hasNext(); ) {
+                ModeImpl modeImpl = i.next();
+                if( modeImpl.getState() != Constants.MODE_KIND_VIEW )
+                    continue;
+
+                //also remember which top component is the selected one
+                modeImpl.setPreviousSelectedTopComponent( modeImpl.getSelectedTopComponent() );
+            }
+        }
+    }
 }
 

@@ -943,11 +943,13 @@ public final class PersistenceManager implements PropertyChangeListener {
                     || ModeParser.INSTANCE_DTD_ID_2_0.equals(publicId)
                     || ModeParser.INSTANCE_DTD_ID_2_1.equals(publicId)
                     || ModeParser.INSTANCE_DTD_ID_2_2.equals(publicId)
+                    || ModeParser.INSTANCE_DTD_ID_2_3.equals(publicId)
                     || GroupParser.INSTANCE_DTD_ID_2_0.equals(publicId)
                     || TCGroupParser.INSTANCE_DTD_ID_2_0.equals(publicId)
                     || TCRefParser.INSTANCE_DTD_ID_1_0.equals(publicId)
                     || TCRefParser.INSTANCE_DTD_ID_2_0.equals(publicId)
                     || TCRefParser.INSTANCE_DTD_ID_2_1.equals(publicId)
+                    || TCRefParser.INSTANCE_DTD_ID_2_2.equals(publicId)
                     || WindowManagerParser.INSTANCE_DTD_ID_1_0.equals(publicId)
                     || WindowManagerParser.INSTANCE_DTD_ID_1_1.equals(publicId)
                     || WindowManagerParser.INSTANCE_DTD_ID_2_0.equals(publicId)
@@ -1102,6 +1104,9 @@ public final class PersistenceManager implements PropertyChangeListener {
             ModeConfig mc = wmc.modes[i];
             if (id.equals(mc.selectedTopComponentID)) {
                 mc.selectedTopComponentID = "";
+            }
+            if (id.equals(mc.previousSelectedTopComponentID)) {
+                mc.previousSelectedTopComponentID = "";
             }
             boolean removeFromMode = false;
             for (int j = 0; j < mc.tcRefConfigs.length; j++) {

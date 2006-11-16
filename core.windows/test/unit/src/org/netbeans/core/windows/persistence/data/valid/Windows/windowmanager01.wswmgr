@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<windowmanager version="2.0">
+<windowmanager version="2.2">
     <main-window>
         <joined-properties
              x="100"
@@ -40,6 +40,6 @@
     </editor-area>
     <screen width="1280" height="1024" />
     <active-mode name="editor" />
-    <maximized-mode name="explorer" />
+    <maximized-mode view="explorer" editor="editor"/>
     <toolbar configuration="Standard" />
 </windowmanager>

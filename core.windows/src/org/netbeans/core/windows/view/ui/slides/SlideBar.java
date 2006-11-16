@@ -89,6 +89,9 @@ public final class SlideBar extends Box implements ComplexListDataListener,
 
     /** Action command indicating that component is going from auto-hide state to regular */
     public static final String COMMAND_DISABLE_AUTO_HIDE = "disableAutoHide"; //NOI18N
+
+    /** Action command indicating that component is going from regular to maximized size and vice versa */
+    public static final String COMMAND_MAXIMIZE = "slideMaximize"; //NOI18N
     
     /** Asociation with Tabbed implementation */
     private final TabbedSlideAdapter tabbed;

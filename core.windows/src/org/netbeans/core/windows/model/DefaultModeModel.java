@@ -137,10 +137,22 @@ final class DefaultModeModel implements ModeModel {
         }
     }
     
+    public void setUnloadedPreviousSelectedTopComponent(String tcID) {
+        synchronized(LOCK_TOPCOMPONENTS) {
+            topComponentSubModel.setUnloadedPreviousSelectedTopComponent(tcID);
+        }
+    }
+    
     /** Sets seleted TopComponent. */
     public void setSelectedTopComponent(TopComponent selected) {
         synchronized(LOCK_TOPCOMPONENTS) {
             topComponentSubModel.setSelectedTopComponent(selected);
+        }
+    }
+    
+    public void setPreviousSelectedTopComponent(TopComponent prevSelected) {
+        synchronized(LOCK_TOPCOMPONENTS) {
+            topComponentSubModel.setPreviousSelectedTopComponent(prevSelected);
         }
     }
 
@@ -241,6 +253,12 @@ final class DefaultModeModel implements ModeModel {
             return topComponentSubModel.getSelectedTopComponent();
         }
     }
+    /** Gets the top component that was selected before switching to/from maximized mode */
+    public TopComponent getPreviousSelectedTopComponent() {
+        synchronized(LOCK_TOPCOMPONENTS) {
+            return topComponentSubModel.getPreviousSelectedTopComponent();
+        }
+    }
 
     /** Gets list of top components. */
     public List<TopComponent> getOpenedTopComponents() {
@@ -279,6 +297,12 @@ final class DefaultModeModel implements ModeModel {
             return getContextSubModel().getTopComponentPreviousMode(tcID);
         }
     }
+    /** Gets the tab index of the top component in its previous mode */
+    public int getTopComponentPreviousIndex(String tcID) {
+        synchronized(LOCK_TC_CONTEXTS) {
+            return getContextSubModel().getTopComponentPreviousIndex(tcID);
+        }
+    }
     
     public void setTopComponentPreviousConstraints(String tcID, SplitConstraint[] constraints) {
         synchronized(LOCK_TC_CONTEXTS) {
@@ -286,9 +310,9 @@ final class DefaultModeModel implements ModeModel {
         }
     }
     
-    public void setTopComponentPreviousMode(String tcID, ModeImpl mode) {
+    public void setTopComponentPreviousMode(String tcID, ModeImpl mode, int prevIndex) {
         synchronized(LOCK_TC_CONTEXTS) {
-            getContextSubModel().setTopComponentPreviousMode(tcID, mode);
+            getContextSubModel().setTopComponentPreviousMode(tcID, mode, prevIndex);
         }
     }
     

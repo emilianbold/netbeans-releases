@@ -46,6 +46,8 @@ class TCRefParser {
     = "-//NetBeans//DTD Top Component in Mode Properties 2.0//EN"; // NOI18N
     public static final String INSTANCE_DTD_ID_2_1
     = "-//NetBeans//DTD Top Component in Mode Properties 2.1//EN"; // NOI18N
+    public static final String INSTANCE_DTD_ID_2_2
+    = "-//NetBeans//DTD Top Component in Mode Properties 2.2//EN"; // NOI18N
     
     private static final boolean DEBUG = Debug.isLoggable(TCRefParser.class);
     
@@ -254,8 +256,12 @@ class TCRefParser {
                     handleTcId(attrs);
                 } else if ("state".equals(qname)) { // NOI18N
                     handleState(attrs);
-                } else if ("previousMode".equals(qname)) {
+                } else if ("previousMode".equals(qname)) { // NOI18N
                     handlePreviousMode(attrs);
+                } else if ("docking-status".equals(qname)) { // NOI18N
+                    handleDockingStatus(attrs);
+                } else if ("slide-in-status".equals(qname)) { // NOI18N
+                    handleSlideInStatus(attrs);
                 }
             } else {
                 log("-- TCRefParser.startElement PARSING OLD");
@@ -381,6 +387,67 @@ class TCRefParser {
                 + " of element \"previousMode\"."); // NOI18N
                 tcRefConfig.previousMode = null;
             }
+            
+            String index = attrs.getValue("index"); // NOI18N;
+            if (index != null) {
+                try {
+                    tcRefConfig.previousIndex = Integer.parseInt( index );
+                } catch( NumberFormatException nfE ) {
+                    PersistenceManager.LOG.log(Level.WARNING,
+                    "[WinSys.TCRefParser.handlePreviousMode]" // NOI18N
+                    + " Warning: Invalid value of attribute \"index\"" // NOI18N
+                    + " of element \"previousMode\"."); // NOI18N
+                    tcRefConfig.previousIndex = -1;
+                }
+            }
+        }
+        
+        private void handleDockingStatus (Attributes attrs) throws SAXException {
+            String status = attrs.getValue("maximized-mode"); // NOI18N;
+            if (status != null) {
+                if ("docked".equals(status)) { // NOI18N
+                    tcRefConfig.dockedInMaximizedMode = true;
+                } else if ("slided".equals(status)) { // NOI18N
+                    tcRefConfig.dockedInMaximizedMode = false;
+                } else {
+                    PersistenceManager.LOG.log(Level.WARNING,
+                    "[WinSys.TCRefParser.handleDockingStatus]" // NOI18N
+                    + " Warning: Invalid value of attribute \"maximized-mode\"" // NOI18N
+                    + " of element \"docking-status\"."); // NOI18N
+                    tcRefConfig.dockedInMaximizedMode = false;
+                }
+            }
+            status = attrs.getValue("default-mode"); // NOI18N;
+            if (status != null) {
+                if ("docked".equals(status)) { // NOI18N
+                    tcRefConfig.dockedInDefaultMode = true;
+                } else if ("slided".equals(status)) { // NOI18N
+                    tcRefConfig.dockedInDefaultMode = false;
+                } else {
+                    PersistenceManager.LOG.log(Level.WARNING,
+                    "[WinSys.TCRefParser.handleDockingStatus]" // NOI18N
+                    + " Warning: Invalid value of attribute \"default-mode\"" // NOI18N
+                    + " of element \"docking-status\"."); // NOI18N
+                    tcRefConfig.dockedInDefaultMode = true;
+                }
+            }
+        }
+        
+        private void handleSlideInStatus (Attributes attrs) throws SAXException {
+            String status = attrs.getValue("maximized"); // NOI18N;
+            if (status != null) {
+                if ("true".equals(status)) { // NOI18N
+                    tcRefConfig.slidedInMaximized = true;
+                } else if ("false".equals(status)) { // NOI18N
+                    tcRefConfig.slidedInMaximized = false;
+                } else {
+                    PersistenceManager.LOG.log(Level.WARNING,
+                    "[WinSys.TCRefParser.handleSlideInStatus]" // NOI18N
+                    + " Warning: Invalid value of attribute \"maximized\"" // NOI18N
+                    + " of element \"slide-in-status\"."); // NOI18N
+                    tcRefConfig.slidedInMaximized = false;
+                }
+            } 
         }
         
         /** Writes data from asociated tcRef to the xml representation */
@@ -421,9 +488,9 @@ class TCRefParser {
             // header
             buff.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\n"); // NOI18N
             /*buff.append("<!DOCTYPE tc-ref PUBLIC\n"); // NOI18N
-            buff.append("          \"-//NetBeans//DTD Top Component in Mode Properties 2.1//EN\"\n"); // NOI18N
-            buff.append("          \"http://www.netbeans.org/dtds/tc-ref2_1.dtd\">\n\n"); // NOI18N*/
-            buff.append("<tc-ref version=\"2.1\">\n"); // NOI18N
+            buff.append("          \"-//NetBeans//DTD Top Component in Mode Properties 2.2//EN\"\n"); // NOI18N
+            buff.append("          \"http://www.netbeans.org/dtds/tc-ref2_2.dtd\">\n\n"); // NOI18N*/
+            buff.append("<tc-ref version=\"2.2\">\n"); // NOI18N
             
             appendModule(ic, buff);
             appendTcId(tcRefCfg, buff);
@@ -431,6 +498,8 @@ class TCRefParser {
             if (tcRefCfg.previousMode != null) {
                 appendPreviousMode(tcRefCfg, buff);
             }
+            appendDockingStatus( tcRefCfg, buff );
+            appendSlideInStatus( tcRefCfg, buff );
             
             buff.append("</tc-ref>\n"); // NOI18N
             return buff;
@@ -476,10 +545,29 @@ class TCRefParser {
             buff.append(" />\n"); // NOI18N
         }
         
+        private void appendDockingStatus (TCRefConfig tcRefCfg, StringBuffer buff) {
+            if( tcRefCfg.dockedInMaximizedMode || !tcRefCfg.dockedInDefaultMode ) {
+                buff.append("    <docking-status"); // NOI18N
+                if( tcRefCfg.dockedInMaximizedMode )
+                    buff.append(" maximized-mode=\"docked\""); // NOI18N
+                if( !tcRefCfg.dockedInDefaultMode )
+                    buff.append(" default-mode=\"slided\""); // NOI18N
+                buff.append(" />\n"); // NOI18N
+            }
+        }
+        
+        private void appendSlideInStatus (TCRefConfig tcRefCfg, StringBuffer buff) {
+            if( tcRefCfg.slidedInMaximized ) {
+                buff.append("    <slide-in-status maximized=\"true\" />\n"); // NOI18N
+            }
+        }
+        
         private void appendPreviousMode(TCRefConfig tcRefCfg, StringBuffer buff) {
             buff.append("    <previousMode name=\""); // NOI18N
-            buff.append(tcRefCfg.previousMode);
-            buff.append("\" />\n"); // NOI18N
+            buff.append(tcRefCfg.previousMode).append("\" ");
+            if( tcRefCfg.previousIndex >= 0 )
+                buff.append( " index=\"" ).append( tcRefCfg.previousIndex ).append( "\" " );
+            buff.append(" />\n"); // NOI18N
         }
 
     }

@@ -63,7 +63,9 @@ final class ModesSubModel {
     /** Active mode. */
     private ModeImpl activeMode;
     /** Maximized mode. */
-    private ModeImpl maximizedMode;
+    private ModeImpl editorMaximizedMode;
+    private ModeImpl viewMaximizedMode;
+    
     // (sliding side + TopComponent ID) -> size in pixels (width or height 
     //depending on the sliding side)
     private final Map<String,Integer> slideInSizes = new HashMap<String,Integer>(15);
@@ -95,6 +97,17 @@ final class ModesSubModel {
         } else {
             return editorSplitSubModel.getModeConstraints(mode);
         }
+    }
+    
+    /**
+     * Find the side (LEFT/RIGHT/BOTTOM) where the TopComponent from the given
+     * mode should slide to.
+     * 
+     * @param mode Mode
+     * @return The slide side for TopComponents from the given mode.
+     */
+    public String getSlideSideForMode( ModeImpl mode ) {
+        return editorSplitSubModel.getSlideSideForMode( mode );
     }
     
     public String getSlidingModeConstraints(ModeImpl mode) {
@@ -273,19 +286,34 @@ final class ModesSubModel {
         return this.activeMode;
     }
     
-    /** Sets maximized mode. */
-    public boolean setMaximizedMode(ModeImpl maximizedMode) {
+    /** Sets maximized mode for editor components. */
+    public boolean setEditorMaximizedMode(ModeImpl maximizedMode) {
         if(maximizedMode == null || modes.contains(maximizedMode)) {
-            this.maximizedMode = maximizedMode;
+            this.editorMaximizedMode = maximizedMode;
             return true;
         }
         
         return false;
     }
     
-    /** Gets maximized mode. */
-    public ModeImpl getMaximizedMode() {
-        return this.maximizedMode;
+    /** Gets maximized mode for editor components. */
+    public ModeImpl getEditorMaximizedMode() {
+        return this.editorMaximizedMode;
+    }
+    
+    /** Sets maximized mode for non-editor components. */
+    public boolean setViewMaximizedMode(ModeImpl maximizedMode) {
+        if(maximizedMode == null || modes.contains(maximizedMode)) {
+            this.viewMaximizedMode = maximizedMode;
+            return true;
+        }
+        
+        return false;
+    }
+    
+    /** Gets maximized mode for non-editor components. */
+    public ModeImpl getViewMaximizedMode() {
+        return this.viewMaximizedMode;
     }
 
     public Set<ModeImpl> getModes() {

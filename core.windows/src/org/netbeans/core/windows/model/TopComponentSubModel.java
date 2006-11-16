@@ -47,6 +47,8 @@ final class TopComponentSubModel {
     private final int kind;
     /** Selected TopComponent ID. Has to be present in openedTopComponenets. */
     private String selectedTopComponentID;
+    /** ID of top component that was the selected one before switching to/from maximized mode */
+    private String previousSelectedTopComponentID;
 
     public TopComponentSubModel(int kind) {
         this.kind = kind;
@@ -264,12 +266,23 @@ final class TopComponentSubModel {
         }
     }
     
+    public void setPreviousSelectedTopComponent(TopComponent tc) {
+        if(tc != null )
+            previousSelectedTopComponentID = getID(tc);
+        else
+            previousSelectedTopComponentID = null;
+    }
+    
     public void setUnloadedSelectedTopComponent(String tcID) {
         if(tcID != null && !getOpenedTopComponentsIDs().contains(tcID)) {
             return;
         }
         
         selectedTopComponentID = tcID;
+    }
+    
+    public void setUnloadedPreviousSelectedTopComponent(String tcID) {
+        previousSelectedTopComponentID = tcID;
     }
     
     public List<String> getOpenedTopComponentsIDs() {
@@ -299,6 +312,12 @@ final class TopComponentSubModel {
     
     public TopComponent getSelectedTopComponent() {
         return getTopComponent(selectedTopComponentID);
+    }
+    
+    public TopComponent getPreviousSelectedTopComponent() {
+        if( null != previousSelectedTopComponentID )
+            return getTopComponent(previousSelectedTopComponentID);
+        return null;
     }
 
     private static TopComponent getTopComponent(String tcID) {

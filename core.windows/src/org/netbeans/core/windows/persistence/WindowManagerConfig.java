@@ -166,8 +166,10 @@ public class WindowManagerConfig {
     public Dimension screenSize;
     /** Name of active mode. */
     public String activeModeName;
-    /** Name of maximized mode. */
-    public String maximizedModeName;
+    /** Name of maximized mode (editor). */
+    public String editorMaximizedModeName;
+    /** Name of maximized mode (view). */
+    public String viewMaximizedModeName;
     /** Name of toolbar configuration. */
     public String toolbarConfiguration;
     /** Preferred size of toolbar icons. */
@@ -183,7 +185,8 @@ public class WindowManagerConfig {
     public WindowManagerConfig() {
         editorAreaConstraints = new SplitConstraint[0];
         activeModeName = ""; // NOI18N
-        maximizedModeName = ""; // NOI18N
+        editorMaximizedModeName = ""; // NOI18N
+        viewMaximizedModeName = ""; // NOI18N
         toolbarConfiguration = ""; // NOI18N
         modes = new ModeConfig[0];
         groups = new GroupConfig[0];
@@ -285,7 +288,10 @@ public class WindowManagerConfig {
         if (!activeModeName.equals(wmCfg.activeModeName)) {
             return false;
         }
-        if (!maximizedModeName.equals(wmCfg.maximizedModeName)) {
+        if (!editorMaximizedModeName.equals(wmCfg.editorMaximizedModeName)) {
+            return false;
+        }
+        if (!viewMaximizedModeName.equals(wmCfg.viewMaximizedModeName)) {
             return false;
         }
         if (!toolbarConfiguration.equals(wmCfg.toolbarConfiguration)) {
@@ -388,7 +394,8 @@ public class WindowManagerConfig {
             hash = 37 * hash + screenSize.hashCode();
         }
         hash = 37 * hash + activeModeName.hashCode();
-        hash = 37 * hash + maximizedModeName.hashCode();
+        hash = 37 * hash + editorMaximizedModeName.hashCode();
+        hash = 37 * hash + viewMaximizedModeName.hashCode();
         hash = 37 * hash + toolbarConfiguration.hashCode();
         hash = 37 * hash + preferredToolbarIconSize;
         for (int i = 0; i < modes.length; i++) {

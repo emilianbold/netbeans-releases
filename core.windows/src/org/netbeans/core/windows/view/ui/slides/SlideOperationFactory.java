@@ -88,4 +88,7 @@ public final class SlideOperationFactory {
         return result;
     }
     
+    public static SlideOperation createSlideResize(Component component, String side) {
+        return createSlideResize( component, SlideOperationImpl.side2Orientation( side ) );
+    }
 }

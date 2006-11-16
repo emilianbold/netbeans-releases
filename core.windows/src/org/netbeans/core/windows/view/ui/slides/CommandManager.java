@@ -194,9 +194,11 @@ final class CommandManager implements ActionListener {
                     Utilities.actionsToPopup(actions, tc.getLookup()), tae.getMouseEvent().getPoint(), tae.getMouseEvent().getComponent());
                 
             }
-        }
-        else if (TabbedContainer.COMMAND_DISABLE_AUTO_HIDE.equals(e.getActionCommand())) {
+        } else if (TabbedContainer.COMMAND_DISABLE_AUTO_HIDE.equals(e.getActionCommand())) {
             slideIntoDesktop(curSlidedIndex, true);
+        } else if (TabbedContainer.COMMAND_MAXIMIZE.equals(e.getActionCommand())) {
+            //inform the window system that the slided window changes its maximized status
+            postEvent(new SlideBarActionEvent(slideBar, SlideBar.COMMAND_MAXIMIZE, null, null, curSlidedIndex));
         } else {
             // convert event - fix index, local tabbed container index isn't right in slide bar context
             TabActionEvent tae = (TabActionEvent)e;

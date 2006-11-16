@@ -88,7 +88,6 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
                 toReturn = Constants.LEFT;
             }
         } else {
-            Rectangle compb = comp.getBounds();
             Rectangle editorb = hierarchy.getPureEditorAreaBounds();
             Point leftTop = new Point(0, 0);
             SwingUtilities.convertPointToScreen(leftTop, comp);
@@ -105,8 +104,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         }
         return toReturn;
     }
-               
-
+    
     public void changeGUI(ViewEvent[] viewEvents, WindowSystemSnapshot snapshot) {
 
         // Change to view understandable-convenient structure.
@@ -446,7 +444,13 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
                     Logger.getLogger(DefaultView.class.getName()).fine(
                         "Could not find mode " + viewEvent.getSource());
                 }
-                
+            } else if (changeType == View.CHANGE_MAXIMIZE_TOPCOMPONENT_SLIDE_IN) {
+                if (DEBUG) {
+                    debugLog("Slided-in top component toggle maximize"); //NOI18N
+                }
+                TopComponent tc = (TopComponent)viewEvent.getSource();
+                String side = (String)viewEvent.getNewValue();
+                hierarchy.performSlideToggleMaximize( tc, side );
             }
         }
         

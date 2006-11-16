@@ -139,7 +139,8 @@ final class PersistenceHandler implements PersistenceObserver {
         }
 
         ModeImpl activeMode    = null;
-        ModeImpl maximizedMode = null;
+        ModeImpl editorMaximizedMode = null;
+        ModeImpl viewMaximizedMode = null;
         
         // First create empty modes.
         Map<ModeImpl, ModeConfig> mode2config = new HashMap<ModeImpl, ModeConfig>();
@@ -154,8 +155,10 @@ final class PersistenceHandler implements PersistenceObserver {
             if(mc.name.equals(wmc.activeModeName)) {
                 activeMode = mode;
             }
-            if(mc.name.equals(wmc.maximizedModeName)) {
-                maximizedMode = mode;
+            if(mc.name.equals(wmc.editorMaximizedModeName)) {
+                editorMaximizedMode = mode;
+            } else if(mc.name.equals(wmc.viewMaximizedModeName)) {
+                viewMaximizedMode = mode;
             }
         }
         
@@ -169,6 +172,9 @@ final class PersistenceHandler implements PersistenceObserver {
             // Set selected TopComponent.
             if(mc.selectedTopComponentID != null) {
                 mode.setUnloadedSelectedTopComponent(mc.selectedTopComponentID);
+            }
+            if(mc.previousSelectedTopComponentID != null) {
+                mode.setUnloadedPreviousSelectedTopComponent(mc.previousSelectedTopComponentID);
             }
         }
         
@@ -190,7 +196,8 @@ final class PersistenceHandler implements PersistenceObserver {
         // project layer, that can cause out of synch state when switching projects... 
         // setting null is however considered a valid state.
         wm.setActiveMode(activeMode);
-        wm.setMaximizedMode(maximizedMode);
+        wm.setEditorMaximizedMode(editorMaximizedMode);
+        wm.setViewMaximizedMode(viewMaximizedMode);
 
         Rectangle joinedBounds = computeBounds(
             wmc.centeredHorizontallyJoined,
@@ -307,7 +314,7 @@ final class PersistenceHandler implements PersistenceObserver {
                     }
                 }
                 if (previous != null) {
-                    WindowManagerImpl.getInstance().setPreviousModeForTopComponent(tcRefConfig.tc_id, mode, previous);
+                    WindowManagerImpl.getInstance().setPreviousModeForTopComponent(tcRefConfig.tc_id, mode, previous, tcRefConfig.previousIndex);
                 } else {
                     Logger.getLogger(PersistenceHandler.class.getName()).log(Level.WARNING, null,
                                       new java.lang.NullPointerException("Cannot find previous mode named \'" +
@@ -320,6 +327,7 @@ final class PersistenceHandler implements PersistenceObserver {
     }
     
     private ModeImpl initModeFromConfig(ModeImpl mode, ModeConfig mc) {
+        WindowManagerImpl wm = WindowManagerImpl.getInstance();
         for (int j = 0; j < mc.tcRefConfigs.length; j++) {
             TCRefConfig tcRefConfig = (TCRefConfig) mc.tcRefConfigs[j];
             if(DEBUG) {
@@ -336,6 +344,9 @@ final class PersistenceHandler implements PersistenceObserver {
             } else {
                 mode.addUnloadedTopComponent(tcRefConfig.tc_id);
             }
+            wm.setTopComponentDockedInMaximizedMode( tcRefConfig.tc_id, tcRefConfig.dockedInMaximizedMode );
+            wm.setTopComponentSlidedInDefaultMode( tcRefConfig.tc_id, !tcRefConfig.dockedInDefaultMode );
+            wm.setTopComponentMaximizedWhenSlidedIn( tcRefConfig.tc_id, tcRefConfig.slidedInMaximized );
         }
 
         // PENDING Refine the unneded computing.
@@ -478,12 +489,20 @@ final class PersistenceHandler implements PersistenceObserver {
             wmc.activeModeName = mo.getName();
         }
         
-        mo = wmi.getMaximizedMode();
+        mo = wmi.getEditorMaximizedMode();
         if(DEBUG) {
-            debugLog("maximized mode=" + mo); // NOI18N
+            debugLog("editor maximized mode=" + mo); // NOI18N
         }
         if (mo != null) {
-            wmc.maximizedModeName = mo.getName();
+            wmc.editorMaximizedModeName = mo.getName();
+        }
+        
+        mo = wmi.getViewMaximizedMode();
+        if(DEBUG) {
+            debugLog("view maximized mode=" + mo); // NOI18N
+        }
+        if (mo != null) {
+            wmc.viewMaximizedModeName = mo.getName();
         }
         
         wmc.toolbarConfiguration = wmi.getToolbarConfigName();
@@ -586,6 +605,17 @@ final class PersistenceHandler implements PersistenceObserver {
             debugLog("mode permanent=" + modeCfg.permanent); // NOI18N
         }
         
+        TopComponent prevSelectedTC = mode.getPreviousSelectedTopComponent();
+        if(prevSelectedTC != null) {
+            if (pm.isTopComponentPersistent(prevSelectedTC)) {
+                String tc_id = wm.findTopComponentID(prevSelectedTC);
+                if(DEBUG) {
+                    debugLog("previous selected tc=" + selectedTC.getName()); // NOI18N
+                }
+                modeCfg.previousSelectedTopComponentID = tc_id;
+            }
+        }
+        
         // TopComponents:
         List<TCRefConfig> tcRefCfgList = new ArrayList<TCRefConfig>();
         List<String> openedTcIDs = mode.getOpenedTopComponentsIDs();
@@ -593,8 +623,8 @@ final class PersistenceHandler implements PersistenceObserver {
             String tcID = (String)it.next();
             
             boolean opened = openedTcIDs.contains(tcID);
+            TopComponent tc = wm.findTopComponent(tcID);
             if(opened) {
-                TopComponent tc = wm.findTopComponent(tcID);
                 if(tc == null || !pm.isTopComponentPersistent(tc)) {
                     continue;
                 }
@@ -602,13 +632,15 @@ final class PersistenceHandler implements PersistenceObserver {
             
             // #45981: save previous mode even for closed tcs
             String modeName = null;
-            if (mode.getKind() == Constants.MODE_KIND_SLIDING) {
+            int prevIndex = -1;
+            if (mode.getKind() == Constants.MODE_KIND_SLIDING || mode.getState() == Constants.MODE_STATE_SEPARATED) {
                 ModeImpl prev = wm.getPreviousModeForTopComponent(tcID, mode);
                 if (prev != null) {
                     modeName = prev.getName();
+                    prevIndex = wm.getPreviousIndexForTopComponent(tcID, mode);
                 }
             }
-
+            
             if(DEBUG) {
                 debugLog("tc ID=" + tcID + " opened=" + opened); // NOI18N
             }
@@ -616,6 +648,10 @@ final class PersistenceHandler implements PersistenceObserver {
             tcRefCfg.tc_id = tcID;
             tcRefCfg.opened = opened;
             tcRefCfg.previousMode = modeName;
+            tcRefCfg.previousIndex = prevIndex;
+            tcRefCfg.dockedInMaximizedMode = wm.isTopComponentDockedInMaximizedMode( tcID );
+            tcRefCfg.dockedInDefaultMode = !wm.isTopComponentSlidedInDefaultMode( tcID );
+            tcRefCfg.slidedInMaximized = wm.isTopComponentMaximizedWhenSlidedIn( tcID );
             tcRefCfgList.add(tcRefCfg);
         }
         
@@ -706,6 +742,11 @@ final class PersistenceHandler implements PersistenceObserver {
         if(DEBUG) {
             debugLog("WMI.topComponentRefConfigAdded mo:" + modeName + " tcRef:" + tcRefConfig.tc_id); // NOI18N
         }
+        
+        WindowManagerImpl wm = WindowManagerImpl.getInstance();
+        wm.setTopComponentDockedInMaximizedMode( tcRefConfig.tc_id, tcRefConfig.dockedInMaximizedMode );
+        wm.setTopComponentSlidedInDefaultMode( tcRefConfig.tc_id, !tcRefConfig.dockedInDefaultMode );
+        wm.setTopComponentMaximizedWhenSlidedIn( tcRefConfig.tc_id, tcRefConfig.slidedInMaximized );
         
         TopComponent tc = getTopComponentForID(tcRefConfig.tc_id);
         if(tc != null) {
@@ -848,7 +889,8 @@ final class PersistenceHandler implements PersistenceObserver {
         
         buffer.append("\n--     screenSize: " + wmc.screenSize);
         buffer.append("\n--    activeModeName: " + wmc.activeModeName);
-        buffer.append("\n-- maximizedModeName: " + wmc.maximizedModeName);
+        buffer.append("\n-- editorMaximizedModeName: " + wmc.editorMaximizedModeName);
+        buffer.append("\n-- viewMaximizedModeName: " + wmc.viewMaximizedModeName);
         buffer.append("\n--     toolbarconfig: " + wmc.toolbarConfiguration);
         buffer.append("\n-- modes: " + Arrays.toString(wmc.modes) + " size " + (wmc.modes == null ? -1 : wmc.modes.length));
         for (int i = 0; i < wmc.modes.length; i++) {

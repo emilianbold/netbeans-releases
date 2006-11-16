@@ -744,6 +744,10 @@ final class ViewHierarchy {
         desktop.performSlideResize(operation);
     }
     
+    public void performSlideToggleMaximize( TopComponent tc, String side ) {
+        desktop.performSlideToggleMaximize( tc, side, getPureEditorAreaBounds());
+    }
+    
     private void setMainWindowDesktop(Component component) {
         setDesktop(component, true);
     }

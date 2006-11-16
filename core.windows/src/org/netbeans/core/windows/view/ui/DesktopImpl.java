@@ -37,6 +37,8 @@ import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.view.SlidingView;
 import org.netbeans.core.windows.view.ViewElement;
 import org.netbeans.core.windows.view.ui.slides.SlideOperation;
+import org.netbeans.core.windows.view.ui.slides.SlideOperationFactory;
+import org.netbeans.swing.tabcontrol.TabbedContainer;
 import org.openide.windows.TopComponent;
 
 
@@ -238,6 +240,25 @@ public final class DesktopImpl {
         performSlide(operation);
     }
     
+    public void performSlideToggleMaximize( TopComponent tc, String side, Rectangle editorBounds ) {
+        Component tabbed = findTabbed( tc );
+        if( null != tabbed ) {
+            SlideOperation operation = SlideOperationFactory.createSlideResize( tabbed, side );
+            Rectangle slideInBounds = computeSlideInBounds(operation, editorBounds);
+            operation.setFinishBounds(slideInBounds);
+            performSlide(operation);
+        }
+    }
+    
+    private Component findTabbed( Component comp ) {
+        while( comp.getParent() != null ) {
+            if( comp.getParent() instanceof TabbedContainer ) {
+                return comp.getParent();
+            }
+            comp = comp.getParent();
+        }
+        return null;
+    }
     /************** private stuff ***********/
     
     private void performSlide(SlideOperation operation) {
@@ -285,7 +306,7 @@ public final class DesktopImpl {
             }
             if (result.width > splitRootRect.width) {
                 // make sure we are not bigger than the current window..
-                result.width = splitRootRect.width - (splitRootRect.width / 10);
+                result.width = splitRootRect.width;
             }
         } else if (Constants.RIGHT.equals(side)) {
             int rightLimit = /*layeredPane.getBounds().x  + */ layeredPane.getBounds().width - Math.max(viewRect.width, viewPreferred.width);
@@ -293,7 +314,7 @@ public final class DesktopImpl {
                         ? rightLimit - splitRootRect.width / 3 : rightLimit - view.getSlideBounds().width;
             if (result.x < 0) {
                 // make sure we are not bigger than the current window..
-                result.x = splitRootRect.width / 10;
+                result.x = 0;
             }
             result.y = 0;
             result.height = splitRootRect.height;
@@ -306,7 +327,7 @@ public final class DesktopImpl {
                         ? lowerLimit - splitRootRect.height / 3 : lowerLimit - view.getSlideBounds().height;
             if (result.y < 0) {
                 // make sure we are not bigger than the current window..
-                result.y = splitRootRect.width / 10;
+                result.y = 0;
             }
             result.height = lowerLimit - result.y;
             result.width = splitRootRect.width;

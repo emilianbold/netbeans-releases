@@ -461,7 +461,7 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
      * false otherwise 
      */
     public static boolean isInMaximizedMode (Component comp) {
-        ModeImpl maxMode = WindowManagerImpl.getInstance().getMaximizedMode();
+        ModeImpl maxMode = WindowManagerImpl.getInstance().getCurrentMaximizedMode();
         if (maxMode == null) {
             return false;
         }

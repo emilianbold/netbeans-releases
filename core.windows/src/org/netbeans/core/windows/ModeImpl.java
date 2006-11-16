@@ -24,13 +24,14 @@ import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.Workspace;
 
-import javax.swing.*;
-import java.awt.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import javax.swing.SwingUtilities;
+import java.awt.Image;
+import java.awt.Rectangle;
 
 
 /** This class is an implementation of Mode interface.
@@ -245,8 +246,35 @@ public final class ModeImpl implements Mode {
         return getCentral().getModeSelectedTopComponent(this);
     }
     
+    /**
+     * Remember which top component was previously the selected one.
+     * Used when switching to/from maximized mode.
+     */
+    public void setPreviousSelectedTopComponent(TopComponent tc) {
+        TopComponent old = getPreviousSelectedTopComponent();
+        if(tc == old) {
+            return;
+        }
+        
+        getCentral().setModePreviousSelectedTopComponent(this, tc);
+    }
+    
+    /**
+     * @return The top component that was the selected one before switching to/from 
+     * the maximized mode.
+     */
+    public TopComponent getPreviousSelectedTopComponent() {
+        WindowManagerImpl.assertEventDispatchThread();
+        
+        return getCentral().getModePreviousSelectedTopComponent(this);
+    }
+    
     public void addOpenedTopComponent(TopComponent tc) {
         getCentral().addModeOpenedTopComponent(this, tc);
+    }
+    
+    public void addOpenedTopComponent(TopComponent tc, int index) {
+        getCentral().insertModeOpenedTopComponent( this, tc, index );
     }
     
     public void addClosedTopComponent(TopComponent tc) {
@@ -259,6 +287,10 @@ public final class ModeImpl implements Mode {
     
     public void setUnloadedSelectedTopComponent(String tcID) {
         getCentral().setUnloadedSelectedTopComponent(this, tcID);
+    }
+    
+    public void setUnloadedPreviousSelectedTopComponent(String tcID) {
+        getCentral().setUnloadedPreviousSelectedTopComponent(this, tcID);
     }
     
     // XXX

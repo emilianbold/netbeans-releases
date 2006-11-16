@@ -140,7 +140,8 @@ public class WindowManagerParserTest extends NbTestCase {
         assertEquals("Screen height",1024,wmCfg.screenSize.height);
         
         assertEquals("Active mode","editor",wmCfg.activeModeName);
-        assertEquals("Maximized mode","explorer",wmCfg.maximizedModeName);
+        assertEquals("Editor maximized mode","editor",wmCfg.editorMaximizedModeName);
+        assertEquals("View maximized mode","explorer",wmCfg.viewMaximizedModeName);
         assertEquals("Toolbar","Standard",wmCfg.toolbarConfiguration);
         
         assertNotNull("Modes are null",wmCfg.modes);
@@ -222,7 +223,9 @@ public class WindowManagerParserTest extends NbTestCase {
         assertEquals("Screen height",480,wmCfg.screenSize.height);
         
         assertEquals("Active mode","editor",wmCfg.activeModeName);
-        assertEquals("Maximized mode","explorer",wmCfg.maximizedModeName);
+        assertEquals("View maximized mode","explorer",wmCfg.viewMaximizedModeName);
+        assertNotNull("Editor maximized mode is null",wmCfg.editorMaximizedModeName);
+        assertEquals("Editor maximized mode is not empty","",wmCfg.editorMaximizedModeName);
         assertEquals("Toolbar","Standard",wmCfg.toolbarConfiguration);
         
         assertNotNull("Modes are null",wmCfg.modes);
@@ -230,6 +233,68 @@ public class WindowManagerParserTest extends NbTestCase {
         assertNotNull("Groups are null",wmCfg.groups);
         
         System.out.println("WindowManagerParserTest.testLoadWM02 FINISH");
+    }
+    
+    /** Test of loaded data
+     */
+    public void testLoadWM03 () throws Exception {
+        System.out.println("");
+        System.out.println("WindowManagerParserTest.testLoadWM03 START");
+        
+        WindowManagerParser wmParser = createWMParser("data/valid/Windows","windowmanager03");
+        
+        WindowManagerConfig wmCfg = null;
+        try {
+            wmCfg = wmParser.load();
+        } catch (IOException exc) {
+            Logger.global.log(Level.WARNING, null, exc);
+            fail("Unexpected exception during parsing");
+        }
+        
+        //Check loaded data
+        assertNotNull("Could not load data.",wmCfg);
+        
+        assertEquals("Editor maximized mode","editor",wmCfg.editorMaximizedModeName);
+        assertNotNull("View maximized mode is null",wmCfg.viewMaximizedModeName);
+        assertEquals("View maximized mode is not empty","",wmCfg.viewMaximizedModeName);
+        
+        assertNotNull("Modes are null",wmCfg.modes);
+        
+        assertNotNull("Groups are null",wmCfg.groups);
+        
+        System.out.println("WindowManagerParserTest.testLoadWM03 FINISH");
+    }
+    
+    /** Test of loaded data - no maximized mode
+     */
+    public void testLoadWM04 () throws Exception {
+        System.out.println("");
+        System.out.println("WindowManagerParserTest.testLoadWM04 START");
+        
+        WindowManagerParser wmParser = createWMParser("data/valid/Windows","windowmanager04");
+        
+        WindowManagerConfig wmCfg = null;
+        try {
+            wmCfg = wmParser.load();
+        } catch (IOException exc) {
+            Logger.global.log(Level.WARNING, null, exc);
+            fail("Unexpected exception during parsing");
+        }
+        
+        //Check loaded data
+        assertNotNull("Could not load data.",wmCfg);
+        
+        assertNotNull("View maximized mode is null",wmCfg.viewMaximizedModeName);
+        assertEquals("View maximized mode is not empty","",wmCfg.viewMaximizedModeName);
+        
+        assertNotNull("Editor maximized mode is null",wmCfg.editorMaximizedModeName);
+        assertEquals("Editor maximized mode is not empty","",wmCfg.editorMaximizedModeName);
+        
+        assertNotNull("Modes are null",wmCfg.modes);
+        
+        assertNotNull("Groups are null",wmCfg.groups);
+        
+        System.out.println("WindowManagerParserTest.testLoadWM04 FINISH");
     }
     
     /** Test of saving
@@ -268,6 +333,42 @@ public class WindowManagerParserTest extends NbTestCase {
         assertTrue("Compare configuration data",wmCfg1.equals(wmCfg2));
         
         System.out.println("WindowManagerParserTest.testSaveWM02 FINISH");
+    }
+    
+    public void testSaveWM03 () throws Exception {
+        System.out.println("");
+        System.out.println("WindowManagerParserTest.testSaveWM03 START");
+        
+        WindowManagerParser wmParser = createWMParser("data/valid/Windows","windowmanager03");
+        
+        WindowManagerConfig wmCfg1 = wmParser.load();
+        
+        wmParser.save(wmCfg1);
+        
+        WindowManagerConfig wmCfg2 = wmParser.load();
+        
+        //Compare data
+        assertTrue("Compare configuration data",wmCfg1.equals(wmCfg2));
+        
+        System.out.println("WindowManagerParserTest.testSaveWM03 FINISH");
+    }
+    
+    public void testSaveWM04 () throws Exception {
+        System.out.println("");
+        System.out.println("WindowManagerParserTest.testSaveWM04 START");
+        
+        WindowManagerParser wmParser = createWMParser("data/valid/Windows","windowmanager04");
+        
+        WindowManagerConfig wmCfg1 = wmParser.load();
+        
+        wmParser.save(wmCfg1);
+        
+        WindowManagerConfig wmCfg2 = wmParser.load();
+        
+        //Compare data
+        assertTrue("Compare configuration data",wmCfg1.equals(wmCfg2));
+        
+        System.out.println("WindowManagerParserTest.testSaveWM04 FINISH");
     }
     
     ////////////////////////////////

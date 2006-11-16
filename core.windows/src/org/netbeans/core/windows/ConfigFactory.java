@@ -70,7 +70,8 @@ abstract class ConfigFactory {
         
         wmc.screenSize = new Dimension(1024, 750);
         wmc.activeModeName = "editor"; // NOI18N
-        wmc.maximizedModeName = null;
+        wmc.editorMaximizedModeName = "";
+        wmc.viewMaximizedModeName = "";
         wmc.toolbarConfiguration = "Standard"; // NOI18N
         wmc.preferredToolbarIconSize = 24;
         wmc.modes = createDefaultModeConfigs();
@@ -282,6 +283,7 @@ abstract class ConfigFactory {
         TCRefConfig tcrc = new TCRefConfig();
         tcrc.tc_id = "CommonPalette"; // NOI18N
         tcrc.opened = true;
+        tcrc.dockedInMaximizedMode = true;
         return tcrc;
     }
     

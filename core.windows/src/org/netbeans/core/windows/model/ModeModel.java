@@ -46,8 +46,10 @@ interface ModeModel {
     public void setBoundsSeparatedHelp(Rectangle bounds);
     /** Sets frame state. */
     public void setFrameState(int frameState);
-    /** Sets seleted TopComponent. */
+    /** Sets selected TopComponent. */
     public void setSelectedTopComponent(TopComponent selected);
+    /** Set top component that was selected before switching to/from maximized mode */
+    public void setPreviousSelectedTopComponent(TopComponent prevSelected);
     /** Adds opened TopComponent. */
     public void addOpenedTopComponent(TopComponent tc);
     /** Inserts opened TopComponent. */
@@ -58,6 +60,8 @@ interface ModeModel {
     public void addUnloadedTopComponent(String tcID);
     // XXX
     public void setUnloadedSelectedTopComponent(String tcID);
+    /** Set top component that was selected before switching to/from maximized mode */
+    public void setUnloadedPreviousSelectedTopComponent(String tcID);
     /** Removes TopComponent from mode. */
     public void removeTopComponent(TopComponent tc);
     // XXX
@@ -66,7 +70,7 @@ interface ModeModel {
     // Info about previous top component context, used by sliding kind of modes
     
     /** Sets information of previous mode top component was in. */
-    public void setTopComponentPreviousMode(String tcID, ModeImpl mode);
+    public void setTopComponentPreviousMode(String tcID, ModeImpl mode, int prevIndex);
     /** Sets information of previous constraints of mode top component was in. */
     public void setTopComponentPreviousConstraints(String tcID, SplitConstraint[] constraints);
 
@@ -91,6 +95,8 @@ interface ModeModel {
     public boolean containsTopComponent(TopComponent tc);
     /** Gets selected TopComponent. */
     public TopComponent getSelectedTopComponent();
+    /** Gets the top component that was selected before switching to/from maximized mode */
+    public TopComponent getPreviousSelectedTopComponent();
     /** Gets list of top components in mode. */
     public List<TopComponent> getTopComponents();
     /** Gets list of top components in mode. */
@@ -103,6 +109,8 @@ interface ModeModel {
     // Info about previous top component context, used by sliding kind of modes
     
     public ModeImpl getTopComponentPreviousMode(String tcID);
+    /** Gets the tab index of the top component in its previous mode */
+    public int getTopComponentPreviousIndex(String tcID);
     
     public SplitConstraint[] getTopComponentPreviousConstraints(String tcID);
     

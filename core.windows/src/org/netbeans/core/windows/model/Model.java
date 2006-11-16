@@ -66,8 +66,10 @@ public interface Model {
     public void setToolbarConfigName(String toolbarConfigName);
     /** Sets active mode. */
     public void setActiveMode(ModeImpl mode);
-    /** Sets maximized mode. */
-    public void setMaximizedMode(ModeImpl maximizedMode);
+    /** Sets editor mode that is currenlty maximized */
+    public void setEditorMaximizedMode(ModeImpl maximizedMode);
+    /** Sets view mode that is currenlty maximized */
+    public void setViewMaximizedMode(ModeImpl maximizedMode);
     /** Adds mode. */ 
     public void addMode(ModeImpl mode, SplitConstraint[] constraints);
     /** Adds mode. */
@@ -93,6 +95,11 @@ public interface Model {
     public void reset();
     /** Set the size (width or height of the given TopComponent when it is slided in */
     public void setSlideInSize(String side, TopComponent tc, int size);
+    /**
+     * Set whether the given TopComponent is maximized when it is slided-in.
+     */
+    public void setTopComponentMaximizedWhenSlidedIn( String tcid, boolean maximized );
+    
     // Mutators (global level) <<
     /////////////////////////////
 
@@ -124,8 +131,10 @@ public interface Model {
     public String getToolbarConfigName();
     /** Gets active mode. */
     public ModeImpl getActiveMode();
-    /** Gets maximized mode. */
-    public ModeImpl getMaximizedMode();
+    /** Gets editor maximized mode. */
+    public ModeImpl getEditorMaximizedMode();
+    /** Gets view maximized mode. */
+    public ModeImpl getViewMaximizedMode();
     /** Gets set of modes. */
     public Set<ModeImpl> getModes();
     /** Gets mode constraints. */
@@ -142,7 +151,28 @@ public interface Model {
      * side, the key in the Map is TopComponent's ID 
      */
     public Map<String,Integer> getSlideInSizes(String side);
-    
+    /**
+     * @return The docking status (docked/slided) of TopComponents before the window system
+     * switched to maximized mode.
+     */
+    public DockingStatus getDefaultDockingStatus();
+    /**
+     * @return The docking status (docked/slided) of TopComponents in maximized editor mode.
+     */
+    public DockingStatus getMaximizedDockingStatus();
+    /**
+     * Find the side (LEFT/RIGHT/BOTTOM) where the TopComponent from the given
+     * mode should slide to.
+     * 
+     * @param mode Mode
+     * @return The slide side for TopComponents from the given mode.
+     */
+    public String getSlideSideForMode( ModeImpl mode );
+    /**
+     * @return True if the given TopComponent is maximized when it is slided-in.
+     */
+    public boolean isTopComponentMaximizedWhenSlidedIn( String tcid );
+
     // Accessors (global level) >>
     //////////////////////////////   
     // Global (the highest) level <<
@@ -161,6 +191,8 @@ public interface Model {
     public void setModeFrameState(ModeImpl mode, int frameState);
     /** Sets selected TopComponent. */
     public void setModeSelectedTopComponent(ModeImpl mode, TopComponent selected);
+    /** Remember which top component was the selected one before switching to/from maximized mode */
+    public void setModePreviousSelectedTopComponent(ModeImpl mode, TopComponent prevSelected);
     /** Adds opened TopComponent. */
     public void addModeOpenedTopComponent(ModeImpl mode, TopComponent tc);
     /** Inserts opened TopComponent. */
@@ -172,6 +204,8 @@ public interface Model {
     public void addModeUnloadedTopComponent(ModeImpl mode, String tcID);
     // XXX
     public void setModeUnloadedSelectedTopComponent(ModeImpl mode, String tcID);
+    /** Remember which top component was the selected one before switching to/from maximized mode */
+    public void setModeUnloadedPreviousSelectedTopComponent(ModeImpl mode, String tcID);
     /** */
     public void removeModeTopComponent(ModeImpl mode, TopComponent tc);
     // XXX
@@ -180,7 +214,7 @@ public interface Model {
     // Info about previous top component context, used by sliding kind of modes
     
     /** Sets information of previous mode top component was in. */
-    public void setModeTopComponentPreviousMode(ModeImpl mode, String tcID, ModeImpl previousMode);
+    public void setModeTopComponentPreviousMode(ModeImpl mode, String tcID, ModeImpl previousMode, int previousIndex);
     /** Sets information of previous constraints of mode top component was in. */
     public void setModeTopComponentPreviousConstraints(ModeImpl mode, String tcID, SplitConstraint[] constraints);
     
@@ -212,6 +246,8 @@ public interface Model {
     public boolean containsModeTopComponent(ModeImpl mode, TopComponent tc);
     /** Gets selected TopComponent. */
     public TopComponent getModeSelectedTopComponent(ModeImpl mode);
+    /** Get the top component that had been the selected one before switching to/from maximzied mode */
+    public TopComponent getModePreviousSelectedTopComponent(ModeImpl mode);
     /** Gets list of top components in this workspace. */
     public List<TopComponent> getModeTopComponents(ModeImpl mode);
     /** Gets list of top components in this workspace. */
@@ -225,6 +261,8 @@ public interface Model {
     
     public ModeImpl getModeTopComponentPreviousMode(ModeImpl mode, String tcID);
     public SplitConstraint[] getModeTopComponentPreviousConstraints(ModeImpl mode, String tcID);
+    /** Gets the tab index of the given top component before it was moved to sliding/separate mode */
+    public int getModeTopComponentPreviousIndex(ModeImpl mode, String tcID);
     
     // Accessors (mode level) <<
     ////////////////////////////

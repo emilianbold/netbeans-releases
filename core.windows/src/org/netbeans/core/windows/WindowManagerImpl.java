@@ -19,8 +19,6 @@
 
 package org.netbeans.core.windows;
 
-import java.util.ArrayList;
-
 import java.awt.*;
 import java.beans.*;
 import java.net.URL;
@@ -657,12 +655,37 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         return central.getEditorAreaFrameState();
     }
     
-    public void setMaximizedMode(ModeImpl maximizedMode) {
-        central.setMaximizedMode(maximizedMode);
+    /** 
+     * Sets new maximized mode or cancels the current one. 
+     * @param newMaximizedMode Mode to set as the maximized one or null to cancel the current one.
+     */
+    public void switchMaximizedMode(ModeImpl newMaximizedMode) {
+        central.switchMaximizedMode(newMaximizedMode);
     }
     
-    public ModeImpl getMaximizedMode() {
-        return central.getMaximizedMode();
+    /** Sets editor mode that is currenlty maximized (used when the window system loads) */
+    public void setEditorMaximizedMode(ModeImpl editorMaximizedMode) {
+        central.setEditorMaximizedMode(editorMaximizedMode);
+    }
+    
+    /** Sets view mode that is currenlty maximized (used when the window system loads) */
+    public void setViewMaximizedMode(ModeImpl viewMaximizedMode) {
+        central.setViewMaximizedMode(viewMaximizedMode);
+    }
+    
+    /** Gets mode that is currently maximized. */
+    public ModeImpl getCurrentMaximizedMode() {
+        return central.getCurrentMaximizedMode();
+    }
+    
+    /** Gets editor maximized mode. */
+    public ModeImpl getEditorMaximizedMode() {
+        return central.getEditorMaximizedMode();
+    }
+    
+    /** Gets view maximized mode. */
+    public ModeImpl getViewMaximizedMode() {
+        return central.getViewMaximizedMode();
     }
     
     /** Sets constraints, delegates from ModeImpl. */
@@ -1011,24 +1034,40 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
                 "TopComponent"); //NOI18N
         }
         
+        
         ModeImpl mode = getMode(tc);
-
+        
         if(mode == null) {
             mode = getDefaultEditorMode();
             if (tc.getClientProperty (Constants.TOPCOMPONENT_ALLOW_DOCK_ANYWHERE) == null) {
                 tc.putClientProperty (Constants.TOPCOMPONENT_ALLOW_DOCK_ANYWHERE, Boolean.TRUE);
             }
         }
+        boolean alreadyOpened = mode.getOpenedTopComponents().contains( tc );
 
         // XXX PENDING If necessary, unmaximize the state, but exclude sliding modes
         // Consider to put it in addOpenedTopComponent, to do it in one step.
-        ModeImpl maximizedMode = getMaximizedMode();
-        if(maximizedMode != null && mode != maximizedMode && 
-            mode.getKind() != Constants.MODE_KIND_SLIDING) {
-            setMaximizedMode(null);
+        ModeImpl maximizedMode = getCurrentMaximizedMode();
+        if(maximizedMode != null && mode != maximizedMode
+           && mode.getKind() != Constants.MODE_KIND_SLIDING
+           && central.isViewMaximized() ) {
+            switchMaximizedMode(null);
         }
 
         mode.addOpenedTopComponent(tc);
+        
+        if( central.isEditorMaximized() 
+                && !alreadyOpened 
+                && mode.getState() != Constants.MODE_STATE_SEPARATED ) {
+            //the editor is maximized so the newly opened TopComponent should slide out
+            String tcID = findTopComponentID( tc );
+            if( !isTopComponentDockedInMaximizedMode( tcID ) ) {
+                //slide the TopComponent to edgebar and slide it out
+                central.slide( tc, mode, central.getSlideSideForMode( mode ) );
+
+                topComponentRequestActive( tc );
+            }
+        }
     }
     
     protected void topComponentClose(TopComponent tc) {
@@ -1204,13 +1243,99 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         return null;
     }
     
-    
+    /**
+     * @return The mode where the given TopComponent had been before it was moved to sliding or separate mode.
+     */
     public ModeImpl getPreviousModeForTopComponent(String tcID, ModeImpl slidingMode) {
         return getCentral().getModeTopComponentPreviousMode(tcID, slidingMode);
     }
     
-    public void setPreviousModeForTopComponent(String tcID, ModeImpl slidingMode, ModeImpl prevMode) {
-        getCentral().setModeTopComponentPreviousMode(tcID, slidingMode, prevMode);
+    /**
+     * @return The position (tab index) of the given TopComponent before it was moved to sliding or separate mode.
+     */
+    public int getPreviousIndexForTopComponent(String tcID, ModeImpl slidingMode) {
+        return getCentral().getModeTopComponentPreviousIndex(tcID, slidingMode);
+    
+    }
+    
+    /**
+     * Remember the mode and position where the given TopComponent was before moving into sliding or separate mode.
+     * 
+     * @param tcID TopComponent's id
+     * @param currentSlidingMode The mode where the TopComponent is at the moment.
+     * @param prevMode The mode where the TopComponent had been before it was moved to the sliding mode.
+     * @param prevIndex Tab index of the TopComponent before it was moved to the new mode.
+     */
+    public void setPreviousModeForTopComponent(String tcID, ModeImpl slidingMode, ModeImpl prevMode, int prevIndex) {
+        getCentral().setModeTopComponentPreviousMode(tcID, slidingMode, prevMode, prevIndex);
+    }
+    
+    /**
+     * Set the state of the TopComponent when the editor is maximized.
+     * 
+     * @param tcID TopComponent id
+     * @param docked True if the TopComponent should stay docked in maximized editor mode,
+     * false if it should slide out when the editor is maximized.
+     */
+    public void setTopComponentDockedInMaximizedMode( String tcID, boolean docked ) {
+        getCentral().setTopComponentDockedInMaximizedMode( tcID, docked );
+    }
+    
+    /**
+     * Get the state of the TopComponent when the editor is maximized.
+     * 
+     * @param tcID TopComponent id.
+     * @return True if the TopComponent should stay docked in maximized editor mode,
+     * false if it should slide out when the editor is maximized.
+     */
+    public boolean isTopComponentDockedInMaximizedMode( String tcID ) {
+        return getCentral().isTopComponentDockedInMaximizedMode( tcID );
+    }
+    
+    /**
+     * Set the state of the TopComponent when no mode is maximized.
+     * 
+     * @param tcID TopComponent id
+     * @param slided True if the TopComponent is slided in the default mode,
+     * false if it is docked.
+     */
+    public void setTopComponentSlidedInDefaultMode( String tcID, boolean slided ) {
+        getCentral().setTopComponentSlidedInDefaultMode( tcID, slided );
+    }
+    
+    /**
+     * Get the state of the TopComponent when no mode is maximized.
+     * 
+     * @param tcID TopComponent id.
+     * @return True if the TopComponent is slided in the default mode,
+     * false if it is docked.
+     */
+    public boolean isTopComponentSlidedInDefaultMode( String tcID ) {
+        return getCentral().isTopComponentSlidedInDefaultMode( tcID );
+    }
+    
+    /**
+     * Get the state of the TopComponent when it is slided-in.
+     * 
+     * @param tcID TopComponent id. 
+     * @return true if the TopComponent is maximized when slided-in.
+     */
+    public boolean isTopComponentMaximizedWhenSlidedIn( String tcID ) {
+        return getCentral().isTopComponentMaximizedWhenSlidedIn( tcID );
+    }
+    
+    /**
+     * Set the state of the TopComponent when it is slided-in.
+     * 
+     * @param tcID TopComponent id. 
+     * @param maximized true if the TopComponent is maximized when slided-in.
+     */
+    public void setTopComponentMaximizedWhenSlidedIn( String tcID, boolean maximized ) {
+        getCentral().setTopComponentMaximizedWhenSlidedIn( tcID, maximized );
+    }
+    
+    public void userToggledTopComponentSlideInMaximize( String tcID ) {
+        getCentral().userToggledTopComponentSlideInMaximize( tcID );
     }
 
     /** Finds out if given Window is used as separate floating window or not.
