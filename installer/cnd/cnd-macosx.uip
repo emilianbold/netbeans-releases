@@ -183,7 +183,7 @@
                         <property name="entryType">2</property>
                         <property name="excludePattern"/>
                         <property name="fileName">$A(cluster.dir)</property>
-                        <property name="fileType">0</property>
+                        <property name="fileType">2</property>
                         <property name="includeSubdirs">True</property>
                         <property name="pathForFiltering">1</property>
                         <property name="pattern"/>
