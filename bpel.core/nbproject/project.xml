@@ -52,7 +52,7 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.bpel.editors.canvas</code-name-base>
+                    <code-name-base>org.netbeans.modules.bpel.editors.api</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
