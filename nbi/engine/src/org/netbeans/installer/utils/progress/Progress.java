@@ -40,6 +40,9 @@ public class Progress {
     
     protected boolean canceled   = false;
     
+    private ProgressListener synchronizer = null;
+    private Progress         source       = null;
+    
     private Vector<ProgressListener> listeners = new Vector<ProgressListener>();
     
     // constructors /////////////////////////////////////////////////////////////////
@@ -88,14 +91,14 @@ public class Progress {
         notifyListeners();
     }
     
-    public void addPercentage(final int percentage) {
-        int result = this.percentage + percentage;
+    public void addPercentage(final int addition) {
+        int result = percentage + addition;
         
         if ((result < START) || (result> COMPLETE)) {
             throw new IllegalArgumentException("The percentage should be between 0 and 100 inclusive");
         }
         
-        this.percentage = result;
+        percentage = result;
         
         notifyListeners();
     }
@@ -103,11 +106,56 @@ public class Progress {
     public void setCanceled(final boolean canceled) {
         this.canceled = canceled;
         
-        notifyListeners();
+        if (source != null) {
+            source.setCanceled(canceled);
+        }
     }
     
     public boolean isCanceled() {
         return canceled;
+    }
+    
+    // syncronization ///////////////////////////////////////////////////////////////
+    public void synchronizeFrom(Progress progress) {
+        if (source != null) {
+            source.removeProgressListener(synchronizer);
+        }
+        
+        synchronizer = new ProgressListener() {
+            public void progressUpdated(Progress progress) {
+                setTitle(progress.getTitle());
+                setDetail(progress.getDetail());
+                setPercentage(progress.getPercentage());
+            }
+        };
+        
+        source = progress;
+        source.addProgressListener(synchronizer);
+    }
+    
+    public void reverseSynchronizeFrom(Progress progress) {
+        if (source != null) {
+            source.removeProgressListener(synchronizer);
+        }
+        
+        synchronizer = new ProgressListener() {
+            public void progressUpdated(Progress progress) {
+                setTitle(progress.getTitle());
+                setDetail(progress.getDetail());
+                setPercentage(Progress.COMPLETE - progress.getPercentage());
+            }
+        };
+        
+        source = progress;
+        source.addProgressListener(synchronizer);
+    }
+    
+    public void synchronizeTo(Progress progress) {
+        progress.synchronizeFrom(this);
+    }
+    
+    public void reverseSynchronizeTo(Progress progress) {
+        progress.reverseSynchronizeFrom(this);
     }
     
     // listeners ////////////////////////////////////////////////////////////////////

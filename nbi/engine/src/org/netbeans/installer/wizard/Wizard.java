@@ -246,7 +246,7 @@ public class Wizard {
     
     // wizard lifecycle control methods /////////////////////////////////////////////
     public void open() {
-        frame = new WizardFrame(this);
+        frame = new WizardFrame();
         
         switch (executionMode) {
             case GUI:

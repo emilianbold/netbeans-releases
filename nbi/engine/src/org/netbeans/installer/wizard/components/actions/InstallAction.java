@@ -20,10 +20,13 @@
  */
 package org.netbeans.installer.wizard.components.actions;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.installer.product.ProductComponent;
 import org.netbeans.installer.product.ProductRegistry;
 import org.netbeans.installer.product.utils.Status;
+import org.netbeans.installer.utils.exceptions.UninstallationException;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
@@ -32,7 +35,6 @@ import org.netbeans.installer.utils.exceptions.InstallationException;
 import org.netbeans.installer.utils.progress.CompositeProgress;
 import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.wizard.components.panels.DefaultWizardPanel;
-import org.netbeans.installer.wizard.components.sequences.*;
 
 public class InstallAction extends CompositeProgressAction {
     /////////////////////////////////////////////////////////////////////////////////
@@ -57,6 +59,8 @@ public class InstallAction extends CompositeProgressAction {
         final int percentageChunk = Progress.COMPLETE / components.size();
         final int percentageLeak = Progress.COMPLETE % components.size();
         
+        final Map<ProductComponent, Progress> progresses = new HashMap<ProductComponent, Progress>();
+        
         overallProgress = new CompositeProgress();
         overallProgress.setTitle("Installing selected components");
         overallProgress.setPercentage(percentageLeak);
@@ -71,7 +75,20 @@ public class InstallAction extends CompositeProgressAction {
             try {
                 component.install(currentProgress);
                 
-                if (canceled) return;
+                if (canceled)  {
+                    currentProgress.setCanceled(false);
+                    component.rollback(currentProgress);
+                    
+                    for (ProductComponent toUninstall: registry.getComponentsInstalledDuringThisSession()) {
+                        toUninstall.setStatus(Status.TO_BE_UNINSTALLED);
+                    }
+                    for (ProductComponent toUninstall: registry.getComponentsToUninstall()) {
+                        component.rollback(progresses.get(component));
+                    }
+                    break;
+                }
+                
+                progresses.put(component, currentProgress);
                 
                 // sleep a little so that the user can perceive that something
                 // is happening
@@ -96,6 +113,8 @@ public class InstallAction extends CompositeProgressAction {
                 }
                 
                 // finally notify the user of what has happened
+                LogManager.log(ErrorLevel.ERROR, e);
+            } catch (UninstallationException e) {
                 LogManager.log(ErrorLevel.ERROR, e);
             }
         }

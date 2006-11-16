@@ -30,7 +30,9 @@ import java.util.Map;
 public class CompositeProgress extends Progress implements ProgressListener {
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
-    Map<Progress, Integer> children = new HashMap<Progress, Integer>();
+    private Map<Progress, Integer> children = new HashMap<Progress, Integer>();
+    
+    private boolean synchronizeDetails = false;
     
     // constructors /////////////////////////////////////////////////////////////////
     public CompositeProgress() {
@@ -72,6 +74,14 @@ public class CompositeProgress extends Progress implements ProgressListener {
         percentage += addition;
     }
     
+    public void setCanceled(final boolean canceled) {
+        super.setCanceled(canceled);
+        
+        for (Progress child: children.keySet()) {
+            child.setCanceled(true);
+        }
+    }
+    
     // composite-specific methods ///////////////////////////////////////////////////
     public void addChild(Progress progress, int percentageChunk) {
         children.put(progress, percentageChunk);
@@ -83,8 +93,16 @@ public class CompositeProgress extends Progress implements ProgressListener {
         }
     }
     
+    public void synchronizeDetails(boolean synchronize) {
+        synchronizeDetails = synchronize;
+    }
+    
     // progress listener implementation /////////////////////////////////////////////
     public void progressUpdated(Progress progress) {
+        if (synchronizeDetails) {
+            setDetail(progress.getDetail());
+        }
+        
         notifyListeners();
     }
     
