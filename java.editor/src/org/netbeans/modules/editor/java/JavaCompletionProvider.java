@@ -377,7 +377,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                     TypeMirror superclass = enclClass.getSuperclass();
                                     params = getMatchingParams(superclass, controller.getElementUtilities().getMembers(superclass, acceptor), INIT, types, controller.getTypes());
                                 } else {
-                                    params = getMatchingParams(enclClass.asType(), controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor), THIS_KEYWORD.equals(name) ? INIT : name, types, controller.getTypes());
+                                    params = getMatchingParams(enclClass != null ? enclClass.asType() : null, controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor), THIS_KEYWORD.equals(name) ? INIT : name, types, controller.getTypes());
                                 }
                                 break;
                             }
@@ -2018,7 +2018,10 @@ public class JavaCompletionProvider implements CompletionProvider {
                 }
             };
             for (Element e : controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor))
-                results.add(JavaCompletionItem.createVariableItem((VariableElement)e, e.asType(), offset, env.getScope().getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e)));
+                if (e.getKind() == FIELD)
+                    results.add(JavaCompletionItem.createVariableItem((VariableElement)e, asMemberOf(e, enclClass != null ? enclClass.asType() : null, types), offset, env.getScope().getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e)));
+                else
+                    results.add(JavaCompletionItem.createVariableItem((VariableElement)e, e.asType(), offset, env.getScope().getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e)));
             addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, TYPE_PARAMETER), null, null);
         }
         
@@ -2108,17 +2111,19 @@ public class JavaCompletionProvider implements CompletionProvider {
                 switch (e.getKind()) {
                     case ENUM_CONSTANT:
                     case EXCEPTION_PARAMETER:
-                    case FIELD:
                     case LOCAL_VARIABLE:
                     case PARAMETER:
+                        results.add(JavaCompletionItem.createVariableItem((VariableElement)e, e.asType(), offset, env.getScope().getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e)));
+                        break;
+                    case FIELD:
                         String name = e.getSimpleName().toString();
                         if (THIS_KEYWORD.equals(name) || SUPER_KEYWORD.equals(name))
                             addKeyword(env, name, null);
                         else
-                            results.add(JavaCompletionItem.createVariableItem((VariableElement)e, e.asType(), offset, env.getScope().getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e)));
+                            results.add(JavaCompletionItem.createVariableItem((VariableElement)e, asMemberOf(e, enclClass != null ? enclClass.asType() : null, types), offset, env.getScope().getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e)));
                         break;
                     case METHOD:
-                        results.add(JavaCompletionItem.createExecutableItem((ExecutableElement)e, (ExecutableType)e.asType(), offset, env.getScope().getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e), false));
+                        results.add(JavaCompletionItem.createExecutableItem((ExecutableElement)e, (ExecutableType)asMemberOf(e, enclClass != null ? enclClass.asType() : null, types), offset, env.getScope().getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e), false));
                         break;
                 }
             }
@@ -2162,15 +2167,17 @@ public class JavaCompletionProvider implements CompletionProvider {
                     }
                     return false;
                 }
-            };
+            };            
             for (Element e : controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor)) {
                 switch (e.getKind()) {
                     case ENUM_CONSTANT:
                     case EXCEPTION_PARAMETER:
-                    case FIELD:
                     case LOCAL_VARIABLE:
                     case PARAMETER:
                         results.add(JavaCompletionItem.createVariableItem((VariableElement)e, e.asType(), offset, env.getScope().getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e)));
+                        break;
+                    case FIELD:
+                        results.add(JavaCompletionItem.createVariableItem((VariableElement)e, asMemberOf(e, enclClass != null ? enclClass.asType() : null, types), offset, env.getScope().getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e)));
                         break;
                 }
             }
@@ -3099,7 +3106,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                             return e.getKind() == METHOD && (!isStatic || e.getModifiers().contains(STATIC)) && tu.isAccessible(scope, e, t);
                                         }
                                     };
-                                    return getMatchingArgumentTypes(enclClass.asType(), controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor), THIS_KEYWORD.equals(name) ? INIT : name, args, controller.getTypes());
+                                    return getMatchingArgumentTypes(enclClass != null ? enclClass.asType() : null, controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor), THIS_KEYWORD.equals(name) ? INIT : name, args, controller.getTypes());
                                 }
                             }
                         }
@@ -3211,7 +3218,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     if (params.size() == 0) {
                         ret.add(Collections.<String>singletonList(NbBundle.getMessage(JavaCompletionProvider.class, "JCP-no-parameters")));
                     } else {
-                        ExecutableType eType = (ExecutableType)(type.getKind() == TypeKind.DECLARED ? types.asMemberOf((DeclaredType)type, e) : e.asType());
+                        ExecutableType eType = (ExecutableType)asMemberOf(e, type, types);
                         for (TypeMirror param : eType.getParameterTypes()) {
                             if (i == argTypes.length) {
                                 List<String> paramStrings = new ArrayList<String>(params.size());
@@ -3250,8 +3257,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     Collection<? extends VariableElement> params = ((ExecutableElement)e).getParameters();
                     if (params.size() <= argTypes.length)
                         continue;
-                    ExecutableType eType = (ExecutableType)(type.getKind() == TypeKind.DECLARED ? types.asMemberOf((DeclaredType)type, e) : e.asType());
-                    for (TypeMirror param : eType.getParameterTypes()) {
+                    for (TypeMirror param : ((ExecutableType)asMemberOf(e, type, types)).getParameterTypes()) {
                         if (i == argTypes.length) {
                             ret.add(param);
                             break;
@@ -3263,6 +3269,19 @@ public class JavaCompletionProvider implements CompletionProvider {
             }
             return ret.isEmpty() ? null : ret;
         }
+        
+        private TypeMirror asMemberOf(Element element, TypeMirror type, Types types) {
+            TypeMirror ret = element.asType();
+            TypeMirror enclType = types.erasure(element.getEnclosingElement().asType());
+            while(type != null && type.getKind() == TypeKind.DECLARED) {
+                if (types.isSubtype(type, enclType)) {
+                    ret = types.asMemberOf((DeclaredType)type, element);
+                    break;
+                }
+                type = ((DeclaredType)type).getEnclosingType();
+            }
+            return ret;
+        }       
         
         private Tree unwrapErrTree(Tree tree) {
             if (tree != null && tree.getKind() == Tree.Kind.ERRONEOUS) {
