@@ -78,6 +78,7 @@ public class FileProxy {
     public void deleteFile(String uri) throws IOException {
         final File file = cache.get(uri);
         if (file != null) FileUtils.deleteFile(file);
+        cache.remove(uri);
     }
     
     public void deleteFile(URI uri) throws IOException{
@@ -129,7 +130,9 @@ public class FileProxy {
     }
     
     public File getFile(URI uri, Progress progress, ClassLoader loader, boolean deleteOnExit) throws DownloadException {
-        if (cache.containsKey(uri.toString())) return cache.get(uri.toString());
+        if (cache.containsKey(uri.toString()) && cache.get(uri.toString()).exists()) {
+            return cache.get(uri.toString());
+        }
         if (uri.getScheme().equals("file")) {
             File file = new File(uri);
             if (!file.exists()) throw new DownloadException("file not exist: " + uri);
