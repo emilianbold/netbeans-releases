@@ -297,7 +297,7 @@
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.bpel.debugger.ui</friend>
-                <friend>org.netbeans.modules.bpel.editor.expression</friend>
+                <friend>org.netbeans.modules.bpel.xpath</friend>
                 <friend>org.netbeans.modules.bpel.refactoring</friend>
                 <package>org.netbeans.modules.bpel.design.model.patterns</package>
                 <package>org.netbeans.modules.bpel.nodes</package>
