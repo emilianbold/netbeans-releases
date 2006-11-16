@@ -22,14 +22,10 @@ package org.netbeans.modules.refactoring.java.ui.tree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.swing.Icon;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.ElementUtilities;
-import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.UiUtils;
-import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.openide.filesystems.FileObject;
 
 /**

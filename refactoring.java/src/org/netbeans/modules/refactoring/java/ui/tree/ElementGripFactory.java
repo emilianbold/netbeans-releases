@@ -25,7 +25,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.WeakHashMap;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.openide.filesystems.FileObject;
 

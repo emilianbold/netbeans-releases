@@ -77,7 +77,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
                         treePathHandle = TreePathHandle.create(TreePath.getPath(cut, cut.getTypeDecls().get(0)), co);
                         refactoring.getContext().add(co);
                     }
-                }, true);
+                }, false);
             } catch (IllegalArgumentException ex) {
                 ex.printStackTrace();
             } catch (IOException ex) {

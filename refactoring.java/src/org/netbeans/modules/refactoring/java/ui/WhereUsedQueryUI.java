@@ -40,19 +40,31 @@ import org.openide.util.NbBundle;
  * @author Martin Matula, Jan Becicka
  */
 public class WhereUsedQueryUI implements RefactoringUI {
-    private final JavaWhereUsedQuery query;
+    private JavaWhereUsedQuery query = null;
     private final String name;
     private WhereUsedPanel panel;
     private final TreePathHandle element;
-    private CompilationInfo info;
+    private ElementKind kind;
 
     public WhereUsedQueryUI(TreePathHandle jmiObject, CompilationInfo info) {
         this.query = new JavaWhereUsedQuery(jmiObject);
+        this.query.getContext().add(info.getClasspathInfo());
         this.element = jmiObject;
-        name = UiUtils.getHeader(jmiObject.resolveElement(info), info, UiUtils.PrintPart.NAME);
-        this.info = info;
-        query.getContext().add(info);
+        Element el = jmiObject.resolveElement(info);
+        name = UiUtils.getHeader(el, info, UiUtils.PrintPart.NAME);
+        kind = el.getKind();
     }
+    
+    public WhereUsedQueryUI(TreePathHandle jmiObject, String name) {
+        //this.query = new JavaWhereUsedQuery(jmiObject);
+        //this.query.getContext().add(info.getClasspathInfo());
+        this.element = jmiObject;
+        //Element el = jmiObject.resolveElement(info);
+        //name = UiUtils.getHeader(el, info, UiUtils.PrintPart.NAME);
+        //kind = el.getKind();
+        this.name = name;
+    }
+    
 
     public boolean isQuery() {
         return true;
@@ -60,20 +72,19 @@ public class WhereUsedQueryUI implements RefactoringUI {
 
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         if (panel == null) {
-            panel = new WhereUsedPanel(name, element, parent, info);
+            panel = new WhereUsedPanel(name, element, parent);
         }
         return panel;
     }
 
     public org.netbeans.modules.refactoring.api.Problem setParameters() {
-        Element element = this.element.resolveElement(info);
         query.setSearchInComments(panel.isSearchInComments());
-        if (element instanceof ExecutableElement) {
+        if (kind == ElementKind.METHOD) {
             query.setSearchFromBaseClass(panel.isMethodFromBaseClass());
             query.setFindOverridingMethods(panel.isMethodOverriders());
             query.setFindUsages(panel.isMethodFindUsages());
             return query.checkParameters();
-        } else if ((element.getKind() == ElementKind.INTERFACE) || (element.getKind() == ElementKind.CLASS)) {
+        } else if (kind.isClass() || kind.isInterface()) {
             query.setFindSubclasses(panel.isClassSubTypes());
             query.setFindDirectSubclassesOnly(panel.isClassSubTypesDirectOnly());
             query.setFindUsages(panel.isClassFindUsages());
@@ -83,13 +94,12 @@ public class WhereUsedQueryUI implements RefactoringUI {
     }
     
     public org.netbeans.modules.refactoring.api.Problem checkParameters() {
-       Element element = this.element.resolveElement(info);
-       if (element instanceof ExecutableElement) {
+        if (kind == ElementKind.METHOD) {
             query.setSearchFromBaseClass(panel.isMethodFromBaseClass());
             query.setFindOverridingMethods(panel.isMethodOverriders());
             query.setFindUsages(panel.isMethodFindUsages());
             return query.fastCheckParameters();
-        } else if ((element.getKind() == ElementKind.INTERFACE) || (element.getKind() == ElementKind.CLASS)) {
+        } else if (kind.isClass() || kind.isInterface()) {
             query.setFindSubclasses(panel.isClassSubTypes());
             query.setFindDirectSubclassesOnly(panel.isClassSubTypesDirectOnly());
             query.setFindUsages(panel.isClassFindUsages());
@@ -103,9 +113,8 @@ public class WhereUsedQueryUI implements RefactoringUI {
     }
 
     public String getDescription() {
-       Element element = this.element.resolveElement(info);
         if (panel!=null) {
-            if ((element.getKind() == ElementKind.INTERFACE) || (element.getKind() == ElementKind.CLASS)) {
+            if ((kind == ElementKind.INTERFACE) || (kind == ElementKind.CLASS)) {
                 if (!panel.isClassFindUsages())
                     if (!panel.isClassSubTypesDirectOnly()) {
                     return getString("DSC_WhereUsedFindAllSubTypes", name);
@@ -113,7 +122,7 @@ public class WhereUsedQueryUI implements RefactoringUI {
                     return getString("DSC_WhereUsedFindDirectSubTypes", name);
                     }
             } else {
-                if (element instanceof ExecutableElement) {
+                if (kind == ElementKind.METHOD) {
                     String description = null;
                     if (panel.isMethodFindUsages()) {
                         description = getString("DSC_FindUsages");

@@ -22,6 +22,7 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ItemEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Collections;
@@ -42,6 +43,10 @@ import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.refactoring.java.RefactoringModule;
 import javax.lang.model.element.Modifier;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
 
 
 /**
@@ -51,15 +56,13 @@ public class WhereUsedPanel extends CustomRefactoringPanel {
 
     private final transient TreePathHandle element;
     private final transient ChangeListener parent;
-    private CompilationInfo info;
     private static final int MAX_NAME = 50;
     
     /** Creates new form WhereUsedPanel */
-    public WhereUsedPanel(String name, TreePathHandle e, ChangeListener parent, CompilationInfo info) {
+    public WhereUsedPanel(String name, TreePathHandle e, ChangeListener parent) {
         setName(NbBundle.getMessage(WhereUsedPanel.class,"LBL_WhereUsed")); // NOI18N
         this.element = e;
         this.parent = parent;
-        this.info = info;
         initComponents();
         //parent.setPreviewEnabled(false);
     }
@@ -72,81 +75,94 @@ public class WhereUsedPanel extends CustomRefactoringPanel {
         return isMethodFromBaseClass() ? methodDeclaringSuperClass : methodDeclaringClass;
     }
     
-    private Collection getOverriddenMethods(ExecutableElement m) {
+    private Collection getOverriddenMethods(ExecutableElement m, CompilationInfo info) {
         return RetoucheUtils.getOverridenMethods(ElementHandle.create(m).resolve(info), info);
     }
     
     public void initialize() {
-        String m_isBaseClassText = null;
         if (initialized) return;
-        final String labelText;
-        Set<Modifier> modif = new HashSet<Modifier>();
-
-        final Element element = this.element.resolveElement(info);
-        if (element.getKind() == ElementKind.METHOD) {
-            ExecutableElement method = (ExecutableElement) element;
-            modif = method.getModifiers();
-            labelText = NbBundle.getMessage(WhereUsedPanel.class, "DSC_MethodUsages", getHeader(method), getSimpleName(method.getEnclosingElement())); // NOI18N
+        JavaSource source = JavaSource.forFileObject(element.getFileObject());
+        CancellableTask<CompilationController> task =new CancellableTask<CompilationController>() {
+            public void cancel() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
             
-            methodDeclaringClass = getSimpleName(method.getEnclosingElement());
-            Collection overridens = getOverriddenMethods(method);
-            if (!overridens.isEmpty()) {
-                m_isBaseClassText =
-                        new MessageFormat(NbBundle.getMessage(WhereUsedPanel.class, "LBL_UsagesOfBaseClass")).format(
-                        new Object[] {
-                    methodDeclaringSuperClass = getSimpleName(((ExecutableElement) overridens.iterator().next()).getEnclosingElement())
-                }
-                );
-            }
-        } else if (element.getKind().isClass() || element.getKind().isInterface()) {
-            labelText = NbBundle.getMessage(WhereUsedPanel.class, "DSC_ClassUsages", element.getSimpleName()); // NOI18N
-        } else if (element.getKind() == ElementKind.CONSTRUCTOR) {
-            labelText = NbBundle.getMessage(WhereUsedPanel.class, "DSC_ConstructorUsages", getHeader(element), getSimpleName(element.getEnclosingElement())); // NOI18N
-        } else if (element.getKind().isField()) {
-            labelText = NbBundle.getMessage(WhereUsedPanel.class, "DSC_FieldUsages", element.getSimpleName(), getSimpleName(element.getEnclosingElement())); // NOI18N
-        } else if (element.getKind() == ElementKind.PACKAGE) {
-            labelText = NbBundle.getMessage(WhereUsedPanel.class, "DSC_PackageUsages", element.getSimpleName()); // NOI18N
-        } else {
-            labelText = NbBundle.getMessage(WhereUsedPanel.class, "DSC_VariableUsages", element.getSimpleName()); // NOI18N
-        }
-        
-        final Set<Modifier> modifiers = modif;
-        final String isBaseClassText = m_isBaseClassText;
-        
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                remove(classesPanel);
-                remove(methodsPanel);
-                label.setText(labelText);
-                if (element instanceof ExecutableElement) {
-                    add(methodsPanel, BorderLayout.CENTER);
-                    methodsPanel.setVisible(true);
-                    m_usages.setVisible(!modifiers.contains(Modifier.STATIC));
-                    m_overriders.setVisible(! modifiers.contains(Modifier.FINAL) || modifiers.contains(Modifier.STATIC) || modifiers.contains(Modifier.PRIVATE));
-                    if (methodDeclaringSuperClass != null ) {
-                        m_isBaseClass.setVisible(true);
-                        m_isBaseClass.setSelected(true);
-                        Mnemonics.setLocalizedText(m_isBaseClass, isBaseClassText);
-                    } else {
-                        m_isBaseClass.setVisible(false);
-                        m_isBaseClass.setSelected(false);
+            public void run(CompilationController info) throws Exception {
+                info.toPhase(Phase.RESOLVED);
+                String m_isBaseClassText = null;
+                final String labelText;
+                Set<Modifier> modif = new HashSet<Modifier>();
+                
+                final Element element = WhereUsedPanel.this.element.resolveElement(info);
+                if (element.getKind() == ElementKind.METHOD) {
+                    ExecutableElement method = (ExecutableElement) element;
+                    modif = method.getModifiers();
+                    labelText = NbBundle.getMessage(WhereUsedPanel.class, "DSC_MethodUsages", getHeader(method, info), getSimpleName(method.getEnclosingElement())); // NOI18N
+                    
+                    methodDeclaringClass = getSimpleName(method.getEnclosingElement());
+                    Collection overridens = getOverriddenMethods(method, info);
+                    if (!overridens.isEmpty()) {
+                        m_isBaseClassText =
+                                new MessageFormat(NbBundle.getMessage(WhereUsedPanel.class, "LBL_UsagesOfBaseClass")).format(
+                                new Object[] {
+                            methodDeclaringSuperClass = getSimpleName(((ExecutableElement) overridens.iterator().next()).getEnclosingElement())
+                        }
+                        );
                     }
-                } else if ((element.getKind() == ElementKind.CLASS) || (element.getKind() == ElementKind.INTERFACE)) {
-                    add(classesPanel, BorderLayout.CENTER);
-                    classesPanel.setVisible(true);
+                } else if (element.getKind().isClass() || element.getKind().isInterface()) {
+                    labelText = NbBundle.getMessage(WhereUsedPanel.class, "DSC_ClassUsages", element.getSimpleName()); // NOI18N
+                } else if (element.getKind() == ElementKind.CONSTRUCTOR) {
+                    labelText = NbBundle.getMessage(WhereUsedPanel.class, "DSC_ConstructorUsages", getHeader(element), getSimpleName(element.getEnclosingElement())); // NOI18N
+                } else if (element.getKind().isField()) {
+                    labelText = NbBundle.getMessage(WhereUsedPanel.class, "DSC_FieldUsages", element.getSimpleName(), getSimpleName(element.getEnclosingElement())); // NOI18N
+                } else if (element.getKind() == ElementKind.PACKAGE) {
+                    labelText = NbBundle.getMessage(WhereUsedPanel.class, "DSC_PackageUsages", element.getSimpleName()); // NOI18N
                 } else {
-                    remove(classesPanel);
-                    remove(methodsPanel);
-                    c_subclasses.setVisible(false);
-                    m_usages.setVisible(false);
-                    c_usages.setVisible(false);
-                    c_directOnly.setVisible(false);
+                    labelText = NbBundle.getMessage(WhereUsedPanel.class, "DSC_VariableUsages", element.getSimpleName()); // NOI18N
                 }
-                validate();
+                
+                final Set<Modifier> modifiers = modif;
+                final String isBaseClassText = m_isBaseClassText;
+                
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        remove(classesPanel);
+                        remove(methodsPanel);
+                        label.setText(labelText);
+                        if (element instanceof ExecutableElement) {
+                            add(methodsPanel, BorderLayout.CENTER);
+                            methodsPanel.setVisible(true);
+                            m_usages.setVisible(!modifiers.contains(Modifier.STATIC));
+                            m_overriders.setVisible(! modifiers.contains(Modifier.FINAL) || modifiers.contains(Modifier.STATIC) || modifiers.contains(Modifier.PRIVATE));
+                            if (methodDeclaringSuperClass != null ) {
+                                m_isBaseClass.setVisible(true);
+                                m_isBaseClass.setSelected(true);
+                                Mnemonics.setLocalizedText(m_isBaseClass, isBaseClassText);
+                            } else {
+                                m_isBaseClass.setVisible(false);
+                                m_isBaseClass.setSelected(false);
+                            }
+                        } else if ((element.getKind() == ElementKind.CLASS) || (element.getKind() == ElementKind.INTERFACE)) {
+                            add(classesPanel, BorderLayout.CENTER);
+                            classesPanel.setVisible(true);
+                        } else {
+                            remove(classesPanel);
+                            remove(methodsPanel);
+                            c_subclasses.setVisible(false);
+                            m_usages.setVisible(false);
+                            c_usages.setVisible(false);
+                            c_directOnly.setVisible(false);
+                        }
+                        validate();
+                    }
+                });
+            }};
+            try {
+                source.runUserActionTask(task, true);
+            } catch (IOException ioe) {
+                throw (RuntimeException) new RuntimeException().initCause(ioe);
             }
-        });
-        info=null;
-        initialized = true;
+            initialized = true;
     }
     
     private String getSimpleName(Element clazz) {
@@ -154,7 +170,7 @@ public class WhereUsedPanel extends CustomRefactoringPanel {
         //return NbBundle.getMessage(WhereUsedPanel.class, "LBL_AnonymousClass"); // NOI18N
     }
     
-    private String getHeader(ExecutableElement call) {
+    private String getHeader(ExecutableElement call, CompilationInfo info) {
         String result = UiUtils.getHeader(call,info,UiUtils.PrintPart.NAME + UiUtils.PrintPart.PARAMETERS);
         if (result.length() > MAX_NAME) {
             result = result.substring(0,MAX_NAME-1) + "..."; // NOI18N

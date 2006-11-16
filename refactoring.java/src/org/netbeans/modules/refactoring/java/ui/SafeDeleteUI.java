@@ -66,7 +66,7 @@ public class SafeDeleteUI implements RefactoringUI{
     public SafeDeleteUI(TreePathHandle[] selectedElements, CompilationInfo info) {
         this.elementsToDelete = selectedElements;
         refactoring = new SafeDeleteRefactoring(elementsToDelete);
-        refactoring.getContext().add(info);
+        refactoring.getContext().add(info.getClasspathInfo());
     }
     
     /**

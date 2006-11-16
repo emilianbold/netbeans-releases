@@ -329,7 +329,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                         selectedElement = cc.getTreeUtilities().pathFor(caret);
                         ui = createRefactoringUI(TreePathHandle.create(selectedElement, cc), start, end, cc);
                     }
-                }, true);
+                }, false);
             } catch (IOException ioe) {
                 ErrorManager.getDefault().notify(ioe);
                 return ;
@@ -365,7 +365,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                         ui = createRefactoringUI(representedObject, info);
                     }
                     
-                }, true);
+                }, false);
             } catch (IllegalArgumentException ex) {
                 ex.printStackTrace();
             } catch (IOException ex) {

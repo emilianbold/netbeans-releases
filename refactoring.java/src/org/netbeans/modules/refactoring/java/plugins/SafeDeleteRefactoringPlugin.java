@@ -33,6 +33,7 @@ import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.swing.Action;
 import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
@@ -159,7 +160,7 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
 //            }
             if (isOuterRef) {
                 fireProgressListenerStop();
-                return new Problem(false, getString("ERR_ReferencesFound"), ProblemDetailsFactory.createProblemDetails(new ProblemDetailsImplemen(new WhereUsedQueryUI(elem.getHandle(), refactoring.getContext().lookup(CompilationInfo.class)), inner)));
+                return new Problem(false, getString("ERR_ReferencesFound"), ProblemDetailsFactory.createProblemDetails(new ProblemDetailsImplemen(new WhereUsedQueryUI(elem.getHandle(), "!!!TODO!!!"), inner)));
             }
         }
         
@@ -240,7 +241,7 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
         //But there's no other go I guess.
         grips.clear();
         Object[] object = refactoring.getRefactoredObjects();
-        final ArrayList<CompilationInfo> controllers = new ArrayList();
+        final ArrayList<ClasspathInfo> controllers = new ArrayList();
         if (object.getClass().isAssignableFrom(FileObject[].class)) {
             for (final FileObject f:(FileObject[])object) {
                 JavaSource source = JavaSource.forFileObject(f);
@@ -249,12 +250,13 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
                         public void cancel() {
                             
                         }
-                        public void run(CompilationController co) {
+                        public void run(CompilationController co) throws Exception {
+                            co.toPhase(Phase.ELEMENTS_RESOLVED);
                             CompilationUnitTree cut = co.getCompilationUnit();
                             for (Tree t: cut.getTypeDecls()) {
                                 grips.add(TreePathHandle.create(TreePath.getPath(cut, t), co));
                             }
-                            controllers.add(co);
+                            controllers.add(co.getClasspathInfo());                            
                         }
                     }, true);
                 } catch (IllegalArgumentException ex) {
