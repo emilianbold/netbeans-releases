@@ -817,7 +817,7 @@ public class JaxWsCodeGenerator {
         
         JavaSource targetSource = JavaSource.forFileObject(targetFo);
         final String respType = responseType;
-        boolean insertServiceDef = false;
+        final boolean[] insertServiceDef = {true};
         final String[] printerName = {"System.out"}; // NOI18N
         final String[] argumentInitPart = {argumentInitializationPart};
         final String[] argumentDeclPart = {argumentDeclarationPart};
@@ -836,7 +836,7 @@ public class JaxWsCodeGenerator {
                     // find if class is Injection Target
                     TypeElement thisTypeEl = srcUtils.getTypeElement();
                     generateWsRefInjection[0] = InjectionTargetQuery.isInjectionTarget(controller, thisTypeEl);
-
+                    insertServiceDef[0] = !generateWsRefInjection[0];
                     if (isServletClass(controller, javaClass)) {
                         printerName[0]="out";
                         argumentInitPart[0] = fixNamesInInitializationPart(argumentInitPart[0]);
@@ -887,7 +887,6 @@ public class JaxWsCodeGenerator {
             //   - argument initialization part
             targetSource.runUserActionTask(task, true);
             
-            insertServiceDef = !generateWsRefInjection[0];
             // create & format inserted text
             IndentEngine eng = IndentEngine.find(document);
             StringWriter textWriter = new StringWriter();
@@ -896,7 +895,7 @@ public class JaxWsCodeGenerator {
             // create the inserted text
             String invocationBody = getJavaInvocationBody(
                     operation,
-                    insertServiceDef,
+                    insertServiceDef[0],
                     serviceJavaName,
                     portJavaName,
                     portGetterMethod,
@@ -970,17 +969,6 @@ public class JaxWsCodeGenerator {
             null
         );
     }
-//      
-//    
-//    private static boolean inSessionBean(JavaClass javaClass) {
-//        List annotations = javaClass.getAnnotations();
-//        for (Iterator it=annotations.iterator();it.hasNext(); ) {
-//            String annotation = ((Annotation)it.next()).getType().getName();
-//            if ( "javax.ejb.Stateless".equals(annotation) || //NOI18N
-//                    "javax.ejb.Stateful".equals(annotation) ) return true; //NOI18N
-//        }
-//        return false;
-//    }
     
     private static String findProperServiceFieldName(Set serviceFieldNames) {
         String name="service";
