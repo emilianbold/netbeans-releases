@@ -23,7 +23,7 @@ import java.util.Iterator;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.j2ee.common.FQNSearch;
+//import org.netbeans.modules.j2ee.common.FQNSearch;
 import org.netbeans.modules.web.struts.StrutsConfigDataObject;
 import org.netbeans.modules.web.struts.StrutsConfigUtilities;
 import org.netbeans.modules.web.struts.config.model.Action;
@@ -119,20 +119,18 @@ public class AddActionPanel extends javax.swing.JPanel implements ValidatingPane
         jLabelActionPath = new javax.swing.JLabel();
         TFActionPath = new javax.swing.JTextField();
 
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 11, 11));
         setLayout(new java.awt.GridBagLayout());
 
-        setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 11, 11));
-        getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_AddActionDialog"));
         jLabelFormName.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "LBL_FormName_mnem").charAt(0));
         jLabelFormName.setLabelFor(CBFormName);
-        jLabelFormName.setText(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "LBL_FormName"));
+        jLabelFormName.setText(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "LBL_FormName")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 20, 0, 0);
         add(jLabelFormName, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
@@ -140,7 +138,8 @@ public class AddActionPanel extends javax.swing.JPanel implements ValidatingPane
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(CBFormName, gridBagConstraints);
-        CBFormName.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_CBFormName"));
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle"); // NOI18N
+        CBFormName.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CBFormName")); // NOI18N
 
         CBInputAction.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -150,7 +149,7 @@ public class AddActionPanel extends javax.swing.JPanel implements ValidatingPane
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(CBInputAction, gridBagConstraints);
-        CBInputAction.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_CBInputAction"));
+        CBInputAction.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CBInputAction")); // NOI18N
 
         TFInputResource.setText("/");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -160,12 +159,12 @@ public class AddActionPanel extends javax.swing.JPanel implements ValidatingPane
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(TFInputResource, gridBagConstraints);
-        TFInputResource.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSN_TFInputResource"));
-        TFInputResource.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_TFinputResource"));
+        TFInputResource.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_TFInputResource")); // NOI18N
+        TFInputResource.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_TFinputResource")); // NOI18N
 
         CHBUseFormBean.setMnemonic(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "LBL_UseFormBean_mnem").charAt(0));
         CHBUseFormBean.setSelected(true);
-        CHBUseFormBean.setText(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "CB_UseFormBean"));
+        CHBUseFormBean.setText(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "CB_UseFormBean")); // NOI18N
         CHBUseFormBean.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         CHBUseFormBean.setMargin(new java.awt.Insets(0, 0, 0, 0));
         CHBUseFormBean.addItemListener(new java.awt.event.ItemListener() {
@@ -173,31 +172,29 @@ public class AddActionPanel extends javax.swing.JPanel implements ValidatingPane
                 CHBUseFormBeanItemStateChanged(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(20, 0, 0, 0);
         add(CHBUseFormBean, gridBagConstraints);
-        CHBUseFormBean.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_CHBUseFormBean"));
+        CHBUseFormBean.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CHBUseFormBean")); // NOI18N
 
         jButtonBrowse.setMnemonic(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "LBL_BrowseButton_mnem").charAt(0));
-        jButtonBrowse.setText(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "LBL_BrowseButton"));
+        jButtonBrowse.setText(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "LBL_BrowseButton")); // NOI18N
         jButtonBrowse.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButtonBrowseActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
         add(jButtonBrowse, gridBagConstraints);
-        jButtonBrowse.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_jButtonBrowse"));
+        jButtonBrowse.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_jButtonBrowse")); // NOI18N
 
-        jLabelScope.setText(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "LBL_Scope"));
+        jLabelScope.setText(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "LBL_Scope")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
@@ -207,14 +204,13 @@ public class AddActionPanel extends javax.swing.JPanel implements ValidatingPane
 
         jLabelAttribute.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "LBL_Attribute_mnem").charAt(0));
         jLabelAttribute.setLabelFor(TFAttribute);
-        jLabelAttribute.setText(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "LBL_Attribute"));
+        jLabelAttribute.setText(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "LBL_Attribute")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 7;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 20, 0, 0);
         add(jLabelAttribute, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 7;
@@ -222,11 +218,11 @@ public class AddActionPanel extends javax.swing.JPanel implements ValidatingPane
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(TFAttribute, gridBagConstraints);
-        TFAttribute.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_TFAttribute"));
+        TFAttribute.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_TFAttribute")); // NOI18N
 
         CHBValidate.setMnemonic(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "CB_Validate_mnem").charAt(0));
         CHBValidate.setSelected(true);
-        CHBValidate.setText(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "CB_Validate"));
+        CHBValidate.setText(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "CB_Validate")); // NOI18N
         CHBValidate.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         CHBValidate.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -236,18 +232,17 @@ public class AddActionPanel extends javax.swing.JPanel implements ValidatingPane
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 20, 0, 0);
         add(CHBValidate, gridBagConstraints);
-        CHBValidate.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_CHBValidate"));
+        CHBValidate.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CHBValidate")); // NOI18N
 
         jLabelParameter.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "LBL_Parameter_mnem").charAt(0));
         jLabelParameter.setLabelFor(TFParameter);
-        jLabelParameter.setText(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "LBL_Parameter"));
+        jLabelParameter.setText(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "LBL_Parameter")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 9;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(20, 0, 0, 0);
         add(jLabelParameter, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 9;
@@ -255,12 +250,12 @@ public class AddActionPanel extends javax.swing.JPanel implements ValidatingPane
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(20, 12, 0, 0);
         add(TFParameter, gridBagConstraints);
-        TFParameter.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_TFParameter"));
+        TFParameter.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_TFParameter")); // NOI18N
 
         buttonGroup1.add(RBInputResource);
         RBInputResource.setMnemonic(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "RB_InputResource_mnem").charAt(0));
         RBInputResource.setSelected(true);
-        RBInputResource.setText(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "RB_InputResource"));
+        RBInputResource.setText(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "RB_InputResource")); // NOI18N
         RBInputResource.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         RBInputResource.setMargin(new java.awt.Insets(0, 0, 0, 0));
         RBInputResource.addItemListener(new java.awt.event.ItemListener() {
@@ -268,18 +263,17 @@ public class AddActionPanel extends javax.swing.JPanel implements ValidatingPane
                 RBInputResourceItemStateChanged(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 20, 0, 0);
         add(RBInputResource, gridBagConstraints);
-        RBInputResource.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_RBInputResources"));
+        RBInputResource.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_RBInputResources")); // NOI18N
 
         buttonGroup1.add(RBInputAction);
         RBInputAction.setMnemonic(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "RB_InputAction_mnem").charAt(0));
-        RBInputAction.setText(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "RB_InputAction"));
+        RBInputAction.setText(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "RB_InputAction")); // NOI18N
         RBInputAction.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         RBInputAction.setMargin(new java.awt.Insets(0, 0, 0, 0));
         RBInputAction.addItemListener(new java.awt.event.ItemListener() {
@@ -287,31 +281,30 @@ public class AddActionPanel extends javax.swing.JPanel implements ValidatingPane
                 RBInputActionItemStateChanged(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 20, 0, 0);
         add(RBInputAction, gridBagConstraints);
-        RBInputAction.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_RBInputAction"));
+        RBInputAction.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_RBInputAction")); // NOI18N
 
         buttonGroup2.add(RBSession);
         RBSession.setMnemonic(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "RB_Session_mnem").charAt(0));
         RBSession.setSelected(true);
-        RBSession.setText(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "RB_Sesson"));
+        RBSession.setText(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "RB_Sesson")); // NOI18N
         RBSession.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         RBSession.setMargin(new java.awt.Insets(0, 0, 0, 0));
         jPanel1.add(RBSession);
-        RBSession.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_RBSession"));
+        RBSession.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_RBSession")); // NOI18N
 
         buttonGroup2.add(RBRequest);
         RBRequest.setMnemonic(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "RB_Request_mnem").charAt(0));
-        RBRequest.setText(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "RB_Request"));
+        RBRequest.setText(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "RB_Request")); // NOI18N
         RBRequest.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         RBRequest.setMargin(new java.awt.Insets(0, 0, 0, 0));
         jPanel1.add(RBRequest);
-        RBRequest.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_RBRequest"));
+        RBRequest.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_RBRequest")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -319,11 +312,11 @@ public class AddActionPanel extends javax.swing.JPanel implements ValidatingPane
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(jPanel1, gridBagConstraints);
-        jPanel1.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_Scope"));
+        jPanel1.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_Scope")); // NOI18N
 
         jLabelActionClass.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "LBL_ActionClass_mnem").charAt(0));
         jLabelActionClass.setLabelFor(TFActionClass);
-        jLabelActionClass.setText(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "LBL_ActionClass"));
+        jLabelActionClass.setText(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "LBL_ActionClass")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -338,26 +331,26 @@ public class AddActionPanel extends javax.swing.JPanel implements ValidatingPane
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         add(TFActionClass, gridBagConstraints);
-        TFActionClass.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_TFActionClass"));
+        TFActionClass.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_TFActionClass")); // NOI18N
 
         jButtonBrowseClass.setMnemonic(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "LBL_Browse_mnem").charAt(0));
-        jButtonBrowseClass.setText(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "LBL_BrowseButton"));
+        jButtonBrowseClass.setText(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "LBL_BrowseButton")); // NOI18N
+        jButtonBrowseClass.setEnabled(false);
         jButtonBrowseClass.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButtonBrowseClassActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
         add(jButtonBrowseClass, gridBagConstraints);
-        jButtonBrowseClass.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_jButtonBrowseClass"));
+        jButtonBrowseClass.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_jButtonBrowseClass")); // NOI18N
 
         jLabelActionPath.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "LBL_ActionPath_mnem").charAt(0));
         jLabelActionPath.setLabelFor(TFActionPath);
-        jLabelActionPath.setText(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "LBL_ActionPath"));
+        jLabelActionPath.setText(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "LBL_ActionPath")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -373,15 +366,16 @@ public class AddActionPanel extends javax.swing.JPanel implements ValidatingPane
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(TFActionPath, gridBagConstraints);
-        TFActionPath.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_TFActionPath"));
+        TFActionPath.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_TFActionPath")); // NOI18N
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+        getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_AddActionDialog")); // NOI18N
+    }// </editor-fold>//GEN-END:initComponents
 
     private void jButtonBrowseClassActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonBrowseClassActionPerformed
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                FQNSearch.showFastOpen(TFActionClass);
+//            XXX removing due to rewriting to retushe    
+//            FQNSearch.showFastOpen(TFActionClass);
             }
         }); 
                 

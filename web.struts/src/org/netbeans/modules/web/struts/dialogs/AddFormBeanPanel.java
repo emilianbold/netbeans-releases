@@ -22,7 +22,7 @@ package org.netbeans.modules.web.struts.dialogs;
 import java.io.IOException;
 import java.util.Hashtable;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.j2ee.common.FQNSearch;
+//import org.netbeans.modules.j2ee.common.FQNSearch;
 import org.netbeans.modules.web.struts.StrutsConfigDataObject;
 import org.netbeans.modules.web.struts.config.model.FormBean;
 import org.openide.util.NbBundle;
@@ -91,13 +91,12 @@ public class AddFormBeanPanel extends javax.swing.JPanel implements ValidatingPa
         jRadioButton1 = new javax.swing.JRadioButton();
         jRadioButton2 = new javax.swing.JRadioButton();
 
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 11, 11));
         setLayout(new java.awt.GridBagLayout());
 
-        setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 11, 11));
-        getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_AddFormBeanPanel"));
         jLabelFormName.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(AddFormBeanPanel.class, "LBL_FormName_mnem").charAt(0));
         jLabelFormName.setLabelFor(TFFormName);
-        jLabelFormName.setText(org.openide.util.NbBundle.getMessage(AddFormBeanPanel.class, "LBL_FormName"));
+        jLabelFormName.setText(org.openide.util.NbBundle.getMessage(AddFormBeanPanel.class, "LBL_FormName")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -114,7 +113,8 @@ public class AddFormBeanPanel extends javax.swing.JPanel implements ValidatingPa
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(CBDynamic, gridBagConstraints);
-        CBDynamic.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_CVBDynamic"));
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle"); // NOI18N
+        CBDynamic.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CVBDynamic")); // NOI18N
 
         TFBeanClass.setColumns(30);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -124,28 +124,28 @@ public class AddFormBeanPanel extends javax.swing.JPanel implements ValidatingPa
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(TFBeanClass, gridBagConstraints);
-        TFBeanClass.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSN_TFBeanClass"));
-        TFBeanClass.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_TFBeanClass"));
+        TFBeanClass.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_TFBeanClass")); // NOI18N
+        TFBeanClass.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_TFBeanClass")); // NOI18N
 
         jButtonBrowse.setMnemonic(org.openide.util.NbBundle.getMessage(AddFormBeanPanel.class, "LBL_Browse_mnem").charAt(0));
-        jButtonBrowse.setText(org.openide.util.NbBundle.getMessage(AddFormBeanPanel.class, "LBL_BrowseButton"));
-        jButtonBrowse.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButtonBrowseActionPerformed(evt);
-            }
-        });
+        jButtonBrowse.setText(org.openide.util.NbBundle.getMessage(AddFormBeanPanel.class, "LBL_BrowseButton")); // NOI18N
+        jButtonBrowse.setEnabled(false);
         jButtonBrowse.addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentHidden(java.awt.event.ComponentEvent evt) {
                 jButtonBrowseComponentHidden(evt);
             }
         });
-
+        jButtonBrowse.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonBrowseActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
         add(jButtonBrowse, gridBagConstraints);
-        jButtonBrowse.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_jButtonBrowseClass"));
+        jButtonBrowse.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_jButtonBrowseClass")); // NOI18N
 
         TFFormName.setColumns(30);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -155,12 +155,12 @@ public class AddFormBeanPanel extends javax.swing.JPanel implements ValidatingPa
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         add(TFFormName, gridBagConstraints);
-        TFFormName.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_TFFormName"));
+        TFFormName.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_TFFormName")); // NOI18N
 
         buttonGroup1.add(jRadioButton1);
         jRadioButton1.setMnemonic(org.openide.util.NbBundle.getMessage(AddFormBeanPanel.class, "LBL_FormBeanClass_mnem").charAt(0));
         jRadioButton1.setSelected(true);
-        jRadioButton1.setText(org.openide.util.NbBundle.getMessage(AddFormBeanPanel.class, "LBL_FormBeanClass"));
+        jRadioButton1.setText(org.openide.util.NbBundle.getMessage(AddFormBeanPanel.class, "LBL_FormBeanClass")); // NOI18N
         jRadioButton1.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jRadioButton1.setMargin(new java.awt.Insets(0, 0, 0, 0));
         jRadioButton1.addItemListener(new java.awt.event.ItemListener() {
@@ -168,18 +168,17 @@ public class AddFormBeanPanel extends javax.swing.JPanel implements ValidatingPa
                 jRadioButton1ItemStateChanged(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         add(jRadioButton1, gridBagConstraints);
-        jRadioButton1.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_jRadioButton1"));
+        jRadioButton1.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_jRadioButton1")); // NOI18N
 
         buttonGroup1.add(jRadioButton2);
         jRadioButton2.setMnemonic(org.openide.util.NbBundle.getMessage(AddFormBeanPanel.class, "LBL_DYNAMIC_mnem").charAt(0));
-        jRadioButton2.setText(org.openide.util.NbBundle.getMessage(AddFormBeanPanel.class, "LBL_DYNAMIC"));
+        jRadioButton2.setText(org.openide.util.NbBundle.getMessage(AddFormBeanPanel.class, "LBL_DYNAMIC")); // NOI18N
         jRadioButton2.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jRadioButton2.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -188,10 +187,10 @@ public class AddFormBeanPanel extends javax.swing.JPanel implements ValidatingPa
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         add(jRadioButton2, gridBagConstraints);
-        jRadioButton2.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_jRadioButton2"));
+        jRadioButton2.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_jRadioButton2")); // NOI18N
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+        getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_AddFormBeanPanel")); // NOI18N
+    }// </editor-fold>//GEN-END:initComponents
 
     private void jButtonBrowseComponentHidden(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_jButtonBrowseComponentHidden
     }//GEN-LAST:event_jButtonBrowseComponentHidden
@@ -199,7 +198,8 @@ public class AddFormBeanPanel extends javax.swing.JPanel implements ValidatingPa
     private void jButtonBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonBrowseActionPerformed
     SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                FQNSearch.showFastOpen(TFBeanClass);
+//            XXX removing due to rewriting to retushe
+//                FQNSearch.showFastOpen(TFBeanClass);
             }
         });
 

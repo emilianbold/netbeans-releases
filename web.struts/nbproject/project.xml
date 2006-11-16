@@ -24,24 +24,7 @@ Microsystems, Inc. All Rights Reserved.
             <code-name-base>org.netbeans.modules.web.struts</code-name-base>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>javax.jmi.reflect</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.7.11</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.api.java</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.api.mdr</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
@@ -65,12 +48,11 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.jmi.javamodel</code-name-base>
+                    <code-name-base>org.netbeans.libs.javacapi</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>2</release-version>
-                        <specification-version>1.11</specification-version>
+                        <specification-version>0.5</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -149,11 +131,11 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.javacore</code-name-base>
+                    <code-name-base>org.netbeans.modules.java.source</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>1</release-version>
+                        <specification-version>0.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

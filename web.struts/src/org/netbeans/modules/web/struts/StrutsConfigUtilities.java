@@ -21,16 +21,23 @@ package org.netbeans.modules.web.struts;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.Elements;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.modules.j2ee.common.JMIUtils;
+import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
@@ -221,20 +228,37 @@ public class StrutsConfigUtilities {
                     .findBeanByName("Servlet", "ServletClass", "org.apache.struts.action.ActionServlet"); //NOI18N;
             if (servlet == null){
                 // check whether a servler class doesn't extend org.apache.struts.action.ActionServlet
-                Servlet[] servlets = webApp.getServlet();
-                ClassPath cp = ClassPath.getClassPath(dd, ClassPath.EXECUTE);
-                JavaClass actionServlet = JMIUtils.findClass("org.apache.struts.action.ActionServlet", cp);
-                if (actionServlet != null){
-                    for (int i = 0; i < servlets.length; i++) {
-                        servlet = servlets[i];
-                        JavaClass servletClass = JMIUtils.findClass(servlets[i].getServletClass(), cp);
-                        if (servletClass != null && servletClass.isSubTypeOf(actionServlet))
-                            continue;
+                final Servlet[] servlets = webApp.getServlet();
+
+                ClasspathInfo cpi = ClasspathInfo.create(dd);
+                JavaSource js =  JavaSource.create(cpi, Collections.EMPTY_LIST);
+                final int[] index = new int[]{-1};
+                js.runUserActionTask( new AbstractTask <CompilationController>(){
+                    public void run(CompilationController  cc) throws Exception {                        
+                        Elements elements = cc.getElements();
+                        TypeElement strutsServletElement = elements.getTypeElement("org.apache.struts.action.ActionServlet"); //NOI18N
+                        TypeElement servletElement;
+                        if (strutsServletElement != null){
+                            for (int i = 0; i < servlets.length; i++) {
+                                servletElement = elements.getTypeElement(servlets[i].getServletClass()); 
+                                if (servletElement != null 
+                                        && cc.getTypes().isSubtype(servletElement.asType(),strutsServletElement.asType())){
+                                    index[0] = i;
+                                    continue;
+                                }
+                            }
+                        }
                     }
-                }
+                    
+                },false);
+    
+                
+                if (index[0] > -1 )
+                    servlet = servlets[index[0]];
             }
             return servlet;
         } catch (java.io.IOException e) {
+            ErrorManager.getDefault().notify(e);
             return null;
         }
     }

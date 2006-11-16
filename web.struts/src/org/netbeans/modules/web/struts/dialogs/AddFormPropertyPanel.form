@@ -297,6 +297,7 @@
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/web/struts/dialogs/Bundle.properties" key="B_BROWSE" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
         </Property>
+        <Property name="enabled" type="boolean" value="false"/>
       </Properties>
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
