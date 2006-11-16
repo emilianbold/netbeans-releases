@@ -31,6 +31,7 @@ import org.apache.lucene.document.Field;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.WildcardQuery;
@@ -170,6 +171,27 @@ class DocumentUtil {
         query.add (new WildcardQuery (new Term (FIELD_BINARY_NAME, sName)),BooleanClause.Occur.MUST);
         return query;
     }
+    
+    public static Query binaryContentNameQuery (final String resourceName) {        
+        int index = resourceName.lastIndexOf(PKG_SEPARATOR);  // NOI18N
+        String pkgName, sName;
+        if (index < 0) {
+            pkgName = "";   // NOI18N
+            sName = resourceName;
+        }
+        else {
+            pkgName = resourceName.substring(0,index);
+            sName = resourceName.substring(index+1);
+        }
+        BooleanQuery query = new BooleanQuery ();
+        BooleanQuery subQuery = new BooleanQuery();
+        subQuery.add (new WildcardQuery (new Term (FIELD_BINARY_NAME, sName + WILDCARD)),BooleanClause.Occur.SHOULD);
+        subQuery.add (new PrefixQuery (new Term (FIELD_BINARY_NAME, sName + '$')),BooleanClause.Occur.SHOULD);
+        query.add (new TermQuery (new Term (FIELD_PACKAGE_NAME, pkgName)),BooleanClause.Occur.MUST);
+        query.add (subQuery,BooleanClause.Occur.MUST);
+        return query;
+    }
+    
     
     public static Term rootDocumentTerm () {
         return new Term (FIELD_RESOURCE_NAME,ROOT_NAME);

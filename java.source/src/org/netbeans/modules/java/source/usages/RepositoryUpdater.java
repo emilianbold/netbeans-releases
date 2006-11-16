@@ -883,7 +883,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 final ClasspathInfo cpInfo = ClasspathInfoAccessor.INSTANCE.create(CacheClassPath.forClassPath(bootPath),CacheClassPath.forClassPath(compilePath),sourcePath,isInitialCompilation);
                 List<JavaFileObject> toCompile = new LinkedList<JavaFileObject>();
                 final File classCache = Index.getClassFolder(rootFile);
-                final Map <String,List<File>> resources = getAllClassFiles(classCache, FileObjects.getRelativePath(rootFile,folderFile));
+                final Map <String,List<File>> resources = getAllClassFiles(classCache, FileObjects.getRelativePath(rootFile,folderFile),true);
                 final LazyFileList children = new LazyFileList(folderFile);
                 ClassIndexImpl uqImpl = ClassIndexManager.getDefault().createUsagesQuery(root, true);
                 assert uqImpl != null;
@@ -960,7 +960,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 final File rootFile = FileUtil.normalizeFile(new File (URI.create(root.toExternalForm())));
                 final File fileFile = FileUtil.toFile(fo);
                 final File classCache = Index.getClassFolder (rootFile);
-                final Map <String,List<File>> resources = getAllClassFiles (classCache, FileObjects.getRelativePath(rootFile, fileFile.getParentFile()));
+                final Map <String,List<File>> resources = getAllClassFiles (classCache, FileObjects.getRelativePath(rootFile, fileFile.getParentFile()),false);
                 String offset = FileObjects.getRelativePath (rootFile,fileFile);
                 final int index = offset.lastIndexOf('.');  //NOI18N
                 if (index > -1) {
@@ -1065,83 +1065,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 final BinaryAnalyser ba = ClassIndexManager.getDefault().createUsagesQuery(root, false).getBinaryAnalyser();
                 ba.analyse(rootFile, handle);
             }
-        }
-        
-        
-        private Map<String,List<File>> getAllClassFiles (final File root, final String offset) {
-            assert root != null;
-            Map<String,List<File>> result = new HashMap<String,List<File>> ();
-            String rootName = root.getAbsolutePath();
-            int len = rootName.length();
-            if (rootName.charAt(len-1)!=File.separatorChar) {
-                len++;
-            }
-            File folder = root;
-            if (offset.length() > 0) {
-                folder = new File (folder,offset);  //NOI18N
-                if (!folder.exists() || !folder.isDirectory()) {
-                    return result;
-                }
-            }
-            getAllClassFilesImpl (folder, root,len,result);
-            return result;
-        }
-        
-        private void getAllClassFilesImpl (final File folder, final File root, final int oi, final Map<String,List<File>> result) {
-            final File[] content = folder.listFiles();
-            for (File f: content) {
-                if (f.isDirectory()) {
-                    getAllClassFilesImpl(f, root, oi,result);                    
-                }
-                else {
-                    String path = f.getAbsolutePath();
-                    int extIndex = path.lastIndexOf('.');  //NO18N
-                    if (extIndex+1+FileObjects.RS.length() == path.length() && path.endsWith(FileObjects.RS)) {
-                        path = path.substring (oi,extIndex);
-                        List<File> files = result.get (path);
-                        if (files == null) {
-                            files = new LinkedList<File>();
-                            result.put (path,files);
-                        }
-                        files.add(0,f); //the rs file has to be the first
-                        try {
-                            readRSFile (f,root, files);
-                        } catch (IOException ioe) {
-                            //The signature file is broken, report it but don't stop scanning
-                            Exceptions.printStackTrace(ioe);
-                        }
-                    }
-                    else if (extIndex+1+FileObjects.SIG.length() == path.length() && path.endsWith(FileObjects.SIG)) {
-                        int index = path.indexOf('$',oi);  //NOI18N                    
-                        if (index == -1) {
-                            path = path.substring (oi,extIndex);
-                        }
-                        else {
-                            path = path.substring (oi,index);
-                        }                    
-                        List<File> files = result.get (path);
-                        if (files == null) {
-                            files = new LinkedList<File>();
-                            result.put (path,files);
-                        }
-                        files.add (f);
-                    }
-                }
-            }
-        }
-        
-        private void readRSFile (final File f, final File root, final List<? super File> files) throws IOException {
-            BufferedReader in = new BufferedReader (new FileReader (f));
-            try {
-                String binaryName;
-                while ((binaryName=in.readLine())!=null) {
-                    File sf = new File (root, FileObjects.convertPackage2Folder(binaryName)+'.'+FileObjects.SIG);
-                    files.add(sf);                                        
-                }
-            } finally {
-                in.close();
-            }
-        }
+        }                
     }        
     
     static class LazyFileList implements Iterable<File> {
@@ -1596,6 +1520,82 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             result.add(st.nextToken());
         }
         return result;
+    }
+    
+    
+    public static Map<String,List<File>> getAllClassFiles (final File root, final String offset, boolean recursive) {
+        assert root != null;
+        Map<String,List<File>> result = new HashMap<String,List<File>> ();
+        String rootName = root.getAbsolutePath();
+        int len = rootName.length();
+        if (rootName.charAt(len-1)!=File.separatorChar) {
+            len++;
+        }
+        File folder = root;
+        if (offset.length() > 0) {
+            folder = new File (folder,offset);  //NOI18N
+            if (!folder.exists() || !folder.isDirectory()) {
+                return result;
+            }
+        }
+        getAllClassFilesImpl (folder, root,len,result, recursive);
+        return result;
+    }
+        
+    private static void getAllClassFilesImpl (final File folder, final File root, final int oi, final Map<String,List<File>> result, final boolean recursive) {
+        final File[] content = folder.listFiles();
+        for (File f: content) {
+            if (f.isDirectory() && recursive) {
+                getAllClassFilesImpl(f, root, oi,result, recursive);                    
+            }
+            else {
+                String path = f.getAbsolutePath();
+                int extIndex = path.lastIndexOf('.');  //NO18N
+                if (extIndex+1+FileObjects.RS.length() == path.length() && path.endsWith(FileObjects.RS)) {
+                    path = path.substring (oi,extIndex);
+                    List<File> files = result.get (path);
+                    if (files == null) {
+                        files = new LinkedList<File>();
+                        result.put (path,files);
+                    }
+                    files.add(0,f); //the rs file has to be the first
+                    try {
+                        readRSFile (f,root, files);
+                    } catch (IOException ioe) {
+                        //The signature file is broken, report it but don't stop scanning
+                        Exceptions.printStackTrace(ioe);
+                    }
+                }
+                else if (extIndex+1+FileObjects.SIG.length() == path.length() && path.endsWith(FileObjects.SIG)) {
+                    int index = path.indexOf('$',oi);  //NOI18N                    
+                    if (index == -1) {
+                        path = path.substring (oi,extIndex);
+                    }
+                    else {
+                        path = path.substring (oi,index);
+                    }                    
+                    List<File> files = result.get (path);
+                    if (files == null) {
+                        files = new LinkedList<File>();
+                        result.put (path,files);
+                    }
+                    files.add (f);
+                }
+            }
+        }
+    }
+        
+    private static void readRSFile (final File f, final File root, final List<? super File> files) throws IOException {
+        BufferedReader in = new BufferedReader (new FileReader (f));
+        try {
+            String binaryName;
+            while ((binaryName=in.readLine())!=null) {
+                File sf = new File (root, FileObjects.convertPackage2Folder(binaryName)+'.'+FileObjects.SIG);
+                files.add(sf);                                        
+            }
+        } finally {
+            in.close();
+        }
     }
     
     public static synchronized RepositoryUpdater getDefault () {

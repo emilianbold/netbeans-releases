@@ -45,6 +45,7 @@ import java.io.PrintWriter;
 import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -136,18 +137,23 @@ public class SourceAnalyser {
         }
     }
     
-    void analyse (final CompilationUnitTree cu, final JavacTaskImpl jt) throws IOException {
-        final Map<String,Map<String,Set<ClassIndexImpl.UsageType>>> usages = new HashMap<String,Map<String,Set<ClassIndexImpl.UsageType>>> ();
-        UsagesVisitor uv = new UsagesVisitor (jt, cu);
-        uv.scan(cu,usages);
-        for (Map.Entry<String,Map<String,Set<ClassIndexImpl.UsageType>>> oe : usages.entrySet()) {            
-            String className = oe.getKey();
-            List<String> ru = getClassReferences (className);
-            Map<String,Set<ClassIndexImpl.UsageType>> oeValue = oe.getValue();
-            for (Map.Entry<String,Set<ClassIndexImpl.UsageType>> ue : oeValue.entrySet()) {
-                ru.add (DocumentUtil.encodeUsage(ue.getKey(),ue.getValue()));
+    void analyseUnitAndStore (final CompilationUnitTree cu, final JavacTaskImpl jt) throws IOException {
+        try {
+            final Map<String,Map<String,Set<ClassIndexImpl.UsageType>>> usages = new HashMap<String,Map<String,Set<ClassIndexImpl.UsageType>>> ();
+            List<String> topLevels = new ArrayList<String>();
+            UsagesVisitor uv = new UsagesVisitor (jt, cu, topLevels);
+            uv.scan(cu,usages);
+            for (Map.Entry<String,Map<String,Set<ClassIndexImpl.UsageType>>> oe : usages.entrySet()) {            
+                String className = oe.getKey();
+                List<String> ru = getClassReferences (className);
+                Map<String,Set<ClassIndexImpl.UsageType>> oeValue = oe.getValue();
+                for (Map.Entry<String,Set<ClassIndexImpl.UsageType>> ue : oeValue.entrySet()) {
+                    ru.add (DocumentUtil.encodeUsage(ue.getKey(),ue.getValue()));
+                }            
             }
-            toDelete.add(className.substring(0, className.length()-1));
+            this.index.store(this.references, topLevels);
+        } finally {
+            this.references.clear();
         }
     }
     
@@ -196,6 +202,7 @@ public class SourceAnalyser {
         private State state;        
         private Element enclosingElement = null;
         private Set<String> rsList;
+        private List<? super String> topLevels;
         
         
         public UsagesVisitor (JavacTaskImpl jt, CompilationUnitTree cu, JavaFileManager manager, javax.tools.JavaFileObject sibling) {
@@ -212,10 +219,10 @@ public class SourceAnalyser {
             this.signatureFiles = true;
             this.manager = manager;
             this.sibling = sibling;
-            this.sourceName = this.manager.inferBinaryName(StandardLocation.SOURCE_PATH, this.sibling);
+            this.sourceName = this.manager.inferBinaryName(StandardLocation.SOURCE_PATH, this.sibling);            
         }
                 
-        protected UsagesVisitor (JavacTaskImpl jt, CompilationUnitTree cu) {
+        protected UsagesVisitor (JavacTaskImpl jt, CompilationUnitTree cu, List<? super String> topLevels) {
             assert jt != null;
             assert cu != null;           
             
@@ -229,6 +236,7 @@ public class SourceAnalyser {
             this.manager = null;
             this.sibling = null;
             this.sourceName = "";   //NOI18N
+            this.topLevels = topLevels;
         }
         
         final Types getTypes() {
@@ -378,6 +386,9 @@ public class SourceAnalyser {
                         }                   
                         if (className != null) {
                             final String classNameType = className + DocumentUtil.encodeKind(ElementKind.CLASS);
+                            if (topLevels != null && activeClass.isEmpty()) {
+                                topLevels.add (className);
+                            }
                             activeClass.push (classNameType);
                             errorIgnorSubtree = false;
                             addUsage (classNameType,className, p, ClassIndexImpl.UsageType.TYPE_REFERENCE);
@@ -394,15 +405,18 @@ public class SourceAnalyser {
                     className = classNameBuilder.toString();
                     classNameBuilder.append(DocumentUtil.encodeKind(sym.getKind()));
                     final String classNameType = classNameBuilder.toString();                                        
-                    if (signatureFiles && activeClass.size() == 0 && !className.equals(sourceName)) {
+                    if (signatureFiles && activeClass.isEmpty() && !className.equals(sourceName)) {
                         rsList = new HashSet<String>();
                     }
-                    activeClass.push (classNameType);
+                    if (topLevels != null && activeClass.isEmpty()) {
+                        topLevels.add (className);
+                    }
+                    activeClass.push (classNameType);                    
                     errorIgnorSubtree = false;
                     addUsage (classNameType,className, p, ClassIndexImpl.UsageType.TYPE_REFERENCE);
                 }
                 
-            }
+            }            
             if (!errorIgnorSubtree) {
                 Element old = enclosingElement;
                 try {

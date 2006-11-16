@@ -20,6 +20,7 @@
 package org.netbeans.modules.java.source;
 
 import com.sun.tools.javac.api.JavacTaskImpl;
+import java.io.IOException;
 import javax.tools.DiagnosticListener;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.java.source.CancellableTask;
@@ -66,9 +67,11 @@ public abstract class JavaSourceAccessor {
     /**
      * Returns a cached compilation info when available or null
      * @param js {@link JavaSource} which {@CompilationInfo} should be returned
+     * @param phase to which the compilation info should be moved
+     * Can be called only from the dispatch thread!
      * @return {@link CompilationInfo} or null
      */
-    public abstract CompilationInfo getCurrentCompilationInfo (JavaSource js);
+    public abstract CompilationInfo getCurrentCompilationInfo (JavaSource js, JavaSource.Phase phase) throws IOException;
     
     public abstract void revalidate(JavaSource js); 
     

@@ -163,54 +163,68 @@ public class PersistentClassIndex extends ClassIndexImpl {
     // Private methods ---------------------------------------------------------                          
     
     private void updateDirty () {
-        WeakReference<JavaSource> jsRef;
-        JavaSource js;
+        WeakReference<JavaSource> jsRef;        
         synchronized (this) {
             jsRef = this.dirty;
-        }        
-        if (jsRef != null && (js=jsRef.get())!=null) {
-            final long startTime = System.currentTimeMillis();
-            if (JavaSourceAccessor.INSTANCE.isDispatchThread()) {
-                try {
+        }
+        if (jsRef != null) {
+            final JavaSource js = jsRef.get();
+            if (js != null) {
+                final long startTime = System.currentTimeMillis();
+                if (JavaSourceAccessor.INSTANCE.isDispatchThread()) {
                     //Already under javac's lock
-                    CompilationInfo compilationInfo = JavaSourceAccessor.INSTANCE.getCurrentCompilationInfo (js);
-                    assert compilationInfo != null;
-                    final SourceAnalyser sa = getSourceAnalyser();
-                    sa.analyse(compilationInfo.getCompilationUnit(), JavaSourceAccessor.INSTANCE.getJavacTask(compilationInfo));
-                    sa.store();
-                } catch (IOException ioe) {
-                    Exceptions.printStackTrace(ioe);
+                    try {
+                        ClassIndexManager.getDefault().writeLock(
+                            new ClassIndexManager.ExceptionAction<Void>() {
+                                public Void run () throws IOException {
+                                    CompilationInfo compilationInfo = JavaSourceAccessor.INSTANCE.getCurrentCompilationInfo (js, JavaSource.Phase.RESOLVED);
+                                    if (compilationInfo != null) {
+                                        //Not cancelled
+                                        final SourceAnalyser sa = getSourceAnalyser();
+                                        long st = System.currentTimeMillis();
+                                        sa.analyseUnitAndStore(compilationInfo.getCompilationUnit(), JavaSourceAccessor.INSTANCE.getJavacTask(compilationInfo));
+                                        long et = System.currentTimeMillis();
+                                    }
+                                    return null;
+                                }
+                        });                                        
+                    } catch (IOException ioe) {
+                        Exceptions.printStackTrace(ioe);
+                    }
                 }
-            }
-            else {
-                try {
-                    js.runUserActionTask(new CancellableTask<CompilationController>() {
-                        public void run (final CompilationController controller) {
-                            try {
-                                long st = System.currentTimeMillis();
-                                Phase phase = controller.getPhase();
-                                controller.toPhase(Phase.RESOLVED);
-                                st = System.currentTimeMillis();
-                                final SourceAnalyser sa = getSourceAnalyser();
-                                sa.analyse(controller.getCompilationUnit(), JavaSourceAccessor.INSTANCE.getJavacTask(controller));
-                                st = System.currentTimeMillis();
-                                sa.store();
-                            } catch (IOException ioe) {
-                                Exceptions.printStackTrace(ioe);
+                else {
+                    try {
+                        js.runUserActionTask(new CancellableTask<CompilationController>() {
+                            public void run (final CompilationController controller) {
+                                try {                            
+                                    ClassIndexManager.getDefault().writeLock(
+                                        new ClassIndexManager.ExceptionAction<Void>() {
+                                            public Void run () throws IOException {
+                                                controller.toPhase(Phase.RESOLVED);
+                                                final SourceAnalyser sa = getSourceAnalyser();
+                                                long st = System.currentTimeMillis();
+                                                sa.analyseUnitAndStore(controller.getCompilationUnit(), JavaSourceAccessor.INSTANCE.getJavacTask(controller));
+                                                long et = System.currentTimeMillis();
+                                                return null;
+                                            }
+                                    });
+                                } catch (IOException ioe) {
+                                    Exceptions.printStackTrace(ioe);
+                                }
                             }
-                        }
-                        
-                        public void cancel () {}
-                    }, true);
-                } catch (IOException ioe) {
-                    Exceptions.printStackTrace(ioe);
+
+                            public void cancel () {}
+                        }, true);
+                    } catch (IOException ioe) {
+                        Exceptions.printStackTrace(ioe);
+                    }
                 }
+                synchronized (this) {
+                    this.dirty = null;
+                }
+                final long endTime = System.currentTimeMillis();
+                LOGGER.fine("PersistentClassIndex.updateDirty took: " + (endTime-startTime)+ " ms");     //NOI18N
             }
-            synchronized (this) {
-                this.dirty = null;
-            }
-            final long endTime = System.currentTimeMillis();
-            LOGGER.fine("PersistentClassIndex.updateDirty took: " + (endTime-startTime)+ " ms");     //NOI18N
         }
     }
     

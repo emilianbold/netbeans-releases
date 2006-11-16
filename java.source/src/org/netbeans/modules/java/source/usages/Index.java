@@ -68,6 +68,7 @@ public abstract class Index {
     public abstract <T> void getDeclaredTypes (String simpleName, ClassIndex.NameKind kind, ResultConvertor<T> convertor, Set<? super T> result) throws IOException;
     public abstract void getPackageNames (String prefix, boolean directOnly, Set<String> result) throws IOException;
     public abstract void store (Map<String,List<String>> refs, Set<String> toDelete) throws IOException;
+    public abstract void store (Map<String,List<String>> refs, List<String> topLevels) throws IOException;
     public abstract boolean isUpToDate (String resourceName, long timeStamp) throws IOException;
     public abstract void clear () throws IOException;
     public abstract void close () throws IOException;

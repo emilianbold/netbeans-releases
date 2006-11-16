@@ -22,6 +22,8 @@ package org.netbeans.modules.java.source.usages;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -460,10 +462,32 @@ class LuceneIndex extends Index {
             searcher.close();
         }
     }
+    
+    public void store (final Map<String, List<String>> refs, final List<String> topLevels) throws IOException {
+        this.rootPkgCache = null;
+        boolean create = !isValid ();
+        long timeStamp = System.currentTimeMillis();
+        if (!create) {
+            IndexReader in = getReader();
+            final Searcher searcher = new IndexSearcher (in);
+            try {
+                for (String topLevel : topLevels) {            
+                    Hits hits = searcher.search(DocumentUtil.binaryContentNameQuery(topLevel));
+                    for (int i=0; i<hits.length(); i++) {
+                        in.deleteDocument (hits.id(i));                    
+                    }
+                }
+                in.deleteDocuments (DocumentUtil.rootDocumentTerm());
+            } finally {
+                searcher.close();
+            }
+        }
+        storeData(refs, create, timeStamp);
+    }
 
     public void store(final Map<String, List<String>> refs, final Set<String> toDelete) throws IOException {
         this.rootPkgCache = null;
-        boolean create = !isValid ();
+        boolean create = !isValid ();        
         long timeStamp = System.currentTimeMillis();
         if (!create) {
             IndexReader in = getReader();
@@ -485,6 +509,10 @@ class LuceneIndex extends Index {
                 searcher.close();
             }
         }
+        storeData(refs, create, timeStamp);
+    }    
+    
+    private void storeData (final Map<String, List<String>> refs, final boolean create, final long timeStamp) throws IOException {        
         IndexWriter out = getWriter(create);
         if (debugIndexMerging) {
             out.setInfoStream (System.err);

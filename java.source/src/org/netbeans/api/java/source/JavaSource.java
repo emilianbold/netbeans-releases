@@ -1321,9 +1321,20 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         }
         
         @Override
-        public CompilationInfo getCurrentCompilationInfo (final JavaSource js) {
+        public CompilationInfo getCurrentCompilationInfo (final JavaSource js, final Phase phase) throws IOException {
             assert js != null;
-            return js.currentInfo;
+            assert isDispatchThread();
+            CompilationInfo info = null;
+            synchronized (js) {                     
+                if ((js.flags & INVALID)==0) {
+                    info = js.currentInfo;
+                }
+            }
+            if (info == null) {
+                return null;
+            }
+            Phase currentPhase = moveToPhase(phase, info, true);                
+            return currentPhase.compareTo(phase)<0 ? null : info;
         }
 
         @Override
