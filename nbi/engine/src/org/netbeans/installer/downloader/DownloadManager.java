@@ -91,7 +91,6 @@ public class DownloadManager {
       }
       while (workersPool.activeCount() > 0) {
         try {
-          System.out.println(workersPool.activeCount());
           Thread.currentThread().sleep(100);
         } catch(InterruptedException ex) {}
       }
@@ -125,7 +124,6 @@ public class DownloadManager {
             if (downloadAction.getResult() == null) break;
             if (Thread.interrupted()) return;
             if (!processingURL.write(downloadAction.getResult()))
-              // System.out.println("fail to write");
               //TODO: write may fails on shutdown.
               //  throw new RuntimeException("can't write to fileBase");
               Thread.yield();

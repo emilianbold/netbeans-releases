@@ -188,7 +188,6 @@ public class FileProxy {
                 wait();
                 System.out.println("un sleep..");
             } catch (InterruptedException ex) {
-                //TODO: todo todo
                 throw new DownloadException("violation interruption", ex);
             }
         }
@@ -207,8 +206,8 @@ public class FileProxy {
     private class MyListener extends EmptyQueueListener {
         
         public void URLStatusChanged(URL url) {
-            System.out.println(url + " status " + DownloadManager.getInstance().getURLQueue().getStatus(url));
-            System.out.println("time: " + new Date(System.currentTimeMillis()));
+            LogManager.log(url + " status " + DownloadManager.getInstance().getURLQueue().getStatus(url));
+            LogManager.log("time: " + new Date(System.currentTimeMillis()));
             if (!url.equals(currentURL)) return;
             URLStatus status = manager.getURLQueue().getStatus(currentURL);
             boolean shuldNotify = false;
@@ -229,12 +228,10 @@ public class FileProxy {
             }
         }
         public void newURLAdded(URL url) {
-            System.out.println("added  " + url);
+            LogManager.log("added  " + url);
         }
         
         public void chunkDownloaded(URL url, int length) {
-            //       System.out.print("chunk downloaded - length" + length + ": " + url + " T:");
-            //       System.out.println(Thread.currentThread().getName());
             if (progress == null) {
                 return;
             }
