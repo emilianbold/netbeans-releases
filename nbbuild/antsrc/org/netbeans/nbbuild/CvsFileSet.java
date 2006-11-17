@@ -96,7 +96,10 @@ public class CvsFileSet extends FileSet {
             if (! super.isIncluded(name)) return false;
             File f = new File(getBasedir(), name);
             if (! f.exists()) throw new IllegalStateException();
-            if (! f.isFile()) return false;
+            if (!f.isFile()) {
+                // Need to say it is included so that <delete includeemptydirs="true"> will work as expected:
+                return true;
+            }
             List<Set<String>> entries = loadEntries(f.getParentFile());
             Set<String> text = entries.get(0);
             Set<String> binary = entries.get(1);

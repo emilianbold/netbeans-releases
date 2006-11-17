@@ -988,6 +988,32 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <delete file="nbantext.jar" quiet="true"/>
     <delete dir="build/antclasses"/>
   </target>
+
+    <target name="-define-cvsfileset" depends="init">
+        <typedef name="cvsfileset" classname="org.netbeans.nbbuild.CvsFileSet" classpath="/space/src/nb_all/nbbuild/nbantext.jar"/>
+        <!-- To make sure CvsFileSet$Mode.class is also loaded before nbantext.jar is deleted: -->
+        <cvsfileset dir="dummy" mode="controlled"/>
+    </target>
+    <target name="cvs-clean" depends="-define-cvsfileset,real-clean" description="Clean out most remaining non-CVS-controlled files.">
+        <fail message="Only applies to CVS-controlled working directories.">
+            <condition>
+                <not>
+                    <available file="CVS" type="dir"/>
+                </not>
+            </condition>
+        </fail>
+        <cvsfileset id="uncontrolled" dir=".." mode="uncontrolled">
+            <exclude name="**/user.build.properties"/>
+            <exclude name="nbbuild/misc/build-site-local.sh"/>
+            <!-- Do not use **/nbproject/private/ as this will match some test/{results,work} dirs: -->
+            <exclude name="*/nbproject/private/"/>
+            <exclude name="*/*/nbproject/private/"/>
+            <exclude name="*/*/*/nbproject/private/"/>
+        </cvsfileset>
+        <delete includeemptydirs="true" verbose="true">
+            <fileset refid="uncontrolled"/>
+        </delete>
+    </target>
   
   <target name="ant-clean">
     <delete file="nbantext.jar"/>
