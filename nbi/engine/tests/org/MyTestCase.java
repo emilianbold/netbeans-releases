@@ -36,7 +36,5 @@ public class MyTestCase extends TestCase {
       super.setUp();
       DownloaderConsts.setWorkingDirectory(new File("testWd"));
       DownloaderConsts.setOutputDirectory(new File("testOutput"));
-      final File logFile = new File(DownloaderConsts.getWorkingDirectory(), "logging.properties");
-      LogManager.getLogManager().readConfiguration(new FileInputStream(logFile));
    }
 }
