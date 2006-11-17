@@ -37,6 +37,7 @@ import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -215,8 +216,12 @@ public class VariablesTableModel implements TableModel, Constants {
     
     private static String getMessage (InvalidExpressionException e) {
         String m = e.getLocalizedMessage ();
-        if (m == null)
+        if (m == null) {
             m = e.getMessage ();
+        }
+        if (m == null) {
+            m = NbBundle.getMessage(VariablesTableModel.class, "MSG_NA");
+        }
         return ">" + m + "<";
     }
 }
