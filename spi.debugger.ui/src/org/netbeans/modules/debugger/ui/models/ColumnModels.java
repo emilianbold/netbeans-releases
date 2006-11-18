@@ -46,8 +46,6 @@ public class ColumnModels {
     private static class AbstractColumn extends ColumnModel {
         
         private String id;
-        private String previousColumnId = null;
-        private String nextColumnId = null;
         private String displayName;
         private String shortDescription;
         private Class type;
@@ -64,23 +62,13 @@ public class ColumnModels {
         
         public AbstractColumn(String id, String displayName, String shortDescription,
                               Class type, boolean defaultVisible) {
-            this(id, null, null, displayName, shortDescription, type, defaultVisible);
+            this(id, displayName, shortDescription, type, defaultVisible, null);
         }
         
-        public AbstractColumn(String id, String previousColumnId, String nextColumnId,
-                              String displayName, String shortDescription,
-                              Class type, boolean defaultVisible) {
-            this(id, previousColumnId, nextColumnId, displayName, shortDescription,
-                 type, defaultVisible, null);
-        }
-        
-        public AbstractColumn(String id, String previousColumnId, String nextColumnId,
-                              String displayName, String shortDescription,
+        public AbstractColumn(String id, String displayName, String shortDescription,
                               Class type, boolean defaultVisible,
                               PropertyEditor propertyEditor) {
             this.id = id;
-            this.previousColumnId = previousColumnId;
-            this.nextColumnId = nextColumnId;
             this.displayName = displayName;
             this.shortDescription = shortDescription;
             this.type = type;
@@ -92,14 +80,6 @@ public class ColumnModels {
             return id;
         }
         
-        public String getPreviuosColumnID () {
-            return previousColumnId;
-        }
-        
-        public String getNextColumnID() {
-            return nextColumnId;
-        }
-
         public String getDisplayName() {
             return NbBundle.getBundle (ColumnModels.class).getString(displayName);
         }
@@ -299,8 +279,6 @@ public class ColumnModels {
      */
     public static ColumnModel createLocalsToStringColumn() {
         return new AbstractColumn(Constants.LOCALS_TO_STRING_COLUMN_ID,
-                Constants.LOCALS_VALUE_COLUMN_ID,
-                null,
                 "CTL_LocalsView_Column_ToString_Name",
                 "CTL_LocalsView_Column_ToString_Desc",
                 String.class,
@@ -314,8 +292,6 @@ public class ColumnModels {
      */
     public static ColumnModel createLocalsTypeColumn() {
         return new AbstractColumn(Constants.LOCALS_TYPE_COLUMN_ID,
-                null,
-                Constants.LOCALS_VALUE_COLUMN_ID,
                 "CTL_LocalsView_Column_Type_Name",
                 "CTL_LocalsView_Column_Type_Desc",
                 String.class,
@@ -328,8 +304,6 @@ public class ColumnModels {
      */
     public static ColumnModel createLocalsValueColumn() {
         return new AbstractColumn(Constants.LOCALS_VALUE_COLUMN_ID,
-                Constants.LOCALS_TYPE_COLUMN_ID,
-                Constants.LOCALS_TO_STRING_COLUMN_ID,
                 "CTL_LocalsView_Column_Value_Name",
                 "CTL_LocalsView_Column_Value_Desc",
                 String.class,
@@ -354,8 +328,6 @@ public class ColumnModels {
      */
     public static ColumnModel createSessionHostNameColumn() {
         return new AbstractColumn(Constants.SESSION_HOST_NAME_COLUMN_ID,
-                Constants.SESSION_LANGUAGE_COLUMN_ID,
-                null,
                 "CTL_SessionsView_Column_HostName_Name",
                 "CTL_SessionsView_Column_HostName_Desc",
                 String.class,
@@ -369,8 +341,6 @@ public class ColumnModels {
      */
     public static ColumnModel createSessionStateColumn () {
         return new AbstractColumn(Constants.SESSION_STATE_COLUMN_ID,
-                null,
-                Constants.SESSION_HOST_NAME_COLUMN_ID,
                 "CTL_SessionsView_Column_State_Name",
                 "CTL_SessionsView_Column_State_Desc",
                 String.class,
@@ -384,8 +354,6 @@ public class ColumnModels {
      */
     public static ColumnModel createSessionLanguageColumn () {
         return new AbstractColumn(Constants.SESSION_LANGUAGE_COLUMN_ID,
-                Constants.SESSION_STATE_COLUMN_ID,
-                Constants.SESSION_HOST_NAME_COLUMN_ID,
                 "CTL_SessionsView_Column_Language_Name",
                 "CTL_SessionsView_Column_Language_Desc",
                 Session.class,
@@ -412,8 +380,6 @@ public class ColumnModels {
      */
     public static ColumnModel createThreadStateColumn() {
         return new AbstractColumn(Constants.THREAD_STATE_COLUMN_ID,
-                null,
-                Constants.THREAD_SUSPENDED_COLUMN_ID,
                 "CTL_ThreadsView_Column_State_Name",
                 "CTL_ThreadsView_Column_State_Desc",
                 String.class,
@@ -427,8 +393,6 @@ public class ColumnModels {
      */
     public static ColumnModel createThreadSuspendedColumn() {
         return new AbstractColumn(Constants.THREAD_SUSPENDED_COLUMN_ID,
-                Constants.THREAD_STATE_COLUMN_ID,
-                null,
                 "CTL_ThreadsView_Column_Suspended_Name",
                 "CTL_ThreadsView_Column_Suspended_Desc",
                 Boolean.TYPE,
@@ -454,8 +418,6 @@ public class ColumnModels {
      */
     public static ColumnModel createWatchToStringColumn() {
         return new AbstractColumn(Constants.WATCH_TO_STRING_COLUMN_ID,
-                Constants.WATCH_VALUE_COLUMN_ID,
-                null,
                 "CTL_WatchesView_Column_ToString_Name",
                 "CTL_WatchesView_Column_ToString_Desc",
                 String.class,
@@ -469,8 +431,6 @@ public class ColumnModels {
      */
     public static ColumnModel createWatchTypeColumn() {
         return new AbstractColumn(Constants.WATCH_TYPE_COLUMN_ID,
-                null,
-                Constants.WATCH_VALUE_COLUMN_ID,
                 "CTL_WatchesView_Column_Type_Name",
                 "CTL_WatchesView_Column_Type_Desc",
                 String.class,
@@ -484,8 +444,6 @@ public class ColumnModels {
      */
     public static ColumnModel createWatchValueColumn() {
         return new AbstractColumn(Constants.WATCH_VALUE_COLUMN_ID,
-                Constants.WATCH_TYPE_COLUMN_ID,
-                Constants.WATCH_TO_STRING_COLUMN_ID,
                 "CTL_WatchesView_Column_Value_Name",
                 "CTL_WatchesView_Column_Value_Desc",
                 String.class,

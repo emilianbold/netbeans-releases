@@ -91,9 +91,11 @@ public class Column extends PropertySupport.ReadWrite {
     }
 
     public Object getValue (String propertyName) {
-        if ("OrderNumberTTV".equals (propertyName)) 
-            if (columnModel.getCurrentOrderNumber () != -1)
-                return new Integer (columnModel.getCurrentOrderNumber ());
+        if ("OrderNumberTTV".equals (propertyName)) {
+            int index = columnModel.getCurrentOrderNumber();
+            if (index != -1)
+                return new Integer(index);
+        }
         if ("InvisibleInTreeTableView".equals (propertyName)) 
             return Boolean.valueOf (!columnModel.isVisible ());
         if ("SortingColumnTTV".equals (propertyName)) 
@@ -104,11 +106,14 @@ public class Column extends PropertySupport.ReadWrite {
     }
     
     public void setValue (String propertyName, Object newValue) {
-        if ("OrderNumberTTV".equals (propertyName)) 
-            columnModel.setCurrentOrderNumber (
-                ((Integer) newValue).intValue ()
-            );
-        else
+        if ("OrderNumberTTV".equals (propertyName)) {
+            int index = ((Integer) newValue).intValue();
+            if (treeTable.isCustomizedColumnIndex(this, index)) {
+                columnModel.setCurrentOrderNumber(index);
+            } else if (index != -1 && columnModel.getCurrentOrderNumber() != -1) {
+                columnModel.setCurrentOrderNumber(-1);
+            }
+        } else
         if ("InvisibleInTreeTableView".equals (propertyName)) {
             columnModel.setVisible (
                 !((Boolean) newValue).booleanValue ()

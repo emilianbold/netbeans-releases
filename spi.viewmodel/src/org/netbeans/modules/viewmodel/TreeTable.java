@@ -228,6 +228,20 @@ ExplorerManager.Provider, PropertyChangeListener, TreeExpansionListener {
         return columns2;
     }
     
+    boolean isCustomizedColumnIndex(Column c, int index) {
+        if (index == -1) return false;
+        int ci = 0, k = columns.length;
+        for (int i = 0; i < k; i++, ci++) {
+            if (Boolean.TRUE.equals (columns [i].getValue 
+                ("InvisibleInTreeTableView"))
+            ) continue;
+            if (c == columns[i]) {
+                break;
+            }
+        }
+        return ci != index;
+    }
+    
     void updateColumnWidths () {
         int i, k = columns.length;
         for (i = 0; i < k; i++) {

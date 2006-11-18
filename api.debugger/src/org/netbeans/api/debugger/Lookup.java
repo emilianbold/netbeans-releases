@@ -28,12 +28,15 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.netbeans.spi.debugger.ContextProvider;
@@ -92,7 +95,7 @@ abstract class Lookup implements ContextProvider {
         }
         
         public List lookup (String folder, Class service) {
-            ArrayList l = new ArrayList ();
+            List l = new LookupList(null);
             l.addAll (l1.lookup (folder, service));
             l.addAll (l2.lookup (folder, service));
             return l;
@@ -127,14 +130,23 @@ abstract class Lookup implements ContextProvider {
         public List lookup (String folder, Class service) {
             List l = list (folder, service);
             
-            Set s = new HashSet (l);
-            
-            ArrayList ll = new ArrayList ();
+            Set s = null;
             int i, k = l.size ();
             for (i = 0; i < k; i++) {
                 String className = (String) l.get (i);
+                if (className.endsWith(HIDDEN)) {
+                    if (s == null) {
+                        s = new HashSet();
+                    }
+                    s.add(className.substring(0, className.length() - HIDDEN.length()));
+                }
+            }
+            
+            LookupList ll = new LookupList (s);
+            for (i = 0; i < k; i++) {
+                String className = (String) l.get (i);
                 if (className.endsWith(HIDDEN)) continue;
-                if (s.contains (className + HIDDEN)) continue;
+                if (s != null && s.contains (className)) continue;
                 Object instance = null;
                 instance = instanceCache.get (className);
                 if (instance == null) {
@@ -142,7 +154,7 @@ abstract class Lookup implements ContextProvider {
                     instanceCache.put (className, instance);
                 }
                 if (instance != null)
-                    ll.add (instance);
+                    ll.add (instance, className);
             }
             return ll;
         }
@@ -291,5 +303,68 @@ abstract class Lookup implements ContextProvider {
             }
             return null;
         }
+        
     }
+    
+    /**
+     * A special List implementation, which ensures that hidden elements
+     * are removed when adding items into the list.
+     */
+    private static final class LookupList extends ArrayList {
+
+        private Set hiddenClassNames;
+        private LinkedHashMap instanceClassNames = new LinkedHashMap();
+
+        public LookupList(Set hiddenClassNames) {
+            this.hiddenClassNames = hiddenClassNames;
+        }
+        
+        void add(Object instance, String className) {
+            super.add(instance);
+            instanceClassNames.put(instance, className);
+        }
+        
+        public boolean addAll(Collection c) {
+            if (c instanceof LookupList) {
+                LookupList ll = (LookupList) c;
+                Set newHiddenClassNames = ll.hiddenClassNames;
+                if (newHiddenClassNames != null) {
+                    // Check the instances we have and remove the newly hidden ones:
+                    for (Iterator it = newHiddenClassNames.iterator(); it.hasNext(); ) {
+                        String className = (String) it.next();
+                        if (instanceClassNames.containsValue(className)) {
+                            for (Iterator ii = instanceClassNames.keySet().iterator(); it.hasNext(); ) {
+                                Object instance = ii.next();
+                                if (className.equals(instanceClassNames.get(instance))) {
+                                    remove(instance);
+                                    instanceClassNames.remove(instance);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    if (hiddenClassNames != null) {
+                        hiddenClassNames.addAll(newHiddenClassNames);
+                    } else {
+                        hiddenClassNames = newHiddenClassNames;
+                    }
+                }
+                ensureCapacity(size() + ll.size());
+                boolean addedAnything = false;
+                for (Iterator it = ll.iterator(); it.hasNext(); ) {
+                    Object instance = it.next();
+                    String className = (String) ll.instanceClassNames.get(instance);
+                    if (hiddenClassNames == null || !hiddenClassNames.contains(className)) {
+                        add(instance, className);
+                        addedAnything = true;
+                    }
+                }
+                return addedAnything;
+            } else {
+                return super.addAll(c);
+            }
+        }
+        
+    }
+    
 }
