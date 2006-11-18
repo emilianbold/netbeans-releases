@@ -20,10 +20,8 @@ package org.netbeans.api.editor.guards;
 
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
 import junit.framework.TestCase;
@@ -598,6 +596,40 @@ public class GuardedSectionManagerTest extends TestCase {
                 editor.doc.createPosition(is1.getEndPosition().getOffset() + 1),
                 "is2");
         assertEquals("doc.content", "a\n \n \n \n\n \n \n \naa", editor.doc.getText(0, editor.doc.getLength()));
+    }
+    
+    public void testModifyInteriorSection() throws BadLocationException {
+        System.out.println("-- testModifyInteriorSection -------------");
+        
+        editor.doc.insertString(0, "aaa", null);
+        InteriorSection is1 = guards.createInteriorSection(editor.doc.createPosition(1), "is1");
+        assertEquals("doc.content", "a\n \n \n \naa", editor.doc.getText(0, editor.doc.getLength()));
+        assertTrue(GuardUtils.isGuarded(editor.doc, 3)); // end of header \n
+        assertTrue(!GuardUtils.isGuarded(editor.doc, 4)); // start of body
+        assertTrue(!GuardUtils.isGuarded(editor.doc, 5)); // end of body
+        assertTrue(GuardUtils.isGuarded(editor.doc, 6)); // start of footer
+        
+        editor.doc.insertString(4, "X", null);
+        assertEquals("doc.content", "a\n \nX \n \naa", editor.doc.getText(0, editor.doc.getLength()));
+        assertTrue(GuardUtils.isGuarded(editor.doc, 3)); // end of header \n
+        assertTrue(!GuardUtils.isGuarded(editor.doc, 4)); // start of body X
+        assertTrue(!GuardUtils.isGuarded(editor.doc, 5)); // body
+        assertTrue(!GuardUtils.isGuarded(editor.doc, 6)); // end of body
+        assertTrue(GuardUtils.isGuarded(editor.doc, 7)); // start of footer
+        
+        is1.setHeader("HEADER");
+        is1.setFooter("FOOTER");
+        is1.setBody("BODY");
+        assertEquals("doc.content", "a\nHEADER\nBODY\nFOOTER\naa", editor.doc.getText(0, editor.doc.getLength()));
+        
+        String content = "a\nHEADER\nBODY\nFOOTER\naa";
+        editor.doc.insertString(content.indexOf("BODY"), "X", null);
+        content = "a\nHEADER\nXBODY\nFOOTER\naa";
+        assertTrue(GuardUtils.isGuarded(editor.doc, content.indexOf("\nXBODY"))); // end of header \n
+        assertTrue(!GuardUtils.isGuarded(editor.doc, content.indexOf("XBODY"))); // start of body X
+        assertTrue(!GuardUtils.isGuarded(editor.doc, content.indexOf("BODY"))); // body
+        assertTrue(!GuardUtils.isGuarded(editor.doc, content.indexOf("\nFOOTER"))); // end of body
+        assertTrue(GuardUtils.isGuarded(editor.doc, content.indexOf("FOOTER"))); // start of footer
     }
     
     private void verifyGuards(Iterable<GuardedSection> wanted, Iterable<GuardedSection> queried) {

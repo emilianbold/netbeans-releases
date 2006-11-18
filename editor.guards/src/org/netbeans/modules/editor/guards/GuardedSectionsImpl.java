@@ -204,7 +204,7 @@ public final class GuardedSectionsImpl {
                     sect[0] = createInteriorSectionImpl(
                             name,
                             PositionBounds.create(where + 1, where + 2, GuardedSectionsImpl.this),
-                            PositionBounds.create(where + 3, where + 4, GuardedSectionsImpl.this),
+                            PositionBounds.createBodyBounds(where + 3, where + 4, GuardedSectionsImpl.this),
                             PositionBounds.create(where + 5, where + 6, GuardedSectionsImpl.this)
                             );
                     sections.put(sect[0].getName(), sect[0]);

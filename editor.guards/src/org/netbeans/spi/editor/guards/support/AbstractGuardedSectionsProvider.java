@@ -103,7 +103,7 @@ public abstract class AbstractGuardedSectionsProvider implements GuardedSections
         return impl.createInteriorSectionObject(
                 name,
                 PositionBounds.createUnresolved(headerBegin, headerEnd, impl),
-                PositionBounds.createUnresolved(headerEnd + 1, footerBegin - 1, impl),
+                PositionBounds.createBodyUnresolved(headerEnd + 1, footerBegin - 1, impl),
                 PositionBounds.createUnresolved(footerBegin, footerEnd, impl)
                 );
     }

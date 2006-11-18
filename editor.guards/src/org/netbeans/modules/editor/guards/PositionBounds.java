@@ -51,6 +51,19 @@ public final class PositionBounds {
             return this.offset;
         }
     }
+    
+    private static final class BackwardPosition implements Position {
+        
+        private Position delegate;
+        
+        public BackwardPosition(Position delegate) {
+            this.delegate = delegate;
+        }
+    
+        public int getOffset() {
+            return this.delegate.getOffset() + 1;
+        }
+    }
 
     /** Creates new <code>PositionBounds</code>.
      * @param begin the start position of the range
@@ -67,16 +80,43 @@ public final class PositionBounds {
         return new PositionBounds(doc.createPosition(begin), doc.createPosition(end), guards);
     }
     
+    /**
+     * creates bounds with backward begin position allowing to insert text to 
+     * begin position while the begin position remains unchanged. The behavior
+     * desired for body sections but not for header or footer sections.
+     */
+    public static PositionBounds createBodyBounds(int begin, int end, GuardedSectionsImpl guards) throws BadLocationException {
+        StyledDocument doc = guards.getDocument();
+        return new PositionBounds(new BackwardPosition(doc.createPosition(begin - 1)), doc.createPosition(end), guards);
+    }
+    
+    /**
+     * creates a position bounds object without checking position validity since the document may be empty yet.
+     * @see #resolvePositions
+     */
     public static PositionBounds createUnresolved(int begin, int end, GuardedSectionsImpl guards) throws BadLocationException {
         StyledDocument doc = guards.getDocument();
         return new PositionBounds(new UnresolvedPosition(begin), new UnresolvedPosition(end), guards);
     }
     
+    /**
+     * @see #createBodyBounds
+     * @see #resolvePositions
+     */
+    public static PositionBounds createBodyUnresolved(int begin, int end, GuardedSectionsImpl guards) throws BadLocationException {
+        return new PositionBounds(new BackwardPosition(new UnresolvedPosition(begin - 1)), new UnresolvedPosition(end), guards);
+    }
+    
     public void resolvePositions() throws BadLocationException {
         StyledDocument doc = guards.getDocument();
         Position b, e;
-        if (begin instanceof UnresolvedPosition) {
-            b = doc.createPosition(begin.getOffset());
+        if (end instanceof UnresolvedPosition) {
+            if (begin instanceof BackwardPosition) {
+                b = ((BackwardPosition) begin).delegate = doc.createPosition(
+                        ((BackwardPosition) begin).delegate.getOffset());
+            } else {
+                b = doc.createPosition(begin.getOffset());
+            }
             e = doc.createPosition(end.getOffset());
             this.begin = b;
             this.end = e;
