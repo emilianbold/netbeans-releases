@@ -29,7 +29,11 @@ import org.netbeans.api.debugger.Session;
  * {@link org.netbeans.api.debugger.Session}.
  *
  * @author Jan Jancura
+ * @deprecated This class is of no use. Nobody can create Session object, but debuggercore.
  */
+// XXX: What this is for??
+// XXX: Not usable anyway, Session is final with private constructor
+// XXX: Should be deprecated? Or removed - can not be meaningfully implemented anyway...
 public abstract class DelegatingSessionProvider {
 
     /**
