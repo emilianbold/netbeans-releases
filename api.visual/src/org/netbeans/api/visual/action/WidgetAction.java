@@ -1671,6 +1671,20 @@ public interface WidgetAction {
             return event.getDropTargetContext ();
         }
 
+        /**
+         * @see DropTargetDragEvent
+         */
+        public void acceptDrag (int dragOperation) {
+            event.acceptDrag (dragOperation);
+        }
+
+        /**
+         * @see DropTargetDragEvent
+         */
+        public void rejectDrag () {
+            event.rejectDrag ();
+        }
+
     }
 
     /**
@@ -1786,6 +1800,20 @@ public interface WidgetAction {
          */
         public DropTargetContext getDropTargetContext () {
             return event.getDropTargetContext ();
+        }
+
+        /**
+         * @see DropTargetDropEvent
+         */
+        public void acceptDrop (int dragOperation) {
+            event.acceptDrop (dragOperation);
+        }
+
+        /**
+         * @see DropTargetDropEvent
+         */
+        public void rejectDrop () {
+            event.rejectDrop ();
         }
 
     }

@@ -19,9 +19,11 @@
 package org.netbeans.modules.visual.action;
 
 import org.netbeans.api.visual.action.AcceptProvider;
-import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.action.ConnectorState;
+import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.widget.Widget;
+
+import java.awt.dnd.DnDConstants;
 
 /**
  * @author David Kaspar
@@ -35,18 +37,45 @@ public final class AcceptAction extends WidgetAction.Adapter {
     }
 
     public State dragOver (Widget widget, WidgetDropTargetDragEvent event) {
-        return provider.isAcceptable (widget, event.getPoint (), event.getTransferable ()) != ConnectorState.REJECT ? State.CONSUMED : State.REJECTED;
+        ConnectorState acceptable = provider.isAcceptable (widget, event.getPoint (), event.getTransferable ());
+
+        if (acceptable == ConnectorState.ACCEPT) {
+            event.acceptDrag (DnDConstants.ACTION_COPY_OR_MOVE);
+            return State.CONSUMED;
+        } else if (acceptable == ConnectorState.REJECT_AND_STOP) {
+            event.rejectDrag ();
+            return State.CONSUMED;
+        }
+        return State.REJECTED;
     }
 
     public State dropActionChanged (Widget widget, WidgetDropTargetDragEvent event) {
-        return provider.isAcceptable (widget, event.getPoint (), event.getTransferable ()) != ConnectorState.REJECT ? State.CONSUMED : State.REJECTED;
+        ConnectorState acceptable = provider.isAcceptable (widget, event.getPoint (), event.getTransferable ());
+
+        if (acceptable == ConnectorState.ACCEPT) {
+            event.acceptDrag (DnDConstants.ACTION_COPY_OR_MOVE);
+            return State.CONSUMED;
+        } else if (acceptable == ConnectorState.REJECT_AND_STOP) {
+            event.rejectDrag ();
+            return State.CONSUMED;
+        }
+        return State.REJECTED;
     }
 
     public State drop (Widget widget, WidgetDropTargetDropEvent event) {
         ConnectorState acceptable = provider.isAcceptable (widget, event.getPoint (), event.getTransferable ());
+
         if (acceptable == ConnectorState.ACCEPT)
             provider.accept (widget, event.getPoint (), event.getTransferable ());
-        return acceptable != ConnectorState.REJECT ? State.CONSUMED : State.REJECTED;
+
+        if (acceptable == ConnectorState.ACCEPT) {
+            event.acceptDrop (DnDConstants.ACTION_COPY_OR_MOVE);
+            return State.CONSUMED;
+        } else if (acceptable == ConnectorState.REJECT_AND_STOP) {
+            event.rejectDrop ();
+            return State.CONSUMED;
+        }
+        return State.REJECTED;
     }
 
 }

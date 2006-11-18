@@ -160,25 +160,19 @@ final class SceneComponent extends JComponent implements MouseListener, MouseMot
 
     public void dragEnter (DropTargetDragEvent e) {
         WidgetAction.State state = processLocationOperator (Operator.DRAG_ENTER, new WidgetAction.WidgetDropTargetDragEvent (++ eventIDcounter, e));
-        if (state.isConsumed ())
-            e.acceptDrag (DnDConstants.ACTION_COPY_OR_MOVE);
-        else
+        if (! state.isConsumed ())
             e.rejectDrag ();
     }
 
     public void dragOver (DropTargetDragEvent e) {
         WidgetAction.State state = processLocationOperator (Operator.DRAG_OVER, new WidgetAction.WidgetDropTargetDragEvent (++ eventIDcounter, e));
-        if (state.isConsumed ())
-            e.acceptDrag (DnDConstants.ACTION_COPY_OR_MOVE);
-        else
+        if (! state.isConsumed ())
             e.rejectDrag ();
     }
 
     public void dropActionChanged (DropTargetDragEvent e) {
         WidgetAction.State state = processLocationOperator (Operator.DROP_ACTION_CHANGED, new WidgetAction.WidgetDropTargetDragEvent (++ eventIDcounter, e));
-        if (state.isConsumed ())
-            e.acceptDrag (DnDConstants.ACTION_COPY_OR_MOVE);
-        else
+        if (! state.isConsumed ())
             e.rejectDrag ();
     }
 
@@ -188,9 +182,7 @@ final class SceneComponent extends JComponent implements MouseListener, MouseMot
 
     public void drop (DropTargetDropEvent e) {
         WidgetAction.State state = processLocationOperator (Operator.DROP, new WidgetAction.WidgetDropTargetDropEvent (++ eventIDcounter, e));
-        if (state.isConsumed ())
-            e.acceptDrop (DnDConstants.ACTION_COPY_OR_MOVE);
-        else
+        if (! state.isConsumed ())
             e.rejectDrop ();
     }
 
