@@ -133,68 +133,113 @@ public class Util {
     
     public static TargetModuleID deployModule(final ModuleType moduleType, final String modulePath, final String moduleName) throws Exception {
         Project project = (Project)openProject(new File(modulePath));
-        
+        TargetModuleID retVal = deployModule(moduleType, project, moduleName);
+        Util.closeProject(moduleName);
+        return   retVal;
+    }
+    
+    public static TargetModuleID deployModule(final ModuleType moduleType, final Project project, final String moduleName) throws Exception {
         ActionProvider ap = (ActionProvider)project.getLookup().lookup(ActionProvider.class);
         J2eeModuleProvider jmp = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
         final ServerInstance si = ServerRegistry.getInstance().getServerInstance(_URL);
+        System.out.println("start deployModule "+new java.util.Date());
         
         Runnable startCondition = new Runnable() {
             public void run() {
+                System.out.println("startCond deployModule "+new java.util.Date());
                 while(!si.isConnected()) {
                     try {
-                        Thread.sleep(5000);
+                        System.out.print("S");
+                        Thread.sleep(1000);
                     } catch(Exception e) {}
                 }
+                System.out.println("");
             }
         };
         
         Runnable deployCondition = new Runnable() {
             public void run() {
-                while(getModuleID(moduleType, moduleName, si) == null) {
+                System.out.println("deployCond deployModule "+new java.util.Date());
+                while(getModuleID(moduleType, moduleName, si, true) == null) {
                     try {
-                        Thread.sleep(5000);
+                        System.out.print("D");
+                        Thread.sleep(500);
                     } catch(Exception e) {}
                 }
+                System.out.println("");
             }
         };
         
         Task t = RequestProcessor.getDefault().create(startCondition);
+        // TODO : get this to work
+        //        if (moduleType == ModuleType.WAR) {
+        //            ap.invokeAction(ap.COMMAND_RUN,project.getLookup());
+        //        } else {
         ap.invokeAction(EjbProjectConstants.COMMAND_REDEPLOY, project.getLookup());
+        //        }
+        
         t.run();
         if(!t.waitFinished(300000))
             throw new Exception("Server start timeout");
         
-        sleep(SLEEP);
         
         t = RequestProcessor.getDefault().create(deployCondition);
         t.run();
         if(!t.waitFinished(300000))
             throw new Exception("Deploy has timeout");
         
-        sleep(SLEEP);
+        System.out.println("finish deployModule "+new java.util.Date());
         
-        closeProject(moduleName);
+        TargetModuleID tmid = getModuleID(moduleType, moduleName, si, true);
         
-        sleep(SLEEP);
+        if (null != tmid) {
+            si.getDeploymentManager().stop(new TargetModuleID[] {tmid});
+        } else {
+            throw new Exception("the module should be runnable");
+        }
         
         return null;
     }
     
     public static void undeployModule(final ModuleType moduleType, final String modulePath, final String moduleName, final TargetModuleID moduleID) throws Exception {
-        ServerInstance si = ServerRegistry.getInstance().getServerInstance(_URL);
+        final ServerInstance si = ServerRegistry.getInstance().getServerInstance(_URL);
         si.getDeploymentManager().undeploy(new TargetModuleID[] {moduleID});
         
-        sleep(SLEEP);
+        Runnable undeployCondition = new Runnable() {
+            public void run() {
+                    try {
+                        Thread.sleep(250);
+                    } catch(Exception e) {}
+                System.out.println("undeployCond deployModule "+new java.util.Date());
+                while(getModuleID(moduleType, moduleName, si, false) != null) {
+                    try {
+                        System.out.print("U");
+                        Thread.sleep(500);
+                    } catch(Exception e) {}
+                }
+                System.out.println("");
+            }
+        };
+        //sleep(SLEEP);
         
-        if(getModuleID(moduleType, moduleName, si) != null)
+        Task t = RequestProcessor.getDefault().create(undeployCondition);
+        t.run();
+        if(!t.waitFinished(300000))
+            throw new Exception("Undeploy has timeout");
+        if(getModuleID(moduleType, moduleName, si, false) != null)
             throw new Exception("Undeploy failed");
     }
     
-    public static TargetModuleID getModuleID(ModuleType moduleType, String moduleName, ServerInstance si) {
+    public static TargetModuleID getModuleID(ModuleType moduleType, String moduleName, ServerInstance si, boolean running) {
         try {
             si.refresh();
             Target target = si.getTargets()[0].getTarget();
-            TargetModuleID[] modules = si.getDeploymentManager().getRunningModules(moduleType, new Target[] {target});
+            TargetModuleID[] modules = null;
+            if (running) {
+                modules = si.getDeploymentManager().getRunningModules(moduleType, new Target[] {target});
+            } else {
+                modules = si.getDeploymentManager().getAvailableModules(moduleType, new Target[] {target});
+            }
             
             for(int i=0;i<modules.length;i++) {
                 if(modules[i].getModuleID().equals(moduleName))
@@ -265,7 +310,7 @@ public class Util {
         ProcessBuilder pb = new ProcessBuilder(cmd);
         return pb.start();
     }
-/** Read a file (< 100Kb) into a String and return the contents.
+    /** Read a file (< 100Kb) into a String and return the contents.
      */
     public static String readFile(File target) throws IOException {
         char [] buffer = new char[100000];

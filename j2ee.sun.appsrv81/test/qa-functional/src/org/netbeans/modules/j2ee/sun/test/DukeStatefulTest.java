@@ -75,7 +75,7 @@ public class DukeStatefulTest extends NbTestCase{
             BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
             String output=input.readLine();
             System.out.println(output);
-            if (Util.getModuleID(ModuleType.EAR, Util.STATEFUL_PROJECT_NAME, si)!=null)
+            if (Util.getModuleID(ModuleType.EAR, Util.STATEFUL_PROJECT_NAME, si,true)!=null)
                 throw new Exception("Disable of application failed.");
         }catch(Exception e){
             fail(e.getMessage());
@@ -102,7 +102,7 @@ public class DukeStatefulTest extends NbTestCase{
     public void undeployApplication() {
         try {
             ServerInstance si = ServerRegistry.getInstance().getServerInstance(Util._URL);
-            TargetModuleID moduleID = Util.getModuleID(ModuleType.EAR, Util.CUSTOMER_APPLICATION_PROJECT_NAME, si);
+            TargetModuleID moduleID = Util.getModuleID(ModuleType.EAR, Util.CUSTOMER_APPLICATION_PROJECT_NAME, si,false);
             if(moduleID == null)
                 return;
             Util.undeployModule(ModuleType.EAR, Util.STATEFUL_PROJECT_PATH, Util.STATEFUL_PROJECT_NAME, moduleID);

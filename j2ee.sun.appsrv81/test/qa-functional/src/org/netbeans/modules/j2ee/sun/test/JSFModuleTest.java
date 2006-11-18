@@ -90,7 +90,7 @@ public class JSFModuleTest extends NbTestCase {
             BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
             String output=input.readLine();
             System.out.println(output);
-            if(Util.getModuleID(ModuleType.WAR, Util.JSF_PROJECT_NAME, si)!=null)
+            if(Util.getModuleID(ModuleType.WAR, Util.JSF_PROJECT_NAME, si,true)!=null)
                 throw new Exception("Disable of application failed.");
         }catch(Exception e){
             fail(e.getMessage());
@@ -117,7 +117,7 @@ public class JSFModuleTest extends NbTestCase {
     public void undeployJSFModule() {
         try {
             ServerInstance si = ServerRegistry.getInstance().getServerInstance(Util._URL);
-            TargetModuleID moduleID = Util.getModuleID(ModuleType.WAR, Util.JSF_PROJECT_NAME, si);
+            TargetModuleID moduleID = Util.getModuleID(ModuleType.WAR, Util.JSF_PROJECT_NAME, si,false);
             
             if(moduleID == null)
                 return;
@@ -180,7 +180,7 @@ public class JSFModuleTest extends NbTestCase {
             
             Runnable runCondition = new Runnable() {
                 public void run() {
-                    while(Util.getModuleID(ModuleType.WAR, Util.JSF_PROJECT_NAME, si) == null) {
+                    while(Util.getModuleID(ModuleType.WAR, Util.JSF_PROJECT_NAME, si,true) == null) {
                         try {
                             
                             Thread.sleep(5000);

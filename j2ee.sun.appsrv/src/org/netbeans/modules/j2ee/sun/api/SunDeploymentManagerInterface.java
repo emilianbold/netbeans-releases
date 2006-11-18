@@ -24,8 +24,6 @@ import java.io.File;
 import java.util.HashMap;
 import org.openide.nodes.Node;
 
-///import org.netbeans.modules.j2ee.sun.share.management.ServerMEJB;
-///import javax.management.MBeanServerConnection;
 /**
  * Extensions specific to our sun deployment manager
  * @author  vkraemer
@@ -111,4 +109,8 @@ public interface SunDeploymentManagerInterface extends Node.Cookie{
     
     /** Unregister the listener. */
     void removePropertyChangeListener(PropertyChangeListener l);
+    
+    boolean grabInnerDM(boolean returnInsteadOfWaiting);
+    
+    void releaseInnerDM();
 }

@@ -38,6 +38,7 @@ import java.rmi.ServerException;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.enterprise.deploy.model.DeployableObject;
 import javax.enterprise.deploy.shared.ActionType;
 import javax.enterprise.deploy.shared.CommandType;
@@ -508,7 +509,8 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         ClassLoader origClassLoader=Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(ServerLocationManager.getServerOnlyClassLoader(getPlatformRoot()));
         
-        try{
+        try {
+            grabInnerDM(false);
             TargetModuleID[] tm =  innerDM.getAvailableModules(modType, target);
 /*     	System.out.println("in getAvailableModules "+modType);
          for(int i = 0; i < target.length; i++) {
@@ -521,6 +523,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
             return tm;
         } finally{
             Thread.currentThread().setContextClassLoader(origClassLoader);
+            releaseInnerDM();
         }
     }
     
@@ -554,10 +557,12 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         ClassLoader origClassLoader=Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(ServerLocationManager.getServerOnlyClassLoader(getPlatformRoot()));
         try{
+            grabInnerDM(false);
             TargetModuleID[] ttt= innerDM.getRunningModules(mType, target);
             return ttt;
         } finally{
             Thread.currentThread().setContextClassLoader(origClassLoader);
+            releaseInnerDM();
         }
         
     }
@@ -586,47 +591,53 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
                 retVal[0] = new FakeTarget();
 //            return retVal;
             } else {
-                if (isLocal()){// if the server is local, make sure we are talking to the correct one
-                    //we do that by testing the server location known by the IDE with the server location known by the
-                    // server
-                    try{
-                        Object configDir = getManagement().invoke(new javax.management.ObjectName("ias:type=domain,category=config"),"getConfigDir", null, null);
-                        if (configDir==null){
-                            mmm=null;
-                            return null;
-                        }
-                        String dir = configDir.toString();
-                        File domainLocationAsReturnedByTheServer = new File(dir).getParentFile().getParentFile();
-                        
-                        String l1 =  domainLocationAsReturnedByTheServer.getCanonicalPath();
-                        if (null == domainDir) {
-                            DeploymentManagerProperties dmProps = new DeploymentManagerProperties(this);
-                            domainDir =  dmProps.getLocation();
-                            domainDir = new File(domainDir).getCanonicalPath();
-                        }
-                        
-                        if (l1.equals(domainDir)==false){ //not the same location, so let's make sure we do not reutrn an invalid target
-                            
-                            return null;
-                        }
-                    } catch (java.rmi.RemoteException  ee) {
-                        return null;//cannot talk to the admin server->not running well
-                    } catch (Throwable  ee) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                                ee);
-                        return null;//cannot talk to the admin server->not running well
-                    }
-                }
-                ClassLoader origClassLoader=Thread.currentThread().getContextClassLoader();
                 try {
-                    Thread.currentThread().setContextClassLoader(ServerLocationManager.getServerOnlyClassLoader(getPlatformRoot()));
-                    retVal = innerDM.getTargets();
-                } catch (IllegalStateException ise) {
-                    retVal = new Target[0];
-                    //	throw ise;
-                } finally{
-                    Thread.currentThread().setContextClassLoader(origClassLoader);
-                    
+                    grabInnerDM(false);
+                    if (isLocal()){// if the server is local, make sure we are talking to the correct one
+                        //we do that by testing the server location known by the IDE with the server location known by the
+                        // server
+                        
+                        try{
+                            Object configDir = getManagement().invoke(new javax.management.ObjectName("ias:type=domain,category=config"),"getConfigDir", null, null);
+                            if (configDir==null){
+                                mmm=null;
+                                return null;
+                            }
+                            String dir = configDir.toString();
+                            File domainLocationAsReturnedByTheServer = new File(dir).getParentFile().getParentFile();
+                            
+                            String l1 =  domainLocationAsReturnedByTheServer.getCanonicalPath();
+                            if (null == domainDir) {
+                                DeploymentManagerProperties dmProps = new DeploymentManagerProperties(this);
+                                domainDir =  dmProps.getLocation();
+                                domainDir = new File(domainDir).getCanonicalPath();
+                            }
+                            
+                            if (l1.equals(domainDir)==false){ //not the same location, so let's make sure we do not reutrn an invalid target
+                                
+                                return null;
+                            }
+                        } catch (java.rmi.RemoteException  ee) {
+                            return null;//cannot talk to the admin server->not running well
+                        } catch (Throwable  ee) {
+                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                                    ee);
+                            return null;//cannot talk to the admin server->not running well
+                        }
+                    }
+                    ClassLoader origClassLoader=Thread.currentThread().getContextClassLoader();
+                    try {
+                        Thread.currentThread().setContextClassLoader(ServerLocationManager.getServerOnlyClassLoader(getPlatformRoot()));
+                        retVal = innerDM.getTargets();
+                    } catch (IllegalStateException ise) {
+                        retVal = new Target[0];
+                        //	throw ise;
+                    } finally{
+                        Thread.currentThread().setContextClassLoader(origClassLoader);
+                        
+                    }
+                } finally {
+                    releaseInnerDM();
                 }
             }
         }
@@ -667,17 +678,18 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
             Thread.currentThread().setContextClassLoader(ServerLocationManager.getServerOnlyClassLoader(getPlatformRoot()));
             //        File f = getInternalPlanFile(plan);
             //        innerPlan = new FileInputStream(f);
+            grabInnerDM(false);
             ProgressObject  retVal = innerDM.redeploy(targetModuleID, archive, innerPlan);
-//            retVal.addProgressListener(new FileDeleter(f));
+            retVal.addProgressListener(new ReleaseInnerDMPL(Thread.currentThread()));
             return retVal;
         } catch (IllegalStateException ise) {
-            ise.printStackTrace();
+            releaseInnerDM();
             throw ise;
         } catch (Exception ioe) {
-            ioe.printStackTrace();
             IllegalStateException ise =
                     new IllegalStateException("file handling issues");
             ise.initCause(ioe);
+            releaseInnerDM();
             throw ise;
         } finally {
             Thread.currentThread().setContextClassLoader(origClassLoader);
@@ -707,11 +719,15 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         ClassLoader origClassLoader=Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(ServerLocationManager.getServerOnlyClassLoader(getPlatformRoot()));
         try{
-            return  innerDM.redeploy(targetModuleID, archive, null);
-            //return redeploy(targetModuleID, a, p);
+            grabInnerDM(false);
+            ProgressObject retVal = innerDM.redeploy(targetModuleID, archive, null);
+            retVal.addProgressListener(new ReleaseInnerDMPL(Thread.currentThread()));
+            return  retVal;
+        } catch (IllegalStateException ise) {
+            releaseInnerDM();
+            throw ise;
         } finally{
-            Thread.currentThread().setContextClassLoader(origClassLoader);
-            
+            Thread.currentThread().setContextClassLoader(origClassLoader);            
         }
     }
     
@@ -819,11 +835,18 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         ClassLoader origClassLoader=Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(ServerLocationManager.getServerOnlyClassLoader(getPlatformRoot()));
         
+        ProgressObject retVal = null;
         try{
-            return innerDM.undeploy(targetModuleID);
+            grabInnerDM(false);
+            retVal = innerDM.undeploy(targetModuleID);
+            retVal.addProgressListener(new ReleaseInnerDMPL(Thread.currentThread()));
+            return retVal;
         }
         
         finally{
+            if (null == retVal) {
+                releaseInnerDM();
+            }
             Thread.currentThread().setContextClassLoader(origClassLoader);
             
         }
@@ -1363,6 +1386,56 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
             return "fakeTargetName";       // NOI18N
         }
         
+    }
+    
+    private AtomicBoolean locked = new AtomicBoolean(false);
+    
+    public boolean grabInnerDM(boolean returnInsteadOfWait) {
+        while (true) {
+            if (locked.compareAndSet(false,true)) {
+                // I just closed the lock
+                break;
+            } else {
+                try {
+                    if (returnInsteadOfWait) {
+                        return false;
+                    }
+                    synchronized (locked) { //(innerDM) {
+                        //innerDM.wait();
+                        locked.wait(500);
+                    }
+                } catch (InterruptedException ie) {
+                    // what do I do now?
+                }
+            }
+        }
+        return true;
+    }
+    
+    public void releaseInnerDM() {
+        locked.set(false);
+        synchronized (locked) { // (innerDM) {
+            //innerDM.notifyAll();
+            locked.notifyAll();
+        }
+    }
+    
+    private class ReleaseInnerDMPL implements ProgressListener {
+        Thread locker;
+        ReleaseInnerDMPL(Thread locker) {
+            this.locker = locker;
+        }
+        
+        public void handleProgressEvent(ProgressEvent progressEvent) {
+            DeploymentStatus dms = progressEvent.getDeploymentStatus();
+            if (!dms.isRunning()) {
+                locked.set(false);
+                synchronized (locked) { //(innerDM) {
+                    //innerDM.notifyAll();
+                    locked.notifyAll();
+                }
+            }
+        }
     }
     
     /** put a file inside this progress listener to get rid of it after

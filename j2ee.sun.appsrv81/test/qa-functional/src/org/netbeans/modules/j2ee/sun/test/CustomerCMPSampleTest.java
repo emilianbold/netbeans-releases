@@ -74,7 +74,7 @@ public class CustomerCMPSampleTest extends NbTestCase{
             BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
             String output=input.readLine();
             System.out.println(output);
-            if(Util.getModuleID(ModuleType.EAR,Util.CUSTOMER_APPLICATION_PROJECT_NAME, si)!=null)
+            if(Util.getModuleID(ModuleType.EAR,Util.CUSTOMER_APPLICATION_PROJECT_NAME, si, true)!=null)
                 throw new Exception("disable of application failed");
         }catch(Exception e){
             fail(e.getMessage());
@@ -104,7 +104,7 @@ public class CustomerCMPSampleTest extends NbTestCase{
         try {
             ServerInstance si = ServerRegistry.getInstance().getServerInstance(Util._URL);
             
-            TargetModuleID moduleID = Util.getModuleID(ModuleType.EAR, Util.CUSTOMER_APPLICATION_PROJECT_NAME, si);
+            TargetModuleID moduleID = Util.getModuleID(ModuleType.EAR, Util.CUSTOMER_APPLICATION_PROJECT_NAME, si,true);
             
             if(moduleID == null)
                 return;

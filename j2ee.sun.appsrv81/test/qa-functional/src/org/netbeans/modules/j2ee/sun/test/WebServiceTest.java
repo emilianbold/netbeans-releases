@@ -76,7 +76,7 @@ public class WebServiceTest extends NbTestCase{
             BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
             String output=input.readLine();
             System.out.println(output);
-            if( Util.getModuleID(ModuleType.WAR, Util.WEBSERVICE_PROJECT_NAME,si)!=null)
+            if( Util.getModuleID(ModuleType.WAR, Util.WEBSERVICE_PROJECT_NAME,si,true)!=null)
                 throw new Exception("Disable of web service failed");
         }catch(Exception e){
             fail(e.getMessage());
@@ -96,7 +96,7 @@ public class WebServiceTest extends NbTestCase{
             BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
             String output=input.readLine();
             System.out.println(output);
-            if( Util.getModuleID(ModuleType.WAR, Util.WEBSERVICE_PROJECT_NAME,si)==null)
+            if( Util.getModuleID(ModuleType.WAR, Util.WEBSERVICE_PROJECT_NAME,si,true)==null)
                 throw new Exception("Enable of web service failed");
             testWebService();
         }catch(Exception e){
@@ -107,7 +107,7 @@ public class WebServiceTest extends NbTestCase{
     public void undeployWebService() {
         try {
             ServerInstance si = ServerRegistry.getInstance().getServerInstance(Util._URL);
-            TargetModuleID moduleID = Util.getModuleID(ModuleType.WAR, Util.WEBSERVICE_PROJECT_NAME, si);
+            TargetModuleID moduleID = Util.getModuleID(ModuleType.WAR, Util.WEBSERVICE_PROJECT_NAME, si,false);
             
             if(moduleID == null)
                 return;

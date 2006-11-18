@@ -49,7 +49,7 @@ public class EjbModuleTest extends NbTestCase {
     public void undeployEjbModule() {
         try {
             ServerInstance si = ServerRegistry.getInstance().getServerInstance(Util._URL);
-            TargetModuleID moduleID = Util.getModuleID(ModuleType.EJB, Util.EJB_PROJECT_NAME, si);
+            TargetModuleID moduleID = Util.getModuleID(ModuleType.EJB, Util.EJB_PROJECT_NAME, si,false);
             
             if(moduleID == null)
                 return;
