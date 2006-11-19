@@ -61,8 +61,8 @@ public class DerbySystemHomePanel extends javax.swing.JPanel {
      */
     public static String findDerbySystemHome() {
         // since this could be called from StartAction, which is asynchronous
-        return (String)Mutex.EVENT.writeAccess(new Mutex.Action() {
-            public Object run() {
+        return Mutex.EVENT.writeAccess(new Mutex.Action<String>() {
+            public String run() {
                 DerbySystemHomePanel panel = new DerbySystemHomePanel();
                 String title = NbBundle.getMessage(DerbySystemHomePanel.class, "LBL_SetDerbySystemHome");
 

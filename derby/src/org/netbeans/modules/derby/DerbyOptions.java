@@ -290,6 +290,6 @@ public class DerbyOptions {
     }
     
     private static BeanNode createViewNode() throws java.beans.IntrospectionException {
-        return new BeanNode(DerbyOptions.getDefault());
+        return new BeanNode<DerbyOptions>(DerbyOptions.getDefault());
     }     
 }
