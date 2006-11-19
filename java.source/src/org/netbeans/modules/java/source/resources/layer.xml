@@ -186,7 +186,8 @@ Microsystems, Inc. All Rights Reserved.
         </file>
     </folder>
   </folder>
-  
+
+  <!-- Switching off in favor of java/navigation
     <folder name="Navigator" >
       <folder name="Panels" >
         <folder name="text" >
@@ -196,7 +197,7 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
       </folder>
     </folder>
-
+  --> 
 
   
 </filesystem>
