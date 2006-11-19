@@ -50,18 +50,9 @@
         <delete dir="${scp.local.file}"/>
     </target>
     
-    <target name="clean-java" depends="init,-clean-init,-clean-java">
-        <delete dir="${working.dir}/${cvs.module}"/>
-    </target>
-    
-    <target name="-clean-init">
-        <condition property="cvs.module.exists">
-            <available file="${working.dir}/${cvs.module}"/>
-        </condition>
-    </target>
-    
-    <target name="-clean-java" depends="init" if="cvs.module.exists">
-        <ant dir="${working.dir}/${cvs.module}/${cvs.path}" target="${target.clean}"/>
+    <target name="clean-java" depends="init">
+        <subant buildpath="${working.dir}/${cvs.module}/${cvs.path}" target="${target.clean}" inheritall="true" inheritrefs="true" failonerror="false"/>
+        <!-- <delete dir="${working.dir}/${cvs.module}"/> -->
     </target>
     
     <!-- =======================================================================
