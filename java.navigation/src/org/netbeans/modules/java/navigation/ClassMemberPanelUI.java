@@ -1,89 +1,63 @@
 /*
- * The contents of this file are subject to the terms of the Common Development
- * and Distribution License (the License). You may not use this file except in
- * compliance with the License.
+ * ClassMemberPanelUi.java
  *
- * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
- * or http://www.netbeans.org/cddl.txt.
- *
- * When distributing Covered Code, include this CDDL Header Notice in each file
- * and include the License file at http://www.netbeans.org/cddl.txt.
- * If applicable, add the following below the CDDL Header, with the fields
- * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
+ * Created on November 8, 2006, 4:03 PM
  */
 
 package org.netbeans.modules.java.navigation;
 
 import java.awt.BorderLayout;
-import java.awt.Cursor;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
+import javax.swing.Action;
+import javax.swing.KeyStroke;
 import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
-import javax.swing.BorderFactory;
-import javax.swing.FocusManager;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.KeyStroke;
-import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
-import org.netbeans.modules.java.navigation.base.CellRenderer;
-import org.netbeans.modules.java.navigation.base.NavigatorJList;
-import org.netbeans.modules.java.navigation.base.SearchPanel;
-import org.netbeans.modules.java.navigation.base.TapPanel;
-import org.netbeans.modules.java.navigation.base.TooltipHack;
-import org.netbeans.modules.java.navigation.jmi.JUtils.TipHackInvoker;
+import javax.swing.KeyStroke;
+import javax.swing.event.ChangeEvent;
+import org.netbeans.modules.java.navigation.ClassMemberFilters;
+import org.netbeans.modules.java.navigation.ElementNode;
+import org.netbeans.modules.java.navigation.ElementNode.Description;
+import org.netbeans.modules.java.navigation.ElementNode.Description;
+import org.netbeans.modules.java.navigation.actions.FilterSubmenuAction;
+import org.netbeans.modules.java.navigation.actions.SortActionSupport.SortByNameAction;
+import org.netbeans.modules.java.navigation.actions.SortActionSupport.SortBySourceAction;
+import org.netbeans.modules.java.navigation.base.FiltersManager;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-
+import org.netbeans.modules.java.navigation.base.TapPanel;
+import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.view.BeanTreeView;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 
 /**
- * UI frontend for navigator panel showing java class members. Consists of
- * list (tree) of members and filters panel.
  *
- * @author Dafe Simonek
+ * @author  phrebejk
  */
-final class ClassMemberPanelUI extends JPanel implements TipHackInvoker {
-
-    private JScrollPane pane;
+public class ClassMemberPanelUI extends javax.swing.JPanel
+        implements ExplorerManager.Provider, FiltersManager.FilterChangeListener {
+    
+    private ExplorerManager manager = new ExplorerManager();
+    private BeanTreeView elementView;
     private TapPanel filtersPanel;
     private JLabel filtersLbl;
-    private NavigatorJList content;
-    private ClassMemberController controller;
-    private SearchPanel searchPanel;
-    /** helper variable for recognizing very first paint */
-    private boolean firstPaint = true;
-
-    public ClassMemberPanelUI () {
-        init();
-        controller = new ClassMemberController(this);
-    }
+    private Lookup lookup = null; // XXX may need better lookup
+    private ClassMemberFilters filters;
     
-    private void init () {
-        // main content
-        pane = new JScrollPane();
-        pane.setBorder (BorderFactory.createEmptyBorder());
-        pane.setViewportBorder(BorderFactory.createEmptyBorder());
+    private Action[] actions; // General actions for the panel
+    
+    /** Creates new form ClassMemberPanelUi */
+    public ClassMemberPanelUI() {
+                      
+        initComponents();
         
-        content = new NavigatorJList(pane);
-
-        content.setCellRenderer(new CellRenderer());
-        content.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        pane.getViewport().setView(content);
-        // no scrollbar if abbreviations enabled
-        if (Boolean.getBoolean("navigator.string.abbrevs")) {  //NOI18N
-            pane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        } else {
-            pane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        }
-        
+        // Tree view of the elements
+        elementView = createBeanTreeView();        
+        add(elementView, BorderLayout.CENTER);
+               
         // filters
         filtersPanel = new TapPanel();
         filtersLbl = new JLabel(NbBundle.getMessage(ClassMemberPanelUI.class, "LBL_Filter")); //NOI18N
@@ -96,77 +70,148 @@ final class ClassMemberPanelUI extends JPanel implements TipHackInvoker {
         String keyText = Utilities.keyToString(toggleKey);
         filtersPanel.setToolTipText(NbBundle.getMessage(ClassMemberPanelUI.class, "TIP_TapPanel", keyText));
         
-        // search ability
-        searchPanel = new SearchPanel();
-        searchPanel.prepare(content);
+        filters = new ClassMemberFilters( this );
+        filters.getInstance().hookChangeListener(this);
+        filtersPanel.add(filters.getComponent());
         
-        setLayout(new BorderLayout());
-        add(pane, BorderLayout.CENTER);
+        actions = new Action[] {            
+            new SortByNameAction( filters ),
+            new SortBySourceAction( filters ),
+            null,
+            new FilterSubmenuAction(filters.getInstance())            
+        };
+        
         add(filtersPanel, BorderLayout.SOUTH);
-    }
-    
-    void setFilters (JComponent filtersComponent) {
-        filtersPanel.add(filtersComponent);
-    }
- 
-    public NavigatorJList getContent () {
-        return content;
-    }
-    
-    /** Overriden to calculate correct row height before first paint */
-    public void paint (Graphics g) {
-        if (firstPaint) {
-            configureRowHeight(g);
-        }
-        super.paint(g);
+        
+        manager.setRootContext(ElementNode.getWaitNode());
+        
     }
 
-    /** Overriden to pass focus directly to main content, which in 
-     * turn assures that some element is always selected
-     */ 
-    public boolean requestFocusInWindow () {
+    @Override
+    public boolean requestFocusInWindow() {
         boolean result = super.requestFocusInWindow();
-        content.requestFocusInWindow();
+        elementView.requestFocusInWindow();
         return result;
     }
     
-    /** JUtils.TipHackInvoker implementation, triggers tooltip occurence */
-    public void invokeTip (int x, int y) {
-        if (!content.isShowing()) {
-            return;
-        }
-        if (content.isTooltipLocValid(x, y)) {
-            TooltipHack.invokeTip(content, x, y, Integer.MAX_VALUE);
+    public org.openide.util.Lookup getLookup() {
+        // XXX Check for chenge of FileObject
+        return lookup;
+    }
+    
+    public org.netbeans.modules.java.navigation.ElementScanningTask getTask() {
+        
+        return new ElementScanningTask(this);
+        
+    }
+               public void
+               showWaitNode() {
+                  SwingUtilities.invokeLater(new Runnable() {
+                                                public void
+                                                run() {
+                                                   elementView.setRootVisible(true);
+                                                   manager.setRootContext(ElementNode.getWaitNode()); } }); }
+               
+    public void refresh( final Description description ) {
+        
+        ElementNode rootNode = getRootNode();
+        
+        if ( rootNode != null && rootNode.getDescritption().fileObject.equals( description.fileObject) ) {
+            // update
+            System.out.println("UPDATE ======" + description.fileObject.getName() );
+            rootNode.updateRecursively( description );
+        } 
+        else {
+            System.out.println("REFRES =====" + description.fileObject.getName() );
+            // New fileobject => refresh completely
+            SwingUtilities.invokeLater(new Runnable() {
+
+                public void run() {
+                    elementView.setRootVisible(false);        
+                    manager.setRootContext(new ElementNode( description ) );
+                    elementView.expandAll();
+                }
+            } );
+            
         }
     }
+    
+    public void sort() {
+        getRootNode().refreshRecursively();
+    }
+    
+    public ClassMemberFilters getFilters() {
+        return filters;
+    }
+    
+    public void expandNode( Node n ) {
+        elementView.expandNode(n);
+    }
+    
+    public Action[] getActions() {
+        return actions;
+    }
+    
+    public FileObject getFileObject() {
+        return getRootNode().getDescritption().fileObject;
+    }
+    
+    // FilterChangeListener ----------------------------------------------------
+    
+    public void filterStateChanged(ChangeEvent e) {
+        getRootNode().refreshRecursively();
+    }
+    
+    /** This method is called from within the constructor to
+     * initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is
+     * always regenerated by the Form Editor.
+     */
+    // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
+    private void initComponents() {
 
-    /** Sets wait cursor on panel UI area according to given flag */
-    public void setBusyState (boolean isBusy) {
-        Cursor cursor;
-        if (isBusy) {
-            cursor = Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR);
-        } else {
-            cursor = Cursor.getDefaultCursor();
+        setLayout(new java.awt.BorderLayout());
+    }// </editor-fold>//GEN-END:initComponents
+    
+    
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    // End of variables declaration//GEN-END:variables
+    
+    // Private methods ---------------------------------------------------------
+    
+    private ElementNode getRootNode() {
+        
+        Node n = manager.getRootContext();
+        if ( n instanceof ElementNode ) {
+            return (ElementNode)n;
         }
-        filtersPanel.setCursor(cursor);
-        content.setCursor(cursor);
-    }
-
-    /** Called after new content is fully loaded. Keeps inner JList content
-     * manageable ky keyboard */
-    public void newContentReady () {
-        if (content.isFocusOwner()) {
-            content.assureSelection();
+        else {
+            return null;
         }
     }
-
-    /** Calculates row height based on font size */
-    private void configureRowHeight (Graphics g) {
-        g.setFont(content.getFont());
-        FontMetrics fm = g.getFontMetrics ();
-        int height = Math.max(16, fm.getHeight());
-        content.setFixedCellHeight(height);
-        firstPaint = false;
+    
+    private BeanTreeView createBeanTreeView() {
+//        ActionMap map = getActionMap();
+//        map.put(DefaultEditorKit.copyAction, ExplorerUtils.actionCopy(manager));
+//        map.put(DefaultEditorKit.cutAction, ExplorerUtils.actionCut(manager));
+//        map.put(DefaultEditorKit.pasteAction, ExplorerUtils.actionPaste(manager));
+//        map.put("delete", new DelegatingAction(ActionProvider.COMMAND_DELETE, ExplorerUtils.actionDelete(manager, true)));
+//        
+        
+        BeanTreeView btv = new BeanTreeView();    // Add the BeanTreeView        
+//      btv.setDragSource (true);        
+//      btv.setRootVisible(false);        
+//      associateLookup( ExplorerUtils.createLookup(manager, map) );        
+        return btv;
+        
     }
-
+    
+    
+    // ExplorerManager.Provider imlementation ----------------------------------
+    
+    public ExplorerManager getExplorerManager() {
+        return manager;
+    }
+    
+    
 }

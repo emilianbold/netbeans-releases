@@ -24,11 +24,11 @@
 
 package org.netbeans.modules.java.navigation.actions;
 
-import org.netbeans.jmi.javamodel.*;
 import org.openide.util.*;
 
 import javax.swing.*;
 import java.awt.event.*;
+import java.lang.UnsupportedOperationException;
 import java.util.*;
 
 /**
@@ -37,19 +37,22 @@ import java.util.*;
  * @author Tim Boudreau
  */
 public final class GenerateJavadocAction extends AbstractAction {
-    private final ClassMember member;
+    
+    //private final ClassMember member;
 
     /**
      * Creates a new instance of GenerateJavadocAction
      */
-    public GenerateJavadocAction (ClassMember e) {
-        this.member = e;
+    public GenerateJavadocAction (/*ClassMember e*/) {
+        // this.member = e;
         putValue ( NAME, NbBundle.getMessage ( GenerateJavadocAction.class,
                 "LBL_GenJavadoc" ) ); //NOI18N
     }
 
     /** Renders template of Javadoc for asociated class member */
     public void actionPerformed (ActionEvent ae) {
+        throw new UnsupportedOperationException( "Not rewritten to new Java Infrastructure" );
+        /*
         StringBuffer sb = new StringBuffer ( 80 );
         if ( member instanceof CallableFeature ) {
             // [dafe] space on following line is intentional! it fixes #52881
@@ -68,12 +71,13 @@ public final class GenerateJavadocAction extends AbstractAction {
             
             member.setJavadocText ( sb.toString () );
         }
-        
+        */
     }
 
     public boolean isEnabled () {
-        return member != null && member.getJavadoc () == null &&
-               member instanceof CallableFeature;
+        return false;
+//        return member != null && member.getJavadoc () == null &&
+//               member instanceof CallableFeature;
     }
     
 }

@@ -24,10 +24,8 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
-import org.netbeans.modules.java.navigation.ClassMemberModel;
-import org.openide.util.HelpCtx;
+import org.netbeans.modules.java.navigation.ClassMemberFilters;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.actions.Presenter;
 
 /** "Radio button" type action, base class designed for subclassing
@@ -37,11 +35,11 @@ import org.openide.util.actions.Presenter;
 public abstract class SortActionSupport extends AbstractAction implements Presenter.Popup {
     
     private JRadioButtonMenuItem menuItem;
-    protected ClassMemberModel mdl;
+    protected ClassMemberFilters filters;
     
     /** Creates a new instance of SortByNameAction */
-    public SortActionSupport (ClassMemberModel mdl) {
-        this.mdl = mdl;
+    public SortActionSupport ( ClassMemberFilters filters ) {
+        this.filters = filters;
     }
     
     public final JMenuItem getPopupPresenter() {
@@ -65,19 +63,19 @@ public abstract class SortActionSupport extends AbstractAction implements Presen
      */
     public static final class SortByNameAction extends SortActionSupport {
         
-        public SortByNameAction (ClassMemberModel mdl) {
-            super(mdl);
+        public SortByNameAction ( ClassMemberFilters filters) {
+            super(filters);
             putValue(Action.NAME, NbBundle.getMessage(SortByNameAction.class, "LBL_SortByName")); //NOI18N
         }
     
         public void actionPerformed (ActionEvent e) {
-            mdl.setNaturalSort(false);
+            filters.setNaturalSort(false);
             updateMenuItem();
         }
 
         protected void updateMenuItem () {
             JRadioButtonMenuItem mi = obtainMenuItem();
-            mi.setSelected(!mdl.isNaturalSort());
+            mi.setSelected(!filters.isNaturalSort());
         }
     } // end of SortByNameAction
 
@@ -85,19 +83,19 @@ public abstract class SortActionSupport extends AbstractAction implements Presen
      */
     public static final class SortBySourceAction extends SortActionSupport {
         
-        public SortBySourceAction (ClassMemberModel mdl) {
-            super(mdl);
+        public SortBySourceAction ( ClassMemberFilters filters ) {
+            super(filters);
             putValue(Action.NAME, NbBundle.getMessage(SortBySourceAction.class, "LBL_SortBySource")); //NOI18N
         }
     
         public void actionPerformed (ActionEvent e) {
-            mdl.setNaturalSort(true);
+            filters.setNaturalSort(true);
             updateMenuItem();
         }
 
         protected void updateMenuItem () {
             JRadioButtonMenuItem mi = obtainMenuItem();
-            mi.setSelected(mdl.isNaturalSort());
+            mi.setSelected(filters.isNaturalSort());
         }
     } // end of SortBySourceAction
     
