@@ -19,13 +19,12 @@
 
 package org.netbeans.modules.welcome.content;
 
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.lang.reflect.Method;
-import org.openide.ErrorManager;
-import org.openide.util.Lookup;
-import org.openide.util.SharedClassObject;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
+import java.util.prefs.Preferences;
+import org.openide.util.NbPreferences;
 
 /**
  *
@@ -34,6 +33,7 @@ import org.openide.util.SharedClassObject;
 class HttpProxySettings {
 
     private static HttpProxySettings theInstance;
+    private static Preferences proxySettingsNode;
 
     private PropertyChangeSupport propertySupport = new PropertyChangeSupport( this );
 
@@ -72,122 +72,37 @@ class HttpProxySettings {
         }
     }
 
-    // Try to avoid referring directly to IDESettings.
-    // If we can in fact find IDESettings and all appropriate methods, then we
-    // use them. This means proxy config etc. will be properly persisted in
-    // the system option. If something goes wrong, log it quietly and revert
-    // to just setting the system properties (valid just for the session duration).
-    
-    private static SharedClassObject settingsInstance;
-   
-    private static Method mGetProxyType, mSetProxyType, mGetProxyHost, mSetProxyHost, mGetProxyPort, mSetProxyPort;
-    
-    private static boolean useReflection() {
-        initProxyMethodsMaybe();
-        return mSetProxyPort != null;
-    }
-
-    private static boolean reflectionAlreadyTried = false;
-    
     private static synchronized void initProxyMethodsMaybe() {
-        if (reflectionAlreadyTried)
-            return;
-        
-        reflectionAlreadyTried = true;
-        
-        try {
-            ClassLoader l = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
-            Class<? extends SharedClassObject> clazz = l.loadClass("org.netbeans.core.IDESettings").asSubclass(SharedClassObject.class); // NOI18N
-            settingsInstance = SharedClassObject.findObject(clazz, true);
-            mGetProxyType = clazz.getMethod ("getProxyType"); // NOI18N
-            mSetProxyType = clazz.getMethod ("setProxyType", Integer.TYPE); // NOI18N
-            mGetProxyHost = clazz.getMethod("getUserProxyHost"); // NOI18N
-            mSetProxyHost = clazz.getMethod("setUserProxyHost", String.class); // NOI18N
-            mGetProxyPort = clazz.getMethod("getUserProxyPort"); // NOI18N
-            mSetProxyPort = clazz.getMethod("setUserProxyPort", String.class); // NOI18N
-            //listen to proxy changes made elsewhere in the gui
-            settingsInstance.addPropertyChangeListener( new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    for( int i=0; i<proxyChangeEvents.length; i++ ) {
-                        if( proxyChangeEvents[i].equals( evt.getPropertyName() ) ) {
-                            getDefault().propertySupport.firePropertyChange( PROXY_SETTINGS, null, getDefault() );
-                            return;
-                        }
-                    }
+        proxySettingsNode = NbPreferences.root ().node ("/org/netbeans/core");
+        assert proxySettingsNode != null;
+        proxySettingsNode.addPreferenceChangeListener (new PreferenceChangeListener (){
+            public void preferenceChange (PreferenceChangeEvent evt) {
+                if (evt.getKey ().startsWith ("proxy")) {
+                    getDefault ().propertySupport.firePropertyChange (PROXY_SETTINGS, null, getDefault());
                 }
-            });
-        } catch (Exception e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-            // OK, use system properties rather than reflection.
-        }
+            }
+        });
     }
-
-    private static final String PROXY_HOST = "http.proxyHost"; // NOI18N
-    private static final String PROXY_PORT = "http.proxyPort"; // NOI18N
 
     /** Gets proxy usage */
     static int getProxyType () {
-        if (useReflection()) {
-            try {
-                return ((Integer)mGetProxyType.invoke(settingsInstance, new Object[0])).intValue();
-            } catch (Exception e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                // return AUTO_DETECT_PROXY as default
-                return 1;
-            }
-        } else {
-            // XXX: return AUTO_DETECT_PROXY as default
-            return 1;
-        }
+        return proxySettingsNode.getInt ("proxyType", 1);
     }
 
     /** Gets Proxy Host */
     static String getUserProxyHost() {
-        if (useReflection()) {
-            try {
-                return (String)mGetProxyHost.invoke(settingsInstance, new Object[0]);
-            } catch (Exception e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                return null;
-            }
-        } else {
-            return System.getProperty(PROXY_HOST);
-        }
+        return proxySettingsNode.get ("proxyHttpHost", "");
     }
 
     /** Gets Proxy Port */
     static String getUserProxyPort() {
-        if (useReflection()) {
-            try {
-                return (String)mGetProxyPort.invoke(settingsInstance, new Object[0]);
-            } catch (Exception e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                return null;
-            }
-        } else {
-            return System.getProperty(PROXY_PORT);
-        }
-    }
+        return proxySettingsNode.get ("proxyHttpPort", "");
+   }
 
     /** Sets the whole proxy configuration */
     static void setProxyConfiguration (int proxyType, String host, String port) {
-        if (useReflection()) {
-            try {
-                mSetProxyType.invoke (settingsInstance, new Object[] {Integer.valueOf (proxyType)});
-                mSetProxyHost.invoke (settingsInstance, new Object[] {host});
-                mSetProxyPort.invoke (settingsInstance, new Object[] {port});
-            } catch (Exception e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-            }
-        } else {
-            // XXX
-            if (proxyType == 0) {
-                System.setProperty(PROXY_HOST, ""); // NOI18N
-                System.setProperty(PROXY_PORT, ""); // NOI18N
-            } else {
-                System.setProperty(PROXY_HOST, host);
-                System.setProperty(PROXY_PORT, port);
-            }
-        }
+        proxySettingsNode.putInt ("proxyType", proxyType);
+        proxySettingsNode.put ("proxyHttpHost", host);
+        proxySettingsNode.put ("proxyHttpPort", port);
     }
 }

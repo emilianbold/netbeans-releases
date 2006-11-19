@@ -93,6 +93,10 @@ implements Runnable, org.netbeans.core.startup.RunLevel {
 
         // install java.net.Authenticator
         java.net.Authenticator.setDefault (new NbAuthenticator ());
+        
+        // install java.net.ProxySelector
+        java.net.ProxySelector.setDefault (new NbProxySelector ());
+        
         StartLog.logProgress ("Security managers installed"); // NOI18N
         Splash.getInstance().increment(1);
         

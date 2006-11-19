@@ -20,39 +20,67 @@
 package org.netbeans.core;
 
 import java.util.ResourceBundle;
-
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import org.openide.DialogDescriptor;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /** Global password protected sites Authenticator for IDE
  *
- * @author  Petr Hrebejk
+ * @author Jiri Rechtacek
  */
 
 class NbAuthenticator extends java.net.Authenticator {
-
-    protected java.net.PasswordAuthentication getPasswordAuthentication() {
-        java.net.InetAddress site = getRequestingSite();
-        ResourceBundle bundle = NbBundle.getBundle( NbAuthenticator.class );
-        String host = site == null ? bundle.getString( "CTL_PasswordProtected" ) : site.getHostName(); // NOI18N
-        PasswordPanel passwordPanel = new PasswordPanel();
-
-        DialogDescriptor dd = new DialogDescriptor( passwordPanel, host );
-        // #48931: set help Id (asked by web team)
-        dd.setHelpCtx (new HelpCtx (NbAuthenticator.class.getName () + ".getPasswordAuthentication")); // NOI18N
-        passwordPanel.setPrompt( getRequestingPrompt() );
-        java.awt.Dialog dialog = org.openide.DialogDisplayer.getDefault().createDialog( dd );
-        dialog.setVisible (true);
-
-        if ( dd.getValue().equals( NotifyDescriptor.OK_OPTION ) )
-            return new java.net.PasswordAuthentication ( passwordPanel.getUsername(), passwordPanel.getPassword() );
-        else
-            return null;
+    NbAuthenticator () {
+        Preferences proxySettingsNode = NbPreferences.root ().node ("/org/netbeans/core");
+        assert proxySettingsNode != null;
+        proxySettingsNode.putBoolean (ProxySettings.USE_PROXY_AUTHENTICATION, false);
     }
 
+    protected java.net.PasswordAuthentication getPasswordAuthentication() {
+        Logger.getLogger (NbAuthenticator.class.getName ()).log (Level.FINER, "Authenticator.getPasswordAuthentication() with prompt " + this.getRequestingPrompt());
+        
+        // XXX: temprary solution while issue 75856 not fixed
+        if (! ProxySettings.useAuthentication ()) {
+
+            java.net.InetAddress site = getRequestingSite();
+            ResourceBundle bundle = NbBundle.getBundle( NbAuthenticator.class );
+            String host = site == null ? bundle.getString( "CTL_PasswordProtected" ) : site.getHostName(); // NOI18N
+            Preferences proxySettingsNode = NbPreferences.root ().node ("/org/netbeans/core");
+            assert proxySettingsNode != null;
+            
+            PasswordPanel passwordPanel = new PasswordPanel (ProxySettings.getAuthenticationUsername (), ProxySettings.getAuthenticationPassword ());
+
+            DialogDescriptor dd = new DialogDescriptor( passwordPanel, host );
+            // #48931: set help Id (asked by web team)
+            dd.setHelpCtx (new HelpCtx (NbAuthenticator.class.getName () + ".getPasswordAuthentication")); // NOI18N
+            passwordPanel.setPrompt( getRequestingPrompt() );
+            java.awt.Dialog dialog = org.openide.DialogDisplayer.getDefault().createDialog( dd );
+            dialog.setVisible (true);
+
+            if ( dd.getValue().equals( NotifyDescriptor.OK_OPTION ) ) {
+                Logger.getLogger (NbAuthenticator.class.getName ()).log (Level.WARNING, "Store authentication for " + this.getRequestingURL ());
+                proxySettingsNode.putBoolean (ProxySettings.USE_PROXY_AUTHENTICATION, true);
+                proxySettingsNode.put (ProxySettings.PROXY_AUTHENTICATION_USERNAME, passwordPanel.getUsername ());
+                proxySettingsNode.put (ProxySettings.PROXY_AUTHENTICATION_PASSWORD, new String (passwordPanel.getPassword ()));
+            }
+        }
+        
+        if (ProxySettings.useAuthentication ()) {
+            Logger.getLogger (NbAuthenticator.class.getName ()).log (Level.FINER, "Username set to " + ProxySettings.getAuthenticationUsername () + " while request " + this.getRequestingURL ());
+            return new java.net.PasswordAuthentication (ProxySettings.getAuthenticationUsername (), ProxySettings.getAuthenticationPassword ());
+        } else {
+            Logger.getLogger (NbAuthenticator.class.getName ()).log (Level.WARNING, "No authentication set while requesting " + this.getRequestingURL ());
+            return null;
+        }
+        
+    }
+    
     /** Inner class for JPanel with Username & Password fields */
 
     static class PasswordPanel extends javax.swing.JPanel {
@@ -66,11 +94,15 @@ class NbAuthenticator extends java.net.Authenticator {
         ResourceBundle bundle = org.openide.util.NbBundle.getBundle(NbAuthenticator.class);
         
         /** Creates new form PasswordPanel */
-        public PasswordPanel() {
+        public PasswordPanel (String username, char [] password) {
             initComponents ();
             
             usernameField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_UserNameField"));
             passwordField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_PasswordField"));
+            
+            usernameField.setText(username);
+            passwordField.setText(new String (password));
+            
         }
 
         public java.awt.Dimension getPreferredSize () {
@@ -101,7 +133,7 @@ class NbAuthenticator extends java.net.Authenticator {
             mainPanel.add (promptLabel, gridBagConstraints1);
 
             jLabel1 = new javax.swing.JLabel ();
-            Mnemonics.setLocalizedText(jLabel1, bundle.getString("LAB_AUTH_User_Name"));
+            Mnemonics.setLocalizedText (jLabel1, bundle.getString("LAB_AUTH_User_Name"));
 
             gridBagConstraints1 = new java.awt.GridBagConstraints ();
             gridBagConstraints1.insets = new java.awt.Insets (0, 0, 5, 12);
@@ -122,7 +154,7 @@ class NbAuthenticator extends java.net.Authenticator {
             mainPanel.add (usernameField, gridBagConstraints1);
 
             jLabel2 = new javax.swing.JLabel ();
-            Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getBundle(NbAuthenticator.class).getString("LAB_AUTH_Password"));
+            Mnemonics.setLocalizedText (jLabel2, bundle.getString("LAB_AUTH_Password"));
 
             gridBagConstraints1 = new java.awt.GridBagConstraints ();
             gridBagConstraints1.insets = new java.awt.Insets (0, 0, 0, 12);
@@ -174,4 +206,5 @@ class NbAuthenticator extends java.net.Authenticator {
             }
         }
     }
+
 }
