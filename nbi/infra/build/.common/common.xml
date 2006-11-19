@@ -26,10 +26,11 @@
         Initialization
     ======================================================================== -->
     <target name="init">
+        <delete dir="${lib.cls}"/>
         <mkdir dir="${lib.cls}"/>
         <javac srcdir="${lib.src}" destdir="${lib.cls}"/>
         
-        <taskdef name="for-each" classname="org.netbeans.installer.infra.build.ant.ForEachTask" classpath="${lib.cls}"/>
+        <taskdef name="for" classname="org.netbeans.installer.infra.build.ant.ForTask" classpath="${lib.cls}"/>
     </target>
     
     <!-- =======================================================================
@@ -38,24 +39,24 @@
     <target name="clean" depends="init,clean-native,clean-java"/>
     
     <target name="clean-native" depends="init">
-        <for-each list="${platforms}" param="platform">
+        <for list="${platforms}" property="platform">
             <antcall target="-clean-native"/>
-        </for-each>
+        </for>
     </target>
     
-    <target name="-clean-native" depends="init">
-        <property file="${native.dir}/build.properties"/>
+    <target name="-clean-native">
         <property file="${native.dir}/${platform}.properties"/>
+        <property file="${native.dir}/native.properties"/>
         
         <delete dir="${scp.local.file}"/>
     </target>
     
     <target name="clean-java" depends="init">
-        <subant buildpath="${working.dir}/${cvs.module}/${cvs.path}" target="${target.clean}" failonerror="false">
-            <property name="${nb.platform.home}" value="${java.home}"/>
-            <property name="${nb.ignore.native}" value="true"/>
+        <subant buildpath="${work.dir}/${cvs.module}/${cvs.path}" target="${nb.target.clean}" failonerror="false">
+            <property name="${nb.platform.home.name}" value="${nb.platform.home.value}"/>
+            <property name="${nb.ignore.native.name}" value="${nb.ignore.native.value}"/>
         </subant>
-        <delete dir="${working.dir}/${cvs.module}"/>
+        <delete dir="${work.dir}/${cvs.module}"/>
     </target>
     
     <!-- =======================================================================
@@ -63,28 +64,28 @@
     ======================================================================== -->
     <target name="checkout" depends="init,-checkout-trunk,-checkout-branch"/>
     
-    <target name="-checkout-trunk" depends="init" unless="cvs.branch">
-        <cvs cvsroot="${cvs.root}" command="checkout" package="${cvs.module}/${cvs.path}" dest="${working.dir}"/>
+    <target name="-checkout-trunk" unless="cvs.branch">
+        <cvs cvsroot="${cvs.root}" command="checkout" package="${cvs.module}/${cvs.path}" dest="${work.dir}"/>
     </target>
     
-    <target name="-checkout-branch" depends="init" if="cvs.branch">
-        <cvs cvsroot="${cvs.root}" command="checkout" package="${cvs.module}/${cvs.path}" tag="${cvs.branch}" dest="${working.dir}"/>
+    <target name="-checkout-branch" if="cvs.branch">
+        <cvs cvsroot="${cvs.root}" command="checkout" package="${cvs.module}/${cvs.path}" tag="${cvs.branch}" dest="${work.dir}"/>
     </target>
     
     <!-- =======================================================================
         Build
     ======================================================================== -->
-    <target name="build" depends="init,build-native,build-java"/>
+    <target name="build" depends="init,checkout,build-native,build-java"/>
     
     <target name="build-native" depends="init">
-        <for-each list="${platforms}" param="platform">
+        <for list="${platforms}" property="platform">
             <antcall target="-build-native"/>
-        </for-each>
+        </for>
     </target>
     
-    <target name="-build-native" depends="init">
+    <target name="-build-native">
         <property file="${basedir}/../.common/${native.dir}/${platform}.properties"/>
-        <property file="${basedir}/../.common/${native.dir}/build.properties"/>
+        <property file="${basedir}/../.common/${native.dir}/native.properties"/>
         
         <exec executable="${ssh.executable}" failonerror="true">
             <arg line="${ssh.arguments}"/>
@@ -94,15 +95,15 @@
         <mkdir dir="${scp.local.dir}"/>
         <exec executable="${scp.executable}" failonerror="true">
             <arg line="${scp.arguments}"/>
-            <arg value="${scp.remote.file}"/>
-            <arg value="${scp.local.file}"/>
+            <arg value="${scp.remote.dir}/${dist.file}"/>
+            <arg value="${scp.local.dir}/${dist.file}"/>
         </exec>
     </target>
     
     <target name="build-java" depends="init">
-        <subant buildpath="${working.dir}/${cvs.module}/${cvs.path}" target="${target.build}" failonerror="true">
-            <property name="${nb.platform.home}" value="${java.home}"/>
-            <property name="${nb.ignore.native}" value="true"/>
+        <subant buildpath="${work.dir}/${cvs.module}/${cvs.path}" target="${nb.target.build}">
+            <property name="${nb.platform.home.name}" value="${nb.platform.home.value}"/>
+            <property name="${nb.ignore.native.name}" value="${nb.ignore.native.value}"/>
         </subant>
     </target>
     

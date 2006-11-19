@@ -51,11 +51,11 @@ $Id$
     </target>
     
     <target name="native-build" depends="native-init,native-compile">
-        <copy file="${native.dir.windows}/${native.dist.dir}/${native.file.windows}" todir="${build.classes.dir}/${native.dir}"/>
-        <copy file="${native.dir.linux}/${native.dist.dir}/${native.file.linux}" todir="${build.classes.dir}/${native.dir}"/>
-        <copy file="${native.dir.solaris-x86}/${native.dist.dir}/${native.file.solaris-x86}" todir="${build.classes.dir}/${native.dir}"/>
-        <copy file="${native.dir.solaris-sparc}/${native.dist.dir}/${native.file.solaris-sparc}" todir="${build.classes.dir}/${native.dir}"/>
-        <copy file="${native.dir.macosx}/${native.dist.dir}/${native.file.macosx}" todir="${build.classes.dir}/${native.dir}"/>
+        <copy file="${native.dir.windows}/${native.dist.dir}/${native.file.windows}" todir="${build.classes.dir}/${native.dist.dir}"/>
+        <copy file="${native.dir.linux}/${native.dist.dir}/${native.file.linux}" todir="${build.classes.dir}/${native.dist.dir}"/>
+        <copy file="${native.dir.solaris-x86}/${native.dist.dir}/${native.file.solaris-x86}" todir="${build.classes.dir}/${native.dist.dir}"/>
+        <copy file="${native.dir.solaris-sparc}/${native.dist.dir}/${native.file.solaris-sparc}" todir="${build.classes.dir}/${native.dist.dir}"/>
+        <copy file="${native.dir.macosx}/${native.dist.dir}/${native.file.macosx}" todir="${build.classes.dir}/${native.dist.dir}"/>
     </target>
     
     <target name="define-platform">
