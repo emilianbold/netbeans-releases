@@ -51,7 +51,9 @@
     </target>
     
     <target name="clean-java" depends="init">
-        <subant buildpath="${working.dir}/${cvs.module}/${cvs.path}" target="${target.clean}" inheritall="true" inheritrefs="true" failonerror="false"/>
+        <subant buildpath="${working.dir}/${cvs.module}/${cvs.path}" target="${target.clean}" failonerror="false">
+            <property name="${platforms.home.property}" value="${java.home}"/>
+        </subant>
         <!-- <delete dir="${working.dir}/${cvs.module}"/> -->
     </target>
     
