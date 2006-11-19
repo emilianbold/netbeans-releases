@@ -19,10 +19,10 @@ Microsystems, Inc. All Rights Reserved.
 
 $Id$
 -->
-<project name="build-engine" default="all" basedir="..">
-    <import file="../.common/build.xml"/>
-    
+<project name="build-engine" default="all" basedir=".">
     <property file="build.properties"/>
+    
+    <import file="../.common/common.xml" optional="false"/>
     
     <target name="all" depends="init,clean,checkout,build,release">
         

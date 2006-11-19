@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ===========================================================================
+    The contents of this file are subject to the terms of the Common Development
+    and Distribution License (the License). You may not use this file except in
+    compliance with the License.
+    
+    You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+    or http://www.netbeans.org/cddl.txt.
+    
+    When distributing Covered Code, include this CDDL Header Notice in each file
+    and include the License file at http://www.netbeans.org/cddl.txt.
+    If applicable, add the following below the CDDL Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyrighted [year] [name of copyright owner]"
+    
+    The Original Software is NetBeans. The Initial Developer of the Original
+    Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+    Microsystems, Inc. All Rights Reserved.
+    
+    $Id$
+============================================================================ -->
+<project name="build-common" default="usage" basedir=".">
+    <property file="${basedir}/../.common/common.properties"/>
+    
+    <!-- =======================================================================
+        Initialization
+    ======================================================================== -->
+    <target name="init">
+        <mkdir dir="${lib.cls}"/>
+        <javac srcdir="${lib.src}" destdir="${lib.cls}"/>
+        
+        <taskdef name="for-each" classname="org.netbeans.installer.infra.build.ant.ForEachTask" classpath="${lib.cls}"/>
+    </target>
+    
+    <!-- =======================================================================
+        Clean-up
+    ======================================================================== -->
+    <target name="clean" depends="init,clean-native,clean-java"/>
+    
+    <target name="clean-native" depends="init">
+        <for-each list="${platforms}" param="platform">
+            <antcall target="-clean-native"/>
+        </for-each>
+    </target>
+    
+    <target name="-clean-native" depends="init">
+        <property file="${native.dir}/build.properties"/>
+        <property file="${native.dir}/${platform}.properties"/>
+        
+        <delete dir="${scp.local.file}"/>
+    </target>
+    
+    <target name="clean-java" depends="init,-clean-init,-clean-java">
+        <delete dir="${working.dir}/${cvs.module}"/>
+    </target>
+    
+    <target name="-clean-init">
+        <condition property="cvs.module.exists">
+            <available file="${working.dir}/${cvs.module}"/>
+        </condition>
+    </target>
+    
+    <target name="-clean-java" depends="init" if="cvs.module.exists">
+        <ant dir="${working.dir}/${cvs.module}/${cvs.path}" target="${target.clean}"/>
+    </target>
+    
+    <!-- =======================================================================
+        Checkout
+    ======================================================================== -->
+    <target name="checkout" depends="init,-checkout-trunk,-checkout-branch"/>
+    
+    <target name="-checkout-trunk" depends="init" unless="cvs.branch">
+        <cvs cvsroot="${cvs.root}" command="checkout" package="${cvs.module}/${cvs.path}" dest="${working.dir}"/>
+    </target>
+    
+    <target name="-checkout-branch" depends="init" if="cvs.branch">
+        <cvs cvsroot="${cvs.root}" command="checkout" package="${cvs.module}/${cvs.path}" tag="${cvs.branch}" dest="${working.dir}"/>
+    </target>
+    
+    <!-- =======================================================================
+        Build
+    ======================================================================== -->
+    <target name="build" depends="init,build-native,build-java"/>
+    
+    <target name="build-native" depends="init">
+        <for-each list="${platforms}" param="platform">
+            <antcall target="-build-native"/>
+        </for-each>
+    </target>
+    
+    <target name="-build-native" depends="init">
+        <property file="${basedir}/../.common/${native.dir}/${platform}.properties"/>
+        <property file="${basedir}/../.common/${native.dir}/build.properties"/>
+        
+        <exec executable="${ssh.executable}" failonerror="true">
+            <arg line="${ssh.arguments}"/>
+            <arg value="${ssh.command}"/>
+        </exec>
+        
+        <mkdir dir="${scp.local.dir}"/>
+        <exec executable="${scp.executable}" failonerror="true">
+            <arg line="${scp.arguments}"/>
+            <arg value="${scp.remote.file}"/>
+            <arg value="${scp.local.file}"/>
+        </exec>
+    </target>
+    
+    <target name="build-java" depends="init">
+        <ant dir="${working.dir}/${cvs.module}/${cvs.path}" target="${target.build}"/>
+    </target>
+    
+    <!-- =======================================================================
+        Default Target
+    ======================================================================== -->
+    <target name="usage">
+        <echo>
+            This build script is a targets library and should not be used 
+            directly. See ../engine/build.xml and ../component/build.xml
+            for usage examples.
+        </echo>
+    </target>
+</project>

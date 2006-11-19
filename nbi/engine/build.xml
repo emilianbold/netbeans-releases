@@ -36,24 +36,24 @@ $Id$
         <property file="nbproject/project.properties"/>
     </target>
     
-    <target name="native-clean" depends="native-init" description="Cleans the native library project">
-        <exec executable="make" dir="${native.directory}">
+    <target name="native-clean" depends="native-init">
+        <exec executable="make" dir="${native.dir}">
             <arg value="clean"/>
         </exec>    
     </target>    
     
-    <target name="native-compile" depends="native-init,native-clean" description="Compile native library">
-        <exec executable="make" dir="${native.directory}">
+    <target name="native-compile" depends="native-init,native-clean">
+        <exec executable="make" dir="${native.dir}">
             <arg value="build"/>
         </exec>
     </target>
     
     <target name="native-build" depends="native-init,native-compile">
-        <copy file="${native.directory.windows}/${native.dist.directory}/${native.file.windows}" todir="${build.classes.dir}/${native.jar.dir}"/>
-        <copy file="${native.directory.linux}/${native.dist.directory}/${native.file.linux}" todir="${build.classes.dir}/${native.jar.dir}"/>
-        <copy file="${native.directory.solaris-x86}/${native.dist.directory}/${native.file.solaris-x86}" todir="${build.classes.dir}/${native.jar.dir}"/>
-        <copy file="${native.directory.solaris-sparc}/${native.dist.directory}/${native.file.solaris-sparc}" todir="${build.classes.dir}/${native.jar.dir}"/>
-        <copy file="${native.directory.macosx}/${native.dist.directory}/${native.file.macosx}" todir="${build.classes.dir}/${native.jar.dir}"/>
+        <copy file="${native.dir.windows}/${native.dist.dir}/${native.file.windows}" todir="${build.classes.dir}/${native.dir}"/>
+        <copy file="${native.dir.linux}/${native.dist.dir}/${native.file.linux}" todir="${build.classes.dir}/${native.dir}"/>
+        <copy file="${native.dir.solaris-x86}/${native.dist.dir}/${native.file.solaris-x86}" todir="${build.classes.dir}/${native.dir}"/>
+        <copy file="${native.dir.solaris-sparc}/${native.dist.dir}/${native.file.solaris-sparc}" todir="${build.classes.dir}/${native.dir}"/>
+        <copy file="${native.dir.macosx}/${native.dist.dir}/${native.file.macosx}" todir="${build.classes.dir}/${native.dir}"/>
     </target>
 
     <target name="define-platform">
@@ -86,23 +86,23 @@ $Id$
     <target name="init-platform" depends="init-windows,init-linux,init-solaris-x86,init-solaris-sparc,init-macosx"/>
    
     <target name="init-windows" if="is.windows">
-        <property name="native.directory" value="${native.directory.windows}"/>
+        <property name="native.dir" value="${native.dir.windows}"/>
         <property name="native.file" value="${native.file.windows}"/>
     </target>
     <target name="init-linux" if="is.linux">
-        <property name="native.directory" value="${native.directory.linux}"/>
+        <property name="native.dir" value="${native.dir.linux}"/>
         <property name="native.file" value="${native.file.linux}"/>
     </target>
     <target name="init-solaris-x86" if="is.solaris-x86">
-        <property name="native.directory" value="${native.directory.solaris-x86}"/>
+        <property name="native.dir" value="${native.dir.solaris-x86}"/>
         <property name="native.file" value="${native.file.solaris-x86}"/>
     </target>
     <target name="init-solaris-sparc" if="is.solaris-sparc">
-        <property name="native.directory" value="${native.directory.solaris-sparc}"/>
+        <property name="native.dir" value="${native.dir.solaris-sparc}"/>
         <property name="native.file" value="${native.file.solaris-sparc}"/>
     </target>
     <target name="init-macosx" if="is.macosx">
-        <property name="native.directory" value="${native.directory.macosx}"/>
+        <property name="native.dir" value="${native.dir.macosx}"/>
         <property name="native.file" value="${native.file.macosx}"/>
     </target>
     
