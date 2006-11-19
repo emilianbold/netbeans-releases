@@ -122,6 +122,7 @@ public final class NbProxySelector extends ProxySelector {
                     res.addAll (original.select (uri));
                 }
             }
+            res.add (Proxy.NO_PROXY);
         } else {
             assert false : "Invalid proxy type: " + ProxySettings.getProxyType ();
         }
@@ -131,7 +132,8 @@ public final class NbProxySelector extends ProxySelector {
     
     public void connectFailed (URI arg0, SocketAddress arg1, IOException arg2) {
         log.info ("connectFailed (" + arg0 + ", " + arg1 + ", " + arg2 + ")");
-        Exceptions.printStackTrace (arg2);
+        // XXX: don't show Exceptions dialog, makes problem in welcome screen
+        //Exceptions.printStackTrace (arg2);
         // XXX invoke Proxy Customizer??? (wait to fix issue 74855) No, don't show Options when connecting is silent (e.g. Autoupdate AutoCheck)
         //OptionsCustomizer.show ();        
     }
