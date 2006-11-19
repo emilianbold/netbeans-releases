@@ -52,9 +52,10 @@
     
     <target name="clean-java" depends="init">
         <subant buildpath="${working.dir}/${cvs.module}/${cvs.path}" target="${target.clean}" failonerror="false">
-            <property name="${platforms.home.property}" value="${java.home}"/>
+            <property name="${nb.platform.home}" value="${java.home}"/>
+            <property name="${nb.ignore.native}" value="true"/>
         </subant>
-        <!-- <delete dir="${working.dir}/${cvs.module}"/> -->
+        <delete dir="${working.dir}/${cvs.module}"/>
     </target>
     
     <!-- =======================================================================
@@ -99,7 +100,10 @@
     </target>
     
     <target name="build-java" depends="init">
-        <ant dir="${working.dir}/${cvs.module}/${cvs.path}" target="${target.build}"/>
+        <subant buildpath="${working.dir}/${cvs.module}/${cvs.path}" target="${target.build}" failonerror="true">
+            <property name="${nb.platform.home}" value="${java.home}"/>
+            <property name="${nb.ignore.native}" value="true"/>
+        </subant>
     </target>
     
     <!-- =======================================================================

@@ -19,30 +19,32 @@ Microsystems, Inc. All Rights Reserved.
 
 $Id$
 -->
-<!-- You may freely edit this file. See commented blocks below for -->
-<!-- some examples of how to customize the build. -->
-<!-- (If you delete it and reopen the project it will be recreated.) -->
 <project name="NetBeans_Installer_Engine" default="default" basedir=".">
     <property file="build.properties"/>
     
-    <description>Builds, tests, and runs the project NetBeans Installer Engine.</description>
     <import file="nbproject/build-impl.xml"/>
     <import file="nbproject/profiler-build-impl.xml"/>
     
+    <!-- =======================================================================
+        Target overrides
+    ======================================================================== -->
     <target name="-post-clean" depends="native-clean"/>
     <target name="-pre-jar" depends="native-build"/>
     
-    <target name="native-init" depends="define-platform,init-platform" description="Inits the native library properties">
+    <!-- =======================================================================
+        NetBeans Installer engine specific targets
+    ======================================================================== -->
+    <target name="native-init" depends="define-platform,init-platform">
         <property file="nbproject/project.properties"/>
     </target>
     
-    <target name="native-clean" depends="native-init">
+    <target name="native-clean" depends="native-init" unless="ignore.native">
         <exec executable="make" dir="${native.dir}">
             <arg value="clean"/>
         </exec>    
     </target>    
     
-    <target name="native-compile" depends="native-init,native-clean">
+    <target name="native-compile" depends="native-init,native-clean" unless="ignore.native">
         <exec executable="make" dir="${native.dir}">
             <arg value="build"/>
         </exec>
@@ -55,36 +57,30 @@ $Id$
         <copy file="${native.dir.solaris-sparc}/${native.dist.dir}/${native.file.solaris-sparc}" todir="${build.classes.dir}/${native.dir}"/>
         <copy file="${native.dir.macosx}/${native.dist.dir}/${native.file.macosx}" todir="${build.classes.dir}/${native.dir}"/>
     </target>
-
+    
     <target name="define-platform">
         <condition property="is.windows">
-            <contains string="${os.name}" substring="Windows"/>
+            <os family="windows"/>
         </condition>
         <condition property="is.linux">
-            <contains string="${os.name}" substring="Linux"/>
+            <os name="Linux"/>
         </condition>
         <condition property="is.solaris-x86">
-            <and>
-                <contains string="${os.name}" substring="SunOS"/>
-                <contains string="${os.arch}" substring="x86"/>
-            </and>
+            <os name="SunOS" arch="x86"/>
         </condition>
         <condition property="is.solaris-sparc">
-            <and>
-                <contains string="${os.name}" substring="SunOS"/>
-                <contains string="${os.arch}" substring="sparc"/>
-            </and>
+            <os name="SunOS" arch="sparc"/>
         </condition>
         <condition property="is.macosx">
-            <or>
-                <contains string="${os.name}" substring="Darwin"/>
-                <contains string="${os.name}" substring="Mac OS X"/>
-            </or>
+            <and>
+                <os family="mac"/>
+                <os family="unix"/>
+            </and>
         </condition>
     </target>
     
     <target name="init-platform" depends="init-windows,init-linux,init-solaris-x86,init-solaris-sparc,init-macosx"/>
-   
+    
     <target name="init-windows" if="is.windows">
         <property name="native.dir" value="${native.dir.windows}"/>
         <property name="native.file" value="${native.file.windows}"/>
@@ -105,66 +101,4 @@ $Id$
         <property name="native.dir" value="${native.dir.macosx}"/>
         <property name="native.file" value="${native.file.macosx}"/>
     </target>
-    
-    <!--
-
-    There exist several targets which are by default empty and which can be 
-    used for execution of your tasks. These targets are usually executed 
-    before and after some main targets. They are: 
-
-    -pre-init:                 called before initialization of project properties
-    -post-init:                called after initialization of project properties
-    -pre-compile:              called before javac compilation
-    -post-compile:             called after javac compilation
-    -pre-compile-single:       called before javac compilation of single file
-    -post-compile-single:      called after javac compilation of single file
-    -pre-compile-test:         called before javac compilation of JUnit tests
-    -post-compile-test:        called after javac compilation of JUnit tests
-    -pre-compile-test-single:  called before javac compilation of single JUnit test
-    -post-compile-test-single: called after javac compilation of single JUunit test
-    -pre-jar:                  called before JAR building
-    -post-jar:                 called after JAR building
-    -post-clean:               called after cleaning build products
-
-    (Targets beginning with '-' are not intended to be called on their own.)
-
-    Example of inserting an obfuscator after compilation could look like this:
-
-    <target name="-post-compile">
-    <obfuscate>
-    <fileset dir="${build.classes.dir}"/>
-    </obfuscate>
-    </target>
-
-    For list of available properties check the imported 
-    nbproject/build-impl.xml file. 
-
-
-    Another way to customize the build is by overriding existing main targets.
-    The targets of interest are: 
-
-    -init-macrodef-javac:     defines macro for javac compilation
-    -init-macrodef-junit:     defines macro for junit execution
-    -init-macrodef-debug:     defines macro for class debugging
-    -init-macrodef-java:      defines macro for class execution
-    -do-jar-with-manifest:    JAR building (if you are using a manifest)
-    -do-jar-without-manifest: JAR building (if you are not using a manifest)
-    run:                      execution of project 
-    -javadoc-build:           Javadoc generation
-    test-report:              JUnit report generation
-
-    An example of overriding the target for project execution could look like this:
-
-    <target name="run" depends="NetBeans_Installer_Engine-impl.jar">
-    <exec dir="bin" executable="launcher.exe">
-    <arg file="${dist.jar}"/>
-    </exec>
-    </target>
-
-    Notice that the overridden target depends on the jar target and not only on 
-    the compile target as the regular run target does. Again, for a list of available 
-    properties which you can use, check the target you are overriding in the
-    nbproject/build-impl.xml file. 
-
-    -->
 </project>
