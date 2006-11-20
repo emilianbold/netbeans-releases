@@ -37,7 +37,7 @@ public class ClassMemberPanel implements NavigatorPanel {
 
     public void panelActivated(Lookup context) {
         assert context != null;
-        System.out.println("Panel Activated");
+        // System.out.println("Panel Activated");
         ClassMemberNavigatorJavaSourceFactory.getInstance().setLookup(context, getClassMemberPanelUI());
         getClassMemberPanelUI().showWaitNode();
     }

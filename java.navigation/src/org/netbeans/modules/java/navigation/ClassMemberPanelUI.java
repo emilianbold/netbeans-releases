@@ -118,11 +118,11 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         
         if ( rootNode != null && rootNode.getDescritption().fileObject.equals( description.fileObject) ) {
             // update
-            System.out.println("UPDATE ======" + description.fileObject.getName() );
+            //System.out.println("UPDATE ======" + description.fileObject.getName() );
             rootNode.updateRecursively( description );
         } 
         else {
-            System.out.println("REFRES =====" + description.fileObject.getName() );
+            //System.out.println("REFRES =====" + description.fileObject.getName() );
             // New fileobject => refresh completely
             SwingUtilities.invokeLater(new Runnable() {
 
