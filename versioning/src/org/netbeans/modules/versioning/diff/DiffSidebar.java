@@ -394,74 +394,65 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
         g.fillRect(clip.x, clip.y, clip.width, clip.height);
         if (currentDiff == null || currentDiff.length == 0) return;
         
-        AbstractDocument doc = (AbstractDocument)component.getDocument();
-        doc.readLock();
         try{
-            foldHierarchy.lock();
-            try{
-                int startPos = textUI.getPosFromY(clip.y);
-                int startViewIndex = rootView.getViewIndex(startPos,Position.Bias.Forward);
-                int rootViewCount = rootView.getViewCount();
+            int startPos = textUI.getPosFromY(clip.y);
+            int startViewIndex = rootView.getViewIndex(startPos,Position.Bias.Forward);
+            int rootViewCount = rootView.getViewCount();
 
-                if (startViewIndex >= 0 && startViewIndex < rootViewCount) {
-                    // find the nearest visible line with an annotation
-                    Rectangle rec = textUI.modelToView(component, rootView.getView(startViewIndex).getStartOffset());
-                    int y = (rec == null) ? 0 : rec.y;
-                    int [] yCoords = new int[3];
+            if (startViewIndex >= 0 && startViewIndex < rootViewCount) {
+                // find the nearest visible line with an annotation
+                Rectangle rec = textUI.modelToView(component, rootView.getView(startViewIndex).getStartOffset());
+                int y = (rec == null) ? 0 : rec.y;
+                int [] yCoords = new int[3];
 
-                    int clipEndY = clip.y + clip.height;
-                    Element rootElem = textUI.getRootView(component).getElement();
+                int clipEndY = clip.y + clip.height;
+                Element rootElem = textUI.getRootView(component).getElement();
 
-                    View view = rootView.getView(startViewIndex);
-                    int line = rootElem.getElementIndex(view.getStartOffset());
+                View view = rootView.getView(startViewIndex);
+                int line = rootElem.getElementIndex(view.getStartOffset());
+                line++; // make it 1-based
+                if (line == 1 && currentDiff[0].getSecondStart() == 0 && currentDiff[0].getType() == Difference.DELETE) {
+                    g.setColor(getColor(currentDiff[0]));
+                    yCoords[0] = y - editorUI.getLineAscent() / 2;
+                    yCoords[1] = y;
+                    yCoords[2] = y + editorUI.getLineAscent() / 2;
+                    g.fillPolygon(new int [] { 0, BAR_WIDTH, 0 }, yCoords, 3);
+                }
+                
+                for (int i = startViewIndex; i < rootViewCount; i++){
+                    view = rootView.getView(i);
+                    line = rootElem.getElementIndex(view.getStartOffset());
                     line++; // make it 1-based
-                    if (line == 1 && currentDiff[0].getSecondStart() == 0 && currentDiff[0].getType() == Difference.DELETE) {
-                        g.setColor(getColor(currentDiff[0]));
-                        yCoords[0] = y - editorUI.getLineAscent() / 2;
-                        yCoords[1] = y;
-                        yCoords[2] = y + editorUI.getLineAscent() / 2;
-                        g.fillPolygon(new int [] { 0, BAR_WIDTH, 0 }, yCoords, 3);
-                    }
-                    
-                    for (int i = startViewIndex; i < rootViewCount; i++){
-                        view = rootView.getView(i);
-                        line = rootElem.getElementIndex(view.getStartOffset());
-                        line++; // make it 1-based
-                        Difference ad = getDifference(line);
-                        if (ad != null) {
-                            g.setColor(getColor(ad));
-                            if (ad.getType() == Difference.DELETE) {
-                                yCoords[0] = y + editorUI.getLineAscent();
-                                yCoords[1] = y + editorUI.getLineAscent() * 3 / 2;
-                                yCoords[2] = y + editorUI.getLineAscent() * 2;
-                                g.fillPolygon(new int [] { 2, BAR_WIDTH, 2 }, yCoords, 3);
-                                g.setColor(colorBorder);
-                                g.drawLine(2, yCoords[0], 2, yCoords[2] - 1);
-                            } else {
-                                g.fillRect(3, y, BAR_WIDTH - 3, editorUI.getLineHeight());
-                                g.setColor(colorBorder);
-                                g.drawLine(2, y, 2, y + editorUI.getLineHeight());
-                                if (ad.getSecondStart() == line) {
-                                    g.drawLine(2, y, BAR_WIDTH - 1, y);
-                                }
-                                if (ad.getSecondEnd() == line) {
-                                    g.drawLine(2, y + editorUI.getLineHeight(), BAR_WIDTH - 1, y + editorUI.getLineHeight());
-                                }
+                    Difference ad = getDifference(line);
+                    if (ad != null) {
+                        g.setColor(getColor(ad));
+                        if (ad.getType() == Difference.DELETE) {
+                            yCoords[0] = y + editorUI.getLineAscent();
+                            yCoords[1] = y + editorUI.getLineAscent() * 3 / 2;
+                            yCoords[2] = y + editorUI.getLineAscent() * 2;
+                            g.fillPolygon(new int [] { 2, BAR_WIDTH, 2 }, yCoords, 3);
+                            g.setColor(colorBorder);
+                            g.drawLine(2, yCoords[0], 2, yCoords[2] - 1);
+                        } else {
+                            g.fillRect(3, y, BAR_WIDTH - 3, editorUI.getLineHeight());
+                            g.setColor(colorBorder);
+                            g.drawLine(2, y, 2, y + editorUI.getLineHeight());
+                            if (ad.getSecondStart() == line) {
+                                g.drawLine(2, y, BAR_WIDTH - 1, y);
+                            }
+                            if (ad.getSecondEnd() == line) {
+                                g.drawLine(2, y + editorUI.getLineHeight(), BAR_WIDTH - 1, y + editorUI.getLineHeight());
                             }
                         }
-                        y += editorUI.getLineHeight();
-                        if (y >= clipEndY) {
-                            break;
-                        }
+                    }
+                    y += editorUI.getLineHeight();
+                    if (y >= clipEndY) {
+                        break;
                     }
                 }
-            } finally {
-                foldHierarchy.unlock();
             }
         } catch (BadLocationException ble){
             ErrorManager.getDefault().notify(ble);
-        } finally {
-            doc.readUnlock();
         }
     }
 
