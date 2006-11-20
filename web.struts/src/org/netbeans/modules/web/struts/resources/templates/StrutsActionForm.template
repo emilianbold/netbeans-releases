@@ -17,7 +17,7 @@ import org.apache.struts.action.ActionMessage;
  * @version 
  */
 
-public class NewActionForm extends __SUPERCLASS__ {
+public class __NAME__ extends __SUPERCLASS__ {
     
    private String name;
 
@@ -54,7 +54,7 @@ public class NewActionForm extends __SUPERCLASS__ {
    /**
     *
     */
-   public FirstNewBean() {
+   public __NAME__() {
        super();
        // TODO Auto-generated constructor stub
    }
