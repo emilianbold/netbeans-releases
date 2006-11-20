@@ -85,7 +85,7 @@ public final class NbPlatform {
     public static final int HARNESS_VERSION_UNKNOWN = 0;
     /** Harness version found in 5.0. */
     public static final int HARNESS_VERSION_50 = 1;
-    /** Harness version found in 5.0 update 1. */
+    /** Harness version found in 5.0 update 1 and 5.5. */
     public static final int HARNESS_VERSION_50u1 = 2;
     /** Harness version found in 5.5 update 1. */
     public static final int HARNESS_VERSION_55u1 = 3;
