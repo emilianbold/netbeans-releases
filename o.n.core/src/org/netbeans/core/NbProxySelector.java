@@ -168,15 +168,15 @@ public final class NbProxySelector extends ProxySelector {
         } else {
             assert false : "Invalid proxy type: " + ProxySettings.getProxyType ();
         }
-        System.setProperty ("http.proxyHost", host);
+        System.setProperty ("http.proxyHost", host == null ? null : host);
         log.finest ("Set System's http.proxyHost/Port/NonProxyHost to " + host + "/" + port + "/" + nonProxyHosts);
-        System.setProperty ("http.proxyPort", port);
-        System.setProperty ("http.nonProxyHosts", nonProxyHosts);
-        System.setProperty ("https.proxyHost", host);
-        System.setProperty ("https.proxyPort", port);
-        System.setProperty ("https.nonProxyHosts", nonProxyHosts);
-        System.setProperty ("socksProxyHost", sHost);
-        System.setProperty ("socksProxyPort", sPort);
+        System.setProperty ("http.proxyPort", port == null ? null : port);
+        System.setProperty ("http.nonProxyHosts", nonProxyHosts == null ? null : nonProxyHosts);
+        System.setProperty ("https.proxyHost", host == null ? null : host);
+        System.setProperty ("https.proxyPort", port == null ? null : port);
+        System.setProperty ("https.nonProxyHosts", nonProxyHosts == null ? null : nonProxyHosts);
+        System.setProperty ("socksProxyHost", sHost == null ? null : sHost);
+        System.setProperty ("socksProxyPort", sPort == null ? null : sPort);
         log.finest ("Set System's socksHost/Port to " + sHost + "/" + sPort);
     }
 
