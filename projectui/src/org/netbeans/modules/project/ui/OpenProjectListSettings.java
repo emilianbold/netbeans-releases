@@ -207,7 +207,7 @@ public class OpenProjectListSettings {
     public String getLastOpenProjectDir() {
         String result = getProperty( LAST_OPEN_PROJECT_DIR );
         if (result == null) {
-            result = getProjectsFolder().getAbsolutePath();
+            result = getProjectsFolder(/* #89624 */false).getAbsolutePath();
         }
         return result;
     }
@@ -244,7 +244,7 @@ public class OpenProjectListSettings {
         }
     }
     
-    public File getProjectsFolder () {
+    public File getProjectsFolder(boolean create) {
         String result = getProperty (PROP_PROJECTS_FOLDER);
         if (result == null) {
             // property for overriding default projects dir location
@@ -262,7 +262,7 @@ public class OpenProjectListSettings {
                 if (nbPrjDir.exists() && nbPrjDir.canWrite()) {
                     return nbPrjDir;
                 } else {
-                    boolean created = nbPrjDir.mkdir();
+                    boolean created = create && nbPrjDir.mkdir();
                     if (created) return nbPrjDir; 
                 }
             }

@@ -19,15 +19,12 @@
 
 package org.netbeans.modules.project.ui;
 
+import java.io.File;
 import javax.swing.JFileChooser;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.project.uiapi.ProjectChooserFactory;
 import org.netbeans.api.project.SourceGroup;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileObject;
-
-import java.io.File;
 
 /**
  * Factory to be implemented bu the ui implementation
@@ -46,7 +43,7 @@ public class ProjectChooserFactoryImpl implements ProjectChooserFactory {
     }
 
     public File getProjectsFolder() {
-        return OpenProjectListSettings.getInstance().getProjectsFolder();
+        return OpenProjectListSettings.getInstance().getProjectsFolder(true);
     }
 
     public void setProjectsFolder(File file) {
