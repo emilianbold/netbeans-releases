@@ -545,7 +545,7 @@ public class Annotator {
         return new MessageFormat(format);  
     }
 
-    private static final int STATUS_BADGEABLE = FileInformation.STATUS_VERSIONED_UPTODATE | FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
+    private static final int STATUS_BADGEABLE = FileInformation.STATUS_VERSIONED_UPTODATE | FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY;
     
     static boolean looksLikeLogicalFolder(Set<File> files) {
         Iterator<File> it = files.iterator();
