@@ -326,7 +326,7 @@ public class SvnUtils {
             }
             
             if (info != null && info.getUrl() != null) {
-                SVNUrl fileURL = info.getUrl();
+                SVNUrl fileURL = decode(info.getUrl());
                 repositoryURL = info.getRepository();
                 
                 if (fileURL != null && repositoryURL !=  null) {
@@ -384,6 +384,7 @@ public class SvnUtils {
                 SVNUrl fileURL = status.getUrl();
                 
                 if (fileURL != null && repositoryURL !=  null) {
+                    fileURL = decode(fileURL);
                     String fileLink = fileURL.toString();
                     String repositoryLink = repositoryURL.toString();
                     repositoryPath = fileLink.substring(repositoryLink.length());
@@ -465,7 +466,7 @@ public class SvnUtils {
                 // it works with 1.3 workdirs and our .svn parser
                 ISVNStatus status = getSingleStatus(client, file);
                 if (status != null) {
-                    fileURL = status.getUrl();
+                    fileURL = decode(status.getUrl());
                     if (fileURL != null) {
                         break;
                     }
@@ -488,7 +489,7 @@ public class SvnUtils {
             }
             
             if (info != null) {
-                fileURL = info.getUrl();
+                fileURL = decode(info.getUrl());
                 
                 if (fileURL != null ) {
                     break;
@@ -505,6 +506,41 @@ public class SvnUtils {
     
     private static ISVNStatus getSingleStatus(SvnClient client, File file) throws SVNClientException{
         return client.getSingleStatus(file);
+    }
+    
+    /**
+     * Decodes svn URI by decoding %XX escape sequences.
+     * 
+     * @param url url to decode
+     * @return decoded url
+     */ 
+    private static SVNUrl decode(SVNUrl url) {
+        if (url == null) return null;
+        String s = url.toString();
+        StringBuffer sb = new StringBuffer(s.length());
+
+        boolean inQuery = false;
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c == '?') {
+                inQuery = true;
+            } else if (c == '+' && inQuery) {
+                c = ' ';
+            } else if (c == '%' && i + 2 < s.length() && isHexDigit(s.charAt(i + 1)) && isHexDigit(s.charAt(i + 2))) {
+                c = (char) Integer.parseInt(s.substring(i + 1, i + 3), 16); 
+                i += 2;
+            }
+            sb.append(c);
+        }
+        try {
+            return new SVNUrl(sb.toString());
+        } catch (java.net.MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static boolean isHexDigit(char c) {
+        return c >= '0' && c <= '9' || c >= 'A' && c <= 'F' || c >= 'a' && c <= 'f';
     }
     
     /*
