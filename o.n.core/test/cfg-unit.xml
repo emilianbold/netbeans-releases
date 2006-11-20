@@ -36,7 +36,6 @@ Microsystems, Inc. All Rights Reserved.
             <patternset>
                 <!-- this includes all tests testing layers -->
                 <include name="**/ValidateLayer*Test.class"/> 
-                <exclude name="**/ValidateLayerAutomountTest.class"/>
                 <!-- Can throw OutOfMemoryError: <include name="org/netbeans/core/ValidateClassLinkageTest.class"/> -->
             </patternset>
         </testset>
