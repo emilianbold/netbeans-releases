@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.subversion.client;
 
-import java.awt.BorderLayout;
 import java.awt.Dialog;
 import java.io.File;
 import java.io.IOException;
@@ -51,6 +50,7 @@ import org.netbeans.modules.subversion.config.CertificateFile;
 import org.netbeans.modules.subversion.config.ProxyDescriptor;
 import org.netbeans.modules.subversion.config.SvnConfigFiles;
 import org.netbeans.modules.subversion.ui.repository.Repository;
+import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
 import org.netbeans.modules.subversion.util.FileUtils;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.DialogDescriptor;
@@ -113,33 +113,38 @@ public class SvnClientExceptionHandler extends ExceptionHandler {
         throw getException();
     }
         
-    private boolean handleRepositoryConnectError(boolean urlEditable) {
+    private boolean handleRepositoryConnectError(boolean urlEnabled) {
         SVNUrl url = client.getSvnUrl();
-        Repository repository = new Repository(SvnModuleConfig.getDefault().getRecentUrls(), url, urlEditable, false, 
-                                               org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_ConnectionParameters")); // NOI18N
-        CorrectAuthPanel corectPanel = new CorrectAuthPanel();
-        corectPanel.panel.setLayout(new BorderLayout());
-        corectPanel.panel.add(repository.getPanel(), BorderLayout.NORTH);
-        DialogDescriptor dialogDescriptor = new DialogDescriptor(corectPanel, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_AuthFailed")); // NOI18N
-
-        JButton retryButton = new JButton(org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Action_Retry")); // NOI18N
-        dialogDescriptor.setOptions(new Object[] {retryButton, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Action_Cancel")}); // NOI18N
-        
-        showDialog(dialogDescriptor);
-
-        boolean ret = dialogDescriptor.getValue()==retryButton;
-        if(ret) {
-            String username = repository.getUserName();
-            String password = repository.getPassword();
             
-            adapter.setUsername(username);
-            adapter.setPassword(password);
+        Repository repository = new Repository(SvnModuleConfig.getDefault().getRecentUrls(), url, false, urlEnabled, false, false,
+                                               org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_ConnectionParameters")); // NOI18N
+
+        JButton retryButton = new JButton(org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Action_Retry")); // NOI18N        
+        Object option = repository.show(org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_AuthFailed"), 
+                                        new HelpCtx(this.getClass()),
+                                        new Object[] {retryButton, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Action_Cancel")});
+                
+
+        boolean ret = (option == retryButton);
+        if(ret) {
+            RepositoryConnection rc; 
+            try {                
+                rc = repository.getSelectedRepositoryConnection();
+                String username = rc.getUsername();
+                String password = rc.getPassword();
+
+                adapter.setUsername(username);
+                adapter.setPassword(password);                
+            } catch (InterruptedException ex) {
+                
+            };                
             try {
                 repository.storeConfigValues();
-            } catch (InterruptedException ex) {
-                return false; // should not happen
             }
-        }        
+            catch (InterruptedException ex) {
+                return false;
+            }
+        }                 
         return ret;
     }
 

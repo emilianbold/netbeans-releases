@@ -77,7 +77,7 @@ public class CommitAction extends ContextAction {
         
         List<File> tagsFiles = new ArrayList<File>();                
         for (int i = 0; i < roots.length; i++) {
-            String tag = SvnUtils.getTag(roots[i]);
+            String tag = SvnUtils.getCopy(roots[i]);
             if(tag!=null && !tag.equals("")) {
                 tagsFiles.add(roots[i]);
             }
@@ -195,7 +195,7 @@ public class CommitAction extends ContextAction {
         for (SvnFileNode fileNode : files.keySet()) {                                    
             CommitOptions options = files.get(fileNode);
             if (options == CommitOptions.EXCLUDE) continue;
-            stickyTags.add(SvnUtils.getBranch(fileNode.getFile()));
+            stickyTags.add(SvnUtils.getCopy(fileNode.getFile()));
             int status = fileNode.getInformation().getStatus();
             if ((status & FileInformation.STATUS_REMOTE_CHANGE) != 0 || status == FileInformation.STATUS_VERSIONED_CONFLICT) {
                 commit.setEnabled(false);
@@ -205,9 +205,9 @@ public class CommitAction extends ContextAction {
                 panel.setErrorLabel("<html><font color=\"#002080\">" + msg + "</font></html>");  // NOI18N
                 conflicts = true;
             }
-            stickyTags.add(SvnUtils.getBranch(fileNode.getFile()));            
+            stickyTags.add(SvnUtils.getCopy(fileNode.getFile()));            
             if(tags == false) {
-                String tag = SvnUtils.getTag(fileNode.getFile());
+                String tag = SvnUtils.getCopy(fileNode.getFile());
                 tags = tag != null && !tag.trim().equals("");
             }                       
         }

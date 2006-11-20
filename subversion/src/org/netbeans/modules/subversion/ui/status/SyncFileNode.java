@@ -169,8 +169,8 @@ public class SyncFileNode extends AbstractNode {
             super(COLUMN_NAME_BRANCH, String.class, NbBundle.getMessage(SyncFileNode.class, "BK2001"), NbBundle.getMessage(SyncFileNode.class, "BK2002")); // NOI18N
         }
 
-        public Object getValue() {
-            String copyName = SvnUtils.getBranch(node.getFile());
+        public Object getValue() {            
+            String copyName = SvnUtils.getCopy(node.getFile());
             return copyName == null ? "" : copyName;
         }
     }

@@ -142,7 +142,7 @@ public class CommitTableModel extends AbstractTableModel {
         if (col.equals(COLUMN_NAME_NAME)) {
             return nodes[rowIndex].getName();
         } else if (col.equals(COLUMN_NAME_BRANCH)) {
-            String branch = SvnUtils.getBranch(nodes[rowIndex].getFile());
+            String branch = SvnUtils.getCopy(nodes[rowIndex].getFile());
             return branch == null ? "" : branch; // NOI18N
         } else if (col.equals(COLUMN_NAME_STATUS)) {
             node = nodes[rowIndex];

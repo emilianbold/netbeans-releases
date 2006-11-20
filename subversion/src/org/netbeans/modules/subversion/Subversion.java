@@ -48,6 +48,7 @@ import org.netbeans.modules.versioning.util.VersioningEvent;
 import org.netbeans.modules.versioning.VersioningManager;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.subversion.config.PasswordFile;
+import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
 
 /**
  * A singleton Subversion manager class, center of Subversion module. Use {@link #getInstance()} to get access
@@ -271,10 +272,10 @@ public class Subversion {
     public SvnClient getClient(SVNUrl repositoryUrl, SvnProgressSupport support) throws SVNClientException {  
         String username = ""; // NOI18N
         String password = ""; // NOI18N
-        PasswordFile passwordFile = PasswordFile.findFileForUrl(repositoryUrl);
-        if(passwordFile!=null) {
-            username = passwordFile.getUsername();
-            password = passwordFile.getPassword();            
+        RepositoryConnection rc = SvnModuleConfig.getDefault().getRepositoryConnection(repositoryUrl.toString());        
+        if(rc != null) {
+            username = rc.getUsername();
+            password = rc.getPassword();            
         }          
         SvnClient client = SvnClientFactory.getInstance().createSvnClient(repositoryUrl, support, null, username, password, SvnClientExceptionHandler.EX_DEFAULT_HANDLED_EXCEPTIONS);
         attachListeners(client);

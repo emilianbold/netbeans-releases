@@ -60,6 +60,7 @@ import java.io.File;
 import java.awt.*;
 import java.lang.reflect.Field;
 import org.netbeans.modules.subversion.client.SvnClient;
+import org.netbeans.modules.subversion.options.AnnotationExpression;
 import org.tigris.subversion.svnclientadapter.*;
 
 /**
@@ -94,8 +95,8 @@ public class Annotator {
     public static String[] LABELS = new String[] { "revision", "status", "folder", "mime_type" };
     
     private final FileStatusCache cache;
-    private MessageFormat format;
-
+    private MessageFormat format;        
+            
     private boolean mimeTypeFlag;
 
     Annotator(Subversion svn) {
@@ -111,27 +112,19 @@ public class Annotator {
                 initDefaultColor(name.substring(0, name.length() - 6)); 
             }
         }
-        refreshFormat();
+        refresh();
     }
 
-    public void refreshFormat() {
+    public void refresh() {
         String string = SvnModuleConfig.getDefault().getAnnotationFormat(); //System.getProperty("netbeans.experimental.svn.ui.statusLabelFormat");  // NOI18N
         if (string != null) {
-            ErrorManager.getDefault().log(ErrorManager.WARNING, "SVN status labels use format \"" + string + "\" where:");              // NOI18N
-            ErrorManager.getDefault().log(ErrorManager.WARNING, "\t{revision} stays for revision");                                     // NOI18N
-            ErrorManager.getDefault().log(ErrorManager.WARNING, "\t{status} stays for status");                                         // NOI18N
-            ErrorManager.getDefault().log(ErrorManager.WARNING, "\t{folder} stays for the annotain of a specific repository folder");   // NOI18N
-            ErrorManager.getDefault().log(ErrorManager.WARNING, "\t{mime_type} stays for binary flag");                                    // NOI18N
-                        
-            mimeTypeFlag = string.indexOf("{binary}") > -1;
-            
+            mimeTypeFlag = string.indexOf("{mime_type}") > -1;
             string = string.replaceAll("\\{revision\\}",  "\\{0\\}");           // NOI18N    
             string = string.replaceAll("\\{status\\}",    "\\{1\\}");           // NOI18N
             string = string.replaceAll("\\{folder\\}",    "\\{2\\}");           // NOI18N
             string = string.replaceAll("\\{mime_type\\}", "\\{3\\}");           // NOI18N
-            
             format = new MessageFormat(string);
-        }        
+        }                      
     }
     
     private void initDefaultColor(String name) {
@@ -297,29 +290,33 @@ public class Annotator {
         String textAnnotationFormat = SvnModuleConfig.getDefault().getPreferences().get(SvnModuleConfig.PROP_TEXT_ANNOTATIONS_FORMAT, null);        
         if (textAnnotationFormat != null && file != null && (status & FileInformation.STATUS_MANAGED) != 0) {
 
-            String sticky;
-            ISVNStatus lstatus = info.getEntry(file);
-            if (lstatus != null && lstatus.getUrl() != null) {
-                sticky = SvnUtils.getCopy(lstatus.getUrl());
-            } else {
-                // slower
-                sticky = SvnUtils.getCopy(file);
-            }
-
-            if (status == FileInformation.STATUS_VERSIONED_UPTODATE && sticky == null) {
-                textAnnotation = ""; // NOI18N
-            } else if (status == FileInformation.STATUS_VERSIONED_UPTODATE) {
-                textAnnotation = " [" + sticky + "]"; // NOI18N
-            } else  if (sticky == null) {
-                String statusText = info.getShortStatusText();
-                if(!statusText.equals("")) { // NOI18N
-                    textAnnotation = " [" + info.getShortStatusText() + "]"; // NOI18N
+            if (format != null) {
+                textAnnotation = formatAnnotation(info, file);
+            } else {            
+                String sticky;
+                ISVNStatus lstatus = info.getEntry(file);
+                if (lstatus != null && lstatus.getUrl() != null) {
+                    sticky = SvnUtils.getCopy(lstatus.getUrl());
                 } else {
-                    textAnnotation = ""; // NOI18N
+                    // slower
+                    sticky = SvnUtils.getCopy(file);
                 }
-            } else {
-                textAnnotation = " [" + info.getShortStatusText() + "; " + sticky + "]"; // NOI18N
-            }
+
+                if (status == FileInformation.STATUS_VERSIONED_UPTODATE && sticky == null) {
+                    textAnnotation = ""; // NOI18N
+                } else if (status == FileInformation.STATUS_VERSIONED_UPTODATE) {
+                    textAnnotation = " [" + sticky + "]"; // NOI18N
+                } else  if (sticky == null) {
+                    String statusText = info.getShortStatusText();
+                    if(!statusText.equals("")) { // NOI18N
+                        textAnnotation = " [" + info.getShortStatusText() + "]"; // NOI18N
+                    } else {
+                        textAnnotation = ""; // NOI18N
+                    }
+                } else {
+                    textAnnotation = " [" + info.getShortStatusText() + "; " + sticky + "]"; // NOI18N
+                }
+            }                
         } else {
             textAnnotation = ""; // NOI18N
         }

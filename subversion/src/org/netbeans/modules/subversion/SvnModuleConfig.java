@@ -23,6 +23,8 @@ package org.netbeans.modules.subversion;
 import java.util.regex.Pattern;
 import java.util.*;
 import java.util.prefs.Preferences;
+import org.netbeans.modules.subversion.options.AnnotationExpression;
+import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
 import org.openide.util.NbPreferences;
 import org.netbeans.modules.versioning.util.TableSorter;
 import org.netbeans.modules.versioning.util.Utils;
@@ -41,8 +43,15 @@ public class SvnModuleConfig {
     public static final String KEY_EXECUTABLE_BINARY        = "svnExecBinary";          // NOI18N
     public static final String KEY_ANNOTATION_FORMAT        = "annotationFormat";       // NOI18N
             
-    private static final String RECENT_URL = "repository.recentURL";                                // NOI18N
+    private static final String RECENT_URL = "repository.recentURL";                            // NOI18N
+    private static final String RECENT_PASSWORD = "repository.recentPassword";                  // NOI18N
+    private static final String RECENT_USERNAME = "repository.recentUsername";                  // NOI18N
+    private static final String RECENT_EXTERNAL_COMMAND = "repository.recentExternalCommand";   // NOI18N
+    private static final String RECENT_PROXY = "repository.recentProxy";                        // NOI18N
 
+    private static final String URL_EXP = "annotator.urlExp";                                   // NOI18N
+    private static final String ANNOTATION_EXP = "annotator.annotationExp";                     // NOI18N
+    
     public static final String TEXT_ANNOTATIONS_FORMAT_DEFAULT = "{DEFAULT}";           // NOI18N
 
     private static final SvnModuleConfig INSTANCE = new SvnModuleConfig();    
@@ -102,19 +111,95 @@ public class SvnModuleConfig {
     public void setAnnotationFormat(String annotationFormat) {
         getPreferences().put(KEY_ANNOTATION_FORMAT, annotationFormat);        
     }
-            
-    public void insertRecentUrl(String url) {
-        Utils.insert(SvnModuleConfig.getDefault().getPreferences(), RECENT_URL, url, -1);        
+
+    public RepositoryConnection getRepositoryConnection(String url) {
+        List<RepositoryConnection> rcs = getRecentUrls();
+        for (Iterator<RepositoryConnection> it = rcs.iterator(); it.hasNext();) {
+            RepositoryConnection rc = it.next();
+            if(url.equals(rc.getUrl())) {
+                return rc;
+            }            
+        }
+        return null;
+    }            
+    
+    public void insertRecentUrl(RepositoryConnection rc) {
+        if(rc.getSvnUrl() == null) {            
+            // something went wrong - leave
+            // XXX log ?
+            return;
+        }
+        Preferences prefs = getPreferences();
+        
+        List<String> urlValues = Utils.getStringList(prefs, RECENT_URL);        
+        for (Iterator<String> it = urlValues.iterator(); it.hasNext();) {
+            String rcOldString = it.next();
+            RepositoryConnection rcOld =  RepositoryConnection.parse(rcOldString);
+            if(rcOld.equals(rc)) {
+                Utils.removeFromArray(prefs, RECENT_URL, rcOldString);
+            }
+        }        
+        Utils.insert(prefs, RECENT_URL, RepositoryConnection.getString(rc), -1);                
+    }    
+
+    public void setRecentUrls(List<RepositoryConnection> recentUrls) {
+        List<String> urls = new ArrayList<String>(recentUrls.size());
+        
+        int idx = 0;
+        for (Iterator<RepositoryConnection> it = recentUrls.iterator(); it.hasNext();) {
+            idx++;
+            RepositoryConnection rc = it.next();
+            if(rc.getSvnUrl() == null) {            
+                // something went wrong - leave
+                // XXX log ?
+                continue;
+            }            
+            urls.add(RepositoryConnection.getString(rc));            
+        }
+        Preferences prefs = getPreferences();
+        Utils.put(prefs, RECENT_URL, urls);            
     }
     
-    public void removeFromRecentUrls(String[] toRemove) {
-        Utils.removeFromArray(SvnModuleConfig.getDefault().getPreferences(), RECENT_URL, toRemove);        
+    public List<RepositoryConnection> getRecentUrls() {
+        Preferences prefs = getPreferences();
+        List<String> urls = Utils.getStringList(prefs, RECENT_URL);                
+        List<RepositoryConnection> ret = new ArrayList<RepositoryConnection>(urls.size());
+        for (Iterator<String> it = urls.iterator(); it.hasNext();) {
+            RepositoryConnection rc = RepositoryConnection.parse(it.next());
+            ret.add(rc);
+        }
+        return ret;
+    }
+            
+    public void setAnnotationExpresions(List<AnnotationExpression> exps) {
+        List<String> urlExp = new ArrayList<String>(exps.size());
+        List<String> annotationExp = new ArrayList<String>(exps.size());        
+        
+        int idx = 0;
+        for (Iterator<AnnotationExpression> it = exps.iterator(); it.hasNext();) {
+            idx++;
+            AnnotationExpression exp = it.next();            
+            urlExp.add(exp.getUrlExp());
+            annotationExp.add(exp.getAnnotationExp());            
+        }
+
+        Preferences prefs = getPreferences();
+        Utils.put(prefs, URL_EXP, urlExp);        
+        Utils.put(prefs, ANNOTATION_EXP, annotationExp);                
     }
 
-    public List<String> getRecentUrls() {
-        return Utils.getStringList(SvnModuleConfig.getDefault().getPreferences(), RECENT_URL);
-    }            
-            
+    public List<AnnotationExpression> getAnnotationExpresions() {
+        Preferences prefs = getPreferences();
+        List<String> urlExp = Utils.getStringList(prefs, URL_EXP);
+        List<String> annotationExp = Utils.getStringList(prefs, ANNOTATION_EXP);        
+        
+        List<AnnotationExpression> ret = new ArrayList<AnnotationExpression>(urlExp.size());        
+        for (int i = 0; i < urlExp.size(); i++) {                                        
+            ret.add(new AnnotationExpression(urlExp.get(i), annotationExp.get(i)));
+        }
+        return ret;
+    }
+    
     // TODO: persist state
 
     private TableSorter importTableSorter;

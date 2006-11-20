@@ -249,13 +249,13 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
             final String branchTitle;
             if (nodes.length > 0) {
                 boolean stickyCommon = true;
-                String currentSticky = SvnUtils.getBranch(nodes[0].getFile());
+                String currentSticky = SvnUtils.getCopy(nodes[0].getFile());
                 for (int i = 1; i < nodes.length; i++) {
                     if (Thread.interrupted()) {
                         // TODO set model that displays that fact to user
                         return;
                     }
-                    String sticky = SvnUtils.getBranch(nodes[i].getFile());
+                    String sticky = SvnUtils.getCopy(nodes[i].getFile());
                     if (sticky != currentSticky && (sticky == null || currentSticky == null || !sticky.equals(currentSticky))) {
                         stickyCommon = false;
                         break;

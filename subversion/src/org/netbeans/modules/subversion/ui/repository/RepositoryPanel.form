@@ -8,9 +8,6 @@
     <Property name="name" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
       <ResourceString bundle="org/netbeans/modules/subversion/ui/repository/Bundle.properties" key="BK2018" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
     </Property>
-    <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-      <Dimension value="[480, 160]"/>
-    </Property>
     <Property name="verifyInputWhenFocusTarget" type="boolean" value="false"/>
   </Properties>
   <AccessibilityProperties>
@@ -40,10 +37,10 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="tipLabel" alignment="0" pref="474" max="32767" attributes="1"/>
+                  <Component id="tipLabel" alignment="0" pref="516" max="32767" attributes="1"/>
                   <Group type="102" alignment="1" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="urlComboBox" pref="302" max="32767" attributes="2"/>
+                      <Component id="urlComboBox" pref="344" max="32767" attributes="2"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="removeButton" min="-2" max="-2" attributes="0"/>
                   </Group>
@@ -53,10 +50,10 @@
                           <Component id="userTextField" alignment="0" pref="145" max="32767" attributes="3"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="leaveBlankLabel" pref="305" max="32767" attributes="1"/>
+                      <Component id="leaveBlankLabel" pref="347" max="32767" attributes="1"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
-                  <Component id="tunnelCommandTextField" alignment="0" pref="474" max="32767" attributes="0"/>
+                  <Component id="tunnelCommandTextField" alignment="0" pref="516" max="32767" attributes="0"/>
               </Group>
           </Group>
           <Group type="102" alignment="0" attributes="0">
@@ -67,7 +64,7 @@
               <Component id="tunnelLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
-          <Component id="tunnelHelpLabel" alignment="0" pref="597" max="32767" attributes="0"/>
+          <Component id="tunnelHelpLabel" alignment="0" pref="639" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">

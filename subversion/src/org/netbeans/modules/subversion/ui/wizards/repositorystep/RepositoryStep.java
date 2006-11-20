@@ -31,10 +31,9 @@ import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.client.ExceptionHandler;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.WizardStepProgressSupport;
-import org.netbeans.modules.subversion.config.ProxyDescriptor;
 import org.netbeans.modules.subversion.ui.repository.Repository;
+import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
 import org.netbeans.modules.subversion.ui.wizards.AbstractStep;
-import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
@@ -74,8 +73,8 @@ public class RepositoryStep
 
     protected JComponent createComponent() {
         if (repository == null) {
-            repository = new Repository(SvnModuleConfig.getDefault().getRecentUrls(), true, acceptRevision, 
-                                        null, org.openide.util.NbBundle.getMessage(RepositoryStep.class, "CTL_Repository_Location")); // NOI18N
+            repository = new Repository(SvnModuleConfig.getDefault().getRecentUrls(), true, true, acceptRevision, 
+                                        false, true, org.openide.util.NbBundle.getMessage(RepositoryStep.class, "CTL_Repository_Location")); // NOI18N
             repository.addPropertyChangeListener(this);
             panel = new RepositoryStepPanel();            
             panel.repositoryPanel.setLayout(new BorderLayout());
@@ -108,19 +107,28 @@ public class RepositoryStep
     }
 
     private void storeHistory() {        
-        Repository.SelectedRepository selection = getSelectedRepository();
-        if(selection != null) {  
-            SvnModuleConfig.getDefault().insertRecentUrl(getSelectedRepository().getUrl().toString());           
+        RepositoryConnection rc = getSelectedRepositoryConnection();
+        if(rc != null) {  
+            SvnModuleConfig.getDefault().insertRecentUrl(rc);           
         }        
     }
     
     public RepositoryFile getRepositoryFile() {
         return repositoryFile;
     }
-    
+
     private Repository.SelectedRepository getSelectedRepository() {      
         try {
             return repository.getSelectedRepository();
+        } catch (Exception ex) {
+            invalid(ex.getLocalizedMessage()); 
+            return null;
+        }
+    }                       
+    
+    private RepositoryConnection getSelectedRepositoryConnection() {      
+        try {
+            return repository.getSelectedRepositoryConnection();
         } catch (Exception ex) {
             invalid(ex.getLocalizedMessage()); 
             return null;
@@ -150,8 +158,8 @@ public class RepositoryStep
         }
 
         public void perform() {
-            final Repository.SelectedRepository selectedRepository = getSelectedRepository();
-            if (selectedRepository == null) {
+            final RepositoryConnection rc = getSelectedRepositoryConnection();
+            if (rc == null) {
                 return;
             }
             String invalidMsg = null;
@@ -160,12 +168,12 @@ public class RepositoryStep
 
                 SvnClient client;
                 try {
-                    String hostString = SvnUtils.ripUserFromHost(selectedRepository.getUrl().getHost());
-                    ProxyDescriptor pd = repository.getProxyDescriptor();
-                    client = Subversion.getInstance().getClient(selectedRepository.getUrl(),
-                                                                pd,
-                                                                repository.getUserName(),
-                                                                repository.getPassword(),
+                    //String hostString = SvnUtils.ripUserFromHost(rc.getSUrl().getHost());
+                    //ProxyDescriptor pd = repository.getProxyDescriptor();
+                    client = Subversion.getInstance().getClient(rc.getSvnUrl(),
+                                                                rc.getProxyDescriptor(),
+                                                                rc.getUsername(),
+                                                                rc.getPassword(),
                                                                 ExceptionHandler.EX_DEFAULT_HANDLED_EXCEPTIONS ^ // the default without
                                                                 (ExceptionHandler.EX_NO_HOST_CONNECTION |        // host connection errors (misspeled host or proxy urls, ...)
                                                                  ExceptionHandler.EX_AUTHENTICATION) );          // authentication errors 
@@ -188,7 +196,7 @@ public class RepositoryStep
                         return;
                     }
                 
-                    info = client.getInfo(selectedRepository.getUrl());
+                    info = client.getInfo(rc.getSvnUrl());
                 } catch (SVNClientException ex) {
                     annotate(ex);
                     invalidMsg = ExceptionHandler.parseExceptionMessage(ex);
@@ -197,7 +205,10 @@ public class RepositoryStep
                     return;
                 }
 
+                Repository.SelectedRepository selectedRepository = getSelectedRepository();                
                 if(info != null) {
+                    // XXX convert to repositoryConnection                    
+                    
                     SVNUrl repositoryUrl = info.getRepository();
                     if(repositoryUrl==null) {
                         // XXX see issue #72810 and #72921. workaround!

@@ -18,11 +18,11 @@
  */
 package org.netbeans.modules.subversion.client;
 
-import java.awt.BorderLayout;
 import java.awt.Dialog;
 import javax.swing.JButton;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.ui.repository.Repository;
+import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
@@ -163,25 +163,29 @@ public class SvnClientCallback implements ISVNPromptUserPassword {
     }    
     
     private void getAuthData() {
-        Repository repository = new Repository(SvnModuleConfig.getDefault().getRecentUrls(), url, false, false, 
-                                               org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_ConnectionParameters")); // NOI18N
-        CorrectAuthPanel corectPanel = new CorrectAuthPanel();
-        corectPanel.panel.setLayout(new BorderLayout());
-        corectPanel.panel.add(repository.getPanel(), BorderLayout.NORTH);
-        DialogDescriptor dialogDescriptor = new DialogDescriptor(corectPanel, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_AuthFailed")); // NOI18N
-
-        JButton retryButton = new JButton(org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Action_Retry")); // NOI18N
-        dialogDescriptor.setOptions(new Object[] {retryButton, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Action_Cancel")}); // NOI18N
+        Repository repository = new Repository(SvnModuleConfig.getDefault().getRecentUrls(), url, false, false, false, false,
+                                               org.openide.util.NbBundle.getMessage(SvnClientCallback.class, "MSG_Error_ConnectionParameters"));            // NOI18N
         
-        showDialog(dialogDescriptor);
+        JButton retryButton = new JButton(org.openide.util.NbBundle.getMessage(SvnClientCallback.class, "CTL_Action_Retry"));                               // NOI18N        
+        Object option = repository.show(org.openide.util.NbBundle.getMessage(SvnClientCallback.class, "MSG_Error_AuthFailed"),                              // NOI18N   
+                                        new HelpCtx(this.getClass()),
+                                        new Object[] {retryButton, org.openide.util.NbBundle.getMessage(SvnClientCallback.class, "CTL_Action_Cancel")});    // NOI18N  
+                
 
-        boolean ret = dialogDescriptor.getValue()==retryButton;
-        if(ret) {
-            username = repository.getUserName();
-            password = repository.getPassword();
+        boolean ret = (option == retryButton);
+        if(ret) {                 
+            try {
+                RepositoryConnection rc = repository.getSelectedRepositoryConnection();
+
+                username = rc.getUsername();
+                password = rc.getPassword();
+            }
+            catch (InterruptedException ex) {
+                
+            };                        
             // XXX we don't need this and it also should be assured that the adapter isn't precofigured with auth data as long it's not the commandline ...
-//            adapter.setUsername(username);
-//            adapter.setPassword(password);
+            //adapter.setUsername(username);
+            //adapter.setPassword(password);
         }                
     }
 
