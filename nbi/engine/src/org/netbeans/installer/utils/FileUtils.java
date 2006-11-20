@@ -46,7 +46,7 @@ import org.netbeans.installer.utils.helper.ErrorLevel;
  *
  *
  *
- * @author ks152834
+ * @author Kirill Sorokin
  */
 public final class FileUtils {
     /////////////////////////////////////////////////////////////////////////////////

@@ -25,7 +25,7 @@ import java.net.ServerSocket;
 
 /**
  *
- * @author ks152834
+ * @author Kirill Sorokin
  */
 public class Main {
     public static void main(String[] args) {

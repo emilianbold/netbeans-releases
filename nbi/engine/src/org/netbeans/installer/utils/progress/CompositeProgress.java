@@ -25,7 +25,7 @@ import java.util.Map;
 
 /**
  *
- * @author ks152834
+ * @author Kirill Sorokin
  */
 public class CompositeProgress extends Progress implements ProgressListener {
     /////////////////////////////////////////////////////////////////////////////////

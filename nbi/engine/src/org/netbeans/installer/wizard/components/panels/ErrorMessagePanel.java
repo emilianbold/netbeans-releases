@@ -31,7 +31,7 @@ import org.netbeans.installer.utils.helper.swing.NbiLabel;
 
 /**
  *
- * @author ks152834
+ * @author Kirill Sorokin
  */
 public abstract class ErrorMessagePanel extends DefaultWizardPanel {
     /////////////////////////////////////////////////////////////////////////////////

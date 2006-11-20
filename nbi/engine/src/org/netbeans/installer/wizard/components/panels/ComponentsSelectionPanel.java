@@ -65,7 +65,7 @@ import org.netbeans.installer.utils.helper.swing.treetable.NbiTreeTableModel;
 
 /**
  *
- * @author ks152834
+ * @author Kirill Sorokin
  */
 public class ComponentsSelectionPanel extends ErrorMessagePanel {
     private NbiTextPane   messagePane;

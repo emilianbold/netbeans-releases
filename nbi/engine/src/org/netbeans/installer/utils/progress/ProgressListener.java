@@ -22,7 +22,7 @@ package org.netbeans.installer.utils.progress;
 
 /**
  *
- * @author ks152834
+ * @author Kirill Sorokin
  */
 public interface ProgressListener {
     public void progressUpdated(Progress progress);

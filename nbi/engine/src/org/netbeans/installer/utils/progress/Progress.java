@@ -24,7 +24,7 @@ import java.util.Vector;
 
 /**
  *
- * @author ks152834
+ * @author Kirill Sorokin
  */
 public class Progress {
     /////////////////////////////////////////////////////////////////////////////////

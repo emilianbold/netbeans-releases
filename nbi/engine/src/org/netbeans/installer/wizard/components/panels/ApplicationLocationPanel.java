@@ -53,7 +53,7 @@ import org.netbeans.installer.utils.helper.swing.NbiTextPane;
 
 /**
  *
- * @author ks152834
+ * @author Kirill Sorokin
  */
 public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
     private NbiTextPane    messagePane;

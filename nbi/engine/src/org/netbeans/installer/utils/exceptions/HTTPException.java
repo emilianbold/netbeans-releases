@@ -24,7 +24,7 @@ import java.io.IOException;
 
 /**
  *
- * @author ks152834
+ * @author Kirill Sorokin
  */
 public class HTTPException extends IOException {
     /**

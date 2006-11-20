@@ -22,7 +22,7 @@ package org.netbeans.installer.utils.exceptions;
 
 /**
  *
- * @author ks152834
+ * @author Kirill Sorokin
  */
 public class UninstallationException extends Exception {
     /**

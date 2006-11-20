@@ -27,7 +27,7 @@ import org.netbeans.installer.utils.ErrorManager;
 
 /**
  *
- * @author ks152834
+ * @author Kirill Sorokin
  */
 public class SetInstallationLocationAction extends DefaultWizardAction {
     public void execute() {

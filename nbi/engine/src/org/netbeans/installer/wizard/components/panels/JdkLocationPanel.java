@@ -34,7 +34,7 @@ import org.netbeans.installer.wizard.components.actions.SearchForJdkAction;
 
 /**
  *
- * @author ks152834
+ * @author Kirill Sorokin
  */
 public class JdkLocationPanel extends ApplicationLocationPanel {
     private Version minimumVersion;

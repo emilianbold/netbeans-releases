@@ -27,7 +27,7 @@ import org.netbeans.installer.utils.helper.swing.NbiTextPane;
 
 /**
  *
- * @author ks152834
+ * @author Kirill Sorokin
  */
 public class TextPanel extends DefaultWizardPanel {
     private NbiTextPane textPane;
