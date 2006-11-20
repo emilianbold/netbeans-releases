@@ -375,14 +375,14 @@ public class CvsVersioningSystem {
     }
 
     /**
-     * Tests whether a file or directory is managed by CVS. All files and folders that have a parent with CVS/Repository
-     * file are considered managed by CVS. This method accesses disk and should NOT be routinely called.
+     * Tests whether a file or directory should receive the STATUS_NOTVERSIONED_NOTMANAGED status. 
+     * All files and folders that have a parent with CVS/Repository file are considered versioned.
      * 
      * @param file a file or directory
-     * @return true if the file is under CVS management, false otherwise
+     * @return false if the file should receive the STATUS_NOTVERSIONED_NOTMANAGED status, true otherwise
      */ 
     boolean isManaged(File file) {
-        return VersioningManager.getInstance().getOwner(file) instanceof CVS;
+        return VersioningManager.getInstance().getOwner(file) instanceof CVS && !Utils.isPartOfCVSMetadata(file);
     }
 
     public void versionedFilesChanged() {
@@ -397,14 +397,23 @@ public class CvsVersioningSystem {
      * @return File the file itself or one of its parents or null if the supplied file is NOT managed by this versioning system
      */
     File getTopmostManagedParent(File file) {
-        if (file.isDirectory() && file.getName().equals(FILENAME_CVS)) return null;
-        if (file.isFile()) file = file.getParentFile();
+        if (Utils.isPartOfCVSMetadata(file)) {
+            for (;file != null; file = file.getParentFile()) {
+                if (file.isDirectory() && file.getName().equals(FILENAME_CVS)) {
+                    file = file.getParentFile();
+                    break;
+                }
+            }
+        }
+        File topmost = null;
         for (; file != null; file = file.getParentFile()) {
             File repository = new File(file, FILENAME_CVS_REPOSITORY);
             File entries = new File(file, FILENAME_CVS_ENTRIES);
-            if (repository.canRead() && entries.canRead()) return file;
+            if (repository.canRead() && entries.canRead()) {
+                topmost = file;
+            }
         }
-        return null;
+        return topmost;
     }
 
     private void addCvsIgnorePatterns(Set patterns, File file) {

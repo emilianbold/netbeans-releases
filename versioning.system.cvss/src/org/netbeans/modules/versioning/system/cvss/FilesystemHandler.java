@@ -29,7 +29,6 @@ import org.openide.ErrorManager;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.regex.Pattern;
 
 /**
  * Handles events fired from the filesystem such as file/folder create/delete/move.
@@ -38,8 +37,6 @@ import java.util.regex.Pattern;
  */
 class FilesystemHandler extends VCSInterceptor {
         
-    private static final Pattern metadataPattern = Pattern.compile(".*\\" + File.separatorChar + "CVS(\\" + File.separatorChar + ".*|$)");
-    
     private final FileStatusCache   cache;
     private static Thread ignoredThread;
 
@@ -54,7 +51,7 @@ class FilesystemHandler extends VCSInterceptor {
      */ 
     public boolean beforeDelete(File file) {
         if (ignoringEvents()) return false;
-        return isPartOfCVSMetadata(file) || file.isDirectory() && hasMetadata(file);
+        return org.netbeans.modules.versioning.system.cvss.util.Utils.isPartOfCVSMetadata(file) || file.isDirectory() && hasMetadata(file);
     }
 
     public void doDelete(File file) throws IOException {
@@ -63,7 +60,7 @@ class FilesystemHandler extends VCSInterceptor {
             cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN, true);
             return;
         }
-        if (!isPartOfCVSMetadata(file)) {
+        if (!org.netbeans.modules.versioning.system.cvss.util.Utils.isPartOfCVSMetadata(file)) {
             if (!file.delete()) {
                 throw new IOException("Failed to delete file: " + file.getAbsolutePath());
             }
@@ -297,10 +294,6 @@ class FilesystemHandler extends VCSInterceptor {
 
     private boolean hasMetadata(File file) {
         return new File(file, "CVS/Repository").canRead();
-    }
-    
-    private boolean isPartOfCVSMetadata(File file) {
-        return metadataPattern.matcher(file.getAbsolutePath()).matches();
     }
     
     /**

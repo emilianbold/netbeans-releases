@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.*;
+import java.util.regex.Pattern;
 
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -61,6 +62,8 @@ import org.openide.windows.WindowManager;
  */
 public class Utils {
 
+    private static final Pattern metadataPattern = Pattern.compile(".*\\" + File.separatorChar + "CVS(\\" + File.separatorChar + ".*|$)");    
+    
     private static Reference/*<Node[]>*/ contextNodesCached = new /* #72006 */ WeakReference(null);
     private static Context  contextCached;
 
@@ -524,6 +527,10 @@ public class Utils {
         }
     }
     
+    public static boolean isPartOfCVSMetadata(File file) {
+        return metadataPattern.matcher(file.getAbsolutePath()).matches();
+    }
+        
     /** Like mkdirs but but using openide filesystems (firing events) */
     public static FileObject mkfolders(File file) throws IOException {
         if (file.isDirectory()) return FileUtil.toFileObject(file);
