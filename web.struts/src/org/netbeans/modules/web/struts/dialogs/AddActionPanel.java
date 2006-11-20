@@ -374,7 +374,7 @@ public class AddActionPanel extends javax.swing.JPanel implements ValidatingPane
     private void jButtonBrowseClassActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonBrowseClassActionPerformed
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-//            XXX removing due to rewriting to retushe    
+            //TODO: RETOUCHE  
 //            FQNSearch.showFastOpen(TFActionClass);
             }
         }); 

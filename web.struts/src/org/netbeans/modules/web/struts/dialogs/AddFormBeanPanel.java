@@ -198,7 +198,7 @@ public class AddFormBeanPanel extends javax.swing.JPanel implements ValidatingPa
     private void jButtonBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonBrowseActionPerformed
     SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-//            XXX removing due to rewriting to retushe
+//TODO: RETOUCHE
 //                FQNSearch.showFastOpen(TFBeanClass);
             }
         });

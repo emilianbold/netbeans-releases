@@ -379,7 +379,7 @@ public class AddExceptionDialogPanel extends javax.swing.JPanel implements Valid
     private void jButtonExcTypeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonExcTypeActionPerformed
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-//            XXX removing due to rewriting to retushe
+//TODO: RETOUCHE
 //                FQNSearch.showFastOpen((JTextComponent)jComboBoxExcType.getEditor().getEditorComponent());
             }
         });

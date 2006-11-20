@@ -273,7 +273,7 @@ public class AddFormPropertyPanel extends javax.swing.JPanel implements Validati
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-//            XXX removing due to rewriting to retushe
+//TODO: RETOUCHE
 //                FQNSearch.showFastOpen((JTextComponent)jComboBoxPropertyType.getEditor().getEditorComponent());
             }
         });
