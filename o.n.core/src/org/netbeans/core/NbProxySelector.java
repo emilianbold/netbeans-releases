@@ -30,11 +30,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.regex.Pattern;
-import org.openide.util.Exceptions;
 import sun.net.NetProperties;
 
 /**
@@ -131,11 +131,7 @@ public final class NbProxySelector extends ProxySelector {
     }
     
     public void connectFailed (URI arg0, SocketAddress arg1, IOException arg2) {
-        log.info ("connectFailed (" + arg0 + ", " + arg1 + ", " + arg2 + ")");
-        // XXX: don't show Exceptions dialog, makes problem in welcome screen
-        //Exceptions.printStackTrace (arg2);
-        // XXX invoke Proxy Customizer??? (wait to fix issue 74855) No, don't show Options when connecting is silent (e.g. Autoupdate AutoCheck)
-        //OptionsCustomizer.show ();        
+        log.log  (Level.INFO, "connectionFailed(" + arg0 + ", " + arg1 +")", arg2);
     }
     
     // XXX Copy current ProxySettings to System properties http.proxyHost, https.proxyHost, ...
