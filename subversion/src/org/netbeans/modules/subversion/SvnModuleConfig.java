@@ -123,12 +123,7 @@ public class SvnModuleConfig {
         return null;
     }            
     
-    public void insertRecentUrl(RepositoryConnection rc) {
-        if(rc.getSvnUrl() == null) {            
-            // something went wrong - leave
-            // XXX log ?
-            return;
-        }
+    public void insertRecentUrl(RepositoryConnection rc) {        
         Preferences prefs = getPreferences();
         
         List<String> urlValues = Utils.getStringList(prefs, RECENT_URL);        
@@ -149,11 +144,6 @@ public class SvnModuleConfig {
         for (Iterator<RepositoryConnection> it = recentUrls.iterator(); it.hasNext();) {
             idx++;
             RepositoryConnection rc = it.next();
-            if(rc.getSvnUrl() == null) {            
-                // something went wrong - leave
-                // XXX log ?
-                continue;
-            }            
             urls.add(RepositoryConnection.getString(rc));            
         }
         Preferences prefs = getPreferences();

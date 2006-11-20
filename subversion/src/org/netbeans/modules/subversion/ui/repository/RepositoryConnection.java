@@ -21,6 +21,10 @@ package org.netbeans.modules.subversion.ui.repository;
 import java.net.MalformedURLException;
 import org.netbeans.modules.subversion.config.ProxyDescriptor;
 import org.netbeans.modules.subversion.config.Scrambler;
+import org.netbeans.modules.subversion.util.SvnUtils;
+import org.openide.ErrorManager;
+import org.openide.util.NbBundle;
+import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
@@ -31,11 +35,14 @@ public class RepositoryConnection {
     
     private static final String RC_DELIMITER = "~=~";
     
-    private String url;
+    private String url;   
     private String username;
     private String password;
     private ProxyDescriptor proxyDescriptor;
     private String externalCommand;
+    
+    private SVNUrl svnUrl;
+    private SVNRevision svnRevision;
     
 
     public RepositoryConnection(RepositoryConnection rc) {
@@ -53,7 +60,7 @@ public class RepositoryConnection {
         this.setUsername(username);
         this.setPassword(password);
         this.setProxyDescriptor(proxyDescriptor);
-        this.setExternalCommand(externalCommand);
+        this.setExternalCommand(externalCommand);                
     }
 
     public String getUrl() {
@@ -76,13 +83,18 @@ public class RepositoryConnection {
         return externalCommand == null ? "" : externalCommand;
     }
     
-    public SVNUrl getSvnUrl() {
-        try {
-            return new SVNUrl(url);
+    public SVNUrl getSvnUrl() throws MalformedURLException {
+        if(svnUrl == null) {
+            parseUrlString(url);
         }
-        catch (MalformedURLException ex) {
-            return null;
-        }        
+        return svnUrl;
+    }
+    
+    public SVNRevision getSvnRevision() throws MalformedURLException {
+        if(svnRevision == null) {
+            parseUrlString(url);
+        }
+        return svnRevision;        
     }
     
     public boolean equals(Object o) {
@@ -111,6 +123,8 @@ public class RepositoryConnection {
 
     void setUrl(String url) {
         this.url = url;
+        svnUrl = null;
+        svnRevision = null;
     }
 
     void setUsername(String username) {
@@ -132,10 +146,77 @@ public class RepositoryConnection {
     public String toString() {
         return url;
     }
-        
+
+    private void parseUrlString(String urlString) throws MalformedURLException {
+        int idx = urlString.lastIndexOf('@');
+        int hostIdx = urlString.indexOf("://");                         // NOI18N
+        int firstSlashIdx = urlString.indexOf("/", hostIdx + 3);        // NOI18N
+        if(idx < 0 || firstSlashIdx < 0 || idx < firstSlashIdx) {
+            svnRevision = SVNRevision.HEAD;
+        } else /*if (acceptRevision)*/ {
+            if( idx + 1 < urlString.length()) {
+                String revisionString = "";                             // NOI18N
+                try {
+                    revisionString = urlString.substring(idx + 1);
+                    svnRevision = SvnUtils.getSVNRevision(revisionString);
+                } catch (NumberFormatException ex) {
+                    throw new MalformedURLException(NbBundle.getMessage(Repository.class, "MSG_Repository_WrongRevision", revisionString));
+                    //setValid(false, NbBundle.getMessage(Repository.class, "MSG_Repository_WrongRevision", revisionString));     // NOI18N
+                    //return null;
+                }
+            } else {
+                svnRevision = SVNRevision.HEAD;
+            }
+            urlString = urlString.substring(0, idx);
+//        } else {
+//            throw new MalformedURLException(NbBundle.getMessage(Repository.class, "MSG_Repository_OnlyHEADRevision"));          // NOI18N
+//        }
+        }    
+        svnUrl = removeEmptyPathSegments(new SVNUrl(urlString));
+
+    }
+    
+    private SVNUrl removeEmptyPathSegments(SVNUrl url) throws MalformedURLException {
+        String[] pathSegments = url.getPathSegments();
+        StringBuffer urlString = new StringBuffer();
+        urlString.append(url.getProtocol());
+        urlString.append("://");                                                // NOI18N
+        urlString.append(SvnUtils.ripUserFromHost(url.getHost()));
+        if(url.getPort() > 0) {
+            urlString.append(":");                                              // NOI18N
+            urlString.append(url.getPort());
+        }
+        boolean gotSegments = false;
+        for (int i = 0; i < pathSegments.length; i++) {
+            if(!pathSegments[i].trim().equals("")) {                            // NOI18N
+                gotSegments = true;
+                urlString.append("/");                                          // NOI18N
+                urlString.append(pathSegments[i]);                
+            }
+        }
+        try {
+            if(gotSegments) {
+                return new SVNUrl(urlString.toString());
+            } else {
+                return url;
+            }
+        } catch (MalformedURLException ex) {
+            throw ex;
+        }
+    }
+    
     public static String getString(RepositoryConnection rc) {
+        SVNUrl url;
+        try {        
+            url = rc.getSvnUrl();
+        } catch (MalformedURLException mue) {
+            // should not happen
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, mue); // should not happen
+            return "";
+        }        
+        
         StringBuffer sb = new StringBuffer();        
-        sb.append(rc.getUrl());
+        sb.append(url.toString());
         sb.append(RC_DELIMITER);
         sb.append(rc.getUsername());
         sb.append(RC_DELIMITER);
@@ -157,7 +238,7 @@ public class RepositoryConnection {
         return sb.toString();
     }
     
-    public static RepositoryConnection parse(String str) {
+    public static RepositoryConnection parse(String str) {        
         String[] fields = str.split(RC_DELIMITER);
         
         int l = fields.length;

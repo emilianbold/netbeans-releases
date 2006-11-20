@@ -96,13 +96,13 @@ public class RepositoryStep
     
     public void prepareValidation() {
         support = new RepositoryStepProgressSupport(panel.progressPanel);
-        SVNUrl url = null;
         try {
-            url = repository.getSelectedRepository().getUrl();
-        } catch (InterruptedException e) {
-            // ignore
-        }
-        support.setRepositoryRoot(url);
+            SVNUrl url = getSelectedRepositoryConnection().getSvnUrl();
+            support.setRepositoryRoot(url);    
+        } catch (MalformedURLException mue) {            
+            // should not happen
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, mue); // should not happen
+        }        
         support.startProgress();
     }
 
@@ -115,16 +115,7 @@ public class RepositoryStep
     
     public RepositoryFile getRepositoryFile() {
         return repositoryFile;
-    }
-
-    private Repository.SelectedRepository getSelectedRepository() {      
-        try {
-            return repository.getSelectedRepository();
-        } catch (Exception ex) {
-            invalid(ex.getLocalizedMessage()); 
-            return null;
-        }
-    }                       
+    }               
     
     private RepositoryConnection getSelectedRepositoryConnection() {      
         try {
@@ -167,10 +158,11 @@ public class RepositoryStep
                 invalid(null);                
 
                 SvnClient client;
+                SVNUrl url = rc.getSvnUrl();
                 try {
                     //String hostString = SvnUtils.ripUserFromHost(rc.getSUrl().getHost());
                     //ProxyDescriptor pd = repository.getProxyDescriptor();
-                    client = Subversion.getInstance().getClient(rc.getSvnUrl(),
+                    client = Subversion.getInstance().getClient(url,
                                                                 rc.getProxyDescriptor(),
                                                                 rc.getUsername(),
                                                                 rc.getPassword(),
@@ -196,7 +188,7 @@ public class RepositoryStep
                         return;
                     }
                 
-                    info = client.getInfo(rc.getSvnUrl());
+                    info = client.getInfo(url);
                 } catch (SVNClientException ex) {
                     annotate(ex);
                     invalidMsg = ExceptionHandler.parseExceptionMessage(ex);
@@ -205,31 +197,29 @@ public class RepositoryStep
                     return;
                 }
 
-                Repository.SelectedRepository selectedRepository = getSelectedRepository();                
                 if(info != null) {
                     // XXX convert to repositoryConnection                    
-                    
+
                     SVNUrl repositoryUrl = info.getRepository();
                     if(repositoryUrl==null) {
                         // XXX see issue #72810 and #72921. workaround!
-                        repositoryUrl = selectedRepository.getUrl();
+                        repositoryUrl = rc.getSvnUrl();
                     }
-                    SVNRevision revision = selectedRepository.getRevision();
+                    SVNRevision revision = rc.getSvnRevision();
                     String[] repositorySegments = repositoryUrl.getPathSegments();
-                    String[] selectedSegments = selectedRepository.getUrl().getPathSegments();
+                    String[] selectedSegments = rc.getSvnUrl().getPathSegments();
                     String[] repositoryFolder = new String[selectedSegments.length - repositorySegments.length];
                     System.arraycopy(selectedSegments, repositorySegments.length,
                                      repositoryFolder, 0,
                                      repositoryFolder.length);
-                    try {
-                        repositoryFile = new RepositoryFile(repositoryUrl, repositoryFolder, revision);
-                    } catch (MalformedURLException ex) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); // should not happen
-                    }
+
+                    repositoryFile = new RepositoryFile(repositoryUrl, repositoryFolder, revision);
                 } else {
-                    invalidMsg = org.openide.util.NbBundle.getMessage(RepositoryStep.class, "CTL_Repository_Invalid", selectedRepository.getUrl()); // NOI18N
+                    invalidMsg = org.openide.util.NbBundle.getMessage(RepositoryStep.class, "CTL_Repository_Invalid", rc.getUrl()); // NOI18N
                     return;
                 }
+            } catch (MalformedURLException ex) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); // should not happen
             } finally {
                 if(isCanceled()) {
                     valid(org.openide.util.NbBundle.getMessage(RepositoryStep.class, "CTL_Repository_Canceled")); // NOI18N
