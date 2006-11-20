@@ -179,15 +179,10 @@ public class RepositoryStep
 
                 ISVNInfo info = null;
                 try {
-                    try {
-                        repository.storeConfigValues(); 
-                    } catch (InterruptedException ex) {
-                        stop();
-                    }
+                    repository.storeConfigValues();                     
                     if(isCanceled()) {
                         return;
-                    }
-                
+                    }                
                     info = client.getInfo(url);
                 } catch (SVNClientException ex) {
                     annotate(ex);

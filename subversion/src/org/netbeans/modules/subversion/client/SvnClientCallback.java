@@ -163,8 +163,9 @@ public class SvnClientCallback implements ISVNPromptUserPassword {
     }    
     
     private void getAuthData() {
-        Repository repository = new Repository(SvnModuleConfig.getDefault().getRecentUrls(), url, false, false, false, false,
-                                               org.openide.util.NbBundle.getMessage(SvnClientCallback.class, "MSG_Error_ConnectionParameters"));            // NOI18N
+        String title = org.openide.util.NbBundle.getMessage(SvnClientCallback.class, "MSG_Error_ConnectionParameters");
+        Repository repository = new Repository(SvnModuleConfig.getDefault().getRecentUrls(), false, false, false, false, false, title);            // NOI18N
+        repository.selectUrl(url, true);
         
         JButton retryButton = new JButton(org.openide.util.NbBundle.getMessage(SvnClientCallback.class, "CTL_Action_Retry"));                               // NOI18N        
         Object option = repository.show(org.openide.util.NbBundle.getMessage(SvnClientCallback.class, "MSG_Error_AuthFailed"),                              // NOI18N   
@@ -174,15 +175,9 @@ public class SvnClientCallback implements ISVNPromptUserPassword {
 
         boolean ret = (option == retryButton);
         if(ret) {                 
-            try {
-                RepositoryConnection rc = repository.getSelectedRepositoryConnection();
-
-                username = rc.getUsername();
-                password = rc.getPassword();
-            }
-            catch (InterruptedException ex) {
-                
-            };                        
+            RepositoryConnection rc = repository.getSelectedRepositoryConnection();
+            username = rc.getUsername();
+            password = rc.getPassword();                      
             // XXX we don't need this and it also should be assured that the adapter isn't precofigured with auth data as long it's not the commandline ...
             //adapter.setUsername(username);
             //adapter.setPassword(password);

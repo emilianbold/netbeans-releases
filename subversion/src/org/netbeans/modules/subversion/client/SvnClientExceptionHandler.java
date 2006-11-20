@@ -115,10 +115,10 @@ public class SvnClientExceptionHandler extends ExceptionHandler {
         
     private boolean handleRepositoryConnectError(boolean urlEnabled) {
         SVNUrl url = client.getSvnUrl();
-            
-        Repository repository = new Repository(SvnModuleConfig.getDefault().getRecentUrls(), url, false, urlEnabled, false, false,
-                                               org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_ConnectionParameters")); // NOI18N
-
+        String title = org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_ConnectionParameters");
+        Repository repository = new Repository(SvnModuleConfig.getDefault().getRecentUrls(), false, urlEnabled, false, false, false, title); // NOI18N
+        repository.selectUrl(url, true);
+        
         JButton retryButton = new JButton(org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Action_Retry")); // NOI18N        
         Object option = repository.show(org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_AuthFailed"), 
                                         new HelpCtx(this.getClass()),
@@ -127,23 +127,14 @@ public class SvnClientExceptionHandler extends ExceptionHandler {
 
         boolean ret = (option == retryButton);
         if(ret) {
-            RepositoryConnection rc; 
-            try {                
-                rc = repository.getSelectedRepositoryConnection();
-                String username = rc.getUsername();
-                String password = rc.getPassword();
+            RepositoryConnection rc = repository.getSelectedRepositoryConnection();
+            String username = rc.getUsername();
+            String password = rc.getPassword();
 
-                adapter.setUsername(username);
-                adapter.setPassword(password);                
-            } catch (InterruptedException ex) {
-                
-            };                
-            try {
-                repository.storeConfigValues();
-            }
-            catch (InterruptedException ex) {
-                return false;
-            }
+            adapter.setUsername(username);
+            adapter.setPassword(password);                                        
+            repository.storeConfigValues();    
+            SvnModuleConfig.getDefault().insertRecentUrl(rc);
         }                 
         return ret;
     }

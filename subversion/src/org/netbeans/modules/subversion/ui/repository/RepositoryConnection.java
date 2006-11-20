@@ -245,13 +245,13 @@ public class RepositoryConnection {
         
         ProxyDescriptor pd = null;
         String url          =         fields[0];
-        String username     = l > 1 ? fields[1] : "";
-        String password     = l > 2 ? Scrambler.getInstance().descramble(fields[2]) : "";
-        String extCmd       = l > 3 ? fields[3] : "";
+        String username     = l > 1 ? fields[1] : null;
+        String password     = l > 2 ? Scrambler.getInstance().descramble(fields[2]) : null;
+        String extCmd       = l > 3 ? fields[3] : null;
         
-        String pdHost       = l > 4 ? fields[4] : "";
-        String pdUsername   = l > 5 ? fields[5] : "";
-        String pdPassword   = l > 6 ? Scrambler.getInstance().descramble(fields[6]) : "";
+        String pdHost       = l > 4 ? fields[4] : null;
+        String pdUsername   = l > 5 ? fields[5] : null;
+        String pdPassword   = l > 6 ? Scrambler.getInstance().descramble(fields[6]) : null;
         int pdPort          = l > 7 ? Integer.parseInt(fields[7]) : -1;
         int pdType          = l > 8 ? Integer.parseInt(fields[8]) : -1;                        
         pd = new ProxyDescriptor(pdType, pdHost, pdPort, pdUsername, pdPassword);        
