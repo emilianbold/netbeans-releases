@@ -88,7 +88,7 @@ public class RevertModificationsPanel extends javax.swing.JPanel {
 
         jLabel10.setText(bundle.getString("CTL_RevertPanel_EmptyHint")); // NOI18N
 
-        revertNewFilesCheckBox.setText("Remove newly added files and folders");
+        revertNewFilesCheckBox.setText(org.openide.util.NbBundle.getMessage(RevertModificationsPanel.class, "CTL_RevertPanel_RevertNewFiles")); // NOI18N
         revertNewFilesCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         revertNewFilesCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
@@ -126,7 +126,7 @@ public class RevertModificationsPanel extends javax.swing.JPanel {
                     .add(layout.createSequentialGroup()
                         .add(141, 141, 141)
                         .add(jLabel9))
-                    .add(revertNewFilesCheckBox))
+                    .add(revertNewFilesCheckBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 257, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(

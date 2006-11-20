@@ -58,7 +58,7 @@
                       <EmptySpace min="141" pref="141" max="141" attributes="0"/>
                       <Component id="jLabel9" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="revertNewFilesCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="revertNewFilesCheckBox" alignment="0" min="-2" pref="257" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -330,7 +330,9 @@
     </Component>
     <Component class="javax.swing.JCheckBox" name="revertNewFilesCheckBox">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Remove newly added files and folders"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/subversion/ui/update/Bundle.properties" key="CTL_RevertPanel_RevertNewFiles" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
           <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
             <EmptyBorder bottom="0" left="0" right="0" top="0"/>
