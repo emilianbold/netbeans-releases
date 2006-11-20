@@ -1321,7 +1321,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         break;
                     case GT:
                         CompilationController controller = env.getController();
-                        TypeMirror tm = controller.getTrees().getTypeMirror(path);
+                        TypeMirror tm = controller.getTrees().getTypeMirror(new TreePath(path, nc.getIdentifier()));
                         addMembers(env, tm, ((DeclaredType)tm).asElement(), EnumSet.of(CONSTRUCTOR), null, false);
                         break;
                 }
@@ -2254,6 +2254,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             final boolean isStatic = elem != null && (elem.getKind().isClass() || elem.getKind().isInterface() || elem.getKind() == TYPE_PARAMETER);
             final Scope scope = env.getScope();
             final Set<TypeMirror> finalSmartTypes = smartTypes;
+            final boolean[] ctorSeen = {false};
             ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
                 public boolean accept(Element e, TypeMirror t) {
                     switch (e.getKind()) {
@@ -2290,9 +2291,10 @@ public class JavaCompletionProvider implements CompletionProvider {
                                 return false;
                             return isStatic && (finalSmartTypes == null || finalSmartTypes.isEmpty());
                         case CONSTRUCTOR:
+                            ctorSeen[0] = true;
                             if (!Utilities.startsWith(e.getEnclosingElement().getSimpleName().toString(), prefix) ||
                                     !isOfKindAndType(e, kinds, baseType, scope, trees, types) ||
-                                    !tu.isAccessible(scope, e, t))
+                                    (!tu.isAccessible(scope, e, t) && (!elem.getModifiers().contains(ABSTRACT) || e.getModifiers().contains(PRIVATE))))
                                 return false;
                             return isStatic && (finalSmartTypes == null || finalSmartTypes.isEmpty());
                     }
@@ -2323,6 +2325,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                         results.add(JavaCompletionItem.createTypeItem((TypeElement)e, (DeclaredType)e.asType(), offset, false, elements.isDeprecated(e)));
                         break;
                 }
+            }
+            if (!ctorSeen[0] && kinds.contains(CONSTRUCTOR) && elem.getKind().isInterface()) {
+                results.add(JavaCompletionItem.createDefaultConstructorItem((TypeElement)elem, offset));
             }
         }
         
