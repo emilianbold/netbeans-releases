@@ -186,11 +186,6 @@ implements Runnable {
         editorsRegistered = true;
     }
 
-    protected void loadSettings() {
-        // -----------------------------------------------------------------------------------------------------
-        // this indirectly sets system properties for proxy servers with values
-        // taken from IDESettings
-        IDESettings.findObject(IDESettings.class, true);
-    }
+    protected void loadSettings() {}
 
 }
