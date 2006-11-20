@@ -239,12 +239,23 @@ public final class NbModuleProject implements Project {
     }
     
     /**
+     * Get the minimum harness version required to work with this module.
+     */
+    public int getMinimumHarnessVersion() {
+        if (helper.createAuxiliaryConfiguration().getConfigurationFragment(NbModuleProjectType.NAME_SHARED, NbModuleProjectType.NAMESPACE_SHARED_2, true) != null) {
+            return NbPlatform.HARNESS_VERSION_50;
+        } else {
+            return NbPlatform.HARNESS_VERSION_55u1;
+        }
+    }
+
+    /**
      * Replacement for {@link AntProjectHelper#getPrimaryConfigurationData}
      * taking into account the /2 -> /3 upgrade.
      */
     public Element getPrimaryConfigurationData() {
-        return (Element) ProjectManager.mutex().readAccess(new Mutex.Action() {
-            public Object run() {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<Element>() {
+            public Element run() {
                 AuxiliaryConfiguration ac = helper.createAuxiliaryConfiguration();
                 Element data = ac.getConfigurationFragment(NbModuleProjectType.NAME_SHARED, NbModuleProjectType.NAMESPACE_SHARED_2, true);
                 if (data != null) {
@@ -261,8 +272,8 @@ public final class NbModuleProject implements Project {
      * taking into account the /2 -> /3 upgrade.
      */
     public void putPrimaryConfigurationData(final Element data) {
-        ProjectManager.mutex().writeAccess(new Mutex.Action() {
-            public Object run() {
+        ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
+            public Void run() {
                 AuxiliaryConfiguration ac = helper.createAuxiliaryConfiguration();
                 if (ac.getConfigurationFragment(NbModuleProjectType.NAME_SHARED, NbModuleProjectType.NAMESPACE_SHARED_2, true) != null) {
                     ac.putConfigurationFragment(Util.translateXML(data, NbModuleProjectType.NAMESPACE_SHARED_2), true);
@@ -319,12 +330,12 @@ public final class NbModuleProject implements Project {
         return eval;
     }
     
-    private final Map<String,FileObject> directoryCache = new WeakHashMap();
+    private final Map<String,FileObject> directoryCache = new WeakHashMap<String,FileObject>();
     
     private FileObject getDir(String prop) {
         // XXX also add a PropertyChangeListener to eval and clear the cache of changed props
         if (directoryCache.containsKey(prop)) {
-            return (FileObject)directoryCache.get(prop);
+            return directoryCache.get(prop);
         } else {
             String v = evaluator().getProperty(prop);
             assert v != null : "No value for " + prop;
@@ -570,10 +581,8 @@ public final class NbModuleProject implements Project {
      */
     public Map<FileObject,Element> getExtraCompilationUnits() {
         if (extraCompilationUnits == null) {
-            extraCompilationUnits = new HashMap();
-            Iterator<Element> ecuEls = Util.findSubElements(getPrimaryConfigurationData()).iterator();
-            while (ecuEls.hasNext()) {
-                Element ecu = (Element) ecuEls.next();
+            extraCompilationUnits = new HashMap<FileObject,Element>();
+            for (Element ecu : Util.findSubElements(getPrimaryConfigurationData())) {
                 if (ecu.getLocalName().equals("extra-compilation-unit")) { // NOI18N
                     Element pkgrootEl = Util.findElement(ecu, "package-root", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
                     String pkgrootS = Util.findText(pkgrootEl);
@@ -602,7 +611,7 @@ public final class NbModuleProject implements Project {
      * For use from unit tests.
      */
     public void open() {
-        ((OpenedHook) getLookup().lookup(OpenedHook.class)).projectOpened();
+        getLookup().lookup(OpenedHook.class).projectOpened();
     }
     
     /**
@@ -610,7 +619,7 @@ public final class NbModuleProject implements Project {
      * LocalizedBundleInfo} for this project.
      */
     public LocalizedBundleInfo getBundleInfo() {
-        return ((LocalizedBundleInfo.Provider) getLookup().lookup(LocalizedBundleInfo.Provider.class)).getLocalizedBundleInfo();
+        return getLookup().lookup(LocalizedBundleInfo.Provider.class).getLocalizedBundleInfo();
     }
     
     
@@ -690,8 +699,8 @@ public final class NbModuleProject implements Project {
             // write user.properties.file=$userdir/build.properties to platform-private.properties
             if (getModuleType() == NbModuleTypeProvider.STANDALONE) {
                 // XXX skip this in case nbplatform.active is not defined
-                ProjectManager.mutex().writeAccess(new Mutex.Action() {
-                    public Object run() {
+                ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
+                    public Void run() {
                         String path = "nbproject/private/platform-private.properties"; // NOI18N
                         EditableProperties ep = getHelper().getProperties(path);
                         File buildProperties = new File(System.getProperty("netbeans.user"), "build.properties"); // NOI18N
@@ -707,7 +716,7 @@ public final class NbModuleProject implements Project {
                 });
             }
             // register project's classpaths to GlobalClassPathRegistry
-            ClassPathProviderImpl cpProvider = (ClassPathProviderImpl)lookup.lookup(ClassPathProviderImpl.class);
+            ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
             ClassPath[] _boot = cpProvider.getProjectClassPaths(ClassPath.BOOT);
             assert _boot != null : "No BOOT path";
             ClassPath[] _source = cpProvider.getProjectClassPaths(ClassPath.SOURCE);
@@ -872,7 +881,7 @@ public final class NbModuleProject implements Project {
                     bundleInfo = Util.findLocalizedBundleInfo(srcFO, getManifest());
                 }
                 if (bundleInfo != null) {
-                    bundleInfo.addPropertyChangeListener((Info) getLookup().lookup(Info.class));
+                    bundleInfo.addPropertyChangeListener(getLookup().lookup(Info.class));
                 }
                 if (mf != null) {
                     getManifestFile().addFileChangeListener(new FileChangeAdapter() {

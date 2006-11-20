@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -57,12 +56,9 @@ import org.openide.NotifyDescriptor;
 import org.openide.actions.FindAction;
 import org.openide.actions.ToolsAction;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.FolderLookup;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
@@ -72,7 +68,7 @@ import org.openide.util.actions.SystemAction;
 public final class ModuleActions implements ActionProvider {
     
     static Action[] getProjectActions(NbModuleProject project) {
-        List<Action> actions = new ArrayList();
+        List<Action> actions = new ArrayList<Action>();
         actions.add(CommonProjectActions.newFileAction());
         actions.add(null);
         actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_BUILD, NbBundle.getMessage(ModuleActions.class, "ACTION_build"), null));
@@ -116,45 +112,32 @@ public final class ModuleActions implements ActionProvider {
         actions.add(CommonProjectActions.deleteProjectAction());
         
         // Honor #57874 contract:
-        try {
-            FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
-            FileObject fo = sfs.findResource("Projects/Actions"); // NOI18N
-            if (fo != null) {
-                DataObject dobj = DataObject.find(fo);
-                FolderLookup actionRegistry = new FolderLookup((DataFolder) dobj);
-                Lookup.Template query = new Lookup.Template(Object.class);
-                Lookup lookup = actionRegistry.getLookup();
-                Iterator it = lookup.lookup(query).allInstances().iterator();
-                if (it.hasNext()) {
+        FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("Projects/Actions"); // NOI18N
+        if (fo != null && fo.isFolder()) {
+            actions.add(null);
+            for (Object next : new FolderLookup(DataFolder.findFolder(fo)).getLookup().lookupAll(Object.class)) {
+                if (next instanceof Action) {
+                    actions.add((Action) next);
+                } else if (next instanceof JSeparator) {
                     actions.add(null);
                 }
-                while (it.hasNext()) {
-                    Object next = it.next();
-                    if (next instanceof Action) {
-                        actions.add((Action) next);
-                    } else if (next instanceof JSeparator) {
-                        actions.add(null);
-                    }
-                }
             }
-        } catch (DataObjectNotFoundException ex) {
-            assert false : ex;
         }
         
         actions.add(null);
         actions.add(SystemAction.get(ToolsAction.class));
         actions.add(null);
         actions.add(CommonProjectActions.customizeProjectAction());
-        return (Action[])actions.toArray(new Action[actions.size()]);
+        return actions.toArray(new Action[actions.size()]);
     }
     
     private final NbModuleProject project;
-    private final Map<String,String[]> globalCommands = new HashMap();
+    private final Map<String,String[]> globalCommands = new HashMap<String,String[]>();
     private final String[] supportedActions;
     
     public ModuleActions(NbModuleProject project) {
         this.project = project;
-        Set<String> supportedActionsSet = new HashSet();
+        Set<String> supportedActionsSet = new HashSet<String>();
         globalCommands.put(ActionProvider.COMMAND_BUILD, new String[] {"netbeans"}); // NOI18N
         globalCommands.put(ActionProvider.COMMAND_CLEAN, new String[] {"clean"}); // NOI18N
         globalCommands.put(ActionProvider.COMMAND_REBUILD, new String[] {"clean", "netbeans"}); // NOI18N
@@ -184,7 +167,7 @@ public final class ModuleActions implements ActionProvider {
         supportedActionsSet.add(ActionProvider.COMMAND_MOVE);
         supportedActionsSet.add(ActionProvider.COMMAND_COPY);
         supportedActionsSet.add(ActionProvider.COMMAND_DELETE);
-        supportedActions = (String[])supportedActionsSet.toArray(new String[supportedActionsSet.size()]);
+        supportedActions = supportedActionsSet.toArray(new String[supportedActionsSet.size()]);
     }
     
     public String[] getSupportedActions() {
@@ -339,6 +322,11 @@ public final class ModuleActions implements ActionProvider {
             }
             return;
         }
+        NbPlatform plaf = project.getPlatform(false);
+        if (plaf != null && plaf.getHarnessVersion() != NbPlatform.HARNESS_VERSION_UNKNOWN && plaf.getHarnessVersion() < project.getMinimumHarnessVersion()) {
+            promptForNewerHarness();
+            return;
+        }
         Properties p;
         String[] targetNames;
         FileObject buildScript = null;
@@ -410,7 +398,7 @@ public final class ModuleActions implements ActionProvider {
             return;
         } else {
             p = null;
-            targetNames = (String[])globalCommands.get(command);
+            targetNames = globalCommands.get(command);
             if (targetNames == null) {
                 throw new IllegalArgumentException(command);
             }
@@ -433,9 +421,16 @@ public final class ModuleActions implements ActionProvider {
                 NbBundle.getMessage(ModuleActions.class, "LBL_configure_pubpkg"),
                 null,
                 NotifyDescriptor.WARNING_MESSAGE)) {
-            CustomizerProviderImpl cpi = ((CustomizerProviderImpl) project.getLookup().lookup(CustomizerProviderImpl.class));
+            CustomizerProviderImpl cpi = project.getLookup().lookup(CustomizerProviderImpl.class);
             cpi.showCustomizer(CustomizerProviderImpl.CATEGORY_VERSIONING, CustomizerProviderImpl.SUBCATEGORY_VERSIONING_PUBLIC_PACKAGES);
         }
+    }
+
+    static void promptForNewerHarness() {
+        // #82388: warn the user that the harness version is too low.
+        NotifyDescriptor d = new NotifyDescriptor.Message(NbBundle.getMessage(ModuleActions.class, "ERR_harness_too_old"), NotifyDescriptor.ERROR_MESSAGE);
+        d.setTitle(NbBundle.getMessage(ModuleActions.class, "TITLE_harness_too_old"));
+        DialogDisplayer.getDefault().notify(d);
     }
     
     private String[] setupTestSingle(Properties p, FileObject[] files) {
@@ -559,8 +554,8 @@ public final class ModuleActions implements ActionProvider {
                 return findBuildXml(project) != null;
             }
             public void actionPerformed(ActionEvent ignore) {
-                ProjectManager.mutex().writeAccess(new Mutex.Action() {
-                    public Object run() {
+                ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
+                    public Void run() {
                         String prop = "javadoc.arch"; // NOI18N
                         if (project.evaluator().getProperty(prop) == null) {
                             // User has not yet configured an arch desc. Assume we should just do it for them.

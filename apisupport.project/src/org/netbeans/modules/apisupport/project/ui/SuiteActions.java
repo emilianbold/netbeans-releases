@@ -22,16 +22,18 @@ package org.netbeans.modules.apisupport.project.ui;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.JSeparator;
 import org.apache.tools.ant.module.api.support.ActionUtils;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizer;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
@@ -41,11 +43,8 @@ import org.openide.actions.FindAction;
 import org.openide.actions.ToolsAction;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.FolderLookup;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -58,7 +57,7 @@ import org.openide.util.actions.SystemAction;
 public final class SuiteActions implements ActionProvider {
     
     static Action[] getProjectActions(SuiteProject project) {
-        List<Action> actions = new ArrayList();
+        List<Action> actions = new ArrayList<Action>();
         actions.add(CommonProjectActions.newFileAction());
         actions.add(null);
         actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_BUILD, NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_build"), null));
@@ -92,35 +91,22 @@ public final class SuiteActions implements ActionProvider {
         actions.add(CommonProjectActions.renameProjectAction());
         actions.add(CommonProjectActions.moveProjectAction());
         actions.add(CommonProjectActions.deleteProjectAction());
-        try {
-            FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
-            FileObject fo = sfs.findResource("Projects/Actions"); // NOI18N
-            if (fo != null) {
-                DataObject dobj = DataObject.find(fo);
-                FolderLookup actionRegistry = new FolderLookup((DataFolder) dobj);
-                Lookup.Template query = new Lookup.Template(Object.class);
-                Lookup lookup = actionRegistry.getLookup();
-                Iterator it = lookup.lookup(query).allInstances().iterator();
-                if (it.hasNext()) {
+        FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("Projects/Actions"); // NOI18N
+        if (fo != null && fo.isFolder()) {
+            actions.add(null);
+            for (Object next : new FolderLookup(DataFolder.findFolder(fo)).getLookup().lookupAll(Object.class)) {
+                if (next instanceof Action) {
+                    actions.add((Action) next);
+                } else if (next instanceof JSeparator) {
                     actions.add(null);
                 }
-                while (it.hasNext()) {
-                    Object next = it.next();
-                    if (next instanceof Action) {
-                        actions.add((Action) next);
-                    } else if (next instanceof JSeparator) {
-                        actions.add(null);
-                    }
-                }
             }
-        } catch (DataObjectNotFoundException ex) {
-            assert false : ex;
         }
         actions.add(null);
         actions.add(SystemAction.get(ToolsAction.class));
         actions.add(null);
         actions.add(CommonProjectActions.customizeProjectAction());
-        return (Action[]) actions.toArray(new Action[actions.size()]);
+        return actions.toArray(new Action[actions.size()]);
     }
     
     private final SuiteProject project;
@@ -169,6 +155,18 @@ public final class SuiteActions implements ActionProvider {
         } else if (ActionProvider.COMMAND_MOVE.equals(command)) {
             DefaultProjectOperations.performDefaultMoveOperation(project);
         } else {
+            NbPlatform plaf = project.getPlatform(false);
+            if (plaf != null) {
+                int v = plaf.getHarnessVersion();
+                if (v != NbPlatform.HARNESS_VERSION_UNKNOWN) {
+                    for (Project p : project.getLookup().lookup(SubprojectProvider.class).getSubprojects()) {
+                        if (v < ((NbModuleProject) p).getMinimumHarnessVersion()) {
+                            ModuleActions.promptForNewerHarness();
+                            return;
+                        }
+                    }
+                }
+            }
             try {
                 invokeActionImpl(command, context);
             } catch (IOException e) {
@@ -256,7 +254,7 @@ public final class SuiteActions implements ActionProvider {
                 NbBundle.getMessage(ModuleActions.class, "LBL_configure_app_name"),
                 null,
                 NotifyDescriptor.WARNING_MESSAGE)) {
-            SuiteCustomizer cpi = ((SuiteCustomizer) project.getLookup().lookup(SuiteCustomizer.class));
+            SuiteCustomizer cpi = project.getLookup().lookup(SuiteCustomizer.class);
             cpi.showCustomizer(SuiteCustomizer.APPLICATION, SuiteCustomizer.APPLICATION_CREATE_STANDALONE_APPLICATION);
         }
         return true;
