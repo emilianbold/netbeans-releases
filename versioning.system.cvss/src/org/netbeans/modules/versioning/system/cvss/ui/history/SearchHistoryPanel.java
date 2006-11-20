@@ -217,8 +217,8 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     }
 
     private void setResults(List newResults, boolean searching) {
+        if (newResults != null) this.dispResults = createDisplayList(newResults);
         this.results = newResults;
-        if (results != null) this.dispResults = createDisplayList(results);
         this.searchInProgress = searching;
         summaryView = null;
         diffView = null;
