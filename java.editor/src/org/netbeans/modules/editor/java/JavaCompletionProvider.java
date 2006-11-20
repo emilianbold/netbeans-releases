@@ -3326,16 +3326,14 @@ public class JavaCompletionProvider implements CompletionProvider {
                 return new Env(offset, prefix, controller, path, sourcePositions, null);
             CompilationUnitTree root = controller.getCompilationUnit();
             Scope scope = null;
-            LinkedList<TreePath> reversePath = new LinkedList<TreePath>();
             TreePath treePath = path;
             while (treePath != null) {
-                reversePath.addFirst(treePath);
-                treePath = treePath.getParentPath();
-            }
-            for (TreePath tp : reversePath) {
-                Tree tree = tp.getLeaf();
-                Tree parent = tp.getParentPath() == null ? null : tp.getParentPath().getLeaf();
-                if (tree.getKind() == Tree.Kind.BLOCK) {
+                Tree tree = treePath.getLeaf();
+                TreePath pPath = treePath.getParentPath();
+                Tree parent = pPath == null ? null : pPath.getLeaf();
+                TreePath gpPath = pPath != null ? pPath.getParentPath() : null;
+                Tree grandParent = gpPath != null ? gpPath.getLeaf() : null;
+                if (tree.getKind() == Tree.Kind.BLOCK && parent != null && (parent.getKind() == Tree.Kind.METHOD || parent.getKind() == Tree.Kind.CLASS)) {
                     controller.toPhase(Phase.ELEMENTS_RESOLVED);
                     int blockPos = (int)sourcePositions.getStartPosition(root, tree);
                     String blockText = controller.getText().substring(blockPos, upToOffset ? offset : (int)sourcePositions.getEndPosition(root, tree));
@@ -3344,8 +3342,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                     if (block == null)
                         break;
                     sourcePositions = new SourcePositionsImpl(block, sourcePositions, sp[0], blockPos, upToOffset ? offset : -1);
-                    path = tu.pathFor(new TreePath(tp.getParentPath(), block), offset, sourcePositions);
-                    scope = controller.getTrees().getScope(tp);
+                    path = tu.pathFor(new TreePath(pPath, block), offset, sourcePositions);
+                    scope = controller.getTrees().getScope(treePath);
                     if (upToOffset) {
                         Tree last = path.getLeaf();
                         List<? extends StatementTree> stmts = null;
@@ -3374,7 +3372,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                         tu.attributeTree(block, scope);
                     }
                     break;
-                } else if (parent != null && parent.getKind() == Tree.Kind.VARIABLE && unwrapErrTree(((VariableTree)parent).getInitializer()) == tree) {
+                } else if (grandParent != null && grandParent.getKind() == Tree.Kind.CLASS && 
+                        parent != null && parent.getKind() == Tree.Kind.VARIABLE && unwrapErrTree(((VariableTree)parent).getInitializer()) == tree) {
                     controller.toPhase(Phase.ELEMENTS_RESOLVED);
                     final int initPos = (int)sourcePositions.getStartPosition(root, tree);
                     String initText = controller.getText().substring(initPos, upToOffset ? offset : (int)sourcePositions.getEndPosition(root, tree));
@@ -3392,22 +3391,23 @@ public class JavaCompletionProvider implements CompletionProvider {
                         }
                     };
                     sourcePositions = new SourcePositionsImpl(fake, sourcePositions, sp[0], initPos, upToOffset ? offset : -1);
-                    path = tu.pathFor(new TreePath(tp.getParentPath(), fake), offset, sourcePositions);
-                    scope = controller.getTrees().getScope(tp);
+                    path = tu.pathFor(new TreePath(pPath, fake), offset, sourcePositions);
+                    scope = controller.getTrees().getScope(treePath);
                     if (upToOffset && sp[0].getEndPosition(root, init) + initPos > offset) {
                         scope = tu.attributeTreeTo(init, scope, path.getLeaf());
                     } else {
                         tu.attributeTree(init, scope);
                     }
                     break;
-                } else if (tree.getKind() == Tree.Kind.VARIABLE && ((VariableTree)tree).getInitializer() != null && tp == path && sourcePositions.getStartPosition(root, ((VariableTree)tree).getInitializer()) <= offset) {
+                } else if (parent != null && parent.getKind() == Tree.Kind.CLASS && tree.getKind() == Tree.Kind.VARIABLE && 
+                        ((VariableTree)tree).getInitializer() != null && treePath == path && sourcePositions.getStartPosition(root, ((VariableTree)tree).getInitializer()) <= offset) {
                     controller.toPhase(Phase.ELEMENTS_RESOLVED);
                     tree = ((VariableTree)tree).getInitializer();
                     final int initPos = (int)sourcePositions.getStartPosition(root, tree);
                     String initText = controller.getText().substring(initPos, offset);
                     final SourcePositions[] sp = new SourcePositions[1];
                     final ExpressionTree init = tu.parseVariableInitializer(initText, sp);
-                    scope = controller.getTrees().getScope(new TreePath(tp, tree));
+                    scope = controller.getTrees().getScope(new TreePath(treePath, tree));
                     final ExpressionStatementTree fake = new ExpressionStatementTree() {
                         public Object accept(TreeVisitor v, Object p) {
                             return v.visitExpressionStatement(this, p);
@@ -3420,10 +3420,11 @@ public class JavaCompletionProvider implements CompletionProvider {
                         }
                     };
                     sourcePositions = new SourcePositionsImpl(fake, sourcePositions, sp[0], initPos, offset);
-                    path = tu.pathFor(new TreePath(tp, fake), offset, sourcePositions);
+                    path = tu.pathFor(new TreePath(treePath, fake), offset, sourcePositions);
                     tu.attributeTree(init, scope);
                     break;
                 }
+                treePath = treePath.getParentPath();
             }
             return new Env(offset, prefix, controller, path, sourcePositions, scope);
         }
