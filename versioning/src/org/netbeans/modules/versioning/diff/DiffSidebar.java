@@ -392,7 +392,9 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
 
         g.setColor(backgroundColor());
         g.fillRect(clip.x, clip.y, clip.width, clip.height);
-        if (currentDiff == null || currentDiff.length == 0) return;
+
+        Difference [] paintDiff = currentDiff;        
+        if (paintDiff == null || paintDiff.length == 0) return;
         
         try{
             int startPos = textUI.getPosFromY(clip.y);
@@ -411,8 +413,8 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
                 View view = rootView.getView(startViewIndex);
                 int line = rootElem.getElementIndex(view.getStartOffset());
                 line++; // make it 1-based
-                if (line == 1 && currentDiff[0].getSecondStart() == 0 && currentDiff[0].getType() == Difference.DELETE) {
-                    g.setColor(getColor(currentDiff[0]));
+                if (line == 1 && paintDiff[0].getSecondStart() == 0 && paintDiff[0].getType() == Difference.DELETE) {
+                    g.setColor(getColor(paintDiff[0]));
                     yCoords[0] = y - editorUI.getLineAscent() / 2;
                     yCoords[1] = y;
                     yCoords[2] = y + editorUI.getLineAscent() / 2;
