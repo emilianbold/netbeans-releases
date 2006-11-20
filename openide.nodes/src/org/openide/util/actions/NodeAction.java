@@ -308,7 +308,18 @@ public abstract class NodeAction extends CallableSystemAction implements Context
     */
     protected abstract boolean enable(Node[] activatedNodes);
 
-    /** Implements <code>ContextAwareAction</code> interface method. */
+    /** Implements <code>ContextAwareAction</code> interface method.
+     *
+     * Returns a delegate action that is associated with a specific lookup and
+     * extracts the nodes it operates on from it. Otherwise it delegates to the
+     * regular NodeAction (especially to {@link #enable} and {@link #performAction} methods).
+     * Note: Never call directly methods <code>setEnabled</code> or <code>putValue</code>
+     * of this delegate action, it is useless, they are empty. The enablement
+     * state of the action is driven by the content of the <code>actionContext</code>.
+     *
+     * @param actionContext a lookup contains action context, cannot be <code>null</code>
+     * @return a delegate action
+     */
     public Action createContextAwareInstance(Lookup actionContext) {
         return new DelegateAction(this, actionContext);
     }
