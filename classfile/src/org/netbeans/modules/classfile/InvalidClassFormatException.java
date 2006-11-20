@@ -65,5 +65,7 @@ public final class InvalidClassFormatException extends IOException {
         super(cause.getLocalizedMessage());
         initCause(cause);
     }
+    
+    private static final long serialVersionUID = -7043855006167696889L;
 }
 

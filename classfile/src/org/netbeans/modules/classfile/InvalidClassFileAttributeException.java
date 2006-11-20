@@ -34,4 +34,6 @@ public final class InvalidClassFileAttributeException extends RuntimeException {
     InvalidClassFileAttributeException(String message, Throwable cause) {
         super(message, cause);
     }
+    
+    private static final long serialVersionUID = -2988920220798200016L;
 }
