@@ -303,8 +303,10 @@ public class CategoryList extends JList implements Autoscroll {
     
     /** notify the Component to autoscroll */
     public void autoscroll( Point cursorLoc ) {
-        Point p = SwingUtilities.convertPoint( this, cursorLoc, getParent().getParent() );
-        getSupport().autoscroll( p );
+        if( null != getParent() && null != getParent().getParent() ) {
+            Point p = SwingUtilities.convertPoint( this, cursorLoc, getParent().getParent() );
+            getSupport().autoscroll( p );
+        }
     }
 
     /** @return the Insets describing the autoscrolling
