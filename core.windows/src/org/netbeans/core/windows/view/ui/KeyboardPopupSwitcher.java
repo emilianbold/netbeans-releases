@@ -36,7 +36,6 @@ import javax.swing.Popup;
 import javax.swing.PopupFactory;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
-import org.netbeans.core.IDESettings;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.actions.RecentViewListAction;
 import org.netbeans.swing.popupswitcher.SwitcherTable;
@@ -107,11 +106,7 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
     
     /** Indicates whether an item to be selected is previous or next one. */
     private boolean fwd = true;
-    
-    /** Used to retrieve state about UI Mode */
-    private static IDESettings settings =
-            (IDESettings) SharedClassObject.findObject (IDESettings.class, true);
-    
+        
     /**
      * Tries to process given <code>KeyEvent</code> and returns true is event
      * was successfully processed/consumed.
