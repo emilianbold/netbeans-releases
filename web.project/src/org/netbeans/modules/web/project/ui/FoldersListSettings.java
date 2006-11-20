@@ -168,7 +168,10 @@ public class FoldersListSettings {
     }
 
     public File getLastUsedImportLocation() {
-        return new File(getPreferences().get(LAST_USED_IMPORT_LOCATION, null));
-        
+        String path = getPreferences().get(LAST_USED_IMPORT_LOCATION, null);
+        if (path == null)
+            return null;
+        else
+            return new File(path);
     }
 }
