@@ -184,7 +184,8 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
         if (srcPath.length() > 0) {
             srcRoot = FileUtil.normalizeFile(new File(srcPath));
         }
-        FoldersListSettings.getDefault().setLastUsedImportLocation(srcRoot);
+        if (srcRoot != null)
+            FoldersListSettings.getDefault().setLastUsedImportLocation(srcRoot);
         settings.putProperty (WizardProperties.SOURCE_ROOT, srcRoot);
         settings.putProperty (WizardProperties.NAME, projectNameTextField.getText().trim());
 
