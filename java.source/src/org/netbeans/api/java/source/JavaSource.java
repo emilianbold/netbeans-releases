@@ -887,7 +887,9 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
     });
     
     private void resetState(boolean invalidate, boolean updateIndex) {
+        boolean invalid;
         synchronized (this) {
+            invalid = (this.flags & INVALID) != 0;
             this.flags|=CHANGE_EXPECTED;
             if (invalidate) {
                 this.flags|=(INVALID|RESCHEDULE_FINISHED_TASKS);
@@ -895,6 +897,10 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             if (updateIndex) {
                 this.flags|=UPDATE_INDEX;
             }
+        }
+        if (updateIndex && !invalid) {
+            //First change set the index as dirty
+            updateIndex ();
         }
         Request r = currentRequest.getTaskToCancel (this);
         try {
@@ -920,15 +926,9 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                 updateIndex = (this.flags & UPDATE_INDEX) != 0;
                 this.flags&=~(RESCHEDULE_FINISHED_TASKS|CHANGE_EXPECTED|UPDATE_INDEX);
             }            
-            if (updateIndex && this.rootFo != null) {
-                try {
-                    ClassIndexImpl ciImpl = ClassIndexManager.getDefault().getUsagesQuery(this.rootFo.getURL());
-                    if (ciImpl != null) {
-                        ciImpl.setDirty(this);
-                    }
-                } catch (IOException ioe) {
-                    Exceptions.printStackTrace(ioe);
-                }
+            if (updateIndex) {
+                //Last change set the index as dirty
+                updateIndex ();
             }
             Collection<Request> cr;            
             if (reschedule) {                
@@ -940,6 +940,19 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                 JavaSource.requests.addAll(cr);
             }
         }        
+    }
+    
+    private void updateIndex () {
+        if (this.rootFo != null) {
+            try {
+                ClassIndexImpl ciImpl = ClassIndexManager.getDefault().getUsagesQuery(this.rootFo.getURL());
+                if (ciImpl != null) {
+                    ciImpl.setDirty(this);
+                }
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            }
+        }
     }
     
     private void assignDocumentListener(FileObject fo) throws IOException {
