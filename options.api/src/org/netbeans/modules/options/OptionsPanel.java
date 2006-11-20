@@ -84,31 +84,31 @@ import org.openide.windows.WindowManager;
 
 public class OptionsPanel extends JPanel {
     
-    private JPanel                  pCategories;
-    private JPanel                  pCategories2;
-    private JPanel                  pOptions;
-    private JLabel                  lTitle;
+    private JPanel pCategories;
+    private JPanel pCategories2;
+    private JPanel pOptions;
+    private JLabel lTitle;
     //                              List (OptionsCategory)
-    private List                    optionCategories = Collections.EMPTY_LIST;
-    private int                     currentCategory = -1;
+    private List optionCategories = Collections.EMPTY_LIST;
+    private int currentCategory = -1;
+    private int highlightedCategory = -1;    
     //                              List (Button)
-    private List                    buttons = new ArrayList ();
-    private Map                     categoryToPanel = new HashMap ();
-    private Map                     categoryToController = new HashMap ();
-    private Set                     updatedCategories = new HashSet ();
-        
-    private Color                   selected = new Color (193, 210, 238);
-    private Color                   selectedB = new Color (149, 106, 197);
-    private Color                   highlighted = new Color (224, 232, 246);
-    private Color                   highlightedB = new Color (152, 180, 226);
-    private Color                   iconViewBorder = new Color (127, 157, 185);
-    private ControllerListener      coltrollerListener = new ControllerListener ();
+    private List buttons = new ArrayList ();
+    private Map categoryToPanel = new HashMap ();
+    private Map categoryToController = new HashMap ();
+    private Set updatedCategories = new HashSet ();
     
-    private final boolean           isMac = UIManager.getLookAndFeel ().getID ().equals ("Aqua");
-    private final Color             selectedMac = new Color(221, 221, 221);
-    private final Color             selectedBMac = new Color(183, 183, 183);
-    private final Color             borderMac = new Color(141, 141, 141);
-    private final Font              labelFontMac = new Font("Lucida Grande", 0, 10);    
+    private final boolean isMac = UIManager.getLookAndFeel ().getID ().equals ("Aqua");    
+    private Color selected = isMac ? new Color(221, 221, 221) : new Color (193, 210, 238);
+    private Color selectedB = isMac ? new Color(183, 183, 183) : new Color (149, 106, 197);
+    private Color highlighted = isMac ? new Color(221, 221, 221) : new Color (224, 232, 246);
+    private Color highlightedB = new Color (152, 180, 226);
+    private Color iconViewBorder = new Color (127, 157, 185);
+    private ControllerListener coltrollerListener = new ControllerListener ();
+    
+    private final Color borderMac = new Color(141, 141, 141);
+    private final Font labelFontMac = new Font("Lucida Grande", 0, 10);    
+    
     
     
     private static String loc (String key) {
@@ -655,8 +655,8 @@ public class OptionsPanel extends JPanel {
     }
     
     class Button extends JLabel implements MouseListener {
-        
         private int index;
+        private int status;
         
         Button (
             int index, 
@@ -684,14 +684,15 @@ public class OptionsPanel extends JPanel {
                 setSelected ();
             else
                 setNormal ();
-            addFocusListener (new FocusListener () {
-                public void focusGained (FocusEvent e) {
-                    if (Button.this.index != currentCategory && !isMac)
-                        setHighlighted ();
+            addFocusListener(new FocusListener() {
+                public void focusGained(FocusEvent e) {
+                    if (Button.this.index != currentCategory) {
+                        setHighlighted();
+                    }
                 }
-                public void focusLost (FocusEvent e) {
+                public void focusLost(FocusEvent e) {
                     if (Button.this.index != currentCategory && !isMac)
-                        setNormal ();
+                        setNormal();
                 }
             });
         }
@@ -708,10 +709,9 @@ public class OptionsPanel extends JPanel {
         void setSelected () {
             if (isMac) {
                 setBorder(new CompoundBorder (
-                        new VariableBorder(null, selectedBMac, null, selectedBMac),
+                        new VariableBorder(null, selectedB, null, selectedB),
                         BorderFactory.createEmptyBorder(5, 5, 3, 5)
                         ));
-                setBackground (selectedMac);
             } else {
                 setBorder (new CompoundBorder (
                     new CompoundBorder (
@@ -720,32 +720,33 @@ public class OptionsPanel extends JPanel {
                     ),
                     new EmptyBorder (0, 2, 0, 2)
                 ));
-                setBackground (selected);
             }
+            setBackground (selected);            
         }
         
-        void setHighlighted () {
-            if (isMac) {
-                setBorder(new CompoundBorder (
-                        new VariableBorder(null, selectedBMac, null, selectedBMac),
-                        BorderFactory.createEmptyBorder(5, 5, 3, 5)
+        void setHighlighted() {
+            if (!isMac) {
+                setBorder(new CompoundBorder(
+                        new CompoundBorder(
+                        new LineBorder(Color.white),
+                        new LineBorder(highlightedB)
+                        ),
+                        new EmptyBorder(0, 2, 0, 2)
                         ));
-                setBackground (selectedMac);
-            } else {
-                setBorder (new CompoundBorder (
-                    new CompoundBorder (
-                        new LineBorder (Color.white),
-                        new LineBorder (highlightedB)
-                    ),
-                    new EmptyBorder (0, 2, 0, 2)
-                ));
-                setBackground (highlighted);
+                setBackground(highlighted);
+            }
+            if (highlightedCategory != index) {
+                if (highlightedCategory >= 0 && highlightedCategory < buttons.size()) {
+                    Button b = (Button)buttons.get(highlightedCategory);
+                    if (b != null && b.index != currentCategory) {
+                        b.setNormal();
+                    }
+                }
+                highlightedCategory = index;
             }
         }
         
-        public void mouseClicked (MouseEvent e) {
-            setCurrentIndex (index);
-//            setSelected ();
+        public void mouseClicked (MouseEvent e) {            
         }
 
         public void mousePressed (MouseEvent e) {
@@ -754,11 +755,15 @@ public class OptionsPanel extends JPanel {
         }
 
         public void mouseReleased (MouseEvent e) {
+            if (index != currentCategory && index == highlightedCategory) {
+                setCurrentIndex (index);
+            }
         }
 
         public void mouseEntered (MouseEvent e) {
-            if (index != currentCategory && !isMac)
+            if (index != currentCategory) {
                 setHighlighted ();
+            }
         }
 
         public void mouseExited (MouseEvent e) {
