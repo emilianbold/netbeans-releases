@@ -53,6 +53,8 @@ public class ClassMemberTest extends GeneratorTest {
         suite.addTest(new ClassMemberTest("testAddAtIndex2"));
         suite.addTest(new ClassMemberTest("testAddToEmpty"));
         suite.addTest(new ClassMemberTest("testAddConstructor"));
+        suite.addTest(new ClassMemberTest("testInsertFieldToIndex0"));
+//        System.setProperty("generatorType", "svobodny");
         return suite;
     }
     
@@ -102,6 +104,7 @@ public class ClassMemberTest extends GeneratorTest {
         };
         src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
     
@@ -150,6 +153,7 @@ public class ClassMemberTest extends GeneratorTest {
         };
         src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
     
@@ -163,7 +167,8 @@ public class ClassMemberTest extends GeneratorTest {
             );
         String golden =
             "package hierbas.del.litoral;\n\n" +
-            "public class Test {\n\n" +
+            "public class Test {\n" +
+            "\n" +
             "public void newlyCreatedMethod(int a, float b) throws java.io.IOException {\n" +
             "}\n" +
             "}\n";
@@ -191,6 +196,7 @@ public class ClassMemberTest extends GeneratorTest {
         };
         src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
     
@@ -261,6 +267,61 @@ public class ClassMemberTest extends GeneratorTest {
         };
         src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testInsertFieldToIndex0() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    \n" +
+            "    int i = 0;\n" +
+            "    \n" +
+            "    public Test() {\n" +
+            "    }\n" +
+            "    \n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    String prefix;\n" +
+            "    \n" +
+            "    int i = 0;\n" +
+            "    \n" +
+            "    public Test() {\n" +
+            "    }\n" +
+            "    \n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                        ClassTree clazz = (ClassTree) typeDecl;
+                        VariableTree member = make.Variable(
+                                make.Modifiers(Collections.<Modifier>emptySet()),
+                                "prefix",
+                                make.Identifier("String"),
+                                null
+                            );
+                        ClassTree modifiedClazz = make.insertClassMember(clazz, 0, member);
+                        workingCopy.rewrite(clazz,modifiedClazz);
+                    }
+                }
+            }
+            public void cancel() {}
+        };
+        src.runModificationTask(task).commit();    
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
     
