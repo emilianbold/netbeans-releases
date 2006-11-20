@@ -178,7 +178,7 @@ public class CustomizerDialog {
             for (int i = 0; i < categs.length; i++) {
                 ActionListener list = categs[i].getOkButtonListener();
                 if (list != null) {
-                    actionPerformed(e);// XXX maybe create new event
+                    list.actionPerformed(e);// XXX maybe create new event
                 }
                 if (categs[i].getSubcategories() != null) {
                     actionPerformed(e, categs[i].getSubcategories());
