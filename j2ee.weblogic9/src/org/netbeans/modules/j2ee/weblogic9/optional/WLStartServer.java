@@ -426,11 +426,8 @@ public class WLStartServer extends StartServer {
                 // wait till the timeout happens, or if the server starts before 
                 // send the completed event to j2eeserver
                 while (System.currentTimeMillis() - start < TIMEOUT) {
-                    // is the server is not yet running send the 'progressing'
-                    // event, else send trhe 'completed' event and return
-                    if (!isRunning()) {
-                        serverProgress.notifyStart(StateType.RUNNING, NbBundle.getMessage(WLStartServer.class, "MSG_START_SERVER_IN_PROGRESS", serverName)); // NOI18N
-                    } else {
+                    // send the 'completed' event and return when the server is running
+                    if (isRunning()) {
                         serverProgress.notifyStart(StateType.COMPLETED, NbBundle.getMessage(WLStartServer.class, "MSG_SERVER_STARTED", serverName)); // NOI18N
                         return;
                     }
@@ -547,11 +544,8 @@ public class WLStartServer extends StartServer {
                 // wait till the timeout happens, or if the server starts before 
                 // send the completed event to j2eeserver
                 while (System.currentTimeMillis() - start < TIMEOUT) {
-                    // is the server is not yet running send the 'progressing'
-                    // event, else send trhe 'completed' event and return
-                    if (!isRunning()) {
-                        serverProgress.notifyStart(StateType.RUNNING, NbBundle.getMessage(WLStartServer.class, "MSG_START_SERVER_IN_PROGRESS", serverName)); // NOI18N
-                    } else {
+                    // send the 'completed' event and return when the server is running
+                    if (isRunning()) {
                         serverProgress.notifyStart(StateType.COMPLETED, NbBundle.getMessage(WLStartServer.class, "MSG_SERVER_STARTED", serverName)); // NOI18N
                         return;
                     }
