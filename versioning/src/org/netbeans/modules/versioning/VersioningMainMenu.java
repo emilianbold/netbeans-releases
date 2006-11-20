@@ -74,7 +74,7 @@ public class VersioningMainMenu extends AbstractAction implements DynamicMenuCon
         for (int i = 0; i < systems.length; i++) {
             final VersioningSystem system = systems[i];
             final JMenu menu = new JMenu();
-            Mnemonics.setLocalizedText(menu, "&" + (i + 1) + " " + system.getDisplayName());
+            Mnemonics.setLocalizedText(menu, "&" + system.getDisplayName());
             menu.addMenuListener(new MenuListener() {
                 public void menuSelected(MenuEvent e) {
                     if (menu.getItemCount() != 0) return;
