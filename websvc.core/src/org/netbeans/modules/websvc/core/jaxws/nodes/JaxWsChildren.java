@@ -19,32 +19,30 @@
 package org.netbeans.modules.websvc.core.jaxws.nodes;
 
 import java.io.File;
-import java.lang.reflect.Modifier;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.*;
+import java.util.Set;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.ElementFilter;
 import javax.swing.SwingUtilities;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.stream.StreamSource;
 import org.apache.tools.ant.module.api.support.ActionUtils;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.openide.nodes.AbstractNode;
+import static org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-// Retouche
-//import javax.jmi.reflect.JmiException;
-//import org.netbeans.api.mdr.MDRepository;
-//import org.netbeans.api.mdr.events.AttributeEvent;
-//import org.netbeans.api.mdr.events.MDRChangeEvent;
-//import org.netbeans.api.mdr.events.MDRChangeListener;
-//import org.netbeans.api.mdr.events.MDRChangeSource;
-//import org.netbeans.jmi.javamodel.Annotation;
-//import org.netbeans.jmi.javamodel.JavaClass;
-//import org.netbeans.jmi.javamodel.Method;
-//import org.netbeans.modules.j2ee.common.JMIUtils;
-//import org.netbeans.modules.j2ee.common.ui.nodes.MethodNode;
-//import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
-//import org.netbeans.modules.j2ee.common.ui.nodes.ComponentMethodViewStrategy;
+import org.netbeans.modules.j2ee.common.source.SourceUtils;
 import org.netbeans.modules.websvc.api.jaxws.project.GeneratedFilesHelper;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.core.jaxws.JaxWsUtils;
@@ -65,16 +63,13 @@ import org.openide.ErrorManager;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import java.awt.Image;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import java.io.IOException;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Binding;
-import org.openide.cookies.OpenCookie;
 import org.xml.sax.SAXException;
 
 /*
@@ -86,9 +81,9 @@ public class JaxWsChildren extends Children.Keys/* implements MDRChangeListener 
     
     // Retouche
     //private JavaClass implClass;
-    private FileObject implClass;
-    //private Method[] methods;
+    //private List<ExecutableElement> methods;
     
+    private FileObject implClass;
     private Service service;
     private FileObject srcRoot;
     
@@ -117,22 +112,24 @@ public class JaxWsChildren extends Children.Keys/* implements MDRChangeListener 
 //        return null;
 //    }
 //    
-//    private Method[] getMethods() {
-//        MDRepository repo = JavaMetamodel.getDefaultRepository();
-//        repo.beginTrans(false);
-//        try {
-//            if (implClass!=null && implClass.isValid())
-//                return JMIUtils.getMethods(implClass);
-//        } finally {
-//            repo.endTrans();
-//        }
-//        return null;
-//    }
+    
+    private List<ExecutableElement> getPublicMethods(CompilationController controller, TypeElement classElement) throws IOException {
+        List<? extends Element> members = classElement.getEnclosedElements();
+        List<ExecutableElement> methods = ElementFilter.methodsIn(members);
+        List<ExecutableElement> publicMethods = new ArrayList<ExecutableElement>();
+        for (ExecutableElement method:methods) {
+            Set<Modifier> modifiers = method.getModifiers();
+            if (modifiers.contains(Modifier.PUBLIC)) {
+                publicMethods.add(method);
+            }
+        }
+        return publicMethods;
+    }
     
     private FileObject getImplementationClass() {
         String implBean = service.getImplementationClass();
         if(implBean != null) {
-            return srcRoot.getFileObject(implBean.replaceAll(".","/")+".java");
+            return srcRoot.getFileObject(implBean.replace('.','/')+".java");
             //return JMIUtils.findClass(implBean, srcRoot);
         }
         return null;
@@ -239,62 +236,81 @@ public class JaxWsChildren extends Children.Keys/* implements MDRChangeListener 
         } else {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    List keys = new ArrayList();
+                    final List[] keys = new List[]{new ArrayList()};
                     if (implClass != null) {
+                        JavaSource javaSource = JavaSource.forFileObject(implClass);
+                        if (javaSource!=null) {
+                            CancellableTask task = new CancellableTask<CompilationController>() {
+                                public void run(CompilationController controller) throws IOException {
+                                    controller.toPhase(Phase.ELEMENTS_RESOLVED);
+                                    SourceUtils srcUtils = SourceUtils.newInstance(controller);
+                                    if (srcUtils!=null) {
+                                        // find WS operations
+                                        // either annotated (@WebMethod) public mathods 
+                                        // or all public methods
+                                        List<ExecutableElement> publicMethods = getPublicMethods(controller, srcUtils.getTypeElement());
+                                        List<ExecutableElement> wsOperations = new ArrayList<ExecutableElement>();
+                                        boolean foundWebMethodAnnotation=false;
+                                        for(ExecutableElement method:publicMethods) {
+                                            List<? extends AnnotationMirror> annotations = method.getAnnotationMirrors();
+                                            boolean hasWebMethodAnnotation=false;
+                                            for (AnnotationMirror an:annotations) {
+                                                TypeElement webMethodEl = controller.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N
+                                                if (webMethodEl!=null && webMethodEl.equals(an.getAnnotationType().asElement())) {
+                                                    hasWebMethodAnnotation=true;
+                                                    break;
+                                                }
+                                            }
+                                            if (hasWebMethodAnnotation) {
+                                                if (!foundWebMethodAnnotation) {
+                                                    foundWebMethodAnnotation=true;
+                                                    // remove all methods added before
+                                                    // because only annotated methods should be added
+                                                    if (wsOperations.size()>0) wsOperations.clear();
+                                                }
+                                                wsOperations.add(method);
+                                            } else if (!foundWebMethodAnnotation) {
+                                                // there are only non-annotated methods present until now
+                                                wsOperations.add(method);
+                                            }
+                                        } // for
+                                        keys[0] = wsOperations;
+                                    }
+                                }
+                                
+                                public void cancel() {}
+                            };
+                            try {
+                                javaSource.runUserActionTask(task, true);
+                            } catch (IOException ex) {
+                                ErrorManager.getDefault().notify(ex);
+                            }
+                        }
                         
 // Retouche
-//                        if (methods==null) {
-//                            methods=getMethods();
-//                            registerMethodListeners();
-//                        }
-//                        boolean foundWebMethodAnnotation=false;
-//                        if (methods != null) {
-//                            for(int i = 0; i < methods.length; i++) {
-//                                if (!methods[i].isValid())
-//                                    continue;
-//                                List annotations = methods[i].getAnnotations();
-//                                boolean hasWebMethodAnnotation=false;
-//                                for (int j=0;j<annotations.size();j++) {
-//                                    Annotation anot = (Annotation)annotations.get(j);
-//                                    if ("javax.jws.WebMethod".equals(anot.getType().getName())) { //NOI18N
-//                                        hasWebMethodAnnotation=true;
-//                                        break;
-//                                    }
-//                                }
-//                                if (hasWebMethodAnnotation) {
-//                                    if (!foundWebMethodAnnotation) {
-//                                        foundWebMethodAnnotation=true;
-//                                        // remove all methods added before
-//                                        // because only annotated methods should be added
-//                                        if (keys.size()>0) keys.clear();
-//                                    }
-//                                    if (isPublic(methods[i])) keys.add(methods[i]);
-//                                } else if (!foundWebMethodAnnotation) {
-//                                    // there are only non-annotated methods present until now
-//                                    if (isPublic(methods[i])) keys.add(methods[i]);
-//                                }
-//                            } // for
-//                        } // if
+// if (methods==null) 
+//     registerMethodListeners();
+// methods = keys[0];
                     }
-                    setKeys(keys);
+                    setKeys(keys[0]);
                 }
             });
         }
     }
     
-//    private boolean isPublic(Method m) {
-//        if ((m.getModifiers()&Modifier.PUBLIC) !=0) return true;
-//        else return false;
-//    }
-    
     protected Node[] createNodes(Object key) {
-//        if(key instanceof WsdlOperation) {
-//            return new Node[] {new OperationNode((WsdlOperation)key)};
-//        } else if(key instanceof Method) {
+        if(key instanceof WsdlOperation) {
+            return new Node[] {new OperationNode((WsdlOperation)key)};
+        } else if(key instanceof ExecutableElement) {
 //            Method method = (Method)key;
 //            ComponentMethodViewStrategy cmvs = createViewStrategy();
 //            return new Node[] {new MethodNode(method, implClass, new ArrayList(), cmvs)};
 //        }
+            Node n = new AbstractNode(Children.LEAF);
+            ExecutableElement method = (ExecutableElement)key;
+            n.setDisplayName(method.getSimpleName().toString());
+            return new Node[]{n};
+        }
         return new Node[0];
     }
     
