@@ -18,7 +18,12 @@
  */
 package org.netbeans.modules.websvc.core.jaxws.nodes;
 
-import java.awt.Dialog;
+import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.Tree.Kind;
+import com.sun.source.util.TreePath;
 import java.awt.Image;
 import java.awt.datatransfer.Transferable;
 import java.io.IOException;
@@ -27,24 +32,21 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
 import javax.swing.Action;
 import org.apache.tools.ant.module.api.support.ActionUtils;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-// Retouche
-//import org.netbeans.jmi.javamodel.AnnotableElement;
-//import org.netbeans.jmi.javamodel.Annotation;
-//import org.netbeans.jmi.javamodel.AttributeValue;
-//import org.netbeans.jmi.javamodel.JavaClass;
-//import org.netbeans.jmi.javamodel.StringLiteral;
-//import org.netbeans.modules.j2ee.common.JMIUtils;
-//import org.netbeans.modules.javacore.api.JavaModel;
-//import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.common.source.SourceUtils;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
@@ -60,19 +62,13 @@ import org.netbeans.modules.websvc.core.jaxws.actions.JaxWsRefreshAction;
 import org.netbeans.modules.websvc.core.jaxws.actions.WsTesterPageAction;
 import org.netbeans.modules.websvc.core.webservices.action.ConfigureHandlerAction;
 import org.netbeans.modules.websvc.core.webservices.action.ConfigureHandlerCookie;
-import org.netbeans.modules.websvc.core.webservices.ui.panels.MessageHandlerPanel;
 import org.netbeans.modules.websvc.core.wseditor.support.EditWSAttributesCookie;
 import org.netbeans.modules.websvc.core.wseditor.support.WSEditAttributesAction;
 import org.netbeans.modules.websvc.jaxws.api.JaxWsRefreshCookie;
 import org.netbeans.modules.websvc.jaxws.api.JaxWsTesterCookie;
 import org.netbeans.modules.websvc.jaxws.api.JaxWsWsdlCookie;
-import org.netbeans.modules.websvc.api.jaxws.project.config.Handler;
-import org.netbeans.modules.websvc.api.jaxws.project.config.HandlerChain;
-import org.netbeans.modules.websvc.api.jaxws.project.config.HandlerChains;
-import org.netbeans.modules.websvc.api.jaxws.project.config.HandlerChainsProvider;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
-import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.actions.DeleteAction;
@@ -86,7 +82,6 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -125,8 +120,8 @@ public class JaxWsNode extends AbstractNode implements OpenCookie, JaxWsWsdlCook
         content.add(srcRoot);
         // Retouche
         //addImplClassToContent(content);
-        implBeanClass = getImplBeanClass();
-        content.add(implBeanClass);
+        //implBeanClass = getImplBean();
+        //content.add(implBeanClass);
         project = FileOwnerQuery.getOwner(srcRoot);
     }
     
@@ -176,11 +171,6 @@ public class JaxWsNode extends AbstractNode implements OpenCookie, JaxWsWsdlCook
         fireIconChange();
     }
     
-    /*
-    public Image getIcon(int type){
-        return Utilities.loadImage("org/netbeans/modules/websvc/core/webservices/ui/resources/XMLServiceDataIcon.gif"); //NOI18N
-    }
-     */
     public Image getOpenedIcon(int type){
         return getIcon( type);
     }
@@ -196,7 +186,7 @@ public class JaxWsNode extends AbstractNode implements OpenCookie, JaxWsWsdlCook
         OpenCookie oc = null;
         // Retouche
         //JavaClass ce = getImplBeanClass();
-        FileObject f = getImplBeanClass();
+        FileObject f = getImplBean();
         //if (ce != null) {
             //FileObject f = JavaModel.getFileObject(ce.getResource());
             if (f != null) {
@@ -338,58 +328,113 @@ public class JaxWsNode extends AbstractNode implements OpenCookie, JaxWsWsdlCook
         return null;
     }
     
-    private String getServiceUri(Object moduleType) throws UnsupportedEncodingException {
-        String serviceName=null;
-        boolean isProvider = false;
-        String name=null;
-// Retouche
-//        JavaClass javaClass = getImplBeanClass();
-//        if (javaClass!=null) {
-//            List/*Annotation*/ annotations = javaClass.getAnnotations();
-//            if (annotations!=null) {
-//                for (int i=0;i<annotations.size();i++) {
-//                    Annotation an = (Annotation)annotations.get(i);
-//                    if ("javax.jws.WebService".equals(an.getType().getName()) ||
-//                            "javax.xml.ws.WebServiceProvider".equals(an.getType().getName())) { //NOI18N
-//                        List/*AttributeValue*/ attrs = an.getAttributeValues();
-//                        for (int j=0;j<attrs.size();j++) {
-//                            AttributeValue attr = (AttributeValue)attrs.get(j);
-//                            if ("serviceName".equals(attr.getName())) { //NOI18N
-//                                serviceName = ((StringLiteral)attr.getValue()).getValue();
-//                            } else if ("name".equals(attr.getName())) { //NOI18N
-//                                name = ((StringLiteral)attr.getValue()).getValue();
-//                            }
-//                            if (serviceName!=null) {
-//                                if (J2eeModule.WAR.equals(moduleType)) {
-//                                    return URLEncoder.encode(serviceName,"UTF-8"); //NOI18N
-//                                } else if (name!=null) {
-//                                    return URLEncoder.encode(serviceName,"UTF-8")+"/"+URLEncoder.encode(name,"UTF-8"); //NOI18N
-//                                }
-//                            }
-//                        }
-//                        if("javax.xml.ws.WebServiceProvider".equals(an.getType().getName())){ //NOI18N
-//                            isProvider = true;
-//                        }
-//                    }
-//                }
-//            }
-//        }
+    private String getServiceUri(final Object moduleType) throws UnsupportedEncodingException {
+        final String[] serviceName=new String[1];
+        final String[] name=new String[1];
+        final String[] resultedUrl = new String[1];
+        final boolean[] isProvider = {false};
+        JavaSource javaSource = getImplBeanJavaSource();
+        if (javaSource!=null) {
+            CancellableTask task = new CancellableTask<CompilationController>() {
+                public void run(CompilationController controller) throws IOException {
+                    controller.toPhase(Phase.ELEMENTS_RESOLVED);
+                    SourceUtils srcUtils = SourceUtils.newInstance(controller);
+                    TypeElement wsElement = controller.getElements().getTypeElement("javax.jws.WebService"); //NOI18N
+                    if (srcUtils!=null && wsElement!=null) {
+                        boolean foundWsAnnotation = resolveServiceUrl(  moduleType, 
+                                                                        controller, 
+                                                                        srcUtils, 
+                                                                        wsElement, 
+                                                                        serviceName, 
+                                                                        name, 
+                                                                        resultedUrl );
+                        if (!foundWsAnnotation) {
+                            TypeElement wsProviderElement = controller.getElements().getTypeElement("javax.jws.WebServiceProvider"); //NOI18N
+                            List<? extends AnnotationTree> annotations = srcUtils.getClassTree().getModifiers().getAnnotations();
+                            for (AnnotationTree anTree : annotations) {                        
+                                TreePath anTreePath = controller.getTrees().getPath(controller.getCompilationUnit(), anTree);
+                                TypeMirror anMirror = controller.getTrees().getTypeMirror(anTreePath);
+                                if (controller.getTypes().isSameType(wsProviderElement.asType(), anMirror)) {
+                                    isProvider[0] = true;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                public void cancel() {}
+            };
+            try {
+                javaSource.runUserActionTask(task, true);
+            } catch (IOException ex) {}
+        }
+
+        if (resultedUrl[0]!=null) return resultedUrl[0];
+        
         String qualifiedImplClassName = service.getImplementationClass();
         String implClassName = getNameFromPackageName(qualifiedImplClassName);
-        if (serviceName==null) serviceName=implClassName+"Service"; //NOI18N
+        if (serviceName[0]==null) serviceName[0]=implClassName+"Service"; //NOI18N
         if (J2eeModule.WAR.equals(moduleType)) {
-            return URLEncoder.encode(serviceName,"UTF-8");
+            return URLEncoder.encode(serviceName[0],"UTF-8"); //NOI18N
         } else if (J2eeModule.EJB.equals(moduleType)) {
             if (name==null){
-                if(isProvider){
+                if(isProvider[0]){
                     //per JSR 109, use qualified impl class name for EJB
-                    name=qualifiedImplClassName;
+                    name[0]=qualifiedImplClassName;
                 } else{
-                    name=implClassName;
+                    name[0]=implClassName;
                 }
             }
-            return URLEncoder.encode(serviceName,"UTF-8")+"/"+URLEncoder.encode(name,"UTF-8"); //NOI18N
-        } else return URLEncoder.encode(serviceName,"UTF-8");
+            return URLEncoder.encode(serviceName[0],"UTF-8")+"/"+URLEncoder.encode(name[0],"UTF-8"); //NOI18N
+        } else return URLEncoder.encode(serviceName[0],"UTF-8");
+    }
+    
+    private boolean resolveServiceUrl(  Object moduleType, 
+                                        CompilationController controller, 
+                                        SourceUtils srcUtils, 
+                                        TypeElement wsElement, 
+                                        String[] serviceName, 
+                                        String[] name, 
+                                        String[] resultedUrl ) throws IOException {
+        boolean foundWsAnnotation = false;
+        List<? extends AnnotationTree> annotations = srcUtils.getClassTree().getModifiers().getAnnotations();
+        for (AnnotationTree anTree : annotations) {                        
+            TreePath anTreePath = controller.getTrees().getPath(controller.getCompilationUnit(), anTree);
+            TypeMirror anMirror = controller.getTrees().getTypeMirror(anTreePath);
+            if (controller.getTypes().isSameType(wsElement.asType(), anMirror)) {
+                foundWsAnnotation=true;
+                List<? extends ExpressionTree> expressions = anTree.getArguments();
+                for(ExpressionTree ex:expressions) {
+                    TreePath exTreePath = controller.getTrees().getPath(controller.getCompilationUnit(), ex);
+                    if (Kind.ASSIGNMENT == ex.getKind()) {
+                        com.sun.source.tree.AssignmentTree ident = (com.sun.source.tree.AssignmentTree)ex;
+                        ExpressionTree varTree = (ExpressionTree)ident.getVariable();
+                        if (Kind.IDENTIFIER == varTree.getKind()) {
+                            IdentifierTree var = (IdentifierTree)varTree;
+                            if (var.getName().contentEquals("serviceName") && // NOI18N
+                                    Kind.STRING_LITERAL == ident.getExpression().getKind()) { 
+                                serviceName[0] = (String)((LiteralTree)ident.getExpression()).getValue();
+                            } else if (var.getName().contentEquals("name") && // NOI18N
+                                    Kind.STRING_LITERAL == ident.getExpression().getKind()) {
+                                name[0] = (String)((LiteralTree)ident.getExpression()).getValue();
+                            }
+                            if (serviceName[0]!=null) {
+                                if (J2eeModule.WAR.equals(moduleType)) {
+                                    resultedUrl[0] = URLEncoder.encode(serviceName[0],"UTF-8"); //NOI18N
+                                    break;
+                                } else if (name[0]!=null) {
+                                    resultedUrl[0] = URLEncoder.encode(serviceName[0],"UTF-8")+"/"+URLEncoder.encode(name[0],"UTF-8"); //NOI18N
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                }
+                break;
+            } // end if 
+        } // end for
+        return foundWsAnnotation;
     }
     
     private String getNameFromPackageName(String packageName) {
@@ -502,25 +547,21 @@ public class JaxWsNode extends AbstractNode implements OpenCookie, JaxWsWsdlCook
         }
     }
     
-    private FileObject getImplBeanClass() {
+    private FileObject getImplBean() {
         String implBean = service.getImplementationClass();
         if(implBean != null) {
-            //JavaClass javaClass = (JavaClass)JavaModel.getDefaultExtent().getType().resolve(implBean);
-            //return javaClass;
-            return srcRoot.getFileObject(implBean.replaceAll(".","/")+".java");
+            return srcRoot.getFileObject(implBean.replace('.','/')+".java");
         }
         return null;
     }
     
-//    private JavaClass getImplBeanClass() {
-//        String implBean = service.getImplementationClass();
-//        if(implBean != null) {
-//            //JavaClass javaClass = (JavaClass)JavaModel.getDefaultExtent().getType().resolve(implBean);
-//            //return javaClass;
-//            return JMIUtils.findClass(implBean, srcRoot);
-//        }
-//        return null;
-//    }
+    private JavaSource getImplBeanJavaSource() {
+        FileObject implBean = getImplBean();
+        if(implBean != null) {
+            return JavaSource.forFileObject(implBean);
+        }
+        return null;
+    }
     
     /**
      * Adds possibility to display custom delete dialog
@@ -541,6 +582,7 @@ public class JaxWsNode extends AbstractNode implements OpenCookie, JaxWsWsdlCook
      */
     public void configureHandler() {
         boolean isNew = false;
+// Retouche
 //        implBeanClass = getImplBeanClass();
 //        ArrayList<String> handlerClasses = new ArrayList<String>();
 //        FileObject handlerFO = null;
@@ -597,7 +639,7 @@ public class JaxWsNode extends AbstractNode implements OpenCookie, JaxWsWsdlCook
 //        dialog.setVisible(true);
         
     }
-    
+// Retouche    
 //    public static Annotation getAnnotation(AnnotableElement element, String annotationType) {
 //        Collection<Annotation> annotations = element.getAnnotations();
 //        for(Annotation annotation : annotations) {
@@ -626,25 +668,12 @@ public class JaxWsNode extends AbstractNode implements OpenCookie, JaxWsWsdlCook
         }
         return false;
     }
-// Retouche    
-//    private void addImplClassToContent(final InstanceContent content) {
-//        RequestProcessor.getDefault().post(new Runnable() {
-//            public void run() {
-//                JavaMetamodel.getManager().waitScanFinished();
-//                implBeanClass = getImplBeanClass();
-//                if (implBeanClass != null) {
-//                    content.add(implBeanClass);
-//                }
-//            }
-//            
-//        });
-//    }
     
     void refreshImplClass() {
         if (implBeanClass != null) {
             content.remove(implBeanClass);
         }
-        implBeanClass = getImplBeanClass();
+        implBeanClass = getImplBean();
         content.add(implBeanClass);
     }
     
