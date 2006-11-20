@@ -2,8 +2,12 @@ package org.netbeans.api.visual.graph.layout;
 
 import org.netbeans.api.visual.graph.GraphPinScene;
 import org.netbeans.api.visual.graph.GraphScene;
+import org.netbeans.api.visual.model.ObjectScene;
+import org.netbeans.api.visual.widget.Widget;
 
 import java.util.Collection;
+import java.util.ArrayList;
+import java.awt.*;
 
 /**
  * This class represents a graph-orinted layout.
@@ -18,12 +22,64 @@ import java.util.Collection;
  */
 public abstract class GraphLayout<N,E> {
 
+    private boolean animated = true;
+    private final ArrayList<GraphLayoutListener<N,E>> listeners = new ArrayList<GraphLayoutListener<N,E>> ();
+
+    /**
+     * Returns whether the layout uses animations.
+     * @return true if animated
+     */
+    public final boolean isAnimated () {
+        return animated;
+    }
+
+    /**
+     * Sets whether the layout is animated.
+     * @param animated if true, then the layout is animated
+     */
+    public final void setAnimated (boolean animated) {
+        this.animated = animated;
+    }
+
+    /**
+     * Adds a graph layout listener.
+     * @param listener the graph layout listener
+     */
+    public final void addGraphLayoutListener (GraphLayoutListener<N,E> listener) {
+        synchronized (listeners) {
+            listeners.add (listener);
+        }
+    }
+
+    /**
+     * Removes a graph layout listener.
+     * @param listener the graph layout listener
+     */
+    public final void removeGraphLayoutListener (GraphLayoutListener<N,E> listener) {
+        synchronized (listeners) {
+            listeners.add (listener);
+        }
+    }
+
     /**
      * Invokes graph-oriented layout on a GraphScene.
      * @param graphScene the graph scene
      */
     public final <N,E> void layoutGraph (GraphScene<N,E> graphScene) {
-        performGraphLayout (UniversalGraph.createUniversalGraph (graphScene));
+        GraphLayoutListener[] listeners;
+        synchronized (this.listeners) {
+            listeners = this.listeners.toArray (new GraphLayoutListener[this.listeners.size ()]);
+        }
+
+        UniversalGraph<N,E> graph = UniversalGraph.createUniversalGraph (graphScene);
+
+        for (GraphLayoutListener<N,E> listener : listeners)
+            listener.graphLayoutStarted (graph);
+
+        performGraphLayout (graph);
+
+        for (GraphLayoutListener<N,E> listener : listeners)
+            listener.graphLayoutFinished (graph);
     }
 
     /**
@@ -31,7 +87,20 @@ public abstract class GraphLayout<N,E> {
      * @param graphPinScene the graph pin scene
      */
     public final <N,E> void layoutGraph (GraphPinScene<N,E,?> graphPinScene) {
-        performGraphLayout (UniversalGraph.createUniversalGraph (graphPinScene));
+        GraphLayoutListener[] listeners;
+        synchronized (this.listeners) {
+            listeners = this.listeners.toArray (new GraphLayoutListener[this.listeners.size ()]);
+        }
+
+        UniversalGraph<N,E> graph = UniversalGraph.createUniversalGraph (graphPinScene);
+
+        for (GraphLayoutListener<N,E> listener : listeners)
+            listener.graphLayoutStarted (graph);
+
+        performGraphLayout (graph);
+
+        for (GraphLayoutListener<N,E> listener : listeners)
+            listener.graphLayoutFinished (graph);
     }
 
     /**
@@ -40,7 +109,20 @@ public abstract class GraphLayout<N,E> {
      * @param nodes the collection of nodes to resolve
      */
     public final <N,E> void layoutNodes (GraphScene<N,E> graphScene, Collection<N> nodes) {
-        performNodesLayout (UniversalGraph.createUniversalGraph (graphScene), nodes);
+        GraphLayoutListener[] listeners;
+        synchronized (this.listeners) {
+            listeners = this.listeners.toArray (new GraphLayoutListener[this.listeners.size ()]);
+        }
+
+        UniversalGraph<N, E> graph = UniversalGraph.createUniversalGraph (graphScene);
+
+        for (GraphLayoutListener<N, E> listener : listeners)
+            listener.graphLayoutStarted (graph);
+
+        performNodesLayout (graph, nodes);
+
+        for (GraphLayoutListener<N, E> listener : listeners)
+            listener.graphLayoutFinished (graph);
     }
 
     /**
@@ -48,18 +130,62 @@ public abstract class GraphLayout<N,E> {
      * @param graphPinScene the graph pin scene
      * @param nodes the collection of nodes to resolve
      */
-    public final <N,E> void layoutNodes (GraphPinScene<N,?,E> graphPinScene, Collection<N> nodes) {
-        performNodesLayout (UniversalGraph.createUniversalGraph (graphPinScene), nodes);
+    public final <N,E> void layoutNodes (GraphPinScene<N,E,?> graphPinScene, Collection<N> nodes) {
+        GraphLayoutListener[] listeners;
+        synchronized (this.listeners) {
+            listeners = this.listeners.toArray (new GraphLayoutListener[this.listeners.size ()]);
+        }
+
+        UniversalGraph<N, E> graph = UniversalGraph.createUniversalGraph (graphPinScene);
+
+        for (GraphLayoutListener<N, E> listener : listeners)
+            listener.graphLayoutStarted (graph);
+
+        performNodesLayout (graph, nodes);
+
+        for (GraphLayoutListener<N, E> listener : listeners)
+            listener.graphLayoutFinished (graph);
+    }
+
+    /**
+     * Should be called to set a new resolved preferred location of a node.
+     * @param graph the universal graph
+     * @param node the node with resolved location
+     * @param newPreferredLocation the new resolved location
+     */
+    protected final <N,E> void setResolvedNodeLocation (UniversalGraph<N,E> graph, N node, Point newPreferredLocation) {
+        ObjectScene scene = graph.getScene ();
+
+        Widget widget = scene.findWidget (node);
+        if (widget == null)
+            return;
+
+        Point previousPreferredLocation = widget.getPreferredLocation ();
+
+        if (animated)
+            scene.getSceneAnimator ().animatePreferredLocation (widget, newPreferredLocation);
+        else
+            widget.setPreferredLocation (newPreferredLocation);
+
+        GraphLayoutListener[] listeners;
+        synchronized (this.listeners) {
+            listeners = this.listeners.toArray (new GraphLayoutListener[this.listeners.size ()]);
+        }
+
+        for (GraphLayoutListener<N,E> listener : listeners)
+            listener.nodeLocationChanged (graph, node, previousPreferredLocation, newPreferredLocation);
     }
 
     /**
      * Implements and performs particular graph-oriented algorithm of a UniversalGraph.
+     * Call <code>GraphLayout.setResolvedNodeLocation</code> method for setting the resolved node location.
      * @param graph the universal graph on which the layout should be performed
      */
     protected abstract <N,E> void performGraphLayout (UniversalGraph<N,E> graph);
 
     /**
      * Implements and performs particular location resolution of a collection of nodes in a UniversalGraph.
+     * Call <code>GraphLayout.setResolvedNodeLocation</code> method for setting the resolved node location.
      * @param graph the universal graph on which the nodes should be resolved
      * @param nodes the collection of nodes to be resolved
      */

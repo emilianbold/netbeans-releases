@@ -51,7 +51,7 @@ public final class GridGraphLayout<N,E> extends GraphLayout<N,E> {
     }
 
     /**
-     * Performs the graph graph layout on an universal graph.
+     * Performs the grid graph layout on an universal graph.
      * @param graph the universal graph
      */
     protected <N,E> void performGraphLayout (UniversalGraph<N, E> graph) {
@@ -147,7 +147,7 @@ public final class GridGraphLayout<N,E> extends GraphLayout<N,E> {
             if (bounds == null)
                 continue;
             Point grid = node2grid.get (node);
-            scene.getSceneAnimator ().animatePreferredLocation (widget, new Point (xAxis[grid.x - gridBounds.x] - bounds.x, yAxis[grid.y - gridBounds.y]));
+            setResolvedNodeLocation (graph, node, new Point (xAxis[grid.x - gridBounds.x] - bounds.x, yAxis[grid.y - gridBounds.y]));
         }
     }
 
