@@ -1076,14 +1076,10 @@ public final class ModuleManager {
                 dep.getType() == Dependency.TYPE_NEEDS ||
                 dep.getType() == Dependency.TYPE_RECOMMENDS
             ) {
-                String token = dep.getName();
-                Set<Module> providers = providersOf.get(token);
+                Set<Module> providers = providersOf.get(dep.getName());
                 if (providers == null) {
-                    if (dep.getType() != Dependency.TYPE_RECOMMENDS) {
-                        throw new IllegalStateException("Should have found a provider of: " + token); // NOI18N
-                    } else {
-                        continue;
-                    }
+                    assert dep.getType() == Dependency.TYPE_RECOMMENDS : "Should have found a provider of " + dep;
+                    continue;
                 }
                 // First check if >= 1 is already enabled or will be soon. If so, great.
                 boolean foundOne = false;
@@ -1110,7 +1106,7 @@ public final class ModuleManager {
                 }
                 // XXX sometimes fails, but not reproducible in a unit test.
                 // Logic is that missingDependencies(m) should contain dep in this case.
-                assert foundOne : "Should have found a nonproblematic provider of " + token + " among " + providers + " with willEnable=" + willEnable + " mightEnable=" + mightEnable;
+                assert foundOne : "Should have found a nonproblematic provider of " + dep + " among " + providers + " with willEnable=" + willEnable + " mightEnable=" + mightEnable;
             }
             // else some other kind of dependency that does not concern us
         }
@@ -1382,10 +1378,12 @@ public final class ModuleManager {
     private static class NeedsCheck {
         public final Module module;
         public final Dependency dep;
-        
         public NeedsCheck(Module m, Dependency d) {
             this.module = m;
             this.dep = d;
+        }
+        public String toString() {
+            return "(" + module + "," + dep + ")"; // NOI18N
         }
     }
     

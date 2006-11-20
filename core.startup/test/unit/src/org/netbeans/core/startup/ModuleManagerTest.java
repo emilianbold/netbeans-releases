@@ -915,35 +915,6 @@ public class ModuleManagerTest extends SetupHid {
         }
     }
 
-    public void testUnsatisfiedProvReq() throws Exception {
-        FakeModuleInstaller installer = new FakeModuleInstaller();
-        FakeEvents ev = new FakeEvents();
-        ModuleManager mgr = new ModuleManager(installer, ev);
-        mgr.mutexPrivileged().enterWriteAccess();
-        try {
-            Module m2 = mgr.create(new File(jars, "req-foo.jar"), null, false, false, false);
-            assertEquals(Collections.EMPTY_LIST, Arrays.asList(m2.getProvides()));
-            assertEquals(Dependency.create(Dependency.TYPE_REQUIRES, "foo"), m2.getDependencies());
-            Map<String,Module> modulesByName = new HashMap<String,Module>();
-            modulesByName.put(m2.getCodeNameBase(), m2);
-            Map<String,Set<Module>> providersOf = new HashMap<String,Set<Module>>();
-            Set<Module> m2Set = new HashSet<Module>();
-            m2Set.add(m2);
-            List<Module> toEnable = mgr.simulateEnable(m2Set);
-            assertEquals("Empty: ", 0, toEnable.size());
-            Set<Object> problems = m2.getProblems();
-            assertEquals("One problem: ", 1, problems.size());
-            Object o = problems.iterator().next();
-            Locale.setDefault(Locale.US);
-            String msg = NbProblemDisplayer.messageForProblem(m2, o);
-            if (msg.indexOf("foo") < 0) {
-                fail("should contain foo:\n" + msg);
-            }
-        } finally {
-            mgr.mutexPrivileged().exitWriteAccess();
-        }
-    }
-    
     public void testProvReqCycles() throws Exception {
         FakeModuleInstaller installer = new FakeModuleInstaller();
         FakeEvents ev = new FakeEvents();
@@ -1040,30 +1011,12 @@ public class ModuleManagerTest extends SetupHid {
         FakeEvents ev = new FakeEvents();
         ModuleManager mgr = new ModuleManager(installer, ev);
         mgr.mutexPrivileged().enterWriteAccess();
-        try {
-            Module m1 = mgr.create(new File(jars, "prov-foo.jar"), null, false, false, false);
-            Module m2 = mgr.create(new File(jars, "prov-foo-req-bar.jar"), null, false, false, false);
-            Module m3 = mgr.create(new File(jars, "req-foo.jar"), null, false, false, false);
-            assertEquals(Collections.EMPTY_SET, m1.getProblems());
-            assertEquals(Collections.EMPTY_SET, m3.getProblems());
-            assertEquals(Dependency.create(Dependency.TYPE_REQUIRES, "bar"), m2.getProblems());
-            List<Module> m13 = Arrays.asList(m1, m3);
-            assertEquals(m13, mgr.simulateEnable(Collections.singleton(m3)));
-            mgr.enable(new HashSet<Module>(m13));
-            assertTrue(m1.isEnabled());
-            assertFalse(m2.isEnabled());
-            assertTrue(m3.isEnabled());
-            Module m4 = mgr.create(new File(jars, "prov-foo-bar.jar"), null, false, false, false);
-            assertEquals(Collections.EMPTY_SET, m2.getProblems());
-            mgr.disable(new HashSet<Module>(m13));
-            assertFalse(m3.isEnabled());
-            List toEnable = mgr.simulateEnable(Collections.singleton(m3));
-            assertEquals(4, toEnable.size());
-            assertTrue(toEnable.get(0) != m2);
-            assertTrue(toEnable.get(0) != m3);
-        } finally {
-            mgr.mutexPrivileged().exitWriteAccess();
-        }
+        Module m1 = createModule(mgr, "OpenIDE-Module: m1\nOpenIDE-Module-Needs: tok\n");
+        Module m2 = createModule(mgr, "OpenIDE-Module: m2\nOpenIDE-Module-Module-Dependencies: m1\n");
+        //assertEquals(1, m2.getProblems().size());
+        assertEquals(Collections.emptyList(), mgr.simulateEnable(Collections.singleton(m2)));
+        Module m3 = createModule(mgr, "OpenIDE-Module: m3\nOpenIDE-Module-Provides: tok\n");
+        assertEquals(new HashSet<Module>(Arrays.asList(m1, m2, m3)), new HashSet<Module>(mgr.simulateEnable(Collections.singleton(m2))));
     }
     
     public void testSimpleProvNeeds() throws Exception {
@@ -1587,7 +1540,7 @@ public class ModuleManagerTest extends SetupHid {
                 case 2:
                     Util.err.info("Add a regular module");
                     if (!freeModules.isEmpty()) {
-                        String name = (String)freeModules.remove(r.nextInt(freeModules.size()));
+                        String name = freeModules.remove(r.nextInt(freeModules.size()));
                         mgr.create(new File(jars, name), null, false, false, false);
                         i++;
                     }
@@ -1595,7 +1548,7 @@ public class ModuleManagerTest extends SetupHid {
                 case 3:
                     Util.err.info("Add an autoload");
                     if (!freeModules.isEmpty()) {
-                        String name = (String)freeModules.remove(r.nextInt(freeModules.size()));
+                        String name = freeModules.remove(r.nextInt(freeModules.size()));
                         mgr.create(new File(jars, name), null, false, true, false);
                         i++;
                     }
@@ -1603,7 +1556,7 @@ public class ModuleManagerTest extends SetupHid {
                 case 4:
                     Util.err.info("Add an eager module");
                     if (!freeModules.isEmpty()) {
-                        String name = (String)freeModules.remove(r.nextInt(freeModules.size()));
+                        String name = freeModules.remove(r.nextInt(freeModules.size()));
                         if (!noDepsNames.contains(name)) {
                             Module m = mgr.create(new File(jars, name), null, false, false, true);
                             i++;
@@ -2330,6 +2283,10 @@ public class ModuleManagerTest extends SetupHid {
         }
         os.close();
         return ret;
+    }
+
+    private static Module createModule(ModuleManager mgr, String manifest) throws Exception {
+        return mgr.createFixed(new Manifest(new ByteArrayInputStream(manifest.getBytes())), null, ModuleManagerTest.class.getClassLoader());
     }
 
 }
