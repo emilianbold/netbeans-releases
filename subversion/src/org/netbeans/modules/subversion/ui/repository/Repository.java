@@ -368,7 +368,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         repositoryPanel.userPasswordField.setEnabled(valid);
         repositoryPanel.userTextField.setEnabled(valid);
 
-        repositoryPanel.removeButton.setEnabled(sr.getUrl().toString().length() > 0);
+        repositoryPanel.removeButton.setEnabled(sr != null && sr.getUrl().toString().length() > 0);
     }
     
     /**
