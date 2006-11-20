@@ -133,7 +133,7 @@ public class JavaCompletionDoc implements CompletionDocumentation {
                 sb.append(getClassHeader(eu, (ClassDoc)doc));
             }
             sb.append("<p>"); //NOI18N
-            sb.append(inlineTags(eu, doc.inlineTags()));
+            sb.append(inlineTags(eu, doc, doc.inlineTags()));
             sb.append("</p><p>"); //NOI18N
             sb.append(getTags(eu, doc));
             sb.append("</p>"); //NOI18N
@@ -253,7 +253,7 @@ public class JavaCompletionDoc implements CompletionDocumentation {
                 Tag[] its = tag.inlineTags();
                 if (its.length > 0) {
                     par.append(" - "); //NOI18N
-                    par.append(inlineTags(eu, its));
+                    par.append(inlineTags(eu, doc, its));
                 }
                 par.append("<br>"); //NOI18N
             } else if (THROWS_TAG.equals(tag.kind())) {
@@ -267,11 +267,11 @@ public class JavaCompletionDoc implements CompletionDocumentation {
                 Tag[] its = tag.inlineTags();
                 if (its.length > 0) {
                     thr.append(" - "); //NOI18N
-                    thr.append(inlineTags(eu, its));
+                    thr.append(inlineTags(eu, doc, its));
                 }
                 thr.append("<br>"); //NOI18N
             } else if (RETURN_TAG.equals(tag.kind())) {
-                ret.append(inlineTags(eu, tag.inlineTags()));
+                ret.append(inlineTags(eu, doc, tag.inlineTags()));
                 ret.append("<br>"); //NOI18N
             } else if (SEE_TAG.equals(tag.kind())) {
                 SeeTag stag = (SeeTag)tag;
@@ -307,7 +307,7 @@ public class JavaCompletionDoc implements CompletionDocumentation {
         return sb.toString();
     }
     
-    private String inlineTags(ElementUtilities eu, Tag[] tags) {
+    private String inlineTags(ElementUtilities eu, Doc doc, Tag[] tags) {
         StringBuilder sb = new StringBuilder();
         for (Tag tag : tags) {
             if (SEE_TAG.equals(tag.kind())) {
@@ -323,11 +323,11 @@ public class JavaCompletionDoc implements CompletionDocumentation {
                 if (doc.isMethod()) {
                     MethodDoc mdoc = ((MethodDoc)doc).overriddenMethod();
                     if (mdoc != null)
-                        sb.append(inlineTags(eu, mdoc.inlineTags()));
+                        sb.append(inlineTags(eu, mdoc, mdoc.inlineTags()));
                 } else if (doc.isClass() || doc.isInterface()) {
                     ClassDoc cdoc = ((ClassDoc)doc).superclass();
                     if (cdoc != null)
-                        sb.append(inlineTags(eu, cdoc.inlineTags()));
+                        sb.append(inlineTags(eu, cdoc, cdoc.inlineTags()));
                 }
             } else {
                 sb.append(tag.text());
