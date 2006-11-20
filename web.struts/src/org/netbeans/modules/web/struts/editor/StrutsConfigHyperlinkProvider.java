@@ -18,10 +18,18 @@
  */
 package org.netbeans.modules.web.struts.editor;
 
+import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.Collections;
 import java.util.Hashtable;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.Elements;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.UiUtils;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.Utilities;
@@ -29,6 +37,7 @@ import org.netbeans.editor.ext.ExtSyntaxSupport;
 //import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.j2ee.common.source.AbstractTask;
 //import org.netbeans.modules.editor.java.JMIUtils;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.struts.StrutsConfigDataObject;
@@ -93,34 +102,34 @@ public class StrutsConfigHyperlinkProvider implements HyperlinkProvider {
     /** Creates a new instance of StrutsHyperlinkProvider */
     public StrutsConfigHyperlinkProvider() {
     }
-
+    
     public int[] getHyperlinkSpan(javax.swing.text.Document doc, int offset) {
-        if (debug) debug (":: getHyperlinkSpan");
+        if (debug) debug(":: getHyperlinkSpan");
         if (eav != null){
             return new int []{valueOffset, valueOffset + eav[2].length() -1};
         }
         return null;
     }
-
+    
     public boolean isHyperlinkPoint(javax.swing.text.Document doc, int offset) {
-        if (debug) debug (":: isHyperlinkSpan - offset: " + offset); //NOI18N
+        if (debug) debug(":: isHyperlinkSpan - offset: " + offset); //NOI18N
         
-        // PENDING - this check should be removed, when 
+        // PENDING - this check should be removed, when
         // the issue #61704 is solved.
         DataObject dObject = NbEditorUtilities.getDataObject(doc);
         if (! (dObject instanceof StrutsConfigDataObject))
             return false;
         
-        eav = getElementAttrValue(doc, offset); 
-        if (eav != null){ 
+        eav = getElementAttrValue(doc, offset);
+        if (eav != null){
             if (hyperlinkTable.get(eav[0]+"#"+eav[1])!= null)
                 return true;
         }
         return false;
     }
-
+    
     public void performClickAction(javax.swing.text.Document doc, int offset) {
-        if (debug) debug (":: performClickAction");
+        if (debug) debug(":: performClickAction");
         if (hyperlinkTable.get(eav[0]+"#"+eav[1])!= null){
             int type = ((Integer)hyperlinkTable.get(eav[0]+"#"+eav[1])).intValue();
             switch (type){
@@ -134,7 +143,7 @@ public class StrutsConfigHyperlinkProvider implements HyperlinkProvider {
     static void debug(String message){
         System.out.println("StrutsHyperlinkProvider: " + message); //NoI18N
     }
-    /** This method finds the value for an attribute of element of on the offset. 
+    /** This method finds the value for an attribute of element of on the offset.
      * @return Returns null, when the offset is not a value of an attribute. If the there is value
      * of an attribute, then returns String array [element, attribute, value].
      */
@@ -159,7 +168,7 @@ public class StrutsConfigHyperlinkProvider implements HyperlinkProvider {
                 return null;
             value = token.getImage();
             if (value != null){
-               // value = value.substring(0, offset - token.getOffset());
+                // value = value.substring(0, offset - token.getOffset());
                 //if (debug) debug ("value to cursor: " + value);
                 value = value.trim();
                 valueOffset = token.getOffset();
@@ -177,7 +186,7 @@ public class StrutsConfigHyperlinkProvider implements HyperlinkProvider {
             // Find attribute and tag
             // 5 - attribute
             // 4 - tag
-            while(token != null && token.getTokenID().getNumericID() != StrutsEditorUtilities.XML_ATTRIBUTE 
+            while(token != null && token.getTokenID().getNumericID() != StrutsEditorUtilities.XML_ATTRIBUTE
                     && token.getTokenID().getNumericID() != StrutsEditorUtilities.XML_ELEMENT)
                 token = token.getPrevious();
             if (token != null && token.getTokenID().getNumericID() == StrutsEditorUtilities.XML_ATTRIBUTE){
@@ -190,49 +199,44 @@ public class StrutsConfigHyperlinkProvider implements HyperlinkProvider {
             if (attribute == null || tag == null)
                 return null;
             tag = tag.substring(1);
-            if (debug) debug ("element: " + tag );   // NOI18N
-            if (debug) debug ("attribute: " + attribute ); //NOI18N
-            if (debug) debug ("value: " + value );  //NOI18N
+            if (debug) debug("element: " + tag );   // NOI18N
+            if (debug) debug("attribute: " + attribute ); //NOI18N
+            if (debug) debug("value: " + value );  //NOI18N
             return new String[]{tag, attribute, value};
         } catch (BadLocationException e) {
         }
         return null;
     }
     
-    private void findJavaClass(String fqn, javax.swing.text.Document doc){
-        OpenJavaClassThread run = new OpenJavaClassThread(fqn, (BaseDocument)doc);
-        RequestProcessor.getDefault().post(run);
-        //JavaMetamodel.getManager().invokeAfterScanFinished(run, NbBundle.getMessage(BaseDocument.class, "goto-source"));
-    }
-   
-    private class OpenJavaClassThread implements Runnable {
-        private String fqn;
-        private BaseDocument doc;
-        
-        public OpenJavaClassThread(String name, BaseDocument doc){
-            super();
-            this.fqn = name;
-            this.doc = doc;
-        }
-        
-        public void run() {
-//            XXX removing due to rewriting to retushe
-//            JMIUtils jmiUtils = JMIUtils.get(doc);
-//            JavaClass item = null;
-//            jmiUtils.beginTrans(false);
-//            try {
-//                item = jmiUtils.getExactClass(fqn);
-//                if (item != null) {
-//                    jmiUtils.openElement(item);
-//                } 
-//                else {
-//                    String key = "goto_source_not_found"; // NOI18N
-//                    String msg = NbBundle.getBundle(StrutsConfigHyperlinkProvider.class).getString(key);
-//                    org.openide.awt.StatusDisplayer.getDefault().setStatusText(MessageFormat.format(msg, new Object [] { fqn } ));
-//                }
-//            } finally {
-//                jmiUtils.endTrans(false);
-//            }
+    private void findJavaClass(final String fqn, javax.swing.text.Document doc){
+        FileObject fo = NbEditorUtilities.getFileObject(doc);
+        if (fo != null){
+            WebModule wm = WebModule.getWebModule(fo);
+            if (wm != null){
+                try {
+                    final ClasspathInfo cpi = ClasspathInfo.create(wm.getDocumentBase());
+                    JavaSource js = JavaSource.create(cpi, Collections.EMPTY_LIST);
+                    
+                    js.runUserActionTask(new AbstractTask<CompilationController>() {
+                        
+                        public void run(CompilationController cc) throws Exception {
+                            Elements elements = cc.getElements();
+                            TypeElement element = elements.getTypeElement(fqn.trim());
+                            if (element != null) {
+                                if (!UiUtils.open(cpi, element)){
+                                    String key = "goto_source_not_found"; // NOI18N
+                                    String msg = NbBundle.getBundle(StrutsConfigHyperlinkProvider.class).getString(key);
+                                    org.openide.awt.StatusDisplayer.getDefault().setStatusText(MessageFormat.format(msg, new Object [] { fqn } ));
+                                    
+                                }
+                            }
+                        }
+                    }, false);
+                } catch (IOException ex) {
+                    java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE,
+                            ex.getMessage(), ex);
+                };
+            }
         }
     }
     
@@ -243,8 +247,7 @@ public class StrutsConfigHyperlinkProvider implements HyperlinkProvider {
         if (offset > 0){
             JTextComponent target = Utilities.getFocusedComponent();
             target.setCaretPosition(offset);
-        }
-        else {
+        } else {
             String key = "goto_formbean_not_found"; // NOI18N
             String msg = NbBundle.getBundle(StrutsConfigHyperlinkProvider.class).getString(key);
             org.openide.awt.StatusDisplayer.getDefault().setStatusText(MessageFormat.format(msg, new Object [] { name } ));
@@ -274,8 +277,7 @@ public class StrutsConfigHyperlinkProvider implements HyperlinkProvider {
                             actionPath = path.substring(0, path.length()-extension.length());
                         else
                             actionPath = path;
-                    }
-                    else{
+                    } else{
                         // the mapping is /xx/* way
                         servletMapping = servletMapping.trim();
                         String prefix = servletMapping.substring(0, servletMapping.length()-2);
@@ -284,7 +286,7 @@ public class StrutsConfigHyperlinkProvider implements HyperlinkProvider {
                         else
                             actionPath = path;
                     }
-                    if (debug) debug (" actionPath: " + actionPath);
+                    if (debug) debug(" actionPath: " + actionPath);
                     if(actionPath != null){
                         ExtSyntaxSupport sup = (ExtSyntaxSupport)doc.getSyntaxSupport();
                         int offset = findDefinitionInSection(sup, "action-mappings","action","path", actionPath);
@@ -294,8 +296,7 @@ public class StrutsConfigHyperlinkProvider implements HyperlinkProvider {
                         }
                     }
                 }
-            }
-            else
+            } else
                 openInEditor(fo);
         }
     }
@@ -328,41 +329,39 @@ public class StrutsConfigHyperlinkProvider implements HyperlinkProvider {
                 while(token != null
                         && !(token.getTokenID().getNumericID() == StrutsEditorUtilities.XML_ELEMENT
                         && token.getImage().equals(endSection))){
-                   //find tag
-                   while (token != null
-                           && (token.getTokenID().getNumericID() != StrutsEditorUtilities.XML_ELEMENT
-                           || (!token.getImage().equals(endSection)
-                           && !token.getImage().equals(element))) )
-                       token = token.getNext();
-                   if (token == null) return -1;
-                   tagOffset = token.getOffset();
-                   if (token.getImage().equals(element)){
+                    //find tag
+                    while (token != null
+                            && (token.getTokenID().getNumericID() != StrutsEditorUtilities.XML_ELEMENT
+                            || (!token.getImage().equals(endSection)
+                            && !token.getImage().equals(element))) )
+                        token = token.getNext();
+                    if (token == null) return -1;
+                    tagOffset = token.getOffset();
+                    if (token.getImage().equals(element)){
                         //find attribute
-                       token = token.getNext();
-                       while (token != null 
-                               && token.getTokenID().getNumericID() != StrutsEditorUtilities.XML_ELEMENT
-                               && !(token.getTokenID().getNumericID() == StrutsEditorUtilities.XML_ATTRIBUTE
-                               && token.getImage().equals(attribute)))
-                           token = token.getNext();
-                       if (token == null) return -1;
-                       if (token.getImage().equals(attribute)){
-                           //find value
-                           token = token.getNext();
-                           while (token != null 
-                                    && token.getTokenID().getNumericID() != StrutsEditorUtilities.XML_ATTRIBUTE_VALUE    
+                        token = token.getNext();
+                        while (token != null
+                                && token.getTokenID().getNumericID() != StrutsEditorUtilities.XML_ELEMENT
+                                && !(token.getTokenID().getNumericID() == StrutsEditorUtilities.XML_ATTRIBUTE
+                                && token.getImage().equals(attribute)))
+                            token = token.getNext();
+                        if (token == null) return -1;
+                        if (token.getImage().equals(attribute)){
+                            //find value
+                            token = token.getNext();
+                            while (token != null
+                                    && token.getTokenID().getNumericID() != StrutsEditorUtilities.XML_ATTRIBUTE_VALUE
                                     && token.getTokenID().getNumericID() != StrutsEditorUtilities.XML_ELEMENT
                                     && token.getTokenID().getNumericID() != StrutsEditorUtilities.XML_ATTRIBUTE)
-                               token = token.getNext();
-                           if (token.getImage().equals(attributeValue))
-                               return tagOffset;
-                       }
-                   }
-                   else 
-                       token = token.getNext();
-                }                
+                                token = token.getNext();
+                            if (token.getImage().equals(attributeValue))
+                                return tagOffset;
+                        }
+                    } else
+                        token = token.getNext();
+                }
             }
-        }
-        catch (BadLocationException e){
+        } catch (BadLocationException e){
             e.printStackTrace(System.out);
         }
         return -1;
@@ -373,10 +372,9 @@ public class StrutsConfigHyperlinkProvider implements HyperlinkProvider {
             DataObject dobj = null;
             try{
                 dobj = DataObject.find(fObj);
-            }
-            catch (DataObjectNotFoundException e){
-               ErrorManager.getDefault().notify(e);
-               return; 
+            } catch (DataObjectNotFoundException e){
+                ErrorManager.getDefault().notify(e);
+                return;
             }
             if (dobj != null){
                 Node.Cookie cookie = dobj.getCookie(OpenCookie.class);
