@@ -315,16 +315,14 @@ public class Subversion {
     }
 
     /**
-     * Tests whether a file or directory is managed by Subversion. All files and folders that have a parent with .svn/entriesy
-     * file are considered managed by WC. This method accesses disk and should NOT be routinely called.
-     *
-     * <p>It works even for non-existing files where cache return UNKNOWN.
-     *
+     * Tests whether a file or directory should receive the STATUS_NOTVERSIONED_NOTMANAGED status. 
+     * All files and folders that have a parent with CVS/Repository file are considered versioned.
+     * 
      * @param file a file or directory
-     * @return true if the file is under WC management, false otherwise
-     */
+     * @return false if the file should receive the STATUS_NOTVERSIONED_NOTMANAGED status, true otherwise
+     */ 
     public boolean isManaged(File file) {
-        return VersioningManager.getInstance().getOwner(file) instanceof SubversionVCS;
+        return VersioningManager.getInstance().getOwner(file) instanceof SubversionVCS && !SvnUtils.isPartOfSubversionMetadata(file);
     }
 
     public void versionedFilesChanged() {
@@ -339,14 +337,21 @@ public class Subversion {
      * @return File the file itself or one of its parents or null if the supplied file is NOT managed by this versioning system
      */
     File getTopmostManagedParent(File file) {
-        if (isAdministrative(file)) return null;
-        if (file.isFile()) file = file.getParentFile();
-        for (; file != null; file = file.getParentFile()) {
-            if (new File(file, ".svn/entries").canRead() || new File(file, "_svn/entries").canRead()) { // NOI18N
-                return file;
+        if (SvnUtils.isPartOfSubversionMetadata(file)) {
+            for (;file != null; file = file.getParentFile()) {
+                if (isAdministrative(file)) {
+                    file = file.getParentFile();
+                    break;
+                }
             }
         }
-        return null;
+        File topmost = null;
+        for (; file != null; file = file.getParentFile()) {
+            if (new File(file, ".svn/entries").canRead() || new File(file, "_svn/entries").canRead()) { // NOI18N
+                topmost = file;
+            }
+        }
+        return topmost;
     }
     
     /**
