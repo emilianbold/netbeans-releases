@@ -113,8 +113,8 @@ public class HttpSettingsTest extends NbTestCase {
 //        proxyPreferences.putInt ("proxyType", ProxySettings.MANUAL_SET_PROXY);
 //        while (isWaiting);
 //        assertEquals ("Proxy type MANUAL_SET_PROXY.", ProxySettings.MANUAL_SET_PROXY, ProxySettings.getProxyType ());
-//        assertEquals ("Manual Set Proxy Host from IDESettings: ", USER_PROXY_HOST, ProxySettings.getHttpHost ());
-//        assertEquals ("Manual Set Proxy Port from IDESettings: ", USER_PROXY_PORT, ProxySettings.getHttpPort ());
+//        assertEquals ("Manual Set Proxy Host from ProxySettings: ", USER_PROXY_HOST, ProxySettings.getHttpHost ());
+//        assertEquals ("Manual Set Proxy Port from ProxySettings: ", USER_PROXY_PORT, ProxySettings.getHttpPort ());
 //        assertEquals ("Manual Set Proxy Host from System.getProperty(): ", USER_PROXY_HOST, System.getProperty ("http.proxyHost"));
 //        assertEquals ("Manual Set Proxy Port from System.getProperty(): ", USER_PROXY_PORT, System.getProperty ("http.proxyPort"));
 //    }
@@ -124,40 +124,40 @@ public class HttpSettingsTest extends NbTestCase {
     }
     
     public void testNonProxy () {
-        assertEquals ("The IDESettings takes as same value as System properties in initial.", System.getProperty ("http.nonProxyHosts"), ProxySettings.getNonProxyHosts ());
+        assertEquals ("The ProxySettings takes as same value as System properties in initial.", System.getProperty ("http.nonProxyHosts"), ProxySettings.getNonProxyHosts ());
         
-        // change value in IDESettings
+        // change value in ProxySettings
         isWaiting = true;
         proxyPreferences.putInt ("proxyType", ProxySettings.MANUAL_SET_PROXY);
         proxyPreferences.put (ProxySettings.NOT_PROXY_HOSTS, "myhost.mydomain.net");
         while (isWaiting);
-        assertEquals ("IDESettings returns new value.", "myhost.mydomain.net", ProxySettings.getNonProxyHosts ());
+        assertEquals ("ProxySettings returns new value.", "myhost.mydomain.net", ProxySettings.getNonProxyHosts ());
         assertEquals ("System property http.nonProxyHosts was changed as well.", ProxySettings.getNonProxyHosts (), System.getProperty ("http.nonProxyHosts"));
         
         // switch proxy type to DIRECT_CONNECTION
         isWaiting = true;
         proxyPreferences.putInt ("proxyType", ProxySettings.DIRECT_CONNECTION);
         while (isWaiting);
-        assertFalse ("IDESettings doesn't return new value if DIRECT_CONNECTION set.", "myhost.mydomain.net".equals (System.getProperty ("http.nonProxyHosts")));
+        assertFalse ("ProxySettings doesn't return new value if DIRECT_CONNECTION set.", "myhost.mydomain.net".equals (System.getProperty ("http.nonProxyHosts")));
         
         // switch proxy type back to MANUAL_SET_PROXY
         isWaiting = true;
         proxyPreferences.putInt ("proxyType", ProxySettings.MANUAL_SET_PROXY);
         while (isWaiting);
-        assertEquals ("IDESettings again returns new value.", "myhost.mydomain.net", ProxySettings.getNonProxyHosts ());
+        assertEquals ("ProxySettings again returns new value.", "myhost.mydomain.net", ProxySettings.getNonProxyHosts ());
         assertEquals ("System property http.nonProxyHosts was changed as well.", ProxySettings.getNonProxyHosts (), System.getProperty ("http.nonProxyHosts"));
         
         // switch proxy type to AUTO_DETECT_PROXY
         isWaiting = true;
         proxyPreferences.putInt ("proxyType", ProxySettings.AUTO_DETECT_PROXY);
         while (isWaiting);
-        assertFalse ("IDESettings doesn't return new value if AUTO_DETECT_PROXY set.", "myhost.mydomain.net".equals (System.getProperty ("http.nonProxyHosts")));
+        assertFalse ("ProxySettings doesn't return new value if AUTO_DETECT_PROXY set.", "myhost.mydomain.net".equals (System.getProperty ("http.nonProxyHosts")));
                 
         // switch proxy type back to MANUAL_SET_PROXY
         isWaiting = true;
         proxyPreferences.putInt ("proxyType", ProxySettings.MANUAL_SET_PROXY);
         while (isWaiting);
-        assertEquals ("IDESettings again returns new value.", "myhost.mydomain.net", ProxySettings.getNonProxyHosts ());
+        assertEquals ("ProxySettings again returns new value.", "myhost.mydomain.net", ProxySettings.getNonProxyHosts ());
         assertEquals ("System property http.nonProxyHosts was changed as well.", ProxySettings.getNonProxyHosts (), System.getProperty ("http.nonProxyHosts"));
     }
     
@@ -181,8 +181,8 @@ public class HttpSettingsTest extends NbTestCase {
         proxyPreferences.putInt ("proxyType", ProxySettings.MANUAL_SET_PROXY);
         while (isWaiting);
         assertEquals ("Proxy type MANUAL_SET_PROXY.", ProxySettings.MANUAL_SET_PROXY, ProxySettings.getProxyType ());
-        assertEquals ("Manual Set Proxy Host from IDESettings: ", SILLY_USER_PROXY_HOST, ProxySettings.getHttpHost ());
-        assertEquals ("Manual Set Proxy Port from IDESettings: ", USER_PROXY_PORT, ProxySettings.getHttpPort ());
+        assertEquals ("Manual Set Proxy Host from ProxySettings: ", SILLY_USER_PROXY_HOST, ProxySettings.getHttpHost ());
+        assertEquals ("Manual Set Proxy Port from ProxySettings: ", USER_PROXY_PORT, ProxySettings.getHttpPort ());
         assertEquals ("Manual Set Proxy Host from System.getProperty(): ", USER_PROXY_HOST, System.getProperty ("http.proxyHost"));
         assertEquals ("Manual Set Proxy Port from System.getProperty(): ", USER_PROXY_PORT, System.getProperty ("http.proxyPort"));
     }
