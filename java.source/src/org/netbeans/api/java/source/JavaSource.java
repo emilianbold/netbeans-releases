@@ -709,7 +709,8 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         JavadocMemberEnter.preRegister(context);       
         JavadocEnv.preRegister(context, getClasspathInfo());
         Scanner.Factory.instance(context);
-        Builder2.instance(context).keepComments = true;
+        //Builder2.instance(context).keepComments = true;
+        com.sun.tools.javac.main.JavaCompiler.instance(context).keepComments = true;
         return javacTask;
     }
     
