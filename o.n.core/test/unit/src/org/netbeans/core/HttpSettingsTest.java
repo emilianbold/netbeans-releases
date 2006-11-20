@@ -89,36 +89,36 @@ public class HttpSettingsTest extends NbTestCase {
         isWaiting = true;
     }
     
-//    public void testDirectConnection () {
-//        proxyPreferences.putInt ("proxyType", ProxySettings.DIRECT_CONNECTION);
-//        while (isWaiting);
-//        assertEquals ("Proxy type DIRECT_CONNECTION.", ProxySettings.DIRECT_CONNECTION, ProxySettings.getProxyType ());
-//        assertEquals ("No Proxy Host set.", "", System.getProperty ("http.proxyHost"));
-//        assertEquals ("No Proxy Port set.", "", System.getProperty ("http.proxyPort"));
-//    }
-//    
-//    public void testAutoDetectProxy () {
-//        proxyPreferences.putInt("proxyType", ProxySettings.AUTO_DETECT_PROXY);
-//        while (isWaiting);
-//        assertEquals("Proxy type AUTO_DETECT_PROXY.",
-//                     ProxySettings.AUTO_DETECT_PROXY,
-//                     ProxySettings.getProxyType());
-//        assertEquals("System Proxy Host: ", SYSTEM_PROXY_HOST,
-//                     System.getProperty("http.proxyHost"));
-//        assertEquals("System Proxy Port: ", SYSTEM_PROXY_PORT,
-//                     System.getProperty("http.proxyPort"));
-//    }
-//    
-//    public void testManualSetProxy () {
-//        proxyPreferences.putInt ("proxyType", ProxySettings.MANUAL_SET_PROXY);
-//        while (isWaiting);
-//        assertEquals ("Proxy type MANUAL_SET_PROXY.", ProxySettings.MANUAL_SET_PROXY, ProxySettings.getProxyType ());
-//        assertEquals ("Manual Set Proxy Host from ProxySettings: ", USER_PROXY_HOST, ProxySettings.getHttpHost ());
-//        assertEquals ("Manual Set Proxy Port from ProxySettings: ", USER_PROXY_PORT, ProxySettings.getHttpPort ());
-//        assertEquals ("Manual Set Proxy Host from System.getProperty(): ", USER_PROXY_HOST, System.getProperty ("http.proxyHost"));
-//        assertEquals ("Manual Set Proxy Port from System.getProperty(): ", USER_PROXY_PORT, System.getProperty ("http.proxyPort"));
-//    }
-//    
+    public void testDirectConnection () {
+        proxyPreferences.putInt ("proxyType", ProxySettings.DIRECT_CONNECTION);
+        while (isWaiting);
+        assertEquals ("Proxy type DIRECT_CONNECTION.", ProxySettings.DIRECT_CONNECTION, ProxySettings.getProxyType ());
+        assertEquals ("No Proxy Host set.", "", System.getProperty ("http.proxyHost"));
+        assertEquals ("No Proxy Port set.", "", System.getProperty ("http.proxyPort"));
+    }
+    
+    public void testAutoDetectProxy () {
+        proxyPreferences.putInt("proxyType", ProxySettings.AUTO_DETECT_PROXY);
+        while (isWaiting);
+        assertEquals("Proxy type AUTO_DETECT_PROXY.",
+                     ProxySettings.AUTO_DETECT_PROXY,
+                     ProxySettings.getProxyType());
+        assertEquals("System Proxy Host: ", SYSTEM_PROXY_HOST,
+                     System.getProperty("http.proxyHost"));
+        assertEquals("System Proxy Port: ", SYSTEM_PROXY_PORT,
+                     System.getProperty("http.proxyPort"));
+    }
+    
+    public void testManualSetProxy () {
+        proxyPreferences.putInt ("proxyType", ProxySettings.MANUAL_SET_PROXY);
+        while (isWaiting);
+        assertEquals ("Proxy type MANUAL_SET_PROXY.", ProxySettings.MANUAL_SET_PROXY, ProxySettings.getProxyType ());
+        assertEquals ("Manual Set Proxy Host from ProxySettings: ", USER_PROXY_HOST, ProxySettings.getHttpHost ());
+        assertEquals ("Manual Set Proxy Port from ProxySettings: ", USER_PROXY_PORT, ProxySettings.getHttpPort ());
+        assertEquals ("Manual Set Proxy Host from System.getProperty(): ", USER_PROXY_HOST, System.getProperty ("http.proxyHost"));
+        assertEquals ("Manual Set Proxy Port from System.getProperty(): ", USER_PROXY_PORT, System.getProperty ("http.proxyPort"));
+    }
+    
     public void testIfTakeUpNonProxyFromProperty () {
         assertTrue (NETBEANS_ORG + " in one of Non-Proxy hosts.", ProxySettings.getNonProxyHosts ().indexOf (NETBEANS_ORG) != -1);
     }
