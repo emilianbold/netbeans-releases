@@ -1011,7 +1011,7 @@ final class Central implements ControllerHandler {
                 
                 if( isEditorMaximized() && mode.getState() != Constants.MODE_STATE_SEPARATED ) {
                     String tcID = wm.findTopComponentID( tc );
-                    if( !isTopComponentDockedInMaximizedMode( tcID ) ) {
+                    if( !isTopComponentDockedInMaximizedMode( tcID ) && mode.getKind() != Constants.MODE_KIND_SLIDING ) {
                         //slide the TopComponent to edgebar and slide it out
                         slide( tc, mode, getSlideSideForMode( mode ) );
                     }
