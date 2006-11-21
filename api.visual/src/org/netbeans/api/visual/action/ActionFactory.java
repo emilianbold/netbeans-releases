@@ -122,6 +122,8 @@ public final class ActionFactory {
 
     private static final WidgetAction RESIZE_ACTION = createResizeAction (null, null);
 
+    private static final WidgetAction CYCLE_FOCUS_OBJECT_SCENE = createCycleFocusAction (new CycleObjectSceneFocusProvider ());
+
     private ActionFactory () {
     }
 
@@ -535,6 +537,24 @@ public final class ActionFactory {
      */
     public static ResizeProvider createDefaultResizeProvider () {
         return RESIZE_PROVIDER_DEFAULT;
+    }
+
+    /**
+     * Creates a cycle focus action which switches focused object on a object scene.
+     * @return the cycle object scene focus action
+     */
+    public static WidgetAction createCycleObjectSceneFocusAction () {
+        return CYCLE_FOCUS_OBJECT_SCENE;
+    }
+
+    /**
+     * Creates a cycle focus action.
+     * @param provider the cycle focus provider
+     * @return the cycle focus action
+     */
+    public static WidgetAction createCycleFocusAction (CycleFocusProvider provider) {
+        assert provider != null;
+        return new CycleFocusAction (provider);
     }
 
 }

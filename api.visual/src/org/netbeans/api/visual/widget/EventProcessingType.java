@@ -33,10 +33,17 @@ public enum EventProcessingType {
 
     /**
      * Means that an event is processed by a focused widget of a scene and then by its parents only.
-     * If no focus widget is set, then this type does not do anything.
      */
     FOCUSED_WIDGET_AND_ITS_PARENTS,
 
-//    FOCUSED_AND_ITS_CHILDREN
+    /**
+     * Means that an event is processed by a focused widget and its children only.
+     */
+    FOCUSED_WIDGET_AND_ITS_CHILDREN,
+
+    /**
+     * Means that an event is processed by a focused widget and its children and its parents only. 
+     */
+    FOCUSED_WIDGET_AND_ITS_CHILDREN_AND_ITS_PARENTS
 
 }

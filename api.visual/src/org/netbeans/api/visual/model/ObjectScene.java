@@ -279,7 +279,7 @@ public class ObjectScene extends Scene {
      * @return the focused object; null if no object is focused
      */
     public final Object getFocusedObject () {
-        return hoveredObject;
+        return focusedObject;
     }
 
     /**
@@ -321,7 +321,9 @@ public class ObjectScene extends Scene {
                 widget.setState (widget.getState ().deriveObjectFocused (true));
             for (ObjectSceneListener listener : listeners)
                 listener.objectStateChanged (event, this.focusedObject, previousState, newState);
-        }
+            setFocusedWidget (widget);
+        } else
+            setFocusedWidget (null);
 
         for (ObjectSceneListener listener : focusListeners)
             listener.focusChanged (event, previouslyFocusedObject, this.focusedObject);
@@ -413,6 +415,17 @@ public class ObjectScene extends Scene {
         } else {
             setSelectedObjects (suggestedSelectedObjects);
         }
+    }
+
+    /**
+     * This method returns an identity code. It should be unique for each object in the scene.
+     * The identity code is a Comparable and could be used for sorting.
+     * The method implementation should be fast.
+     * @param object the object
+     * @return the identity code of the object; null, if the object is null
+     */
+    public Comparable getIdentityCode (Object object) {
+        return object != null ? System.identityHashCode (object) : null;
     }
 
     /**

@@ -346,11 +346,19 @@ final class SceneComponent extends JComponent implements MouseListener, MouseMot
     }
 
     private WidgetAction.State processKeyOperator (Operator operator, String tool, Scene scene, WidgetAction.WidgetKeyEvent event) {
+        Widget focusedWidget = scene.getFocusedWidget ();
         switch (scene.getKeyEventProcessingType ()) {
             case ALL_WIDGETS:
                 return processOperator (operator, tool, scene, event);
             case FOCUSED_WIDGET_AND_ITS_PARENTS:
-                return processParentOperator (operator, tool, scene.getFocusedWidget (), event);
+                return processParentOperator (operator, tool, focusedWidget, event);
+            case FOCUSED_WIDGET_AND_ITS_CHILDREN:
+                return processOperator (operator, tool, focusedWidget, event);
+            case FOCUSED_WIDGET_AND_ITS_CHILDREN_AND_ITS_PARENTS:
+                WidgetAction.State state = processOperator (operator, tool, focusedWidget, event);
+                if (state.isConsumed ())
+                    return state;
+                return processParentOperator (operator, tool, focusedWidget.getParentWidget (), event);
             default:
                 throw new IllegalStateException ();
         }
