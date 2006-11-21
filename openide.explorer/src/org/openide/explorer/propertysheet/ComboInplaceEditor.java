@@ -318,6 +318,8 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
             } else {
                 jtc.setBackground(PropUtils.getTextFieldBackground());
             }
+            if( tableUI )
+                jtc.requestFocus();
         }
 
         if (getLayout() != null) {
@@ -343,7 +345,8 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
             if (isEditable()) {
                 prepareEditor();
 
-                //                showPopup();
+                if( tableUI )
+                    SwingUtilities.invokeLater(new PopupChecker());
             } else {
                 if (tableUI) {
                     showPopup();
@@ -525,9 +528,8 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
 
                     if (isEditable()) {
                         prepareEditor();
-                    } else {
-                        showPopup();
                     }
+                    showPopup();
                 }
 
                 checker = null;
