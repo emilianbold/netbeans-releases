@@ -211,12 +211,12 @@ public class MessageArea extends JLabel {
 	
 	sbuf.append (">");
 	if (f != null) {
-	    if ((f.getStyle () & Font.BOLD) == 1) {
+	    if ((f.getStyle () & Font.BOLD) == Font.BOLD) {
 		sbuf.append ("<b>");
 		isBold = true;
 	    }
 		
-  	    if ((f.getStyle () & Font.ITALIC) == 1) {
+  	    if ((f.getStyle () & Font.ITALIC) == Font.ITALIC) {
 		sbuf.append ("<i>");
 		isItalic = true;
 	    }
