@@ -35,5 +35,9 @@ public interface Fix {
      *  determined.
      */
     public abstract ChangeInfo implement();
+    
+    public abstract int hashCode();
+    
+    public abstract boolean equals(Object o);
 
 }

@@ -25,6 +25,8 @@ import java.awt.Font;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
 import javax.swing.AbstractListModel;
 import javax.swing.BorderFactory;
@@ -161,7 +163,7 @@ public class ListCompletionView extends JList implements ListCellRenderer {
         private synchronized void update() {
             computed = data.isComputed();
             if (computed)
-                fixes = new ArrayList<Fix>(data.getFixes());
+                fixes = new ArrayList<Fix>(new LinkedHashSet<Fix>(data.getFixes()));
             else
                 data.getFixes();
         }
