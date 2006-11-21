@@ -155,7 +155,7 @@ public final class TreeUtilities {
                 case GTGTGT:
                 case GTGT:
                 case GT:
-                    if (path.getLeaf().getKind() == Tree.Kind.MEMBER_SELECT || path.getLeaf().getKind() == Tree.Kind.CLASS)
+                    if (path.getLeaf().getKind() == Tree.Kind.MEMBER_SELECT || path.getLeaf().getKind() == Tree.Kind.CLASS || path.getLeaf().getKind() == Tree.Kind.GREATER_THAN)
                         break;
                 case RPAREN:
                     if (path.getLeaf().getKind() == Tree.Kind.ENHANCED_FOR_LOOP || path.getLeaf().getKind() == Tree.Kind.FOR_LOOP ||
