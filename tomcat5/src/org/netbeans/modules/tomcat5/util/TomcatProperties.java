@@ -26,8 +26,11 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
@@ -35,6 +38,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.tomcat5.TomcatFactory;
 import org.netbeans.modules.tomcat5.TomcatManager;
+import org.netbeans.modules.tomcat5.TomcatManager.TomcatVersion;
 import org.netbeans.modules.tomcat5.customizer.CustomizerSupport;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
@@ -51,6 +55,8 @@ import org.openide.util.Utilities;
  * @author sherold
  */
 public class TomcatProperties {
+    
+    private static final Logger LOGGER = Logger.getLogger(TomcatProperties.class.getName());
     
     /** Java platform property which is used as a java platform ID */
     public static final String PLAT_PROP_ANT_NAME = "platform.ant.name"; //NOI18N
@@ -516,6 +522,14 @@ public class TomcatProperties {
         
         // tomcat libs
         List retValue = listUrls(new File(homeDir, tm.libFolder()),  nbFilter);    // NOI18N
+        
+        if (tm.isTomcat60()) {
+            try {
+                retValue.add(new File(homeDir, "bin/tomcat-juli.jar").toURI().toURL()); // NOI18N
+            } catch (MalformedURLException e) {
+                LOGGER.log(Level.WARNING, "$CATALINA_HOME/bin/tomcat-juli.jar not found", e); // NOI18N
+            }
+        }
 
         // jwsdp libs
         retValue.addAll(listUrls(new File(homeDir, "jaxws/lib"),    implFilter)); // NOI18N
