@@ -121,40 +121,38 @@ public class IgnoreAction extends ContextAction {
     public void performContextAction(final Node[] nodes) {
 
         final int actionStatus = getActionStatus(nodes);
+        if (actionStatus != IGNORING && actionStatus != UNIGNORING) {
+            throw new RuntimeException("Invalid action status: " + actionStatus); // NOI18N
+        }
         
         final File files[] = SvnUtils.getCurrentContext(nodes).getRootFiles();                                                
 
         ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this, nodes) {
             public void perform() {                
-                SvnClient client = Subversion.getInstance().getClient(true);               
-                for (int i = 0; i<files.length; i++) {
-                    
-                    File file = files[i];
-                    File parent = file.getParentFile();
-                                                                    
+                Map<File, Set<String>> names = splitByParent(files);
+                // do not attach onNotify listeners because the ignore command forcefully fires change events on ALL files
+                // in the parent directory and NONE of them interests us, see #89516
+                SvnClient client = Subversion.getInstance().getClient(false);               
+                for (File parent : names.keySet()) {
+                    Set<String> patterns = names.get(parent);
                     if(isCanceled()) {
                         return;
                     }
-                    if (actionStatus == IGNORING) {
-                        try {
+                    try {
+                        Set<String> currentPatterns = new HashSet<String>(client.getIgnoredPatterns(parent));
+                        if (actionStatus == IGNORING) {
                             ensureVersioned(parent);
-                            client.addToIgnoredPatterns(parent, file.getName());                            
-                        } catch (SVNClientException ex) {
-                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                            currentPatterns.addAll(patterns);
+                        } else if (actionStatus == UNIGNORING) {
+                            currentPatterns.removeAll(patterns);
                         }
-                    } else if (actionStatus == UNIGNORING) {
-                        try {
-                            List patterns = Subversion.getInstance().getClient(true).getIgnoredPatterns(parent);
-                            patterns.remove(file.getName());                                                        
-                            client.setIgnoredPatterns(parent, patterns);
-                        } catch (SVNClientException ex) {
-                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-                        }
-                    } else {
-                        throw new RuntimeException("Invalid action status: " + actionStatus); // NOI18N
+                        client.setIgnoredPatterns(parent, new ArrayList<String>(currentPatterns));
+                    } catch (SVNClientException e) {
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                     }
-                    
-                    // it's not catched by cache's onNotify(), refresh explicitly 
+                }
+                // refresh files manually, we do not suppport wildcards in ignore patterns so this is sufficient
+                for (File file : files) {
                     Subversion.getInstance().getStatusCache().refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
                 }
             }
@@ -162,6 +160,21 @@ public class IgnoreAction extends ContextAction {
         support.start(createRequestProcessor(nodes));
     }
 
+    private Map<File, Set<String>> splitByParent(File[] files) {
+        Map<File, Set<String>> map = new HashMap<File, Set<String>>(2);
+        for (File file : files) {
+            File parent = file.getParentFile();
+            if (parent == null) continue;
+            Set<String> names = map.get(parent);
+            if (names == null) {
+                names = new HashSet<String>(5);
+                map.put(parent, names);
+            }
+            names.add(file.getName());
+        }
+        return map;
+    }    
+    
     /**
      * Adds this file and all its parent folders to repository if they are not yet added. 
      * 
