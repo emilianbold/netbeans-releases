@@ -175,6 +175,7 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
         cvs.getStatusCache().addVersioningListener(this);
         cvs.addVersioningListener(this);
         explorerManager.addPropertyChangeListener(this);
+        reScheduleRefresh(0);   // the view does not listen for changes when it is not visible         
     }
 
     public void removeNotify() {

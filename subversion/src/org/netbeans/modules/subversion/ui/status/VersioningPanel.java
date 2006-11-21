@@ -172,6 +172,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         subversion.getStatusCache().addVersioningListener(this);
 //        subversion.addVersioningListener(this);
         explorerManager.addPropertyChangeListener(this);
+        reScheduleRefresh(0);   // the view does not listen for changes when it is not visible
     }
 
     public void removeNotify() {
