@@ -22,6 +22,7 @@ package org.netbeans.modules.versioning.system.cvss.util;
 import org.netbeans.lib.cvsclient.command.Command;
 import org.netbeans.lib.cvsclient.command.log.RlogCommand;
 import org.netbeans.lib.cvsclient.command.tag.RtagCommand;
+import org.netbeans.lib.cvsclient.command.tag.TagCommand;
 import org.netbeans.lib.cvsclient.command.remove.RemoveCommand;
 import org.netbeans.lib.cvsclient.command.commit.CommitCommand;
 import org.netbeans.lib.cvsclient.command.update.UpdateCommand;
@@ -39,6 +40,7 @@ public abstract class CommandDuplicator {
         if (src instanceof RemoveCommand) return new RemoveCloner((RemoveCommand) src);
         if (src instanceof RtagCommand) return new RtagCloner((RtagCommand) src);
         if (src instanceof RlogCommand) return new RlogCloner((RlogCommand) src);
+        if (src instanceof TagCommand) return new TagCloner((TagCommand) src);
         throw new IllegalArgumentException("Clone not supported for command type: " + src.getClass().getName()); // NOI18N
     }
 
@@ -129,6 +131,28 @@ public abstract class CommandDuplicator {
         }
     }
 
+    private static class TagCloner extends CommandDuplicator {
+        private final TagCommand sample;
+
+        public TagCloner(TagCommand sample) {
+            this.sample = sample;
+        }
+
+        public Command duplicate() {
+            TagCommand c = new TagCommand();
+            c.setDeleteTag(sample.isDeleteTag());
+            c.setMakeBranchTag(sample.isMakeBranchTag());
+            c.setMatchHeadIfRevisionNotFound(sample.isMatchHeadIfRevisionNotFound());
+            c.setOverrideExistingTag(sample.isOverrideExistingTag());
+            c.setTag(sample.getTag());
+            c.setTagByDate(sample.getTagByDate());
+            c.setTagByRevision(sample.getTagByRevision());
+            c.setRecursive(sample.isRecursive());
+            c.setCheckThatUnmodified(sample.isCheckThatUnmodified());
+            return c;
+        }
+    }
+    
     private static class RlogCloner extends CommandDuplicator {
         private final RlogCommand sample;
 
