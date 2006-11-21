@@ -43,7 +43,6 @@ public class MaximizeWindowAction extends AbstractAction {
     private final PropertyChangeListener propListener;
     private TopComponent topComponent;
     private boolean isPopup;
-    private static boolean isFirstActivated = true;
     
     public MaximizeWindowAction() {
         propListener = new PropertyChangeListener() {
@@ -55,8 +54,7 @@ public class MaximizeWindowAction extends AbstractAction {
                     updateState();
                 }
                 // #64876: correctly initialize after startup 
-                if (isFirstActivated && TopComponent.Registry.PROP_ACTIVATED.equals(propName)) {
-                    isFirstActivated = false;
+                if (TopComponent.Registry.PROP_ACTIVATED.equals(propName)) {
                     updateState();
                 }
             }
@@ -152,7 +150,7 @@ public class MaximizeWindowAction extends AbstractAction {
         }
 
         if (wm.isDocked(active)) {
-            maximize = wm.getCurrentMaximizedMode() == null;
+            maximize = wm.getCurrentMaximizedMode() != activeMode;
         } else {
             maximize = activeMode.getFrameState() == Frame.NORMAL;
         }
