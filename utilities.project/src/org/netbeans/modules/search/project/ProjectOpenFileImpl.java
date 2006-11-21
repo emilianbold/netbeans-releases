@@ -16,48 +16,39 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.modules.search.project;
 
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.openfile.OpenFileImpl;
 import org.openide.filesystems.FileObject;
 
-
 /**
  * Opens projects.
  *
- * @author Jaroslav Tulach
+ * @author Jaroslav Tulach, Jesse Glick
  */
 public class ProjectOpenFileImpl implements OpenFileImpl {
-    private Logger LOG = Logger.getLogger(ProjectOpenFileImpl.class.getName());
-    
+
     public boolean open(FileObject fileObject, int line) {
-        if (ProjectManager.getDefault().isProject(fileObject)) {
-            Project p = FileOwnerQuery.getOwner(fileObject);
-            LOG.log(Level.FINE, "Searching for project for {0} gives {1}", new Object[] { fileObject, p }); // NOI18N
-            if (p != null) {
-                OpenProjects.getDefault().open(new Project[] { p }, false);
-                Project opened = null;
-                try {
-                    opened = ProjectManager.getDefault().findProject(fileObject);
-                } catch (IOException ex) {
-                    LOG.log(Level.WARNING, "Project not opened", ex); // NOI18N
+        if (fileObject.isFolder()) {
+            try {
+                Project p = ProjectManager.getDefault().findProject(fileObject);
+                if (p != null) {
+                    OpenProjects.getDefault().open(new Project[] {p}, false);
+                    OpenProjects.getDefault().setMainProject(p);
+                    return true;
                 }
-                if (opened != p) {
-                    LOG.log(Level.INFO, "Project not opened! {0} != {1}", new Object[] { opened, p }); // NOI18N
-                    return false;
-                }
-                OpenProjects.getDefault().setMainProject(opened);
-                LOG.log(Level.FINE, "project {0} set as main", opened); // NOI18N
-                return true;
+            } catch (IOException ex) {
+                Logger.getLogger(ProjectOpenFileImpl.class.getName()).log(Level.WARNING, null, ex);
             }
         }
         return false;
     }
+
 }
