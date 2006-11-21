@@ -127,7 +127,7 @@ public class SvnClientExceptionHandler extends ExceptionHandler {
 
         boolean ret = (option == retryButton);
         if(ret) {
-            RepositoryConnection rc = repository.getSelectedRepositoryConnection();
+            RepositoryConnection rc = repository.getSelectedRC();
             String username = rc.getUsername();
             String password = rc.getPassword();
 

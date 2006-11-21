@@ -175,7 +175,7 @@ public class SvnClientCallback implements ISVNPromptUserPassword {
 
         boolean ret = (option == retryButton);
         if(ret) {                 
-            RepositoryConnection rc = repository.getSelectedRepositoryConnection();
+            RepositoryConnection rc = repository.getSelectedRC();
             username = rc.getUsername();
             password = rc.getPassword();                      
             // XXX we don't need this and it also should be assured that the adapter isn't precofigured with auth data as long it's not the commandline ...

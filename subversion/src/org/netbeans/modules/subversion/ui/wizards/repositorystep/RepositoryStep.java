@@ -119,7 +119,7 @@ public class RepositoryStep
     
     private RepositoryConnection getSelectedRepositoryConnection() {      
         try {
-            return repository.getSelectedRepositoryConnection();
+            return repository.getSelectedRC();
         } catch (Exception ex) {
             invalid(ex.getLocalizedMessage()); 
             return null;
