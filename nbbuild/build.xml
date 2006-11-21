@@ -990,7 +990,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   </target>
 
     <target name="-define-cvsfileset" depends="init">
-        <typedef name="cvsfileset" classname="org.netbeans.nbbuild.CvsFileSet" classpath="/space/src/nb_all/nbbuild/nbantext.jar"/>
+        <typedef name="cvsfileset" classname="org.netbeans.nbbuild.CvsFileSet" classpath="nbantext.jar"/>
         <!-- To make sure CvsFileSet$Mode.class is also loaded before nbantext.jar is deleted: -->
         <cvsfileset dir="dummy" mode="controlled"/>
     </target>
