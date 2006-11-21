@@ -20,7 +20,7 @@
     $Id$
 ============================================================================ -->
 <project name="build-common" default="usage" basedir=".">
-    <property file="${basedir}/../.common/common.properties"/>
+    <property file="${common.dir}/common.properties"/>
     
     <!-- =======================================================================
         Initialization
@@ -31,11 +31,14 @@
         <javac srcdir="${lib.src}" destdir="${lib.cls}"/>
         
         <taskdef name="for" 
-                classname="org.netbeans.installer.infra.build.ant.ForTask" 
-                classpath="${lib.cls}"/>
+                 classname="org.netbeans.installer.infra.build.ant.ForTask" 
+                 classpath="${lib.cls}"/>
         
         <condition property="checkout.from.trunk">
             <equals arg1="${cvs.branch}" arg2=""/>
+        </condition>
+        <condition property="build.native.libraries">
+            <equals arg1="${has.native}" arg2="true"/>
         </condition>
     </target>
     
@@ -44,7 +47,7 @@
     ======================================================================== -->
     <target name="clean" depends="init,clean-native,clean-java"/>
     
-    <target name="clean-native" depends="init">
+    <target name="clean-native" depends="init" if="build.native.libraries">
         <for list="${platforms}" property="platform">
             <antcall target="-clean-native"/>
         </for>
@@ -62,9 +65,11 @@
                 target="${nb.target.clean}" 
                 failonerror="false">
             <property name="${nb.platform.home.name}" 
-                    value="${nb.platform.home.value}"/>
+                      value="${nb.platform.home.value}"/>
             <property name="${nb.ignore.native.name}" 
-                    value="${nb.ignore.native.value}"/>
+                      value="${nb.ignore.native.value}"/>
+            <property name="${nb.no.dependencies.name}" 
+                      value="${nb.no.dependencies.value}"/>
         </subant>
         <delete dir="${work.dir}/${cvs.module}"/>
     </target>
@@ -76,17 +81,17 @@
     
     <target name="-checkout-trunk" if="checkout.from.trunk">
         <cvs cvsroot="${cvs.root}" 
-                command="checkout" 
-                package="${cvs.module}/${cvs.path}" 
-                dest="${work.dir}"/>
+             command="checkout" 
+             package="${cvs.module}/${cvs.path}" 
+             dest="${work.dir}"/>
     </target>
     
     <target name="-checkout-branch" unless="checkout.from.trunk">
         <cvs cvsroot="${cvs.root}" 
-                command="checkout" 
-                package="${cvs.module}/${cvs.path}" 
-                tag="${cvs.branch}" 
-                dest="${work.dir}"/>
+             command="checkout" 
+             package="${cvs.module}/${cvs.path}" 
+             tag="${cvs.branch}" 
+             dest="${work.dir}"/>
     </target>
     
     <!-- =======================================================================
@@ -94,7 +99,7 @@
     ======================================================================== -->
     <target name="build" depends="init,checkout,build-native,build-java"/>
     
-    <target name="build-native" depends="init">
+    <target name="build-native" depends="init" if="build.native.libraries">
         <for list="${platforms}" property="platform">
             <antcall target="-build-native"/>
         </for>
@@ -121,9 +126,11 @@
         <subant buildpath="${work.dir}/${cvs.module}/${cvs.path}" 
                 target="${nb.target.build}">
             <property name="${nb.platform.home.name}" 
-                    value="${nb.platform.home.value}"/>
+                      value="${nb.platform.home.value}"/>
             <property name="${nb.ignore.native.name}" 
-                    value="${nb.ignore.native.value}"/>
+                      value="${nb.ignore.native.value}"/>
+            <property name="${nb.no.dependencies.name}" 
+                      value="${nb.no.dependencies.value}"/>
         </subant>
     </target>
     

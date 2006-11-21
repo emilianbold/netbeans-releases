@@ -24,7 +24,7 @@
     
     <import file="${common.dir}/common.xml" optional="false"/>
     
-    <target name="all" depends="init,clean,checkout,build,release"/>
+    <target name="all" depends="init,clean,build,release"/>
     
     <target name="release" depends="init">
         
@@ -36,7 +36,7 @@
     <target name="usage">
         <echo>
             This script builds and releases NetBeans Installer engine. In order
-            for it to function correctly, set up the properties in 
+            for it to function correctly, set the properties in 
             build.properties, ${common.dir}/common.properties and 
             ../common/native/*.properties
         </echo>
