@@ -168,16 +168,16 @@ public class ProxySettings {
         }
 
         public static String getSocksHost () {
-            if (isSystemProxyDetect ()) {
-                return getSystemProxyHost ();
+            if (isSystemSocksServerDetect ()) {
+                return getSystemSocksServerHost ();
             } else {
                 return "";
             }
         }
 
         public static String getSocksPort () {
-            if (isSystemProxyDetect ()) {
-                return getSystemProxyPort ();
+            if (isSystemSocksServerDetect ()) {
+                return getSystemSocksServerPort ();
             } else {
                 return "";
             }
@@ -218,6 +218,21 @@ public class ProxySettings {
             }
 
             return systemProxy.substring (i+1);
+        }
+
+        private static boolean isSystemSocksServerDetect () {
+            // no SOCKS detection yet
+            return false;
+        }
+        
+        private static String getSystemSocksServerHost () {
+            assert false : "SOCKS Server cannot be detected yet.";
+            return "";
+        }
+
+        private static String getSystemSocksServerPort () {
+            assert false : "SOCKS Server cannot be detected yet.";
+            return "";
         }
 
     }
