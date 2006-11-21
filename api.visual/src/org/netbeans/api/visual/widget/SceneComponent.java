@@ -21,6 +21,7 @@ package org.netbeans.api.visual.widget;
 import org.netbeans.api.visual.action.WidgetAction;
 
 import javax.swing.*;
+import javax.accessibility.AccessibleContext;
 import java.awt.*;
 import java.awt.dnd.*;
 import java.awt.event.*;
@@ -37,6 +38,7 @@ final class SceneComponent extends JComponent implements MouseListener, MouseMot
     private Widget lockedWidget;
     private WidgetAction lockedAction;
     private long eventIDcounter = 0;
+    private AccessibleContext accessibleContext;
 
     public SceneComponent (Scene scene) {
         this.scene = scene;
@@ -59,6 +61,14 @@ final class SceneComponent extends JComponent implements MouseListener, MouseMot
         scene.setGraphics ((Graphics2D) getGraphics ());
         scene.revalidate ();
         scene.validate ();
+    }
+
+    public AccessibleContext getAccessibleContext () {
+        return accessibleContext;
+    }
+
+    private void setAccessibleContext (AccessibleContext accessibleContext) {
+        this.accessibleContext = accessibleContext;
     }
 
     public void setBounds (int x, int y, int width, int height) {
@@ -503,20 +513,23 @@ final class SceneComponent extends JComponent implements MouseListener, MouseMot
     private static final class MouseContext {
 
         private String toolTipText;
-
         private Cursor cursor;
+        private AccessibleContext accessibleContext;
 
         public boolean update (Widget widget) {
             if (cursor == null)
                 cursor = widget.getCursor ();
             if (toolTipText == null)
                 toolTipText = widget.getToolTipText ();
-            return cursor == null  ||  toolTipText == null;
+            if (accessibleContext == null)
+                accessibleContext = widget.getAccessibleContext ();
+            return cursor == null  ||  toolTipText == null  ||  accessibleContext == null;
         }
 
         public void commit (SceneComponent component) {
             component.setToolTipText (toolTipText);
             component.setCursor (cursor);
+            component.setAccessibleContext (accessibleContext);
         }
 
     }

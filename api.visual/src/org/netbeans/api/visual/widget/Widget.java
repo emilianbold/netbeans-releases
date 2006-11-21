@@ -27,6 +27,7 @@ import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.modules.visual.util.GeomUtil;
 import org.openide.util.Lookup;
 
+import javax.accessibility.AccessibleContext;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
@@ -94,6 +95,7 @@ public class Widget {
 
     private Cursor cursor;
     private String toolTipText;
+    private AccessibleContext accessibleContext;
 
     private Point location;
     private Rectangle bounds;
@@ -618,6 +620,22 @@ public class Widget {
      */
     public final void setToolTipText (String toolTipText) {
         this.toolTipText = toolTipText;
+    }
+
+    /**
+     * Returns an accessible context of the widget.
+     * @return the accessible context
+     */
+    public final AccessibleContext getAccessibleContext () {
+        return accessibleContext;
+    }
+
+    /**
+     * Sets a accessible context of the widget.
+     * @param accessibleContext the accessible context
+     */
+    public final void setAccessibleContext (AccessibleContext accessibleContext) {
+        this.accessibleContext = accessibleContext;
     }
 
     /**
