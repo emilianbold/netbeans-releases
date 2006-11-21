@@ -82,8 +82,9 @@ public class Utils {
             
         } finally {
             try {
-                if (p!=null)
+                if (p!=null) {
                     p.close();
+                }
             } catch (Exception ex) {
                 return null;
             }
@@ -122,7 +123,7 @@ public class Utils {
         ConnectorResource[] connResources = resources.getConnectorResource();
         ConnectorConnectionPool[] connPoolResources = resources.getConnectorConnectionPool();
         AdminObjectResource[] admObjResources = resources.getAdminObjectResource();
-        if(admObjResources.length != 0 ||(connPoolResources.length != 0 & connResources.length != 0)){
+        if(admObjResources.length != 0 ||(connPoolResources.length != 0 && connResources.length != 0)){
             return "jms-resource";
         }
         return null;
@@ -136,8 +137,9 @@ public class Utils {
     public static File[] getResourceDirs(javax.enterprise.deploy.model.DeployableObject deployableObject){
         try{
             SourceFileMap sourceFileMap = SourceFileMap.findSourceMap(deployableObject);
-            if (sourceFileMap != null)
+            if (sourceFileMap != null) {
                 return sourceFileMap.getEnterpriseResourceDirs();
+            }
             }catch(Exception exception){
                 System.out.println(exception.getMessage());
         }
