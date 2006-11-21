@@ -76,6 +76,14 @@ public class DbSchemaEjbGenerator {
             return false;
         }
         
+        // issue 89576: a table which references itself is not a join table
+        String tableName = e.getName().getName();
+        for (int i = 0; i < 2; i++) {
+            if (tableName.equals(foreignKeys[i].getReferencedTable().getName().getName())) {
+                return false;
+            }
+        }
+        
         return true;
     }
     
