@@ -58,6 +58,8 @@ public class DefaultLookFeel extends LookFeel {
             return BORDER_HOVERED;
         if (state.isSelected ())
             return BORDER_SELECTED;
+        if (state.isFocused ())
+            return BORDER_HOVERED;
         return BORDER_NORMAL;
     }
 
@@ -66,6 +68,8 @@ public class DefaultLookFeel extends LookFeel {
             return MINI_BORDER_HOVERED;
         if (state.isSelected ())
             return MINI_BORDER_SELECTED;
+        if (state.isFocused ())
+            return MINI_BORDER_HOVERED;
         return MINI_BORDER_NORMAL;
     }
 
@@ -78,7 +82,7 @@ public class DefaultLookFeel extends LookFeel {
             return COLOR_HOVERED;
         if (state.isSelected ())
             return COLOR_SELECTED;
-        if (state.isHighlighted ())
+        if (state.isHighlighted ()  || state.isFocused ())
             return COLOR_HIGHLIGHTED;
         return Color.BLACK;
     }
@@ -88,7 +92,7 @@ public class DefaultLookFeel extends LookFeel {
             return COLOR_HOVERED;
         if (state.isSelected ())
             return COLOR_SELECTED;
-        if (state.isHighlighted ())
+        if (state.isHighlighted ()  || state.isFocused ())
             return COLOR_HIGHLIGHTED;
         return Color.WHITE;
     }

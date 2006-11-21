@@ -23,6 +23,7 @@ import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.action.SelectProvider;
 
 import java.awt.event.MouseEvent;
+import java.awt.event.KeyEvent;
 import java.awt.*;
 
 /**
@@ -84,6 +85,14 @@ public final class SelectAction extends WidgetAction.LockedAdapter {
         aimedWidget = widget;
         if (aimedWidget != null)
             aimedWidget.setState (aimedWidget.getState ().deriveWidgetAimed (true));
+    }
+
+    public State keyTyped (Widget widget, WidgetKeyEvent event) {
+        if (! aiming  &&  event.getKeyChar () == KeyEvent.VK_SPACE) {
+            provider.select (widget, null, (event.getModifiersEx () & MouseEvent.CTRL_DOWN_MASK) != 0);
+            return State.CONSUMED;
+        }
+        return State.REJECTED;
     }
 
 }

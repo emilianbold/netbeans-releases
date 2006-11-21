@@ -27,6 +27,7 @@ import org.netbeans.api.visual.widget.Widget;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
+import java.awt.event.KeyEvent;
 
 /**
  * @author David Kaspar
@@ -64,6 +65,17 @@ public final class InplaceEditorAction <C extends JComponent> extends WidgetActi
         if (editor != null)
             closeEditor (true);
         return State.REJECTED;
+    }
+
+    public State keyTyped (Widget widget, WidgetKeyEvent event) {
+        if (event.getKeyChar () == KeyEvent.VK_ENTER)
+            if (openEditor (widget))
+                return State.createLocked (widget, this);
+        return State.REJECTED;
+    }
+
+    public State keyReleased (Widget widget, WidgetKeyEvent event) {
+        return super.keyReleased (widget, event); // TODO
     }
 
     public final boolean isEditorVisible () {

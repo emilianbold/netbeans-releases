@@ -50,8 +50,8 @@ public final class TextFieldInplaceEditorProvider implements InplaceEditorProvid
     public void notifyOpened (final EditorController controller, Widget widget, JTextField editor) {
         editor.setMinimumSize (new Dimension (64, 19));
         keyListener = new KeyAdapter() {
-            public void keyReleased (KeyEvent e) {
-                switch (e.getKeyCode ()) {
+            public void keyTyped (KeyEvent e) {
+                switch (e.getKeyChar ()) {
                     case KeyEvent.VK_ESCAPE:
                         e.consume ();
                         controller.closeEditor (false);

@@ -23,6 +23,7 @@ import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.action.EditProvider;
 
 import java.awt.event.MouseEvent;
+import java.awt.event.KeyEvent;
 
 /**
  * @author David Kaspar
@@ -37,6 +38,14 @@ public final class EditAction extends WidgetAction.Adapter {
 
     public State mouseClicked (Widget widget, WidgetMouseEvent event) {
         if (event.getButton () == MouseEvent.BUTTON1  &&  event.getClickCount () == 2) {
+            provider.edit (widget);
+            return State.CONSUMED;
+        }
+        return State.REJECTED;
+    }
+
+    public State keyTyped (Widget widget, WidgetKeyEvent event) {
+        if (event.getKeyChar () == KeyEvent.VK_ENTER) {
             provider.edit (widget);
             return State.CONSUMED;
         }
