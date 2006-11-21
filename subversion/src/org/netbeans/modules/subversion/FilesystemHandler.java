@@ -237,12 +237,12 @@ class FilesystemHandler extends VCSInterceptor {
             SvnClient client = Subversion.getInstance().getClient(false);
             client.remove(new File [] { file }, true);
 
-            // fire event explicitly because the file is already gone
-            // so svnClientAdapter does not fire ISVNNotifyListener event
-            cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
         } catch (SVNClientException e) {
-            // ignore; we do not know what to do here; does no harm
+            // ignore; we do not know what to do here; does no harm, the file was probably Locally New
         }
+        // fire event explicitly because the file is already gone
+        // so svnClientAdapter does not fire ISVNNotifyListener event
+        cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
     }
     
     private boolean hasMetadata(File file) {
