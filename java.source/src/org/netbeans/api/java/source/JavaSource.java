@@ -77,7 +77,6 @@ import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.api.timers.TimesCollector;
 import org.netbeans.editor.Registry;
 import org.netbeans.modules.java.builder.ASTService;
-import org.netbeans.modules.java.builder.Builder2;
 import org.netbeans.modules.java.builder.Scanner;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.JavadocEnv;
