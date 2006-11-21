@@ -59,7 +59,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
-import java.util.Collections;
 
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
@@ -93,6 +92,7 @@ public class SymbolClassReader extends JavadocClassReader {
     private char[] buffer;
     private int currentBufferIndex;
     
+    private boolean readingClassSignature = false;
     private boolean readingEnclMethod = false;
     private List<Type> missingTypeVariables = List.nil();
     private List<Type> foundTypeVariables = List.nil();
@@ -208,61 +208,67 @@ public class SymbolClassReader extends JavadocClassReader {
         long flags = readFlags(r) | Flags.FROMCLASS;
         c.flags_field = flags;
 
-        //read type variables:
         int read = r.read();
-        List<TypeVar> typevarsList;
-        
-        if (read == '<') {
-            typevarsList = readTypeParamsWithName(r, c);
-            read = r.read();
-        } else {
-            typevarsList = List.<TypeVar>nil();
-        }
-        
-        for (TypeVar tvar : typevarsList) {
-            typevars.enter(tvar.tsym);
-        }
-        
-        ct.typarams_field = (List<Type>) ((List<?>) typevarsList);
-        
-        assert read == 'N' : read;
-        
-        Name name = readPlainNameIntoTable(r);
-        
-        if (name != c.flatname) {
-            throw badClassFile("class.file.wrong.class",
-                    name);
-        }
-        
-        // handle enclosing method for anonymous and local classes
-        if ((read = r.read()) != ';') {
-            readEnclosingMethodAttr(r, c, read);
-        }
-        
-        read = r.read();
-        
-        if (read != ';') {
-            ct.supertype_field = readType(r, read); //XXX: Maybe add ct.supertype_field.tsym.erase () as the ClassReader does
-        } else {
-            //noType as the parent, for j.l.Object:
-            ct.supertype_field = Type.noType;
-        }
-        
-        if (ct.supertype_field.getClass() == Type.class) {
-            if (!ct.supertype_field.isPrimitive()) {
-                System.err.println("PROBLEM");
-                System.err.println("c=" + c.flatname.toString());
+        readingClassSignature = true;
+        try {
+            //read type variables:
+            List<TypeVar> typevarsList;
+            
+            if (read == '<') {
+                typevarsList = readTypeParamsWithName(r, c);
+                read = r.read();
+            } else {
+                typevarsList = List.<TypeVar>nil();
             }
+            
+            for (TypeVar tvar : typevarsList) {
+                typevars.enter(tvar.tsym);
+            }
+            
+            ct.typarams_field = (List<Type>) ((List<?>) typevarsList);
+            
+            assert read == 'N' : read;
+            
+            Name name = readPlainNameIntoTable(r);
+            
+            if (name != c.flatname) {
+                throw badClassFile("class.file.wrong.class",
+                        name);
+            }
+            
+            // handle enclosing method for anonymous and local classes
+            if ((read = r.read()) != ';') {
+                readEnclosingMethodAttr(r, c, read);
+            }
+            
+            read = r.read();
+            
+            if (read != ';') {
+                ct.supertype_field = readType(r, read); //XXX: Maybe add ct.supertype_field.tsym.erase () as the ClassReader does
+            } else {
+                //noType as the parent, for j.l.Object:
+                ct.supertype_field = Type.noType;
+            }
+            
+            if (ct.supertype_field.getClass() == Type.class) {
+                if (!ct.supertype_field.isPrimitive()) {
+                    System.err.println("PROBLEM");
+                    System.err.println("c=" + c.flatname.toString());
+                }
+            }
+            
+            //read super interfaces:
+            List<Type> superInterfaces = List.nil();
+            
+            while ((read = r.read()) != ';') {
+                superInterfaces = superInterfaces.prepend(readType(r, read));   //XXX: Maybe add erase () as the ClassReader does
+            }
+            
+            ct.interfaces_field = superInterfaces.reverse();
+            
+        } finally {
+            readingClassSignature = false;
         }
-        
-        //read super interfaces:
-        List<Type> superInterfaces = List.nil();
-        
-        while ((read = r.read()) != ';') {
-            superInterfaces = superInterfaces.prepend(readType(r, read));   //XXX: Maybe add erase () as the ClassReader does
-        }
-        
-        ct.interfaces_field = superInterfaces.reverse();
         
         //handle innerclasses
         while ((read = r.read()) != ';') {
@@ -407,7 +413,21 @@ public class SymbolClassReader extends JavadocClassReader {
             
             Name typeName = findName(buffer, bufferLength());
             
-            TypeVar tvar = new TypeVar(typeName, owner, syms.botType);
+            TypeVar tvar = null;
+            List<Type> last = null;
+            for (List<Type> l = missingTypeVariables; l.nonEmpty(); l = l.tail) {
+                if (typeName == l.head.tsym.name) {
+                    tvar = (TypeVar)l.head;
+                    if (last != null)
+                        last.tail = l.tail;
+                    else
+                        missingTypeVariables = l.tail;
+                    break;
+                }
+                last = l;
+            }
+            if (tvar == null)
+                tvar = new TypeVar(typeName, owner, syms.botType);
             
             typevars.enter(tvar.tsym);
             
@@ -536,7 +556,7 @@ public class SymbolClassReader extends JavadocClassReader {
         if (e.scope != null) {
             return e.sym.type;
         } else {
-            if (readingEnclMethod) {
+            if (readingClassSignature || readingEnclMethod) {
                 // While reading the class attribute, the supertypes
                 // might refer to a type variable from an enclosing element
                 // (method or class).
