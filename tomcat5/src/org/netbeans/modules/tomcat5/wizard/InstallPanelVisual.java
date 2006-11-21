@@ -34,8 +34,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.tomcat5.TomcatFactory;
-import org.netbeans.modules.tomcat5.TomcatFactory55;
-import org.netbeans.modules.tomcat5.TomcatManager;
+import org.netbeans.modules.tomcat5.TomcatManager.TomcatVersion;
 import org.netbeans.modules.tomcat5.config.gen.Server;
 import org.netbeans.modules.tomcat5.util.TomcatInstallUtil;
 import org.netbeans.modules.tomcat5.util.TomcatProperties;
@@ -54,7 +53,7 @@ class InstallPanelVisual extends javax.swing.JPanel {
     private final String SERVER_XML = "conf/server.xml"; // NOI18N
     
     private final List listeners = new ArrayList();
-    private final int tomcatVersion;
+    private final TomcatVersion tomcatVersion;
     
     private String errorMessage;
     
@@ -65,8 +64,8 @@ class InstallPanelVisual extends javax.swing.JPanel {
     
     
     /** Creates new form JPanel */
-    public InstallPanelVisual(int aTomcatVersion) {
-        tomcatVersion = aTomcatVersion;
+    public InstallPanelVisual(TomcatVersion tomcatVersion) {
+        this.tomcatVersion = tomcatVersion;
         initComponents();
         DocumentListener updateListener = new DocumentListener() {
             public void changedUpdate(DocumentEvent e) {
@@ -374,10 +373,17 @@ class InstallPanelVisual extends javax.swing.JPanel {
     
     public String getUrl() {
         String url;
-        if (tomcatVersion == TomcatManager.TOMCAT_55) {
-            url = TomcatFactory55.tomcatUriPrefix;
-        } else {
-            url = TomcatFactory.tomcatUriPrefix;
+        switch (tomcatVersion) {
+            case TOMCAT_60:
+                url = TomcatFactory.TOMCAT_URI_PREFIX_60;
+                break;
+            case TOMCAT_55:
+                url = TomcatFactory.TOMCAT_URI_PREFIX_55;
+                break;
+            case TOMCAT_50:
+            default:
+                url = TomcatFactory.TOMCAT_URI_PREFIX_50;
+                break;
         }
         
         url += "home=" + jTextFieldHomeDir.getText();       // NOI18N

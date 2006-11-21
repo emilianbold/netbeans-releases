@@ -27,17 +27,16 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="Tomcat5">
                 <file name="Descriptor" url="deployment.xml"/>
                 <file name="Factory.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.tomcat5.TomcatFactory.create"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.tomcat5.TomcatFactory.create50"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.tomcat5.TomcatFactory"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.tomcat5.TomcatFactory,javax.enterprise.deploy.spi.factories.DeploymentFactory"/>
                 </file>
                 <file name="TomcatRegistryNodeFactory.instance">                                
-                    <!--<attr name="instanceCreate" methodvalue="org.netbeans.modules.tomcat5.nodes.TomcatRegistryNodeFactory.create"/>-->
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.tomcat5.nodes.TomcatRegistryNodeFactory"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.RegistryNodeFactory"/>
                 </file>
                 <file name="OptionalFactory.instance">
-                    <attr name="instanceCreate" newvalue="org.netbeans.modules.tomcat5.ide.OptionalFactory"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.tomcat5.ide.OptionalFactory.create50"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.tomcat5.ide.OptionalFactory"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.OptionalDeploymentManagerFactory"/>
                 </file>
@@ -60,18 +59,48 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="Tomcat55">
                 <file name="Descriptor" url="deployment55.xml"/>
                 <file name="Factory55.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.tomcat5.TomcatFactory55.create"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.tomcat5.TomcatFactory55"/>
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.tomcat5.TomcatFactory55,javax.enterprise.deploy.spi.factories.DeploymentFactory"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.tomcat5.TomcatFactory.create55"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.tomcat5.TomcatFactory"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.tomcat5.TomcatFactory,javax.enterprise.deploy.spi.factories.DeploymentFactory"/>
                 </file>
-                <file name="TomcatRegistryNodeFactory.instance">                                
-                    <!--<attr name="instanceCreate" methodvalue="org.netbeans.modules.tomcat5.nodes.TomcatRegistryNodeFactory.create"/>-->
+                <file name="TomcatRegistryNodeFactory.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.tomcat5.nodes.TomcatRegistryNodeFactory"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.RegistryNodeFactory"/>
                 </file>
                 <file name="OptionalFactory55.instance">
-                    <attr name="instanceCreate" newvalue="org.netbeans.modules.tomcat5.ide.OptionalFactory55"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.tomcat5.ide.OptionalFactory55"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.tomcat5.ide.OptionalFactory.create55"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.tomcat5.ide.OptionalFactory"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.OptionalDeploymentManagerFactory"/>
+                </file>
+                <file name="TomcatPlatformFactory.instance">
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.tomcat5.ide.TomcatPlatformFactory"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.tomcat5.ide.TomcatPlatformFactory"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.J2eePlatformFactory"/>
+                </file>
+                <file name="ConfigurationSupportImpl.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.tomcat5.config.ConfigurationSupportImpl"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.ConfigurationSupport"/>
+                </file>
+                <folder name="DeploymentFileNames">
+                    <folder name="WAR">
+                        <file name="META-INF\context.xml"/>
+                    </folder>
+                </folder>
+            </folder>
+            <folder name="Tomcat60">
+                <file name="Descriptor" url="deployment60.xml"/>
+                <file name="Factory60.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.tomcat5.TomcatFactory.create60"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.tomcat5.TomcatFactory"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.tomcat5.TomcatFactory,javax.enterprise.deploy.spi.factories.DeploymentFactory"/>
+                </file>
+                <file name="TomcatRegistryNodeFactory.instance">                                
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.tomcat5.nodes.TomcatRegistryNodeFactory"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.RegistryNodeFactory"/>
+                </file>
+                <file name="OptionalFactory60.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.tomcat5.ide.OptionalFactory.create60"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.tomcat5.ide.OptionalFactory"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.OptionalDeploymentManagerFactory"/>
                 </file>
                 <file name="TomcatPlatformFactory.instance">

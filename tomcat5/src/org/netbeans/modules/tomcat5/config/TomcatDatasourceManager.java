@@ -31,6 +31,7 @@ import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
 import org.netbeans.modules.j2ee.deployment.plugins.api.DatasourceManager;
 import org.netbeans.modules.tomcat5.TomcatManager;
+import org.netbeans.modules.tomcat5.TomcatManager.TomcatVersion;
 import org.netbeans.modules.tomcat5.config.gen.GlobalNamingResources;
 import org.netbeans.modules.tomcat5.config.gen.Parameter;
 import org.netbeans.modules.tomcat5.config.gen.ResourceParams;
@@ -76,8 +77,8 @@ public class TomcatDatasourceManager implements DatasourceManager {
         if (globalNamingResources.length > 0) {
             // only one GlobalNamingResources element is allowed
             GlobalNamingResources globalNR = globalNamingResources[0];
-            if (tm.getTomcatVersion() == TomcatManager.TOMCAT_55) {
-                // Tomcat 5.5.x
+            if (tm.getTomcatVersion() != TomcatVersion.TOMCAT_50) {
+                // Tomcat 5.5.x or Tomcat 6.0.x
                 int length = globalNR.getResource().length;
                 for (int i = 0; i < length; i++) {
                     String type = globalNR.getResourceType(i);

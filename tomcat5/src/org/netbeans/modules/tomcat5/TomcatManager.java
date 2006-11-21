@@ -62,6 +62,8 @@ import org.openide.util.NbBundle;
  */
 public class TomcatManager implements DeploymentManager {
     
+    public enum TomcatVersion {TOMCAT_50, TOMCAT_55, TOMCAT_60};
+    
     public static ErrorManager ERR = ErrorManager.getDefault().getInstance("org.netbeans.modules.tomcat5"); // NOI18N
 
     /** Enum value for get*Modules methods. */
@@ -72,9 +74,6 @@ public class TomcatManager implements DeploymentManager {
     
     /** Enum value for get*Modules methods. */
     static final int ENUM_NONRUNNING = 2;
-    
-    public static final int TOMCAT_50 = 0;
-    public static final int TOMCAT_55 = 1;
     
     private static final String PROP_BUNDLED_TOMCAT = "is_it_bundled_tomcat";       // NOI18N
     
@@ -99,7 +98,7 @@ public class TomcatManager implements DeploymentManager {
     
     private TomcatProperties tp;
     
-    private int tomcatVersion;
+    private TomcatVersion tomcatVersion;
     
     private InstanceProperties ip;
 
@@ -109,7 +108,7 @@ public class TomcatManager implements DeploymentManager {
      * @param uname username
      * @param passwd password
      */
-    public TomcatManager(boolean conn, String uri, int tomcatVersion) 
+    public TomcatManager(boolean conn, String uri, TomcatVersion tomcatVersion) 
     throws IllegalArgumentException {
         if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
             TomcatFactory.getEM ().log ("Creating connected TomcatManager uri="+uri); //NOI18N
@@ -189,10 +188,14 @@ public class TomcatManager implements DeploymentManager {
      * @return URI including home and base specification
      */
     public String getUri () {
-        if (isTomcat55()) {
-            return TomcatFactory55.tomcatUriPrefix + uri;
-        } else {
-            return TomcatFactory.tomcatUriPrefix + uri;            
+        switch (tomcatVersion) {
+            case TOMCAT_60: 
+                return TomcatFactory.TOMCAT_URI_PREFIX_60 + uri;
+            case TOMCAT_55: 
+                return TomcatFactory.TOMCAT_URI_PREFIX_55 + uri;
+            case TOMCAT_50: 
+            default:
+                return TomcatFactory.TOMCAT_URI_PREFIX_50 + uri;
         }
     }
     
@@ -348,15 +351,25 @@ public class TomcatManager implements DeploymentManager {
         return false;
     }
     
+    public boolean isTomcat60() {
+        return tomcatVersion == TomcatVersion.TOMCAT_60;
+    }
+    
     public boolean isTomcat55() {
-        return tomcatVersion == TOMCAT_55;
+        return tomcatVersion == TomcatVersion.TOMCAT_55;
     }
     
     public boolean isTomcat50() {
-        return tomcatVersion == TOMCAT_50;
+        return tomcatVersion == TomcatVersion.TOMCAT_50;
     }
     
-    public int getTomcatVersion() {
+    /** Returns Tomcat lib folder: "lib" for  Tomcat 6.0 and "common/lib" for Tomcat 5.x */
+    public String libFolder() {
+        // Tomcat 5.x and 6.0 uses different lib folder
+        return isTomcat60() ?  "lib" : "common/lib"; // NOI18N
+    }
+    
+    public TomcatVersion getTomcatVersion() {
         return tomcatVersion;
     }
 
@@ -970,7 +983,7 @@ public class TomcatManager implements DeploymentManager {
     
     public synchronized TomcatPlatformImpl getTomcatPlatform() {
         if (tomcatPlatform == null) {
-            tomcatPlatform = new TomcatPlatformImpl(tp);
+            tomcatPlatform = new TomcatPlatformImpl(this);
         }
         return tomcatPlatform;
     }

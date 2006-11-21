@@ -56,6 +56,7 @@ import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerServerSettings;
 import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerSupport;
 import org.netbeans.modules.tomcat5.TomcatFactory;
 import org.netbeans.modules.tomcat5.TomcatManager;
+import org.netbeans.modules.tomcat5.TomcatManager.TomcatVersion;
 import org.netbeans.modules.tomcat5.util.EditableProperties;
 import org.netbeans.modules.tomcat5.util.TomcatProperties;
 import org.openide.filesystems.FileObject;
@@ -312,7 +313,7 @@ public final class StartTomcat extends StartServer implements ProgressObject {
                     if (MonitorSupport.getMonitorFlag(tm)) {
                         // tomcat has been started with monitor enabled
                         MonitorSupport.setMonitorFlag(tm, false);
-                        fireCmdExecProgressEvent("MSG_enableMonitorSupportErr", StateType.FAILED);
+                        fireCmdExecProgressEvent(tm.isTomcat60() ? "MSG_enableMonitorSupportErr60" : "MSG_enableMonitorSupportErr", StateType.FAILED);
                     } else {
                         // tomcat has been started with monitor disabled
                         fireCmdExecProgressEvent("MSG_disableMonitorSupportErr", StateType.FAILED);
@@ -768,7 +769,7 @@ public final class StartTomcat extends StartServer implements ProgressObject {
             return new File(tp.getScriptPath());
         }
         // use catalina50.sh/bat for Tomcat 5.0 on jdk1.5
-        if (tm.getTomcatVersion() == TomcatManager.TOMCAT_50 
+        if (tm.getTomcatVersion() == TomcatVersion.TOMCAT_50 
              && "1.5".equals(getJavaPlatform().getSpecification().getVersion().toString())) {  // NOI18N
             String startupScript = Utilities.isWindows() ? CATALINA_50_BAT : CATALINA_50_SH;
             File scriptFile = new File(tp.getCatalinaHome(), "/bin/" + startupScript); // NOI18N
@@ -803,7 +804,7 @@ public final class StartTomcat extends StartServer implements ProgressObject {
                     int idx = commonLoader.indexOf(COMMON_ENDORSED);
                     if (endorsedEnabled) {
                         if (idx == -1) { // common/endorsed/*.jar is not present, add it
-                            String COMMON_LIB = "${catalina.home}/common/lib/*.jar"; // NOI18N
+                            String COMMON_LIB = "${catalina.home}/" + tm.libFolder() + "/*.jar"; // NOI18N
                             int commonLibIdx = commonLoader.indexOf(COMMON_LIB);
                             StringBuffer sb = new StringBuffer(commonLibIdx == -1 
                                     ? commonLoader 

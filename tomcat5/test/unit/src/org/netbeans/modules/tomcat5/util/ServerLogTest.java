@@ -23,10 +23,6 @@ import java.io.File;
 import junit.textui.TestRunner;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.modules.tomcat5.TomcatFactory55;
-import org.netbeans.modules.tomcat5.TomcatFactory55Test;
-import org.netbeans.modules.tomcat5.TomcatManager;
-import org.openide.util.Utilities;
 import org.netbeans.modules.tomcat5.util.LogSupport.LineInfo;
 import org.netbeans.modules.tomcat5.util.ServerLog.ServerLogSupport;
 

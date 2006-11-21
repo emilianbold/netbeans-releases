@@ -42,9 +42,6 @@ import org.openide.util.Utilities;
  */
 public class TomcatPlatformImpl extends J2eePlatformImpl {
     
-    private static final Set/*<Object>*/ MODULE_TYPES = new HashSet();
-    private static final Set/*<String>*/ SPEC_VERSIONS = new HashSet();
-    
     private static final String WSCOMPILE_LIBS[] = new String[] {
         "jaxrpc/lib/jaxrpc-api.jar",        // NOI18N
         "jaxrpc/lib/jaxrpc-impl.jar",       // NOI18N
@@ -136,18 +133,14 @@ public class TomcatPlatformImpl extends J2eePlatformImpl {
     
     private String displayName;
     private TomcatProperties tp;
+    private TomcatManager manager;
     
     private List/*<LibraryImpl>*/ libraries  = new ArrayList();
     
-    static {
-        MODULE_TYPES.add(J2eeModule.WAR);
-        SPEC_VERSIONS.add(J2eeModule.J2EE_13);
-        SPEC_VERSIONS.add(J2eeModule.J2EE_14);
-    }
-    
     /** Creates a new instance of TomcatInstallation */
-    public TomcatPlatformImpl(TomcatProperties tp) {
-        this.tp = tp;
+    public TomcatPlatformImpl(TomcatManager manager) {
+        this.manager = manager;
+        this.tp = manager.getTomcatProperties();
         displayName = tp.getDisplayName();
         
         J2eeLibraryTypeProvider libProvider = new J2eeLibraryTypeProvider();
@@ -426,11 +419,19 @@ public class TomcatPlatformImpl extends J2eePlatformImpl {
     }
         
     public Set/*<Object>*/ getSupportedModuleTypes() {
-        return MODULE_TYPES;
+        Set moduleTypes = new HashSet(1);
+        moduleTypes.add(J2eeModule.WAR);
+        return moduleTypes;
     }
     
     public Set/*<String>*/ getSupportedSpecVersions() {
-        return SPEC_VERSIONS;
+        Set specVersions = new HashSet(3);
+        specVersions.add(J2eeModule.J2EE_13);
+        specVersions.add(J2eeModule.J2EE_14);
+        if (manager.isTomcat60()) {
+            specVersions.add(J2eeModule.JAVA_EE_5);
+        }
+        return specVersions;
     }
     
     public Set/*<String>*/ getSupportedJavaPlatformVersions() {

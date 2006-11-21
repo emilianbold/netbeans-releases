@@ -34,7 +34,6 @@ import org.netbeans.api.java.platform.Specification;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.tomcat5.TomcatFactory;
-import org.netbeans.modules.tomcat5.TomcatFactory55;
 import org.netbeans.modules.tomcat5.TomcatManager;
 import org.netbeans.modules.tomcat5.customizer.CustomizerSupport;
 import org.openide.ErrorManager;
@@ -255,10 +254,23 @@ public class TomcatProperties {
         }
         // generate unique tomcat instance identifier (e.g. tomcat55, tomcat55_1, ...
         // for Tomcat 5.5.x and tomcat50, tomcat50_1... for Tomcat 5.0.x)
-        boolean tm50 = tm.isTomcat50();
-        String prefix = tm50 ? "tomcat50" : "tomcat55"; // NOI18N
-        String[] instanceURLs = Deployment.getDefault().getInstancesOfServer(
-                tm50 ? TomcatFactory.SERVER_ID : TomcatFactory55.SERVER_ID); // NOI18N
+        String prefix;
+        String serverID;
+        switch (tm.getTomcatVersion()) {
+            case TOMCAT_60:
+                prefix = "tomcat60"; // NIO18N
+                serverID = TomcatFactory.SERVER_ID_60;
+                break;
+            case TOMCAT_55:
+                prefix = "tomcat55"; // NIO18N
+                serverID = TomcatFactory.SERVER_ID_55;
+                break;
+            case TOMCAT_50:
+            default:
+                prefix = "tomcat50"; // NIO18N
+                serverID = TomcatFactory.SERVER_ID_50;
+        }
+        String[] instanceURLs = Deployment.getDefault().getInstancesOfServer(serverID);
         for (int i = 0; name == null; i++) {
             if (i == 0) {
                 name = prefix;
@@ -501,8 +513,9 @@ public class TomcatProperties {
         String[] implFilter = new String[] {
             "-impl.jar"
         };
+        
         // tomcat libs
-        List retValue = listUrls(new File(homeDir, "common/lib"),  nbFilter);    // NOI18N
+        List retValue = listUrls(new File(homeDir, tm.libFolder()),  nbFilter);    // NOI18N
 
         // jwsdp libs
         retValue.addAll(listUrls(new File(homeDir, "jaxws/lib"),    implFilter)); // NOI18N

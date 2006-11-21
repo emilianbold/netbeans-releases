@@ -28,20 +28,36 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.OptionalDeploymentManage
 import org.netbeans.modules.j2ee.deployment.plugins.api.StartServer;
 import org.netbeans.modules.j2ee.deployment.plugins.api.TargetModuleIDResolver;
 import org.netbeans.modules.tomcat5.AntDeploymentProviderImpl;
-import org.netbeans.modules.tomcat5.TomcatManager;
+import org.netbeans.modules.tomcat5.TomcatManager.TomcatVersion;
 import org.netbeans.modules.tomcat5.config.TomcatDatasourceManager;
 import org.netbeans.modules.tomcat5.jsps.FindJSPServletImpl;
 import org.openide.WizardDescriptor;
 import org.netbeans.modules.tomcat5.wizard.AddInstanceIterator;
 
 /**
- * OptionalFactory implementation for Tomcat 5.0
+ * OptionalFactory implementation
  *
  * @author  Pavel Buzek
  */
 public class OptionalFactory extends OptionalDeploymentManagerFactory {
+    
+    private final TomcatVersion version;
+    
     /** Creates a new instance of OptionalFactory */
-    public OptionalFactory () {
+    private OptionalFactory(TomcatVersion version) {
+        this.version = version;
+    }
+    
+    public static OptionalFactory create50() {
+        return new OptionalFactory(TomcatVersion.TOMCAT_50);
+    }
+    
+    public static OptionalFactory create55() {
+        return new OptionalFactory(TomcatVersion.TOMCAT_55);
+    }
+    
+    public static OptionalFactory create60() {
+        return new OptionalFactory(TomcatVersion.TOMCAT_60);
     }
     
     public FindJSPServlet getFindJSPServlet (javax.enterprise.deploy.spi.DeploymentManager dm) {
@@ -61,7 +77,7 @@ public class OptionalFactory extends OptionalDeploymentManagerFactory {
     }
 
     public WizardDescriptor.InstantiatingIterator getAddInstanceIterator() {
-        return new AddInstanceIterator(TomcatManager.TOMCAT_50);
+        return new AddInstanceIterator(version);
     }
     
     public DatasourceManager getDatasourceManager(DeploymentManager dm) {

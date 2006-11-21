@@ -25,6 +25,7 @@ import junit.textui.TestRunner;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.modules.tomcat5.TomcatManager.TomcatVersion;
 import org.netbeans.modules.tomcat5.util.TomcatProperties;
 import org.netbeans.modules.tomcat5.util.TestUtils;
 
@@ -38,13 +39,15 @@ public class TomcatManagerTest extends NbTestCase {
     private TomcatManager tm;
     private File datadir;
     
+    public static final String BUNDLED_TOMCAT_URI = "tomcat55:home=$bundled_home:base=$bundled_base";
+    
     public TomcatManagerTest (String testName) {
         super (testName);
     }
     
     protected void setUp () throws Exception {
         super.setUp ();
-        tm = (TomcatManager)TomcatFactory55.create().getDeploymentManager(TomcatFactory55Test.TOMCAT_URI, null, null);
+        tm = (TomcatManager)TomcatFactory.create55().getDeploymentManager(BUNDLED_TOMCAT_URI, null, null);
     }
     
     public static NbTestSuite suite() {
@@ -61,7 +64,7 @@ public class TomcatManagerTest extends NbTestCase {
     
     /** Test of getUri method, of class org.netbeans.modules.tomcat5.TomcatManager. */
     public void testGetUri () {
-        assertEquals ("Uri string doesn't match", TomcatFactory55Test.TOMCAT_URI, tm.getUri ());
+        assertEquals ("Uri string doesn't match", BUNDLED_TOMCAT_URI, tm.getUri ());
     }
     
     public void testGetPorts() throws Exception {
@@ -70,14 +73,14 @@ public class TomcatManagerTest extends NbTestCase {
         String home = getDataDir().getAbsolutePath() + "/server/home0";
         String base = getWorkDir().getAbsolutePath() + "/base_dir";
         
-        String url = TomcatFactory55.tomcatUriPrefix;        
+        String url = TomcatFactory.TOMCAT_URI_PREFIX_55;        
         url += "home=" + home + ":base=" + base;
         
         // register the test tomcat instance
         InstanceProperties ip = InstanceProperties.createInstanceProperties(
                 url, "", "", "Test Tomcat");
         
-        TomcatManager manager = (TomcatManager)TomcatFactory55.create().getDeploymentManager(url, null, null);
+        TomcatManager manager = (TomcatManager)TomcatFactory.create55().getDeploymentManager(url, null, null);
         
         assertEquals(9999, manager.getServerPort());
         assertEquals(7777, manager.getShutdownPort());
@@ -115,7 +118,7 @@ public class TomcatManagerTest extends NbTestCase {
     }
     
     public void testBundledTomcatDefaults() {
-        assertEquals(tm.TOMCAT_55, tm.getTomcatVersion());
+        assertEquals(TomcatVersion.TOMCAT_55, tm.getTomcatVersion());
         assertTrue(tm.isTomcat55());
         assertFalse(tm.isTomcat50());
     }

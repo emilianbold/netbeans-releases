@@ -24,6 +24,7 @@ import java.util.Iterator;
 import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.tomcat5.TomcatManager.TomcatVersion;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
@@ -35,10 +36,10 @@ class InstallPanel implements WizardDescriptor.Panel, ChangeListener {
     private final List listeners = new ArrayList();
     private WizardDescriptor wizard;
     private InstallPanelVisual component;
-    private final int tomcatVersion;
+    private final TomcatVersion tomcatVersion;
 
-    public InstallPanel(int aTomcatVersion) {
-        tomcatVersion = aTomcatVersion;
+    public InstallPanel(TomcatVersion tomcatVersion) {
+        this.tomcatVersion = tomcatVersion;
     }
 
     public void addChangeListener(javax.swing.event.ChangeListener l) {

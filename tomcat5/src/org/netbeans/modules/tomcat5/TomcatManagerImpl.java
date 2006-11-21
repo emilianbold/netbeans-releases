@@ -88,10 +88,6 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
     /** TargetModuleID of module that is managed. */
     private TomcatModule tmId;
     
-    /** Temporary copy of context.xml in which docBase attribute will be added
-        and which will be used for deployment. */
-    private File tmpContextXml;
-    
     public TomcatManagerImpl (TomcatManager tm) {
         this.tm = tm;
         pes = new ProgressEventSupport (this);
@@ -188,11 +184,11 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
             String docBase = dir.getAbsolutePath ();
             String ctxPath = ctx.getAttributeValue ("path");
             this.tmId = new TomcatModule (t, ctxPath, docBase); //NOI18N
-            tmpContextXml = createTempContextXml(docBase, ctx);
-            if (tm.isTomcat55()) {
-                command = "deploy?config=" + tmpContextXml.toURI ().toASCIIString () + "&path=" + encodePath(tmId.getPath()); // NOI18N   
-            } else {
+            File tmpContextXml = createTempContextXml(docBase, ctx);
+            if (tm.isTomcat50()) {
                 command = "deploy?config=" + tmpContextXml.toURI ().toASCIIString () + "&war=" + docBaseURI; // NOI18N
+            } else {
+                command = "deploy?config=" + tmpContextXml.toURI ().toASCIIString () + "&path=" + encodePath(tmId.getPath()); // NOI18N   
             }
             cmdType = CommandType.DISTRIBUTE;
             String msg = NbBundle.getMessage(TomcatManagerImpl.class, "MSG_DeploymentInProgress");
@@ -297,11 +293,11 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
             File contextXml = new File (docBase + "/META-INF/context.xml"); // NO18N
             FileInputStream in = new FileInputStream (contextXml);
             Context ctx = Context.createGraph (in);
-            tmpContextXml = createTempContextXml(docBase, ctx);
-            if (tm.isTomcat55()) {
-                command = "deploy?config=" + tmpContextXml.toURI ().toASCIIString () + "&path=" + encodePath(tmId.getPath()); // NOI18N
-            } else {
+            File tmpContextXml = createTempContextXml(docBase, ctx);
+            if (tm.isTomcat50()) {
                 command = "deploy?config=" + tmpContextXml.toURI ().toASCIIString () + "&war=" + docBaseURI; // NOI18N
+            } else {
+                command = "deploy?config=" + tmpContextXml.toURI ().toASCIIString () + "&path=" + encodePath(tmId.getPath()); // NOI18N
             }
             cmdType = CommandType.DISTRIBUTE;
             String msg = NbBundle.getMessage(TomcatManagerImpl.class, "MSG_DeployInProgress");
@@ -341,6 +337,7 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
      */
     private File createTempContextXml(String docBase, Context ctx) throws IOException {
         File tmpContextXml = File.createTempFile("context", ".xml"); // NOI18N
+        tmpContextXml.deleteOnExit();
         if (!docBase.equals (ctx.getAttributeValue ("docBase"))) { //NOI18N
             ctx.setAttributeValue ("docBase", docBase); //NOI18N
             FileOutputStream fos = new FileOutputStream (tmpContextXml);
@@ -624,9 +621,6 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
                     } catch (java.io.IOException ioe) { // ignore this
                     }
                     istream = null;
-                }
-                if (tmpContextXml != null && tmpContextXml.exists()) {
-                    tmpContextXml.delete();
                 }
             }
             if (retries >=0) {

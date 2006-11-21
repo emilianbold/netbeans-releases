@@ -23,10 +23,8 @@ import java.io.File;
 import junit.textui.TestRunner;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.modules.tomcat5.TomcatFactory55;
-import org.netbeans.modules.tomcat5.TomcatFactory55Test;
 import org.netbeans.modules.tomcat5.TomcatManager;
-import org.openide.util.Utilities;
+import org.netbeans.modules.tomcat5.TomcatManager.TomcatVersion;
 
 /**
  *
@@ -52,7 +50,7 @@ public class InstallPanelVisualTest extends NbTestCase {
     }
     
     public void testIsServerXmlValid() {
-        InstallPanelVisual inst = new InstallPanelVisual(TomcatManager.TOMCAT_55);
+        InstallPanelVisual inst = new InstallPanelVisual(TomcatVersion.TOMCAT_55);
         for (int i = 0; true; i++) {
             File serverXml = new File(datadir, "conf/valid/server_" + i + ".xml");
             if (!serverXml.exists()) {

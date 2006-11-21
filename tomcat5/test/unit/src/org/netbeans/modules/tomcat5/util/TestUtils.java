@@ -20,13 +20,6 @@
 package org.netbeans.modules.tomcat5.util;
 
 import java.io.File;
-import junit.textui.TestRunner;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.modules.tomcat5.TomcatFactory55;
-import org.netbeans.modules.tomcat5.TomcatFactory55Test;
-import org.netbeans.modules.tomcat5.TomcatManager;
-import org.openide.util.Utilities;
 
 /**
  *

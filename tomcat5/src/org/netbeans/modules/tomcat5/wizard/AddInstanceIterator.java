@@ -28,6 +28,7 @@ import java.util.Properties;
 import java.util.Set;
 import javax.swing.JComponent;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.modules.tomcat5.TomcatManager.TomcatVersion;
 import org.netbeans.modules.tomcat5.util.TomcatInstallUtil;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -57,10 +58,10 @@ public class AddInstanceIterator implements WizardDescriptor.InstantiatingIterat
     private WizardDescriptor wizard;
     private InstallPanel panel;
     
-    private final int tomcatVersion;
+    private final TomcatVersion tomcatVersion;
     
-    public AddInstanceIterator(int aTomcatVersion) {
-        tomcatVersion = aTomcatVersion;
+    public AddInstanceIterator(TomcatVersion tomcatVersion) {
+        this.tomcatVersion = tomcatVersion;
         
     }
 
