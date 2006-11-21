@@ -423,7 +423,11 @@ public class WorkingCopyDetails {
 
             while (baseLine != null) {
                 //StringBuilder modifiedFileLine = new StringBuilder(fileLine);
-
+                    
+                if(fileLine == null) {
+                    return true;
+                }
+        
                 if (!fileLine.equals(baseLine)) {
                     boolean equal = false;
                     for (int i = 0; i < keywords.length; i++) {
