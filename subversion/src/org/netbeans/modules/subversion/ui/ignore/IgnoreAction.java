@@ -79,39 +79,23 @@ public class IgnoreAction extends ContextAction {
             }
             FileInformation info = cache.getStatus(files[i]);
             if (info.getStatus() == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) {
+                if (actionStatus == UNIGNORING) {
+                    actionStatus = UNDEFINED;
+                    break;
+                }
                 actionStatus = IGNORING;
             } else if (info.getStatus() == FileInformation.STATUS_NOTVERSIONED_EXCLUDED) {
-                actionStatus = canBeUnignored(files[i]) ? UNIGNORING : UNDEFINED;
+                if (actionStatus == IGNORING) {
+                    actionStatus = UNDEFINED;
+                    break;
+                }
+                actionStatus = UNIGNORING;
             } else {
                 actionStatus = UNDEFINED;
                 break;
             }
         }
         return actionStatus == -1 ? UNDEFINED : actionStatus;
-    }
-    
-    private boolean canBeUnignored(File file) {
-        File parent = file.getParentFile();
-        List<String> patterns = getIgnorePatterns(parent);
-        if(patterns == null) {
-            return false;
-        }
-        List<String> patternsList = getMatchingPatterns(patterns, file.getName(), true);
-        return patternsList.size() > 0 && !patternsList.get(0).equals("");        
-    }
-
-    private List<String> getMatchingPatterns(List<String> patterns, String value, boolean onlyFirtsMatch) {                
-        return SvnUtils.getMatchinIgnoreParterns(patterns, value, onlyFirtsMatch);        
-    }
-    
-    private List<String> getIgnorePatterns(File file) {
-        try {
-            SvnClient client = Subversion.getInstance().getClient(false);
-            return  client.getIgnoredPatterns(file);            
-        } catch (SVNClientException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-            return null;
-        }        
     }
     
     protected boolean enable(Node[] nodes) {
