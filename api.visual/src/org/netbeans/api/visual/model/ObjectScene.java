@@ -93,6 +93,8 @@ public class ObjectScene extends Scene {
         highlightedObjects.remove (object);
         if (object.equals (hoveredObject))
             hoveredObject = null;
+        if (object.equals (focusedObject))
+            focusedObject = null;
         objectStates.remove (object);
         Widget widget = object2widgets.remove (object);
         if (widget != null) {
