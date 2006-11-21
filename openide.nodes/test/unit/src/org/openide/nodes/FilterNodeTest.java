@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.junit.NbTestCase;
+import org.openide.cookies.OpenCookie;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
@@ -668,6 +669,45 @@ public class FilterNodeTest extends NbTestCase {
         assertTrue("No items:" + c, c.isEmpty());
         c = res.allInstances();
         assertTrue("No instances:" + c, c.isEmpty());
+    }
+    
+    public void testNoClassCast89329() throws Exception {
+        InstanceContent ic = new InstanceContent();
+        AbstractLookup lookup = new AbstractLookup(ic);
+        AbstractNode a = new AbstractNode(Children.LEAF, lookup);
+        FilterNode f = new FilterNode(a);
+        
+        ic.add("Kuk");
+        
+        Class what = String.class;
+        assertNull("Indeed null, string is not a cookie", f.getCookie(what));
+        assertEquals("Kuk", f.getLookup().lookup(String.class));
+    }
+    public void testNoClass2Cast89329() throws Exception {
+        InstanceContent ic = new InstanceContent();
+        AbstractLookup lookup = new AbstractLookup(ic);
+        AbstractNode a = new AbstractNode(Children.LEAF, lookup);
+        
+        class F extends FilterNode implements OpenCookie {
+            public F(Node n) {
+                super(n);
+            }
+            public Node.Cookie getCookie(Class type) {
+                if (OpenCookie.class.isAssignableFrom(type)) return this;
+                else return super.getCookie(type);
+            }
+
+            public void open() {
+            }
+        }
+        
+        FilterNode f = new F(a);
+        
+        ic.add("Kuk");
+        
+        Class what = String.class;
+        assertNull("Indeed null, string is not a cookie", f.getCookie(what));
+        assertEquals("Kuk", f.getLookup().lookup(String.class));
     }
 }
 

@@ -793,7 +793,8 @@ public class FilterNode extends Node {
         Lookup l = internalLookup(true);
 
         if (l != null) {
-            return l.lookup(type);
+            Object res = l.lookup(type);
+            return type.isInstance(res) && res instanceof Node.Cookie ? type.cast(res) : null;
         }
 
         return original.getCookie(type);
