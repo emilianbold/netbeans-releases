@@ -23,6 +23,9 @@ import javax.swing.Action;
 import javax.swing.JMenuItem;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ui.CustomizerProvider;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.Presenter;
@@ -68,8 +71,15 @@ public class CustomizeProject extends ProjectAction implements Presenter.Popup {
         Project[] projects = ActionsUtil.getProjectsFromLookup( context, null );
         
         if ( projects.length == 1 ) {
-            CustomizerProvider cp = (CustomizerProvider)projects[0].getLookup().lookup( CustomizerProvider.class );
+            CustomizerProvider cp = projects[0].getLookup().lookup( CustomizerProvider.class );
             if ( cp != null ) {
+                if (!DataObject.getRegistry().getModifiedSet().isEmpty()) {
+                    // #50992: danger! Project properties dialog may try to write to the same config files.
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                            NbBundle.getMessage(CustomizeProject.class, "CustomizeProject.save_modified_files"),
+                            NotifyDescriptor.WARNING_MESSAGE));
+                    return;
+                }
                 cp.showCustomizer();
             }
         }
