@@ -2,6 +2,7 @@
 <project basedir=".." name="XTest PES-IDE">
     
     <property name="build.classes.dir" location="build/classes"/>
+    <property name="build.test.classes.dir" location="build/test/unit/classes"/>
     
     <!-- TODO: edit the following target according to your needs -->
     <!-- (more info: http://www.netbeans.org/kb/41/freeform-config.html#runsingle) -->
@@ -24,4 +25,35 @@
             <classpath path="${ant.home}/lib/ant.jar"/>
         </javac>
     </target>
+    
+    <target name="run-selected-file-in-test-unit-src">
+        <fail unless="run.class">Must set property 'run.class'</fail>
+        <property name="files" value="run.class"/>
+        <!-- <ant dir="test" target="buildtests"/> -->
+        <java classname="${run.class}" failonerror="true" fork="true">
+            <classpath>
+                <pathelement location="${build.test.classes.dir}"/>
+                <pathelement path="${ant.home}/lib/ant.jar"/>
+                <pathelement location="${build.classes.dir}"/>
+                <pathelement location="../lib/junit.jar"/>
+                <pathelement location="../lib/nbjunit.jar"/>
+                <pathelement location="../lib/insanelib.jar"/>
+                <pathelement location="test/unit/data/classes12.zip"/>
+            </classpath>
+        </java>
+    </target>
+    
+    <target name="compile-selected-files-in-test-unit-src">
+        <fail unless="files">Must set property 'files'</fail>
+        <mkdir dir="${build.test.classes.dir}"/>
+        <javac destdir="${build.test.classes.dir}" includes="${files}" source="1.4" srcdir="test/unit/src" debug="true">
+            <classpath>
+                <pathelement path="${ant.home}/lib/ant.jar"/>
+                <pathelement location="${build.classes.dir}"/>
+                <pathelement location="../lib/junit.jar"/>
+                <pathelement location="../lib/nbjunit.jar"/>
+            </classpath>
+        </javac>
+    </target>
+
 </project>

@@ -45,12 +45,38 @@
                         </arity>
                     </context>
                 </action>
+                <action name="run.single">
+                    <script>nbproject/ide-file-targets.xml</script>
+                    <target>run-selected-file-in-test-unit-src</target>
+                    <context>
+                        <property>run.class</property>
+                        <folder>test/unit/src</folder>
+                        <pattern>\.java$</pattern>
+                        <format>java-name</format>
+                        <arity>
+                            <one-file-only/>
+                        </arity>
+                    </context>
+                </action>
                 <action name="compile.single">
                     <script>nbproject/ide-file-targets.xml</script>
                     <target>compile-selected-files-in-src</target>
                     <context>
                         <property>files</property>
                         <folder>src</folder>
+                        <pattern>\.java$</pattern>
+                        <format>relative-path</format>
+                        <arity>
+                            <separated-files>,</separated-files>
+                        </arity>
+                    </context>
+                </action>
+                <action name="compile.single">
+                    <script>nbproject/ide-file-targets.xml</script>
+                    <target>compile-selected-files-in-test-unit-src</target>
+                    <context>
+                        <property>files</property>
+                        <folder>test/unit/src</folder>
                         <pattern>\.java$</pattern>
                         <format>relative-path</format>
                         <arity>
@@ -88,7 +114,7 @@
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/2">
             <compilation-unit>
                 <package-root>src</package-root>
-                <classpath mode="compile">${ant.home}/lib/ant.jar</classpath>
+                <classpath mode="compile">${ant.home}/lib/ant.jar;build/classes</classpath>
                 <source-level>1.4</source-level>
             </compilation-unit>
             <compilation-unit>
