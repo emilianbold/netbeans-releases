@@ -231,7 +231,6 @@ Microsystems, Inc. All Rights Reserved.
             alias="${jnlp.signjar.alias}" 
             keystore="${jnlp.signjar.keystore}" 
             storepass="${jnlp.signjar.password}" 
-            signedjar="${jnlp.dest.dir}/app"
         >
             <fileset dir="${jnlp.dest.dir}/branding">
                 <include name="*_${branding.token}.jar"/>
