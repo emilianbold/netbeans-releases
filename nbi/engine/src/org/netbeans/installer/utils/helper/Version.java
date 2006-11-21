@@ -25,7 +25,7 @@ import java.util.regex.Pattern;
 
 /**
  *
- * @author ks152834
+ * @author Kirill Sorokin
  */
 public class Version {
     private int major;

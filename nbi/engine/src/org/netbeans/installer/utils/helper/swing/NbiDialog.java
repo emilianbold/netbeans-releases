@@ -33,7 +33,7 @@ import org.netbeans.installer.wizard.WizardFrame;
 
 /**
  *
- * @author ks152834
+ * @author Kirill Sorokin
  */
 public class NbiDialog extends JDialog {
     private NbiFrame owner;

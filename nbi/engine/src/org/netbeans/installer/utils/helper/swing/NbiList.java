@@ -27,7 +27,7 @@ import javax.swing.border.BevelBorder;
 
 /**
  *
- * @author ks152834
+ * @author Kirill Sorokin
  */
 public class NbiList extends JList {
     public NbiList() {

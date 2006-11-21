@@ -27,7 +27,7 @@ import org.netbeans.installer.utils.SystemUtils;
 
 /**
  *
- * @author ks152834
+ * @author Kirill Sorokin
  */
 public class NbiButton extends JButton {
     public NbiButton() {

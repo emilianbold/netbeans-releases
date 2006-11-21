@@ -25,7 +25,7 @@ import org.netbeans.installer.utils.StringUtils;
 
 /**
  *
- * @author ks152834
+ * @author Kirill Sorokin
  */
 public class NbiLabel extends JLabel {
     public NbiLabel() {
