@@ -243,7 +243,6 @@ class TabControlButtonFactory {
         }
 
         private void startTimer() {
-            performAction();
             Timer t = getTimer();
             if (t.isRunning()) {
                 return;
