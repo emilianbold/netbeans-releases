@@ -66,10 +66,7 @@ public abstract class GraphLayout<N,E> {
      * @param graphScene the graph scene
      */
     public final <N,E> void layoutGraph (GraphScene<N,E> graphScene) {
-        GraphLayoutListener[] listeners;
-        synchronized (this.listeners) {
-            listeners = this.listeners.toArray (new GraphLayoutListener[this.listeners.size ()]);
-        }
+        GraphLayoutListener<N,E>[] listeners = createListenersCopy ();
 
         UniversalGraph<N,E> graph = UniversalGraph.createUniversalGraph (graphScene);
 
@@ -82,15 +79,21 @@ public abstract class GraphLayout<N,E> {
             listener.graphLayoutFinished (graph);
     }
 
+    @SuppressWarnings ("unchecked")
+    private <N,E> GraphLayoutListener<N,E>[] createListenersCopy () {
+        GraphLayoutListener<N,E>[] listeners;
+        synchronized (this.listeners) {
+            listeners = this.listeners.toArray (new GraphLayoutListener[this.listeners.size ()]);
+        }
+        return listeners;
+    }
+
     /**
      * Invokes graph-oriented layout on a GraphPinScene.
      * @param graphPinScene the graph pin scene
      */
     public final <N,E> void layoutGraph (GraphPinScene<N,E,?> graphPinScene) {
-        GraphLayoutListener[] listeners;
-        synchronized (this.listeners) {
-            listeners = this.listeners.toArray (new GraphLayoutListener[this.listeners.size ()]);
-        }
+        GraphLayoutListener<N,E>[] listeners = createListenersCopy ();
 
         UniversalGraph<N,E> graph = UniversalGraph.createUniversalGraph (graphPinScene);
 
@@ -109,10 +112,7 @@ public abstract class GraphLayout<N,E> {
      * @param nodes the collection of nodes to resolve
      */
     public final <N,E> void layoutNodes (GraphScene<N,E> graphScene, Collection<N> nodes) {
-        GraphLayoutListener[] listeners;
-        synchronized (this.listeners) {
-            listeners = this.listeners.toArray (new GraphLayoutListener[this.listeners.size ()]);
-        }
+        GraphLayoutListener<N,E>[] listeners = createListenersCopy ();
 
         UniversalGraph<N, E> graph = UniversalGraph.createUniversalGraph (graphScene);
 
@@ -131,10 +131,7 @@ public abstract class GraphLayout<N,E> {
      * @param nodes the collection of nodes to resolve
      */
     public final <N,E> void layoutNodes (GraphPinScene<N,E,?> graphPinScene, Collection<N> nodes) {
-        GraphLayoutListener[] listeners;
-        synchronized (this.listeners) {
-            listeners = this.listeners.toArray (new GraphLayoutListener[this.listeners.size ()]);
-        }
+        GraphLayoutListener<N,E>[] listeners = createListenersCopy ();
 
         UniversalGraph<N, E> graph = UniversalGraph.createUniversalGraph (graphPinScene);
 
@@ -167,10 +164,7 @@ public abstract class GraphLayout<N,E> {
         else
             widget.setPreferredLocation (newPreferredLocation);
 
-        GraphLayoutListener[] listeners;
-        synchronized (this.listeners) {
-            listeners = this.listeners.toArray (new GraphLayoutListener[this.listeners.size ()]);
-        }
+        GraphLayoutListener<N,E>[] listeners = createListenersCopy ();
 
         for (GraphLayoutListener<N,E> listener : listeners)
             listener.nodeLocationChanged (graph, node, previousPreferredLocation, newPreferredLocation);
