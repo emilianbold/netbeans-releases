@@ -90,6 +90,8 @@ public class HttpSettingsTest extends NbTestCase {
     }
     
     public void testDirectConnection () {
+        System.setProperty ("http.proxyHost", "");
+        System.setProperty ("http.proxyPort", "");
         proxyPreferences.putInt ("proxyType", ProxySettings.DIRECT_CONNECTION);
         while (isWaiting);
         assertEquals ("Proxy type DIRECT_CONNECTION.", ProxySettings.DIRECT_CONNECTION, ProxySettings.getProxyType ());
@@ -98,6 +100,8 @@ public class HttpSettingsTest extends NbTestCase {
     }
     
     public void testAutoDetectProxy () {
+        System.setProperty ("http.proxyHost", "");
+        System.setProperty ("http.proxyPort", "");
         proxyPreferences.putInt("proxyType", ProxySettings.AUTO_DETECT_PROXY);
         while (isWaiting);
         assertEquals("Proxy type AUTO_DETECT_PROXY.",
@@ -136,6 +140,7 @@ public class HttpSettingsTest extends NbTestCase {
         
         // switch proxy type to DIRECT_CONNECTION
         isWaiting = true;
+        System.setProperty ("http.nonProxyHosts", "");
         proxyPreferences.putInt ("proxyType", ProxySettings.DIRECT_CONNECTION);
         while (isWaiting);
         assertFalse ("ProxySettings doesn't return new value if DIRECT_CONNECTION set.", "myhost.mydomain.net".equals (System.getProperty ("http.nonProxyHosts")));

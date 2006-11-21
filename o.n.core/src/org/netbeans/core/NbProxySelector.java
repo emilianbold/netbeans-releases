@@ -34,7 +34,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
-import java.util.regex.Pattern;
 import sun.net.NetProperties;
 
 /**
@@ -57,9 +56,10 @@ public final class NbProxySelector extends ProxySelector {
     
     public List<Proxy> select(URI uri) {
         List<Proxy> res = new ArrayList<Proxy> ();
-        if (ProxySettings.DIRECT_CONNECTION == ProxySettings.getProxyType ()) {
+        int proxyType = ProxySettings.getProxyType ();
+        if (ProxySettings.DIRECT_CONNECTION == proxyType) {
             res = Collections.singletonList (Proxy.NO_PROXY);
-        } else if (ProxySettings.AUTO_DETECT_PROXY == ProxySettings.getProxyType ()) {
+        } else if (ProxySettings.AUTO_DETECT_PROXY == proxyType) {
             // XXX What with Solaris or KDE?
             if (NetProperties.getBoolean ("java.net.useSystemProxies")) {
                 res = original.select (uri);
@@ -67,6 +67,10 @@ public final class NbProxySelector extends ProxySelector {
                 String protocol = uri.getScheme ();
                 assert protocol != null : "Invalid scheme of uri " + uri + ". Scheme cannot be null!";
                 if (protocol.toLowerCase (Locale.US).startsWith("http")) {
+                    // handling nonProxyHosts first
+                    if (dontUseProxy (ProxySettings.SystemProxySettings.getNonProxyHosts (), uri.getHost ())) {
+                        res.add (Proxy.NO_PROXY);
+                    }
                     String ports = ProxySettings.SystemProxySettings.getHttpPort ();
                     if (ports != null && ports.length () > 0 && ProxySettings.SystemProxySettings.getHttpHost ().length () > 0) {
                         int porti = Integer.parseInt(ports);
@@ -76,26 +80,12 @@ public final class NbProxySelector extends ProxySelector {
                 }
                 res.addAll (original.select (uri));
             }
-        } else if (ProxySettings.MANUAL_SET_PROXY == ProxySettings.getProxyType ()) {
+        } else if (ProxySettings.MANUAL_SET_PROXY == proxyType) {
             String protocol = uri.getScheme ();
             assert protocol != null : "Invalid scheme of uri " + uri + ". Scheme cannot be null!";
             if (protocol.toLowerCase (Locale.US).startsWith("http")) {
                 // handling nonProxyHosts first
-                String nphosts = ProxySettings.getNonProxyHosts ();
-                String reqHost = uri.getHost ();
-                boolean dontUseProxy = false;
-                if (nphosts != null && nphosts.length () > 0) {
-                    Pattern p = null;
-                    StringTokenizer st = new StringTokenizer (nphosts, "|", false);
-                    while (st.hasMoreTokens () && !dontUseProxy) {
-                          p = Pattern.compile (st.nextToken ());
-                          dontUseProxy = p.matcher (reqHost).matches ();
-                          if (dontUseProxy) {
-                            log.finest ("NbProxySelector[Type: " + ProxySettings.getProxyType () + "]. Host " + reqHost + " found in nonProxyHosts: " + nphosts);
-                          }
-                    }
-                }
-                if (dontUseProxy) {
+                if (dontUseProxy (ProxySettings.getNonProxyHosts (), uri.getHost ())) {
                     res.add (Proxy.NO_PROXY);
                 }
                 String hosts = ProxySettings.getHttpHost ();
@@ -147,37 +137,69 @@ public final class NbProxySelector extends ProxySelector {
     private void copySettingsToSystem () {
         String host = null, port = null, nonProxyHosts = null;
         String sHost = null, sPort = null;
-        if (ProxySettings.DIRECT_CONNECTION == ProxySettings.getProxyType ()) {
+        int proxyType = ProxySettings.getProxyType ();
+        if (ProxySettings.DIRECT_CONNECTION == proxyType) {
             host = "";
             port = "";
             nonProxyHosts = "";
             sHost = "";
             sPort = "";
-        } else if (ProxySettings.AUTO_DETECT_PROXY == ProxySettings.getProxyType ()) {
+        } else if (ProxySettings.AUTO_DETECT_PROXY == proxyType) {
             host = normalizeProxyHost (ProxySettings.SystemProxySettings.getHttpHost ());
             port = ProxySettings.SystemProxySettings.getHttpPort ();
             nonProxyHosts = ProxySettings.SystemProxySettings.getNonProxyHosts ();
             sHost = ProxySettings.SystemProxySettings.getSocksHost ();
             sPort = ProxySettings.SystemProxySettings.getSocksPort ();
-        } else if (ProxySettings.MANUAL_SET_PROXY == ProxySettings.getProxyType ()) {
+        } else if (ProxySettings.MANUAL_SET_PROXY == proxyType) {
             host = normalizeProxyHost (ProxySettings.getHttpHost ());
             port = ProxySettings.getHttpPort ();
             nonProxyHosts = ProxySettings.getNonProxyHosts ();
             sHost = ProxySettings.getSocksHost ();
             sPort = ProxySettings.getSocksPort ();
         } else {
-            assert false : "Invalid proxy type: " + ProxySettings.getProxyType ();
+            assert false : "Invalid proxy type: " + proxyType;
         }
-        System.setProperty ("http.proxyHost", host == null ? null : host);
+        if (host != null && host.length() > 0) {
+            System.setProperty ("http.proxyHost", host);
+        }
+        if (port != null && port.length() > 0) {
+            try {
+                Integer.parseInt (port);
+                System.setProperty ("http.proxyPort", port);
+            } catch (NumberFormatException nfe) {
+                log.log (Level.INFO, nfe.getMessage(), nfe);
+            }
+        }
+        if (nonProxyHosts != null && nonProxyHosts.length() > 0) {
+            System.setProperty ("http.nonProxyHosts", nonProxyHosts);
+        }
+        if (host != null && host.length() > 0) {
+            System.setProperty ("https.proxyHost", host);
+        }
+        if (port != null && port.length() > 0) {
+            try {
+                Integer.parseInt (port);
+                System.setProperty ("https.proxyPort", port);
+            } catch (NumberFormatException nfe) {
+                log.log (Level.INFO, nfe.getMessage(), nfe);
+            }
+        }
+        if (nonProxyHosts != null && nonProxyHosts.length() > 0) {
+            System.setProperty ("https.nonProxyHosts", nonProxyHosts);
+        }
+        if (sHost != null && sHost.length() > 0) {
+            System.setProperty ("socksProxyHost", sHost);
+        }
+        if (sPort != null && sPort.length() > 0) {
+            try {
+                Integer.parseInt (sPort);
+                System.setProperty ("socksProxyPort", sPort);
+            } catch (NumberFormatException nfe) {
+                log.log (Level.INFO, nfe.getMessage(), nfe);
+            }
+        }
         log.finest ("Set System's http.proxyHost/Port/NonProxyHost to " + host + "/" + port + "/" + nonProxyHosts);
-        System.setProperty ("http.proxyPort", port == null ? null : port);
-        System.setProperty ("http.nonProxyHosts", nonProxyHosts == null ? null : nonProxyHosts);
-        System.setProperty ("https.proxyHost", host == null ? null : host);
-        System.setProperty ("https.proxyPort", port == null ? null : port);
-        System.setProperty ("https.nonProxyHosts", nonProxyHosts == null ? null : nonProxyHosts);
-        System.setProperty ("socksProxyHost", sHost == null ? null : sHost);
-        System.setProperty ("socksProxyPort", sPort == null ? null : sPort);
-        log.finest ("Set System's socksHost/Port to " + sHost + "/" + sPort);
+        log.finest ("Set System's socksProxyHost/Port to " + sHost + "/" + sPort);
     }
 
     private static String normalizeProxyHost (String proxyHost) {
@@ -188,4 +210,26 @@ public final class NbProxySelector extends ProxySelector {
         }
     }
     
+    private boolean dontUseProxy (String nonProxyHosts, String host) {
+        boolean dontUseProxy = false;
+        StringTokenizer st = new StringTokenizer (nonProxyHosts, "|", false);
+        while (st.hasMoreTokens () && !dontUseProxy) {
+            String token = st.nextToken ();
+            int star = token.indexOf ("*");
+            if (star == -1) {
+                dontUseProxy = token.equals (host);
+                if (dontUseProxy) {
+                    log.finest ("NbProxySelector[Type: " + ProxySettings.getProxyType () + "]. Host " + host + " found in nonProxyHosts: " + nonProxyHosts);                    
+                }
+            } else {
+                String start = token.substring (0, star - 1 < 0 ? 0 : star - 1);
+                String end = token.substring (star + 1 > token.length () ? token.length () : star + 1);
+                dontUseProxy = host.startsWith(start) && host.endsWith(end);
+                if (dontUseProxy) {
+                    log.finest ("NbProxySelector[Type: " + ProxySettings.getProxyType () + "]. Host " + host + " found in nonProxyHosts: " + nonProxyHosts);                    
+                }
+            }
+        }
+        return dontUseProxy;
+    }
 }
