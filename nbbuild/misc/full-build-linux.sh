@@ -254,12 +254,7 @@ antcmd="nice $ant -emacs"
 if [ $doclean = yes ]
 then
     echo "----------CLEANING SOURCES----------" 1>&2
-    if [ $update = yes ]
-    then
-        $antcmd -f $sources/nbbuild/build.xml cvs-clean
-    else
-        $antcmd -f $sources/nbbuild/build.xml real-clean
-    fi
+    $antcmd -f $sources/nbbuild/build.xml real-clean
 fi
 
 if [ $update = yes ]
