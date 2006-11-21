@@ -18,10 +18,14 @@
  */
 
 package org.netbeans.modules.web.jsf;
-
-import org.netbeans.jmi.javamodel.JavaClass;
+//TODO: RETOUCHE
+//import org.netbeans.jmi.javamodel.JavaClass;
+//import org.netbeans.modules.j2ee.common.queries.spi.InjectionTargetQueryImplementation;
+//TODO: RETOUCHE
+//import org.netbeans.modules.javacore.api.JavaModel;
+import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.modules.j2ee.common.queries.spi.InjectionTargetQueryImplementation;
-import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.config.model.ManagedBean;
 import org.openide.filesystems.FileObject;
@@ -40,11 +44,57 @@ public class JSFInjectionTargetQueryImplementation implements InjectionTargetQue
     public JSFInjectionTargetQueryImplementation() {
     }
     
+    public boolean isInjectionTarget(CompilationController controller,
+                                     TypeElement typeElement) {
+        boolean is = false;
+        if (controller == null || typeElement==null) {
+            throw new NullPointerException("Passed null to JSFInjectionTargetQueryImplementation.isInjectionTarget(CompilationController,TypeElement)"); // NOI18N
+        }
+
+        // Find the web module, where the class is
+        WebModule wm  = WebModule.getWebModule(controller.getFileObject());
+        // Is the web modile 2.5 servlet spec or higher?
+        if (wm != null && !wm.getJ2eePlatformVersion().equals(WebModule.J2EE_13_LEVEL)
+        && !wm.getJ2eePlatformVersion().equals(WebModule.J2EE_14_LEVEL)){
+            // Get deployment desctriptor from the web module
+            FileObject dd = wm.getDeploymentDescriptor();
+            if (dd != null){
+                // Get all jsf configurations files
+                FileObject[] jsfConfigs = JSFConfigUtilities.getConfiFilesFO(dd);
+                try {
+                    for (int i = 0; i < jsfConfigs.length && !is ; i++) {
+                        DataObject dObject;
+                        dObject = DataObject.find(jsfConfigs[i]);
+                        if (dObject instanceof JSFConfigDataObject){
+                            // Get manage beans from the configuration file
+                            ManagedBean [] beans = ((JSFConfigDataObject)dObject).getFacesConfig().getManagedBean();
+                            for (int j = 0; j < beans.length && !is; j++) {
+                                //TODO: RETOUCHE - need to be tested, when the functionality will be accessible.
+                                if (typeElement.getQualifiedName().toString().equals(beans[j].getManagedBeanClass()))
+                                    is = true;
+                            }
+                        }
+                    }
+                } catch (DataObjectNotFoundException ex) {
+                    ex.printStackTrace();
+                } catch (java.io.IOException ioe) {
+                    ioe.printStackTrace();
+                }
+            }
+        }
+        return is;
+    }
+    
+    public boolean isStaticReferenceRequired(CompilationController controller,
+                                             TypeElement typeElement) {
+        return false;
+    }
+    
     /** For method return true if:
      *      1) The web module follows 2.5 servlet specification or higher
      *      2) The jc is defined as manage bean in a jsp configuration file. 
      */
-    public boolean isInjectionTarget(JavaClass jc) {
+    /*public boolean isInjectionTarget(JavaClass jc) {
         boolean is = false;
         if (jc == null) {
             throw new NullPointerException("Passed null to JSFInjectionTargetQueryImplementation.isInjectionTarget(JavaClass)"); // NOI18N
@@ -87,5 +137,5 @@ public class JSFInjectionTargetQueryImplementation implements InjectionTargetQue
     public boolean isStaticReferenceRequired(JavaClass jc) {
         return false;
     }
-    
+    */
 }
