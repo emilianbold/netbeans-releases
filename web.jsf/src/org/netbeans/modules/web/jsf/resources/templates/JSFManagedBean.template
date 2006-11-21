@@ -13,10 +13,10 @@ package Templates.Classes;
  *
  * @author __USER__
  */
-public class Class {
+public class __NAME__ {
 
     /** Creates a new instance of __NAME__ */
-    public Class() {
+    public __NAME__() {
     }
 
 }
