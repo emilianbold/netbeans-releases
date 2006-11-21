@@ -45,29 +45,30 @@ import org.netbeans.installer.wizard.components.panels.SelectedComponentsLicense
  */
 public class MainSequence extends WizardSequence {
     public void executeForward(final Wizard wizard) {
-        List<ProductComponent> componentsToInstall = ProductRegistry.getInstance().getComponentsToInstall();
-        List<ProductComponent> componentsToUninstall = ProductRegistry.getInstance().getComponentsToUninstall();
+        final ProductRegistry registry = ProductRegistry.getInstance();
+        final List<ProductComponent> toInstall = registry.getComponentsToInstall();
+        final List<ProductComponent> toUninstall = registry.getComponentsToUninstall();
         
         removeAllChildren();
         
         switch (Installer.getInstance().getExecutionMode()) {
             case NORMAL:
-                if (componentsToInstall.size() > 0) {
+                if (toInstall.size() > 0) {
                     addChild(new DownloadConfigurationLogicAction());
                     addChild(new SelectedComponentsLicensesPanel());
                     
-                    for (int i = 0; i < componentsToInstall.size(); i++) {
-                        addChild(new ProductComponentWizardSequence(componentsToInstall.get(i)));
+                    for (ProductComponent component: toInstall) {
+                        addChild(new ProductComponentWizardSequence(component));
                     }
                 }
                 
                 addChild(new PreInstallSummaryPanel());
                 
-                if (componentsToUninstall.size() > 0) {
+                if (toUninstall.size() > 0) {
                     addChild(new UninstallAction());
                 }
                 
-                if (componentsToInstall.size() > 0) {
+                if (toInstall.size() > 0) {
                     addChild(new DownloadInstallationDataAction());
                     addChild(new InstallAction());
                 }
