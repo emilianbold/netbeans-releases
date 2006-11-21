@@ -99,7 +99,7 @@ public class DefaultExternalDropHandler extends ExternalDropHandler {
 
     void openFile( File file ) {
         FileObject fo = FileUtil.toFileObject( FileUtil.normalizeFile( file ) );
-        OpenFile.open( fo );
+        OpenFile.open(fo, -1);
     }
 
     private static DataFlavor uriListDataFlavor;

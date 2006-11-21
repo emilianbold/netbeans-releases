@@ -38,27 +38,18 @@ public final class OpenFile {
     /** do not instantiate */
     private OpenFile() {}
 
-    private static OpenFileImpl theInstance;
-    private static OpenFileImpl getImpl() {
-        if( null == theInstance )
-            theInstance = new DefaultOpenFileImpl();
-        return theInstance;
-    }
-
-    /**
-     * For unit testing only.
-     */
-    static void setImpl( OpenFileImpl impl ) {
-        theInstance = impl;
-    }
-    
     /**
      * Open a file (object) at the beginning.
      * @param fileObject the file to open
      * @usecase  API
      */
-    public static void open(FileObject fileObject) {
-        getImpl().open(fileObject, -1);
+    public static boolean open(FileObject fileObject, int line) {
+        for (OpenFileImpl impl : Lookup.getDefault().lookupAll(OpenFileImpl.class)) {
+            if (impl.open(fileObject, line)) {
+                return true;
+            }
+        }
+        return false;
     }
     
     /**
@@ -76,14 +67,11 @@ public final class OpenFile {
         }
                               
         FileObject fileObject;
-        OpenFileImpl impl = getImpl();
-	fileObject = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+        fileObject = FileUtil.toFileObject(FileUtil.normalizeFile(file));
         if (fileObject != null) {
-            impl.open(fileObject, line);
-            return true;
-        } else {
-            return false;
+            return open(fileObject, line);
         }
+        return false;
     }
     
     /**
@@ -103,7 +91,7 @@ public final class OpenFile {
             errMsgKey = "MSG_fileNotFound";                             //NOI18N
         } else if (isSpecifiedByUNCPath(file)) {
             errMsgKey = "MSG_UncNotSupported";                          //NOI18N
-        } else if (!file.isFile()) {
+        } else if (!file.isFile() && !file.isDirectory()) {
             errMsgKey = "MSG_fileNotFound";                             //NOI18N
         } else {
             return true;
@@ -113,12 +101,7 @@ public final class OpenFile {
         final String msg = NbBundle.getMessage(OpenFile.class,
                                                errMsgKey,
                                                fileName);
-        new Thread(new Runnable() {
-                public void run() {
-                    DialogDisplayer.getDefault().notify(
-                            new NotifyDescriptor.Message(msg));
-                }
-            }).start();
+        DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(msg));
         return false;
     }
 

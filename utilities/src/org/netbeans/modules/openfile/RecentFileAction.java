@@ -128,7 +128,7 @@ public class RecentFileAction extends AbstractAction implements Presenter.Menu, 
         JMenuItem source = (JMenuItem) evt.getSource();
         FileObject fo = (FileObject) source.getClientProperty(FO_PROP);
         if (fo != null) {
-            OpenFile.open(fo);
+            OpenFile.open(fo, -1);
         }
     }
     

@@ -504,7 +504,11 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
             return true;
         }
         
-        if (ZIP_EXT.equalsIgnoreCase(fileObject.getExt()) || JAR_EXT.equalsIgnoreCase(fileObject.getExt())) {
+        if (
+            ZIP_EXT.equalsIgnoreCase(fileObject.getExt()) || 
+            JAR_EXT.equalsIgnoreCase(fileObject.getExt()) ||
+            fileObject.isFolder()
+        ) {
             // select it in explorer:
             Node node = dataObject.getNodeDelegate();
             if (node != null) {

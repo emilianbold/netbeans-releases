@@ -156,6 +156,7 @@ Microsystems, Inc. All Rights Reserved.
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.utilities.project</friend>
+                <package>org.netbeans.modules.openfile</package>
                 <package>org.netbeans.modules.search</package>
             </friend-packages>
         </data>

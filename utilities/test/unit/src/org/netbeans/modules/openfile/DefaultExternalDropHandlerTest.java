@@ -4,7 +4,6 @@ import java.awt.Component;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.DropTarget;
-import java.awt.dnd.DropTargetDragEvent;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -19,9 +18,11 @@ import junit.framework.*;
 import java.awt.datatransfer.DataFlavor;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -108,8 +109,9 @@ public class DefaultExternalDropHandlerTest extends NbTestCase {
 
     public void testOpenFile() throws IOException {
         DefaultExternalDropHandler handler = new DefaultExternalDropHandler();
-        MockOpenFileImpl openImpl = new MockOpenFileImpl();
-        OpenFile.setImpl( openImpl );
+        MockServices.setServices(MockOpenFileImpl.class);
+        MockOpenFileImpl openImpl = Lookup.getDefault().lookup(MockOpenFileImpl.class);
+        assertNotNull("Registered", openImpl);
 
 
         File file = File.createTempFile( "somefile", ".someext", getWorkDir() );
@@ -121,7 +123,7 @@ public class DefaultExternalDropHandlerTest extends NbTestCase {
         }
     }
 
-    private static class MockOpenFileImpl implements OpenFileImpl {
+    public static class MockOpenFileImpl implements OpenFileImpl {
         private Set/*<FileObject>*/ openedFiles = new HashSet();
 
         public boolean open(FileObject fileObject, int line) {
