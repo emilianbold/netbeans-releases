@@ -136,15 +136,20 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
             return;
         }
         final CallStackFrame csf = currentDebugger.getCurrentCallStackFrame ();
-        final DebuggerEngine currentEngine = DebuggerManager.
-            getDebuggerManager ().getCurrentEngine ();
-        final Session currentSession = DebuggerManager.getDebuggerManager ().
-            getCurrentSession ();
+        Session currentSession = null;
+        Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
+        for (int i = 0; i < sessions.length; i++) {
+            if (sessions[i].lookupFirst(null, JPDADebugger.class) == currentDebugger) {
+                currentSession = sessions[i];
+                break;
+            }
+        }
         final String language = currentSession == null ? 
             null : currentSession.getCurrentLanguage ();
-        final SourcePath sourcePath = currentEngine == null ? 
-            null : (SourcePath) currentEngine.lookupFirst 
-                (null, SourcePath.class);
+        DebuggerEngine currentEngine = (currentSession == null) ?
+            null : currentSession.getCurrentEngine();
+        final SourcePath sourcePath = (currentEngine == null) ? 
+            null : (SourcePath) currentEngine.lookupFirst(null, SourcePath.class);
 
         // 3) annotate current line & stack
         synchronized (currentPCLock) {

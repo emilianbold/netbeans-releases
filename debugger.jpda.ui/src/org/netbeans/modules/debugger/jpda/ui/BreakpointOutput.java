@@ -196,8 +196,15 @@ PropertyChangeListener {
             printText = classNamePattern.matcher (printText).replaceAll ("?");
 
         // 3) replace {methodName} by the name of current method
-        String language = DebuggerManager.getDebuggerManager ().
-            getCurrentSession ().getCurrentLanguage ();
+        Session session = null;
+        Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
+        for (int i = 0; i < sessions.length; i++) {
+            if (sessions[i].lookupFirst(null, JPDADebugger.class) == debugger) {
+                session = sessions[i];
+                break;
+            }
+        }
+        String language = (session != null) ? session.getCurrentLanguage() : null;
         String methodName = t.getMethodName ();
         if ("".equals (methodName)) methodName = "?";
         // replace $ by \$

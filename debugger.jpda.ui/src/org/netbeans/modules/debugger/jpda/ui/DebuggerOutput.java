@@ -35,6 +35,7 @@ import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.ActionsManagerListener;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.LazyActionsManagerListener;
+import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.AbstractDICookie;
 import org.netbeans.api.debugger.jpda.AttachingDICookie;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
@@ -251,8 +252,15 @@ PropertyChangeListener {
                 print ("CTL_Debugger_stopped", null, null);
                 return;
             }
-            String language = DebuggerManager.getDebuggerManager ().
-                getCurrentSession ().getCurrentLanguage ();
+            Session session = null;
+            Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
+            for (int i = 0; i < sessions.length; i++) {
+                if (sessions[i].lookupFirst(null, JPDADebugger.class) == debugger) {
+                    session = sessions[i];
+                    break;
+                }
+            }
+            String language = (session != null) ? session.getCurrentLanguage() : null;
             String threadName = t.getName ();
             String methodName = t.getMethodName ();
             String className = t.getClassName ();
