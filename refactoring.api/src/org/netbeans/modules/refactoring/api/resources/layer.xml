@@ -40,11 +40,9 @@ Microsystems, Inc. All Rights Reserved.
             <file name="RenameAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.refactoring.spi.impl.RenameAction"/>
             </file>
-            <!--
             <file name="MoveAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.refactoring.spi.impl.MoveAction"/>
             </file>
-            -->
             
             
         </folder>

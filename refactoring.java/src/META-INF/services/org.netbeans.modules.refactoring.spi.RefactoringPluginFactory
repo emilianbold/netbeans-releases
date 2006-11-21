@@ -1,2 +1,4 @@
 org.netbeans.modules.refactoring.java.plugins.JavaRefactoringsFactory
 #position=100
+org.netbeans.modules.refactoring.java.plugins.PackageRename
+#position=200

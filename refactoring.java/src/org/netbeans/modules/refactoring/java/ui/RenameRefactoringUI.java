@@ -24,10 +24,12 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
+import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUIBypass;
@@ -128,6 +130,14 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
         dispOldName = oldName;
         //this(jmiObject, (FileObject) null, true);
     }
+
+    public RenameRefactoringUI(NonRecursiveFolder file) {
+        this.refactoring = new RenameRefactoring(file);
+        oldName = RetoucheUtils.getPackageName(file.getFolder());
+        dispOldName = oldName;
+        pkgRename = true;
+        //this(jmiObject, (FileObject) null, true);
+    }
     
     
 //    private MoveClassRefactoring createMoveClassRefactoring(FileObject folder, boolean packageRename) {
@@ -142,6 +152,19 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
         this.dispOldName = newName;
         fromListener = true;
     }
+    
+    RenameRefactoringUI(NonRecursiveFolder jmiObject, String newName) {
+        this.refactoring = new RenameRefactoring(jmiObject);
+        //this.jmiObject = jmiObject;
+        oldName = newName;
+        //[FIXME] this should be oldName of refactored object
+        this.dispOldName = newName;
+        fromListener = true;
+        pkgRename = true;
+    }
+    
+    
+    
     
 //    RenameRefactoringUI(FileObject folder, String newName, boolean packageRename) {
 //        this.refactoring = createMoveClassRefactoring(folder, packageRename);

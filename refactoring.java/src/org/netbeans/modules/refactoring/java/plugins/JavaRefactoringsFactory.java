@@ -16,8 +16,10 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.modules.refactoring.java.plugins;
 
+import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.api.*;
@@ -44,8 +46,15 @@ public class JavaRefactoringsFactory implements RefactoringPluginFactory {
             }
         } else if (refactoring instanceof RenameRefactoring) {
             Object o = ((RenameRefactoring) refactoring).getRefactoredObject();
-            if (o instanceof TreePathHandle || o instanceof FileObject && RetoucheUtils.isJavaFile((FileObject) o)) {
+            if (o instanceof TreePathHandle || o instanceof FileObject && RetoucheUtils.isRefactorable(((FileObject) o))) {
+                //rename java file, class, method etc..
                 return new RenameRefactoringPlugin((RenameRefactoring)refactoring);
+            } else if (o instanceof FileObject && RetoucheUtils.isOnSourceClasspath((FileObject)o) && ((FileObject)o).isFolder()) {
+                //rename folder
+                return new MoveRefactoringPlugin((RenameRefactoring)refactoring);
+            } else if (o instanceof NonRecursiveFolder && RetoucheUtils.isOnSourceClasspath(((NonRecursiveFolder)o).getFolder())) {
+                //rename package
+                return new MoveRefactoringPlugin((RenameRefactoring)refactoring);
             }
         } else if (refactoring instanceof SafeDeleteRefactoring) {
             if (checkSafeDelete(((SafeDeleteRefactoring)refactoring).getRefactoredObjects())) {

@@ -20,19 +20,13 @@
 package org.netbeans.modules.refactoring.java.plugins;
 
 import com.sun.source.tree.*;
-import com.sun.source.util.TreePath;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.*;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -77,7 +71,7 @@ public class MoveTransformer extends SearchVisitor {
                     elementsToImport.add(el);
                 }
             } else {
-                if (!isThisFileReferencingOldPackage && (!isElementMoving(el) && isTopLevelClass(el)) && getPackageOf(el).toString().equals(move.getPackageName(workingCopy.getFileObject().getParent()))) {
+                if (!isThisFileReferencingOldPackage && (!isElementMoving(el) && isTopLevelClass(el)) && getPackageOf(el).toString().equals(RetoucheUtils.getPackageName(workingCopy.getFileObject().getParent()))) {
                     isThisFileReferencingOldPackage = true;
                 }
             }

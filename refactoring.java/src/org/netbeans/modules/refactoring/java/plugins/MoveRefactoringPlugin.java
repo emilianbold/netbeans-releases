@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -33,6 +34,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClassIndex;
@@ -47,9 +49,11 @@ import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.queries.VisibilityQuery;
+import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
+import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.java.DiffElement;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.classpath.RefactoringClassPathImplementation;
@@ -57,11 +61,12 @@ import org.netbeans.modules.refactoring.java.ui.tree.ElementGripFactory;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
 
     private Map packagePostfix = new HashMap();
-    MoveRefactoring refactoring;
+    private AbstractRefactoring refactoring;
     ArrayList<FileObject> filesToMove = new ArrayList();
     ArrayList<ElementHandle> classes;
     Map<FileObject, Set<FileObject>> whoReferences = new HashMap();
@@ -69,6 +74,15 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
     public MoveRefactoringPlugin(MoveRefactoring move) {
         this.refactoring = move;
         setup(Arrays.asList(move.getRefactoredObjects()), "");
+    }
+    
+    public MoveRefactoringPlugin(RenameRefactoring rename) {
+        this.refactoring = rename;
+        if (rename.getRefactoredObject() instanceof FileObject) {
+            setup(Collections.singletonList((FileObject)rename.getRefactoredObject()), "");
+        } else {
+            setup(Collections.singletonList(((NonRecursiveFolder)rename.getRefactoredObject()).getFolder()), "");
+        }
     }
     
     public Problem preCheck() {
@@ -83,7 +97,7 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
         return null;
     }
 
-    private Set<FileObject> getRelevantFiles(CompilationInfo info) {
+    private Set<FileObject> getRelevantFiles() {
         ClasspathInfo cpInfo = refactoring.getContext().lookup(ClasspathInfo.class);
         ClassIndex idx = cpInfo.getClassIndex();
         Set<FileObject> set = new HashSet<FileObject>();
@@ -93,6 +107,7 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
             set.addAll(files);
             whoReferences.put(filesToMove.get(i), files);
         }
+        set.addAll(filesToMove);
         return set;
     }    
 
@@ -148,7 +163,7 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
         
         initClasses();
         
-        Set<FileObject> a = getRelevantFiles(mainInfo);
+        Set<FileObject> a = getRelevantFiles();
         fireProgressListenerStart(ProgressEvent.START, a.size());
         if (!a.isEmpty()) {
             final Collection<ModificationResult> results = processFiles(a, new UpdateReferences());
@@ -176,18 +191,29 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
         return null;
     }
     String getNewPackageName() {
-        return getPackageName((FileObject)refactoring.getTarget());        
-    }
-    
-    String getPackageName(FileObject folder) {
-        assert folder.isFolder();
-        return ClassPath.getClassPath(
-                folder, ClassPath.SOURCE)
-                .getResourceName(folder, '.', false);
+        if (refactoring instanceof MoveRefactoring) {
+            return RetoucheUtils.getPackageName((FileObject)((MoveRefactoring) refactoring).getTarget());        
+        } else {
+            return ((RenameRefactoring) refactoring).getNewName();
+        }
     }
     
     String getTargetPackageName(FileObject fo) {
-        if (packagePostfix != null) {
+        if (refactoring instanceof RenameRefactoring) {
+            if (((RenameRefactoring) refactoring).getRefactoredObject() instanceof NonRecursiveFolder)
+                //package rename
+                return getNewPackageName();
+            else {
+                //folder rename
+                FileObject folder = (FileObject) ((RenameRefactoring) refactoring).getRefactoredObject();
+                ClassPath cp = ClassPath.getClassPath(folder, ClassPath.SOURCE);
+                FileObject root = cp.findOwnerRoot(folder);
+                String prefix = FileUtil.getRelativePath(root, folder.getParent()).replace('/','.');
+                String postfix = FileUtil.getRelativePath(folder, fo.getParent()).replace('/', '.');
+                String t = concat(prefix, getNewPackageName(), postfix);
+                return t;
+            }
+        } else if (packagePostfix != null) {
             String postfix = (String) packagePostfix.get(fo);
             String packageName = concat(null, getNewPackageName(), postfix);
             return packageName;

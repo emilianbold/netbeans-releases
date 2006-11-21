@@ -38,7 +38,9 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -49,6 +51,8 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
@@ -213,13 +217,38 @@ public class RetoucheUtils {
         return false;
     }
     
-    public static boolean isOnSourceClasspath(FileObject file) {
-        assert file != null;
-        return ClassPath.getClassPath(file, ClassPath.SOURCE) != null;
+    public static boolean isOnSourceClasspath(FileObject fo) {
+        Project p = FileOwnerQuery.getOwner(fo);
+        if (p==null) return false;
+        Project[] opened = OpenProjects.getDefault().getOpenProjects();
+        for (int i = 0; i<opened.length; i++) {
+            if (p==opened[i]) {
+                SourceGroup[] gr = ProjectUtils.getSources(p).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+                for (int j = 0; j < gr.length; j++) {
+                    if (fo==gr[j].getRootFolder()) return true;
+                    if (FileUtil.isParentOf(gr[j].getRootFolder(), fo))
+                        return true;
+                }
+                return false;
+            }
+        }
+        return false;
+    }
+
+    public static boolean isClasspathRoot(FileObject fo) {
+        return fo.equals(ClassPath.getClassPath(fo, ClassPath.SOURCE).findOwnerRoot(fo));
     }
     
     public static boolean isRefactorable(FileObject file) {
         return isJavaFile(file) && isFileInOpenProject(file) && isOnSourceClasspath(file);
     }
+    
+    public static String getPackageName(FileObject folder) {
+        assert folder.isFolder();
+        return ClassPath.getClassPath(
+                folder, ClassPath.SOURCE)
+                .getResourceName(folder, '.', false);
+    }
+    
 }
     

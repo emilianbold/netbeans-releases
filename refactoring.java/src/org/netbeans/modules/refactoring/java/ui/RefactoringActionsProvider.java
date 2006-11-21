@@ -32,6 +32,7 @@ import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -86,10 +87,17 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 @Override
                 protected RefactoringUI createRefactoringUI(FileObject[] selectedElements) {
                     String newName = (String) dictionary.get("name");
-                    if (newName!=null) 
-                        return new RenameRefactoringUI(selectedElements[0], newName);
+                    if (newName!=null) {
+                        if (pkg[0]!= null)
+                            return new RenameRefactoringUI(pkg[0], newName);
+                        else
+                            return new RenameRefactoringUI(selectedElements[0], newName);
+                    }
                     else 
-                        return new RenameRefactoringUI(selectedElements[0]);
+                        if (pkg[0]!= null)
+                            return new RenameRefactoringUI(pkg[0]);
+                        else
+                            return new RenameRefactoringUI(selectedElements[0]);
                 }
             };
         }
@@ -106,9 +114,18 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         }
         Node n = nodes.iterator().next();
         DataObject dob = n.getCookie(DataObject.class);
-        if ((dob!=null) && RetoucheUtils.isRefactorable(dob.getPrimaryFile())) { //NOI18N
+        FileObject fo = dob.getPrimaryFile();
+        if (dob==null) {
+            return false;
+        }
+        if (RetoucheUtils.isRefactorable(fo)) { //NOI18N
             return true;
         }
+        if ((dob instanceof DataFolder) && 
+                RetoucheUtils.isFileInOpenProject(fo) && 
+                RetoucheUtils.isOnSourceClasspath(fo) &&
+                !RetoucheUtils.isClasspathRoot(fo))
+            return true;
         return false;
     }
 
@@ -379,6 +396,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
     public abstract class NodeToFileObject implements Runnable {
         private Collection<? extends Node> nodes;
         private RefactoringUI ui;
+        public NonRecursiveFolder pkg[];
         
         public NodeToFileObject(Collection<? extends Node> nodes) {
             this.nodes = nodes;
@@ -386,11 +404,13 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         
         public void run() {
             FileObject[] fobs = new FileObject[nodes.size()];
+            pkg = new NonRecursiveFolder[fobs.length];
             int i = 0;
             for (Node node:nodes) {
                 DataObject dob = (DataObject) node.getCookie(DataObject.class);
                 if (dob!=null) {
-                    fobs[i++] = dob.getPrimaryFile();
+                    fobs[i] = dob.getPrimaryFile();
+                    pkg[i++] = node.getLookup().lookup(NonRecursiveFolder.class);
                 }
             }
             UI.openRefactoringUI(createRefactoringUI(fobs));
