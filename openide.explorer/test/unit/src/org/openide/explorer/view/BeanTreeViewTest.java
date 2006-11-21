@@ -80,7 +80,7 @@ public class BeanTreeViewTest extends NbTestCase {
         
         final JTree tree = btv.tree;
         
-        class AWTTest implements Runnable {
+        class AWTTst implements Runnable {
             public void run() {
                 Node operateOn;
                 
@@ -109,7 +109,7 @@ public class BeanTreeViewTest extends NbTestCase {
                 assertNotNull("After removal: one node should be selected, but there are none.", tree.getSelectionPath());
             }
         }
-        AWTTest awt = new AWTTest();
+        AWTTst awt = new AWTTst();
         try {
             SwingUtilities.invokeAndWait(awt);
         } catch (InvocationTargetException ex) {

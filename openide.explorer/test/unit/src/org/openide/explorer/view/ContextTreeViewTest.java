@@ -67,7 +67,7 @@ public class ContextTreeViewTest extends NbTestCase {
         
         final JTree tree = ctv.tree;
         
-        class AWTTest implements Runnable {
+        class AWTTst implements Runnable {
             public void run() {
                 // wait a while till the frame is realized and ctv.addNotify called
                 Object r = tree.getModel().getRoot();
@@ -83,7 +83,7 @@ public class ContextTreeViewTest extends NbTestCase {
                 assertEquals("No children as they are leaves", 0, cnt);
             }
         }
-        AWTTest awt = new AWTTest();
+        AWTTst awt = new AWTTst();
         try {
             SwingUtilities.invokeAndWait(awt);
         } catch (InvocationTargetException ex) {

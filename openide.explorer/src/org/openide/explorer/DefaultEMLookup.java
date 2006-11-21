@@ -106,7 +106,7 @@ final class DefaultEMLookup extends ProxyLookup implements LookupListener, Prope
             attachedTo = null;
         }
 
-        setLookups(new Lookup[] { new NoNodeLookup(new ProxyLookup(lookups), arr), Lookups.fixed(arr), actionMap, });
+        setLookups(new Lookup[] { new NoNodeLookup(new ProxyLookup(lookups), arr), Lookups.fixed((Object[])arr), actionMap, });
     }
 
     /** Change in one of the lookups we delegate to */
