@@ -30,7 +30,13 @@
         <mkdir dir="${lib.cls}"/>
         <javac srcdir="${lib.src}" destdir="${lib.cls}"/>
         
-        <taskdef name="for" classname="org.netbeans.installer.infra.build.ant.ForTask" classpath="${lib.cls}"/>
+        <taskdef name="for" 
+                classname="org.netbeans.installer.infra.build.ant.ForTask" 
+                classpath="${lib.cls}"/>
+        
+        <condition property="checkout.from.trunk">
+            <equals arg1="${cvs.branch}" arg2=""/>
+        </condition>
     </target>
     
     <!-- =======================================================================
@@ -52,9 +58,13 @@
     </target>
     
     <target name="clean-java" depends="init">
-        <subant buildpath="${work.dir}/${cvs.module}/${cvs.path}" target="${nb.target.clean}" failonerror="false">
-            <property name="${nb.platform.home.name}" value="${nb.platform.home.value}"/>
-            <property name="${nb.ignore.native.name}" value="${nb.ignore.native.value}"/>
+        <subant buildpath="${work.dir}/${cvs.module}/${cvs.path}" 
+                target="${nb.target.clean}" 
+                failonerror="false">
+            <property name="${nb.platform.home.name}" 
+                    value="${nb.platform.home.value}"/>
+            <property name="${nb.ignore.native.name}" 
+                    value="${nb.ignore.native.value}"/>
         </subant>
         <delete dir="${work.dir}/${cvs.module}"/>
     </target>
@@ -64,12 +74,19 @@
     ======================================================================== -->
     <target name="checkout" depends="init,-checkout-trunk,-checkout-branch"/>
     
-    <target name="-checkout-trunk" unless="cvs.branch">
-        <cvs cvsroot="${cvs.root}" command="checkout" package="${cvs.module}/${cvs.path}" dest="${work.dir}"/>
+    <target name="-checkout-trunk" if="checkout.from.trunk">
+        <cvs cvsroot="${cvs.root}" 
+                command="checkout" 
+                package="${cvs.module}/${cvs.path}" 
+                dest="${work.dir}"/>
     </target>
     
-    <target name="-checkout-branch" if="cvs.branch">
-        <cvs cvsroot="${cvs.root}" command="checkout" package="${cvs.module}/${cvs.path}" tag="${cvs.branch}" dest="${work.dir}"/>
+    <target name="-checkout-branch" unless="checkout.from.trunk">
+        <cvs cvsroot="${cvs.root}" 
+                command="checkout" 
+                package="${cvs.module}/${cvs.path}" 
+                tag="${cvs.branch}" 
+                dest="${work.dir}"/>
     </target>
     
     <!-- =======================================================================
@@ -84,8 +101,8 @@
     </target>
     
     <target name="-build-native">
-        <property file="${basedir}/../.common/${native.dir}/${platform}.properties"/>
-        <property file="${basedir}/../.common/${native.dir}/native.properties"/>
+        <property file="${common.dir}/${native.dir}/${platform}.properties"/>
+        <property file="${common.dir}/${native.dir}/native.properties"/>
         
         <exec executable="${ssh.executable}" failonerror="true">
             <arg line="${ssh.arguments}"/>
@@ -101,9 +118,12 @@
     </target>
     
     <target name="build-java" depends="init">
-        <subant buildpath="${work.dir}/${cvs.module}/${cvs.path}" target="${nb.target.build}">
-            <property name="${nb.platform.home.name}" value="${nb.platform.home.value}"/>
-            <property name="${nb.ignore.native.name}" value="${nb.ignore.native.value}"/>
+        <subant buildpath="${work.dir}/${cvs.module}/${cvs.path}" 
+                target="${nb.target.build}">
+            <property name="${nb.platform.home.name}" 
+                    value="${nb.platform.home.value}"/>
+            <property name="${nb.ignore.native.name}" 
+                    value="${nb.ignore.native.value}"/>
         </subant>
     </target>
     
