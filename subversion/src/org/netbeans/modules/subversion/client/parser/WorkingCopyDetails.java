@@ -421,13 +421,8 @@ public class WorkingCopyDetails {
             String baseLine = baseReader.readLine();
             String fileLine = fileReader.readLine();
 
-            while (baseLine != null) {
-                //StringBuilder modifiedFileLine = new StringBuilder(fileLine);
-                    
-                if(fileLine == null) {
-                    return true;
-                }
-        
+            while (baseLine != null && fileLine != null) {                
+                            
                 if (!fileLine.equals(baseLine)) {
                     boolean equal = false;
                     for (int i = 0; i < keywords.length; i++) {
@@ -446,7 +441,7 @@ public class WorkingCopyDetails {
                 fileLine = fileReader.readLine();
             }
 
-            returnValue = (fileLine != null);
+            returnValue = baseLine != null || fileLine != null;
             
         } finally {
             if (fileReader != null) {
