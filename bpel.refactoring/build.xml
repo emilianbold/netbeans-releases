@@ -17,7 +17,7 @@
   Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
   Microsystems, Inc. All Rights Reserved.
 -->
-<project name="print" default="netbeans" basedir=".">
+<project name="refactoring" default="netbeans" basedir=".">
     <import file="nbproject/build-impl.xml"/>
 
     <target name="check">

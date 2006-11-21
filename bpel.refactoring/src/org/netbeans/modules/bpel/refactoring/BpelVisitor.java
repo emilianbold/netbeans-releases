@@ -24,12 +24,15 @@ import org.netbeans.modules.bpel.model.api.BooleanExpr;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.Branches;
 import org.netbeans.modules.bpel.model.api.Catch;
+import org.netbeans.modules.bpel.model.api.CompensateScope;
 import org.netbeans.modules.bpel.model.api.ContentElement;
+import org.netbeans.modules.bpel.model.api.Correlation;
 import org.netbeans.modules.bpel.model.api.CorrelationSet;
 import org.netbeans.modules.bpel.model.api.DeadlineExpression;
 import org.netbeans.modules.bpel.model.api.FinalCounterValue;
 import org.netbeans.modules.bpel.model.api.For;
 import org.netbeans.modules.bpel.model.api.From;
+import org.netbeans.modules.bpel.model.api.FromPart;
 import org.netbeans.modules.bpel.model.api.Import;
 import org.netbeans.modules.bpel.model.api.Invoke;
 import org.netbeans.modules.bpel.model.api.OnEvent;
@@ -38,9 +41,13 @@ import org.netbeans.modules.bpel.model.api.PartnerLink;
 import org.netbeans.modules.bpel.model.api.Receive;
 import org.netbeans.modules.bpel.model.api.RepeatEvery;
 import org.netbeans.modules.bpel.model.api.Reply;
+import org.netbeans.modules.bpel.model.api.Scope;
+import org.netbeans.modules.bpel.model.api.Source;
 import org.netbeans.modules.bpel.model.api.StartCounterValue;
+import org.netbeans.modules.bpel.model.api.Target;
 import org.netbeans.modules.bpel.model.api.Throw;
 import org.netbeans.modules.bpel.model.api.To;
+import org.netbeans.modules.bpel.model.api.ToPart;
 import org.netbeans.modules.bpel.model.api.Validate;
 import org.netbeans.modules.bpel.model.api.Variable;
 import org.netbeans.modules.bpel.model.api.VariableDeclaration;
@@ -201,6 +208,39 @@ final class BpelVisitor extends SimpleBpelModelVisitorAdaptor {
   }
 
   @Override
+  public void visit(Correlation correlation)
+  {
+    Util.visit(
+      correlation.getSet(),
+      myTarget,
+      correlation,
+      myUsage
+    );
+  }
+
+  @Override
+  public void visit(Source source)
+  {
+    Util.visit(
+      source.getLink(),
+      myTarget,
+      source,
+      myUsage
+    );
+  }
+
+  @Override
+  public void visit(Target target)
+  {
+    Util.visit(
+      target.getLink(),
+      myTarget,
+      target,
+      myUsage
+    );
+  }
+
+  @Override
   public void visit(From from)
   {
 //Log.out();
@@ -224,7 +264,24 @@ final class BpelVisitor extends SimpleBpelModelVisitorAdaptor {
       from,
       myUsage
     );
+    Util.visit(
+      from.getPartnerLink(),
+      myTarget,
+      from,
+      myUsage
+    );
     visitContentElement(from);
+  }
+
+  @Override
+  public void visit(FromPart fromPart)
+  {
+    Util.visit(
+      fromPart.getToVariable(),
+      myTarget,
+      fromPart,
+      myUsage
+    );
   }
 
   @Override
@@ -251,7 +308,24 @@ final class BpelVisitor extends SimpleBpelModelVisitorAdaptor {
       to,
       myUsage
     );
+    Util.visit(
+      to.getPartnerLink(),
+      myTarget,
+      to,
+      myUsage
+    );
     visitContentElement(to);
+  }
+
+  @Override
+  public void visit(ToPart toPart)
+  {
+    Util.visit(
+      toPart.getFromVariable(),
+      myTarget,
+      toPart,
+      myUsage
+    );
   }
 
   private void visitContentElement(BpelEntity entity) {
@@ -290,6 +364,12 @@ final class BpelVisitor extends SimpleBpelModelVisitorAdaptor {
       event,
       myUsage
     );
+    Util.visit(
+      event.getPartnerLink(),
+      myTarget,
+      event,
+      myUsage
+    );
   }
 
   @Override
@@ -317,6 +397,12 @@ final class BpelVisitor extends SimpleBpelModelVisitorAdaptor {
     );
     Util.visit(
       message.getVariable(),
+      myTarget,
+      message,
+      myUsage
+    );
+    Util.visit(
+      message.getPartnerLink(),
       myTarget,
       message,
       myUsage
@@ -383,6 +469,12 @@ final class BpelVisitor extends SimpleBpelModelVisitorAdaptor {
       reply,
       myUsage
     );
+    Util.visit(
+      reply.getPartnerLink(),
+      myTarget,
+      reply,
+      myUsage
+    );
   }
 
   @Override
@@ -410,6 +502,12 @@ final class BpelVisitor extends SimpleBpelModelVisitorAdaptor {
     );
     Util.visit(
       receive.getVariable(),
+      myTarget,
+      receive,
+      myUsage
+    );
+    Util.visit(
+      receive.getPartnerLink(),
       myTarget,
       receive,
       myUsage
@@ -443,6 +541,34 @@ final class BpelVisitor extends SimpleBpelModelVisitorAdaptor {
       invoke.getOutputVariable(),
       myTarget,
       invoke,
+      myUsage
+    );
+    Util.visit(
+      invoke.getPartnerLink(),
+      myTarget,
+      invoke,
+      myUsage
+    );
+    if (invoke.getCompensationHandler() == myTarget) {
+      myUsage.addItem(invoke);
+    }
+  }
+
+  @Override
+  public void visit(Scope scope)
+  {
+    if (scope.getCompensationHandler() == myTarget) {
+      myUsage.addItem(scope);
+    }
+  }
+
+  @Override
+  public void visit(CompensateScope scope)
+  {
+    Util.visit(
+      scope.getTarget(),
+      myTarget,
+      scope,
       myUsage
     );
   }
