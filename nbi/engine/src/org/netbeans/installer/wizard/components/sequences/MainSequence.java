@@ -41,7 +41,7 @@ import org.netbeans.installer.wizard.components.panels.SelectedComponentsLicense
 
 /**
  *
- * @author ks152834
+ * @author Kirill Sorokin
  */
 public class MainSequence extends WizardSequence {
     public void executeForward(final Wizard wizard) {
