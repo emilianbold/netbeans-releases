@@ -18,21 +18,30 @@
  */
 package org.netbeans.modules.web.jsf.editor;
 
+import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.Collections;
 import java.util.Hashtable;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.Elements;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.UiUtils;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
-import org.netbeans.jmi.javamodel.JavaClass;
+//import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.editor.java.JMIUtils;
+import org.netbeans.modules.j2ee.common.source.AbstractTask;
+//import org.netbeans.modules.editor.java.JMIUtils;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.JSFConfigDataObject;
-import org.netbeans.modules.web.jsf.JSFConfigUtilities;
+//import org.netbeans.modules.web.jsf.JSFConfigUtilities;
 import org.openide.ErrorManager;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
@@ -40,7 +49,6 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -171,40 +179,40 @@ public class JSFConfigHyperlinkProvider implements HyperlinkProvider {
     private boolean isWhiteChar(char c){
         return (c == ' ' || c == '\n' || c == '\t' || c == '\r');
     }
-    private void findJavaClass(String fqn, javax.swing.text.Document doc){
-        OpenJavaClassThread run = new OpenJavaClassThread(fqn, (BaseDocument)doc);
-        RequestProcessor.getDefault().post(run);
-    }
-   
-    private class OpenJavaClassThread implements Runnable {
-        private String fqn;
-        private BaseDocument doc;
-        
-        public OpenJavaClassThread(String name, BaseDocument doc){
-            super();
-            this.fqn = name;
-            this.doc = doc;
-        }
-        
-        public void run() {
-            JMIUtils jmiUtils = JMIUtils.get(doc);
-            JavaClass item = null;
-            jmiUtils.beginTrans(false);
-            try {
-                item = jmiUtils.getExactClass(fqn);
-                if (item != null) {
-                    jmiUtils.openElement(item);
-                } 
-                else {
-                    String key = "goto_source_not_found"; // NOI18N
-                    String msg = NbBundle.getBundle(JSFConfigHyperlinkProvider.class).getString(key);
-                    org.openide.awt.StatusDisplayer.getDefault().setStatusText(MessageFormat.format(msg, new Object [] { fqn } ));
-                }
-            } finally {
-                jmiUtils.endTrans(false);
+    
+    private void findJavaClass(final String fqn, javax.swing.text.Document doc){
+        FileObject fo = NbEditorUtilities.getFileObject(doc);
+        if (fo != null){
+            WebModule wm = WebModule.getWebModule(fo);
+            if (wm != null){
+                try {
+                    final ClasspathInfo cpi = ClasspathInfo.create(wm.getDocumentBase());
+                    JavaSource js = JavaSource.create(cpi, Collections.EMPTY_LIST);
+                    
+                    js.runUserActionTask(new AbstractTask<CompilationController>() {
+                        
+                        public void run(CompilationController cc) throws Exception {
+                            Elements elements = cc.getElements();
+                            TypeElement element = elements.getTypeElement(fqn.trim());
+                            if (element != null) {
+                                if (!UiUtils.open(cpi, element)){
+                                    String key = "goto_source_not_found"; // NOI18N
+                                    String msg = NbBundle.getBundle(JSFConfigHyperlinkProvider.class).getString(key);
+                                    org.openide.awt.StatusDisplayer.getDefault().setStatusText(MessageFormat.format(msg, new Object [] { fqn } ));
+                                    
+                                }
+                            }
+                        }
+                    }, false);
+                } catch (IOException ex) {
+                    java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE,
+                            ex.getMessage(), ex);
+                };
             }
         }
     }
+   
+    
     
     private void findResourcePath(String path, BaseDocument doc){
         //normalize path
