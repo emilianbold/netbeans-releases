@@ -45,6 +45,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
+import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.config.ProxyDescriptor;
 import org.netbeans.modules.subversion.config.SvnConfigFiles;
 import org.netbeans.modules.subversion.util.SvnUtils;
@@ -61,13 +62,19 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  * @author Tomas Stupka
  */
 public class Repository implements ActionListener, DocumentListener, FocusListener, ItemListener {
-
+    
+    public final static int FLAG_URL_EDITABLE           = 2;
+    public final static int FLAG_URL_ENABLED            = 4;
+    public final static int FLAG_ACCEPT_REVISION        = 8;
+    public final static int FLAG_SHOW_REMOVE            = 16;
+    public final static int FLAG_SHOW_HINTS             = 32;    
+    
     private final static String LOCAL_URL_HELP      = "file:///repository_path[@REV]";              // NOI18N
     private final static String HTTP_URL_HELP       = "http://hostname/repository_path[@REV]";      // NOI18N
     private final static String HTTPS_URL_HELP      = "https://hostname/repository_path[@REV]";     // NOI18N
     private final static String SVN_URL_HELP        = "svn://hostname/repository_path[@REV]";       // NOI18N
     private final static String SVN_SSH_URL_HELP    = "svn+{0}://hostname/repository_path[@REV]";   // NOI18N   
-            
+               
     private RepositoryPanel repositoryPanel;
     private boolean valid = true;
     private List<PropertyChangeListener> listeners;
@@ -75,30 +82,27 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
     public static final String PROP_VALID = "valid";                                                // NOI18N
 
     private String message;
-
-    private boolean acceptRevision;
             
-    // XXX use a mask
-    public Repository(List<RepositoryConnection> recentUrls, 
-                      boolean urlEditable, 
-                      boolean urlEnabled, 
-                      boolean acceptRevision, 
-                      boolean showRemove, 
-                      boolean showHints, 
-                      String titleLabel) {
+    private int modeMask;
+    
+    public Repository(String titleLabel) {
+        this(0, titleLabel);
+    }
+    
+    public Repository(int modeMask, String titleLabel) {
+        
+        this.modeMask = modeMask;
+        
         initPanel();
-        refreshUrlHistory(recentUrls);
+        refreshUrlHistory();
         
-        repositoryPanel.urlComboBox.setEditable(urlEditable);
-        repositoryPanel.urlComboBox.setEnabled(urlEnabled);
         repositoryPanel.titleLabel.setText(titleLabel);
-        
-        repositoryPanel.tunnelHelpLabel.setVisible(showHints);
-        repositoryPanel.tipLabel.setVisible(showHints);
-        repositoryPanel.removeButton.setVisible(showRemove);
-
-        this.acceptRevision = acceptRevision;        
-        
+                                        
+        repositoryPanel.urlComboBox.setEditable(isSet(FLAG_URL_EDITABLE));
+        repositoryPanel.urlComboBox.setEnabled(isSet(FLAG_URL_ENABLED));        
+        repositoryPanel.tunnelHelpLabel.setVisible(isSet(FLAG_SHOW_HINTS));
+        repositoryPanel.tipLabel.setVisible(isSet(FLAG_SHOW_HINTS));
+        repositoryPanel.removeButton.setVisible(isSet(FLAG_SHOW_REMOVE));        
     }
     
     public void selectUrl(SVNUrl url, boolean force) {
@@ -162,7 +166,10 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         onSelectedRepositoryChange();
     }
     
-    public void refreshUrlHistory(List<RepositoryConnection> recentUrls) {
+    public void refreshUrlHistory() {
+        
+        List<RepositoryConnection> recentUrls = SvnModuleConfig.getDefault().getRecentUrls();
+                
         Set<RepositoryConnection> recentRoots = new LinkedHashSet<RepositoryConnection>();
         recentRoots.addAll(recentUrls);                               
         
@@ -189,7 +196,11 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         }         
     }
 
-    public List<RepositoryConnection> getRecentUrls() {
+    public void storeRecentUrls() {
+        SvnModuleConfig.getDefault().setRecentUrls(getRecentUrls());
+    }
+    
+    private List<RepositoryConnection> getRecentUrls() {
         ComboBoxModel model = repositoryPanel.urlComboBox.getModel();
         List<RepositoryConnection> ret = new ArrayList<RepositoryConnection>(model.getSize());
         for (int i = 0; i < model.getSize(); i++) {
@@ -279,7 +290,8 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
             rc = getSelectedRC();            
             // check for a valid svnurl
             rc.getSvnUrl();                             
-            if(!acceptRevision && !rc.getSvnRevision().equals(SVNRevision.HEAD)) {
+            if(!isSet(FLAG_ACCEPT_REVISION) && !rc.getSvnRevision().equals(SVNRevision.HEAD)) 
+            {
                 setValid(false, NbBundle.getMessage(Repository.class, "MSG_Repository_OnlyHEADRevision"));
                 valid = false;
             };                   
@@ -574,5 +586,8 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);        
         dialog.setVisible(true);
     }
-    
+
+    private boolean isSet(int flag) {
+        return (modeMask & flag) != 0;
+    }
 }

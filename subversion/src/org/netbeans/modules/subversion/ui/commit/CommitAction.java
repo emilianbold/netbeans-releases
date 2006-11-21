@@ -190,7 +190,6 @@ public class CommitAction extends ContextAction {
         Map<SvnFileNode, CommitOptions> files = table.getCommitFiles();
         Set<String> stickyTags = new HashSet<String>();
         boolean conflicts = false;
-        boolean tags = false;
         
         for (SvnFileNode fileNode : files.keySet()) {                                    
             CommitOptions options = files.get(fileNode);
@@ -205,14 +204,10 @@ public class CommitAction extends ContextAction {
                 panel.setErrorLabel("<html><font color=\"#002080\">" + msg + "</font></html>");  // NOI18N
                 conflicts = true;
             }
-            stickyTags.add(SvnUtils.getCopy(fileNode.getFile()));            
-            if(tags == false) {
-                String tag = SvnUtils.getCopy(fileNode.getFile());
-                tags = tag != null && !tag.trim().equals("");
-            }                       
+            stickyTags.add(SvnUtils.getCopy(fileNode.getFile()));                        
         }
         
-        if (stickyTags.size() > 1 || tags) {
+        if (stickyTags.size() > 1) {
             table.setColumns(new String [] { CommitTableModel.COLUMN_NAME_NAME, CommitTableModel.COLUMN_NAME_BRANCH, CommitTableModel.COLUMN_NAME_STATUS, 
                                                 CommitTableModel.COLUMN_NAME_ACTION, CommitTableModel.COLUMN_NAME_PATH });
         } else {
@@ -237,10 +232,6 @@ public class CommitAction extends ContextAction {
             dd.setTitle(MessageFormat.format(loc.getString("CTL_CommitDialog_Title_Branches"), new Object [] { contentTitle }));
             String msg = loc.getString("MSG_CommitForm_ErrorMultipleBranches");
             errorLabel = "<html><font color=\"#CC0000\">" + msg + "</font></html>"; // NOI18N
-        }
-        if(tags) { // override the error msg if there seems to be a commit into tags ...
-            String msg = loc.getString("MSG_CommitForm_ErrorTags");
-            errorLabel = "<html><font color=\"#CC0000\">" + msg + "</font></html>"; // NOI18N            
         }
         if (!conflicts) {
             panel.setErrorLabel(errorLabel);

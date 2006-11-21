@@ -225,15 +225,15 @@ public class RepositoryConnection {
         sb.append(rc.getExternalCommand());
         sb.append(RC_DELIMITER);        
         ProxyDescriptor pd = rc.getProxyDescriptor();
-        sb.append(pd != null ? pd.getHost() : "");
-        sb.append(RC_DELIMITER);        
-        sb.append(pd != null ? pd.getUserName() : "");
+        sb.append(pd != null && pd.getHost() != null     ? pd.getHost()                                       : "");
         sb.append(RC_DELIMITER);                        
-        sb.append(pd != null ? Scrambler.getInstance().scramble(pd.getPassword()) : "");
+        sb.append(pd != null && pd.getUserName() != null ? pd.getUserName()                                   : "");
+        sb.append(RC_DELIMITER);                        
+        sb.append(pd != null && pd.getPassword() != null ? Scrambler.getInstance().scramble(pd.getPassword()) : "");
         sb.append(RC_DELIMITER);        
-        sb.append(pd != null ? pd.getPort() : "");
+        sb.append(pd != null && pd.getPort() != -1       ? pd.getPort()                                       : "");
         sb.append(RC_DELIMITER);        
-        sb.append(pd != null ? pd.getType() : "");
+        sb.append(pd != null && pd.getType() != -1       ? pd.getType()                                       : "");
         sb.append(RC_DELIMITER);
         return sb.toString();
     }
@@ -244,16 +244,16 @@ public class RepositoryConnection {
         int l = fields.length;
         
         ProxyDescriptor pd = null;
-        String url          =         fields[0];
-        String username     = l > 1 ? fields[1] : null;
-        String password     = l > 2 ? Scrambler.getInstance().descramble(fields[2]) : null;
-        String extCmd       = l > 3 ? fields[3] : null;
+        String url          =           fields[0];
+        String username     = l > 1 && !fields[1].equals("") ? fields[1] : null;
+        String password     = l > 2 && !fields[2].equals("") ? Scrambler.getInstance().descramble(fields[2]) : null;
+        String extCmd       = l > 3 && !fields[3].equals("") ? fields[3] : null;
         
-        String pdHost       = l > 4 ? fields[4] : null;
-        String pdUsername   = l > 5 ? fields[5] : null;
-        String pdPassword   = l > 6 ? Scrambler.getInstance().descramble(fields[6]) : null;
-        int pdPort          = l > 7 ? Integer.parseInt(fields[7]) : -1;
-        int pdType          = l > 8 ? Integer.parseInt(fields[8]) : -1;                        
+        String pdHost       = l > 4 && !fields[4].equals("") ? fields[4] : null;
+        String pdUsername   = l > 5 && !fields[5].equals("") ? fields[5] : null;
+        String pdPassword   = l > 6 && !fields[6].equals("") ? Scrambler.getInstance().descramble(fields[6]) : null;
+        int pdPort          = l > 7 && !fields[7].equals("") ? Integer.parseInt(fields[7]) : -1;
+        int pdType          = l > 8 && !fields[8].equals("") ? Integer.parseInt(fields[8]) : -1;                        
         pd = new ProxyDescriptor(pdType, pdHost, pdPort, pdUsername, pdPassword);        
         
         return new RepositoryConnection(url, username, password, pd, extCmd);        

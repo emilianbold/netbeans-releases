@@ -27,6 +27,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.SvnModuleConfig;
+import org.netbeans.modules.subversion.ui.repository.Repository;
 import org.netbeans.modules.subversion.ui.wizards.repositorystep.RepositoryStep;
 import org.netbeans.modules.subversion.ui.wizards.checkoutstep.CheckoutStep;
 import org.openide.DialogDisplayer;
@@ -108,7 +109,7 @@ public final class CheckoutWizard implements ChangeListener {
 
         protected WizardDescriptor.Panel[] initializePanels() {
             WizardDescriptor.Panel[] panels = new WizardDescriptor.Panel[3];
-            repositoryStep = new RepositoryStep(true);
+            repositoryStep = new RepositoryStep(Repository.FLAG_ACCEPT_REVISION);
             repositoryStep.addChangeListener(CheckoutWizard.this);
             checkoutStep = new CheckoutStep();            
             checkoutStep.addChangeListener(CheckoutWizard.this);

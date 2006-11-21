@@ -45,15 +45,16 @@ public final class SvnOptionsController extends OptionsPanelController implement
 
     private final SvnOptionsPanel panel; 
     private final Repository repository;    
-    private final AnnotationSettings labelsSettings;    
+    private final AnnotationSettings annotationSettings;    
     
     public SvnOptionsController() {
         panel = new SvnOptionsPanel();
-                
-        repository = new Repository(SvnModuleConfig.getDefault().getRecentUrls(), false, true, false, true, 
-                                    false, org.openide.util.NbBundle.getMessage(SvnOptionsController.class, "CTL_Repository_Location")); // NOI18N                        
+                         
+        int repositoryModeMask = Repository.FLAG_URL_ENABLED | Repository.FLAG_SHOW_REMOVE; 
+        String title = org.openide.util.NbBundle.getMessage(SvnOptionsController.class, "CTL_Repository_Location");
+        repository = new Repository(repositoryModeMask, title); // NOI18N                        
         
-        labelsSettings = new AnnotationSettings();
+        annotationSettings = new AnnotationSettings();
         
         panel.browseButton.addActionListener(this);
         panel.manageConnSettingsButton.addActionListener(this);
@@ -65,9 +66,8 @@ public final class SvnOptionsController extends OptionsPanelController implement
         
         panel.executablePathTextField.setText(SvnModuleConfig.getDefault().getExecutableBinaryPath());        
         
-        labelsSettings.update();
-                
-        repository.refreshUrlHistory(SvnModuleConfig.getDefault().getRecentUrls());
+        annotationSettings.update();                
+        repository.refreshUrlHistory();
         
     }
     
@@ -79,18 +79,16 @@ public final class SvnOptionsController extends OptionsPanelController implement
         // Subversion.setupSvnClientFactory(); this won't work anyway because the svnclientadapter doesn't allow more setups per client!
         
         // labels
-        labelsSettings.applyChanges();
-        SvnModuleConfig.getDefault().setAnnotationFormat(labelsSettings.getLabelsFormat());                             
+        annotationSettings.applyChanges();        
         Subversion.getInstance().getAnnotator().refresh();
         Subversion.getInstance().refreshAllAnnotations();                
         
         // connection                      
-        SvnModuleConfig.getDefault().setRecentUrls(repository.getRecentUrls());
-        
+        repository.storeRecentUrls();        
     }
     
     public void cancel () {
-        repository.refreshUrlHistory(SvnModuleConfig.getDefault().getRecentUrls());
+        repository.refreshUrlHistory();
     }
     
     public boolean isValid () {
@@ -162,16 +160,14 @@ public final class SvnOptionsController extends OptionsPanelController implement
     
     
     private void onManageConnClick() {        
-        boolean ok = repository.show(
-                NbBundle.getMessage(SvnOptionsController.class, "CTL_ManageConnections"),                 
-                new HelpCtx(Repository.class));        
+        boolean ok = repository.show(NbBundle.getMessage(SvnOptionsController.class, "CTL_ManageConnections"), new HelpCtx(Repository.class));        
         if(!ok) {
-            repository.refreshUrlHistory(SvnModuleConfig.getDefault().getRecentUrls());
+            repository.refreshUrlHistory();
         }
     }
     
     private void onManageLabelsClick() {
-        showDialog(labelsSettings.getPanel(), NbBundle.getMessage(SvnOptionsController.class, "CTL_ManageLabels"), NbBundle.getMessage(SvnOptionsController.class, "ACSD_ManageLabels"), new HelpCtx(AnnotationSettings.class));
+        showDialog(annotationSettings.getPanel(), NbBundle.getMessage(SvnOptionsController.class, "CTL_ManageLabels"), NbBundle.getMessage(SvnOptionsController.class, "ACSD_ManageLabels"), new HelpCtx(AnnotationSettings.class));
     }
     
     private boolean showDialog(JPanel panel, String title, String accesibleDescription, HelpCtx helpCtx) {

@@ -72,28 +72,12 @@ public class AnnotationSettings implements ActionListener, AWTEventListener, Lis
     }
     
     void update() {
-        panel.annotationTextField.setText(SvnModuleConfig.getDefault().getAnnotationFormat());
-        
-        List<AnnotationExpression> exps = SvnModuleConfig.getDefault().getAnnotationExpresions();        
-        
-        getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        DefaultTableModel model = getModel();
-        model.setColumnCount(2);
-        if(exps.size() > 0) {
-            model.setRowCount(exps.size());
-            int r = -1;
-            for (Iterator<AnnotationExpression> it = exps.iterator(); it.hasNext();) {
-                AnnotationExpression annotationExpression = it.next();                
-                r++;
-                model.setValueAt(annotationExpression.getUrlExp(),        r, 0);
-                model.setValueAt(annotationExpression.getAnnotationExp(), r, 1);
-            }
-        } else {
-            onResetClick();
-        }
+        reset(SvnModuleConfig.getDefault().getAnnotationFormat(), SvnModuleConfig.getDefault().getAnnotationExpresions());
     }
 
     void applyChanges() {
+        SvnModuleConfig.getDefault().setAnnotationFormat(panel.annotationTextField.getText());                                     
+        
         TableModel model = panel.expresionsTable.getModel();
         List<AnnotationExpression> exps = new ArrayList<AnnotationExpression>(model.getRowCount());        
         for (int r = 0; r < model.getRowCount(); r++) {
@@ -184,13 +168,25 @@ public class AnnotationSettings implements ActionListener, AWTEventListener, Lis
             selectionModel.setSelectionInterval(r, r);    
         }
     }
-    
-    
+        
     private void onResetClick() {
+        reset(SvnModuleConfig.getDefault().getDefaultAnnotationFormat(), SvnModuleConfig.getDefault().getDefaultAnnotationExpresions());               
+    }
+    
+    private void reset(String annotationformat, List<AnnotationExpression> exps) {
+        panel.annotationTextField.setText(annotationformat);        
+                
+        getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         DefaultTableModel model = getModel();
-        model.setRowCount(1);
-        model.setValueAt(".*/(branches|tags)/(.+?)/.*", 0, 0);
-        model.setValueAt("\\2",                         0, 1);                    
+        model.setColumnCount(2);
+        model.setRowCount(exps.size());
+        int r = -1;
+        for (Iterator<AnnotationExpression> it = exps.iterator(); it.hasNext();) {
+            AnnotationExpression annotationExpression = it.next();                
+            r++;
+            model.setValueAt(annotationExpression.getUrlExp(),        r, 0);
+            model.setValueAt(annotationExpression.getAnnotationExp(), r, 1);
+        }        
     }
     
     private DefaultTableModel getModel() {
@@ -241,10 +237,6 @@ public class AnnotationSettings implements ActionListener, AWTEventListener, Lis
             labelsWindow.dispose();
             //labelsWindow = null;
         }        
-    }
-
-    String getLabelsFormat() {
-        return panel.annotationTextField.getText();                     
     }
     
     public void valueChanged(ListSelectionEvent evt) {

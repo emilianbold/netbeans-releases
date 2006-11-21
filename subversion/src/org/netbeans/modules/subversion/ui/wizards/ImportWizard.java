@@ -127,7 +127,7 @@ public final class ImportWizard implements ChangeListener {
         protected WizardDescriptor.Panel[] initializePanels() {
             WizardDescriptor.Panel[] panels = new WizardDescriptor.Panel[3];            
 
-            repositoryStep = new RepositoryStep(false);
+            repositoryStep = new RepositoryStep();
             repositoryStep.addChangeListener(ImportWizard.this);
 
             File file = context.getRootFiles()[0];

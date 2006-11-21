@@ -105,9 +105,13 @@ public class SvnModuleConfig {
     }
 
     public String getAnnotationFormat() {
-        return (String) getPreferences().get(KEY_ANNOTATION_FORMAT, "");        
+        return (String) getPreferences().get(KEY_ANNOTATION_FORMAT, getDefaultAnnotationFormat());                
     }
     
+    public String getDefaultAnnotationFormat() {
+        return "[{" + Annotator.ANNOTATION_STATUS + "} {" + Annotator.ANNOTATION_FOLDER + "}]";
+    }
+
     public void setAnnotationFormat(String annotationFormat) {
         getPreferences().put(KEY_ANNOTATION_FORMAT, annotationFormat);        
     }
@@ -182,11 +186,20 @@ public class SvnModuleConfig {
         Preferences prefs = getPreferences();
         List<String> urlExp = Utils.getStringList(prefs, URL_EXP);
         List<String> annotationExp = Utils.getStringList(prefs, ANNOTATION_EXP);        
-        
-        List<AnnotationExpression> ret = new ArrayList<AnnotationExpression>(urlExp.size());        
+                
+        List<AnnotationExpression> ret = new ArrayList<AnnotationExpression>(urlExp.size());                
         for (int i = 0; i < urlExp.size(); i++) {                                        
             ret.add(new AnnotationExpression(urlExp.get(i), annotationExp.get(i)));
         }
+        if(ret.size() < 1) {
+            ret = getDefaultAnnotationExpresions();
+        }
+        return ret;
+    }
+
+    public List<AnnotationExpression> getDefaultAnnotationExpresions() {
+        List<AnnotationExpression> ret = new ArrayList<AnnotationExpression>(1);
+        ret.add(new AnnotationExpression(".*/(branches|tags)/(.+?)/.*", "\\2"));     
         return ret;
     }
     

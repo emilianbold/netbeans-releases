@@ -92,7 +92,12 @@ public class Annotator {
 
     private static final Pattern lessThan = Pattern.compile("<");  // NOI18N
     
-    public static String[] LABELS = new String[] { "revision", "status", "folder", "mime_type" };
+    public static String ANNOTATION_REVISION    = "revision";
+    public static String ANNOTATION_STATUS      = "status";
+    public static String ANNOTATION_FOLDER      = "folder";
+    public static String ANNOTATION_MIME_TYPE   = "mime_type";
+    
+    public static String[] LABELS = new String[] {ANNOTATION_REVISION, ANNOTATION_STATUS, ANNOTATION_FOLDER, ANNOTATION_MIME_TYPE};
     
     private final FileStatusCache cache;
     private MessageFormat format;        

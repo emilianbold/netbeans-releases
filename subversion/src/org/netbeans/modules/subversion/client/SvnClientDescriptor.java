@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.subversion.client;
 
-import org.netbeans.modules.subversion.config.ProxyDescriptor;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**

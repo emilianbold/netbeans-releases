@@ -163,12 +163,13 @@ public class SvnClientCallback implements ISVNPromptUserPassword {
     }    
     
     private void getAuthData() {
-        String title = org.openide.util.NbBundle.getMessage(SvnClientCallback.class, "MSG_Error_ConnectionParameters");
-        Repository repository = new Repository(SvnModuleConfig.getDefault().getRecentUrls(), false, false, false, false, false, title);            // NOI18N
+        String title = org.openide.util.NbBundle.getMessage(SvnClientCallback.class, "MSG_Error_ConnectionParameters");                 // NOI18N
+
+        Repository repository = new Repository(title);            
         repository.selectUrl(url, true);
         
-        JButton retryButton = new JButton(org.openide.util.NbBundle.getMessage(SvnClientCallback.class, "CTL_Action_Retry"));                               // NOI18N        
-        Object option = repository.show(org.openide.util.NbBundle.getMessage(SvnClientCallback.class, "MSG_Error_AuthFailed"),                              // NOI18N   
+        JButton retryButton = new JButton(org.openide.util.NbBundle.getMessage(SvnClientCallback.class, "CTL_Action_Retry"));           // NOI18N                    
+        Object option = repository.show(org.openide.util.NbBundle.getMessage(SvnClientCallback.class, "MSG_Error_AuthFailed"),          // NOI18N                    
                                         new HelpCtx(this.getClass()),
                                         new Object[] {retryButton, org.openide.util.NbBundle.getMessage(SvnClientCallback.class, "CTL_Action_Cancel")});    // NOI18N  
                 

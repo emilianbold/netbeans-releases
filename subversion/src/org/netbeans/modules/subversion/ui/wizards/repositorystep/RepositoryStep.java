@@ -59,12 +59,16 @@ public class RepositoryStep
 
     private RepositoryFile repositoryFile;    
 
-    private boolean acceptRevision;
+    private int repositoryModeMask;
 
     private WizardStepProgressSupport support;
 
-    public RepositoryStep(boolean acceptRevision) {
-        this.acceptRevision = acceptRevision;
+    public RepositoryStep() {
+        this.repositoryModeMask = 0;
+    }
+    
+    public RepositoryStep(int repositoryModeMask) {
+        this.repositoryModeMask = repositoryModeMask;
     }
 
     public HelpCtx getHelp() {
@@ -72,9 +76,10 @@ public class RepositoryStep
     }        
 
     protected JComponent createComponent() {
-        if (repository == null) {
-            repository = new Repository(SvnModuleConfig.getDefault().getRecentUrls(), true, true, acceptRevision, 
-                                        false, true, org.openide.util.NbBundle.getMessage(RepositoryStep.class, "CTL_Repository_Location")); // NOI18N
+        if (repository == null) {         
+            repositoryModeMask = repositoryModeMask | Repository.FLAG_URL_EDITABLE | Repository.FLAG_URL_ENABLED | Repository.FLAG_SHOW_HINTS;
+            String title = org.openide.util.NbBundle.getMessage(RepositoryStep.class, "CTL_Repository_Location");       // NOI18N
+            repository = new Repository(repositoryModeMask, title); 
             repository.addPropertyChangeListener(this);
             panel = new RepositoryStepPanel();            
             panel.repositoryPanel.setLayout(new BorderLayout());
