@@ -45,6 +45,7 @@ public final class Dependency {
      * Dependency on the IDE.
      * @deprecated This type of dependency should no longer be used.
      */
+    @Deprecated
     public final static int TYPE_IDE = 4;
 
     /** Dependency on a token.
@@ -78,14 +79,17 @@ public final class Dependency {
     public final static int COMPARE_ANY = 3;
 
     /** @deprecated request dependencies on direct modules */
+    @Deprecated
     public static final String IDE_NAME = System.getProperty("org.openide.major.version", "IDE"); // NOI18N
 
     /** @deprecated request dependencies on direct modules */
+    @Deprecated
     public static final SpecificationVersion IDE_SPEC = makeSpec(
             System.getProperty("org.openide.specification.version")
         ); // NOI18N
 
     /** @deprecated request dependencies on direct modules */
+    @Deprecated
     public static final String IDE_IMPL = System.getProperty("org.openide.version"); // NOI18N
 
     /** Name, for purposes of dependencies, of the Java platform. */
@@ -412,7 +416,11 @@ public final class Dependency {
         } else if (type == TYPE_PACKAGE) {
             buf.append("package "); // NOI18N
         } else if (type == TYPE_REQUIRES) {
-            buf.append("token "); // NOI18N
+            buf.append("requires "); // NOI18N
+        } else if (type == TYPE_NEEDS) {
+            buf.append("needs "); // NOI18N
+        } else if (type == TYPE_RECOMMENDS) {
+            buf.append("recommends "); // NOI18N
         }
 
         buf.append(name);
