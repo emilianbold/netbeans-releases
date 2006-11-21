@@ -611,7 +611,7 @@ public class Annotator {
         for (Iterator i = map.keySet().iterator(); i.hasNext();) {
             File file = (File) i.next();
             FileInformation info = (FileInformation) map.get(file);
-            if (!info.isDirectory() && (info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) modifiedFiles.put(file, info);
+            if ((info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) modifiedFiles.put(file, info);
         }
 
         for (Iterator i = context.getRootFiles().iterator(); i.hasNext();) {
