@@ -35,7 +35,6 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -46,7 +45,6 @@ import org.openide.filesystems.URLMapper;
  */
 public class J2SELibrarySourceLevelQueryImpl implements SourceLevelQueryImplementation {
     
-    private static final String JDK_11 = "1.1";     //NOI18N
     private static final String JDK_12 = "1.2";     //NOI18N
     private static final String JDK_13 = "1.3";     //NOI18N
     private static final String JDK_14 = "1.4";     //NOI18N
@@ -111,10 +109,7 @@ public class J2SELibrarySourceLevelQueryImpl implements SourceLevelQueryImplemen
             return JDK_UNKNOWN;
         }
         int version = getClassFileMajorVersion (classFile);
-        if (version == CF_11) {
-            return JDK_11;
-        }
-        else if (version == CF_12) {
+        if (version == CF_11 || version == CF_12) {
             return JDK_12;
         }
         else if (version == CF_13) {

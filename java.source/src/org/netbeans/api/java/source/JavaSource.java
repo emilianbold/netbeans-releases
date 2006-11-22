@@ -21,6 +21,8 @@ package org.netbeans.api.java.source;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.tools.javac.api.JavacTaskImpl;
+import com.sun.tools.javac.code.Source;
+import com.sun.tools.javac.code.Source;
 import com.sun.tools.javac.comp.Enter;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.util.Abort;
@@ -97,6 +99,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -728,7 +731,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         options.add("-g:lines"); // NOI18N, Make the compiler to maintain line table
         options.add("-g:vars");  // NOI18N, Make the compiler to maintain local variables table
         options.add("-source");  // NOI18N
-        options.add(sourceLevel);
+        options.add(validateSourceLevel(sourceLevel));
 
         ClassLoader orig = Thread.currentThread().getContextClassLoader();
         try {            
@@ -1530,6 +1533,28 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             Exceptions.printStackTrace(e);
         }
         return false;
+    }    
+    
+    private static String validateSourceLevel (String sourceLevel) {        
+        Source[] sources = Source.values();
+        if (sourceLevel == null) {
+            //Should never happen but for sure
+            return sources[sources.length-1].name;
+        }
+        for (Source source : sources) {
+            if (source.name.equals(sourceLevel)) {
+                return sourceLevel;
+            }
+        }
+        SpecificationVersion specVer = new SpecificationVersion (sourceLevel);
+        SpecificationVersion JAVA_12 = new SpecificationVersion ("1.2");   //NOI18N
+        if (JAVA_12.compareTo(specVer)>0) {
+            //Some SourceLevelQueries return 1.1 source level which is invalid, use 1.2
+            return sources[0].name;
+        }
+        else {
+            return sources[sources.length-1].name;
+        }
     }
     
 }
