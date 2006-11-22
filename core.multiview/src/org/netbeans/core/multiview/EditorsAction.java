@@ -21,6 +21,7 @@ package org.netbeans.core.multiview;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.lang.ref.WeakReference;
 import javax.swing.AbstractAction;
 import javax.swing.ButtonGroup;
 import javax.swing.JComponent;
@@ -74,16 +75,24 @@ public class EditorsAction extends AbstractAction
                 TopComponent tc = mode.getSelectedTopComponent();
                 if (tc != null) {
                     setEnabled(true);
-                    final MultiViewHandler handler = MultiViews.findMultiViewHandler(tc);
+                    MultiViewHandler handler = MultiViews.findMultiViewHandler(tc);
                     if (handler != null) {
+                        final WeakReference handlerRef = new WeakReference(handler);
                         ButtonGroup group = new ButtonGroup();
                         MultiViewPerspective[] pers = handler.getPerspectives();
                         for (int i = 0; i < pers.length; i++) {
-                            final MultiViewPerspective thisPers = pers[i];
+                            MultiViewPerspective thisPers = pers[i];
+                            final WeakReference persRef = new WeakReference(thisPers);
+                            
                             JRadioButtonMenuItem item = new JRadioButtonMenuItem(thisPers.getDisplayName());
                             item.addActionListener(new ActionListener() {
                                 public void actionPerformed(ActionEvent event) {
-                                    handler.requestActive(thisPers);
+                                    //#88626 prevent a memory leak
+                                    MultiViewHandler handler = (MultiViewHandler)handlerRef.get();
+                                    MultiViewPerspective thisPers = (MultiViewPerspective)persRef.get();
+                                    if (handler != null && thisPers != null) {
+                                        handler.requestActive(thisPers);
+                                    }
                                 }
                             });
                             if (thisPers.getDisplayName().equals(handler.getSelectedPerspective().getDisplayName())) {
