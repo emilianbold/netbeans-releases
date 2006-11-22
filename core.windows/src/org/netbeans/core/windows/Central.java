@@ -20,6 +20,7 @@
 package org.netbeans.core.windows;
 
 
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Point;
@@ -1251,6 +1252,10 @@ final class Central implements ControllerHandler {
     public int getEditorAreaFrameState() {
         return model.getEditorAreaFrameState();
     }
+    
+    public Component getEditorAreaComponent() {
+        return viewRequestor.getEditorAreaComponent();
+    }
 
     /** Gets mode that is currently maximized (can be an editor or view component). */
     ModeImpl getCurrentMaximizedMode() {
@@ -1454,14 +1459,14 @@ final class Central implements ControllerHandler {
     }
     
     /** Creates new mode on side of editor area and puts there the TopComponentS. */
-    private void attachTopComponentsAroundEditor(TopComponent[] tcs, String side, boolean fireEvents) {
+    private void attachTopComponentsAroundEditor(TopComponent[] tcs, String side, boolean fireEvents, int modeKind) {
         if(tcs == null || tcs.length == 0) {
             return;
         }
         
         // New mode. It is necessary to add it yet.
         ModeImpl newMode = WindowManagerImpl.getInstance().createModeImpl(
-            ModeImpl.getUnusedModeName(), Constants.MODE_KIND_VIEW, false);
+            ModeImpl.getUnusedModeName(), modeKind, false);
 
         // XXX All others should have the same restriction.
         if(!newMode.canContain(tcs[0])) {
@@ -1802,8 +1807,8 @@ final class Central implements ControllerHandler {
         updateViewAfterDnD(true);
     }
     
-    public void userDroppedTopComponentsAroundEditor(TopComponent[] tcs, String side) {
-        attachTopComponentsAroundEditor(tcs, side, false);
+    public void userDroppedTopComponentsAroundEditor(TopComponent[] tcs, String side, int modeKind) {
+        attachTopComponentsAroundEditor(tcs, side, false, modeKind);
 
         updateViewAfterDnD(true);
     }

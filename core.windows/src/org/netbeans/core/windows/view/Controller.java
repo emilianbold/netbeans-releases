@@ -73,7 +73,7 @@ public interface Controller {
     
     public void userDroppedTopComponentsAround(TopComponent[] tcs, String side);
     
-    public void userDroppedTopComponentsAroundEditor(TopComponent[] tcs, String side);
+    public void userDroppedTopComponentsAroundEditor(TopComponent[] tcs, String side, int modeKind);
     
     public void userDroppedTopComponentsIntoFreeArea(TopComponent[] tcs, Rectangle bounds, int modeKind);
 

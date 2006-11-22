@@ -872,6 +872,13 @@ final class ViewHierarchy {
         return findEditorViewForElement(getSplitRootElement());
     }
     
+    Component getEditorAreaComponent() {
+        EditorView editor = findEditorAreaElement();
+        if( null != editor )
+            return editor.getComponent();
+        return null;
+    }
+    
     private EditorView findEditorViewForElement(ViewElement view) {
         if(view instanceof EditorView) {
             return (EditorView)view;

@@ -626,6 +626,10 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         central.setEditorAreaConstraints(editorAreaConstraints);
     }
     
+    public java.awt.Component getEditorAreaComponent() {
+        return central.getEditorAreaComponent();
+    }
+    
     /** Gets editor area constraints. */
     public SplitConstraint[] getEditorAreaConstraints() {
         return central.getEditorAreaConstraints();

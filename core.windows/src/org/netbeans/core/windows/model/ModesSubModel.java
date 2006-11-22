@@ -190,7 +190,7 @@ final class ModesSubModel {
         boolean result;
         // XXX PENDING
         if(mode.getKind() == Constants.MODE_KIND_EDITOR) {
-            result = false;
+            result = editorSplitSubModel.getEditorArea().addModeToSideRoot(mode, side);
         } else {
             result = editorSplitSubModel.addModeAroundEditor(mode, side);
         }

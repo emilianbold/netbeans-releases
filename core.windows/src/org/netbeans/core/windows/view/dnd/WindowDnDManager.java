@@ -93,6 +93,10 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
     /** Keeps ref to fake center panel droppable. */
     private static Reference<CenterPanelDroppable> centerDropWRef = 
             new WeakReference<CenterPanelDroppable>(null);
+
+    /** Keeps ref to fake editor area droppable. */
+    private static Reference<EditorAreaDroppable> editorDropWRef = 
+            new WeakReference<EditorAreaDroppable>(null);
     
     /** Debugging flag. */
     private static final boolean DEBUG = Debug.isLoggable(WindowDnDManager.class);
@@ -493,6 +497,9 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
             }
         }
         lastSlideDroppable = null;
+        if (isNearEditorEdge(location, viewAccessor, kind)) {
+            return getEditorAreaDroppable();
+        }
         if (isNearEdge(location, viewAccessor)) {
             return getCenterPanelDroppable();
         }
@@ -595,6 +602,33 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
         return false;
     }
     
+    /** Indicates whether the cursor is around the editor area of the main window.
+     * In that case is needed also to provide a drop. */
+    static boolean isNearEditorEdge(Point location, ViewAccessor viewAccessor, int kind) {
+        Component editor = WindowManagerImpl.getInstance().getEditorAreaComponent();
+        if(editor == null) {
+            return false;
+        }
+        Point p = new Point(location);
+        SwingUtilities.convertPointFromScreen(p, editor.getParent());
+        Rectangle editorBounds = editor.getBounds();
+        editorBounds.y -= 10;
+        editorBounds.height += 10;
+        Rectangle shrinked = editor.getBounds();
+        shrinked.grow(-10,0);
+        shrinked.height -= 10;
+        Component dr = viewAccessor.getSlidingModeComponent(Constants.RIGHT);
+        if (dr != null) {
+            shrinked.width = shrinked.width - dr.getBounds().width;
+        }
+        dr = viewAccessor.getSlidingModeComponent(Constants.BOTTOM);
+        if (dr != null) {
+            shrinked.height = shrinked.height - dr.getBounds().height;
+        }
+        return editorBounds.contains(p) && !shrinked.contains(p) && kind == Constants.MODE_KIND_EDITOR;
+    }    
+    
+    
     /** Indicates whether the cursor is around center panel of main window.
      * In that case is needed also to provide a drop. */
     static boolean isNearEdge(Point location, ViewAccessor viewAccessor) {
@@ -630,8 +664,7 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
     
     /** Creates fake droppable for center panel. */
     private TopComponentDroppable getCenterPanelDroppable() {
-        CenterPanelDroppable droppable
-                = centerDropWRef.get();
+        CenterPanelDroppable droppable = centerDropWRef.get();
         
         if(droppable == null) {
             droppable = new CenterPanelDroppable();
@@ -644,6 +677,19 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
     private static TopComponentDroppable getFreeAreaDroppable(Point location) {
         return new FreeAreaDroppable(location);
     }
+
+    /** Creates fake droppable for editor area. */
+    private TopComponentDroppable getEditorAreaDroppable() {
+        EditorAreaDroppable droppable = editorDropWRef.get();
+        
+        if(droppable == null) {
+            droppable = new EditorAreaDroppable();
+            editorDropWRef = new WeakReference<EditorAreaDroppable>(droppable);
+        }
+        
+        return droppable;
+    }
+    
     
     /** 
      * Tries to perform actual drop.
@@ -770,7 +816,7 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
                 || constr == Constants.LEFT
                 || constr == Constants.RIGHT
                 || constr == Constants.BOTTOM) {
-                    controller.userDroppedTopComponentsAroundEditor(tcArray, (String)constr);
+                    controller.userDroppedTopComponentsAroundEditor(tcArray, (String)constr, kind);
                 } else if(Constants.SWITCH_MODE_ADD_NO_RESTRICT
                 || WindowManagerImpl.getInstance().isTopComponentAllowedToMoveAnywhere(tcArray[0])) {
                     controller.userDroppedTopComponentsIntoEmptyEditor(tcArray);
@@ -793,7 +839,11 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
             || constr == Constants.LEFT
             || constr == Constants.RIGHT
             || constr == Constants.BOTTOM) { // XXX around area
-                controller.userDroppedTopComponentsAround(tcArray, (String)constr);
+                if( droppable instanceof EditorAreaDroppable ) {
+                    controller.userDroppedTopComponentsAroundEditor(tcArray, (String)constr, Constants.MODE_KIND_EDITOR);
+                } else {
+                    controller.userDroppedTopComponentsAround(tcArray, (String)constr);
+                }
             } else if(constr instanceof Rectangle) { // XXX free area
                 Rectangle bounds = (Rectangle)constr;
                 // #38657 Refine bounds.
@@ -1096,6 +1146,82 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
 
     } // End of class CenterPanelDroppable.
     
+    /** Fake helper droppable used when used around  */
+    private class EditorAreaDroppable implements TopComponentDroppable {
+
+        /** Implements <code>TopComponentDroppable</code>. */
+        public java.awt.Shape getIndicationForLocation(Point p) {
+            Rectangle bounds = getDropComponent().getBounds();
+            Rectangle res = null;
+            double ratio = Constants.DROP_AROUND_RATIO;
+            Object constraint = getConstraintForLocation(p);
+            if(constraint == JSplitPane.LEFT) {
+                res = new Rectangle(0, 0, (int)(bounds.width * ratio) - 1, bounds.height - 1);
+            } else if(constraint == JSplitPane.TOP) {
+                res = new Rectangle(0, 0, bounds.width - 1, (int)(bounds.height * ratio) - 1);
+            } else if(constraint == JSplitPane.RIGHT) {
+                res = new Rectangle(bounds.width - (int)(bounds.width * ratio), 0,
+                        (int)(bounds.width * ratio) - 1, bounds.height - 1);
+            } else if(constraint == JSplitPane.BOTTOM) {
+                res = new Rectangle(0, bounds.height - (int)(bounds.height * ratio), bounds.width - 1,
+                        (int)(bounds.height * ratio) - 1);
+            }
+
+            return res;
+        }
+
+        /** Implements <code>TopComponentDroppable</code>. */
+        public Object getConstraintForLocation(Point p) {
+            Rectangle bounds = getDropComponent().getBounds();
+            Component leftSlide = viewAccessor.getSlidingModeComponent(Constants.LEFT);
+            Component rightSlide = viewAccessor.getSlidingModeComponent(Constants.RIGHT);
+            Component bottomSlide = viewAccessor.getSlidingModeComponent(Constants.BOTTOM);
+            if(null != leftSlide && p.x <  leftSlide.getBounds().width + 10) {
+                return javax.swing.JSplitPane.LEFT;
+            } else if(p.y < bounds.y) {
+                return javax.swing.JSplitPane.TOP;
+            } else if(null !=rightSlide && null != leftSlide 
+                      && p.x > bounds.width - 10 - rightSlide.getBounds().width - leftSlide.getBounds().width) {
+                return javax.swing.JSplitPane.RIGHT;
+            } else if(null != bottomSlide && p.y > bounds.height - 10 - bottomSlide.getBounds().height) {
+                return javax.swing.JSplitPane.BOTTOM;
+            }
+
+            return null;
+        }
+
+        /** Implements <code>TopComponentDroppable</code>. */
+        public Component getDropComponent() {
+            return WindowManagerImpl.getInstance().getEditorAreaComponent();
+        }
+        
+        /** Implements <code>TopComponentDroppable</code>. */
+        public ViewElement getDropViewElement() {
+            return null;
+        }
+        
+        public boolean canDrop(TopComponent transfer, Point location) {
+            if(Constants.SWITCH_MODE_ADD_NO_RESTRICT
+            || WindowManagerImpl.getInstance().isTopComponentAllowedToMoveAnywhere(transfer)) {
+                return true;
+            }
+
+            ModeImpl mode = (ModeImpl)WindowManagerImpl.getInstance().findMode(transfer);
+            return mode != null && mode.getKind() == Constants.MODE_KIND_EDITOR;
+        }
+        
+        public boolean supportsKind(int kind, TopComponent transfer) {
+            if(Constants.SWITCH_MODE_ADD_NO_RESTRICT
+            || WindowManagerImpl.getInstance().isTopComponentAllowedToMoveAnywhere(transfer)) {
+                return true;
+            }
+
+            return kind == Constants.MODE_KIND_EDITOR;
+        }
+
+
+    } // End of class EditorAreaDroppable.
+
     
     /** Fake helper droppable used when dropping is done into free area.  */
     private static class FreeAreaDroppable implements TopComponentDroppable {

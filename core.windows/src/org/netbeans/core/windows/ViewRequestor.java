@@ -80,6 +80,10 @@ class ViewRequestor {
         return view.getMainWindow();
     }
     
+    public Component getEditorAreaComponent() {
+        return view.getEditorAreaComponent();
+    }
+    
     public String guessSlideSide(TopComponent tc) {
         return view.guessSlideSide(tc);
     }

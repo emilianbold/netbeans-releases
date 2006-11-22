@@ -208,6 +208,27 @@ class SplitSubModel {
         return addNodeToTreeToSide(modeNode, attachModeNode, side);
     }
 
+    public boolean addModeToSideRoot(ModeImpl mode, String side) {
+        if(mode == null || mode.getState() == Constants.MODE_STATE_SEPARATED) {
+            Logger.getLogger(SplitSubModel.class.getName()).log(Level.WARNING, null,
+                              new java.lang.IllegalArgumentException("Mode=" +
+                                                                     mode));
+            return false;
+        }
+
+        Node modeNode = getModeNode(mode);
+        
+        if(DEBUG) {
+            debugLog(""); // NOI18N
+            debugLog(""); // NOI18N
+            debugLog("=========================================="); // NOI18N
+            debugLog("Adding mode to root's side=" + mode); // NOI18N
+            debugLog("side=" + side); // NOI18N
+        }
+
+        return addNodeToTreeToSide(modeNode, root, side);
+    }
+
     // XXX
     public boolean addModeAround(ModeImpl mode, String side) {
         if(mode == null || mode.getState() == Constants.MODE_STATE_SEPARATED) {
@@ -400,7 +421,7 @@ class SplitSubModel {
             if( orientation == parent.getOrientation() ) {
                 //reuse existing split
                 if( side == Constants.BOTTOM || side == Constants.RIGHT )
-                    attachIndex++;
+                    attachIndex = parent.getChildren().size();
                 parent.setChildAt( attachIndex, Constants.DROP_TO_SIDE_RATIO, addingNode );
             } else {
                 //split orientation does not match, create a new sub-split

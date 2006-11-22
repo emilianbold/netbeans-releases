@@ -91,6 +91,8 @@ public interface View {
     // XXX
     public Frame getMainWindow();
     
+    public Component getEditorAreaComponent();
+    
     public String guessSlideSide(TopComponent tc);
    
     

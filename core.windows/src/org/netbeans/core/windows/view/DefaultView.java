@@ -78,6 +78,10 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         return hierarchy.getMainWindow();
     }
     
+    public Component getEditorAreaComponent() {
+        return hierarchy.getEditorAreaComponent();
+    }
+    
     public String guessSlideSide (TopComponent comp) {
         String toReturn = Constants.LEFT;
         if (hierarchy.getMaximizedModeView() != null) {
@@ -809,7 +813,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         controllerHandler.userDroppedTopComponentsAround(tcs, side);
     }
     
-    public void userDroppedTopComponentsAroundEditor(TopComponent[] tcs, String side) {
+    public void userDroppedTopComponentsAroundEditor(TopComponent[] tcs, String side, int modeKind) {
         if(tcs.length == 0) {
             return;
         }
@@ -818,7 +822,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
             debugLog("User dropped TopComponent's around editor, side=" + side); // NOI18N
         }
         
-        controllerHandler.userDroppedTopComponentsAroundEditor(tcs, side);
+        controllerHandler.userDroppedTopComponentsAroundEditor(tcs, side, modeKind);
     }
     
     public void userDroppedTopComponentsIntoFreeArea(TopComponent[] tcs, Rectangle bounds, int draggedKind) {
