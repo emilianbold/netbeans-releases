@@ -18,9 +18,28 @@
  */
 package org.netbeans.modules.websvc.core.jaxws.actions;
 
+import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePath;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.modules.j2ee.common.source.GenerationUtils;
+import static org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.j2ee.common.source.SourceUtils;
 
 //import org.netbeans.jmi.javamodel.Array;
 //import org.netbeans.jmi.javamodel.JavaClass;
@@ -45,8 +64,57 @@ public class JaxWsClassesCookieImpl implements JaxWsClassesCookie {
         this.implClassFO = implClassFO;
     }
     
-    public void addOperation(MethodTree m) {
-        
+    public void addOperation(final MethodTree method) {
+        JavaSource targetSource = JavaSource.forFileObject(implClassFO);
+        CancellableTask modificationTask = new CancellableTask<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);            
+                TreeMaker make = workingCopy.getTreeMaker();
+                GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
+                if (genUtils!=null) {
+                    ClassTree javaClass = genUtils.getClassTree();
+                    TypeElement webMethodAn = workingCopy.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N
+                    TypeElement webParamAn = workingCopy.getElements().getTypeElement("javax.jws.WebParam"); //NOI18N
+                    
+                    AnnotationTree webMethodAnnotation = make.Annotation(
+                        make.QualIdent(webMethodAn), 
+                        Collections.<ExpressionTree>emptyList()
+                    );
+                    
+                    genUtils.addAnnotation(webMethodAnnotation, method);
+                    //Kind. method.getReturnType().getKind()
+                    TreePath methodTreePath = workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), method);
+                    ExecutableElement methodElement = (ExecutableElement)workingCopy.getTrees().getElement(methodTreePath);
+                    if (TypeKind.VOID == methodElement.getReturnType().getKind()) {
+                        TypeElement oneWayAn = workingCopy.getElements().getTypeElement("javax.jws.Oneway"); //NOI18N
+                        AnnotationTree oneWayAnnotation = make.Annotation(
+                            make.QualIdent(oneWayAn), 
+                            Collections.<ExpressionTree>emptyList()
+                        );
+                        genUtils.addAnnotation(oneWayAnnotation,method);
+                    }
+                    
+                    List<? extends VariableTree> parameters = method.getParameters();
+                    for (VariableTree param:parameters) {
+                        AnnotationTree paramAnnotation = make.Annotation(
+                            make.QualIdent(webParamAn), 
+                            Collections.<ExpressionTree>singletonList(
+                                make.Assignment(make.Identifier("name"), make.Literal(param.getName()))) //NOI18N
+                        );
+                        genUtils.addAnnotation(paramAnnotation,param);
+                    }
+                    
+                    ClassTree modifiedClass = make.addClassMember(javaClass,method);
+                    workingCopy.rewrite(javaClass, modifiedClass);
+                }
+            }
+            public void cancel() {}
+        };
+        try {
+            targetSource.runModificationTask(modificationTask).commit();
+        } catch (IOException ex) {
+            ErrorManager.getDefault().notify(ex);
+        }
     }
 // Retouche    
 //    private JavaClass getImplBeanClass() {
