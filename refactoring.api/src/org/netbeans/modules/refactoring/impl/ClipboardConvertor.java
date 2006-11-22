@@ -38,63 +38,73 @@ import org.openide.util.lookup.InstanceContent;
  */
 
 public class ClipboardConvertor implements Convertor {
-
-    public Transferable convert(Transferable t) {
-        return NodeTransfer.createPaste(new RefactoringPaste(t));
-    }
     
-    private class RefactoringPasteType extends PasteType {
-        Action move;
-        RefactoringPasteType(Transferable orig, Node target) {
-            Node[] nodes = NodeTransfer.nodes(orig, NodeTransfer.CLIPBOARD_CUT);
+    public Transferable convert(Transferable t) {
+        Node[] nodes = NodeTransfer.nodes(t, NodeTransfer.CLIPBOARD_CUT);
+        
+        if (nodes!=null && nodes.length>0) {
             InstanceContent ic = new InstanceContent();
-            if (nodes!=null) {
-                for (Node n:nodes) {
-                    ic.add((n));
-                }
-            } else {
-                return ;
+            for (Node n:nodes) {
+                ic.add((n));
             }
-            Dictionary d = new Hashtable();
-            d.put("target", target); //NOI18N
-            PasteType[] types = target.getPasteTypes(orig);
-            if (types.length>0)
-                d.put("paste", types[0]); //NOI18N
+            Hashtable d = new Hashtable();
             ic.add(d);
             Lookup l = new AbstractLookup(ic);
-            this.move = RefactoringActionsFactory.moveAction().createContextAwareInstance(l);
+            Action move = RefactoringActionsFactory.moveAction().createContextAwareInstance(l);
+            if (move.isEnabled())
+                return NodeTransfer.createPaste(new RefactoringPaste(t, ic, move, d));
         }
-        
-        public boolean canHandle() {
-            if (move==null)
-                return false;
-            return move.isEnabled();
-        }
-        public Transferable paste() throws IOException {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    if (move!=null) {
-                        move.actionPerformed(null);
-                    }
-                };
-            });
-            return null;
-        }
+        return t;
     }
-
+    
+    
+    
     private class RefactoringPaste implements NodeTransfer.Paste {
         
         private Transferable delegate;
-        RefactoringPaste(Transferable t) {
+        private InstanceContent ic;
+        private Action move;
+        private Hashtable d;
+        RefactoringPaste(Transferable t, InstanceContent ic, Action move, Hashtable d) {
             delegate = t;
+            this.ic = ic;
+            this.move = move;
+            this.d=d;
         }
         
-        public PasteType[] types (Node target) {
-            RefactoringPasteType refactoringPaste = new RefactoringPasteType(delegate, target);
+        public PasteType[] types(Node target) {
+            RefactoringPasteType refactoringPaste = new RefactoringPasteType(delegate, target, ic);
             if (refactoringPaste.canHandle())
                 return new PasteType[] {refactoringPaste};
-            return target.getPasteTypes(delegate);  
+                return target.getPasteTypes(delegate);
+        }
+        
+        private class RefactoringPasteType extends PasteType {
+            RefactoringPasteType(Transferable orig, Node target, InstanceContent ic) {
+                d.clear();
+                d.put("target", target); //NOI18N
+                PasteType[] types = target.getPasteTypes(orig);
+                if (types.length>0)
+                    d.put("paste", types[0]); //NOI18N
+                ic.add(d);
+            }
+            
+            public boolean canHandle() {
+                if (move==null)
+                    return false;
+                return move.isEnabled();
+            }
+            public Transferable paste() throws IOException {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        if (move!=null) {
+                            move.actionPerformed(null);
+                        }
+                    };
+                });
+                return null;
+            }
         }
     }
-
+    
 }

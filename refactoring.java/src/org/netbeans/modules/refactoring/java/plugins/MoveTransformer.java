@@ -107,10 +107,10 @@ public class MoveTransformer extends SearchVisitor {
     private boolean isElementMoving(Element el) {
         index=0;
         for (ElementHandle handle:move.classes) {
-            index++;
             if (handle.signatureEquals(el)) {
                 return true;
             }
+            index++;
         }
         index=-1;
         return false;

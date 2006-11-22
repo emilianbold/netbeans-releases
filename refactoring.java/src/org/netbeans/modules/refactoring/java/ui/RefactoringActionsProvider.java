@@ -215,7 +215,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
     public boolean canMove(Lookup lookup) {
         Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
         Dictionary dict = lookup.lookup(Dictionary.class);
-        if (dict.get("target") != null) {
+        if (dict!=null && dict.get("target") != null) {
             //it is drag and drop
             Set<DataFolder> folders = new HashSet();
             boolean jdoFound = false;
@@ -297,6 +297,9 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                     FileObject tar=null;
                     if (target!=null) {
                         tar = ((Node) target).getCookie(DataObject.class).getPrimaryFile();
+                        if (!tar.isFolder()) {
+                            tar=tar.getParent();
+                        }
                     }
                     if (selectedElements.length == 1) {
                         try {
