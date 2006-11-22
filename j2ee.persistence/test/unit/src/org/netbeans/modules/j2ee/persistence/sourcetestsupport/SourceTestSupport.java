@@ -33,6 +33,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 
 /**
+ * A base class for unit tests.
  *
  * @author Erno Mononen
  */
@@ -43,11 +44,10 @@ public abstract class SourceTestSupport extends NbTestCase {
     }
     
     protected void setUp() throws Exception {
-        MockServices.setServices(FakeJavaDataLoaderPool.class, RepositoryImpl.class);
+        MockServices.setServices(FakeJavaDataLoaderPool.class, RepositoryImpl.class, ClassPathProviderImpl.class);
         clearWorkDir();
         initTemplates();
     }
-    
     protected void tearDown() throws Exception{
         super.tearDown();
         getSystemFs().reset();
