@@ -439,7 +439,7 @@ public class SymbolClassReader extends JavadocClassReader {
             
             bounds = bounds.reverse();
             
-            types.setBounds(tvar, bounds);
+            types.setBounds(tvar, bounds, null);
             
             result = result.prepend(tvar);
         }
