@@ -71,8 +71,8 @@ public final class ClassMemberFilters {
         for (Description description : original) {
             
             if ( !non_public && 
-                 !description.modifiers.contains(Modifier.PUBLIC) &&
-                 !description.modifiers.contains(Modifier.PROTECTED) ) {
+                 !description.modifiers.contains(Modifier.PUBLIC)                 
+                 /* Fix for #89777 && !description.modifiers.contains(Modifier.PROTECTED) */ ) {
                 continue;
             }
             
