@@ -99,20 +99,24 @@ public class PutTransaction extends HttpServlet {
 	    return; 
 	} 
 
-	PrintWriter fout = null, out = null;
-	InputStreamReader isr = null;
 	boolean success = false;
-	try { 
+	try {
+	    PrintWriter fout = new PrintWriter(fo.getOutputStream(lock));
+        try {
+            InputStreamReader isr = new InputStreamReader(req.getInputStream());
+            try {
+                char[] charBuf = new char[4096];
+                int numChars;
 
-	    fout = new PrintWriter(fo.getOutputStream(lock));
-	    isr = new InputStreamReader(req.getInputStream());
-
-	    char[] charBuf = new char[4096];
-	    int numChars;
-	     
-	    while((numChars = isr.read(charBuf, 0, 4096)) != -1) {
-		fout.write(charBuf, 0, numChars);
-	    }
+                while((numChars = isr.read(charBuf, 0, 4096)) != -1) {
+                    fout.write(charBuf, 0, numChars);
+                }
+            } finally {
+                isr.close();
+            }
+        } finally {
+            fout.close();
+        }
 	    success = true;
  	    if(debug) log("...success"); //NOI18N
 	}
@@ -126,22 +130,16 @@ public class PutTransaction extends HttpServlet {
 	    lock.releaseLock(); 
 
 	    try { 
-		res.setContentType("text/plain");  //NOI18N	    
-		out = res.getWriter();
-		out.println(Constants.Comm.ACK); 
+            res.setContentType("text/plain");  //NOI18N	    
+            PrintWriter out = res.getWriter();
+            try {
+                out.println(Constants.Comm.ACK); 
+            } finally {
+                out.close();
+            }
+	    } catch(Exception ex) {
+            // It doesn't actually matter if this goes wrong
 	    }
-	    catch(Exception ex) {
-		// It doesn't actually matter if this goes wrong
-	    } 
-
-	    try {out.close(); }
-	    catch(Exception ex2) { }
-
-	    try { isr.close();}
-	    catch(Exception ex3) { }
-
-	    try { fout.close(); }
-	    catch(Exception ex4) { }
 	}
         final boolean success2 = success;
         final String id2 = id;
