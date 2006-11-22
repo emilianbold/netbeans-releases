@@ -91,6 +91,8 @@ public class NbClipboardNativeTest extends NbTestCase implements ClipboardListen
         EmptyTrans et = new EmptyTrans();
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(et, et);
 
+        waitFinished(this.ec);
+        
         LOG.info("system clipboard content changed");
         
         this.ec.addClipboardListener(this);
@@ -180,8 +182,6 @@ public class NbClipboardNativeTest extends NbTestCase implements ClipboardListen
         } else {
             assertEquals ("without slow hack it gets the value immediatelly", "oldvalue", s);
         }
-        
-        
     }
     
     public void testClipboard() throws Exception {
