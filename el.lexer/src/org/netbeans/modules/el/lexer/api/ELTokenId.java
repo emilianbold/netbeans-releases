@@ -36,72 +36,72 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 public enum ELTokenId implements TokenId {
     
     //operators
-    LT("<", "operator"),
-    GT(">", "operator"),
-    DOT(".", "operator"),
-    COMMA(",", "operator"),
-    QUESTION("?", "operator"),
-    PLUS("+", "operator"),
-    MINUS("-", "operator"),
-    MUL("*", "operator"),
-    DIV("/", "operator"),
-    MOD("%", "operator"),
-    EQ_EQ("==", "operator"),
-    LT_EQ("<=", "operator"),
-    GT_EQ(">=", "operator"),
-    NOT_EQ("!=", "operator"),
-    AND_AND("&&", "operator"),
-    OR_OR("||", "operator"),
-    COLON(":", "operator"),
-    NOT("!", "operator"),
-    LPAREN("(", "operator"),
-    RPAREN(")", "operator"),
-    LBRACKET("[", "operator"),
-    RBRACKET("]", "operator"),
+    LT("<", "el-operator"),
+    GT(">", "el-operator"),
+    DOT(".", "el-operator"),
+    COMMA(",", "el-operator"),
+    QUESTION("?", "el-operator"),
+    PLUS("+", "el-operator"),
+    MINUS("-", "el-operator"),
+    MUL("*", "el-operator"),
+    DIV("/", "el-operator"),
+    MOD("%", "el-operator"),
+    EQ_EQ("==", "el-operator"),
+    LT_EQ("<=", "el-operator"),
+    GT_EQ(">=", "el-operator"),
+    NOT_EQ("!=", "el-operator"),
+    AND_AND("&&", "el-operator"),
+    OR_OR("||", "el-operator"),
+    COLON(":", "el-operator"),
+    NOT("!", "el-operator"),
+    LPAREN("(", "el-operator"),
+    RPAREN(")", "el-operator"),
+    LBRACKET("[", "el-operator"),
+    RBRACKET("]", "el-operator"),
     
     //keywords
-    AND_KEYWORD("and", "keyword"),
-    DIV_KEYWORD("div", "keyword"),
-    EMPTY_KEYWORD("empty", "keyword"),
-    EQ_KEYWORD("eq", "keyword"),
-    FALSE_KEYWORD("false", "keyword"),
-    GE_KEYWORD("ge", "keyword"),
-    GT_KEYWORD("gt", "keyword"),
-    INSTANCEOF_KEYWORD("instanceof", "keyword"),
-    LE_KEYWORD("le", "keyword"),
-    LT_KEYWORD("lt", "keyword"),
-    MOD_KEYWORD("mod", "keyword"),
-    NE_KEYWORD("ne", "keyword"),
-    NOT_KEYWORD("not", "keyword"),
-    NULL_KEYWORD("null", "keyword"),
-    OR_KEYWORD("or", "keyword"),
-    TRUE_KEYWORD("true", "keyword"),
+    AND_KEYWORD("and", "el-keyword"),
+    DIV_KEYWORD("div", "el-keyword"),
+    EMPTY_KEYWORD("empty", "el-keyword"),
+    EQ_KEYWORD("eq", "el-keyword"),
+    FALSE_KEYWORD("false", "el-keyword"),
+    GE_KEYWORD("ge", "el-keyword"),
+    GT_KEYWORD("gt", "el-keyword"),
+    INSTANCEOF_KEYWORD("instanceof", "el-keyword"),
+    LE_KEYWORD("le", "el-keyword"),
+    LT_KEYWORD("lt", "el-keyword"),
+    MOD_KEYWORD("mod", "el-keyword"),
+    NE_KEYWORD("ne", "el-keyword"),
+    NOT_KEYWORD("not", "el-keyword"),
+    NULL_KEYWORD("null", "el-keyword"),
+    OR_KEYWORD("or", "el-keyword"),
+    TRUE_KEYWORD("true", "el-keyword"),
     
     //literals
-    WHITESPACE(null, "whitespace"),
-    EOL("\n", null),
+    WHITESPACE(null, "el-whitespace"),
+    EOL("\n", "el-eol"),
     EL_DELIM(null, "el-delimiter"),
-    STRING_LITERAL(null, "string"),
-    TAG_LIB_PREFIX(null, "tag-lib-prefix"),
-    IDENTIFIER(null, "identifier"),
-    CHAR_LITERAL(null, "char-literal"),
+    STRING_LITERAL(null, "el-string"),
+    TAG_LIB_PREFIX(null, "el-tag-lib-prefix"),
+    IDENTIFIER(null, "el-identifier"),
+    CHAR_LITERAL(null, "el-char-literal"),
     
     //numeric literals
     /** Java integer literal e.g. 1234 */
-    INT_LITERAL(null, "int-literal"),
+    INT_LITERAL(null, "el-int-literal"),
     /** Java long literal e.g. 12L */
-    LONG_LITERAL(null, "long-literal"),
+    LONG_LITERAL(null, "el-long-literal"),
     /** Java hexadecimal literal e.g. 0x5a */
-    HEX_LITERAL(null, "hex-literal"),
+    HEX_LITERAL(null, "el-hex-literal"),
     /** Java octal literal e.g. 0123 */
-    OCTAL_LITERAL(null, "octal-literal"),
+    OCTAL_LITERAL(null, "el-octal-literal"),
     /** Java float literal e.g. 1.5e+20f */
-    FLOAT_LITERAL(null, "float-literal"),
+    FLOAT_LITERAL(null, "el-float-literal"),
     /** Java double literal e.g. 1.5e+20 */
-    DOUBLE_LITERAL(null, "double-literal"),
+    DOUBLE_LITERAL(null, "el-double-literal"),
     // Incomplete and error token-ids
-    INVALID_OCTAL_LITERAL(null, "invalid-octal-literal"),
-    INVALID_CHAR(null, "invalid-char");
+    INVALID_OCTAL_LITERAL(null, "el-invalid-octal-literal"),
+    INVALID_CHAR(null, "el-invalid-char");
     
     
     private final String fixedText; // Used by lexer for production of flyweight tokens
@@ -139,7 +139,7 @@ public enum ELTokenId implements TokenId {
         protected Map<String,Collection<ELTokenId>> createTokenCategories() {
             Map<String,Collection<ELTokenId>> cats = new HashMap<String,Collection<ELTokenId>>();
             
-            cats.put("numeric-literals", EnumSet.of(
+            cats.put("el-numeric-literals", EnumSet.of(
                     ELTokenId.INT_LITERAL,
                     ELTokenId.LONG_LITERAL,
                     ELTokenId.HEX_LITERAL,
