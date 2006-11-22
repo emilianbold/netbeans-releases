@@ -22,11 +22,11 @@ package org.netbeans.modules.editor.settings.storage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.netbeans.spi.editor.mimelookup.MimeDataProvider;
@@ -35,6 +35,7 @@ import org.openide.util.WeakListeners;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  *
@@ -59,7 +60,27 @@ public final class SettingsProvider implements MimeDataProvider {
             Lookup lookup = ref == null ? null : ref.get();
             
             if (lookup == null) {
-                lookup = new MyLookup(mimePath);
+                String path = mimePath.getPath();
+                if (path.startsWith("test")) { //NOI18N
+                    int idx = path.indexOf('_'); //NOI18N
+                    if (idx == -1) {
+                        throw new IllegalStateException("Invalid mimePath: " + path); //NOI18N
+                    }
+                    
+                    MimePath realMimePath = MimePath.parse(path.substring(idx + 1));
+                    lookup = new ProxyLookup(new Lookup [] {
+                        new MyLookup(mimePath),
+                        Lookups.exclude(
+                            MimeLookup.getLookup(realMimePath),
+                            new Class [] {
+                                FontColorSettingsImpl.class,
+                                KeyBindingSettingsImpl.class
+                            })
+                    });
+                } else {
+                    lookup = new MyLookup(mimePath);
+                }
+                
                 cache.put(mimePath, new WeakReference<Lookup>(lookup));
             }
             
@@ -121,7 +142,7 @@ public final class SettingsProvider implements MimeDataProvider {
                 if (factories[i] == f) {
                     instances[i] = f.createInstance();
                     assert instances[i] != null;
-                    
+            
                     ic.set(Arrays.asList(instances), null);
                     break;
                 }
