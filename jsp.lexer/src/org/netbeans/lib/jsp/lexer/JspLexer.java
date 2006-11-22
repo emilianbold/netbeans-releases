@@ -98,6 +98,20 @@ public class JspLexer implements Lexer<JspTokenId> {
     private static final int ISI_SCRIPTLET       = 36; // inside java scriptlet/declaration/expression
     private static final int ISP_SCRIPTLET_PC   = 37; // just after % in scriptlet
     
+    //expression language
+    
+    //EL in content language
+    private static final int ISA_CONTENT_EL_DELIM        = 38; //after $ or # in content language
+    private static final int ISI_CONTENT_EL              = 39; //expression language in content (after ${ or #{ )
+    
+    //EL in jsp tag attribute
+    private static final int ISA_TAG_ATTR_EL_DELIM       = 41; //after $ or # in jsp tag attribute
+    private static final int ISI_TAG_ATTR_EL             = 42; //expression language in jsp tag attribute (after ${ or #{ )
+    
+    //EL in jsp directive attribute
+    private static final int ISA_DIR_ATTR_EL_DELIM       = 43; //after $ or # in jsp directive attribute
+    private static final int ISI_DIR_ATTR_EL             = 44; //expression language in jsp directive attribute (after ${ or #{ )
+    
     
     public JspLexer(LexerRestartInfo<JspTokenId> info) {
         this.input = info.input();
@@ -114,7 +128,7 @@ public class JspLexer implements Lexer<JspTokenId> {
     }
     
     private Token<JspTokenId> token(JspTokenId id) {
-        System.out.print("token(" + id + "; '" + input.readText().toString() + "')");
+        System.out.print("JSP token(" + id + "; '" + input.readText().toString() + "')");
         if(input.readLength() == 0) {
             System.out.println("Error - token length is zero!; state = " + state);
         }
@@ -130,7 +144,7 @@ public class JspLexer implements Lexer<JspTokenId> {
         return canBeJsp;
     }
     
-   /** Looks ahead into the character buffer and checks if a jsp tag name follows. */
+    /** Looks ahead into the character buffer and checks if a jsp tag name follows. */
     private boolean followsJspTag() {
         int actChar;
         int prev_read = input.readLength(); //remember the size of the read sequence
@@ -180,7 +194,36 @@ public class JspLexer implements Lexer<JspTokenId> {
 //                        default:
 //                            state = ISI_ERROR;
 //                            break;
+                        case '$':
+                        case '#': //maybe expression language
+                            state = ISA_CONTENT_EL_DELIM;
+                            break;
                     }
+                    break;
+                    
+                case ISA_CONTENT_EL_DELIM:
+                    switch(actChar) {
+                        case '{':
+                            if(input.readLength() > 2) {
+                                //we have something read except the '${' or '#{' => it's content language
+                                input.backup(2); //backup the '$/#{' 
+                                state = INIT; //we will read the '$/#{' again
+                                return token(JspTokenId.TEXT); //return the content language token
+                            }
+                            state = ISI_CONTENT_EL;
+                            break;
+                        default:
+                            state = INIT;
+                    }
+                    break;
+
+                case ISI_CONTENT_EL:
+                    if(actChar == '}') {
+                        //return EL token
+                        state = INIT;
+                        return token(JspTokenId.EL);
+                    }
+                    //stay in EL
                     break;
                     
                 case ISA_LT:
@@ -585,7 +628,7 @@ public class JspLexer implements Lexer<JspTokenId> {
                             break;
                     }
                     break;
-                
+                    
                 case ISP_SCRIPTLET_PC:
                     switch(actChar) {
                         case '>':
@@ -883,6 +926,9 @@ public class JspLexer implements Lexer<JspTokenId> {
             case ISI_JSP_COMMENT_MMP:
                 state = INIT;
                 return token(JspTokenId.COMMENT);
+            case ISA_CONTENT_EL_DELIM:
+            case ISI_CONTENT_EL:
+                return token(JspTokenId.EL);
             default:
                 System.out.println("JSPLexer - unhandled state : " + state);   // NOI18N
         }

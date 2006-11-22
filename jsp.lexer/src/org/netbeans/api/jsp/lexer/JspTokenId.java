@@ -29,6 +29,7 @@ import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.jsp.lexer.JspLexer;
+import org.netbeans.modules.el.lexer.api.ELTokenId;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;
@@ -52,7 +53,8 @@ public enum JspTokenId implements TokenId {
     ATTRIBUTE("attribute-name"),
     ATTR_VALUE("attribute-value"),
     EOL("EOL"),
-    WHITESPACE("whitespace");
+    WHITESPACE("whitespace"),
+    EL("expression-language");
     
 
     private final String primaryCategory;
@@ -102,6 +104,20 @@ public enum JspTokenId implements TokenId {
                         
                         public int endSkipLength() {
                             return 0;
+                        }
+                    };
+                case EL:
+                    return new LanguageEmbedding() {
+                        public Language<? extends TokenId> language() {
+                            return ELTokenId.language();
+                        }
+                        
+                        public int startSkipLength() {
+                            return 2;
+                        }
+                        
+                        public int endSkipLength() {
+                            return 1;
                         }
                     };
                     //                case SCRIPTLET:
