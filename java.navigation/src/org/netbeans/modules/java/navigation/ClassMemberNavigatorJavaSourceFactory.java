@@ -37,18 +37,29 @@ import org.openide.util.Lookup;
 public final class ClassMemberNavigatorJavaSourceFactory extends LookupBasedJavaSourceTaskFactory {
             
     private ClassMemberPanelUI ui;
+    private static final CancellableTask<CompilationInfo> EMPTY_TASK = new CancellableTask<CompilationInfo>() {
+
+        public void cancel() {}
+
+        public void run(CompilationInfo parameter) throws Exception {}
+    };
     
     static ClassMemberNavigatorJavaSourceFactory getInstance() {
         return Lookup.getDefault().lookup(ClassMemberNavigatorJavaSourceFactory.class);
     }
     
     public ClassMemberNavigatorJavaSourceFactory() {        
-        super(Phase.RESOLVED, Priority.NORMAL);
+        super(Phase.ELEMENTS_RESOLVED, Priority.NORMAL);
     }
 
     public synchronized CancellableTask<CompilationInfo> createTask(FileObject file) {
         // System.out.println("CREATE TASK FOR " + file.getNameExt() );
-        return ui.getTask();
+        if ( ui == null) {
+            return EMPTY_TASK;
+        }
+        else {
+            return ui.getTask();
+        }
     }
 
     public List<FileObject> getFileObjects() {
@@ -70,7 +81,6 @@ public final class ClassMemberNavigatorJavaSourceFactory extends LookupBasedJava
 
     public synchronized void setLookup(Lookup l, ClassMemberPanelUI ui) {
         this.ui = ui;
-        // lookupContentChanged(); // Not sure whether this is still necessary
         super.setLookup(l);
     }
 
