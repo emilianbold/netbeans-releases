@@ -64,6 +64,11 @@ public class PlatformChooserVisualPanel extends BasicVisualPanel
         platformChooser.putClientProperty(
                 "JFileChooser.appBundleIsTraversable", "always"); // NOI18N #73124
     }
+
+    public void addNotify() {
+        super.addNotify();
+        checkForm();
+    }
     
     /** Stores collected data into model. */
     void storeData() {
@@ -79,31 +84,38 @@ public class PlatformChooserVisualPanel extends BasicVisualPanel
     public void propertyChange(PropertyChangeEvent evt) {
         String propName = evt.getPropertyName();
         if (propName.equals(JFileChooser.SELECTED_FILE_CHANGED_PROPERTY)) {
-            File selFile = platformChooser.getSelectedFile();
-            if (selFile != null) { // #73123
-                File plafDir = FileUtil.normalizeFile(selFile);
-                if (/* #60133 */ plafDir != null && NbPlatform.isPlatformDirectory(plafDir)) {
-                    try {
-                        setPlafLabel(NbPlatform.computeDisplayName(plafDir));
-                    } catch (IOException e) {
-                        setPlafLabel(plafDir.getAbsolutePath());
-                    }
-                    if (!NbPlatform.isSupportedPlatform(plafDir)) {
-                        setError(getMessage("MSG_UnsupportedPlatform"));
-                    } else if (NbPlatform.contains(plafDir)) {
-                        setError(getMessage("MSG_AlreadyAddedPlatform"));
-                    } else if (!NbPlatform.isLabelValid(plafLabelValue.getText())) {
-                        setWarning(getMessage("MSG_NameIsAlreadyUsedGoToNext"));
-                    } else {
-                        markValid();
-                        ModuleUISettings.getDefault().setLastUsedNbPlatformLocation(plafDir.getParentFile().getAbsolutePath());
-                    }
-                } else {
-                    markInvalid();
-                    setPlafLabel(null);
-                    storeData();
+            checkForm();
+        }
+    }
+    
+    private void checkForm() {
+        File selFile = platformChooser.getSelectedFile();
+        boolean invalid = true;
+        if (selFile != null) { // #73123
+            File plafDir = FileUtil.normalizeFile(selFile);
+            if (/* #60133 */ plafDir != null && NbPlatform.isPlatformDirectory(plafDir)) {
+                try {
+                    setPlafLabel(NbPlatform.computeDisplayName(plafDir));
+                } catch (IOException e) {
+                    setPlafLabel(plafDir.getAbsolutePath());
                 }
+                if (!NbPlatform.isSupportedPlatform(plafDir)) {
+                    setError(getMessage("MSG_UnsupportedPlatform"));
+                } else if (NbPlatform.contains(plafDir)) {
+                    setError(getMessage("MSG_AlreadyAddedPlatform"));
+                } else if (!NbPlatform.isLabelValid(plafLabelValue.getText())) {
+                    setWarning(getMessage("MSG_NameIsAlreadyUsedGoToNext"));
+                } else {
+                    markValid();
+                    ModuleUISettings.getDefault().setLastUsedNbPlatformLocation(plafDir.getParentFile().getAbsolutePath());
+                }
+                invalid = false;
             }
+        }
+        if (invalid) {
+            markInvalid();
+            setPlafLabel(null);
+            storeData();
         }
     }
     
