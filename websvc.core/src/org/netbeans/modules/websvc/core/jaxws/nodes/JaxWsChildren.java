@@ -78,7 +78,9 @@ import org.xml.sax.SAXException;
  */
 
 public class JaxWsChildren extends Children.Keys/* implements MDRChangeListener  */{
-    
+    private static final java.awt.Image OPERATION_BADGE =
+        org.openide.util.Utilities.loadImage( "org/netbeans/modules/websvc/core/webservices/ui/resources/wsoperation.png" ); //NOI18N
+
     // Retouche
     //private JavaClass implClass;
     //private List<ExecutableElement> methods;
@@ -306,9 +308,20 @@ public class JaxWsChildren extends Children.Keys/* implements MDRChangeListener 
 //            ComponentMethodViewStrategy cmvs = createViewStrategy();
 //            return new Node[] {new MethodNode(method, implClass, new ArrayList(), cmvs)};
 //        }
-            Node n = new AbstractNode(Children.LEAF);
-            ExecutableElement method = (ExecutableElement)key;
-            n.setDisplayName(method.getSimpleName().toString());
+            final ExecutableElement method = (ExecutableElement)key;
+            Node n = new AbstractNode(Children.LEAF) {
+
+                @java.lang.Override
+                public java.awt.Image getIcon(int type) {
+                    return OPERATION_BADGE;
+                }
+
+                @Override
+                public String getDisplayName() {
+                    return method.getSimpleName().toString();
+                }
+            };
+            
             return new Node[]{n};
         }
         return new Node[0];
