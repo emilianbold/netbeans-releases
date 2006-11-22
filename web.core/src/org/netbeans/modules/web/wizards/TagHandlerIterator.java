@@ -27,6 +27,7 @@ import java.util.Set;
 import java.text.MessageFormat;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.web.core.Util;
 
 import org.openide.filesystems.FileObject;
@@ -43,16 +44,12 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
-//import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 
 import org.netbeans.modules.web.taglib.TLDDataObject;
 import org.netbeans.modules.web.taglib.model.Taglib;
 import org.netbeans.modules.web.taglib.model.TagType;
 import org.netbeans.modules.web.taglib.model.TldAttributeType;
-
-//import org.openide.src.ClassElement;
-//import org.openide.src.SourceException;
 
 /** A template wizard iterator (sequence of panels).
  * Used to fill in the second and subsequent panels in the New wizard.
@@ -114,20 +111,19 @@ public class TagHandlerIterator implements TemplateWizard.Iterator {
         TagInfoPanel tldPanel = (TagInfoPanel)tagInfoPanel;
         Object[][] attrs = tldPanel.getAttributes();
         boolean isBodyTag = ((TagHandlerSelection)tagHandlerSelectionPanel).isBodyTagSupport();
+        
         // writing setters to tag handler
-        //TODO: RETOUCHE
-//        if (attrs.length>0 || isBodyTag) {
-//            ClassElement clazz = ClassElement.forName(tldPanel.getClassName(),dobj.getPrimaryFile());
-//            boolean evaluateBody = !((TagInfoPanel)tagInfoPanel).isEmpty();
-//            TagHandlerGenerator generator = new TagHandlerGenerator(clazz,attrs,isBodyTag, evaluateBody);
-//            try {
-//                generator.generate();
-//            } catch (SourceException ex){
-//                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,ex);
-//            }
-//            SaveCookie save = (SaveCookie)dobj.getCookie(SaveCookie.class);
-//            if (save!=null) save.save();
-//        }
+        if (attrs.length>0 || isBodyTag) {
+            JavaSource clazz = JavaSource.forFileObject(dobj.getPrimaryFile());
+            boolean evaluateBody = !((TagInfoPanel)tagInfoPanel).isEmpty();
+            TagHandlerGenerator generator = new TagHandlerGenerator(clazz,attrs,isBodyTag, evaluateBody);
+            try {
+                generator.generate();
+            } catch (IOException ex){
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,ex);
+            }
+        }
+        
         // writing to TLD file
         if (tldPanel.writeToTLD()) {
             FileObject tldFo = tldPanel.getTLDFile();

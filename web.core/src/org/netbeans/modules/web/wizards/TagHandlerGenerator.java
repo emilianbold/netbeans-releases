@@ -16,9 +16,32 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.modules.web.wizards;
 
-//import org.openide.src.*;
+import java.io.IOException;
+import java.util.Collections;
+
+import javax.lang.model.element.Modifier;
+import javax.lang.model.type.TypeKind;
+
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeParameterTree;
+import com.sun.source.tree.VariableTree;
+
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.ModificationResult;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.WorkingCopy;
+
+import org.netbeans.modules.j2ee.common.source.AbstractTask;
+import org.netbeans.modules.j2ee.common.source.GenerationUtils;
+
 /**
  * Generator of attributes for tag handler class
  *
@@ -26,94 +49,83 @@ package org.netbeans.modules.web.wizards;
  * Created on May, 2004
  */
 public class TagHandlerGenerator {
-    //TODO: RETOUCHE
-//    private Object[][] attributes;
-//    private ClassElement clazz;
-//    private boolean isBodyTag;
-//    private boolean evaluateBody;
-//
-//    /** Creates a new instance of ListenerGenerator */
-//    public TagHandlerGenerator(ClassElement clazz, Object[][] attributes, boolean isBodyTag, boolean evaluateBody) {
-//        this.clazz=clazz;
-//        this.attributes=attributes;
-//        this.isBodyTag=isBodyTag;
-//        this.evaluateBody=evaluateBody;
-//    }
-//    
-//    public void generate() throws SourceException {
-//        addFields();
-//        if (isBodyTag) addBodyEvaluatorCheck(evaluateBody);
-//        addSetters();
-//        
-//    }
-//    
-//    private void addFields() throws SourceException {
-//        for (int i=0;i<attributes.length;i++) {
-//            FieldElement field = new FieldElement();
-//            field.setName(Identifier.create((String)attributes[i][0]));
-//            field.setModifiers(java.lang.reflect.Modifier.PRIVATE);
-//            String type = (String) attributes[i][1];
-//            field.setType(Type.parse(type));
-//            /* Default values for Object types should be null
-//            if (!((Boolean)attributes[i][2]).booleanValue()) {
-//                if ("java.lang.String".equals(type)) field.setInitValue("\"\""); //NOI18N
-//                else if ("java.lang.Boolean".equals(type)) field.setInitValue("Boolean.valueOf(false)"); //NOI18N
-//                else if ("java.lang.Character".equals(type)) field.setInitValue("new java.lang.Character('\\u0000')"); //NOI18N
-//                else if ("java.lang.Byte".equals(type)) field.setInitValue("Byte.valueOf(\"0\")"); //NOI18N
-//                else if ("java.lang.Short".equals(type)) field.setInitValue("Short.valueOf(\"0\")"); //NOI18N
-//                else if ("java.lang.Integer".equals(type)) field.setInitValue("Integer.valueOf(\"0\")"); //NOI18N
-//                else if ("java.lang.Long".equals(type)) field.setInitValue("Long.valueOf(\"0\")"); //NOI18N
-//                else if ("java.lang.Float".equals(type)) field.setInitValue("Float.valueOf(\"0.0\")"); //NOI18N
-//                else if ("java.lang.Double".equals(type)) field.setInitValue("Double.valueOf(\"0.0\")"); //NOI18N
-//            }
-//            */
-//            JavaDoc doc = field.getJavaDoc();
-//            doc.setRawText("Initialization of "+attributes[i][0]+" property."); //NOI18N
-//            clazz.addField(field);     
-//        }
-//    }
-//    
-//    private void addSetters() throws SourceException {
-//        for (int i=0;i<attributes.length;i++) {        
-//            MethodElement method = new MethodElement();
-//            String attrName=(String)attributes[i][0];
-//            String firstLetter = attrName.substring(0,1).toUpperCase();
-//            String methodName="set"+firstLetter+attrName.substring(1);
-//            method.setName(Identifier.create(methodName));
-//            method.setReturn(Type.VOID);
-//            method.setModifiers(java.lang.reflect.Modifier.PUBLIC);
-//            String type = (String)attributes[i][1];
-//            MethodParameter mp = MethodParameter.parse(type+" value"); //NOI18N
-//            method.setParameters(new MethodParameter[]{mp});
-//            method.setBody("this."+attrName+" = value;"); //NOI18N
-//            JavaDoc doc = method.getJavaDoc();
-//            doc.setRawText("Setter for the "+attrName+" attribute."); //NOI18N
-//            clazz.addMethod(method);
-//        }
-//    }
-//    
-//    private void addBodyEvaluatorCheck(boolean evaluateBody) throws SourceException {    
-//        MethodElement method = new MethodElement();
-//        String methodName="theBodyShouldBeEvaluated"; //NOI18N
-//        method.setName(Identifier.create(methodName));
-//        method.setReturn(Type.BOOLEAN);
-//        method.setModifiers(java.lang.reflect.Modifier.PRIVATE);
-//        method.setParameters(new MethodParameter[]{});
-//        StringBuffer buf = new StringBuffer();
-//        buf.append("\n//"); //NOI18N
-//        buf.append("\n// TODO: code that determines whether the body should be"); //NOI18N
-//        buf.append("\n//       evaluated should be placed here."); //NOI18N
-//        buf.append("\n//       Called from the doStartTag() method."); //NOI18N
-//        buf.append("\n//"); //NOI18N
-//        buf.append("\nreturn "+(evaluateBody?"true;":"false;")); //NOI18N
-//        buf.append("\n"); //NOI18N
-//        method.setBody(buf.toString());
-//        JavaDoc doc = method.getJavaDoc();
-//        buf = new StringBuffer();
-//        buf.append("Fill in this method to determine if the tag body should be evaluated."); //NOI18N
-//        buf.append("\nCalled from doStartTag()."); //NOI18N
-//        doc.setRawText(buf.toString());
-//        clazz.addMethod(method);
-//    }
+    private Object[][] attributes;
+    private JavaSource clazz;
+    private boolean isBodyTag;
+    private boolean evaluateBody;
+
+    /** Creates a new instance of ListenerGenerator */
+    public TagHandlerGenerator(JavaSource clazz, Object[][] attributes, boolean isBodyTag, boolean evaluateBody) {
+        this.clazz=clazz;
+        this.attributes=attributes;
+        this.isBodyTag=isBodyTag;
+        this.evaluateBody=evaluateBody;
+    }
+    
+    public void generate() throws IOException {
+        AbstractTask task = new AbstractTask<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws Exception {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                GenerationUtils gu = GenerationUtils.newInstance(workingCopy);
+                ClassTree oldClassTree = gu.getClassTree();
+                ClassTree classTree = addFields(gu, make, oldClassTree);
+                if (isBodyTag) {
+                    classTree = make.addClassMember(classTree, addBodyEvaluatorCheck(evaluateBody, make));
+                }
+                classTree = addSetters(gu, make, classTree);
+                workingCopy.rewrite(oldClassTree, classTree);
+            }
+        };
+        ModificationResult result = clazz.runModificationTask(task);
+        result.commit();
+    }
+    
+    private ClassTree addFields(GenerationUtils gu, TreeMaker make, ClassTree classTree) throws IOException {
+        for (int i = 0; i < attributes.length; i++) {
+            VariableTree field = gu.createField(Modifier.PRIVATE, (String) attributes[i][1], (String) attributes[i][0]);
+            classTree = make.insertClassMember(classTree, i, field);
+            
+            //TODO: generate Javadoc
+        }
+        
+        return classTree;
+    }
+
+    private ClassTree addSetters(GenerationUtils gu, TreeMaker make, ClassTree newClassTree) throws IOException {
+        for (int i = 0; i < attributes.length; i++) {
+            MethodTree setter = gu.createPropertySetterMethod((String) attributes[i][1], (String) attributes[i][0]);
+            newClassTree = make.addClassMember(newClassTree, setter);
+            
+            //TODO: generate Javadoc
+        }
+        
+        return newClassTree;
+    }
+
+    private MethodTree addBodyEvaluatorCheck(boolean evaluateBody, TreeMaker make) throws IOException {        
+        StringBuffer methodBody = new StringBuffer();
+        methodBody.append("{\n//"); //NOI18N
+        methodBody.append("\n// TODO: code that determines whether the body should be"); //NOI18N
+        methodBody.append("\n//       evaluated should be placed here."); //NOI18N
+        methodBody.append("\n//       Called from the doStartTag() method."); //NOI18N
+        methodBody.append("\n//"); //NOI18N
+        methodBody.append("\nreturn " + (evaluateBody ? "true;" : "false;")); //NOI18N
+        methodBody.append("\n}"); //NOI18N
+        
+        MethodTree method = make.Method(
+                make.Modifiers(Collections.<Modifier>singleton(Modifier.PRIVATE)),
+                "theBodyShouldBeEvaluated", //NOI18N
+                make.PrimitiveType(TypeKind.BOOLEAN),
+                Collections.<TypeParameterTree>emptyList(),
+                Collections.<VariableTree>emptyList(),
+                Collections.<ExpressionTree>emptyList(),
+                methodBody.toString(),
+                null);
+        
+        //TODO: generate Javadoc
+        
+        return method;
+    }
 
 }
