@@ -252,12 +252,7 @@ public class LocalizationSupportIterator implements TemplateWizard.Iterator {
         // valid package is an empty one, or well-formed java identifier :-)
         if ("".equals(s)) // NOI18N
             return true;
-        try {
-            Utilities.isJavaIdentifier(s);
-            return true;
-        } catch (IllegalArgumentException ex) {
-            return false;
-        }
+	return Utilities.isJavaIdentifier(s);
     }
     
     private void checkValidPackageName(final DataFolder targetFolder)
