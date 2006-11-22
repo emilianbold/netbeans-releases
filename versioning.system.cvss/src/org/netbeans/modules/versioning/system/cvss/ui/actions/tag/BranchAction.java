@@ -34,6 +34,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.HelpCtx;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 
 import javax.swing.*;
@@ -68,6 +69,13 @@ public class BranchAction extends AbstractSystemAction {
     
     public void performCvsAction(Node[] nodes) {
         Context context = getContext(nodes);
+        if (context.getFiles().length == 0) {
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor(
+                    NbBundle.getBundle(BranchAction.class).getString("CTL_BranchDialogNone_Prompt"),
+                    NbBundle.getBundle(BranchAction.class).getString("CTL_BranchDialogNone_Title"),
+                    NotifyDescriptor.DEFAULT_OPTION, NotifyDescriptor.ERROR_MESSAGE, null, null));
+            return;
+        }
 
         String title = MessageFormat.format(NbBundle.getBundle(BranchAction.class).getString("CTL_BranchDialog_Title"), getContextDisplayName(nodes));
 
