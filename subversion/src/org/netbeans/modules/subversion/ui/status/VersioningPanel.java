@@ -64,7 +64,6 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
     private final Subversion            subversion;
     private Context                     context;
     private int                         displayStatuses;
-    private boolean                     pendingRefresh;
     
     private SyncTable                   syncTable;
     private RequestProcessor.Task       refreshViewTask;
@@ -238,7 +237,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         final ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(VersioningPanel.class, "MSG_Refreshing_Versioning_View")); // NOI18N
         try {
             refreshViewThread = Thread.currentThread();
-            refreshViewThread.interrupted();  // clear interupted status
+            Thread.interrupted();  // clear interupted status
             ph.start();
             final SyncFileNode [] nodes = getNodes(context, displayStatuses);  // takes long
             if (nodes == null) {
@@ -325,6 +324,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
      */ 
     private void onUpdateAction() {
         UpdateAction.performUpdate(context);
+        parentTopComponent.contentRefreshed();
     }
     
     /**
@@ -363,6 +363,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
                 setupModels();
             }            
         };
+        parentTopComponent.contentRefreshed();
         return svnProgressSupport.start(rp, repository, org.openide.util.NbBundle.getMessage(VersioningPanel.class, "LBL_Refresh_Progress")); // NOI18N
     }
 
