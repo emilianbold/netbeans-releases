@@ -24,6 +24,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.JavaSource.Priority;
 import org.openide.filesystems.FileObject;
@@ -53,6 +56,10 @@ import org.openide.util.RequestProcessor;
  */
 public abstract class JavaSourceTaskFactory {
 
+    private static final Logger LOG = Logger.getLogger(JavaSourceTaskFactory.class.getName());
+            static final String BEFORE_ADDING_REMOVING_TASKS = "beforeAddingRemovingTasks"; //NOI18N
+            static final String FILEOBJECTS_COMPUTATION = "fileObjectsComputation"; //NOI18N
+            
     private final Phase phase;
     private final Priority priority;
 
@@ -99,6 +106,8 @@ public abstract class JavaSourceTaskFactory {
      * The infrastructure calls {@link #getFileObjects()} to get a new collection files.
      */
     protected final void fileObjectsChanged() {
+        LOG.log(Level.FINEST, FILEOBJECTS_COMPUTATION);
+
         final List<FileObject> currentFiles = new ArrayList(getFileObjects());
 
         if (SYNCHRONOUS_EVENTS) {
@@ -116,40 +125,56 @@ public abstract class JavaSourceTaskFactory {
      */
     static boolean SYNCHRONOUS_EVENTS = false;
 
-    private synchronized void stateChangedImpl(List<FileObject> currentFiles) {
-        List<FileObject> addedFiles = new ArrayList(currentFiles);
-        List<FileObject> removedFiles = new ArrayList(file2Task.keySet());
+    private void stateChangedImpl(List<FileObject> currentFiles) {
+        Map<JavaSource, CancellableTask<CompilationInfo>> toRemove = new HashMap<JavaSource, CancellableTask<CompilationInfo>>();
+        Map<JavaSource, CancellableTask<CompilationInfo>> toAdd = new HashMap<JavaSource, CancellableTask<CompilationInfo>>();
         
-        addedFiles.removeAll(file2Task.keySet());
-        removedFiles.removeAll(currentFiles);
-        
-        //remove old tasks:
-        for (FileObject r : removedFiles) {
-            JavaSource source = file2JS.remove(r);
+        synchronized (this) {
+            List<FileObject> addedFiles = new ArrayList(currentFiles);
+            List<FileObject> removedFiles = new ArrayList(file2Task.keySet());
             
-            if (source == null) {
-                //TODO: log
-                continue;
+            addedFiles.removeAll(file2Task.keySet());
+            removedFiles.removeAll(currentFiles);
+            
+            //remove old tasks:
+            for (FileObject r : removedFiles) {
+                JavaSource source = file2JS.remove(r);
+                
+                if (source == null) {
+                    //TODO: log
+                    continue;
+                }
+                
+                toRemove.put(source, file2Task.remove(r));
             }
             
-            ACCESSOR2.removePhaseCompletionTask(source, file2Task.remove(r));
-        }
-        
-        //add new tasks:
-        for (FileObject a : addedFiles) {
-            if (a == null)
-                continue;
-            
-            JavaSource js = JavaSource.forFileObject(a);
-            
-            try {
+            //add new tasks:
+            for (FileObject a : addedFiles) {
+                if (a == null)
+                    continue;
+                
+                JavaSource js = JavaSource.forFileObject(a);
+                
                 if (js != null) {
                     CancellableTask<CompilationInfo> task = createTask(a);
-                    ACCESSOR2.addPhaseCompletionTask(js, task, phase, priority);
+                    
+                    toAdd.put(js, task);
                     
                     file2Task.put(a, task);
                     file2JS.put(a, js);
                 }
+            }
+        }
+        
+        LOG.log(Level.FINEST, BEFORE_ADDING_REMOVING_TASKS);
+        
+        for (Entry<JavaSource, CancellableTask<CompilationInfo>> e : toRemove.entrySet()) {
+            ACCESSOR2.removePhaseCompletionTask(e.getKey(), e.getValue());
+        }
+        
+        for (Entry<JavaSource, CancellableTask<CompilationInfo>> e : toAdd.entrySet()) {
+            try {
+                ACCESSOR2.addPhaseCompletionTask(e.getKey(), e.getValue(), phase, priority);
             } catch (IOException ex) {
                 ErrorManager.getDefault().notify(ex);
             }

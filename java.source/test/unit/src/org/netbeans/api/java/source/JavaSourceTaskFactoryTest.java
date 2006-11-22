@@ -30,6 +30,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -245,6 +250,72 @@ public class JavaSourceTaskFactoryTest extends NbTestCase {
         assertGC("", jsRef);
     }
     
+    public void testDeadlock88782() throws Exception {
+        files = Collections.emptyList();
+        
+        SourceUtilsTestUtil.setLookup(new Object[] {
+            JavaDataLoader.getLoader(JavaDataLoader.class),
+                    jstf,
+                    cpp
+        }, this.getClass().getClassLoader());
+        
+        final CountDownLatch l = new CountDownLatch(2);
+        final Object lock = new Object();
+        
+        Logger.getLogger(JavaSourceTaskFactory.class.getName()).setLevel(Level.FINEST);
+        
+        Logger.getLogger(JavaSourceTaskFactory.class.getName()).addHandler(new Handler() {
+            public void publish(LogRecord record) {
+                if (JavaSourceTaskFactory.BEFORE_ADDING_REMOVING_TASKS.equals(record.getMessage())) {
+                    l.countDown();
+                    try {
+                        l.await();
+                    } catch (InterruptedException e) {
+                        Logger.global.log(Level.SEVERE, "", e);
+                    }
+                    synchronized (lock) {
+                    }
+                }
+                if (JavaSourceTaskFactory.FILEOBJECTS_COMPUTATION.equals(record.getMessage())) {
+                    l.countDown();
+                    try {
+                        l.await();
+                    } catch (InterruptedException e) {
+                        Logger.global.log(Level.SEVERE, "", e);
+                    }
+                }
+            }
+            public void flush() {}
+            public void close() throws SecurityException {}
+        });
+        
+        Thread t1 = new Thread() {
+            public void run() {
+                synchronized (lock) {
+                    SourceUtilsTestUtil.setLookup(new Object[] {
+                        JavaDataLoader.getLoader(JavaDataLoader.class),
+                                jstf,
+                                new JavaSourceTaskFactoryImplImpl(),
+                                cpp
+                    }, this.getClass().getClassLoader());
+                }
+            }
+        };
+        
+        t1.start();
+
+        Thread t2 = new Thread() {
+            public void run() {
+                jstf.fireChangeEvent();
+            }
+        };
+        
+        t2.start();
+        
+        t1.join();
+        t2.join();
+    }
+    
     private ClassPath createBootPath () {
         try {
             String bootPath = System.getProperty ("sun.boot.class.path");
@@ -302,7 +373,7 @@ public class JavaSourceTaskFactoryTest extends NbTestCase {
             return file2Task.get(file);
         }
 
-        public List<FileObject> getFileObjects() {
+        public synchronized List<FileObject> getFileObjects() {
             return files;
         }
 
