@@ -313,6 +313,23 @@ final class SceneComponent extends JComponent implements MouseListener, MouseMot
         return WidgetAction.State.REJECTED;
     }
 
+    private WidgetAction.State processSingleOperator (Operator operator, String tool, Widget widget, WidgetAction.WidgetEvent event) {
+        WidgetAction.State state;
+
+        state = operator.operate (widget.getActions (), widget, event);
+        if (state.isConsumed ())
+            return state;
+
+        WidgetAction.Chain actions = widget.getActions (tool);
+        if (actions != null) {
+            state = operator.operate (actions, widget, event);
+            if (state.isConsumed ())
+                return state;
+        }
+
+        return WidgetAction.State.REJECTED;
+    }
+
     private WidgetAction.State processParentOperator (Operator operator, String tool, Widget widget, WidgetAction.WidgetKeyEvent event) {
         while (widget != null) {
             WidgetAction.State state;
@@ -357,15 +374,22 @@ final class SceneComponent extends JComponent implements MouseListener, MouseMot
 
     private WidgetAction.State processKeyOperator (Operator operator, String tool, Scene scene, WidgetAction.WidgetKeyEvent event) {
         Widget focusedWidget = scene.getFocusedWidget ();
+        WidgetAction.State state;
         switch (scene.getKeyEventProcessingType ()) {
             case ALL_WIDGETS:
                 return processOperator (operator, tool, scene, event);
             case FOCUSED_WIDGET_AND_ITS_PARENTS:
                 return processParentOperator (operator, tool, focusedWidget, event);
             case FOCUSED_WIDGET_AND_ITS_CHILDREN:
+                state = processSingleOperator (operator, tool, focusedWidget, event);
+                if (state.isConsumed ())
+                    return state;
                 return processOperator (operator, tool, focusedWidget, event);
             case FOCUSED_WIDGET_AND_ITS_CHILDREN_AND_ITS_PARENTS:
-                WidgetAction.State state = processOperator (operator, tool, focusedWidget, event);
+                state = processSingleOperator (operator, tool, focusedWidget, event);
+                if (state.isConsumed ())
+                    return state;
+                state = processOperator (operator, tool, focusedWidget, event);
                 if (state.isConsumed ())
                     return state;
                 return processParentOperator (operator, tool, focusedWidget.getParentWidget (), event);

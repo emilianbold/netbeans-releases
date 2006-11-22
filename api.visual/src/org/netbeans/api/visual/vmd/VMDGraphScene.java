@@ -32,6 +32,7 @@ import org.netbeans.api.visual.router.RouterFactory;
 import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.LayerWidget;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.api.visual.widget.EventProcessingType;
 
 import javax.swing.*;
 import java.awt.*;
@@ -68,6 +69,8 @@ public class VMDGraphScene extends GraphPinScene<String, String, String> {
      * Creates a VMD graph scene.
      */
     public VMDGraphScene () {
+        setKeyEventProcessingType (EventProcessingType.FOCUSED_WIDGET_AND_ITS_PARENTS);
+
         addChild (backgroundLayer);
         addChild (mainLayer);
         addChild (connectionLayer);

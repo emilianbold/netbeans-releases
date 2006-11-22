@@ -132,6 +132,7 @@ public final class InplaceEditorAction <C extends JComponent> extends WidgetActi
         if (bounds != null) {
             parent.remove (editor);
             parent.repaint (bounds.x, bounds.y, bounds.width, bounds.height);
+            parent.requestFocus ();
         }
         editor = null;
         widget = null;

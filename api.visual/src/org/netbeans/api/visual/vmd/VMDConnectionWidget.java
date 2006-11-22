@@ -68,6 +68,8 @@ public class VMDConnectionWidget extends ConnectionWidget {
             setForeground (VMDNodeWidget.COLOR_SELECTED);
         else if (state.isHighlighted ())
             setForeground (COLOR_HIGHLIGHTED);
+        else if (state.isFocused ())
+            setForeground (COLOR_HOVERED);
         else
             setForeground (COLOR_NORMAL);
 

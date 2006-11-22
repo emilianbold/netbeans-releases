@@ -24,9 +24,7 @@ import org.netbeans.api.visual.widget.Widget;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
+import java.awt.event.*;
 
 /**
  * @author David Kaspar
@@ -35,11 +33,12 @@ public final class TextFieldInplaceEditorProvider implements InplaceEditorProvid
 
     private TextFieldInplaceEditor editor;
 
+    private KeyListener keyListener;
+    private FocusListener focusListener;
+
     public TextFieldInplaceEditorProvider (TextFieldInplaceEditor editor) {
         this.editor = editor;
     }
-
-    private KeyListener keyListener;
 
     public JTextField createEditorComponent (EditorController controller, Widget widget) {
         if (! editor.isEnabled (widget))
@@ -63,11 +62,18 @@ public final class TextFieldInplaceEditorProvider implements InplaceEditorProvid
                 }
             }
         };
+        focusListener = new FocusAdapter() {
+            public void focusLost (FocusEvent e) {
+                controller.closeEditor (true);
+            }
+        };
         editor.addKeyListener (keyListener);
+        editor.addFocusListener (focusListener);
         editor.selectAll ();
     }
 
     public void notifyClosing (EditorController controller, Widget widget, JTextField editor, boolean commit) {
+        editor.removeFocusListener (focusListener);
         editor.removeKeyListener (keyListener);
         if (commit) {
             this.editor.setText (widget, editor.getText ());
