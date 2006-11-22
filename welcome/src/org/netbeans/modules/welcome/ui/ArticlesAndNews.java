@@ -23,17 +23,17 @@ import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import org.netbeans.modules.autoupdate.Settings;
 import org.netbeans.modules.welcome.WelcomeOptions;
 import org.netbeans.modules.welcome.content.BundleSupport;
 import org.netbeans.modules.welcome.content.CombinationRSSFeed;
-import org.netbeans.modules.welcome.content.NoHorizontalScrollPanel;
 import org.netbeans.modules.welcome.content.RSSFeed;
 import org.netbeans.modules.welcome.content.RSSFeedReaderPanel;
 import org.netbeans.modules.welcome.content.WebLink;
+import org.openide.util.NbPreferences;
 
 /**
  *
@@ -54,9 +54,9 @@ public class ArticlesAndNews extends RSSFeedReaderPanel {
     }
 
     protected JComponent buildContent(String url, boolean showProxyButton) {
-        Settings autoUpdateSettings = Settings.getShared();
-        if( null != autoUpdateSettings ) {
-            String ideId = autoUpdateSettings.getIdeIdentity();
+        final Preferences p = NbPreferences.root().node("/org/netbeans/modules/autoupdate"); // NOI18N
+        if( null != p ) {
+            String ideId = p.get ("ideIdentity", null); // NOI18N
             if( null != ideId && ideId.length() > 0 ) {
                 url +=  "?unique=" + ideId; // NOI18N
             }
@@ -65,7 +65,7 @@ public class ArticlesAndNews extends RSSFeedReaderPanel {
         feed.addPropertyChangeListener( RSSFeed.FEED_CONTENT_PROPERTY, this );
         return feed;
     }
-
+    
     protected JComponent buildBottomContent() {
         WebLink news = new WebLink( "AllNews", false ); // NOI18N
         news.setFont( HEADER_FONT );
