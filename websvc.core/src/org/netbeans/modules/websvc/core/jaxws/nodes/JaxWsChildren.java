@@ -256,7 +256,7 @@ public class JaxWsChildren extends Children.Keys/* implements MDRChangeListener 
                                             boolean hasWebMethodAnnotation=false;
                                             for (AnnotationMirror an:annotations) {
                                                 TypeElement webMethodEl = controller.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N
-                                                if (webMethodEl!=null && webMethodEl.equals(an.getAnnotationType().asElement())) {
+                                                if (webMethodEl!=null && controller.getTypes().isSameType(webMethodEl.asType(), an.getAnnotationType())) {
                                                     hasWebMethodAnnotation=true;
                                                     break;
                                                 }
