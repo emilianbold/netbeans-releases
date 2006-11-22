@@ -47,8 +47,9 @@ public class UpdateExecutor extends ExecutorSupport {
     /**
      * Contains all files that should NOT be set as up-to-date after Update finishes. 
      */ 
-    private Set     refreshedFiles = Collections.synchronizedSet(new HashSet());
+    private Set<File>   refreshedFiles = Collections.synchronizedSet(new HashSet<File>());
     private boolean rwUpdate;
+    private boolean mergeUpdate;
     
     /**
      * Files modified afterwards will not be cosidered up-to-date even if server says so.
@@ -86,6 +87,7 @@ public class UpdateExecutor extends ExecutorSupport {
     private UpdateExecutor(CvsVersioningSystem cvs, UpdateCommand cmd, GlobalOptions options) {
         super(cvs, cmd, options);
         rwUpdate = options == null || !options.isDoNoChanges();
+        mergeUpdate = cmd.getMergeRevision1() != null;
     }
 
     protected void setup() {
@@ -123,7 +125,7 @@ public class UpdateExecutor extends ExecutorSupport {
             cache.clearVirtualDirectoryContents(files[i], ucmd.isRecursive(), ucmd.getGlobalOptions().getExclusions());
         }
         
-        Set filesystems = new HashSet(2);
+        Set<FileSystem> filesystems = new HashSet<FileSystem>(2);
         boolean hasConflict = false;
         for (Iterator i = toRefresh.iterator(); i.hasNext();) {
             DefaultFileInfoContainer info = (DefaultFileInfoContainer) i.next();
@@ -132,7 +134,13 @@ public class UpdateExecutor extends ExecutorSupport {
             int c = info.getType().charAt(0);
             if (c == 'P') c = 'U';                
             if (rwUpdate) {
-                if (c == 'U') c = FileStatusCache.REPOSITORY_STATUS_UPTODATE;
+                if (c == 'U') {
+                    if (mergeUpdate) {
+                        c = FileStatusCache.REPOSITORY_STATUS_MODIFIED;
+                    } else {
+                        c = FileStatusCache.REPOSITORY_STATUS_UPTODATE;
+                    }
+                }
                 if (c == 'G') c = FileStatusCache.REPOSITORY_STATUS_MODIFIED;
                 if (c == 'C') hasConflict = true;
             }
@@ -178,7 +186,7 @@ public class UpdateExecutor extends ExecutorSupport {
         }        
     }
 
-    private void addFileSystem(Set filesystems, File file) {
+    private void addFileSystem(Set<FileSystem> filesystems, File file) {
         FileObject fo;
         for (;;) {
             fo = FileUtil.toFileObject(file);
