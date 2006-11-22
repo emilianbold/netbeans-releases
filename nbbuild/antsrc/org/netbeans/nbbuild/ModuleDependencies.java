@@ -68,11 +68,11 @@ public class ModuleDependencies extends org.apache.tools.ant.Task {
                 getProject ().log ("Generating " + o.type + " to " + o.file);
                 
                 if ("public-packages".equals (o.type.getValue ())) {
-                    generatePublicPackages (o.file, true);
+                    generatePublicPackages (o.file, true, false);
                     continue;
                 }
                 if ("friend-packages".equals (o.type.getValue ())) {
-                    generatePublicPackages (o.file, false);
+                    generatePublicPackages (o.file, false, false);
                     continue;
                 }
                 if ("shared-packages".equals (o.type.getValue ())) {
@@ -97,6 +97,10 @@ public class ModuleDependencies extends org.apache.tools.ant.Task {
                 }
                 if ("group-implementation-dependencies".equals (o.type.getValue ())) {
                     generateGroupDependencies (o.file, true);                    
+                    continue;
+                }
+                if ("group-friend-packages".equals (o.type.getValue ())) {
+                    generatePublicPackages(o.file, false, true);                    
                     continue;
                 }
                 if ("external-libraries".equals (o.type.getValue ())) {
@@ -222,105 +226,120 @@ public class ModuleDependencies extends org.apache.tools.ant.Task {
     }
     
     
-    private void generatePublicPackages (File output, boolean justPublic) throws BuildException, IOException {
-        TreeSet packages = new TreeSet ();
-	TreeMap friendExports = new TreeMap();
+    private void generatePublicPackages(File output, boolean justPublic, boolean justInterCluster) throws BuildException, IOException {
+        TreeSet packages = new TreeSet();
+        TreeMap friendExports = new TreeMap();
         
-        Iterator it = modules.iterator ();
-        while (it.hasNext ()) {
-            ModuleInfo m = (ModuleInfo)it.next ();
-	    if (justPublic) {
-		if (m.friends != null) {
-		    continue;
-		}
-	    }
-
+        Iterator it = modules.iterator();
+        while (it.hasNext()) {
+            ModuleInfo m = (ModuleInfo)it.next();
+            if (justPublic) {
+                if (m.friends != null) {
+                    continue;
+                }
+            }
+            
             String s = m.publicPackages;
             HashMap pkgs = null;
             if (s != null) {
-                pkgs = new HashMap ();
-                StringTokenizer tok = new StringTokenizer (s, ",");
-                while (tok.hasMoreElements ()) {
-                    String p = tok.nextToken ().trim ();
-                    if (p.equals ("-")) {
+                pkgs = new HashMap();
+                StringTokenizer tok = new StringTokenizer(s, ",");
+                while (tok.hasMoreElements()) {
+                    String p = tok.nextToken().trim();
+                    if (p.equals("-")) {
                         continue;
                     }
                     
-                    if (p.endsWith (".*")) {
-                        pkgs.put (p.substring (0, p.length () - 2).replace ('.', '/'), Boolean.FALSE);
+                    if (p.endsWith(".*")) {
+                        pkgs.put(p.substring(0, p.length() - 2).replace('.', '/'), Boolean.FALSE);
                         continue;
                     }
-                    if (p.endsWith (".**")) {
-                        pkgs.put (p.substring (0, p.length () - 3).replace ('.', '/'), Boolean.TRUE);
+                    if (p.endsWith(".**")) {
+                        pkgs.put(p.substring(0, p.length() - 3).replace('.', '/'), Boolean.TRUE);
                         continue;
                     }
-                    throw new BuildException ("Unknown package format: " + p + " in " + m.file);
+                    throw new BuildException("Unknown package format: " + p + " in " + m.file);
                 }
-            }
-	    
-	    if (justPublic) {
-		iterateThruPackages (m.file, pkgs, packages);
-		if (pkgs != null && packages.size () < pkgs.size ()) {
-		    throw new BuildException ("Not enough packages found. The declared packages are: " + s + " but only " + packages + " were found in " + m.file);
-		}
-	    } else {
-		TreeSet modulePkgs = new TreeSet();
-		iterateThruPackages (m.file, pkgs, modulePkgs);
-		friendExports.put(m, modulePkgs);
-	    }
-
-        }
-
-        PrintWriter w = new PrintWriter (new FileWriter (output));
-	if (justPublic) {
-	    it = packages.iterator ();
-	    while (it.hasNext ()) {
-		String out = (String)it.next ();
-		w.println (out.replace ('/', '.'));
-	    }
-	} else {
-            int maxFriends = Integer.MAX_VALUE;
-            String maxFriendsString = this.getProject().getProperty("deps.max.friends");
-            if (maxFriendsString != null) {
-                maxFriends = Integer.parseInt(maxFriendsString);
             }
             
-	    it = friendExports.entrySet().iterator();
-	    while (it.hasNext()) {
-		Map.Entry entry = (Map.Entry)it.next();
-		ModuleInfo info = (ModuleInfo)entry.getKey();
-		if (info.friends == null) {
-		    continue;
-		}
-		log("Friends for " + info.getName(), org.apache.tools.ant.Project.MSG_DEBUG);
-		w.print("MODULE ");
-		w.println(info.getName());
-		Iterator iterFrnd = info.friends.iterator();
-		while(iterFrnd.hasNext()) {
-		    String n = (String)iterFrnd.next();
-		    ModuleInfo friend = findModuleInfo(n);
-		    if (friend != null) {
-			w.print("  FRIEND ");
-			w.println(friend.getName());
-		    } else {
-			w.print("  EXTERNAL ");
-			w.println(n);
-		    }
-		}
-                if (info.friends.size() > maxFriends) {
-                    throw new BuildException("Too many friends (" + info.friends.size() + ") for module " + info.getName());
+            if (justPublic) {
+                iterateThruPackages(m.file, pkgs, packages);
+                if (pkgs != null && packages.size() < pkgs.size()) {
+                    throw new BuildException("Not enough packages found. The declared packages are: " + s + " but only " + packages + " were found in " + m.file);
+                }
+            } else {
+                TreeSet modulePkgs = new TreeSet();
+                iterateThruPackages(m.file, pkgs, modulePkgs);
+                friendExports.put(m, modulePkgs);
+            }
+            
+        }
+        
+        PrintWriter w = new PrintWriter(new FileWriter(output));
+        if (justPublic) {
+            it = packages.iterator();
+            while (it.hasNext()) {
+                String out = (String)it.next();
+                w.println(out.replace('/', '.'));
+            }
+        } else {
+            int maxFriends = Integer.MAX_VALUE;
+            if (justInterCluster) {
+                String maxFriendsString = this.getProject().getProperty("deps.max.friends");
+                if (maxFriendsString != null) {
+                    maxFriends = Integer.parseInt(maxFriendsString);
+                }
+            }
+            
+            it = friendExports.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry entry = (Map.Entry)it.next();
+                ModuleInfo info = (ModuleInfo)entry.getKey();
+                if (info.friends == null) {
+                    continue;
+                }
+                log("Friends for " + info.getName(), org.apache.tools.ant.Project.MSG_DEBUG);
+                Iterator iterFrnd = info.friends.iterator();
+                int cntFriends = 0;
+                boolean printed = false;
+                while(iterFrnd.hasNext()) {
+                    String n = (String)iterFrnd.next();
+                    ModuleInfo friend = findModuleInfo(n);
+                    if (justInterCluster && friend != null && friend.group.equals(info.group)) {
+                        continue;
+                    }
+                    
+                    if (!printed) {
+                        w.print("MODULE ");
+                        w.println(info.getName());
+                        printed = true;
+                    }
+                    
+                    if (friend != null) {
+                        w.print("  FRIEND ");
+                        w.println(friend.getName());
+                    } else {
+                        w.print("  EXTERNAL ");
+                        w.println(n);
+                    }
+                    cntFriends++;
+                }
+                if (cntFriends > maxFriends) {
+                    throw new BuildException("Too many intercluster friends (" + cntFriends + ") for module " + info.getName());
                 }
                 
-		Set<String> pkgs = (Set<String>)entry.getValue();
-		Iterator iterPkgs = pkgs.iterator();
-		while (iterPkgs.hasNext()) {
-		    String out = (String)iterPkgs.next ();
-		    w.print("  PACKAGE ");
-		    w.println (out.replace ('/', '.'));
-		}
-	    }
-	}
-        w.close ();
+                if (cntFriends > 0) {
+                    Set<String> pkgs = (Set<String>)entry.getValue();
+                    Iterator iterPkgs = pkgs.iterator();
+                    while (iterPkgs.hasNext()) {
+                        String out = (String)iterPkgs.next();
+                        w.print("  PACKAGE ");
+                        w.println(out.replace('/', '.'));
+                    }
+                }
+            }
+        }
+        w.close();
     }
     
     private void iterateThruPackages (File f, HashMap pkgs, TreeSet packages) throws IOException {
@@ -706,6 +725,7 @@ public class ModuleDependencies extends org.apache.tools.ant.Task {
                 "implementation-dependencies",
                 "group-dependencies",
                 "group-implementation-dependencies",
+                "group-friend-packages",
                 "external-libraries",
             };
         }

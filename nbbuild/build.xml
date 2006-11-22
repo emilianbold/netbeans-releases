@@ -1255,6 +1255,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     check-files-layout,
     check-public-packages,
     check-friend-packages,
+    check-group-friend-packages,
     check-shared-packages,
     check-modules,
     check-dependencies,
@@ -1362,7 +1363,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   
   <target name="generate-golden-files" depends="generate-golden-files-init" >
     <property name="generated.files.dir" location="build/generated" />
-    <property name="deps.max.friends" value="34"/>
+    <property name="deps.max.friends" value="15"/>
     <mkdir dir="${generated.files.dir}" />
     
     <taskdef name="deps" classname="org.netbeans.nbbuild.ModuleDependencies" classpath="nbantext.jar"/>
@@ -1402,6 +1403,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <output type="public-packages" file="${generated.files.dir}/public-packages.txt" />
       <output type="shared-packages" file="${generated.files.dir}/shared-packages.txt" />
       <output type="friend-packages" file="${generated.files.dir}/friend-packages.txt" />
+      <output type="group-friend-packages" file="${generated.files.dir}/group-friend-packages.txt" />
       <output type="external-libraries" file="${generated.files.dir}/external-libraries.txt" />
     </deps>
   </target>
@@ -1491,6 +1493,56 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     your review and want to change the list of friend packages, then please
     update the golden file at 
     ${check.friend.packages.golden}
+    and run the test once again. 
+    
+    Read more about the Verification Framework:
+    http://openide.netbeans.org/proposals/arch/clusters.html#verify
+    
+    Look at for information about reviews:
+    http://openide.netbeans.org/tutorial/review-steps.html
+    
+    Check the page about APIs:
+    http://openide.netbeans.org/tutorial/api-design.html#api
+    </fail>
+  </target>
+
+  <target name="check-group-friend-packages" depends="generate-golden-files" >
+    <property name="check.group.friend.packages.golden" location="${golden.files.dir}/group-friend-packages.txt" />
+    <property name="check.group.friend.packages.template" location="${template.files.dir}/group-friend-packages.txt" />
+    <property name="check.group.friend.packages.generated" location="${generated.files.dir}/group-friend-packages.txt" />
+  
+    <condition property="check-group-friend-packages-are-they-the-same" >
+        <filesmatch file1="${check.group.friend.packages.template}" file2="${check.group.friend.packages.generated}" />
+    </condition>
+    
+    
+    <exec os="Linux SunOS Solaris " dir="." executable="diff" failonerror="no" timeout="60000" >
+      <arg value="-U"/>
+      <arg value="15"/>
+      <arg value="${check.group.friend.packages.template}" />
+      <arg value="${check.group.friend.packages.generated}" />
+    </exec>
+    
+    <fail unless="check-group-friend-packages-are-they-the-same" >!
+    *** Friend packages has changed! ***
+    
+    Differences were found while comparing file 
+    ${check.group.friend.packages.template}
+    with 
+    ${check.group.friend.packages.generated}
+    
+    This means that the set of friend packages between clusters
+    changed since the previously known one.
+    Some packages may have been added, some of them may have been removed 
+    Either by changing manifest of a module or by adding or removing a class file
+    from a module package.
+    
+    
+    Changing the packages may or may not be ok. It means that an api of 
+    whole product changes and as such it is subject to review. If you passed
+    your review and want to change the list of friend packages, then please
+    update the golden file at 
+    ${check.group.friend.packages.golden}
     and run the test once again. 
     
     Read more about the Verification Framework:

@@ -238,7 +238,7 @@ public class ModuleDependenciesTest extends NbTestCase {
         output.delete ();
         File friendPkg = PublicPackagesInProjectizedXMLTest.extractString ("");
         friendPkg.delete ();
-	assertFalse ("Is gone", output.exists ());
+        assertFalse ("Is gone", output.exists ());
         java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
@@ -260,11 +260,165 @@ public class ModuleDependenciesTest extends NbTestCase {
             "</target>" +
             "</project>"
         );
+        // this should succeed now, as the limit applies only to intercluster relations - #87076
+        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+    }
+
+    public void testThereCanBeLimitOnNumberOfFriendsAmongGroups() throws Exception {
+        File notAModule = generateJar (new String[] { "not/X.class", "not/resource/X.html" }, createManifest ());
+        
+        Manifest m = createManifest ();
+        m.getMainAttributes ().putValue ("OpenIDE-Module", "my.module/3");
+        m.getMainAttributes ().putValue ("OpenIDE-Module-Friends", "my.very.public.module");
+        File myModule = generateJar (new String[] { "DefaultPkg.class", "just/friend/X.class", "just/friend/MyClass.class", "not/as/it/is/resource/X.xml" }, m);
+        
+        m = createManifest ();
+        m.getMainAttributes ().putValue ("OpenIDE-Module", "my.another.module/3");
+        m.getMainAttributes ().putValue ("OpenIDE-Module-Public-Packages", "friend.there.*, friend.recursive.**");
+        m.getMainAttributes ().putValue ("OpenIDE-Module-Friends", "my.very.public.module, my.module");
+        File myAnotherModule = generateJar (new String[] { "friend/there/A.class", "not/there/B.class", "friend/recursive/Root.class", "friend/recursive/sub/Under.class", "not/res/X.jpg"}, m);
+
+        m = createManifest ();
+        m.getMainAttributes ().putValue ("OpenIDE-Module", "my.very.public.module/10");
+        m.getMainAttributes ().putValue ("OpenIDE-Module-Public-Packages", "-");
+        File myVeryPublicModule = generateJar (new String[] { "not/very/A.class", "not/very/B.class", "not/very/sub/Root.class", "not/res/X.jpg"}, m);
+        
+        File parent = notAModule.getParentFile ();
+        assertEquals ("All parents are the same 1", parent, myModule.getParentFile ());
+        assertEquals ("All parents are the same 2", parent, myAnotherModule.getParentFile ());
+        assertEquals ("All parents are the same 3", parent, myVeryPublicModule.getParentFile ());
+        
+        
+        File friendPkg = PublicPackagesInProjectizedXMLTest.extractString ("");
+        friendPkg.delete ();
+    	assertFalse ("Is gone", friendPkg.exists ());
+        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+            "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
+            "  <taskdef name=\"deps\" classname=\"org.netbeans.nbbuild.ModuleDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "<target name=\"all\" >" +
+            "  <property name='deps.max.friends' value='${limit}'/>" +
+            "  <deps>" +
+            "    <input name=\"base\" >" +
+            "      <jars dir=\"" + parent + "\" > " +
+            "        <include name=\"" + notAModule.getName () + "\" />" +
+            "        <include name=\"" + myAnotherModule.getName () + "\" />" +
+            "      </jars>" +
+            "    </input>" +
+            "    <input name=\"extra\" >" +
+            "      <jars dir=\"" + parent + "\" > " +
+            "        <include name=\"" + myModule.getName () + "\" />" +
+            "        <include name=\"" + myVeryPublicModule.getName () + "\" />" +
+            "      </jars>" +
+            "    </input>" +
+            "    <output type=\"group-friend-packages\" file=\"" + friendPkg + "\" />" +
+            "  </deps >" +
+            "</target>" +
+            "</project>"
+        );
+
+        // this will succeed, limit of 5 is ok
+        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose", "-Dlimit=5" });
+        
+        String res = readFile (friendPkg);
+
+        if (!res.equals(
+            "MODULE my.another.module/3 (base)\n" +
+            "  FRIEND my.module/3 (extra)\n" +
+            "  FRIEND my.very.public.module/10 (extra)\n" +
+            "  PACKAGE friend.recursive\n" +
+            "  PACKAGE friend.recursive.sub\n" +
+            "  PACKAGE friend.there\n" +
+            ""
+        )) {
+            fail("Unexpected res:\n" + res);
+        }
+        
+        
+        friendPkg.delete();
+        
         try {
-            PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+            PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose", "-Dlimit=1" });
             fail("This should fail");
         } catch (PublicPackagesInProjectizedXMLTest.ExecutionError ex) {
-            if (PublicPackagesInProjectizedXMLTest.getStdErr().indexOf("Too many friends") == -1) {
+            if (PublicPackagesInProjectizedXMLTest.getStdErr().indexOf("Too many intercluster friends") == -1) {
+                fail("There should be a message about too many friends:\n" + PublicPackagesInProjectizedXMLTest.getStdErr());
+            }
+        }
+    }
+    
+    public void testThereExternalsAreCountedAsWell() throws Exception {
+        File notAModule = generateJar (new String[] { "not/X.class", "not/resource/X.html" }, createManifest ());
+        
+        Manifest m = createManifest ();
+        m.getMainAttributes ().putValue ("OpenIDE-Module", "my.module/3");
+        m.getMainAttributes ().putValue ("OpenIDE-Module-Friends", "my.very.public.module");
+        File myModule = generateJar (new String[] { "DefaultPkg.class", "just/friend/X.class", "just/friend/MyClass.class", "not/as/it/is/resource/X.xml" }, m);
+        
+        m = createManifest ();
+        m.getMainAttributes ().putValue ("OpenIDE-Module", "my.another.module/3");
+        m.getMainAttributes ().putValue ("OpenIDE-Module-Public-Packages", "friend.there.*, friend.recursive.**");
+        m.getMainAttributes ().putValue ("OpenIDE-Module-Friends", "my.very.public.module, my.module");
+        File myAnotherModule = generateJar (new String[] { "friend/there/A.class", "not/there/B.class", "friend/recursive/Root.class", "friend/recursive/sub/Under.class", "not/res/X.jpg"}, m);
+
+        m = createManifest ();
+        m.getMainAttributes ().putValue ("OpenIDE-Module", "my.very.public.module/10");
+        m.getMainAttributes ().putValue ("OpenIDE-Module-Public-Packages", "-");
+        File myVeryPublicModule = generateJar (new String[] { "not/very/A.class", "not/very/B.class", "not/very/sub/Root.class", "not/res/X.jpg"}, m);
+        
+        File parent = notAModule.getParentFile ();
+        assertEquals ("All parents are the same 1", parent, myModule.getParentFile ());
+        assertEquals ("All parents are the same 2", parent, myAnotherModule.getParentFile ());
+        assertEquals ("All parents are the same 3", parent, myVeryPublicModule.getParentFile ());
+        
+        
+        File friendPkg = PublicPackagesInProjectizedXMLTest.extractString ("");
+        friendPkg.delete ();
+    	assertFalse ("Is gone", friendPkg.exists ());
+        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+            "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
+            "  <taskdef name=\"deps\" classname=\"org.netbeans.nbbuild.ModuleDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "<target name=\"all\" >" +
+            "  <property name='deps.max.friends' value='${limit}'/>" +
+            "  <deps>" +
+            "    <input name=\"base\" >" +
+            "      <jars dir=\"" + parent + "\" > " +
+            "        <include name=\"" + notAModule.getName () + "\" />" +
+            "        <include name=\"" + myAnotherModule.getName () + "\" />" +
+            "      </jars>" +
+            "    </input>" +
+            "    <output type=\"group-friend-packages\" file=\"" + friendPkg + "\" />" +
+            "  </deps >" +
+            "</target>" +
+            "</project>"
+        );
+
+        // this will succeed, limit of 5 is ok
+        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose", "-Dlimit=5" });
+        
+        String res = readFile (friendPkg);
+
+        if (!res.equals(
+            "MODULE my.another.module/3 (base)\n" +
+            "  EXTERNAL my.module\n" +
+            "  EXTERNAL my.very.public.module\n" +
+            "  PACKAGE friend.recursive\n" +
+            "  PACKAGE friend.recursive.sub\n" +
+            "  PACKAGE friend.there\n" +
+            ""
+        )) {
+            fail("Unexpected res:\n" + res);
+        }
+        
+        
+        friendPkg.delete();
+        
+        try {
+            PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose", "-Dlimit=1" });
+            fail("This should fail");
+        } catch (PublicPackagesInProjectizedXMLTest.ExecutionError ex) {
+            if (PublicPackagesInProjectizedXMLTest.getStdErr().indexOf("Too many intercluster friends") == -1) {
                 fail("There should be a message about too many friends:\n" + PublicPackagesInProjectizedXMLTest.getStdErr());
             }
         }
