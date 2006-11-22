@@ -32,6 +32,13 @@ Microsystems, Inc. All Rights Reserved.
                     <file name="keybindings.xml" url="key-bindings.xml"/> 
                 </folder>
             </folder>
+            
+            <folder name="x-orig">
+                <file name="marker.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.settings.storage.SettingsProviderTest.createMarker" />
+                    <attr name="instanceOf" methodvalue="org.netbeans.modules.editor.settings.storage.SettingsProviderTest$Marker" />
+                </file>
+            </folder>
         </folder>
     </folder>
 

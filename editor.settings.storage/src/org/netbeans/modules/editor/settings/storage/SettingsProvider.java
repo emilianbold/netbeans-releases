@@ -28,6 +28,8 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.settings.FontColorSettings;
+import org.netbeans.api.editor.settings.KeyBindingSettings;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.netbeans.spi.editor.mimelookup.MimeDataProvider;
 import org.openide.util.Lookup;
@@ -73,8 +75,8 @@ public final class SettingsProvider implements MimeDataProvider {
                         Lookups.exclude(
                             MimeLookup.getLookup(realMimePath),
                             new Class [] {
-                                FontColorSettingsImpl.class,
-                                KeyBindingSettingsImpl.class
+                                FontColorSettings.class,
+                                KeyBindingSettings.class
                             })
                     });
                 } else {
