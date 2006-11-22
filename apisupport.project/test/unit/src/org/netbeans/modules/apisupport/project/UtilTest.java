@@ -31,6 +31,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.jar.Manifest;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
@@ -266,6 +268,27 @@ public class UtilTest extends TestBase {
         assertFalse("does not exist", Util.addDependency(p, "org.openide.i_do_not_exist"));
         ProjectManager.getDefault().saveProject(p);
         assertEquals("still one dependency", 1, new ProjectXMLManager(p).getDirectDependencies().size());
+    }
+    
+    public void testScanProjectForPackageNames() throws Exception {
+        FileObject prjDir = generateStandaloneModuleDirectory(getWorkDir(), "module");
+        FileUtil.createData(prjDir, "src/a/b/c/Test.java");
+        SortedSet<String> packages = Util.scanProjectForPackageNames(FileUtil.toFile(prjDir));
+        assertEquals("one package", 1, packages.size());
+        assertEquals("a.b.c package", "a.b.c", packages.first());
+    }
+    
+    public void testScanJarForPackageNames() throws Exception {
+        Map/*<String,String>*/ contents = new HashMap();
+        contents.put("a/b/A12.class", "");
+        contents.put("a/b/c/B123.class", "");
+        File jar = new File(getWorkDir(), "some.jar");
+        createJar(jar, contents, new Manifest());
+        SortedSet<String> packages = new TreeSet<String>();
+        Util.scanJarForPackageNames(packages, jar);
+        assertEquals("two packages", 2, packages.size());
+        assertEquals("a.b package", "a.b", packages.first());
+        assertEquals("a.b.c package", "a.b.c", packages.last());
     }
     
 }

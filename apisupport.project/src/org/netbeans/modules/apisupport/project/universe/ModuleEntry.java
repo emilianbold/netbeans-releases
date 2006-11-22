@@ -128,6 +128,12 @@ public interface ModuleEntry extends Comparable {
     ManifestManager.PackageExport[] getPublicPackages();
     
     /**
+     * Get a set of names of all <em>nonempty</em> packages this module
+     * contains.
+     */
+    Set<String> getAllPackagesNames();
+    
+    /**
      * Get array of friends of this module.
      */
     boolean isDeclaredAsFriend(String cnb);

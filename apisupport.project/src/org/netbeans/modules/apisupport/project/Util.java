@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -40,7 +41,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.StringTokenizer;
+import java.util.TreeSet;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
@@ -50,6 +53,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
@@ -75,7 +79,8 @@ import org.w3c.dom.Text;
 
 /**
  * Utility methods for the module.
- * @author Jesse Glick
+ *
+ * @author Jesse Glick, Martin Krauskopf
  */
 public final class Util {
     
@@ -446,6 +451,7 @@ public final class Util {
         }
         return null;
     }
+    
     private static void addBundlesFromJar(JarFile jf, List<InputStream> bundleISs, String locBundleResource) throws IOException {
         for (Iterator it = getPossibleResources(locBundleResource); it.hasNext(); ) {
             String resource = (String) it.next();
@@ -542,7 +548,7 @@ public final class Util {
     }
     
     /**
-     * Find javadoc URL for NetBeans.org modules. May return <code>null</code>.
+     * Find Javadoc URL for NetBeans.org modules. May return <code>null</code>.
      */
     public static URL findJavadocForNetBeansOrgModules(final ModuleDependency dep) {
         ModuleEntry entry = dep.getModuleEntry();
@@ -569,7 +575,7 @@ public final class Util {
     }
     
     /**
-     * Find javadoc URL for the given module dependency using javadoc roots of
+     * Find Javadoc URL for the given module dependency using Javadoc roots of
      * the given platform. May return <code>null</code>.
      */
     public static URL findJavadoc(final ModuleDependency dep, final NbPlatform platform) {
@@ -872,6 +878,116 @@ public final class Util {
         NbModuleTypeProvider provider = (NbModuleTypeProvider) project.getLookup().lookup(NbModuleTypeProvider.class);
         assert provider != null : "has NbModuleTypeProvider in the lookup";
         return provider.getModuleType();
+    }
+    
+    /**
+     * Finds all available packages in a given project directory. Found entries
+     * are in the form of a regular java package (x.y.z).
+     * 
+     * @param prjDir directory containing project to be scanned
+     * @return a set of found packages
+     */
+    public static SortedSet<String> scanProjectForPackageNames(final File prjDir) {
+        NbModuleProject project = null;
+        // find all available public packages in classpath extensions
+        FileObject source = FileUtil.toFileObject(prjDir);
+        if (source != null) { // ??
+            try {
+                project = (NbModuleProject) ProjectManager.getDefault().findProject(source);
+            } catch (IOException e) {
+                Util.err.notify(ErrorManager.INFORMATIONAL, e);
+            }
+        }
+        
+        if (project == null) {
+            return new TreeSet(Collections.emptySet());
+        }
+        
+        SortedSet<String> availablePublicPackages = new TreeSet<String>();
+        // find all available public packages in a source root
+        Set<FileObject> pkgs = new HashSet<FileObject>();
+        FileObject srcDirFO = project.getSourceDirectory();
+        Util.scanForPackages(pkgs, srcDirFO, "java"); // NOI18N
+        for (FileObject pkg : pkgs) {
+            if (srcDirFO.equals(pkg)) { // default package #71532
+                continue;
+            }
+            String pkgS = PropertyUtils.relativizeFile(FileUtil.toFile(srcDirFO), FileUtil.toFile(pkg));
+            availablePublicPackages.add(pkgS.replace('/', '.'));
+        }
+        
+        String[] libsPaths = new ProjectXMLManager(project).getBinaryOrigins();
+        for (int i = 0; i < libsPaths.length; i++) {
+            scanJarForPackageNames(availablePublicPackages, project.getHelper().resolveFile(libsPaths[i]));
+        }
+        
+        // #72669: remove invalid packages.
+        Iterator it = availablePublicPackages.iterator();
+        while (it.hasNext()) {
+            String pkg = (String) it.next();
+            if (!Util.isValidJavaFQN(pkg)) {
+                it.remove();
+            }
+        }
+        return availablePublicPackages;
+    }
+    
+    /**
+     * Scans a given jar file for all packages which contains at least one
+     * .class file. Found entries are in the form of a regular java package
+     * (x.y.z).
+     * 
+     * @param jarFile jar file to be scanned
+     * @param packages a set into which found packages will be added
+     */
+    public static void scanJarForPackageNames(final Set<String> packages, final File jarFile) {
+        FileObject jarFileFO = FileUtil.toFileObject(jarFile);
+        if (jarFileFO == null) {
+            // Broken classpath entry, perhaps.
+            return;
+        }
+        FileObject root = FileUtil.getArchiveRoot(jarFileFO);
+        if (root == null) {
+            // Not really a JAR?
+            return;
+        }
+        Set<FileObject> pkgs = new HashSet();
+        Util.scanForPackages(pkgs, root, "class"); // NOI18N
+        for (Iterator it = pkgs.iterator(); it.hasNext();) {
+            FileObject pkg = (FileObject) it.next();
+            if (root.equals(pkg)) { // default package #71532
+                continue;
+            }
+            String pkgS = pkg.getPath();
+            packages.add(pkgS.replace('/', '.'));
+        }
+    }
+    
+    /**
+     * Scan recursively through all folders in the given <code>dir</code> and
+     * add every directory/package, which contains at least one file with the
+     * given extension (probably class or java), into the given
+     * <code>validPkgs</code> set. Added entries are in the form of regular java
+     * package (x.y.z)
+     */
+    private static void scanForPackages(final Set<FileObject> validPkgs, final FileObject dir, final String ext) {
+        if (dir == null) {
+            return;
+        }
+        for (Enumeration en1 = dir.getFolders(false); en1.hasMoreElements(); ) {
+            FileObject subDir = (FileObject) en1.nextElement();
+            if (VisibilityQuery.getDefault().isVisible(subDir)) {
+                scanForPackages(validPkgs, subDir, ext);
+            }
+        }
+        for (Enumeration en2 = dir.getData(false); en2.hasMoreElements(); ) {
+            FileObject kid = (FileObject) en2.nextElement();
+            if (kid.hasExt(ext) && Utilities.isJavaIdentifier(kid.getName())) {
+                // at least one class inside directory -> valid package
+                validPkgs.add(dir);
+                break;
+            }
+        }
     }
     
 }

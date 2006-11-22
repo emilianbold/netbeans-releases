@@ -25,7 +25,6 @@ import java.text.Collator;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -41,7 +40,6 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.apisupport.project.EditableManifest;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
@@ -60,7 +58,6 @@ import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -616,37 +613,7 @@ public final class SingleModuleProperties extends ModuleProperties {
      */
     Set<String> getAvailablePublicPackages() {
         if (availablePublicPackages == null) {
-            availablePublicPackages = new TreeSet();
-            
-            // find all available public packages in a source root
-            File srcDir = getHelper().resolveFile(getEvaluator().getProperty("src.dir")); // NOI18N
-            Set<FileObject> pkgs = new HashSet();
-            FileObject srcDirFO = FileUtil.toFileObject(srcDir);
-            SingleModuleProperties.addNonEmptyPackages(
-                    pkgs, srcDirFO, "java"); // NOI18N
-            for (Iterator it = pkgs.iterator(); it.hasNext();) {
-                FileObject pkg = (FileObject) it.next();
-                if (srcDirFO.equals(pkg)) { // default package #71532
-                    continue;
-                }
-                String pkgS = PropertyUtils.relativizeFile(srcDir, FileUtil.toFile(pkg));
-                availablePublicPackages.add(pkgS.replace('/', '.'));
-            }
-            
-            // find all available public packages in classpath extensions
-            String[] libsPaths = getProjectXMLManager().getBinaryOrigins();
-            for (int i = 0; i < libsPaths.length; i++) {
-                addNonEmptyPackagesFromJar(availablePublicPackages, getHelper().resolveFile(libsPaths[i]));
-            }
-            
-            // #72669: remove invalid packages.
-            Iterator it = availablePublicPackages.iterator();
-            while (it.hasNext()) {
-                String pkg = (String) it.next();
-                if (!Util.isValidJavaFQN(pkg)) {
-                    it.remove();
-                }
-            }
+            availablePublicPackages = Util.scanProjectForPackageNames(getProjectDirectoryFile());
         }
         return availablePublicPackages;
     }
@@ -816,57 +783,6 @@ public final class SingleModuleProperties extends ModuleProperties {
             }
         }
         return false;
-    }
-    
-    private static void addNonEmptyPackagesFromJar(Set<String> packages, File jarFile) {
-        FileObject jarFileFO = FileUtil.toFileObject(jarFile);
-        if (jarFileFO == null) {
-            // Broken classpath entry, perhaps.
-            return;
-        }
-        FileObject root = FileUtil.getArchiveRoot(jarFileFO);
-        if (root == null) {
-            // Not really a JAR?
-            return;
-        }
-        Set<FileObject> pkgs = new HashSet();
-        SingleModuleProperties.addNonEmptyPackages(pkgs, root, "class"); // NOI18N
-        for (Iterator it = pkgs.iterator(); it.hasNext();) {
-            FileObject pkg = (FileObject) it.next();
-            if (root.equals(pkg)) { // default package #71532
-                continue;
-            }
-            String pkgS = pkg.getPath();
-            packages.add(pkgS.replace('/', '.'));
-        }
-    }
-    
-    /**
-     * Goes recursively through all folders in the given <code>root</code> and
-     * add every directory/package, which contains at least one file with the
-     * given extension (probably class or java), into the given
-     * <code>pkgs</code> set. Added entries are in the form of regular java
-     * package (x.y.z) <code>isJarRoot</code> specifies if a given root is root
-     * of a jar file.
-     */
-    private static void addNonEmptyPackages(final Set<FileObject> validPkgs, final FileObject dir, final String ext) {
-        if (dir == null) {
-            return;
-        }
-        for (Enumeration en1 = dir.getFolders(false); en1.hasMoreElements(); ) {
-            FileObject subDir = (FileObject) en1.nextElement();
-            if (VisibilityQuery.getDefault().isVisible(subDir)) {
-                addNonEmptyPackages(validPkgs, subDir, ext);
-            }
-        }
-        for (Enumeration en2 = dir.getData(false); en2.hasMoreElements(); ) {
-            FileObject kid = (FileObject) en2.nextElement();
-            if (kid.hasExt(ext) && Utilities.isJavaIdentifier(kid.getName())) {
-                // at least one class inside directory -> valid package
-                validPkgs.add(dir);
-                break;
-            }
-        }
     }
     
     /**

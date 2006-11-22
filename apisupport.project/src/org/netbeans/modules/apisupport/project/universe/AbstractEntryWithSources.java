@@ -39,6 +39,7 @@ import org.w3c.dom.Element;
 abstract class AbstractEntryWithSources extends AbstractEntry {
     
     private LocalizedBundleInfo bundleInfo;
+    private Set<String> allPackageNames;
     
     protected LocalizedBundleInfo getBundleInfo() {
         if (bundleInfo == null) {
@@ -56,6 +57,13 @@ abstract class AbstractEntryWithSources extends AbstractEntry {
             scanForClasses(result, pkg, new File(src, pkg.replace('.', File.separatorChar)), pkgs[i].isRecursive());
         }
         return result;
+    }
+    
+    public synchronized Set<String> getAllPackagesNames() {
+        if (allPackageNames == null) {
+            allPackageNames = Util.scanProjectForPackageNames(getSourceLocation());
+        }
+        return allPackageNames;
     }
     
     private void scanForClasses(Set<String> result, String pkg, File dir, boolean recurse) throws IOException {

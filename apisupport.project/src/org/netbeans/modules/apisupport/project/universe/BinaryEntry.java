@@ -44,6 +44,7 @@ final class BinaryEntry extends AbstractEntry {
     private final String[] friends;
     private final boolean deprecated;
     private final String[] runDependencies;
+    private Set<String> allPackageNames;
     
     public BinaryEntry(String cnb, File jar, File[] exts, File nbdestdir, File clusterDir,
             String releaseVersion, String specVersion, String[] providedTokens,
@@ -143,6 +144,14 @@ final class BinaryEntry extends AbstractEntry {
     
     public ManifestManager.PackageExport[] getPublicPackages() {
         return publicPackages;
+    }
+    
+    public synchronized Set<String> getAllPackagesNames() {
+        if (allPackageNames == null) {
+            allPackageNames = new TreeSet<String>();
+            Util.scanJarForPackageNames(allPackageNames, getJarLocation());
+        }
+        return allPackageNames;
     }
     
     public boolean isDeclaredAsFriend(String cnb) {

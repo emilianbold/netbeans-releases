@@ -19,8 +19,9 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.net.URL;
-import java.util.Iterator;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.swing.DefaultListModel;
@@ -28,6 +29,7 @@ import javax.swing.JPanel;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
+import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.NbBundle;
@@ -44,6 +46,7 @@ public final class EditDependencyPanel extends JPanel {
     private final URL javadoc;
     
     private final ManifestManager.PackageExport[] pp;
+    private final DefaultListModel packagesModel = new DefaultListModel();
     
     /** Creates new form EditDependencyPanel */
     public EditDependencyPanel(final ModuleDependency dep, final NbPlatform platform) {
@@ -63,44 +66,58 @@ public final class EditDependencyPanel extends JPanel {
     
     private void refresh() {
         specVerValue.setEnabled(specVer.isSelected());
-        includeInCP.setEnabled(implVer.isSelected() || hasAvailablePackages());
+        includeInCP.setEnabled(hasAvailablePackages());
         if (!includeInCP.isEnabled()) {
             includeInCP.setSelected(false);
         } // else leave the user's selection
     }
     
     private boolean hasAvailablePackages() {
-        return pp.length > 0;
+        return implVer.isSelected() || pp.length > 0;
     }
     
     /** Called first time dialog is opened. */
     private void initDependency() {
-        UIUtil.setText(codeNameBaseValue, origDep.getModuleEntry().getCodeNameBase());
-        UIUtil.setText(jarLocationValue, origDep.getModuleEntry().getJarLocation().getAbsolutePath());
+        ModuleEntry me = origDep.getModuleEntry();
+        UIUtil.setText(codeNameBaseValue, me.getCodeNameBase());
+        UIUtil.setText(jarLocationValue, me.getJarLocation().getAbsolutePath());
         UIUtil.setText(releaseVersionValue, origDep.getReleaseVersion());
         UIUtil.setText(specVerValue, origDep.hasImplementationDepedendency() ?
-            origDep.getModuleEntry().getSpecificationVersion() :
+            me.getSpecificationVersion() :
             origDep.getSpecificationVersion());
         implVer.setSelected(origDep.hasImplementationDepedendency());
         availablePkg.setEnabled(hasAvailablePackages());
-        DefaultListModel model = new DefaultListModel();
+        includeInCP.setSelected(origDep.hasCompileDependency());
+        refreshAvailablePackages();
+        refresh();
+        ActionListener versionListener = new ActionListener() {
+            public void actionPerformed(ActionEvent arg0) {
+                refreshAvailablePackages();
+            }
+        };
+        implVer.addActionListener(versionListener);
+        specVer.addActionListener(versionListener);
+    }
+    
+    public void refreshAvailablePackages() {
+        packagesModel.clear();
         if (hasAvailablePackages()) {
             // XXX should show all subpackages in the case of recursion is set
             // to true instead of e.g. org/**
-            SortedSet<String> packages = new TreeSet();
-            for (int i = 0; i < pp.length; i++) {
+            SortedSet<String> packages = new TreeSet<String>();
+            for (int i = 0; i < pp.length; i++) { // add public packages
                 packages.add(pp[i].getPackage() + (pp[i].isRecursive() ? ".**" : "")); // NOI18N
             }
-            Iterator it = packages.iterator();
-            while (it.hasNext()) {
-                model.addElement((String) it.next());
+            if (implVer.isSelected()) { // add all packages
+                packages.addAll(origDep.getModuleEntry().getAllPackagesNames());
+            }
+            for (String pkg : packages) {
+                packagesModel.addElement(pkg);
             }
         } else {
-            model.addElement(NbBundle.getMessage(EditDependencyPanel.class, "EditDependencyPanel_empty"));
+            packagesModel.addElement(NbBundle.getMessage(EditDependencyPanel.class, "EditDependencyPanel_empty"));
         }
-        availablePkg.setModel(model);
-        includeInCP.setSelected(origDep.hasCompileDependency());
-        refresh();
+        availablePkg.setModel(packagesModel);
     }
     
     public ModuleDependency getEditedDependency() {
@@ -136,10 +153,10 @@ public final class EditDependencyPanel extends JPanel {
         jarLocationValue = new javax.swing.JTextField();
         showJavadocButton = new javax.swing.JButton();
 
-        setLayout(new java.awt.GridBagLayout());
-
         setBorder(javax.swing.BorderFactory.createEmptyBorder(6, 6, 6, 6));
         setPreferredSize(new java.awt.Dimension(400, 300));
+        setLayout(new java.awt.GridBagLayout());
+
         codeNameBase.setLabelFor(codeNameBaseValue);
         org.openide.awt.Mnemonics.setLocalizedText(codeNameBase, org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "LBL_CNB")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -168,7 +185,6 @@ public final class EditDependencyPanel extends JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(24, 0, 0, 12);
         add(releaseVersion, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -188,7 +204,6 @@ public final class EditDependencyPanel extends JPanel {
                 versionChanged(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -213,7 +228,6 @@ public final class EditDependencyPanel extends JPanel {
                 versionChanged(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -270,7 +284,6 @@ public final class EditDependencyPanel extends JPanel {
                 showJavadoc(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 7;
@@ -279,7 +292,6 @@ public final class EditDependencyPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(24, 0, 0, 0);
         add(showJavadocButton, gridBagConstraints);
         showJavadocButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "EditDependencyPanel.showJavadocButton.AccessibleContext.accessibleDescription")); // NOI18N
-
     }// </editor-fold>//GEN-END:initComponents
     
     private void showJavadoc(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showJavadoc
