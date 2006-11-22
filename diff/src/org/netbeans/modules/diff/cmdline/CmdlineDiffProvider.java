@@ -28,6 +28,7 @@ import java.util.regex.PatternSyntaxException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 import org.netbeans.api.diff.Difference;
 import org.netbeans.spi.diff.DiffProvider;
@@ -69,7 +70,7 @@ public class CmdlineDiffProvider extends DiffProvider implements java.io.Seriali
     }
     
     public static CmdlineDiffProvider createDefault() {
-        return new CmdlineDiffProvider("diff \"{0}\" \"{1}\"");
+        return new CmdlineDiffProvider("diff {0} {1}"); // NOI18N
     }
 
     /**
@@ -179,8 +180,17 @@ public class CmdlineDiffProvider extends DiffProvider implements java.io.Seriali
             //firstText = new StringBuffer();
             //secondText = new StringBuffer();
         }
-        final String cmd = java.text.MessageFormat.format(diffCmd,
-            new Object[] { f1.getAbsolutePath(), f2.getAbsolutePath() });
+        diffCmd = diffCmd.replace("\"{0}\"", "{0}").replace("\"{1}\"", "{1}");  // compatibility // NOI18N
+        String firstPath;
+        String secondPath;
+        if (Utilities.isWindows()) {
+            firstPath = "\"" + f1.getAbsolutePath() + "\""; // NOI18N
+            secondPath = "\"" + f2.getAbsolutePath() + "\""; // NOI18N
+        } else {
+            firstPath = f1.getAbsolutePath();
+            secondPath = f2.getAbsolutePath();
+        }
+        final String cmd = java.text.MessageFormat.format(diffCmd, firstPath, secondPath);
 
         final Process p[] = new Process[1];
         final Object[] ret = new Object[1];
