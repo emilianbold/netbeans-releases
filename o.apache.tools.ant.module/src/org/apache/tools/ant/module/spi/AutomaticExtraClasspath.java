@@ -21,7 +21,6 @@ package org.apache.tools.ant.module.spi;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.net.URL;
 import java.util.Map;
 import org.openide.filesystems.FileObject;

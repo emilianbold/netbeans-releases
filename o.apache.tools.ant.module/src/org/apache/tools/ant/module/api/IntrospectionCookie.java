@@ -35,6 +35,7 @@ import org.openide.nodes.Node;
  * @see IntrospectedInfo
  * @deprecated No longer useful in new UI.
  */
+@Deprecated
 public interface IntrospectionCookie extends Node.Cookie {
     
     /** Get the name of the class this object is associated with.

@@ -65,7 +65,7 @@ public class LastTargetExecuted {
             FileObject fo = FileUtil.toFileObject(buildScript);
             assert fo != null;
             try {
-                return (AntProjectCookie) DataObject.find(fo).getCookie(AntProjectCookie.class);
+                return DataObject.find(fo).getCookie(AntProjectCookie.class);
             } catch (DataObjectNotFoundException e) {
                 assert false : e;
             }

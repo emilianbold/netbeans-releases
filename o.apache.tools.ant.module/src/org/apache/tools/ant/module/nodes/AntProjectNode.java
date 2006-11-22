@@ -40,7 +40,7 @@ import org.w3c.dom.Element;
 public final class AntProjectNode extends DataNode implements ChangeListener {
     
     public AntProjectNode (DataObject obj) {
-        this(obj, (AntProjectCookie) obj.getCookie(AntProjectCookie.class));
+        this(obj, obj.getCookie(AntProjectCookie.class));
     }
     
     private AntProjectNode(DataObject obj, AntProjectCookie cookie) {
@@ -61,7 +61,7 @@ public final class AntProjectNode extends DataNode implements ChangeListener {
         return i;
     }
     private Image getBasicIcon() {
-        AntProjectCookie.ParseStatus cookie = (AntProjectCookie.ParseStatus) getCookie(AntProjectCookie.ParseStatus.class);
+        AntProjectCookie.ParseStatus cookie = getCookie(AntProjectCookie.ParseStatus.class);
         if (cookie.getFile() == null && cookie.getFileObject() == null) {
             // Script has been invalidated perhaps? Don't continue, we would
             // just get an NPE from the getParseException.
@@ -85,7 +85,7 @@ public final class AntProjectNode extends DataNode implements ChangeListener {
     
     @Override
     public String getShortDescription() {
-        AntProjectCookie cookie = (AntProjectCookie) getCookie(AntProjectCookie.class);
+        AntProjectCookie cookie = getCookie(AntProjectCookie.class);
         if (cookie.getFile() == null && cookie.getFileObject() == null) {
             // Script has been invalidated perhaps? Don't continue, we would
             // just get an NPE from the getParseException.
@@ -137,7 +137,7 @@ public final class AntProjectNode extends DataNode implements ChangeListener {
         }
         @Override
         protected Element getElement () {
-            return ((AntProjectCookie) getCookie (AntProjectCookie.class)).getProjectElement ();
+            return getCookie(AntProjectCookie.class).getProjectElement();
         }
     }
 
@@ -147,7 +147,7 @@ public final class AntProjectNode extends DataNode implements ChangeListener {
         }
         @Override
         protected Element getElement () {
-            return ((AntProjectCookie) getCookie (AntProjectCookie.class)).getProjectElement ();
+            return getCookie(AntProjectCookie.class).getProjectElement();
         }
     }
 

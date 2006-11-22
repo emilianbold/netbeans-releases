@@ -31,6 +31,7 @@ import org.openide.filesystems.FileObject;
  * @deprecated This functionality is not recommended to be used and may result
  *             in loss of some Ant module features as of org.apache.tools.ant.module/3 3.12.
  */
+@Deprecated
 public abstract class AntOutputStream extends OutputStream {
 
     /** buffer which will be used for the next line */
@@ -133,6 +134,7 @@ public abstract class AntOutputStream extends OutputStream {
      * @since org.apache.tools.ant.module/3 3.10
      * @deprecated No longer called.
      */
+    @Deprecated
     protected boolean writeLine(String line, URL file, int line1, int col1, int line2, int col2, String message) throws IOException {
         return false;
     }
@@ -148,6 +150,7 @@ public abstract class AntOutputStream extends OutputStream {
     * @param message message 
      * @deprecated Please override the variant taking URL instead, since org.apache.tools.ant.module/3 3.10.
     */
+    @Deprecated
     protected void writeLine(String line, FileObject file, int line1, int col1, int line2, int col2, String message) throws IOException {
         throw new IllegalStateException("writeLine(...URL...) must return true if writeLine(...FileObject...) is not implemented"); // NOI18N
     }
@@ -159,6 +162,7 @@ public abstract class AntOutputStream extends OutputStream {
     /** Create well formated message from the parsed information.
      * @deprecated No longer used since org.apache.tools.ant.module/3 3.8.
      */
+    @Deprecated
     protected String formatMessage(String fileName, String message, int line1, int col1, int line2, int col2) {
         return message;
     }

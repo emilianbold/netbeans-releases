@@ -373,8 +373,8 @@ final class AntTargetNode extends AbstractNode implements ChangeListener {
             LineCookie lines;
             try {
                 DataObject d = DataObject.find(script);
-                editor = (EditorCookie) d.getCookie(EditorCookie.class);
-                lines = (LineCookie) d.getCookie(LineCookie.class);
+                editor = d.getCookie(EditorCookie.class);
+                lines = d.getCookie(LineCookie.class);
                 assert editor != null;
                 assert lines != null;
             } catch (DataObjectNotFoundException e) {

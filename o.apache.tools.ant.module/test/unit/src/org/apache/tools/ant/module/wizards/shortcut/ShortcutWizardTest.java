@@ -19,8 +19,6 @@
 
 package org.apache.tools.ant.module.wizards.shortcut;
 
-import org.netbeans.junit.NbTestCase;
-
 /**
  * Test functionality of ShortcutWizard.
  * @author Jesse Glick

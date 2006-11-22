@@ -26,6 +26,7 @@ import org.openide.nodes.Node;
 /** Represents something with an associated Document Object Model element.
  * @deprecated Not currently used in Ant module UI.
  */
+@Deprecated
 public interface ElementCookie extends Node.Cookie {
 
     /** Get the associated DOM element.

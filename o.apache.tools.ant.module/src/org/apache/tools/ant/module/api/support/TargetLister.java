@@ -669,7 +669,7 @@ public class TargetLister {
     static AntProjectCookie getAntProjectCookie(FileObject fo) {
         try {
             DataObject d = DataObject.find(fo);
-            AntProjectCookie apc = (AntProjectCookie) d.getCookie(AntProjectCookie.class);
+            AntProjectCookie apc = d.getCookie(AntProjectCookie.class);
             if (apc != null) {
                 return apc;
             }

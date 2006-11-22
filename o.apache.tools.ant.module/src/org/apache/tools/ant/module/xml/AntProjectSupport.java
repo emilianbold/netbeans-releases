@@ -92,7 +92,7 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
         if (fo == null) return null;
         if (editor == null) {
             try {
-                editor = (EditorCookie.Observable)DataObject.find(fo).getCookie(EditorCookie.Observable.class);
+                editor = DataObject.find(fo).getCookie(EditorCookie.Observable.class);
                 if (editor != null) {
                     editor.addPropertyChangeListener(WeakListeners.propertyChange(this, editor));
                 }

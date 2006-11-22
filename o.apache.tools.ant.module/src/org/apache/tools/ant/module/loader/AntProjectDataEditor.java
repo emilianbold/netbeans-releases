@@ -86,7 +86,7 @@ final class AntProjectDataEditor extends DataEditorSupport implements OpenCookie
         DataObject d = getDataObject();
         if (d.getPrimaryFile().getNameExt().equals("build.xml")) { // NOI18N
             // #25793: show project name in case the script name does not suffice
-            AntProjectCookie cookie = (AntProjectCookie)d.getCookie(AntProjectCookie.class);
+            AntProjectCookie cookie = d.getCookie(AntProjectCookie.class);
             Element pel = cookie.getProjectElement();
             if (pel != null) {
                 String projectName = pel.getAttribute("name"); // NOI18N

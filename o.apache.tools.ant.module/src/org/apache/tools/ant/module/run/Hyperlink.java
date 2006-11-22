@@ -103,7 +103,7 @@ public final class Hyperlink extends Annotation implements OutputListener, Prope
         }
         try {
             DataObject dob = DataObject.find(file);
-            EditorCookie ed = (EditorCookie) dob.getCookie(EditorCookie.class);
+            EditorCookie ed = dob.getCookie(EditorCookie.class);
             if (ed != null && /* not true e.g. for *_ja.properties */file == dob.getPrimaryFile()) {
                 if (line1 == -1) {
                     // OK, just open it.
@@ -150,7 +150,7 @@ public final class Hyperlink extends Annotation implements OutputListener, Prope
         }
         try {
             DataObject dob = DataObject.find(file);
-            EditorCookie ed = (EditorCookie) dob.getCookie(EditorCookie.class);
+            EditorCookie ed = dob.getCookie(EditorCookie.class);
             if (ed != null) {
                 if (ed.getDocument() == null) {
                     // The document is not opened, don't bother with it.

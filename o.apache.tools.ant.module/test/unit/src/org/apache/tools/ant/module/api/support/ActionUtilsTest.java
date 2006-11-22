@@ -21,7 +21,6 @@ package org.apache.tools.ant.module.api.support;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.regex.Pattern;
 import org.netbeans.junit.NbTestCase;

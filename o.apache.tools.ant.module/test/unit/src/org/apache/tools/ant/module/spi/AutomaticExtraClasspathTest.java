@@ -20,19 +20,12 @@
 package org.apache.tools.ant.module.spi;
 
 import java.util.logging.Level;
-import junit.framework.TestCase;
-import junit.framework.*;
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
-import java.util.Map;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.MultiFileSystem;
-import org.openide.filesystems.URLMapper;
 import org.openide.filesystems.XMLFileSystem;
 
 /**
