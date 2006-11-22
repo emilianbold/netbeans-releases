@@ -74,6 +74,16 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.versioning.VersioningMainMenu"/>
             </file>
         </folder>
+        
+        <folder name="Window">
+            <folder name="Versioning">
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/versioning/resources/window-versioning.png"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.versioning.Bundle" />
+            </folder>
+            <attr name="org-netbeans-modules-web-monitor-client-MonitorAction.shadow/Versioning" boolvalue="true"/>
+            <attr name="Versioning/InspectorAction.shadow" boolvalue="true"/>
+        </folder>
+        
     </folder>
     
 </filesystem>

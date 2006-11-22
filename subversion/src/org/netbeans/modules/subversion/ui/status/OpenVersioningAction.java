@@ -35,8 +35,8 @@ import java.awt.event.ActionEvent;
 public class OpenVersioningAction extends ShowAllChangesAction {
 
     public OpenVersioningAction() {
-        putValue("noIconInMenu", null); // NOI18N
-//        setIcon(new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/versioning/system/cvss/resources/icons/versioning-view.png", true)));  // NOI18N
+        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
+        setIcon(null);
     }
 
     public String getName() {

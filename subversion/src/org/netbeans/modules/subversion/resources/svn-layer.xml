@@ -111,11 +111,11 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
         
         <folder name="Window">
-            <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-status-OpenVersioningAction.shadow/org-netbeans-modules-subversion-ui-status-OpenVersioningAction.shadow" boolvalue="true"/>
-            <attr name="org-netbeans-modules-subversion-ui-status-OpenVersioningAction.shadow/InspectorAction.shadow" boolvalue="true"/>
-            <file name="org-netbeans-modules-subversion-ui-status-OpenVersioningAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-status-OpenVersioningAction.instance"/>
-            </file>
+            <folder name="Versioning">            
+                <file name="org-netbeans-modules-subversion-ui-status-OpenVersioningAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-status-OpenVersioningAction.instance"/>
+                </file>
+            </folder>
         </folder>
     </folder>
 
