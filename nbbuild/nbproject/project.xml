@@ -176,13 +176,11 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../apisupport/ant</project>
                 <project>../apisupport/harness</project>
                 <project>../apisupport/project</project>
-                <project>../apisupport/refactoring</project>
                 <project>../apisupport/samples/PaintApp-sample-ui</project>
                 <project>../apisupport/samples/feedreader-sample-ui</project>
+                <project>../apisupport/timers</project>
                 <project>../autoupdate</project>
-                <project>../beans</project>
                 <project>../classfile</project>
-                <project>../clazz</project>
                 <project>../core</project>
                 <project>../core/bootstrap</project>
                 <project>../core/execution</project>
@@ -225,7 +223,9 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../editor/errorstripe</project>
                 <project>../editor/errorstripe/api</project>
                 <project>../editor/fold</project>
+                <project>../editor/guards</project>
                 <project>../editor/hints</project>
+                <project>../editor/hints/highlights</project>
                 <project>../editor/lib</project>
                 <project>../editor/mimelookup</project>
                 <project>../editor/mimelookup/impl</project>
@@ -252,48 +252,37 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../ide/updatecenters</project>
                 <project>../ide/welcome</project>
                 <project>../image</project>
-                <project>../j2ee/archiveproject</project>
-                <project>../j2ee/blueprints</project>
-                <project>../j2ee/clientproject</project>
                 <project>../j2ee/ddapi</project>
-                <project>../j2ee/ddloaders</project>
                 <project>../j2ee/debug</project>
-                <project>../j2ee/earproject</project>
                 <project>../j2ee/ejbapi</project>
-                <project>../j2ee/ejbcore</project>
                 <project>../j2ee/ejbfreeform</project>
-                <project>../j2ee/ejbjarproject</project>
                 <project>../j2ee/genericserver</project>
                 <project>../j2ee/metadata</project>
-                <project>../j2ee/persistence</project>
                 <project>../j2ee/persistenceapi</project>
                 <project>../j2ee/platform</project>
-                <project>../j2ee/refactoring</project>
-                <project>../j2ee/samples</project>
                 <project>../j2ee/toplinklib</project>
                 <project>../j2ee/utilities</project>
-                <project>../j2ee/verification</project>
                 <project>../j2eeserver</project>
                 <project>../j2eeserver/ant</project>
                 <project>../j2eeserver/j2eeapis</project>
-                <project>../java</project>
                 <project>../java/api</project>
                 <project>../java/editor</project>
                 <project>../java/editor/lib</project>
                 <project>../java/freeform</project>
+                <project>../java/guards</project>
                 <project>../java/hints</project>
                 <project>../java/j2seplatform</project>
                 <project>../java/j2seproject</project>
-                <project>../java/javacore</project>
-                <project>../java/javamodel</project>
                 <project>../java/lexer</project>
                 <project>../java/navigation</project>
                 <project>../java/platform</project>
                 <project>../java/project</project>
-                <project>../java/srcmodel</project>
+                <project>../java/source</project>
+                <project>../java/source/debug</project>
+                <project>../java/source/javacapi</project>
+                <project>../java/source/javacimpl</project>
                 <project>../javacvs/cvsmodule</project>
                 <project>../javacvs/libmodule</project>
-                <project>../javadoc</project>
                 <project>../junit</project>
                 <project>../lexer</project>
                 <project>../lexer/editorbridge</project>
@@ -303,11 +292,6 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../libs/resolver</project>
                 <project>../libs/swing-layout</project>
                 <project>../libs/xerces</project>
-                <project>../mdr/jmi</project>
-                <project>../mdr/mdrapi</project>
-                <project>../mdr/module</project>
-                <project>../mdr/mof</project>
-                <project>../mdr/nbjmiutils</project>
                 <project>../monitor</project>
                 <project>../openide/actions</project>
                 <project>../openide/awt</project>
@@ -334,7 +318,8 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../projects/queries</project>
                 <project>../properties</project>
                 <project>../properties/syntax</project>
-                <project>../refactoring</project>
+                <project>../refactoring/api</project>
+                <project>../refactoring/java</project>
                 <project>../schema2beans/rt</project>
                 <project>../serverplugins/jboss4</project>
                 <project>../serverplugins/sun/appsrv</project>
@@ -357,9 +342,9 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../utilities/project</project>
                 <project>../versioncontrol</project>
                 <project>../web/core</project>
+                <project>../web/el/lexer</project>
                 <project>../web/examples</project>
                 <project>../web/freeform</project>
-                <project>../web/jsf</project>
                 <project>../web/jspdebug</project>
                 <project>../web/jspparser</project>
                 <project>../web/jspsyntax</project>
@@ -368,12 +353,8 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../web/libs/glassfish_logging</project>
                 <project>../web/project</project>
                 <project>../web/servletjspapi</project>
-                <project>../web/struts</project>
                 <project>../web/webapi</project>
                 <project>../websvc/clientapi</project>
-                <project>../websvc/core</project>
-                <project>../websvc/customization</project>
-                <project>../websvc/dev</project>
                 <project>../websvc/jaxrpc16</project>
                 <project>../websvc/jaxws20</project>
                 <project>../websvc/jaxwsapi</project>
@@ -385,6 +366,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../xml/catalog</project>
                 <project>../xml/core</project>
                 <project>../xml/css</project>
+                <project>../xml/lexer</project>
                 <project>../xml/multiview</project>
                 <project>../xml/retriever</project>
                 <project>../xml/schema</project>
@@ -392,7 +374,6 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../xml/tageditorsupport</project>
                 <project>../xml/tax</project>
                 <project>../xml/text-edit</project>
-                <project>../xml/tools</project>
                 <project>../xml/wsdl/api</project>
                 <project>../xml/xam</project>
                 <project>../xml/xdm</project>
