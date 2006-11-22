@@ -69,17 +69,19 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
     public final static int FLAG_SHOW_REMOVE            = 16;
     public final static int FLAG_SHOW_HINTS             = 32;    
     
-    private final static String LOCAL_URL_HELP      = "file:///repository_path[@REV]";              // NOI18N
-    private final static String HTTP_URL_HELP       = "http://hostname/repository_path[@REV]";      // NOI18N
-    private final static String HTTPS_URL_HELP      = "https://hostname/repository_path[@REV]";     // NOI18N
-    private final static String SVN_URL_HELP        = "svn://hostname/repository_path[@REV]";       // NOI18N
-    private final static String SVN_SSH_URL_HELP    = "svn+{0}://hostname/repository_path[@REV]";   // NOI18N   
+    private final static String LOCAL_URL_HELP          = "file:///repository_path[@REV]";              // NOI18N
+    private final static String HTTP_URL_HELP           = "http://hostname/repository_path[@REV]";      // NOI18N
+    private final static String HTTPS_URL_HELP          = "https://hostname/repository_path[@REV]";     // NOI18N
+    private final static String SVN_URL_HELP            = "svn://hostname/repository_path[@REV]";       // NOI18N
+    private final static String SVN_SSH_URL_HELP        = "svn+{0}://hostname/repository_path[@REV]";   // NOI18N   
                
     private RepositoryPanel repositoryPanel;
     private boolean valid = true;
     private List<PropertyChangeListener> listeners;
-
-    public static final String PROP_VALID = "valid";                                                // NOI18N
+    
+    private RepositoryConnection editedRC;
+    
+    public static final String PROP_VALID = "valid";                                                    // NOI18N
 
     private String message;
             
@@ -319,8 +321,8 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
      * Always updates UI fields visibility.
      */
     private void onSelectedRepositoryChange() {
-        setValid(true, "");
-        String urlString = ""; 
+        setValid(true, "");                                                                            // NOI18N     
+        String urlString = "";                                                                         // NOI18N         
         try {
             urlString = getUrlString();
         } catch (InterruptedException ex) {
@@ -328,35 +330,31 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         }
                 
         if(urlString != null) {
+            
+            RepositoryConnection editedrc = getEditedRC();
+            editedrc.setUrl(urlString);
+            editedrc.setUsername(repositoryPanel.userTextField.getText());
+            editedrc.setPassword(new String(repositoryPanel.userPasswordField.getPassword()));
+            editedrc.setExternalCommand(repositoryPanel.tunnelCommandTextField.getText());                        
+            
             DefaultComboBoxModel dcbm = (DefaultComboBoxModel) repositoryPanel.urlComboBox.getModel();                
-            int idx = dcbm.getIndexOf(urlString);
-            // XXX bad hack?            
+            int idx = dcbm.getIndexOf(urlString);       
             if(idx > -1) {
-                dcbm.setSelectedItem(urlString);                
-                repositoryPanel.urlComboBox.getEditor().setItem(dcbm.getSelectedItem());
-            } else {    
-                Object obj = repositoryPanel.urlComboBox.getEditor().getItem();
-                    
-                RepositoryConnection newRc;                
-                // XXX proxy!
-                if(obj instanceof RepositoryConnection) {
-                    RepositoryConnection rc = (RepositoryConnection) obj;
-                    newRc = new RepositoryConnection(urlString, rc.getUsername(), rc.getPassword(), null, rc.getExternalCommand());                    
-                } else {
-                    newRc = new RepositoryConnection(
-                        urlString, 
-                        repositoryPanel.userTextField.getText(), 
-                        new String(repositoryPanel.userPasswordField.getPassword()), 
-                        null, 
-                        repositoryPanel.tunnelCommandTextField.getText());                    
-                }                    
-                repositoryPanel.urlComboBox.getEditor().setItem(newRc);
-            }                
+                dcbm.setSelectedItem(urlString);                                
+                //repositoryPanel.urlComboBox.getEditor().setItem(dcbm.getSelectedItem());
+            } 
         }
-        message = ""; // NOI18N
+        message = "";                                                                                   // NOI18N
         updateVisibility();
     }            
 
+    private RepositoryConnection getEditedRC() {
+        if(editedRC == null) {
+            editedRC = new RepositoryConnection("");
+        }
+        return editedRC;
+    }
+    
     /** Shows proper fields depending on Svn connection method. */
     private void updateVisibility() {
         String selectedUrlString;
@@ -451,7 +449,23 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
     }
 
     public RepositoryConnection getSelectedRC() {
-        return (RepositoryConnection) repositoryPanel.urlComboBox.getEditor().getItem();
+        String urlString;
+        try {
+            urlString = getUrlString();            
+        }
+        catch (InterruptedException ex) {
+            // should not happen
+            ErrorManager.getDefault().notify(ex);
+            return null;
+        };
+        
+        DefaultComboBoxModel dcbm = (DefaultComboBoxModel) repositoryPanel.urlComboBox.getModel();                
+        int idx = dcbm.getIndexOf(urlString);        
+        
+        if(idx > -1) {
+            return (RepositoryConnection) dcbm.getSelectedItem();            
+        }        
+        return getEditedRC();        
     }
     
     private void onUsernameChange() {
@@ -548,7 +562,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
             RepositoryConnection rc = (RepositoryConnection) evt.getItem();
             refresh(rc);
             updateVisibility();  
-            repositoryPanel.urlComboBox.getEditor().setItem(new RepositoryConnection(rc));
+            editedRC = new RepositoryConnection(rc);
         }        
     }
     
@@ -590,4 +604,66 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
     private boolean isSet(int flag) {
         return (modeMask & flag) != 0;
     }
+    
+    public class RepositoryModel  extends DefaultComboBoxModel {
+
+        public RepositoryModel(Vector v) {
+            super(v);
+        }
+
+        public void setSelectedItem(Object obj) {
+            if(obj instanceof String) {
+                int idx = getIndexOf(obj);
+                if(idx > -1) {
+                    obj = getElementAt(idx);
+                } else {
+                    obj = createNewRepositoryConnection((String)obj);                   
+                }                
+            }            
+            super.setSelectedItem(obj);
+        }
+
+        public int getIndexOf(Object obj) {
+            if(obj instanceof String) {
+                obj = createNewRepositoryConnection((String)obj);                
+            }
+            return super.getIndexOf(obj);
+        }
+
+        public void addElement(Object obj) {
+            if(obj instanceof String) {
+                obj = createNewRepositoryConnection((String)obj);                
+            }
+            super.addElement(obj);
+        }
+
+        public void insertElementAt(Object obj,int index) {
+            if(obj instanceof String) {
+                String str = (String) obj;
+                RepositoryConnection rc = null;
+                try {
+                    rc = (RepositoryConnection) getElementAt(index);                    
+                } catch (ArrayIndexOutOfBoundsException e) {
+                }
+                if(rc != null) {
+                    rc.setUrl(str);
+                    obj = rc;
+                }                
+                obj = createNewRepositoryConnection(str);
+            } 
+            super.insertElementAt(obj, index);
+        }         
+
+        public void removeElement(Object obj) {
+            int index = getIndexOf(obj);
+            if ( index != -1 ) {
+                removeElementAt(index);
+            }
+        }
+        
+        private RepositoryConnection createNewRepositoryConnection(String url) {
+            editedRC.setUrl(url);
+            return new RepositoryConnection(editedRC);
+        }
+    }    
 }
