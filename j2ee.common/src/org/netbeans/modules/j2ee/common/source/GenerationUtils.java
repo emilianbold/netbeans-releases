@@ -192,7 +192,7 @@ public final class GenerationUtils extends SourceUtils {
     public AnnotationTree createAnnotation(String annotationType) {
         Parameters.notNull("annotationType", annotationType); // NOI18N
 
-        return createAnnotation(annotationType, null);
+        return createAnnotation(annotationType, Collections.<ExpressionTree>emptyList());
     }
 
     /**
