@@ -850,7 +850,12 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
                 if (status instanceof FileSystem.HtmlStatus) {
                     name = ((FileSystem.HtmlStatus) status).annotateNameHtml(name, set);
                 } else {
-                    name = status.annotateName(name, set);
+                    // #89138: return null if the name starts with '<' and status is not HtmlStatus
+                    if (name.startsWith("<")) {
+                        name = null;
+                    } else {
+                        name = status.annotateName(name, set);
+                    }
                 }
             } catch (FileStateInvalidException e) {
                 // no fs, do nothing
