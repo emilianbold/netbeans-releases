@@ -23,6 +23,7 @@ import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.openide.nodes.Node;
@@ -69,7 +70,7 @@ public class SearchHistoryAction extends ContextAction {
                 tc.open();
                 tc.requestActive();
                 File [] files = context.getFiles();
-                if (files.length == 1 && files[0].isFile()) {
+                if (Utils.shareCommonDataObject(files)) {
                     tc.search();
                 }
             }

@@ -34,14 +34,11 @@ import org.netbeans.modules.subversion.ui.blame.BlameAction;
 import org.netbeans.modules.subversion.ui.history.SearchHistoryAction;
 import org.netbeans.modules.subversion.ui.project.ImportAction;
 import org.netbeans.modules.subversion.ui.checkout.CheckoutAction;
-import org.openide.filesystems.*;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.netbeans.modules.subversion.util.SvnUtils;
@@ -60,7 +57,6 @@ import java.io.File;
 import java.awt.*;
 import java.lang.reflect.Field;
 import org.netbeans.modules.subversion.client.SvnClient;
-import org.netbeans.modules.subversion.options.AnnotationExpression;
 import org.tigris.subversion.svnclientadapter.*;
 
 /**
@@ -393,7 +389,7 @@ public class Annotator {
         }
 
         if (folderAnnotation == false && context.getRootFiles().size() > 1) {
-            folderAnnotation = looksLikeLogicalFolder(context.getRootFiles());
+            folderAnnotation = !Utils.shareCommonDataObject(context.getRootFiles().toArray(new File[context.getRootFiles().size()]));
         }
 
         if (mostImportantInfo == null) return null;
@@ -521,58 +517,12 @@ public class Annotator {
         return true;
     }
 
-    /**
-     * try to distinguish between logical containes (e.g. "Important Files"
-     * keeping manifest, arch, ..) and multi data objects (.form);
-     */
-    static boolean looksLikeLogicalFolder2(Set<FileObject> files) {
-        Iterator it = files.iterator();
-        FileObject fo = (FileObject) it.next();
-        try {
-            DataObject etalon = DataObject.find(fo);
-            while (it.hasNext()) {
-                FileObject fileObject = (FileObject) it.next();
-                if (etalon.equals(DataObject.find(fileObject)) == false) {
-                    return true;
-                }
-            }
-        } catch (DataObjectNotFoundException e) {
-            ErrorManager err = ErrorManager.getDefault();
-            err.annotate(e, "Can not find dataobject, annottaing as logical folder");  // NOI18N
-            err.notify(e);
-            return true;
-        }
-        return false;
-    }
-
     private static MessageFormat getFormat(String key) {
         String format = NbBundle.getMessage(Annotator.class, key);
         return new MessageFormat(format);  
     }
 
     private static final int STATUS_BADGEABLE = FileInformation.STATUS_VERSIONED_UPTODATE | FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY;
-    
-    static boolean looksLikeLogicalFolder(Set<File> files) {
-        Iterator<File> it = files.iterator();
-        File file = (File) it.next();
-        try {
-            FileObject fo = FileUtil.toFileObject(file);
-            DataObject etalon = DataObject.find(fo);
-            while (it.hasNext()) {
-                File file2 = (File) it.next();
-                FileObject fileObject = FileUtil.toFileObject(file2);
-                if (etalon.equals(DataObject.find(fileObject)) == false) {
-                    return true;
-                }
-            }
-        } catch (DataObjectNotFoundException e) {
-            ErrorManager err = ErrorManager.getDefault();
-            err.annotate(e, "Can not find dataobject, annottaing as logical folder");  // NOI18N
-            err.notify(e);
-            return true;
-        }
-        return false;
-    }
     
     public Image annotateIcon(Image icon, VCSContext context) {
         boolean folderAnnotation = false;
@@ -584,7 +534,7 @@ public class Annotator {
         }
         
         if (folderAnnotation == false && context.getRootFiles().size() > 1) {
-            folderAnnotation = Annotator.looksLikeLogicalFolder(context.getRootFiles());
+            folderAnnotation = !Utils.shareCommonDataObject(context.getRootFiles().toArray(new File[context.getRootFiles().size()]));
         }
 
         if (folderAnnotation == false) {

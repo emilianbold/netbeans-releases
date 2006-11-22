@@ -69,7 +69,7 @@ public class SearchHistoryAction extends AbstractSystemAction  {
                 tc.open();
                 tc.requestActive();
                 File [] files = context.getFiles();
-                if (files.length == 1 && files[0].isFile()) {
+                if (org.netbeans.modules.versioning.util.Utils.shareCommonDataObject(files)) {
                     tc.search();
                 }
             }
