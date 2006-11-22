@@ -153,7 +153,7 @@ public final class Util {
      */
     public static List<Element> findSubElements(Element parent) throws IllegalArgumentException {
         NodeList l = parent.getChildNodes();
-        List<Element> elements = new ArrayList(l.getLength());
+        List<Element> elements = new ArrayList<Element>(l.getLength());
         for (int i = 0; i < l.getLength(); i++) {
             Node n = l.item(i);
             if (n.getNodeType() == Node.ELEMENT_NODE) {
@@ -348,7 +348,7 @@ public final class Util {
                 ManifestManager.getInstance(manifest, false).getLocalizingBundle();
         try {
             if (locBundleResource != null) {
-                List<FileObject> bundleFOs = new ArrayList();
+                List<FileObject> bundleFOs = new ArrayList<FileObject>();
                 for (Iterator it = getPossibleResources(locBundleResource); it.hasNext(); ) {
                     String resource = (String) it.next();
                     FileObject bundleFO = sourceDir.getFileObject(resource);
@@ -358,7 +358,7 @@ public final class Util {
                 }
                 if (!bundleFOs.isEmpty()) {
                     Collections.reverse(bundleFOs);
-                    return LocalizedBundleInfo.load((FileObject[]) bundleFOs.toArray(new FileObject[bundleFOs.size()]));
+                    return LocalizedBundleInfo.load(bundleFOs.toArray(new FileObject[bundleFOs.size()]));
                 }
             }
         } catch (IOException e) {
@@ -404,8 +404,8 @@ public final class Util {
                 String locBundleResource =
                         ManifestManager.getInstance(mf, false).getLocalizingBundle();
                 if (locBundleResource != null) {
-                    List<InputStream> bundleISs = new ArrayList();
-                    Collection<JarFile> extraJarFiles = new ArrayList();
+                    List<InputStream> bundleISs = new ArrayList<InputStream>();
+                    Collection<JarFile> extraJarFiles = new ArrayList<JarFile>();
                     try {
                         // Look for locale variant JARs too.
                         // XXX the following could be simplified with #29580:
@@ -418,7 +418,7 @@ public final class Util {
                         String suffix = name.substring(dot);
                         Iterator<String> it = NbBundle.getLocalizingSuffixes();
                         while (it.hasNext()) {
-                            String infix = (String) it.next();
+                            String infix = it.next();
                             File variant = new File(binaryProject.getParentFile(), "locale" + File.separatorChar + base + infix + suffix); // NOI18N
                             if (variant.isFile()) {
                                 JarFile jf = new JarFile(variant);
@@ -430,16 +430,14 @@ public final class Util {
                         addBundlesFromJar(main, bundleISs, locBundleResource);
                         if (!bundleISs.isEmpty()) {
                             Collections.reverse(bundleISs);
-                            return LocalizedBundleInfo.load((InputStream[]) bundleISs.toArray(new InputStream[bundleISs.size()]));
+                            return LocalizedBundleInfo.load(bundleISs.toArray(new InputStream[bundleISs.size()]));
                         }
                     } finally {
-                        Iterator it = bundleISs.iterator();
-                        while (it.hasNext()) {
-                            ((InputStream) it.next()).close();
+                        for (InputStream bundleIS : bundleISs) {
+                            bundleIS.close();
                         }
-                        it = extraJarFiles.iterator();
-                        while (it.hasNext()) {
-                            ((JarFile) it.next()).close();
+                        for (JarFile jarFile : extraJarFiles) {
+                            jarFile.close();
                         }
                     }
                 }
@@ -699,9 +697,9 @@ public final class Util {
             locBundleResourceBase = locBundleResource;
             locBundleResourceExt = "";
         }
-        Collection<String> resources = new LinkedHashSet();
+        Collection<String> resources = new LinkedHashSet<String>();
         for (Iterator<String> it = NbBundle.getLocalizingSuffixes(); it.hasNext(); ) {
-            String suffix = (String) it.next();
+            String suffix = it.next();
             String resource = locBundleResourceBase + suffix + locBundleResourceExt;
             resources.add(resource);
             resources.add(resource);
@@ -731,7 +729,7 @@ public final class Util {
      */
     public static abstract class ComputedPropertyProvider implements PropertyProvider, PropertyChangeListener {
         private final PropertyEvaluator eval;
-        private final List<ChangeListener> listeners = new ArrayList();
+        private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
         protected ComputedPropertyProvider(PropertyEvaluator eval) {
             this.eval = eval;
             eval.addPropertyChangeListener(WeakListeners.propertyChange(this, eval));
@@ -741,10 +739,8 @@ public final class Util {
         /** specify interesting input properties */
         protected abstract Set<String> inputProperties();
         public final Map<String,String> getProperties() {
-            Map<String,String> vals = new HashMap();
-            Iterator it = inputProperties().iterator();
-            while (it.hasNext()) {
-                String k = (String) it.next();
+            Map<String,String> vals = new HashMap<String, String>();
+            for (String k : inputProperties()) {
                 vals.put(k, eval.getProperty(k));
             }
             return getProperties(vals);
@@ -765,15 +761,15 @@ public final class Util {
                 return;
             }
             ChangeEvent ev = new ChangeEvent(this);
-            Iterator it;
+            Iterator<ChangeListener> it;
             synchronized (listeners) {
                 if (listeners.isEmpty()) {
                     return;
                 }
-                it = new HashSet(listeners).iterator();
+                it = new HashSet<ChangeListener>(listeners).iterator();
             }
             while (it.hasNext()) {
-                ((ChangeListener) it.next()).stateChanged(ev);
+                it.next().stateChanged(ev);
             }
         }
     }
@@ -781,7 +777,7 @@ public final class Util {
     public static final class UserPropertiesFileProvider implements PropertyProvider, PropertyChangeListener, ChangeListener {
         private final PropertyEvaluator eval;
         private final File basedir;
-        private final List<ChangeListener> listeners = new ArrayList();
+        private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
         private PropertyProvider delegate;
         public UserPropertiesFileProvider(PropertyEvaluator eval, File basedir) {
             this.eval = eval;
@@ -805,11 +801,11 @@ public final class Util {
                 delegate.addChangeListener(this);
             }
         }
-        public Map getProperties() {
+        public Map<String,String> getProperties() {
             if (delegate != null) {
                 return delegate.getProperties();
             } else {
-                return Collections.EMPTY_MAP;
+                return Collections.emptyMap();
             }
         }
         public void addChangeListener(ChangeListener l) {
@@ -834,15 +830,15 @@ public final class Util {
         }
         private void fireChange() {
             ChangeEvent ev = new ChangeEvent(this);
-            Iterator it;
+            Iterator<ChangeListener> it;
             synchronized (listeners) {
                 if (listeners.isEmpty()) {
                     return;
                 }
-                it = new HashSet(listeners).iterator();
+                it = new HashSet<ChangeListener>(listeners).iterator();
             }
             while (it.hasNext()) {
-                ((ChangeListener) it.next()).stateChanged(ev);
+                it.next().stateChanged(ev);
             }
         }
     }
@@ -851,11 +847,11 @@ public final class Util {
      * Order projects by display name.
      */
     public static Comparator<Project> projectDisplayNameComparator() {
-        return new Comparator() {
+        return new Comparator<Project>() {
             private final Collator LOC_COLLATOR = Collator.getInstance();
-            public int compare(Object o1, Object o2) {
-                ProjectInformation i1 = ProjectUtils.getInformation((Project) o1);
-                ProjectInformation i2 = ProjectUtils.getInformation((Project) o2);
+            public int compare(Project o1, Project o2) {
+                ProjectInformation i1 = ProjectUtils.getInformation(o1);
+                ProjectInformation i2 = ProjectUtils.getInformation(o2);
                 int result = LOC_COLLATOR.compare(i1.getDisplayName(), i2.getDisplayName());
                 if (result != 0) {
                     return result;
@@ -875,7 +871,7 @@ public final class Util {
      * Returns {@link NbModuleTypeProvider.NbModuleType} from a project's lookup.
      */
     public static NbModuleTypeProvider.NbModuleType getModuleType(final Project project) {
-        NbModuleTypeProvider provider = (NbModuleTypeProvider) project.getLookup().lookup(NbModuleTypeProvider.class);
+        NbModuleTypeProvider provider = project.getLookup().lookup(NbModuleTypeProvider.class);
         assert provider != null : "has NbModuleTypeProvider in the lookup";
         return provider.getModuleType();
     }
@@ -900,7 +896,7 @@ public final class Util {
         }
         
         if (project == null) {
-            return new TreeSet(Collections.emptySet());
+            return new TreeSet<String>(Collections.<String>emptySet());
         }
         
         SortedSet<String> availablePublicPackages = new TreeSet<String>();
@@ -951,10 +947,9 @@ public final class Util {
             // Not really a JAR?
             return;
         }
-        Set<FileObject> pkgs = new HashSet();
+        Set<FileObject> pkgs = new HashSet<FileObject>();
         Util.scanForPackages(pkgs, root, "class"); // NOI18N
-        for (Iterator it = pkgs.iterator(); it.hasNext();) {
-            FileObject pkg = (FileObject) it.next();
+        for (FileObject pkg : pkgs) {
             if (root.equals(pkg)) { // default package #71532
                 continue;
             }

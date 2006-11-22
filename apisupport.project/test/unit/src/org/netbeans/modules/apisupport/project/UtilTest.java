@@ -138,7 +138,7 @@ public class UtilTest extends TestBase {
             assertEquals("Foo", info.getDisplayName());
             assertNull(info.getShortDescription());
             f = new File(dir, "internalloc.jar");
-            Map/*<String,String>*/ contents = new HashMap();
+            Map<String,String> contents = new HashMap<String,String>();
             contents.put("pack/age/Bundle.properties", "OpenIDE-Module-Name=Foo\nOpenIDE-Module-Short-Description=short");
             contents.put("pack/age/Bundle_ja_JP.properties", "OpenIDE-Module-Name=Foo Nihon");
             createJar(f, contents, mani);
@@ -279,7 +279,7 @@ public class UtilTest extends TestBase {
     }
     
     public void testScanJarForPackageNames() throws Exception {
-        Map/*<String,String>*/ contents = new HashMap();
+        Map<String,String> contents = new HashMap<String,String>();
         contents.put("a/b/A12.class", "");
         contents.put("a/b/c/B123.class", "");
         File jar = new File(getWorkDir(), "some.jar");

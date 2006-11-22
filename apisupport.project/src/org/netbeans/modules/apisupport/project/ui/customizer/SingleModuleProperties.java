@@ -107,7 +107,7 @@ public final class SingleModuleProperties extends ModuleProperties {
     
     static {
         // setup defaults
-        Map map = new HashMap();
+        Map<String, String> map = new HashMap<String, String>();
         map.put(BUILD_COMPILER_DEBUG, "true"); // NOI18N
         map.put(BUILD_COMPILER_DEPRECATION, "true"); // NOI18N
         map.put(IS_AUTOLOAD, "false"); // NOI18N
@@ -129,7 +129,7 @@ public final class SingleModuleProperties extends ModuleProperties {
     private String specificationVersion;
     private String implementationVersion;
     private String provTokensString;
-    private SortedSet requiredTokens;
+    private SortedSet<String> requiredTokens;
     private NbPlatform activePlatform;
     private NbPlatform originalPlatform;
     private JavaPlatform activeJavaPlatform;
@@ -159,9 +159,9 @@ public final class SingleModuleProperties extends ModuleProperties {
      * Returns an instance of SingleModuleProperties for the given project.
      */
     public static SingleModuleProperties getInstance(final NbModuleProject project) {
-        SuiteProvider sp = (SuiteProvider) project.getLookup().lookup(SuiteProvider.class);
+        SuiteProvider sp = project.getLookup().lookup(SuiteProvider.class);
         return new SingleModuleProperties(project.getHelper(), project.evaluator(), sp, Util.getModuleType(project),
-                (LocalizedBundleInfo.Provider) project.getLookup().lookup(LocalizedBundleInfo.Provider.class));
+                project.getLookup().lookup(LocalizedBundleInfo.Provider.class));
     }
     
     /**
@@ -209,7 +209,7 @@ public final class SingleModuleProperties extends ModuleProperties {
         }
         getPublicPackagesModel().reloadData(loadPublicPackages());
         requiredTokens = Collections.unmodifiableSortedSet(
-                new TreeSet(Arrays.asList(manifestManager.getRequiredTokens())));
+                new TreeSet<String>(Arrays.asList(manifestManager.getRequiredTokens())));
         bundleInfo = bundleInfoProvider.getLocalizedBundleInfo();
         if (bundleInfo != null) {
             try {
@@ -457,7 +457,7 @@ public final class SingleModuleProperties extends ModuleProperties {
         if (universeDependencies == null) {
             reloadModuleListInfo();
         }
-        Set<ModuleDependency> result = new HashSet(universeDependencies);
+        Set<ModuleDependency> result = new HashSet<ModuleDependency>(universeDependencies);
         if (filterExcludedModules && isSuiteComponent()) {
             SuiteProject suite = getSuite();
             String[] disableModules = SuiteProperties.getArrayProperty(
@@ -468,8 +468,8 @@ public final class SingleModuleProperties extends ModuleProperties {
                     suite.getEvaluator(), SuiteProperties.DISABLED_CLUSTERS_PROPERTY);
             String suiteClusterProp = getEvaluator().getProperty("cluster"); // NOI18N
             File suiteClusterDir = suiteClusterProp != null ? getHelper().resolveFile(suiteClusterProp) : null;
-            for (Iterator it = result.iterator(); it.hasNext();) {
-                ModuleDependency dep = (ModuleDependency) it.next();
+            for (Iterator<ModuleDependency> it = result.iterator(); it.hasNext();) {
+                ModuleDependency dep = it.next();
                 ModuleEntry me = dep.getModuleEntry();
                 if (me.getClusterDirectory().equals(suiteClusterDir)) {
                     // #72124: do not filter other modules in the same suite.
@@ -481,8 +481,8 @@ public final class SingleModuleProperties extends ModuleProperties {
             }
         }
         if (apiProvidersOnly) { // remove module without public/friend API
-            for (Iterator it = result.iterator(); it.hasNext();) {
-                ModuleDependency dep = (ModuleDependency) it.next();
+            for (Iterator<ModuleDependency> it = result.iterator(); it.hasNext();) {
+                ModuleDependency dep = it.next();
                 ModuleEntry me = dep.getModuleEntry();
                 if (me.getPublicPackages().length == 0 || !me.isDeclaredAsFriend(getCodeNameBase())) {
                     it.remove();
@@ -518,7 +518,7 @@ public final class SingleModuleProperties extends ModuleProperties {
      * Returns sorted arrays of CNBs of available friends for this module.
      */
     String[] getAvailableFriends() {
-        SortedSet set = new TreeSet();
+        SortedSet<String> set = new TreeSet<String>();
         if (isSuiteComponent()) {
             for (Iterator it = SuiteUtils.getSubProjects(getSuite()).iterator(); it.hasNext();) {
                 Project prj = (Project) it.next();
@@ -534,7 +534,7 @@ public final class SingleModuleProperties extends ModuleProperties {
                 set.add(dep.getModuleEntry().getCodeNameBase());
             }
         } // else standalone module - leave empty (see the UI spec)
-        return (String[]) set.toArray(new String[set.size()]);
+        return set.toArray(new String[set.size()]);
     }
     
     FriendListModel getFriendListModel() {
@@ -555,14 +555,14 @@ public final class SingleModuleProperties extends ModuleProperties {
     String[] getAllTokens() {
         if (allTokens == null) {
             try {
-                SortedSet<String> provTokens = new TreeSet();
+                SortedSet<String> provTokens = new TreeSet<String>();
                 provTokens.addAll(Arrays.asList(IDE_TOKENS));
                 for (Iterator it = getModuleList().getAllEntriesSoft().iterator(); it.hasNext(); ) {
                     ModuleEntry me = (ModuleEntry) it.next();
                     provTokens.addAll(Arrays.asList(me.getProvidedTokens()));
                 }
                 String[] result = new String[provTokens.size()];
-                return (String[]) provTokens.toArray(result);
+                return provTokens.toArray(result);
             } catch (IOException e) {
                 allTokens = new String[0];
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
@@ -581,16 +581,16 @@ public final class SingleModuleProperties extends ModuleProperties {
     /** Loads a map of package-isSelected entries. */
     private Map<String, Boolean> loadPublicPackages() {
         Collection<String> selectedPackages = getSelectedPackages();
-        Map<String, Boolean> publicPackages = new TreeMap();
-        for (Iterator it = getAvailablePublicPackages().iterator(); it.hasNext(); ) {
-            String pkg = (String) it.next();
+        Map<String, Boolean> publicPackages = new TreeMap<String, Boolean>();
+        for (Iterator<String> it = getAvailablePublicPackages().iterator(); it.hasNext(); ) {
+            String pkg = it.next();
             publicPackages.put(pkg, Boolean.valueOf(selectedPackages.contains(pkg)));
         }
         return publicPackages;
     }
     
-    private Collection getSelectedPackages() {
-        Collection<String> sPackages = new HashSet();
+    private Collection<String> getSelectedPackages() {
+        Collection<String> sPackages = new HashSet<String>();
         ManifestManager.PackageExport[] pexports = getProjectXMLManager().getPublicPackages();
         for (int i = 0; i < pexports.length; i++) {
             ManifestManager.PackageExport pexport = pexports[i];
@@ -633,7 +633,7 @@ public final class SingleModuleProperties extends ModuleProperties {
         // store module dependencies
         DependencyListModel dependencyListModel = getDependenciesListModel();
         if (dependencyListModel.isChanged()) {
-            Set<ModuleDependency> depsToSave = new TreeSet(dependencyListModel.getDependencies());
+            Set<ModuleDependency> depsToSave = new TreeSet<ModuleDependency>(dependencyListModel.getDependencies());
             
             // process removed modules
             depsToSave.removeAll(dependencyListModel.getRemovedDependencies());
@@ -763,8 +763,8 @@ public final class SingleModuleProperties extends ModuleProperties {
             "SingleModuleProperties.reloadModuleListInfo() cannot be called from EDT"; // NOI18N
         if (isActivePlatformValid()) {
             try {
-                SortedSet<String> allCategories = new TreeSet(Collator.getInstance());
-                Set<ModuleDependency> allDependencies = new HashSet();
+                SortedSet<String> allCategories = new TreeSet<String>(Collator.getInstance());
+                Set<ModuleDependency> allDependencies = new HashSet<ModuleDependency>();
                 for (Iterator it = getModuleList().getAllEntriesSoft().iterator(); it.hasNext(); ) {
                     ModuleEntry me = (ModuleEntry) it.next();
                     if (!me.getCodeNameBase().equals(getCodeNameBase())) {
