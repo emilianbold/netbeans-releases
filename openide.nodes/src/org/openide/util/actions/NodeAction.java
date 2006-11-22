@@ -147,10 +147,15 @@ public abstract class NodeAction extends CallableSystemAction implements Context
 
         synchronized (getLock()) {
             b = (Boolean) getProperty(PROP_ENABLED);
+            
+            if (NodeAction.l == null) {
+                NodeAction.l = new NodesL ();
+                l.setActive (true);
+            }
 
             NodesL listener = NodeAction.l;
-
-            if ((b == null) && (listener != null)) {
+            
+            if (b == null) {
                 ns = listener.getActivatedNodes(surviveFocusChange());
 
                 Reference r = (Reference) getProperty(PROP_LAST_NODES);
