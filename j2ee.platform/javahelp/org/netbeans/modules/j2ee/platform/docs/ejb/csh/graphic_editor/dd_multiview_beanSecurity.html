@@ -29,16 +29,17 @@ for an EJB module. You open the editor by expanding the project's <tt>Configurat
 <ul>
 <li><b>Security Identity.</b>
 <ul>
-<li><b>No Security Identity.</b></li>
-<li><b>Use Caller's Identity.</b></li>
-<li><b>Run As.</b></li>
+<li><b>No Security Identity.</b> No security identity is used when invoking methods on this bean.</li>
+<li><b>Use Caller's Identity.</b> Use the identity of the caller when invoking methods on this bean.</li>
+<li><b>Run As.</b> Use the identity of a particular role when invoking methods on this bean. The role must match one of the roles in the Security Roles table.</li>
 </ul>
 </li>
 <li><b>Global Method Permissions.</b>
 <ul>
-<li><b>No Permissions.</b></li>
-<li><b>All Users Can Access All Methods.</b></li>
-<li><b>Set Role(s) for Access to All Methods.</b></li>
+<li><b>No Permissions.</b> No method permission is specified for this bean.</li>
+<li><b>All Users Can Access All Methods.</b> No method permission is checked for all the methods.</li>
+<li><b>Set Role(s) for Access to All Methods.</b> Set the comma separated list of roles that have permissions to access all the methods of the bean. 
+The roles must match the roles in the Security Roles table.</li>
 </ul>
 </li>
 </ul>

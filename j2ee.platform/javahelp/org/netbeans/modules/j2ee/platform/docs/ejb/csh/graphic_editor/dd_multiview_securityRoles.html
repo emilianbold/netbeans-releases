@@ -25,20 +25,39 @@
 <param name="textColor" value="blue">
 </object>
 for an EJB module. You open the editor by expanding the project's <tt>Configuration Files</tt> node in the Projects window and double-clicking <tt>ejb-jar.xml</tt>. </p>
-<p>You can use the Security section to specify security identity and method permission information for your EJB module:</p>
+<p>A security role is an abstract logical grouping of users that is defined by the application assembler. When an application is deployed, the roles
+   are mapped to security identities, such as&nbsp;
+<object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+<param name="content" value="../../glossary/principal.html">
+<param name="viewerActivator" value="javax.help.LinkLabel">
+<param name="viewerStyle" value="javax.help.Popup">
+<param name="viewerSize" value="400,220">
+<param name="text" value="principals">
+<param name="textFontSize" value="medium">
+</object>&nbsp;or&nbsp; 
+<object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+<param name="content" value="../../glossary/group.html">
+<param name="viewerActivator" value="javax.help.LinkLabel">
+<param name="viewerStyle" value="javax.help.Popup">
+<param name="viewerSize" value="400,220">
+<param name="text" value="groups">
+<param name="textFontSize" value="medium">
+</object>, in the operational environment. 
+In the J2EE server authentication service, a role is an abstract name for permission to access a particular set of resources. A role can be compared to a key that can open a lock. Many people might have a copy of the key; the lock does not care who you are, only that you have the right key.</p>
+<p><b>To add a role:</b></p>
+<ol>
+<li>In the Security Roles section, click Add.</li>
+<li>In the Add Security Role dialog box, enter the name and a description for the role and click OK.</li>
+</ol>
+<p><b>To edit a role:</b></p>
+<ol>
+<li>In the Security Roles section, select the role you want to edit and click Edit.<br>
+The row for the role you selected becomes editable.</li>
+<li>Make your changes in the row.</li>
+</ol>
+<p><b>To remove a role:</b></p>
 <ul>
-<li><b>Security Identity.</b>
-<ul>
-<li><b>No Security Identity.</b> Indicates that security identity is not enabled for the EJB module.</li>
-<li><b>Use Caller's Identity.</b> </li>
-<li><b>Run As.</b> </li>
-</ul></li>
-<li><b>Global Method Permissions.</b>
-<ul>
-<li><b>No Permissions.</b> Indicates that global method permissions are not enabled for the EJB module.</li>
-<li><b>All Users Can Access All Methods.</b> </li>
-<li><b>Set Role(s) for Access to All Methods.</b> </li>
-</ul></li>
+<li>In the Security Roles section, select the role you want to delete and click Remove.</li>
 </ul>
 <dl>
 <dt><a name="seealso">See Also</a></dt>
@@ -50,6 +69,14 @@ for an EJB module. You open the editor by expanding the project's <tt>Configurat
 <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="dd_multiview_Session.html">Session Bean</a></dd>
 <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="dd_multiview_MDB.html">Message-Driven Bean</a></dd>
 <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="dd_multiview_Relationship.html">CMP Relationships</a></dd>
+<dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://java.sun.com/javaee/reference/glossary/index.jsp#89082">
+<param name="text" value="<html><u>Glossary definition: Principal</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object></dd>
+
+
 </dl>
 <hr>
 <font size=-2><a href="../../../credits.html">Legal Notices</a></font>
