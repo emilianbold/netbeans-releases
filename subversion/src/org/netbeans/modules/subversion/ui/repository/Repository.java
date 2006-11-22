@@ -330,19 +330,20 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         }
                 
         if(urlString != null) {
-            
+                       
             RepositoryConnection editedrc = getEditedRC();
             editedrc.setUrl(urlString);
-            editedrc.setUsername(repositoryPanel.userTextField.getText());
-            editedrc.setPassword(new String(repositoryPanel.userPasswordField.getPassword()));
-            editedrc.setExternalCommand(repositoryPanel.tunnelCommandTextField.getText());                        
             
             DefaultComboBoxModel dcbm = (DefaultComboBoxModel) repositoryPanel.urlComboBox.getModel();                
-            int idx = dcbm.getIndexOf(urlString);       
+            int idx = dcbm.getIndexOf(editedrc);       
             if(idx > -1) {
-                dcbm.setSelectedItem(urlString);                                
-                //repositoryPanel.urlComboBox.getEditor().setItem(dcbm.getSelectedItem());
+                //dcbm.setSelectedItem(urlString);                                                
+                refresh((RepositoryConnection)dcbm.getElementAt(idx));                
             } 
+            
+            editedrc.setUsername(repositoryPanel.userTextField.getText());
+            editedrc.setPassword(new String(repositoryPanel.userPasswordField.getPassword()));
+            editedrc.setExternalCommand(repositoryPanel.tunnelCommandTextField.getText());                                               
         }
         message = "";                                                                                   // NOI18N
         updateVisibility();
@@ -463,7 +464,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         int idx = dcbm.getIndexOf(urlString);        
         
         if(idx > -1) {
-            return (RepositoryConnection) dcbm.getSelectedItem();            
+            return (RepositoryConnection) dcbm.getElementAt(idx);
         }        
         return getEditedRC();        
     }
