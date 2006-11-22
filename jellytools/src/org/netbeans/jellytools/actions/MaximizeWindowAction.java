@@ -24,6 +24,7 @@ import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.openide.windows.TopComponent;
 
@@ -78,11 +79,16 @@ public class MaximizeWindowAction extends Action {
     
     /** Maximize active top component by IDE API.*/
     public void performAPI() {
-        WindowManagerImpl wm = WindowManagerImpl.getInstance();
-        ModeImpl activeMode = wm.getActiveMode();
-        if(activeMode != null) {
-            wm.setMaximizedMode(activeMode);
-        }
+        // run in dispatch thread
+        new QueueTool().invokeSmoothly(new Runnable() {
+            public void run() {
+                WindowManagerImpl wm = WindowManagerImpl.getInstance();
+                ModeImpl activeMode = wm.getActiveMode();
+                if(activeMode != null) {
+                    wm.switchMaximizedMode(activeMode);
+                }
+            }
+        });
     }
 
     /** Performs Maximize Window by IDE API on given top component operator 
@@ -96,7 +102,7 @@ public class MaximizeWindowAction extends Action {
             public void run() {
                 WindowManagerImpl wm = WindowManagerImpl.getInstance();
                 ModeImpl mode = (ModeImpl)wm.findMode((TopComponent)tco.getSource());
-                wm.setMaximizedMode(mode);
+                wm.switchMaximizedMode(mode);
             }
         });
     }

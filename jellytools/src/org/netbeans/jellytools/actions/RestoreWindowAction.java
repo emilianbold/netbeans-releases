@@ -23,6 +23,7 @@ import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.operators.ComponentOperator;
 
 /** Used to call "Restore Window" popup menu item, "Window|Restore Window" main menu item,
@@ -78,7 +79,12 @@ public class RestoreWindowAction extends Action {
     
     /** Restore active top component by IDE API.*/
     public void performAPI() {
-        WindowManagerImpl.getInstance().setMaximizedMode(null);
+        // run in dispatch thread
+        new QueueTool().invokeSmoothly(new Runnable() {
+            public void run() {
+                WindowManagerImpl.getInstance().switchMaximizedMode(null);
+            }
+        });
     }
 
     /** Throws UnsupportedOperationException because RestoreWindowAction doesn't have
