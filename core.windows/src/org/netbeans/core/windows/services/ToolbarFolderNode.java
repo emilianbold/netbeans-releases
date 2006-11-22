@@ -74,7 +74,7 @@ public final class ToolbarFolderNode extends DataFolder.FolderNode implements Pr
         return new HelpCtx (ToolbarFolderNode.class);
     }
     
-    protected void createPasteTypes(Transferable t, java.util.List s) {
+    protected void createPasteTypes(Transferable t, List<PasteType> s) {
         PasteType pType = ActionPasteType.getPasteType((DataFolder)getDataObject() , t);
         if (pType != null) {
             s.add(pType);
@@ -413,7 +413,7 @@ public final class ToolbarFolderNode extends DataFolder.FolderNode implements Pr
             attachConfigListener();
         }
 
-        protected void createPasteTypes(Transferable t, List s) {
+        protected void createPasteTypes(Transferable t, List<PasteType> s) {
             PasteType pType = ActionPasteType.getPasteType((DataFolder)getDataObject() , t);
             if (pType != null) {
                 //now we know that the tranferable holds a paste-able Action
