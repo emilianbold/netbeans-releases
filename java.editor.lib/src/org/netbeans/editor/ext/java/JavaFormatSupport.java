@@ -20,14 +20,11 @@
 package org.netbeans.editor.ext.java;
 
 import org.netbeans.editor.TokenID;
-import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.TokenContextPath;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.ext.FormatTokenPosition;
 import org.netbeans.editor.ext.ExtFormatSupport;
 import org.netbeans.editor.ext.FormatWriter;
-import org.netbeans.editor.ext.java.JavaTokenContext;
-import org.netbeans.editor.ext.java.JavaSyntax;
 
 /**
 * Java indentation services are located here
@@ -126,9 +123,17 @@ public class JavaFormatSupport extends ExtFormatSupport {
                         break;
 
                     case JavaTokenContext.LBRACE_ID:
-                    case JavaTokenContext.RBRACE_ID:
                     case JavaTokenContext.ELSE_ID:
                         return (lit != null) ? lit : t;
+                        
+                    case JavaTokenContext.RBRACE_ID:
+                        // Check whether this is an array initialization block
+                        if (!isArrayInitializationBraceBlock(t, null)) {
+                            return (lit != null) ? lit : t;
+                        } else { // skip the array initialization block
+                            t = findMatchingToken(t, null, JavaTokenContext.LBRACE, true);
+                        }
+                        break;
 
                     case JavaTokenContext.COLON_ID:
                         TokenItem tt = findAnyToken(t, null, new TokenID[] {JavaTokenContext.CASE, JavaTokenContext.DEFAULT, JavaTokenContext.FOR, JavaTokenContext.QUESTION, JavaTokenContext.ASSERT}, t.getTokenContextPath(), true);
@@ -341,6 +346,10 @@ public class JavaFormatSupport extends ExtFormatSupport {
      *  the given token.
      */
     public TokenItem findStatementStart(TokenItem token) {
+        return findStatementStart(token, true);
+    }
+    
+    public TokenItem findStatementStart(TokenItem token, boolean outermost) {
         TokenItem t = findStatement(token);
         if (t != null) {
             switch (t.getTokenID().getNumericID()) {
@@ -365,13 +374,13 @@ public class JavaFormatSupport extends ExtFormatSupport {
                         case JavaTokenContext.IF_ID:
                         case JavaTokenContext.WHILE_ID:
                         case JavaTokenContext.SYNCHRONIZED_ID:
-                            return findStatementStart(t);
+                            return findStatementStart(t, outermost);
 
                         case JavaTokenContext.ELSE_ID: // 'else' then ';'
                             // Find the corresponding 'if'
                             TokenItem ifss = findIf(scss);
                             if (ifss != null) { // 'if' ... 'else' then ';'
-                                return findStatementStart(ifss);
+                                return findStatementStart(ifss, outermost);
 
                             } else { // no valid starting 'if'
                                 return scss; // return 'else'
@@ -392,13 +401,13 @@ public class JavaFormatSupport extends ExtFormatSupport {
                                     case JavaTokenContext.IF_ID:
                                     case JavaTokenContext.WHILE_ID:
                                     case JavaTokenContext.SYNCHRONIZED_ID:
-                                        return findStatementStart(bscss);
+                                        return findStatementStart(bscss, outermost);
 
                                     case JavaTokenContext.ELSE_ID:
                                         // Find the corresponding 'if'
                                         ifss = findIf(bscss);
                                         if (ifss != null) { // 'if' ... 'else' ... ';'
-                                            return findStatementStart(ifss);
+                                            return findStatementStart(ifss, outermost);
 
                                         } else { // no valid starting 'if'
                                             return bscss; // return 'else'
@@ -424,7 +433,7 @@ public class JavaFormatSupport extends ExtFormatSupport {
                                     // Find the corresponding 'if'
                                     TokenItem ifss = findIf(lbss);
                                     if (ifss != null) { // valid 'if'
-                                        return findStatementStart(ifss);
+                                        return findStatementStart(ifss, outermost);
                                     } else {
                                         return lbss; // return 'else'
                                     }
@@ -433,7 +442,7 @@ public class JavaFormatSupport extends ExtFormatSupport {
                                     // Find the corresponding 'try'
                                     TokenItem tryss = findTry(lbss);
                                     if (tryss != null) { // valid 'try'
-                                        return findStatementStart(tryss);
+                                        return findStatementStart(tryss, outermost);
                                     } else {
                                         return lbss; // return 'catch'
                                     }
@@ -443,7 +452,7 @@ public class JavaFormatSupport extends ExtFormatSupport {
                                 case JavaTokenContext.IF_ID:
                                 case JavaTokenContext.WHILE_ID:
                                 case JavaTokenContext.SYNCHRONIZED_ID:
-                                    return findStatementStart(lbss);
+                                    return findStatementStart(lbss, outermost);
 
                             }
                             
@@ -466,14 +475,18 @@ public class JavaFormatSupport extends ExtFormatSupport {
                 case JavaTokenContext.ELSE_ID:
                     // Find the corresponding 'if'
                     TokenItem ifss = findIf(t);
-                    return (ifss != null) ? findStatementStart(ifss) : t;
+                    return (ifss != null) ? findStatementStart(ifss, outermost) : t;
 
                 case JavaTokenContext.DO_ID:
                 case JavaTokenContext.FOR_ID:
                 case JavaTokenContext.IF_ID:
                 case JavaTokenContext.WHILE_ID:
                 case JavaTokenContext.SYNCHRONIZED_ID:
-                    return findStatementStart(t);
+                    if (!outermost) {
+                        return t;
+                    } else {
+                        return findStatementStart(t, outermost);
+                    }
                     
                 case JavaTokenContext.IDENTIFIER_ID:
                     return t;
@@ -630,7 +643,7 @@ public class JavaFormatSupport extends ExtFormatSupport {
                         break;
 
                     case JavaTokenContext.LBRACE_ID:
-                        TokenItem lbss = findStatementStart(t);
+                        TokenItem lbss = findStatementStart(t, false);
                         if (lbss == null) {
                             lbss = t;
                         }
@@ -734,6 +747,22 @@ public class JavaFormatSupport extends ExtFormatSupport {
                         }
                         break;
 
+                    case JavaTokenContext.COLON_ID:
+                        TokenItem ttt = findAnyToken(t, null, new TokenID[] {JavaTokenContext.CASE, JavaTokenContext.DEFAULT, JavaTokenContext.FOR, JavaTokenContext.QUESTION, JavaTokenContext.ASSERT}, t.getTokenContextPath(), true);
+                        if (ttt != null && ttt.getTokenID().getNumericID() == JavaTokenContext.QUESTION_ID) {
+                            indent = getTokenIndent(ttt) + getShiftWidth();
+                        } else {
+                            // Indent of line with ':' plus one indent level
+                            indent = getTokenIndent(t) + getShiftWidth();
+                        }
+                        break;
+
+                    case JavaTokenContext.QUESTION_ID:
+                    case JavaTokenContext.DO_ID:
+                    case JavaTokenContext.ELSE_ID:
+                        indent = getTokenIndent(t) + getShiftWidth();
+                        break;
+
                     case JavaTokenContext.RPAREN_ID:
                         // Try to find the matching left paren
                         TokenItem rpmt = findMatchingToken(t, null, JavaTokenContext.LPAREN, true);
@@ -751,24 +780,11 @@ public class JavaFormatSupport extends ExtFormatSupport {
                                 }
                             }
                         }
-                        break;
-
-                    case JavaTokenContext.COLON_ID:
-                        TokenItem ttt = findAnyToken(t, null, new TokenID[] {JavaTokenContext.CASE, JavaTokenContext.DEFAULT, JavaTokenContext.FOR, JavaTokenContext.QUESTION, JavaTokenContext.ASSERT}, t.getTokenContextPath(), true);
-                        if (ttt != null && ttt.getTokenID().getNumericID() == JavaTokenContext.QUESTION_ID) {
-                            indent = getTokenIndent(ttt) + getShiftWidth();
-                        } else {
-                            // Indent of line with ':' plus one indent level
-                            indent = getTokenIndent(t) + getShiftWidth();
+                        if (indent < 0) {
+                            indent = computeStatementIndent(t);
                         }
                         break;
-
-                    case JavaTokenContext.QUESTION_ID:
-                    case JavaTokenContext.DO_ID:
-                    case JavaTokenContext.ELSE_ID:
-                        indent = getTokenIndent(t) + getShiftWidth();
-                        break;
-
+                        
                     case JavaTokenContext.COMMA_ID:
                         if (isEnumComma(t)) {
                             indent = getTokenIndent(t);
@@ -776,10 +792,7 @@ public class JavaFormatSupport extends ExtFormatSupport {
                         } // else continue to default
 
                     default: {
-                        // Find stmt start and add continuation indent
-                        TokenItem stmtStart = findStatementStart(t);
-                        indent = getTokenIndent(stmtStart) + getFormatStatementContinuationIndent();
-
+                        indent = computeStatementIndent(t);
                         break;
                     }
                 }
@@ -794,6 +807,43 @@ public class JavaFormatSupport extends ExtFormatSupport {
             indent = 0;
         }
 
+        return indent;
+    }
+
+    private int computeStatementIndent(final TokenItem t) {
+        int indent;
+        // Find stmt start and add continuation indent
+        TokenItem stmtStart = findStatementStart(t);
+        indent = getTokenIndent(stmtStart);
+        int tindent = getTokenIndent(t);
+        if (tindent > indent)
+            return tindent;
+        
+        if (stmtStart != null) {
+            // Check whether there is a comma on the previous line end
+            // and if so then also check whether the present
+            // statement is inside array initialization statement
+            // and not inside parents and if so then do not indent
+            // statement continuation
+            if (t != null && tokenEquals(t, JavaTokenContext.COMMA, tokenContextPath)) {
+                if (isArrayInitializationBraceBlock(t, null) && !isInsideParens(t, stmtStart)) {
+                    // Eliminate the later effect of statement continuation shifting
+                    indent -= getFormatStatementContinuationIndent();
+                }
+            }
+            // Check whether there is an annotation '@' on the previous line begining
+            // and if so then do not add the continuation indent
+            if (t != null) {
+                FormatTokenPosition pos = findLineFirstNonWhitespace(getPosition(t, 0));
+                if (pos != null) {
+                    TokenItem maybeAnno = pos.getToken();
+                    if (maybeAnno != null && maybeAnno.getTokenID() == JavaTokenContext.ANNOTATION) {
+                        indent -= getFormatStatementContinuationIndent();
+                    }
+                }
+            }
+            indent += getFormatStatementContinuationIndent();
+        }
         return indent;
     }
 
@@ -822,6 +872,26 @@ public class JavaFormatSupport extends ExtFormatSupport {
                                 // For non-java-doc not because it can be commented code
                                 indent = getLineIndent(pos, true);
                             }
+                        } else {
+                            if (isJavaDocComment(firstNWS.getToken())) {
+                                if (!getFormatLeadingStarInComment()) {
+                                    // For java-doc it should be OK to remove the star
+                                    int len = -1;
+                                    if (firstNWS.getOffset() + 1 < firstNWS.getToken().getImage().length()) {
+                                        FormatTokenPosition nextCharPos = getPosition(firstNWS.getToken(), firstNWS.getOffset() + 1);
+                                        char nextChar = getChar(nextCharPos);
+                                        if (nextChar != '/') {
+                                            len = getChar(nextCharPos) == ' ' ? 2 : 1;
+                                        }
+                                    } else {
+                                        len = 1;
+                                    }
+                                    
+                                    if (len != -1) {
+                                        remove(firstNWS, len);
+                                    }
+                                }
+                            }
                         }
 
                     } else { // in indent mode (not formatting)
@@ -836,7 +906,7 @@ public class JavaFormatSupport extends ExtFormatSupport {
                     }
 
                 } else if (!isMultiLineComment(firstNWS)) { // line-comment
-                    indent = firstNWS.equals(findLineStart(firstNWS)) ? getLineIndent(firstNWS, true) : findIndent(firstNWS.getToken());
+                    indent = findIndent(firstNWS.getToken());
                 } else { // multi-line comment
                     if (isJavaDocComment(firstNWS.getToken()))
                     {
@@ -870,9 +940,9 @@ public class JavaFormatSupport extends ExtFormatSupport {
                 if (getFormatLeadingStarInComment()
                     && (isIndentOnly() || isJavaDocComment(token))
                 ) {
-                    // Insert initial '*'
-                    insertString(pos, "*"); // NOI18N
-                    setIndentShift(1);
+                    // Insert initial '* '
+                    insertString(pos, "* "); // NOI18N
+                    setIndentShift(2);
                 }
 
                 // Indent the multi-comment by one more space
@@ -942,6 +1012,82 @@ public class JavaFormatSupport extends ExtFormatSupport {
             token = token.getPrevious();
         }
 
+        return false;
+    }
+    
+    /**
+     * Check whether there are left parenthesis before the given token
+     * until the limit token.
+     * 
+     * @param token non-null token from which to start searching back.
+     * @param limitToken limit token when reached the search will stop
+     *  with returning false.
+     * @return true if there is LPAREN token before the given token
+     *  (while respecting paren nesting).
+     */
+    private boolean isInsideParens(TokenItem token, TokenItem limitToken) {
+        int depth = 0;
+        token = token.getPrevious();
+
+        while (token != null && token != limitToken) {
+            if (tokenEquals(token, JavaTokenContext.LPAREN, tokenContextPath)) {
+                if (--depth < 0) {
+                    return true;
+                }
+
+            } else if (tokenEquals(token, JavaTokenContext.RPAREN, tokenContextPath)) {
+                depth++;
+            }
+            token = token.getPrevious();
+        }
+        return false;
+    }
+
+    /**
+     * Check whether the given token is located in array initialization block.
+     * 
+     * @param token non-null token from which to start searching back.
+     * @param limitToken limit token when reached the search will stop
+     *  with returning false.
+     * @return true if the token is located inside the brace block of array
+     *  initialization.
+     */
+    private boolean isArrayInitializationBraceBlock(TokenItem token, TokenItem limitToken) {
+        int depth = 0;
+        token = token.getPrevious();
+
+        while (token != null && token != limitToken && token.getTokenContextPath() == tokenContextPath) {
+            switch (token.getTokenID().getNumericID()) {
+                case JavaTokenContext.RBRACE_ID:
+                    depth++;
+                    break;
+
+                case JavaTokenContext.LBRACE_ID:
+                    depth--;
+                    if (depth < 0) {
+                        TokenItem prev = findImportantToken(token, limitToken, true);
+                        // Array initialization left brace should be preceded
+                        // by either '=' or ']' i.e.
+                        // either "String array = { "a", "b", ... }"
+                        // or     "String array = new String[] { "a", "b", ... }"
+                        return (prev != null && prev.getTokenContextPath() == tokenContextPath
+                                && (JavaTokenContext.RBRACKET.equals(prev.getTokenID())
+                                 || JavaTokenContext.EQ.equals(prev.getTokenID())));
+                    }
+                    break;
+
+                // Array initialization block should not contain statements or ';'
+                case JavaTokenContext.DO_ID:
+                case JavaTokenContext.FOR_ID:
+                case JavaTokenContext.IF_ID:
+                case JavaTokenContext.WHILE_ID:
+                case JavaTokenContext.SEMICOLON_ID:
+                    if (depth == 0) {
+                        return false;
+                    }
+            }                    
+            token = token.getPrevious();
+        }
         return false;
     }
 
