@@ -156,10 +156,12 @@ public class ElementNode extends AbstractNode {
            
            for( Description newSub : newDescription.subs ) {
                 ElementNode node = oldD2node.get(newSub);
-                if ( !oldSubs.contains(newSub) ) {                                           
-                    description.ui.expandNode(node); // Make sure new nodes get expanded
-                }                         
-                node.updateRecursively( newSub ); // update the node recursively
+                if ( node != null ) { // filtered out
+                    if ( !oldSubs.contains(newSub) && node.getChildren() != Children.LEAF) {                                           
+                        description.ui.expandNode(node); // Make sure new nodes get expanded
+                    }     
+                    node.updateRecursively( newSub ); // update the node recursively
+                }
            }
         }
                         
@@ -244,6 +246,13 @@ public class ElementNode extends AbstractNode {
             
             if ( !name.equals(d.name) ) {
                 // System.out.println("- name");
+                return false;
+            }
+            
+            ElementHandle eh1 = this.elementHandle;
+            ElementHandle eh2 = d.elementHandle;
+            
+            if ( !eh1.signatureEquals(eh2) ) {
                 return false;
             }
             
