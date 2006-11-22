@@ -297,35 +297,29 @@ public class BasicBrandingModel {
                 "org.netbeans.core",//NOI18N
                 "org/netbeans/core/ui/Bundle.properties" ,//NOI18N
                 "LBL_ProductInformation");//NOI18N
-        assert productInformation != null;
         
         mainWindowTitle = getBranding().getBundleKey(
                 "org.netbeans.core.windows",//NOI18N
                 "org/netbeans/core/windows/view/ui/Bundle.properties", // NOI18N
                 "CTL_MainWindow_Title");//NOI18N
-        assert mainWindowTitle != null;
         
         mainWindowTitleNoProject = getBranding().getBundleKey(
                 "org.netbeans.core.windows",//NOI18N
                 "org/netbeans/core/windows/view/ui/Bundle.properties",//NOI18N
                 "CTL_MainWindow_Title_No_Project");//NOI18N
-        assert mainWindowTitleNoProject != null;
         
         currentVersion = getBranding().getBundleKey(
                 "org.netbeans.core.startup",//NOI18N
                 "org/netbeans/core/startup/Bundle.properties",//NOI18N
                 "currentVersion");//NOI18N
-        assert currentVersion != null;
         
         icon = getBranding().getBrandedFile(
                 "org.netbeans.core.startup",//NOI18N
                 "org/netbeans/core/startup/frame48.gif");//NOI18N
-        assert icon != null;
         
         splash = getBranding().getBrandedFile(
                 "org.netbeans.core.startup",//NOI18N
                 "org/netbeans/core/startup/splash.gif");//NOI18N
-        assert splash != null;
         
         // init of splash keys
         
@@ -333,117 +327,84 @@ public class BasicBrandingModel {
                 "org.netbeans.core.startup",//NOI18N
                 "org/netbeans/core/startup/Bundle.properties",//NOI18N
                 "SPLASH_WIDTH");//NOI18N
-        assert splashWidth != null;
         
         splashHeight = getBranding().getBundleKey(
                 "org.netbeans.core.startup",//NOI18N
                 "org/netbeans/core/startup/Bundle.properties",//NOI18N
                 "SPLASH_HEIGHT");//NOI18N
-        assert splashHeight != null;
         
         splashShowProgressBar = getBranding().getBundleKey(
                 "org.netbeans.core.startup",//NOI18N
                 "org/netbeans/core/startup/Bundle.properties",//NOI18N
                 "SplashShowProgressBar");//NOI18N
-        assert splashShowProgressBar != null;
         
         splashRunningTextFontSize= getBranding().getBundleKey(
                 "org.netbeans.core.startup",//NOI18N
                 "org/netbeans/core/startup/Bundle.properties",//NOI18N
                 "SplashRunningTextFontSize");//NOI18N
-        assert splashRunningTextFontSize!= null;
         
         splashProgressBarBounds= getBranding().getBundleKey(
                 "org.netbeans.core.startup",//NOI18N
                 "org/netbeans/core/startup/Bundle.properties",//NOI18N
                 "SplashProgressBarBounds");//NOI18N
-        assert splashProgressBarBounds!= null;
         
         splashRunningTextBounds= getBranding().getBundleKey(
                 "org.netbeans.core.startup",//NOI18N
                 "org/netbeans/core/startup/Bundle.properties",//NOI18N
                 "SplashRunningTextBounds");//NOI18N
-        assert splashRunningTextBounds!= null;
         
         splashRunningTextColor= getBranding().getBundleKey(
                 "org.netbeans.core.startup",//NOI18N
                 "org/netbeans/core/startup/Bundle.properties",//NOI18N
                 "SplashRunningTextColor");//NOI18N
-        assert splashRunningTextColor!= null;
         
         splashProgressBarColor= getBranding().getBundleKey(
                 "org.netbeans.core.startup",//NOI18N
                 "org/netbeans/core/startup/Bundle.properties",//NOI18N
                 "SplashProgressBarColor");//NOI18N
-        assert splashProgressBarColor!= null;
         
         splashProgressBarEdgeColor= getBranding().getBundleKey(
                 "org.netbeans.core.startup",//NOI18N
                 "org/netbeans/core/startup/Bundle.properties",//NOI18N
                 "SplashProgressBarEdgeColor");//NOI18N
-        assert splashProgressBarEdgeColor!= null;
         
         splashProgressBarCornerColor= getBranding().getBundleKey(
                 "org.netbeans.core.startup",//NOI18N
                 "org/netbeans/core/startup/Bundle.properties",//NOI18N
                 "SplashProgressBarCornerColor");//NOI18N
-        assert splashProgressBarCornerColor!= null;
         
         splashKeys.clear();
-        /*splashKeys.add("SPLASH_WIDTH");//NOI18N BundleKey: SPLASH_WIDTH: 398
-        splashKeys.add("SPLASH_HEIGHT");//NOI18N BundleKey: SPLASH_HEIGHT: 299
-        splashKeys.add("SplashShowProgressBar");//NOI18N BundleKey: SplashShowProgressBar: true
-        splashKeys.add("SplashRunningTextBounds");//NOI18N BundleKey: SplashRunningTextBounds: 87,253,380,12
-        splashKeys.add("SplashProgressBarBounds");//NOI18N BundleKey: SplashProgressBarBounds: 0, 266, 397, 3
-        splashKeys.add("SplashRunningTextFontSize");//NOI18N BundleKey: SplashRunningTextFontSize: 12
-        splashKeys.add("SplashRunningTextColor");//NOI18N BundleKey: SplashRunningTextColor: 0xFFFF00
-        splashKeys.add("SplashProgressBarColor");//NOI18N BundleKey: SplashProgressBarColor: 0xFF00
-        splashKeys.add("SplashProgressBarEdgeColor");//NOI18N BundleKey: SplashProgressBarEdgeColor: 0xF66E03
-        splashKeys.add("SplashProgressBarCornerColor");//NOI18N BundleKey: SplashProgressBarCornerColor: 0x8B452C
-         
-        splashKeys = getBranding().getBundleKeys(
-                "org.netbeans.core.startup",//NOI18N
-                "org/netbeans/core/startup/Bundle.properties",//NOI18N
-                splashKeys);//NOI18N
-         
-        assert splashKeys != null;
-         
-        for (Iterator iterator = splashKeys.iterator(); iterator.hasNext();) {
-            BrandingSupport.BundleKey bKey = (BrandingSupport.BundleKey) iterator.next();
-            if (bKey.getKey().equals("SPLASH_WIDTH")) {//NOI18N
-                splashWidth = bKey;
-            } else if (bKey.getKey().equals("SPLASH_HEIGHT")) {//NOI18N
-                splashHeight = bKey;
-            }else if (bKey.getKey().equals("SplashShowProgressBar")) {//NOI18N
-                splashShowProgressBar = bKey;
-            } else if (bKey.getKey().equals("SplashRunningTextBounds")) {//NOI18N
-                splashRunningTextBounds = bKey;
-            } else if (bKey.getKey().equals("SplashProgressBarBounds")) {//NOI18N
-                splashProgressBarBounds = bKey;
-            } else if (bKey.getKey().equals("SplashRunningTextFontSize")) {//NOI18N
-                splashRunningTextFontSize = bKey;
-            } else if (bKey.getKey().equals("SplashRunningTextColor")) {//NOI18N
-                splashRunningTextColor = bKey;
-            } else if (bKey.getKey().equals("SplashProgressBarColor")) {//NOI18N
-                splashProgressBarColor = bKey;
-            } else if (bKey.getKey().equals("SplashProgressBarEdgeColor")) {//NOI18N
-                splashProgressBarEdgeColor = bKey;
-            } else if (bKey.getKey().equals("SplashProgressBarCornerColor")) {//NOI18N
-                splashProgressBarCornerColor = bKey;
-            }
-        }
-         */
         
-        splashKeys.add(splashWidth);
-        splashKeys.add(splashHeight);
-        splashKeys.add(splashShowProgressBar);
-        splashKeys.add(splashRunningTextBounds);
-        splashKeys.add(splashProgressBarBounds);
-        splashKeys.add(splashRunningTextFontSize);
-        splashKeys.add(splashRunningTextColor );
-        splashKeys.add(splashProgressBarColor);
-        splashKeys.add(splashProgressBarEdgeColor);
-        splashKeys.add(splashProgressBarCornerColor);
+        if (splashWidth != null) {
+            splashKeys.add(splashWidth);
+        }
+        if (splashHeight != null) {
+            splashKeys.add(splashHeight);
+        }
+        if (splashShowProgressBar != null) {
+            splashKeys.add(splashShowProgressBar);
+        }
+        if (splashRunningTextBounds != null) {
+            splashKeys.add(splashRunningTextBounds);
+        }
+        if (splashProgressBarBounds != null) {
+            splashKeys.add(splashProgressBarBounds);
+        }
+        if (splashRunningTextFontSize != null) {
+            splashKeys.add(splashRunningTextFontSize);
+        }
+        if (splashRunningTextColor != null) {
+            splashKeys.add(splashRunningTextColor );
+        }
+        if (splashProgressBarColor != null) {
+            splashKeys.add(splashProgressBarColor);
+        }
+        if (splashProgressBarEdgeColor != null) {
+            splashKeys.add(splashProgressBarEdgeColor);
+        }
+        if (splashProgressBarCornerColor != null) {
+            splashKeys.add(splashProgressBarCornerColor);
+        }
         splashKeys.remove(null);
     }
     
