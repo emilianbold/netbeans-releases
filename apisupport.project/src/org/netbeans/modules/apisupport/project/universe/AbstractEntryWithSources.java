@@ -22,8 +22,6 @@ package org.netbeans.modules.apisupport.project.universe;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import org.netbeans.api.project.ProjectManager;
@@ -49,17 +47,16 @@ abstract class AbstractEntryWithSources extends AbstractEntry {
     }
     
     protected Set<String> computePublicClassNamesInMainModule() throws IOException {
-        Set<String> result = new HashSet();
+        Set<String> result = new HashSet<String>();
         File src = new File(getSourceLocation(), "src"); // XXX hardcoding src.dir // NOI18N
-        ManifestManager.PackageExport[] pkgs = getPublicPackages();
-        for (int i = 0; i < pkgs.length; i++) {
-            String pkg = pkgs[i].getPackage();
-            scanForClasses(result, pkg, new File(src, pkg.replace('.', File.separatorChar)), pkgs[i].isRecursive());
+        for (ManifestManager.PackageExport p : getPublicPackages()) {
+            String pkg = p.getPackage();
+            scanForClasses(result, pkg, new File(src, pkg.replace('.', File.separatorChar)), p.isRecursive());
         }
         return result;
     }
     
-    public synchronized Set<String> getAllPackagesNames() {
+    public synchronized Set<String> getAllPackageNames() {
         if (allPackageNames == null) {
             allPackageNames = Util.scanProjectForPackageNames(getSourceLocation());
         }
@@ -74,21 +71,21 @@ abstract class AbstractEntryWithSources extends AbstractEntry {
         if (kids == null) {
             throw new IOException(dir.getAbsolutePath());
         }
-        for (int i = 0; i < kids.length; i++) {
-            String name = kids[i].getName();
+        for (File kid : kids) {
+            String name = kid.getName();
             if (name.endsWith(".java")) { // NOI18N
                 String basename = name.substring(0, name.length() - 5);
                 result.add(pkg + '.' + basename);
                 // no inner classes scanned, too slow
             }
-            if (recurse && kids[i].isDirectory()) {
-                scanForClasses(result, pkg + '.' + name, kids[i], true);
+            if (recurse && kid.isDirectory()) {
+                scanForClasses(result, pkg + '.' + name, kid, true);
             }
         }
     }
 
     public String[] getRunDependencies() {
-        Set<String> deps = new TreeSet();
+        Set<String> deps = new TreeSet<String>();
         FileObject source = FileUtil.toFileObject(getSourceLocation());
         if (source == null) { // ??
             return new String[0];
@@ -103,10 +100,7 @@ abstract class AbstractEntryWithSources extends AbstractEntry {
         Element data = project.getPrimaryConfigurationData();
         Element moduleDependencies = Util.findElement(data,
             "module-dependencies", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
-        List<Element> depEls = Util.findSubElements(moduleDependencies);
-        Iterator it = depEls.iterator();
-        while (it.hasNext()) {
-            Element dep = (Element) it.next();
+        for (Element dep : Util.findSubElements(moduleDependencies)) {
             if (Util.findElement(dep, "run-dependency", // NOI18N
                     NbModuleProjectType.NAMESPACE_SHARED) == null) {
                 continue;
@@ -116,7 +110,7 @@ abstract class AbstractEntryWithSources extends AbstractEntry {
             String cnb = Util.findText(cnbEl);
             deps.add(cnb);
         }
-        return (String[]) deps.toArray(new String[deps.size()]);
+        return deps.toArray(new String[deps.size()]);
     }
 
     public String getSpecificationVersion() {

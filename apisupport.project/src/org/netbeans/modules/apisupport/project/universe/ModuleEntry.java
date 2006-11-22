@@ -131,7 +131,7 @@ public interface ModuleEntry extends Comparable {
      * Get a set of names of all <em>nonempty</em> packages this module
      * contains.
      */
-    Set<String> getAllPackagesNames();
+    Set<String> getAllPackageNames();
     
     /**
      * Get array of friends of this module.

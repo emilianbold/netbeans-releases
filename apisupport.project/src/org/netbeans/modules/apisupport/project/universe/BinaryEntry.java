@@ -22,7 +22,6 @@ package org.netbeans.modules.apisupport.project.universe;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 import org.netbeans.modules.apisupport.project.ManifestManager;
@@ -66,10 +65,9 @@ final class BinaryEntry extends AbstractEntry {
         this.publicPackages = publicPackages;
         this.friends = friends;
         this.deprecated = deprecated;
-        Set<String> deps = new TreeSet();
-        Iterator it = moduleDependencies.iterator();
-        while (it.hasNext()) {
-            String codename = ((Dependency) it.next()).getName();
+        Set<String> deps = new TreeSet<String>();
+        for (Dependency d : moduleDependencies) {
+            String codename = d.getName();
             int slash = codename.lastIndexOf('/');
             if (slash == -1) {
                 deps.add(codename);
@@ -77,7 +75,7 @@ final class BinaryEntry extends AbstractEntry {
                 deps.add(codename.substring(0, slash));
             }
         }
-        runDependencies = (String[]) deps.toArray(new String[deps.size()]);
+        runDependencies = deps.toArray(new String[deps.size()]);
     }
     
     //private boolean recurring;
@@ -146,7 +144,7 @@ final class BinaryEntry extends AbstractEntry {
         return publicPackages;
     }
     
-    public synchronized Set<String> getAllPackagesNames() {
+    public synchronized Set<String> getAllPackageNames() {
         if (allPackageNames == null) {
             allPackageNames = new TreeSet<String>();
             Util.scanJarForPackageNames(allPackageNames, getJarLocation());
@@ -168,7 +166,7 @@ final class BinaryEntry extends AbstractEntry {
     }
     
     protected Set<String> computePublicClassNamesInMainModule() throws IOException {
-        Set<String> result = new HashSet();
+        Set<String> result = new HashSet<String>();
         scanJarForPublicClassNames(result, jar);
         return result;
     }

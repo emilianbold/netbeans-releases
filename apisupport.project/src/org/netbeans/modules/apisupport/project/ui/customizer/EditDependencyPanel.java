@@ -109,7 +109,7 @@ public final class EditDependencyPanel extends JPanel {
                 packages.add(pp[i].getPackage() + (pp[i].isRecursive() ? ".**" : "")); // NOI18N
             }
             if (implVer.isSelected()) { // add all packages
-                packages.addAll(origDep.getModuleEntry().getAllPackagesNames());
+                packages.addAll(origDep.getModuleEntry().getAllPackageNames());
             }
             for (String pkg : packages) {
                 packagesModel.addElement(pkg);
