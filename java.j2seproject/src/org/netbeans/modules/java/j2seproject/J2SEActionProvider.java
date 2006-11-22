@@ -651,8 +651,10 @@ class J2SEActionProvider implements ActionProvider {
             return MainClassStatus.UNSET;
         }
         
-        ClassPath classPath = ClassPath.getClassPath (sourcesRoots[0], ClassPath.EXECUTE);  //Single compilation unit
-        if (J2SEProjectUtil.isMainClass (mainClass, classPath)) {
+        ClassPath bootPath = ClassPath.getClassPath (sourcesRoots[0], ClassPath.BOOT);        //Single compilation unit
+        ClassPath compilePath = ClassPath.getClassPath (sourcesRoots[0], ClassPath.COMPILE);
+        ClassPath sourcePath = ClassPath.getClassPath(sourcesRoots[0], ClassPath.SOURCE);
+        if (J2SEProjectUtil.isMainClass (mainClass, bootPath, compilePath, sourcePath)) {
             return MainClassStatus.SET_AND_VALID;
         }
         return MainClassStatus.SET_BUT_INVALID;

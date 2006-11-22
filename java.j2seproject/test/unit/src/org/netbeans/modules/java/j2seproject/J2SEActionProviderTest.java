@@ -471,22 +471,27 @@ public class J2SEActionProviderTest extends NbTestCase {
         FileObject file = pkg.createData("Bar.java");
         DataObject srcDO = DataObject.find(file);
         Lookup context = Lookups.fixed(new DataObject[] { srcDO });
-        // test of targets defined in config
-        String[] targets = actionProvider.getTargetNames(ActionProvider.COMMAND_DEBUG, context, new Properties());
-        assertEquals("There must be two Debug targets in test config", 2, targets.length);
-        assertEquals("First Debug target name is debugtarget1", "debugtarget1", targets[0]);
-        assertEquals("Second Debug target name is debugtarget2", "debugtarget2", targets[1]);
-        targets = actionProvider.getTargetNames(ActionProvider.COMMAND_BUILD, context, new Properties());
-        assertEquals("There must be 1 Build target in test config", 1, targets.length);
-        // target is not in fact from the config, config contains empty string
-        assertEquals("Build target name is jar", "jar", targets[0]); 
-        targets = actionProvider.getTargetNames(ActionProvider.COMMAND_RUN, context, new Properties());
-        assertEquals("There must be 1 Run target in test config", 1, targets.length);
-        assertEquals("Run target name is runtarget", "runtarget", targets[0]);
-        // test of targets not in config
-        targets = actionProvider.getTargetNames(ActionProvider.COMMAND_CLEAN, context, new Properties());
-        assertEquals("There must be 1 Clean target", 1, targets.length);
-        assertEquals("Clean target name is runtarget", "clean", targets[0]);
+        MainClassChooser.unitTestingSupport_hasMainMethodResult = Boolean.TRUE;
+        try {
+            // test of targets defined in config
+            String[] targets = actionProvider.getTargetNames(ActionProvider.COMMAND_DEBUG, context, new Properties());
+            assertEquals("There must be two Debug targets in test config", 2, targets.length);
+            assertEquals("First Debug target name is debugtarget1", "debugtarget1", targets[0]);
+            assertEquals("Second Debug target name is debugtarget2", "debugtarget2", targets[1]);
+            targets = actionProvider.getTargetNames(ActionProvider.COMMAND_BUILD, context, new Properties());
+            assertEquals("There must be 1 Build target in test config", 1, targets.length);
+            // target is not in fact from the config, config contains empty string
+            assertEquals("Build target name is jar", "jar", targets[0]); 
+            targets = actionProvider.getTargetNames(ActionProvider.COMMAND_RUN, context, new Properties());
+            assertEquals("There must be 1 Run target in test config", 1, targets.length);
+            assertEquals("Run target name is runtarget", "runtarget", targets[0]);
+            // test of targets not in config
+            targets = actionProvider.getTargetNames(ActionProvider.COMMAND_CLEAN, context, new Properties());
+            assertEquals("There must be 1 Clean target", 1, targets.length);
+            assertEquals("Clean target name is runtarget", "clean", targets[0]);
+        } finally {
+            MainClassChooser.unitTestingSupport_hasMainMethodResult = null;
+        }
     }
     
     public void testIsActionEnabled() throws Exception {    

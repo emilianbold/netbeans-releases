@@ -19,9 +19,21 @@
 
 package org.netbeans.modules.java.j2seproject.applet;
 
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
+import com.sun.source.util.Trees;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.java.j2seproject.J2SEProjectUtil;
 
 import org.openide.*;
@@ -62,7 +74,7 @@ public class AppletSupport {
     // is different from null it will be returned instead.
     public static Boolean unitTestingSupport_isApplet = null;
     
-    public static boolean isApplet(FileObject file) {
+    public static boolean isApplet(final FileObject file) {
         if (file == null) {
             return false;
         }
@@ -70,39 +82,47 @@ public class AppletSupport {
         if (unitTestingSupport_isApplet != null) {
             return unitTestingSupport_isApplet.booleanValue();
         }
-        try {
-            DataObject classDO = DataObject.find(file);
-//XXX: remove this to compile workaround                		    
-//            return (getAppletClassName(classDO.getCookie(SourceCookie.class)) != null);
-        } catch (DataObjectNotFoundException ex) {
-            // just ignore
+        JavaSource js = JavaSource.forFileObject(file);
+        if (js == null) {
+            return false;
         }
-        return false;
-    }
-    
-    public static String getAppletClassName(Object obj) {
-//XXX: remove this to compile workaround                
-//        if ((obj == null) || !(obj instanceof SourceCookie)) {
-//            return null;
-//        }
-//        SourceCookie cookie = (SourceCookie) obj;
-//        String fullName = null;
-//        SourceElement source = cookie.getSource ();
-//        ClassElement[] classes = source.getClasses();
-//        boolean isApplet = false;
-//        for (int i = 0; i < classes.length; i++) {
-//            JavaClass applet = (JavaClass)JavaModel.getDefaultExtent().getType().resolve("java.applet.Applet");
-//            JavaClass jApplet = (JavaClass)JavaModel.getDefaultExtent().getType().resolve("javax.swing.JApplet");
-//            JavaClass javaClass = (JavaClass)JavaModel.getDefaultExtent().getType().resolve(classes[i].getName().getFullName());
-//            if (!(javaClass instanceof UnresolvedClass)) {
-//                if (javaClass.isSubTypeOf(applet) || (javaClass.isSubTypeOf(jApplet))) {
-//                    fullName = classes[i].getName().getFullName ();
-//                    return fullName;
-//                }
-//            }
-//        }
-        return null;
-    }
+        final boolean[] result = new boolean[] {false};
+        try {
+            js.runUserActionTask(new CancellableTask<CompilationController>() {
+                
+                public void run(CompilationController control) throws Exception {
+                    if (JavaSource.Phase.ELEMENTS_RESOLVED.compareTo(control.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED))<=0) {
+                        Elements elements = control.getElements();
+                        Trees trees = control.getTrees();
+                        Types types = control.getTypes();
+                        TypeElement applet = elements.getTypeElement("java.applet.Applet");     //NOI18N
+                        TypeElement japplet = elements.getTypeElement("javax.swing.JApplet");   //NOI18N
+                        CompilationUnitTree cu = control.getCompilationUnit();
+                        List<? extends Tree> topLevels = cu.getTypeDecls();
+                        for (Tree topLevel : topLevels) {
+                            if (topLevel.getKind() == Tree.Kind.CLASS) {
+                                TypeElement type = (TypeElement) trees.getElement(TreePath.getPath(cu, topLevel));
+                                if (type != null) {
+                                    Set<Modifier> modifiers = type.getModifiers();
+                                    if (modifiers.contains(Modifier.PUBLIC) && 
+                                        ((applet != null && types.isSubtype(type.asType(), applet.asType())) 
+                                        || (japplet != null && types.isSubtype(type.asType(), japplet.asType())))) {
+                                            result[0] = true;
+                                            break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                public void cancel() {}
+            }, true);
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+        }
+        return result[0];
+    }    
     
     /**
     * @return html file with the same name as applet

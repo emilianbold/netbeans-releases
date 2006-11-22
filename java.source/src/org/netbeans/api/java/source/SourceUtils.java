@@ -19,6 +19,7 @@
 
 package org.netbeans.api.java.source;
 
+import com.sun.source.util.TreePathScanner;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -26,6 +27,12 @@ import java.net.URI;
 import java.util.*;
 
 import javax.lang.model.element.*;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 import javax.tools.JavaFileObject.Kind;
 
 import com.sun.source.tree.*;
@@ -43,10 +50,12 @@ import com.sun.tools.javac.util.Name;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.api.java.source.ClassIndex.NameKind;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.modules.java.JavaDataLoader;
 import org.netbeans.modules.java.source.parsing.FileObjects;
+import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 
@@ -355,6 +364,181 @@ import org.openide.util.Exceptions;
      */
     public static void waitScanFinished () throws InterruptedException {
         RepositoryUpdater.getDefault().waitScanFinished();
+    }
+    
+    
+    //Helper methods    
+    
+    /**
+     * Returns classes declared in the given source file which have the main method.
+     * @param fo source file
+     * @return the classes containing main method
+     * @throws IllegalArgumentException when file does not exist or is not a java source file.
+     */
+    public static Collection<ElementHandle<TypeElement>> getMainClasses (final FileObject fo) {
+        if (fo == null || !fo.isValid() || fo.isVirtual()) {
+            throw new IllegalArgumentException ();
+        }
+        final JavaSource js = JavaSource.forFileObject(fo);        
+        if (js == null) {
+            throw new IllegalArgumentException ();
+        }
+        try {
+            final List<ElementHandle<TypeElement>> result = new LinkedList<ElementHandle<TypeElement>>();
+            js.runUserActionTask(new CancellableTask<CompilationController>() {            
+                public void run(final CompilationController control) throws Exception {
+                    if (control.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED).compareTo (JavaSource.Phase.ELEMENTS_RESOLVED)>=0) {
+                        new TreePathScanner<Void,Void> () {
+                           public Void visitMethod(MethodTree node, Void p) {
+                               ExecutableElement method = (ExecutableElement) control.getTrees().getElement(getCurrentPath());
+                               if (SourceUtils.isMainMethod(method) && isAccessible(method.getEnclosingElement())) {
+                                   result.add (ElementHandle.create((TypeElement)method.getEnclosingElement()));
+                               }
+                               return null;
+                           }
+                        }.scan(control.getCompilationUnit(), null);
+                    }                   
+                }
+
+                private boolean isAccessible (Element element) {
+                    ElementKind kind = element.getKind();
+                    while (kind != ElementKind.PACKAGE) {
+                        if (!kind.isClass() && !kind.isInterface()) {
+                            return false;
+                        }                    
+                        Set<Modifier> modifiers = ((TypeElement)element).getModifiers();
+                        if (!modifiers.contains(Modifier.PUBLIC)) {
+                            return false;
+                        }
+                        Element parent = element.getEnclosingElement();
+                        if (parent.getKind() != ElementKind.PACKAGE && !modifiers.contains(Modifier.STATIC)) {
+                            return false;
+                        }
+                        element = parent;
+                        kind = element.getKind();
+                    }
+                    return true;
+                }
+
+                public void cancel() {}
+
+            }, true);
+            return result;
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+            return Collections.<ElementHandle<TypeElement>>emptySet();
+        }		
+    }
+    
+    /**
+     * Returns true when the class contains main method.
+     * @param qualifiedName the fully qualified name of class
+     * @param cpInfo the classpath used to resolve the class
+     * @return true when the class contains a main method
+     */
+    public static boolean isMainClass (final String qualifiedName, ClasspathInfo cpInfo) {
+        if (qualifiedName == null || cpInfo == null) {
+            throw new IllegalArgumentException ();
+        }
+        final boolean[] result = new boolean[]{false};
+        JavaSource js = JavaSource.create(cpInfo);
+        try {
+            js.runUserActionTask(new CancellableTask<CompilationController>() {
+
+                public void run(CompilationController control) throws Exception {
+                    TypeElement type = control.getElements().getTypeElement(qualifiedName);
+                    if (type == null) {
+
+                    }
+                    List<? extends ExecutableElement> methods = ElementFilter.methodsIn(type.getEnclosedElements());
+                    for (ExecutableElement method : methods) {
+                        if (SourceUtils.isMainMethod(method)) {
+                            result[0] = true;
+                            break;
+                        }
+                    }
+                }
+
+                public void cancel() {}
+
+            }, true);
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+        }
+        return result[0];
+    }
+    
+    /**
+     * Returns true if the method is a main method
+     * @param method to be checked
+     * @return true when the method is a main method
+     */
+    public static boolean isMainMethod (final ExecutableElement method) {
+        if (!"main".contentEquals(method.getSimpleName())) {                //NOI18N
+            return false;
+        }
+        long flags = ((Symbol.MethodSymbol)method).flags();                 //faster
+        if (((flags & Flags.PUBLIC) == 0) || ((flags & Flags.STATIC) == 0)) {
+            return false;
+        }
+        if (method.getReturnType().getKind() != TypeKind.VOID) {
+            return false;
+        }
+        List<? extends VariableElement> params = method.getParameters();
+        if (params.size() != 1) {
+            return false;
+        }
+        TypeMirror param = params.get(0).asType();
+        if (param.getKind() != TypeKind.ARRAY) {
+            return false;
+        }
+        ArrayType array = (ArrayType) param;
+        TypeMirror compound = array.getComponentType();
+        if (compound.getKind() != TypeKind.DECLARED) {
+            return false;
+        }
+        if (!"java.lang.String".contentEquals(((TypeElement)((DeclaredType)compound).asElement()).getQualifiedName())) {   //NOI18N
+            return false;
+        }
+        return true;
+    }
+    
+    /**
+     * Returns classes declared under the given source roots which have the main method.
+     * @param sourceRoots the source roots
+     * @return the classes containing the main methods
+     * Currently this method is not optimized and may be slow
+     */
+    public static Collection<ElementHandle<TypeElement>> getMainClasses (final FileObject[] sourceRoots) {
+        final List<ElementHandle<TypeElement>> result = new LinkedList<ElementHandle<TypeElement>> ();
+        for (FileObject root : sourceRoots) {
+            try {
+                ClasspathInfo cpInfo = ClasspathInfo.create(root);
+                final Set<ElementHandle<TypeElement>> classes = cpInfo.getClassIndex().getDeclaredTypes("", ClassIndex.NameKind.PREFIX, EnumSet.of(ClassIndex.SearchScope.SOURCE));
+                JavaSource js = JavaSource.create(cpInfo);
+                js.runUserActionTask(new CancellableTask<CompilationController>() {
+                    public void run(CompilationController control) throws Exception {
+                        for (ElementHandle<TypeElement> cls : classes) {
+                            TypeElement te = cls.resolve(control);
+                            if (te != null) {
+                                Iterable<? extends ExecutableElement> methods = ElementFilter.methodsIn(te.getEnclosedElements());
+                                for (ExecutableElement method : methods) {
+                                    if (isMainMethod(method)) {
+                                        result.add (cls);
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    public void cancel() {}                
+                }, false);
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+                return Collections.<ElementHandle<TypeElement>>emptySet();
+            }
+        }
+        return result;
     }
     
     private static boolean isCaseSensitive () {

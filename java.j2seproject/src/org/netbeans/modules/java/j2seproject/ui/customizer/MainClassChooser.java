@@ -19,10 +19,15 @@
 
 package org.netbeans.modules.java.j2seproject.ui.customizer;
 
+import java.awt.Component;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Collection;
+import java.util.Comparator;
+import javax.lang.model.element.TypeElement;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
@@ -30,8 +35,9 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.modules.java.j2seproject.J2SEProjectUtil;
-//import org.netbeans.modules.javacore.JMManager;
 import org.openide.awt.Mnemonics;
 import org.openide.awt.MouseUtils;
 import org.openide.filesystems.FileObject;
@@ -46,7 +52,7 @@ public class MainClassChooser extends JPanel {
 
     private ChangeListener changeListener;
     private String dialogSubtitle = null;
-    private List/*<String>*/ possibleMainClasses;
+    private Collection<ElementHandle<TypeElement>> possibleMainClasses;
             
     /** Creates new form MainClassChooser */
     public MainClassChooser (FileObject[] sourcesRoots) {
@@ -56,6 +62,7 @@ public class MainClassChooser extends JPanel {
     public MainClassChooser (FileObject[] sourcesRoots, String subtitle) {
         dialogSubtitle = subtitle;
         initComponents();
+        jMainClassList.setCellRenderer(new MainClassRenderer());
         initClassesView (sourcesRoots);
     }
     
@@ -89,7 +96,8 @@ public class MainClassChooser extends JPanel {
         
         RequestProcessor.getDefault ().post (new Runnable () {
             public void run () {
-                possibleMainClasses = J2SEProjectUtil.getMainClasses (sourcesRoots);
+                
+                possibleMainClasses = SourceUtils.getMainClasses(sourcesRoots);
                 if (possibleMainClasses.isEmpty ()) {                    
                     SwingUtilities.invokeLater( new Runnable () {
                         public void run () {
@@ -97,9 +105,9 @@ public class MainClassChooser extends JPanel {
                         }
                     });                    
                 } else {
-                    final Object[] arr = possibleMainClasses.toArray ();
+                    final ElementHandle<TypeElement>[] arr = possibleMainClasses.toArray(new ElementHandle[possibleMainClasses.size()]);
                     // #46861, sort name of classes
-                    Arrays.sort (arr);
+                    Arrays.sort (arr, new MainClassComparator());
                     SwingUtilities.invokeLater(new Runnable () {
                         public void run () {
                             jMainClassList.setListData (arr);
@@ -133,7 +141,7 @@ public class MainClassChooser extends JPanel {
      */    
     public String getSelectedMainClass () {
         if (isValidMainClassName (jMainClassList.getSelectedValue ())) {
-            return (String)jMainClassList.getSelectedValue ();
+            return ((ElementHandle)jMainClassList.getSelectedValue()).getQualifiedName();
         } else {
             return null;
         }
@@ -214,19 +222,26 @@ public class MainClassChooser extends JPanel {
     private javax.swing.JScrollPane jScrollPane1;
     // End of variables declaration//GEN-END:variables
 
-    // Maybe useless renderer (fit if wanted to reneder Icons) // XXX
-//    private static final class MainClassRenderer extends DefaultListCellRenderer {
-//        public Component getListCellRendererComponent (JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-//            String displayName;
-//            if (value instanceof String) {
-//                displayName = (String) value;
-//            } if (value instanceof FileObject) {
-//                displayName = ((FileObject)value).getName ();
-//            } else {
-//                displayName = value.toString ();
-//            }
-//            return super.getListCellRendererComponent (list, displayName, index, isSelected, cellHasFocus);
-//        }
-//    }
-//
+
+    private static final class MainClassRenderer extends DefaultListCellRenderer {
+        public Component getListCellRendererComponent (JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            String displayName;
+            if (value instanceof String) {
+                displayName = (String) value;
+            } if (value instanceof ElementHandle) {
+                displayName = ((ElementHandle)value).getQualifiedName();
+            } else {
+                displayName = value.toString ();
+            }
+            return super.getListCellRendererComponent (list, displayName, index, isSelected, cellHasFocus);
+        }
+    }
+    
+    private static class MainClassComparator implements Comparator<ElementHandle> {
+            
+        public int compare(ElementHandle arg0, ElementHandle arg1) {
+            return arg0.getQualifiedName().compareTo(arg1.getQualifiedName());
+        }
+    }
+
 }
