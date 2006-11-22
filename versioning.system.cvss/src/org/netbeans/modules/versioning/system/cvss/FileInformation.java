@@ -251,6 +251,10 @@ public class FileInformation implements Serializable {
             return loc.getString("CTL_FileInfoStatus_NewLocally_Short");
         } else if (status == FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) {
             return loc.getString("CTL_FileInfoStatus_AddedLocally_Short");
+        } else if (status == FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY) {
+            return loc.getString("CTL_FileInfoStatus_RemovedLocally_Short");
+        } else if (status == FileInformation.STATUS_VERSIONED_DELETEDLOCALLY) {
+            return loc.getString("CTL_FileInfoStatus_DeletedLocally_Short");
         } else if (status == FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY) {
             return loc.getString("CTL_FileInfoStatus_ModifiedLocally_Short");
         } else if (status == FileInformation.STATUS_VERSIONED_CONFLICT) {
