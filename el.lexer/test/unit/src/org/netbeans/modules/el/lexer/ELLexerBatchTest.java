@@ -44,12 +44,26 @@ public class ELLexerBatchTest extends TestCase {
     protected void tearDown() throws java.lang.Exception {
     }
 
-    public void testJspTags() {
-        String text = "${session}";
-                
-        TokenHierarchy hi = TokenHierarchy.create(text, ELTokenId.language());
-        TokenSequence ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, ELTokenId.IDENTIFIER, "${");
+    public void testExpressions() {
+        String text = "session";
+        TokenSequence ts = TokenHierarchy.create(text, ELTokenId.language()).tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, ELTokenId.IDENTIFIER, "session");
+        
+        text = "(6 * 0x5) + 05";
+        ts = TokenHierarchy.create(text, ELTokenId.language()).tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, ELTokenId.LPAREN, "(");
+        LexerTestUtilities.assertNextTokenEquals(ts, ELTokenId.INT_LITERAL, "6");
+        LexerTestUtilities.assertNextTokenEquals(ts, ELTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, ELTokenId.MUL, "*");
+        LexerTestUtilities.assertNextTokenEquals(ts, ELTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, ELTokenId.HEX_LITERAL, "0x5");
+        LexerTestUtilities.assertNextTokenEquals(ts, ELTokenId.RPAREN, ")");
+        LexerTestUtilities.assertNextTokenEquals(ts, ELTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, ELTokenId.PLUS, "+");
+        LexerTestUtilities.assertNextTokenEquals(ts, ELTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, ELTokenId.OCTAL_LITERAL, "05");
+        
+        
     }
     
 }

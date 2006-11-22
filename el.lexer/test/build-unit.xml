@@ -22,7 +22,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="unit-compiler">
         <!-- build lexer unit tests first -->
-        <ant inheritall="false" antfile="../../../lexer/test/build.xml" target="buildtests"/>
+        <ant inheritall="false" antfile="../../../../lexer/test/build.xml" target="buildtests"/>
         <!-- compile web/el/lexer tests -->
         <antcall target="default-compiler"/>
     </target>

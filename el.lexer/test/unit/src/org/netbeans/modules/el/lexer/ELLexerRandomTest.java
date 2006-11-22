@@ -54,33 +54,36 @@ public class ELLexerRandomTest extends TestCase {
         //randomModify.setDebugHierarchy(true);
 
         // Explicit inserts/removals checks
-        randomModify.insertText(0, "$");
-        randomModify.insertText(1, "{session}");
+        randomModify.insertText(0, "(");
+        randomModify.insertText(1, "1");
+        randomModify.insertText(2, "2");
+        randomModify.insertText(3, ")");
+        randomModify.insertText(2, "+");
         randomModify.removeText(2, 1);
+        randomModify.insertText(2, "-");
         
         randomModify.clearDocument();
         
         // Begin really randomized testing
         FixedTextDescriptor[] fixedTexts = new FixedTextDescriptor[] {
-            FixedTextDescriptor.create("/>", 0.2),
+            FixedTextDescriptor.create(" ", 0.2),
         };
         
         RandomCharDescriptor[] regularChars = new RandomCharDescriptor[] {
-            RandomCharDescriptor.letter(0.2),
+            RandomCharDescriptor.digit(0.2),
             RandomCharDescriptor.space(0.2),
-            RandomCharDescriptor.lf(0.05),
-            RandomCharDescriptor.chars(new char[] { '<', '>', '=' }, 0.3),
+            RandomCharDescriptor.chars(new char[] { '+', '-', '(', ')' }, 0.3),
         };
 
         RandomTextProvider regularTextProvider = new RandomTextProvider(regularChars, fixedTexts);
         
         randomModify.test(
             new RandomModifyDescriptor[] {
-                new RandomModifyDescriptor(200, regularTextProvider,
+                new RandomModifyDescriptor(20, regularTextProvider,
                         0.4, 0.2, 0.2,
                         0.1, 0.1,
                         0.0, 0.0), // snapshots create/destroy
-                new RandomModifyDescriptor(200, regularTextProvider,
+                new RandomModifyDescriptor(20, regularTextProvider,
                         0.2, 0.2, 0.1,
                         0.4, 0.3,
                         0.0, 0.0), // snapshots create/destroy

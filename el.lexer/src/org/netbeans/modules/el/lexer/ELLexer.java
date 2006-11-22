@@ -28,7 +28,8 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 import org.netbeans.spi.lexer.TokenFactory;
 
 /**
- * Lexical analyzer for Expression Language.
+ * Lexical analyzer for Expression Language. 
+ * It does NOT recognizes the EL delimiters ${ } and #{ }
  *
  * @author Petr Pisl
  * @author Marek Fukala
