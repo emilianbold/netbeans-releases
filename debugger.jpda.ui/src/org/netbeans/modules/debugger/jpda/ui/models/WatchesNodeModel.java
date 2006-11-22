@@ -85,9 +85,4 @@ public class WatchesNodeModel extends VariablesNodeModel {
         return super.getIconBase (o);
     }
 
-    public void addModelListener (ModelListener l) {
-    }
-
-    public void removeModelListener (ModelListener l) {
-    }
 }
