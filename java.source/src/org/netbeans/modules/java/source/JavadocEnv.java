@@ -229,7 +229,8 @@ public class JavadocEnv extends DocEnv {
                         public void run(CompilationController controller) throws Exception {
                             controller.toPhase(Phase.ELEMENTS_RESOLVED);
                             Element e = handle.resolve(controller);
-                            ret[0] = controller.getElements().getDocComment(e);
+                            if (e != null)
+                                ret[0] = controller.getElements().getDocComment(e);
                         }
                     },true);
                     return ret[0] != null ? ret[0] : ""; //NOI18N
