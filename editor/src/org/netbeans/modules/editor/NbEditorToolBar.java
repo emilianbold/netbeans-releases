@@ -567,7 +567,7 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
                         // because the default fallback in TextAction.getTextComponent()
                         // might not work properly if the focus was switched
                         // to e.g. a JTextField and then toolbar was clicked.
-                        a = new WrapperAction(a);
+                        a = new WrapperAction(componentRef, a);
                         // Try to find an icon if not present
                         Object icon = a.getValue(Action.SMALL_ICON);
                         if (icon == null) {
@@ -785,11 +785,14 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
         }
     }
     
-    private final class WrapperAction implements Action {
+    private static final class WrapperAction implements Action {
         
-        private Action delegate;
+        private final Reference componentRef;
         
-        WrapperAction(Action delegate) {
+        private final Action delegate;
+        
+        WrapperAction(Reference componentRef, Action delegate) {
+            this.componentRef = componentRef;
             assert (delegate != null);
             this.delegate = delegate;
         }
@@ -819,7 +822,7 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
         }
 
         public void actionPerformed(ActionEvent e) {
-            JTextComponent c = getComponent();
+            JTextComponent c = (JTextComponent)componentRef.get();
             if (c != null) { // Override action event to text component
                 e = new ActionEvent(c, e.getID(), e.getActionCommand());
             }
