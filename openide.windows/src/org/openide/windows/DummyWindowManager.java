@@ -52,6 +52,8 @@ import org.openide.util.actions.SystemAction;
  * @see "#29933"
  */
 final class DummyWindowManager extends WindowManager {
+
+    private static final boolean VISIBLE = Boolean.parseBoolean(System.getProperty("org.openide.windows.DummyWindowManager.VISIBLE", "true"));
     private static final long serialVersionUID = 1L;
     private static Action[] DEFAULT_ACTIONS_CLONEABLE;
     private static Action[] DEFAULT_ACTIONS_NOT_CLONEABLE;
@@ -62,7 +64,7 @@ final class DummyWindowManager extends WindowManager {
 
     public DummyWindowManager() {
         workspaces = new TreeMap();
-        createWorkspace("default", null); // NOI18N
+        createWorkspace("default", null).createMode(/*CloneableEditorSupport.EDITOR_MODE*/"editor", "editor", null); // NOI18N
     }
 
     public synchronized void addPropertyChangeListener(PropertyChangeListener l) {
@@ -347,7 +349,9 @@ final class DummyWindowManager extends WindowManager {
         if (!tc.isShowing()) {
             componentOpenNotify(tc);
             componentShowing(tc);
-            f.setVisible(true);
+            if (VISIBLE) {
+                f.setVisible(true);
+            }
             registry().open(tc);
         }
     }
@@ -359,7 +363,9 @@ final class DummyWindowManager extends WindowManager {
         JFrame f = (JFrame) SwingUtilities.getAncestorOfClass(JFrame.class, tc);
 
         if (f != null) {
-            f.setVisible(false);
+            if (VISIBLE) {
+                f.setVisible(false);
+            }
             tc.getParent().remove(tc);
         }
 
@@ -377,7 +383,9 @@ final class DummyWindowManager extends WindowManager {
         JFrame f = (JFrame) SwingUtilities.getAncestorOfClass(JFrame.class, tc);
 
         if (f != null) {
-            f.setVisible(true);
+            if (VISIBLE) {
+                f.setVisible(true);
+            }
         }
     }
 
