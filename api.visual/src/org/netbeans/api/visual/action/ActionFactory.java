@@ -557,4 +557,17 @@ public final class ActionFactory {
         return new CycleFocusAction (provider);
     }
 
+    /**
+     * This action is used for forwarding key events to another widget.
+     * Usually it could be used to forwarding a key event from a node widget to node-label widget when
+     * a scene is using process-focused-widget-and-its-parents event processing type.
+     * @param forwardToWidget the widget to which events are forwarded
+     * @param forwardToTool the tool to which events are forwarded; if null, then default action chain is used
+     * @return the forward key events action; assign this action to widget from which the forwarding should be done
+     */
+    public static WidgetAction createForwardKeyEventsAction (Widget forwardToWidget, String forwardToTool) {
+        assert forwardToWidget != null;
+        return new ForwardKeyEventsAction (forwardToWidget, forwardToTool);
+    }
+
 }
