@@ -76,7 +76,7 @@ public class FolderTreeElement implements TreeElement {
         return ClassPath.getClassPath(fo, ClassPath.SOURCE).getResourceName(fo).replace('/','.');
     }
 
-    private SourceGroup getSourceGroup(FileObject file) {
+    static SourceGroup getSourceGroup(FileObject file) {
         Project prj = FileOwnerQuery.getOwner(file);
         if (prj == null)
             return null;
