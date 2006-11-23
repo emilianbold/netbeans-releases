@@ -80,7 +80,6 @@ public enum ELTokenId implements TokenId {
     //literals
     WHITESPACE(null, "el-whitespace"),
     EOL("\n", "el-eol"),
-    EL_DELIM(null, "el-delimiter"),
     STRING_LITERAL(null, "el-string"),
     TAG_LIB_PREFIX(null, "el-tag-lib-prefix"),
     IDENTIFIER(null, "el-identifier"),

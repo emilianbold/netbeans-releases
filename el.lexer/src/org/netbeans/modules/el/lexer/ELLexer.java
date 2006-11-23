@@ -135,8 +135,16 @@ public class ELLexer implements Lexer<ELTokenId> {
         while (true) {
             ch = input.read();
             
-            if (ch == EOF)
-                break;
+            if (ch == EOF) {
+                if(input.readLength() == 0) {
+                    return null; //just EOL is read
+                } else {
+                    //there is something else in the buffer except EOL
+                    //we will return last token now
+                    input.backup(1); //backup the EOL, we will return null in next nextToken() call
+                    break;
+                }
+            }
             
             switch (state) { // switch by the current internal state
                 case INIT:
@@ -404,6 +412,7 @@ public class ELLexer implements Lexer<ELTokenId> {
                                 break;
                         }
                         Token<ELTokenId> tid = matchKeyword(input);
+                        input.backup(1);
                         if (tid == null){
                             if (ch == ':'){
                                 tid = token(ELTokenId.TAG_LIB_PREFIX);
@@ -411,7 +420,6 @@ public class ELLexer implements Lexer<ELTokenId> {
                                 tid = token(ELTokenId.IDENTIFIER);
                             }
                         }
-                        input.backup(1);
                         return tid;
                     }
                     break;
