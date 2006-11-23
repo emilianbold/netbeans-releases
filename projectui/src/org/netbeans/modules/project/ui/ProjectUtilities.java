@@ -364,7 +364,7 @@ public class ProjectUtilities {
             relFileName.append('/');
         }
         relFileName.append(newObjectName);
-        if (extension != null) {
+        if (extension != null && extension.length() != 0) {
             relFileName.append('.');
             relFileName.append(extension);
         }
