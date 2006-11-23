@@ -18,9 +18,18 @@
  */
 package org.netbeans.api.java.source.gen;
 
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Tree;
 import java.io.File;
+import java.io.IOException;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TestUtilities;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.jackpot.transform.Transformer;
 import org.netbeans.junit.NbTestSuite;
 
@@ -461,6 +470,54 @@ public class MethodThrowsTest extends GeneratorTestMDRCompat {
             }
         );
         String res = TestUtilities.copyFileToString(testFile);
+        assertEquals(golden, res);
+    }
+    
+    public void testAddFirstToBadFormatted() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n\n" +
+            "import java.io.*;\n\n" +
+            "public class Test {\n" +
+            "    public void taragui(){\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n\n" +
+            "import java.io.*;\n\n" +
+            "public class Test {\n" +
+            "    public void taragui() throws IOException{\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // should check kind, here we can be sure!
+                    ClassTree clazz = (ClassTree) typeDecl;
+                    MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                    if ("taragui".contentEquals(method.getName())) {
+                        MethodTree copy = make.addMethodThrows(
+                            method, make.Identifier("IOException")
+                        );
+                        workingCopy.rewrite(method, copy);
+                    }
+                }
+            }
+            
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
     
