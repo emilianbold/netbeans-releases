@@ -115,9 +115,9 @@ public abstract class CloneableOpenSupport extends Object {
 
         //Bugfix #10688 close() is now run in AWT thread
         //also bugfix of 10714 - whole close (boolean) is run in AWT thread
-        Boolean ret = (Boolean) Mutex.EVENT.writeAccess(
-                new Mutex.Action() {
-                    public Object run() {
+        Boolean ret = Mutex.EVENT.writeAccess(
+                new Mutex.Action<Boolean>() {
+                    public Boolean run() {
                         //synchronized (allEditors) {
                         synchronized (getLock()) {
                             // user canceled the action

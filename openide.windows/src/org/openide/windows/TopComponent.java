@@ -128,10 +128,10 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
     private static Object defaultLookupLock = new Object();
 
     /** Classes that have been warned about overriding preferredID() */
-    private static final Set /*<Class>*/ warnedTCPIClasses = new WeakSet();
+    private static final Set<Class> warnedTCPIClasses = new WeakSet<Class>();
 
     /** Used to print warning about getPersistenceType */
-    private static final Set /*<Class>*/ warnedClasses = new WeakSet();
+    private static final Set<Class> warnedClasses = new WeakSet<Class>();
 
     /** reference to Lookup with default implementation for the
      * component or the lookup associated with the component itself
@@ -463,10 +463,10 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
 
         // If there are some sys actions (i.e. the subclass overrided the defautl impl) add them.
         if (sysActions.length > 0) {
-            List acs = new ArrayList(Arrays.asList(actions));
+            List<Action> acs = new ArrayList<Action>(Arrays.asList(actions));
             acs.addAll(Arrays.asList(sysActions));
 
-            return (Action[]) acs.toArray(new Action[0]);
+            return acs.toArray(new Action[0]);
         } else {
             return actions;
         }
@@ -853,7 +853,7 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
      * @return list of {@link Mode} which are available for dock, can contain nulls
      * @since 2.14
      */
-    public List availableModes(List modes) {
+    public List<Mode> availableModes(List<Mode> modes) {
         return modes;
     }
 
@@ -1058,7 +1058,7 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
             }
 
             Lookup lookup = new DefaultTopComponentLookup(this); // Lookup of activated nodes and action map
-            defaultLookupRef = new java.lang.ref.WeakReference(lookup);
+            defaultLookupRef = new java.lang.ref.WeakReference<Lookup>(lookup);
 
             return lookup;
         }
@@ -1154,7 +1154,7 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
         *
         * @return live read-only set of {@link TopComponent}s
         */
-        public Set getOpened();
+        public Set<TopComponent> getOpened();
 
         /** Get the currently selected element.
         * @return the selected top component, or <CODE>null</CODE> if there is none
@@ -1290,8 +1290,8 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
         */
         private void attach(Node n) {
             synchronized (top) {
-                node = new WeakReference(n);
-                nodeL = (NodeListener) WeakListeners.create(NodeListener.class, this, n);
+                node = new WeakReference<Node>(n);
+                nodeL = WeakListeners.create(NodeListener.class, this, n);
                 n.addNodeListener(nodeL);
                 top.attachNodeName(this);
                 top.setActivatedNodes(new Node[] { n });
@@ -1374,7 +1374,7 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
                             // invoke resolve method and accept its result
                             try {
                                 TopComponent unresolvedTc = tc;
-                                tc = (TopComponent) resolveMethod.invoke(tc, new Class[0]);
+                                tc = (TopComponent) resolveMethod.invoke(tc);
 
                                 if (tc == null) {
                                     throw new java.io.InvalidObjectException(
@@ -1446,10 +1446,10 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
     /** Synchronization between Lookup and getActivatedNodes
      */
     private class SynchronizeNodes implements org.openide.util.LookupListener, Runnable {
-        private Lookup.Result res;
+        private Lookup.Result<Node> res;
 
         public SynchronizeNodes(Lookup l) {
-            res = l.lookup(new Lookup.Template(Node.class));
+            res = l.lookup(new Lookup.Template<Node>(Node.class));
             res.addLookupListener(this);
             resultChanged(null);
         }
@@ -1474,12 +1474,12 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
         public void run() {
             boolean l = LOG.isLoggable(Level.FINE);
 
-            Collection nodes = res.allInstances();
+            Collection<? extends Node> nodes = res.allInstances();
 
             if (l) {
                 LOG.fine("setting nodes for " + TopComponent.this + " to " + nodes); // NOI18N
             }
-            setActivatedNodes((Node[]) nodes.toArray(new Node[0]));
+            setActivatedNodes(nodes.toArray(new Node[0]));
             if (l) {
                 LOG.fine("setting nodes done for " + TopComponent.this + " to " + nodes); // NOI18N
             }

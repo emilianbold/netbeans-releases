@@ -79,7 +79,7 @@ public interface Workspace extends Serializable {
      * Gets a list of all modes on this workspace.
      * @return a set of all {@link Mode}s known on this workspace
      * @deprecated Use {@link WindowManager#getModes} instead. */
-    public Set getModes();
+    public Set<Mode> getModes();
 
     /** Get bounds of the workspace. Returned value has slighly different
      * meaning for SDI and MDI mode. Modules should use this method for

@@ -99,7 +99,7 @@ public abstract class WindowManager extends Object implements Serializable {
 
     /** Gets set of all <code>Mode</code>S added into window system.
      * @since 4.13 */
-    public abstract Set getModes();
+    public abstract Set<Mode> getModes();
 
     /**
      * Gets the NetBeans Main Window.
@@ -488,6 +488,7 @@ public abstract class WindowManager extends Object implements Serializable {
      * It is always attached to a {@link TopComponent}.
      * @deprecated Do not use anymore. This interface is replaced by bunch of protected methods
      * which name starts with topComponent prefix, i.e. {@link #topComponentOpen}, {@link #topComponentClose} etc. */
+    @SuppressWarnings("deprecation")
     protected interface Component extends java.io.Serializable {
         /**
          * Do not use.
@@ -553,6 +554,6 @@ public abstract class WindowManager extends Object implements Serializable {
          * Gets a list of workspaces where this component is currently open.
          * @return the set of workspaces where the managed component is open
          */
-        public Set whereOpened();
+        public Set<Workspace> whereOpened();
     }
 }

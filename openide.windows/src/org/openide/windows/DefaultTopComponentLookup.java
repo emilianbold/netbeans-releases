@@ -59,8 +59,8 @@ final class DefaultTopComponentLookup extends ProxyLookup implements LookupListe
     /** lookup listener that is attached to all subnodes */
     private LookupListener listener;
 
-    /** Map of (Node -> node Lookup.Result) the above lookup listener is attached to */
-    private Map attachedTo;
+    /** Map of (Lookup -> node Lookup.Result) the above lookup listener is attached to */
+    private Map<Lookup,Lookup.Result> attachedTo;
 
     /** action map for the top component */
     private Lookup actionMap;
@@ -93,13 +93,13 @@ final class DefaultTopComponentLookup extends ProxyLookup implements LookupListe
 
         Lookup[] lookups = new Lookup[arr.length];
 
-        Map copy;
+        Map<Lookup,Lookup.Result> copy;
 
         synchronized (this) {
             if (attachedTo == null) {
-                copy = Collections.EMPTY_MAP;
+                copy = Collections.emptyMap();
             } else {
-                copy = new HashMap(attachedTo);
+                copy = new HashMap<Lookup,Lookup.Result>(attachedTo);
             }
         }
 
@@ -112,8 +112,8 @@ final class DefaultTopComponentLookup extends ProxyLookup implements LookupListe
             }
         }
 
-        for (Iterator it = copy.values().iterator(); it.hasNext();) {
-            Lookup.Result res = (Lookup.Result) it.next();
+        for (Iterator<Lookup.Result> it = copy.values().iterator(); it.hasNext();) {
+            Lookup.Result res = it.next();
             res.removeLookupListener(listener);
         }
 
@@ -121,7 +121,7 @@ final class DefaultTopComponentLookup extends ProxyLookup implements LookupListe
             attachedTo = null;
         }
 
-        setLookups(new Lookup[] { new NoNodeLookup(new ProxyLookup(lookups), arr), Lookups.fixed(arr), actionMap, });
+        setLookups(new Lookup[] { new NoNodeLookup(new ProxyLookup(lookups), arr), Lookups.fixed((Object[])arr), actionMap, });
     }
 
     /** Change in one of the lookups we delegate to */
@@ -133,18 +133,18 @@ final class DefaultTopComponentLookup extends ProxyLookup implements LookupListe
      * by a state of the "nodes" lookup and whether we should
      * initialize listening
      */
-    private static boolean isNodeQuery(Class c) {
+    private static boolean isNodeQuery(Class<?> c) {
         return Node.class.isAssignableFrom(c) || c.isAssignableFrom(Node.class);
     }
 
-    protected synchronized void beforeLookup(Template t) {
+    protected synchronized void beforeLookup(Template<?> t) {
         if ((attachedTo == null) && isNodeQuery(t.getType())) {
             Lookup[] arr = getLookups();
 
-            attachedTo = new WeakHashMap(arr.length * 2);
+            attachedTo = new WeakHashMap<Lookup,Lookup.Result>(arr.length * 2);
 
             for (int i = 0; i < (arr.length - 2); i++) {
-                Lookup.Result res = arr[i].lookup(t);
+                Lookup.Result<?> res = arr[i].lookup(t);
                 res.addLookupListener(listener);
                 attachedTo.put(arr[i], res);
             }
@@ -189,28 +189,25 @@ final class DefaultTopComponentLookup extends ProxyLookup implements LookupListe
      */
     private static final class NoNodeLookup extends Lookup {
         private final Lookup delegate;
-        private final Map verboten;
+        private final Map<Object,Object> verboten;
 
         public NoNodeLookup(Lookup del, Object[] exclude) {
             delegate = del;
-            verboten = new IdentityHashMap();
+            verboten = new IdentityHashMap<Object,Object>();
 
             for (int i = 0; i < exclude.length; verboten.put(exclude[i++], PRESENT))
                 ;
         }
 
-        public Object lookup(Class clazz) {
+        public <T> T lookup(Class<T> clazz) {
             if (clazz == Node.class) {
                 return null;
             } else {
-                Object o = delegate.lookup(clazz);
+                T o = delegate.lookup(clazz);
 
                 if (verboten.containsKey(o)) {
                     // There might be another one of the same class.
-                    Iterator it = lookup(new Lookup.Template(clazz)).allInstances().iterator();
-
-                    while (it.hasNext()) {
-                        Object o2 = it.next();
+                    for( T o2 : lookupAll(clazz) ) {
 
                         if (!verboten.containsKey(o2)) {
                             // OK, use this one.
@@ -226,33 +223,34 @@ final class DefaultTopComponentLookup extends ProxyLookup implements LookupListe
             }
         }
 
-        public Lookup.Result lookup(Lookup.Template template) {
+        @SuppressWarnings("unchecked")
+        public <T> Lookup.Result<T> lookup(Lookup.Template<T> template) {
             if (template.getType() == Node.class) {
                 return Lookup.EMPTY.lookup(new Lookup.Template(Node.class));
             } else {
-                return new ExclusionResult(delegate.lookup(template), verboten);
+                return new ExclusionResult<T>(delegate.lookup(template), verboten);
             }
         }
 
         /**
          * A lookup result excluding some instances.
          */
-        private static final class ExclusionResult extends Lookup.Result implements LookupListener {
-            private final Lookup.Result delegate;
-            private final Map verboten;
-            private final List listeners = new ArrayList(); // List<LookupListener>
+        private static final class ExclusionResult<T> extends Lookup.Result<T> implements LookupListener {
+            private final Lookup.Result<T> delegate;
+            private final Map<Object,Object> verboten;
+            private final List<LookupListener> listeners = new ArrayList<LookupListener>();
 
-            public ExclusionResult(Lookup.Result delegate, Map verboten) {
+            public ExclusionResult(Lookup.Result<T> delegate, Map<Object,Object> verboten) {
                 this.delegate = delegate;
                 this.verboten = verboten;
             }
 
-            public Collection allInstances() {
-                Collection c = delegate.allInstances();
-                List ret = new ArrayList(c.size()); // upper bound
+            public Collection<? extends T> allInstances() {
+                Collection<? extends T> c = delegate.allInstances();
+                List<T> ret = new ArrayList<T>(c.size()); // upper bound
 
-                for (Iterator it = c.iterator(); it.hasNext();) {
-                    Object o = it.next();
+                for (Iterator<? extends T> it = c.iterator(); it.hasNext();) {
+                    T o = it.next();
 
                     if (!verboten.containsKey(o)) {
                         ret.add(o);
@@ -262,16 +260,16 @@ final class DefaultTopComponentLookup extends ProxyLookup implements LookupListe
                 return ret;
             }
 
-            public Set allClasses() {
+            public Set<Class<? extends T>> allClasses() {
                 return delegate.allClasses(); // close enough
             }
 
-            public Collection allItems() {
-                Collection c = delegate.allItems();
-                List ret = new ArrayList(c.size()); // upper bound
+            public Collection<? extends Lookup.Item<T>> allItems() {
+                Collection<? extends Lookup.Item<T>> c = delegate.allItems();
+                List<Lookup.Item<T>> ret = new ArrayList<Lookup.Item<T>>(c.size()); // upper bound
 
-                for (Iterator it = c.iterator(); it.hasNext();) {
-                    Lookup.Item i = (Lookup.Item) it.next();
+                for (Iterator<? extends Lookup.Item<T>> it = c.iterator(); it.hasNext();) {
+                    Lookup.Item<T> i = it.next();
 
                     if (!verboten.containsKey(i.getInstance())) {
                         ret.add(i);

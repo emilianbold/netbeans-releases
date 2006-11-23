@@ -46,7 +46,7 @@ implements LookupListener {
     
     protected void setUp() throws Exception {
         tc = new TopComponent();
-        res = tc.getLookup().lookup(new Lookup.Template (ActionMap.class));
+        res = tc.getLookup().lookup(new Lookup.Template<ActionMap> (ActionMap.class));
         assertEquals("One instance", 1, res.allItems().size());
         
         res.addLookupListener(this);

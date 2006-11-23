@@ -50,20 +50,22 @@ import org.openide.util.actions.SystemAction;
  * Useful in case core-windows.jar is not installed, e.g. in standalone usage.
  * @author Jesse Glick
  * @see "#29933"
+ * 
  */
+@SuppressWarnings("deprecation")
 final class DummyWindowManager extends WindowManager {
 
     private static final boolean VISIBLE = Boolean.parseBoolean(System.getProperty("org.openide.windows.DummyWindowManager.VISIBLE", "true"));
     private static final long serialVersionUID = 1L;
     private static Action[] DEFAULT_ACTIONS_CLONEABLE;
     private static Action[] DEFAULT_ACTIONS_NOT_CLONEABLE;
-    private final Map workspaces; // Map<String,Workspace>
+    private final Map<String,Workspace> workspaces;
     private transient Frame mw;
     private transient PropertyChangeSupport pcs;
     private transient R r;
 
     public DummyWindowManager() {
-        workspaces = new TreeMap();
+        workspaces = new TreeMap<String,Workspace>();
         createWorkspace("default", null).createMode(/*CloneableEditorSupport.EDITOR_MODE*/"editor", "editor", null); // NOI18N
     }
 
@@ -129,15 +131,15 @@ final class DummyWindowManager extends WindowManager {
     }
 
     public synchronized Workspace findWorkspace(String name) {
-        return (Workspace) workspaces.get(name);
+        return workspaces.get(name);
     }
 
     public synchronized Workspace getCurrentWorkspace() {
-        return (Workspace) workspaces.values().iterator().next();
+        return workspaces.values().iterator().next();
     }
 
     public synchronized Workspace[] getWorkspaces() {
-        return (Workspace[]) workspaces.values().toArray(new Workspace[0]);
+        return workspaces.values().toArray(new Workspace[0]);
     }
 
     public synchronized void setWorkspaces(Workspace[] ws) {
@@ -169,11 +171,11 @@ final class DummyWindowManager extends WindowManager {
     }
 
     // Modes
-    public Set getModes() {
-        Set s = new HashSet();
+    public Set<Mode> getModes() {
+        Set<Mode> s = new HashSet<Mode>();
 
-        for (Iterator it = new HashSet(workspaces.values()).iterator(); it.hasNext();) {
-            Workspace w = (Workspace) it.next();
+        for (Iterator<Workspace> it = new HashSet<Workspace>(workspaces.values()).iterator(); it.hasNext();) {
+            Workspace w = it.next();
             s.addAll(w.getModes());
         }
 
@@ -181,8 +183,8 @@ final class DummyWindowManager extends WindowManager {
     }
 
     public Mode findMode(TopComponent tc) {
-        for (Iterator it = getModes().iterator(); it.hasNext();) {
-            Mode m = (Mode) it.next();
+        for (Iterator<Mode> it = getModes().iterator(); it.hasNext();) {
+            Mode m = it.next();
 
             if (Arrays.asList(m.getTopComponents()).contains(tc)) {
                 return m;
@@ -197,8 +199,8 @@ final class DummyWindowManager extends WindowManager {
             return null;
         }
 
-        for (Iterator it = getModes().iterator(); it.hasNext();) {
-            Mode m = (Mode) it.next();
+        for (Iterator<Mode> it = getModes().iterator(); it.hasNext();) {
+            Mode m = it.next();
 
             if (name.equals(m.getName())) {
                 return m;
@@ -253,7 +255,7 @@ final class DummyWindowManager extends WindowManager {
     }
 
     private static Action[] loadActions(String[] names) {
-        ArrayList arr = new ArrayList();
+        ArrayList<Action> arr = new ArrayList<Action>();
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
 
         for (int i = 0; i < names.length; i++) {
@@ -264,13 +266,14 @@ final class DummyWindowManager extends WindowManager {
             }
 
             try {
-                arr.add(SystemAction.get(Class.forName("org.openide.actions." + names[i] + "Action", true, loader))); // NOI18N
+                Class<? extends SystemAction> sa = Class.forName("org.openide.actions." + names[i] + "Action", true, loader).asSubclass(SystemAction.class);
+                arr.add(SystemAction.get(sa)); // NOI18N
             } catch (ClassNotFoundException e) {
                 // ignore it, missing org-openide-actions.jar
             }
         }
 
-        return (Action[]) arr.toArray(new Action[0]);
+        return arr.toArray(new Action[0]);
     }
 
     protected boolean topComponentIsOpened(TopComponent tc) {
@@ -320,11 +323,11 @@ final class DummyWindowManager extends WindowManager {
             f.getContentPane().add(tc);
             f.pack();
 
-            final java.lang.ref.WeakReference ref = new java.lang.ref.WeakReference(tc);
+            final java.lang.ref.WeakReference<TopComponent> ref = new java.lang.ref.WeakReference<TopComponent>(tc);
             f.addWindowListener(
                 new WindowAdapter() {
                     public void windowClosing(WindowEvent ev) {
-                        TopComponent tc = (TopComponent) ref.get();
+                        TopComponent tc = ref.get();
 
                         if (tc == null) {
                             return;
@@ -334,7 +337,7 @@ final class DummyWindowManager extends WindowManager {
                     }
 
                     public void windowActivated(WindowEvent e) {
-                        TopComponent tc = (TopComponent) ref.get();
+                        TopComponent tc = ref.get();
 
                         if (tc == null) {
                             return;
@@ -408,12 +411,11 @@ final class DummyWindowManager extends WindowManager {
         //TODO what to do here?
     }
 
-
     private final class W implements Workspace {
         private static final long serialVersionUID = 1L;
         private final String name;
-        private final Map modes = new HashMap(); // Map<String,Mode>
-        private final Map modesByComponent = new WeakHashMap(); // Map<TopComponent,Mode>
+        private final Map<String,Mode> modes = new HashMap<String,Mode>();
+        private final Map<TopComponent,Mode> modesByComponent = new WeakHashMap<TopComponent,Mode>();
         private transient PropertyChangeSupport pcs;
 
         public W(String name) {
@@ -452,16 +454,16 @@ final class DummyWindowManager extends WindowManager {
             return m;
         }
 
-        public synchronized Set getModes() {
-            return new HashSet(modes.values());
+        public synchronized Set<Mode> getModes() {
+            return new HashSet<Mode>(modes.values());
         }
 
         public synchronized Mode findMode(String name) {
-            return (Mode) modes.get(name);
+            return modes.get(name);
         }
 
         public synchronized Mode findMode(TopComponent c) {
-            return (Mode) modesByComponent.get(c);
+            return modesByComponent.get(c);
         }
 
         synchronized void dock(Mode m, TopComponent c) {
@@ -492,7 +494,7 @@ final class DummyWindowManager extends WindowManager {
         private final class M implements Mode {
             private static final long serialVersionUID = 1L;
             private final String name;
-            private final Set components = new HashSet(); // Set<TopComponent>
+            private final Set<TopComponent> components = new HashSet<TopComponent>();
 
             public M(String name) {
                 this.name = name;
@@ -555,7 +557,7 @@ final class DummyWindowManager extends WindowManager {
             }
 
             public synchronized TopComponent[] getTopComponents() {
-                return (TopComponent[]) components.toArray(new TopComponent[0]);
+                return components.toArray(new TopComponent[0]);
             }
 
             public Workspace getWorkspace() {
@@ -570,7 +572,7 @@ final class DummyWindowManager extends WindowManager {
             }
 
             public TopComponent getSelectedTopComponent() {
-                TopComponent[] tcs = (TopComponent[]) components.toArray(new TopComponent[0]);
+                TopComponent[] tcs = components.toArray(new TopComponent[0]);
 
                 return (tcs.length > 0) ? tcs[0] : null;
             }
@@ -579,12 +581,12 @@ final class DummyWindowManager extends WindowManager {
 
     private static final class R implements TopComponent.Registry {
         private TopComponent active;
-        private final Set opened; // Set<TopComponent>
+        private final Set<TopComponent> opened;
         private Node[] nodes;
         private PropertyChangeSupport pcs;
 
         public R() {
-            opened = new HashSet();
+            opened = new HashSet<TopComponent>();
             nodes = new Node[0];
         }
 
@@ -624,8 +626,8 @@ final class DummyWindowManager extends WindowManager {
             }
         }
 
-        public synchronized Set getOpened() {
-            return new HashSet(opened);
+        public synchronized Set<TopComponent> getOpened() {
+            return new HashSet<TopComponent>(opened);
         }
 
         synchronized void setActive(TopComponent tc) {

@@ -87,12 +87,12 @@ final class DelegateActionMap extends ActionMap {
     }
 
     private Object[] keys(boolean all) {
-        java.util.Set keys = new java.util.HashSet();
+        java.util.Set<Object> keys = new java.util.HashSet<Object>();
 
         javax.swing.ActionMap m = (delegate == null) ? component.getActionMap() : delegate;
 
         if (m != null) {
-            java.util.List l;
+            java.util.List<Object> l;
 
             if (all) {
                 l = java.util.Arrays.asList(m.allKeys());

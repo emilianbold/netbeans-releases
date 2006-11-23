@@ -174,6 +174,7 @@ public abstract class CloneableTopComponent extends TopComponent implements Exte
         return getReference().unregister(this);
     }
 
+    @SuppressWarnings("deprecation")
     public boolean canClose(Workspace workspace, boolean last) {
         if (last) {
             return getReference().unregister(this);
@@ -227,7 +228,7 @@ public abstract class CloneableTopComponent extends TopComponent implements Exte
         private static final Object LOCK = new Object();
 
         /** Set of registered components. */
-        private transient /*final*/ Set componentSet = new HashSet(7);
+        private transient /*final*/ Set<CloneableTopComponent> componentSet = new HashSet<CloneableTopComponent>(7);
 
         /** Default constructor for creating empty reference.
         */
@@ -246,11 +247,11 @@ public abstract class CloneableTopComponent extends TopComponent implements Exte
         /** Enumeration of all registered components.
         * @return enumeration of CloneableTopComponent
         */
-        public Enumeration getComponents() {
-            Set components;
+        public Enumeration<CloneableTopComponent> getComponents() {
+            Set<CloneableTopComponent> components;
 
             synchronized (LOCK) {
-                components = new HashSet(componentSet);
+                components = new HashSet<CloneableTopComponent>(componentSet);
             }
 
             return Collections.enumeration(components);
@@ -273,7 +274,7 @@ public abstract class CloneableTopComponent extends TopComponent implements Exte
         */
         public CloneableTopComponent getAnyComponent() {
             synchronized (LOCK) {
-                return (CloneableTopComponent) componentSet.iterator().next();
+                return componentSet.iterator().next();
             }
         }
 
@@ -291,10 +292,10 @@ public abstract class CloneableTopComponent extends TopComponent implements Exte
                     return (CloneableTopComponent) activated;
                 }
 
-                Iterator it = componentSet.iterator();
+                Iterator<CloneableTopComponent> it = componentSet.iterator();
 
                 if (it.hasNext()) {
-                    return (CloneableTopComponent) it.next();
+                    return it.next();
                 } else {
                     return null;
                 }
@@ -347,7 +348,7 @@ public abstract class CloneableTopComponent extends TopComponent implements Exte
             in.defaultReadObject();
 
             synchronized (LOCK) {
-                componentSet = new HashSet(7);
+                componentSet = new HashSet<CloneableTopComponent>(7);
             }
         }
     }

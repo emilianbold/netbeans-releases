@@ -24,6 +24,18 @@ Microsystems, Inc. All Rights Reserved.
 </apidefs>
 <changes>
 
+<change id="generics">
+    <api name="winsys"/>
+    <summary>Generics</summary>
+    <version major="6" minor="12"/>
+    <date day="23" month="11" year="2006"/>
+    <author login="saubrecht"/>
+    <compatibility addition="no" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+    <description>
+        Source level has been upgraded to 1.5 and all API use generics now.
+    </description>
+</change>
+    
 <change id="maximizedMode">
     <api name="winsys"/>
     <summary>Enhanced logic for maximized mode</summary>

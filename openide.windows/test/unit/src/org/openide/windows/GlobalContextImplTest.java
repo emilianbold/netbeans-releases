@@ -64,7 +64,7 @@ implements org.openide.util.LookupListener {
         
         
         lookup = org.openide.util.Utilities.actionsGlobalContext();
-        result = lookup.lookup (new Lookup.Template (Node.class));
+        result = lookup.lookup (new Lookup.Template<Node> (Node.class));
         result.addLookupListener (this);
         result.allItems();
     }
@@ -109,15 +109,15 @@ implements org.openide.util.LookupListener {
         tc.setActivatedNodes(new Node[] { n });
         
         assertActionMap ();
-        final Lookup.Result res = lookup.lookup (new Lookup.Template (ActionMap.class));
+        final Lookup.Result<ActionMap> res = lookup.lookup (new Lookup.Template<ActionMap> (ActionMap.class));
         assertEquals ("One action map", 1, res.allItems ().size ());
         
         class L implements org.openide.util.LookupListener {
-            ArrayList maps = new ArrayList ();
+            ArrayList<ActionMap> maps = new ArrayList<ActionMap> ();
             
             public void resultChanged (org.openide.util.LookupEvent ev) {
                 assertEquals ("Still only one", 1, res.allItems ().size ());
-                Lookup.Item i = (Lookup.Item)res.allItems ().iterator ().next ();
+                Lookup.Item<ActionMap> i = res.allItems ().iterator ().next ();
                 assertNotNull (i);
                 
                 maps.add (i.getInstance ());
@@ -174,7 +174,7 @@ implements org.openide.util.LookupListener {
         
         assertEquals("test4", 1, cnt);
         
-        result = lookup.lookup (new Lookup.Template (ActionMap.class));
+        result = lookup.lookup (new Lookup.Template<ActionMap> (ActionMap.class));
         result.addLookupListener (this);
         result.allItems();
         
