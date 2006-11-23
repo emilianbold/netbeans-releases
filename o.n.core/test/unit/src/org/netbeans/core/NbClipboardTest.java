@@ -18,7 +18,11 @@
  */
 package org.netbeans.core;
 
+import java.awt.Window;
+import java.lang.ref.WeakReference;
+import javax.swing.SwingUtilities;
 import org.netbeans.junit.NbTestCase;
+import org.openide.windows.TopComponent;
 
 /** Basic tests on NbClipboard
  *
@@ -55,5 +59,31 @@ public class NbClipboardTest extends NbTestCase {
         NbClipboard ec = new NbClipboard();
         assertFalse("Property overrides default", ec.slowSystemClipboard);
         assertEquals("sun.awt.datatransfer.timeout is now 1000", "1000", System.getProperty("sun.awt.datatransfer.timeout"));
+    }
+    
+    public void testMemoryLeak89844() throws Exception {
+        NbClipboard ec = new NbClipboard();
+        
+        TopComponent tc = new TopComponent();
+        tc.open();
+        
+        Window w;
+        for(;;) {
+            w = SwingUtilities.getWindowAncestor(tc);
+            if (w != null && w.isVisible()) {
+                break;
+            }
+            Thread.sleep(100);
+        }
+       
+        tc.close();
+        w.dispose();
+       
+        
+        WeakReference<Object> ref = new WeakReference<Object>(w);
+        w = null;
+        tc = null;
+        
+        assertGC("Top component can disappear", ref);
     }
 }

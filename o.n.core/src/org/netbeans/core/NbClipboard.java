@@ -30,6 +30,8 @@ import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.AWTEventListener;
 import java.awt.event.WindowEvent;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -51,7 +53,7 @@ implements LookupListener, Runnable, FlavorListener, AWTEventListener
     private Transferable last;
     private long lastWindowActivated;
     private long lastWindowDeactivated;
-    private Object lastWindowDeactivatedSource;
+    private Reference<Object> lastWindowDeactivatedSource = new WeakReference<Object>(null);
 
     public NbClipboard() {
         super("NBClipboard");   // NOI18N
@@ -273,11 +275,11 @@ implements LookupListener, Runnable, FlavorListener, AWTEventListener
 
         if (ev.getID() == WindowEvent.WINDOW_DEACTIVATED) {
             lastWindowDeactivated = System.currentTimeMillis();
-            lastWindowDeactivatedSource = ev.getSource();
+            lastWindowDeactivatedSource = new WeakReference<Object>(ev.getSource());
         }
         if (ev.getID() == WindowEvent.WINDOW_ACTIVATED) {
             if (System.currentTimeMillis() - lastWindowDeactivated < 100 &&
-                ev.getSource() == lastWindowDeactivatedSource) {
+                ev.getSource() == lastWindowDeactivatedSource.get()) {
                 activateWindowHack (false);
             }
             if (log.isLoggable (Level.FINE)) {
