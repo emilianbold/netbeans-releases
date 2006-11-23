@@ -24,6 +24,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Iterator;
 import java.util.Set;
 import org.apache.tools.ant.module.AntModule;
 import org.openide.ErrorManager;
@@ -52,8 +53,10 @@ public final class Hyperlink extends Annotation implements OutputListener, Prope
     private static final Set<Hyperlink> hyperlinks = new WeakSet<Hyperlink>();
     public static void detachAllAnnotations() {
         synchronized (hyperlinks) {
-            for (Hyperlink link : hyperlinks) {
-                link.destroy();
+            Iterator<Hyperlink> it = hyperlinks.iterator();
+            while (it.hasNext()) {
+                it.next().destroy();
+                it.remove();
             }
         }
     }
@@ -64,6 +67,7 @@ public final class Hyperlink extends Annotation implements OutputListener, Prope
     private int col1;
     private final int line2;
     private final int col2;
+    private Line liveLine;
     
     private boolean dead = false;
     
@@ -92,6 +96,7 @@ public final class Hyperlink extends Annotation implements OutputListener, Prope
     void destroy() {
         doDetach();
         dead = true;
+        liveLine = null;
     }
     
     public void outputLineAction(OutputEvent ev) {
@@ -112,13 +117,14 @@ public final class Hyperlink extends Annotation implements OutputListener, Prope
                     ed.openDocument(); // XXX getLineSet does not do it for you!
                     AntModule.err.log("opened document for " + file);
                     try {
-                        Line l = ed.getLineSet().getOriginal(line1 - 1);
-                        if (! l.isDeleted()) {
-                            attachAsNeeded(l);
+                        updateLines(ed);
+                        assert liveLine != null;
+                        if (!liveLine.isDeleted()) {
+                            attachAsNeeded(liveLine);
                             if (col1 == -1) {
-                                l.show(Line.SHOW_GOTO);
+                                liveLine.show(Line.SHOW_GOTO);
                             } else {
-                                l.show(Line.SHOW_GOTO, col1 - 1);
+                                liveLine.show(Line.SHOW_GOTO, col1 - 1);
                             }
                         }
                     } catch (IndexOutOfBoundsException ioobe) {
@@ -141,6 +147,23 @@ public final class Hyperlink extends Annotation implements OutputListener, Prope
             StatusDisplayer.getDefault().setStatusText(message);
         }
     }
+
+    /**
+     * #62623: record positions in document at time first hyperlink was clicked for this file.
+     * Otherwise an intervening save action can mess up line numbers.
+     */
+    private void updateLines(EditorCookie ed) {
+        Line.Set lineset = ed.getLineSet();
+        synchronized (hyperlinks) {
+            if (liveLine == null) {
+                for (Hyperlink h : hyperlinks) {
+                    if (h.liveLine == null && h.url.equals(url) && h.line1 != -1) {
+                        h.liveLine = lineset.getOriginal(h.line1 - 1);
+                    }
+                }
+            }
+        }
+    }
     
     public void outputLineSelected(OutputEvent ev) {
         if (dead) return;
@@ -160,13 +183,14 @@ public final class Hyperlink extends Annotation implements OutputListener, Prope
                 }
                 AntModule.err.log("got document for " + file);
                 if (line1 != -1) {
-                    Line l = ed.getLineSet().getOriginal(line1 - 1);
-                    if (! l.isDeleted()) {
-                        attachAsNeeded(l);
+                    updateLines(ed);
+                    assert liveLine != null;
+                    if (!liveLine.isDeleted()) {
+                        attachAsNeeded(liveLine);
                         if (col1 == -1) {
-                            l.show(Line.SHOW_TRY_SHOW);
+                            liveLine.show(Line.SHOW_TRY_SHOW);
                         } else {
-                            l.show(Line.SHOW_TRY_SHOW, col1 - 1);
+                            liveLine.show(Line.SHOW_TRY_SHOW, col1 - 1);
                         }
                     }
                 }
@@ -248,6 +272,7 @@ public final class Hyperlink extends Annotation implements OutputListener, Prope
     
     public void outputLineCleared(OutputEvent ev) {
         doDetach();
+        liveLine = null;
     }
     
     public void propertyChange(PropertyChangeEvent ev) {
