@@ -71,6 +71,10 @@ public abstract class SourceTestSupport extends NbTestCase {
                 "}");
     }
     
+    protected void assertFile(FileObject result){
+        assertFile( getGoldenFile(), FileUtil.toFile(result));
+    }
+    
     // temporary methods for debugging
     
     protected void print(FileObject fo) throws IOException {

@@ -19,37 +19,40 @@
 
 package org.netbeans.modules.j2ee.persistence.wizard.entity;
 
+import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.VariableTree;
 import java.io.IOException;
-import java.lang.reflect.Modifier;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.jmi.javamodel.AttributeValue;
-import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
-import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
-import org.netbeans.modules.javacore.api.JavaModel;
 import org.openide.*;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.*;
 import java.util.Collections;
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import javax.lang.model.element.Modifier;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.jmi.javamodel.Annotation;
-import org.netbeans.jmi.javamodel.Field;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.Method;
 import org.netbeans.modules.j2ee.common.DelegatingWizardDescriptorPanel;
-import org.netbeans.modules.j2ee.common.JMIGenerationUtil;
+import org.netbeans.modules.j2ee.common.source.AbstractTask;
+import org.netbeans.modules.j2ee.common.source.GenerationUtils;
+import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
+import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.filesystems.FileObject;
 
 /**
- *
+ * A wizard for creating entity classes.
+ * 
  * @author Martin Adamek
+ * @author Erno Mononen
  */
 
 public final class EntityWizard implements WizardDescriptor.InstantiatingIterator {
@@ -82,16 +85,15 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
     }
     
     public Set instantiate() throws IOException {
-
+        
         if (ejbPanel.getPersistenceUnit() != null){
             ProviderUtil.addPersistenceUnit(ejbPanel.getPersistenceUnit(), Templates.getProject(wiz));
         }
-
+        
         FileObject result = generateEntity(
                 Templates.getTargetFolder(wiz),
                 Templates.getTargetName(wiz),
                 ejbPanel.getPrimaryKeyClassName(),
-                sourceGroups,
                 false // setting PROPERTY access type by default
                 );
         return Collections.singleton(result);
@@ -129,63 +131,62 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
         return panels[index];
     }
     
-    public static FileObject generateEntity(FileObject targetFolder, String targetName, String primaryKeyClassName, SourceGroup[] sourceGroups, boolean isAccessProperty) {
-        JavaClass javaClass = null;
-        boolean rollback = true;
-        JavaModel.getJavaRepository().beginTrans(true);
-        try {
+    /**
+     * Generates an entity class and adds it to an appropriate persistence unit
+     *  if needed. 
+     * @param targetFolder the target folder for the entity.
+     * @param targetName the target name of the entity.
+     * @param primaryKeyClassName the fully qualified name of the primary key class.
+     * @param isAccessProperty defines the access strategy for the id field.
+     * @return a FileObject representing the generated entity.
+     */
+    public static FileObject generateEntity(FileObject targetFolder, String targetName, 
+            final String primaryKeyClassName, final boolean isAccessProperty) throws IOException {
+        
+        FileObject entityFo = GenerationUtils.createClass(targetFolder, targetName, null);
+        JavaSource targetSource = JavaSource.forFileObject(entityFo);
+        AbstractTask task = new AbstractTask<WorkingCopy>() {
             
-            javaClass = JMIGenerationUtil.createEntityClass(targetFolder, targetName);
-            
-            JMIGenerationUtil.addInterface(javaClass, "java.io.Serializable"); //NOI18N
-            
-            Annotation entityAnnotation = JMIGenerationUtil.createAnnotation(javaClass, "javax.persistence.Entity", Collections.EMPTY_LIST /*entityAttributeValues*/);
-            javaClass.getAnnotations().add(entityAnnotation);
-            Annotation idAnnotation = JMIGenerationUtil.createAnnotation(javaClass, "javax.persistence.Id", Collections.EMPTY_LIST);
-            AttributeValue strategyAttibuteValue = JMIGenerationUtil.createAttributeValue(javaClass, "strategy", "javax.persistence.GenerationType", "AUTO");
-            Annotation generatedValueAnnotation = JMIGenerationUtil.createAnnotation(javaClass, "javax.persistence.GeneratedValue", Collections.singletonList(strategyAttibuteValue));
-            String memberName = "id";   // NOI18N
-            String capitalizedMemberName = "Id";   // NOI18N
-            Field idField = JMIGenerationUtil.createField(javaClass, memberName, Modifier.PRIVATE, primaryKeyClassName);
-            List features = javaClass.getFeatures();
-            features.add(0, idField);
-            
-            Method getter = JMIGenerationUtil.createGetterMethod(memberName,
-                    capitalizedMemberName, primaryKeyClassName, javaClass);
-            List addAnnotationsList = (isAccessProperty ? getter.getAnnotations() : idField.getAnnotations());
-            addAnnotationsList.add(idAnnotation);
-            addAnnotationsList.add(generatedValueAnnotation);
-            features.add(getter);
-            features.add(JMIGenerationUtil.createSetterMethod(memberName,
-                    capitalizedMemberName, primaryKeyClassName, javaClass));
-            
-            List idFieldList = Collections.singletonList(idField);
-            Method hashCodeMethod = JMIGenerationUtil.createHashCodeMethod(javaClass, idFieldList);
-            features.add(hashCodeMethod);
-            Method equalsMethod = JMIGenerationUtil.createEntityEqualsMethod(javaClass, idFieldList);
-            features.add(equalsMethod);
-            Method toString = JMIGenerationUtil.createToStringMethod(javaClass, idFieldList);
-            features.add(toString);
-            
-            rollback = false;
-        } catch (DataObjectNotFoundException dex) {
-            ErrorManager.getDefault().notify(dex);
-        } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ioe);
-        } finally {
-            JavaModel.getJavaRepository().endTrans(rollback);
-        }
-        FileObject fo = javaClass == null ? null : JavaModel.getFileObject(javaClass.getResource());
+            public void run(WorkingCopy workingCopy) throws Exception {
+                GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
+                ClassTree clazz = genUtils.getClassTree();
+                
+                String idFieldName = "id"; // NO18N
+                VariableTree idField = genUtils.createField(Modifier.PRIVATE, primaryKeyClassName, idFieldName);
+                MethodTree idGetter = genUtils.createPropertyGetterMethod(primaryKeyClassName, idFieldName);
+                MethodTree idSetter = genUtils.createPropertySetterMethod(primaryKeyClassName, idFieldName);
+                ExpressionTree generationStrategy = genUtils.createAnnotationArgument("strategy", "javax.persistence.GenerationType", "AUTO"); //NO18N
+                AnnotationTree idAnnotation = genUtils.createAnnotation("javax.persistence.Id", Collections.singletonList(generationStrategy)); //NO18N
+                
+                if (isAccessProperty){
+                    idField = genUtils.addAnnotation(idAnnotation, idField);
+                } else {
+                    idGetter = genUtils.addAnnotation(idAnnotation, idGetter);
+                }
+                ClassTree modifiedClazz = genUtils.addClassFields(clazz, Collections.singletonList(idField));
+                
+                TreeMaker make = workingCopy.getTreeMaker();
+                modifiedClazz = make.addClassMember(modifiedClazz, idSetter);
+                modifiedClazz = make.addClassMember(modifiedClazz, idGetter);
+                modifiedClazz = genUtils.addImplementsClause(modifiedClazz, "java.io.Serializable");
+                modifiedClazz = genUtils.addAnnotation(genUtils.createAnnotation("javax.persistence.Entity"), modifiedClazz);
+                
+                workingCopy.rewrite(clazz, modifiedClazz);
+            }
+        };
+        
+        targetSource.runModificationTask(task).commit();
+        
         Project project = FileOwnerQuery.getOwner(targetFolder);
-        if (fo != null && !Util.isSupportedJavaEEVersion(project) && ProviderUtil.getDDFile(project) != null) {
+        if (project != null && !Util.isSupportedJavaEEVersion(project) && ProviderUtil.getDDFile(project) != null) {
             PUDataObject pudo = ProviderUtil.getPUDataObject(project);
             PersistenceUnit pu[] = pudo.getPersistence().getPersistenceUnit();
             //only add if a PU exists, if there are more we do not know where to add - UI needed to ask
             if (pu.length == 1) {
-                pudo.addClass(pu[0], javaClass.getName());
+                pudo.addClass(pu[0], targetName);
             }
         }
-        return fo;
+        return entityFo;
     }
     
     /**

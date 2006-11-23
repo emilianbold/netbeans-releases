@@ -23,7 +23,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.common.FQNSearch;
+//import org.netbeans.modules.j2ee.common.FQNSearch;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardPanel.TableGeneration;
@@ -143,7 +143,8 @@ public class EntityWizardPanel extends javax.swing.JPanel {
     private void searchButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchButtonActionPerformed
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                FQNSearch.showFastOpen(primaryKeyTextField);
+                // TODO: RETOUCHE
+//                FQNSearch.showFastOpen(primaryKeyTextField);
             }
         });
     }//GEN-LAST:event_searchButtonActionPerformed
