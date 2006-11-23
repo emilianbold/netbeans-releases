@@ -23,33 +23,22 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
-import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Comment;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.modules.j2ee.common.source.GenerationUtils;
 import static org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.j2ee.common.source.SourceUtils;
-
-//import org.netbeans.jmi.javamodel.Array;
-//import org.netbeans.jmi.javamodel.JavaClass;
-//import org.netbeans.jmi.javamodel.Method;
-//import org.netbeans.jmi.javamodel.Parameter;
-//import org.netbeans.jmi.javamodel.PrimitiveType;
-//import org.netbeans.jmi.javamodel.PrimitiveTypeKindEnum;
-//import org.netbeans.jmi.javamodel.Type;
-//import org.netbeans.modules.j2ee.common.JMIUtils;
-//import org.netbeans.modules.j2ee.common.JMIGenerationUtil;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -80,31 +69,47 @@ public class JaxWsClassesCookieImpl implements JaxWsClassesCookie {
                         make.QualIdent(webMethodAn), 
                         Collections.<ExpressionTree>emptyList()
                     );
+                    // add @WebMethod annotation
+                    ModifiersTree modifiersTree = make.addModifiersAnnotation(method.getModifiers(), webMethodAnnotation);
                     
-                    genUtils.addAnnotation(webMethodAnnotation, method);
-                    //Kind. method.getReturnType().getKind()
-                    TreePath methodTreePath = workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), method);
-                    ExecutableElement methodElement = (ExecutableElement)workingCopy.getTrees().getElement(methodTreePath);
-                    if (TypeKind.VOID == methodElement.getReturnType().getKind()) {
-                        TypeElement oneWayAn = workingCopy.getElements().getTypeElement("javax.jws.Oneway"); //NOI18N
-                        AnnotationTree oneWayAnnotation = make.Annotation(
-                            make.QualIdent(oneWayAn), 
-                            Collections.<ExpressionTree>emptyList()
-                        );
-                        genUtils.addAnnotation(oneWayAnnotation,method);
+                    // add @Oneway annotation
+                    if (Kind.PRIMITIVE_TYPE == method.getReturnType().getKind()) {
+                        PrimitiveTypeTree primitiveType = (PrimitiveTypeTree)method.getReturnType();
+                        if (TypeKind.VOID == primitiveType.getPrimitiveTypeKind()) {
+                            TypeElement oneWayAn = workingCopy.getElements().getTypeElement("javax.jws.Oneway"); //NOI18N
+                            AnnotationTree oneWayAnnotation = make.Annotation(
+                                make.QualIdent(oneWayAn), 
+                                Collections.<ExpressionTree>emptyList()
+                            );
+                            modifiersTree = make.addModifiersAnnotation(modifiersTree, oneWayAnnotation);
+                        }
                     }
                     
+                    // add @WebParam annotations 
                     List<? extends VariableTree> parameters = method.getParameters();
+                    List<VariableTree> newParameters = new ArrayList<VariableTree>();
                     for (VariableTree param:parameters) {
                         AnnotationTree paramAnnotation = make.Annotation(
                             make.QualIdent(webParamAn), 
                             Collections.<ExpressionTree>singletonList(
-                                make.Assignment(make.Identifier("name"), make.Literal(param.getName()))) //NOI18N
+                                make.Assignment(make.Identifier("name"), make.Literal(param.getName().toString()))) //NOI18N
                         );
-                        genUtils.addAnnotation(paramAnnotation,param);
+                        newParameters.add(genUtils.addAnnotation(paramAnnotation,param));
                     }
+                    // create new (annotated) method
+                    MethodTree  annotatedMethod = make.Method(
+                                modifiersTree,
+                                method.getName(),
+                                method.getReturnType(),
+                                method.getTypeParameters(),
+                                newParameters,
+                                method.getThrows(),
+                                method.getBody(),
+                                (ExpressionTree)method.getDefaultValue());
+                    Comment comment = Comment.create(NbBundle.getMessage(JaxWsClassesCookieImpl.class, "TXT_WSOperation"));                    
+                    make.addComment(annotatedMethod, comment, true);
                     
-                    ClassTree modifiedClass = make.addClassMember(javaClass,method);
+                    ClassTree modifiedClass = make.addClassMember(javaClass,annotatedMethod);
                     workingCopy.rewrite(javaClass, modifiedClass);
                 }
             }
