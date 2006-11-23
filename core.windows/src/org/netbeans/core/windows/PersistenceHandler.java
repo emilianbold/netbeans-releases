@@ -511,10 +511,11 @@ final class PersistenceHandler implements PersistenceObserver {
         }
         
         // Modes.
-        Set<ModeImpl> modeSet = wmi.getModes();
+        Set<? extends Mode> modeSet = wmi.getModes();
         List<ModeConfig> modeConfigs = new ArrayList<ModeConfig>(modeSet.size());
-        for (Iterator<ModeImpl> it = modeSet.iterator(); it.hasNext(); ) {
-            modeConfigs.add(getConfigFromMode(it.next()));
+        for (Iterator<? extends Mode> it = modeSet.iterator(); it.hasNext(); ) {
+            ModeImpl modeImpl = (ModeImpl)it.next();
+            modeConfigs.add(getConfigFromMode(modeImpl));
         }
         wmc.modes = modeConfigs.toArray(new ModeConfig[0]);
         

@@ -289,7 +289,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
 
     /** Gets <code>Set</code> of all <code>Mode</code>'s.
      * Implements <code>Workspace</code> interface method. */
-    public Set<ModeImpl> getModes () {
+    public Set<? extends Mode> getModes () {
         return central.getModes();
     }
     
@@ -1381,7 +1381,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
      */
     public TopComponent[] getEditorTopComponents() {
         Set<TopComponent> editors = new HashSet<TopComponent>();
-        Set<ModeImpl> modes = getModes();
+        Set<? extends Mode> modes = getModes();
         for(Mode mode: modes) {
             ModeImpl modeImpl = findModeImpl( mode.getName() ); // XXX probably useless
             if( modeImpl.getKind() == Constants.MODE_KIND_EDITOR ) {

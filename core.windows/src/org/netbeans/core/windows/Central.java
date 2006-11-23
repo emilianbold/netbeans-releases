@@ -42,6 +42,7 @@ import org.netbeans.core.windows.model.ModelFactory;
 import org.netbeans.core.windows.persistence.PersistenceManager;
 import org.netbeans.core.windows.view.ControllerHandler;
 import org.netbeans.core.windows.view.View;
+import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -1207,7 +1208,7 @@ final class Central implements ControllerHandler {
     }
     
     /** Gets <code>Set</code> of all <code>Mode</code>'s. */
-    public Set<ModeImpl> getModes () {
+    public Set<? extends Mode> getModes () {
         return model.getModes();
     }
 
@@ -2193,9 +2194,9 @@ final class Central implements ControllerHandler {
      */
     private void restoreViews( DockingStatus viewStatus ) {
         WindowManagerImpl wm = WindowManagerImpl.getInstance();
-        Set<ModeImpl> modes = getModes();
-        for( Iterator<ModeImpl> i=modes.iterator(); i.hasNext(); ) {
-            ModeImpl modeImpl = i.next();
+        Set<? extends Mode> modes = getModes();
+        for( Iterator<? extends Mode> i=modes.iterator(); i.hasNext(); ) {
+            ModeImpl modeImpl = (ModeImpl)i.next();
             if( modeImpl.getState() == Constants.MODE_STATE_SEPARATED )
                 continue;
             
@@ -2232,9 +2233,9 @@ final class Central implements ControllerHandler {
      * Slide out all non-editor TopComponents.
      */
     private void slideAllViews() {
-        Set<ModeImpl> modes = getModes();
-        for( Iterator<ModeImpl> i=modes.iterator(); i.hasNext(); ) {
-            ModeImpl modeImpl = i.next();;
+        Set<? extends Mode> modes = getModes();
+        for( Iterator<? extends Mode> i=modes.iterator(); i.hasNext(); ) {
+            ModeImpl modeImpl = (ModeImpl)i.next();
             if( modeImpl.getKind() == Constants.MODE_KIND_VIEW 
                     && modeImpl != getViewMaximizedMode()
                     && modeImpl.getState() != Constants.MODE_STATE_SEPARATED ) {

@@ -33,6 +33,7 @@ import org.openide.actions.SaveAction;
 import org.openide.cookies.SaveCookie;
 import org.openide.util.*;
 import org.openide.util.actions.Presenter;
+import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 
 
@@ -190,9 +191,10 @@ public abstract class ActionUtils {
     public static void closeAllDocuments() {
         WindowManagerImpl wm = WindowManagerImpl.getInstance();
         Set<TopComponent> tcs = new HashSet<TopComponent>();
-        for(ModeImpl mode: wm.getModes()) {
-            if(mode.getKind() == Constants.MODE_KIND_EDITOR) {
-                tcs.addAll(mode.getOpenedTopComponents());
+        for(Mode mode: wm.getModes()) {
+            ModeImpl modeImpl = (ModeImpl)mode;
+            if(modeImpl.getKind() == Constants.MODE_KIND_EDITOR) {
+                tcs.addAll(modeImpl.getOpenedTopComponents());
             }
         }
         
@@ -204,9 +206,10 @@ public abstract class ActionUtils {
     public static void closeAllExcept (TopComponent c) {
         WindowManagerImpl wm = WindowManagerImpl.getInstance();
         Set<TopComponent> tcs = new HashSet<TopComponent>();
-        for(ModeImpl mode: wm.getModes()) {
-            if(mode.getKind() == Constants.MODE_KIND_EDITOR) {
-                tcs.addAll(mode.getOpenedTopComponents());
+        for(Mode mode: wm.getModes()) {
+            ModeImpl modeImpl = (ModeImpl)mode;
+            if(modeImpl.getKind() == Constants.MODE_KIND_EDITOR) {
+                tcs.addAll(modeImpl.getOpenedTopComponents());
             }
         }
 

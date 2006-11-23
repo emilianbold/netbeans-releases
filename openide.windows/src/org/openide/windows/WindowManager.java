@@ -99,7 +99,7 @@ public abstract class WindowManager extends Object implements Serializable {
 
     /** Gets set of all <code>Mode</code>S added into window system.
      * @since 4.13 */
-    public abstract Set<Mode> getModes();
+    public abstract Set<? extends Mode> getModes();
 
     /**
      * Gets the NetBeans Main Window.
