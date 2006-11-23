@@ -20,7 +20,7 @@
 package org.netbeans.core.windows.view.ui;
 
 import org.openide.awt.StatusDisplayer;
-import org.openide.util.WeakListeners;
+import org.openide.util.RequestProcessor;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -33,15 +33,30 @@ import java.awt.*;
 */
 final class StatusLine extends JLabel implements ChangeListener, Runnable {
     private StatusDisplayer d = StatusDisplayer.getDefault();
-    /** Minimum size of the status line */
-    private static final Dimension PREF_SIZE = new Dimension(100, 0);
-    /** Minimum size of the status line */
-    private static final Dimension MIN_SIZE = new Dimension(0, 0);
+    
+    private String currentMsg;
 
+    private RequestProcessor.Task updater = RequestProcessor.getDefault().create(new Runnable() {
+        
+        public void run() {
+            currentMsg = "";
+            SwingUtilities.invokeLater(StatusLine.this);
+        }
+    });
+    
     /** Creates a new StatusLine */
     public StatusLine () {
+    }
+    
+    public void addNotify() {
+        super.addNotify();
         run();
-        d.addChangeListener(WeakListeners.change(this, d));
+        d.addChangeListener(this);
+    }
+    
+    public void removeNotify() {
+        super.removeNotify();
+        d.removeChangeListener(this);
     }
     
     public void updateUI() {
@@ -56,6 +71,7 @@ final class StatusLine extends JLabel implements ChangeListener, Runnable {
     }
 
     public void stateChanged(ChangeEvent e) {
+        currentMsg = d.getStatusText ();
         if(SwingUtilities.isEventDispatchThread()) {
             run();
         } else {
@@ -66,19 +82,22 @@ final class StatusLine extends JLabel implements ChangeListener, Runnable {
     /** Called in event queue, should update the status text.
     */
     public void run () {
-        setText (d.getStatusText ());
+        setText (currentMsg);
+        if (!"".equals(currentMsg)) {
+            updater.schedule(5000);
+        }
     }
     
     /** #62967: Pref size so that status line is able to shrink as much as possible.
      */
     public Dimension getPreferredSize() {
-        return PREF_SIZE;
+        return new Dimension(100, 0);
     }
     
     /** #62967: Minimum size so that status line is able to shrink as much as possible.
      */
     public Dimension getMinimumSize() {
-        return MIN_SIZE;
+        return new Dimension(0, 0);
     }
 
 }
