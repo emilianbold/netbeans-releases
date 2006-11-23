@@ -405,7 +405,7 @@ public abstract class Module extends ModuleInfo {
             mgr.refineDependencies(this, dependencies);
             dependenciesA = dependencies.toArray(new Dependency[dependencies.size()]);
         } catch (IllegalArgumentException iae) {
-            throw (InvalidException) new InvalidException("While parsing a dependency attribute: " + iae.toString()).initCause(iae); // NOI18N
+            throw (InvalidException) new InvalidException("While parsing " + codeName + " a dependency attribute: " + iae.toString()).initCause(iae); // NOI18N
         }
     }
 
