@@ -17,7 +17,8 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
-                      <Group type="103" groupAlignment="1" attributes="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="jScrollPane1" pref="506" max="32767" attributes="2"/>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="jLabel3" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="-2" pref="270" max="-2" attributes="0"/>
@@ -25,9 +26,8 @@
                           <Group type="102" alignment="0" attributes="1">
                               <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="annotationTextField" pref="402" max="32767" attributes="0"/>
+                              <Component id="annotationTextField" pref="367" max="32767" attributes="0"/>
                           </Group>
-                          <Component id="jScrollPane1" alignment="0" pref="505" max="32767" attributes="2"/>
                       </Group>
                       <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="1" max="-2" attributes="0">
@@ -41,7 +41,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="resetButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="warningLabel" pref="446" max="32767" attributes="0"/>
+                      <Component id="warningLabel" pref="447" max="32767" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -61,7 +61,7 @@
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Component id="jLabel3" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jScrollPane1" pref="177" max="32767" attributes="2"/>
+                      <Component id="jScrollPane1" pref="138" max="32767" attributes="2"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
@@ -70,14 +70,13 @@
                       <Component id="upButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="downButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="49" max="32767" attributes="0"/>
+                      <EmptySpace pref="26" max="32767" attributes="0"/>
                       <Component id="newButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="removeButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" pref="16" max="-2" attributes="0"/>
                   </Group>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
                   <Component id="resetButton" min="-2" max="-2" attributes="0"/>
                   <Component id="warningLabel" min="-2" max="-2" attributes="0"/>
@@ -188,10 +187,10 @@
           <Properties>
             <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
               <Table columnCount="2" rowCount="1">
-                <Column editable="true" title="Url Pattern" type="java.lang.String">
+                <Column editable="true" title="Repository Url Pattern" type="java.lang.String">
                   <Data value=".*/(branches|tags)/(.+?)/.*"/>
                 </Column>
-                <Column editable="true" title="Annotation" type="java.lang.String">
+                <Column editable="true" title="Folder Name" type="java.lang.String">
                   <Data value="\\2"/>
                 </Column>
               </Table>
