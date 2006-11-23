@@ -98,10 +98,16 @@ public class WhereUsedElement extends SimpleRefactoringElementImpl {
             start = start + t.toString().indexOf(((MethodTree)t).getName().toString())+1;
             end = start + ((MethodTree)t).getName().toString().length();
         }
+        if (t.getKind() == Tree.Kind.MEMBER_SELECT) {
+            //XXX: must be improved
+            start = (int)sp.getEndPosition(unit, ((MemberSelectTree) t).getExpression());
+        }
+                
         LineMap lm = tree.getCompilationUnit().getLineMap();
         long line = lm.getLineNumber(start);
+        long endLine = lm.getLineNumber(end);
         long sta = lm.getStartPosition(line);
-        long en = lm.getStartPosition(line+1)-1;
+        long en = lm.getStartPosition(endLine+1)-1;
         StringBuffer sb = new StringBuffer();
         sb.append(RetoucheUtils.getHtml(content.subSequence((int)sta,(int)start).toString().trim()));
         sb.append(" <b>");
