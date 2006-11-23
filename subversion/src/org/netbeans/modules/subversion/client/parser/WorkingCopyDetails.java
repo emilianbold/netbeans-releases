@@ -143,7 +143,7 @@ public class WorkingCopyDetails {
     public Date getDateValue(String key) throws LocalSubversionException {
         try {
             String value = getValue(key);
-            if(value==null) return null;
+            if(value==null || value.equals("")) return null;
             return SvnWcUtils.parseSvnDate(value);
         } catch (ParseException ex) {
             throw new LocalSubversionException(ex);
