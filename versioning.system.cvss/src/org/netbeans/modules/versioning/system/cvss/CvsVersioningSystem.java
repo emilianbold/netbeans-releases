@@ -30,7 +30,6 @@ import org.netbeans.lib.cvsclient.connection.AuthenticationException;
 import org.netbeans.lib.cvsclient.file.FileHandler;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
-import org.netbeans.modules.versioning.system.cvss.CvsModuleConfig;
 import org.netbeans.modules.versioning.system.cvss.ui.syncview.CvsSynchronizeTopComponent;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
@@ -47,8 +46,6 @@ import org.openide.filesystems.*;
 import javax.swing.*;
 import java.io.*;
 import java.util.*;
-import java.util.logging.Logger;
-import java.util.logging.Level;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.beans.PropertyChangeListener;
@@ -359,6 +356,7 @@ public class CvsVersioningSystem {
         // TODO: implement full SH->REGEX convertor
         s = s.replaceAll("\\.", "\\\\."); // NOI18N
         s = s.replaceAll("\\*", ".*"); // NOI18N
+        s = s.replaceAll("\\?", "."); // NOI18N
         try {
             return Pattern.compile(s);
         } catch (PatternSyntaxException e) {
@@ -594,10 +592,10 @@ public class CvsVersioningSystem {
         }
     }
     
-    private Set readCvsIgnoreEntries(File directory) throws IOException {
+    private Set<String> readCvsIgnoreEntries(File directory) throws IOException {
         File cvsIgnore = new File(directory, FILENAME_CVSIGNORE);
         
-        Set entries = new HashSet(5);
+        Set<String> entries = new HashSet<String>(5);
         if (!cvsIgnore.canRead()) return entries;
         
         String s;
@@ -605,7 +603,7 @@ public class CvsVersioningSystem {
         try {
             r = new BufferedReader(new FileReader(cvsIgnore));
             while ((s = r.readLine()) != null) {
-                entries.add(s.trim());
+                entries.addAll(Arrays.asList(s.trim().split(" ")));
             }
         } finally {
             if (r != null) try { r.close(); } catch (IOException e) {}
