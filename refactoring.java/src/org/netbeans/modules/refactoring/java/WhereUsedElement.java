@@ -82,9 +82,9 @@ public class WhereUsedElement extends SimpleRefactoringElementImpl {
             ex.printStackTrace();
         }
         SourcePositions sp = compiler.getTrees().getSourcePositions();
-        int start = (int)sp.getStartPosition(unit, tree.getLeaf());
-        int end   = (int)sp.getEndPosition(unit, tree.getLeaf());
         Tree t= tree.getLeaf();
+        int start = (int)sp.getStartPosition(unit, t);
+        int end   = (int)sp.getEndPosition(unit, t);
         if (end == -1) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new RuntimeException("Cannot get end position for " + t.getClass().getName()+ " " + t + " file:" + compiler.getFileObject().getPath()));
             end=start;
