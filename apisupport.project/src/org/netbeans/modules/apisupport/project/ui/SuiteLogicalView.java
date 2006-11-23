@@ -464,10 +464,8 @@ public final class SuiteLogicalView implements LogicalViewProvider {
             }
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
-                    String previousText = StatusDisplayer.getDefault().getStatusText();
                     StatusDisplayer.getDefault().setStatusText(getMessage("MSG_OpeningProjects"));
                     OpenProjects.getDefault().open(projects, false);
-                    StatusDisplayer.getDefault().setStatusText(previousText);
                 }
             });
         }
