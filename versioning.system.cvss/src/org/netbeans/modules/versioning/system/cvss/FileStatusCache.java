@@ -397,6 +397,7 @@ public class FileStatusCache {
      * Cleans up the cache by removing or correcting entries that are no longer valid or correct.
      */
     void cleanUp() {
+        long t0 = System.currentTimeMillis();
         Map files = cacheProvider.getAllModifiedValues();
         for (Iterator i = files.keySet().iterator(); i.hasNext();) {
             File file = (File) i.next();
@@ -410,6 +411,7 @@ public class FileStatusCache {
                     refresh(file, REPOSITORY_STATUS_UNKNOWN);
                 }
             }
+            if (System.currentTimeMillis() - t0 > 15000) break; // lots of files in the cache, abort cleanup
         }
     }
         
@@ -420,7 +422,7 @@ public class FileStatusCache {
         if (dir.getName().equals(CvsVersioningSystem.FILENAME_CVS)) return NOT_MANAGED_MAP;
         files = (Map) turbo.readEntry(dir, FILE_STATUS_MAP);
         if (files != null) return files;
-        if (isNotManagedByDefault(dir)) {
+        if (!dir.exists()) {
             return NOT_MANAGED_MAP; 
         }
 
@@ -435,10 +437,6 @@ public class FileStatusCache {
             if ((info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) fireFileStatusChanged(file, null, info);
         }
         return files;
-    }
-
-    private boolean isNotManagedByDefault(File dir) {
-        return !dir.exists();
     }
 
     /**
@@ -516,7 +514,11 @@ public class FileStatusCache {
     private FileInformation createFileInformation(File file, Entry entry, int repositoryStatus) {
         if (entry == null) {
             if (!cvs.isManaged(file)) {
-                return file.isDirectory() ? FILE_INFORMATION_NOTMANAGED_DIRECTORY : FILE_INFORMATION_NOTMANAGED;
+                if (file.exists()) {
+                    return file.isDirectory() ? FILE_INFORMATION_NOTMANAGED_DIRECTORY : FILE_INFORMATION_NOTMANAGED;
+                } else {
+                    return FILE_INFORMATION_UNKNOWN;
+                }
             }
             return createMissingEntryFileInformation(file, repositoryStatus);            
         } else {

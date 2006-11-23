@@ -122,20 +122,12 @@ public class CvsVersioningSystem {
     private void cleanup() {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                // HACK: FileStatusProvider cannot do it itself
-//                if (FileStatusProvider.getInstance() != null) {
-                    // must be called BEFORE cache is cleaned up
-//                    fileStatusCache.addVersioningListener(FileStatusProvider.getInstance());
-//                    FileStatusProvider.getInstance().init();
-//                }
-                // must be called AFTER the filestatusprovider is attached
                 fileStatusCache.cleanUp();
             }
         }, 3000);
     }
 
     void shutdown() {
-//        FileStatusProvider.getInstance().shutdown();
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 try {
