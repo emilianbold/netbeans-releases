@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.refactoring.spi;
 
-//[retouche] import org.netbeans.jmi.javamodel.Element;
 import org.netbeans.modules.refactoring.api.RefactoringElement;
 import org.openide.filesystems.FileObject;
 import org.openide.text.PositionBounds;
@@ -28,6 +27,7 @@ import org.openide.text.PositionBounds;
  * <p>
  *
  * @author Martin Matula
+ * @author Jan Becicka
  * @see RefactoringElement
  * @see SimpleRefactoringElementImpl
  */
@@ -66,8 +66,11 @@ public interface RefactoringElementImplementation {
      */
     void performChange();
     
-    /** Returns Java element associated with this refactoring element.
-     * @return MDR Java element.
+    /** Returns element containing this refactoring element.
+     * @see org.netbeans.modules.refactoring.spi.ui.TreeElement
+     * @see org.netbeans.modules.refactoring.spi.ui.TreeElementFactory
+     * @see org.netbeans.modules.refactoring.spi.ui.TreeElementFactoryImplementation
+     * @return element.
      */
     Object getComposite();
     
