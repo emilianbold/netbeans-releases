@@ -143,6 +143,7 @@ public class ExportDiffAction extends ContextAction {
             }
         });
         
+        chooser.setDialogType(JFileChooser.SAVE_DIALOG);        
         chooser.setApproveButtonMnemonic(NbBundle.getMessage(ExportDiffAction.class, "MNE_Export_ExportAction").charAt(0));
         chooser.setApproveButtonText(NbBundle.getMessage(ExportDiffAction.class, "CTL_Export_ExportAction"));
         DialogDescriptor dd = new DialogDescriptor(chooser, NbBundle.getMessage(ExportDiffAction.class, "CTL_Export_Title"));
