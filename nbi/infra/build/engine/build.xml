@@ -21,14 +21,17 @@
 ============================================================================ -->
 <project name="build-engine" default="usage" basedir=".">
     <property file="build.properties"/>
-    
     <import file="${common.dir}/common.xml" optional="false"/>
     
     <target name="all" depends="init,clean,build,release"/>
     
-    <target name="release" depends="init">
-        
-    </target>
+    <target name="init" depends="-init"/>
+    
+    <target name="clean" depends="init,-clean"/>
+    
+    <target name="build" depends="init,-build"/>
+    
+    <target name="release" depends="init,build"/>
     
     <!-- =======================================================================
         Default Target

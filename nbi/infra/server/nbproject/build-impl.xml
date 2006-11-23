@@ -302,8 +302,12 @@
     <!--
                 COMPILATION SECTION
             -->
-    <target name="deps-module-jar" depends="init" if="no.dist.ear.dir" unless="no.deps"/>
-    <target name="deps-ear-jar" depends="init" if="dist.ear.dir" unless="no.deps"/>
+    <target name="deps-module-jar" depends="init" if="no.dist.ear.dir" unless="no.deps">
+        <ant target="jar" inheritall="false" antfile="${project.NetBeans_Installer_Engine}/build.xml"/>
+    </target>
+    <target name="deps-ear-jar" depends="init" if="dist.ear.dir" unless="no.deps">
+        <ant target="jar" inheritall="false" antfile="${project.NetBeans_Installer_Engine}/build.xml"/>
+    </target>
     <target name="deps-jar" depends="init, deps-module-jar, deps-ear-jar" unless="no.deps"/>
     <target name="-pre-pre-compile" depends="init,deps-jar">
         <mkdir dir="${build.classes.dir.real}"/>
@@ -420,11 +424,17 @@
     </target>
     <target name="do-dist" depends="init,compile,compile-jsps,-pre-dist,-do-dist-with-manifest,-do-dist-without-manifest"/>
     <target name="library-inclusion-in-manifest" depends="init" if="dist.ear.dir">
+        <basename property="included.lib.reference.NetBeans_Installer_Engine.jar" file="${reference.NetBeans_Installer_Engine.jar}"/>
+        <copy-ear-war file="${reference.NetBeans_Installer_Engine.jar}" propname="included.lib.reference.NetBeans_Installer_Engine.jar.X"/>
         <mkdir dir="${build.web.dir.real}/META-INF"/>
-        <manifest file="${build.web.dir.real}/META-INF/MANIFEST.MF" mode="update"/>
+        <manifest file="${build.web.dir.real}/META-INF/MANIFEST.MF" mode="update">
+            <attribute name="Class-Path" value="${included.lib.reference.NetBeans_Installer_Engine.jar} "/>
+        </manifest>
         <delete dir="${dist.ear.dir}/temp"/>
     </target>
-    <target name="library-inclusion-in-archive" depends="init" unless="dist.ear.dir"/>
+    <target name="library-inclusion-in-archive" depends="init" unless="dist.ear.dir">
+        <copy file="${reference.NetBeans_Installer_Engine.jar}" todir="${build.web.dir.real}/WEB-INF/lib"/>
+    </target>
     <target name="do-ear-dist" depends="init,compile,compile-jsps,-pre-dist,library-inclusion-in-manifest">
         <dirname property="dist.jar.dir" file="${dist.ear.war}"/>
         <mkdir dir="${dist.jar.dir}"/>
@@ -693,7 +703,9 @@
                 
                 CLEANUP SECTION
             -->
-    <target name="deps-clean" depends="init" if="no.dist.ear.dir" unless="no.deps"/>
+    <target name="deps-clean" depends="init" if="no.dist.ear.dir" unless="no.deps">
+        <ant target="clean" inheritall="false" antfile="${project.NetBeans_Installer_Engine}/build.xml"/>
+    </target>
     <target name="do-clean" depends="init">
         <condition value="${build.web.dir.real}" property="build.dir.to.clean">
             <isset property="dist.ear.dir"/>

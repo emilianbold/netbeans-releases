@@ -25,13 +25,46 @@
     <!-- =======================================================================
         Initialization
     ======================================================================== -->
-    <target name="init">
+    <target name="-init">
         <delete dir="${lib.cls}"/>
         <mkdir dir="${lib.cls}"/>
-        <javac srcdir="${lib.src}" destdir="${lib.cls}"/>
+        <javac srcdir="${lib.src}" destdir="${lib.cls}" debug="true"/>
         
-        <taskdef name="for" 
-                 classname="org.netbeans.installer.infra.build.ant.ForTask" 
+        <taskdef name="for-each" 
+                 classname="org.netbeans.installer.infra.build.ant.ForEach" 
+                 classpath="${lib.cls}"/>
+        <taskdef name="set-property" 
+                 classname="org.netbeans.installer.infra.build.ant.SetProperty" 
+                 classpath="${lib.cls}"/>
+        <taskdef name="package" 
+                 classname="org.netbeans.installer.infra.build.ant.Package" 
+                 classpath="${lib.cls}"/>
+        <taskdef name="sizeof" 
+                 classname="org.netbeans.installer.infra.build.ant.SizeOf" 
+                 classpath="${lib.cls}"/>
+        <taskdef name="sum" 
+                 classname="org.netbeans.installer.infra.build.ant.Sum" 
+                 classpath="${lib.cls}"/>
+        <taskdef name="concat" 
+                 classname="org.netbeans.installer.infra.build.ant.Concat" 
+                 classpath="${lib.cls}"/>
+        <taskdef name="sha1" 
+                 classname="org.netbeans.installer.infra.build.ant.Sha1" 
+                 classpath="${lib.cls}"/>
+        <taskdef name="md5" 
+                 classname="org.netbeans.installer.infra.build.ant.Md5" 
+                 classpath="${lib.cls}"/>
+        <taskdef name="crc32" 
+                 classname="org.netbeans.installer.infra.build.ant.Crc32" 
+                 classpath="${lib.cls}"/>
+        <taskdef name="load-locales" 
+                 classname="org.netbeans.installer.infra.build.ant.LoadLocales" 
+                 classpath="${lib.cls}"/>
+        <taskdef name="evaluate" 
+                 classname="org.netbeans.installer.infra.build.ant.Evaluate" 
+                 classpath="${lib.cls}"/>
+        <taskdef name="descriptor" 
+                 classname="org.netbeans.installer.infra.build.ant.Descriptor" 
                  classpath="${lib.cls}"/>
         
         <condition property="checkout.from.trunk">
@@ -45,22 +78,24 @@
     <!-- =======================================================================
         Clean-up
     ======================================================================== -->
-    <target name="clean" depends="init,clean-native,clean-java"/>
-    
-    <target name="clean-native" depends="init" if="build.native.libraries">
-        <for list="${platforms}" property="platform">
-            <antcall target="-clean-native"/>
-        </for>
+    <target name="-clean" depends="-init,.clean-native,.clean-java">
+        <delete dir="${work.dir}/${cvs.module}"/>
     </target>
     
-    <target name="-clean-native">
+    <target name=".clean-native" depends="init" if="build.native.libraries">
+        <for-each list="${platforms}" property="platform">
+            <antcall target="..clean-native"/>
+        </for-each>
+    </target>
+    
+    <target name="..clean-native">
         <property file="${native.dir}/${platform}.properties"/>
         <property file="${native.dir}/native.properties"/>
         
         <delete dir="${scp.local.file}"/>
     </target>
     
-    <target name="clean-java" depends="init">
+    <target name=".clean-java" depends="-init">
         <subant buildpath="${work.dir}/${cvs.module}/${cvs.path}" 
                 target="${nb.target.clean}" 
                 failonerror="false">
@@ -71,22 +106,22 @@
             <property name="${nb.no.dependencies.name}" 
                       value="${nb.no.dependencies.value}"/>
         </subant>
-        <delete dir="${work.dir}/${cvs.module}"/>
+        <delete dir="${work.dir}/${cvs.module}/${cvs.path}"/>
     </target>
     
     <!-- =======================================================================
         Checkout
     ======================================================================== -->
-    <target name="checkout" depends="init,-checkout-trunk,-checkout-branch"/>
+    <target name="-checkout" depends="-init,.checkout-trunk,.checkout-branch"/>
     
-    <target name="-checkout-trunk" if="checkout.from.trunk">
+    <target name=".checkout-trunk" if="checkout.from.trunk">
         <cvs cvsroot="${cvs.root}" 
              command="checkout" 
              package="${cvs.module}/${cvs.path}" 
              dest="${work.dir}"/>
     </target>
     
-    <target name="-checkout-branch" unless="checkout.from.trunk">
+    <target name=".checkout-branch" unless="checkout.from.trunk">
         <cvs cvsroot="${cvs.root}" 
              command="checkout" 
              package="${cvs.module}/${cvs.path}" 
@@ -97,15 +132,15 @@
     <!-- =======================================================================
         Build
     ======================================================================== -->
-    <target name="build" depends="init,checkout,build-native,build-java"/>
+    <target name="-build" depends="-init,-checkout,.build-native,.build-java"/>
     
-    <target name="build-native" depends="init" if="build.native.libraries">
-        <for list="${platforms}" property="platform">
-            <antcall target="-build-native"/>
-        </for>
+    <target name=".build-native" depends="-init" if="build.native.libraries">
+        <for-each list="${platforms}" property="platform">
+            <antcall target="..build-native"/>
+        </for-each>
     </target>
     
-    <target name="-build-native">
+    <target name="..build-native">
         <property file="${common.dir}/${native.dir}/${platform}.properties"/>
         <property file="${common.dir}/${native.dir}/native.properties"/>
         
@@ -122,7 +157,7 @@
         </exec>
     </target>
     
-    <target name="build-java" depends="init">
+    <target name=".build-java" depends="init">
         <subant buildpath="${work.dir}/${cvs.module}/${cvs.path}" 
                 target="${nb.target.build}">
             <property name="${nb.platform.home.name}" 
