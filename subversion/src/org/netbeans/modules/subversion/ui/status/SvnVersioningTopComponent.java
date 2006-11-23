@@ -27,13 +27,10 @@ import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
 import org.openide.ErrorManager;
 import org.netbeans.modules.subversion.util.Context;
-import org.netbeans.modules.subversion.util.SvnUtils;
-import org.netbeans.modules.versioning.util.FlatFolder;
 
 import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.io.*;
-import java.util.*;
 
 /**
  * Top component of the Versioning view.
@@ -207,18 +204,18 @@ public class SvnVersioningTopComponent extends TopComponent implements Externali
             setName(NbBundle.getMessage(SvnVersioningTopComponent.class, "MSG_Preparing")); // NOI18N
             setEnabled(false);
             setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-            setToolTipText(""); // NOI18N            
         } else {
             setEnabled(true);
             setCursor(Cursor.getDefaultCursor());
             context = ctx;
             setBranchTitle(null);
             refreshContent();
-            setToolTipText(getContextFilesList(ctx));            
         }
+        setToolTipText(getContextFilesList(ctx, NbBundle.getMessage(SvnVersioningTopComponent.class, "CTL_Versioning_TopComponent_Title"))); // NOI18N            
     }
-
-    private String getContextFilesList(Context ctx) {
+    
+    private String getContextFilesList(Context ctx, String def) {
+        if (ctx == null || ctx.getFiles().length == 0) return def;
         StringBuffer sb = new StringBuffer(200);
         sb.append("<html>"); // NOI18N
         for (File file : ctx.getFiles()) {
@@ -229,26 +226,6 @@ public class SvnVersioningTopComponent extends TopComponent implements Externali
         return sb.toString();
     }
 
-    private List<File> removeDuplicates(File [] roots) {
-        List<File> newFiles = new ArrayList<File>();
-        outter: for (int i = 0; i < roots.length; i++) {
-            File file = roots[i];
-            for (Iterator<File> j = newFiles.iterator(); j.hasNext();) {
-                File includedFile = j.next();
-                if (SvnUtils.isParentOrEqual(includedFile, file) && (file.isFile() || !(includedFile instanceof FlatFolder))) continue outter;
-                if (SvnUtils.isParentOrEqual(file, includedFile) && (includedFile.isFile() || !(file instanceof FlatFolder))) {
-                    j.remove();
-                }
-            }
-            newFiles.add(file);
-        }
-        return newFiles;
-    }
-
-    private Context removeDuplicates(Context ctx) {
-        return new Context(removeDuplicates(ctx.getFiles()), removeDuplicates(ctx.getRoots().toArray(new File[0])), ctx.getExclusions());
-    }
-    
     /** Tests whether it shows some content. */
     public boolean hasContext() {
         return context != null && context.getFiles().length > 0;

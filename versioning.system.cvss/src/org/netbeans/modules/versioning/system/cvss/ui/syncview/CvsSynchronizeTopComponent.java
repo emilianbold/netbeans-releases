@@ -133,7 +133,6 @@ public class CvsSynchronizeTopComponent extends TopComponent implements External
                 setName(NbBundle.getMessage(CvsSynchronizeTopComponent.class, "CTL_Synchronize_TopComponent_Title_ContentBranch", contentTitle, branchTitle, age));
             }
         }
-        setToolTipText(getName());
     }
 
     String getContentTitle() {
@@ -219,8 +218,21 @@ public class CvsSynchronizeTopComponent extends TopComponent implements External
             setBranchTitle(null);
             refreshContent();
         }
+        setToolTipText(getContextFilesList(ctx, NbBundle.getMessage(CvsSynchronizeTopComponent.class, "CTL_Synchronize_TopComponent_Title")));            
     }
 
+    private String getContextFilesList(Context ctx, String def) {
+        if (ctx == null || ctx.getFiles().length == 0) return def;
+        StringBuilder sb = new StringBuilder(200);
+        sb.append("<html>"); // NOI18N
+        for (File file : ctx.getFiles()) {
+            sb.append(file.getAbsolutePath());
+            sb.append("<br>"); // NOI18N
+        }
+        sb.delete(sb.length() - 4, Integer.MAX_VALUE);
+        return sb.toString();
+    }
+    
     /** Tests whether it shows some content. */
     public boolean hasContext() {
         return context != null && context.getFiles().length > 0;
