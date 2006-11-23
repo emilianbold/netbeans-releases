@@ -27,7 +27,6 @@ import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.api.JavacTaskImpl.Filter;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
-import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.comp.AttrContext;
 import com.sun.tools.javac.comp.Env;
 import com.sun.tools.javac.main.JavaCompiler;
@@ -43,7 +42,6 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.URI;
-import java.net.URL;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -64,7 +62,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
 import javax.tools.DiagnosticListener;
-import javax.tools.Diagnostic;
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
@@ -93,7 +90,6 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -205,11 +201,14 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     String originalName = fe.getName();
                     final String originalExt = fe.getExt();
                     if (originalExt.length()>0) {
-                        originalName = originalName+'.'+originalExt;
-                    }                
-                    final URL original = new URL (fo.getParent().getURL().toExternalForm()+originalName);
-                    submit(Work.delete(original,root,fo.isFolder()));
-                    delay.post(Work.compile (fo,root));
+                        originalName = originalName+'.'+originalExt;  //NOI18N
+                    }
+                    final File parentFile = FileUtil.toFile(fo.getParent());
+                    if (parentFile != null) {
+                        final URL original = new File (parentFile,originalName).toURI().toURL();
+                        submit(Work.delete(original,root,fo.isFolder()));
+                        delay.post(Work.compile (fo,root));
+                    }
                 }
             }
             else if (isBinary(fo) && VisibilityQuery.getDefault().isVisible(fo)) {
@@ -218,11 +217,14 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     String originalName = fe.getName();
                     final String originalExt = fe.getExt();
                     if (originalExt.length()>0) {
-                        originalName = originalName+'.'+originalExt;
-                    }                
-                    final URL original = new URL (fo.getParent().getURL().toExternalForm()+originalName);
-                    submit(Work.binary(original, root, fo.isFolder()));
-                    submit(Work.binary(fo, root));
+                        originalName = originalName+'.'+originalExt;    //NOI18N
+                    }
+                    final File parentFile = FileUtil.toFile(fo.getParent());
+                    if (parentFile != null) {
+                        final URL original = new File (parentFile,originalName).toURI().toURL();
+                        submit(Work.binary(original, root, fo.isFolder()));
+                        submit(Work.binary(fo, root));
+                    }
                 }
             }
         } catch (IOException ioe) {
