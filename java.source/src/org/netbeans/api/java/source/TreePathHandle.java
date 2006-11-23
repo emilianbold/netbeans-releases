@@ -141,7 +141,17 @@ public final class TreePathHandle {
                 throw ise;                                                                                                                                                                                                   
             }                                                                                                                                                                                                                  
         }                                                                                                                                                                                                                      
-        return info.getTrees().getElement(tp);                                                                                                                                                                                 
+        Element el = info.getTrees().getElement(tp);
+        if (el==null) {
+            Logger.getLogger(TreePathHandle.class.toString()).fine("info.getTrees().getElement(tp) returned null for " + tp);
+            if (enclElIsCorrespondingEl) {
+                return enclosingElement.resolve(info);  
+            } else {
+                return null;
+            }
+        } else {
+            return el;
+        }
     }                                                                                                                                                                                                                          
                                                                                                                                                                                                                                
     /**                                                                                                                                                                                                                        
