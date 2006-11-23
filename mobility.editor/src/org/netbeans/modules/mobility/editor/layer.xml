@@ -67,10 +67,6 @@ Microsystems, Inc. All Rights Reserved.
                 </folder>
             </folder>
         </folder>
-        <folder name="AnnotationTypes">
-            <file name="org-netbeans-modules-mobility-editor-preprocessor_warning.xml" url="preprocessor_warning.xml"/>
-            <file name="org-netbeans-modules-mobility-editor-preprocessor_error.xml" url="preprocessor_error.xml"/>
-        </folder>
     </folder>
 <!--
     <folder name="Actions">

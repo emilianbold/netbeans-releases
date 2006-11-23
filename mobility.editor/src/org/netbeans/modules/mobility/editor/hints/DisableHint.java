@@ -28,10 +28,12 @@ import org.openide.ErrorManager;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.BadLocationException;
+import org.netbeans.spi.editor.hints.ChangeInfo;
+import org.netbeans.spi.editor.hints.Fix;
 
 /**
  */
-public class DisableHint {//extends Hint {
+public class DisableHint implements Fix {
     
     final protected Document doc;
     protected int offset;
@@ -48,26 +50,20 @@ public class DisableHint {//extends Hint {
         return NbBundle.getMessage(InlineIncludeHint.class, "HintInlineDisable"); //NOI18N
     }
     
-//    public synchronized ChangeInfo implement() {
-//        final MDRepository rep = JavaModel.getJavaRepository();
-//        rep.beginTrans(false);
-//        try {
-//            NbDocument.runAtomic((StyledDocument) doc, new Runnable() {
-//                public void run() {
-//                    try {
-//                        doc.insertString(offset, "/", null);
-//                    } catch (BadLocationException ble) {
-//                        ErrorManager.getDefault().notify(ble);
-//                    }
-//                    RecommentAction.actionPerformed(doc);
-//                }
-//            });
-//        } finally {
-//            rep.endTrans();
-//        }
-//        return null;
-//    }
-//    
+    public synchronized ChangeInfo implement() {
+        NbDocument.runAtomic((StyledDocument) doc, new Runnable() {
+            public void run() {
+                try {
+                    doc.insertString(offset, "/", null);
+                } catch (BadLocationException ble) {
+                    ErrorManager.getDefault().notify(ble);
+                }
+                RecommentAction.actionPerformed(doc);
+            }
+        });
+        return null;
+    }
+    
 //    public int getType() {
 //        return SUGGESTION;
 //    }

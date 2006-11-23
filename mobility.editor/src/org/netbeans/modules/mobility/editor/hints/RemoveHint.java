@@ -27,10 +27,12 @@ import org.openide.ErrorManager;
 
 import javax.swing.text.StyledDocument;
 import javax.swing.text.BadLocationException;
+import org.netbeans.spi.editor.hints.ChangeInfo;
+import org.netbeans.spi.editor.hints.Fix;
 
 /**
  */
-public class RemoveHint {//extends Hint {
+public class RemoveHint implements Fix {
     
     final protected int offset;
     final protected BaseDocument doc;
@@ -45,30 +47,24 @@ public class RemoveHint {//extends Hint {
         return NbBundle.getMessage(RemoveHint.class, "HintInlineRemove"); //NOI18N)
     }
     
-//    public ChangeInfo implement() {
-//        final MDRepository rep = JavaModel.getJavaRepository();
-//        rep.beginTrans(false);
-//        try {
-//            NbDocument.runAtomic((StyledDocument) doc, new Runnable() {
-//                public void run() {
-//                    try {
-//                        final int start=Utilities.getRowStart(doc,offset);
-//                        
-//                        final int end=Utilities.getRowEnd(doc,offset);
-//                        doc.remove(start,end-start+1);
-//                        
-//                    } catch (BadLocationException ble) {
-//                        ErrorManager.getDefault().notify(ble);
-//                    }
-//                    RecommentAction.actionPerformed(doc);
-//                }
-//            });
-//        } finally {
-//            rep.endTrans();
-//        }
-//        return null;
-//    }
-//    
+    public ChangeInfo implement() {
+        NbDocument.runAtomic((StyledDocument) doc, new Runnable() {
+            public void run() {
+                try {
+                    final int start=Utilities.getRowStart(doc,offset);
+
+                    final int end=Utilities.getRowEnd(doc,offset);
+                    doc.remove(start,end-start+1);
+
+                } catch (BadLocationException ble) {
+                    ErrorManager.getDefault().notify(ble);
+                }
+                RecommentAction.actionPerformed(doc);
+            }
+        });
+        return null;
+    }
+    
 //    public int getType() {
 //        return SUGGESTION;
 //    }

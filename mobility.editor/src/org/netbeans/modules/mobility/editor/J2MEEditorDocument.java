@@ -34,7 +34,6 @@ import org.netbeans.editor.Coloring;
 import org.netbeans.editor.DrawContext;
 import org.netbeans.editor.DrawLayer;
 import org.netbeans.editor.MarkFactory.DrawMark;
-import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.mobility.antext.preprocessor.CommentingPreProcessor;
 import org.netbeans.mobility.antext.preprocessor.LineParserTokens;
@@ -48,10 +47,7 @@ import org.netbeans.modules.mobility.project.preprocessor.PPDocumentSource;
 import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
-import org.openide.cookies.LineCookie;
 import org.openide.loaders.DataObject;
-import org.openide.text.Annotation;
-import org.openide.text.Line;
 import org.openide.text.NbDocument;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -68,7 +64,19 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.*;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.java.JavaDocument;
+import org.netbeans.modules.mobility.editor.hints.DisableHint;
+import org.netbeans.modules.mobility.editor.hints.InlineIncludeHint;
+import org.netbeans.modules.mobility.editor.hints.ReplaceOldSyntaxHint;
+import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.editor.hints.HintsController;
+import org.netbeans.spi.editor.hints.Severity;
+import org.netbeans.spi.editor.hints.Severity;
+import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 
 
@@ -94,7 +102,6 @@ public class J2MEEditorDocument extends JavaDocument {
     static Lookup.Result LR = null;
     
     /** preprocessor tag error annotations */
-    protected ArrayList<Annotation> errorAnnotations=new ArrayList<Annotation>();
     protected ArrayList<PPLine> lineList = new ArrayList<PPLine>();
     
     /** listens for document changes and updates blocks appropriately */
@@ -131,8 +138,7 @@ public class J2MEEditorDocument extends JavaDocument {
         this.addLayer(cbl, 1300);
         chl = new ConfigurationHeadersLayer();
         this.addLayer(chl, 1200);
-        
-        
+                
         updateBlockChain(J2MEEditorDocument.this);
         
         dl = new DL();
@@ -319,36 +325,34 @@ public class J2MEEditorDocument extends JavaDocument {
     
     /*****              Annotation Stuff                                           ********/
     
-    
     void processAnnotations() {  //XXX needs to be split for errors and warnings
-        final ArrayList<Annotation> added = new ArrayList<Annotation>();
-        for ( final PPLine line : lineList ) {
-            for ( final PPLine.Error err : line.getErrors()) {
-                final PPToken tok = err.token;
-                final int shift = (tok.getType() == LineParserTokens.END_OF_FILE || tok.getType() == LineParserTokens.END_OF_LINE || tok.getType() == LineParserTokens.OTHER_TEXT) ? Math.max(1, tok.getPadding().length()) : 0;
-                final PreprocessorTagAnnotation anno =
-                        new PreprocessorTagAnnotation(line.getLineNumber(), tok.getColumn() - shift, tok.getText().length() + shift, err.message, err.warning);
-                // chain annotations which are on the same line
-                added.add(anno);
+        final ArrayList<ErrorDescription> errs = new ArrayList();
+        DataObject dob = NbEditorUtilities.getDataObject(J2MEEditorDocument.this);
+        FileObject fo = dob == null ? null : dob.getPrimaryFile();
+        for (PPLine line : lineList ) {
+            for (PPLine.Error err : line.getErrors()) {
+                PPToken tok = err.token;
+                int shift = (tok.getType() == LineParserTokens.END_OF_FILE || tok.getType() == LineParserTokens.END_OF_LINE || tok.getType() == LineParserTokens.OTHER_TEXT) ? Math.max(1, tok.getPadding().length()) : 0;
+                int loff = NbDocument.findLineOffset(this, line.getLineNumber()-1);
+                errs.add(ErrorDescriptionFactory.createErrorDescription(err.warning ? Severity.WARNING : Severity.ERROR, err.message, fo, loff + tok.getColumn() - shift, loff + tok.getColumn() + tok.getText().length()));  
             }
+            ArrayList<Fix> fixes = new ArrayList();
+            int start = Utilities.getRowStartFromLineOffset(this, line.getLineNumber()-1);
+            if (line.getTokens().size() > 1 && "//#include".equals(line.getTokens().get(0).getText())) { //NOI18N
+                fixes.add(new InlineIncludeHint(this, start, line.getTokens().get(1).getText()));
+            } else if (line.getType() == PPLine.OLDIF || line.getType() == PPLine.OLDENDIF) {
+                PPBlockInfo b = line.getBlock();
+                while (b != null && b.getType() != PPLine.OLDIF) {
+                    b = b.getParent();
+                }
+                if (b != null) fixes.add(new ReplaceOldSyntaxHint(this, lineList, b));
+            }
+            if (line.getType() == PPLine.UNKNOWN) fixes.add(new DisableHint(this, start));
+            if (fixes.size() > 0) errs.add(ErrorDescriptionFactory.createErrorDescription(Severity.HINT, NbBundle.getMessage(J2MEEditorDocument.class, "LBL_PreprocessorHint"), fixes, this, line.getLineNumber())); //NOI18N
         }
-        
-        final Runnable docRenderer = new Runnable() {
-            public void run() {
-            	for (Annotation an : errorAnnotations )
-                	an.detach();
-                DataObject dob = NbEditorUtilities.getDataObject(J2MEEditorDocument.this);
-                LineCookie cookie = (LineCookie)dob.getCookie(LineCookie.class);
-                Line.Set lines = cookie.getLineSet();
-                for (Annotation an : added)
-                	((PreprocessorTagAnnotation)an).attachToLineSet(lines);
-            }
-        };
-        J2MEEditorDocument.this.render(docRenderer);
-        errorAnnotations = added;
+        HintsController.setErrors(this, "preprocessor-errors", errs); //NOI18N
     }
-    
-    
+   
     /*****              End Annotation Stuff                                           ********/
     
     protected static Coloring toColoring(final AttributeSet as, final Coloring defaults) {

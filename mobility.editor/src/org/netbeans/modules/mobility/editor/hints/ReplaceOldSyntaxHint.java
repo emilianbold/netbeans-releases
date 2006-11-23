@@ -37,6 +37,8 @@ import org.netbeans.mobility.antext.preprocessor.PPBlockInfo;
 import org.netbeans.mobility.antext.preprocessor.PPLine;
 import org.netbeans.mobility.antext.preprocessor.PPToken;
 import org.netbeans.modules.mobility.editor.actions.RecommentAction;
+import org.netbeans.spi.editor.hints.ChangeInfo;
+import org.netbeans.spi.editor.hints.Fix;
 import org.openide.ErrorManager;
 import org.openide.text.NbDocument;
 import org.openide.util.NbBundle;
@@ -45,7 +47,7 @@ import org.openide.util.NbBundle;
  *
  * @author Adam Sotona
  */
-public class ReplaceOldSyntaxHint {//extends Hint {
+public class ReplaceOldSyntaxHint implements Fix {
     
     final protected Document doc;
     final protected ArrayList<PPLine> lineList;
@@ -70,44 +72,38 @@ public class ReplaceOldSyntaxHint {//extends Hint {
         return abilities;
     }
     
-//    public synchronized ChangeInfo implement() {
-//        final MDRepository rep = JavaModel.getJavaRepository();
-//        rep.beginTrans(false);
-//        try {
-//            NbDocument.runAtomic((StyledDocument)doc, new Runnable() {
-//                public void run() {
-//                    try {
-//                        final PPLine startLine  = lineList.get(block.getStartLine()-1);
-//                        final List<PPToken> tokens = startLine.getTokens();
-//                        boolean negative = isNegative(tokens);
-//                        final List<String> abilities = extractAbilities(tokens);
-//                        PPBlockInfo elseBlock = findContraryBlock(negative, abilities);
-//                        if (elseBlock != null && elseBlock.getStartLine() < block.getStartLine()) {
-//                            //else is before if -> exchange the blocks and switch the negation
-//                            final PPBlockInfo x = elseBlock;
-//                            elseBlock = block;
-//                            block = x;
-//                            negative ^= true;
-//                        }
-//                        if (elseBlock != null) {
-//                            doc.insertString(removeLine(doc, elseBlock.getEndLine()), "//#endif", null); //NOI18N
-//                            doc.insertString(removeLine(doc, elseBlock.getStartLine()), "//#else", null); //NOI18N
-//                            doc.remove(removeLine(doc, block.getEndLine()), 1);
-//                        } else {
-//                            doc.insertString(removeLine(doc, block.getEndLine()), "//#endif", null); //NOI18N
-//                        }
-//                        doc.insertString(removeLine(doc, block.getStartLine()), "//#if " + constructCondition(negative, abilities), null); //NOI18N
-//                    } catch (BadLocationException ble) {
-//                        ErrorManager.getDefault().notify(ble);
-//                    }
-//                    RecommentAction.actionPerformed(doc);
-//                }
-//            });
-//        } finally {
-//            rep.endTrans();
-//        }
-//        return null;
-//    }
+    public synchronized ChangeInfo implement() {
+        NbDocument.runAtomic((StyledDocument)doc, new Runnable() {
+            public void run() {
+                try {
+                    final PPLine startLine  = lineList.get(block.getStartLine()-1);
+                    final List<PPToken> tokens = startLine.getTokens();
+                    boolean negative = isNegative(tokens);
+                    final List<String> abilities = extractAbilities(tokens);
+                    PPBlockInfo elseBlock = findContraryBlock(negative, abilities);
+                    if (elseBlock != null && elseBlock.getStartLine() < block.getStartLine()) {
+                        //else is before if -> exchange the blocks and switch the negation
+                        final PPBlockInfo x = elseBlock;
+                        elseBlock = block;
+                        block = x;
+                        negative ^= true;
+                    }
+                    if (elseBlock != null) {
+                        doc.insertString(removeLine(doc, elseBlock.getEndLine()), "//#endif", null); //NOI18N
+                        doc.insertString(removeLine(doc, elseBlock.getStartLine()), "//#else", null); //NOI18N
+                        doc.remove(removeLine(doc, block.getEndLine()), 1);
+                    } else {
+                        doc.insertString(removeLine(doc, block.getEndLine()), "//#endif", null); //NOI18N
+                    }
+                    doc.insertString(removeLine(doc, block.getStartLine()), "//#if " + constructCondition(negative, abilities), null); //NOI18N
+                } catch (BadLocationException ble) {
+                    ErrorManager.getDefault().notify(ble);
+                }
+                RecommentAction.actionPerformed(doc);
+            }
+        });
+        return null;
+    }
     
     protected String constructCondition(final boolean negative, final List<String> abilities) {
         final StringBuffer sb = new StringBuffer();
