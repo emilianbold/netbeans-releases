@@ -41,6 +41,10 @@ public class ResolveConflictsAction extends ContextAction {
         return "ResolveConflicts";  // NOI18N
     }
 
+    protected int getFileEnabledStatus() {
+        return FileInformation.STATUS_VERSIONED_CONFLICT;
+    }
+
     protected void performContextAction(Node[] nodes) {
         Context ctx = getContext(nodes);
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
