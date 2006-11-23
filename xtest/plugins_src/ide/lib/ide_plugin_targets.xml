@@ -213,7 +213,7 @@ Microsystems, Inc. All Rights Reserved.
         <!-- to  be removed -->
         <property name="test.propertyfile" value=""/>
         
-        <property name="args" value="-jdkhome &quot;${jdkhome}&quot; -userdir &quot;${xtest.userdir}&quot; -nosplash 
+        <property name="args" value="--jdkhome &quot;${jdkhome}&quot; --userdir &quot;${xtest.userdir}&quot; -nosplash 
 -cp:p &quot;${xtest.ide.path}&quot; 
 -J-Dnetbeans.classpath=&quot;${xtest.netbeans.classpath}&quot; 
 -J-Dnetbeans.mainclass=org.netbeans.xtest.plugin.ide.Main 
