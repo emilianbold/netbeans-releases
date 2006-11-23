@@ -3319,116 +3319,140 @@ public class JavaCompletionProvider implements CompletionProvider {
                 }
             }
             controller.toPhase(Phase.PARSED);
-            TreeUtilities tu = controller.getTreeUtilities();
-            TreePath path = tu.pathFor(offset);
-            SourcePositions sourcePositions = controller.getTrees().getSourcePositions();
-            if (!upToOffset && Phase.RESOLVED.compareTo(controller.getPhase()) <= 0)
-                return new Env(offset, prefix, controller, path, sourcePositions, null);
-            CompilationUnitTree root = controller.getCompilationUnit();
-            Scope scope = null;
-            TreePath treePath = path;
-            while (treePath != null) {
-                Tree tree = treePath.getLeaf();
-                TreePath pPath = treePath.getParentPath();
-                Tree parent = pPath == null ? null : pPath.getLeaf();
-                TreePath gpPath = pPath != null ? pPath.getParentPath() : null;
-                Tree grandParent = gpPath != null ? gpPath.getLeaf() : null;
-                if (tree.getKind() == Tree.Kind.BLOCK && parent != null && (parent.getKind() == Tree.Kind.METHOD || parent.getKind() == Tree.Kind.CLASS)) {
-                    controller.toPhase(Phase.ELEMENTS_RESOLVED);
-                    int blockPos = (int)sourcePositions.getStartPosition(root, tree);
-                    String blockText = controller.getText().substring(blockPos, upToOffset ? offset : (int)sourcePositions.getEndPosition(root, tree));
-                    final SourcePositions[] sp = new SourcePositions[1];
-                    final BlockTree block = (BlockTree)(((BlockTree)tree).isStatic() ? tu.parseStaticBlock(blockText, sp) : tu.parseStatement(blockText, sp));
-                    if (block == null)
-                        break;
-                    sourcePositions = new SourcePositionsImpl(block, sourcePositions, sp[0], blockPos, upToOffset ? offset : -1);
-                    path = tu.pathFor(new TreePath(pPath, block), offset, sourcePositions);
-                    scope = controller.getTrees().getScope(treePath);
-                    if (upToOffset) {
-                        Tree last = path.getLeaf();
-                        List<? extends StatementTree> stmts = null;
-                        switch (path.getLeaf().getKind()) {
-                            case BLOCK:
-                                stmts = ((BlockTree)path.getLeaf()).getStatements();
-                                break;
-                            case FOR_LOOP:
-                                stmts = ((ForLoopTree)path.getLeaf()).getInitializer();
-                                break;
-                            case ENHANCED_FOR_LOOP:
-                                stmts = Collections.singletonList(((EnhancedForLoopTree)path.getLeaf()).getStatement());
-                                break;
-                            case METHOD:
-                                stmts = ((MethodTree)path.getLeaf()).getParameters();
-                                break;
-                        }
-                        if (stmts != null) {
-                            for (StatementTree st : stmts) {
-                                if (sourcePositions.getEndPosition(root, st) <= offset)
-                                    last = st;
-                            }
-                        }
-                        scope = tu.attributeTreeTo(block, scope, last);
-                    } else {
-                        tu.attributeTree(block, scope);
-                    }
-                    break;
-                } else if (grandParent != null && grandParent.getKind() == Tree.Kind.CLASS && 
-                        parent != null && parent.getKind() == Tree.Kind.VARIABLE && unwrapErrTree(((VariableTree)parent).getInitializer()) == tree) {
-                    controller.toPhase(Phase.ELEMENTS_RESOLVED);
-                    final int initPos = (int)sourcePositions.getStartPosition(root, tree);
-                    String initText = controller.getText().substring(initPos, upToOffset ? offset : (int)sourcePositions.getEndPosition(root, tree));
-                    final SourcePositions[] sp = new SourcePositions[1];
-                    final ExpressionTree init = tu.parseVariableInitializer(initText, sp);
-                    final ExpressionStatementTree fake = new ExpressionStatementTree() {
-                        public Object accept(TreeVisitor v, Object p) {
-                            return v.visitExpressionStatement(this, p);
-                        }
-                        public ExpressionTree getExpression() {
-                            return init;
-                        }
-                        public Kind getKind() {
-                            return Tree.Kind.EXPRESSION_STATEMENT;
-                        }
-                    };
-                    sourcePositions = new SourcePositionsImpl(fake, sourcePositions, sp[0], initPos, upToOffset ? offset : -1);
-                    path = tu.pathFor(new TreePath(pPath, fake), offset, sourcePositions);
-                    scope = controller.getTrees().getScope(treePath);
-                    if (upToOffset && sp[0].getEndPosition(root, init) + initPos > offset) {
-                        scope = tu.attributeTreeTo(init, scope, path.getLeaf());
-                    } else {
-                        tu.attributeTree(init, scope);
-                    }
-                    break;
-                } else if (parent != null && parent.getKind() == Tree.Kind.CLASS && tree.getKind() == Tree.Kind.VARIABLE && 
-                        ((VariableTree)tree).getInitializer() != null && treePath == path && sourcePositions.getStartPosition(root, ((VariableTree)tree).getInitializer()) <= offset) {
-                    controller.toPhase(Phase.ELEMENTS_RESOLVED);
-                    tree = ((VariableTree)tree).getInitializer();
-                    final int initPos = (int)sourcePositions.getStartPosition(root, tree);
-                    String initText = controller.getText().substring(initPos, offset);
-                    final SourcePositions[] sp = new SourcePositions[1];
-                    final ExpressionTree init = tu.parseVariableInitializer(initText, sp);
-                    scope = controller.getTrees().getScope(new TreePath(treePath, tree));
-                    final ExpressionStatementTree fake = new ExpressionStatementTree() {
-                        public Object accept(TreeVisitor v, Object p) {
-                            return v.visitExpressionStatement(this, p);
-                        }
-                        public ExpressionTree getExpression() {
-                            return init;
-                        }
-                        public Kind getKind() {
-                            return Tree.Kind.EXPRESSION_STATEMENT;
-                        }
-                    };
-                    sourcePositions = new SourcePositionsImpl(fake, sourcePositions, sp[0], initPos, offset);
-                    path = tu.pathFor(new TreePath(treePath, fake), offset, sourcePositions);
-                    tu.attributeTree(init, scope);
-                    break;
+            TreePath path = controller.getTreeUtilities().pathFor(offset);
+            if (upToOffset) {
+                TreePath treePath = path;
+                while (treePath != null) {
+                    TreePath pPath = treePath.getParentPath();
+                    TreePath gpPath = pPath != null ? pPath.getParentPath() : null;
+                    Env env = getEnvImpl(controller, path, treePath, pPath, gpPath, offset, prefix, upToOffset);
+                    if (env != null)
+                        return env;
+                    treePath = treePath.getParentPath();
                 }
-                treePath = treePath.getParentPath();
+            } else {
+                if (Phase.RESOLVED.compareTo(controller.getPhase()) > 0) {
+                    LinkedList<TreePath> reversePath = new LinkedList<TreePath>();
+                    TreePath treePath = path;
+                    while (treePath != null) {
+                        reversePath.addFirst(treePath);
+                        treePath = treePath.getParentPath();
+                    }
+                    for (TreePath tp : reversePath) {
+                        TreePath pPath = tp.getParentPath();
+                        TreePath gpPath = pPath != null ? pPath.getParentPath() : null;
+                        Env env = getEnvImpl(controller, path, tp, pPath, gpPath, offset, prefix, upToOffset);
+                        if (env != null)
+                            return env;
+                    }
+                }
             }
-            return new Env(offset, prefix, controller, path, sourcePositions, scope);
+            return new Env(offset, prefix, controller, path, controller.getTrees().getSourcePositions(), null);
         }
         
+        private Env getEnvImpl(CompilationController controller, TreePath orig, TreePath path, TreePath pPath, TreePath gpPath, int offset, String prefix, boolean upToOffset) throws IOException {
+            Tree tree = path != null ? path.getLeaf() : null;
+            Tree parent = pPath != null ? pPath.getLeaf() : null;
+            Tree grandParent = gpPath != null ? gpPath.getLeaf() : null;
+            SourcePositions sourcePositions = controller.getTrees().getSourcePositions();
+            CompilationUnitTree root = controller.getCompilationUnit();
+            if (parent != null && tree.getKind() == Tree.Kind.BLOCK && (parent.getKind() == Tree.Kind.METHOD || parent.getKind() == Tree.Kind.CLASS)) {
+                controller.toPhase(Phase.ELEMENTS_RESOLVED);
+                TreeUtilities tu = controller.getTreeUtilities();
+                int blockPos = (int)sourcePositions.getStartPosition(root, tree);
+                String blockText = controller.getText().substring(blockPos, upToOffset ? offset : (int)sourcePositions.getEndPosition(root, tree));
+                final SourcePositions[] sp = new SourcePositions[1];
+                final BlockTree block = (BlockTree)(((BlockTree)tree).isStatic() ? tu.parseStaticBlock(blockText, sp) : tu.parseStatement(blockText, sp));
+                if (block == null)
+                    return null;
+                sourcePositions = new SourcePositionsImpl(block, sourcePositions, sp[0], blockPos, upToOffset ? offset : -1);
+                Scope scope = controller.getTrees().getScope(path);
+                path = tu.pathFor(new TreePath(pPath, block), offset, sourcePositions);
+                if (upToOffset) {
+                    Tree last = path.getLeaf();
+                    List<? extends StatementTree> stmts = null;
+                    switch (path.getLeaf().getKind()) {
+                        case BLOCK:
+                            stmts = ((BlockTree)path.getLeaf()).getStatements();
+                            break;
+                        case FOR_LOOP:
+                            stmts = ((ForLoopTree)path.getLeaf()).getInitializer();
+                            break;
+                        case ENHANCED_FOR_LOOP:
+                            stmts = Collections.singletonList(((EnhancedForLoopTree)path.getLeaf()).getStatement());
+                            break;
+                        case METHOD:
+                            stmts = ((MethodTree)path.getLeaf()).getParameters();
+                            break;
+                    }
+                    if (stmts != null) {
+                        for (StatementTree st : stmts) {
+                            if (sourcePositions.getEndPosition(root, st) <= offset)
+                                last = st;
+                        }
+                    }
+                    scope = tu.attributeTreeTo(block, scope, last);
+                } else {
+                    tu.attributeTree(block, scope);
+                }
+                return new Env(offset, prefix, controller, path, sourcePositions, scope);
+            } else if (grandParent != null && grandParent.getKind() == Tree.Kind.CLASS &&
+                    parent != null && parent.getKind() == Tree.Kind.VARIABLE && unwrapErrTree(((VariableTree)parent).getInitializer()) == tree) {
+                controller.toPhase(Phase.ELEMENTS_RESOLVED);
+                TreeUtilities tu = controller.getTreeUtilities();
+                final int initPos = (int)sourcePositions.getStartPosition(root, tree);
+                String initText = controller.getText().substring(initPos, upToOffset ? offset : (int)sourcePositions.getEndPosition(root, tree));
+                final SourcePositions[] sp = new SourcePositions[1];
+                final ExpressionTree init = tu.parseVariableInitializer(initText, sp);
+                final ExpressionStatementTree fake = new ExpressionStatementTree() {
+                    public Object accept(TreeVisitor v, Object p) {
+                        return v.visitExpressionStatement(this, p);
+                    }
+                    public ExpressionTree getExpression() {
+                        return init;
+                    }
+                    public Kind getKind() {
+                        return Tree.Kind.EXPRESSION_STATEMENT;
+                    }
+                };
+                sourcePositions = new SourcePositionsImpl(fake, sourcePositions, sp[0], initPos, upToOffset ? offset : -1);
+                Scope scope = controller.getTrees().getScope(path);
+                path = tu.pathFor(new TreePath(pPath, fake), offset, sourcePositions);
+                if (upToOffset && sp[0].getEndPosition(root, init) + initPos > offset) {
+                    scope = tu.attributeTreeTo(init, scope, path.getLeaf());
+                } else {
+                    tu.attributeTree(init, scope);
+                }
+                return new Env(offset, prefix, controller, path, sourcePositions, scope);
+            } else if (parent != null && parent.getKind() == Tree.Kind.CLASS && tree.getKind() == Tree.Kind.VARIABLE &&
+                    ((VariableTree)tree).getInitializer() != null && orig == path && sourcePositions.getStartPosition(root, ((VariableTree)tree).getInitializer()) <= offset) {
+                controller.toPhase(Phase.ELEMENTS_RESOLVED);
+                TreeUtilities tu = controller.getTreeUtilities();
+                tree = ((VariableTree)tree).getInitializer();
+                final int initPos = (int)sourcePositions.getStartPosition(root, tree);
+                String initText = controller.getText().substring(initPos, offset);
+                final SourcePositions[] sp = new SourcePositions[1];
+                final ExpressionTree init = tu.parseVariableInitializer(initText, sp);
+                Scope scope = controller.getTrees().getScope(new TreePath(path, tree));
+                final ExpressionStatementTree fake = new ExpressionStatementTree() {
+                    public Object accept(TreeVisitor v, Object p) {
+                        return v.visitExpressionStatement(this, p);
+                    }
+                    public ExpressionTree getExpression() {
+                        return init;
+                    }
+                    public Kind getKind() {
+                        return Tree.Kind.EXPRESSION_STATEMENT;
+                    }
+                };
+                sourcePositions = new SourcePositionsImpl(fake, sourcePositions, sp[0], initPos, offset);
+                path = tu.pathFor(new TreePath(path, fake), offset, sourcePositions);
+                tu.attributeTree(init, scope);
+                return new Env(offset, prefix, controller, path, sourcePositions, scope);
+            }
+            return null;
+        }
+
         private class SourcePositionsImpl extends TreeScanner<Void, Tree> implements SourcePositions {
             
             private Tree root;
