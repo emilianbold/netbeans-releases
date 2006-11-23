@@ -148,7 +148,8 @@ public class DbFeeder {
                             }
                         }
                     } // upload metadata
-                    updateLocalTeamBuild(metadata);
+                    // Currently not used. See comment at method
+                    //updateLocalTeamBuild(metadata);
                     // delete the metadata as well
                     if (!metadataFile.delete()) {
                         PESLogger.logger.severe("Cannot delete upload metadata file: "+metadataFile);
@@ -278,29 +279,15 @@ public class DbFeeder {
            
            Connection connection = config.getDatabaseConnection();
            DbUtils dbUtils = new DbUtils(connection);                      
-           String projectQuery = "SELECT Project_id FROM Project WHERE Project_id = '"+ir.getProject_id()+"' AND '"+ir.getBuild()+"' >= FIRSTBUILD AND '"
-                    +ir.getBuild()+"' <= LASTBUILD";
+           String projectQuery = "SELECT id FROM Project WHERE id = '"+ir.getProject_id()+"'";
            PESLogger.logger.finest("Checking whether IncomingReport is acceptable project: SQL command:"+projectQuery);
            
            if (dbUtils.anyResultsFromQuery(projectQuery)) {
                result = true;
            } else {
-               setNotAcceptedReason("Project_id '"+ir.getProject_id()+
-                                    "' not found in table Project or build number '"
-                                    +ir.getBuild()+
-                                    "' is not between Project.FIRSTBUILD and Project.LASTBUILD");
+               setNotAcceptedReason("Project.id '"+ir.getProject_id()+"' not found in table Project.");
                result = false;
            }
-           
-           String teamQuery = "SELECT url FROM team WHERE name = '"+ir.getTeam()+"' AND '"+ir.getWebLink()+"' LIKE (url || '%')";
-           if (dbUtils.anyResultsFromQuery(teamQuery)) {
-               result &= true;
-           } else {
-               setNotAcceptedReason("Team '"+ir.getTeam()+"' doesn't have this URL '"+
-                                    ir.getWebLink()+"' assigned in table Team.");
-               result = false;
-           }
-           // hmm, no luck - return false;
        } catch (SQLException sqle) {
            PESLogger.logger.log(Level.SEVERE,"Caught SQLException when getting connection from database",sqle);
            setNotAcceptedReason("Caught SQLException when getting connection from database"+sqle.getMessage());
@@ -352,6 +339,11 @@ public class DbFeeder {
        }
    }
    
+   /** Updates table LocalTeamBuild which holds build numbers of results which
+    * are available at local PES. Without this info we can't decide whether
+    * to create a link to local PES when showing a HTML page of a query from
+    * database.
+    */
    private void updateLocalTeamBuild(UploadMetadata metadata)  {
        WebStatus[] webs = metadata.getWebs();
        if (webs != null) {

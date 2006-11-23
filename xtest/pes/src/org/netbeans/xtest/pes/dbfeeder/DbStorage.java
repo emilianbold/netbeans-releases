@@ -28,28 +28,22 @@ package org.netbeans.xtest.pes.dbfeeder;
 
 import java.sql.*;
 import java.util.ArrayList;
-import org.netbeans.xtest.pe.ResultsUtils;
 import org.netbeans.xtest.pe.xmlbeans.*;
 import org.netbeans.xtest.pes.xmlbeans.*;
-import java.io.File;
-import java.io.PrintStream;
-import java.io.IOException;
-import java.util.Properties;
 import java.beans.IntrospectionException;
 import org.netbeans.xtest.pes.PESLogger;
 import java.util.logging.Level;
-import org.netbeans.xtest.util.OSNameMappingTable;
 
-/** Ant task performing storage of XTest results into MySQL database
+/** Utility class to store xml beans to a database. It is called from DbFeeder class.
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
- * @version 0.2
+ * @author Jiri.Skrivanek@sun.com
  */
 public class DbStorage {
     
     DbUtils utils;
     Connection connection;
     
-    /** creates new DbStorageTask
+    /** creates new DbStorage
      */
     public DbStorage(Connection connection) {
         this.connection = connection;
@@ -69,6 +63,11 @@ public class DbStorage {
         try {
             PESLogger.logger.fine("Storing XTestResultsReport: "+xtr.getHost()+" "+xtr.getProject()+" "+xtr.getBuild());
             
+            // is this correct -> I don't think this report is valid, so this should not happen
+            if (xtr.xmlel_TestRun==null) {
+                throw new SQLException("XTest Result Report does not contain any testruns -- cannot be uploaded to db");
+            }
+            // store system info
             long systemInfo_id = storeSystemInfo(xtr.xmlel_SystemInfo[0]);
             
             xtr.setSystemInfo_id(systemInfo_id);
@@ -83,11 +82,6 @@ public class DbStorage {
                     throw new SQLException("XTest Result Report already in database");
                 }
             }
-            long xtestResultsReport_id = ((Number)utils.insertBeanAutoIncrement(xtr, "id")).longValue();
-            // is this correct -> I don't think this report is valid, so this should not happen
-            if (xtr.xmlel_TestRun==null) {
-                throw new SQLException("XTest Result Report does not contain any testruns -- cannot be uploaded to db");
-            }
             //
             for (int i=0;i<xtr.xmlel_TestRun.length;i++) {
                 TestRun run = xtr.xmlel_TestRun[i];
@@ -96,6 +90,47 @@ public class DbStorage {
                     PESLogger.logger.log(Level.WARNING,"Detected empty test run in report: from host"+xtr.getHost()
                             +", project_id: "+xtr.getProject_id()+", build: "+xtr.getBuild()+", not storing this testrun to database");
                 } else {
+                    // store XTestResultsReport. In normal case TestRun is only one.
+                    // We should investigate whether we should support more test runs.
+            
+                    // This was used when there was only single XTestResultsReport table.
+                    //long xtestResultsReport_id = ((Number)utils.insertBeanAutoIncrement(xtr, "id")).longValue();
+        
+                    // Now we have XTESTRESULTSREPORT and TESTEDTYPE tables
+        
+                    // insert into TESTEDTYPE table if record not exist
+                    Object testedTypeId = utils.insertAutoIncrementIfNotExist(
+                            "TESTEDTYPE",
+                            "ID",
+                            new String[] {"NAME"},
+                            new Object[] {xtr.getTestedType()}
+                    );
+                    // insert into XTESTRESULTSREPORT with reference to TESTEDTYPE
+                    PESLogger.logger.finest("Inserting into XTESTRESULTSREPORT. TESTEDTYPE_ID="+testedTypeId);
+                    long xtestResultsReport_id = ((Number)utils.insertAutoIncrement(
+                                        "XTESTRESULTSREPORT",
+                                        "ID",
+                                        new String[] {
+                                            "PROJECT_ID",
+                                            "BUILD",
+                                            "RUNID",
+                                            "TESTEDTYPE_ID",
+                                            "STARTDATE",
+                                            "EXECTIME",
+                                            "SYSTEMINFO_ID",
+                                            "WEBLINK"
+                                        },
+                                        new Object[] {
+                                            xtr.getProject_id(),
+                                            xtr.getBuild(),
+                                            run.getRunID(),
+                                            testedTypeId,
+                                            xtr.getTimeStamp(),
+                                            Long.valueOf(xtr.getTime()),
+                                            Long.valueOf(xtr.getSystemInfo_id()),
+                                            xtr.getWebLink()
+                                        }
+                            )).longValue();
                     for (int j=0;j<run.xmlel_TestBag.length;j++) {
                         // although this is highly unprobable, better check for nulls
                         if (run.xmlel_TestBag[j] != null) {
@@ -104,13 +139,6 @@ public class DbStorage {
                     }
                 }
             }
-            // finally store attributes (optional)
-            if (xtr.xmlel_Attribute != null) {
-                for (int i=0; i < xtr.xmlel_Attribute.length; i++) {
-                    storeReportAttribute(xtr.xmlel_Attribute[i], xtestResultsReport_id);
-                }
-            }
-            
         } catch (IntrospectionException ie) {
             PESLogger.logger.log(Level.SEVERE,"Caught IntrospectionException when storing XTestResultsReport in database",ie);
             throw new SQLException("Caught IntrospectionException when storing XTestResultsReport in database: "+ie.getMessage());
@@ -125,58 +153,13 @@ public class DbStorage {
             PESLogger.logger.finest("System Info already in database.");
             return id.longValue();
         }
-        updateOSName(info);
         id = (Number)utils.insertBeanAutoIncrement(info, "id");
-        if (info.xmlel_SystemInfoExtra!=null) {
-            for (int i=0;i<info.xmlel_SystemInfoExtra.length;i++) {
-                // although this is highly unprobable, better check for nulls
-                if (info.xmlel_SystemInfoExtra[i] != null) {
-                    storeSystemInfoExtra(info.xmlel_SystemInfoExtra[i], id.longValue());
-                }
-            }
-        }
         return id.longValue();
     }
     
-    void storeSystemInfoExtra(SystemInfoExtra extra, long systemInfo_id) throws SQLException, IntrospectionException {
-        extra.setSystemInfo_id(systemInfo_id);
-        PESLogger.logger.finest("System Info Extra: "+extra.getName()+"="+extra.getValue());
-        utils.insertBean(extra);
-    }
-    
-    // update rows in OSNames table if neccessary
-    void updateOSName(SystemInfo info) throws SQLException {
-        String osName = info.getOsName();
-        String osVersion = info.getOsVersion();
-        String osArch = info.getOsArch();
-        // query
-        String osnameQuery = "SELECT name FROM OSnames WHERE osName = '"+osName+"' AND osVersion = '"
-                +osVersion+"' AND osArch = '"+osArch+"'";
-        PESLogger.logger.finest("Detecting whether this OS is alredy in OSnames table. Query:"+osnameQuery);
-        if (!utils.anyResultsFromQuery(osnameQuery)) {
-            // we need to insert the new osName row
-            String fullOSName = OSNameMappingTable.getFullOSName(osName,osVersion,osArch);
-            if (fullOSName.equals(OSNameMappingTable.UNKNOWN_OS)) {
-                fullOSName = osName+"-"+osVersion+"-"+osArch;
-                PESLogger.logger.severe("Unknown OS detected when inserting new full os name to OSnames table. host="+info.getHost()+", osName="
-                        +osName+", osVersion="+osVersion+", osArch="+osArch
-                        +". You should manually fix the row with name="+fullOSName);
-                
-            }
-            String insert = "INSERT INTO OSnames VALUES ('"+fullOSName+"','"+osName+"','"
-                    +osArch+"','"+osVersion+"')";
-            PESLogger.logger.fine("OS not found in OSnames table, inserting a new row. Statement:"+insert);
-            Statement stmt = connection.createStatement();
-            stmt.executeUpdate(insert);
-            utils.closeStatement(stmt);
-        } else {
-            // nothing - so return
-            return;
-        }
-    }
-    
-    
-    // update the localteambuild table
+    /** Currently not used. See coment at DbFeeder.updateLocalTeamBuild().
+     * Updates the localteambuild table.
+     */
     void updateLocalTeamBuild(String team, String project, String lastBuild) throws SQLException {
         PESLogger.logger.fine("Updating LocalTeamBuild table for project="+project+", team="+team+" with lastBuild = "+lastBuild);
         //
@@ -215,7 +198,7 @@ public class DbStorage {
         }
     }
     
-    
+    /** Stores given test bag and all included test suites and test cases. */
     void storeTestBag(TestBag bag, long xtestResultsReport_id, String runID) throws SQLException, IntrospectionException {
         bag.setXTestResultsReport_id(xtestResultsReport_id);
         bag.setRunID(runID);
@@ -233,122 +216,135 @@ public class DbStorage {
         }
     }
     
-    void storeUnitTestSuite(UnitTestSuite suite, long testBag_id) throws SQLException, IntrospectionException {
-        suite.setTestBag_id(testBag_id);
-        PESLogger.logger.finest("Unit Test Suite: "+suite.getName());
-        long unitTestSuite_id = ((Number)utils.insertBeanAutoIncrement(suite, "id")).longValue();
-        if (suite.xmlel_UnitTestCase==null) {
+    /** Stores given test suite and all included performance data and test cases. */
+    void storeUnitTestSuite(UnitTestSuite testSuite, long testBag_id) throws SQLException, IntrospectionException {
+        testSuite.setTestBag_id(testBag_id);
+        PESLogger.logger.finest("Unit Test Suite: "+testSuite.getName());
+        // This was used when there was only single UnitTestSuite table.
+        // long testSuiteId = ((Number)utils.insertBeanAutoIncrement(suite, "id")).longValue();
+        
+        // Now we have TESTSUITE and TESTSUITENAME tables
+        
+        // insert into TESTSUITENAME table if record not exist
+        Object testSuiteNameId = utils.insertAutoIncrementIfNotExist(
+                "TESTSUITENAME",
+                "ID",
+                new String[] {"NAME"},
+                new Object[] {testSuite.getName()}
+        );
+        // insert into TESTSUITE with reference to TESTSUITENAME
+        PESLogger.logger.finest("Inserting into TESTSUITE. TESTSUITENAME_ID="+testSuiteNameId);
+        long testSuiteId = ((Number)utils.insertAutoIncrement("TESTSUITE", "ID",
+                                        new String[] {
+                                            "TESTSUITENAME_ID",
+                                            "TESTBAG_ID"
+                                        },
+                                        new Object[] {
+                                            testSuiteNameId,
+                                            Long.valueOf(testSuite.getTestBag_id())
+                                        }
+                    )).longValue();
+        if (testSuite.xmlel_UnitTestCase==null) {
             // suite does not have to contain any testcase
             // is this possible - I think so
             return;
         }
-        for (int i=0;i<suite.xmlel_UnitTestCase.length;i++) {
+        for (int i=0;i<testSuite.xmlel_UnitTestCase.length;i++) {
             // although this is highly unprobable, better check for nulls
-            if (suite.xmlel_UnitTestCase[i] != null) {
-                storeUnitTestCase(suite.xmlel_UnitTestCase[i], unitTestSuite_id);
+            if (testSuite.xmlel_UnitTestCase[i] != null) {
+                storeUnitTestCase(testSuite.xmlel_UnitTestCase[i], testSuiteId);
             }
         }
-        if (suite.xmlel_Data==null || suite.xmlel_Data.length<1 || suite.xmlel_Data[0]==null) return;
-        PerformanceData d[] = suite.xmlel_Data[0].xmlel_PerformanceData;
+        if (testSuite.xmlel_Data==null || testSuite.xmlel_Data.length<1 || testSuite.xmlel_Data[0]==null) return;
+        PerformanceData d[] = testSuite.xmlel_Data[0].xmlel_PerformanceData;
         if ( d == null || d.length < 1) return;
         for (int i=0;i<d.length;i++) {
             // although this is highly unprobable, better check for nulls
             if (d[i] != null) {
-                storePerformanceData(d[i], unitTestSuite_id);
+                storePerformanceData(d[i], testSuiteId);
             }
         }
     }
     
-    void storeUnitTestCase(UnitTestCase test, long testSuite_id) throws SQLException, IntrospectionException {
-        test.setUnitTestSuite_id(testSuite_id);
-        PESLogger.logger.finest("Unit Test Case: "+test.getName());
+    /** Stores given test case. */
+    void storeUnitTestCase(UnitTestCase testCase, long testSuite_id) throws SQLException, IntrospectionException {
+        testCase.setUnitTestSuite_id(testSuite_id);
+        PESLogger.logger.finest("Unit Test Case: "+testCase.getName());
         // This was used when there was only single UnitTestCase table.
         //utils.insertBean(test);
         
-        // Now we have UnitTestCase_def and UnitTestCase_tbl tables
+        // Now we have TESTCASENAME, TESTCASERESULT and TESTCASE tables
         
-        // try to find classname and name pair in UnitTestCase_def table
-        Object unitTestCase_def_id = utils.queryFirst("UnitTestCase_def", "id",
-                        new String[] {"classname", "name"},
-                        new String[] {test.getClassName(), test.getName()});
-        if(unitTestCase_def_id == null) {
-            // not found in UnitTestCase_def => insert a new record into UnitTestCase_def
-            PESLogger.logger.finest("Inserting "+test.getClassName()+", "+test.getName()+" into UnitTestCase_def");
-            unitTestCase_def_id = utils.insertAutoIncrement("UnitTestCase_def", "id", 
-                        new String[] {"classname", "name"},
-                        new String[] {test.getClassName(), test.getName()});
-        }
-        PESLogger.logger.finest("Inserting into UnitTestCase_tbl. unitTestCase_def_id="+unitTestCase_def_id);
-        // insert into UnitTestCase_tbl with reference to UnitTestCase_def
-        utils.insert("UnitTestCase_tbl", 
+        // try to find CLASSNAME and NAME pair in TESTCASENAME table
+        String[] columns = {"CLASSNAME", "NAME"};
+        Object[] values = {
+            testCase.getClassName(),
+            testCase.getName()
+        };
+        Object testCaseNameId = utils.insertAutoIncrementIfNotExist("TESTCASENAME", "ID", columns, values);
+
+        // try to find RESULT in TESTCASERESULT table
+        Object testCaseResultId = utils.insertAutoIncrementIfNotExist(
+                        "TESTCASERESULT",
+                        "ID",
+                        new String[] {"RESULT"},
+                        new String[] {testCase.getResult()});
+        PESLogger.logger.finest("Inserting into TESTCASE. TESTCASENAME_ID="+testCaseNameId+", TESTCASERESULT_ID="+testCaseResultId);
+        // insert into TESTCASE with reference to TESTCASENAME and TESTCASERESULT
+        utils.insert("TESTCASE", 
                         new String[] {
-                            "UnitTestCase_def_id",
-                            "result", 
-                            "message",
-                            "failreason",
-                            "time",
-                            "UnitTestSuite_id"
+                            "MESSAGE",
+                            "EXECTIME",
+                            "FAILREASON",
+                            "STACKTRACE",
+                            "TESTCASENAME_ID",
+                            "TESTCASERESULT_ID",
+                            "TESTSUITE_ID"
                         },
                         new Object[] {
-                            unitTestCase_def_id, 
-                            test.getResult(), 
-                            test.getMessage(), 
-                            test.getFailReason(),
-                            new Long(test.getTime()), 
-                            new Long(test.getUnitTestSuite_id())
+                            testCase.getMessage(),
+                            Long.valueOf(testCase.getTime()),
+                            testCase.getFailReason(),
+                            testCase.getStackTrace(),
+                            testCaseNameId,
+                            testCaseResultId,
+                            Long.valueOf(testCase.getUnitTestSuite_id())
                         }
         );
     }
     
-    // is this correct -> shoudn't we agreed in term just plain 'data'
-    void storePerformanceData(PerformanceData data, long testSuite_id) throws SQLException, IntrospectionException {
-        data.setUnitTestSuite_id(testSuite_id);
-        PESLogger.logger.finest("PerformanceData: "+data.xmlat_name);
-        utils.insertBean(data);
-    }
-    
-    // store attributes - this is going to be a little tricky ....
-    void storeReportAttribute(Attribute attribute, long xtestResultsReport_id) throws SQLException {
-        String name = attribute.getName();
-        String value = attribute.getValue();
-        PESLogger.logger.finest("Attribute: "+name+" : "+value);
-        Statement stmt = null;
-        try {
-            stmt = connection.createStatement();
-            long attributeID;
-            Long idWrapper = getAttributeID(name,value,stmt);
-            if (idWrapper == null) {
-                // need to store the attribute;
-                String attributeInsert =  "INSERT INTO Attribute (name,value) VALUES ('"+name+"','"+value+"')";
-                stmt.executeUpdate(attributeInsert);
-                attributeID = getAttributeID(name,value,stmt).longValue();
-            } else {
-                attributeID = idWrapper.longValue();
-            }
-            // now create the m:m relation ship
-            String reportAttributeInsert = "INSERT INTO ReportAttribute VALUES ("+xtestResultsReport_id+","+attributeID+")";
-            stmt.executeUpdate(reportAttributeInsert);
-            // we're done
-        } finally {
-            DbUtils.closeStatement(stmt);
-        }
-    }
-    
-    // helper method for obtaining the id of attribute name/value
-    // it uses Long wrapper, because it returns null when the attribute does not exist
-    private Long getAttributeID(String name, String value, Statement stmt) throws SQLException {
-        String attributeQuery = "SELECT id FROM Attribute WHERE name = '"+name+"' AND value = '"+value+"'";
-        PESLogger.logger.finest("Detecting whether attribute is already in the table. Query:"+attributeQuery);
-        ResultSet rs = stmt.executeQuery(attributeQuery);
-        if (rs.next()) {
-            // yes, it is in the table
-            long attributeID = rs.getLong(1);
-            return new Long(attributeID);
-        } else {
-            // nothing is in the table
-            return null;
-        }
+    /** Stores given performance data. */
+    void storePerformanceData(PerformanceData performanceData, long testSuite_id) throws SQLException, IntrospectionException {
+        performanceData.setUnitTestSuite_id(testSuite_id);
+        PESLogger.logger.finest("PerformanceData: "+performanceData.xmlat_name);
+        // This was used when there was only single PerformanceData table.
+        // utils.insertBean(performanceData);
         
+        // Now we have PERFDATANAME and PERFORMANCEDATA tables
+        
+        // try to find performance data in PERFDATANAME table
+        String[] columns = {"NAME", "UNIT", "RUNORDER", "THRESHOLD"};
+        Object[] values = {
+            performanceData.getName(),
+            performanceData.getUnit(),
+            Integer.valueOf(performanceData.getRunOrder()),
+            Long.valueOf(performanceData.getThreshold())
+        };
+        Object perfDataNameId = utils.insertAutoIncrementIfNotExist("PERFDATANAME", "ID", columns, values);
+        PESLogger.logger.finest("Inserting into PERFORMANCEDATA. PERFDATANAME_ID="+perfDataNameId);
+        // insert into PERFORMANCEDATA with reference to PERFDATANAME
+        utils.insert("PERFORMANCEDATA", 
+                        new String[] {
+                            "PERFDATANAME_ID",
+                            "TESTSUITE_ID", 
+                            "VALUE"
+                        },
+                        new Object[] {
+                            perfDataNameId,
+                            Long.valueOf(performanceData.getUnitTestSuite_id()),
+                            Long.valueOf(performanceData.getValue())
+                        }
+        );
     }
     
     /** Deletes results for builds beyond deleteAge threshold. It deletes only
@@ -362,9 +358,7 @@ public class DbStorage {
             for(int i=deleteAge;i<builds.length;i++) {
                 String whereClause = "build = '"+builds[i]+"' AND "+
                         "project_id = '"+xtr.getProject_id()+"' AND "+
-                        "team = '"+xtr.getTeam()+"' AND "+
-                        "testinggroup = '"+xtr.getTestingGroup()+"' AND "+
-                        "testedtype = '"+xtr.getTestedType()+"'";
+                        "testedType_id = (select id from TestedType where name = '"+xtr.getTestedType()+"')";
                 PESLogger.logger.finest("Going to delete out-dated results where:\n"+whereClause);
                 utils.deleteFromTable("XTestResultsReport", whereClause);
             }
@@ -376,11 +370,10 @@ public class DbStorage {
      * milestone builds.
      */
     private String[] getBuilds(XTestResultsReport xtr) throws SQLException {
-        String sqlQuery = "SELECT DISTINCT build FROM XTestResultsReport WHERE "+
+        String sqlQuery = "SELECT DISTINCT build FROM XTestResultsReport, TestedType WHERE "+
                 "project_id = '"+xtr.getProject_id()+"' AND "+
-                "team = '"+xtr.getTeam()+"' AND "+
-                "testinggroup = '"+xtr.getTestingGroup()+"' AND "+
-                "testedtype = '"+xtr.getTestedType()+"' AND "+
+                "testedType_id = TestedType.id AND "+
+                "TestedType.name = '"+xtr.getTestedType()+"' AND "+
                 "build NOT IN (SELECT build FROM MilestoneBuild WHERE project_id = '"+xtr.getProject_id()+"')"+
                 "order by build desc";
         Statement stmt = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);

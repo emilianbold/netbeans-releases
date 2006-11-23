@@ -313,6 +313,31 @@ public class DbUtils {
         insert(table, columns, values);
         return queryLast(table, autoIncrementColumn, columns, values);
     }
+
+    /** Inserts values into given table if record doesn't exist. Otherwise
+     * it just returns value of autoIncrementColumn for existing record.
+     * @param table name of table
+     * @param autoIncrementColumn name of auto-increment column
+     * @param columns an array of column names
+     * @param values an array of column values
+     * @return value of autoIncrementColumn for existing or just inserted record.
+     */
+    public Object insertAutoIncrementIfNotExist(String table, String autoIncrementColumn, String[] columns, Object values[]) throws SQLException {
+        // try to find values in table
+        Object id = queryFirst(table, autoIncrementColumn, columns, values);
+        if(id == null) {
+            // not found => insert a new record into table
+            StringBuffer valuesToInsert = new StringBuffer();
+            for (int i = 0; i < values.length; i++) {
+                Object object = values[i];
+                valuesToInsert.append(values[i]);
+                valuesToInsert.append(" ");
+            }
+            PESLogger.logger.finest("Inserting "+valuesToInsert+"into "+table);
+            id = insertAutoIncrement(table, autoIncrementColumn, columns, values);
+        }
+        return id;
+    }
     
     public Object[] query(Object bean, String returnColumn) throws IntrospectionException, SQLException {
         return query(bean, returnColumn, null, true, new String[0]);

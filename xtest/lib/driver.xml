@@ -123,8 +123,7 @@ Microsystems, Inc. All Rights Reserved.
             project="${xtest.tested.project}" project_id="${xtest.tested.project_id}"
             team="${xtest.testing.team}" build="${xtest.ide.build.name}"
             testingGroup="${xtest.testing.group}" testedType="${xtest.tested.type}"
-            host="${xtest.machine}" comment="${xtest.testrun.comment}" 
-            scanPropertiesForAttributes="true"/>
+            host="${xtest.machine}"/>
      
      
      <for list="${xtest.instance.postfixes}" delimiters="," property="xtest.instance.postfix">

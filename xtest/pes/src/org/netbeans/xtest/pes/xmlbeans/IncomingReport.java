@@ -150,7 +150,9 @@ public class IncomingReport extends ManagedReport {
            }
            return (IncomingReport)xmlBean;
        } catch (ClassNotFoundException cnfe) {
-           throw new IOException("Loaded file "+reportFile+" does not contain IncomingReport, caused by ClassNotFoundException :"+cnfe.getMessage());
+           IOException ioe = new IOException("Loaded file "+reportFile+" does not contain IncomingReport, caused by ClassNotFoundException :"+cnfe.getMessage());
+           ioe.initCause(cnfe);
+           throw ioe;
        }
     }
 

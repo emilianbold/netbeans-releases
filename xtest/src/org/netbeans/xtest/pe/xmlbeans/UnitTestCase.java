@@ -126,20 +126,6 @@ public class UnitTestCase extends XMLBean {
         xmlat_message = message;
     }
     
-    /** Getter for property type.
-     * @return Value of property type.
-     */
-    public String getType() {
-        return xmlat_type;
-    }
-    
-    /** Setter for property type.
-     * @param type New value of property type.
-     */
-    public void setType(String type) {
-        xmlat_type = type;
-    }
-    
     /** Getter for property unitTestSuite_id.
      * @return Value of property unitTestSuite_id.
      */
@@ -189,7 +175,6 @@ public class UnitTestCase extends XMLBean {
     public String   xmlat_workdir;
     public String   xmlat_message;
     public String   xmlat_failReason;
-    public String   xmlat_type;
     public long     xmlat_time;
 
     /** Holds value of property unitTestSuite_id. */

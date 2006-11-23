@@ -42,13 +42,11 @@ public class XTestResultsReport extends XMLBean {
     // XML attributes
     public java.sql.Timestamp     xmlat_timeStamp;
     public long     xmlat_time;
-    //public String   xmlat_attributes;
     public String   xmlat_project;
     public String   xmlat_build;
     public String   xmlat_testingGroup;
     public String   xmlat_testedType;
     public String   xmlat_host;
-    public String   xmlat_comment;    
     public long     xmlat_testsTotal;
     public long     xmlat_testsPass;
     public long     xmlat_testsFail;
@@ -56,8 +54,6 @@ public class XTestResultsReport extends XMLBean {
     public long     xmlat_testsExpectedFail;
     public long     xmlat_testsError;
     public boolean  xmlat_fullReport;
-    // only for compatibility reasons -> should to remove it
-    public String   xmlat_platform;
     // project_id - project_id of the report in the database 
     public String   xmlat_project_id;
     // link - link to local pes -> this is not full link, but only the part from         
@@ -71,7 +67,6 @@ public class XTestResultsReport extends XMLBean {
     // child elements
     public SystemInfo[] xmlel_SystemInfo;
     public TestRun[] xmlel_TestRun;
-    public Attribute[] xmlel_Attribute;
     
     /** Holds value of property systemInfo_id. */
     private long systemInfo_id;    
@@ -170,20 +165,6 @@ public class XTestResultsReport extends XMLBean {
         xmlat_build = build;
     }
     
-    /** Getter for property comment.
-     * @return Value of property comment.
-     */
-    public String getComment() {
-        return xmlat_comment;
-    }
-    
-    /** Setter for property comment.
-     * @param comment New value of property comment.
-     */
-    public void setComment(String comment) {
-        xmlat_comment = comment;
-    }
-    
     /** Getter for property host.
      * @return Value of property host.
      */
@@ -196,20 +177,6 @@ public class XTestResultsReport extends XMLBean {
      */
     public void setHost(String host) {
         xmlat_host = host;
-    }
-    
-    /** Getter for property platform.
-     * @return Value of property platform.
-     */
-    public String getPlatform() {
-        return xmlat_platform;
-    }
-    
-    /** Setter for property platform.
-     * @param platform New value of property platform.
-     */
-    public void setPlatform(String platform) {
-        xmlat_platform = platform;
     }
     
     /** Getter for property project.
@@ -409,7 +376,6 @@ public class XTestResultsReport extends XMLBean {
         xmlat_testingGroup = xtr.xmlat_testingGroup;
         xmlat_testedType = xtr.xmlat_testedType;
         xmlat_host = xtr.xmlat_host;
-        xmlat_comment = xtr.xmlat_comment;
         xmlat_testsTotal = xtr.xmlat_testsTotal;
         xmlat_testsPass = xtr.xmlat_testsPass;
         xmlat_testsFail = xtr.xmlat_testsFail;

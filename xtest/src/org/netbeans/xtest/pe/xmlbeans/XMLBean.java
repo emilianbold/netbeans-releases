@@ -470,11 +470,7 @@ public abstract class XMLBean {
                     xmlBean.fillAttributes(atts);
                     if (DEBUG) System.out.println("XMLBean.getXMLBean(): got attributes");
                 } catch (NoSuchFieldException nsfe) {
-                    if (DEBUG) {
-                        System.out.println("Nested Exception:");
-                        nsfe.printStackTrace();
-                    }
-                    throw new ClassNotFoundException("Cannot fill defined attributes");
+                    throw new ClassNotFoundException("Cannot fill defined attributes", nsfe);
                 }
             }
         }

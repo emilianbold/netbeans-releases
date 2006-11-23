@@ -74,17 +74,19 @@ public class DbFeederTest extends NbTestCase {
         DbUtils dBUtils = new DbUtils(connection);
         try {
             Object xtestResultsReportId = dBUtils.queryFirst("XTestResultsReport", "id", "build", "200699999999");
+            System.out.println("xtestResultsReportId="+xtestResultsReportId);
             Object testbagId = dBUtils.queryFirst("Testbag", "id", "XTestResultsReport_id", xtestResultsReportId);
             Object testbagName = dBUtils.queryFirst("Testbag", "name", "id", testbagId);
             assertEquals("Testbag name differs.", "Out Of The Box Startup", testbagName);
-            Object unitTestSuiteId = dBUtils.queryFirst("UnitTestSuite", "id", "Testbag_id", testbagId);
-            Object unitTestSuiteName = dBUtils.queryFirst("UnitTestSuite", "name", "id", unitTestSuiteId);
-            assertEquals("UnitTestSuite name differs.", "footprint.FootprintTests", unitTestSuiteName);
-            Object unitTestCaseTblId = dBUtils.queryFirst("UnitTestCase_tbl", "id", "UnitTestSuite_id", unitTestSuiteId);
-            Object unitTestCaseDefId = dBUtils.queryFirst("UnitTestCase_tbl", "UnitTestCase_def_id", "id", unitTestCaseTblId);
-            Object unitTestCaseName = dBUtils.queryFirst("UnitTestCase_def", "name", "id", unitTestCaseDefId);
-            assertEquals("UnitTestCase name differs.", "testOutOfTheBoxStartup", unitTestCaseName);
-            Object performanceDataValue = dBUtils.queryFirst("PerformanceData", "value", "UnitTestSuite_id", unitTestSuiteId);
+            Object testSuiteId = dBUtils.queryFirst("TestSuite", "id", "Testbag_id", testbagId);
+            Object testSuiteNameId = dBUtils.queryFirst("TestSuite", "TestSuiteName_id", "id", testSuiteId);
+            Object testSuiteName = dBUtils.queryFirst("TestSuiteName", "name", "id", testSuiteNameId);
+            assertEquals("TestSuite name differs.", "footprint.FootprintTests", testSuiteName);
+            Object testCaseId = dBUtils.queryFirst("TestCase", "id", "TestSuite_id", testSuiteId);
+            Object testCaseNameId = dBUtils.queryFirst("TestCase", "TestCaseName_id", "id", testCaseId);
+            Object testCaseName = dBUtils.queryFirst("TestCaseName", "name", "id", testCaseNameId);
+            assertEquals("TestCase name differs.", "testOutOfTheBoxStartup", testCaseName);
+            Object performanceDataValue = dBUtils.queryFirst("PerformanceData", "value", "TestSuite_id", testSuiteId);
             assertEquals("PerformanceData value differs.", "81724", performanceDataValue.toString());
         } finally {
             System.out.println("FINALLY");

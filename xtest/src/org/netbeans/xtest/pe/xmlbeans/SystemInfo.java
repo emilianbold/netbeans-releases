@@ -43,8 +43,6 @@ public class SystemInfo extends XMLBean {
 
     // attributes
     public String   xmlat_host;
-    //public String   xmlat_project;
-    //public String   xmlat_build;
     public String   xmlat_osArch;
     public String   xmlat_osName;
     public String   xmlat_osVersion;
@@ -52,9 +50,6 @@ public class SystemInfo extends XMLBean {
     public String   xmlat_javaVersion;
     public String   xmlat_userLanguage;
     public String   xmlat_userRegion;
-    
-    // child elements
-    public SystemInfoExtra[] xmlel_SystemInfoExtra;
     
     /** Holds value of property osArch. */
     private String osArch;
