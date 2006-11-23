@@ -342,21 +342,40 @@ public class JavaCompletionDoc implements CompletionDocumentation {
     }
     
     private int appendType(ElementUtilities eu, StringBuilder sb, Type type, boolean varArg) {
-        int len = createLink(sb, eu.elementFor(type.asClassDoc()), type.simpleTypeName());
-        ParameterizedType pt = type.asParameterizedType();
-        if (pt != null) {
-            Type[] targs = pt.typeArguments();
-            if (targs.length > 0) {
-                sb.append("&lt;"); //NOI18N
-                for (int j = 0; j < targs.length; j++) {
-                    len += appendType(eu, sb, targs[j], false);
-                    if (j < targs.length - 1) {
-                        sb.append(", "); //NOI18N
-                        len += 2;
+        int len = 0;
+        WildcardType wt = type.asWildcardType();
+        if (wt != null) {
+            sb.append('?'); //NOI18N
+            len++;
+            Type[] bounds = wt.extendsBounds();
+            if (bounds != null && bounds.length > 0) {
+                sb.append(" extends "); //NOI18N
+                len += 9;
+                len += appendType(eu, sb, bounds[0], false);
+            }
+            bounds = wt.superBounds();
+            if (bounds != null && bounds.length > 0) {
+                sb.append(" super "); //NOI18N
+                len += 7;
+                len += appendType(eu, sb, bounds[0], false);
+            }
+        } else {
+            len = createLink(sb, eu.elementFor(type.asClassDoc()), type.simpleTypeName());
+            ParameterizedType pt = type.asParameterizedType();
+            if (pt != null) {
+                Type[] targs = pt.typeArguments();
+                if (targs.length > 0) {
+                    sb.append("&lt;"); //NOI18N
+                    for (int j = 0; j < targs.length; j++) {
+                        len += appendType(eu, sb, targs[j], false);
+                        if (j < targs.length - 1) {
+                            sb.append(", "); //NOI18N
+                            len += 2;
+                        }
                     }
+                    sb.append("&gt;"); //NOI18N
+                    len += 2;
                 }
-                sb.append("&gt;"); //NOI18N
-                len += 2;
             }
         }
         String dim = type.dimension();
