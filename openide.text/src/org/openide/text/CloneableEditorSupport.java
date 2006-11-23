@@ -826,10 +826,15 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
     /**
      * Gets editor panes opened by this support.
+     * Can be called from AWT event thread only.
+     *
      * @return a non-empty array of panes, or null
      * @see EditorCookie#getOpenedPanes
      */
     public JEditorPane[] getOpenedPanes() {
+        // expected in AWT only
+        // assert SwingUtilities.isEventDispatchThread() : "AWT"; // NOI18N
+
         LinkedList<JEditorPane> ll = new LinkedList<JEditorPane>();
         Enumeration en = allEditors.getComponents();
 
