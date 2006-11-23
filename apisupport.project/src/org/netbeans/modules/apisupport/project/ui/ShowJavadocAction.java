@@ -21,7 +21,6 @@ package org.netbeans.modules.apisupport.project.ui;
 
 import java.net.URL;
 import java.net.MalformedURLException;
-import java.text.MessageFormat;
 import org.openide.ErrorManager;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.StatusDisplayer;
@@ -106,9 +105,9 @@ final class ShowJavadocAction extends NodeAction {
         if (javadoc!=null) {
             HtmlBrowser.URLDisplayer.getDefault().showURL(javadoc);
         } else {
-            StatusDisplayer.getDefault().setStatusText(MessageFormat.format(
-                    NbBundle.getMessage(ShowJavadocAction.class, "TXT_NoJavadoc"),
-                    new Object[] {displayName}));
+            StatusDisplayer.getDefault().setStatusText(
+                    NbBundle.getMessage(ShowJavadocAction.class, "TXT_NoJavadoc",
+                    displayName));
         }
     }
     
