@@ -266,6 +266,7 @@ public class ProxySettings {
             // name for itself which can't actually be resolved. Normally
             // "localhost" is aliased to 127.0.0.1 anyway.
         }
+        /* per Milan's agreement it's removed. See issue #89868
         try {
             String localhost2 = InetAddress.getLocalHost().getCanonicalHostName();
             if (!"localhost".equals(localhost2) && !localhost2.equals(localhost)) { // NOI18N
@@ -281,6 +282,7 @@ public class ProxySettings {
             // name for itself which can't actually be resolved. Normally
             // "localhost" is aliased to 127.0.0.1 anyway.
         }
+         */
         return compactNonProxyHosts (nonProxy);
     }
 
