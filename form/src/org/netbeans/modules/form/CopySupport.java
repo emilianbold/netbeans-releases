@@ -23,22 +23,12 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
-import java.util.EnumSet;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.util.ElementFilter;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.ClassIndex;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.modules.classfile.ClassFile;
 import org.netbeans.modules.form.layoutdesign.LayoutComponent;
 import org.netbeans.modules.form.layoutdesign.LayoutModel;
+import org.netbeans.modules.form.palette.BeanInstaller;
 import org.netbeans.modules.form.project.ClassPathUtils;
 import org.netbeans.modules.form.project.ClassSource;
 import org.openide.DialogDisplayer;
@@ -398,53 +388,21 @@ class CopySupport {
             return transferable;
         }
     }
-    
-    private static TypeElement findTypeElement(CompilationController controller, JavaSource js, String simpleName) {
-        ClassIndex index = js.getClasspathInfo().getClassIndex();
-        for (ElementHandle<TypeElement> handle: index.getDeclaredTypes(
-                simpleName,
-                ClassIndex.NameKind.SIMPLE_NAME,
-                EnumSet.of(ClassIndex.SearchScope.SOURCE))) {
-            return handle.resolve(controller);
-        }
-        return null;
-    }
-        
-    private static boolean isDeclaredAsJavaBean(TypeElement classElm) {
-        Set<Modifier> modifiers = classElm.getModifiers();
-        if (modifiers.contains(Modifier.PUBLIC) && !modifiers.contains(Modifier.ABSTRACT)) {
-            for (ExecutableElement constr: ElementFilter.constructorsIn(classElm.getEnclosedElements())) {
-                Set<Modifier> cmodifiers = constr.getModifiers();
-                if (cmodifiers.contains(Modifier.PUBLIC) && constr.getParameters().isEmpty()) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
 
     static String getCopiedBeanClassName(final FileObject fo) {
-        final String[] result = new String[1];
-        final JavaSource js = JavaSource.forFileObject(fo);
-        try {
-            js.runUserActionTask(new CancellableTask<CompilationController>() {
-
-                public void cancel() {
+        String beanName = null;
+        if ("class".equals(fo.getExt())) {
+            try {
+                // XXX rewrite this to use javax.lang.model.element.* as soon as JavaSource introduce .class files support
+                ClassFile clazz = new ClassFile(fo.getInputStream());
+                if (BeanInstaller.isDeclaredAsJavaBean(clazz)) {
+                    beanName = clazz.getName().getInternalName();
                 }
-
-                public void run(CompilationController controller) throws Exception {
-                    controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                    TypeElement classElm = findTypeElement(controller, js, fo.getName());
-                    if (classElm != null && isDeclaredAsJavaBean(classElm)) {
-                        result[0] = controller.getElements().getBinaryName(classElm).toString();
-                    }
-                }
-            }, true);
-        } catch (IOException ex) {
-            Logger.getLogger(CopySupport.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
+            } catch (IOException ex) {
+                Logger.getLogger(CopySupport.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
+            }
         }
-        
-        return result[0];
+        return beanName;
     }
 
     static ClassSource getCopiedBeanClassSource(Transferable t) {
