@@ -434,8 +434,9 @@ public class RepositoryPathNode extends AbstractNode {
         
         public Component getCustomEditor() {
             SVNRevision revision = entry.getLastChangedRevision();
-            SVNUrl url = entry.getRepositoryFile().getFileUrl();
-            final SvnSearch svnSearch = new SvnSearch(new RepositoryFile(url, revision));        
+            SVNUrl repositoryUrl = entry.getRepositoryFile().getRepositoryUrl();
+            SVNUrl fileUrl = entry.getRepositoryFile().getFileUrl();
+            final SvnSearch svnSearch = new SvnSearch(new RepositoryFile(repositoryUrl, fileUrl, revision));        
             return svnSearch.getSearchPanel();
         }
     }
