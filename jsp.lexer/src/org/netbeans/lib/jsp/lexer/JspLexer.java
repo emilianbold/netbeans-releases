@@ -927,7 +927,10 @@ public class JspLexer implements Lexer<JspTokenId> {
                 state = INIT;
                 return token(JspTokenId.COMMENT);
             case ISA_CONTENT_EL_DELIM:
+                state = INIT;
+                return token(JspTokenId.TEXT);
             case ISI_CONTENT_EL:
+                state = INIT;
                 return token(JspTokenId.EL);
             default:
                 System.out.println("JSPLexer - unhandled state : " + state);   // NOI18N
