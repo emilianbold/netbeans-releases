@@ -285,7 +285,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
      * Fast url syntax check. It can invalidate the whole step
      */
     private void validateSvnUrl() {
-        boolean valid;
+        boolean valid = true;
 
         RepositoryConnection rc = null; 
         try {
@@ -294,16 +294,19 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
             rc.getSvnUrl();                             
             if(!isSet(FLAG_ACCEPT_REVISION) && !rc.getSvnRevision().equals(SVNRevision.HEAD)) 
             {
-                setValid(false, NbBundle.getMessage(Repository.class, "MSG_Repository_OnlyHEADRevision"));
+                message = NbBundle.getMessage(Repository.class, "MSG_Repository_OnlyHEADRevision");
                 valid = false;
-            };                   
+            } else {
+                // check for a valid svnrevision
+                rc.getSvnRevision();
+            }
         } catch (Exception ex) {             
-            setValid(false, ex.getLocalizedMessage());
+            message = ex.getLocalizedMessage();
             valid = false;
-        }
-        valid = rc != null && !rc.getUrl().equals("");
+        }        
         
         if(valid) {            
+            valid = rc != null && !rc.getUrl().equals("");
             if(rc.getUrl().startsWith("svn+") && repositoryPanel.tunnelCommandTextField.getText().trim().equals("")) {
                 valid = false;
             }
@@ -563,7 +566,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
             RepositoryConnection rc = (RepositoryConnection) evt.getItem();
             refresh(rc);
             updateVisibility();  
-            editedRC = new RepositoryConnection(rc);
+            editedRC = new RepositoryConnection(rc);           
         }        
     }
     

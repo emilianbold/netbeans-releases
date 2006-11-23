@@ -72,7 +72,7 @@ public class RepositoryConnection {
     }
 
     public String getPassword() {
-        return password== null ? "" : password ;
+        return password == null ? "" : password ;
     }
 
     public ProxyDescriptor getProxyDescriptor() {
@@ -161,16 +161,11 @@ public class RepositoryConnection {
                     svnRevision = SvnUtils.getSVNRevision(revisionString);
                 } catch (NumberFormatException ex) {
                     throw new MalformedURLException(NbBundle.getMessage(Repository.class, "MSG_Repository_WrongRevision", revisionString));
-                    //setValid(false, NbBundle.getMessage(Repository.class, "MSG_Repository_WrongRevision", revisionString));     // NOI18N
-                    //return null;
                 }
             } else {
                 svnRevision = SVNRevision.HEAD;
             }
             urlString = urlString.substring(0, idx);
-//        } else {
-//            throw new MalformedURLException(NbBundle.getMessage(Repository.class, "MSG_Repository_OnlyHEADRevision"));          // NOI18N
-//        }
         }    
         svnUrl = removeEmptyPathSegments(new SVNUrl(urlString));
 
