@@ -31,7 +31,7 @@ import org.openide.ErrorManager;
  * @author Ivan Sidorkin
  */
 public class JBPluginProperties {
-
+    
     public static final String PROPERTY_DISPLAY_NAME ="displayName";//NOI18N
     public static final String PROPERTY_SERVER = "server";//NOI18N
     public static final String PROPERTY_DEPLOY_DIR = "deploy-dir";//NOI18N
@@ -43,6 +43,7 @@ public class JBPluginProperties {
     
     private static JBPluginProperties pluginProperties = null;
     private String installLocation;
+    private String domainLocation;
     
     
     public static JBPluginProperties getInstance(){
@@ -155,9 +156,20 @@ public class JBPluginProperties {
         
         this.installLocation = installLocation;
     }
-
+    
     public String getInstallLocation(){
         return this.installLocation;
     }
     
+    public void setDomainLocation(String domainLocation) {
+        if ( domainLocation.endsWith("/") || domainLocation.endsWith("\\") ){
+            domainLocation = domainLocation.substring(0, domainLocation.length() - 1 );
+        }
+        
+        this.domainLocation = domainLocation;
+    }
+    
+    public String getDomainLocation() {
+        return domainLocation;
+    }
 }

@@ -33,8 +33,6 @@ import java.security.Permissions;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.MissingResourceException;
 import java.util.Set;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils;
 import org.openide.ErrorManager;
@@ -43,8 +41,6 @@ import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
 import javax.enterprise.deploy.shared.factories.DeploymentFactoryManager;
-import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
-import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
@@ -101,15 +97,21 @@ public class JBDeploymentFactory implements DeploymentFactory {
        }         
     }
 
-    public static URLClassLoader getJBClassLoader(String serverRoot){
+    public static URLClassLoader getJBClassLoader(String serverRoot, String domainRoot){
         try {
 
+            // dom4j.jar library for JBoss Application Server 4.0.4 and lower
+            File dom404 = new File(serverRoot + "/lib/dom4j.jar");
+            
+            // dom4j.jar library for JBoss Application Server 4.0.5
+            File dom405 = new File(domainRoot + "/lib/dom4j.jar");
+            
             URL urls[] = new URL[]{
                     new File(serverRoot + "/client/jbossall-client.jar").toURI().toURL(),      //NOI18N
                     new File(serverRoot + "/client/jboss-common-client.jar").toURI().toURL(),  //NOI18N
                     new File(serverRoot + "/client/jboss-deployment.jar").toURI().toURL(),     //NOI18N
                     new File(serverRoot + "/client/jnp-client.jar").toURI().toURL(),           //NOI18N
-                    new File(serverRoot + "/lib/dom4j.jar").toURI().toURL()                    //NOI18N
+                    (dom404.exists()) ? (dom404.toURI().toURL()) : (dom405.toURI().toURL())    //NOI18N
             };
             URLClassLoader loader = new JBClassLoader(urls, JBDeploymentFactory.class.getClassLoader());
             return loader;
@@ -124,15 +126,25 @@ public class JBDeploymentFactory implements DeploymentFactory {
         try {
             String jbossRoot = InstanceProperties.getInstanceProperties(instanceURL).
                                     getProperty(JBPluginProperties.PROPERTY_ROOT_DIR);
+            
+            String domainRoot = InstanceProperties.getInstanceProperties(instanceURL).
+                                    getProperty(JBPluginProperties.PROPERTY_SERVER_DIR);
+            
             // if jbossRoot is null, then we are in a server instance registration process, thus this call
             // is made from InstanceProperties creation -> JBPluginProperties singleton contains 
             // install location of the instance being registered
             if (jbossRoot == null)
                 jbossRoot = JBPluginProperties.getInstance().getInstallLocation();
             
+            // if domainRoot is null, then we are in a server instance registration process, thus this call
+            // is made from InstanceProperties creation -> JBPluginProperties singleton contains 
+            // install location of the instance being registered
+            if (domainRoot == null)
+                domainRoot = JBPluginProperties.getInstance().getDomainLocation();
+            
             jbossFactory = (DeploymentFactory) jbossFactories.get(jbossRoot);
             if ( jbossFactory == null ) {
-                URLClassLoader loader = getJBClassLoader(jbossRoot);
+                URLClassLoader loader = getJBClassLoader(jbossRoot, domainRoot);
                 jbossFactory = (DeploymentFactory) loader.loadClass("org.jboss.deployment.spi.factories.DeploymentFactoryImpl").newInstance();//NOI18N
                 
                 jbossFactories.put(jbossRoot, jbossFactory);

@@ -178,8 +178,9 @@ public class Util {
         
         try{
             oldLoader = Thread.currentThread().getContextClassLoader();
-            String serverRoot = ip.getProperty(JBPluginProperties.PROPERTY_ROOT_DIR);
-            URLClassLoader loader = JBDeploymentFactory.getJBClassLoader(serverRoot);
+
+            URLClassLoader loader = JBDeploymentFactory.getJBClassLoader(ip.getProperty(JBPluginProperties.PROPERTY_ROOT_DIR), 
+                    ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR));
             Thread.currentThread().setContextClassLoader(loader);
             
             Object srv = dm.refreshRMIServer();

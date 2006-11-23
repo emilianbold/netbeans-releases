@@ -116,7 +116,8 @@ public class JBDeploymentManager implements DeploymentManager {
             try {
                 oldLoader = Thread.currentThread().getContextClassLoader();
                 InstanceProperties ip = this.getInstanceProperties();
-                URLClassLoader loader = JBDeploymentFactory.getJBClassLoader(ip.getProperty(JBPluginProperties.PROPERTY_ROOT_DIR));
+                URLClassLoader loader = JBDeploymentFactory.getJBClassLoader(ip.getProperty(JBPluginProperties.PROPERTY_ROOT_DIR),
+                        ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR));
                 Thread.currentThread().setContextClassLoader(loader);
                 
                 JBProperties props = getProperties();

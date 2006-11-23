@@ -115,6 +115,8 @@ public class AddServerPropertiesPanel implements WizardDescriptor.Panel, ChangeL
         instantiatingIterator.setServerPath(panel.getDomainPath());
         instantiatingIterator.setDeployDir(JBPluginUtils.getDeployDir( panel.getDomainPath()));
         
+        JBPluginProperties.getInstance().setDomainLocation(panel.getDomainPath());
+        
         return true;
     }
     
