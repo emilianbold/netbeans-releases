@@ -170,7 +170,6 @@ public class XMLJ2eeEditorSupport extends DataEditorSupport
                 saveDocument();
             }else {
                 obj.displayErrorMessage();
-                StatusDisplayer.getDefault().setStatusText("");
                 dialog = new DialogDescriptor(
                     NbBundle.getMessage (XMLJ2eeEditorSupport.class, "MSG_invalidXmlWarning"),
                     NbBundle.getMessage (XMLJ2eeEditorSupport.class, "TTL_invalidXmlWarning"));
@@ -179,13 +178,6 @@ public class XMLJ2eeEditorSupport extends DataEditorSupport
                 if (dialog.getValue() == DialogDescriptor.OK_OPTION) {
                     obj.setSavingDocument(true);
                     saveDocument();
-                }
-                else {
-                    RequestProcessor.getDefault().post(new Runnable() {
-                        public void run(){
-                            StatusDisplayer.getDefault().setStatusText("");
-                        }                        
-                    },100);
                 }
             }
         }

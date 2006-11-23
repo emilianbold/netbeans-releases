@@ -132,7 +132,6 @@ public class SchemaElementUtil {
                             for (int j = 0; j < size; j++)
                                 tables[j].setDeclaringSchema(se);
 
-                            org.openide.awt.StatusDisplayer.getDefault().setStatusText(""); //NOI18N
                         } catch (Exception e) {
                             org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, e);
                             org.openide.awt.StatusDisplayer.getDefault().setStatusText(ResourceBundle.getBundle("org.netbeans.modules.dbschema.resources.Bundle").getString("CannotRetrieve")); //NOI18N

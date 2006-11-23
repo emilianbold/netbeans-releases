@@ -143,8 +143,6 @@ public class OptionsAction extends CallableSystemAction {
                 } else {
                     dialog.toFront();
                 }
-                
-                StatusDisplayer.getDefault().setStatusText(""); // NOI18N
             }
         }); // EQ.iL
     }

@@ -143,6 +143,5 @@ public class HelpAction extends SystemAction
         
         StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(HelpAction.class, "CTL_OpeningHelp"));
         h.showHelp (help);
-        StatusDisplayer.getDefault ().setStatusText (""); // NOI18N
     }
 }

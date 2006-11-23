@@ -76,7 +76,6 @@ public class HTMLViewAction extends CallableSystemAction {
             } else
                 HtmlBrowser.URLDisplayer.getDefault().showURL(IDESettings.getRealHomeURL ());
         }
-        org.openide.awt.StatusDisplayer.getDefault().setStatusText (""); // NOI18N
     }
     
     protected boolean asynchronous() {

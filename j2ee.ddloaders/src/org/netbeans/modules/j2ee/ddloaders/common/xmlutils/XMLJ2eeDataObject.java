@@ -149,7 +149,6 @@ public abstract class XMLJ2eeDataObject extends XMLDataObject implements CookieS
     protected void repairNode(){
         // PENDING: set the icon in Node
         // ((DataNode)getNodeDelegate()).setIconBase (getIconBaseForValidDocument());
-        org.openide.awt.StatusDisplayer.getDefault().setStatusText("");  // NOI18N
         if (inOut!=null) {
             inOut.closeInputOutput();
             errorAnnotation.detach();

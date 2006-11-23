@@ -194,7 +194,6 @@ implements Runnable, org.netbeans.core.startup.RunLevel {
                                                                  null,
                                                                  new NullPointerException("\n\n\nWindowSystem is not supplied!!!\\n\n"));
                                            }
-                                           StatusDisplayer.getDefault().setStatusText("");
                                            StartLog.logProgress("Window system shown");
                                            if (!StartLog.willLog()) {
                                                maybeDie(null);
