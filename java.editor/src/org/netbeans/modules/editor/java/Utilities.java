@@ -49,6 +49,7 @@ import org.netbeans.editor.ext.java.JavaTokenContext;
 public class Utilities {
     
     private static final String CAPTURED_WILDCARD = "<captured wildcard>"; //NOI18N
+    private static final String ERROR = "<error>"; //NOI18N
 
     private static boolean caseSensitive = true;
     private static SettingsChangeListener settingsListener = new SettingsListener();
@@ -61,7 +62,7 @@ public class Utilities {
     }
     
     public static boolean startsWith(String theString, String prefix) {
-        if (theString == null || theString.length() == 0)
+        if (theString == null || theString.length() == 0 || ERROR.equals(theString))
             return false;
         if (prefix == null || prefix.length() == 0)
             return true;
