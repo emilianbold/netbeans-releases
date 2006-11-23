@@ -68,7 +68,7 @@ public class WsTesterPageAction extends CookieAction {
     
     protected void performAction(Node[] activatedNodes) {
         JaxWsTesterCookie cookie = 
-           (JaxWsTesterCookie)activatedNodes[0].getCookie(JaxWsTesterCookie.class);
+           activatedNodes[0].getCookie(JaxWsTesterCookie.class);
         String wsdlURL = cookie.getTesterPageURL();
         try {
             final URL url = new URL(wsdlURL);
@@ -109,9 +109,8 @@ public class WsTesterPageAction extends CookieAction {
                 });
             }
         } catch (MalformedURLException ex) {
-            StatusDisplayer.getDefault().setStatusText(MessageFormat.format(NbBundle.getMessage(WsTesterPageAction.class,
-                    "TXT_TesterPageUrl"), new Object[] {wsdlURL}));   //NOI18N
-            System.out.println(cookie.getTesterPageURL());
+            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(WsTesterPageAction.class,
+                    "TXT_TesterPageUrl", wsdlURL));   //NOI18N
         }
     }
     

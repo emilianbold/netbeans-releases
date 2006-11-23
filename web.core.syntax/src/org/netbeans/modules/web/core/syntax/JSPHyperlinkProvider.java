@@ -20,7 +20,6 @@
 package org.netbeans.modules.web.core.syntax;
 
 
-import java.text.MessageFormat;
 import java.util.List;
 import java.util.StringTokenizer;
 import javax.servlet.jsp.tagext.TagFileInfo;
@@ -29,7 +28,6 @@ import javax.servlet.jsp.tagext.TagLibraryInfo;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.TokenID;
@@ -280,8 +278,8 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
                 }
                 else {
                     // when the file was not found.
-                    String msg = NbBundle.getBundle(JSPHyperlinkProvider.class).getString("LBL_file_not_found"); //NOI18N
-                    org.openide.awt.StatusDisplayer.getDefault().setStatusText(MessageFormat.format(msg, new Object [] { path } ));
+                    String msg = NbBundle.getMessage(JSPHyperlinkProvider.class, "LBL_file_not_found", path); //NOI18N
+                    org.openide.awt.StatusDisplayer.getDefault().setStatusText(msg);
                 }
 
             }
