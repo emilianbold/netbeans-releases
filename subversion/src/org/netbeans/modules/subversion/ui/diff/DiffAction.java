@@ -23,6 +23,7 @@ import java.util.*;
 
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.Context;
+import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.subversion.*;
 import java.io.File;
 
@@ -40,14 +41,9 @@ public class DiffAction extends ContextAction {
         return "CTL_MenuItem_Diff";    // NOI18N
     }
 
-    protected int getFileEnabledStatus() {
-        return FileInformation.STATUS_LOCAL_CHANGE
-             | FileInformation.STATUS_REMOTE_CHANGE;
-    }
-
-    protected int getDirectoryEnabledStatus() {
-        return FileInformation.STATUS_MANAGED 
-             & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED; 
+    protected boolean enable(Node[] nodes) {
+        Context ctx = SvnUtils.getCurrentContext(nodes);
+        return getModifiedFiles(ctx, FileInformation.STATUS_LOCAL_CHANGE).length > 0; 
     }
     
     public static void diff(Context ctx, int type, String contextName) {
