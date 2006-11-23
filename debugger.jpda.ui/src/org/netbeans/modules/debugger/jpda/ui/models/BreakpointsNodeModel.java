@@ -65,6 +65,12 @@ public class BreakpointsNodeModel implements NodeModel {
         "org/netbeans/modules/debugger/resources/breakpointsView/DisabledNonLineBreakpointHit";
     public static final String DISABLED_CURRENT_LINE_BREAKPOINT =
         "org/netbeans/modules/debugger/resources/breakpointsView/DisabledBreakpointHit";
+    public static final String LINE_CONDITIONAL_BREAKPOINT =
+        "org/netbeans/modules/debugger/resources/breakpointsView/ConditionalBreakpoint";
+    public static final String CURRENT_LINE_CONDITIONAL_BREAKPOINT =
+        "org/netbeans/modules/debugger/resources/breakpointsView/ConditionalBreakpointHit";
+    public static final String DISABLED_LINE_CONDITIONAL_BREAKPOINT =
+        "org/netbeans/modules/debugger/resources/breakpointsView/DisabledConditionalBreakpoint";
 
     private Vector listeners = new Vector ();
 
@@ -374,16 +380,34 @@ public class BreakpointsNodeModel implements NodeModel {
         boolean current = currentBreakpoint == o;
         boolean disabled = !((Breakpoint) o).isEnabled();
         if (o instanceof LineBreakpoint) {
+            String condition = ((LineBreakpoint) o).getCondition();
+            boolean conditional = condition != null && condition.trim().length() > 0;
             if (current) {
                 if (disabled) {
-                    return DISABLED_CURRENT_LINE_BREAKPOINT;
+                    if (conditional) {
+                        return DISABLED_LINE_CONDITIONAL_BREAKPOINT;
+                    } else {
+                        return DISABLED_CURRENT_LINE_BREAKPOINT;
+                    }
                 } else {
-                    return CURRENT_LINE_BREAKPOINT;
+                    if (conditional) {
+                        return CURRENT_LINE_CONDITIONAL_BREAKPOINT;
+                    } else {
+                        return CURRENT_LINE_BREAKPOINT;
+                    }
                 }
             } else if (disabled) {
-                return DISABLED_LINE_BREAKPOINT;
+                if (conditional) {
+                    return DISABLED_LINE_CONDITIONAL_BREAKPOINT;
+                } else {
+                    return DISABLED_LINE_BREAKPOINT;
+                }
             } else {
-                return LINE_BREAKPOINT;
+                if (conditional) {
+                    return LINE_CONDITIONAL_BREAKPOINT;
+                } else {
+                    return LINE_BREAKPOINT;
+                }
             }
         } else
         if (o instanceof ThreadBreakpoint ||
