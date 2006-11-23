@@ -19,6 +19,7 @@
 
 package org.netbeans.spi.palette;
 import junit.framework.*;
+import org.netbeans.modules.palette.DefaultSettings;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -28,6 +29,7 @@ import org.openide.loaders.DataLoaderPool;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
+import org.openide.util.NbPreferences;
 
 
 /**
@@ -54,6 +56,8 @@ public abstract class AbstractPaletteTestHid extends TestCase {
         if( null != paletteRootFolder )
             paletteRootFolder.delete();
         paletteRootFolder = fs.getRoot().createFolder( PALETTE_ROOT_FOLDER_NAME );
+        
+        NbPreferences.forModule( DefaultSettings.class ).node( "CommonPaletteSettings" ).removeNode();
         
         if( null == myDummyLoader )
             myDummyLoader = new DummyItemLoader();
