@@ -587,6 +587,9 @@ public class Annotator {
                     if (Utils.isParentOrEqual(file, mf)) {
                         FileInformation info = (FileInformation) modifiedFiles.get(mf);
                         int status = info.getStatus();
+                        if ((status == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY || status == FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) && file.equals(mf)) {
+                            continue;
+                        }
                         if (status == FileInformation.STATUS_VERSIONED_CONFLICT) {
                             Image badge = Utilities.loadImage("org/netbeans/modules/versioning/system/cvss/resources/icons/conflicts-badge.png", true); // NOI18N
                             return Utilities.mergeImages(icon, badge, 16, 9);

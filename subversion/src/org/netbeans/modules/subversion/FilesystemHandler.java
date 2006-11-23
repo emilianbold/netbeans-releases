@@ -76,18 +76,7 @@ class FilesystemHandler extends VCSInterceptor {
     public void afterDelete(final File file) {
         Utils.post(new Runnable() {
             public void run() {
-                // needed for external deletes; othewise, beforeDelete is quicker
-                if (file != null) {
-                    if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_NOTVERSIONED_EXCLUDED) == 0) {
-                        // file is already deleted, cache contains null for up-to-date file
-                        // for deleted files it'd mean FILE_INFORMATION_UNKNOWN
-                        // on the other hand cache keeps all folders regardless their status
-                        File probe = file.getParentFile();
-                        if ((cache.getStatus(probe).getStatus() & FileInformation.STATUS_VERSIONED) != 0) {
-                            fileDeletedImpl(file);
-                        }
-                    }
-                }
+                fileDeletedImpl(file);
             }
         });
     }
@@ -233,12 +222,15 @@ class FilesystemHandler extends VCSInterceptor {
      */ 
     private void fileDeletedImpl(File file) {
         if (file == null) return;
-        try {
-            SvnClient client = Subversion.getInstance().getClient(false);
-            client.remove(new File [] { file }, true);
-
-        } catch (SVNClientException e) {
-            // ignore; we do not know what to do here; does no harm, the file was probably Locally New
+        int status = cache.getStatus(file).getStatus();
+        if (status != FileInformation.STATUS_NOTVERSIONED_EXCLUDED && status != FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) {
+            try {
+                SvnClient client = Subversion.getInstance().getClient(false);
+                client.remove(new File [] { file }, true);
+    
+            } catch (SVNClientException e) {
+                // ignore; we do not know what to do here; does no harm, the file was probably Locally New
+            }
         }
         // fire event explicitly because the file is already gone
         // so svnClientAdapter does not fire ISVNNotifyListener event
