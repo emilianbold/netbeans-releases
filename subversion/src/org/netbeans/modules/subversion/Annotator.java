@@ -266,7 +266,7 @@ public class Annotator {
             stickyString,
             binaryString
         };
-        return format.format(arguments, new StringBuffer(), null).toString().trim();
+        return " " + format.format(arguments, new StringBuffer(), null).toString().trim();
     }
 
     private String getMimeType(File file) {
