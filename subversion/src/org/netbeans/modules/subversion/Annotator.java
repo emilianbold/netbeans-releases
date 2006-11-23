@@ -118,7 +118,7 @@ public class Annotator {
 
     public void refresh() {
         String string = SvnModuleConfig.getDefault().getAnnotationFormat(); //System.getProperty("netbeans.experimental.svn.ui.statusLabelFormat");  // NOI18N
-        if (string != null) {
+        if (string != null && !string.trim().equals("")) {
             mimeTypeFlag = string.indexOf("{mime_type}") > -1;
             string = string.replaceAll("\\{revision\\}",  "\\{0\\}");           // NOI18N    
             string = string.replaceAll("\\{status\\}",    "\\{1\\}");           // NOI18N

@@ -109,7 +109,7 @@ public class SvnModuleConfig {
     }
     
     public String getDefaultAnnotationFormat() {
-        return "[{" + Annotator.ANNOTATION_STATUS + "} {" + Annotator.ANNOTATION_FOLDER + "}]";
+        return ""; //"[{" + Annotator.ANNOTATION_STATUS + "} {" + Annotator.ANNOTATION_FOLDER + "}]";
     }
 
     public void setAnnotationFormat(String annotationFormat) {
