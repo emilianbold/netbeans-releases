@@ -217,7 +217,7 @@ class ModeParser {
         readOrder();
         
         List<TCRefParser> localList = new ArrayList<TCRefParser>(10);
-        Map<String, TCRefParser> localMap = (Map<String, TCRefParser>) ((HashMap<String, TCRefParser>) tcRefParserMap).clone();
+        Map<String, TCRefParser> localMap = new HashMap<String, TCRefParser>( tcRefParserMap );
         
         if (tcRefOrder != null) {
             //if (DEBUG) Debug.log(ModeParser.class, "-- -- ORDER IS DEFINED");

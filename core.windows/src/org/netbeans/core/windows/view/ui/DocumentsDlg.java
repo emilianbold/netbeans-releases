@@ -278,7 +278,7 @@ public class DocumentsDlg extends JPanel implements PropertyChangeListener, Expl
         List<TopComponent> tcList = getOpenedDocuments();
         List<TopComponentNode> tcNodes = new ArrayList<TopComponentNode> (tcList.size());
         for (TopComponent tc : tcList) {
-            tcNodes.add(new TopComponentNode<TopComponentNode>(tc));
+            tcNodes.add(new TopComponentNode(tc));
         }
         
         if(tcList.isEmpty()) {
@@ -507,8 +507,8 @@ public class DocumentsDlg extends JPanel implements PropertyChangeListener, Expl
     private static final Collator COLLATOR = Collator.getInstance();
 
     /** Used to display list of TopComponent in ListView. */
-    private class TopComponentNode<T extends TopComponentNode> extends AbstractNode
-                                   implements Comparable<T>, Action, PropertyChangeListener {
+    private class TopComponentNode extends AbstractNode
+                                   implements Comparable<TopComponentNode>, Action, PropertyChangeListener {
         
         private TopComponent tc;
         
@@ -550,7 +550,7 @@ public class DocumentsDlg extends JPanel implements PropertyChangeListener, Expl
             fireNameChange(null, null);
         }
         
-        public int compareTo(T tcn) {
+        public int compareTo(TopComponentNode tcn) {
             String displayName1 = getDisplayName();
             String displayName2 = tcn.getDisplayName();
             

@@ -403,7 +403,7 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
         java.util.ArrayList<ChangeListener> list;
         synchronized (this) {
             if (changeListenerList == null) return;
-            list = (java.util.ArrayList<ChangeListener>)changeListenerList.clone();
+            list = new ArrayList<ChangeListener>( changeListenerList );
         }
         //Note: Firing the events while holding the tree lock avoids many
         //gratuitous repaints that slow down switching tabs.  To demonstrate this,
