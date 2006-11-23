@@ -13,12 +13,12 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="jScrollPane1" alignment="0" pref="133" max="32767" attributes="0"/>
+          <Component id="jScrollPane1" alignment="0" pref="373" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="jScrollPane1" alignment="0" pref="101" max="32767" attributes="0"/>
+          <Component id="jScrollPane1" alignment="0" pref="110" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
   </Layout>
@@ -33,12 +33,10 @@
         <Component class="javax.swing.JList" name="labelsList">
           <Properties>
             <Property name="model" type="javax.swing.ListModel" editor="org.netbeans.modules.form.editors2.ListModelEditor">
-              <StringArray count="5">
-                <StringItem index="0" value="Item 1"/>
-                <StringItem index="1" value="Item 2"/>
-                <StringItem index="2" value="Item 3"/>
-                <StringItem index="3" value="Item 4"/>
-                <StringItem index="4" value="Item 5"/>
+              <StringArray count="3">
+                <StringItem index="0" value="item1"/>
+                <StringItem index="1" value="item2"/>
+                <StringItem index="2" value="item3"/>
               </StringArray>
             </Property>
           </Properties>

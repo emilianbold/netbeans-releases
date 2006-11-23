@@ -16,7 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.subversion.options;
 
 import java.awt.Dialog;
@@ -42,79 +41,79 @@ import org.openide.util.NbBundle;
  * @author Tomas Stupka
  */
 public final class SvnOptionsController extends OptionsPanelController implements ActionListener {
-
-    private final SvnOptionsPanel panel; 
-    private final Repository repository;    
-    private final AnnotationSettings annotationSettings;    
+    
+    private final SvnOptionsPanel panel;
+    private final Repository repository;
+    private final AnnotationSettings annotationSettings;
     
     public SvnOptionsController() {
         panel = new SvnOptionsPanel();
-                         
-        int repositoryModeMask = Repository.FLAG_URL_ENABLED | Repository.FLAG_SHOW_REMOVE; 
+        
+        int repositoryModeMask = Repository.FLAG_URL_ENABLED | Repository.FLAG_SHOW_REMOVE;
         String title = org.openide.util.NbBundle.getMessage(SvnOptionsController.class, "CTL_Repository_Location");
-        repository = new Repository(repositoryModeMask, title); // NOI18N                        
+        repository = new Repository(repositoryModeMask, title); // NOI18N
         
         annotationSettings = new AnnotationSettings();
         
         panel.browseButton.addActionListener(this);
         panel.manageConnSettingsButton.addActionListener(this);
-        panel.manageLabelsButton.addActionListener(this);        
-
+        panel.manageLabelsButton.addActionListener(this);
+        
     }
     
-    public void update () {
+    public void update() {
         
-        panel.executablePathTextField.setText(SvnModuleConfig.getDefault().getExecutableBinaryPath());        
+        panel.executablePathTextField.setText(SvnModuleConfig.getDefault().getExecutableBinaryPath());
         
-        annotationSettings.update();                
+        annotationSettings.update();
         repository.refreshUrlHistory();
         
     }
     
-    public void applyChanges () {        
-                
+    public void applyChanges() {
+        
         // executable
-        SvnModuleConfig.getDefault().setExecutableBinaryPath(panel.executablePathTextField.getText());     
+        SvnModuleConfig.getDefault().setExecutableBinaryPath(panel.executablePathTextField.getText());
         // XXX only if value changed?
         // Subversion.setupSvnClientFactory(); this won't work anyway because the svnclientadapter doesn't allow more setups per client!
         
         // labels
-        annotationSettings.applyChanges();        
+        annotationSettings.applyChanges();
         Subversion.getInstance().getAnnotator().refresh();
-        Subversion.getInstance().refreshAllAnnotations();                
+        Subversion.getInstance().refreshAllAnnotations();
         
-        // connection                      
-        repository.storeRecentUrls();        
+        // connection
+        repository.storeRecentUrls();
     }
     
-    public void cancel () {
+    public void cancel() {
         repository.refreshUrlHistory();
     }
     
-    public boolean isValid () {
-        return true;        
+    public boolean isValid() {
+        return true;
     }
     
-    public boolean isChanged () {
+    public boolean isChanged() {
         return false; // NOI18N // XXX
     }
     
-    public org.openide.util.HelpCtx getHelpCtx () {
+    public org.openide.util.HelpCtx getHelpCtx() {
         return new org.openide.util.HelpCtx("netbeans.optionsDialog.advanced.subversion");
     }
-
-    public javax.swing.JComponent getComponent (org.openide.util.Lookup masterLookup) {
+    
+    public javax.swing.JComponent getComponent(org.openide.util.Lookup masterLookup) {
         return panel;
     }
-
-    public void addPropertyChangeListener (java.beans.PropertyChangeListener l) {
+    
+    public void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
         
     }
-
+    
     public void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
         
     }
-
+    
     public void actionPerformed(ActionEvent evt) {
         if(evt.getSource() == panel.browseButton) {
             onBrowseClick();
@@ -122,10 +121,10 @@ public final class SvnOptionsController extends OptionsPanelController implement
             onManageConnClick();
         } else if(evt.getSource() == panel.manageLabelsButton) {
             onManageLabelsClick();
-        } 
+        }
     }
     
-    private File getExecutableFile() { 
+    private File getExecutableFile() {
         String execPath = panel.executablePathTextField.getText();
         return FileUtil.normalizeFile(new File(execPath));
     }
@@ -136,10 +135,10 @@ public final class SvnOptionsController extends OptionsPanelController implement
         fileChooser.setDialogTitle(NbBundle.getMessage(SvnOptionsController.class, "Browse_title"));                                            // NOI18N
         fileChooser.setMultiSelectionEnabled(false);
         FileFilter[] old = fileChooser.getChoosableFileFilters();
-                for (int i = 0; i < old.length; i++) {
+        for (int i = 0; i < old.length; i++) {
             FileFilter fileFilter = old[i];
             fileChooser.removeChoosableFileFilter(fileFilter);
-
+            
         }
         fileChooser.addChoosableFileFilter(new FileFilter() {
             public boolean accept(File f) {
@@ -157,30 +156,29 @@ public final class SvnOptionsController extends OptionsPanelController implement
         }
     }
     
-    
-    
-    private void onManageConnClick() {        
-        boolean ok = repository.show(NbBundle.getMessage(SvnOptionsController.class, "CTL_ManageConnections"), new HelpCtx(Repository.class));        
+    private void onManageConnClick() {
+        boolean ok = repository.show(NbBundle.getMessage(SvnOptionsController.class, "CTL_ManageConnections"), new HelpCtx(Repository.class));
         if(!ok) {
             repository.refreshUrlHistory();
         }
     }
     
     private void onManageLabelsClick() {
-        showDialog(annotationSettings.getPanel(), NbBundle.getMessage(SvnOptionsController.class, "CTL_ManageLabels"), NbBundle.getMessage(SvnOptionsController.class, "ACSD_ManageLabels"), new HelpCtx(AnnotationSettings.class));
-    }
+        showDialog(annotationSettings.getPanel(), NbBundle.getMessage(SvnOptionsController.class, "CTL_ManageLabels"), NbBundle.getMessage(SvnOptionsController.class, "ACSD_ManageLabels"), new HelpCtx(AnnotationSettings.class));        
+    }    
     
     private boolean showDialog(JPanel panel, String title, String accesibleDescription, HelpCtx helpCtx) {
-        DialogDescriptor dialogDescriptor = new DialogDescriptor(panel, title); 
-        dialogDescriptor.setModal(true);
-        dialogDescriptor.setHelpCtx(helpCtx);               
+        DialogDescriptor dialogDescriptor = new DialogDescriptor(panel, title);
+        dialogDescriptor.setModal(false);
+        dialogDescriptor.setHelpCtx(helpCtx);
         dialogDescriptor.setValid(true);
         
-        Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);     
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
         dialog.getAccessibleContext().setAccessibleDescription(accesibleDescription);
+        //dialog.setModal(false);
+        dialog.setAlwaysOnTop(false);
         dialog.setVisible(true);
         
         return DialogDescriptor.OK_OPTION.equals(dialogDescriptor.getValue());
-    }
-
+    }   
 }

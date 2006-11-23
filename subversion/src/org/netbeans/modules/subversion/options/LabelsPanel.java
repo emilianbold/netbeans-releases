@@ -27,6 +27,9 @@ public class LabelsPanel extends javax.swing.JPanel {
     /** Creates new form LabelsPanel */
     public LabelsPanel() {
         initComponents();
+
+
+
     }
     
     /** This method is called from within the constructor to
@@ -40,7 +43,7 @@ public class LabelsPanel extends javax.swing.JPanel {
         jScrollPane1 = new javax.swing.JScrollPane();
 
         labelsList.setModel(new javax.swing.AbstractListModel() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
+            String[] strings = { "item1", "item2", "item3" };
             public int getSize() { return strings.length; }
             public Object getElementAt(int i) { return strings[i]; }
         });
@@ -50,11 +53,11 @@ public class LabelsPanel extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 133, Short.MAX_VALUE)
+            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 373, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 101, Short.MAX_VALUE)
+            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 110, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
     

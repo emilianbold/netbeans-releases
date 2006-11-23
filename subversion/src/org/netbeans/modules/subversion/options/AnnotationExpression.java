@@ -44,4 +44,10 @@ public class AnnotationExpression {
     public Pattern getUrlPatern() {
         return urlPattern;
     }
+    void setUrlExp(String urlExp) {
+        this.urlExp = urlExp;        
+    }
+    void setAnnotationExp(String annotationExp) {
+        this.annotationExp = annotationExp;
+    }            
 }

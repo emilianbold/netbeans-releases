@@ -18,45 +18,41 @@
  */
 package org.netbeans.modules.subversion.options;
 
-import java.awt.AWTEvent;
-import java.awt.Component;
-import java.awt.Point;
-import java.awt.Toolkit;
-import java.awt.Window;
-import java.awt.event.AWTEventListener;
+import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import javax.swing.DefaultListModel;
 import javax.swing.JPanel;
-import javax.swing.JWindow;
 import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import org.netbeans.modules.subversion.Annotator;
 import org.netbeans.modules.subversion.SvnModuleConfig;
+import java.util.regex.Pattern;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class AnnotationSettings implements ActionListener, AWTEventListener, ListSelectionListener {
+public class AnnotationSettings implements ActionListener, /*AWTEventListener, ListSelectionListener,*/ TableModelListener {
     
     private final AnnotationSettingsPanel panel; 
-    private JWindow labelsWindow;
-    private LabelsPanel labelsPanel;     
+//    private JWindow labelsWindow;
+//    private LabelsPanel labelsPanel;     
     
-    /** Creates a new instance of LabelsSettings */
     public AnnotationSettings() {
         panel = new AnnotationSettingsPanel();
                 
-        String tooltip = org.openide.util.NbBundle.getMessage(AnnotationSettings.class, "AnnotationSettingsPanel.annotationTextField.toolTipText", Annotator.LABELS);               
+        String tooltip = NbBundle.getMessage(AnnotationSettings.class, "AnnotationSettingsPanel.annotationTextField.toolTipText", Annotator.LABELS);               
         panel.annotationTextField.setToolTipText(tooltip);        
         
         panel.labelsButton.addActionListener(this); 
@@ -65,6 +61,10 @@ public class AnnotationSettings implements ActionListener, AWTEventListener, Lis
         panel.newButton.addActionListener(this); 
         panel.removeButton.addActionListener(this); 
         panel.resetButton.addActionListener(this); 
+        
+        panel.warningLabel.setVisible(false);
+        
+        getModel().addTableModelListener(this); 
     }
  
     JPanel getPanel() {
@@ -111,18 +111,10 @@ public class AnnotationSettings implements ActionListener, AWTEventListener, Lis
         ListSelectionModel listSelectionModel = getSelectionModel();
         int r = listSelectionModel.getMinSelectionIndex();        
         if(r > 0) {
-           DefaultTableModel model = getModel();
-           Object urlExp        = model.getValueAt(r, 0);            
-           Object annotationExp = model.getValueAt(r, 1);            
-           
-           int rNew = r - 1;
-           model.setValueAt(model.getValueAt(rNew, 0), r, 0);            
-           model.setValueAt(model.getValueAt(rNew, 1), r, 1);            
-           
-           model.setValueAt(urlExp,        rNew, 0);            
-           model.setValueAt(annotationExp, rNew, 1);            
-           
-           listSelectionModel.setSelectionInterval(rNew, rNew);
+            DefaultTableModel model = getModel();
+            int rNew = r - 1;
+            model.moveRow(r, r, rNew) ;
+            listSelectionModel.setSelectionInterval(rNew, rNew);
         }
     }
     
@@ -130,29 +122,21 @@ public class AnnotationSettings implements ActionListener, AWTEventListener, Lis
         ListSelectionModel listSelectionModel = getSelectionModel();
         int r = listSelectionModel.getMinSelectionIndex();                
         DefaultTableModel model = getModel();
-        if(r > -1 && r < model.getRowCount() - 1) {                      
-           Object urlExp =        model.getValueAt(r, 0);            
-           Object annotationExp = model.getValueAt(r, 1);            
-           
+        if(r > -1 && r < model.getRowCount() - 1) {     
            int rNew = r + 1;
-           model.setValueAt(model.getValueAt(rNew, 0), r, 0);            
-           model.setValueAt(model.getValueAt(rNew, 1), r, 1);            
-           
-           model.setValueAt(urlExp,        rNew, 0);            
-           model.setValueAt(annotationExp, rNew, 1);            
-           
+           model.moveRow(r, r, rNew) ;
            listSelectionModel.setSelectionInterval(rNew, rNew);
         }        
     }
     
     private void onNewClick() {
-         int r = getSelectionModel().getMinSelectionIndex();         
+         int r = getSelectionModel().getMinSelectionIndex();    
          if(r < 0) {
              getModel().addRow(      new String[] {"", ""});
          } else {
              getModel().insertRow(r, new String[] {"", ""});
          }
-    }   
+    }    
     
     private void onRemoveClick() {        
         ListSelectionModel selectionModel = getSelectionModel();
@@ -197,69 +181,176 @@ public class AnnotationSettings implements ActionListener, AWTEventListener, Lis
         return panel.expresionsTable.getSelectionModel();
     }
     
-    private void onLabelsClick() {
-        Toolkit.getDefaultToolkit().addAWTEventListener(this, AWTEvent.MOUSE_EVENT_MASK);        
-        if(labelsWindow  == null) {
-            labelsPanel = new LabelsPanel();
-            labelsWindow = new JWindow();
-            DefaultListModel model = new DefaultListModel();    
+    private class LabelVariable {
+        private String description;
+        private String variable;
+         
+        public LabelVariable(String variable, String description) {
+            this.description = description;
+            this.variable = variable;
+        }
+         
+        public String toString() {
+            return description;
+        }
         
-            for (int i = 0; i < Annotator.LABELS.length; i++) {            
-                model.addElement(Annotator.LABELS[i]);   
-            }       
-            labelsPanel.labelsList.setModel(model);        
-
-            labelsWindow.add(labelsPanel);
-            labelsWindow.pack();
-            Point loc = panel.labelsButton.getLocationOnScreen();        
-            labelsWindow.setLocation(new Point((int)loc.getX(), (int) (loc.getY() + panel.labelsButton.getHeight())));            
+        public String getDescription() {
+            return description;
+        }
         
-            labelsPanel.labelsList.getSelectionModel().addListSelectionListener(this);        
-        }                
-        labelsWindow.setVisible(true);              
-    }
-
-    public void eventDispatched(AWTEvent evt) {
-        if (evt.getID() == MouseEvent.MOUSE_PRESSED) {
-            onClick(evt);
-        }              
-    }
-
-    private void onClick(AWTEvent event) {
-        Component component = (Component) event.getSource();
-        Window w = SwingUtilities.windowForComponent(component);
-        if (w != labelsWindow) shutdown();
-    }
-
-    private void shutdown() {
-        Toolkit.getDefaultToolkit().removeAWTEventListener(this);
-        if(labelsWindow!=null) {
-            labelsWindow.dispose();
-            //labelsWindow = null;
-        }        
+        public String getVariable() {
+            return variable;
+        }
     }
     
-    public void valueChanged(ListSelectionEvent evt) {
-        int idx = evt.getFirstIndex();
-        String selection = (String) labelsPanel.labelsList.getModel().getElementAt(idx);
+    private void onLabelsClick() {
+        LabelsPanel labelsPanel = new LabelsPanel();
+        List<LabelVariable> variables = new ArrayList<LabelVariable>(Annotator.LABELS.length);
+        for (int i = 0; i < Annotator.LABELS.length; i++) {   
+            LabelVariable variable = new LabelVariable(
+                    Annotator.LABELS[i], 
+                    "{" + Annotator.LABELS[i] + "} - " + NbBundle.getMessage(AnnotationSettings.class, "AnnotationSettings.label." + Annotator.LABELS[i])
+            );
+            variables.add(variable);   
+        }       
+        labelsPanel.labelsList.setListData(variables.toArray(new LabelVariable[variables.size()]));        
         
-        shutdown(); 
+        String title = NbBundle.getMessage(AnnotationSettings.class, "AnnotationSettings.labelVariables.title");
+        String acsd = NbBundle.getMessage(AnnotationSettings.class, "AnnotationSettings.labelVariables.acsd");
         
-        selection = "{" + selection + "}";
-        
-        String annotation = panel.annotationTextField.getText();
-        int pos = panel.annotationTextField.getCaretPosition();
-        if(pos < 0) pos = annotation.length();
-        
-        StringBuffer sb = new StringBuffer(annotation.length() + selection.length());
-        sb.append(annotation.substring(0, pos));
-        sb.append(selection);
-        if(pos < annotation.length()) {
-            sb.append(annotation.substring(pos, annotation.length()));
+        if(showDialog(labelsPanel, title, acsd)) {
+            
+            Object[] selection = (Object[])labelsPanel.labelsList.getSelectedValues();
+            
+            String variable = "";
+            for (int i = 0; i < selection.length; i++) {
+                variable += "{" + ((LabelVariable)selection[i]).getVariable() + "}";
+            }
+
+            String annotation = panel.annotationTextField.getText();
+
+            int pos = panel.annotationTextField.getCaretPosition();
+            if(pos < 0) pos = annotation.length();
+
+            StringBuffer sb = new StringBuffer(annotation.length() + variable.length());
+            sb.append(annotation.substring(0, pos));
+            sb.append(variable);
+            if(pos < annotation.length()) {
+                sb.append(annotation.substring(pos, annotation.length()));
+            }
+            panel.annotationTextField.setText(sb.toString());
+            panel.annotationTextField.requestFocus();
+            panel.annotationTextField.setCaretPosition(pos + variable.length());            
+            
         }
-        panel.annotationTextField.setText(sb.toString());
-        panel.annotationTextField.requestFocus();
-        panel.annotationTextField.setCaretPosition(pos + selection.length());
+        
+//        Toolkit.getDefaultToolkit().addAWTEventListener(this, AWTEvent.MOUSE_EVENT_MASK);        
+//        labelsPanel = new LabelsPanel();
+//        labelsWindow = new JWindow();
+//
+//        List<LabelVariable> variables = new ArrayList<LabelVariable>(Annotator.LABELS.length);
+//        for (int i = 0; i < Annotator.LABELS.length; i++) {   
+//            LabelVariable variable = new LabelVariable(
+//                    Annotator.LABELS[i], 
+//                    "{" + Annotator.LABELS[i] + "} - " + NbBundle.getMessage(AnnotationSettings.class, "AnnotationSettings.label." + Annotator.LABELS[i])
+//            );
+//            variables.add(variable);   
+//        }       
+//        labelsPanel.labelsList.setListData(variables.toArray(new LabelVariable[variables.size()]));                
+//        labelsPanel.labelsList.getSelectionModel().addListSelectionListener(this); 
+//        
+//        labelsWindow.setLayout(new BorderLayout());
+//        labelsWindow.add(labelsPanel, BorderLayout.CENTER);
+//        labelsWindow.pack();
+//        Point loc = panel.labelsButton.getLocationOnScreen();        
+//        labelsWindow.setLocation(new Point((int)loc.getX(), (int) (loc.getY() + panel.labelsButton.getHeight())));            
+//        labelsWindow.setVisible(true);              
     }
+
+//    public void eventDispatched(AWTEvent evt) {
+//        if (evt.getID() == MouseEvent.MOUSE_PRESSED) {
+//            onClick(evt);
+//        }              
+//    }
+//
+//    private void onClick(AWTEvent event) {
+//        Component component = (Component) event.getSource();
+//        Window w = SwingUtilities.windowForComponent(component);
+//        if (w != labelsWindow) shutdown();
+//    }
+//
+//    private void shutdown() {
+//        Toolkit.getDefaultToolkit().removeAWTEventListener(this);
+//        if(labelsWindow != null) {
+//            labelsWindow.dispose();
+//            labelsWindow = null;
+//        }        
+//    }
+//    
+//    public void valueChanged(ListSelectionEvent evt) {
+//        int idx = evt.getFirstIndex();
+//        LabelVariable selection = (LabelVariable) labelsPanel.labelsList.getModel().getElementAt(idx);
+//        
+//        shutdown(); 
+//        
+//        String variable = "{" + selection.getVariable() + "}";
+//        
+//        String annotation = panel.annotationTextField.getText();
+       
+//        int pos = panel.annotationTextField.getCaretPosition();
+//        if(pos < 0) pos = annotation.length();
+//        
+//        StringBuffer sb = new StringBuffer(annotation.length() + variable.length());
+//        sb.append(annotation.substring(0, pos));
+//        sb.append(variable);
+//        if(pos < annotation.length()) {
+//            sb.append(annotation.substring(pos, annotation.length()));
+//        }
+//        panel.annotationTextField.setText(sb.toString());
+//        panel.annotationTextField.requestFocus();
+//        panel.annotationTextField.setCaretPosition(pos + variable.length());
+//    }
+
+    public void tableChanged(TableModelEvent evt) {
+        if (evt.getType() == TableModelEvent.UPDATE) {
+            validateTable(evt.getFirstRow(), evt.getColumn());
+        }
+    }
+
+    private void validateTable(int r, int c) {
+        
+        if(r < 0 || c != 0) {
+            return;
+        }
+        
+        boolean valid = true;     
+        String pattern = (String) getModel().getValueAt(r, c);
+        try {
+            Pattern.compile(pattern);                                                       
+        } catch (Exception e) {
+            valid = false;
+        }
+        
+        if(valid) {
+            panel.warningLabel.setVisible(false);    
+        } else {
+            String label = NbBundle.getMessage(AnnotationSettings.class, "AnnotationSettingsPanel.warningLabel.text", pattern);
+            panel.warningLabel.setText(label);
+            panel.warningLabel.setVisible(true);            
+        }
+        
+    }
+    
+    private boolean showDialog(JPanel panel, String title, String accesibleDescription) {
+        DialogDescriptor dialogDescriptor = new DialogDescriptor(panel, title);
+        dialogDescriptor.setModal(true);
+        dialogDescriptor.setValid(true);
+        
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
+        dialog.getAccessibleContext().setAccessibleDescription(accesibleDescription);
+        dialog.setVisible(true);
+        
+        return DialogDescriptor.OK_OPTION.equals(dialogDescriptor.getValue());
+    }    
     
 }
