@@ -179,6 +179,7 @@ public class CachingFileManager implements JavaFileManager {
            if ("jar".equals(url.getProtocol())) {   // NOI18N
                url = FileUtil.getArchiveFile(url);
            }
+           assert "file".equals(url.getProtocol()) : "Unexpected protocol of the URL: " + url.toExternalForm();
            final File f = new File (URI.create(url.toExternalForm()));
            if (f.canRead()) {
                result.add (f);
