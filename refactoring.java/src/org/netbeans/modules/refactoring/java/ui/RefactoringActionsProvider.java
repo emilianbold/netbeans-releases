@@ -114,10 +114,10 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         }
         Node n = nodes.iterator().next();
         DataObject dob = n.getCookie(DataObject.class);
-        FileObject fo = dob.getPrimaryFile();
         if (dob==null) {
             return false;
         }
+        FileObject fo = dob.getPrimaryFile();
         if (RetoucheUtils.isRefactorable(fo)) { //NOI18N
             return true;
         }
