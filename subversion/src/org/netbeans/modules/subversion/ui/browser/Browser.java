@@ -107,11 +107,16 @@ public class Browser implements VetoableChangeListener, BrowserClient {
         if(selectedNodes==null) {
             selectedNodes = new Node[] {};
         }
-        try {
+        
+        try {        
             getExplorerManager().setSelectedNodes(selectedNodes);    
+            for (int i = 0; i < selectedNodes.length; i++) {
+                getExplorerManager().setExploredContext(selectedNodes[i]);                           
+            }   
         } catch (PropertyVetoException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-        }          
+        }                  
+        
     }       
 
     private Node[] getSelectedNodes(RepositoryPathNode rootNode, RepositoryFile repositoryRoot, RepositoryFile[] select) {        
