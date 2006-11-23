@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 2004-2005 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 2004-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -23,12 +23,18 @@ import java.awt.EventQueue;
 import java.lang.ref.Reference;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
-import org.openide.util.Mutex;
+import org.openide.NotifyDescriptor;
+import org.openide.awt.StatusDisplayer;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
 import org.openidex.search.SearchGroup;
+import static org.netbeans.modules.search.ReplaceTask.ResultStatus.SUCCESS;
+import static org.netbeans.modules.search.ReplaceTask.ResultStatus.PRE_CHECK_FAILED;
+import static org.netbeans.modules.search.ReplaceTask.ResultStatus.PROBLEMS_ENCOUNTERED;
 
 /**
  * Manager of the Search module's activities.
@@ -55,6 +61,8 @@ final class Manager {
 
     static final int PRINTING_DETAILS = 0x04;
     
+    static final int REPLACING        = 0x08;
+    
     static final int EVENT_SEARCH_STARTED = 1;
     
     static final int EVENT_SEARCH_FINISHED = 2;
@@ -78,14 +86,22 @@ final class Manager {
     private TaskListener taskListener;
     
     private SearchTask currentSearchTask;
-
+    
     private SearchTask pendingSearchTask;
+
+    private SearchTask lastSearchTask;
+    
+    private ReplaceTask currentReplaceTask;
+    
+    private ReplaceTask pendingReplaceTask;
 
     private PrintDetailsTask currentPrintDetailsTask;
     
     private PrintDetailsTask pendingPrintDetailsTask;
 
     private Task searchTask;
+    
+    private Task replaceTask;
 
     private Task cleanResultTask;
     
@@ -135,6 +151,7 @@ final class Manager {
             }
             pendingTasks |= SEARCHING;
             pendingSearchTask = task;
+            lastSearchTask = task;
             if (state == NO_TASK) {
                 processNextPendingTask();
             } else {
@@ -145,17 +162,65 @@ final class Manager {
     
     /**
      */
-    void schedulePrintingDetails(ResultTreeChildren children,
+    void scheduleReplaceTask(ReplaceTask task) {
+        assert EventQueue.isDispatchThread();
+        
+        synchronized (lock) {
+            assert (state == NO_TASK) && (pendingTasks == 0);
+            
+            pendingTasks |= REPLACING;
+            pendingReplaceTask = task;
+            processNextPendingTask();
+        }
+    }
+    
+    /**
+     */
+    void scheduleSearchTaskRerun() {
+        assert EventQueue.isDispatchThread();
+        
+        synchronized (lock) {
+            SearchTask newSearchTask = lastSearchTask.createNewGeneration();
+            lastSearchTask = null;
+            scheduleSearchTask(newSearchTask);
+        }
+    }
+    
+    /**
+     */
+    void schedulePrintingDetails(Object[] matchingObjects,
                                  SearchGroup searchGroup) {
         synchronized (lock) {
             assert state == NO_TASK;
             pendingTasks |= PRINTING_DETAILS;
             
             pendingPrintDetailsTask = new PrintDetailsTask(
-                    children.getNodes(),
+                    matchingObjects,
                     searchGroup);
             processNextPendingTask();
         }
+    }
+    
+    /**
+     * Queries whether the user should be allowed to initiate a new search.
+     * For example, the user should not be allowed to do so if the last
+     * replace action has not finished yet.
+     * 
+     * @return  message to the user, describing the reason why a new search
+     *          cannot be started, or {@code null} if there is no such reason
+     *          (i.e. if a new search may be started)
+     */
+    String mayStartSearching() {
+        boolean replacing;
+        
+        synchronized (lock) {
+            replacing = (state == REPLACING);
+        }
+        
+        String msgKey = replacing ? "MSG_Cannot_start_search__replacing"//NOI18N
+                                  : null;
+        return (msgKey != null) ? NbBundle.getMessage(getClass(), msgKey)
+                                : null;
     }
     
     /**
@@ -210,6 +275,63 @@ final class Manager {
     
     /**
      */
+    private void notifyReplaceFinished() {
+        assert Thread.holdsLock(lock);
+        assert currentReplaceTask != null;
+        
+        ReplaceTask.ResultStatus resultStatus
+                = currentReplaceTask.getResultStatus();
+        if (resultStatus == SUCCESS) {
+            StatusDisplayer.getDefault().setStatusText(
+                    NbBundle.getMessage(getClass(), "MSG_Success"));    //NOI18N
+            if (searchWindowOpen) {
+                callOnWindowFromAWT("closeAndSendFocusToEditor", false);//NOI18N
+            }
+        } else {
+            String msgKey = (resultStatus == PRE_CHECK_FAILED)
+                            ? "MSG_Issues_found_during_precheck"        //NOI18N
+                            : "MSG_Issues_found_during_replace";        //NOI18N
+            String title = NbBundle.getMessage(getClass(), msgKey);
+            displayIssuesFromAWT(title,
+                                 currentReplaceTask.getProblems());
+            if (resultStatus == PRE_CHECK_FAILED) {
+                offerRescanAfterIssuesFound();
+            }
+        }
+    }
+    
+    /**
+     */
+    private void offerRescanAfterIssuesFound() {
+        assert Thread.holdsLock(lock);
+        assert currentReplaceTask != null;
+        
+        String msg = NbBundle.getMessage(getClass(),
+                                         "MSG_IssuesFound_Rescan_");    //NOI18N
+        NotifyDescriptor nd = new NotifyDescriptor.Message(
+                                            msg,
+                                            NotifyDescriptor.QUESTION_MESSAGE);
+        String rerunOption = NbBundle.getMessage(getClass(),
+                                                 "LBL_Rerun");          //NOI18N
+        nd.setOptions(new Object[] {rerunOption,
+                                    NotifyDescriptor.CANCEL_OPTION});
+        Object dlgResult = DialogDisplayer.getDefault().notify(nd);
+        if (rerunOption.equals(dlgResult)) {
+            /*
+             * The rescan method calls 'scheduleSearchTaskRerun()' on this.
+             * But it will wait until 'taskFinished()' returns, which is
+             * exactly what we need to keep consistency of the manager's fields
+             * like 'currentReplaceTask', 'replaceTask' and 'state'.
+             * Using this mechanism also requires that, when sending a method
+             * to the EventQueue thread, we use invokeLater(...) and not
+             * invokeAndWait(...).
+             */
+            callOnWindowFromAWT("rescan", false);                       //NOI18N
+        }
+    }
+    
+    /**
+     */
     private void notifyPrintingDetailsFinished() {
         if (!searchWindowOpen) {
             return;
@@ -231,11 +353,32 @@ final class Manager {
     }
     
     /**
+     */
+    private void displayIssuesFromAWT(String title, String[] issues) {
+        Method theMethod;
+        try {
+            theMethod = ResultView.class.getDeclaredMethod(
+                                                "displayIssuesToUser",  //NOI18N
+                                                String.class, String[].class);
+        } catch (NoSuchMethodException ex) {
+            throw new IllegalStateException(ex);
+        }
+        callOnWindowFromAWT(theMethod, new Object[] {title, issues}, false);
+    }
+    
+    /**
      * Calls a given method on the Search Results window, from the AWT thread.
      *
      * @param  methodName  name of the method to be called
      */
     private void callOnWindowFromAWT(final String methodName) {
+        callOnWindowFromAWT(methodName, true);
+    }
+    
+    /**
+     */
+    private void callOnWindowFromAWT(final String methodName,
+                                     final boolean wait) {
         Method theMethod;
         try {
             theMethod = ResultView.class
@@ -243,7 +386,7 @@ final class Manager {
         } catch (NoSuchMethodException ex) {
             throw new IllegalArgumentException();
         }
-        callOnWindowFromAWT(theMethod, null);
+        callOnWindowFromAWT(theMethod, null, wait);
     }
     
     /**
@@ -254,6 +397,14 @@ final class Manager {
      */
     private void callOnWindowFromAWT(final String methodName,
                                      final Object param) {
+        callOnWindowFromAWT(methodName, param, true);
+    }
+    
+    /**
+     */
+    private void callOnWindowFromAWT(final String methodName,
+                                     final Object param,
+                                     final boolean wait) {
         Method theMethod = null;
         Method[] methods = ResultView.class.getDeclaredMethods();
         for (int i = 0; i < methods.length; i++) {
@@ -275,13 +426,21 @@ final class Manager {
         if (theMethod == null) {
             throw new IllegalArgumentException();
         }
-        callOnWindowFromAWT(theMethod, new Object[] {param});
+        callOnWindowFromAWT(theMethod, new Object[] {param}, wait);
     }
     
     /**
      */
     private void callOnWindowFromAWT(final Method method,
                                      final Object[] params) {
+        callOnWindowFromAWT(method, params, true);
+    }
+    
+    /**
+     */
+    private void callOnWindowFromAWT(final Method method,
+                                     final Object[] params,
+                                     final boolean wait) {
         Runnable runnable = new Runnable() {
             public void run() {
                 final ResultView resultViewInstance = ResultView.getInstance();
@@ -295,12 +454,16 @@ final class Manager {
         if (EventQueue.isDispatchThread()) {
             runnable.run();
         } else {
-            try {
-                EventQueue.invokeAndWait(runnable);
-            } catch (InvocationTargetException ex1) {
-                ErrorManager.getDefault().notify(ex1);
-            } catch (Exception ex2) {
-                ErrorManager.getDefault().notify(ErrorManager.ERROR, ex2);
+            if (wait) {
+                try {
+                    EventQueue.invokeAndWait(runnable);
+                } catch (InvocationTargetException ex1) {
+                    ErrorManager.getDefault().notify(ex1);
+                } catch (Exception ex2) {
+                    ErrorManager.getDefault().notify(ErrorManager.ERROR, ex2);
+                }
+            } else {
+                EventQueue.invokeLater(runnable);
             }
         }
     }
@@ -325,7 +488,6 @@ final class Manager {
                 return;
             }
             
-            ResultView.getInstance().setResultModel(null);
             if (currentSearchTask != null) {
                 currentSearchTask.stop(false);
             }
@@ -334,6 +496,7 @@ final class Manager {
             }
             pendingTasks &= ~SEARCHING;
             pendingSearchTask = null;
+            lastSearchTask = null;
             if (state == NO_TASK) {
                 processNextPendingTask();
             }
@@ -360,6 +523,8 @@ final class Manager {
                 startCleaning();
             } else if ((pendingTasks & SEARCHING) != 0) {
                 startSearching();
+            } else if ((pendingTasks & REPLACING) != 0) {
+                startReplacing();
             } else {
                 assert pendingTasks == 0;
             }
@@ -370,11 +535,13 @@ final class Manager {
      */
     private void startSearching() {
         synchronized (lock) {
+            assert pendingSearchTask != null;
+            
             notifySearchStarted();
             
             ResultModel resultModel = pendingSearchTask.getResultModel();
             callOnWindowFromAWT("setResultModel",                       //NOI18N
-                              resultModel);
+                                resultModel);
             resultModelToClean = resultModel;
 
             if (outputWriterRef != null) {
@@ -399,6 +566,26 @@ final class Manager {
             searchTask = task;
             pendingTasks &= ~SEARCHING;
             state = SEARCHING;
+        }
+    }
+    
+    /**
+     */
+    private void startReplacing() {
+        synchronized (lock) {
+            assert pendingReplaceTask != null;
+            
+            RequestProcessor.Task task;
+            task = RequestProcessor.getDefault().create(pendingReplaceTask);
+            task.addTaskListener(getTaskListener());
+            task.schedule(0);
+            
+            currentReplaceTask = pendingReplaceTask;
+            pendingReplaceTask = null;
+
+            replaceTask = task;
+            pendingTasks &= ~REPLACING;
+            state = REPLACING;
         }
     }
     
@@ -478,6 +665,12 @@ final class Manager {
                 }
                 currentSearchTask = null;
                 searchTask = null;
+                state = NO_TASK;
+            } else if (task == replaceTask) {
+                assert state == REPLACING;
+                notifyReplaceFinished();
+                currentReplaceTask = null;
+                replaceTask = null;
                 state = NO_TASK;
             } else if (task == cleanResultTask) {
                 assert state == CLEANING_RESULT;

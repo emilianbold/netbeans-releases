@@ -26,6 +26,8 @@ import java.beans.PropertyChangeListener;
 import java.util.List;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.search.types.FullTextType;
+import org.openide.LifecycleManager;
 
 import org.openide.nodes.Node;
 import org.openide.util.Cancellable;
@@ -64,6 +66,8 @@ final class SearchTask implements Runnable, Cancellable {
     private volatile boolean interrupted = false;
     /** */
     private volatile boolean finished = false;
+    /** */
+    private final String replaceString;
     
     
     /**
@@ -79,11 +83,37 @@ final class SearchTask implements Runnable, Cancellable {
         this.nodes = nodes;
         this.searchTypeList = searchTypeList;
         this.customizedSearchTypes = customizedSearchTypes;
+        
+        this.replaceString = getReplaceString(customizedSearchTypes);
     }
-
+    
+    /**
+     * Checks whether we are about to do search &amp; replace.
+     * 
+     * @param  customizedSearchTypes  array of applied search types
+     * @return  replace string set in the full text search,
+     *          or {@code null} if no replacing should be performed
+     */
+    private static String getReplaceString(SearchType[] searchTypes) {
+        for (SearchType searchType : searchTypes) {
+            if (searchType.getClass() == FullTextType.class) {
+                return ((FullTextType) searchType).getReplaceString();
+            }
+        }
+        return null;
+    }
+    
+    /**
+     */
+    private boolean isSearchAndReplace() {
+        return (replaceString != null);
+    }
     
     /** Runs the search task. */
     public void run() {
+        if (isSearchAndReplace()) {
+            LifecycleManager.getDefault().saveAll();
+        }
         
         ProgressHandle progressHandle = ProgressHandleFactory.createHandle(
                 NbBundle.getMessage(ResultView.class,"TEXT_SEARCHING___"), this);
@@ -111,10 +141,15 @@ final class SearchTask implements Runnable, Cancellable {
             searchGroup.search();
         } catch (RuntimeException ex) {
             resultModel.searchException(ex);
+            ex.printStackTrace();
         }
         finished = true;
         
         progressHandle.finish();
+    }
+    
+    SearchTask createNewGeneration() {
+        return new SearchTask(nodes, searchTypeList, customizedSearchTypes);
     }
 
     /**
@@ -131,7 +166,9 @@ final class SearchTask implements Runnable, Cancellable {
             SearchGroup[] groups
                     = SearchGroup.createSearchGroups(customizedSearchTypes);
             searchGroup = (groups.length != 0) ? groups[0] : null;
-            resultModel = new ResultModel(searchTypeList, searchGroup);
+            resultModel = new ResultModel(searchTypeList,
+                                          searchGroup,
+                                          replaceString);
         }
     }
 

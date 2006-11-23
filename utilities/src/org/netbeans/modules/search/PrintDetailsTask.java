@@ -36,7 +36,7 @@ public class PrintDetailsTask implements Runnable {
     /** */
     private static final int BUFFER_SIZE = 8;
     /** */
-    private final Node[] nodes;
+    private final Object[] objects;
     /** */
     private final SearchGroup searchGroup;
     /** */
@@ -50,9 +50,9 @@ public class PrintDetailsTask implements Runnable {
     
     
     /** Creates a new instance of PrintDetailsTask */
-    public PrintDetailsTask(final Node[] nodes,
+    public PrintDetailsTask(final Object[] matchingObjects,
                             final SearchGroup searchGroup) {
-        this.nodes = nodes;
+        this.objects = matchingObjects;
         this.searchGroup = searchGroup;
     }
     
@@ -64,12 +64,12 @@ public class PrintDetailsTask implements Runnable {
         final SearchType[] searchTypes = searchGroup.getSearchTypes();        
         
         int freeBufSpace = 0;
-        for (int i = 0; i < nodes.length; i++) {
+        for (int i = 0; i < objects.length; i++) {
 
             /* Collect details about the found node: */
             Node[] allDetails = null;
             for (int j = 0; j < searchTypes.length; j++) {
-                Node[] details = searchTypes[j].getDetails(nodes[i]);
+                Node[] details = searchTypes[j].getDetails(objects[i]);
                 if (details == null || details.length == 0) {
                     continue;
                 }

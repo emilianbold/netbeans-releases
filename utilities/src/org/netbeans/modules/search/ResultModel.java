@@ -21,7 +21,6 @@
 package org.netbeans.modules.search;
 
 
-import java.beans.*;
 import java.util.*;
 import org.netbeans.modules.search.types.FullTextType;
 
@@ -49,13 +48,19 @@ public final class ResultModel {
             = "org.netbeans.modules.search.types";                      //NOI18N
     private static final String FULLTEXT_SEARCH_TYPE
             = "FullTextType";                                           //NOI18N
+    
+    /** */
+    private final long creationTime;
+    
     /** */
     private int size = 0;
     /** */
     private int totalDetailsCount = 0;
     /**
      */
-    private ResultTreeChildren observer;
+    private ResultTreeModel treeModel;
+    /** */
+    private ResultView resultView;
     
     /**
      * flag - did number of found objects reach the limit?
@@ -83,19 +88,28 @@ public final class ResultModel {
      */
     final boolean defaultSearchTypesOnly;
     /** */
+    final boolean fullTextOnly;
+    /** */
     final FullTextType fullTextSearchType;
+    /** */
+    final String replaceString;
+    /** */
+    final boolean searchAndReplace;
     /** list of matching objects (usually {@code DataObject}s) */
-    final Collection<MatchingObject> matchingObjects
-            = new HashSet<MatchingObject>();
+    final List<MatchingObject> matchingObjects
+            = new ArrayList<MatchingObject>();
 
     /** Contains optional finnish message often reason why finished. */
     private String finishMessage;
 
     /** Creates new <code>ResultModel</code>. */
     public ResultModel(List<SearchType> searchTypeList,
-                       SearchGroup searchGroup) {
+                       SearchGroup searchGroup,
+                       String replaceString) {
         this.searchTypeList = searchTypeList;
         this.searchGroup = searchGroup;
+        this.replaceString = replaceString;
+        this.searchAndReplace = (replaceString != null);
         
         isDataObjectSearchGroup
                 = (searchGroup.getClass() == DataObjectSearchGroup.class);
@@ -115,6 +129,16 @@ public final class ResultModel {
         }
         defaultSearchTypesOnly = !hasNonDefaultSearchType;
         fullTextSearchType = fullTextType;
+        fullTextOnly = (searchAndReplace || defaultSearchTypesOnly)
+                       && (fullTextSearchType != null);
+        
+        creationTime = System.currentTimeMillis();
+    }
+    
+    /**
+     */
+    long getCreationTime() {
+        return creationTime;
     }
     
     /**
@@ -122,8 +146,17 @@ public final class ResultModel {
      *
      * @param  observer  observer or <code>null</code>
      */
-    void setObserver(ResultTreeChildren observer) {
-        this.observer = observer;
+    void setObserver(ResultTreeModel observer) {
+        this.treeModel = observer;
+    }
+    
+    /**
+     * Sets an observer which will be notified whenever an object is found.
+     *
+     * @param  observer  observer or <code>null</code>
+     */
+    void setObserver(ResultView observer) {
+        this.resultView = observer;
     }
 
     /**
@@ -164,19 +197,154 @@ public final class ResultModel {
      *          {@code false} if number of found objects reached the limit
      */
     synchronized boolean objectFound(Object object) {
-        MatchingObject matchingObject = new MatchingObject(object);
+        MatchingObject matchingObject = new MatchingObject(this, object);
         if (matchingObjects.add(matchingObject) == false) {
             return true;
         }
         
         assert limitReached == false;
-        assert observer != null;
+        assert treeModel != null;
+        assert resultView != null;
         
-        observer.objectFound(matchingObject);
+        totalDetailsCount += getDetailsCount(matchingObject);
         
-        size++;
-        totalDetailsCount += getDetailsCount(object);
+        treeModel.objectFound(matchingObject, size++);
+        resultView.objectFound(matchingObject, totalDetailsCount);
+        
         return size < COUNT_LIMIT && totalDetailsCount < DETAILS_COUNT_LIMIT;
+    }
+    
+    /**
+     */
+    synchronized int getTotalDetailsCount() {
+        return totalDetailsCount;
+    }
+    
+    /**
+     */
+    synchronized MatchingObject[] getMatchingObjects() {
+        return matchingObjects.toArray(
+                                    new MatchingObject[matchingObjects.size()]);
+    }
+    
+    /**
+     */
+    synchronized Object[] getFoundObjects() {
+        Object[] foundObjects = new Object[matchingObjects.size()];
+        int index = 0;
+        for (MatchingObject matchingObj : matchingObjects) {
+            foundObjects[index++] = matchingObj.object;
+        }
+        return foundObjects;
+    }
+    
+    public void run() {
+        
+    }
+    
+    /**
+     */
+    boolean hasDetails() {
+        return totalDetailsCount != 0;      //PENDING - synchronization?
+    }
+    
+    /**
+     * Performs a quick check whether
+     * {@linkplain MatchingObject matching objects} contained in this model
+     * can have details.
+     * 
+     * @return  {@code Boolean.TRUE} if all matching objects have details,
+     *          {@code Boolean.FALSE} if no matching object has details,
+     *          {@code null} if matching objects may have details
+     *                         (if more time consuming check would be necessary)
+     */
+    Boolean canHaveDetails() {
+        Boolean ret;
+        if (fullTextSearchType != null) {
+            ret = Boolean.TRUE;
+        } else if (defaultSearchTypesOnly) {
+            ret = Boolean.FALSE;
+        } else {
+            ret = null;
+        }
+        return ret;
+    }
+    
+    /*
+     * A cache exists for information about a single MatchingObject
+     * to prevent from repetitive calls of time-consuming queries on
+     * number of details and list of details. These calls are initiated
+     * by the node renderer (class NodeRenderer).
+     */
+    
+    private MatchingObject infoCacheMatchingObject;
+    private Boolean infoCacheHasDetails;
+    private int infoCacheDetailsCount;
+    private Node[] infoCacheDetailNodes;
+    private final Node[] EMPTY_NODES_ARRAY = new Node[0];
+    
+    /**
+     */
+    private void prepareCacheFor(MatchingObject matchingObject) {
+        if (matchingObject != infoCacheMatchingObject) {
+            infoCacheHasDetails = null;
+            infoCacheDetailsCount = -1;
+            infoCacheDetailNodes = null;
+            infoCacheMatchingObject = matchingObject;
+        }
+    }
+    
+    /**
+     */
+    boolean hasDetails(MatchingObject matchingObject) {
+        prepareCacheFor(matchingObject);
+        if (infoCacheHasDetails != null) {
+            return infoCacheHasDetails.booleanValue();
+        }
+        
+        boolean hasDetails = hasDetailsReal(matchingObject);
+        infoCacheHasDetails = Boolean.valueOf(hasDetails);
+        
+        assert (infoCacheHasDetails == Boolean.TRUE)
+               || (infoCacheHasDetails == Boolean.FALSE);
+        return hasDetails;
+    }
+    
+    /**
+     */
+    private boolean hasDetailsReal(MatchingObject matchingObject) {
+        boolean ret;
+        if (fullTextSearchType != null) {
+            ret = true;
+        } else if (defaultSearchTypesOnly) {
+            ret = false;
+        } else {
+            ret = false;
+            final Object foundObject = matchingObject.object;
+            for (SearchType searchType : searchGroup.getSearchTypes()) {
+                Node[] detailNodes = searchType.getDetails(foundObject);
+                if ((detailNodes != null) && (detailNodes.length != 0)) {
+                    ret = true;
+                    break;
+                }
+            }
+        }
+        return ret;
+    }
+    
+    /**
+     */
+    int getDetailsCount(MatchingObject matchingObject) {
+        prepareCacheFor(matchingObject);
+        if (infoCacheDetailsCount == -1) {
+            infoCacheDetailsCount = getDetailsCountReal(matchingObject);
+            if (infoCacheDetailsCount == 0) {
+                infoCacheDetailNodes = EMPTY_NODES_ARRAY;
+            }
+        }
+        
+        assert infoCacheDetailsCount >= 0;
+        return infoCacheDetailsCount;
     }
     
     /**
@@ -186,14 +354,15 @@ public final class ResultModel {
      * @return  number of detail items (represented by individual nodes)
      *          available for the given object (usually {@code DataObject})
      */
-    private int getDetailsCount(Object foundObject) {
+    private int getDetailsCountReal(MatchingObject matchingObject) {
         if (defaultSearchTypesOnly) {
             return (fullTextSearchType != null)
-                   ? fullTextSearchType.getDetailsCount(foundObject)
+                   ? fullTextSearchType.getDetailsCount(matchingObject.object)
                    : 0;
         }
         
         int count = 0;
+        final Object foundObject = matchingObject.object;
         for (SearchType searchType : searchGroup.getSearchTypes()) {
             if (searchType == fullTextSearchType) {
                 count += fullTextSearchType.getDetailsCount(foundObject);
@@ -206,9 +375,77 @@ public final class ResultModel {
     }
     
     /**
+     * 
+     * @return  non-empty array of detail nodes
+     *          or {@code null} if there are no detail nodes
      */
-    int size() {
+    Node[] getDetails(MatchingObject matchingObject) {
+        prepareCacheFor(matchingObject);
+        Node[] detailNodes;
+        if (infoCacheDetailNodes == null) {
+            detailNodes = getDetailsReal(matchingObject);
+            infoCacheDetailNodes = (detailNodes != null)
+                                   ? detailNodes
+                                   : EMPTY_NODES_ARRAY;
+            infoCacheDetailsCount = infoCacheDetailNodes.length;
+        } else {
+            detailNodes = (infoCacheDetailNodes != EMPTY_NODES_ARRAY)
+                          ? infoCacheDetailNodes
+                          : null;
+        }
+        
+        assert (infoCacheDetailNodes != null)
+               && ((infoCacheDetailNodes == EMPTY_NODES_ARRAY)
+                   || (infoCacheDetailNodes.length > 0));
+        assert (detailNodes == null) || (detailNodes.length > 0);
+        return detailNodes;
+    }
+    
+    /**
+     * 
+     * @return  non-empty array of detail nodes
+     *          or {@code null} if there are no detail nodes
+     */
+    private Node[] getDetailsReal(MatchingObject matchingObject) {
+        if (defaultSearchTypesOnly) {
+            return (fullTextSearchType != null)
+                   ? fullTextSearchType.getDetails(matchingObject.object)
+                   : null;
+        }
+        
+        Node[] nodesTotal = null;
+        final Object foundObject = matchingObject.object;
+        for (SearchType searchType : searchGroup.getSearchTypes()) {
+            Node[] detailNodes = searchType.getDetails(foundObject);
+            if ((detailNodes == null) || (detailNodes.length == 0)) {
+                continue;
+            }
+            if (nodesTotal == null) {
+                nodesTotal = detailNodes;
+            } else {
+                Node[] oldNodesTotal = nodesTotal;
+                nodesTotal = new Node[nodesTotal.length + detailNodes.length];
+                System.arraycopy(oldNodesTotal, 0,
+                                 nodesTotal, 0,
+                                 oldNodesTotal.length);
+                System.arraycopy(detailNodes, 0,
+                                 nodesTotal, oldNodesTotal.length,
+                                 detailNodes.length);
+            }
+        }
+        return nodesTotal;
+    }
+    
+    /**
+     */
+    synchronized int size() {
         return size;
+    }
+    
+    /**
+     */
+    boolean isEmpty() {
+        return size == 0;
     }
 
     /** Getter for search group property. */
@@ -254,30 +491,6 @@ public final class ResultModel {
      */
     String getExceptionMsg() {
         return finishMessage;
-    }
-    
-    /**
-     * Data structure holding a reference to the found object and information
-     * whether occurences in the found object should be found or not.
-     */
-    static final class MatchingObject {
-        final Object object;
-        MatchingObject(Object object) {
-            if (object == null) {
-                throw new IllegalArgumentException("null");             //NOI18N
-            }
-            this.object = object;
-        }
-        @Override
-        public boolean equals(Object anotherObject) {
-            return (anotherObject != null)
-                   && (anotherObject.getClass() == MatchingObject.class)
-                   && (((MatchingObject) anotherObject) == object);
-        }
-        @Override
-        public int hashCode() {
-            return object.hashCode() + 1;
-        }
     }
 
 }
