@@ -164,21 +164,6 @@ public final class SvnOptionsController extends OptionsPanelController implement
     }
     
     private void onManageLabelsClick() {
-        showDialog(annotationSettings.getPanel(), NbBundle.getMessage(SvnOptionsController.class, "CTL_ManageLabels"), NbBundle.getMessage(SvnOptionsController.class, "ACSD_ManageLabels"), new HelpCtx(AnnotationSettings.class));        
-    }    
-    
-    private boolean showDialog(JPanel panel, String title, String accesibleDescription, HelpCtx helpCtx) {
-        DialogDescriptor dialogDescriptor = new DialogDescriptor(panel, title);
-        dialogDescriptor.setModal(false);
-        dialogDescriptor.setHelpCtx(helpCtx);
-        dialogDescriptor.setValid(true);
-        
-        Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
-        dialog.getAccessibleContext().setAccessibleDescription(accesibleDescription);
-        //dialog.setModal(false);
-        dialog.setAlwaysOnTop(false);
-        dialog.setVisible(true);
-        
-        return DialogDescriptor.OK_OPTION.equals(dialogDescriptor.getValue());
-    }   
+        annotationSettings.show();                
+    }            
 }

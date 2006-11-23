@@ -26,8 +26,6 @@ import java.util.Iterator;
 import java.util.List;
 import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
@@ -37,6 +35,7 @@ import org.netbeans.modules.subversion.SvnModuleConfig;
 import java.util.regex.Pattern;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -46,8 +45,8 @@ import org.openide.util.NbBundle;
 public class AnnotationSettings implements ActionListener, /*AWTEventListener, ListSelectionListener,*/ TableModelListener {
     
     private final AnnotationSettingsPanel panel; 
-//    private JWindow labelsWindow;
-//    private LabelsPanel labelsPanel;     
+    private DialogDescriptor dialogDescriptor;
+    private boolean valid;
     
     public AnnotationSettings() {
         panel = new AnnotationSettingsPanel();
@@ -69,6 +68,24 @@ public class AnnotationSettings implements ActionListener, /*AWTEventListener, L
  
     JPanel getPanel() {
         return panel;
+    }
+        
+    void show() {
+        
+        String title = NbBundle.getMessage(SvnOptionsController.class, "CTL_ManageLabels");
+        String accesibleDescription = NbBundle.getMessage(SvnOptionsController.class, "ACSD_ManageLabels");
+        HelpCtx helpCtx = new HelpCtx(AnnotationSettings.class);
+        
+        dialogDescriptor = new DialogDescriptor(panel, title);
+        dialogDescriptor.setModal(false);
+        dialogDescriptor.setHelpCtx(helpCtx);
+        dialogDescriptor.setValid(valid);
+        
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
+        dialog.getAccessibleContext().setAccessibleDescription(accesibleDescription);
+        //dialog.setModal(false);
+        dialog.setAlwaysOnTop(false);
+        dialog.setVisible(true);                
     }
     
     void update() {
@@ -181,28 +198,6 @@ public class AnnotationSettings implements ActionListener, /*AWTEventListener, L
         return panel.expresionsTable.getSelectionModel();
     }
     
-    private class LabelVariable {
-        private String description;
-        private String variable;
-         
-        public LabelVariable(String variable, String description) {
-            this.description = description;
-            this.variable = variable;
-        }
-         
-        public String toString() {
-            return description;
-        }
-        
-        public String getDescription() {
-            return description;
-        }
-        
-        public String getVariable() {
-            return variable;
-        }
-    }
-    
     private void onLabelsClick() {
         LabelsPanel labelsPanel = new LabelsPanel();
         List<LabelVariable> variables = new ArrayList<LabelVariable>(Annotator.LABELS.length);
@@ -242,74 +237,8 @@ public class AnnotationSettings implements ActionListener, /*AWTEventListener, L
             panel.annotationTextField.requestFocus();
             panel.annotationTextField.setCaretPosition(pos + variable.length());            
             
-        }
-        
-//        Toolkit.getDefaultToolkit().addAWTEventListener(this, AWTEvent.MOUSE_EVENT_MASK);        
-//        labelsPanel = new LabelsPanel();
-//        labelsWindow = new JWindow();
-//
-//        List<LabelVariable> variables = new ArrayList<LabelVariable>(Annotator.LABELS.length);
-//        for (int i = 0; i < Annotator.LABELS.length; i++) {   
-//            LabelVariable variable = new LabelVariable(
-//                    Annotator.LABELS[i], 
-//                    "{" + Annotator.LABELS[i] + "} - " + NbBundle.getMessage(AnnotationSettings.class, "AnnotationSettings.label." + Annotator.LABELS[i])
-//            );
-//            variables.add(variable);   
-//        }       
-//        labelsPanel.labelsList.setListData(variables.toArray(new LabelVariable[variables.size()]));                
-//        labelsPanel.labelsList.getSelectionModel().addListSelectionListener(this); 
-//        
-//        labelsWindow.setLayout(new BorderLayout());
-//        labelsWindow.add(labelsPanel, BorderLayout.CENTER);
-//        labelsWindow.pack();
-//        Point loc = panel.labelsButton.getLocationOnScreen();        
-//        labelsWindow.setLocation(new Point((int)loc.getX(), (int) (loc.getY() + panel.labelsButton.getHeight())));            
-//        labelsWindow.setVisible(true);              
+        }        
     }
-
-//    public void eventDispatched(AWTEvent evt) {
-//        if (evt.getID() == MouseEvent.MOUSE_PRESSED) {
-//            onClick(evt);
-//        }              
-//    }
-//
-//    private void onClick(AWTEvent event) {
-//        Component component = (Component) event.getSource();
-//        Window w = SwingUtilities.windowForComponent(component);
-//        if (w != labelsWindow) shutdown();
-//    }
-//
-//    private void shutdown() {
-//        Toolkit.getDefaultToolkit().removeAWTEventListener(this);
-//        if(labelsWindow != null) {
-//            labelsWindow.dispose();
-//            labelsWindow = null;
-//        }        
-//    }
-//    
-//    public void valueChanged(ListSelectionEvent evt) {
-//        int idx = evt.getFirstIndex();
-//        LabelVariable selection = (LabelVariable) labelsPanel.labelsList.getModel().getElementAt(idx);
-//        
-//        shutdown(); 
-//        
-//        String variable = "{" + selection.getVariable() + "}";
-//        
-//        String annotation = panel.annotationTextField.getText();
-       
-//        int pos = panel.annotationTextField.getCaretPosition();
-//        if(pos < 0) pos = annotation.length();
-//        
-//        StringBuffer sb = new StringBuffer(annotation.length() + variable.length());
-//        sb.append(annotation.substring(0, pos));
-//        sb.append(variable);
-//        if(pos < annotation.length()) {
-//            sb.append(annotation.substring(pos, annotation.length()));
-//        }
-//        panel.annotationTextField.setText(sb.toString());
-//        panel.annotationTextField.requestFocus();
-//        panel.annotationTextField.setCaretPosition(pos + variable.length());
-//    }
 
     public void tableChanged(TableModelEvent evt) {
         if (evt.getType() == TableModelEvent.UPDATE) {
@@ -323,7 +252,7 @@ public class AnnotationSettings implements ActionListener, /*AWTEventListener, L
             return;
         }
         
-        boolean valid = true;     
+        valid = true;     
         String pattern = (String) getModel().getValueAt(r, c);
         try {
             Pattern.compile(pattern);                                                       
@@ -332,13 +261,15 @@ public class AnnotationSettings implements ActionListener, /*AWTEventListener, L
         }
         
         if(valid) {
-            panel.warningLabel.setVisible(false);    
+            panel.warningLabel.setVisible(false);                
         } else {
             String label = NbBundle.getMessage(AnnotationSettings.class, "AnnotationSettingsPanel.warningLabel.text", pattern);
             panel.warningLabel.setText(label);
             panel.warningLabel.setVisible(true);            
         }
-        
+        if(dialogDescriptor != null) {
+            dialogDescriptor.setValid(valid);
+        }
     }
     
     private boolean showDialog(JPanel panel, String title, String accesibleDescription) {
@@ -352,5 +283,27 @@ public class AnnotationSettings implements ActionListener, /*AWTEventListener, L
         
         return DialogDescriptor.OK_OPTION.equals(dialogDescriptor.getValue());
     }    
+
     
+    private class LabelVariable {
+        private String description;
+        private String variable;
+         
+        public LabelVariable(String variable, String description) {
+            this.description = description;
+            this.variable = variable;
+        }
+         
+        public String toString() {
+            return description;
+        }
+        
+        public String getDescription() {
+            return description;
+        }
+        
+        public String getVariable() {
+            return variable;
+        }
+    }
 }
