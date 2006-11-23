@@ -52,6 +52,7 @@ public class JavaCompletionDoc implements CompletionDocumentation {
     private String content = null;
     private Hashtable<String, ElementHandle<? extends Element>> links = new Hashtable<String, ElementHandle<? extends Element>>();
     private int linkCounter = 0;
+    private URL docURL = null;
     private AbstractAction goToSource = null;
 
     private static final String PARAM_TAG = "@param"; //NOI18N
@@ -61,22 +62,21 @@ public class JavaCompletionDoc implements CompletionDocumentation {
     private static final String SINCE_TAG = "@since"; //NOI18N
     private static final String INHERIT_DOC_TAG = "@inheritDoc"; //NOI18N
     
-    public static final JavaCompletionDoc create(Doc doc, CompilationController controller) {
-        return new JavaCompletionDoc(doc, controller);
+    public static final JavaCompletionDoc create(CompilationController controller, Element element) {
+        return new JavaCompletionDoc(controller, element);
     }
     
-    private JavaCompletionDoc(Doc doc, CompilationController controller) {
-        this.cpInfo = controller.getClasspathInfo();
-        this.doc = doc;
+    private JavaCompletionDoc(CompilationController controller, Element element) {
         ElementUtilities eu = controller.getElementUtilities();
+        this.cpInfo = controller.getClasspathInfo();
+        this.doc = eu.javaDocFor(element);
         this.content = prepareContent(eu);
-        Element element = eu.elementFor(doc);
         if (element != null) {
             final FileObject fo = SourceUtils.getFile(element, controller.getClasspathInfo());
             if (fo != null) {
                 final ElementHandle<? extends Element> handle = ElementHandle.create(element);
                 goToSource = new AbstractAction() {
-                    public void actionPerformed(ActionEvent arg0) {
+                    public void actionPerformed(ActionEvent evt) {
                         UiUtils.open(fo, handle);
                     }
                 };
@@ -89,7 +89,7 @@ public class JavaCompletionDoc implements CompletionDocumentation {
     }
 
     public URL getURL() {
-        return null;
+        return docURL;
     }
 
     public CompletionDocumentation resolveLink(final String link) {
@@ -102,7 +102,7 @@ public class JavaCompletionDoc implements CompletionDocumentation {
                     JavaSource.forFileObject(fo).runUserActionTask(new CancellableTask<CompilationController>() {
                         public void run(CompilationController controller) throws IOException {
                             controller.toPhase(Phase.ELEMENTS_RESOLVED);
-                            ret[0] = JavaCompletionDoc.create(controller.getElementUtilities().javaDocFor(linkDoc.resolve(controller)), controller);
+                            ret[0] = JavaCompletionDoc.create(controller, linkDoc.resolve(controller));
                         }
                         public void cancel() {
                         }

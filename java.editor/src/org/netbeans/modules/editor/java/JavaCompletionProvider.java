@@ -427,7 +427,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             controller.toPhase(Phase.ELEMENTS_RESOLVED);
             Element el = element != null ? element.resolve(controller) : controller.getTrees().getElement(getCompletionEnvironment(controller, false).getPath());
             if (el != null) {
-                documentation = JavaCompletionDoc.create(controller.getElementUtilities().javaDocFor(el), controller);
+                documentation = JavaCompletionDoc.create(controller, el);
             }
         }
         
