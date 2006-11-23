@@ -50,6 +50,8 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
 import java.io.*;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 
 import java.util.*;
 
@@ -100,7 +102,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
     /** Used for allowing to pass getDocument method
      * when called from loadDocument. */
-    private static final ThreadLocal LOCAL_LOAD_TASK = new ThreadLocal();
+    private static final ThreadLocal<Boolean> LOCAL_LOAD_TASK = new ThreadLocal<Boolean>();
 
     /** error manager for CloneableEditorSupport logging and error reporting */
     private static final Logger ERR = Logger.getLogger("org.openide.text.CloneableEditorSupport"); // NOI18N
@@ -153,10 +155,10 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     //    protected String modifiedAppendix = " *"; // NOI18N
 
     /** Listeners for the changing of the state - document in memory X closed. */
-    private HashSet listeners;
+    private Set<ChangeListener> listeners;
 
-    /** last selected editor Reference<Pane>. */
-    private transient java.lang.ref.Reference lastSelected;
+    /** last selected editor pane. */
+    private transient Reference<Pane> lastSelected;
 
     /** The time of the last save to determine the real external modifications */
     private long lastSaveTime;
@@ -191,7 +193,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     /** Reference to WeakHashMap that is used by all Line.Sets created
      * for this CloneableEditorSupport.
      */
-    private WeakHashMap lineSetWHM;
+    private Map<Line,Reference<Line>> lineSetWHM;
     private boolean annotationsLoaded;
 
     /* Whether the file was externally modified or not.
@@ -206,7 +208,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     *    data object
     */
     public CloneableEditorSupport(Env env) {
-        this(env, org.openide.util.Lookup.EMPTY);
+        this(env, Lookup.EMPTY);
     }
 
     /** Creates new CloneableEditorSupport attached to given environment.
@@ -278,9 +280,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
      * @since 4.3
      */
     protected String messageLine(Line line) {
-        return NbBundle.getMessage(
-            Line.class, "FMT_CESLineDisplayName", messageName(), new Integer(line.getLineNumber() + 1)
-        );
+        return NbBundle.getMessage(Line.class, "FMT_CESLineDisplayName", messageName(), line.getLineNumber() + 1);
     }
 
     //
@@ -331,10 +331,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             annotationsLoaded = true;
 
             Line.Set lines = getLineSet();
-            Lookup.Result result = Lookup.getDefault().lookup(new Lookup.Template(AnnotationProvider.class));
-
-            for (Iterator it = result.allInstances().iterator(); it.hasNext();) {
-                AnnotationProvider act = (AnnotationProvider) it.next();
+            for (AnnotationProvider act : Lookup.getDefault().lookupAll(AnnotationProvider.class)) {
                 act.annotate(lines, lookup);
             }
         }
@@ -833,7 +830,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
      * @see EditorCookie#getOpenedPanes
      */
     public JEditorPane[] getOpenedPanes() {
-        LinkedList ll = new LinkedList();
+        LinkedList<JEditorPane> ll = new LinkedList<JEditorPane>();
         Enumeration en = allEditors.getComponents();
 
         while (en.hasMoreElements()) {
@@ -863,19 +860,19 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             }
         }
 
-        return ll.isEmpty() ? null : (JEditorPane[]) ll.toArray(new JEditorPane[ll.size()]);
+        return ll.isEmpty() ? null : ll.toArray(new JEditorPane[ll.size()]);
     }
 
     /** Returns the lastly selected Pane or null
      */
     final Pane getLastSelected() {
-        java.lang.ref.Reference r = lastSelected;
+        Reference<Pane> r = lastSelected;
 
-        return (r == null) ? null : (Pane) r.get();
+        return (r == null) ? null : r.get();
     }
 
     final void setLastSelected(Pane lastSelected) {
-        this.lastSelected = new java.lang.ref.WeakReference(lastSelected);
+        this.lastSelected = new WeakReference<Pane>(lastSelected);
     }
 
     //
@@ -891,7 +888,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
     /** Lazyly creates or finds already created map for internal use.
      */
-    final WeakHashMap findWeakHashMap() {
+    final Map<Line,Reference<Line>> findWeakHashMap() {
         // any lock not hold for too much time will do as we do not 
         // call outside in the sync block
         synchronized (LOCK_PRINTING) {
@@ -899,7 +896,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                 return lineSetWHM;
             }
 
-            lineSetWHM = new WeakHashMap();
+            lineSetWHM = new WeakHashMap<Line,Reference<Line>>();
 
             return lineSetWHM;
         }
@@ -1140,9 +1137,10 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     * @deprecated Deprecated since 3.40. Use {@link #addPropertyChangeListener} instead.
     * See also {@link org.openide.cookies.EditorCookie.Observable}.
     */
+    @Deprecated
     public synchronized void addChangeListener(ChangeListener l) {
         if (listeners == null) {
-            listeners = new HashSet(8);
+            listeners = new HashSet<ChangeListener>(8);
         }
 
         listeners.add(l);
@@ -1153,6 +1151,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     * @deprecated Deprecated since 3.40. Use {@link #removePropertyChangeListener} instead.
     * See also {@link org.openide.cookies.EditorCookie.Observable}.
     */
+    @Deprecated
     public synchronized void removeChangeListener(ChangeListener l) {
         if (listeners != null) {
             listeners.remove(l);
@@ -1439,12 +1438,12 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
      */
     public static EditorKit getEditorKit(String mimePath) {
         Lookup lookup = MimeLookup.getLookup(MimePath.parse(mimePath));
-        EditorKit kit = (EditorKit) lookup.lookup(EditorKit.class);
+        EditorKit kit = lookup.lookup(EditorKit.class);
         
         if (kit == null) {
             // Try 'text/plain'
             lookup = MimeLookup.getLookup(MimePath.parse("text/plain"));
-            kit = (EditorKit) lookup.lookup(EditorKit.class);
+            kit = lookup.lookup(EditorKit.class);
         }
         
         // Don't use the prototype instance straightaway
@@ -1923,16 +1922,13 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     private final void fireStateChangeEvent(StyledDocument document, boolean closing) {
         if (listeners != null) {
             EnhancedChangeEvent event = new EnhancedChangeEvent(this, document, closing);
-            HashSet s;
+            ChangeListener[] ls;
 
             synchronized (this) {
-                s = ((HashSet) listeners.clone());
+                ls = listeners.toArray(new ChangeListener[listeners.size()]);
             }
 
-            Iterator it = s.iterator();
-
-            while (it.hasNext()) {
-                ChangeListener l = (ChangeListener) it.next();
+            for (ChangeListener l : ls) {
                 l.stateChanged(event);
             }
         }
@@ -2392,7 +2388,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
             try {
                 loadExc = null;
-                LOCAL_LOAD_TASK.set(Boolean.TRUE);
+                LOCAL_LOAD_TASK.set(true);
                 loadDocument(kit, doc);
             } catch (IOException e) {
                 loadExc = e;

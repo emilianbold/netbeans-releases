@@ -164,7 +164,8 @@ public final class PositionRef extends Object implements Serializable {
     */
     static final class Manager extends Object implements Runnable, Serializable {
         /** document that this thread should use */
-        private static ThreadLocal DOCUMENT = new ThreadLocal();
+        // XXX never read, does it have some purpose?
+        private static ThreadLocal<Object> DOCUMENT = new ThreadLocal<Object>();
         static final long serialVersionUID = -4374030124265110801L;
 
         /** Head item of data structure replacing linked list here.
@@ -172,7 +173,7 @@ public final class PositionRef extends Object implements Serializable {
         private transient ChainItem head;
 
         /** ReferenceQueue where all <code>ChainedItem</code>'s will be enqueued to. */
-        private transient ReferenceQueue queue;
+        private transient ReferenceQueue<PositionRef> queue;
 
         /** Counter which counts enqued items and after reaching
          * number 100 schedules sweepTask. */
@@ -199,7 +200,7 @@ public final class PositionRef extends Object implements Serializable {
 
         /** Initialize the variables to the default values. */
         protected void init() {
-            queue = new ReferenceQueue();
+            queue = new ReferenceQueue<PositionRef>();
 
             // A stable mark used to simplify operations with the list
             head = new ChainItem(null, queue, null);
@@ -406,7 +407,7 @@ public final class PositionRef extends Object implements Serializable {
 
         /** One item which chained instanced provides data structure
          * keeping positions for this Manager. */
-        private static class ChainItem extends WeakReference {
+        private static class ChainItem extends WeakReference<PositionRef> {
             /** Next reference keeping the position. */
             ChainItem next;
 
@@ -415,7 +416,7 @@ public final class PositionRef extends Object implements Serializable {
              * instance
              * @param queue <code>ReferenceQueue</code> to be used for this instance
              * @param next next chained item */
-            public ChainItem(PositionRef position, ReferenceQueue queue, ChainItem next) {
+            public ChainItem(PositionRef position, ReferenceQueue<PositionRef> queue, ChainItem next) {
                 super(position, queue);
 
                 this.next = next;
@@ -952,7 +953,7 @@ public final class PositionRef extends Object implements Serializable {
                             p = mgr.getDoc().getEndPosition();
                         }
 
-                        retObject = (PositionKind) new PositionKind(p, mgr);
+                        retObject = new PositionKind(p, mgr);
 
                         break;
                     }
@@ -1018,7 +1019,7 @@ public final class PositionRef extends Object implements Serializable {
                             ChainItem ref = previous.next;
 
                             while (ref != null) {
-                                PositionRef pos = (PositionRef) ref.get();
+                                PositionRef pos = ref.get();
 
                                 if (pos == null) {
                                     // Remove the item from data structure.

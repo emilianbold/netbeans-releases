@@ -18,11 +18,16 @@
  */
 package org.openide.text;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
 
 /** Lazy List that delegates to another instance of itself.
  */
-final class LazyLines extends Object implements java.util.List {
-    private java.util.List delegate;
+final class LazyLines extends Object implements List<Line> {
+    private List<Line> delegate;
     private DocumentLine.Set set;
 
     public LazyLines(DocumentLine.Set set) {
@@ -31,9 +36,9 @@ final class LazyLines extends Object implements java.util.List {
 
     /** Override this to create the delegate
      */
-    private java.util.List createDelegate() {
+    private List<Line> createDelegate() {
         int cnt = set.listener.getOriginalLineCount();
-        java.util.List l = new java.util.ArrayList(cnt);
+        List<Line> l = new ArrayList<Line>(cnt);
 
         for (int i = 0; i < cnt; i++) {
             l.add(set.getOriginal(i));
@@ -42,7 +47,7 @@ final class LazyLines extends Object implements java.util.List {
         return l;
     }
 
-    private synchronized java.util.List getDelegate() {
+    private synchronized List<Line> getDelegate() {
         if (delegate == null) {
             delegate = createDelegate();
         }
@@ -86,7 +91,7 @@ final class LazyLines extends Object implements java.util.List {
         throw new UnsupportedOperationException();
     }
 
-    public java.util.ListIterator listIterator() {
+    public ListIterator<Line> listIterator() {
         return getDelegate().listIterator();
     }
 
@@ -94,11 +99,11 @@ final class LazyLines extends Object implements java.util.List {
         return getDelegate().toArray();
     }
 
-    public Object[] toArray(Object[] a) {
+    public <T> T[] toArray(T[] a) {
         return getDelegate().toArray(a);
     }
 
-    public java.util.ListIterator listIterator(int index) {
+    public ListIterator<Line> listIterator(int index) {
         return getDelegate().listIterator(index);
     }
 
@@ -114,7 +119,7 @@ final class LazyLines extends Object implements java.util.List {
         return getDelegate().contains(o);
     }
 
-    public void add(int index, Object element) {
+    public void add(int index, Line element) {
         throw new UnsupportedOperationException();
     }
 
@@ -122,7 +127,7 @@ final class LazyLines extends Object implements java.util.List {
         getDelegate().clear();
     }
 
-    public Object set(int index, Object element) {
+    public Line set(int index, Line element) {
         throw new UnsupportedOperationException();
     }
 
@@ -130,15 +135,15 @@ final class LazyLines extends Object implements java.util.List {
         return getDelegate().size();
     }
 
-    public Object get(int index) {
+    public Line get(int index) {
         return getDelegate().get(index);
     }
 
-    public boolean containsAll(java.util.Collection c) {
+    public boolean containsAll(Collection<?> c) {
         return getDelegate().containsAll(c);
     }
 
-    public boolean add(Object o) {
+    public boolean add(Line o) {
         throw new UnsupportedOperationException();
     }
 
@@ -146,19 +151,19 @@ final class LazyLines extends Object implements java.util.List {
         return getDelegate().isEmpty();
     }
 
-    public boolean retainAll(java.util.Collection c) {
+    public boolean retainAll(Collection<?> c) {
         throw new UnsupportedOperationException();
     }
 
-    public java.util.List subList(int fromIndex, int toIndex) {
+    public List<Line> subList(int fromIndex, int toIndex) {
         return getDelegate().subList(fromIndex, toIndex);
     }
 
-    public Object remove(int index) {
+    public Line remove(int index) {
         return getDelegate().remove(index);
     }
 
-    public java.util.Iterator iterator() {
+    public Iterator<Line> iterator() {
         return getDelegate().iterator();
     }
 

@@ -39,12 +39,12 @@ final class LineStruct extends Object {
     private static final RequestProcessor PROCESSOR = new RequestProcessor("LineStruct Processor"); // NOI18N
 
     /** list of Info objects that represents the whole document */
-    private LinkedList list;
+    private List<Info> list;
 
     /** Constructor.
     */
     public LineStruct() {
-        list = new LinkedList();
+        list = new LinkedList<Info>();
         list.add(new Info(MAX, MAX));
     }
 
@@ -156,10 +156,10 @@ final class LineStruct extends Object {
     * @param count number of lines inserted
     */
     private void insertLinesImpl(int line, int count) {
-        ListIterator it = list.listIterator();
+        ListIterator<Info> it = list.listIterator();
 
         for (;;) {
-            Info i = (Info) it.next();
+            Info i = it.next();
 
             if (i.current >= line) {
                 for (;;) {
@@ -169,7 +169,7 @@ final class LineStruct extends Object {
                         return;
                     }
 
-                    i = (Info) it.next();
+                    i = it.next();
                     line = 0;
                 }
             }
@@ -185,10 +185,10 @@ final class LineStruct extends Object {
     * @param
     */
     private void deleteLinesImpl(int line, int count) {
-        ListIterator it = list.listIterator();
+        ListIterator<Info> it = list.listIterator();
 
         for (;;) {
-            Info i = (Info) it.next();
+            Info i = it.next();
 
             if (i.current >= line) {
                 // information to hold both the number of lines to delete (original)
@@ -202,17 +202,17 @@ final class LineStruct extends Object {
                         break;
                     }
 
-                    i = (Info) it.next();
+                    i = it.next();
                     line = 0;
                 }
 
                 // insert the amount of lines to mark deleted before current position
                 if ((stat.current > 0) && it.hasPrevious()) {
-                    Info prev = (Info) it.previous();
+                    Info prev = it.previous();
                     boolean hasPrev = it.hasPrevious();
 
                     if (hasPrev) {
-                        prev = (Info) it.previous();
+                        prev = it.previous();
                     }
 
                     if (prev.current == 0) {
@@ -276,7 +276,7 @@ final class LineStruct extends Object {
         * @param it iterator that just returned this object
         * @return how much lines to insert after this object
         */
-        public int insert(int pos, int count, ListIterator it) {
+        public int insert(int pos, int count, ListIterator<Info> it) {
             switch (type()) {
             case AREA_INSERT:
 
@@ -329,10 +329,10 @@ final class LineStruct extends Object {
                 }
 
                 // check the previous Info if it cannot be merged
-                Info prev = (Info) it.previous(); // current item
+                Info prev = it.previous(); // current item
 
                 if (it.hasPrevious()) {
-                    prev = (Info) it.previous(); // previous
+                    prev = it.previous(); // previous
                     it.next(); // previous
                 }
 
@@ -389,7 +389,7 @@ final class LineStruct extends Object {
         *   info.current the amount of lines that needs to be later marked as deleted
         *     this will be put before the
         */
-        public Info delete(int pos, Info info, ListIterator it) {
+        public Info delete(int pos, Info info, ListIterator<Info> it) {
             switch (type()) {
             case AREA_ORIGINAL:
 

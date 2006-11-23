@@ -19,7 +19,6 @@
 package org.openide.text;
 
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
 import java.io.*;
@@ -28,6 +27,8 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.WeakHashMap;
 
 
@@ -38,7 +39,7 @@ import java.util.WeakHashMap;
 *
 * @author Ales Novak, Petr Hamernik, Jan Jancura, Jaroslav Tulach, David Konecny
 */
-public abstract class Line extends Annotatable implements java.io.Serializable {
+public abstract class Line extends Annotatable implements Serializable {
     /** generated Serialized Version UID */
     static final long serialVersionUID = 9113186289600795476L;
 
@@ -161,32 +162,38 @@ public abstract class Line extends Annotatable implements java.io.Serializable {
      * @param b <code>true</code> to turn on
      * @deprecated Deprecated since 1.20. Use {@link Annotation#attach} instead.
      */
+    @Deprecated
     public abstract void setBreakpoint(boolean b);
 
     /** Test if there is a breakpoint set at this line.
      * @return <code>true</code> is there is
      * @deprecated Deprecated since 1.20. Use {@link Annotation} instead.
      */
+    @Deprecated
     public abstract boolean isBreakpoint();
 
     /** Mark an error at this line.
      * @deprecated Deprecated since 1.20. Use {@link Annotation#attach} instead.
      */
+    @Deprecated
     public abstract void markError();
 
     /** Unmark error at this line.
      * @deprecated Deprecated since 1.20. Use {@link Annotation#detach} instead.
      */
+    @Deprecated
     public abstract void unmarkError();
 
     /** Mark this line as current.
      * @deprecated Deprecated since 1.20. Use {@link Annotation#attach} instead.
      */
+    @Deprecated
     public abstract void markCurrentLine();
 
     /** Unmark this line as current.
      * @deprecated Deprecated since 1.20. Use {@link Annotation#detach} instead.
      */
+    @Deprecated
     public abstract void unmarkCurrentLine();
 
     /** Method that should allow the debugger to communicate with lines that
@@ -206,6 +213,7 @@ public abstract class Line extends Annotatable implements java.io.Serializable {
     *
     * @deprecated Deprecated since 1.20, as {@link #markCurrentLine} is deprecated by {@link Annotation#attach}.
     */
+    @Deprecated
     public boolean canBeMarkedCurrent(int action, Line previousLine) {
         return true;
     }
@@ -303,7 +311,7 @@ public abstract class Line extends Annotatable implements java.io.Serializable {
          * @see DocumentLine#hashCode
          * @see DocumentLine#equals
          * @see #registerLine */
-        private WeakHashMap whm;
+        private Map<Line,Reference<Line>> whm;
 
         /** Create a new snapshot. Remembers the date when it was created. */
         public Set() {
@@ -314,9 +322,9 @@ public abstract class Line extends Annotatable implements java.io.Serializable {
         * line numbers. This immutable list will contains all lines held by this
         * line set.
         *
-        * @return list of element type {@link Line}
+        * @return list of lines
         */
-        public abstract java.util.List getLines();
+        public abstract List<? extends Line> getLines();
 
         /** Get creation time for this line set.
          * @return time
@@ -356,13 +364,13 @@ public abstract class Line extends Annotatable implements java.io.Serializable {
 
         /** Lazyly creates or finds already created map for internal use.
          */
-        WeakHashMap findWeakHashMap() {
+        Map<Line,Reference<Line>> findWeakHashMap() {
             synchronized (date) {
                 if (whm != null) {
                     return whm;
                 }
 
-                whm = new WeakHashMap();
+                whm = new WeakHashMap<Line,Reference<Line>>();
 
                 return whm;
             }
@@ -379,18 +387,18 @@ public abstract class Line extends Annotatable implements java.io.Serializable {
                 throw new NullPointerException();
             }
 
-            WeakHashMap lines = findWeakHashMap();
+            Map<Line,Reference<Line>> lines = findWeakHashMap();
 
             synchronized (lines) {
-                Reference r = (Reference) lines.get(line);
-                Line in = ((r != null) ? (Line) r.get() : null);
+                Reference<Line> r = lines.get(line);
+                Line in = r != null ? r.get() : null;
 
                 if (in == null) {
                     if (line instanceof DocumentLine) {
                         ((DocumentLine) line).init();
                     }
 
-                    lines.put(line, new WeakReference(line));
+                    lines.put(line, new WeakReference<Line>(line));
                     in = line;
                 }
 
@@ -403,11 +411,11 @@ public abstract class Line extends Annotatable implements java.io.Serializable {
          * @return the registered line equal to line or null
          */
         final Line findLine(Line line) {
-            WeakHashMap lines = findWeakHashMap();
+            Map<Line,Reference<Line>> lines = findWeakHashMap();
 
             synchronized (lines) {
-                Reference r = (Reference) lines.get(line);
-                Line in = ((r != null) ? (Line) r.get() : null);
+                Reference<Line> r = lines.get(line);
+                Line in = r != null ? r.get() : null;
 
                 return in;
             }

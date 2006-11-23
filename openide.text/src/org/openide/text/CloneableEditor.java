@@ -74,6 +74,10 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         this.support = support;
 
         updateName();
+        _setCloseOperation();
+    }
+    @SuppressWarnings("deprecation")
+    private void _setCloseOperation() {
         setCloseOperation(CLOSE_EACH);
     }
 
@@ -287,6 +291,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
      * Also tries to open all other top components which are docked
      * in editor mode on given workspace, but not visible.<br>
      */
+    @SuppressWarnings("deprecation")
     public void open(Workspace workspace) {
         if (discard()) {
             Logger.getAnonymousLogger().warning(
@@ -327,30 +332,34 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         return support.getUndoRedo();
     }
 
-    public SystemAction[] getSystemActions() {
-        SystemAction[] sa = super.getSystemActions();
+    @Override
+    public Action[] getActions() {
+        Action[] a = super.getActions();
 
         try {
-            ClassLoader l = (ClassLoader) org.openide.util.Lookup.getDefault().lookup(ClassLoader.class);
+            ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
 
             if (l == null) {
                 l = getClass().getClassLoader();
             }
 
-            Class c = Class.forName("org.openide.actions.FileSystemAction", true, l); // NOI18N
-            SystemAction ra = (SystemAction) SystemAction.findObject(c, true);
+            Class<? extends SystemAction> c = Class.forName("org.openide.actions.FileSystemAction", true, l).asSubclass(SystemAction.class); // NOI18N
+            SystemAction ra = SystemAction.findObject(c, true);
 
-            // initialize the SYSTEM_ACTIONS
-            sa = SystemAction.linkActions(sa, new SystemAction[] { ra });
+            Action[] a2 = new Action[a.length + 1];
+            System.arraycopy(a, 0, a2, 0, a.length);
+            a2[a.length] = ra;
+            return a2;
         } catch (Exception ex) {
             // ok, we no action like this I guess
         }
 
-        return sa;
+        return a;
     }
 
     /** Transfer the focus to the editor pane.
      */
+    @SuppressWarnings("deprecation")
     public void requestFocus() {
         super.requestFocus();
 
@@ -363,6 +372,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
 
     /** Transfer the focus to the editor pane.
      */
+    @SuppressWarnings("deprecation")
     public boolean requestFocusInWindow() {
         super.requestFocusInWindow();
 
@@ -375,6 +385,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         return false;
     }
 
+    @SuppressWarnings("deprecation")
     public boolean requestDefaultFocus() {
         if ((customComponent != null) && !SwingUtilities.isDescendingFrom(pane, customComponent)) {
             return customComponent.requestFocusInWindow();
@@ -385,8 +396,10 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         return false;
     }
 
+    // XXX is this method really needed?
     /** @return Preferred size of editor top component  */
     public Dimension getPreferredSize() {
+        @SuppressWarnings("deprecation")
         Rectangle bounds = WindowManager.getDefault().getCurrentWorkspace().getBounds();
 
         return new Dimension(bounds.width / 2, bounds.height / 2);

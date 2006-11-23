@@ -25,6 +25,7 @@ import java.awt.geom.*;
 import java.awt.print.*;
 import java.text.*;
 import java.util.*;
+import java.util.List;
 import javax.swing.text.*;
 import org.openide.*;
 import org.openide.util.Exceptions;
@@ -59,7 +60,7 @@ final class DefaultPrintable extends Object implements Printable {
     private int startPage = -1;
 
     /** created text layouts */
-    private ArrayList textLayouts;
+    private List<TextLayout> textLayouts;
 
     /** page indices to textLayouts list */
     private int[] pageIndices;
@@ -80,7 +81,7 @@ final class DefaultPrintable extends Object implements Printable {
     private int maxPage;
 
     /** text layouts that starts new line (those that were not created thanks to wrapping) */
-    private ArrayList startLayouts;
+    private List<TextLayout> startLayouts;
 
     /** page to line indexes (page 5 starts with line 112) */
     private int[] lineIndices; // pageIndicesSize
@@ -116,7 +117,7 @@ final class DefaultPrintable extends Object implements Printable {
         }
 
         if (printSettings == null) {
-            printSettings = (PrintSettings) PrintSettings.findObject(PrintSettings.class, true);
+            printSettings = PrintSettings.findObject(PrintSettings.class, true);
         }
 
         // bugfix for sun.awt.Bidi line 250
@@ -125,7 +126,7 @@ final class DefaultPrintable extends Object implements Printable {
         styledTexts = iter;
 
         //        pageno = 0;
-        textLayouts = new ArrayList(100); // 100 lines
+        textLayouts = new ArrayList<TextLayout>(100); // 100 lines
         pageIndices = new int[50];
         pageIndicesSize = 0;
         currentLayout = 0;
@@ -133,7 +134,7 @@ final class DefaultPrintable extends Object implements Printable {
         lineBreakMeasurer = null;
         maxPage = Integer.MAX_VALUE;
 
-        startLayouts = new ArrayList(10); // 10 lines
+        startLayouts = new ArrayList<TextLayout>(10); // 10 lines
         lineIndices = new int[pageIndices.length];
 
         pageArgs = new Object[ARG_SIZE];
@@ -478,7 +479,7 @@ final class DefaultPrintable extends Object implements Printable {
                 startLayouts.add(l);
             }
         } else {
-            l = (TextLayout) textLayouts.get(currentLayout);
+            l = textLayouts.get(currentLayout);
         }
 
         currentLayout++; // advance to next
@@ -610,7 +611,7 @@ final class DefaultPrintable extends Object implements Printable {
 
         AttributedCharacters achs = null;
         char[] chars = null;
-        ArrayList iterators = new ArrayList(300);
+        List<AttributedCharacterIterator> iterators = new ArrayList<AttributedCharacterIterator>(300);
 
         try {
             String document = doc.getText(0, doc.getLength());

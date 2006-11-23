@@ -18,6 +18,7 @@
  */
 package org.openide.text;
 
+import java.lang.ref.Reference;
 import java.util.*;
 
 import javax.swing.event.*;
@@ -44,7 +45,7 @@ final class EditorSupportLineSet extends DocumentLine.Set {
 
     /** Shares the whm with other line sets based on the same support.
      */
-    WeakHashMap findWeakHashMap() {
+    Map<Line,Reference<Line>> findWeakHashMap() {
         return support.findWeakHashMap();
     }
 
@@ -141,7 +142,7 @@ final class EditorSupportLineSet extends DocumentLine.Set {
 
         /** Shares the whm with other line sets based on the same support.
          */
-        WeakHashMap findWeakHashMap() {
+        Map<Line,Reference<Line>> findWeakHashMap() {
             return support.findWeakHashMap();
         }
 
@@ -151,13 +152,13 @@ final class EditorSupportLineSet extends DocumentLine.Set {
         *
         * @return list of element type {@link Line}
         */
-        public java.util.List getLines() {
+        public List<? extends Line> getLines() {
             if (delegate != null) {
                 return delegate.getLines();
             }
 
             // PENDING
-            return new java.util.ArrayList();
+            return new ArrayList<Line>();
         }
 
         /** Find line object in the line set corresponding to original line number.

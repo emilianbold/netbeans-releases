@@ -18,6 +18,9 @@
  */
 package org.openide.text;
 
+import java.beans.PropertyChangeSupport;
+import java.util.LinkedList;
+import java.util.List;
 
 /** Classes which are capable of holding annotations must
  * extend this abstract class. The examples of these classes are
@@ -42,13 +45,13 @@ public abstract class Annotatable extends Object {
     public static final String PROP_TEXT = "text"; // NOI18N
 
     /** Support for property change listeners*/
-    private java.beans.PropertyChangeSupport propertyChangeSupport;
+    private PropertyChangeSupport propertyChangeSupport;
 
     /** Count of all annotations attached to this instance. */
     private int annotationCount;
 
     /** List of all annotations attached to this annotatable object */
-    private java.util.List attachedAnnotations;
+    private List<Annotation> attachedAnnotations;
 
     /** Whether the Annotatable object was deleted during
      * the editting of document or not. */
@@ -57,8 +60,8 @@ public abstract class Annotatable extends Object {
     public Annotatable() {
         deleted = false;
         annotationCount = 0;
-        propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
-        attachedAnnotations = new java.util.LinkedList();
+        propertyChangeSupport = new PropertyChangeSupport(this);
+        attachedAnnotations = new LinkedList<Annotation>();
     }
 
     /** Add annotation to this Annotatable class
@@ -79,7 +82,7 @@ public abstract class Annotatable extends Object {
 
     /** Gets the list of all annotations attached to this annotatable object
      * @since 1.27 */
-    java.util.List getAnnotations() {
+    List<? extends Annotation> getAnnotations() {
         return attachedAnnotations;
     }
 

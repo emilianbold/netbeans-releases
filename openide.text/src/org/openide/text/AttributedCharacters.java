@@ -214,7 +214,7 @@ public class AttributedCharacters extends Object {
         protected int[] runLimit;
 
         /** Singleton. */
-        protected Set singleton;
+        protected Set<AttributedCharacterIterator.Attribute> singleton;
 
         public AttributedCharacterIteratorImpl(char[] chars, Font[] fonts, Color[] colors, int[] rs, int[] rl) {
             this.chars = chars;
@@ -342,9 +342,9 @@ public class AttributedCharacters extends Object {
         /*
          * @return a Set with TextAttribute.FONT
          */
-        public Set getAllAttributeKeys() {
+        public Set<AttributedCharacterIterator.Attribute> getAllAttributeKeys() {
             if (singleton == null) {
-                HashSet l = new HashSet(4);
+                Set<AttributedCharacterIterator.Attribute> l = new HashSet<AttributedCharacterIterator.Attribute>(4);
                 l.add(TextAttribute.FONT);
                 l.add(TextAttribute.FOREGROUND);
                 singleton = Collections.unmodifiableSet(l);
@@ -370,8 +370,8 @@ public class AttributedCharacters extends Object {
         /*
          *  @return map with all attributes for current char
          */
-        public Map getAttributes() {
-            Map m = new HashMap(1);
+        public Map<AttributedCharacterIterator.Attribute,Object> getAttributes() {
+            Map<AttributedCharacterIterator.Attribute,Object> m = new HashMap<AttributedCharacterIterator.Attribute,Object>(1);
             m.put(TextAttribute.FONT, fonts[getIndex()]);
             m.put(TextAttribute.FOREGROUND, colors[getIndex()]);
 
@@ -399,7 +399,7 @@ public class AttributedCharacters extends Object {
         /*
          * @param attributes a Set of attributes
          */
-        public int getRunLimit(Set attributes) {
+        public int getRunLimit(Set<? extends AttributedCharacterIterator.Attribute> attributes) {
             if (attributes.contains(TextAttribute.FONT) || attributes.contains(TextAttribute.FOREGROUND)) {
                 return getRunLimit();
             } else {
@@ -428,7 +428,7 @@ public class AttributedCharacters extends Object {
         /*
          * @param attributes a Set
          */
-        public int getRunStart(Set attributes) {
+        public int getRunStart(Set<? extends AttributedCharacterIterator.Attribute> attributes) {
             if ((attributes.contains(TextAttribute.FONT)) || attributes.contains(TextAttribute.FOREGROUND)) {
                 return getRunStart();
             } else {

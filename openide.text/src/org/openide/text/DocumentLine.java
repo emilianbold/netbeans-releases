@@ -21,7 +21,6 @@ package org.openide.text;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.text.EnhancedChangeEvent;
-import org.openide.util.WeakListeners;
 
 import java.io.*;
 
@@ -29,7 +28,6 @@ import java.util.*;
 
 import javax.swing.event.*;
 import javax.swing.text.*;
-import javax.swing.text.Element;
 
 
 /** Implementation of a line in a {@link StyledDocument}.
@@ -43,7 +41,7 @@ import javax.swing.text.Element;
 public abstract class DocumentLine extends Line {
     /** weak map that assignes to editor supports whether they have current or error line
     * selected. (EditorSupport, DocumentLine[2]), where Line[0] is current and Line[1] is error */
-    private static WeakHashMap assigned = new WeakHashMap(5);
+    private static Map<CloneableEditorSupport,DocumentLine[]> assigned = new WeakHashMap<CloneableEditorSupport,DocumentLine[]>(5);
     static final long serialVersionUID = 3213776466939427487L;
 
     /** reference to one position on the line */
@@ -51,14 +49,17 @@ public abstract class DocumentLine extends Line {
 
     /** is breakpoint there - presistent state
      @deprecated since 1.20 */
+    @Deprecated
     private boolean breakpoint;
 
     /** error line  - transient state
      @deprecated since 1.20 */
+    @Deprecated
     private transient boolean error;
 
     /** current line - transient state
      @deprecated since 1.20 */
+    @Deprecated
     private transient boolean current;
 
     /** listener for changes of state of the document */
@@ -68,7 +69,7 @@ public abstract class DocumentLine extends Line {
     private transient DocumentListener docL;
 
     /** List of Line.Part which exist for this line*/
-    private List lineParts = new ArrayList(3);
+    private List<Part> lineParts = new ArrayList<Part>(3);
 
     /** Constructor.
     * @param obj context we belong to
@@ -112,6 +113,7 @@ public abstract class DocumentLine extends Line {
     public abstract void show(int kind, int column);
 
     /* Sets the breakpoint. */
+    @SuppressWarnings("deprecation")
     public void setBreakpoint(boolean b) {
         if (breakpoint != b) {
             breakpoint = b;
@@ -120,11 +122,13 @@ public abstract class DocumentLine extends Line {
     }
 
     /* Tests if the breakpoint is set. */
+    @SuppressWarnings("deprecation")
     public boolean isBreakpoint() {
         return breakpoint;
     }
 
     /* Marks the error. */
+    @SuppressWarnings("deprecation")
     public void markError() {
         DocumentLine previous = registerLine(1, this);
 
@@ -139,6 +143,7 @@ public abstract class DocumentLine extends Line {
     }
 
     /* Unmarks error at this line. */
+    @SuppressWarnings("deprecation")
     public void unmarkError() {
         error = false;
         registerLine(1, null);
@@ -147,6 +152,7 @@ public abstract class DocumentLine extends Line {
     }
 
     /* Marks this line as current. */
+    @SuppressWarnings("deprecation")
     public void markCurrentLine() {
         DocumentLine previous = registerLine(0, this);
 
@@ -160,6 +166,7 @@ public abstract class DocumentLine extends Line {
     }
 
     /* Unmarks this line as current. */
+    @SuppressWarnings("deprecation")
     public void unmarkCurrentLine() {
         current = false;
         registerLine(0, null);
@@ -170,6 +177,7 @@ public abstract class DocumentLine extends Line {
     /** Refreshes the current line.
      *
      * @deprecated since 1.20. */
+    @Deprecated
     synchronized void refreshState() {
         StyledDocument doc = pos.getCloneableEditorSupport().getDocument();
 
@@ -236,12 +244,13 @@ public abstract class DocumentLine extends Line {
     * @return the previous value
     *
     * @deprecated since 1.20 */
+    @Deprecated
     private DocumentLine registerLine(int indx, DocumentLine line) {
         DocumentLine prev;
 
         CloneableEditorSupport es = pos.getCloneableEditorSupport();
 
-        DocumentLine[] arr = (DocumentLine[]) assigned.get(es);
+        DocumentLine[] arr = assigned.get(es);
 
         if (arr != null) {
             // remember the previous
@@ -275,7 +284,7 @@ public abstract class DocumentLine extends Line {
     private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
         pos = (PositionRef) ois.readObject();
         setBreakpoint(ois.readBoolean());
-        lineParts = new ArrayList(3);
+        lineParts = new ArrayList<Part>(3);
     }
 
     /** Register line.
@@ -372,8 +381,8 @@ public abstract class DocumentLine extends Line {
         }
 
         // notify also all Line.Part attached to this Line
-        for (int i = 0; i < lineParts.size(); i++) {
-            ((DocumentLine.Part) lineParts.get(i)).attachDetachAnnotations(doc, closing);
+        for (Part p : lineParts) {
+            p.attachDetachAnnotations(doc, closing);
         }
     }
 
@@ -435,7 +444,7 @@ public abstract class DocumentLine extends Line {
         DocumentLine.Part part;
 
         for (int i = 0; i < lineParts.size();) {
-            part = (DocumentLine.Part) lineParts.get(i);
+            part = lineParts.get(i);
 
             // notify Line.Part about the change
             part.handleDocumentChange(p0);
@@ -876,7 +885,7 @@ public abstract class DocumentLine extends Line {
         final LineListener listener;
 
         /** all lines in the set or null */
-        private java.util.List list;
+        private List<Line> list;
 
         /** Constructor.
         * @param doc document to work on
@@ -926,12 +935,11 @@ public abstract class DocumentLine extends Line {
 
         /** Gets the lines with line number whitin the range inclusive.
          * @return <code>List</code> of lines from range inclusive */
-        private List getLinesFromRange(int startLineNumber, int endLineNumber) {
-            List linesInRange = new ArrayList(10);
+        private List<Line> getLinesFromRange(int startLineNumber, int endLineNumber) {
+            List<Line> linesInRange = new ArrayList<Line>(10);
 
             synchronized (findWeakHashMap()) {
-                for (Iterator it = findWeakHashMap().keySet().iterator(); it.hasNext();) {
-                    Line line = (Line) it.next();
+                for (Line line : findWeakHashMap().keySet()) {
                     int lineNumber = line.getLineNumber();
 
                     if ((startLineNumber <= lineNumber) && (lineNumber <= endLineNumber)) {
@@ -949,7 +957,7 @@ public abstract class DocumentLine extends Line {
         *
         * @return list of Line objects
         */
-        public synchronized java.util.List getLines() {
+        public synchronized List<? extends Line> getLines() {
             if (list == null) {
                 list = new LazyLines(this);
             }

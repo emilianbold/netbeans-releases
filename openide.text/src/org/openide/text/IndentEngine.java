@@ -26,6 +26,8 @@ import java.io.Writer;
 
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.text.*;
 
@@ -39,8 +41,8 @@ import javax.swing.text.*;
 public abstract class IndentEngine extends ServiceType {
     static final long serialVersionUID = -8548906260608507035L;
 
-    /** hashtable mapping MIME type to engine (String, IndentEngine) */
-    private static java.util.HashMap map = new java.util.HashMap(7);
+    /** hashtable mapping MIME type to engine */
+    private static Map<String,IndentEngine> map = new HashMap<String,IndentEngine>(7);
     private static IndentEngine INSTANCE = null;
 
     public HelpCtx getHelpCtx() {
@@ -95,6 +97,7 @@ public abstract class IndentEngine extends ServiceType {
     /**
      * @deprecated IndentEngine now is a ServiceType
      */
+    @Deprecated
     public synchronized static void register(String mime, IndentEngine eng) {
         map.put(mime, eng);
     }
@@ -102,27 +105,25 @@ public abstract class IndentEngine extends ServiceType {
     /** Returns enumeration of all registered indentation engines.
      * @return enumeration of IndentEngine
      */
-    public static Enumeration indentEngines() {
-        return Collections.enumeration(
-            Lookup.getDefault().lookup(new Lookup.Template(IndentEngine.class)).allInstances()
-        );
+    public static Enumeration<? extends IndentEngine> indentEngines() {
+        return Collections.enumeration(Lookup.getDefault().lookupAll(IndentEngine.class));
     }
 
     /** Finds engine associated with given mime type.
     * If no engine is associated returns default one.
     */
     public synchronized static IndentEngine find(String mime) {
-        Enumeration en = indentEngines();
+        Enumeration<? extends IndentEngine> en = indentEngines();
 
         while (en.hasMoreElements()) {
-            IndentEngine eng = (IndentEngine) en.nextElement();
+            IndentEngine eng = en.nextElement();
 
             if (eng.acceptMimeType(mime)) {
                 return eng;
             }
         }
 
-        IndentEngine eng = (IndentEngine) map.get(mime);
+        IndentEngine eng = map.get(mime);
 
         if (eng != null) {
             return eng;

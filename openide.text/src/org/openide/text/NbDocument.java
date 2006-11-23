@@ -77,6 +77,7 @@ public final class NbDocument extends Object {
     public static final String NORMAL_STYLE_NAME = "NbNormalStyle"; // NOI18N
 
     /** @deprecated Not useful for anything. */
+    @Deprecated
     public static final Colors COLORS = new Colors();
 
     private NbDocument() {
@@ -240,6 +241,7 @@ public final class NbDocument extends Object {
     *
     * @deprecated since 1.20. Use addAnnotation() instead
     */
+    @Deprecated
     public static void markBreakpoint(StyledDocument doc, int offset) {
         checkDocParameter(doc);
 
@@ -271,6 +273,7 @@ public final class NbDocument extends Object {
     *
     * @deprecated since 1.20. Use addAnnotation() instead
     */
+    @Deprecated
     public static void markError(StyledDocument doc, int offset) {
         checkDocParameter(doc);
 
@@ -302,6 +305,7 @@ public final class NbDocument extends Object {
     *
     * @deprecated since 1.20. Use addAnnotation() instead
     */
+    @Deprecated
     public static void markCurrent(StyledDocument doc, int offset) {
         checkDocParameter(doc);
 
@@ -333,6 +337,7 @@ public final class NbDocument extends Object {
      *
      * @deprecated since 1.20. Use addAnnotation() instead
      */
+    @Deprecated
     public static void markNormal(StyledDocument doc, int offset) {
         checkDocParameter(doc);
 
@@ -604,6 +609,7 @@ public final class NbDocument extends Object {
     }
 
     /** @deprecated Not useful for anything. */
+    @Deprecated
     public static final class Colors extends SystemOption {
         public static final String PROP_BREAKPOINT = BREAKPOINT_STYLE_NAME;
         public static final String PROP_ERROR = ERROR_STYLE_NAME;
