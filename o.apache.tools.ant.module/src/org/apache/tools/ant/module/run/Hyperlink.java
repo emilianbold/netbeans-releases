@@ -297,11 +297,7 @@ public final class Hyperlink extends Annotation implements OutputListener, Prope
     
     @Override
     public String getShortDescription() {
-        if (message != null) {
-            return message;
-        } else {
-            return null;
-        }
+        return message;
     }
     
     @Override

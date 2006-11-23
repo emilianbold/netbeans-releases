@@ -361,7 +361,7 @@ public class HintsUI implements MouseListener, KeyListener, ChangeListener, AWTE
             
             if (   at instanceof Line
                 && lineNum == ((Line) at).getLineNumber()
-                && desc.getShortDescription().equals(a.getShortDescription())
+                && org.openide.util.Utilities.compareObjects(desc.getShortDescription(), a.getShortDescription())
                 && a instanceof ParseErrorAnnotation) {
                 return (ParseErrorAnnotation) a;
             }
@@ -494,21 +494,18 @@ public class HintsUI implements MouseListener, KeyListener, ChangeListener, AWTE
                     DataObject dob = 
                         DataObject.find (file);
 
-                    EditCookie ck = 
-                        (EditCookie) dob.getCookie(EditCookie.class);
+                    EditCookie ck = dob.getCookie(EditCookie.class);
 
                     if (ck != null) {
                         //Try EditCookie first so we don't open the form
                         //editor
                         ck.edit();
                     } else {
-                        OpenCookie oc = (OpenCookie) 
-                            dob.getCookie(OpenCookie.class);
+                        OpenCookie oc = dob.getCookie(OpenCookie.class);
 
                         oc.open();
                     }
-                    EditorCookie edit = (EditorCookie) 
-                        dob.getCookie (EditorCookie.class);
+                    EditorCookie edit = dob.getCookie(EditorCookie.class);
 
                     JEditorPane[] panes = edit.getOpenedPanes();
                     if (panes != null && panes.length > 0) {

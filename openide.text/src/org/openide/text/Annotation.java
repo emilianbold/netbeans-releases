@@ -75,8 +75,10 @@ public abstract class Annotation extends Object {
      * @return  name of the anotation type*/
     public abstract String getAnnotationType();
 
-    /** Returns the tooltip text for this annotation.
-     * @return  tooltip for this annotation*/
+    /**
+     * Gets the tool tip text for this annotation.
+     * @return tool tip for this annotation, or null for no tool tip
+     */
     public abstract String getShortDescription();
 
     /** Attach annotation to Annotatable object.
