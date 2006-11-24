@@ -461,7 +461,7 @@ public class FileStatusCache {
             File file = files[i];
             String filename = file.getName();
             if (filename.equals(CvsVersioningSystem.FILENAME_CVS)) continue;
-            Entry entry = getEntry(entries, filename);
+            Entry entry = getEntry(dir, entries, file);
             FileInformation fi = createFileInformation(file, entry, REPOSITORY_STATUS_UNKNOWN);
             // directories are always in cache for listFiles() to work
             if (fi.isDirectory() || fi.getStatus() != FileInformation.STATUS_VERSIONED_UPTODATE) {
@@ -472,15 +472,15 @@ public class FileStatusCache {
         if (entries != null) {
             outter : for (int i = 0; i < entries.length; i++) {
                 Entry entry = entries[i];
+                File entryFile = new File(dir, entry.getName());
                 for (int j = 0; j < files.length; j++) {
                     File file = files[j];
-                    if (file.getName().equals(entry.getName())) {
+                    if (entryFile.equals(file)) {
                         continue outter;
                     }
                 }
-                File file = new File(dir, entries[i].getName());
-                FileInformation fi = createFileInformation(file, entry, REPOSITORY_STATUS_UNKNOWN);
-                folderFiles.put(file, fi);
+                FileInformation fi = createFileInformation(entryFile, entry, REPOSITORY_STATUS_UNKNOWN);
+                folderFiles.put(entryFile, fi);
             }
         }
         return folderFiles;
@@ -490,14 +490,15 @@ public class FileStatusCache {
      * Searches array of Entries for the given filename.
      *
      * @param entries array of Entries, may be null
-     * @param filename name of the file to search for
+     * @param file file to search for
      * @return corresponding entry or null
      */
-    private Entry getEntry(Entry[] entries, String filename) {
+    private Entry getEntry(File dir, Entry[] entries, File file) {
         if (entries != null) {
             for (int i = 0; i < entries.length; i++) {
                 Entry entry = entries[i];
-                if (filename.equals(entry.getName())) return entry;
+                File entryFile = new File(dir, entry.getName());
+                if (file.equals(entryFile)) return entry;
             }
         }
         return null;
