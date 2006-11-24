@@ -27,6 +27,8 @@ import org.openide.windows.TopComponent.Registry;
 import org.openide.windows.WindowManager;
 
 import java.beans.*;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -115,12 +117,19 @@ public class UndoAction extends CallableSystemAction {
         // resulting in repetitive text in UndoAction/RedoAction. attempt to remove the AbstractUndoableEdit text
         // keeping our text because it has mnemonics.
         String undo = getUndoRedo().getUndoPresentationName();
+        Logger.getLogger (UndoAction.class.getName ()).log (Level.FINE, "getUndoRedo().getUndoPresentationName() returns " + undo);
+        Logger.getLogger (UndoAction.class.getName ()).log (Level.FINE, "SWING_DEFAULT_LABEL is " + SWING_DEFAULT_LABEL);
 
         if ((undo != null) && (SWING_DEFAULT_LABEL != null) && undo.startsWith(SWING_DEFAULT_LABEL)) {
             undo = undo.substring(SWING_DEFAULT_LABEL.length()).trim();
         }
+        
+        Logger.getLogger (UndoAction.class.getName ()).log (Level.FINE, "Name adapted by SWING_DEFAULT_LABEL is " + undo);
+        String presentationName = NbBundle.getMessage(UndoAction.class, "Undo", undo);
+        
+        Logger.getLogger (UndoAction.class.getName ()).log (Level.FINE, "Result name is " + presentationName);
 
-        return NbBundle.getMessage(UndoAction.class, "Undo", undo);
+        return presentationName;
     }
 
     public HelpCtx getHelpCtx() {
