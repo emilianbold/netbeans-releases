@@ -20,6 +20,9 @@
 package org.netbeans.modules.editor.java;
 
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
@@ -56,7 +59,6 @@ import org.netbeans.api.java.source.UiUtils;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 
@@ -148,6 +150,19 @@ public class GoToSupport {
                         return;
                     }
                     
+                    if (controller.getElementUtilities().isSyntetic(el) && el.getKind() == ElementKind.CONSTRUCTOR) {
+                        //check for annonymous innerclasses:
+                        el = handlePossibleAnnonymousInnerClass(controller, el);
+                    }
+                    
+                    if (el == null || el.asType().getKind() == TypeKind.ERROR) {
+                        if (!tooltip)
+                            CALLER.beep();
+                        else
+                            result[0] = null;
+                        return;
+                    }
+                    
                     if (el.getKind() != ElementKind.CONSTRUCTOR && (token[0].id() == JavaTokenId.SUPER || token[0].id() == JavaTokenId.THIS)) {
                         if (!tooltip)
                             CALLER.beep();
@@ -163,18 +178,10 @@ public class GoToSupport {
                         
                         result[0] = "<html><body>" + v.result.toString();
                     } else {
-                        if (el.getKind() == ElementKind.PARAMETER || el.getKind() == ElementKind.LOCAL_VARIABLE) {
-                            while (path.getLeaf().getKind() != Kind.METHOD && path.getLeaf().getKind() != Kind.CLASS) {
-                                path = path.getParentPath();
-                            }
-                            
-                            FindVariableDeclarationVisitor v = new FindVariableDeclarationVisitor();
-                            
-                            v.info = controller;
-                            v.scan(path, el);
-                            
-                            Tree t = v.found;
-                            long pos = t != null ? controller.getTrees().getSourcePositions().getStartPosition(controller.getCompilationUnit(), t) : -1;
+                        Tree tree = controller.getTrees().getTree(el);
+                        
+                        if (tree != null) {
+                            long pos = controller.getTrees().getSourcePositions().getStartPosition(controller.getCompilationUnit(), tree);
                             
                             if (pos != (-1)) {
                                 CALLER.open(fo, (int) pos);
@@ -182,7 +189,27 @@ public class GoToSupport {
                                 CALLER.beep();
                             }
                         } else {
-                            CALLER.open(ClasspathInfo.create(fo), el);
+                            if (el.getKind() == ElementKind.PARAMETER || el.getKind() == ElementKind.LOCAL_VARIABLE) {
+                                while (path.getLeaf().getKind() != Kind.METHOD && path.getLeaf().getKind() != Kind.CLASS) {
+                                    path = path.getParentPath();
+                                }
+                                
+                                FindVariableDeclarationVisitor v = new FindVariableDeclarationVisitor();
+                                
+                                v.info = controller;
+                                v.scan(path, el);
+                                
+                                Tree t = v.found;
+                                long pos = t != null ? controller.getTrees().getSourcePositions().getStartPosition(controller.getCompilationUnit(), t) : -1;
+                                
+                                if (pos != (-1)) {
+                                    CALLER.open(fo, (int) pos);
+                                } else {
+                                    CALLER.beep();
+                                }
+                            } else {
+                                CALLER.open(ClasspathInfo.create(fo), el);
+                            }
                         }
                     }
                 }
@@ -229,6 +256,42 @@ public class GoToSupport {
         return new int [] {ts.offset(), ts.offset() + t.length()};
     }
     
+    private static Element handlePossibleAnnonymousInnerClass(CompilationInfo info, final Element el) {
+        Element encl = el.getEnclosingElement();
+        Element doubleEncl = encl != null ? encl.getEnclosingElement() : null;
+        
+        if (   doubleEncl != null
+            && !doubleEncl.getKind().isClass()
+            && !doubleEncl.getKind().isInterface()
+            && encl.getKind() == ElementKind.CLASS) {
+            TreePath enclTreePath = info.getTrees().getPath(encl);
+            Tree enclTree = enclTreePath.getLeaf();
+            
+            if (enclTree != null && enclTree.getKind() == Tree.Kind.CLASS && enclTreePath.getParentPath().getLeaf().getKind() == Tree.Kind.NEW_CLASS) {
+                NewClassTree nct = (NewClassTree) enclTreePath.getParentPath().getLeaf();
+                
+                if (nct.getClassBody() != null) {
+                    Element parentElement = info.getTrees().getElement(new TreePath(enclTreePath, nct.getIdentifier()));
+                    
+                    if (parentElement == null || parentElement.getKind().isInterface()) {
+                        return parentElement;
+                    } else {
+                        //annonymous innerclass extending a class. Find out which constructor is used:
+                        TreePath superConstructorCall = new FindSuperConstructorCall().scan(enclTreePath, null);
+                        
+                        if (superConstructorCall != null) {
+                            return info.getTrees().getElement(superConstructorCall);
+                        }
+                    }
+                }
+            }
+            
+            return null;//prevent jumps to incorrect positions
+        }
+        
+        return el;
+    }
+    
     private static final class FindVariableDeclarationVisitor extends TreePathScanner<Void, Element> {
         
         private CompilationInfo info;
@@ -238,7 +301,7 @@ public class GoToSupport {
             //do not dive into the innerclasses:
             return null;
         }
-
+        
         public @Override Void visitVariable(VariableTree node, Element p) {
             Element resolved = info.getTrees().getElement(getCurrentPath());
             
@@ -247,6 +310,28 @@ public class GoToSupport {
             }
             
             return null;
+        }
+        
+    }
+    
+    private static final class FindSuperConstructorCall extends TreePathScanner<TreePath, Void> {
+        
+        @Override
+        public TreePath visitMethodInvocation(MethodInvocationTree tree, Void v) {
+            if (tree.getMethodSelect().getKind() == Kind.IDENTIFIER && "super".equals(((IdentifierTree) tree.getMethodSelect()).getName().toString())) {
+                return getCurrentPath();
+            }
+            
+            return null;
+        }
+        
+        @Override
+        public TreePath reduce(TreePath first, TreePath second) {
+            if (first == null) {
+                return second;
+            } else {
+                return first;
+            }
         }
         
     }

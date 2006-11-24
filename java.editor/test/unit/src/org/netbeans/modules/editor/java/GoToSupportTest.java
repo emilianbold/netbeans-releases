@@ -24,6 +24,10 @@ import java.io.OutputStream;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.swing.text.Document;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -59,16 +63,15 @@ public class GoToSupportTest extends NbTestCase {
         
         performTest("package test; public class Test { public void test() {} public static void main(String[] args) {test();}}", 97, new UiUtilsCaller() {
             public void open(FileObject fo, int pos) {
-                fail("Should not be called.");
+                assertTrue(source == fo);
+                assertEquals(34, pos);
+                wasCalled[0] = true;
             }
             public void beep() {
                 fail("Should not be called.");
             }
             public void open(ClasspathInfo info, Element el) {
-                assertEquals(ElementKind.METHOD, el.getKind());
-                assertEquals("test", el.getSimpleName().toString());
-                assertEquals(0, ((ExecutableElement) el).getParameters().size());
-                wasCalled[0] = true;
+                fail("Should not be called.");
             }
         }, false);
         
@@ -80,15 +83,15 @@ public class GoToSupportTest extends NbTestCase {
         
         performTest("package test; public class Test { public static void main(String[] args) {TT tt} } class TT { }", 75, new UiUtilsCaller() {
             public void open(FileObject fo, int pos) {
-                fail("Should not be called.");
+                assertTrue(source == fo);
+                assertEquals(83, pos);
+                wasCalled[0] = true;
             }
             public void beep() {
                 fail("Should not be called.");
             }
             public void open(ClasspathInfo info, Element el) {
-                assertEquals(ElementKind.CLASS, el.getKind());
-                assertEquals("TT", el.getSimpleName().toString());
-                wasCalled[0] = true;
+                fail("Should not be called.");
             }
         }, false);
         
@@ -100,14 +103,15 @@ public class GoToSupportTest extends NbTestCase {
         
         performTest("package test; public class Test { public Test() {} public static void main(String[] args) {new Test();}}", 97, new UiUtilsCaller() {
             public void open(FileObject fo, int pos) {
-                fail("Should not be called.");
+                assertTrue(source == fo);
+                assertEquals(34, pos);
+                wasCalled[0] = true;
             }
             public void beep() {
                 fail("Should not be called.");
             }
             public void open(ClasspathInfo info, Element el) {
-                assertEquals(ElementKind.CONSTRUCTOR, el.getKind());
-                wasCalled[0] = true;
+                fail("Should not be called.");
             }
         }, false);
         
@@ -119,14 +123,15 @@ public class GoToSupportTest extends NbTestCase {
         
         performTest("package test; public class Test<T> { public Test() {} public static void main(String[] args) {new Test<String>();}}", 100, new UiUtilsCaller() {
             public void open(FileObject fo, int pos) {
-                fail("Should not be called.");
+                assertTrue(source == fo);
+                assertEquals(37, pos);
+                wasCalled[0] = true;
             }
             public void beep() {
                 fail("Should not be called.");
             }
             public void open(ClasspathInfo info, Element el) {
-                assertEquals(ElementKind.CONSTRUCTOR, el.getKind());
-                wasCalled[0] = true;
+                fail("Should not be called.");
             }
         }, false);
         
@@ -138,16 +143,15 @@ public class GoToSupportTest extends NbTestCase {
         
         performTest("package test; public class Test extends Base { public Test() {super(1);} } class Base {public Base() {} public Base(int i) {}}", 64, new UiUtilsCaller() {
             public void open(FileObject fo, int pos) {
-                fail("Should not be called.");
+                assertTrue(source == fo);
+                assertEquals(104, pos);
+                wasCalled[0] = true;
             }
             public void beep() {
                 fail("Should not be called.");
             }
             public void open(ClasspathInfo info, Element el) {
-                assertEquals(ElementKind.CONSTRUCTOR, el.getKind());
-                assertEquals("Base", el.getEnclosingElement().getSimpleName().toString());
-                assertEquals(1, ((ExecutableElement) el).getParameters().size());
-                wasCalled[0] = true;
+                fail("Should not be called.");
             }
         }, false);
         
@@ -159,16 +163,15 @@ public class GoToSupportTest extends NbTestCase {
         
         performTest("package test; public class Test { public Test() {this(1);} public Test(int i) {}}", 50, new UiUtilsCaller() {
             public void open(FileObject fo, int pos) {
-                fail("Should not be called.");
+                assertTrue(source == fo);
+                assertEquals(59, pos);
+                wasCalled[0] = true;
             }
             public void beep() {
                 fail("Should not be called.");
             }
             public void open(ClasspathInfo info, Element el) {
-                assertEquals(ElementKind.CONSTRUCTOR, el.getKind());
-                assertEquals("Test", el.getEnclosingElement().getSimpleName().toString());
-                assertEquals(1, ((ExecutableElement) el).getParameters().size());
-                wasCalled[0] = true;
+                fail("Should not be called.");
             }
         }, false);
         
@@ -181,16 +184,15 @@ public class GoToSupportTest extends NbTestCase {
         
         performTest("package test; public class Test extends Base { public void test() {super.methodInParent();} } class Base {public void methodInParent() {}}", 75, new UiUtilsCaller() {
             public void open(FileObject fo, int pos) {
-                fail("Should not be called.");
+                assertTrue(source == fo);
+                assertEquals(106, pos);
+                wasCalled[0] = true;
             }
             public void beep() {
                 fail("Should not be called.");
             }
             public void open(ClasspathInfo info, Element el) {
-                assertEquals(ElementKind.METHOD, el.getKind());
-                assertEquals("methodInParent", el.getSimpleName().toString());
-                assertEquals(0, ((ExecutableElement) el).getParameters().size());
-                wasCalled[0] = true;
+                fail("Should not be called.");
             }
         }, false);
         
@@ -246,8 +248,161 @@ public class GoToSupportTest extends NbTestCase {
                 fail("Should not be called.");
             }
         }, true);
+    }
+    
+    public void testGoToIntoAnnonymous() throws Exception {
+        final boolean[] wasCalled = new boolean[1];
         
-        System.err.println("tooltip=" + tooltip);
+        performTest("package test; public class Test {public void test() {new Runnable() {int var; public void run() {var = 0;}};} }", 99, new UiUtilsCaller() {
+            public void open(FileObject fo, int pos) {
+                wasCalled[0] = true;
+                assertTrue(source == fo);
+                assertEquals(69, pos);
+            }
+            public void beep() {
+                fail("Should not be called.");
+            }
+            public void open(ClasspathInfo info, Element el) {
+                fail("Should not be called.");
+            }
+        }, false);
+        
+        assertTrue(wasCalled[0]);
+    }
+    
+    public void testGoToString() throws Exception {
+        final boolean[] wasCalled = new boolean[1];
+        
+        performTest("package test; public class Test {public void test() {String s = null;} }", 56, new UiUtilsCaller() {
+            public void open(FileObject fo, int pos) {
+                fail("Should not be called.");
+            }
+            public void beep() {
+                fail("Should not be called.");
+            }
+            public void open(ClasspathInfo info, Element el) {
+                assertEquals(ElementKind.CLASS, el.getKind());
+                assertEquals("java.lang.String", ((TypeElement) el).getQualifiedName().toString());
+                wasCalled[0] = true;
+            }
+        }, false);
+        
+        assertTrue(wasCalled[0]);
+    }
+    
+    public void testGoToAnnonymousInnerClass() throws Exception {
+        final boolean[] wasCalled = new boolean[1];
+        
+        performTest("package test; public class Test {public void test() {new Runnable() {public void run(){}};} }", 61, new UiUtilsCaller() {
+            public void open(FileObject fo, int pos) {
+                fail("Should not be called.");
+            }
+            public void beep() {
+                fail("Should not be called.");
+            }
+            public void open(ClasspathInfo info, Element el) {
+                assertEquals(ElementKind.INTERFACE, el.getKind());
+                assertEquals("java.lang.Runnable", ((TypeElement) el).getQualifiedName().toString());
+                wasCalled[0] = true;
+            }
+        }, false);
+        
+        assertTrue(wasCalled[0]);
+    }
+    
+    public void testGoToAnnonymousInnerClass2() throws Exception {
+        final boolean[] wasCalled = new boolean[1];
+        
+        performTest("package test; public class Test {public void test() {new java.util.ArrayList(c) {public void run(){}};} java.util.Collection c;}", 70, new UiUtilsCaller() {
+            public void open(FileObject fo, int pos) {
+                fail("Should not be called.");
+            }
+            public void beep() {
+                fail("Should not be called.");
+            }
+            public void open(ClasspathInfo info, Element el) {
+                assertEquals(ElementKind.CONSTRUCTOR, el.getKind());
+                assertEquals("java.util.ArrayList", ((TypeElement) el.getEnclosingElement()).getQualifiedName().toString());
+                
+                ExecutableElement ee = (ExecutableElement) el;
+                
+                assertEquals(1, ee.getParameters().size());
+                
+                TypeMirror paramType = ee.getParameters().get(0).asType();
+                
+                assertEquals(TypeKind.DECLARED, paramType.getKind());
+                assertEquals("java.util.Collection", ((TypeElement) ((DeclaredType) paramType).asElement()).getQualifiedName().toString());
+                
+                wasCalled[0] = true;
+            }
+        }, false);
+        
+        assertTrue(wasCalled[0]);
+    }
+    
+    public void testGoToAnnonymousInnerClass3() throws Exception {
+        final boolean[] wasCalled = new boolean[1];
+        
+        performTest("package test; public class Test {java.util.List l = new java.util.ArrayList() {public void run(){}};}", 70, new UiUtilsCaller() {
+            public void open(FileObject fo, int pos) {
+                fail("Should not be called.");
+            }
+            public void beep() {
+                fail("Should not be called.");
+            }
+            public void open(ClasspathInfo info, Element el) {
+                assertEquals(ElementKind.CONSTRUCTOR, el.getKind());
+                assertEquals("java.util.ArrayList", ((TypeElement) el.getEnclosingElement()).getQualifiedName().toString());
+                
+                ExecutableElement ee = (ExecutableElement) el;
+                
+                assertEquals(0, ee.getParameters().size());
+                
+                wasCalled[0] = true;
+            }
+        }, false);
+        
+        assertTrue(wasCalled[0]);
+    }
+    
+    public void testGoToParameter() throws Exception {
+        final boolean[] wasCalled = new boolean[1];
+        
+        performTest("package test; public class Test {public void test(int xx) {xx = 0;}}", 60, new UiUtilsCaller() {
+            public void open(FileObject fo, int pos) {
+                assertTrue(source == fo);
+                assertEquals(50, pos);
+                wasCalled[0] = true;
+            }
+            public void beep() {
+                fail("Should not be called.");
+            }
+            public void open(ClasspathInfo info, Element el) {
+                fail("Should not be called.");
+            }
+        }, false);
+        
+        assertTrue(wasCalled[0]);
+    }
+    
+    public void testGoToLocalVariable() throws Exception {
+        final boolean[] wasCalled = new boolean[1];
+        
+        performTest("package test; public class Test {public void test() {int xx;xx = 0;}}", 61, new UiUtilsCaller() {
+            public void open(FileObject fo, int pos) {
+                assertTrue(source == fo);
+                assertEquals(53, pos);
+                wasCalled[0] = true;
+            }
+            public void beep() {
+                fail("Should not be called.");
+            }
+            public void open(ClasspathInfo info, Element el) {
+                fail("Should not be called.");
+            }
+        }, false);
+        
+        assertTrue(wasCalled[0]);
     }
     
     private void writeIntoFile(FileObject file, String what) throws Exception {
@@ -262,6 +417,8 @@ public class GoToSupportTest extends NbTestCase {
         }
     }
     
+    private FileObject source;
+    
     private String performTest(String sourceCode, final int offset, final UiUtilsCaller validator, boolean tooltip) throws Exception {
         GoToSupport.CALLER = validator;
         
@@ -271,7 +428,7 @@ public class GoToSupportTest extends NbTestCase {
         FileObject buildDir = root.createFolder("build");
         FileObject cacheDir = root.createFolder("cache");
         
-        FileObject source = sourceDir.createFolder("test").createData("Test.java");
+        source = sourceDir.createFolder("test").createData("Test.java");
         
         writeIntoFile(source, sourceCode);
         
