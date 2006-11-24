@@ -28,11 +28,6 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.jar.JarFile;
-// IMPORTANT! You may need to mount ant.jar before this class will
-// compile. So mount the JAR modules/ext/ant-1.4.1.jar (NOT modules/ant.jar)
-// from your IDE installation directory in your Filesystems before
-// continuing to ensure that it is in your classpath.
-
 import org.apache.tools.ant.AntClassLoader;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.Path;
@@ -100,7 +95,7 @@ public class NbPatchClass extends MatchingTask {
     /**
      * Adds a set of files (nested fileset attribute).
      */
-    private Vector filesets = new Vector ();
+    private Vector<FileSet> filesets = new Vector<FileSet>();
     public void addFileset(FileSet set) {
         log ("Adding new FileSet", Project.MSG_DEBUG);
         filesets.addElement(set);
