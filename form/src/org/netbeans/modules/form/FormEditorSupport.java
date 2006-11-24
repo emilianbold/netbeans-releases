@@ -1221,8 +1221,8 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
         }
         
         @Override
-        protected FileLock takeLock() throws java.io.IOException {
-            return this.getFile().lock();
+        protected FileLock takeLock() throws java.io.IOException {            
+            return ((FormDataObject) getDataObject()).getPrimaryEntry().takeLock();
         }
         
         @Override
