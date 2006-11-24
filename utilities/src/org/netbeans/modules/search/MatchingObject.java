@@ -533,7 +533,7 @@ final class MatchingObject {
             return null;
         }
         
-        StringBuilder content = text(false);   //skips the cache, reads the file
+        StringBuilder content = text(true);   //refresh the cache, reads the file
         
         List<TextDetail> textMatches = resultModel.fullTextSearchType
                                                     .getTextDetails(object);
