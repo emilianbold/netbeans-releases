@@ -10,6 +10,7 @@
 package org.netbeans.modules.languages.javascript;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
 import javax.swing.text.BadLocationException;
@@ -131,15 +132,49 @@ public class JavaScript {
     private static List completionItems;
     
     public static List completionItems (PTPath path) {
-        if (completionItems == null)
-            completionItems = getLibrary ().getItems ("root");
+        if (completionItems == null) {
+            completionItems = new ArrayList ();
+            completionItems.addAll (getLibrary ().getItems ("keyword"));
+            completionItems.addAll (getLibrary ().getItems ("root"));
+        }
         return completionItems;
     }
 
+    private static List completionDescriptions;
+
     public static List completionDescriptions (PTPath path) {
-        if (completionItems == null)
-            completionItems = getLibrary ().getItems ("root");
-        return completionItems;
+        if (completionDescriptions == null) {
+            List tags = completionItems (path);
+            completionDescriptions = new ArrayList (tags.size ());
+            Iterator it = tags.iterator ();
+            while (it.hasNext ()) {
+                String tag = (String) it.next ();
+                String description = getLibrary ().getProperty 
+                    ("keyword", tag, "description");
+                if (description != null) {
+                    completionDescriptions.add (
+                        "<html><b><font color=blue>" + tag + 
+                        ": </font></b><font color=black> " + 
+                        description + "</font></html>"
+                    );
+                } else {
+                    description = getLibrary ().getProperty 
+                        ("root", tag, "description");
+                    if (description == null) 
+                        completionDescriptions.add (
+                            "<html><b><font color=black>" + tag + 
+                            "</font></b></html>"
+                        );
+                    else
+                        completionDescriptions.add (
+                            "<html><b><font color=black>" + tag + 
+                            ": </font></b><font color=black> " + 
+                            description + "</font></html>"
+                        );
+                }
+            }
+        }
+        return completionDescriptions;
     }
     
     

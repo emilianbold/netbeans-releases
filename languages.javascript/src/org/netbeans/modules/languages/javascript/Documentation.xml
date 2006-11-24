@@ -1,10 +1,69 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <documentation>
+    <node key="abstract"       context="keyword" description="Reserved for ECM extensions."/>
+    <node key="boolean"       context="keyword" description="Reserved for ECM extensions."/>
+    <node key="break"       context="keyword" description="JavaScript keyword."/>
+    <node key="byte"       context="keyword" description="Reserved for ECM extensions."/>
+    <node key="case"       context="keyword" description="JavaScript keyword."/>
+    <node key="catch"       context="keyword" description="JavaScript keyword."/>
+    <node key="char"       context="keyword" description="Reserved for ECM extensions."/>
+    <node key="class"       context="keyword" description="Reserved for ECM extensions."/>
+    <node key="const"       context="keyword" description="Reserved for ECM extensions."/>
+    <node key="continue"       context="keyword" description="JavaScript keyword."/>
+    <node key="debugger"       context="keyword" description="Reserved for ECM extensions."/>
+    <node key="default"       context="keyword" description="JavaScript keyword."/>
+    <node key="delete"       context="keyword" description="JavaScript keyword."/>
+    <node key="do"       context="keyword" description="JavaScript keyword."/>
+    <node key="double"       context="keyword" description="Reserved for ECM extensions."/>
+    <node key="else"       context="keyword" description="JavaScript keyword."/>
+    <node key="enum"       context="keyword" description="Reserved for ECM extensions."/>
+    <node key="export"       context="keyword" description="Reserved for ECM extensions."/>
+    <node key="extends"       context="keyword" description="Reserved for ECM extensions."/>
+    <node key="false"       context="keyword" description="JavaScript keyword."/>
+    <node key="final"       context="keyword" description="Reserved for ECM extensions."/>
+    <node key="finally"       context="keyword" description="JavaScript keyword."/>
+    <node key="float"       context="keyword" description="Reserved for ECM extensions."/>
+    <node key="for"       context="keyword" description="JavaScript keyword."/>
+    <node key="function"       context="keyword" description="JavaScript keyword."/>
+    <node key="goto"       context="keyword" description="Reserved for ECM extensions."/>
+    <node key="if"       context="keyword" description="JavaScript keyword."/>
+    <node key="implements"       context="keyword" description="Reserved for ECM extensions."/>
+    <node key="import"       context="keyword" description="Reserved for ECM extensions."/>
+    <node key="in"       context="keyword" description="JavaScript keyword."/>
+    <node key="instanceof"       context="keyword" description="JavaScript keyword."/>
+    <node key="int"       context="keyword" description="Reserved for ECM extensions."/>
+    <node key="interface"       context="keyword" description="Reserved for ECM extensions."/>
+    <node key="long"       context="keyword" description="Reserved for ECM extensions."/>
+    <node key="native"       context="keyword" description="Reserved for ECM extensions."/>
+    <node key="new"       context="keyword" description="JavaScript keyword."/>
+    <node key="null"       context="keyword" description="JavaScript keyword."/>
+    <node key="package"       context="keyword" description="Reserved for ECM extensions."/>
+    <node key="private"       context="keyword" description="Reserved for ECM extensions."/>
+    <node key="protected"       context="keyword" description="Reserved for ECM extensions."/>
+    <node key="public"       context="keyword" description="Reserved for ECM extensions."/>
+    <node key="return"       context="keyword" description="JavaScript keyword."/>
+    <node key="short"       context="keyword" description="Reserved for ECM extensions."/>
+    <node key="static"       context="keyword" description="Reserved for ECM extensions."/>
+    <node key="super"       context="keyword" description="Reserved for ECM extensions."/>
+    <node key="switch"       context="keyword" description="JavaScript keyword."/>
+    <node key="synchronized"       context="keyword" description="Reserved for ECM extensions."/>
+    <node key="this"       context="keyword" description="JavaScript keyword."/>
+    <node key="throw"       context="keyword" description="JavaScript keyword."/>
+    <node key="throws"       context="keyword" description="Reserved for ECM extensions."/>
+    <node key="transient"       context="keyword" description="Reserved for ECM extensions."/>
+    <node key="true"       context="keyword" description="JavaScript keyword."/>
+    <node key="try"       context="keyword" description="JavaScript keyword."/>
+    <node key="typeof"       context="keyword" description="JavaScript keyword."/>
+    <node key="var"       context="keyword" description="JavaScript keyword."/>
+    <node key="void"       context="keyword" description="JavaScript keyword."/>
+    <node key="volatile"       context="keyword" description="Reserved for ECM extensions."/>
+    <node key="while"       context="keyword" description="JavaScript keyword."/>
+    <node key="with"       context="keyword" description="JavaScript keyword."/>
+    
     <node key="arguments"       context="root"/>
         <node key="callee"      context="member"/>
         <node key="length"      context="member"/>
     <node key="Array"           context="root"/>
-        <node key="length"      context="member"/>
         <node key="concat"      context="member"/>
         <node key="join"        context="member"/>
         <node key="pop"         context="member"/>
@@ -19,7 +78,6 @@
         <node key="unshift"     context="member"/>
     <node key="Boolean"         context="root"/>
         <node key="value"       context="member"/>
-        <node key="toString"    context="member"/>
         <node key="valueOf"     context="member"/>
     <node key="Date"            context="root"/>
         <node key="parse"       context="Date"/>
@@ -62,12 +120,9 @@
         <node key="toDateString"    context="member"/>
         <node key="toGMTString" context="member"/>
         <node key="toLocaleDateString" context="member"/>
-        <node key="toLocaleString" context="member"/>
         <node key="toLocaleTimeString" context="member"/>
-        <node key="toString"    context="member"/>
         <node key="toTimeString"    context="member"/>
         <node key="toUTCString" context="member"/>
-        <node key="valueOf"     context="member"/>
     <node key="decodeURI"       context="root"/>
     <node key="decodeURIComponent" context="root"/>
     <node key="encodeURI"       context="root"/>
@@ -75,14 +130,12 @@
     <node key="Error"           context="root"/>
         <node key="message"     context="member"/>
         <node key="name"        context="member"/>
-        <node key="toString"    context="member"/>
     <node key="escape"          context="root"/>
     <node key="eval"            context="root"/>
     <node key="Function"        context="root"/>
         <node key="apply"       context="member"/>
         <node key="call"        context="member"/>
         <node key="prototype"   context="member"/>
-        <node key="toString"    context="member"/>
     <node key="Infinity"        context="root"/>
     <node key="isFinite"        context="root"/>
     <node key="isNaN"           context="root"/>
@@ -120,7 +173,6 @@
         <node key="NaN"         context="Number"/>
         <node key="NEGATIVE_INFINITY" context="Number"/>
         <node key="POSITIVE_INFINITY" context="Number"/>
-        <node key="toLocaleString"  context="member"/>
         <node key="toFixed"     context="member"/>
         <node key="toExponential"   context="member"/>
         <node key="toPrecision" context="member"/>
@@ -129,9 +181,6 @@
         <node key="hasOwnProperty"  context="member"/>
         <node key="isPrototypeOf"   context="member"/>
         <node key="propertyIsEnumerable" context="member"/>
-        <node key="toString"    context="member"/>
-        <node key="toLocaleString" context="member"/>
-        <node key="valueOf"     context="member"/>
     <node key="parseFloat"      context="root"/>
     <node key="parseInt"        context="root"/>
     <node key="RangeError"      context="root"/>
@@ -146,23 +195,18 @@
         <node key="test"        context="member"/>
     <node key="String"          context="root"/>
         <node key="fromCharCode" context="String"/>
-        <node key="length"      context="member"/>
         <node key="charAt"      context="member"/>
         <node key="charCodeAt"  context="member"/>
-        <node key="concat"      context="member"/>
         <node key="indexOf"     context="member"/>
         <node key="lastIndexOf" context="member"/>
         <node key="match"       context="member"/>
         <node key="replace"     context="member"/>
         <node key="search"      context="member"/>
-        <node key="slice"       context="member"/>
         <node key="split"       context="member"/>
         <node key="substring"   context="member"/>
         <node key="substr"      context="member"/>
         <node key="toLowerCase" context="member"/>
-        <node key="toString"    context="member"/>
         <node key="toUpperCase" context="member"/>
-        <node key="valueOf"     context="member"/>
 
         <node key="anchor"      context="member"/>
         <node key="big"         context="member"/>

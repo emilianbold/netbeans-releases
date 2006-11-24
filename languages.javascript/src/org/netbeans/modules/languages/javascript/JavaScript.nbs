@@ -326,6 +326,16 @@ COMPLETION:js-identifier {
     description1:org.netbeans.modules.languages.javascript.JavaScript.completionDescriptions; 
 }
 
+COMPLETION:js-keyword {
+    text1:org.netbeans.modules.languages.javascript.JavaScript.completionItems; 
+    description1:org.netbeans.modules.languages.javascript.JavaScript.completionDescriptions; 
+}
+
+COMPLETION:js-whitespace {
+    text1:org.netbeans.modules.languages.javascript.JavaScript.completionItems; 
+    description1:org.netbeans.modules.languages.javascript.JavaScript.completionDescriptions; 
+}
+
 STORE:VariableDeclaration {
     context:current_project;
     name:"$js-identifier$";
