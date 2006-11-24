@@ -18,18 +18,16 @@
  */
 package org.netbeans.modules.refactoring.java.ui;
 
-import java.beans.PropertyChangeListener;
-import java.lang.reflect.Modifier;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.UiUtils;
-import org.netbeans.modules.refactoring.java.api.JavaWhereUsedQuery;
+import org.netbeans.modules.refactoring.api.WhereUsedQuery;
+import org.netbeans.modules.refactoring.java.api.WhereUsedQueryConstants;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.openide.util.HelpCtx;
@@ -40,14 +38,14 @@ import org.openide.util.NbBundle;
  * @author Martin Matula, Jan Becicka
  */
 public class WhereUsedQueryUI implements RefactoringUI {
-    private JavaWhereUsedQuery query = null;
+    private WhereUsedQuery query = null;
     private final String name;
     private WhereUsedPanel panel;
     private final TreePathHandle element;
     private ElementKind kind;
 
     public WhereUsedQueryUI(TreePathHandle jmiObject, CompilationInfo info) {
-        this.query = new JavaWhereUsedQuery(jmiObject);
+        this.query = new WhereUsedQuery(jmiObject);
         this.query.getContext().add(info.getClasspathInfo());
         this.element = jmiObject;
         Element el = jmiObject.resolveElement(info);
@@ -78,31 +76,39 @@ public class WhereUsedQueryUI implements RefactoringUI {
     }
 
     public org.netbeans.modules.refactoring.api.Problem setParameters() {
-        query.setSearchInComments(panel.isSearchInComments());
+        query.putValue(query.SEARCH_IN_COMMENTS,panel.isSearchInComments());
         if (kind == ElementKind.METHOD) {
-            query.setSearchFromBaseClass(panel.isMethodFromBaseClass());
-            query.setFindOverridingMethods(panel.isMethodOverriders());
-            query.setFindUsages(panel.isMethodFindUsages());
+            setForMethod();
             return query.checkParameters();
         } else if (kind.isClass() || kind.isInterface()) {
-            query.setFindSubclasses(panel.isClassSubTypes());
-            query.setFindDirectSubclassesOnly(panel.isClassSubTypesDirectOnly());
-            query.setFindUsages(panel.isClassFindUsages());
+            setForClass();
             return query.checkParameters();
         } else
             return null;
     }
     
+    private void setForMethod() {
+        if (panel.isMethodFromBaseClass()) {
+            query.setRefactoredObject(panel.getBaseMethod());
+        } else {
+            query.setRefactoredObject(element);
+        }
+        query.putValue(WhereUsedQueryConstants.FIND_OVERRIDING_METHODS,panel.isMethodOverriders());
+        query.putValue(query.FIND_REFERENCES,panel.isMethodFindUsages());
+    }
+    
+    private void setForClass() {
+        query.putValue(WhereUsedQueryConstants.FIND_SUBCLASSES,panel.isClassSubTypes());
+        query.putValue(WhereUsedQueryConstants.FIND_DIRECT_SUBCLASSES,panel.isClassSubTypesDirectOnly());
+        query.putValue(query.FIND_REFERENCES,panel.isClassFindUsages());
+    }
+    
     public org.netbeans.modules.refactoring.api.Problem checkParameters() {
         if (kind == ElementKind.METHOD) {
-            query.setSearchFromBaseClass(panel.isMethodFromBaseClass());
-            query.setFindOverridingMethods(panel.isMethodOverriders());
-            query.setFindUsages(panel.isMethodFindUsages());
+            setForMethod();
             return query.fastCheckParameters();
         } else if (kind.isClass() || kind.isInterface()) {
-            query.setFindSubclasses(panel.isClassSubTypes());
-            query.setFindDirectSubclassesOnly(panel.isClassSubTypesDirectOnly());
-            query.setFindUsages(panel.isClassFindUsages());
+            setForClass();
             return query.fastCheckParameters();
         } else
             return null;

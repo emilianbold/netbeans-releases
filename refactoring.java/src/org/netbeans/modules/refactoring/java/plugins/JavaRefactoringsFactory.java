@@ -23,7 +23,6 @@ import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.api.*;
-import org.netbeans.modules.refactoring.java.api.JavaWhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.*;
 import org.openide.filesystems.FileObject;
 
@@ -34,15 +33,10 @@ import org.openide.filesystems.FileObject;
 public class JavaRefactoringsFactory implements RefactoringPluginFactory {
    
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
-        if (refactoring instanceof JavaWhereUsedQuery) {
-            return new JavaWhereUsedQueryPlugin((JavaWhereUsedQuery) refactoring);
-        } else if (refactoring instanceof WhereUsedQuery) {
+        if (refactoring instanceof WhereUsedQuery) {
             Object o = ((WhereUsedQuery)refactoring).getRefactoredObject();
             if (o instanceof TreePathHandle) {
-                JavaWhereUsedQuery q = new JavaWhereUsedQuery((TreePathHandle)o);
-                q.setFindUsages(true);
-                q.setSearchFromBaseClass(true);
-                return new JavaWhereUsedQueryPlugin(q);
+                return new JavaWhereUsedQueryPlugin((WhereUsedQuery) refactoring);
             }
         } else if (refactoring instanceof RenameRefactoring) {
             Object o = ((RenameRefactoring) refactoring).getRefactoredObject();

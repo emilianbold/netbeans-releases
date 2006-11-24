@@ -27,20 +27,20 @@ import javax.lang.model.element.*;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.WhereUsedElement;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
+import org.netbeans.modules.refactoring.java.api.WhereUsedQueryConstants;
 import org.netbeans.modules.refactoring.java.classpath.RefactoringClassPathImplementation;
 import org.netbeans.modules.refactoring.java.plugins.FindOverridingVisitor;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
-import org.netbeans.modules.refactoring.java.api.JavaWhereUsedQuery;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.text.CloneableEditorSupport;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -48,34 +48,30 @@ import org.openide.util.NbBundle;
  * @author  Jan Becicka
  */
 public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
-    private TreePathHandle searchHandle;
-    private boolean baseClass;
-    private boolean overriders;
-    private boolean subclasses;
-    private boolean directOnly;
-    private boolean findUsages=true;
-    private JavaWhereUsedQuery refactoring;
+    private WhereUsedQuery refactoring;
     private ClasspathInfo classPathInfo=null;
     
     
     /** Creates a new instance of WhereUsedQuery */
-    public JavaWhereUsedQueryPlugin(JavaWhereUsedQuery refactoring) {
+    public JavaWhereUsedQueryPlugin(WhereUsedQuery refactoring) {
         this.refactoring = refactoring;
-        this.searchHandle = refactoring.getRefactoredObject();
     }
     
     private ClasspathInfo getClasspathInfo(ClasspathInfo info) {
         if (classPathInfo == null) {
             ClassPath boot = info.getClassPath(ClasspathInfo.PathKind.BOOT);
-            FileObject fo = searchHandle.getFileObject();
+            FileObject fo = getSearchHandle().getFileObject();
             ClassPath rcp = RefactoringClassPathImplementation.getCustom(Collections.singleton(fo));
             classPathInfo = ClasspathInfo.create(boot, rcp, rcp);
         }
         return classPathInfo; 
     }
+    private TreePathHandle getSearchHandle() {
+        return ((TreePathHandle) refactoring.getRefactoredObject());
+    }
     
     public Problem preCheck() {
-        Problem p = isElementAvail(searchHandle, refactoring.getContext().lookup(CompilationInfo.class));
+        Problem p = isElementAvail(getSearchHandle(), refactoring.getContext().lookup(CompilationInfo.class));
         if (p != null)
             return p;
         
@@ -105,8 +101,8 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
                     //get field references from index
                     set.addAll(idx.getResources(ElementHandle.create((TypeElement)el.getEnclosingElement()), EnumSet.of(ClassIndex.SearchKind.FIELD_REFERENCES), EnumSet.of(ClassIndex.SearchScope.SOURCE)));
                 } else if (el.getKind().isClass() || el.getKind().isInterface()) {
-                    if (refactoring.isFindSubclasses()||refactoring.isFindDirectSubclassesOnly()) {
-                        if (refactoring.isFindDirectSubclassesOnly()) {
+                    if (isFindSubclasses()||isFindDirectSubclassesOnly()) {
+                        if (isFindDirectSubclassesOnly()) {
                             //get direct implementors from index
                             EnumSet searchKind = EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS);
                             set.addAll(idx.getResources(ElementHandle.create((TypeElement)el), searchKind,EnumSet.of(ClassIndex.SearchScope.SOURCE)));
@@ -132,12 +128,12 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
                         //get type references from index
                         set.addAll(idx.getResources(ElementHandle.create((TypeElement) el), EnumSet.of(ClassIndex.SearchKind.TYPE_REFERENCES),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
                     }
-                } else if (el.getKind() == ElementKind.METHOD && refactoring.isFindOverridingMethods()) {
+                } else if (el.getKind() == ElementKind.METHOD && isFindOverridingMethods()) {
                     //Find overriding methods
                     TypeElement type = (TypeElement) el.getEnclosingElement();
                     set.addAll(idx.getResources(ElementHandle.create((TypeElement)el.getEnclosingElement()), EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
                 } 
-                if (el.getKind() == ElementKind.METHOD && refactoring.isFindUsages()) {
+                if (el.getKind() == ElementKind.METHOD && isFindUsages()) {
                     //get method references for method and for all it's overriders
                     Set<ElementHandle<TypeElement>> s = idx.getElements(ElementHandle.create((TypeElement) el.getEnclosingElement()), EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),EnumSet.of(ClassIndex.SearchScope.SOURCE));
                     for (ElementHandle<TypeElement> eh:s) {
@@ -174,7 +170,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
         
         refactoring.getContext().add(getClasspathInfo(cpInfo));
         
-        Set<FileObject> a = getRelevantFiles(searchHandle);
+        Set<FileObject> a = getRelevantFiles(getSearchHandle());
         fireProgressListenerStart(ProgressEvent.START, a.size());
         processFiles(a, new FindTask(elements));
         fireProgressListenerStop();
@@ -183,69 +179,22 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
     
     //@Override
     public Problem fastCheckParameters() {
-        if (searchHandle.getKind() == Tree.Kind.METHOD) {
-            return checkParametersForMethod(refactoring.isSearchFromBaseClass(), refactoring.isFindOverridingMethods(), refactoring.isFindUsages());
-        } else if (searchHandle.getKind() == Tree.Kind.CLASS) {
-            return checkParametersForClass(refactoring.isFindSubclasses(), refactoring.isFindDirectSubclassesOnly());
-        }
+        if (getSearchHandle().getKind() == Tree.Kind.METHOD) {
+            return checkParametersForMethod(isFindOverridingMethods(), isFindUsages());
+        } 
         return null;
     }
     
     //@Override
     public Problem checkParameters() {
-        if (searchHandle.getKind() == Tree.Kind.METHOD) {
-            return setParametersForMethod(refactoring.isSearchFromBaseClass(), refactoring.isFindOverridingMethods(), refactoring.isFindUsages());
-        } else if (searchHandle.getKind() == Tree.Kind.CLASS) {
-            return setParametersForClass(refactoring.isFindSubclasses(), refactoring.isFindDirectSubclassesOnly());
-        }
         return null;
     }
     
-    private Problem checkParametersForMethod(boolean baseClass, boolean overriders, boolean usages) {
+    private Problem checkParametersForMethod(boolean overriders, boolean usages) {
         if (!(usages || overriders)) {
             return new Problem(true, NbBundle.getMessage(WhereUsedQuery.class, "MSG_NothingToFind"));
         } else
             return null;
-    }
-    
-    private Problem setParametersForMethod(boolean baseClass, boolean overriders, boolean usages) {
-        this.baseClass = baseClass;
-        this.overriders = overriders;
-        this.findUsages = usages;
-        if (baseClass) {
-            final ClasspathInfo info = refactoring.getContext().lookup(ClasspathInfo.class);
-            JavaSource source = JavaSource.create(info, new FileObject[]{searchHandle.getFileObject()});
-            CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
-                public void cancel() {
-                }
-                public void run(CompilationController parameter) throws Exception {
-                    parameter.toPhase(Phase.ELEMENTS_RESOLVED);
-                    final Collection<ExecutableElement>  c = RetoucheUtils.getOverridenMethods((ExecutableElement)searchHandle.resolveElement(parameter),parameter);
-                    if (!c.isEmpty()) {
-                        final ElementHandle eh = ElementHandle.create(c.iterator().next());
-                        TreePath tp = SourceUtils.pathFor(parameter, eh.resolve(parameter));
-                        searchHandle = TreePathHandle.create(tp, parameter);
-                    }
-                    
-                }
-            };
-            try {
-                source.runUserActionTask(task, true);
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-        }
-        return null;
-    }
-    
-    private Problem checkParametersForClass(boolean subclasses, boolean transitively) {
-        return null;
-    }
-    
-    private Problem setParametersForClass(boolean subclasses, boolean directOnly) {
-        this.subclasses = subclasses;
-        this.directOnly = directOnly;
-        return null;
     }
     
     public static CloneableEditorSupport findCloneableEditorSupport(DataObject dob) {
@@ -258,6 +207,23 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
             return (CloneableEditorSupport)obj;
         }
         return null;
+    }
+    
+    private boolean isFindSubclasses() {
+        return refactoring.getBooleanValue(WhereUsedQueryConstants.FIND_SUBCLASSES);
+    }
+    private boolean isFindUsages() {
+        return refactoring.getBooleanValue(refactoring.FIND_REFERENCES);
+    }
+    private boolean isFindDirectSubclassesOnly() {
+        return refactoring.getBooleanValue(WhereUsedQueryConstants.FIND_DIRECT_SUBCLASSES);
+    }
+    
+    private boolean isFindOverridingMethods() {
+        return refactoring.getBooleanValue(WhereUsedQueryConstants.FIND_OVERRIDING_METHODS);
+    }
+    private boolean isSearchFromBaseClass() {
+        return false;
     }
     
     
@@ -292,21 +258,21 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
                 ErrorManager.getDefault().log(ErrorManager.ERROR, "compiler.getCompilationUnit() is null " + compiler);
                 return;
             }
-            Element element = searchHandle.resolveElement(compiler);
+            Element element = getSearchHandle().resolveElement(compiler);
             assert element != null;
             Collection<TreePath> result = new ArrayList();
-            if (refactoring.isFindUsages()) {
+            if (isFindUsages()) {
                 FindUsagesVisitor findVisitor = new FindUsagesVisitor(compiler);
                 findVisitor.scan(compiler.getCompilationUnit(), element);
                 result.addAll(findVisitor.getUsages());
             }
-            if (element.getKind() == ElementKind.METHOD && refactoring.isFindOverridingMethods()) {
+            if (element.getKind() == ElementKind.METHOD && isFindOverridingMethods()) {
                 FindOverridingVisitor override = new FindOverridingVisitor(compiler);
                 override.scan(compiler.getCompilationUnit(), element);
                 result.addAll(override.getUsages());
             } else if ((element.getKind().isClass() || element.getKind().isInterface()) &&
-                    (refactoring.isFindSubclasses()||refactoring.isFindDirectSubclassesOnly())) {
-                FindSubtypesVisitor subtypes = new FindSubtypesVisitor(!refactoring.isFindDirectSubclassesOnly(), compiler);
+                    (isFindSubclasses()||isFindDirectSubclassesOnly())) {
+                FindSubtypesVisitor subtypes = new FindSubtypesVisitor(!isFindDirectSubclassesOnly(), compiler);
                 subtypes.scan(compiler.getCompilationUnit(), element);
                 result.addAll(subtypes.getUsages());
             }

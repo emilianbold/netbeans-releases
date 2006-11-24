@@ -47,8 +47,9 @@ import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RefactoringElement;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
+import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.api.ui.UI;
-import org.netbeans.modules.refactoring.java.api.JavaWhereUsedQuery;
+import org.netbeans.modules.refactoring.java.api.WhereUsedQueryConstants;
 import org.netbeans.modules.refactoring.spi.ProblemDetailsFactory;
 import org.netbeans.modules.refactoring.spi.ProblemDetailsImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
@@ -72,7 +73,7 @@ import org.openide.util.NbBundle;
  */
 public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
     private SafeDeleteRefactoring refactoring;
-    private JavaWhereUsedQuery[] whereUsedQueries;
+    private WhereUsedQuery[] whereUsedQueries;
     
     /**
      * Creates the a new instance of the Safe Delete refactoring
@@ -269,15 +270,16 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
             grips.addAll(Arrays.asList((TreePathHandle[])refactoring.getRefactoredObjects()));
         }
 
-        whereUsedQueries = new JavaWhereUsedQuery[grips.size()];
+        whereUsedQueries = new WhereUsedQuery[grips.size()];
         for(int i = 0;i <  whereUsedQueries.length; ++i) {
             if (!controllers.isEmpty()) {
                 refactoring.getContext().add(controllers.get(i));
             }
-            whereUsedQueries[i] = new JavaWhereUsedQuery(grips.get(i), refactoring);
-            whereUsedQueries[i].setSearchInComments(refactoring.isCheckInComments());
+            whereUsedQueries[i] = createQuery(grips.get(i));
+            
+            whereUsedQueries[i].putValue(WhereUsedQuery.SEARCH_IN_COMMENTS, refactoring.isCheckInComments());
             if(Tree.Kind.METHOD.equals(grips.get(i).getKind())){
-                whereUsedQueries[i].setFindOverridingMethods(true);
+                whereUsedQueries[i].putValue(WhereUsedQueryConstants.FIND_OVERRIDING_METHODS,true);
             }
         }
         
@@ -290,6 +292,14 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
                 return problemFromUsage;
         }
         return null;
+    }
+    
+    private WhereUsedQuery createQuery(TreePathHandle tph) {
+        WhereUsedQuery<TreePathHandle> q = new WhereUsedQuery(tph);
+        for (Object o:refactoring.getContext().lookupAll(Object.class)) {
+            q.getContext().add(o);
+        }
+        return q;
     }
     
     

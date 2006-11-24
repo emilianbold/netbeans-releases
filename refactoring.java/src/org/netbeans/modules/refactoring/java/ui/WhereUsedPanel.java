@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.refactoring.java.ui;
 
+import com.sun.source.util.TreePath;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ItemEvent;
@@ -47,6 +48,7 @@ import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.SourceUtils;
 
 
 /**
@@ -55,6 +57,7 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 public class WhereUsedPanel extends CustomRefactoringPanel {
 
     private final transient TreePathHandle element;
+    private  TreePathHandle newElement;
     private final transient ChangeListener parent;
     private static final int MAX_NAME = 50;
     
@@ -102,12 +105,17 @@ public class WhereUsedPanel extends CustomRefactoringPanel {
                     methodDeclaringClass = getSimpleName(method.getEnclosingElement());
                     Collection overridens = getOverriddenMethods(method, info);
                     if (!overridens.isEmpty()) {
+                        ExecutableElement el = (ExecutableElement) overridens.iterator().next();                        
                         m_isBaseClassText =
                                 new MessageFormat(NbBundle.getMessage(WhereUsedPanel.class, "LBL_UsagesOfBaseClass")).format(
                                 new Object[] {
                             methodDeclaringSuperClass = getSimpleName(((ExecutableElement) overridens.iterator().next()).getEnclosingElement())
                         }
                         );
+                         final ElementHandle eh = ElementHandle.create(el);
+                        TreePath tp = SourceUtils.pathFor(info, eh.resolve(info));
+                        newElement = TreePathHandle.create(tp, info);
+
                     }
                 } else if (element.getKind().isClass() || element.getKind().isInterface()) {
                     labelText = NbBundle.getMessage(WhereUsedPanel.class, "DSC_ClassUsages", element.getSimpleName()); // NOI18N
@@ -176,6 +184,10 @@ public class WhereUsedPanel extends CustomRefactoringPanel {
             result = result.substring(0,MAX_NAME-1) + "..."; // NOI18N
         }
         return RetoucheUtils.htmlize(result);
+    }
+    
+    public TreePathHandle getBaseMethod() {
+        return newElement;
     }
     
     public void requestFocus() {

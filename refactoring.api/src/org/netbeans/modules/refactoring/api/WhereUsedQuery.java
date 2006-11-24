@@ -18,7 +18,7 @@
  */
 package org.netbeans.modules.refactoring.api;
 
-import java.util.Collection;
+import java.util.Hashtable;
 import org.netbeans.modules.refactoring.api.*;
 
 /**
@@ -27,15 +27,16 @@ import org.netbeans.modules.refactoring.api.*;
  */
 public final class WhereUsedQuery<T> extends AbstractRefactoring {
     private T  item;
-    private boolean searchInComments;
-
-
+    public static final String SEARCH_IN_COMMENTS = "SEARCH_IN_COMMENTS";
+    public static final String FIND_REFERENCES = "FIND_REFERENCES";
+    
     /**
      * Creates a new instance of WhereUsedQuery
      * @param item searched item
      */
     public WhereUsedQuery(T item) {
         this.item = item;
+        putValue(FIND_REFERENCES, true);
     }
 
     /**
@@ -45,21 +46,22 @@ public final class WhereUsedQuery<T> extends AbstractRefactoring {
     public final T getRefactoredObject() {
         return item;
     }    
-
-    /**
-     * Getter for boolean property searchInComments
-     * @return Value of property searchInComments
-     */
-    public final boolean isSearchInComments() {
-        return searchInComments;
-    }
-
-    /**
-     * Getter for boolean property searchInComments
-     * @return Value of property searchInComments
-     */
-    public final void setSearchInComments(boolean searchInComments) {
-        this.searchInComments = searchInComments;
+    
+    public final void setRefactoredObject(T item) {
+        this.item = item;
     }
     
+    private Hashtable hash = new Hashtable();
+    
+    public final boolean getBooleanValue(Object key) {
+        Object o = hash.get(key);
+        if (o instanceof Boolean) 
+            return (Boolean)o;
+        return false;
+    }
+    
+    public final void putValue(Object key, Object value) {
+        hash.put(key, (Boolean) value);
+    }
 }
+
