@@ -36,6 +36,7 @@ import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.FileSystemAction;
+import org.openide.actions.ToolsAction;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
@@ -135,8 +136,10 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
     }
     
     /** Clears the status line. */
-    protected final void clearStatusLine() {
-        setStatusLine("");                                              //NOI18N
+    private final void clearStatusLine(String toReplace) {
+        if (toReplace == null || toReplace.equals(StatusDisplayer.getDefault().getStatusText())) {
+            setStatusLine(""); //NOI18N
+        }
     }
     
     /**
@@ -148,8 +151,10 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
      * @param  waiting  <code>true</code> if the server will wait for the file,
      *                  <code>false</code> if not
      */
-    protected void setStatusLineOpening(String fileName) {
-        setStatusLine(NbBundle.getMessage(DefaultOpenFileImpl.class, "MSG_opening", fileName));
+    private String setStatusLineOpening(String fileName) {
+        String msg = NbBundle.getMessage(DefaultOpenFileImpl.class, "MSG_opening", fileName);
+        setStatusLine(msg);
+        return msg;
     }
     
     /**
@@ -218,7 +223,7 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
             ErrorManager.getDefault().notify(
                     ErrorManager.EXCEPTION,
                     ErrorManager.getDefault().annotate(ex, msg));
-            clearStatusLine();
+            clearStatusLine(null);
             return false;
         }
 
@@ -480,27 +485,27 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
         if ( (line != -1 && ((cookie = dataObject.getCookie(cookieClass = EditorCookie.Observable.class)) != null
              || (cookie = dataObject.getCookie(cookieClass = EditorCookie.class)) != null)) ){
             boolean ret = openByCookie(cookie,cookieClass, line);      
-            clearStatusLine();                              
+            clearStatusLine(null);                              
             return ret;
         } 
                             
         /* try to open the object using the default action */
         final Node dataNode = dataObject.getNodeDelegate();        
         final Action action = dataNode.getPreferredAction();
-        if (action != null && !(action instanceof FileSystemAction)) {            
+        if (action != null && !(action instanceof FileSystemAction) && !(action instanceof ToolsAction)) {            
             EventQueue.invokeLater(new Runnable() {
                 public void run() {
                     action.actionPerformed(new ActionEvent(dataNode, 0, null));                                 
-                    clearStatusLine();            
+                    clearStatusLine(null);            
                 }
             });            
             return true;            
         }             
         
         /* Try to grab an editor/open/edit/view cookie and open the object: */
-        setStatusLineOpening(fileName);
+        String prev = setStatusLineOpening(fileName);
         boolean success = openDataObjectByCookie(dataObject, line);
-        clearStatusLine();
+        clearStatusLine(prev);
         if (success) {
             return true;
         }
