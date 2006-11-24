@@ -22,7 +22,11 @@ import java.util.Hashtable;
 import org.netbeans.modules.refactoring.api.*;
 
 /**
- * Where used query does not do any "real" refactring. I just perform Find Usages
+ * Where used query does not do any "real" refactoring.
+ * It just encapsulates parameters for Find Usages, which is implemented by
+ * plugins.
+ * @see org.netbeans.modules.refactoring.spi.RefactoringPluginFactory
+ * @see org.netbeans.modules.refactoring.spi.RefactoringPlugin
  * @author Jan Becicka
  */
 public final class WhereUsedQuery<T> extends AbstractRefactoring {
