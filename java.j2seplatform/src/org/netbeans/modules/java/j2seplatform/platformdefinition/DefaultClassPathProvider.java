@@ -87,7 +87,18 @@ public class DefaultClassPathProvider implements ClassPathProvider {
         }
         // #49013 - do not return classpath for files which do 
         // not have EXTERNAL URL, e.g. files from DefaultFS
-        if (URLMapper.findURL(file, URLMapper.EXTERNAL) == null) {
+        // The modified template has an external URL (file) as well as an internal (nbfs)
+        // the original check externalURL == null does not work, the classpath with nbfs root
+        // is returned. Also it's not possible to create classpath with external URLs  
+        // (ClassPathSupport.createClasspath(URLMapper.getURL(root,EXTERNAL))) for these templates
+        // since the the returned classpath WILL NOT work correctly (ClassPath.getClassPath(file,SOURCE).findRoot(file)
+        // returns null).
+        try {
+            URL externalURL = URLMapper.findURL(file, URLMapper.EXTERNAL);
+            if ( externalURL == null || !externalURL.equals(file.getURL())) {
+                return null;
+            }
+        } catch (FileStateInvalidException fsi) {
             return null;
         }
         if (JAVA_EXT.equalsIgnoreCase(file.getExt()) || file.isFolder()) {  //Workaround: Editor asks for package root
