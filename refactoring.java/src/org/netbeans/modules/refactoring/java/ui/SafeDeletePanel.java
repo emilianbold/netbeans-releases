@@ -19,9 +19,15 @@
 package org.netbeans.modules.refactoring.java.ui;
 import java.awt.Dimension;
 import java.awt.event.ItemEvent;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.openide.filesystems.FileObject;
@@ -71,7 +77,28 @@ public class SafeDeletePanel extends CustomRefactoringPanel {
         
         final ArrayList<String> names = new ArrayList();
         for (Object o:refactoring.getRefactoredObjects()) {
-            names.add(((FileObject)o).getName());
+            if (o instanceof FileObject)
+                names.add(((FileObject)o).getName());
+            else if (o instanceof TreePathHandle) {
+                final TreePathHandle handle=(TreePathHandle) o;
+                //"really easy" way how to get name of the method
+                //from handle
+                JavaSource s = JavaSource.forFileObject(handle.getFileObject());
+                try {
+                s.runUserActionTask(new CancellableTask<CompilationController>() {
+                    public void cancel() {
+                    }
+
+                    public void run(CompilationController parameter) throws Exception {
+                        parameter.toPhase(Phase.RESOLVED);
+                        names.add(handle.resolveElement(parameter).getSimpleName().toString());
+                    }
+                }, true);
+                } catch (IOException ioe) {
+                    throw (RuntimeException) new RuntimeException().initCause(ioe);
+                }
+                       
+            }
         }
 //        final String labelText;
 //            if(elements.size() > 1){
