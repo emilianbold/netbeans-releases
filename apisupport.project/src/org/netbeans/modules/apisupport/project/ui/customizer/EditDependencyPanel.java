@@ -300,6 +300,9 @@ public final class EditDependencyPanel extends JPanel {
     
     private void versionChanged(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_versionChanged
         refresh();
+        if (implVer.isSelected()) { // automatic compile-time dependency
+            includeInCP.setSelected(true);
+        }
     }//GEN-LAST:event_versionChanged
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
