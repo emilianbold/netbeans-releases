@@ -84,6 +84,7 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
 
     private static final String ZIP_EXT = "zip"; //NOI18N
     private static final String JAR_EXT = "jar"; //NOI18N
+    private static final String WAR_EXT = "war"; //NOI18N
 
     /**
      * parameter of this <code>Runnable</code>
@@ -507,6 +508,7 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
         if (
             ZIP_EXT.equalsIgnoreCase(fileObject.getExt()) || 
             JAR_EXT.equalsIgnoreCase(fileObject.getExt()) ||
+            WAR_EXT.equalsIgnoreCase(fileObject.getExt()) ||
             fileObject.isFolder()
         ) {
             // select it in explorer:
