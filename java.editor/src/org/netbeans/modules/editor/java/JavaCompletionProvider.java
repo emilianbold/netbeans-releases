@@ -2118,7 +2118,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case FIELD:
                         String name = e.getSimpleName().toString();
                         if (THIS_KEYWORD.equals(name) || SUPER_KEYWORD.equals(name))
-                            addKeyword(env, name, null);
+                            results.add(JavaCompletionItem.createKeywordItem(name, null, offset));
                         else
                             results.add(JavaCompletionItem.createVariableItem((VariableElement)e, asMemberOf(e, enclClass != null ? enclClass.asType() : null, types), offset, env.getScope().getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e)));
                         break;
@@ -2310,7 +2310,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case PARAMETER:
                         String name = e.getSimpleName().toString();
                         if (THIS_KEYWORD.equals(name) || CLASS_KEYWORD.equals(name))
-                            addKeyword(env, name, null);
+                            results.add(JavaCompletionItem.createKeywordItem(name, null, offset));
                         else
                             results.add(JavaCompletionItem.createVariableItem((VariableElement)e, type.getKind() == TypeKind.DECLARED ? types.asMemberOf((DeclaredType)type, e) : e.asType(), offset, typeElem != e.getEnclosingElement(), elements.isDeprecated(e)));
                         break;
