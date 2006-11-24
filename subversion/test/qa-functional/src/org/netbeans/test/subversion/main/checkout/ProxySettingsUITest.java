@@ -69,7 +69,6 @@ public class ProxySettingsUITest extends JellyTestCase {
         pco.useSystemProxySettings();
         pco.noProxyDirectConnection();
         pco.hTTPProxy();
-        pco.sOCKSProxy();
         pco.setProxyHost("host");// NOI18N
         pco.setPort("8080");
         pco.checkProxyServerRequiresLogin(true);

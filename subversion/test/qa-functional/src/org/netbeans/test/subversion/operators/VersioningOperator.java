@@ -52,11 +52,12 @@ import org.netbeans.jemmy.operators.JToggleButtonOperator;
 public class VersioningOperator extends TopComponentOperator {
     
     /** "Versioning" */
-    static final String VERSIONING_TITLE = "Subversion";
+    static final String VERSIONING_TITLE = "Versioning";
+    static final String SUBVERSION_TITLE = "Subversion";
     
     /** Waits for Versioning TopComponent within whole IDE. */
     public VersioningOperator() {
-        super(waitTopComponent(null, VERSIONING_TITLE, 0, new VersioningSubchooser()));
+        super(waitTopComponent(null, SUBVERSION_TITLE, 0, new VersioningSubchooser()));
     }
     
     /** Invokes Window|Versioning main menu item and returns new instance of
@@ -65,7 +66,7 @@ public class VersioningOperator extends TopComponentOperator {
     public static VersioningOperator invoke() {
         String windowItem = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Window");
         String versioningItem = "Subversion";
-        new Action(windowItem+"|"+versioningItem, null).perform();
+        new Action(windowItem + "|" + VERSIONING_TITLE + "|" + versioningItem, null).perform();
         return new VersioningOperator();
     }
     

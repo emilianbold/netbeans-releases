@@ -25,7 +25,7 @@ public class ProxyConfigurationOperator extends NbDialogOperator {
     private JRadioButtonOperator _rbUseSystemProxySettings;
     private JRadioButtonOperator _rbNoProxyDirectConnection;
     private JRadioButtonOperator _rbHTTPProxy;
-    private JRadioButtonOperator _rbSOCKSProxy;
+    //private JRadioButtonOperator _rbSOCKSProxy;
     private JLabelOperator _lblProxyHost;
     private JTextFieldOperator _txtProxyHost;
     private JLabelOperator _lblPort;
@@ -72,16 +72,6 @@ public class ProxyConfigurationOperator extends NbDialogOperator {
             _rbHTTPProxy = new JRadioButtonOperator(this, "HTTP Proxy");
         }
         return _rbHTTPProxy;
-    }
-
-    /** Tries to find "SOCKS Proxy" JRadioButton in this dialog.
-     * @return JRadioButtonOperator
-     */
-    public JRadioButtonOperator rbSOCKSProxy() {
-        if (_rbSOCKSProxy==null) {
-            _rbSOCKSProxy = new JRadioButtonOperator(this, "SOCKS Proxy");
-        }
-        return _rbSOCKSProxy;
     }
 
     /** Tries to find "Proxy Host:" JLabel in this dialog.
@@ -227,12 +217,6 @@ public class ProxyConfigurationOperator extends NbDialogOperator {
         rbHTTPProxy().push();
     }
 
-    /** clicks on "SOCKS Proxy" JRadioButton
-     */
-    public void sOCKSProxy() {
-        rbSOCKSProxy().push();
-    }
-
     /** gets text for txtProxyHost
      * @return String text
      */
@@ -349,7 +333,6 @@ public class ProxyConfigurationOperator extends NbDialogOperator {
         rbUseSystemProxySettings();
         rbNoProxyDirectConnection();
         rbHTTPProxy();
-        rbSOCKSProxy();
         lblProxyHost();
         txtProxyHost();
         lblPort();

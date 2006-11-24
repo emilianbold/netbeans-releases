@@ -118,7 +118,7 @@ public class ImportUITest extends JellyTestCase {
         //Warning message for empty import message
         ftiso.setRepositoryFolder(PROJECT_NAME);
         ftiso.setImportMessage("");
-        assertEquals("Import message required", "Import message required", ftiso.lblImportMessageRequired().getText());
+        assertEquals("Import message required", "Import Message required", ftiso.lblImportMessageRequired().getText());
         assertFalse("Next button should be disabled", ftiso.btNext().isEnabled());
         assertFalse("Finish button should be disabled", ftiso.btFinish().isEnabled());
         

@@ -181,7 +181,7 @@ public class CopyTest extends JellyTestCase {
         oto.clear();
         Node projNode = new Node(new ProjectsTabOperator().tree(), PROJECT_NAME);
         CopyToOperator cto = CopyToOperator.invoke(projNode);
-        cto.setRepositoryFolder("branches/release01/" + PROJECT_NAME);
+        cto.setRepositoryFolder("branches/release01");
         cto.setCopyPurpose("New branch for project.");
         cto.checkSwitchToCopy(false);
         cto.copy();

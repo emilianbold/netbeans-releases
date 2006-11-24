@@ -110,7 +110,7 @@ public class CommitStepOperator extends ImportWizardOperator {
      */
     public JLabelOperator lblCommitFiles() {
         if (_lblCommitFiles==null) {
-            _lblCommitFiles = new JLabelOperator(this, "Commit files");
+            _lblCommitFiles = new JLabelOperator(this, "Files to Commit");
         }
         return _lblCommitFiles;
     }

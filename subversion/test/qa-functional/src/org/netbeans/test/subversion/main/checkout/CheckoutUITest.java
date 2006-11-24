@@ -36,6 +36,7 @@ import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JFileChooserOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.test.subversion.operators.CheckoutWizardOperator;
 import org.netbeans.test.subversion.operators.RepositoryBrowserOperator;
@@ -84,11 +85,11 @@ public class CheckoutUITest extends JellyTestCase{
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new CheckoutUITest("testInvokeClose"));
-        suite.addTest(new CheckoutUITest("testChangeAccessTypes"));
-        suite.addTest(new CheckoutUITest("testIncorrentUrl"));        
+        //suite.addTest(new CheckoutUITest("testInvokeClose"));
+        //suite.addTest(new CheckoutUITest("testChangeAccessTypes"));
+        //suite.addTest(new CheckoutUITest("testIncorrentUrl"));        
         suite.addTest(new CheckoutUITest("testAvailableFields"));
-        suite.addTest(new CheckoutUITest("testRepositoryFolder"));        
+        //suite.addTest(new CheckoutUITest("testRepositoryFolder"));        
         return suite;
     }
     
@@ -115,7 +116,7 @@ public class CheckoutUITest extends JellyTestCase{
         //
         rso.setRepositoryURL(RepositoryStepOperator.ITEM_SVNSSH);
         rso.txtUser().setText(RepositoryStepOperator.ITEM_SVNSSH);
-        rso.txtPassword().setText(RepositoryStepOperator.ITEM_SVNSSH);
+        //rso.txtPassword().setText(RepositoryStepOperator.ITEM_SVNSSH);
         Thread.sleep(1000);
         //
         rso.setRepositoryURL(RepositoryStepOperator.ITEM_HTTP);
@@ -265,9 +266,14 @@ public class CheckoutUITest extends JellyTestCase{
         //svn+ssh
         rso = new RepositoryStepOperator();
         rso.setRepositoryURL(RepositoryStepOperator.ITEM_SVNSSH);
-        lblU = rso.lblUser();
-        lblP = rso.lblPassword();
-        btnProxy = rso.btProxyConfiguration();
+        lblU = rso.lblUseExternal();
+        lblU = rso.lblTunnelCommand();
+        JTextFieldOperator txt = rso.txtTunnelCommand();
+        txt.typeText("plink");
+        Thread.sleep(2000);
+        //lblU = rso.lblUser();
+        //lblP = rso.lblPassword();
+        //btnProxy = rso.btProxyConfiguration();
         
         //file
         rso = new RepositoryStepOperator();

@@ -42,11 +42,14 @@ public class CopyToOperator extends NbDialogOperator {
     }
 
     private JTextAreaOperator _txtJTextArea;
+    private JRadioButtonOperator _rbLocalFolder;
+    private JRadioButtonOperator _rbRemoteFolder;
     private JLabelOperator _lblDescribeTheCopyPurpose;
     private JLabelOperator _lblRepositoryFolder;
     private JComboBoxOperator _cboJComboBox;
     private JButtonOperator _btBrowse;
     private JCheckBoxOperator _cbSwitchToCopy;
+    private JCheckBoxOperator _cbSkip;
     private JLabelOperator _lblWarningMessage;
     private JButtonOperator _btCopy;
     private JButtonOperator _btCancel;
@@ -80,11 +83,18 @@ public class CopyToOperator extends NbDialogOperator {
     /** Tries to find "Repository Folder:" JLabel in this dialog.
      * @return JLabelOperator
      */
-    public JLabelOperator lblRepositoryFolder() {
-        if (_lblRepositoryFolder==null) {
-            _lblRepositoryFolder = new JLabelOperator(this, "Repository Folder:");
+    public JRadioButtonOperator rbLocalFolder() {
+        if (_rbLocalFolder == null) {
+            _rbLocalFolder = new JRadioButtonOperator(this, "Local Folder");
         }
-        return _lblRepositoryFolder;
+        return _rbLocalFolder;
+    }
+    
+    public JRadioButtonOperator rbRemoteFolder() {
+        if (_rbRemoteFolder == null) {
+            _rbRemoteFolder = new JRadioButtonOperator(this, "Remote Folder");
+        }
+        return _rbRemoteFolder;
     }
 
     /** Tries to find null JComboBox in this dialog.
@@ -115,6 +125,16 @@ public class CopyToOperator extends NbDialogOperator {
             _cbSwitchToCopy = new JCheckBoxOperator(this, "Switch to Copy");
         }
         return _cbSwitchToCopy;
+    }
+    
+    /** Tries to find "Skip" JCheckBox in this dialog.
+     * @return JCheckBoxOperator
+     */
+    public JCheckBoxOperator cbSkip() {
+        if (_cbSkip==null) {
+            _cbSkip = new JCheckBoxOperator(this, "Skip");
+        }
+        return _cbSkip;
     }
 
     /** Tries to find "Warning - there are localy modified files!" JLabel in this dialog.
@@ -249,10 +269,12 @@ public class CopyToOperator extends NbDialogOperator {
     public void verify() {
         txtJTextArea();
         lblDescribeTheCopyPurpose();
-        lblRepositoryFolder();
+        rbLocalFolder();
+        rbRemoteFolder();
         cboJComboBox();
         btBrowse();
         cbSwitchToCopy();
+        cbSkip();
         btCopy();
         btCancel();
         btHelp();

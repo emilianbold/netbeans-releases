@@ -53,6 +53,9 @@ public class RepositoryStepOperator extends WizardOperator {
     private JListOperator _lstSteps;
     private JLabelOperator _lblRepository;
     private JButtonOperator _btProxyConfiguration;
+    private JLabelOperator _lblUseExternal;
+    private JLabelOperator _lblTunnelCommand;
+    private JTextFieldOperator _txtTunnelCommand;
     private JLabelOperator _lblPassword;
     private JLabelOperator _lblUser;
     private JLabelOperator _lblRepositoryURL;
@@ -114,6 +117,26 @@ public class RepositoryStepOperator extends WizardOperator {
         }
         return _btProxyConfiguration;
     }
+    
+    /** Tries to find "Use External Tunnel" JLabel in this dialog.
+     * @return JLabelOperator
+     */
+    public JLabelOperator lblUseExternal() {
+        if (_lblUseExternal==null) {
+            _lblUseExternal = new JLabelOperator(this, "Use External");
+        }
+        return _lblUseExternal;
+    }
+    
+    /** Tries to find "Tunnel Command" JLabel in this dialog.
+     * @return JLabelOperator
+     */
+    public JLabelOperator lblTunnelCommand() {
+        if (_lblTunnelCommand==null) {
+            _lblTunnelCommand = new JLabelOperator(this, "Tunnel Command");
+        }
+        return _lblTunnelCommand;
+    }
 
     /** Tries to find "Password:" JLabel in this dialog.
      * @return JLabelOperator
@@ -145,6 +168,15 @@ public class RepositoryStepOperator extends WizardOperator {
         return _lblRepositoryURL;
     }
 
+    /** Tries to find "Tunnel Command" JTextField in this dialog.
+     * @return JTextFieldOperator
+     */
+    public JTextFieldOperator txtTunnelCommand() {
+        if (_txtTunnelCommand == null)
+            _txtTunnelCommand = new JTextFieldOperator(this, 1);
+        return _txtTunnelCommand;
+    }
+    
     /** Tries to find null JTextField in this dialog.
      * @return JTextFieldOperator
      */
