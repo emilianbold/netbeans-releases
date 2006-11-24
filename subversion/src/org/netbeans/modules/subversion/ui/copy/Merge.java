@@ -349,8 +349,8 @@ public class Merge extends CopyDialog implements ItemListener {
             RepositoryPaths mergeStartRepositoryPaths =
                 new RepositoryPaths(
                     repositoryRoot,
-                    (JTextComponent) panel.mergeStartUrlComboBox.getEditor().getEditorComponent(),
-                    panel.mergeStartBrowseButton,
+                    null,
+                    null,
                     panel.mergeStartRevisionTextField,
                     panel.mergeStartSearchButton
                 );
@@ -358,8 +358,8 @@ public class Merge extends CopyDialog implements ItemListener {
             mergeEndRepositoryPaths =
                 new RepositoryPaths(
                     repositoryRoot,
-                    null,
-                    null,
+                    (JTextComponent) panel.mergeStartUrlComboBox.getEditor().getEditorComponent(),
+                    panel.mergeStartBrowseButton,
                     panel.mergeEndRevisionTextField,
                     panel.mergeEndSearchButton
                 );
@@ -374,9 +374,10 @@ public class Merge extends CopyDialog implements ItemListener {
             ((JTextComponent) panel.mergeStartUrlComboBox.getEditor().getEditorComponent()).getDocument().addDocumentListener(this);
         }
 
-        public SVNUrl getMergeEndUrl() {
+        
+        public SVNUrl getMergeStartUrl() {
             // in this case iths the same folder url
-            return getMergeStartUrl();
+            return getMergeEndUrl();
         }
 
         public String getDisplayName() {
