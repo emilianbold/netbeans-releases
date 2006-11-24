@@ -124,9 +124,6 @@ public class Wizard {
     
     public static List<WizardComponent> loadWizardComponents(String componentsURI, ClassLoader loader) throws InitializationException {
         try {
-            DownloadOptions options = DownloadOptions.getDefaults();
-            options.put(DownloadOptions.CLASSLOADER, loader);
-            
             File schemaFile =
                     FileProxy.getInstance().getFile(componentsSchemaURI, loader);
             File componentsFile =

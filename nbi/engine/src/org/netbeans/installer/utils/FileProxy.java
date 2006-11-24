@@ -34,12 +34,13 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.installer.Installer;
-import org.netbeans.installer.downloader.DownloadFilesBase;
 import org.netbeans.installer.downloader.DownloadManager;
-import org.netbeans.installer.downloader.queue.EmptyQueueListener;
-import org.netbeans.installer.downloader.queue.URLQueue;
-import org.netbeans.installer.downloader.queue.URLStatus;
+import org.netbeans.installer.downloader.Pumping;
+import org.netbeans.installer.downloader.Pumping.Section;
+import org.netbeans.installer.downloader.PumpingsQueue;
+import org.netbeans.installer.downloader.PumpingsQueueListener;
 import org.netbeans.installer.utils.exceptions.DownloadException;
+import org.netbeans.installer.utils.helper.Pair;
 import org.netbeans.installer.utils.progress.Progress;
 
 /**
@@ -48,28 +49,19 @@ import org.netbeans.installer.utils.progress.Progress;
  */
 public class FileProxy {
     
-    private final DownloadManager manager = DownloadManager.getInstance();
-    
     private final File tmpDir = new File(Installer.DEFAULT_LOCAL_DIRECTORY_PATH, "tmp");
     private final Map<String, File> cache = new HashMap<String, File>();
     {
         tmpDir.mkdirs();
         tmpDir.deleteOnExit();
     }
-    
-    MyListener listener = new MyListener();
+    final PumpingsQueue queue = DownloadManager.DM.getQueue();
+    PumpingsQueueListener listener = new MyListener();
     {
-        manager.getURLQueue().addListener(listener);
+        queue.addListener(listener);
     }
     
-    URL currentURL;
-    
-    URLStatus currentURLStatus;
-    
-    Progress progress;
-    
     public static final FileProxy proxy = new FileProxy();
-    //TODO: not thread safe now!!!!!!!!!
     
     public static FileProxy getInstance() {
         return proxy;
@@ -77,14 +69,15 @@ public class FileProxy {
     
     public void deleteFile(String uri) throws IOException {
         final File file = cache.get(uri);
+        if (uri != null && uri.startsWith("file")) return;
         if (file != null) FileUtils.deleteFile(file);
         cache.remove(uri);
     }
     
-    public void deleteFile(URI uri) throws IOException{
+    public void deleteFile(URI uri) throws IOException {
         deleteFile(uri.toString());
     }
-    public void deleteFile(URL url) throws IOException{
+    public void deleteFile(URL url) throws IOException {
         deleteFile(url.toString());
     }
     
@@ -175,71 +168,86 @@ public class FileProxy {
         throw new DownloadException("unsupported sheme: " + uri.getScheme());
     }
     
-    protected File getFile(URL url, Progress progress, boolean deleteOnExit) throws DownloadException {
-        //   if (currentURL != null) throw new IllegalStateException("getFile not thread Safe! not allowed cuncurrency invokation!");
-        currentURL = url;
+    Progress progress;
+    URL url;
+    protected synchronized File getFile(final URL url,final Progress progress, boolean deleteOnExit) throws DownloadException {
         this.progress = progress;
-        File file = DownloadFilesBase.getInstance().getFile(currentURL);
-        if (file != null) return file;
-        synchronized (this) {
-            manager.getURLQueue().add(currentURL);
-            try {
-                System.out.println("sleep..");
-                wait();
-                System.out.println("un sleep..");
-            } catch (InterruptedException ex) {
-                throw new DownloadException("violation interruption", ex);
-            }
+        this.url = url;
+        final DownloadManager DM = DownloadManager.DM;
+        if (!DM.isActive()) DM.invoke();
+        queue.add(url);
+        try {
+            wait();
+        } catch (InterruptedException ex) {
+            ex.printStackTrace();
         }
-        if (currentURLStatus != URLStatus.DOWNLOAD_FINISHED) {
-            currentURL = null;
-            this.progress = null;
-            throw new DownloadException(currentURLStatus.toString());
-        }
-        currentURL = null;
+        final File file = cache.get(url.toString());
+        if (file == null) throw new DownloadException("faild to download" + url);
+        if (deleteOnExit) file.deleteOnExit();
         this.progress = null;
-        if (deleteOnExit)
-            DownloadFilesBase.getInstance().getFile(url).deleteOnExit();
-        return DownloadFilesBase.getInstance().getFile(url);
+        return file;
     }
     
-    private class MyListener extends EmptyQueueListener {
-        
-        public void URLStatusChanged(URL url) {
-            LogManager.log(url + " status " + DownloadManager.getInstance().getURLQueue().getStatus(url));
-            LogManager.log("time: " + new Date(System.currentTimeMillis()));
-            if (!url.equals(currentURL)) return;
-            URLStatus status = manager.getURLQueue().getStatus(currentURL);
-            boolean shuldNotify = false;
-            switch (status) {
-                case DOWNLOAD_FINISHED: {
-                    currentURLStatus = status;
-                    shuldNotify = true;
-                    break;
+    private class MyListener implements PumpingsQueueListener {
+        public void pumpingUpdate(String id) {
+            final Pumping pumping = queue.getById(id);
+            if (pumping != null) {
+                if (progress != null) {
+                    progress.setDetail("downloding: " + pumping.declaredURL());
+                    if (pumping.length() > 0) {
+                        final long length = pumping.length();
+                        long per = 0;
+                        for (Section section: pumping.getSections()) {
+                            final Pair<Long, Long> pair = section.getRange();
+                            per += section.offset() - pair.getFirst();
+                        }
+                        progress.setPercentage((int)(per * 100 / length));
+                    }
                 }
-                case CONNECTION_FAILD:
-                case DOWNLOAD_FAILD:
-                    
             }
-            if (shuldNotify == true) {
+        }
+        
+        public void pumpingStateChange(String id) {
+            final Pumping pumping = queue.getById(id);
+            if (pumping != null) {
+                if (progress != null) {
+                    progress.setDetail(pumping.state().toString().toLowerCase() +": "
+                        + pumping.declaredURL());
+                }
+                switch (pumping.state()) {
+                    case FINISHED:
+                        cache.put(url.toString(), pumping.outputFile());
+                    case FAILED: synchronized (FileProxy.this) {
+                        FileProxy.this.notify();
+                    }
+                }
+            } else {
                 synchronized (FileProxy.this) {
                     FileProxy.this.notify();
                 }
             }
         }
-        public void newURLAdded(URL url) {
-            LogManager.log("added  " + url);
+        
+        public void pumpingAdd(String id) {
+            final Pumping pumping = queue.getById(id);
+            if (pumping != null) {
+                if (progress != null) {
+                    progress.setDetail("scheduled: " + pumping.declaredURL());
+                }
+            }
         }
         
-        public void chunkDownloaded(URL url, int length) {
-            if (progress == null) {
-                return;
-            }
-            
-            URLQueue queue = manager.getURLQueue();
-            
-            int percentage = (queue.getCurrentSize(url) * Progress.COMPLETE) / queue.getSize(url);
-            progress.setPercentage(percentage);
+        
+        public void pumpingDelete(String id) {
+        }
+        
+        public void queueReset() {
+        }
+        
+        public void pumpsInvoke() {
+        }
+        
+        public void pumpsTerminate() {
         }
     }
 }

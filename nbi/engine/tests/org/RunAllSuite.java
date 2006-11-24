@@ -24,7 +24,6 @@ import junit.framework.TestSuite;
 import org.connection.ConnectionConfiguratorTest;
 import org.connection.ProxySelectorTest;
 import org.connection.ProxyTest;
-import org.netbeans.installer.utils.system.windows.WindowsRegistryTest;
 import org.util.DomVisitorTest;
 
 /**

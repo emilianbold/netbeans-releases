@@ -31,7 +31,6 @@ import javax.swing.JFrame;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import org.netbeans.installer.downloader.DownloadManager;
-import org.netbeans.installer.downloader.DownloaderConsts;
 import org.netbeans.installer.product.ProductRegistry;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.FileProxy;
@@ -162,10 +161,6 @@ public class Installer {
         }
         createInstallerLockFile(localDirectory);
         
-        DownloaderConsts.setWorkingDirectory(new File(localDirectory, "wd"));
-        DownloaderConsts.setOutputDirectory(new File(localDirectory, "downloads"));
-        DownloadManager.getInstance().start();
-        
         final Wizard wizard = Wizard.getInstance();
         
         wizard.open();
@@ -183,7 +178,7 @@ public class Installer {
      */
     public void cancel() {
         // shut down everything that needs it
-        DownloadManager.getInstance().shutdown();
+        DownloadManager.DM.terminate();
         
         // exit with the cancel error code
         System.exit(CANCEL_ERRORCODE);
@@ -201,7 +196,7 @@ public class Installer {
         
         wizard.executeComponent(new FinalizeRegistryAction());
         wizard.close();
-        DownloadManager.getInstance().shutdown();
+        DownloadManager.DM.terminate();
         System.exit(NORMAL_ERRORCODE);
     }
     
@@ -214,7 +209,7 @@ public class Installer {
      */
     public void criticalExit() {
         // exit immediately, as the system is apparently in a crashed state
-        DownloadManager.getInstance().shutdown();
+        DownloadManager.DM.terminate();
         System.exit(CRITICAL_ERRORCODE);
     }
     

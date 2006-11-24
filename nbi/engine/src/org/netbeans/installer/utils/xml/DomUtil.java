@@ -160,4 +160,10 @@ public class DomUtil {
     public static <T extends DomExternalizable> void addChild(Element parent, T object) {
         parent.appendChild(object.writeXML(parent.getOwnerDocument()));
     }
+    
+    public static void addElemet(Element parent, String elemName, String elemText) {
+        final Element child = parent.getOwnerDocument().createElement(elemName);
+        child.setTextContent(elemText);
+        parent.appendChild(child);
+    }
 }

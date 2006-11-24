@@ -24,7 +24,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import junit.framework.TestCase;
 import java.util.logging.LogManager;
-import org.netbeans.installer.downloader.DownloaderConsts;
 
 /**
  *
@@ -34,7 +33,7 @@ public class MyTestCase extends TestCase {
    
    protected void setUp() throws Exception {
       super.setUp();
-      DownloaderConsts.setWorkingDirectory(new File("testWd"));
-      DownloaderConsts.setOutputDirectory(new File("testOutput"));
+      new File("testWd").mkdirs();
+      new File("testOutput").mkdirs();
    }
 }
