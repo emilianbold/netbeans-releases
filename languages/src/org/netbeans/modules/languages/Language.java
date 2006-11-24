@@ -454,8 +454,7 @@ public class Language {
     
     public static interface Evaluator {
         public Object evaluate ();
-        public Object evaluate (ASTNode node);
-        public Object evaluate (SToken token);
+        public Object evaluate (PTPath path);
     }
     
     public static class StringEvaluator implements Evaluator {
@@ -500,7 +499,16 @@ public class Language {
             return node.getTokenType (s);
         }
         
-        public Object evaluate (ASTNode node) {
+        public Object evaluate (PTPath path) {
+            Object l = path.getLeaf ();
+            if (l instanceof ASTNode)
+                return evaluate ((ASTNode) l);
+            if (l instanceof SToken)
+                return evaluate ((SToken) l);
+            throw new IllegalArgumentException ();
+        }
+        
+        private Object evaluate (ASTNode node) {
             if (names == null) return null;
             StringBuilder sb = new StringBuilder ();
             int i, k = names.length;
@@ -527,7 +535,7 @@ public class Language {
             return expression;
         }
         
-        public Object evaluate (SToken token) {
+        private Object evaluate (SToken token) {
             if (names == null) return null;
             StringBuilder sb = new StringBuilder ();
             int i, k = names.length;
@@ -563,12 +571,8 @@ public class Language {
             return evaluate (new Object[] {});
         }
         
-        public Object evaluate (ASTNode node) {
-            return evaluate (new Object[] {node});
-        }
-        
-        public Object evaluate (SToken token) {
-            return evaluate (new Object[] {token});
+        public Object evaluate (PTPath path) {
+            return evaluate (new Object[] {path});
         }
     
         public Object evaluate (

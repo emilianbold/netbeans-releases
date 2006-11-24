@@ -317,7 +317,8 @@ public class NBSLanguageReader {
                 getString (m, "wave-underline-color", false),
                 getString (m, "strike-through-color", false),
                 getString (m, "font-name", false),
-                getString (m, "font-type", false)
+                getString (m, "font-type", false),
+                getEvaluator (m, "condition", false)
             );
             language.addFeature (featureName, identifier, feature);
         } else
@@ -520,7 +521,8 @@ public class NBSLanguageReader {
         String waveunderline,
         String strikethrough,
         String fontName,
-        String fontType
+        String fontType,
+        Evaluator condition
     ) throws ParseException {
         SimpleAttributeSet coloring = new SimpleAttributeSet ();
         coloring.addAttribute (StyleConstants.NameAttribute, colorName);
@@ -544,6 +546,8 @@ public class NBSLanguageReader {
             if (fontType.toLowerCase ().indexOf ("italic") >= 0)
                 coloring.addAttribute (StyleConstants.Italic, Boolean.TRUE);
         }
+        if (condition != null)
+            coloring.addAttribute ("condition", condition);
         return coloring;
     }
     

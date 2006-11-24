@@ -16,11 +16,12 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
-import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.languages.LibrarySupport;
 import org.netbeans.modules.languages.fold.DatabaseManager;
 import org.netbeans.modules.languages.parser.ASTNode;
+import org.netbeans.modules.languages.parser.PTPath;
 import org.netbeans.modules.languages.parser.SToken;
 import org.netbeans.modules.languages.parser.TokenInput;
 import org.openide.ErrorManager;
@@ -35,6 +36,9 @@ import org.openide.text.NbDocument;
  * @author Jan Jancura
  */
 public class JavaScript {
+
+    private static final String DOC = "org/netbeans/modules/languages/javascript/Documentation.xml";
+    
     
     public static ASTNode parseRegularExpression (
         TokenInput input, 
@@ -64,7 +68,8 @@ public class JavaScript {
         return nnode;
     }
 
-    public static Runnable hyperlink (SToken t) {
+    public static Runnable hyperlink (PTPath path) {
+        SToken t = (SToken) path.getLeaf ();
         String name = t.getIdentifier ();
         final Line.Part l = (Line.Part) DatabaseManager.get (name);
         if (l == null) return null;
@@ -81,7 +86,8 @@ public class JavaScript {
         };
     }
     
-    public static String functionName (ASTNode n) {
+    public static String functionName (PTPath path) {
+        ASTNode n = (ASTNode) path.getLeaf ();
         String name = n.getTokenTypeIdentifier ("js-identifier");
         String parameters = "";
         ASTNode parametersNode = n.getNode ("FormalParameterList");
@@ -105,7 +111,8 @@ public class JavaScript {
         return "?";
     }
 
-    public static String objectName (ASTNode n) {
+    public static String objectName (PTPath path) {
+        ASTNode n = (ASTNode) path.getLeaf ();
         ASTNode p = n.getParent ();
         while (p != null) {
             if (p.getNT ().equals ("AssignmentExpressionInitial") &&
@@ -123,21 +130,28 @@ public class JavaScript {
     
     private static List completionItems;
     
-    public static List completionItems (SToken t) {
+    public static List completionItems (PTPath path) {
         if (completionItems == null)
-            completionItems = new ArrayList (XMLStorage.readDoc ());
+            completionItems = getLibrary ().getItems ("root");
         return completionItems;
     }
 
-    public static List completionDescriptions (SToken t) {
+    public static List completionDescriptions (PTPath path) {
         if (completionItems == null)
-            completionItems = new ArrayList (XMLStorage.readDoc ());
+            completionItems = getLibrary ().getItems ("root");
         return completionItems;
     }
     
     
     // helper methods ..........................................................
     
+    private static LibrarySupport library;
+    
+    private static LibrarySupport getLibrary () {
+        if (library == null)
+            library = LibrarySupport.create (DOC);
+        return library;
+    }
 
     private static TokenSequence getTokenSequence (Document doc, Caret caret) {
         int ln = NbDocument.findLineNumber ((StyledDocument) doc, caret.getDot ()) - 1;

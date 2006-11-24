@@ -10,6 +10,7 @@
 package org.netbeans.modules.languages.css;
 
 import org.netbeans.modules.languages.parser.ASTNode;
+import org.netbeans.modules.languages.parser.PTPath;
 import org.netbeans.modules.languages.parser.SToken;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
@@ -24,7 +25,8 @@ import org.openide.windows.TopComponent;
  */
 public class CSS {
 
-    public static String tooltip (ASTNode n) {
+    public static String tooltip (PTPath path) {
+        ASTNode n = (ASTNode) path.getLeaf ();
         StringBuilder sb = new StringBuilder ();
         sb.append ("<html>");
         sb.append ("<p style=\"");
@@ -40,7 +42,8 @@ public class CSS {
         return sb.toString ();
     }
 
-    public static String navigatorTooltip (ASTNode n) {
+    public static String navigatorTooltip (PTPath path) {
+        ASTNode n = (ASTNode) path.getLeaf ();
         StringBuilder sb = new StringBuilder ();
         sb.append ("<html>");
         sb.append ("<p style=\"");
@@ -56,7 +59,8 @@ public class CSS {
         return sb.toString ();
     }
     
-    public static Runnable hyperlink (SToken t) {
+    public static Runnable hyperlink (PTPath path) {
+        SToken t = (SToken) path.getLeaf ();
         String s = t.getIdentifier ();
         s = s.substring (1, s.length () - 1);
         s = s.replace ("%20", " "); // HACK
