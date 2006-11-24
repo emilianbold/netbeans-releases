@@ -293,7 +293,8 @@ final class Manager {
                             : "MSG_Issues_found_during_replace";        //NOI18N
             String title = NbBundle.getMessage(getClass(), msgKey);
             displayIssuesFromAWT(title,
-                                 currentReplaceTask.getProblems());
+                                 currentReplaceTask.getProblems(),
+                                 resultStatus != PRE_CHECK_FAILED);
             if (resultStatus == PRE_CHECK_FAILED) {
                 offerRescanAfterIssuesFound();
             }
@@ -354,16 +355,22 @@ final class Manager {
     
     /**
      */
-    private void displayIssuesFromAWT(String title, String[] issues) {
+    private void displayIssuesFromAWT(String title,
+                                      String[] issues,
+                                      boolean att) {
         Method theMethod;
         try {
             theMethod = ResultView.class.getDeclaredMethod(
                                                 "displayIssuesToUser",  //NOI18N
-                                                String.class, String[].class);
+                                                String.class,
+                                                String[].class,
+                                                Boolean.TYPE);
         } catch (NoSuchMethodException ex) {
             throw new IllegalStateException(ex);
         }
-        callOnWindowFromAWT(theMethod, new Object[] {title, issues}, false);
+        callOnWindowFromAWT(theMethod,
+                            new Object[] {title, issues, Boolean.valueOf(att)},
+                            false);
     }
     
     /**

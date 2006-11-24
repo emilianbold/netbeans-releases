@@ -1147,7 +1147,7 @@ final class ResultView extends TopComponent {
         
     /**
      */
-    void displayIssuesToUser(String title, String[] problems) {
+    void displayIssuesToUser(String title, String[] problems, boolean reqAtt) {
         assert EventQueue.isDispatchThread();
         assert issuesPanel == null;
         
@@ -1158,12 +1158,14 @@ final class ResultView extends TopComponent {
         if (!isOpened()) {
             open();
         }
-        requestAttention(false);
+        if (reqAtt) {
+            requestAttention(true);
+        }
     }
     
     /**
      */
-    private void rescan() {
+    void rescan() {
         assert EventQueue.isDispatchThread();
         
         removeIssuesPanel();
