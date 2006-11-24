@@ -25,7 +25,6 @@ import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.lib.cvsclient.file.FileUtils;
 import org.netbeans.lib.cvsclient.admin.Entry;
 import org.netbeans.lib.cvsclient.admin.AdminHandler;
-import org.netbeans.lib.cvsclient.command.update.UpdateCommand;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.ErrorManager;
@@ -192,6 +191,9 @@ public class GetCleanAction extends AbstractSystemAction {
                 cache.refresh(file, revision == VersionsCache.REVISION_BASE ? FileStatusCache.REPOSITORY_STATUS_UPTODATE : FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
                 // 'atomic' action  <<<
             } else {
+                if (group.isCancelled()) {
+                    return;
+                }
                 // locally delete? NOt yet there seems to be bug in checkout -p
                 ErrorManager.getDefault().log(ErrorManager.WARNING, "Unable to checkout " + file.getName()); // NOI18N
                 cleanFile.getName(); // raise compatability NPE

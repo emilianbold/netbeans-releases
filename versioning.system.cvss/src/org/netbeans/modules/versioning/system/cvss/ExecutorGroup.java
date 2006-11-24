@@ -224,7 +224,7 @@ public final class ExecutorGroup extends AbstractAction implements Cancellable {
         }
     }
 
-    boolean isCancelled() {
+    public boolean isCancelled() {
         return cancelled;
     }
 

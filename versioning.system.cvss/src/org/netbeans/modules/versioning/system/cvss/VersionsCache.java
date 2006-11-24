@@ -77,7 +77,7 @@ public class VersionsCache {
      * @param revision revision to fetch
      * @param group that carries shared state. Note that this group must not be executed later on. This parameter can be null. 
      * @return File supplied file in the specified revision (locally cached copy) or null if this file does not exist
-     * in the specified revision
+     * in the specified revision or the user cancelled file checkout (in this case group.isCancelled() returns true)
      * @throws java.io.IOException
      * @throws org.netbeans.modules.versioning.system.cvss.IllegalCommandException
      * @throws org.netbeans.lib.cvsclient.command.CommandException
@@ -233,7 +233,7 @@ public class VersionsCache {
 
         CheckoutCommand cmd = new CheckoutCommand();
         cmd.setRecursive(false);
-        assert repositoryPath.startsWith(repository) : repositoryPath + " does not start with: " + repository; // NOI18N  
+        assert repositoryPath.startsWith(repository) : repositoryPath + " does not start with: " + repository; // NOI18N
 
         repositoryPath = repositoryPath.substring(repository.length());
         if (repositoryPath.startsWith("/")) { // NOI18N
@@ -259,6 +259,9 @@ public class VersionsCache {
         if (executor.isSuccessful()) {
             return executor.getCheckedOutVersion();
         } else {
+            if (executor.isCancelled()) {
+                return null;
+            }
             // XXX note that executor already handles/notifies failures
             IOException ioe = new IOException(NbBundle.getMessage(VersionsCache.class, "Bk4001", revision, baseFile.getName()));
             ioe.initCause(executor.getFailure());
