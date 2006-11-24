@@ -19,14 +19,15 @@
 package org.netbeans.modules.refactoring.java.ui;
 import java.awt.Dimension;
 import java.awt.event.ItemEvent;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.refactoring.java.RefactoringModule;
-import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -67,6 +68,11 @@ public class SafeDeletePanel extends CustomRefactoringPanel {
         searchInComments.setEnabled(true);
         
         if (initialized) return;
+        
+        final ArrayList<String> names = new ArrayList();
+        for (Object o:refactoring.getRefactoredObjects()) {
+            names.add(((FileObject)o).getName());
+        }
 //        final String labelText;
 //            if(elements.size() > 1){
 //                Iterator elementIterator = elements.iterator();
@@ -104,7 +110,11 @@ public class SafeDeletePanel extends CustomRefactoringPanel {
         
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                label.setText("safe del");
+                if (names.size()==1) {
+                    label.setText(NbBundle.getMessage(SafeDeletePanel.class, "LBL_SafeDelHeader", names.get(0)));
+                } else {
+                    label.setText(NbBundle.getMessage(SafeDeletePanel.class, "LBL_SafeDel_Elements", names.get(0), names.get(1)));
+                }
                 validate();
             }
         });
