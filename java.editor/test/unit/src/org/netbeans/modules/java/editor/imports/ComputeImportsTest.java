@@ -161,6 +161,10 @@ public class ComputeImportsTest extends NbTestCase {
         doTest("TestPackageDoesNotExist", NO_MASKS, NO_MASKS);
     }
 
+    public void testUnfinishedMethod2() throws Exception {
+        doTest("TestUnfinishedMethod2", NO_MASKS, NO_MASKS);
+    }
+    
     private void prepareTest(String capitalizedName) throws Exception {
         FileObject workFO = IsOverriddenAnnotationCreatorTest.makeScratchDir(this);
         

@@ -225,6 +225,10 @@ public class ComputeImports {
             
             if (leftSide != null && leftSide.hasFirst()) {
                 String rightSide = tree.getIdentifier().toString();
+                
+                if (ERROR.equals(rightSide))
+                    rightSide = "";
+                
                 boolean isMethodInvocation = getCurrentPath().getParentPath().getLeaf().getKind() == Kind.METHOD_INVOCATION;
                 
                 //Ignore .class (which will not help us much):
