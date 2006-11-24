@@ -821,6 +821,9 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                     }
                 }
             });
+        } else {
+            documentationCancel();
+            layout.hideDocumentation();
         }
     }
 
@@ -863,7 +866,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
             newDocumentationResult.queryInvoked();
         } else {
             documentationCancel();
-            layout.hideDocumentation();            
+            layout.hideDocumentation();
         }
     }
 
