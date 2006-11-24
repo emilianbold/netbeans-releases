@@ -321,9 +321,13 @@ final class MatchingObject {
      * @author  Marian Petras
      */
     private StringBuilder text() throws IOException {
+        return text(false);
+    }
+    
+    private StringBuilder text(boolean refreshCache) throws IOException {
         assert !EventQueue.isDispatchThread();
         
-        if (text == null) {
+        if (refreshCache || (text == null)) {
             text = readText();
         }
         return text == null ? new StringBuilder() : text;
@@ -529,7 +533,7 @@ final class MatchingObject {
             return null;
         }
         
-        StringBuilder content = readText();   //really reads the file
+        StringBuilder content = text(false);   //skips the cache, reads the file
         
         List<TextDetail> textMatches = resultModel.fullTextSearchType
                                                     .getTextDetails(object);
