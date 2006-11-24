@@ -22,12 +22,14 @@ package org.netbeans.api.java.source;
 import com.sun.source.tree.Tree;                                                                                                                                                                                               
 import com.sun.source.util.TreePath;                                                                                                                                                                                           
 import com.sun.tools.javac.tree.JCTree;                                                                                                                                                                                        
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.logging.Logger;                                                                                                                                                                                                    
 import javax.lang.model.element.Element;                                                                                                                                                                                       
 import javax.swing.text.Position.Bias;                                                                                                                                                                                         
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;                                                                                                                                                                                     
+import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;                                                                                                                                                                                         
 import org.openide.loaders.DataObjectNotFoundException;                                                                                                                                                                        
 import org.openide.text.CloneableEditorSupport;                                                                                                                                                                                
@@ -182,8 +184,14 @@ public final class TreePathHandle {
      * {@link Tree.Kind}.                                                                                                                                                                                                      
      */                                                                                                                                                                                                                        
     public static TreePathHandle create (final TreePath treePath, CompilationInfo info) throws IllegalArgumentException {                                                                                                      
+        FileObject file;
+        try {
+            file = URLMapper.findFileObject(treePath.getCompilationUnit().getSourceFile().toUri().toURL());
+        } catch (MalformedURLException e) {
+            throw (RuntimeException) new RuntimeException().initCause(e);
+        }
         int position = ((JCTree) treePath.getLeaf()).pos;                                                                                                                                                                      
-        CloneableEditorSupport s = findCloneableEditorSupport(info.getFileObject());                                                                                                                                           
+        CloneableEditorSupport s = findCloneableEditorSupport(file);                                                                                                                                           
         PositionRef pos = s.createPositionRef(position, Bias.Forward);                                                                                                                                                         
         TreePath current = treePath;                                                                                                                                                                                           
         Element element;                                                                                                                                                                                                       
@@ -195,9 +203,9 @@ public final class TreePathHandle {
                 enclElIsCorrespondingEl=false;                                                                                                                                                                                 
             }                                                                                                                                                                                                                  
         } while ((element == null || !isSupported(element)) && current !=null);                                                                                                                                                
-        return new TreePathHandle(pos, new KindPath(treePath), info.getFileObject(),ElementHandle.create(element), enclElIsCorrespondingEl);                                                                                   
-    }                                                                                                                                                                                                                          
-                                                                                                                                                                                                                               
+        return new TreePathHandle(pos, new KindPath(treePath), file,ElementHandle.create(element), enclElIsCorrespondingEl);                                                                                   
+    }          
+    
     private static boolean isSupported(Element el) {                                                                                                                                                                           
         switch (el.getKind()) {                                                                                                                                                                                                
             case PACKAGE:                                                                                                                                                                                                      
