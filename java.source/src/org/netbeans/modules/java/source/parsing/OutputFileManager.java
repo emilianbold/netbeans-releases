@@ -21,10 +21,13 @@ package org.netbeans.modules.java.source.parsing;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -35,13 +38,13 @@ public class OutputFileManager extends CachingFileManager {
 
     private static boolean debug = Boolean.getBoolean("org.netbeans.modules.java.source.parsing.OutputFileManager.debug");      //NOI18N
 
-    private File[] sourceRoots;
+    private FileObject[] sourceRoots;
     
     /** Creates a new instance of CachingFileManager */
     public OutputFileManager(CachingArchiveProvider provider, final ClassPath outputClassPath, final ClassPath sourcePath) {
         super (provider, outputClassPath, false);
 	assert sourcePath != null && outputClassPath != null;
-	this.sourceRoots = getClassPathRoots(sourcePath);
+	this.sourceRoots = sourcePath.getRoots();
     }
     
     public @Override JavaFileObject getJavaFileForOutput( Location l, String className, JavaFileObject.Kind kind, javax.tools.FileObject sibling ) 
@@ -51,19 +54,19 @@ public class OutputFileManager extends CachingFileManager {
         if (kind != JavaFileObject.Kind.CLASS) {
             throw new IllegalArgumentException ();
         }
-        else {
-	    String baseName = className.replace('.', File.separatorChar);	//NOI18N
-            String nameStr = baseName + '.' + FileObjects.SIG;
-            int nameComponentIndex = nameStr.lastIndexOf(File.separatorChar);
+        else {	                            
             int index;
             if (sibling != null) {
                 index = getActiveRoot (sibling);
             }
             else {
-                index = getActiveRoot (baseName);
+                index = getActiveRoot (FileObjects.convertPackage2Folder(className));
             }
             assert index >= 0 && index < this.files.length;
             File activeRoot = this.files[index];
+            String baseName = className.replace('.', File.separatorChar);       //NOI18N
+            String nameStr = baseName + '.' + FileObjects.SIG;
+            int nameComponentIndex = nameStr.lastIndexOf(File.separatorChar);            
             if (nameComponentIndex != -1) {
                 String pathComponent = nameStr.substring(0, nameComponentIndex);
                 new File (activeRoot, pathComponent).mkdirs();
@@ -103,59 +106,50 @@ public class OutputFileManager extends CachingFileManager {
         
         
     
-    private int getActiveRoot (final javax.tools.FileObject file) {        
-        final File jf = new File (file.toUri());
-        assert debug("getActiveRoot for: " + jf.getAbsolutePath()+"\nSourceRoots:");
+    private int getActiveRoot (final javax.tools.FileObject file) throws IOException {
+        if (this.sourceRoots.length == 1) {
+            return 0;
+        }
         for (int i = 0; i< sourceRoots.length; i++) {
-            assert debug("\t"+sourceRoots[i].getAbsolutePath());
-            if (isParentOf(sourceRoots[i], jf)) {
-                assert debug ("FOUND");
+            if (isParentOf(sourceRoots[i], file.toUri().toURL())) {
                 return i;
             }
         }
-        assert debug("NOT FOUND");
         return -1;
     }
     
-    private boolean isParentOf (File folder, final File file) {
+    private boolean isParentOf (FileObject folder, final URL file) throws IOException {
         assert folder != null && file != null;
-        File parent = file.getParentFile();
-        while (parent != null) {
-            if (parent.equals(folder)) {
-                return true;
-            }
-            parent = parent.getParentFile();
-        }
-        return false;
+        URL folderUrl = folder.getURL();
+        return file.toExternalForm().startsWith(folderUrl.toExternalForm());
     }
     
     private int getActiveRoot (String baseName) {
-        assert debug("getActiveRoot (no sibling) for: " + baseName);
         if (sourceRoots.length == 1) {
             return 0;
         }
-	int index = baseName.lastIndexOf(File.separatorChar);
+        String name, parent = null;
+	int index = baseName.lastIndexOf('/');              //NOI18N        
 	if (index<0) {
-	    index = baseName.indexOf('$');	//NOI18N
+            name = baseName;	    
 	}
 	else {
-	    index = baseName.indexOf('$',index);    //NOI18N
+            parent = baseName.substring(0, index);
+            name = baseName.substring(index+1);
 	}
+        index = name.indexOf('$');                          //NOI18N
 	if (index > 0) {
-	    baseName = baseName.substring(0,index);
+	    name = name.substring(0,index);
 	}
-	//XXX: case sensitive FSs will not work in case of file.JavA !!!!!
-	baseName+=".java";  //NOI18N
-        assert debug("Looking for: " + baseName + " in:");
-	for (int i = 0; i < this.sourceRoots.length; i++) {
-            assert debug("\t"+sourceRoots[i].getAbsolutePath());
-	    File tmpFile = new File (sourceRoots[i], baseName);
-	    if (tmpFile.exists()) {
-                assert debug("FOUND");
-		return i;
-	    }
-	}
-        assert debug("NOT FOUND");
+        
+        for (int i=0; i<this.sourceRoots.length; i++) {
+            FileObject parentFile = sourceRoots[i].getFileObject(parent);
+            if (parentFile != null) {
+                if (parentFile.getFileObject(name, FileObjects.JAVA) != null) {
+                    return i;
+                }
+            }
+        }        
 	return -1;
     }
     
