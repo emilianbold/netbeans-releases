@@ -51,6 +51,7 @@ public class DiffStreamSource extends StreamSource {
     private boolean         binary;
 
     private ExecutorGroup   group;
+    private boolean         initialized;
 
     /**
      * Creates a new StreamSource implementation for Diff engine.
@@ -87,7 +88,7 @@ public class DiffStreamSource extends StreamSource {
     }
 
     public Reader createReader() throws IOException {
-        init(null);
+        init(group);
         if (revision == null || remoteFile == null) return null;
         if (binary) {
             return new StringReader(NbBundle.getMessage(DiffStreamSource.class, "BK5001", getTitle()));
@@ -121,7 +122,8 @@ public class DiffStreamSource extends StreamSource {
      * Note that this group must not be executed later on. 
      */
     synchronized void init(ExecutorGroup group) throws IOException {
-        if (remoteFile != null || revision == null) return;
+        if (initialized) return;
+        initialized = true;
         binary = !CvsVersioningSystem.getInstance().isText(baseFile);
         try {
             remoteFile = VersionsCache.getInstance().getRemoteFile(baseFile, revision, group);
