@@ -21,6 +21,8 @@ package org.netbeans.api.java.source;
 
 import java.io.OutputStream;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -54,13 +56,17 @@ public class TypeMirrorHandleTest extends NbTestCase {
         SourceUtilsTestUtil.prepareTest(new String[0], new Object[0]);
     }
 
-    //TODO: cannot handle wildcards, as Types.isSameType returns false for wildcards:
-    private void testCase(CompilationInfo info, String name) {
+    private TypeMirror parse(CompilationInfo info, String name) {
         TypeElement string = info.getElements().getTypeElement("test.Test");
         
         assertNotNull(string);
         
-        TypeMirror tm = info.getTreeUtilities().parseType(name, string);
+        return info.getTreeUtilities().parseType(name, string);
+    }
+    
+    //TODO: cannot handle wildcards, as Types.isSameType returns false for wildcards:
+    private void testCase(CompilationInfo info, String name) {
+        TypeMirror tm = parse(info, name);
         TypeMirrorHandle th = TypeMirrorHandle.create(tm);
         
         assertTrue(info.getTypes().isSameType(th.resolve(info), tm));
@@ -83,14 +89,13 @@ public class TypeMirrorHandleTest extends NbTestCase {
         FileSystem fs = FileUtil.createMemoryFileSystem();
         
         testSource = fs.getRoot().createData("Test.java");
-        
-        writeIntoFile(testSource, "package test; public class Test<T> {}");
+        assertNotNull(testSource);
     }
     
     public void testTypeMirrorHandle() throws Exception {
         prepareTest();
+        writeIntoFile(testSource, "package test; public class Test<T> {}");
         ClassPath empty = ClassPathSupport.createClassPath(new URL[0]);
-        assertNotNull(testSource);
         JavaSource js = JavaSource.create(ClasspathInfo.create(ClassPathSupport.createClassPath(SourceUtilsTestUtil.getBootClassPath().toArray(new URL[0])), empty, empty), testSource);
         
         js.runUserActionTask(new CancellableTask<CompilationController>() {
@@ -106,4 +111,37 @@ public class TypeMirrorHandleTest extends NbTestCase {
         }, true);
     }
 
+    public void testTypeMirrorHandleCannotResolve() throws Exception {
+        prepareTest();
+        writeIntoFile(testSource, "package test; public class Test {} class Test1{}");
+        ClassPath empty = ClassPathSupport.createClassPath(new URL[0]);
+        JavaSource js = JavaSource.create(ClasspathInfo.create(ClassPathSupport.createClassPath(SourceUtilsTestUtil.getBootClassPath().toArray(new URL[0])), empty, empty), testSource);
+        final List<TypeMirrorHandle> handles = new ArrayList<TypeMirrorHandle>();
+        
+        js.runUserActionTask(new CancellableTask<CompilationController>() {
+            public void cancel() {
+            }
+            public void run(CompilationController info) throws Exception {
+                info.toPhase(Phase.RESOLVED);
+                handles.add(TypeMirrorHandle.create(parse(info, "test.Test1")));
+                handles.add(TypeMirrorHandle.create(parse(info, "java.util.List<test.Test1>")));
+                handles.add(TypeMirrorHandle.create(parse(info, "test.Test1[]")));
+            }
+        }, true);
+        writeIntoFile(testSource, "package test; public class Test {}");
+        js.runUserActionTask(new CancellableTask<CompilationController>() {
+            public void cancel() {
+            }
+            public void run(CompilationController info) throws Exception {
+                info.toPhase(Phase.RESOLVED);
+                
+                int count = 0;
+                
+                for (TypeMirrorHandle h : handles) {
+                    assertNull(String.valueOf(count++), h.resolve(info));
+                }
+            }
+        }, true);
+    }
+    
 }

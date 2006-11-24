@@ -141,7 +141,12 @@ public final class TypeMirrorHandle<T extends TypeMirror> {
                 List<TypeMirror> resolvedTypeArguments = new ArrayList<TypeMirror>();
                 
                 for (TypeMirrorHandle t : typeArguments) {
-                    resolvedTypeArguments.add(t.resolve(info));
+                    TypeMirror resolved = t.resolve(info);
+                    
+                    if (resolved == null)
+                        return null;
+                    
+                    resolvedTypeArguments.add(resolved);
                 }
                 
                 TypeElement te = element.resolve(info);
@@ -151,7 +156,12 @@ public final class TypeMirrorHandle<T extends TypeMirror> {
                 
                 return (T) info.getTypes().getDeclaredType(te, resolvedTypeArguments.toArray(new TypeMirror[0]));
             case ARRAY:
-                return (T) info.getTypes().getArrayType(elementType.resolve(info));
+                TypeMirror resolved = elementType.resolve(info);
+                
+                if (resolved == null)
+                    return null;
+                
+                return (T) info.getTypes().getArrayType(resolved);
         }
         
         throw new IllegalStateException("Internal error: unknown TypeHandle kind: " + kind);
