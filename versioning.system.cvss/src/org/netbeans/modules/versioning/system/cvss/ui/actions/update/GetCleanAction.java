@@ -36,6 +36,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileLock;
 
 import java.io.*;
+import java.util.logging.Logger;
 
 /**
  * Revert modifications action.
@@ -195,8 +196,7 @@ public class GetCleanAction extends AbstractSystemAction {
                     return;
                 }
                 // locally delete? NOt yet there seems to be bug in checkout -p
-                ErrorManager.getDefault().log(ErrorManager.WARNING, "Unable to checkout " + file.getName()); // NOI18N
-                cleanFile.getName(); // raise compatability NPE
+                Logger.getLogger(GetCleanAction.class.getName()).severe("Unable to revert changes in " + file.getName() + "; checkout failed");
             }
         } catch (Exception e) {
             if (e.getCause() instanceof InterruptedException) {
