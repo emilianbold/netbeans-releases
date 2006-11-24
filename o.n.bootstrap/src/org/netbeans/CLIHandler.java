@@ -460,6 +460,10 @@ public abstract class CLIHandler extends Object {
             home = System.getProperty("user.home"); // NOI18N
             System.setProperty ("netbeans.user", home); // NOI18N
         }
+    
+        if ("memory".equals(home)) { // NOI18N
+            return new Status(0);
+        }
         
         if (runWhenHome != null) {
             // notify that we have successfully identified the home property
