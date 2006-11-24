@@ -35,24 +35,20 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.IdentityHashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
 import junit.framework.TestResult;
+import org.netbeans.insane.live.LiveReferences;
+import org.netbeans.insane.live.Path;
 import org.netbeans.insane.scanner.CountingVisitor;
-import org.netbeans.insane.scanner.ObjectMap;
 import org.netbeans.insane.scanner.ScannerUtils;
-import org.netbeans.insane.scanner.Visitor;
 import org.netbeans.junit.diff.Diff;
 import org.netbeans.junit.internal.MemoryPreferencesFactory;
 /**
@@ -1263,153 +1259,12 @@ public abstract class NbTestCase extends TestCase implements NbTest {
     public static void failByBug(int bugID, String message) {
         throw new AssertionKnownBugError(bugID, message);
     }
-
-    private static class ObjectFoundException extends RuntimeException {}
     
     private static String findRefsFromRoot(final Object target, final Set<?> rootsHint) throws Exception {
-        final Map<Object,Entry> objects = new IdentityHashMap<Object,Entry>();
-        boolean found = false;
-        
-        Visitor vis = new Visitor() {
-            public void visitClass(Class cls) {}
-            
-            public void visitObject(ObjectMap map, Object object) {
-                objects.put(object, new Entry(object));
-            }
-            
-            public void visitArrayReference(ObjectMap map, Object from, Object to, int index) {
-                visitRef(from, to, null);
-            }
-            
-            public void visitObjectReference(ObjectMap map, Object from, Object to, java.lang.reflect.Field ref) {
-                visitRef(from, to, ref);
-            }
-            
-            private void visitRef(Object from, Object to, Field field) {
-                objects.get(to).addIn(from, field);
-                if (to == target) throw new ObjectFoundException();
-            }
-            
-            
-            public void visitStaticReference(ObjectMap map, Object to, java.lang.reflect.Field ref) {
-                objects.get(to).addIn(null, ref);
-                if (to == target) throw new ObjectFoundException();
-            }
-        };
-        
-        try {
-            @SuppressWarnings("unchecked")
-            Set<Object> s = new HashSet<Object>(ScannerUtils.interestingRoots());
-            s.addAll(rootsHint);
-            ScannerUtils.scanExclusivelyInAWT(ScannerUtils.skipNonStrongReferencesFilter(), vis, s);
-        } catch (ObjectFoundException ex) {
-            // found object
-            found = true;
-        }
-        
-        if (found) {
-            return findRoots(objects, target, rootsHint);
-        } else {
-            return "Not found!!!";
-        }
-    }
-    /** BFS scan of incoming refs*/
-    private static String  findRoots(Map<Object,Entry> objects, Object obj, Set roots) {
-        class PathElement {
-            private Entry item;
-            private PathElement next;
-            private Field field;
-            
-            public PathElement(Entry item, PathElement next, Field field) {
-                this.item = item;
-                this.next = next;
-                this.field = field;
-            }
-            
-            public Entry getItem() {
-                return item;
-            }
-            public String toString() {
-                String fld = field == null ? "[]" : field.getName();
-                if (next == null) {
-                    return item.toString();
-                } else {
-                    return item.toString() + "-" + fld + "->\n" + next.toString();
-                }
-            }
-        }
-        
-        Set<Entry> visited = new HashSet<Entry>();
-        Entry fin = objects.get(obj);
-        assert fin != null;
-        
-        visited.add(fin);
-        List<PathElement> queue = new LinkedList<PathElement>();
-        queue.add(new PathElement(fin, null, null));
-        
-        while (!queue.isEmpty()) {
-            PathElement act = queue.remove(0);
-            Entry item = act.getItem();
-
-            if (roots.contains(item.getObject())) {
-                return "||root||:" + act;
-            }
-            
-            // follow incomming
-            Iterator it = act.getItem().incomingRefs();
-            while(it.hasNext()) {
-                Object o = it.next();
-                assert (it.hasNext());
-                Field f = (Field)it.next();
-                if (o == null) return f + "->\n" + act; // static (root)
-
-                Entry ref = objects.get(o);
-                assert ref != null;
-                
-                // add to the queue if not new
-                if (visited.add(ref)) queue.add(new PathElement(ref, act, f));
-            }
-        }
-        return "Error";
+        Map m = LiveReferences.fromRoots(Collections.singleton(target), rootsHint, null);
+        Path p = (Path)m.get(target);
+        if (p != null) return p.toString();
+        return "Not found!!!";
     }
     
-    
-    static Object[] EMPTY = new Object[0];
-    
-    /** Entry represents one object and its incomming/outgoing refs */
-    private static class Entry {
-        private Object obj;
-        private Object[] in;
-        
-        public Entry(Object o) {
-            obj = o;
-            in = EMPTY;
-        }
-        
-        
-        void addIn(Object o, Field f) {
-            in = append(in, o);
-            in = append(in, f);
-        }
-        
-        public Object getObject() {
-            return obj;
-        }
-        
-        public Iterator<Object> incomingRefs() {
-            return Arrays.asList(in).iterator();
-        }
-        
-        private Object[] append(Object[] orig, Object add) {
-            int origLen = orig.length;
-            Object[] ret = new Object[origLen + 1];
-            System.arraycopy(orig, 0, ret, 0, origLen);
-            ret[origLen] = add;
-            return ret;
-        }
-        
-        public String toString() {
-            return obj.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(obj));
-        }
-    }
 }

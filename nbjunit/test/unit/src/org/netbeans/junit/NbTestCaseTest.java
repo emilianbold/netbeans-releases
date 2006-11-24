@@ -23,6 +23,7 @@ import java.lang.ref.WeakReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import junit.framework.TestResult;
+import junit.framework.AssertionFailedError;
 
 /** Regular test of the behaviour.
  *
@@ -87,4 +88,27 @@ public class NbTestCaseTest extends NbTestCase {
         assertEquals("One logger is gone", len - 1, Logger.getLogger("").getHandlers().length);
     }
     
+    public void testAssertGcPasses() {
+        Object o = new Object();
+        WeakReference<Object> wr = new WeakReference<Object>(o);
+        
+        o = null;
+        assertGC("The object is really not referenced", wr);
+    }
+
+    static Object REF_O;
+
+    public void testAssertGcFails() {
+        REF_O = new Object();
+        WeakReference<Object> wr = new WeakReference<Object>(REF_O);
+        try {
+            assertGC("The object is really not referenced", wr);
+        } catch (AssertionFailedError afe) {
+            assertTrue("Found the reference", afe.getMessage().indexOf("REF_O") >= 0);
+            return;
+        } finally {
+            REF_O = null;
+        }
+        fail("The assertion should fail");
+    }
 }
