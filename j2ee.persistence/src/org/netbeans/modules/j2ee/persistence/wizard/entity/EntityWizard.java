@@ -23,6 +23,7 @@ import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.VariableTree;
 import java.io.IOException;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
@@ -152,16 +153,17 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
                 ClassTree clazz = genUtils.getClassTree();
                 
                 String idFieldName = "id"; // NO18N
-                VariableTree idField = genUtils.createField(Modifier.PRIVATE, primaryKeyClassName, idFieldName);
-                MethodTree idGetter = genUtils.createPropertyGetterMethod(primaryKeyClassName, idFieldName);
-                MethodTree idSetter = genUtils.createPropertySetterMethod(primaryKeyClassName, idFieldName);
+                VariableTree idField = genUtils.createField(genUtils.createModifiers(Modifier.PRIVATE), idFieldName, primaryKeyClassName);
+                ModifiersTree idMethodModifiers = genUtils.createModifiers(Modifier.PUBLIC);
+                MethodTree idGetter = genUtils.createPropertyGetterMethod(idMethodModifiers, idFieldName, primaryKeyClassName);
+                MethodTree idSetter = genUtils.createPropertySetterMethod(idMethodModifiers, idFieldName, primaryKeyClassName);
                 ExpressionTree generationStrategy = genUtils.createAnnotationArgument("strategy", "javax.persistence.GenerationType", "AUTO"); //NO18N
                 AnnotationTree idAnnotation = genUtils.createAnnotation("javax.persistence.Id", Collections.singletonList(generationStrategy)); //NO18N
                 
                 if (isAccessProperty){
-                    idField = genUtils.addAnnotation(idAnnotation, idField);
+                    idField = genUtils.addAnnotation(idField, idAnnotation);
                 } else {
-                    idGetter = genUtils.addAnnotation(idAnnotation, idGetter);
+                    idGetter = genUtils.addAnnotation(idGetter, idAnnotation);
                 }
                 ClassTree modifiedClazz = genUtils.addClassFields(clazz, Collections.singletonList(idField));
                 
@@ -169,7 +171,7 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
                 modifiedClazz = make.addClassMember(modifiedClazz, idSetter);
                 modifiedClazz = make.addClassMember(modifiedClazz, idGetter);
                 modifiedClazz = genUtils.addImplementsClause(modifiedClazz, "java.io.Serializable");
-                modifiedClazz = genUtils.addAnnotation(genUtils.createAnnotation("javax.persistence.Entity"), modifiedClazz);
+                modifiedClazz = genUtils.addAnnotation(modifiedClazz, genUtils.createAnnotation("javax.persistence.Entity"));
                 
                 workingCopy.rewrite(clazz, modifiedClazz);
             }

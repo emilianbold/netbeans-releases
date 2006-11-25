@@ -183,14 +183,14 @@ public class GenerationUtilsTest extends NbTestCase {
         runModificationTask(testFO, new AbstractTask<WorkingCopy>() {
             public void run(WorkingCopy copy) throws Exception {
                 GenerationUtils genUtils = GenerationUtils.newInstance(copy);
-                assertEquals(TypeKind.BOOLEAN, ((PrimitiveTypeTree)genUtils.getTypeTree("boolean")).getPrimitiveTypeKind());
-                assertEquals(TypeKind.BYTE, ((PrimitiveTypeTree)genUtils.getTypeTree("byte")).getPrimitiveTypeKind());
-                assertEquals(TypeKind.SHORT, ((PrimitiveTypeTree)genUtils.getTypeTree("short")).getPrimitiveTypeKind());
-                assertEquals(TypeKind.INT, ((PrimitiveTypeTree)genUtils.getTypeTree("int")).getPrimitiveTypeKind());
-                assertEquals(TypeKind.LONG, ((PrimitiveTypeTree)genUtils.getTypeTree("long")).getPrimitiveTypeKind());
-                assertEquals(TypeKind.CHAR, ((PrimitiveTypeTree)genUtils.getTypeTree("char")).getPrimitiveTypeKind());
-                assertEquals(TypeKind.FLOAT, ((PrimitiveTypeTree)genUtils.getTypeTree("float")).getPrimitiveTypeKind());
-                assertEquals(TypeKind.DOUBLE, ((PrimitiveTypeTree)genUtils.getTypeTree("double")).getPrimitiveTypeKind());
+                assertEquals(TypeKind.BOOLEAN, ((PrimitiveTypeTree)genUtils.createType("boolean")).getPrimitiveTypeKind());
+                assertEquals(TypeKind.BYTE, ((PrimitiveTypeTree)genUtils.createType("byte")).getPrimitiveTypeKind());
+                assertEquals(TypeKind.SHORT, ((PrimitiveTypeTree)genUtils.createType("short")).getPrimitiveTypeKind());
+                assertEquals(TypeKind.INT, ((PrimitiveTypeTree)genUtils.createType("int")).getPrimitiveTypeKind());
+                assertEquals(TypeKind.LONG, ((PrimitiveTypeTree)genUtils.createType("long")).getPrimitiveTypeKind());
+                assertEquals(TypeKind.CHAR, ((PrimitiveTypeTree)genUtils.createType("char")).getPrimitiveTypeKind());
+                assertEquals(TypeKind.FLOAT, ((PrimitiveTypeTree)genUtils.createType("float")).getPrimitiveTypeKind());
+                assertEquals(TypeKind.DOUBLE, ((PrimitiveTypeTree)genUtils.createType("double")).getPrimitiveTypeKind());
             }
         });
     }
@@ -205,10 +205,10 @@ public class GenerationUtilsTest extends NbTestCase {
                 GenerationUtils genUtils = GenerationUtils.newInstance(copy);
                 AnnotationTree annotationTree = genUtils.createAnnotation("java.lang.SuppressWarnings",
                         Collections.singletonList(genUtils.createAnnotationArgument(null, "unchecked")));
-                ClassTree newClassTree = genUtils.addAnnotation(annotationTree, genUtils.getClassTree());
+                ClassTree newClassTree = genUtils.addAnnotation(genUtils.getClassTree(), annotationTree);
                 annotationTree = genUtils.createAnnotation("java.lang.annotation.Retention",
                         Collections.singletonList(genUtils.createAnnotationArgument(null, "java.lang.annotation.RetentionPolicy", "RUNTIME")));
-                newClassTree = genUtils.addAnnotation(annotationTree, newClassTree);
+                newClassTree = genUtils.addAnnotation(newClassTree, annotationTree);
                 copy.rewrite(genUtils.getClassTree(), newClassTree);
             }
         }).commit();
@@ -251,7 +251,7 @@ public class GenerationUtilsTest extends NbTestCase {
                         genUtils.createAnnotationArgument("query", "q1")));
                 ExpressionTree namedQueriesAnnValue = genUtils.createAnnotationArgument("value", Arrays.asList(namedQueryAnnotation0, namedQueryAnnotation1));
                 AnnotationTree namedQueriesAnnotation = genUtils.createAnnotation("foo.NamedQueries", Collections.singletonList(namedQueriesAnnValue));
-                ClassTree newClassTree = genUtils.addAnnotation(namedQueriesAnnotation, genUtils.getClassTree());
+                ClassTree newClassTree = genUtils.addAnnotation(genUtils.getClassTree(), namedQueriesAnnotation);
                 copy.rewrite(genUtils.getClassTree(), newClassTree);
             }
         }).commit();
@@ -300,7 +300,7 @@ public class GenerationUtilsTest extends NbTestCase {
             public void run(WorkingCopy copy) throws Exception {
                 GenerationUtils genUtils = GenerationUtils.newInstance(copy);
                 AnnotationTree annotationTree = genUtils.createAnnotation("foo.Column", Collections.singletonList(genUtils.createAnnotationArgument("nullable", true)));
-                ClassTree newClassTree = genUtils.addAnnotation(annotationTree, genUtils.getClassTree());
+                ClassTree newClassTree = genUtils.addAnnotation(genUtils.getClassTree(), annotationTree);
                 copy.rewrite(genUtils.getClassTree(), newClassTree);
             }
         }).commit();
@@ -333,9 +333,9 @@ public class GenerationUtilsTest extends NbTestCase {
                         Collections.singletonList(genUtils.createAnnotationArgument(null, Collections.<ExpressionTree>emptyList())));
                 AnnotationTree annWithMemberSelectArgument = genUtils.createAnnotation("java.lang.annotation.Retention",
                         Collections.singletonList(genUtils.createAnnotationArgument(null, "java.lang.annotation.RetentionPolicy", "RUNTIME")));
-                ClassTree newClassTree = genUtils.addAnnotation(annWithLiteralArgument, genUtils.getClassTree());
-                newClassTree = genUtils.addAnnotation(annWithArrayArgument, newClassTree);
-                newClassTree = genUtils.addAnnotation(annWithMemberSelectArgument, newClassTree);
+                ClassTree newClassTree = genUtils.addAnnotation(genUtils.getClassTree(), annWithLiteralArgument);
+                newClassTree = genUtils.addAnnotation(newClassTree, annWithArrayArgument);
+                newClassTree = genUtils.addAnnotation(newClassTree, annWithMemberSelectArgument);
                 copy.rewrite(genUtils.getClassTree(), newClassTree);
             }
         }).commit();
@@ -353,9 +353,9 @@ public class GenerationUtilsTest extends NbTestCase {
         runModificationTask(testFO, new AbstractTask<WorkingCopy>() {
             public void run(WorkingCopy copy) throws Exception {
                 GenerationUtils genUtils = GenerationUtils.newInstance(copy);
-                VariableTree field = genUtils.createField(Modifier.PRIVATE, "java.lang.String", "someProp");
-                MethodTree getter = genUtils.createPropertyGetterMethod("java.lang.String", "someProp");
-                MethodTree setter = genUtils.createPropertySetterMethod("java.lang.String", "someProp");
+                VariableTree field = genUtils.createField(genUtils.createModifiers(Modifier.PRIVATE), "someProp", "java.lang.String");
+                MethodTree getter = genUtils.createPropertyGetterMethod(genUtils.createModifiers(Modifier.PUBLIC), "someProp", "java.lang.String");
+                MethodTree setter = genUtils.createPropertySetterMethod(genUtils.createModifiers(Modifier.PUBLIC), "someProp", "java.lang.String");
                 TreeMaker make = copy.getTreeMaker();
                 ClassTree newClassTree = genUtils.getClassTree();
                 newClassTree = make.insertClassMember(newClassTree, 0, field);

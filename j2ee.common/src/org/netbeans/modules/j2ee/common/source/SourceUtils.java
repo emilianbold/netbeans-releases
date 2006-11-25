@@ -292,32 +292,32 @@ public class SourceUtils {
 
     static final class Parameters {
 
-        public static void notNull(String name, Object value) {
+        public static void notNull(CharSequence name, Object value) {
             if (value == null) {
                 throw new NullPointerException("The " + name + " parameter cannot be null"); // NOI18N
             }
         }
 
-        public static void notEmpty(String name, String value) {
+        public static void notEmpty(CharSequence name, CharSequence value) {
             notNull(name, value);
             if (value.length() == 0) {
                 throw new IllegalArgumentException("The " + name + " parameter cannot be an empty string"); // NOI18N
             }
         }
 
-        public static void notWhitespace(String name, String value) {
+        public static void notWhitespace(CharSequence name, CharSequence value) {
             notNull(name, value);
-            notEmpty(name, value.trim());
+            notEmpty(name, value.toString().trim());
         }
 
-        public static void javaIdentifier(String name, String value) {
+        public static void javaIdentifier(CharSequence name, CharSequence value) {
             notNull(name, value);
             javaIdentifierOrNull(name, value);
         }
 
-        public static void javaIdentifierOrNull(String name, String value) {
-            if (value != null && !Utilities.isJavaIdentifier(value)) {
-                throw new IllegalArgumentException("The " + name + " parameter is not a valid Java identifier"); // NOI18N
+        public static void javaIdentifierOrNull(CharSequence name, CharSequence value) {
+            if (value != null && !Utilities.isJavaIdentifier(value.toString())) {
+                throw new IllegalArgumentException("The " + name + " parameter ('" + value + "') is not a valid Java identifier"); // NOI18N
             }
         }
     }

@@ -94,7 +94,7 @@ public class JaxWsClassesCookieImpl implements JaxWsClassesCookie {
                             Collections.<ExpressionTree>singletonList(
                                 make.Assignment(make.Identifier("name"), make.Literal(param.getName().toString()))) //NOI18N
                         );
-                        newParameters.add(genUtils.addAnnotation(paramAnnotation,param));
+                        newParameters.add(genUtils.addAnnotation(param, paramAnnotation));
                     }
                     // create new (annotated) method
                     MethodTree  annotatedMethod = make.Method(

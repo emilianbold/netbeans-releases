@@ -46,6 +46,14 @@ import org.openide.loaders.DataObject;
  */
 public final class GenerationUtils extends SourceUtils {
 
+    // XXX this class both provides some state (getClassTree()) and
+    // method which could be static if they didn't need TreeMaker.
+    // GenerationUtils should only contain these "static" method and should not
+    // inherit from SourceUtils. Instead it should have just a newInstance(WorkingCopy)
+    // method and there should also be a SourceUtils.getGenerationUtils() method.
+
+    // TODO use CharSequence instead of String where possible
+
     /**
      * The templates for regular Java class and interface.
      */
@@ -182,6 +190,36 @@ public final class GenerationUtils extends SourceUtils {
 
     // <editor-fold desc="Public methods">
 
+    public Tree createType(String typeName) {
+        TreeMaker make = getTreeMaker();
+        TypeKind primitiveTypeKind = null;
+        if ("boolean".equals(typeName)) {           // NOI18N
+            primitiveTypeKind = TypeKind.BOOLEAN;
+        } else if ("byte".equals(typeName)) {       // NOI18N
+            primitiveTypeKind = TypeKind.BYTE;
+        } else if ("short".equals(typeName)) {      // NOI18N
+            primitiveTypeKind = TypeKind.SHORT;
+        } else if ("int".equals(typeName)) {        // NOI18N
+            primitiveTypeKind = TypeKind.INT;
+        } else if ("long".equals(typeName)) {       // NOI18N
+            primitiveTypeKind = TypeKind.LONG;
+        } else if ("char".equals(typeName)) {       // NOI18N
+            primitiveTypeKind = TypeKind.CHAR;
+        } else if ("float".equals(typeName)) {      // NOI18N
+            primitiveTypeKind = TypeKind.FLOAT;
+        } else if ("double".equals(typeName)) {     // NOI18N
+            primitiveTypeKind = TypeKind.DOUBLE;
+        }
+        if (primitiveTypeKind != null) {
+            return getTreeMaker().PrimitiveType(primitiveTypeKind);
+        }
+        return createQualIdent(typeName);
+    }
+
+    public ModifiersTree createModifiers(Modifier modifier) {
+        return getTreeMaker().Modifiers(EnumSet.of(modifier), Collections.<AnnotationTree>emptyList());
+    }
+
     /**
      * Creates a new annotation.
      *
@@ -209,8 +247,7 @@ public final class GenerationUtils extends SourceUtils {
         Parameters.notNull("arguments", arguments); // NOI18N
 
         ExpressionTree annotationTypeTree = createQualIdent(annotationType);
-        List<? extends ExpressionTree> realArguments = arguments != null ? arguments : Collections.<ExpressionTree>emptyList();
-        return getTreeMaker().Annotation(annotationTypeTree, realArguments);
+        return getTreeMaker().Annotation(annotationTypeTree, arguments);
     }
 
     /**
@@ -259,8 +296,8 @@ public final class GenerationUtils extends SourceUtils {
     }
 
     /**
-     * Creates a new annotation argument whose value is a member of a type, e.g.
-     * <code>@Target(ElementType.CONSTRUCTOR)</code>.
+     * Creates a new annotation argument whose value is a member of a type. For
+     * example it can be used to generate <code>@Target(ElementType.CONSTRUCTOR)</code>.
      *
      * @param  argumentName the argument name; cannot be null.
      * @param  argumentType the fully-qualified name of the type whose member is to be invoked
@@ -286,42 +323,155 @@ public final class GenerationUtils extends SourceUtils {
     }
 
     /**
+     * Creates a constructor which assigns its parameters to fields with the
+     * same names. For example it can be used to generate:
+     *
+     * <pre>
+     * public void Constructor(String field1, Object field2) {
+     *     this.field1 = field1;
+     *     this.field2 = field2;
+     * }
+     * </pre>
+     *
+     * @param  modifier the constructor modifier.
+     * @param  constructorName the constructor name; cannot be null.
+     * @param  parameters the constructor parameters; cannot be null.
+     * @return the new constructor; never null.
+     */
+    public MethodTree createAssignmentConstructor(ModifiersTree modifiersTree, String constructorName, List<VariableTree> parameters) {
+        Parameters.notNull("modifiersTree", modifiersTree);
+        Parameters.javaIdentifier("constructorName", constructorName); // NOI18N
+        Parameters.notNull("parameters", parameters); // NOI18N
+
+        StringBuilder body = new StringBuilder(parameters.size() * 30);
+        body.append("{"); // NOI18N
+        for (VariableTree parameter : parameters) {
+            String parameterName = parameter.getName().toString();
+            body.append("this." + parameterName + " = " + parameterName + ";"); // NOI18N
+        }
+        body.append("}"); // NOI18N
+
+        TreeMaker make = getTreeMaker();
+        return make.Constructor(
+                modifiersTree,
+                Collections.<TypeParameterTree>emptyList(),
+                parameters,
+                Collections.<ExpressionTree>emptyList(),
+                body.toString());
+    }
+
+    /**
      * Creates a new field.
      *
-     * @param  modifier the field modifier.
+     * @param  modifiersTree the field modifiers; cannot be null.
      * @param  fieldType the fully-qualified name of the field type; cannot be null.
      * @param  fieldName the field name; cannot be null.
      * @return the new field; never null.
      */
-    public VariableTree createField(Modifier modifier, String fieldType, String fieldName) {
-        Parameters.notNull("fieldType", fieldType); // NOI18N
+    public VariableTree createField(ModifiersTree modifiersTree, String fieldName, String fieldType) {
+        Parameters.notNull("modifiersTree", modifiersTree); // NOI18N
         Parameters.javaIdentifier("fieldName", fieldName); // NOI18N
+        Parameters.notNull("fieldType", fieldType); // NOI18N
+
+        return getTreeMaker().Variable(
+                modifiersTree,
+                fieldName,
+                createType(fieldType),
+                null);
+    }
+
+    // MISSING createField(ModifiersTree, String, String, ExpressionTree)
+
+    /**
+     * Creates a new variable (a <code>VariableTree</code> with no
+     * modifiers nor initializer).
+     *
+     * @param  variableType the fully-qualified name of the variable type; cannot be null.
+     * @param  variableName the variable name; cannot be null.
+     * @return the new variable; never null.
+     */
+    public VariableTree createVariable(String variableName, String variableType) {
+        Parameters.javaIdentifier("variableName", variableName); // NOI18N
+        Parameters.notNull("variableType", variableType); // NOI18N
+
+        return createField(
+                createEmptyModifiers(),
+                variableName,
+                variableType);
+    }
+
+    /**
+     * Creates a new variable (a <code>VariableTree</code> with no
+     * modifiers nor initializer).
+     *
+     * @param  variableType the variable type; cannot be null.
+     * @param  variableName the variable name; cannot be null.
+     * @return the new variable; never null.
+     */
+    public VariableTree createVariable(String variableName, Tree variableType) {
+        Parameters.javaIdentifier("variableName", variableName); // NOI18N
+        Parameters.notNull("variableType", variableType); // NOI18N
+
+        return getTreeMaker().Variable(
+                createEmptyModifiers(),
+                variableName,
+                variableType,
+                null);
+    }
+
+    /**
+     * Removes any modifiers from the given <code>VariableTree</code>. This can be e.g.
+     * used to create a variable suitable for use as a method parameter.
+     *
+     * @param  variableTree the <code>VariableTree</code> to remove the modifiers from.
+     * @return a <code>VariableTree</code> with the same properties but no modifiers.
+     */
+    public VariableTree removeModifiers(VariableTree variableTree) {
+        Parameters.notNull("variableTree", variableTree);
 
         TreeMaker make = getTreeMaker();
         return make.Variable(
-                make.Modifiers(Collections.singleton(modifier)),
-                fieldName,
-                getTypeTree(fieldType),
-                null);
+                createEmptyModifiers(),
+                variableTree.getName(),
+                variableTree.getType(),
+                variableTree.getInitializer());
     }
 
     /**
      * Creates a new public property getter method.
      *
+     * @param  modifiersTree the method modifiers; cannot be null.
      * @param  propertyType the fully-qualified name of the property type; cannot be null.
      * @param  propertyName the property name; cannot be null.
      * @return the new method; never null.
      */
-    public MethodTree createPropertyGetterMethod(String propertyType, String propertyName) throws IOException {
-        Parameters.notNull("propertyType", propertyType); // NOI18N
+    public MethodTree createPropertyGetterMethod(ModifiersTree modifiersTree, String propertyName, String propertyType) throws IOException {
+        Parameters.notNull("modifiersTree", modifiersTree); // NOI18N
         Parameters.javaIdentifier("propertyName", propertyName); // NOI18N
+        Parameters.notNull("propertyType", propertyType); // NOI18N
         getWorkingCopy().toPhase(Phase.RESOLVED);
 
-        TreeMaker make = getTreeMaker();
-        return make.Method(
-                make.Modifiers(Collections.singleton(Modifier.PUBLIC)),
+        return createPropertyGetterMethod(modifiersTree, propertyName, createType(propertyType));
+    }
+
+    /**
+     * Creates a new public property getter method.
+     *
+     * @param  modifiersTree the method modifiers; cannot be null.
+     * @param  propertyType the property type; cannot be null.
+     * @param  propertyName the property name; cannot be null.
+     * @return the new method; never null.
+     */
+    public MethodTree createPropertyGetterMethod(ModifiersTree modifiersTree, String propertyName, Tree propertyType) throws IOException {
+        Parameters.notNull("modifiersTree", modifiersTree); // NOI18N
+        Parameters.javaIdentifier("propertyName", propertyName); // NOI18N
+        Parameters.notNull("propertyType", propertyType); // NOI18N
+        getWorkingCopy().toPhase(Phase.RESOLVED);
+
+        return getTreeMaker().Method(
+                modifiersTree,
                 createPropertyAccessorName(propertyName, true),
-                getTypeTree(propertyType),
+                propertyType,
                 Collections.<TypeParameterTree>emptyList(),
                 Collections.<VariableTree>emptyList(),
                 Collections.<ExpressionTree>emptyList(),
@@ -336,27 +486,52 @@ public final class GenerationUtils extends SourceUtils {
      * @param  propertyName the property name; cannot be null.
      * @return the new method; never null.
      */
-    public MethodTree createPropertySetterMethod(String propertyType, String propertyName) throws IOException {
-        Parameters.notNull("propertyType", propertyType); // NOI18N
+    public MethodTree createPropertySetterMethod(ModifiersTree modifiersTree, String propertyName, String propertyType) throws IOException {
+        Parameters.notNull("modifiersTree", modifiersTree); // NOI18N
         Parameters.javaIdentifier("propertyName", propertyName); // NOI18N
+        Parameters.notNull("propertyType", propertyType); // NOI18N
+        getWorkingCopy().toPhase(Phase.RESOLVED);
+
+        return createPropertySetterMethod(modifiersTree, propertyName, createType(propertyType));
+    }
+
+    /**
+     * Creates a new public property setter method.
+     *
+     * @param  propertyType the property type; cannot be null.
+     * @param  propertyName the property name; cannot be null.
+     * @return the new method; never null.
+     */
+    public MethodTree createPropertySetterMethod(ModifiersTree modifiersTree, String propertyName, Tree propertyType) throws IOException {
+        Parameters.notNull("modifiersTree", modifiersTree); // NOI18N
+        Parameters.javaIdentifier("propertyName", propertyName); // NOI18N
+        Parameters.notNull("propertyType", propertyType); // NOI18N
         getWorkingCopy().toPhase(Phase.RESOLVED);
 
         TreeMaker make = getTreeMaker();
         return make.Method(
-                make.Modifiers(Collections.singleton(Modifier.PUBLIC)),
+                modifiersTree,
                 createPropertyAccessorName(propertyName, false),
                 make.PrimitiveType(TypeKind.VOID),
                 Collections.<TypeParameterTree>emptyList(),
-                Collections.singletonList(createVariable(propertyType, propertyName)),
+                Collections.singletonList(createVariable(propertyName, propertyType)),
                 Collections.<ExpressionTree>emptyList(),
                 "{ this." + propertyName + " = " + propertyName + "; }", // NOI18N
                 null);
     }
 
-    @SuppressWarnings("unchecked")
-    public ClassTree addAnnotation(AnnotationTree annotationTree, ClassTree classTree) {
-        Parameters.notNull("annotationTree", annotationTree); // NOI18N
+    /**
+     * Adds an annotation to a class. This is equivalent to {@link TreeMaker#addModifiersAnnotation},
+     * but it creates and returns a new <code>ClassTree, not a new <code>ModifiersTree</code>.
+     *
+     * @param  classTree the class to add the annotation to; cannot be null.
+     * @param  annotationTree the annotation to add; cannot be null.
+     * @return a new class annotated with the new annotation; never null.
+     */
+    @SuppressWarnings("unchecked") // NOI18N
+    public ClassTree addAnnotation(ClassTree classTree, AnnotationTree annotationTree) {
         Parameters.notNull("classTree", classTree); // NOI18N
+        Parameters.notNull("annotationTree", annotationTree); // NOI18N
 
         TreeMaker make = getTreeMaker();
         return make.Class(
@@ -368,9 +543,17 @@ public final class GenerationUtils extends SourceUtils {
                 classTree.getMembers());
     }
 
-    public MethodTree addAnnotation(AnnotationTree annotationTree, MethodTree methodTree) {
-        Parameters.notNull("annotationTree", annotationTree); // NOI18N
+    /**
+     * Adds an annotation to a method. This is equivalent to {@link TreeMaker#addModifiersAnnotation},
+     * but it creates and returns a new <code>MethodTree, not a new <code>ModifiersTree</code>.
+     *
+     * @param  methodTree the method to add the annotation to; cannot be null.
+     * @param  annotationTree the annotation to add; cannot be null.
+     * @return a new method annotated with the new annotation; never null.
+     */
+    public MethodTree addAnnotation(MethodTree methodTree, AnnotationTree annotationTree) {
         Parameters.notNull("methodTree", methodTree); // NOI18N
+        Parameters.notNull("annotationTree", annotationTree); // NOI18N
 
         TreeMaker make = getTreeMaker();
         return make.Method(
@@ -384,9 +567,17 @@ public final class GenerationUtils extends SourceUtils {
                 (ExpressionTree)methodTree.getDefaultValue());
     }
 
-    public VariableTree addAnnotation(AnnotationTree annotationTree, VariableTree variableTree) {
-        Parameters.notNull("annotationTree", annotationTree); // NOI18N
+    /**
+     * Adds an annotation to a variable. This is equivalent to {@link TreeMaker#addModifiersAnnotation},
+     * but it creates and returns a new <code>VariableTree, not a new <code>ModifiersTree</code>.
+     *
+     * @param  variableTree the variable to add the annotation to; cannot be null.
+     * @param  annotationTree the annotation to add; cannot be null.
+     * @return a new variable annotated with the new annotation; never null.
+     */
+    public VariableTree addAnnotation(VariableTree variableTree, AnnotationTree annotationTree) {
         Parameters.notNull("variableTree", variableTree); // NOI18N
+        Parameters.notNull("annotationTree", annotationTree); // NOI18N
 
         TreeMaker make = getTreeMaker();
         return make.Variable(
@@ -396,6 +587,15 @@ public final class GenerationUtils extends SourceUtils {
                 variableTree.getInitializer());
     }
 
+    /**
+     * Inserts the given fields in the given class after any fields already existing
+     * in the class (if any, otherwise the fields are inserted at the beginning
+     * of the class).
+     *
+     * @param  classTree the class to add fields to; cannot be null.
+     * @param  fieldTrees the fields to be added; cannot be null.
+     * @return the class containing the new fields; never null.
+     */
     public ClassTree addClassFields(ClassTree classTree, List<? extends VariableTree> fieldTrees) {
         Parameters.notNull("classTree", classTree); // NOI18N
         Parameters.notNull("fieldTrees", fieldTrees); // NOI18N
@@ -413,6 +613,8 @@ public final class GenerationUtils extends SourceUtils {
         }
         return newClassTree;
     }
+
+    // MISSING addClassConstructors(), addClassMethods()
 
     /**
      * Adds the specified interface to the implements clause of
@@ -461,7 +663,7 @@ public final class GenerationUtils extends SourceUtils {
             TreeMaker make = getTreeMaker();
             ClassTree oldClassTree = getClassTree();
             MethodTree method = make.Constructor(
-                    make.Modifiers(Collections.singleton(Modifier.PUBLIC)),
+                    make.Modifiers(EnumSet.of(Modifier.PUBLIC)),
                     Collections.<TypeParameterTree>emptyList(),
                     Collections.<VariableTree>emptyList(),
                     Collections.<ExpressionTree>emptyList(),
@@ -486,40 +688,8 @@ public final class GenerationUtils extends SourceUtils {
         return getWorkingCopy().getTreeMaker();
     }
 
-    private VariableTree createVariable(String fieldType, String fieldName) {
-        TreeMaker make = getTreeMaker();
-        return make.Variable(
-                make.Modifiers(Collections.<Modifier>emptySet()),
-                fieldName,
-                getTypeTree(fieldType),
-                null);
-    }
-
-    Tree getTypeTree(String typeName) {
-        TreeMaker make = getTreeMaker();
-        TypeKind primitiveTypeKind = null;
-        if ("boolean".equals(typeName)) {           // NOI18N
-            primitiveTypeKind = TypeKind.BOOLEAN;
-        } else if ("byte".equals(typeName)) {       // NOI18N
-            primitiveTypeKind = TypeKind.BYTE;
-        } else if ("short".equals(typeName)) {      // NOI18N
-            primitiveTypeKind = TypeKind.SHORT;
-        } else if ("int".equals(typeName)) {        // NOI18N
-            primitiveTypeKind = TypeKind.INT;
-        } else if ("long".equals(typeName)) {       // NOI18N
-            primitiveTypeKind = TypeKind.LONG;
-        } else if ("char".equals(typeName)) {       // NOI18N
-            primitiveTypeKind = TypeKind.CHAR;
-        } else if ("float".equals(typeName)) {      // NOI18N
-            primitiveTypeKind = TypeKind.FLOAT;
-        } else if ("double".equals(typeName)) {     // NOI18N
-            primitiveTypeKind = TypeKind.DOUBLE;
-        }
-        if (primitiveTypeKind != null) {
-            return getTreeMaker().PrimitiveType(primitiveTypeKind);
-        } else {
-            return createQualIdent(typeName);
-        }
+    private ModifiersTree createEmptyModifiers() {
+        return getTreeMaker().Modifiers(Collections.<Modifier>emptySet(), Collections.<AnnotationTree>emptyList());
     }
 
     private ExpressionTree createQualIdent(String typeName) {

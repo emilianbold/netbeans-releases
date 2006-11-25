@@ -83,7 +83,7 @@ public class TagHandlerGenerator {
     
     private ClassTree addFields(GenerationUtils gu, TreeMaker make, ClassTree classTree) throws IOException {
         for (int i = 0; i < attributes.length; i++) {
-            VariableTree field = gu.createField(Modifier.PRIVATE, (String) attributes[i][1], (String) attributes[i][0]);
+            VariableTree field = gu.createField(gu.createModifiers(Modifier.PRIVATE), (String) attributes[i][0], (String) attributes[i][1]);
             classTree = make.insertClassMember(classTree, i, field);
             
             //TODO: generate Javadoc
@@ -94,7 +94,7 @@ public class TagHandlerGenerator {
 
     private ClassTree addSetters(GenerationUtils gu, TreeMaker make, ClassTree newClassTree) throws IOException {
         for (int i = 0; i < attributes.length; i++) {
-            MethodTree setter = gu.createPropertySetterMethod((String) attributes[i][1], (String) attributes[i][0]);
+            MethodTree setter = gu.createPropertySetterMethod(gu.createModifiers(Modifier.PUBLIC), (String) attributes[i][0], (String) attributes[i][1]);
             newClassTree = make.addClassMember(newClassTree, setter);
             
             //TODO: generate Javadoc
