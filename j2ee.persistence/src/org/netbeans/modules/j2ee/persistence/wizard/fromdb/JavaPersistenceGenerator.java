@@ -19,564 +19,94 @@
 
 package org.netbeans.modules.j2ee.persistence.wizard.fromdb;
 
-import java.lang.reflect.Modifier;
-import java.util.Collections;
+import com.sun.source.tree.*;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Set;
-import org.netbeans.api.mdr.events.AttributeEvent;
-import org.netbeans.api.mdr.events.MDRChangeEvent;
-import org.netbeans.api.mdr.events.MDRChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.jmi.javamodel.Annotation;
-import org.netbeans.jmi.javamodel.AttributeValue;
-import org.netbeans.jmi.javamodel.Constructor;
-import org.netbeans.jmi.javamodel.Field;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.Method;
-import org.netbeans.jmi.javamodel.MultipartId;
-import org.netbeans.jmi.javamodel.Parameter;
-import org.netbeans.jmi.javamodel.Type;
 import org.netbeans.modules.j2ee.persistence.dd.orm.model_1_0.Entity;
 import org.netbeans.modules.j2ee.persistence.dd.orm.model_1_0.Table;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import javax.lang.model.element.*;
+import javax.lang.model.type.*;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.common.source.AbstractTask;
+import org.netbeans.modules.j2ee.common.source.GenerationUtils;
+import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
-import org.netbeans.modules.j2ee.persistence.entitygenerator.*;
+import org.netbeans.modules.j2ee.persistence.entitygenerator.CMPMappingModel;
+import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityClass;
+import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityMember;
+import org.netbeans.modules.j2ee.persistence.entitygenerator.RelationshipRole;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
-import org.netbeans.modules.javacore.api.JavaModel;
-import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileObject;
-import java.io.IOException;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-import org.netbeans.modules.j2ee.common.JMIGenerationUtil;
-import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
-/** Generator of Java Persistence API ORM classes from DB.
+/**
+ * Generator of Java Persistence API ORM classes from DB.
  *
- * @author Pavel Buzek
+ * @author Pavel Buzek, Andrei Badea
  */
 public class JavaPersistenceGenerator implements PersistenceGenerator {
-    
-    private Map<String, String> entityName2TableName = new HashMap<String, String>();
-        
-    private HashMap genDataCache = new HashMap(13);
-    
+
+    // XXX Javadoc for generated code missing in many places
+    // XXX createToStringMethod() could be moved to GenerationUtils
+    // XXX init() commented out until annotation model is implemented
+
+    // XXX empty lines in generated hashCode()
+    // XXX comments are lost in method body passed as string
+    // XXX return 0, 1 in generated equals()
+    // XXX empty line in generated equals()
+
+    private final Map<String, String> entityName2TableName = new HashMap<String, String>();
+
     // options (not currently exposed in UI)
     // field vs. property access
-    private boolean fieldAccess = true;
+    private static boolean fieldAccess = true;
     // named input params for named queries vs. positional params
-    private boolean genNamedParams = true;
+    private static boolean genNamedParams = true;
     // should generated Entity Classes implement Serializable?
-    private boolean genSerializableEntities = true;
-    
+    private static boolean genSerializableEntities = true;
+
     public JavaPersistenceGenerator() {
     }
-    
-    private String getCmrFieldBaseType(RelationshipRole role, String pkg, JavaClass jc) {
-        String jcPkgName = jc.getResource().getPackageName();
-        boolean samePackages = org.openide.util.Utilities.compareObjects(pkg, jcPkgName);
-        RelationshipRole rA = role.getParent().getRoleA();
-        RelationshipRole rB = role.getParent().getRoleB();
-        RelationshipRole otherRole = role.equals(rA) ? rB : rA;
-        String typeName = (samePackages || pkg == null || pkg.length() == 0) ? otherRole.getEntityName() : pkg + "." + otherRole.getEntityName(); //NOI18N
-        return typeName;
-        /*
-        if (role.isToMany()) {
-            return java.util.Collection.class.getName() + "<" + typeName + ">";
-        } else {
-            return typeName;
-        }
-         */
-    }
-    
+
     public void generateBeans(final ProgressPanel progressPanel,
             final RelatedCMPHelper helper,
             final FileObject dbSchemaFile,
             final ProgressHandle handle,
             boolean justTesting) throws IOException {
-        
-        MDRInstanceNameListener mdrListener = new MDRInstanceNameListener();
-        EntityClass[] genBeans = helper.getBeans();
-        int max = genBeans.length;
-        handle.switchToDeterminate(max);
-        String pkgName = helper.getPackageName();
-        HashMap<String,EntityClass> beanMap = new HashMap<String, EntityClass>();
-        List fileObjects = new ArrayList(genBeans.length);
-        for(EntityClass e : genBeans) {
-            beanMap.put(e.getClassName(), e);
-        }
-        for (int i = 0; i < genBeans.length; i++) {
-            String className = genBeans[i].getClassName();
-            FileObject packageFileObject = genBeans[i].getPackageFileObject();
-            
-            if (packageFileObject.getFileObject(className, "java") != null) { // NOI18N
-                // avoid generating classes which already exist
-                handle.progress(i);
-                continue;
-            }
-            
-            handle.progress(NbBundle.getMessage(RelatedCMPWizard.class, "TXT_GeneratingClass", className), i);
-            progressPanel.setText(NbBundle.getMessage(RelatedCMPWizard.class, "TXT_GeneratingClass", className));
-            
-            CMPMappingModel dbMappings = genBeans[i].getCMPMapping();
-            boolean rollback = true;
-            boolean needsPKClass = !genBeans[i].isUsePkField();
-            JavaClass pkClass = null;
-            String pkClassName = null;
-            ArrayList fieldsToAdd = new ArrayList();
-            ArrayList nonNullableFields = new ArrayList();
-            ArrayList methodsToAdd = new ArrayList();
-            ArrayList fieldsToAddPK = null;
-            ArrayList methodsToAddPK = null;
-            ArrayList pkColumns = new ArrayList();
-            ArrayList namedQueriesList = new ArrayList();
-            String namedQueryPrefix = null;
-            Field pkField = null;
-            String pkFieldName = null;
-            boolean genQueries = helper.isGenerateFinderMethods();
-            
-            if (i > 20) {
-                mdrListener.register(className);
-            }
-
-            JavaClass javaClass = JMIGenerationUtil.createEntityClass(packageFileObject, className);
-            
-            if (i > 20) {
-                mdrListener.waitInstance();
-                mdrListener.unregister();
-            }
-
-            if (needsPKClass) {
-                pkClassName = className + "PK"; //NOI18N
-                pkClass = JMIGenerationUtil.createClass(packageFileObject, pkClassName);
-                String templateJavaDoc = pkClass.getJavadocText();
-                pkClass.setJavadocText(NbBundle.getMessage(JavaPersistenceGenerator.class, "MSG_Javadoc_PKClass", 
-                    className, pkClassName)  + templateJavaDoc);
-            }
-            
-            JavaModel.getJavaRepository().beginTrans(true);
-            try {
-                List javaClassFeatures = javaClass.getFeatures();
-                
-                if (genSerializableEntities) {
-                    JMIGenerationUtil.addInterface(javaClass, "java.io.Serializable"); //NOI18N
-                }
-
-                List entityAttributeValues = null; //isAccessProperty ? null : Collections.singletonList(
-                Annotation entityAnnotation = JMIGenerationUtil.createAnnotation(javaClass, "javax.persistence.Entity", entityAttributeValues);
-                javaClass.getAnnotations().add(entityAnnotation);
-                
-                AttributeValue tableNameAttrValue = JMIGenerationUtil.createAttributeValue(javaClass, "name", dbMappings.getTableName()); //NOI18N
-                Annotation tableAnnotation = JMIGenerationUtil.createAnnotation(javaClass, "javax.persistence.Table", Collections.singletonList(tableNameAttrValue)); //NOI18N
-                javaClass.getAnnotations().add(tableAnnotation);
-                
-//TODO: javadoc - generate or fake in test mode
-//        b.setCommentDataAuthor(authorOverride);
-//        b.setCommentDataDate(dateOverride);
-
-                if (needsPKClass) {
-                    pkFieldName = getFieldName(pkClassName);
-                    
-                    // pkClass must be serializable
-                    JMIGenerationUtil.addInterface(pkClass, "java.io.Serializable"); //NOI18N
-
-                    // add @Embeddable()
-                    Annotation embeddableAnnotation = JMIGenerationUtil.createAnnotation(pkClass, 
-                            "javax.persistence.Embeddable", null); //NOI18N
-                    pkClass.getAnnotations().add(embeddableAnnotation);
-                    
-                    // public no arg constructor required -- it is part of the 
-                    // template used unless it has been customized
-                    JMIGenerationUtil.ensurePublicConstructor(pkClass);
- 
-                    fieldsToAddPK = new ArrayList();
-                    methodsToAddPK = new ArrayList();            
-
-                    // add field, getter, and setter for the PK class to the Entity
-                    pkField = createField(pkFieldName, pkClassName, Modifier.PROTECTED, javaClass);
-                    pkField.setJavadocText(NbBundle.getMessage(JavaPersistenceGenerator.class, "MSG_Javadoc_EmbeddedId"));
-                    fieldsToAdd.add(pkField);
-                    
-                    Method getter = JMIGenerationUtil.createGetterMethod(pkFieldName, pkClassName, pkClassName, javaClass);
-                    methodsToAdd.add(getter);
-
-                    Annotation embeddedIdAnnotation = JMIGenerationUtil.createAnnotation(javaClass, "javax.persistence.EmbeddedId", Collections.EMPTY_LIST); //NOI18N
-                    addAnnotation(fieldAccess, pkField, getter, embeddedIdAnnotation);
-
-                    methodsToAdd.add(JMIGenerationUtil.createSetterMethod(pkFieldName, pkClassName, pkClassName, javaClass));
-                }
-
-                // workaround for issuezilla bug 77758
-                Map fieldToTypeName = new HashMap();
-                // end of workaround
-                
-                Iterator fieldIt = genBeans[i].getFields().iterator();
-                String beanName = javaClass.getSimpleName();
-                while (fieldIt.hasNext()) {
-                    EntityMember m = (EntityMember) fieldIt.next();
-                    String memberName = m.getMemberName();
-                    String memberType = m.getMemberType();
-                    String cmFieldMethodName = getCapitalizedFieldName(memberName);
-                    boolean isPKMember = m.isPrimaryKey();
-                    boolean addMembersToPKClass = (needsPKClass && isPKMember);
-                    JavaClass addToClass = (addMembersToPKClass ? pkClass : javaClass);
-                    ArrayList addToFieldsList = (addMembersToPKClass ? fieldsToAddPK : fieldsToAdd);
-                    ArrayList addToMethodsList = (addMembersToPKClass ? methodsToAddPK : methodsToAdd);
-                    
-                    String temporal = null;
-                    if ("java.sql.Date".equals(memberType)) { //NOI18N
-                        m.setMemberType("java.util.Date");
-                        temporal = "DATE";
-                    } else if ("java.sql.Time".equals(memberType)) { //NOI18N
-                        m.setMemberType("java.util.Date");
-                        temporal = "TIME";
-                    } else if ("java.sql.Timestamp".equals(memberType)) { //NOI18N
-                        m.setMemberType("java.util.Date");
-                        temporal = "TIMESTAMP";
-                    }
-                    
-                    if (temporal != null) {  // memberType changed, update it
-                        memberType = m.getMemberType();
-                    }
-                    
-                    Field field = createField(memberName, memberType, Modifier.PRIVATE, addToClass);
-                    addToFieldsList.add(field);
-                    // workaround for issuezilla bug 77758
-                    fieldToTypeName.put(field, memberType);
-                    // end of workaround
- 
-                    Method getter = JMIGenerationUtil.createGetterMethod(memberName, cmFieldMethodName, memberType, addToClass);
-                    
-                    if (isPKMember) {
-                        if (!needsPKClass) {
-                            pkField = field;
-                        }
-                        pkFieldName = pkField.getName();
-                        genBeans[i].setPkFieldName(pkFieldName);
-                        
-                        //add @Id() only if not in an embeddable PK class
-                        if (!needsPKClass) {
-                            Annotation idAnnotation = JMIGenerationUtil.createAnnotation(addToClass, "javax.persistence.Id", Collections.EMPTY_LIST); //NOI18N
-                            addAnnotation(fieldAccess, field, getter, idAnnotation);
-                        }
-                    }
-                    boolean isLobType = m.isLobType();
-                    if (isLobType) {
-                        Annotation lobAnnotation = JMIGenerationUtil.createAnnotation(javaClass, "javax.persistence.Lob", Collections.EMPTY_LIST);
-                        addAnnotation(fieldAccess, field, getter, lobAnnotation);
-                    }
-
-                    ArrayList colAttrs = new ArrayList();
-                    String columnName = (String) dbMappings.getCMPFieldMapping().get(memberName);
-                    AttributeValue columnNameAttrValue = JMIGenerationUtil.createAttributeValue(addToClass, "name", columnName); //NOI18N
-                    colAttrs.add(columnNameAttrValue);
-                    if (!m.isNullable()) {
-                        AttributeValue columnNullableAttrValue = JMIGenerationUtil.createAttributeValue(addToClass, "nullable", false); //NOI18N
-                        colAttrs.add(columnNullableAttrValue);
-                        if (!isPKMember)
-                            nonNullableFields.add(field);
-                        else
-                            pkColumns.add(columnName);
-                    }
-                    Annotation columnAnnotation = JMIGenerationUtil.createAnnotation(addToClass, "javax.persistence.Column", colAttrs); //NOI18N
-                    addAnnotation(fieldAccess, field, getter, columnAnnotation);
-
-                    if (temporal != null) {
-                        AttributeValue tempAttrValue = JMIGenerationUtil.createAttributeValue(addToClass, "", "javax.persistence.TemporalType", temporal); //NOI18N
-                        Annotation temporalAnnotation = JMIGenerationUtil.createAnnotation(addToClass, "javax.persistence.Temporal", Collections.singletonList(tempAttrValue)); //NOI18N
-                        addAnnotation(fieldAccess, field, getter, temporalAnnotation);
-                    }
-                    addToMethodsList.add(getter);                    
-                    addToMethodsList.add(JMIGenerationUtil.createSetterMethod(memberName, cmFieldMethodName, memberType, addToClass));
-                    
-                    // generate equivalent of finder methods - named query annotations
-                    if (genQueries && !isLobType) {
-                        ArrayList queryAttrs = new ArrayList();
-                        AttributeValue queryNameAttrValue = JMIGenerationUtil.createAttributeValue(
-                                javaClass, "name", beanName + ".findBy" + cmFieldMethodName); //NOI18N
-                        queryAttrs.add(queryNameAttrValue);
-                        
-                        if (namedQueryPrefix == null) {
-                            char firstLetter = beanName.toLowerCase().charAt(0);
-                            namedQueryPrefix = "SELECT " + firstLetter + " FROM " + beanName + " " + // NOI18N
-                                    firstLetter + " WHERE " + firstLetter + "."; // NOI18N
-                        }
-                        // need a prefix of "pkFieldName." if this is part of a composite pk
-                        String memberAccessString = ((addMembersToPKClass) ? 
-                            (pkFieldName + "." + memberName) : memberName);     // NOI18N
-                        AttributeValue queryStringAttrValue = JMIGenerationUtil.createAttributeValue(
-                                javaClass, "query", namedQueryPrefix + //NOI18N
-                                memberAccessString + ((genNamedParams) ? (" = :" + memberName) : "= ?1")); //NOI18N
-                        queryAttrs.add(queryStringAttrValue);
-                        Annotation namedQueryAnnotation = JMIGenerationUtil.createAnnotation(
-                                javaClass, "javax.persistence.NamedQuery", queryAttrs); //NOI18N
-                        namedQueriesList.add(namedQueryAnnotation);
-                    }
-                }
-
-                if (genQueries && !namedQueriesList.isEmpty()) {
-                    ArrayList queryAttrs = new ArrayList();
-                    AttributeValue queryValueAttrValue = JMIGenerationUtil.createAttributeValue(
-                            javaClass, "", namedQueriesList); //NOI18N
-                    queryAttrs.add(queryValueAttrValue);
-                    Annotation namedQueriesAnnotation = JMIGenerationUtil.createAnnotation(
-                            javaClass, "javax.persistence.NamedQueries", queryAttrs); //NOI18N
-                    javaClass.getAnnotations().add(namedQueriesAnnotation);
-                }
-
-                // add constructor which takes pk fields as args 
-                List pkFields = Collections.singletonList(pkField);
-                javaClassFeatures.add(JMIGenerationUtil.createConstructor(javaClass, pkFields));
-
-                // if different than pk fields constructor, add constructor 
-                // which takes all non-nullable non-relationship fields as args
-                if (nonNullableFields.size() > 0) {
-                    nonNullableFields.add(0, pkField);
-                    javaClassFeatures.add(JMIGenerationUtil.createConstructor(javaClass, nonNullableFields));
-                }
-
-                for (Iterator it = genBeans[i].getRoles().iterator(); it.hasNext();) {
-                    RelationshipRole role = (RelationshipRole) it.next();
-                    
-                    String memberName = role.getFieldName();
-                    String cmFieldMethodName = getCapitalizedFieldName(memberName);
-                    
-                    boolean isToMany = role.isToMany();
-                    String rv = getCmrFieldBaseType(role, genBeans[i].getPackage(), javaClass);
-                    String rvType = isToMany ? java.util.Collection.class.getName() : rv;
-                    Field field = createField(memberName, rvType, Modifier.PRIVATE, javaClass);
-                    if (isToMany) {
-                        List typeArgs = ((MultipartId)field.getTypeName()).getTypeArguments();
-                        typeArgs.add(JMIGenerationUtil.createImport(javaClass, rv));
-                    }
-                    fieldsToAdd.add(field);
-
-                    Method getter = JMIGenerationUtil.createGetterMethod(memberName, cmFieldMethodName, rvType, javaClass);
-                    if (isToMany) {
-                        List typeArgs = ((MultipartId)getter.getTypeName()).getTypeArguments();
-                        typeArgs.add(JMIGenerationUtil.createImport(javaClass, rv));
-                    }
-                    
-                    boolean cascadeDelete = role.isCascade();
-                    
-                    ArrayList annAttributes = new ArrayList();
-                    if (cascadeDelete) {
-                        AttributeValue cascadeAttibuteValue = JMIGenerationUtil.createAttributeValue(javaClass, "cascade", "javax.persistence.CascadeType", "ALL"); //NOI18N
-                        annAttributes.add(cascadeAttibuteValue);
-                    }
-                    if (role.equals(role.getParent().getRoleB())) {
-                        AttributeValue mappedByAttibuteValue = JMIGenerationUtil.createAttributeValue(javaClass, "mappedBy", role.getParent().getRoleA().getFieldName()); //NOI18N
-                        annAttributes.add(mappedByAttibuteValue);
-                    } else {
-                        if (role.isMany() && role.isToMany()) {
-                            ArrayList joinAttributes = new ArrayList();
-                            AttributeValue joinTableNameAttrValue = JMIGenerationUtil.createAttributeValue(javaClass, "name", (String) dbMappings.getJoinTableMapping().get(role.getFieldName())); //NOI18N
-                            joinAttributes.add(joinTableNameAttrValue);
-                            
-                            CMPMappingModel.JoinTableColumnMapping joinColumnMap = dbMappings.getJoinTableColumnMppings().get(role.getFieldName());
-                            
-                            ArrayList joinCols = new ArrayList();
-                            String[] colNames = joinColumnMap.getColumns();
-                            String[] refColNames = joinColumnMap.getReferencedColumns();
-                            for(int colIndex = 0; colIndex < colNames.length; colIndex++) {
-                                AttributeValue joinColumnNameAttrValue = JMIGenerationUtil.createAttributeValue(javaClass, "name", colNames[colIndex] ); //NOI18N
-                                AttributeValue joinColumnRefNameAttrValue = JMIGenerationUtil.createAttributeValue(javaClass, "referencedColumnName", refColNames[colIndex] ); //NOI18N
-                                ArrayList attrs = new ArrayList();
-                                attrs.add(joinColumnNameAttrValue);
-                                attrs.add(joinColumnRefNameAttrValue);
-                                Annotation joinColumnAnnotation = JMIGenerationUtil.createAnnotation(javaClass, "javax.persistence.JoinColumn", attrs); //NOI18N
-                                joinCols.add(joinColumnAnnotation);
-                            }
-                            AttributeValue joinColumnsNameAttrValue = JMIGenerationUtil.createAttributeValue(javaClass, "joinColumns", joinCols);
-                            joinAttributes.add(joinColumnsNameAttrValue);
-                            
-                            ArrayList inverseCols = new ArrayList();
-                            String[] invColNames = joinColumnMap.getInverseColumns();
-                            String[] refInvColNames = joinColumnMap.getReferencedInverseColumns();
-                            for(int colIndex = 0; colIndex < invColNames.length; colIndex++) {
-                                AttributeValue joinColumnNameAttrValue = JMIGenerationUtil.createAttributeValue(javaClass, "name", invColNames[colIndex] ); //NOI18N
-                                AttributeValue joinColumnRefNameAttrValue = JMIGenerationUtil.createAttributeValue(javaClass, "referencedColumnName", refInvColNames[colIndex] ); //NOI18N
-                                ArrayList attrs = new ArrayList();
-                                attrs.add(joinColumnNameAttrValue);
-                                attrs.add(joinColumnRefNameAttrValue);
-                                Annotation joinColumnAnnotation = JMIGenerationUtil.createAnnotation(javaClass, "javax.persistence.JoinColumn", attrs); //NOI18N
-                                inverseCols.add(joinColumnAnnotation);
-                            }
-                            AttributeValue inverseColumnsNameAttrValue = JMIGenerationUtil.createAttributeValue(javaClass, "inverseJoinColumns", inverseCols);
-                            joinAttributes.add(inverseColumnsNameAttrValue);
-                            
-                            Annotation joinTableAnnotation = JMIGenerationUtil.createAnnotation(javaClass, "javax.persistence.JoinTable", joinAttributes); //NOI18N
-                            addAnnotation(fieldAccess, field, getter, joinTableAnnotation);
-                        } else {
-                            String[] colNames = (String[]) dbMappings.getCmrFieldMapping().get(role.getFieldName());
-                            CMPMappingModel relatedMappings = beanMap.get(role.getParent().getRoleB().getEntityName()).getCMPMapping();
-                            String[] invColNames = (String[]) relatedMappings.getCmrFieldMapping().get(role.getParent().getRoleB().getFieldName());
-                            if (colNames.length == 1) {
-                                AttributeValue joinColumnNameAttrValue = JMIGenerationUtil.createAttributeValue(javaClass, "name", colNames[0]); //NOI18N
-                                AttributeValue joinColumnRefNameAttrValue = JMIGenerationUtil.createAttributeValue(javaClass, "referencedColumnName", invColNames[0]); //NOI18N
-                                ArrayList<AttributeValue> attrs = new ArrayList<AttributeValue>();
-                                attrs.add(joinColumnNameAttrValue);
-                                attrs.add(joinColumnRefNameAttrValue);
-                                makeReadOnlyIfNecessary(pkColumns, colNames[0], javaClass, attrs);
-                                Annotation joinColumnAnnotation = JMIGenerationUtil.createAnnotation(javaClass, "javax.persistence.JoinColumn", attrs); //NOI18N
-                                addAnnotation(fieldAccess, field, getter, joinColumnAnnotation);
-                            } else {
-                                ArrayList joinCols = new ArrayList();
-                                for(int colIndex = 0; colIndex < colNames.length; colIndex++) {
-                                    AttributeValue joinColumnNameAttrValue = JMIGenerationUtil.createAttributeValue(javaClass, "name", colNames[colIndex] ); //NOI18N
-                                    AttributeValue joinColumnRefNameAttrValue = JMIGenerationUtil.createAttributeValue(javaClass, "referencedColumnName", invColNames[colIndex]); //NOI18N
-                                    ArrayList<AttributeValue> attrs = new ArrayList<AttributeValue>();
-                                    attrs.add(joinColumnNameAttrValue);
-                                    attrs.add(joinColumnRefNameAttrValue);
-                                    makeReadOnlyIfNecessary(pkColumns, colNames[colIndex], javaClass, attrs);
-                                    Annotation joinColumnAnnotation = JMIGenerationUtil.createAnnotation(javaClass, "javax.persistence.JoinColumn", attrs); //NOI18N
-                                    joinCols.add(joinColumnAnnotation);
-                                }
-                                AttributeValue joinColumnsNameAttrValue = JMIGenerationUtil.createAttributeValue(javaClass, "value", joinCols);
-                                Annotation joinColumnsAnnotation = JMIGenerationUtil.createAnnotation(javaClass, "javax.persistence.JoinColumns", Collections.singletonList(joinColumnsNameAttrValue)); //NOI18N
-                                addAnnotation(fieldAccess, field, getter, joinColumnsAnnotation);
-                            }
-                        }
-                    }
-                    String relationAnn;
-                    if (role.isMany() && role.isToMany()) {
-                        relationAnn = "ManyToMany"; //NOI18N
-                    } else if (role.isMany()) {
-                        relationAnn = "ManyToOne"; //NOI18N
-                    } else if (role.isToMany()) {
-                        relationAnn = "OneToMany"; //NOI18N
-                    } else {
-                        relationAnn = "OneToOne";  //NOI18N
-                    }
-                    Annotation relAnnotation = JMIGenerationUtil.createAnnotation(javaClass, "javax.persistence." + relationAnn, annAttributes); //NOI18N
-                    addAnnotation(fieldAccess, field, getter, relAnnotation);
-                    methodsToAdd.add(getter);
-                    Method setter = JMIGenerationUtil.createSetterMethod(memberName, cmFieldMethodName, rvType, javaClass);
-                    if (isToMany) {
-                        List typeArgs = ((MultipartId)((Parameter)setter.getParameters().get(0)).getTypeName()).getTypeArguments();
-                        typeArgs.add(JMIGenerationUtil.createImport(javaClass, rv));
-                    }
-                    methodsToAdd.add(setter);
-                }
-
-                // add equals and hashCode methods
-                methodsToAdd.add(JMIGenerationUtil.createHashCodeMethod(javaClass, pkFields));
-                methodsToAdd.add(JMIGenerationUtil.createEntityEqualsMethod(javaClass, pkFields));
-                methodsToAdd.add(JMIGenerationUtil.createToStringMethod(javaClass, pkFields));
-                
-                // add fields, get/set methods, and equals/hashCode methods to pk class as well
-                // as updating the pk field based constructor in the entity class
-                if (fieldsToAddPK != null) {
-                    Constructor constructor = JMIGenerationUtil.createConstructor(javaClass, Modifier.PUBLIC);
-                    String simpleName = pkClass.getSimpleName();
-                    StringBuffer constructorBody = new StringBuffer("this." + pkFieldName
-                            + " = new " + simpleName + "("); //NOI18N
-                    StringBuffer constructorJavaDoc = new StringBuffer(
-                            NbBundle.getMessage(JavaPersistenceGenerator.class, "MSG_Javadoc_Constructor", 
-                                simpleName));
-                    List params = constructor.getParameters();
-                    List featuresList = pkClass.getFeatures();
-                    int pkFieldsCount = fieldsToAddPK.size();
-
-                    // fields should be before constructors (which are added to features earlier)
-                    Collections.reverse(fieldsToAddPK);
-                    featuresList.add(JMIGenerationUtil.createConstructor(pkClass, fieldsToAddPK));
-                    for(int j = 0; j < pkFieldsCount; j++) {
-                        Field nextField = (Field)fieldsToAddPK.get(j);
-                        String fieldName = nextField.getName();
-                        Type fieldType = nextField.getType();
-                        Parameter fieldParameter = JMIGenerationUtil.createParameter(
-                                javaClass, fieldName, fieldType.getName());
-                        
-                        featuresList.add(0, nextField);
-                        params.add(fieldParameter);
-                        constructorBody.append(fieldName);
-                        constructorBody.append((j < (pkFieldsCount - 1)) ? ", " : ");"); //NOI18N
-                        // workaround for issuezilla bug 77758
-                        String fieldTypeName = (String)fieldToTypeName.get(nextField);
-                        // end of workaround
-                        JMIGenerationUtil.createImport(javaClass, fieldTypeName);
-                        constructorJavaDoc.append(NbBundle.getMessage(JavaPersistenceGenerator.class, "MSG_Javadoc_ConstructorParam", 
-                            fieldName, simpleName));
-
-                    }
-                    constructor.setBodyText(constructorBody.toString());
-                    constructor.setJavadocText(constructorJavaDoc.toString());
-                    javaClassFeatures.add(constructor);
-
-                    methodsToAddPK.add(JMIGenerationUtil.createHashCodeMethod(pkClass, fieldsToAddPK));
-                    methodsToAddPK.add(JMIGenerationUtil.createEntityEqualsMethod(pkClass, fieldsToAddPK));
-                    methodsToAddPK.add(JMIGenerationUtil.createToStringMethod(pkClass, fieldsToAddPK));
-                    
-                    for(Iterator it = methodsToAddPK.iterator(); it.hasNext();) {
-                        featuresList.add((Method) it.next());
-                    }
-                }
-                
-                Collections.reverse(fieldsToAdd);
-                for(Iterator it = fieldsToAdd.iterator(); it.hasNext();) {
-                    // fields should be before constructor (which is added to features earlier)
-                    javaClassFeatures.add(0, (Field) it.next());
-                }
-                for(Iterator it = methodsToAdd.iterator(); it.hasNext();) {
-                    javaClassFeatures.add((Method) it.next());
-                }
-
-                rollback = false;
-            } catch (Exception e) {
-                String message = e.getMessage();
-                String newMessage = ((message == null) ? 
-                    NbBundle.getMessage(RelatedCMPWizard.class, "ERR_GeneratingClass_NoExceptionMessage", className) :
-                    NbBundle.getMessage(RelatedCMPWizard.class, "ERR_GeneratingClass", className, message));
-                IOException wrappedException = new IOException(newMessage);
-                wrappedException.initCause(e);
-                throw wrappedException;
-            } finally {
-                JavaModel.getJavaRepository().endTrans(rollback);
-            }
-            
-            FileObject fo = javaClass == null ? null : JavaModel.getFileObject(javaClass.getResource());
-            Project project = FileOwnerQuery.getOwner(packageFileObject);
-            if (fo != null) {
-                fileObjects.add(fo);
-                if (!Util.isSupportedJavaEEVersion(project) && ProviderUtil.getDDFile(project) != null) {
-                    PUDataObject pudo = ProviderUtil.getPUDataObject(project);
-                    PersistenceUnit pu[] = pudo.getPersistence().getPersistenceUnit();
-                    //only add if a PU exists, if there are more we do not know where to add - UI needed to ask
-                    if (pu.length == 1) {
-                        pudo.addClass(pu[0], javaClass.getName());
-                    }
-                }
-            }
-        }
-        JavaMetamodel manager = JavaMetamodel.getManager();
-        for (Iterator iter = fileObjects.iterator(); iter.hasNext(); ) {
-            FileObject fileObj = (FileObject)iter.next();
-            manager.addModified(fileObj);
-        }
-        JavaModel.getJavaRepository().beginTrans(true); 
-        JavaModel.getJavaRepository().endTrans(false);
-        handle.progress(max);
+        new Generator(helper, handle, progressPanel).run();
     }
-    
+
     public void init(WizardDescriptor wiz) {
         // get the table names for all entities in the project
-        Project project = Templates.getProject(wiz);
-        try {
-            processEntities(PersistenceUtils.getEntityClasses(project));
-        } catch (IOException e) {
-            ErrorManager.getDefault().notify(e);
-        }
-        processEntities(PersistenceUtils.getAnnotationEntityClasses(project));
+        // Project project = Templates.getProject(wiz);
+        // try {
+        //     processEntities(PersistenceUtils.getEntityClasses(project));
+        // } catch (IOException e) {
+        //     ErrorManager.getDefault().notify(e);
+        // }
+        // processEntities(PersistenceUtils.getAnnotationEntityClasses(project));
     }
 
     private void processEntities(Set<Entity> entityClasses) {
@@ -587,94 +117,778 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             }
         }
     }
-    
+
     public void uninit() {
     }
-    
+
     public String getFQClassName(String tableName) {
         return entityName2TableName.get(tableName);
     }
-    
+
     public String generateEntityName(String name) {
         return name;
     }
-    
+
     public Set createdObjects() {
         return Collections.EMPTY_SET;
     }
 
-    private String getFieldName(String capitalizedFieldName) {
-        StringBuffer sb = new StringBuffer(capitalizedFieldName);
-        sb.setCharAt(0, Character.toLowerCase(sb.charAt(0)));
-        return sb.toString();
-    }
-
-    private String getCapitalizedFieldName(String fieldName) {
-        StringBuffer sb = new StringBuffer(fieldName);
-        sb.setCharAt(0, Character.toUpperCase(sb.charAt(0)));
-        return sb.toString();
-    }
-
-    private Field createField(String fieldName, String fieldType, int modifiers, JavaClass javaClass) {
-        return JMIGenerationUtil.createField(javaClass, fieldName, modifiers, fieldType);
-    }
-
-    private void addAnnotation(boolean isFieldAccess, Field field, Method getter, Annotation annotation) {
-        if (isFieldAccess) {
-            field.getAnnotations().add(annotation);
-        } else {
-            getter.getAnnotations().add(annotation);
-        }
-    }
-
-    private void makeReadOnlyIfNecessary(List pkColumns, String testColumnName, JavaClass javaClass, List attrs) {
-        // if the join column is a pk column, add insertable=false, updatable=false
-        if (pkColumns.contains(testColumnName)) {
-            AttributeValue insertableAttrValue = JMIGenerationUtil.createAttributeValue(javaClass, "insertable", false); //NOI18N
-            AttributeValue updatableAttrValue = JMIGenerationUtil.createAttributeValue(javaClass, "updatable", false); //NOI18N
-            attrs.add(insertableAttrValue);
-            attrs.add(updatableAttrValue);
-        }
-    }
-    
     /**
-     * Hackish fix for issue 76916. Should be removed in 6.0.
+     * Encapsulates the whole entity class generation process.
      */
-    private class MDRInstanceNameListener implements MDRChangeListener {
-        
-        private boolean instanceDetected;
-        private String name;
-        
-        public synchronized void change(MDRChangeEvent e) {
-            Object newElem = ((AttributeEvent)e).getNewElement();
-            if (newElem instanceof String && ((String)newElem).endsWith(name)) {
-                instanceDetected = true;
-                notify();
-            }
+    private static final class Generator {
+
+        private final RelatedCMPHelper helper;
+        private final ProgressHandle handle;
+        private final ProgressPanel progressPanel;
+        private final Map<String, EntityClass> beanMap = new HashMap<String, EntityClass>();
+
+        public Generator(RelatedCMPHelper helper, ProgressHandle handle, ProgressPanel progressPanel) {
+            this.helper = helper;
+            this.handle = handle;
+            this.progressPanel = progressPanel;
         }
-        
-        public synchronized void waitInstance() {
-            if (instanceDetected) {
-                return;
-            } else {
+
+        public void run() throws IOException {
+            EntityClass[] genBeans = helper.getBeans();
+
+            int progressMax = genBeans.length * 2;
+            handle.switchToDeterminate(progressMax);
+
+            // first generate empty entity classes -- this is needed as
+            // in the field and method generation it will be necessary to resolve
+            // their types (e.g. entity A has a field of type Collection<B>, thus
+            // while generating entity A we must be able to resolve type B).
+
+            beanMap.clear();
+            Set<FileObject> generationPackageFOs = new HashSet<FileObject>();
+            Set<String> generatedEntityClasses = new HashSet<String>();
+            for (int i = 0; i < genBeans.length; i++) {
+                final EntityClass entityClass = genBeans[i];
+                String entityClassName = entityClass.getClassName();
+                FileObject packageFileObject = genBeans[i].getPackageFileObject();
+                beanMap.put(entityClassName, entityClass);
+
+                if (packageFileObject.getFileObject(entityClassName, "java") != null) { // NOI18N
+                    handle.progress(i);
+                    continue;
+                }
+                String progressMsg = NbBundle.getMessage(JavaPersistenceGenerator.class, "TXT_GeneratingClass", entityClassName);
+                handle.progress(progressMsg, i);
+                progressPanel.setText(progressMsg);
+
+                generationPackageFOs.add(packageFileObject);
+                generatedEntityClasses.add(entityClassName);
+
+                // XXX Javadoc
+                GenerationUtils.createClass(packageFileObject, entityClassName, NbBundle.getMessage(JavaPersistenceGenerator.class, "MSG_Javadoc_Class"));
+                if (!genBeans[i].isUsePkField()) {
+                    String pkClassName = createPKClassName(entityClassName);
+                    GenerationUtils.createClass(packageFileObject, pkClassName, NbBundle.getMessage(JavaPersistenceGenerator.class, "MSG_Javadoc_PKClass", pkClassName, entityClassName));
+                }
+            }
+
+            // now generate the fields and methods for each entity class
+            // and its primary key class
+
+            ClasspathInfo classpathInfo = ClasspathInfo.create(
+                    createUnionClassPath(generationPackageFOs, ClassPath.BOOT),
+                    createUnionClassPath(generationPackageFOs, ClassPath.COMPILE),
+                    createUnionClassPath(generationPackageFOs, ClassPath.SOURCE));
+
+            for (int i = 0; i < genBeans.length; i++) {
+                final EntityClass entityClass = genBeans[i];
+                String entityClassName = entityClass.getClassName();
+
+                if (!generatedEntityClasses.contains(entityClassName)) {
+                    // this entity class already existed, we didn't create it, so we don't want to touch it
+                    handle.progress(genBeans.length + i);
+                    continue;
+                }
+                String progressMsg = NbBundle.getMessage(JavaPersistenceGenerator.class, "TXT_GeneratingClass", entityClassName);
+                handle.progress(progressMsg, genBeans.length + i);
+                progressPanel.setText(progressMsg);
+
+                FileObject entityClassPackageFO = entityClass.getPackageFileObject();
+                final FileObject entityClassFO = entityClassPackageFO.getFileObject(entityClassName, "java"); // NOI18N
+                final FileObject pkClassFO = entityClassPackageFO.getFileObject(createPKClassName(entityClassName), "java"); // NOI18N
                 try {
-                    wait(3000); // set bound on time for safety reasons...
-                } catch (InterruptedException ex) {
-                    ex.printStackTrace();
+                    JavaSource javaSource = (pkClassFO != null) ?
+                            JavaSource.create(classpathInfo, entityClassFO, pkClassFO) :
+                            JavaSource.create(classpathInfo, entityClassFO);
+                    javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
+                        public void run(WorkingCopy copy) throws IOException {
+                            if (copy.getFileObject().equals(entityClassFO)) {
+                                new EntityClassGenerator(helper, copy, entityClass).run();
+                            } else {
+                                new PKClassGenerator(helper, copy, entityClass).run();
+                            }
+                        }
+                    }).commit();
+                } catch (IOException e) {
+                    String message = e.getMessage();
+                    String newMessage = ((message == null) ?
+                        NbBundle.getMessage(JavaPersistenceGenerator.class, "ERR_GeneratingClass_NoExceptionMessage", entityClassName) :
+                        NbBundle.getMessage(JavaPersistenceGenerator.class, "ERR_GeneratingClass", entityClassName, message));
+                    IOException wrappedException = new IOException(newMessage);
+                    wrappedException.initCause(e);
+                    throw wrappedException;
+                }
+
+                Project project = FileOwnerQuery.getOwner(entityClassFO);
+                if (!Util.isSupportedJavaEEVersion(project) && ProviderUtil.getDDFile(project) != null) {
+                    PUDataObject pudo = ProviderUtil.getPUDataObject(project);
+                    PersistenceUnit pu[] = pudo.getPersistence().getPersistenceUnit();
+                    //only add if a PU exists, if there are more we do not know where to add - UI needed to ask
+                    if (pu.length == 1) {
+                        pudo.addClass(pu[0], entityClassName);
+                    }
+                }
+            }
+
+            handle.progress(progressMax);
+        }
+
+        private static String createPKClassName(String entityClassName) {
+            return entityClassName + "PK"; // NOI18N
+        }
+
+        private static ClassPath createUnionClassPath(Set<FileObject> fileObjects, String id) {
+            Set<ClassPath> classPaths = new HashSet<ClassPath>();
+            for (FileObject fileObject : fileObjects) {
+                classPaths.add(ClassPath.getClassPath(fileObject, id));
+            }
+            if (classPaths.size() == 1) {
+                return classPaths.iterator().next();
+            }
+            return ClassPathSupport.createProxyClassPath(classPaths.toArray(new ClassPath[classPaths.size()]));
+        }
+
+        /**
+         * Encapsulates common logic for generating classes (be it
+         * entity or primary key classes). Each instance generates a single
+         * class.
+         */
+        private abstract class ClassGenerator {
+
+            protected final RelatedCMPHelper helper;
+            protected final WorkingCopy copy;
+            protected final GenerationUtils genUtils;
+
+            // the entity class we are generating
+            protected final EntityClass entityClass;
+            // the mapping of the entity class to the database
+            protected final CMPMappingModel dbMappings;
+            // true if a primary key class needs to be generated along with the entity class
+            protected final boolean needsPKClass;
+            // the simple class name of the primary key class
+            protected final String pkClassName;
+            // the fully-qualified name of the primary key class
+            protected final String pkFQClassName;
+
+            // generated properties
+            protected final List<Property> properties = new ArrayList<Property>();
+            // generated methods
+            protected final List<MethodTree> methods = new ArrayList<MethodTree>();
+            // generated constructors
+            protected final List<MethodTree> constructors = new ArrayList<MethodTree>();
+
+            // the class tree of the class we are generating
+            protected ClassTree classTree;
+
+            public ClassGenerator(RelatedCMPHelper helper, WorkingCopy copy, EntityClass entityClass) throws IOException {
+                this.helper = helper;
+                this.copy = copy;
+
+                this.entityClass = entityClass;
+                dbMappings = entityClass.getCMPMapping();
+                needsPKClass = !entityClass.isUsePkField();
+                pkClassName = needsPKClass ? createPKClassName(entityClass.getClassName()) : null;
+                pkFQClassName = entityClass.getPackage() + "." + pkClassName; // NOI18N
+
+                genUtils = GenerationUtils.newInstance(copy);
+                if (genUtils == null) {
+                    throw new IllegalStateException("Cannot find a public top-level class named " + entityClass.getClassName() +  // NOI18N
+                            " in " + FileUtil.getFileDisplayName(copy.getFileObject())); // NOI18N
+                }
+                classTree = genUtils.getClassTree();
+            }
+
+            protected String createFieldName(String capitalizedFieldName) {
+                return createFieldNameImpl(capitalizedFieldName, false);
+            }
+
+            protected String createCapitalizedFieldName(String fieldName) {
+                return createFieldNameImpl(fieldName, true);
+            }
+
+            private String createFieldNameImpl(String fieldName, boolean capitalized) {
+                StringBuffer sb = new StringBuffer(fieldName);
+                char firstChar = sb.charAt(0);
+                sb.setCharAt(0, capitalized ? Character.toUpperCase(firstChar) : Character.toLowerCase(firstChar));
+                return sb.toString();
+            }
+
+            /**
+             * Creates a property for an entity member, that is, is creates
+             * a field, a getter and a setter method.
+             */
+            protected Property createProperty(EntityMember m) throws IOException {
+                boolean isPKMember = m.isPrimaryKey();
+                List<AnnotationTree> annotations = new ArrayList<AnnotationTree>();
+
+                //add @Id() only if not in an embeddable PK class
+                if (isPKMember && !needsPKClass) {
+                    annotations.add(genUtils.createAnnotation("javax.persistence.Id")); // NOI18N
+                }
+
+                boolean isLobType = m.isLobType();
+                if (isLobType) {
+                    annotations.add(genUtils.createAnnotation("javax.persistence.Lob")); // NOI18N
+                }
+
+                List<ExpressionTree> columnAnnArguments = new ArrayList();
+                String memberName = m.getMemberName();
+
+                String columnName = (String) dbMappings.getCMPFieldMapping().get(memberName);
+                columnAnnArguments.add(genUtils.createAnnotationArgument("name", columnName)); //NOI18N
+                if (!m.isNullable()) {
+                    columnAnnArguments.add(genUtils.createAnnotationArgument("nullable", false)); //NOI18N
+                }
+                annotations.add(genUtils.createAnnotation("javax.persistence.Column", columnAnnArguments)); //NOI18N
+
+                String temporalType = getMemberTemporalType(m);
+                if (temporalType != null) {
+                    ExpressionTree temporalAnnValueArgument = genUtils.createAnnotationArgument(null, "javax.persistence.TemporalType", temporalType); //NOI18N
+                    annotations.add(genUtils.createAnnotation("javax.persistence.Temporal", Collections.singletonList(temporalAnnValueArgument)));
+                }
+
+                return new Property(Modifier.PRIVATE, annotations, getMemberType(m), memberName);
+            }
+
+            /**
+             * Like {@link #createProperty}, but it only creates a variable
+             * with no modififers and no annotations. Useful to pass in
+             * a parameter list when creating a method or constructor.
+             */
+            protected VariableTree createVariable(EntityMember m) {
+                return genUtils.createVariable(m.getMemberName(), getMemberType(m));
+            }
+
+            private String getMemberType(EntityMember m) {
+                String memberType = m.getMemberType();
+                if ("java.sql.Date".equals(memberType)) { //NOI18N
+                    memberType = "java.util.Date";
+                } else if ("java.sql.Time".equals(memberType)) { //NOI18N
+                    memberType = "java.util.Date";
+                } else if ("java.sql.Timestamp".equals(memberType)) { //NOI18N
+                    memberType = "java.util.Date";
+                }
+                return memberType;
+            }
+
+            private String getMemberTemporalType(EntityMember m) {
+                String memberType = m.getMemberType();
+                String temporalType = null;
+                if ("java.sql.Date".equals(memberType)) { //NOI18N
+                    temporalType = "DATE";
+                } else if ("java.sql.Time".equals(memberType)) { //NOI18N
+                    temporalType = "TIME";
+                } else if ("java.sql.Timestamp".equals(memberType)) { //NOI18N
+                    temporalType = "TIMESTAMP";
+                }
+                return temporalType;
+            }
+
+            protected MethodTree createHashCodeMethod(List<VariableTree> fields) {
+                StringBuilder body = new StringBuilder(20 + fields.size() * 30);
+                body.append("{"); // NOI18N
+                body.append("int hash = 0;"); // NOI18N
+                for (VariableTree field : fields) {
+                    body.append(createHashCodeLineForField(field));
+                }
+                body.append("return hash;"); // NOI18N
+                body.append("}"); // NOI18N
+                TreeMaker make = copy.getTreeMaker();
+                // XXX Javadoc
+                return make.Method(
+                        make.Modifiers(EnumSet.of(Modifier.PUBLIC), Collections.singletonList(genUtils.createAnnotation("java.lang.Override"))),
+                        "hashCode", // NOI18N
+                        make.PrimitiveType(TypeKind.INT),
+                        Collections.<TypeParameterTree>emptyList(),
+                        Collections.<VariableTree>emptyList(),
+                        Collections.<ExpressionTree>emptyList(),
+                        body.toString(),
+                        null);
+            }
+
+            private String createHashCodeLineForField(VariableTree field) {
+                Name fieldName = field.getName();
+                Tree fieldType = field.getType();
+                if (fieldType.getKind() == Tree.Kind.PRIMITIVE_TYPE) {
+                    if (((PrimitiveTypeTree)fieldType).getPrimitiveTypeKind() == TypeKind.BOOLEAN) {
+                        return "hash += (" + fieldName + " ? 1 : 0"; // NOI18N
+                    }
+                    return "hash += (int)" + fieldName + ";"; // NOI18N
+                }
+                return "hash += (" + fieldName + " != null ? " + fieldName + ".hashCode() : 0);"; // NOI18N
+            }
+
+            protected MethodTree createEqualsMethod(String simpleClassName, List<VariableTree> fields) {
+                StringBuilder body = new StringBuilder(50 + fields.size() * 30);
+                body.append("{"); // NOI18N
+                body.append("// TODO: Warning - this method won't work in the case the id fields are not set\n"); // NOI18N
+                body.append("if (!(object instanceof "); // NOI18N
+                body.append(simpleClassName + ")) {return false;}"); // NOI18N
+                body.append(simpleClassName + " other = (" + simpleClassName + ")object;"); // NOI18N
+                for (VariableTree field : fields) {
+                    body.append(createEqualsLineForField(field));
+                }
+                body.append("return true;"); // NOI18N
+                body.append("}"); // NOI18N
+                TreeMaker make = copy.getTreeMaker();
+                // XXX Javadoc
+                return make.Method(
+                        make.Modifiers(EnumSet.of(Modifier.PUBLIC), Collections.singletonList(genUtils.createAnnotation("java.lang.Override"))), // NOI18N
+                        "equals", // NOI18N
+                        make.PrimitiveType(TypeKind.BOOLEAN),
+                        Collections.<TypeParameterTree>emptyList(),
+                        Collections.singletonList(genUtils.createVariable("object", "java.lang.Object")), // NOI18N
+                        Collections.<ExpressionTree>emptyList(),
+                        body.toString(),
+                        null);
+            }
+
+            private String createEqualsLineForField(VariableTree field){
+                Name fieldName = field.getName();
+                Tree fieldType = field.getType();
+                if (fieldType.getKind() == Tree.Kind.PRIMITIVE_TYPE) {
+                    return "if (this." + fieldName + " != other." + fieldName + ") return false;"; // NOI18N
+                }
+                return "if (this." + fieldName + " != other." + fieldName + // NOI18N
+                         " && (this." + fieldName + " == null || !this." + // NOI18N
+                         fieldName + ".equals(other." + fieldName + "))) return false;"; // NOI18N
+            }
+
+            protected MethodTree createToStringMethod(String simpleClassName, List<VariableTree> fields) {
+                StringBuilder body = new StringBuilder(30 + fields.size() * 30);
+                body.append("{"); // NOI18N
+                body.append("return \"" + simpleClassName + "["); // NOI18N
+                for (Iterator<VariableTree> i = fields.iterator(); i.hasNext();) {
+                    String fieldName = i.next().getName().toString();
+                    body.append(fieldName + "=\" + " + fieldName + " + \""); //NOI18N
+                    body.append(i.hasNext() ? ", " : "]\";"); //NOI18N
+                }
+                body.append("}"); // NOI18N
+                TreeMaker make = copy.getTreeMaker();
+                // XXX Javadoc
+                return make.Method(
+                        make.Modifiers(EnumSet.of(Modifier.PUBLIC), Collections.singletonList(genUtils.createAnnotation("java.lang.Override"))),
+                        "toString", // NOI18N
+                        genUtils.createType("java.lang.String"), // NOI18N
+                        Collections.<TypeParameterTree>emptyList(),
+                        Collections.<VariableTree>emptyList(),
+                        Collections.<ExpressionTree>emptyList(),
+                        body.toString(),
+                        null);
+            }
+
+            public void run() throws IOException {
+                initialize();
+                for (Object object : entityClass.getFields()) {
+                    generateMember((EntityMember)object);
+                }
+                afterMembersGenerated();
+                for (Object object : entityClass.getRoles()) {
+                    generateRelationship((RelationshipRole)object);
+                }
+                finish();
+
+                // add the generated members
+                TreeMaker make = copy.getTreeMaker();
+                int position = 0;
+                for (Property property : properties) {
+                    classTree = make.insertClassMember(classTree, position, property.getField());
+                    position++;
+                }
+                for (MethodTree constructor : constructors) {
+                    classTree = make.addClassMember(classTree, constructor);
+                }
+                for (Property property : properties) {
+                    classTree = make.addClassMember(classTree, property.getGetter());
+                    classTree = make.addClassMember(classTree, property.getSetter());
+                }
+                for (MethodTree method : methods) {
+                    classTree = make.addClassMember(classTree, method);
+                }
+                copy.rewrite(genUtils.getClassTree(), classTree);
+            }
+
+            /**
+             * Called at the beginning of the generation process.
+             */
+            protected abstract void initialize() throws IOException;
+
+            /**
+             * Called for each entity class member.
+             */
+            protected abstract void generateMember(EntityMember m) throws IOException;
+
+            /**
+             * Called after all members have been generated.
+             */
+            protected abstract void afterMembersGenerated() throws IOException;
+
+            /**
+             * Called for each relationship.
+             */
+            protected abstract void generateRelationship(RelationshipRole role) throws IOException;
+
+            /**
+             * Called at the end of the generation process.
+             */
+            protected abstract void finish() throws IOException;
+
+            /**
+             * Encapsulates a generated property, that is, its field, getter
+             * and setter method.
+             */
+            protected final class Property {
+
+                private final VariableTree field;
+                private final MethodTree getter;
+                private final MethodTree setter;
+
+                public Property(Modifier modifier, List<AnnotationTree> annotations, String type, String name) throws IOException {
+                    this(modifier, annotations, genUtils.createType(type), name);
+                }
+
+                public Property(Modifier modifier, List<AnnotationTree> annotations, TypeMirror type, String name) throws IOException {
+                    this(modifier, annotations, copy.getTreeMaker().Type(type), name);
+                }
+
+                private Property(Modifier modifier, List<AnnotationTree> annotations, Tree typeTree, String name) throws IOException {
+                    TreeMaker make = copy.getTreeMaker();
+                    field = make.Variable(
+                            make.Modifiers(EnumSet.of(modifier), fieldAccess ? annotations : Collections.<AnnotationTree>emptyList()),
+                            name,
+                            typeTree,
+                            null);
+                    getter = genUtils.createPropertyGetterMethod(
+                            make.Modifiers(EnumSet.of(Modifier.PUBLIC), fieldAccess ? Collections.<AnnotationTree>emptyList() : annotations),
+                            name,
+                            typeTree);
+                    setter = genUtils.createPropertySetterMethod(genUtils.createModifiers(Modifier.PUBLIC),
+                            name,
+                            typeTree);
+                }
+
+                public VariableTree getField() {
+                    return field;
+                }
+
+                public MethodTree getGetter() {
+                    return getter;
+                }
+
+                public MethodTree getSetter() {
+                    return setter;
                 }
             }
         }
-        
-        public void register(String name) {
-            synchronized (this) {
-                instanceDetected = false;
-                this.name = name;
+
+        /**
+         * An implementation of ClassGenerator which generates entity classes.
+         */
+        private final class EntityClassGenerator extends ClassGenerator {
+
+            // the simple name of the entity class
+            private final String entityClassName;
+            // the fully-qualified name of the entity class
+            private final String entityFQClassName;
+            // the non-nullable properties (not including the primary key ones)
+            private final List<Property> nonNullableProps = new ArrayList<Property>();
+            // the names of the primary key columns
+            private final List<String> pkColumnNames = new ArrayList<String>();
+            // variables correspoding to the fields in the primary key classs (or empty if no primary key class)
+            private final List<VariableTree> pkClassVariables = new ArrayList<VariableTree>();
+            // the list of @NamedQuery annotations which will be added to the entity class
+            private final List<ExpressionTree> namedQueryAnnotations = new ArrayList<ExpressionTree>();
+
+            // the property for the primary key (or the primary key class)
+            private Property pkProperty;
+            // the prefix or all named queries ("select ... ")
+            private String namedQueryPrefix;
+
+            public EntityClassGenerator(RelatedCMPHelper helper, WorkingCopy copy, EntityClass entityClass) throws IOException {
+                super(helper, copy, entityClass);
+                entityClassName = entityClass.getClassName();
+                assert genUtils.getTypeElement().getSimpleName().contentEquals(entityClassName);
+                entityFQClassName = entityClass.getPackage() + "." + entityClassName;
             }
-            JavaModel.getJavaRepository().addListener(this, AttributeEvent.EVENTMASK_ATTRIBUTE);
+
+            protected void initialize() throws IOException {
+                if (genSerializableEntities) {
+                    classTree = genUtils.addImplementsClause(classTree, "java.io.Serializable"); // NOI18N
+                }
+                classTree = genUtils.addAnnotation(classTree, genUtils.createAnnotation("javax.persistence.Entity")); // NOI18N
+                ExpressionTree tableNameArgument = genUtils.createAnnotationArgument("name", dbMappings.getTableName()); // NOI18N
+                classTree = genUtils.addAnnotation(classTree, genUtils.createAnnotation("javax.persistence.Table", Collections.singletonList(tableNameArgument)));
+
+                if (needsPKClass) {
+                    String pkFieldName = createFieldName(pkClassName);
+                    pkProperty = new Property(
+                            Modifier.PROTECTED,
+                            Collections.singletonList(genUtils.createAnnotation("javax.persistence.EmbeddedId")),
+                            pkFQClassName,
+                            pkFieldName);
+                    properties.add(pkProperty);
+                }
+
+                //TODO: javadoc - generate or fake in test mode
+                //        b.setCommentDataAuthor(authorOverride);
+                //        b.setCommentDataDate(dateOverride);
+            }
+
+            protected void generateMember(EntityMember m) throws IOException {
+                String memberName = m.getMemberName();
+                boolean isPKMember = m.isPrimaryKey();
+                Property property = null;
+                if (isPKMember) {
+                    if (needsPKClass) {
+                        pkClassVariables.add(createVariable(m));
+                    } else {
+                        pkProperty = property = createProperty(m);
+                    }
+                    String pkColumnName = (String)dbMappings.getCMPFieldMapping().get(memberName);
+                    pkColumnNames.add(pkColumnName);
+                } else {
+                    property = createProperty(m);
+                    if (!m.isNullable()) {
+                        nonNullableProps.add(property);
+                    }
+                }
+                // we don't create the property only if the current member is
+                // part of a primary key, in which case it will be put in the primary key class
+                assert (property != null) || (property == null && isPKMember && needsPKClass);
+                if (property != null) {
+                    properties.add(property);
+                }
+
+                // generate equivalent of finder methods - named query annotations
+                if (helper.isGenerateFinderMethods() && !m.isLobType()) {
+                    List<ExpressionTree> namedQueryAnnArguments = new ArrayList<ExpressionTree>();
+                    namedQueryAnnArguments.add(genUtils.createAnnotationArgument("name", entityClassName + ".findBy" + createCapitalizedFieldName(memberName))); //NOI18N
+
+                    if (namedQueryPrefix == null) {
+                        char firstLetter = entityClassName.toLowerCase().charAt(0);
+                        namedQueryPrefix = "SELECT " + firstLetter + " FROM " + entityClassName + " " + firstLetter + " WHERE " + firstLetter + "."; // NOI18N
+                    }
+                    // need a prefix of "pk_field_name." if this is part of a composite pk
+                    String memberAccessString = ((needsPKClass && isPKMember) ? (pkProperty.getField().getName().toString() + "." + memberName) : memberName); // NOI18N
+                    namedQueryAnnArguments.add(genUtils.createAnnotationArgument(
+                            "query", namedQueryPrefix + //NOI18N
+                            memberAccessString + ((genNamedParams) ? (" = :" + memberName) : "= ?1"))); //NOI18N
+                    namedQueryAnnotations.add(genUtils.createAnnotation("javax.persistence.NamedQuery", namedQueryAnnArguments)); //NOI18N
+                }
+            }
+
+            protected void afterMembersGenerated() {
+                classTree = genUtils.addAnnotation(classTree, genUtils.createAnnotation("javax.persistence.NamedQueries", // NOI18N
+                        Collections.singletonList(genUtils.createAnnotationArgument(null, namedQueryAnnotations))));
+            }
+
+            protected void generateRelationship(RelationshipRole role) throws IOException {
+                String memberName = role.getFieldName();
+
+                // XXX getRelationshipFieldType() does not work well when entity classes
+                // are not all generated to the same package
+                String typeName = getRelationshipFieldType(role, entityClass.getPackage());
+                TypeMirror fieldType = copy.getElements().getTypeElement(typeName).asType();
+                if (role.isToMany()) {
+                    // XXX this will probably not resolve imports
+                    TypeElement collectionType = copy.getElements().getTypeElement("java.util.Collection"); // NOI18N
+                    fieldType = copy.getTypes().getDeclaredType(collectionType, fieldType);
+                }
+
+                List<AnnotationTree> annotations = new ArrayList<AnnotationTree>();
+                List<ExpressionTree> annArguments = new ArrayList<ExpressionTree>();
+                if (role.isCascade()) {
+                    annArguments.add(genUtils.createAnnotationArgument("cascade", "javax.persistence.CascadeType", "ALL")); // NOI18N
+                }
+                if (role.equals(role.getParent().getRoleB())) {
+                    annArguments.add(genUtils.createAnnotationArgument("mappedBy", role.getParent().getRoleA().getFieldName())); // NOI18N
+                } else {
+                    if (role.isMany() && role.isToMany()) {
+                        List<ExpressionTree> joinTableAnnArguments = new ArrayList<ExpressionTree>();
+                        joinTableAnnArguments.add(genUtils.createAnnotationArgument("name", (String) dbMappings.getJoinTableMapping().get(role.getFieldName()))); //NOI18N
+
+                        CMPMappingModel.JoinTableColumnMapping joinColumnMap = dbMappings.getJoinTableColumnMppings().get(role.getFieldName());
+
+                        List<AnnotationTree> joinCols = new ArrayList<AnnotationTree>();
+                        String[] colNames = joinColumnMap.getColumns();
+                        String[] refColNames = joinColumnMap.getReferencedColumns();
+                        for(int colIndex = 0; colIndex < colNames.length; colIndex++) {
+                            List<ExpressionTree> attrs = new ArrayList<ExpressionTree>();
+                            attrs.add(genUtils.createAnnotationArgument("name", colNames[colIndex])); //NOI18N
+                            attrs.add(genUtils.createAnnotationArgument("referencedColumnName", refColNames[colIndex])); //NOI18N
+                            joinCols.add(genUtils.createAnnotation("javax.persistence.JoinColumn", attrs)); //NOI18N
+                        }
+                        joinTableAnnArguments.add(genUtils.createAnnotationArgument("joinColumns", joinCols)); // NOI18N
+
+                        List<AnnotationTree> inverseCols = new ArrayList<AnnotationTree>();
+                        String[] invColNames = joinColumnMap.getInverseColumns();
+                        String[] refInvColNames = joinColumnMap.getReferencedInverseColumns();
+                        for(int colIndex = 0; colIndex < invColNames.length; colIndex++) {
+                            List<ExpressionTree> attrs = new ArrayList<ExpressionTree>();
+                            attrs.add(genUtils.createAnnotationArgument("name", invColNames[colIndex])); //NOI18N
+                            attrs.add(genUtils.createAnnotationArgument("referencedColumnName", refInvColNames[colIndex])); //NOI18N
+                            inverseCols.add(genUtils.createAnnotation("javax.persistence.JoinColumn", attrs)); // NOI18N
+                        }
+                        joinTableAnnArguments.add(genUtils.createAnnotationArgument("inverseJoinColumns", inverseCols)); // NOI18N
+
+                        annotations.add(genUtils.createAnnotation("javax.persistence.JoinTable", joinTableAnnArguments)); // NOI18N
+                    } else {
+                        String[] colNames = (String[]) dbMappings.getCmrFieldMapping().get(role.getFieldName());
+                        CMPMappingModel relatedMappings = beanMap.get(role.getParent().getRoleB().getEntityName()).getCMPMapping();
+                        String[] invColNames = (String[]) relatedMappings.getCmrFieldMapping().get(role.getParent().getRoleB().getFieldName());
+                        if (colNames.length == 1) {
+                            List<ExpressionTree> attrs = new ArrayList<ExpressionTree>();
+                            attrs.add(genUtils.createAnnotationArgument("name", colNames[0])); //NOI18N
+                            attrs.add(genUtils.createAnnotationArgument("referencedColumnName", invColNames[0])); //NOI18N
+                            makeReadOnlyIfNecessary(pkColumnNames, colNames[0], attrs);
+                            annotations.add(genUtils.createAnnotation("javax.persistence.JoinColumn", attrs)); //NOI18N
+                        } else {
+                            List<AnnotationTree> joinCols = new ArrayList<AnnotationTree>();
+                            for(int colIndex = 0; colIndex < colNames.length; colIndex++) {
+                                List<ExpressionTree> attrs = new ArrayList<ExpressionTree>();
+                                attrs.add(genUtils.createAnnotationArgument("name", colNames[colIndex])); //NOI18N
+                                attrs.add(genUtils.createAnnotationArgument("referencedColumnName", invColNames[colIndex])); //NOI18N
+                                makeReadOnlyIfNecessary(pkColumnNames, colNames[colIndex], attrs);
+                                joinCols.add(genUtils.createAnnotation("javax.persistence.JoinColumn", attrs)); // NOI18N
+                            }
+                            ExpressionTree joinColumnsNameAttrValue = genUtils.createAnnotationArgument(null, joinCols);
+                            AnnotationTree joinColumnsAnnotation = genUtils.createAnnotation("javax.persistence.JoinColumns", Collections.singletonList(joinColumnsNameAttrValue)); //NOI18N
+                            annotations.add(joinColumnsAnnotation);
+                        }
+                    }
+                }
+                String relationAnn;
+                if (role.isMany() && role.isToMany()) {
+                    relationAnn = "ManyToMany"; //NOI18N
+                } else if (role.isMany()) {
+                    relationAnn = "ManyToOne"; //NOI18N
+                } else if (role.isToMany()) {
+                    relationAnn = "OneToMany"; //NOI18N
+                } else {
+                    relationAnn = "OneToOne";  //NOI18N
+                }
+                annotations.add(genUtils.createAnnotation("javax.persistence." + relationAnn, annArguments)); // NOI18N
+
+                properties.add(new Property(Modifier.PRIVATE, annotations, fieldType, memberName));
+            }
+
+            protected void finish() {
+                // create a constructor which takes the primary key field as argument
+                VariableTree pkFieldParam = genUtils.removeModifiers(pkProperty.getField());
+                List<VariableTree> pkFieldParams = Collections.singletonList(pkFieldParam);
+                constructors.add(genUtils.createAssignmentConstructor(genUtils.createModifiers(Modifier.PUBLIC), entityClassName, pkFieldParams));
+
+                // if different than pk fields constructor, add constructor
+                // which takes all non-nullable non-relationship fields as args
+                if (nonNullableProps.size() > 0) {
+                    List<VariableTree> nonNullableParams = new ArrayList<VariableTree>(nonNullableProps.size() + 1);
+                    nonNullableParams.add(pkFieldParam);
+                    for (Property property : nonNullableProps) {
+                        nonNullableParams.add(genUtils.removeModifiers(property.getField()));
+                    }
+                    constructors.add(genUtils.createAssignmentConstructor(genUtils.createModifiers(Modifier.PUBLIC), entityClassName, nonNullableParams));
+                }
+
+                // create a constructor which takes the fields of the primary key class as arguments
+                if (pkClassVariables.size() > 0) {
+                    StringBuilder body = new StringBuilder(30 + 30 * pkClassVariables.size());
+                    body.append("{"); // NOI18N
+                    body.append("this." + pkProperty.getField().getName() + " = new " + pkClassName + "("); // NOI18N
+                    for (Iterator<VariableTree> i = pkClassVariables.iterator(); i.hasNext();) {
+                        body.append(i.next().getName());
+                        body.append(i.hasNext() ? ", " : ");"); // NOI18N
+                    }
+                    body.append("}"); // NOI18N
+                    TreeMaker make = copy.getTreeMaker();
+                    constructors.add(make.Constructor(
+                            make.Modifiers(EnumSet.of(Modifier.PUBLIC), Collections.<AnnotationTree>emptyList()),
+                            Collections.<TypeParameterTree>emptyList(),
+                            pkClassVariables,
+                            Collections.<ExpressionTree>emptyList(),
+                            body.toString()));
+                }
+
+                // add equals and hashCode methods
+                methods.add(createHashCodeMethod(pkFieldParams));
+                methods.add(createEqualsMethod(entityClassName, pkFieldParams));
+                methods.add(createToStringMethod(entityFQClassName, pkFieldParams));
+            }
+
+            private String getRelationshipFieldType(RelationshipRole role, String pkg) {
+                RelationshipRole rA = role.getParent().getRoleA();
+                RelationshipRole rB = role.getParent().getRoleB();
+                RelationshipRole otherRole = role.equals(rA) ? rB : rA;
+                return pkg + "." + otherRole.getEntityName(); // NOI18N
+            }
+
+            private void makeReadOnlyIfNecessary(List<String> pkColumnNames, String testColumnName, List<ExpressionTree> attrs) {
+                // if the join column is a pk column, add insertable = false, updatable = false
+                if (pkColumnNames.contains(testColumnName)) {
+                    attrs.add(genUtils.createAnnotationArgument("insertable", false)); //NOI18N
+                    attrs.add(genUtils.createAnnotationArgument("updatable", false)); //NOI18N
+                }
+            }
         }
-        
-        public void unregister() {
-            JavaModel.getJavaRepository().removeListener(this);
+
+        /**
+         * An implementation of ClassGenerator which generates primary key
+         * classes.
+         */
+        private final class PKClassGenerator extends ClassGenerator {
+
+            public PKClassGenerator(RelatedCMPHelper helper, WorkingCopy copy, EntityClass entityClass) throws IOException {
+                super(helper, copy, entityClass);
+            }
+
+            protected void initialize() {
+                // primary key class must be serializable and @Embeddable
+                classTree = genUtils.addImplementsClause(classTree, "java.io.Serializable"); //NOI18N
+                classTree = genUtils.addAnnotation(classTree, genUtils.createAnnotation("javax.persistence.Embeddable")); // NOI18N
+            }
+
+            protected void generateMember(EntityMember m) throws IOException {
+                if (!m.isPrimaryKey()) {
+                    return;
+                }
+                Property property = createProperty(m);
+                properties.add(property);
+            }
+
+            protected void afterMembersGenerated() {
+            }
+
+            protected void generateRelationship(RelationshipRole relationship) {
+            }
+
+            protected void finish() {
+                // add a constructor which takes the fields of the primary key class as arguments
+                List<VariableTree> parameters = new ArrayList<VariableTree>(properties.size());
+                for (Property property : properties) {
+                    parameters.add(genUtils.removeModifiers(property.getField()));
+                }
+                constructors.add(genUtils.createAssignmentConstructor(genUtils.createModifiers(Modifier.PUBLIC), pkClassName, parameters));
+
+                // add equals and hashCode methods
+                methods.add(createHashCodeMethod(parameters));
+                methods.add(createEqualsMethod(pkClassName, parameters));
+                methods.add(createToStringMethod(pkFQClassName, parameters));
+            }
         }
     }
 }
