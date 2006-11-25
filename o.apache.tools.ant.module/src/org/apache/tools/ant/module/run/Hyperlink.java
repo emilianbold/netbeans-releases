@@ -68,6 +68,8 @@ public final class Hyperlink extends Annotation implements OutputListener, Prope
     private final int line2;
     private final int col2;
     private Line liveLine;
+    /** #22374: do not double up annotations. (Prefer parser annotations from editor.) */
+    private boolean masked;
     
     private boolean dead = false;
     
@@ -118,7 +120,6 @@ public final class Hyperlink extends Annotation implements OutputListener, Prope
                     AntModule.err.log("opened document for " + file);
                     try {
                         updateLines(ed);
-                        assert liveLine != null;
                         if (!liveLine.isDeleted()) {
                             attachAsNeeded(liveLine);
                             if (col1 == -1) {
@@ -154,8 +155,10 @@ public final class Hyperlink extends Annotation implements OutputListener, Prope
      */
     private void updateLines(EditorCookie ed) {
         Line.Set lineset = ed.getLineSet();
+        boolean ran = false;
         synchronized (hyperlinks) {
             if (liveLine == null) {
+                ran = true;
                 for (Hyperlink h : hyperlinks) {
                     if (h.liveLine == null && h.url.equals(url) && h.line1 != -1) {
                         h.liveLine = lineset.getOriginal(h.line1 - 1);
@@ -163,6 +166,7 @@ public final class Hyperlink extends Annotation implements OutputListener, Prope
                 }
             }
         }
+        assert liveLine != null : ran;
     }
     
     public void outputLineSelected(OutputEvent ev) {
@@ -184,7 +188,6 @@ public final class Hyperlink extends Annotation implements OutputListener, Prope
                 AntModule.err.log("got document for " + file);
                 if (line1 != -1) {
                     updateLines(ed);
-                    assert liveLine != null;
                     if (!liveLine.isDeleted()) {
                         attachAsNeeded(liveLine);
                         if (col1 == -1) {
@@ -205,6 +208,11 @@ public final class Hyperlink extends Annotation implements OutputListener, Prope
     private synchronized void attachAsNeeded(Line l) {
         if (getAttachedAnnotatable() == null) {
             boolean log = AntModule.err.isLoggable(ErrorManager.INFORMATIONAL);
+            // Suppress for lifetime of hyperlink in case problem was fixed by user.
+            masked |= l.getAnnotationCount() > 0;
+            if (masked) {
+                return;
+            }
             Annotatable ann;
             // Text of the line, incl. trailing newline.
             String text = l.getText();
@@ -287,6 +295,21 @@ public final class Hyperlink extends Annotation implements OutputListener, Prope
                 AntModule.err.log("Received Annotatable property change: " + prop);
             }
             doDetach();
+        }
+        if (Annotatable.PROP_ANNOTATION_COUNT.equals(prop)) {
+            // #22374 again: detach if another annotation is added to this line after me.
+            Annotatable ann = getAttachedAnnotatable();
+            if (ann != null) {
+                int count = ann.getAnnotationCount();
+                if (ann instanceof Line.Part) {
+                    // Parser annotation may be on line rather than our segment of it.
+                    count += ((Line.Part) ann).getLine().getAnnotationCount();
+                }
+                if (count > 1) {
+                    masked = true;
+                    doDetach();
+                }
+            }
         }
     }
     
