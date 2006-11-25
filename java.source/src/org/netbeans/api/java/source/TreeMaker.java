@@ -53,7 +53,7 @@ import org.netbeans.modules.java.builder.CommentHandlerService;
  *    }; 
  * </pre>
  *
- * @see <a href="http://wiki.netbeans.info/wiki/view/JavaHT_Modification">How do I do modification to a source file?</a> 
+ * @see <a href="http://wiki.netbeans.org/wiki/view/JavaHT_Modification">How do I do modification to a source file?</a> 
  *
  * @author Tom Ball
  * @author Pavel Flaska

@@ -102,7 +102,7 @@ Microsystems, Inc. All Rights Reserved.
         <h4>FAQ and Mailing List</h4>
 
         <p>Can't find what you're looking for? Try the <a
-        href="http://wiki.netbeans.info/wiki/view/NetBeansDeveloperFAQ" target="_top">FAQ</a>
+        href="http://wiki.netbeans.org/wiki/view/NetBeansDeveloperFAQ" target="_top">FAQ</a>
         and then <a
         href="http://www.netbeans.org/community/lists/top.html" target="_top">dev@openide.netbeans.org</a>.</p>
 
