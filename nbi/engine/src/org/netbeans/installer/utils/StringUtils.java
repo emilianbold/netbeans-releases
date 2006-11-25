@@ -60,8 +60,11 @@ public abstract class StringUtils {
     
     public static final String CR = "\r";
     public static final String LF = "\n";
+    public static final String DOT = ".";
+    public static final String EMPTY_STRING = "";
     public static final String CRLF = CR + LF;
     public static final String CRLFCRLF = CRLF + CRLF;
+    public static final String SPACE = " ";
     
     private static final String LEFT_WHITESPACE  = "^\\s+";
     private static final String RIGHT_WHITESPACE = "\\s+$";
@@ -110,11 +113,11 @@ public abstract class StringUtils {
     }
     
     public static String leftTrim(String string) {
-        return string.replaceFirst(LEFT_WHITESPACE, "");
+        return string.replaceFirst(LEFT_WHITESPACE, EMPTY_STRING);
     }
     
     public static String rightTrim(String string) {
-        return string.replaceFirst(RIGHT_WHITESPACE, "");
+        return string.replaceFirst(RIGHT_WHITESPACE, EMPTY_STRING);
     }
     
     public static char fetchMnemonic(String string) {
@@ -127,11 +130,11 @@ public abstract class StringUtils {
     }
     
     public static String stripMnemonic(String string) {
-        return string.replaceFirst(MNEMONIC, "");
+        return string.replaceFirst(MNEMONIC, EMPTY_STRING);
     }
     
     public static String capitalizeFirst(String string) {
-        return "" + Character.toUpperCase(string.charAt(0)) + string.substring(1);
+        return EMPTY_STRING + Character.toUpperCase(string.charAt(0)) + string.substring(1);
     }
     
     public static String getGetterName(String propertyName) {
@@ -190,7 +193,7 @@ public abstract class StringUtils {
         StringBuilder result = new StringBuilder();
         
         for (int i = 0; i < strings.length; i++) {
-            result.append((strings[i]==null) ? ""+null :
+            result.append((strings[i]==null) ? EMPTY_STRING+null :
                 strings[i].toString());
             
             if (i != strings.length - 1) {
@@ -225,7 +228,7 @@ public abstract class StringUtils {
         }
         
         // return as bytes
-        return "" + longBytes + " B";
+        return EMPTY_STRING + longBytes + " B";
     }
     
     public static String asHexString(byte[] bytes) {
@@ -394,7 +397,7 @@ public abstract class StringUtils {
         
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         try {
-            properties.store(outputStream, "");
+            properties.store(outputStream, EMPTY_STRING);
         } catch (IOException e) {
             ErrorManager.notify(ErrorLevel.WARNING, "Cannot convert string", e);
             return string;
@@ -446,7 +449,7 @@ public abstract class StringUtils {
         } else {
             List<Platform> platforms = new ArrayList<Platform>();
             
-            for (String name: string.split(" ")) {
+            for (String name: string.split(SPACE)) {
                 Platform platform = parsePlatform(name);
                 if (!platforms.contains(platform)) {
                     platforms.add(platform);

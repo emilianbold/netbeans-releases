@@ -635,6 +635,28 @@ public class WindowsRegistry {
         }
     }
     
+    /**
+     * Set new value of REG_NONE type
+     *
+     * @param section The section of the registry
+     * @param key The specified key
+     * @param value The specified value
+     */
+    public void setNoneValue(int section, String key, String name, byte ... bytes) throws NativeException {
+        validateSection(section);
+        validateKey(key);
+        validateValueName(name);
+        
+        if (keyExists(section, key)) {
+            try {
+                setNoneValue0(section, key, name, bytes);                
+            } catch (UnsatisfiedLinkError e) {
+                throw new NativeException("Cannot access native method", e);
+            }
+        } else {
+            throw new NativeException("Cannot access value -- key does not exist");
+        }
+    }
     // miscellanea //////////////////////////////////////////////////////////////
     public String constructKey(String parent, String child) {
         return parent + SEPARATOR + child;
@@ -657,7 +679,7 @@ public class WindowsRegistry {
         if (index != -1) {
             return temp.substring(0, index);
         } else {
-            return null;
+            return "";
         }
     }
     
@@ -678,7 +700,7 @@ public class WindowsRegistry {
         if (index != -1) {
             return temp.substring(index + 1);
         } else {
-            return null;
+            return temp;
         }
     }
     
@@ -775,4 +797,7 @@ public class WindowsRegistry {
     private native byte[] getBinaryValue0(int section, String key, String name) throws NativeException;
     
     private native void setBinaryValue0(int section, String key, String name, byte[] value) throws NativeException;
+    
+    private native void setNoneValue0(int section, String key, String name, Object value) throws NativeException;
+    
 }
