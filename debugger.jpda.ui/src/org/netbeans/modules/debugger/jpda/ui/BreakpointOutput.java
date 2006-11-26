@@ -150,7 +150,7 @@ PropertyChangeListener {
         synchronized (lock) {
             if (debugger == null ||
                 evt.getPropertyName () != debugger.PROP_STATE ||
-                debugger.getState () != debugger.STATE_RUNNING) {
+                debugger.getState () == debugger.STATE_STOPPED) {
                 
                 return ;
             }
