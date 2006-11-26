@@ -107,6 +107,10 @@ public class Installer {
      * @return An instance of <code>Installer</code>
      */
     public static synchronized Installer getInstance() {
+        if (instance == null) {
+            instance = new Installer(new String[0]);
+        }
+        
         return instance;
     }
     

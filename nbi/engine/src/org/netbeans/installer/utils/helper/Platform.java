@@ -30,8 +30,8 @@ public enum Platform {
     LINUX("linux", "Linux"),
     SOLARIS_X86("solaris-x86", "Solaris X86"),
     SOLARIS_SPARC("solaris-sparc", "Solaris Sparc"),
-    MACOS_X_PPC("macos-x-ppc", "MacOS X (PPC)"),
-    MACOS_X_X86("macos-x-x86", "MacOS X (Intel)");
+    MACOS_X_PPC("macosx-ppc", "MacOS X (PPC)"),
+    MACOS_X_X86("macosx-x86", "MacOS X (Intel)");
     
     private String name;
     private String displayName;

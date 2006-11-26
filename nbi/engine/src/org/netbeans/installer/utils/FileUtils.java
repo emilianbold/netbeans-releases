@@ -29,29 +29,35 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.Reader;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import java.util.regex.Pattern;
 import java.util.zip.CRC32;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 
 /**
- *
- *
- *
  *
  * @author Kirill Sorokin
  */
 public final class FileUtils {
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    public static final int BUFFER_SIZE = 10240;
+    public static final int    BUFFER_SIZE = 4096;
+    
+    public static final String SLASH       = "/";
+    public static final String METAINF     = "META-INF";
     
     /////////////////////////////////////////////////////////////////////////////////
     // Static
@@ -415,7 +421,7 @@ public final class FileUtils {
         copyFile(source, destination, false);
     }
     
-    public static void copyFile(File source, File destination, boolean recurseToSubDirs) throws IOException {
+    public static void copyFile(File source, File destination, boolean recurse) throws IOException {
         if (!source.exists()) {
             LogManager.log(ErrorLevel.MESSAGE, "    ... " + source + " does not exist"); //NOI18N
             return;
@@ -458,15 +464,15 @@ public final class FileUtils {
                 } catch (IOException ignored){}
             }
         }  else {
-            LogManager.log(ErrorLevel.MESSAGE, "    copying directory: " + source + " to: " + destination + (recurseToSubDirs ? " with recursion" : ""));//NOI18N
+            LogManager.log(ErrorLevel.MESSAGE, "    copying directory: " + source + " to: " + destination + (recurse ? " with recursion" : ""));//NOI18N
             if (!destination.mkdirs()) {
                 LogManager.log(ErrorLevel.MESSAGE, "    ... cannot create " + destination); //NOI18N
                 return;
             }
             
-            if (recurseToSubDirs) {
+            if (recurse) {
                 for(File file : source.listFiles()) {
-                    copyFile(file, new File(destination, file.getName()), recurseToSubDirs);
+                    copyFile(file, new File(destination, file.getName()), recurse);
                 }
             }
         }
@@ -530,6 +536,131 @@ public final class FileUtils {
                     }
                 }
             }
+        }
+    }
+    
+    public static void unzip(File file, File directory) throws IOException {
+        ZipFile zip = new ZipFile(file);
+        
+        if (directory.exists() && directory.isFile()) {
+            throw new IOException("Directory is an existing file, cannot unzip.");
+        }
+        
+        if (!directory.exists() && !directory.mkdirs()) {
+            throw new IOException("Cannot create directory");
+        }
+        
+        Enumeration<? extends ZipEntry> entries =
+                (Enumeration<? extends ZipEntry>) zip.entries();
+        while (entries.hasMoreElements()) {
+            ZipEntry entry = entries.nextElement();
+            
+            File entryFile = new File(directory, entry.getName());
+            
+            InputStream  in  = null;
+            OutputStream out = null;
+            if (entry.getName().endsWith(SLASH)) {
+                if (entryFile.exists() && !entryFile.isDirectory()) {
+                    throw new IOException("An entry directory exists and is not a directory");
+                }
+                if (!entryFile.exists() && !entryFile.mkdirs()) {
+                    throw new IOException("Cannot create an entry directory.");
+                }
+            } else {
+                if (entryFile.exists() && !entryFile.isFile()) {
+                    throw new IOException("An entry file exists and is not a file");
+                }
+                if (!entryFile.getParentFile().exists() && !entryFile.getParentFile().mkdirs()) {
+                    throw new IOException("Cannot create an entry parent directory.");
+                }
+                
+                try {
+                    in  = zip.getInputStream(entry);
+                    out = new FileOutputStream(entryFile);
+                    
+                    StreamUtils.transferData(in, out);
+                } finally {
+                    if (in != null) {
+                        in.close();
+                    }
+                    if (out != null) {
+                        out.close();
+                    }
+                }
+            }
+            
+            entryFile.setLastModified(entry.getTime());
+        }
+        
+        zip.close();
+    }
+    
+    public static void unjar(File file, File directory) throws IOException {
+        JarFile jar = new JarFile(file);
+        
+        if (directory.exists() && directory.isFile()) {
+            throw new IOException("Directory is an existing file, cannot unjar.");
+        }
+        
+        if (!directory.exists() && !directory.mkdirs()) {
+            throw new IOException("Cannot create directory");
+        }
+        
+        Enumeration<JarEntry> entries = (Enumeration<JarEntry>) jar.entries();
+        while (entries.hasMoreElements()) {
+            JarEntry entry = entries.nextElement();
+            
+            if (entry.getName().startsWith(METAINF)) {
+                continue;
+            }
+            
+            File entryFile = new File(directory, entry.getName());
+            
+            InputStream  in  = null;
+            OutputStream out = null;
+            if (entry.getName().endsWith(SLASH)) {
+                if (entryFile.exists() && !entryFile.isDirectory()) {
+                    throw new IOException("An entry directory exists and is not a directory");
+                }
+                if (!entryFile.exists() && !entryFile.mkdirs()) {
+                    throw new IOException("Cannot create an entry directory.");
+                }
+            } else {
+                if (entryFile.exists() && !entryFile.isFile()) {
+                    throw new IOException("An entry file exists and is not a file");
+                }
+                if (!entryFile.getParentFile().exists() && !entryFile.getParentFile().mkdirs()) {
+                    throw new IOException("Cannot create an entry parent directory.");
+                }
+                
+                try {
+                    in  = jar.getInputStream(entry);
+                    out = new FileOutputStream(entryFile);
+                    
+                    StreamUtils.transferData(in, out);
+                } finally {
+                    if (in != null) {
+                        in.close();
+                    }
+                    if (out != null) {
+                        out.close();
+                    }
+                }
+            }
+            
+            entryFile.setLastModified(entry.getTime());
+        }
+        
+        jar.close();
+    }
+    
+    public static String getJarAttribute(File file, String name) throws IOException {
+        JarFile jar = new JarFile(file);
+        
+        try {
+            return jar.getManifest().getMainAttributes().getValue(name);
+        } finally {
+            jar.close();
         }
     }
     

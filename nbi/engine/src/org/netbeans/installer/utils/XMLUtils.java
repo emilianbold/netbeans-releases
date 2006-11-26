@@ -21,13 +21,18 @@
 package org.netbeans.installer.utils;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
@@ -46,6 +51,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 /**
  *
@@ -108,6 +114,36 @@ public abstract class XMLUtils {
             throw new XMLException("Cannot save XML document", e);
         } catch (TransformerException e) {
             throw new XMLException("Cannot save XML document", e);
+        }
+    }
+    
+    public static Document loadXMLDocument(File file) throws XMLException {
+        FileInputStream input = null;
+        try {
+            return loadXMLDocument(input = new FileInputStream(file));
+        } catch (IOException e) {
+            throw new XMLException("Cannot open XML file", e);
+        } finally {
+            if (input != null) {
+                try {
+                    input.close();
+                } catch (IOException e) {
+                    ErrorManager.notify(ErrorLevel.DEBUG, e);
+                }
+            }
+        }
+    }
+    
+    public static Document loadXMLDocument(InputStream input) throws XMLException {
+        try {
+            return DocumentBuilderFactory.
+                    newInstance().newDocumentBuilder().parse(input);
+        } catch (ParserConfigurationException e) {
+            throw new XMLException("Cannot parse XML", e);
+        } catch (SAXException e) {
+            throw new XMLException("Cannot parse XML", e);
+        } catch (IOException e) {
+            throw new XMLException("Cannot parse XML", e);
         }
     }
     

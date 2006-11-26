@@ -462,7 +462,7 @@ public abstract class StringUtils {
     public static ExtendedURI parseExtendedUri(Element element) throws ParseException {
         try {
             URI    uri           = new URI(XMLUtils.getChildNodeTextContent(element, "default-uri"));
-            long   estimatedSize = Long.parseLong(XMLUtils.getAttribute(element, "estimated-size"));
+            long   estimatedSize = Long.parseLong(XMLUtils.getAttribute(element, "size"));
             String md5           = XMLUtils.getAttribute(element, "md5");
             String crc32         = XMLUtils.getAttribute(element, "crc32");
             
@@ -472,6 +472,8 @@ public abstract class StringUtils {
                 return new ExtendedURI(uri, estimatedSize, md5, crc32);
             }
         } catch (URISyntaxException e) {
+            throw new ParseException("Cannot parse extended URI", e);
+        } catch (NumberFormatException e) {
             throw new ParseException("Cannot parse extended URI", e);
         }
     }
