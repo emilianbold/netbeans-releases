@@ -309,14 +309,19 @@ public final class DerbyDatabases {
      */
     private static File ensureSystemHome() throws IOException {
         String systemHome = DerbySupport.getSystemHome();
+        boolean noSystemHome = false;
         if (systemHome.length() <= 0) { // NOI18N
-            throw new IllegalStateException("The derby.system.home directory is not set"); // NOI18N
+            noSystemHome = true;
+            systemHome = DerbySupport.getDefaultSystemHome();
         }
         File systemHomeFile = new File(systemHome);
         if (!systemHomeFile.exists()){
             if (!systemHomeFile.mkdirs()) {
                 throw new IOException("Could not create the derby.system.home directory"); // NOI18N
             }
+        }
+        if (noSystemHome) {
+            DerbySupport.setSystemHome(systemHome);
         }
         return systemHomeFile;
     }
