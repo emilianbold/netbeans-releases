@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<application version="5" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/application_5.xsd">
+  <display-name>server</display-name>
+  <module>
+    <web>
+      <web-uri>war-admin.war</web-uri>
+      <context-root>/nbi-admin</context-root>
+    </web>
+  </module>
+  <module>
+    <web>
+      <web-uri>war-client.war</web-uri>
+      <context-root>/nbi</context-root>
+    </web>
+  </module>
+  <module>
+    <ejb>ejb.jar</ejb>
+  </module>
+</application>
