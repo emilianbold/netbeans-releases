@@ -33,7 +33,12 @@ import com.sun.tools.javadoc.JavadocMemberEnter;
 import com.sun.tools.javadoc.Messager;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
@@ -72,6 +77,7 @@ import javax.tools.DiagnosticListener;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
 import javax.tools.ToolProvider;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
@@ -861,6 +867,15 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             }                
         } catch (Abort abort) {
             currentPhase = Phase.UP_TO_DATE;
+        } catch (IOException ex) {
+            dumpSource(currentInfo, ex);
+            throw ex;
+        } catch (RuntimeException ex) {
+            dumpSource(currentInfo, ex);
+            throw ex;
+        } catch (Error ex) {
+            dumpSource(currentInfo, ex);
+            throw ex;
         }
         finally {
             if (isMultiFiles) {
@@ -1554,6 +1569,69 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         }
         else {
             return sources[sources.length-1].name;
+        }
+    }
+    
+    private static final int MAX_DUMPS = 255;
+    
+    /**
+     * Dumps the source code to the file. Used for parser debugging. Only a limited number
+     * of dump files is used. If the last file exists, this method doesn't dump anything.
+     *
+     * @param  info  CompilationInfo for which the error occurred.
+     * @param  exc  exception to write to the end of dump file
+     */
+    private static void dumpSource(CompilationInfo info, Throwable exc) {
+        String dumpDir = System.getProperty("netbeans.user") + "/var/log/"; //NOI18N
+        String src = info.getText();
+        FileObject file = info.getFileObject();
+        String fileName = FileUtil.getFileDisplayName(info.getFileObject());
+        String origName = file.getName();
+        File f = new File(dumpDir + origName + ".dump"); // NOI18N
+        boolean dumpSucceeded = false;
+        int i = 1;
+        while (i < MAX_DUMPS) {
+            if (!f.exists())
+                break;
+            f = new File(dumpDir + origName + '_' + i + ".dump"); // NOI18N
+            i++;
+        }
+        if (!f.exists()) {
+            try {
+                OutputStream os = new FileOutputStream(f);
+                PrintWriter writer = new PrintWriter(new OutputStreamWriter(os, "UTF-8")); // NOI18N
+                try {
+                    writer.println(src);
+                    writer.println("----- Classpath: ---------------------------------------------"); // NOI18N
+                    
+                    final ClassPath bootPath   = info.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.BOOT);
+                    final ClassPath classPath  = info.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.COMPILE);
+                    final ClassPath sourcePath = info.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.SOURCE);
+
+                    writer.println("bootPath: " + (bootPath != null ? bootPath.toString() : "null"));
+                    writer.println("classPath: " + (classPath != null ? classPath.toString() : "null"));
+                    writer.println("sourcePath: " + (sourcePath != null ? sourcePath.toString() : "null"));
+                    
+                    writer.println("----- Original exception ---------------------------------------------"); // NOI18N
+                    exc.printStackTrace(writer);
+                } finally {
+                    writer.close();
+                    dumpSucceeded = true;
+                }
+            } catch (IOException ioe) {
+                Logger.getLogger("global").log(Level.INFO, "Error when writing parser dump file!", ioe); // NOI18N
+            }
+        }
+        if (dumpSucceeded) {
+            Throwable t = Exceptions.attachMessage(exc, "An error occurred during parsing of \'" + fileName + "\'. Please report a bug against java/source and attach dump file '"  // NOI18N
+                    + f.getAbsolutePath() + "'."); // NOI18N
+            Exceptions.printStackTrace(t);
+        } else {
+            Logger.getLogger("global").log(Level.WARNING,
+                    "Dump could not be written. Either dump file could not " + // NOI18N
+                    "be created or all dump files were already used. Please " + // NOI18N
+                    "check that you have write permission to '" + dumpDir + "' and " + // NOI18N
+                    "clean all *.dump files in that directory."); // NOI18N
         }
     }
     
