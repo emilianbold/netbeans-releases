@@ -19,30 +19,67 @@
 
 package org.netbeans.core.windows.view.ui;
 
+import java.awt.event.ActionEvent;
 import org.openide.awt.StatusDisplayer;
-import org.openide.util.RequestProcessor;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
+import java.awt.event.ActionListener;
 
 /** The status line component of the main window.
 *
 * @author Jaroslav Tulach, Jesse Glick
 */
 final class StatusLine extends JLabel implements ChangeListener, Runnable {
+    private static int SURVIVING_TIME = Integer.getInteger("org.openide.awt.StatusDisplayer.DISPLAY_TIME", 5000);
+    
     private StatusDisplayer d = StatusDisplayer.getDefault();
     
-    private String currentMsg;
-
-    private RequestProcessor.Task updater = RequestProcessor.getDefault().create(new Runnable() {
+    Object clearing;
+    
+    private class Updater implements ActionListener {
         
-        public void run() {
-            currentMsg = "";
-            SwingUtilities.invokeLater(StatusLine.this);
+        private Object token;
+
+        private long startTime;
+        
+        private Timer controller;
+        
+        public Updater(Object token) {
+            this.token = token;
         }
-    });
+        
+        public void schedule() {
+            controller = new Timer(SURVIVING_TIME, this);
+            controller.setDelay(100);
+            controller.start();
+        }
+        
+        public void actionPerformed(ActionEvent arg0) {
+            if (clearing == token) {
+                long t = System.currentTimeMillis();
+                if (startTime != 0L) {
+                    Color c = UIManager.getColor("Label.foreground");
+                    if (c != null) {
+                        int alpha = 256 * (int)(t - startTime) / 2000;
+                        StatusLine.this.setForeground(
+                                new Color(c.getRed(), c.getGreen(), c.getBlue(), 255 - Math.min(255, alpha)));
+                    }
+                }
+                else {
+                    startTime = t;
+                }
+                if (t > startTime + 2000) {
+                    controller.stop();
+                }
+            }
+            else {
+                controller.stop();
+            }
+        }
+    };
     
     /** Creates a new StatusLine */
     public StatusLine () {
@@ -71,7 +108,6 @@ final class StatusLine extends JLabel implements ChangeListener, Runnable {
     }
 
     public void stateChanged(ChangeEvent e) {
-        currentMsg = d.getStatusText ();
         if(SwingUtilities.isEventDispatchThread()) {
             run();
         } else {
@@ -82,9 +118,13 @@ final class StatusLine extends JLabel implements ChangeListener, Runnable {
     /** Called in event queue, should update the status text.
     */
     public void run () {
+        String currentMsg = d.getStatusText ();
+        setForeground(UIManager.getColor("Label.foreground"));
         setText (currentMsg);
-        if (!"".equals(currentMsg)) {
-            updater.schedule(5000);
+        if (!"".equals(currentMsg) && SURVIVING_TIME != 0) {
+            Object token = new Object();
+            clearing = token;
+            new Updater(token).schedule();
         }
     }
     
