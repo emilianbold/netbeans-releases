@@ -19,9 +19,9 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<mconfig name="jbrowse">
+<mconfig name="java/source">
     
-    <testbag testattribs="stable" executor="unit-executor" name="jbrowse">
+    <testbag testattribs="stable" executor="unit-executor" name="java/source">
         <testset dir="unit/src">
             <patternset>
                 <include name="**/*Test.class"/>
@@ -116,7 +116,7 @@ Microsystems, Inc. All Rights Reserved.
                 Three method for testing body provided as a text.
                 Current problems:
                 * Methods are in tests - not possible to add them to the TreeMaker as they need
-                  to know SourceUtils class. Method will be defined in jbrowse module.
+                  to know SourceUtils class. Method will be defined in java/source module.
                 * generator adds extra empty statement ';' when setting body
                 * how to generate comments with the statements? It is not possible to add them
                 * immediately in text.
