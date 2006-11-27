@@ -222,7 +222,6 @@ public abstract class NbTopManager {
         public void setStatusText(String text) {
             ChangeListener[] _listeners;
             synchronized (this) {
-                if (text.equals(this.text)) return;
                 this.text = text;
                 if (listeners == null || listeners.isEmpty()) {
                     return;
