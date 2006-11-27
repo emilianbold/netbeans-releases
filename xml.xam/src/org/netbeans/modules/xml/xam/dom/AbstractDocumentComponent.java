@@ -859,10 +859,10 @@ public abstract class AbstractDocumentComponent<C extends DocumentComponent<C>>
     }
     
     private String getText(int index, boolean leading) {
-        if (getParent() == null) return null;
-        int domIndex = getAccess().getElementIndexOf(getParent().getPeer(), getPeer());
+        C child = getChildren().get(index);
+        int domIndex = getAccess().getElementIndexOf(getPeer(), child.getPeer());
         domIndex = leading ? domIndex-1 : domIndex+1;
-        NodeList nl = getParent().getPeer().getChildNodes();
+        NodeList nl = getPeer().getChildNodes();
         if (domIndex > -1 && domIndex < nl.getLength()) {
             Node n = nl.item(domIndex);
             if (n instanceof Text) {
@@ -874,14 +874,14 @@ public abstract class AbstractDocumentComponent<C extends DocumentComponent<C>>
     
     private void setText(String propertyName, String text, int index, boolean leading) {
         verifyWrite();
-        if (getParent() == null) return;
 
-        int domIndex = getAccess().getElementIndexOf(getParent().getPeer(), getPeer());
+        C child = getChildren().get(index);
+        int domIndex = getAccess().getElementIndexOf(getPeer(), child.getPeer());
         domIndex = leading ? domIndex-1 : domIndex+1;
-        NodeList nl = getParent().getPeer().getChildNodes();
+        NodeList nl = getPeer().getChildNodes();
         String oldValue = null;
-        Node refChild = getPeer();
         Text oldNode = null;
+        Node refChild = getPeer();
         if (domIndex > -1 && domIndex < nl.getLength()) {
             Node n = nl.item(domIndex);
             if (n instanceof Text) {
@@ -895,11 +895,11 @@ public abstract class AbstractDocumentComponent<C extends DocumentComponent<C>>
         Text newNode = text == null ? null : getModel().getDocument().createTextNode(text);
         if (newNode == null && oldValue == null) return;
         if (newNode == null) {
-            getModel().getAccess().removeChild(getParent().getPeer(), oldNode, (AbstractDocumentComponent)getParent());
+            getModel().getAccess().removeChild(getParent().getPeer(), oldNode, this);
         } else if (oldValue == null) {
-            getModel().getAccess().insertBefore(getParent().getPeer(), newNode, refChild, (AbstractDocumentComponent)getParent());
+            getModel().getAccess().insertBefore(getParent().getPeer(), newNode, refChild, this);
         } else {
-            getModel().getAccess().replaceChild(getParent().getPeer(), oldNode, newNode, (AbstractDocumentComponent)getParent());
+            getModel().getAccess().replaceChild(getParent().getPeer(), oldNode, newNode, this);
         }
         
         firePropertyChange(propertyName, oldValue, text);
