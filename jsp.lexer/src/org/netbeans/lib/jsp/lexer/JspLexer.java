@@ -44,10 +44,17 @@ public class JspLexer implements Lexer<JspTokenId> {
     private TokenFactory<JspTokenId> tokenFactory;
     
     public Object state() {
-        return state * 1000;
+        return state + before_el_state * 1000;
     }
     
+    //main internal lexer state
     private int state = INIT;
+    
+    //secondary internal state for EL expressions in JSP
+    //is it used to eliminate a number of lexer states when EL is found - 
+    //we have 8 states just in attribute value so I would have to copy the EL 
+    //recognition code eight-times.
+    private int before_el_state = INIT; 
     
     // Internal analyzer states
     // general
@@ -101,17 +108,8 @@ public class JspLexer implements Lexer<JspTokenId> {
     //expression language
     
     //EL in content language
-    private static final int ISA_CONTENT_EL_DELIM        = 38; //after $ or # in content language
-    private static final int ISI_CONTENT_EL              = 39; //expression language in content (after ${ or #{ )
-    
-    //EL in jsp tag attribute
-    private static final int ISA_TAG_ATTR_EL_DELIM       = 41; //after $ or # in jsp tag attribute
-    private static final int ISI_TAG_ATTR_EL             = 42; //expression language in jsp tag attribute (after ${ or #{ )
-    
-    //EL in jsp directive attribute
-    private static final int ISA_DIR_ATTR_EL_DELIM       = 43; //after $ or # in jsp directive attribute
-    private static final int ISI_DIR_ATTR_EL             = 44; //expression language in jsp directive attribute (after ${ or #{ )
-    
+    private static final int ISA_EL_DELIM        = 38; //after $ or # in content language
+    private static final int ISI_EL              = 39; //expression language in content (after ${ or #{ )
     
     public JspLexer(LexerRestartInfo<JspTokenId> info) {
         this.input = info.input();
@@ -119,7 +117,9 @@ public class JspLexer implements Lexer<JspTokenId> {
         if (info.state() == null) {
             this.state = INIT;
         } else {
-            this.state = ((Integer)info.state()).intValue() / 1000;
+            int encoded = ((Integer) state).intValue();
+            before_el_state = encoded / 1000;
+            state = encoded % 1000;
         }
     }
     
@@ -196,31 +196,35 @@ public class JspLexer implements Lexer<JspTokenId> {
 //                            break;
                         case '$':
                         case '#': //maybe expression language
-                            state = ISA_CONTENT_EL_DELIM;
+                            before_el_state = state; //remember main state
+                            state = ISA_EL_DELIM; 
                             break;
                     }
                     break;
                     
-                case ISA_CONTENT_EL_DELIM:
+                case ISA_EL_DELIM:
                     switch(actChar) {
                         case '{':
                             if(input.readLength() > 2) {
                                 //we have something read except the '${' or '#{' => it's content language
-                                input.backup(2); //backup the '$/#{' 
-                                state = INIT; //we will read the '$/#{' again
+                                input.backup(2); //backup the '$/#{'
+                                state = before_el_state; //we will read the '$/#{' again
+                                before_el_state = INIT;
                                 return token(JspTokenId.TEXT); //return the content language token
                             }
-                            state = ISI_CONTENT_EL;
+                            state = ISI_EL;
                             break;
                         default:
-                            state = INIT;
+                            state = before_el_state;
+                            before_el_state = INIT;
                     }
                     break;
-
-                case ISI_CONTENT_EL:
+                    
+                case ISI_EL:
                     if(actChar == '}') {
                         //return EL token
-                        state = INIT;
+                        state = before_el_state;
+                        before_el_state = INIT;
                         return token(JspTokenId.EL);
                     }
                     //stay in EL
@@ -512,6 +516,14 @@ public class JspLexer implements Lexer<JspTokenId> {
 //                                input.backup(1);
 //                                return token(JspTokenId.ATTR_VALUE);
 //                            }
+                        case '$':
+                        case '#':
+                            before_el_state = state; //remember main state
+                            state = ISA_EL_DELIM;
+                            break;
+                            
+                        default:
+                            //stay in ISI_TAG_STRING/2;
                     }
                     break;
                     
@@ -926,10 +938,10 @@ public class JspLexer implements Lexer<JspTokenId> {
             case ISI_JSP_COMMENT_MMP:
                 state = INIT;
                 return token(JspTokenId.COMMENT);
-            case ISA_CONTENT_EL_DELIM:
+            case ISA_EL_DELIM:
                 state = INIT;
                 return token(JspTokenId.TEXT);
-            case ISI_CONTENT_EL:
+            case ISI_EL:
                 state = INIT;
                 return token(JspTokenId.EL);
             default:
