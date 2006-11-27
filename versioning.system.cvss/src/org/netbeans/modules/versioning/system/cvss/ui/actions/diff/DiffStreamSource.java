@@ -124,6 +124,7 @@ public class DiffStreamSource extends StreamSource {
     synchronized void init(ExecutorGroup group) throws IOException {
         if (initialized) return;
         initialized = true;
+        if (revision == null) return;
         binary = !CvsVersioningSystem.getInstance().isText(baseFile);
         try {
             remoteFile = VersionsCache.getInstance().getRemoteFile(baseFile, revision, group);
