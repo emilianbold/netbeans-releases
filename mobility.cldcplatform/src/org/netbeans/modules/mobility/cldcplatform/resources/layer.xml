@@ -20,16 +20,6 @@ Microsystems, Inc. All Rights Reserved.
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 
 <filesystem>
-    <folder name="org-netbeans-api-project-libraries">
-        <folder name="LibraryTypeProviders">
-            <file name="j2me_library_provider.instance">
-                <attr name="instanceOf" stringvalue="org.netbeans.spi.project.libraries.LibraryTypeProvider"/>
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.mobility.cldcplatform.libraries.J2MELibraryTypeProvider" />
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.mobility.cldcplatform.libraries.J2MELibraryTypeProvider.create"/>
-            </file>
-        </folder>
-    </folder>
-
     <folder name="org-netbeans-api-java">
         <folder name="platform">
             <folder name="installers">

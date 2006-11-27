@@ -45,7 +45,6 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.mobility.project.ui.customizer.ProjectProperties;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
-import org.netbeans.modules.mobility.cldcplatform.libraries.J2MELibraryTypeProvider;
 import org.netbeans.modules.mobility.project.DefaultPropertiesDescriptor;
 import org.netbeans.modules.mobility.project.ui.customizer.VisualClassPathItem;
 import org.netbeans.spi.mobility.project.ui.customizer.support.VisualPropertySupport;
@@ -154,7 +153,7 @@ public class MIDletScanner implements Runnable {
             } else if (VisualClassPathItem.TYPE_LIBRARY == item.getType()) {
                 final Library l = (Library)item.getElement();
                 if (l != null) {
-                    final Iterator iter = l.getContent(J2MELibraryTypeProvider.VOLUME_TYPE_CLASSPATH).iterator();
+                    final Iterator iter = l.getContent("classpath").iterator(); //NOI18N
                     while (iter.hasNext()) {
                         final FileObject fo = URLMapper.findFileObject((URL)iter.next());
                         if (fo != null) roots.add(FileUtil.isArchiveFile(fo) ? FileUtil.getArchiveRoot(fo) : fo);

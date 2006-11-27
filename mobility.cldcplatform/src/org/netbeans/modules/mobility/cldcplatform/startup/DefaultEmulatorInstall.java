@@ -61,6 +61,7 @@ public class DefaultEmulatorInstall extends ModuleInstall {
     static private final String DSC_MARKER="dsc_installed.mark";
     
     public void restored() {
+        new LibraryConverter();
         installEmulators();
     }
     

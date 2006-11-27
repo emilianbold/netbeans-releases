@@ -33,7 +33,6 @@ import org.netbeans.modules.mobility.project.ui.customizer.VisualClassPathItem;
 import org.netbeans.spi.mobility.project.ui.customizer.support.VisualPropertySupport;
 import org.netbeans.modules.mobility.project.ui.customizer.VisualClasspathSupport;
 import org.netbeans.spi.mobility.project.ui.customizer.VisualPropertyGroup;
-import org.netbeans.modules.mobility.cldcplatform.libraries.J2MELibraryTypeProvider;
 import org.netbeans.modules.mobility.project.DefaultPropertiesDescriptor;
 import org.openide.util.NbBundle;
 
@@ -59,7 +58,7 @@ public class CustomizerLibraries extends JPanel implements CustomizerPanel, Visu
                 jButtonAddJar,
                 jButtonAddFolder,
                 jButtonAddLibrary,
-                J2MELibraryTypeProvider.LIBRARY_TYPE, //NOI18N
+                "j2se", //NOI18N
                 jButtonAddArtifact,
                 jButtonRemove,
                 jButtonMoveUp,

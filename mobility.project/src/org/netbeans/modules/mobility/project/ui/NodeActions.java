@@ -48,7 +48,6 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.api.project.libraries.Library;
-import org.netbeans.modules.mobility.cldcplatform.libraries.J2MELibraryTypeProvider;
 import org.netbeans.modules.mobility.project.J2MEProject;
 import org.netbeans.modules.mobility.project.DefaultPropertiesDescriptor;
 import org.netbeans.modules.mobility.project.ui.customizer.CustomizerLibraries;
@@ -255,7 +254,7 @@ class AddLibraryAction extends NodeAction<Library>
     protected Library[] getItems()
     {
         Library result[]=null;
-        final LibrariesChooser panel = new LibrariesChooser(J2MELibraryTypeProvider.LIBRARY_TYPE);
+        final LibrariesChooser panel = new LibrariesChooser("j2se"); //NOI18N
             final Object[] options = new Object[] {
             NbBundle.getMessage (VisualClasspathSupport.class,"LBL_AddLibrary"), //NOI18N
             NotifyDescriptor.CANCEL_OPTION
