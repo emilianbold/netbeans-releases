@@ -987,7 +987,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 String sourceLevel = SourceLevelQuery.getSourceLevel(fo);
                 final CompilerListener listener = new CompilerListener ();
                 final JavaFileManager fm = ClasspathInfoAccessor.INSTANCE.getFileManager(cpInfo);
-                JavaFileObject active = SourceFileObject.create(fo);
+                JavaFileObject active = FileObjects.fileFileObject(fileFile, rootFile);
                 JavacTaskImpl jt = JavaSourceAccessor.INSTANCE.createJavacTask(cpInfo, listener, sourceLevel);
                 jt.setTaskListener(listener);
                 Iterable<? extends CompilationUnitTree> trees = jt.parse(new JavaFileObject[] {active});
