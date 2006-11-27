@@ -19,6 +19,7 @@
 
 package org.netbeans.api.java.source;
 
+import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.jvm.Target;
 import com.sun.tools.javac.model.JavacElements;
 import java.util.List;
@@ -98,27 +99,25 @@ public final class ElementHandle<T extends Element> {
      */
     @SuppressWarnings ("unchecked")     // NOI18N
     public T resolve (final CompilationInfo compilationInfo) {
-        assert compilationInfo != null;
-        assert compilationInfo.getElements() instanceof JavacElements;
-        final JavacElements elements = (JavacElements) compilationInfo.getElements();
+        assert compilationInfo != null;        
         switch (this.kind) {
             case PACKAGE:
                 assert signatures.length == 1;
-                return (T) elements.getPackageElement(signatures[0]);
+                return (T) compilationInfo.getElements().getPackageElement(signatures[0]);
             case CLASS:
             case INTERFACE:
             case ENUM:
             case ANNOTATION_TYPE:
             case OTHER:
                 assert signatures.length == 1;
-                return (T) elements.getTypeElementByBinaryName (signatures[0]);
+                return (T) getTypeElementByBinaryName (signatures[0], compilationInfo);
             case METHOD:
             case CONSTRUCTOR:
             case INSTANCE_INIT:
             case STATIC_INIT:
             {
                 assert signatures.length == 3;
-                final TypeElement type = elements.getTypeElementByBinaryName (signatures[0]);
+                final TypeElement type = getTypeElementByBinaryName (signatures[0], compilationInfo);
                 if (type != null) {
                    final List<? extends Element> members = type.getEnclosedElements();
                    for (Element member : members) {
@@ -137,7 +136,7 @@ public final class ElementHandle<T extends Element> {
             case ENUM_CONSTANT:
             {
                 assert signatures.length == 3;
-                final TypeElement type = elements.getTypeElementByBinaryName (signatures[0]);
+                final TypeElement type = getTypeElementByBinaryName (signatures[0], compilationInfo);
                 if (type != null) {
                     final List<? extends Element> members = type.getEnclosedElements();
                     for (Element member : members) {
@@ -190,7 +189,7 @@ public final class ElementHandle<T extends Element> {
      * isn't creatred for the {@link TypeElement}.
      */
     public String getBinaryName () throws IllegalStateException {
-        if (this.kind.isClass() || this.kind.isInterface()) {
+        if ((this.kind.isClass() && !isArray(signatures[0])) || this.kind.isInterface()) {
             return this.signatures[0];
         }
         else {
@@ -208,7 +207,7 @@ public final class ElementHandle<T extends Element> {
      * isn't creatred for the {@link TypeElement}.
      */
     public String getQualifiedName () throws IllegalStateException {
-        if (this.kind.isClass() || this.kind.isInterface()) {
+        if ((this.kind.isClass() && !isArray(signatures[0])) || this.kind.isInterface()) {
             return this.signatures[0].replace (Target.DEFAULT.syntheticNameChar(),'.');    //NOI18N
         }
         else {
@@ -272,7 +271,7 @@ public final class ElementHandle<T extends Element> {
             case ENUM:
             case ANNOTATION_TYPE:
                 assert element instanceof TypeElement;
-                signatures = new String[] {ClassFileUtil.encodeClassName((TypeElement)element)};
+                signatures = new String[] {ClassFileUtil.encodeClassNameOrArray((TypeElement)element)};
                 break;
             case METHOD:
             case CONSTRUCTOR:                
@@ -355,6 +354,21 @@ public final class ElementHandle<T extends Element> {
                     throw new IllegalArgumentException ();
             }            
         }        
+    }
+    
+    private static TypeElement getTypeElementByBinaryName (final String signature, final CompilationInfo ci) {
+        if (isArray(signature)) {
+            return Symtab.instance(ci.getJavacTask().getContext()).arrayClass;
+        }
+        else {
+            assert ci.getElements() instanceof JavacElements;
+            final JavacElements elements = (JavacElements) ci.getElements();                    
+            return (TypeElement) elements.getTypeElementByBinaryName(signature);
+        }
+    }
+    
+    private static boolean isArray (String signature) {
+        return signature.length() == 1 && signature.charAt(0) == '[';
     }
     
 }

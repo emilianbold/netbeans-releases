@@ -138,7 +138,7 @@ public class ClassFileUtil {
         String[] result = new String[3];
 	Element enclosingElement = ve.getEnclosingElement();
 	assert enclosingElement instanceof TypeElement;
-        result[0] = encodeClassName ((TypeElement) enclosingElement);
+        result[0] = encodeClassNameOrArray ((TypeElement) enclosingElement);
         result[1] = ve.getSimpleName().toString();
         StringBuilder sb = new StringBuilder ();
         encodeType(ve.asType(),sb);
@@ -151,7 +151,7 @@ public class ClassFileUtil {
         final String[] result = new String[3];
         final Element enclosingType = ee.getEnclosingElement();
 	assert enclosingType instanceof TypeElement;
-        result[0] = encodeClassName ((TypeElement)enclosingType);
+        result[0] = encodeClassNameOrArray ((TypeElement)enclosingType);
         final ElementKind kind = ee.getKind();
         if (kind == ElementKind.METHOD || kind == ElementKind.CONSTRUCTOR) {
             final StringBuilder retType = new StringBuilder ();
@@ -182,6 +182,17 @@ public class ClassFileUtil {
             throw new IllegalArgumentException ();
         }
         return result;
+    }
+    
+    public static String encodeClassNameOrArray (TypeElement td) {
+        assert td != null;
+        CharSequence qname = td.getQualifiedName();
+        if (qname != null && "Array".contentEquals(qname) && td.getEnclosingElement().asType().getKind() == TypeKind.NONE) {     //NOI18N
+            return "[";  //NOI18N
+        }
+        else {
+            return encodeClassName(td);
+        }
     }
     
     public static String encodeClassName (TypeElement td) {
