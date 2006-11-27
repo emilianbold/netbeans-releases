@@ -45,20 +45,18 @@ import java.util.*;
  */
 
 public abstract class QueueBase implements PumpingsQueue {
-
+  
   /**
    * @noinspection unchecked
    */
   private static final WeakReference<PumpingsQueueListener>[] EMPTY_ARRAY = new WeakReference[0];
-
+  
   private final List<WeakReference<PumpingsQueueListener>> listeners;
-
-  private final Announcer announcer = new Announcer();
-
+  
   protected final Map<String, PumpingImpl> id2Pumping = new HashMap<String, PumpingImpl>();
-
+  
   protected File stateFile;
-
+  
   protected QueueBase(File stateFile) {
     try {
       this.stateFile = stateFile;
@@ -67,15 +65,14 @@ public abstract class QueueBase implements PumpingsQueue {
       LogManager.log(ex);
     }
     listeners = new ArrayList<WeakReference<PumpingsQueueListener>>(3);
-    announcer.start();
   }
-
+  
   public synchronized void addListener(PumpingsQueueListener listener) {
     if (!contains(listener)) {
       listeners.add(new WeakReference<PumpingsQueueListener>(listener));
     }
   }
-
+  
   private boolean contains(PumpingsQueueListener listener) {
     for (WeakReference<PumpingsQueueListener> weak : listeners) {
       final PumpingsQueueListener listen = weak.get();
@@ -83,24 +80,39 @@ public abstract class QueueBase implements PumpingsQueue {
     }
     return false;
   }
-
+  
   public Pumping getById(String id) {
     return id2Pumping.get(id);
   }
-
+  
   public Pumping[] toArray() {
     return id2Pumping.values().toArray(new Pumping[0]);
   }
-
+  
   public void fire(String methodName, Object... args) throws NoSuchMethodException {
     final List<Class> argsClasses = new ArrayList<Class>(args.length);
     for (Object arg : args) {
       argsClasses.add(arg.getClass());
     }
     final Method method = PumpingsQueueListener.class.getMethod(methodName, argsClasses.toArray(new Class[0]));
-    announcer.notifyListeners(method, args);
+    notifyListeners(method, args);
   }
-
+  
+  private synchronized void notifyListeners(Method mehtod, Object... args) {
+    WeakReference<PumpingsQueueListener>[] stub = listeners.toArray(EMPTY_ARRAY);
+    for (WeakReference<PumpingsQueueListener> ref : stub) {
+      final PumpingsQueueListener listener = ref.get();
+      if (listener == null) continue;
+      try {
+        mehtod.invoke(listener, args);
+      } catch (IllegalAccessException ignored) {
+        LogManager.log(ignored);
+      } catch (InvocationTargetException ignored) {
+        LogManager.log(ignored);
+      }
+    }
+  }
+  
   protected void load() throws IOException {
     try {
       Document queueState = DomUtil.parseXmlFile(stateFile);
@@ -120,7 +132,7 @@ public abstract class QueueBase implements PumpingsQueue {
       LogManager.log(ex);
     }
   }
-
+  
   public synchronized void dump() {
     try {
       final Document document = DomUtil.parseXmlFile("<queueState/>");
@@ -130,56 +142,10 @@ public abstract class QueueBase implements PumpingsQueue {
       }
       DomUtil.writeXmlFile(document, stateFile);
     } catch (ParseException wontHappend) {//skip
-        LogManager.log(wontHappend);
+      LogManager.log(wontHappend);
     } catch (IOException io) {
       LogManager.log("fail to dump - i/o error occures");
       LogManager.log(io);
-    }
-  }
-
-  private class Announcer extends Thread {
-
-    private final Queue<Pair<Method, Object[]>> workingQueue;
-
-    {
-      workingQueue = new LinkedList<Pair<Method, Object[]>>();
-    }
-
-    public Announcer() {
-      super();
-      setDaemon(true);
-    }
-
-    public synchronized void notifyListeners(Method method, Object... args) {
-      workingQueue.add(new Pair<Method, Object[]>(method, args));
-      notify();
-    }
-
-    public void run() {
-      while (true) {
-        try {
-          Pair<Method, Object[]> pair;
-          synchronized (this) {
-            if (workingQueue.isEmpty()) {
-              wait();
-            }
-            pair = workingQueue.poll();
-          }
-          WeakReference<PumpingsQueueListener>[] stub = listeners.toArray(EMPTY_ARRAY);
-          for (WeakReference<PumpingsQueueListener> ref : stub) {
-            final PumpingsQueueListener listener = ref.get();
-            if (listener == null) continue;
-            try {
-              pair.getFirst().invoke(listener, pair.getSecond());
-            } catch (IllegalAccessException ignored) {
-            } catch (InvocationTargetException ignored) {
-            }
-          }
-        } catch (InterruptedException exit) {
-          LogManager.log("announcer interrupted");
-          break;
-        }
-      }
     }
   }
 }

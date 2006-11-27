@@ -52,6 +52,9 @@ public class DispatchedQueue extends QueueBase {
     final boolean wasActive = dispatcher.isActive();
     if (wasActive) dispatcher.stop();
     pId2p.clear();
+    for (PumpingImpl pumping : id2Pumping.values()) {
+      if (pumping.state() == State.FINISHED) pumping.reset();
+    }
     id2Pumping.clear();
     if (wasActive) dispatcher.start();
     try {
@@ -88,15 +91,15 @@ public class DispatchedQueue extends QueueBase {
     final PumpingImpl oldOne = id2Pumping.remove(id);
     if (oldOne == null) return null;
     dispatcher.terminate(pId2p.get(id));
-    pId2p.remove(id);
-    if (oldOne.state() != State.FINISHED)
-      oldOne.reset();
     try {
       fire("pumpingDelete", id);
-      return oldOne;
     } catch (NoSuchMethodException ex) {
       throw new UnexpectedExceptionError("Listener contract was changed", ex);
     }
+    pId2p.remove(id);
+    if (oldOne.state() != State.FINISHED)
+      oldOne.reset();
+    return oldOne;
   }
   
   public synchronized void invoke() {

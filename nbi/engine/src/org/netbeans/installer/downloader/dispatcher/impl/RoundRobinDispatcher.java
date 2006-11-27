@@ -20,13 +20,16 @@
  */
 package org.netbeans.installer.downloader.dispatcher.impl;
 
-import java.util.HashSet;
+import org.netbeans.installer.downloader.dispatcher.LoadFactor;
 import org.netbeans.installer.downloader.dispatcher.Process;
 import org.netbeans.installer.downloader.dispatcher.ProcessDispatcher;
 
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Set;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -39,6 +42,12 @@ import org.omg.CORBA.Current;
  * @author Danila_Dugurov
  */
 public class RoundRobinDispatcher implements ProcessDispatcher {
+  private static final Map<LoadFactor, Byte> quantumToSkip = new HashMap<LoadFactor, Byte>();
+  static {
+    quantumToSkip.put(LoadFactor.FULL, (byte)0);
+    quantumToSkip.put(LoadFactor.AVERAGE, (byte)2);
+    quantumToSkip.put(LoadFactor.LOW, (byte)5);
+  }
   private final int timeQuantum;
   private final int pollingTime;
   private final WorkersPool pool;
@@ -50,6 +59,7 @@ public class RoundRobinDispatcher implements ProcessDispatcher {
   private Thread dispatcherThread;
   private Terminator terminator = new Terminator();
   private boolean isActive;
+  private LoadFactor factor;
 
   public RoundRobinDispatcher(int quantum, int poolSize) {
     if (quantum < 10 || poolSize < 1)
@@ -60,6 +70,7 @@ public class RoundRobinDispatcher implements ProcessDispatcher {
     workingQueue = new ArrayBlockingQueue<Worker>(poolSize);
     waitingQueue = new LinkedList<Process>();
     proc2Worker = new MutualHashMap<Process, Worker>();
+    factor = LoadFactor.FULL;
   }
 
   public synchronized boolean schedule(Process process) {
@@ -73,6 +84,14 @@ public class RoundRobinDispatcher implements ProcessDispatcher {
   
   public synchronized void terminate(Process process) {
     terminateInternal(process);
+  }
+  
+  public void setLoadFactor(LoadFactor factor) {
+    this.factor = factor;
+  }
+  
+  public LoadFactor loadFactor() {
+    return factor;
   }
 
   private void terminateInternal(Process process) {
@@ -143,13 +162,14 @@ public class RoundRobinDispatcher implements ProcessDispatcher {
         try {
           current = workingQueue.poll(pollingTime, TimeUnit.MILLISECONDS);
           if (invokeCurrent())
-            synchronized (this) {
-              wait(timeQuantum);
-            }
-        } catch (InterruptedException exit) {
-          break;
-        } finally  {
+              Thread.sleep(timeQuantum);
           suspendCurrent();
+          if (factor != LoadFactor.FULL) {
+            Thread.sleep(quantumToSkip.get(factor) * timeQuantum);
+          }
+        } catch (InterruptedException exit) {
+            suspendCurrent();
+          break;
         }
       }
       terminateAll();
@@ -197,6 +217,7 @@ public class RoundRobinDispatcher implements ProcessDispatcher {
     }
 
     private void filWorkingQueue() {
+        if (waitingQueue.size() == 0) return;
       synchronized (waitingQueue) {
         while (workingQueue.remainingCapacity() > 0) {
           final Process process = waitingQueue.poll();

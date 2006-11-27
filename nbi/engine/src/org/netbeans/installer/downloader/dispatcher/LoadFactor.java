@@ -16,27 +16,13 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  * 
- * $Id$
  */
 package org.netbeans.installer.downloader.dispatcher;
 
-public interface ProcessDispatcher {
-
-    boolean schedule(Process process);
-
-    void terminate(Process process);
-    
-    void setLoadFactor(LoadFactor factor);
-    
-    LoadFactor loadFactor();
-
-    boolean isActive();
-
-    int activeCount();
-
-    int waitingCount();
-
-    void start();
-
-    void stop();
+/**
+ *
+ * @author Danila_Dugurov
+ */
+public enum LoadFactor {
+    FULL, AVERAGE, LOW
 }
