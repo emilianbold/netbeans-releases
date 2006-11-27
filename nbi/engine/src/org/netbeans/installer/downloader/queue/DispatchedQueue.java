@@ -53,7 +53,7 @@ public class DispatchedQueue extends QueueBase {
     if (wasActive) dispatcher.stop();
     pId2p.clear();
     for (PumpingImpl pumping : id2Pumping.values()) {
-      if (pumping.state() == State.FINISHED) pumping.reset();
+      if (pumping.state() != State.FINISHED) pumping.reset();
     }
     id2Pumping.clear();
     if (wasActive) dispatcher.start();
