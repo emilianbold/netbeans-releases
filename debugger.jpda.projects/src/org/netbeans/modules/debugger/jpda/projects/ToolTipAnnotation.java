@@ -195,7 +195,7 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
      *
      * Used in: ToolTipAnnotation
      */
-    static JEditorPane getCurrentEditor () {
+    private static JEditorPane getCurrentEditor () {
         EditorCookie e = getCurrentEditorCookie ();
         if (e == null) return null;
         JEditorPane[] op = e.getOpenedPanes ();

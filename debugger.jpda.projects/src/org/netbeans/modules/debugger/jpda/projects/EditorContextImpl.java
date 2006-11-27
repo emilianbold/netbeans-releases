@@ -30,6 +30,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
@@ -40,6 +41,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
@@ -341,6 +343,26 @@ public class EditorContextImpl extends EditorContext {
      * @return number of line currently selected in editor or <code>-1</code>
      */
     public int getCurrentLineNumber () {
+        if (SwingUtilities.isEventDispatchThread()) {
+            return getCurrentLineNumber_();
+        } else {
+            final int[] ln = new int[1];
+            try {
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    public void run() {
+                        ln[0] = getCurrentLineNumber_();
+                    }
+                });
+            } catch (InvocationTargetException ex) {
+                ErrorManager.getDefault().notify(ex.getTargetException());
+            } catch (InterruptedException ex) {
+                ErrorManager.getDefault().notify(ex);
+            }
+            return ln[0];
+        }
+    }
+    
+    private int getCurrentLineNumber_() {
         EditorCookie e = getCurrentEditorCookie ();
         if (e == null) return -1;
         JEditorPane ep = getCurrentEditor ();
@@ -425,6 +447,26 @@ public class EditorContextImpl extends EditorContext {
      * @return identifier currently selected in editor or <code>null</code>
      */
     public String getSelectedIdentifier () {
+        if (SwingUtilities.isEventDispatchThread()) {
+            return getSelectedIdentifier_();
+        } else {
+            final String[] si = new String[1];
+            try {
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    public void run() {
+                        si[0] = getSelectedIdentifier_();
+                    }
+                });
+            } catch (InvocationTargetException ex) {
+                ErrorManager.getDefault().notify(ex.getTargetException());
+            } catch (InterruptedException ex) {
+                ErrorManager.getDefault().notify(ex);
+            }
+            return si[0];
+        }
+    }
+
+    private String getSelectedIdentifier_() {
         JEditorPane ep = getCurrentEditor ();
         if (ep == null) return null;
         String s = ep.getSelectedText ();
@@ -439,6 +481,26 @@ public class EditorContextImpl extends EditorContext {
      * @return method name currently selected in editor or empty string
      */
     public String getSelectedMethodName () {
+        if (SwingUtilities.isEventDispatchThread()) {
+            return getSelectedMethodName_();
+        } else {
+            final String[] mn = new String[1];
+            try {
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    public void run() {
+                        mn[0] = getSelectedMethodName_();
+                    }
+                });
+            } catch (InvocationTargetException ex) {
+                ErrorManager.getDefault().notify(ex.getTargetException());
+            } catch (InterruptedException ex) {
+                ErrorManager.getDefault().notify(ex);
+            }
+            return mn[0];
+        }
+    }
+    
+    private String getSelectedMethodName_() {
         EditorCookie e = getCurrentEditorCookie ();
         if (e == null) return "";
         JEditorPane ep = getCurrentEditor ();
