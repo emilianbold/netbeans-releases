@@ -842,7 +842,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             sortParams.append('(');
             int cnt = 0;
             for(Iterator<? extends TypeMirror> it = type.getParameterTypes().iterator(); it.hasNext();) {
-                sortParams.append(Utilities.getTypeName(it.next(), false));
+                sortParams.append(Utilities.getTypeName(it.next(), false, elem.isVarArgs() && !it.hasNext()));
                 if (it.hasNext()) {
                     sortParams.append(',');
                 }
@@ -869,7 +869,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             Iterator<? extends VariableElement> it = elem.getParameters().iterator();
             Iterator<? extends TypeMirror> tIt = type.getParameterTypes().iterator();
             while(it.hasNext() && tIt.hasNext()) {
-                lText.append(escape(Utilities.getTypeName(tIt.next(), false)));
+                lText.append(escape(Utilities.getTypeName(tIt.next(), false, elem.isVarArgs() && !tIt.hasNext())));
                 lText.append(' ');
                 lText.append(PARAMETER_NAME_COLOR);
                 lText.append(it.next().getSimpleName());
@@ -1062,7 +1062,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             Iterator<? extends VariableElement> it = elem.getParameters().iterator();
             Iterator<? extends TypeMirror> tIt = type.getParameterTypes().iterator();
             while(it.hasNext() && tIt.hasNext()) {
-                sb.append(Utilities.getTypeName(tIt.next(), false));
+                sb.append(Utilities.getTypeName(tIt.next(), false, elem.isVarArgs() && !tIt.hasNext()));
                 sb.append(' ');
                 sb.append(it.next().getSimpleName());
                 if (it.hasNext()) {
@@ -1202,7 +1202,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             sortParams.append('(');
             int cnt = 0;
             for(Iterator<? extends TypeMirror> it = type.getParameterTypes().iterator(); it.hasNext();) {
-                sortParams.append(Utilities.getTypeName(it.next(), false));
+                sortParams.append(Utilities.getTypeName(it.next(), false, elem.isVarArgs() && !it.hasNext()));
                 if (it.hasNext()) {
                     sortParams.append(',');
                 }
@@ -1227,7 +1227,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             Iterator<? extends VariableElement> it = elem.getParameters().iterator();
             Iterator<? extends TypeMirror> tIt = type.getParameterTypes().iterator();
             while(it.hasNext() && tIt.hasNext()) {
-                lText.append(escape(Utilities.getTypeName(tIt.next(), false)));
+                lText.append(escape(Utilities.getTypeName(tIt.next(), false, elem.isVarArgs() && !tIt.hasNext())));
                 lText.append(' ');
                 lText.append(PARAMETER_NAME_COLOR);
                 lText.append(it.next().getSimpleName());
@@ -1385,7 +1385,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             Iterator<? extends VariableElement> it = elem.getParameters().iterator();
             Iterator<? extends TypeMirror> tIt = type.getParameterTypes().iterator();
             while(it.hasNext() && tIt.hasNext()) {
-                sb.append(Utilities.getTypeName(tIt.next(), false));
+                sb.append(Utilities.getTypeName(tIt.next(), false, elem.isVarArgs() && !tIt.hasNext()));
                 sb.append(' ');
                 sb.append(it.next().getSimpleName());
                 if (it.hasNext()) {
@@ -1611,7 +1611,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             sortParams.append('(');
             int cnt = 0;
             for(Iterator<? extends TypeMirror> it = ((ExecutableType)memberType).getParameterTypes().iterator(); it.hasNext();) {
-                sortParams.append(Utilities.getTypeName(it.next(), false));
+                sortParams.append(Utilities.getTypeName(it.next(), false, ((ExecutableElement)memberElem).isVarArgs() && !it.hasNext()));
                 if (it.hasNext()) {
                     sortParams.append(',');
                 }
@@ -1645,7 +1645,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 Iterator<? extends VariableElement> it = ((ExecutableElement)memberElem).getParameters().iterator();
                 Iterator<? extends TypeMirror> tIt = ((ExecutableType)memberType).getParameterTypes().iterator();
                 while(it.hasNext() && tIt.hasNext()) {
-                    lText.append(escape(Utilities.getTypeName(tIt.next(), false)));
+                    lText.append(escape(Utilities.getTypeName(tIt.next(), false, ((ExecutableElement)memberElem).isVarArgs() && !tIt.hasNext())));
                     lText.append(' '); //NOI18N
                     lText.append(PARAMETER_NAME_COLOR);
                     lText.append(it.next().getSimpleName());
@@ -1823,7 +1823,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 Iterator<? extends VariableElement> it = ((ExecutableElement)memberElem).getParameters().iterator();
                 Iterator<? extends TypeMirror> tIt = ((ExecutableType)memberType).getParameterTypes().iterator();
                 while(it.hasNext() && tIt.hasNext()) {
-                    sb.append(Utilities.getTypeName(tIt.next(), false));
+                    sb.append(Utilities.getTypeName(tIt.next(), false, ((ExecutableElement)memberElem).isVarArgs() && !tIt.hasNext()));
                     sb.append(' ');
                     sb.append(it.next().getSimpleName());
                     if (it.hasNext()) {

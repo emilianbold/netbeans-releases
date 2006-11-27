@@ -135,9 +135,13 @@ public class Utilities {
     }
     
     public static String getTypeName(TypeMirror type, boolean fqn) {
+        return getTypeName(type, fqn, false);
+    }
+    
+    public static String getTypeName(TypeMirror type, boolean fqn, boolean varArg) {
 	if (type == null)
             return null;
-        return type.accept(new TypeNameVisitor(),fqn);
+        return type.accept(new TypeNameVisitor(varArg),fqn);
     }
     
     public static String getElementName(Element el, boolean fqn) {
@@ -360,6 +364,12 @@ public class Utilities {
 
     private static class TypeNameVisitor extends SimpleTypeVisitor6<String,Boolean> {
         
+        private boolean varArg;
+        
+        private TypeNameVisitor(boolean varArg) {
+            this.varArg = varArg;
+        }
+        
         @Override
         public String defaultAction(TypeMirror t, Boolean p) {
             return t.toString();
@@ -387,7 +397,9 @@ public class Utilities {
                         
         @Override
         public String visitArray(ArrayType t, Boolean p) {
-            return t.getComponentType().accept(this, p) + "[]"; //NOI18N;
+            String s = varArg ? "..." : "[]"; //NOI18N
+            varArg = false;
+            return t.getComponentType().accept(this, p) + s; //NOI18N;
         }
 
         @Override
