@@ -48,7 +48,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -336,7 +335,7 @@ public final class JavaSource {
      * @param cpInfo classpath info
      */
     private JavaSource (ClasspathInfo cpInfo, Collection<? extends FileObject> files) throws IOException {
-        this.files = Collections.unmodifiableSet(new HashSet (files));   //Create a defensive copy, prevent modification
+        this.files = Collections.unmodifiableList(new ArrayList (files));   //Create a defensive copy, prevent modification
         this.fileChangeListener = new FileChangeListenerImpl ();
         boolean multipleSources = this.files.size() > 1;
         for (Iterator<? extends FileObject> it = this.files.iterator(); it.hasNext();) {
