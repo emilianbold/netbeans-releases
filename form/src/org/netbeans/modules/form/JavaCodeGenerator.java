@@ -41,7 +41,6 @@ import org.openide.*;
 import org.openide.filesystems.*;
 import org.openide.nodes.*;
 import org.openide.text.IndentEngine;
-import org.openide.util.SharedClassObject;
 
 import org.netbeans.api.editor.fold.*;
 
@@ -171,9 +170,6 @@ class JavaCodeGenerator extends CodeGenerator {
     private Class[] listenersInMainClass;
     private Class[] listenersInMainClass_lastSet;
 
-    private SimpleSection initComponentsSection;
-    private SimpleSection variablesSection;
-
     private int emptyLineCounter;
     private int emptyLineRequest;
 
@@ -217,8 +213,8 @@ class JavaCodeGenerator extends CodeGenerator {
             }
             else canGenerate = false;
 
-            initComponentsSection = formEditorSupport.getInitComponentSection();
-            variablesSection = formEditorSupport.getVariablesSection();
+            SimpleSection initComponentsSection = formEditorSupport.getInitComponentSection();
+            SimpleSection variablesSection = formEditorSupport.getVariablesSection();
 
             if (initComponentsSection == null || variablesSection == null) {
                 System.err.println("ERROR: Cannot initialize guarded sections... code generation is disabled."); // NOI18N
@@ -741,6 +737,7 @@ class JavaCodeGenerator extends CodeGenerator {
         IndentEngine indentEngine = IndentEngine.find(
                                         formEditorSupport.getDocument());
 
+        final SimpleSection initComponentsSection = formEditorSupport.getInitComponentSection();
         int initComponentsOffset = initComponentsSection.getCaretPosition().getOffset();
 
         // create Writer for writing the generated code in
@@ -871,6 +868,7 @@ class JavaCodeGenerator extends CodeGenerator {
 
         StringWriter variablesBuffer = new StringWriter(1024);
         CodeWriter variablesWriter;
+        final SimpleSection variablesSection = formEditorSupport.getVariablesSection();
         
         if (formSettings.getUseIndentEngine()) {
             variablesWriter = new CodeWriter(
@@ -2686,7 +2684,7 @@ class JavaCodeGenerator extends CodeGenerator {
 
     private String getListenerClassName() {
         if (listenerClassName == null) {
-            String initText = initComponentsSection.getText();
+            String initText = formEditorSupport.getInitComponentSection().getText();
             int index = initText.lastIndexOf("private class "); // NOI18N
             if (index >= 0) {
                 StringBuffer nameBuffer = new StringBuffer(16);
@@ -2750,6 +2748,7 @@ class JavaCodeGenerator extends CodeGenerator {
 
         IndentEngine engine = IndentEngine.find(formEditorSupport.getDocument());
         StringWriter buffer = new StringWriter();
+        final SimpleSection initComponentsSection = formEditorSupport.getInitComponentSection();
         Writer codeWriter = engine.createWriter(
                         formEditorSupport.getDocument(),
                         initComponentsSection.getEndPosition().getOffset(),

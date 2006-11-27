@@ -225,6 +225,7 @@ public final class JavaSource {
     private final FileObject rootFo;
     private final FileChangeListener fileChangeListener;
     private DocListener listener;
+    private DataObjectListener dataObjectListener;
     
     private final ClasspathInfo classpathInfo;    
     private CompilationInfo currentInfo;
@@ -342,8 +343,11 @@ public final class JavaSource {
             FileObject file = it.next();
             try {
                 TimesCollector.getDefault().reportReference( file, JavaSource.class.toString(), "[M] JavaSource", this );       //NOI18N
-                file.addFileChangeListener(FileUtil.weakFileChangeListener(this.fileChangeListener,file));
-                this.assignDocumentListener(file);
+                if (!multipleSources) {
+                    file.addFileChangeListener(FileUtil.weakFileChangeListener(this.fileChangeListener,file));
+                    this.assignDocumentListener(file);
+                    this.dataObjectListener = new DataObjectListener(file);
+                }
             } catch (DataObjectNotFoundException donf) {
                 if (multipleSources) {
                     Logger.getLogger("global").warning("Ignoring non existent file: " + FileUtil.getFileDisplayName(file));     //NOI18N
@@ -1294,6 +1298,50 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         public @Override void fileRenamed(FileRenameEvent fe) {
             JavaSource.this.resetState(true, false);
         }        
+    }
+    
+    private final class DataObjectListener implements PropertyChangeListener {
+        
+        private DataObject dobj;
+        private final FileObject fobj;
+        private PropertyChangeListener wlistener;
+        
+        public DataObjectListener(FileObject fo) throws DataObjectNotFoundException {
+            this.fobj = fo;
+            this.dobj = DataObject.find(fo);
+            wlistener = WeakListeners.propertyChange(this, dobj);
+            this.dobj.addPropertyChangeListener(wlistener);
+        }
+        
+        public void propertyChange(PropertyChangeEvent pce) {
+            DataObject invalidDO = (DataObject) pce.getSource();
+            if (invalidDO != dobj)
+                return;
+            if (DataObject.PROP_VALID.equals(pce.getPropertyName())) {
+                handleInvalidDataObject(invalidDO);
+            } else if (pce.getPropertyName() == null && !dobj.isValid()) {
+                handleInvalidDataObject(invalidDO);
+            }
+        }
+        
+        private void handleInvalidDataObject(DataObject invalidDO) {
+            invalidDO.removePropertyChangeListener(wlistener);
+            if (fobj.isValid()) {
+                // file object still exists try to find new data object
+                try {
+                    dobj = DataObject.find(fobj);
+                    dobj.addPropertyChangeListener(wlistener);
+                    assignDocumentListener(fobj);
+                    resetState(true, true);
+                } catch (IOException ex) {
+                    // should not occur
+                    Logger.getLogger(JavaSource.class.getName()).log(Level.SEVERE,
+                                                                     ex.getMessage(),
+                                                                     ex);
+                }
+            }
+        }
+        
     }
         
     private static CompilationInfo createCurrentInfo (final JavaSource js, final FileObject fo, final JavacTaskImpl javac) throws IOException {        
