@@ -31,7 +31,7 @@ public class RefreshAction extends Action {
             "org.netbeans.modules.j2ee.deployment.impl.ui.actions.Bundle",
             "LBL_Refresh");
 
-    /** creates new CutAction instance */    
+    /** Creates new RefreshAction instance. */    
     public RefreshAction() {
         super(null, popupPath, "org.netbeans.modules.j2ee.deployment.impl.ui" +
                 ".actions.RefreshAction");
