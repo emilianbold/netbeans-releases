@@ -39,6 +39,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
 
 /**
  *
@@ -818,6 +819,90 @@ public abstract class AbstractDocumentComponent<C extends DocumentComponent<C>>
         }
         getModel().getAccess().setText(childElement, text, this);
         firePropertyChange(propertyName, oldVal, text);
+        fireValueChanged();
+    }
+
+    /**
+     * Returns leading text for the child component of the given index.
+     * @param index 0-based position of the child
+     * @return value of the leading text node, or null the indexed component peer does not have leading text nodes.
+     */
+    protected String getLeadingText(int index) {
+        return getText(index, true);
+    }
+    
+    /**
+     * Set leading text for the child component which position is the given index.
+     * @param index 0-based position of the child
+     * @param text value of the leading text node, or null to remove the leading text node.
+     */
+    protected void setLeadingText(String propName, String text, int index) {
+        setText(propName, text, index, true);
+    }
+    
+    /**
+     * Returns trailing text for the child component of the given index.
+     * @param index 0-based position of the child
+     * @return value of the leading text node, or null the indexed component peer does not have trailing text nodes.
+     */
+    protected String getTrailingText(int index, boolean leading) {
+        return getText(index, false);
+    }
+    
+    /**
+     * Set trailing text for the child component which position is the given index.
+     * @param index 0-based position of the child
+     * @param text value of the trailing text node, or null to remove the trailing text node.
+     */
+    protected void setTrailingText(String propName, String text, int index) {
+        setText(propName, text, index, false);
+    }
+    
+    private String getText(int index, boolean leading) {
+        if (getParent() == null) return null;
+        int domIndex = getAccess().getElementIndexOf(getParent().getPeer(), getPeer());
+        domIndex = leading ? domIndex-1 : domIndex+1;
+        NodeList nl = getParent().getPeer().getChildNodes();
+        if (domIndex > -1 && domIndex < nl.getLength()) {
+            Node n = nl.item(domIndex);
+            if (n instanceof Text) {
+                return ((Text)n).getNodeValue();
+            }
+        }
+        return null;
+    }
+    
+    private void setText(String propertyName, String text, int index, boolean leading) {
+        verifyWrite();
+        if (getParent() == null) return;
+
+        int domIndex = getAccess().getElementIndexOf(getParent().getPeer(), getPeer());
+        domIndex = leading ? domIndex-1 : domIndex+1;
+        NodeList nl = getParent().getPeer().getChildNodes();
+        String oldValue = null;
+        Node refChild = getPeer();
+        Text oldNode = null;
+        if (domIndex > -1 && domIndex < nl.getLength()) {
+            Node n = nl.item(domIndex);
+            if (n instanceof Text) {
+                oldValue = ((Text)n).getNodeValue();
+                oldNode = (Text) n;
+            } else if (! leading) {
+                refChild = nl.item(domIndex);
+            }
+        }
+
+        Text newNode = text == null ? null : getModel().getDocument().createTextNode(text);
+        if (newNode == null && oldValue == null) return;
+        if (newNode == null) {
+            getModel().getAccess().removeChild(getParent().getPeer(), oldNode, (AbstractDocumentComponent)getParent());
+        } else if (oldValue == null) {
+            getModel().getAccess().insertBefore(getParent().getPeer(), newNode, refChild, (AbstractDocumentComponent)getParent());
+        } else {
+            getModel().getAccess().replaceChild(getParent().getPeer(), oldNode, newNode, (AbstractDocumentComponent)getParent());
+        }
+        
+        firePropertyChange(propertyName, oldValue, text);
         fireValueChanged();
     }
 }
