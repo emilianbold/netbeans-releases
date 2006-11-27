@@ -74,7 +74,7 @@ public abstract class XMLUtils {
         FileOutputStream output = null;
         try {
             output = new FileOutputStream(file);
-            saveXMLDocument(document, output);            
+            saveXMLDocument(document, output);
         } catch (IOException e) {
             throw new XMLException("Cannot save XML document", e);
         } finally {
@@ -97,7 +97,7 @@ public abstract class XMLUtils {
             File xslt = FileProxy.getInstance().getFile(XSLT_REFORMAT_URI);
             xsltSource = new StreamSource(xslt);
         } catch (DownloadException e) {
-            LogManager.log(ErrorLevel.MESSAGE, 
+            LogManager.log(ErrorLevel.MESSAGE,
                     "Cannot load XSLT file, so save XML without formatting");
             LogManager.log(ErrorLevel.MESSAGE, e);
         }
@@ -168,23 +168,37 @@ public abstract class XMLUtils {
         return resultList;
     }
     
-    public static List<Element> getChildren(Element element, String... names) {
-        List<Element> resultList = new LinkedList<Element>();
+    public static List<Element> getChildren(Element element) {
+        List<Element> chuldren = new LinkedList<Element>();
         
-        NodeList children = element.getChildNodes();
-        for (int i = 0; i < children.getLength(); i++) {
-            Node node = children.item(i);
+        NodeList list = element.getChildNodes();
+        for (int i = 0; i < list.getLength(); i++) {
+            Node node = list.item(i);
+            if (node instanceof Element) {
+                chuldren.add((Element) node);
+            }
+        }
+        
+        return chuldren;
+    }
+    
+    public static List<Element> getChildren(Element element, String... names) {
+        List<Element> children = new LinkedList<Element>();
+        
+        NodeList list = element.getChildNodes();
+        for (int i = 0; i < list.getLength(); i++) {
+            Node node = list.item(i);
             if (node instanceof Element) {
                 for (int j = 0; j < names.length; j++) {
                     if (node.getNodeName().equals(names[j])) {
-                        resultList.add((Element) node);
+                        children.add((Element) node);
                         break;
                     }
                 }
             }
         }
         
-        return resultList;
+        return children;
     }
     
     public static Element getChild(Element element, String name) {
