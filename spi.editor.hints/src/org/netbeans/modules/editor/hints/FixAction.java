@@ -18,19 +18,12 @@
  */
 package org.netbeans.modules.editor.hints;
 
-import java.awt.Point;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ImplementationProvider;
-import org.netbeans.editor.Utilities;
-import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.openide.ErrorManager;
-import org.openide.util.ContextAwareAction;
-import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -40,6 +33,7 @@ public class FixAction extends AbstractAction {
     
     public FixAction() {
         setEnabled(true);
+        putValue(NAME, NbBundle.getMessage(FixAction.class, "NM_FixAction"));
     }
     
     public void actionPerformed(ActionEvent e) {
