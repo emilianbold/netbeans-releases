@@ -1048,6 +1048,7 @@ public class Evaluator implements JavaParserVisitor {
         }
         Assert.assertNonEmpty(possibleMethods, currentNode, "noSuchMethod", ctx);
         MethodCall call = mostSpecific(possibleMethods, args);
+        call = findConcrete(call);
         Assert.assertNotNull(call, currentNode, "ambigousMethod", ctx);
         return call;
     }
@@ -1115,6 +1116,20 @@ public class Evaluator implements JavaParserVisitor {
         String classType = t1s.length() > 1 ? t1s : t2s;
 
         return wrapperSignature(primitiveType.charAt(0)).equals(classType);
+    }
+    
+    private MethodCall findConcrete(MethodCall call) {
+        if (call.method.isAbstract()) {
+            ReferenceType type = call.instanceContext.referenceType();
+            if (type instanceof ClassType) {
+                Method m = ((ClassType) type).concreteMethodByName(call.method.name(), call.method.signature());
+                if (m != null) {
+                    call.method = m;
+                    call.typeContext = type;
+                }
+            }
+        }
+        return call;
     }
 
     private List<Value> prepareArguments(Value [] args, List argTypes) {
