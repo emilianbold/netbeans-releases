@@ -1195,8 +1195,7 @@ public class JavaSourceTest extends NbTestCase {
             try {
                 try {
                     //Should throw exception
-                    controler.toPhase(Phase.PARSED);
-                    throw new AssertionError ();
+                    assertEquals(Phase.PARSED, controler.toPhase(Phase.PARSED));
                 } catch (IllegalStateException e) {                    
                 }
                 try {
@@ -1205,12 +1204,7 @@ public class JavaSourceTest extends NbTestCase {
                     throw new AssertionError ();
                 } catch (IllegalStateException e) {                    
                 }
-                try {
-                    //Should throw exception
-                    controler.getPhase();
-                    throw new AssertionError ();
-                } catch (IllegalStateException e) {                    
-                }
+                controler.getPhase();
                 controler.getTypes();
                 controler.getTrees();
                 controler.getElements();

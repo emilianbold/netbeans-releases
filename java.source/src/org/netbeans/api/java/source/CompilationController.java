@@ -71,11 +71,16 @@ public class CompilationController extends CompilationInfo {
             throw new IllegalArgumentException( "Wrong phase" + phase );
         }
         if (delegate.jfo == null) {
-            throw new IllegalStateException ();
+            JavaSource.Phase currentPhase = delegate.getPhase();
+            if (currentPhase.compareTo(phase)<0) {
+                delegate.setPhase(phase);
+            }
+            return delegate.getPhase();
         }
-        CompilationInfo ci;        
-        JavaSource.Phase currentPhase = JavaSource.moveToPhase(phase, this.delegate,false);
-	return currentPhase.compareTo (phase) < 0 ? currentPhase : phase;
+        else {
+            JavaSource.Phase currentPhase = JavaSource.moveToPhase(phase, this.delegate,false);
+            return currentPhase.compareTo (phase) < 0 ? currentPhase : phase;
+        }
     }            
 
     /**

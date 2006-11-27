@@ -82,9 +82,6 @@ public class CompilationInfo {
      * @return {@link JavaSource.Phase} the state which was reached by the {@link JavaSource}.
      */
     public JavaSource.Phase getPhase() {
-        if (this.jfo == null) {
-            throw new IllegalStateException ();
-        }
         return this.phase;
     }
        
@@ -166,16 +163,13 @@ public class CompilationInfo {
 	return javaSource.getClasspathInfo();
     }
     
-    public FileObject getFileObject() {
-        if (this.fo == null) {
-            throw new IllegalStateException ();
-        }
+    public FileObject getFileObject() {        
         return fo;
     }
     
     public Document getDocument() throws IOException {
         if (this.fo == null) {
-            throw new IllegalStateException ();
+            return null;
         }
         DataObject od = DataObject.find(fo);            
         EditorCookie ec = (EditorCookie) od.getCookie(EditorCookie.class);        
