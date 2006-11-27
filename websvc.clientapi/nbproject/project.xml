@@ -118,14 +118,15 @@ Microsystems, Inc. All Rights Reserved.
                 <friend>org.netbeans.modules.e2e.end2end</friend>
                 <friend>org.netbeans.modules.j2ee.clientproject</friend>
                 <friend>org.netbeans.modules.j2ee.ejbjarproject</friend>
-                <friend>org.netbeans.modules.j2ee.verification</friend>
                 <friend>org.netbeans.modules.java.j2seproject</friend>
                 <friend>org.netbeans.modules.tcpmon.integration</friend>
                 <friend>org.netbeans.modules.web.project</friend>
-                <friend>org.netbeans.modules.websvc.core</friend>
                 <friend>org.netbeans.modules.mobility.end2end</friend>
+                <friend>org.netbeans.modules.websvc.core</friend>
+                <!-- commented out temporarly (issue 90051)
                 <friend>org.netbeans.modules.websvc.customization</friend>
                 <friend>org.netbeans.modules.websvc.wsitconf</friend>
+                -->
                 <friend>com.sun.rave.project.jsfproject</friend>
                 <package>org.netbeans.modules.websvc.api.client</package>
                 <package>org.netbeans.modules.websvc.api.jaxws.client</package>
