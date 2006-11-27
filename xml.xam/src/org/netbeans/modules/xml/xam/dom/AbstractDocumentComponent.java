@@ -895,11 +895,11 @@ public abstract class AbstractDocumentComponent<C extends DocumentComponent<C>>
         Text newNode = text == null ? null : getModel().getDocument().createTextNode(text);
         if (newNode == null && oldValue == null) return;
         if (newNode == null) {
-            getModel().getAccess().removeChild(getParent().getPeer(), oldNode, this);
+            getModel().getAccess().removeChild(getPeer(), oldNode, this);
         } else if (oldValue == null) {
-            getModel().getAccess().insertBefore(getParent().getPeer(), newNode, refChild, this);
+            getModel().getAccess().insertBefore(getPeer(), newNode, refChild, this);
         } else {
-            getModel().getAccess().replaceChild(getParent().getPeer(), oldNode, newNode, this);
+            getModel().getAccess().replaceChild(getPeer(), oldNode, newNode, this);
         }
         
         firePropertyChange(propertyName, oldValue, text);
