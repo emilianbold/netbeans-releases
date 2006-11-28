@@ -19,26 +19,37 @@
 
 package org.openide.awt;
 
-
 import java.awt.*;
 import java.awt.datatransfer.*;
 import java.awt.dnd.*;
 import java.awt.event.*;
 import java.io.IOException;
-import java.util.*;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EventObject;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TooManyListenersException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.*;
 import javax.swing.plaf.metal.MetalLookAndFeel;
+import javax.swing.plaf.synth.Region;
+import javax.swing.plaf.synth.SynthConstants;
+import javax.swing.plaf.synth.SynthContext;
+import javax.swing.plaf.synth.SynthLookAndFeel;
+import javax.swing.plaf.synth.SynthStyle;
+import javax.swing.plaf.synth.SynthStyleFactory;
 import org.openide.cookies.InstanceCookie;
 import org.openide.loaders.*;
 import org.openide.nodes.Node;
 import org.openide.util.*;
 import org.openide.util.actions.Presenter;
 import org.openide.util.datatransfer.ExTransferable;
-
 
 /**
  * Toolbar provides a component which is useful for displaying commonly used
@@ -88,7 +99,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
     private static final boolean isJdk15;
     private static final boolean isJdk16;
     
-    static final long serialVersionUID =5011742660516204764L;
+    static final long serialVersionUID = 5011742660516204764L;
 
     static {
         String javaVersion = System.getProperty( "java.version" );
@@ -109,6 +120,10 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         
         customFontHeightCorrection = Math.max( customFontSize - defaultFontSize, 0 );
     }
+    
+    private static Class synthIconClass = null;
+        
+    private static boolean testExecuted = false;
     
     /** Create a new Toolbar with empty name. */
     public Toolbar () {
@@ -141,6 +156,23 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         backingFolder = folder;
         initAll(folder.getName(), f);
         initDnD();
+    }
+    
+    /** 
+     * Test if SynthIcon is available and can be used for painting native Toolbar
+     * D&D handle. If not use our own handle. Reflection is used here as it is Sun
+     * proprietary API.
+     */
+    private static boolean useSynthIcon () {
+        if (!testExecuted) {
+            testExecuted = true;
+            try {
+                synthIconClass = Class.forName("sun.swing.plaf.synth.SynthIcon");
+            } catch (ClassNotFoundException exc) {
+                Logger.getLogger(Toolbar.class.getName()).log(Level.INFO, null, exc);
+            }
+        }
+        return (synthIconClass != null);
     }
     
     private void initDnD() {
@@ -587,6 +619,8 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
                 ((AbstractButton) c).setBorderPainted(false);
                 ((AbstractButton) c).setOpaque(false);
             }
+            //This is active for GTK L&F. It should be fixed in JDK
+            //but it is not fixed in JDK 6.0.
             if( isJdk16 && !isMetalLaF ) {
                 ((AbstractButton) c).setMargin( emptyInsets );
             }
@@ -1123,8 +1157,8 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         /** Maximum size. */
         Dimension max;
 
-        static final long serialVersionUID =-8819972936203315277L;
-
+        static final long serialVersionUID = -8819972936203315277L;
+        
         /** Create new ToolbarBump. */
         public ToolbarGtk () {
             super();
@@ -1133,24 +1167,65 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
             max = new Dimension (width, Integer.MAX_VALUE);
             this.setToolTipText (Toolbar.this.getDisplayName());
         }
-
+        
         /** Paint bumps to specific Graphics. */
         public void paint (Graphics g) {
             Dimension size = this.getSize ();
             int height = size.height - BOTGAP;
-            g.setColor (this.getBackground ());
+            if (useSynthIcon()) {
+                Icon icon = UIManager.getIcon("ToolBar.handleIcon");
+                Region region = Region.TOOL_BAR;
+                SynthLookAndFeel laf = (SynthLookAndFeel)UIManager.getLookAndFeel();
+                SynthStyleFactory sf = laf.getStyleFactory();
+                SynthStyle style = sf.getStyle(Toolbar.this, region);
+                SynthContext context = new SynthContext(Toolbar.this, region, style, SynthConstants.DEFAULT);
 
-            for (int x = 0; x+1 < size.width; x+=4) {
-                for (int y = TOPGAP; y+1 < height; y+=4) {
-                    g.setColor (this.getBackground ().brighter ());
-                    g.drawLine (x, y, x, y);
-                    if (x+5 < size.width && y+5 < height) {
-                        g.drawLine (x+2, y+2, x+2, y+2);
-                    }
-                    g.setColor (this.getBackground ().darker ().darker ());
-                    g.drawLine (x+1, y+1, x+1, y+1);
-                    if (x+5 < size.width && y+5 < height) {
-                        g.drawLine (x+3, y+3, x+3, y+3);
+                // for vertical toolbar, you'll need to ask for getIconHeight() instead
+                Method m = null;
+                try {
+                    m = synthIconClass.getMethod("getIconWidth",Icon.class, SynthContext.class);
+                } catch (NoSuchMethodException exc) {
+                    Logger.getLogger(Toolbar.class.getName()).log(Level.WARNING, null, exc);
+                }
+                int width = 0;
+                //width = SynthIcon.getIconWidth(icon, context);
+                try {
+                    width = (Integer) m.invoke(null, new Object [] {icon, context});
+                } catch (IllegalAccessException exc) {
+                    Logger.getLogger(Toolbar.class.getName()).log(Level.WARNING, null, exc);
+                } catch (InvocationTargetException exc) {
+                    Logger.getLogger(Toolbar.class.getName()).log(Level.WARNING, null, exc);
+                }
+                try {
+                    m = synthIconClass.getMethod("paintIcon",Icon.class,SynthContext.class,                            
+                    Graphics.class,Integer.TYPE,Integer.TYPE,Integer.TYPE,Integer.TYPE);
+                } catch (NoSuchMethodException exc) {
+                    Logger.getLogger(Toolbar.class.getName()).log(Level.WARNING, null, exc);
+                }
+                //SynthIcon.paintIcon(icon, context, g, 0, 0, width, height);
+                try {
+                    m.invoke(null, new Object [] {icon,context,g,new Integer(0),new Integer(0),
+                    new Integer(width),new Integer(height)});
+                } catch (IllegalAccessException exc) {
+                    Logger.getLogger(Toolbar.class.getName()).log(Level.WARNING, null, exc);
+                } catch (InvocationTargetException exc) {
+                    Logger.getLogger(Toolbar.class.getName()).log(Level.WARNING, null, exc);
+                }                    
+            } else {
+                g.setColor (this.getBackground ());
+
+                for (int x = 0; x+1 < size.width; x+=4) {
+                    for (int y = TOPGAP; y+1 < height; y+=4) {
+                        g.setColor (this.getBackground ().brighter ());
+                        g.drawLine (x, y, x, y);
+                        if (x+5 < size.width && y+5 < height) {
+                            g.drawLine (x+2, y+2, x+2, y+2);
+                        }
+                        g.setColor (this.getBackground ().darker ().darker ());
+                        g.drawLine (x+1, y+1, x+1, y+1);
+                        if (x+5 < size.width && y+5 < height) {
+                            g.drawLine (x+3, y+3, x+3, y+3);
+                        }
                     }
                 }
             }
