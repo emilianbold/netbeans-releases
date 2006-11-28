@@ -546,7 +546,11 @@ public class Node {
          */
         public void expandPath(final TreePath treePath) {
             super.expandPath(treePath);
-            Visualizer.findNode(treePath.getLastPathComponent()).getChildren().getNodes(true);
+            try {
+                Visualizer.findNode(treePath.getLastPathComponent()).getChildren().getNodes(true);
+            } catch (ClassCastException e) {
+                // ignore for trees in IDE which are not compound from VisualizerNode instances
+            }
         }
     }
 }
