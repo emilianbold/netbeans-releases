@@ -167,7 +167,7 @@ public final class ElementHandle<T extends Element> {
      * @return true if the handles resolve into the same {@link Element}s
      * in the same {@link javax.tools.JavaCompiler} task.
      */
-    public boolean signatureEquals (final ElementHandle<? extends T> handle) {
+    public boolean signatureEquals (final ElementHandle<? extends Element> handle) {
          if (this.kind != handle.kind || this.signatures.length != handle.signatures.length) {
              return false;
          }
