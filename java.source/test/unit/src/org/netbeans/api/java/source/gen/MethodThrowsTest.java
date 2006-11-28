@@ -96,6 +96,7 @@ public class MethodThrowsTest extends GeneratorTestMDRCompat {
             }
         );
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
     
@@ -173,6 +174,7 @@ public class MethodThrowsTest extends GeneratorTestMDRCompat {
             }
         );
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
 
     }
@@ -212,6 +214,7 @@ public class MethodThrowsTest extends GeneratorTestMDRCompat {
             }
         );
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
     
@@ -249,6 +252,7 @@ public class MethodThrowsTest extends GeneratorTestMDRCompat {
             }
         );
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
     
@@ -319,6 +323,7 @@ public class MethodThrowsTest extends GeneratorTestMDRCompat {
             }
         );
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
     
@@ -354,6 +359,7 @@ public class MethodThrowsTest extends GeneratorTestMDRCompat {
             }
         );
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
     
@@ -389,6 +395,7 @@ public class MethodThrowsTest extends GeneratorTestMDRCompat {
             }
         );
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
 
@@ -426,6 +433,7 @@ public class MethodThrowsTest extends GeneratorTestMDRCompat {
             }
         );
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
     
@@ -470,6 +478,7 @@ public class MethodThrowsTest extends GeneratorTestMDRCompat {
             }
         );
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
     
