@@ -106,7 +106,7 @@ public enum XMLTokenId implements TokenId {
         }
         
         public String mimeType() {
-            return "text/XML";
+            return "text/xml";
         }
     }.language();
     

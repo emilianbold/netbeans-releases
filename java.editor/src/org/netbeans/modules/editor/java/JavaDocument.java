@@ -33,7 +33,6 @@ public class JavaDocument extends NbEditorDocument {
 
     public JavaDocument(Class kitClass) {
         super(kitClass);
-        putProperty(Language.class, JavaTokenId.language());
     }
 
     @Override

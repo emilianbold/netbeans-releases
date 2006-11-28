@@ -228,7 +228,7 @@ public class HTMLLexer implements Lexer<HTMLTokenId> {
                     //test if the tagname is SCRIPT                    
                     if("script".equalsIgnoreCase(input.readText().toString())) { //NOI18N
                         scriptState = INIT;
-                        System.out.println("---end of script");
+                        //System.out.println("---end of script");
                     }
 
                     return token(HTMLTokenId.TAG_CLOSE);
@@ -268,7 +268,7 @@ public class HTMLLexer implements Lexer<HTMLTokenId> {
                     //test if the tagname is SCRIPT                    
                     if("script".equalsIgnoreCase(input.readText().toString())) { //NOI18N
                         scriptState = ISI_SCRIPT;
-                        System.out.println("+++start of script");
+                        //System.out.println("+++start of script");
                     }                    
                     return token(HTMLTokenId.TAG_OPEN);
                     
@@ -690,12 +690,12 @@ public class HTMLLexer implements Lexer<HTMLTokenId> {
     }
     
     private Token<HTMLTokenId> token(HTMLTokenId id) {
-        System.out.print("--- token(" + id + "; '" + input.readText().toString() + "')");
-        if(input.readLength() == 0) {
-            System.out.println("HTMLLexer error - zero length token!");
-        }
+//        System.out.print("--- token(" + id + "; '" + input.readText().toString() + "')");
+//        if(input.readLength() == 0) {
+//            System.out.println("HTMLLexer error - zero length token!");
+//        }
         Token<HTMLTokenId> t = tokenFactory.createToken(id);
-        System.out.println(t.id() + "; " + t.length());
+//        System.out.println(t.id() + "; " + t.length());
         return t;
     }
 

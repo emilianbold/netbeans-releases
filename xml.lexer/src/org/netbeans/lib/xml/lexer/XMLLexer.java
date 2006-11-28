@@ -881,12 +881,12 @@ public class XMLLexer implements Lexer<XMLTokenId> {
     }
     
     private Token<XMLTokenId> token(XMLTokenId id) {
-        System.out.print("--- token(" + id + "; '" + input.readText().toString() + "')");
-        if(input.readLength() == 0) {
-            System.out.println("XMLLexer error - zero length token!");
-        }
+//        System.out.print("--- token(" + id + "; '" + input.readText().toString() + "')");
+//        if(input.readLength() == 0) {
+//            System.out.println("XMLLexer error - zero length token!");
+//        }
         Token<XMLTokenId> t = tokenFactory.createToken(id);
-        System.out.println(t.id() + "; " + t.length());
+//        System.out.println(t.id() + "; " + t.length());
         return t;
     }
     
