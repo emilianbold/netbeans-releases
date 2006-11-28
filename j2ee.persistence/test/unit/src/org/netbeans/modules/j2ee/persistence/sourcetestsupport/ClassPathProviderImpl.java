@@ -38,19 +38,13 @@ public class ClassPathProviderImpl implements ClassPathProvider {
     }
     
     public ClassPath findClassPath(FileObject file, String type) {
-        if (type == ClassPath.SOURCE) {
-            return null;
-        }
-        if (type == ClassPath.COMPILE){
+        if (ClassPath.COMPILE == type){
             try {
                 URL toplinkJarUrl = Class.forName("javax.persistence.EntityManager").getProtectionDomain().getCodeSource().getLocation();
                 return ClassPathSupport.createClassPath(new URL[]{FileUtil.getArchiveRoot(toplinkJarUrl)});
             } catch (Exception ex) {
                 throw new RuntimeException(ex);
             }
-        }
-        if (type == ClassPath.BOOT){
-            return null;
         }
         return null;
     }
