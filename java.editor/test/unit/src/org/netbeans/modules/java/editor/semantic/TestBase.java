@@ -94,6 +94,10 @@ public abstract class TestBase extends NbTestCase {
     }
     
     protected void performTest(String fileName, final Performer performer) throws Exception {
+        performTest(fileName, performer, false);
+    }
+    
+    protected void performTest(String fileName, final Performer performer, boolean doCompileRecursively) throws Exception {
         SourceUtilsTestUtil.prepareTest(new String[] {"org/netbeans/modules/java/editor/resources/layer.xml"}, new Object[0]);
         
 	FileObject scratch = SourceUtilsTestUtil.makeScratchDir(this);
@@ -119,7 +123,10 @@ public abstract class TestBase extends NbTestCase {
         testBuildTo.mkdirs();
 
         SourceUtilsTestUtil.prepareTest(FileUtil.toFileObject(dataFolder), FileUtil.toFileObject(testBuildTo), cache);
-        SourceUtilsTestUtil.compileRecursively(FileUtil.toFileObject(dataFolder));
+        
+        if (doCompileRecursively) {
+            SourceUtilsTestUtil.compileRecursively(FileUtil.toFileObject(dataFolder));
+        }
 
         final Document doc = getDocument(testSourceFO);
         final Set<Highlight> highlights = new TreeSet<Highlight>(new HighlightComparator());
