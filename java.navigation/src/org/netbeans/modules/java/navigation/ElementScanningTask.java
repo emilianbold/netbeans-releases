@@ -126,7 +126,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
                 d.name = e.getSimpleName().toString();
                 d.subs = new ArrayList<Description>();
                 d.pos = getPosition( e );
-                d.htmlHeader = createHtmlHeader( e );
+                d.htmlHeader = createHtmlHeader( e, info.getElements().isDeprecated(e) );                
                 if ( d.pos == -1 ) {
                     return null;
                 }
@@ -145,7 +145,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
                 d.elementHandle = ElementHandle.create(e);
                 d.name = e.getSimpleName().toString();
                 d.pos = getPosition( e );
-                d.htmlHeader = createHtmlHeader( e ); 
+                d.htmlHeader = createHtmlHeader( e, info.getElements().isDeprecated(e) ); 
                 if ( d.pos == -1 ) {
                     return null;
                 }
@@ -166,8 +166,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
                 if ( d.pos == -1 ) {
                     return null;
                 }
-                //d.htmlHeader = UiUtils.getHeader(e, info, "%name%(%parameters%) : %type%");
-                d.htmlHeader = createHtmlHeader(e);
+                d.htmlHeader = createHtmlHeader(e, info.getElements().isDeprecated(e));
                 super.visitExecutable(e, d);
                 p.subs.add(d);            
             }
@@ -197,15 +196,20 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         
                 
         /** Creates HTML display name of the Executable element */
-        private String createHtmlHeader( ExecutableElement e ) {
+        private String createHtmlHeader( ExecutableElement e, boolean isDeprecated ) {
             
             StringBuilder sb = new StringBuilder();
-            
+            if ( isDeprecated ) {
+                sb.append("<s>"); // NOI18N
+            }
             if ( e.getKind() == ElementKind.CONSTRUCTOR ) {
                 sb.append(e.getEnclosingElement().getSimpleName());
             }
             else {
                 sb.append(e.getSimpleName());
+            }
+            if ( isDeprecated ) {
+                sb.append("</s>"); // NOI18N
             }
             
             sb.append("("); // NOI18N
@@ -231,15 +235,21 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
                     sb.append(print(e.getReturnType()));
                 }
             }
-            
+                
             return sb.toString();
         }
         
-        private String createHtmlHeader( VariableElement e ) {
+        private String createHtmlHeader( VariableElement e, boolean isDeprecated ) {
             
             StringBuilder sb = new StringBuilder();
             
+            if ( isDeprecated ) {
+                sb.append("<s>"); // NOI18N
+            }
             sb.append(e.getSimpleName());
+            if ( isDeprecated ) {
+                sb.append("</s>"); // NOI18N
+            }
             
             if ( e.getKind() != ElementKind.ENUM_CONSTANT ) {
                 sb.append( " : " ); // NOI18N
@@ -249,10 +259,16 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
             return sb.toString();            
         }
         
-        private String createHtmlHeader( TypeElement e ) {
+        private String createHtmlHeader( TypeElement e, boolean isDeprecated ) {
             
             StringBuilder sb = new StringBuilder();            
+            if ( isDeprecated ) {
+                sb.append("<s>"); // NOI18N
+            }
             sb.append(e.getSimpleName());
+            if ( isDeprecated ) {
+                sb.append("</s>"); // NOI18N
+            }
             // sb.append(print(e.asType()));            
             List<? extends TypeParameterElement> typeParams = e.getTypeParameters();
             
