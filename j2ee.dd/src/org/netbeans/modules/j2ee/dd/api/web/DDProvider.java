@@ -102,8 +102,9 @@ public final class DDProvider {
     }
     
     public WebApp getMergedDDRoot(MetadataUnit mu) throws IOException {
-        WebApp xmlRoot = getDDRoot(mu.getDeploymentDescriptor());
-        if (xmlRoot != null && !xmlRoot.getVersion().equals(WebApp.VERSION_2_5)) {
+        WebApp xmlRoot = getDDRoot(mu.getDeploymentDescriptor());        
+        if (xmlRoot != null) { // && !xmlRoot.getVersion().equals(WebApp.VERSION_2_5)) {
+            // TODO find a better resolution for this hack
             return xmlRoot;
         }
         return null;
