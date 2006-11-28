@@ -21,22 +21,25 @@ package org.netbeans.jellytools.modules.javacvs.actions;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 
-/** Used to call "CVS|Import into Repository" popup or main menu item.
+/** Used to call "Versioning|CVS|Import into Repository" popup or main menu item.
  * @see ActionNoBlock
  * @author Jiri.Skrivanek@sun.com
  */
 public class ImportAction extends ActionNoBlock {
-
-    // "CVS"
-    private static final String CVS_ITEM = Bundle.getStringTrimmed(
-            "org.netbeans.modules.versioning.system.cvss.Bundle", "Menu/CVS");
+    /** "Versioning" menu item. */
+    public static final String VERSIONING_ITEM = Bundle.getStringTrimmed(
+           "org.netbeans.modules.versioning.Bundle", "Menu/Window/Versioning");
+    /** "CVS" menu item. */
+    public static final String CVS_ITEM = Bundle.getStringTrimmed(
+                "org.netbeans.modules.versioning.system.cvss.ui.actions.Bundle",
+                "CTL_MenuItem_CVSCommands_Label");
     // "Import into Repository"
     private static final String IMPORT_ITEM = Bundle.getStringTrimmed(
             "org.netbeans.modules.versioning.system.cvss.ui.actions.project.Bundle", "BK0006");
     
     /** Creates new ImportAction instance. */
     public ImportAction() {
-        super(CVS_ITEM+"|"+IMPORT_ITEM, CVS_ITEM+"|"+IMPORT_ITEM);
+        super(VERSIONING_ITEM+"|"+CVS_ITEM+"|"+IMPORT_ITEM, CVS_ITEM+"|"+IMPORT_ITEM);
     }
 }
 

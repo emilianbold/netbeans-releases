@@ -21,22 +21,25 @@ package org.netbeans.jellytools.modules.javacvs.actions;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 
-/** Used to call "CVS|Checkout..." main menu item.
+/** Used to call "Versioning|CVS|Checkout..." main menu item.
  * @see ActionNoBlock
  * @author Jiri.Skrivanek@sun.com
  */
 public class CheckoutAction extends ActionNoBlock {
-
+    /** "Versioning" menu item. */
+    public static final String VERSIONING_ITEM = Bundle.getStringTrimmed(
+           "org.netbeans.modules.versioning.Bundle", "Menu/Window/Versioning");
     /** "CVS" menu item. */
     public static final String CVS_ITEM = Bundle.getStringTrimmed(
-            "org.netbeans.modules.versioning.system.cvss.Bundle", "Menu/CVS");
+                "org.netbeans.modules.versioning.system.cvss.ui.actions.Bundle",
+                "CTL_MenuItem_CVSCommands_Label");
     /** "Checkout..." menu item. */
     public static final String CHECKOUT_ITEM = Bundle.getStringTrimmed(
             "org.netbeans.modules.versioning.system.cvss.ui.actions.checkout.Bundle", "CTL_MenuItem_Checkout_Label");
     
     /** Creates new CheckoutAction instance. */
     public CheckoutAction() {
-        super(CVS_ITEM+"|"+CHECKOUT_ITEM, null);
+        super(VERSIONING_ITEM+"|"+CVS_ITEM+"|"+CHECKOUT_ITEM, null);
     }
 }
 
