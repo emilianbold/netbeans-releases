@@ -141,18 +141,11 @@ public class CvsFileSet extends FileSet {
                                     line = line.substring(0, idx);
                                     idx = line.lastIndexOf('/');
                                     String subst = line.substring(idx + 1);
-                                    if (subst.equals("")) {
-                                        tb.get(0).add(name);
-                                    } else if (subst.equals("-kb")) {
+                                    if (subst.equals("-kb")) {
                                         tb.get(1).add(name);
                                     } else {
-                                        /* Don't know why, but getProject() stoped working, returns null :-(
-                                        getProject().log(efile + ":" + lineNumber + ": warning: strange key subst mode: " + subst, Project.MSG_WARN);
-                                        */
-                                        if (subst.equals("-ko")) {
-                                            // Treat it like -kkv.
-                                            tb.get(0).add(name);
-                                        }
+                                        // Usually "", but occasionally "-ko", "-kv", etc.
+                                        tb.get(0).add(name);
                                     }
                                 }
                             }
