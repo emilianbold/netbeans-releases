@@ -135,7 +135,7 @@ public class ElementNode extends AbstractNode {
     public void updateRecursively( Description newDescription ) {
         Children ch = getChildren();
         if ( ch instanceof ElementChilren ) {           
-           HashSet oldSubs = new HashSet( description.subs );
+           HashSet<Description> oldSubs = new HashSet<Description>( description.subs );
 
            // Now refresh keys
            ((ElementChilren)ch).resetKeys(newDescription.subs, newDescription.ui.getFilters());
@@ -249,10 +249,7 @@ public class ElementNode extends AbstractNode {
                 return false;
             }
             
-            ElementHandle eh1 = this.elementHandle;
-            ElementHandle eh2 = d.elementHandle;
-            
-            if ( !eh1.signatureEquals(eh2) ) {
+            if ( !this.elementHandle.signatureEquals(d.elementHandle) ) {
                 return false;
             }
             

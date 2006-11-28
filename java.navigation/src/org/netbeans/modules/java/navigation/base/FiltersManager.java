@@ -102,7 +102,7 @@ public final class FiltersManager {
     private class FiltersComponent extends Box implements ActionListener {
         
         /** list of <JToggleButton> visually representing filters */
-        private List toggles;
+        private List<JToggleButton> toggles;
         /** description of filters */
         private final FiltersDescription filtersDesc;
  
@@ -114,7 +114,7 @@ public final class FiltersManager {
         /** lock for map of filter states */
         private Object STATES_LOCK = new Object();
         /** copy of filter states for accessing outside AWT */
-        private Map filterStates;
+        private Map<String,Boolean> filterStates;
 
         /** Returns selected state of given filter, thread safe.
          */
@@ -130,7 +130,7 @@ public final class FiltersManager {
                         return filtersDesc.isSelected(index);
                     }
                 }
-                result = (Boolean)filterStates.get(filterName);
+                result = filterStates.get(filterName);
             }
             
             if (result == null) {
@@ -148,7 +148,7 @@ public final class FiltersManager {
                 throw new IllegalArgumentException("Filter " + filterName + " not found.");
             }
             // update both swing control and states map
-            ((JToggleButton)toggles.get(index)).setSelected(value);
+            toggles.get(index).setSelected(value);
             synchronized (STATES_LOCK) {
                 filterStates.put(filterName, Boolean.valueOf(value));
             }
@@ -193,10 +193,10 @@ public final class FiltersManager {
             toolbar.setBorderPainted(false);
             // create toggle buttons
             int filterCount = filtersDesc.getFilterCount();
-            toggles = new ArrayList(filterCount);
+            toggles = new ArrayList<JToggleButton>(filterCount);
             JToggleButton toggleButton = null;
             
-            Map fStates = new HashMap(filterCount * 2);
+            Map<String,Boolean> fStates = new HashMap<String, Boolean>(filterCount * 2);
 
             for (int i = 0; i < filterCount; i++) {
                 toggleButton = createToggle(fStates, i);
@@ -207,7 +207,7 @@ public final class FiltersManager {
             JToggleButton curToggle;
             Dimension space = new Dimension(3, 0);
             for (int i = 0; i < toggles.size(); i++) {
-                curToggle = (JToggleButton)toggles.get(i);
+                curToggle = toggles.get(i);
                 curToggle.addActionListener(this);
                 toolbar.add(curToggle);
                 if (i != toggles.size() - 1) {
@@ -223,7 +223,7 @@ public final class FiltersManager {
             }
         }
         
-        private JToggleButton createToggle (Map fStates, int index) {
+        private JToggleButton createToggle (Map<String,Boolean> fStates, int index) {
             boolean isSelected = filtersDesc.isSelected(index);
             Icon icon = filtersDesc.getSelectedIcon(index);
             // ensure small size, just for the icon

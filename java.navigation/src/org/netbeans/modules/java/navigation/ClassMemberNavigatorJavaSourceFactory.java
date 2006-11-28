@@ -63,7 +63,7 @@ public final class ClassMemberNavigatorJavaSourceFactory extends LookupBasedJava
     }
 
     public List<FileObject> getFileObjects() {
-        List<FileObject> result = new ArrayList();
+        List<FileObject> result = new ArrayList<FileObject>();
 
         // Filter uninteresting files from the lookup
         for( FileObject fileObject : super.getFileObjects() ) {

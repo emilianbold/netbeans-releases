@@ -22,7 +22,6 @@ package org.netbeans.modules.java.navigation.base;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Icon;
-import javax.swing.event.ChangeListener;
 
 /**
  * @author Dafe Simonek
@@ -34,11 +33,11 @@ public final class FiltersDescription {
     }
 
     /** List of <FilterItem> describing filters properties */
-    private List filters;
+    private List<FilterItem> filters;
 
     /** Creates a new instance of FiltersDescription */
     public FiltersDescription() {
-        filters = new ArrayList();
+        filters = new ArrayList<FilterItem>();
     }
     
     public void addFilter (String name, String displayName, String tooltip,
@@ -53,30 +52,30 @@ public final class FiltersDescription {
     }
     
     public String getName (int index) {
-        return ((FilterItem)filters.get(index)).name;
+        return filters.get(index).name;
     }
     
     public String getDisplayName (int index) {
-        return ((FilterItem)filters.get(index)).displayName;
+        return filters.get(index).displayName;
     }
     
     public String getTooltip (int index) {
-        return ((FilterItem)filters.get(index)).tooltip;
+        return filters.get(index).tooltip;
     }
     
     public Icon getSelectedIcon (int index) {
-        return ((FilterItem)filters.get(index)).selectedIcon;
+        return filters.get(index).selectedIcon;
     }
     
     public Icon getUnselectedIcon (int index) {
-        return ((FilterItem)filters.get(index)).unselectedIcon;
+        return filters.get(index).unselectedIcon;
     }
     
     public boolean isSelected (int index) {
-        return ((FilterItem)filters.get(index)).isSelected;
+        return filters.get(index).isSelected;
     }
     
-    private static class FilterItem {
+    static class FilterItem {
         String name;
         String displayName;
         String tooltip;

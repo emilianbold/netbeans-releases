@@ -70,7 +70,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         
         Description rootDescription = new Description( ui );
         rootDescription.fileObject = info.getFileObject();
-        rootDescription.subs = new ArrayList();
+        rootDescription.subs = new ArrayList<Description>();
         
         // Get all outerclasses in the Compilation unit
         CompilationUnitTree cuTree = info.getCompilationUnit();
@@ -124,7 +124,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
                 d.modifiers = e.getModifiers();
                 d.elementHandle = ElementHandle.create(e);
                 d.name = e.getSimpleName().toString();
-                d.subs = new ArrayList();
+                d.subs = new ArrayList<Description>();
                 d.pos = getPosition( e );
                 d.htmlHeader = createHtmlHeader( e );
                 if ( d.pos == -1 ) {
