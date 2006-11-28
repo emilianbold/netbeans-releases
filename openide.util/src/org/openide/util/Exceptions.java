@@ -43,6 +43,8 @@ import java.util.logging.Logger;
 public final class Exceptions extends Object {
     private Exceptions() {
     }
+    
+    private static final String LOC_MSG_PLACEHOLDER = "msg"; // NOI18N
 
     /** Attaches additional message to given exception. This message will
      * be visible when one does <code>e.printStackTrace()</code>.
@@ -67,10 +69,10 @@ public final class Exceptions extends Object {
      */
     public static <E extends Throwable> E attachLocalizedMessage(E e, final String localizedMessage) {
         AnnException ae = AnnException.findOrCreate(e, true);
-        LogRecord rec = new LogRecord(Level.ALL, "msg"); // NOI18N
+        LogRecord rec = new LogRecord(Level.ALL, LOC_MSG_PLACEHOLDER);
         ResourceBundle rb = new ResourceBundle() {
             public Object handleGetObject(String key) {
-                if ("msg".equals(key)) { // NOI18N
+                if (LOC_MSG_PLACEHOLDER.equals(key)) {
                     return localizedMessage;
                 } else {
                     return null;
@@ -78,7 +80,7 @@ public final class Exceptions extends Object {
             }
 
             public Enumeration<String> getKeys() {
-                return Enumerations.singleton("msg"); // NOI18N
+                return Enumerations.singleton(LOC_MSG_PLACEHOLDER);
             }
         };
         rec.setResourceBundle(rb);
@@ -168,9 +170,10 @@ public final class Exceptions extends Object {
             StringBuilder sb = new StringBuilder();
             String sep = "";
             for (LogRecord r : records) {
-                if (r.getMessage() != null) {
+                String m = r.getMessage();
+                if (m != null && !m.equals(LOC_MSG_PLACEHOLDER)) {
                     sb.append(sep);
-                    sb.append(r.getMessage());
+                    sb.append(m);
                     sep = "\n";
                 }
             }

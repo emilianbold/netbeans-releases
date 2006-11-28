@@ -34,6 +34,16 @@ public class ExceptionsTest extends TestCase {
         super(testName);
     }
 
+    private void assertCleanStackTrace(Throwable t) {
+        StringWriter w = new StringWriter();
+        PrintWriter pw = new PrintWriter(w);
+        t.printStackTrace(pw);
+        pw.flush();
+        String m = w.toString();
+        assertFalse(m.replace("\n", "\\n").replace("\t", "\\t"), m.contains("AnnException"));
+        assertFalse(m.replace("\n", "\\n").replace("\t", "\\t"), m.contains("msg"));
+    }
+
     public void testAttachMessage() {
         Exception e = new Exception("Help");
         String msg = "me please";
@@ -50,6 +60,8 @@ public class ExceptionsTest extends TestCase {
         if (m.indexOf(msg) == -1) {
             fail(msg + " shall be part of output:\n" + m);
         }
+
+        assertCleanStackTrace(e);
     }
     
     public void testAttachMessageForClassNotFound() {
@@ -68,6 +80,8 @@ public class ExceptionsTest extends TestCase {
         if (m.indexOf(msg) == -1) {
             fail(msg + " shall be part of output:\n" + m);
         }
+
+        assertCleanStackTrace(e);
     }
 
     public void testAttachLocalizedMessage() {
@@ -81,6 +95,8 @@ public class ExceptionsTest extends TestCase {
         String fnd = Exceptions.findLocalizedMessage(e);
 
         assertEquals("The same msg", msg, fnd);
+
+        assertCleanStackTrace(e);
     }
 
     public void testAttachLocalizedMessageForClassNFE() {
@@ -94,6 +110,8 @@ public class ExceptionsTest extends TestCase {
         String fnd = Exceptions.findLocalizedMessage(e);
 
         assertEquals("The same msg", msg, fnd);
+
+        assertCleanStackTrace(e);
     }
 
     public void testAttachLocalizedMessageForClassNFEIfNoMsg() {
@@ -107,6 +125,8 @@ public class ExceptionsTest extends TestCase {
         String fnd = Exceptions.findLocalizedMessage(e);
 
         assertEquals("No localized msg found", null, fnd);
+
+        assertCleanStackTrace(e);
     }
     
 }
