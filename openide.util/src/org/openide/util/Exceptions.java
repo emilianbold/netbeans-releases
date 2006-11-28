@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -164,6 +163,7 @@ public final class Exceptions extends Object {
             super(msg);
         }
 
+        @Override
         public String getMessage() {
             StringBuilder sb = new StringBuilder();
             String sep = "";
@@ -218,18 +218,26 @@ public final class Exceptions extends Object {
             return r == null ? empty : r.toArray(empty);
         }
 
+        @Override
         public void printStackTrace(PrintStream s) {
             super.printStackTrace(s);
             logRecords(s);
         }
 
+        @Override
         public void printStackTrace(PrintWriter s) {
             super.printStackTrace(s);
             logRecords(s);
         }
 
-        public void printStackTrace() {
-            printStackTrace(System.err);
+        @Override
+        public Throwable fillInStackTrace() {
+            return this;
+        }
+
+        @Override
+        public String toString() {
+            return getMessage();
         }
 
         private void logRecords(Appendable a) {
