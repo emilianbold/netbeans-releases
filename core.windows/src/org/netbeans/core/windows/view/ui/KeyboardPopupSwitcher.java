@@ -377,7 +377,11 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
     /** Switch to the currently selected document and close the popup. */
     private void performSwitching() {
         if (popup != null) {
-            pTable.getSelectedItem().activate();
+            // #90007: selection may be null if mouse is involved
+            SwitcherTableItem item = pTable.getSelectedItem();
+            if (item != null) {
+                item.activate();
+            }
         }
         cancelSwitching();
     }
