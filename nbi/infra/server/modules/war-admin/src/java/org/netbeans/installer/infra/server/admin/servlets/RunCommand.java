@@ -123,7 +123,7 @@ public class RunCommand extends HttpServlet {
         } catch (IOException e) {
             e.printStackTrace(new PrintWriter(response.getWriter()));
             
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+//            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
         
         response.getWriter().close();

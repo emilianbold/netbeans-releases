@@ -69,6 +69,12 @@
         <taskdef name="group-descriptor" 
                  classname="org.netbeans.installer.infra.build.ant.GroupDescriptor" 
                  classpath="${lib.cls}"/>
+        <taskdef name="update-group" 
+                 classname="org.netbeans.installer.infra.build.ant.UpdateGroup" 
+                 classpath="${lib.cls}"/>
+        <taskdef name="update-component" 
+                 classname="org.netbeans.installer.infra.build.ant.UpdateComponent" 
+                 classpath="${lib.cls}"/>
         
         <condition property="checkout.from.trunk">
             <equals arg1="${cvs.branch}" arg2=""/>
