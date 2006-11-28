@@ -228,6 +228,26 @@ public class DetectorTest extends TestBase {
         performTest("ArrayThroughInitializer");
     }
     
+    public void testReadUseAssert2() throws Exception {
+        performTest("ReadUseAssert2");
+    }
+    
+    public void testConstructorUsedBySuper1() throws Exception {
+        performTest("ConstructorUsedBySuper1");
+    }
+    
+    public void testConstructorUsedBySuper2() throws Exception {
+        performTest("ConstructorUsedBySuper2");
+    }
+    
+    public void testConstructorUsedByThis() throws Exception {
+        performTest("ConstructorUsedByThis");
+    }
+    
+    public void testUnresolvableImportsAreNotUnused() throws Exception {
+        performTest("UnresolvableImportsAreNotUnused");
+    }
+    
     private void performTest(String fileName) throws Exception {
         performTest(fileName, new Performer() {
             public Collection<Highlight> compute(CompilationController parameter, Document doc) {

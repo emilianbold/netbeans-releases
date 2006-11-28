@@ -71,6 +71,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.type.TypeKind;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
@@ -668,8 +669,23 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
         @Override
         public Void visitMethodInvocation(MethodInvocationTree tree, EnumSet<UseTypes> d) {
             Tree possibleIdent = tree.getMethodSelect();
+            boolean handled = false;
             
-            handlePossibleIdentifier(new TreePath(getCurrentPath(), possibleIdent), EnumSet.of(UseTypes.EXECUTE));
+            if (possibleIdent.getKind() == Kind.IDENTIFIER) {
+                //handle "this" and "super" constructors:
+                String ident = ((IdentifierTree) possibleIdent).getName().toString();
+                
+                if ("super".equals(ident) || "this".equals(ident)) { //NOI18N
+                    Element resolved = info.getTrees().getElement(getCurrentPath());
+                    
+                    addUse(resolved, EnumSet.of(UseTypes.EXECUTE), null, null);
+                    handled = true;
+                }
+            }
+            
+            if (!handled) {
+                handlePossibleIdentifier(new TreePath(getCurrentPath(), possibleIdent), EnumSet.of(UseTypes.EXECUTE));
+            }
             
             for (Tree expr : tree.getArguments()) {
                 if (expr instanceof IdentifierTree) {
@@ -788,7 +804,9 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
             if (!tree.isStatic()) {
                 Element decl = info.getTrees().getElement(new TreePath(getCurrentPath(), tree.getQualifiedIdentifier()));
                 
-                type2Highlight.put(decl, getCurrentPath());
+                if (decl != null && decl.asType().getKind() != TypeKind.ERROR) { //unresolvable imports should not be marked as unused
+                    type2Highlight.put(decl, getCurrentPath());
+                }
 //                } else {
 //                    //cannot handle package import for now.
 //                    //cannot handle static imports for now.
@@ -1031,6 +1049,8 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
         public Void visitAssert(AssertTree tree, EnumSet<UseTypes> p) {
             if (tree.getCondition().getKind() == Kind.IDENTIFIER)
                 handlePossibleIdentifier(new TreePath(getCurrentPath(), tree.getCondition()), EnumSet.of(UseTypes.READ));
+            if (tree.getDetail() != null && tree.getDetail().getKind() == Kind.IDENTIFIER)
+                handlePossibleIdentifier(new TreePath(getCurrentPath(), tree.getDetail()), EnumSet.of(UseTypes.READ));
             
             return super.visitAssert(tree, null);
         }
