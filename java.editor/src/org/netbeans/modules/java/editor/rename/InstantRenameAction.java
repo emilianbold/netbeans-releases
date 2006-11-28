@@ -21,18 +21,26 @@ package org.netbeans.modules.java.editor.rename;
 import com.sun.source.util.TreePath;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
+import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Set;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.util.ElementFilter;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.highlights.spi.Highlight;
+import org.netbeans.modules.java.editor.semantic.ColoringAttributes;
 import org.netbeans.modules.java.editor.semantic.FindLocalUsagesQuery;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -74,19 +82,7 @@ public class InstantRenameAction extends BaseAction {
                     if (controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0)
                         return;
                     
-                    TreePath path = controller.getTreeUtilities().pathFor(caret);
-                    Element el = controller.getTrees().getElement(path);
-                    
-                    if (el == null) {
-                        wasResolved[0] = false;
-                        return ;
-                    }
-                    
-                    wasResolved[0] = true;
-                    
-                    if (org.netbeans.modules.java.editor.semantic.Utilities.isPrivateElement(el)) {
-                        changePoints[0] = new FindLocalUsagesQuery().findUsages(el, controller, target.getDocument());
-                    }
+                    changePoints[0] = computeChangePoints(controller, caret, wasResolved);
                 }
             }, true);
             
@@ -120,4 +116,53 @@ public class InstantRenameAction extends BaseAction {
         });
     }
     
+    static Set<Highlight> computeChangePoints(CompilationInfo info, final int caret, final boolean[] wasResolved) throws IOException {
+        TreePath path = info.getTreeUtilities().pathFor(caret);
+        Element el = info.getTrees().getElement(path);
+        
+        if (el == null) {
+            wasResolved[0] = false;
+            return null;
+        }
+        
+        //#89736: if the caret is not in the resolved element's name, no rename:
+        final Highlight name = org.netbeans.modules.java.editor.semantic.Utilities.createHighlight(info.getCompilationUnit(), info.getTrees().getSourcePositions(), info.getDocument(), path, EnumSet.of(ColoringAttributes.MARK_OCCURRENCES), null);
+        
+        info.getDocument().render(new Runnable() {
+            public void run() {
+                wasResolved[0] = name.getStart() <= caret && caret <= name.getEnd();
+            }
+        });
+        
+        if (!wasResolved[0])
+            return null;
+        
+        if (el.getKind() == ElementKind.CONSTRUCTOR) {
+            //for constructor, work over the enclosing class:
+            el = el.getEnclosingElement();
+        }
+        
+        if (org.netbeans.modules.java.editor.semantic.Utilities.isPrivateElement(el)) {
+            Set<Highlight> points = new HashSet<Highlight>(new FindLocalUsagesQuery().findUsages(el, info, info.getDocument()));
+            
+            if (el.getKind().isClass()) {
+                //rename also the constructors:
+                for (ExecutableElement c : ElementFilter.constructorsIn(el.getEnclosedElements())) {
+                    TreePath t = info.getTrees().getPath(c);
+                    
+                    if (t != null) {
+                        Highlight h = org.netbeans.modules.java.editor.semantic.Utilities.createHighlight(info.getCompilationUnit(), info.getTrees().getSourcePositions(), info.getDocument(), t, EnumSet.of(ColoringAttributes.MARK_OCCURRENCES), null);
+                        
+                        if (h != null) {
+                            points.add(h);
+                        }
+                    }
+                }
+            }
+            
+            return points;
+        }
+        
+        return null;
+    }
 }
