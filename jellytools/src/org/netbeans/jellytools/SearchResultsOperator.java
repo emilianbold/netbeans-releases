@@ -25,10 +25,7 @@ import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
-
 import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JRadioButtonOperator;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 
 
@@ -54,8 +51,6 @@ public class SearchResultsOperator extends TopComponentOperator {
     private JButtonOperator _btShowDetails;
     private JButtonOperator _btModifySearch;
     private JTreeOperator _treeResult;
-    private JRadioButtonOperator _rbSortByName;
-    private JRadioButtonOperator _rbDoNotSort;
 
     /**
      * Waits for view opened.
@@ -126,50 +121,7 @@ public class SearchResultsOperator extends TopComponentOperator {
         return _treeResult;
     }
 
-    /**
-     * Returns operator for "Sort by Name" radio button.
-     * @return JRadioButtonOperator instance
-     */
-    public JRadioButtonOperator rbSortByName() {
-        if(_rbSortByName == null) {
-            _rbSortByName = 
-                new JRadioButtonOperator(this, 
-                                         Bundle.
-                                         getStringTrimmed("org.netbeans.modules.search.Bundle",
-                                                          "TEXT_BUTTON_SORT"));
-        }
-        return _rbSortByName;
-    }
-
-    /**
-     * Returns operator for "Do Not Sort" radio button.
-     * @return JRadioButtonOperator instance
-     */
-    public JRadioButtonOperator rbDoNotSort() {
-        if(_rbDoNotSort == null) {
-            _rbDoNotSort = 
-                new JRadioButtonOperator(this, 
-                                         Bundle.
-                                         getStringTrimmed("org.netbeans.modules.search.Bundle",
-                                                          "TEXT_BUTTON_UNSORT"));
-        }
-        return _rbDoNotSort;
-    }
-
     //shortcuts
-    /**
-     * Selects "Sort by Name" radio button.
-     */
-    public void sortByName() {
-        rbSortByName().changeSelection(true);
-    }
-
-    /**
-     * Selects "Do Not Sort" radio button.
-     */
-    public void doNotSort() {
-        rbDoNotSort().changeSelection(true);
-    }
 
     /**
      * Selects a path in the results tree
@@ -243,7 +195,5 @@ public class SearchResultsOperator extends TopComponentOperator {
         btShowDetails();
         btModifySearch();
         treeResult();
-        rbSortByName();
-        rbDoNotSort();
     }
 }
