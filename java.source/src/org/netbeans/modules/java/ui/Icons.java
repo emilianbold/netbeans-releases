@@ -21,8 +21,6 @@ package org.netbeans.modules.java.ui;
 
 import java.awt.Image;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Collections;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
@@ -39,10 +37,8 @@ public final class Icons {
     private static final String ICON_BASE = "org/netbeans/modules/java/source/resources/icons/";
     private static final String GIF_EXTENSION = ".gif";
     private static final String PNG_EXTENSION = ".png";
-    private static final String WAIT = ICON_BASE + "wait" + GIF_EXTENSION;
+    private static final String WAIT = ICON_BASE + "wait" + PNG_EXTENSION;
         
-    private static final Map<String,Icon> icons = new HashMap<String,Icon>();
-    
     /** Creates a new instance of Icons */
     private Icons() {
     }
@@ -86,13 +82,13 @@ public final class Icons {
 		img = Utilities.loadImage( getIconName( ICON_BASE + "field", PNG_EXTENSION, modifiers ) );
 		break;
 	    case ENUM_CONSTANT: 
-		img = Utilities.loadImage( ICON_BASE + "constant" + GIF_EXTENSION );                                    
+		img = Utilities.loadImage( ICON_BASE + "constant" + PNG_EXTENSION );
 		break;
 	    case CONSTRUCTOR:
 		img = Utilities.loadImage( getIconName( ICON_BASE + "constructor", PNG_EXTENSION, modifiers ) );
 		break;
 	    case STATIC_INIT: 	
-		img = Utilities.loadImage( getIconName( ICON_BASE + "constructor", PNG_EXTENSION, modifiers ) );      
+		img = Utilities.loadImage( getIconName( ICON_BASE + "initializer", PNG_EXTENSION, modifiers ) );      
 		break;
 	    case METHOD: 	
 		img = Utilities.loadImage( getIconName( ICON_BASE + "method", PNG_EXTENSION, modifiers ) );      
