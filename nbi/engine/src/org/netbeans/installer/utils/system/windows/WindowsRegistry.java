@@ -62,8 +62,8 @@ public class WindowsRegistry {
     
     public static final String SEPARATOR = "\\";
     
-    private static int KEY_MODIFY_LEVEL = 1;
-    private static int KEY_READ_LEVEL = 1;
+    private static int KEY_READ_LEVEL = 0;
+    private static int KEY_MODIFY_LEVEL = 1;    
     
     /////////////////////////////////////////////////////////////////////////////
     // Instance
