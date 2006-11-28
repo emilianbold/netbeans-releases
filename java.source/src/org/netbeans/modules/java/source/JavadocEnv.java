@@ -87,9 +87,9 @@ public class JavadocEnv extends DocEnv {
         ClassDocImpl result = classMap.get(clazz);
         if (result != null) return result;
         if (isAnnotationType(clazz)) {
-            result = new JavadocClass(this, clazz);
-        } else {
             result = new JavadocAnnotation(this, clazz);
+        } else {
+            result = new JavadocClass(this, clazz);
         }
         classMap.put(clazz, result);
         return result;
