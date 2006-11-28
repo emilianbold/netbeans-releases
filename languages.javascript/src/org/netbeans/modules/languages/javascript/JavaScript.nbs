@@ -343,7 +343,7 @@ STORE:VariableDeclaration {
 
 STORE:FunctionDeclaration {
     context:current_project;
-    name:org.netbeans.modules.languages.javascript.JavaScript.functionName;
+    name:"$js-identifier$";
 }
 
 STORE:PropertyNameAndValue {

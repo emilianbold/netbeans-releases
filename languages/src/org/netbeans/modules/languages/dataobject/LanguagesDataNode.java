@@ -1,7 +1,7 @@
 package org.netbeans.modules.languages.dataobject;
 
 import org.netbeans.modules.languages.Language;
-import org.netbeans.modules.languages.Language.Evaluator;
+import org.netbeans.modules.languages.Evaluator;
 import org.netbeans.modules.languages.LanguagesManager;
 import org.openide.ErrorManager;
 import org.openide.cookies.InstanceCookie;

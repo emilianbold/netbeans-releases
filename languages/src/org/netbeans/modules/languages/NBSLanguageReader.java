@@ -26,11 +26,9 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 
 import org.netbeans.api.editor.settings.EditorStyleConstants;
-import org.netbeans.modules.languages.Language.Evaluator;
+import org.netbeans.modules.languages.Evaluator;
 import org.netbeans.modules.languages.Language.Identifier;
-import org.netbeans.modules.languages.Language.MethodEvaluator;
 import org.netbeans.modules.languages.Language.Navigator;
-import org.netbeans.modules.languages.Language.StringEvaluator;
 import org.netbeans.modules.languages.parser.ASTNode;
 import org.netbeans.modules.languages.parser.LLSyntaxAnalyser;
 import org.netbeans.modules.languages.parser.Input;
@@ -220,26 +218,26 @@ public class NBSLanguageReader {
         if (value == null) {
             ASTNode n = node.getNode ("command0.command1.command2.class");
             if (n != null)
-                value = Language.createMethodEvaluator (n.getAsText ());
+                value = Evaluator.createMethodEvaluator (n.getAsText ());
         }
         if (value == null) {
             String s = node.getTokenTypeIdentifier ("command0.command1.command2.string");
             if (s != null) {
                 s = s.substring (1, s.length () - 1);
-                value = Language.createStringEvaluator (c (s));
+                value = Evaluator.createStringEvaluator (c (s));
             }
         }
         
         if (value == null) {
             ASTNode n = node.getNode ("command0.command2.class");
             if (n != null)
-                value = Language.createMethodEvaluator (n.getAsText ());
+                value = Evaluator.createMethodEvaluator (n.getAsText ());
         }
         if (value == null) {
             String s = node.getTokenTypeIdentifier ("command0.command2.string");
             if (s != null) {
                 s = s.substring (1, s.length () - 1);
-                value = Language.createStringEvaluator (c (s));
+                value = Evaluator.createStringEvaluator (c (s));
             }
         }
         
@@ -257,11 +255,11 @@ public class NBSLanguageReader {
             String value = n.getTokenTypeIdentifier ("propertyValue.string");
             if (value == null) {
                 value = n.getNode ("propertyValue.class").getAsText ();
-                Evaluator evaluator = Language.createMethodEvaluator (value);
+                Evaluator evaluator = Evaluator.createMethodEvaluator (value);
                 result.put (key, evaluator);
             } else {
                 value = value.substring (1, value.length () - 1);
-                Evaluator evaluator = Language.createStringEvaluator (c (value));
+                Evaluator evaluator = Evaluator.createStringEvaluator (c (value));
                 result.put (key, evaluator);
             }
         }
@@ -325,12 +323,12 @@ public class NBSLanguageReader {
         if (Language.COMPLETE.equals (featureName)) {
             if (identifier != null)
                 throw new ParseException ("Syntax error.");
-            if (feature instanceof MethodEvaluator) {
+            if (feature instanceof Evaluator.Method) {
                 if (language.getProperty (language.getMimeType (), featureName) != null)
                     throw new ParseException ("Syntax error.");
                 language.addProperty (featureName, feature);
             } else
-            if (feature instanceof StringEvaluator) {
+            if (feature instanceof Evaluator.Expression) {
                 Object ov = language.getProperty (language.getMimeType (), featureName);
                 if (ov != null && !(ov instanceof List[]))
                     throw new ParseException ("Syntax error.");
@@ -339,7 +337,7 @@ public class NBSLanguageReader {
                     ss = new List [] {new ArrayList (), new ArrayList ()};
                     language.addProperty (featureName, ss);
                 }
-                String s = (String) ((StringEvaluator) feature).evaluate ();
+                String s = (String) ((Evaluator.Expression) feature).evaluate ();
                 int i = s.indexOf (':');
                 if (i < 1) throw new ParseException ("Syntax error.");
                 ss [0].add (s.substring (0, i));
@@ -358,7 +356,7 @@ public class NBSLanguageReader {
             if (identifier == null)
                 throw new ParseException ("Syntax error.");
             if (feature == null)
-                feature = Language.createStringEvaluator ("...");
+                feature = Evaluator.createStringEvaluator ("...");
             else
             if (!(feature instanceof Evaluator))
                 throw new ParseException ("Syntax error.");
@@ -381,12 +379,12 @@ public class NBSLanguageReader {
         if (Language.INDENT.equals (featureName)) {
             if (identifier != null)
                 throw new ParseException ("Syntax error.");
-            if (feature instanceof MethodEvaluator) {
+            if (feature instanceof Evaluator.Method) {
                 if (language.getProperty (language.getMimeType (), featureName) != null)
                     throw new ParseException ("Syntax error.");
                 language.addProperty (featureName, feature);
             } else
-            if (feature instanceof StringEvaluator) {
+            if (feature instanceof Evaluator.Expression) {
                 Object ov = language.getProperty (language.getMimeType (), featureName);
                 if (ov != null && !(ov instanceof Object[]))
                     throw new ParseException ("Syntax error.");
@@ -395,7 +393,7 @@ public class NBSLanguageReader {
                     ss = new Object [] {new ArrayList (), new HashSet (), new HashSet (), new HashMap ()};
                     language.addProperty (featureName, ss);
                 }
-                String s = (String) ((StringEvaluator) feature).evaluate ();
+                String s = (String) ((Evaluator.Expression) feature).evaluate ();
                 int i = s.indexOf (':');
                 if (i < 1) 
                     ((List) ss [0]).add (java.util.regex.Pattern.compile (c (s)));
@@ -458,9 +456,9 @@ public class NBSLanguageReader {
         if (Language.REFORMAT.equals (featureName)) {
             if (identifier == null)
                 throw new ParseException ("Syntax error.");
-            if (!(feature instanceof StringEvaluator))
+            if (!(feature instanceof Evaluator.Expression))
                 throw new ParseException ("Syntax error.");
-            String f = (String) ((StringEvaluator) feature).evaluate ();
+            String f = (String) ((Evaluator.Expression) feature).evaluate ();
             language.addFeature (featureName, identifier, feature);
         } else
         if (Language.SKIP.equals (featureName)) {
@@ -507,9 +505,9 @@ public class NBSLanguageReader {
             else 
                 return null;
         }
-        if (!(e instanceof StringEvaluator))
+        if (!(e instanceof Evaluator.Expression))
             throw new ParseException ("Syntax error.");
-        return (String) ((StringEvaluator) e).evaluate ();
+        return (String) e.evaluate ();
     }
     
     private static AttributeSet createColoring (

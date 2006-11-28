@@ -13,9 +13,10 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
+import org.netbeans.modules.languages.Evaluator;
+import org.netbeans.modules.languages.Evaluator;
 import org.netbeans.modules.languages.Language;
-import org.netbeans.modules.languages.Language.Evaluator;
-import org.netbeans.modules.languages.Language.MethodEvaluator;
+import org.netbeans.modules.languages.Evaluator;
 import org.openide.ErrorManager;
 import org.openide.util.Lookup;
 import org.openide.windows.IOProvider;
@@ -126,9 +127,9 @@ public class LLSyntaxAnalyser {
                     getErrorNode (node, offset).addToken (input.read ());
                 } else {
                     Rule rule = (Rule) rules.get (newRule);
-                    MethodEvaluator evaluator = null;
+                    Evaluator.Method evaluator = null;
                     if (language != null)
-                        evaluator = (MethodEvaluator) language.getFeature (
+                        evaluator = (Evaluator.Method) language.getFeature (
                             language.PARSE, 
                             mimeType, 
                             rule.getNT ()
