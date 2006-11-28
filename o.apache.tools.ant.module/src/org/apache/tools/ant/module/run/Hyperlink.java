@@ -119,13 +119,13 @@ public final class Hyperlink extends Annotation implements OutputListener, Prope
                     ed.openDocument(); // XXX getLineSet does not do it for you!
                     AntModule.err.log("opened document for " + file);
                     try {
-                        updateLines(ed);
-                        if (!liveLine.isDeleted()) {
-                            attachAsNeeded(liveLine);
+                        Line line = updateLines(ed);
+                        if (!line.isDeleted()) {
+                            attachAsNeeded(line);
                             if (col1 == -1) {
-                                liveLine.show(Line.SHOW_GOTO);
+                                line.show(Line.SHOW_GOTO);
                             } else {
-                                liveLine.show(Line.SHOW_GOTO, col1 - 1);
+                                line.show(Line.SHOW_GOTO, col1 - 1);
                             }
                         }
                     } catch (IndexOutOfBoundsException ioobe) {
@@ -153,10 +153,10 @@ public final class Hyperlink extends Annotation implements OutputListener, Prope
      * #62623: record positions in document at time first hyperlink was clicked for this file.
      * Otherwise an intervening save action can mess up line numbers.
      */
-    private void updateLines(EditorCookie ed) {
+    private Line updateLines(EditorCookie ed) {
         Line.Set lineset = ed.getLineSet();
-        boolean ran = false;
         synchronized (hyperlinks) {
+            boolean ran = false;
             if (liveLine == null) {
                 ran = true;
                 for (Hyperlink h : hyperlinks) {
@@ -165,8 +165,9 @@ public final class Hyperlink extends Annotation implements OutputListener, Prope
                     }
                 }
             }
+            assert liveLine != null : ran;
+            return liveLine;
         }
-        assert liveLine != null : ran;
     }
     
     public void outputLineSelected(OutputEvent ev) {
@@ -187,13 +188,13 @@ public final class Hyperlink extends Annotation implements OutputListener, Prope
                 }
                 AntModule.err.log("got document for " + file);
                 if (line1 != -1) {
-                    updateLines(ed);
-                    if (!liveLine.isDeleted()) {
-                        attachAsNeeded(liveLine);
+                    Line line = updateLines(ed);
+                    if (!line.isDeleted()) {
+                        attachAsNeeded(line);
                         if (col1 == -1) {
-                            liveLine.show(Line.SHOW_TRY_SHOW);
+                            line.show(Line.SHOW_TRY_SHOW);
                         } else {
-                            liveLine.show(Line.SHOW_TRY_SHOW, col1 - 1);
+                            line.show(Line.SHOW_TRY_SHOW, col1 - 1);
                         }
                     }
                 }
