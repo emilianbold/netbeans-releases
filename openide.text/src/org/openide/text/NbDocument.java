@@ -18,8 +18,6 @@
  */
 package org.openide.text;
 
-import org.openide.options.SystemOption;
-
 import java.awt.Color;
 import java.awt.Component;
 
@@ -610,7 +608,7 @@ public final class NbDocument extends Object {
 
     /** @deprecated Not useful for anything. */
     @Deprecated
-    public static final class Colors extends SystemOption {
+    public static final class Colors extends org.openide.options.SystemOption {
         public static final String PROP_BREAKPOINT = BREAKPOINT_STYLE_NAME;
         public static final String PROP_ERROR = ERROR_STYLE_NAME;
         public static final String PROP_CURRENT = CURRENT_STYLE_NAME;
