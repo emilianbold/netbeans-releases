@@ -20,8 +20,13 @@ package org.netbeans.api.java.source.gen;
 
 import com.sun.source.tree.*;
 import java.io.File;
+import java.io.IOException;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TestUtilities;
-import org.netbeans.jackpot.transform.Transformer;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.junit.NbTestSuite;
 
 /**
@@ -38,6 +43,9 @@ public class ConstructorRenameTest extends GeneratorTest {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTestSuite(ConstructorRenameTest.class);
+//        suite.addTest(new ConstructorRenameTest("testClassRename"));
+//        suite.addTest(new ConstructorRenameTest("testClassRename"));
+//        suite.addTest(new ConstructorRenameTest("testEnumRename"));
         return suite;
     }
     
@@ -64,19 +72,29 @@ public class ConstructorRenameTest extends GeneratorTest {
             "    }\n\n" +
             "}\n";
 
-        process(
-            new Transformer<Void, Object>() {
-                public Void visitClass(ClassTree node, Object p) {
-                    super.visitClass(node, p);
-                    if ("Test".contentEquals(node.getSimpleName())) {
-                        ClassTree copy = make.setLabel(node, "Test2");
-                        changes.rewrite(node, copy);
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // ensure that it is correct type declaration, i.e. class
+                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                        ClassTree copy = make.setLabel((ClassTree) typeDecl, "Test2");
+                        workingCopy.rewrite(typeDecl, copy);
                     }
-                    return null;
                 }
             }
-        );
+            
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
     
@@ -106,19 +124,29 @@ public class ConstructorRenameTest extends GeneratorTest {
             "    }\n\n" +
             "}\n";
 
-        process(
-            new Transformer<Void, Object>() {
-                public Void visitClass(ClassTree node, Object p) {
-                    super.visitClass(node, p);
-                    if ("Test".contentEquals(node.getSimpleName())) {
-                        ClassTree copy = make.setLabel(node, "Test2");
-                        changes.rewrite(node, copy);
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // ensure that it is correct type declaration, i.e. class
+                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                        ClassTree copy = make.setLabel((ClassTree) typeDecl, "Test2");
+                        workingCopy.rewrite(typeDecl, copy);
                     }
-                    return null;
                 }
             }
-        );
+            
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
     
@@ -134,19 +162,29 @@ public class ConstructorRenameTest extends GeneratorTest {
             "public enum Test2 {\n" +
             "}\n";
 
-        process(
-            new Transformer<Void, Object>() {
-                public Void visitClass(ClassTree node, Object p) {
-                    super.visitClass(node, p);
-                    if ("Enum".contentEquals(node.getSimpleName())) {
-                        ClassTree copy = make.setLabel(node, "Test2");
-                        changes.rewrite(node, copy);
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // ensure that it is correct type declaration, i.e. class
+                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                        ClassTree copy = make.setLabel((ClassTree) typeDecl, "Test2");
+                        workingCopy.rewrite(typeDecl, copy);
                     }
-                    return null;
                 }
             }
-        );
+            
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
     
