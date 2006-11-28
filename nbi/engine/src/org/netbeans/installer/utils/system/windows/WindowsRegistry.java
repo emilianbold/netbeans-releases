@@ -78,11 +78,11 @@ public class WindowsRegistry {
     
     // queries //////////////////////////////////////////////////////////////////
     /**
-     * Checks whether the specified key exists in the registry.
+     * Checks whether the specified key exists in the registry (can be read).
      *
      * @param section The section of the registry
      * @param key The specified key
-     * @return <i>true</i> if the specified key exists, <i>false</i> otherwise
+     * @return <i>true</i> if the specified key exists (can be read), <i>false</i> otherwise
      */
     public boolean keyExists(int section, String key) throws NativeException {
         validateSection(section);
@@ -661,6 +661,13 @@ public class WindowsRegistry {
         }
     }
     
+    /**    
+     * Checks whether the specified key exists and can be modified in the registry.
+     *
+     * @param section The section of the registry
+     * @param key The specified key
+     * @return <i>true</i> if the specified key can exists and can be modified, <i>false</i> otherwise
+     */
     public boolean canModifyKey(int section, String key) throws NativeException {
         validateSection(section);
         validateKey(key);
@@ -671,6 +678,7 @@ public class WindowsRegistry {
             throw new NativeException("Cannot access native method", e);
         }
     }
+    
     // miscellanea //////////////////////////////////////////////////////////////
     public String constructKey(String parent, String child) {
         return parent + SEPARATOR + child;
