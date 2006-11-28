@@ -34,7 +34,6 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.Callable;
-import java.util.logging.Formatter;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -43,7 +42,6 @@ import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.WeakSet;
-import org.openide.util.lookup.Lookups;
 
 /**
  * A more or less <em>deprecated</em> system of managing, annotating, and classifying errors
