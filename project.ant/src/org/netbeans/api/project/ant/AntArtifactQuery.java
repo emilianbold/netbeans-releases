@@ -21,7 +21,6 @@ package org.netbeans.api.project.ant;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
@@ -50,9 +49,7 @@ public class AntArtifactQuery {
             throw new IllegalArgumentException("Parameter file was not "+  // NOI18N
                 "normalized. Was "+file+" instead of "+FileUtil.normalizeFile(file));  // NOI18N
         }
-        Iterator it = Lookup.getDefault().lookupAll(AntArtifactQueryImplementation.class).iterator();
-        while (it.hasNext()) {
-            AntArtifactQueryImplementation aaqi = (AntArtifactQueryImplementation)it.next();
+        for (AntArtifactQueryImplementation aaqi : Lookup.getDefault().lookupAll(AntArtifactQueryImplementation.class)) {
             AntArtifact artifact = aaqi.findArtifact(file);
             if (artifact != null) {
                 return artifact;
@@ -74,10 +71,9 @@ public class AntArtifactQuery {
         if (prov == null) {
             return null;
         }
-        AntArtifact[] artifacts = prov.getBuildArtifacts();
-        for (int i = 0; i < artifacts.length; i++) {
-            if (artifacts[i].getID().equals(id)) {
-                return artifacts[i];
+        for (AntArtifact artifact : prov.getBuildArtifacts()) {
+            if (artifact.getID().equals(id)) {
+                return artifact;
             }
         }
         return null;

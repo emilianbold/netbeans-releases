@@ -19,20 +19,12 @@
 
 package org.netbeans.spi.project.support.ant;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.URL;
 import java.util.Iterator;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton;
-import org.netbeans.modules.project.ant.Util;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -119,9 +111,7 @@ public class ProjectGenerator {
                     Project p = ProjectManager.getDefault().findProject(directory);
                     if (p == null) {
                         // Something is wrong, it is not being recognized.
-                        Iterator it = Lookup.getDefault().lookupAll(AntBasedProjectType.class).iterator();
-                        while (it.hasNext()) {
-                            AntBasedProjectType abpt = (AntBasedProjectType)it.next();
+                        for (AntBasedProjectType abpt : Lookup.getDefault().lookupAll(AntBasedProjectType.class)) {
                             if (abpt.getType().equals(type)) {
                                 // Well, the factory was there.
                                 throw new IllegalArgumentException("For some reason the folder " + directory + " with a new project of type " + type + " is still not recognized"); // NOI18N

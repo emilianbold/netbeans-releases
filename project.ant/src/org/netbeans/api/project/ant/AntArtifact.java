@@ -187,10 +187,9 @@ public abstract class AntArtifact {
      * @since 1.5
      */
     public final FileObject[] getArtifactFiles() {
-        URI artifactLocations[] = getArtifactLocations();
         List<FileObject> l = new ArrayList<FileObject>();
-        for (int i=0; i<artifactLocations.length; i++) {
-            FileObject fo = getArtifactFile(artifactLocations[i]);
+        for (URI artifactLocation : getArtifactLocations()) {
+            FileObject fo = getArtifactFile(artifactLocation);
             if (fo != null) {
                 l.add(fo);
             }

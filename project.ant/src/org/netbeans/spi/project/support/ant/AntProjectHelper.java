@@ -442,12 +442,12 @@ public final class AntProjectHelper {
         final boolean xml = path.equals(PROJECT_XML_PATH) || path.equals(PRIVATE_XML_PATH);
         ProjectManager.mutex().readAccess(new Mutex.Action<Void>() {
             public Void run() {
-                for (int i = 0; i < _listeners.length; i++) {
+                for (AntProjectListener l : _listeners) {
                     try {
                         if (xml) {
-                            _listeners[i].configurationXmlChanged(ev);
+                            l.configurationXmlChanged(ev);
                         } else {
-                            _listeners[i].propertiesChanged(ev);
+                            l.propertiesChanged(ev);
                         }
                     } catch (RuntimeException e) {
                         // Don't prevent other listeners from being notified.
@@ -527,9 +527,9 @@ public final class AntProjectHelper {
                     pendingHook = p.getLookup().lookup(ProjectXmlSavedHook.class);
                     // might still be null
                 }
-                Iterator it = modifiedMetadataPaths.iterator();
+                Iterator<String> it = modifiedMetadataPaths.iterator();
                 while (it.hasNext()) {
-                    String path = (String)it.next();
+                    String path = it.next();
                     if (path.equals(PROJECT_XML_PATH)) {
                         assert projectXml != null;
                         locks.add(saveXml(projectXml, path));
