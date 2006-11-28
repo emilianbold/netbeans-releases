@@ -19,17 +19,13 @@
 
 package org.openide.util;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.lang.ref.*;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.openide.ErrorManager;
 import junit.framework.*;
 import org.netbeans.junit.*;
 
@@ -1011,7 +1007,7 @@ public class MutexTest extends NbTestCase {
                 }
             }
         };
-        Mutex.ExceptionAction firstRequest = new Mutex.ExceptionAction() {
+        Mutex.ExceptionAction<Object> firstRequest = new Mutex.ExceptionAction<Object>() {
             public Object run () throws Exception {
                 mm.postWriteRequest(secondRequest);
                 throw e1;
