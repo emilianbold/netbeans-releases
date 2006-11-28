@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -72,6 +73,14 @@ public class RunCommand extends HttpServlet {
         }
         
         try {
+            if (command.equals("add-registry")) {
+                registryManager.addRegistry(registry);
+            }
+            
+            if (command.equals("remove-registry")) {
+                registryManager.removeRegistry(registry);
+            }
+            
             if (command.equals("update-engine")) {
                 engineManager.updateEngine(archive);
             }
@@ -94,12 +103,15 @@ public class RunCommand extends HttpServlet {
             
             response.getWriter().write(
                     "The \"" + command + "\" command was successfully executed.");
-            response.getWriter().close();
+            
         } catch (IOException e) {
             e.printStackTrace(new PrintWriter(response.getWriter()));
+            
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
+        
+        response.getWriter().close();
     }
-    
     
     /**
      * Reads the servlet parameters passed in via multipart/form-data http request.
@@ -327,5 +339,12 @@ public class RunCommand extends HttpServlet {
         }
         
         return length;
+    }
+    
+    private String getHostUrl(HttpServletRequest request) throws MalformedURLException {
+        URL    url    = new URL(request.getRequestURL().toString());
+        String string = url.toString();
+        
+        return string.substring(0, string.indexOf(url.getFile()));
     }
 }

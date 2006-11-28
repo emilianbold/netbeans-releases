@@ -16,6 +16,14 @@
         <servlet-name>update-engine</servlet-name>
         <servlet-class>org.netbeans.installer.infra.server.admin.servlets.UpdateEngine</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>add-registry</servlet-name>
+        <servlet-class>org.netbeans.installer.infra.server.admin.servlets.AddRegistry</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>remove-registry</servlet-name>
+        <servlet-class>org.netbeans.installer.infra.server.admin.servlets.RemoveRegistry</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>run-command</servlet-name>
         <url-pattern>/run-command</url-pattern>
@@ -31,6 +39,14 @@
     <servlet-mapping>
         <servlet-name>update-engine</servlet-name>
         <url-pattern>/update-engine</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>add-registry</servlet-name>
+        <url-pattern>/add-registry</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>remove-registry</servlet-name>
+        <url-pattern>/remove-registry</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>
