@@ -39,7 +39,7 @@ public final class BorderFactory {
     }
 
     /**
-     * Creates an default empty border with 0px border.
+     * Creates an default empty border with 0px layout.
      * The instance can be shared by multiple widgets.
      * @return the empty border
      */
@@ -105,7 +105,7 @@ public final class BorderFactory {
     }
 
     /**
-     * Creates a border from a Swing border.
+     * Creates a layout from a Swing border.
      * The instance can be shared by multiple widgets but cannot be used in multiple scenes.
      * @param scene the scene where the border is used.
      * @param border the Swing border
@@ -126,7 +126,7 @@ public final class BorderFactory {
     }
 
     /**
-     * Creates a line border with specific thickness. The line is still one pixel but the border insets are calculated from thickness.
+     * Creates a line border with specific thickness. The line is still one pixel but the layout insets are calculated from thickness.
      * The instance can be shared by multiple widgets.
      * @param thickness the border thickness
      * @return the line border
@@ -136,7 +136,7 @@ public final class BorderFactory {
     }
 
     /**
-     * Creates a line border with specific thickness and color. The line is still one pixel but the border insets are calculated from thickness.
+     * Creates a line border with specific thickness and color. The line is still one pixel but the layout insets are calculated from thickness.
      * The instance can be shared by multiple widgets.
      * @param thickness the border thickness
      * @param color     the line color
@@ -147,7 +147,7 @@ public final class BorderFactory {
     }
 
     /**
-     * Creates a line border with specific insets and color. The line is still one pixel but the border insets are specified.
+     * Creates a line border with specific insets and color. The line is still one pixel but the layout insets are specified.
      * The instance can be shared by multiple widgets.
      * @param top the top inset
      * @param left the left inset
@@ -163,7 +163,7 @@ public final class BorderFactory {
     /**
      * Creates a bevel border.
      * The instance can be shared by multiple widgets.
-     * @param raised if true, then it is a raised-bevel border; if false, then it is a lowered-bevel border
+     * @param raised if true, then it is a raised-bevel border; if false, then it is a lowered-bevel layout
      * @return the bevel border
      */
     public static Border createBevelBorder (boolean raised) {
@@ -173,7 +173,7 @@ public final class BorderFactory {
     /**
      * Creates a bevel border.
      * The instance can be shared by multiple widgets.
-     * @param raised if true, then it is a raised-bevel border; if false, then it is a lowered-bevel border
+     * @param raised if true, then it is a raised-bevel layout; if false, then it is a lowered-bevel border
      * @param color the border color
      * @return the bevel border
      */
@@ -182,7 +182,7 @@ public final class BorderFactory {
     }
 
     /**
-     * Creates an image border. The border is painted using a supplied Image. The image is split into 3x3 regions defined by insets.
+     * Creates an image layout. The border is painted using a supplied Image. The image is split into 3x3 regions defined by insets.
      * The middle regions are tiled for supplying variable width and height of border. Central region is not painted.
      * The instance can be shared by multiple widgets.
      * @param insets the border insets
@@ -194,7 +194,7 @@ public final class BorderFactory {
     }
 
     /**
-     * Creates an image border. The border is painted using a supplied Image. The image is split into 3x3 regions defined by imageInsets.
+     * Creates an image layout. The border is painted using a supplied Image. The image is split into 3x3 regions defined by imageInsets.
      * The middle regions are tiled for supplying variable width and height of border. Central region is not painted.
      * The insets of the border is specified by borderInsets.
      * The instance can be shared by multiple widgets.

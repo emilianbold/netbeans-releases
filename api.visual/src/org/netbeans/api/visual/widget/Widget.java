@@ -432,7 +432,7 @@ public class Widget {
     }
 
     /**
-     * Sets the Swing border as the border of the widget.
+     * Sets the Swing layout as the border of the widget.
      * @param swingBorder the Swing border
      */
     public final void setBorder (javax.swing.border.Border swingBorder) {

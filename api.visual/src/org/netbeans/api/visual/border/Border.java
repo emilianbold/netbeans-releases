@@ -34,7 +34,7 @@ import java.awt.*;
 public interface Border {
 
     /**
-     * Returns border insets. Insets has to be the same during whole life-cycle of the border.
+     * Returns layout insets. Insets has to be the same during whole life-cycle of the border.
      * @return the insets
      */
     // WARNING - must be immutable during whole lifecycle
