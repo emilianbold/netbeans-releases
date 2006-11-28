@@ -58,6 +58,7 @@ import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.util.LowMemoryEvent;
 import org.netbeans.modules.java.source.util.LowMemoryListener;
 import org.netbeans.modules.java.source.util.LowMemoryNotifier;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 
@@ -174,7 +175,12 @@ public class BinaryAnalyser implements LowMemoryListener {
         for( Enumeration e = zipFile.entries(); e.hasMoreElements(); ) {
             ZipEntry ze = (ZipEntry)e.nextElement();
             if ( !ze.isDirectory()  && this.accepts(ze.getName()))  {
-                analyse( zipFile.getInputStream( ze ) );
+                try {
+                    analyse( zipFile.getInputStream( ze ) );
+                } catch (IOException x) {
+                    Exceptions.attachMessage(x, "While scanning: " + ze.getName());
+                    throw x;
+                }
                 if (this.lowMemory.getAndSet(false)) {
                     this.store();
                 }

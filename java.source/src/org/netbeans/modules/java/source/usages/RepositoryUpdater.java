@@ -629,6 +629,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                 }
                             }
                         }
+                        // XXX use @SuppressWarnings("fallthrough") or break
                         case COMPILE_CONT:
                             boolean completed = false;
                             try {
@@ -787,8 +788,8 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 if (this.canceled.getAndSet(false)) {                    
                     return false;
                 }
+                final URL rootURL = it.next();
                 try {
-                    final URL rootURL = it.next();
                     it.remove();
                     final ClassIndexImpl ci = ClassIndexManager.getDefault().createUsagesQuery(rootURL,false);
                     final File rootFile = FileObjects.getRootFile(rootURL);
@@ -814,6 +815,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         throw (ThreadDeath) e;
                     }
                     else {
+                        Exceptions.attachMessage(e, "While scanning: " + rootURL);
                         Exceptions.printStackTrace(e);
                     }
                 }
@@ -1218,7 +1220,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         }
         
         List<? extends ClassSymbol> getEnteredTypes () {
-            List<ClassSymbol> result = new ArrayList(this.justEntered);
+            List<ClassSymbol> result = new ArrayList<ClassSymbol>(this.justEntered);
             this.justEntered.clear();
             return result;
         }
@@ -1515,9 +1517,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         }
     }
     
-    private static HashSet parseSet(String propertyName, String defaultValue) {
+    private static Set<String> parseSet(String propertyName, String defaultValue) {
         StringTokenizer st = new StringTokenizer(System.getProperty(propertyName, defaultValue), " \t\n\r\f,-:+!");
-        HashSet result = new HashSet();
+        Set<String> result = new HashSet<String>();
         while (st.hasMoreTokens()) {
             result.add(st.nextToken());
         }
