@@ -46,7 +46,7 @@ import java.util.ArrayList;
  * @see #replaceString(String original, String begin, String end, String replace)
  */
 public class StringFilter {
-    ArrayList filter = new ArrayList();
+    ArrayList<Pattern> filter = new ArrayList<Pattern>();
     
     /** Adds replace pattern into Filter.
      * @see #replaceString(String original, String begin, String end, String replace )

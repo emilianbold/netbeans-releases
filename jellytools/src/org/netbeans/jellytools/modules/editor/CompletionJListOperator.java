@@ -75,7 +75,7 @@ public class CompletionJListOperator extends JListOperator {
     throws Exception {
         ListModel model = (ListModel) compJList.getModel();
         // dump items to List
-        List data = new ArrayList(model.getSize());
+        List<Object> data = new ArrayList<Object>(model.getSize());
         for (int i=0; i < model.getSize(); i++) {
             data.add(model.getElementAt(i));
         }
@@ -98,7 +98,7 @@ public class CompletionJListOperator extends JListOperator {
             final Object popup = popupField.get(layout);
             //CompletionScrollPane.class
             final Method getCSPaneMethod = popup.getClass().getDeclaredMethod(
-                    "getCompletionScrollPane", null);
+                    "getCompletionScrollPane", (Class[])null);
             getCSPaneMethod.setAccessible(true);
             Object compSPane = waitFor(new Waitable() {                
                 public Object actionProduced(Object obj) {
@@ -107,7 +107,7 @@ public class CompletionJListOperator extends JListOperator {
                         return INSTANT_SUBSTITUTION;
                     }
                     try {
-                        o = getCSPaneMethod.invoke(popup, null);
+                        o = getCSPaneMethod.invoke(popup, (Object[])null);
                     } catch (Exception ex) {
                         throw new JemmyException("Invovation of " +
                                 "getCompletionScrollPane() failed", ex);

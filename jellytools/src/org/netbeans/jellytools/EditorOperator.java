@@ -570,7 +570,7 @@ public class EditorOperator extends TopComponentOperator {
      * @see #getAnnotationType
      */
     public Object[] getAnnotations(int lineNumber) {
-        ArrayList result = new ArrayList();
+        ArrayList<Object> result = new ArrayList<Object>();
         try {
             Class annotationsClass = Class.forName("org.netbeans.editor.Annotations");
             Method getLineAnnotationsMethod = annotationsClass.getDeclaredMethod("getLineAnnotations", new Class[] {int.class});
@@ -592,7 +592,7 @@ public class EditorOperator extends TopComponentOperator {
      * @see #getAnnotationType
      */
     public Object[] getAnnotations() {
-        ArrayList result = new ArrayList();
+        ArrayList<Object> result = new ArrayList<Object>();
         try {
             Class annotationsClass = Class.forName("org.netbeans.editor.Annotations");
             Field lineAnnotationsArrayField = annotationsClass.getDeclaredField("lineAnnotationsArray");
@@ -612,23 +612,23 @@ public class EditorOperator extends TopComponentOperator {
      * document. */
     private Object getAnnotationsInstance() throws Exception {
         Class baseDocumentClass = Class.forName("org.netbeans.editor.BaseDocument");
-        Method getAnnotationsMethod = baseDocumentClass.getDeclaredMethod("getAnnotations", null);
+        Method getAnnotationsMethod = baseDocumentClass.getDeclaredMethod("getAnnotations", (Class[])null);
         getAnnotationsMethod.setAccessible(true);
-        return getAnnotationsMethod.invoke(txtEditorPane().getDocument(), null);
+        return getAnnotationsMethod.invoke(txtEditorPane().getDocument(), (Object[])null);
     }
     
     /** Returns ArrayList of org.openide.text.Annotation from given LineAnnotations
      * object. */
-    private ArrayList getAnnotations(Object lineAnnotations) throws Exception {
+    private ArrayList<Object> getAnnotations(Object lineAnnotations) throws Exception {
         Class lineAnnotationsClass = Class.forName("org.netbeans.editor.Annotations$LineAnnotations");
         Class annotationDescDelegateClass = Class.forName("org.netbeans.modules.editor.NbEditorDocument$AnnotationDescDelegate");
         Field delegateField = annotationDescDelegateClass.getDeclaredField("delegate");
         delegateField.setAccessible(true);
 
-        Method getAnnotationsMethod = lineAnnotationsClass.getDeclaredMethod("getAnnotations", null);
+        Method getAnnotationsMethod = lineAnnotationsClass.getDeclaredMethod("getAnnotations", (Class[])null);
         getAnnotationsMethod.setAccessible(true);
-        Iterator annotations = (Iterator)getAnnotationsMethod.invoke(lineAnnotations, null);
-        ArrayList result = new ArrayList();
+        Iterator annotations = (Iterator)getAnnotationsMethod.invoke(lineAnnotations, (Object[])null);
+        ArrayList<Object> result = new ArrayList<Object>();
         for (Iterator it = annotations; it.hasNext();) {
             result.add(delegateField.get(it.next()));
         }

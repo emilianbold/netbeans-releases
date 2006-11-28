@@ -187,7 +187,8 @@ public class ActionNoBlock extends Action {
     }
 
     /** performs action through API  
-     * @throws UnsupportedOperationException when action does not support API mode */    
+     * @throws UnsupportedOperationException when action does not support API mode */
+    @SuppressWarnings("unchecked")
     public void performAPI() {
         if (systemActionClass==null) {
             throw new UnsupportedOperationException(getClass().toString()+" does not define SystemAction");

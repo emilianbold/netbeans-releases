@@ -461,7 +461,7 @@ public class Node {
      * @param actions array of actions to be verified
      */
     public void verifyPopup(Action actions[]) {
-        ArrayList popupPaths=new ArrayList();
+        ArrayList<String> popupPaths=new ArrayList<String>();
         String path;
         for (int i=0; i<actions.length; i++) {
             path=actions[i].getPopupPath();
@@ -469,7 +469,7 @@ public class Node {
                 popupPaths.add(path);
             }
         }
-        verifyPopup((String[])popupPaths.toArray(new String[0]));
+        verifyPopup((String[])popupPaths.toArray(new String[popupPaths.size()]));
     }
     
     

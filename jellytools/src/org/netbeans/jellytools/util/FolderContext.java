@@ -68,6 +68,7 @@ public class FolderContext {
     /** Creates a new instance of FolderContext.
      * @param url folder's URL
      */
+    @SuppressWarnings("deprecation")
     public FolderContext(URL url) {
         FileObject[] fos = URLMapper.findFileObjects(url);
         if (fos == null || fos.length == 0) {
@@ -94,6 +95,7 @@ public class FolderContext {
      * @throws IOException if the directory cannot be created
      * @return FolderContext
      */
+    @SuppressWarnings("deprecation")
     public static FolderContext getWorkDir(JellyTestCase test) throws IOException {
         String wd = test.getWorkDir().getAbsolutePath();
         FileSystem fs = Repository.getDefault().findFileSystem(wd);
@@ -118,6 +120,7 @@ public class FolderContext {
      * @param spec File Object's path
      * @return FileObject
      */
+    @SuppressWarnings("deprecation")
     public FileObject getFileObject(String spec) {
         FileObject fo = null;
         URL url = null;
@@ -241,6 +244,7 @@ public class FolderContext {
      * @param path relative path separated by '|'
      * @return String
      */
+    @SuppressWarnings("deprecation")
     public String getTreePath(String path) {
         String tp = null;
         FileObject fo = getFileObject("");

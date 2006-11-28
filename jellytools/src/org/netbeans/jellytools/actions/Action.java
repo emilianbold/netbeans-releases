@@ -471,7 +471,8 @@ public class Action {
     }
     
     /** performs action through API  
-     * @throws UnsupportedOperationException when action does not support API mode */    
+     * @throws UnsupportedOperationException when action does not support API mode */
+    @SuppressWarnings("unchecked")
     public void performAPI() {
         if (systemActionClass==null) {
             throw new UnsupportedOperationException(getClass().toString()+" does not support API call.");
@@ -725,6 +726,7 @@ public class Action {
      * UnsupportedOperationException.
      * @return true if this action is enabled; false otherwise
      */
+    @SuppressWarnings("unchecked")
     public boolean isEnabled() {
         if(systemActionClass != null) {
             return SystemAction.get(systemActionClass).isEnabled();
@@ -743,6 +745,7 @@ public class Action {
      * @param nodes array of nodes to be selected before a check
      * @return true if this action is enabled; false otherwise
      */
+    @SuppressWarnings("unchecked")
     public boolean isEnabled(Node[] nodes) {
         testNodes(nodes);
         if(systemActionClass != null) {
@@ -802,6 +805,7 @@ public class Action {
      * @param componentOperator instance of ComponentOperator
      * @return true if this action is enabled; false otherwise
      */
+    @SuppressWarnings("unchecked")
     public boolean isEnabled(ComponentOperator componentOperator) {
         componentOperator.makeComponentVisible();
         componentOperator.getFocus();

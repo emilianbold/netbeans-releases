@@ -171,9 +171,9 @@ public class OutputTabOperator extends JComponentOperator {
                 Document document = ((AbstractOutputTab)getSource()).getOutputPane().getDocument();
                 try {
                     Class clazz = Class.forName("org.netbeans.core.output2.OutputDocument");
-                    Method getLengthMethod = clazz.getDeclaredMethod("getLength", null);
+                    Method getLengthMethod = clazz.getDeclaredMethod("getLength", (Class[])null);
                     getLengthMethod.setAccessible(true);
-                    return ((Integer)getLengthMethod.invoke(document, null)).intValue();
+                    return ((Integer)getLengthMethod.invoke(document, (Object[])null)).intValue();
                 } catch (Exception e) {
                     throw new JemmyException("getLength() by reflection failed.", e);
                 }
@@ -210,7 +210,7 @@ public class OutputTabOperator extends JComponentOperator {
                     Class clazz = Class.forName("org.netbeans.core.output2.OutputDocument");
                     Method getTextMethod = clazz.getDeclaredMethod("getText", new Class[] {int.class, int.class});
                     getTextMethod.setAccessible(true);
-                    return getTextMethod.invoke(document, new Integer[] {new Integer(0), new Integer(length)}).toString();
+                    return getTextMethod.invoke(document, new Object[] {new Integer(0), new Integer(length)}).toString();
                 } catch (Exception e) {
                     throw new JemmyException("Getting text by reflection failed.", e);
                 }
@@ -257,9 +257,9 @@ public class OutputTabOperator extends JComponentOperator {
                 Document document = ((AbstractOutputTab)getSource()).getOutputPane().getDocument();
                 try {
                     Class clazz = Class.forName("org.netbeans.core.output2.OutputDocument");
-                    Method getElementCountMethod = clazz.getDeclaredMethod("getElementCount", null);
+                    Method getElementCountMethod = clazz.getDeclaredMethod("getElementCount", (Class[])null);
                     getElementCountMethod.setAccessible(true);
-                    return (Integer)getElementCountMethod.invoke(document, null);
+                    return (Integer)getElementCountMethod.invoke(document, (Object[])null);
                 } catch (Exception e) {
                     throw new JemmyException("getElementCount() by reflection failed.", e);
                 }
@@ -292,17 +292,17 @@ public class OutputTabOperator extends JComponentOperator {
                     Class clazz = Class.forName("org.netbeans.core.output2.OutputDocument");
                     Method getLineStartMethod = clazz.getDeclaredMethod("getLineStart", new Class[] {int.class});
                     getLineStartMethod.setAccessible(true);
-                    Integer lineStart = (Integer)getLineStartMethod.invoke(document, new Integer[] {new Integer(line)});
+                    Integer lineStart = (Integer)getLineStartMethod.invoke(document, new Object[] {new Integer(line)});
                     Method getLineEndMethod = clazz.getDeclaredMethod("getLineEnd", new Class[] {int.class});
                     getLineEndMethod.setAccessible(true);
-                    Integer lineEnd = (Integer)getLineEndMethod.invoke(document, new Integer[] {new Integer(line)});
+                    Integer lineEnd = (Integer)getLineEndMethod.invoke(document, new Object[] {new Integer(line)});
                     if(lineStart.intValue() == lineEnd.intValue()) {
                         // line is empty
                         return "";
                     }
                     Method getTextMethod = clazz.getDeclaredMethod("getText", new Class[] {int.class, int.class});
                     getTextMethod.setAccessible(true);
-                    return getTextMethod.invoke(document, new Integer[] {lineStart, new Integer(lineEnd.intValue()-lineStart.intValue()-1)}).toString();
+                    return getTextMethod.invoke(document, new Object[] {lineStart, new Integer(lineEnd.intValue()-lineStart.intValue()-1)}).toString();
                 } catch (Exception e) {
                     throw new JemmyException("Getting text by reflection failed.", e);
                 }

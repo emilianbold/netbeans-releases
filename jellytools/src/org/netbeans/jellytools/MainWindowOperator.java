@@ -423,11 +423,11 @@ public class MainWindowOperator extends JFrameOperator {
      */
     public class StatusTextTracer implements ChangeListener {
         /** List of all messages */
-        private ArrayList statusTextHistory;
+        private ArrayList<String> statusTextHistory;
         
         /** Creates new instance. */
         public StatusTextTracer() {
-            this.statusTextHistory = new ArrayList();
+            this.statusTextHistory = new ArrayList<String>();
         }
         
         /** Starts to register all status messages into history array.

@@ -188,6 +188,7 @@ public class Property {
      * @param textValue text to be set in property (e.g. "a new value",
      * "a new item from list", "false", "TRUE")
      */
+    @SuppressWarnings("unchecked")
     public void setValue(final String textValue) {
         propertySheetOper.getOutput().printTrace("Setting value \""+textValue+
                                                  "\" of property \""+getName()+"\".");
@@ -297,6 +298,7 @@ public class Property {
      * It can be both for string renderer or combo box renderer.
      * @return true if this property can be edited, false otherwise
      */
+    @SuppressWarnings("deprecation")
     public boolean canEditAsText() {
         if (property.canRead() && property.canWrite()) {
             Boolean val = (Boolean)property.getValue("canEditAsText");  // NOI18N
