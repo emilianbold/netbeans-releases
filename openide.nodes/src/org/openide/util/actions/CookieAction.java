@@ -143,15 +143,16 @@ public abstract class CookieAction extends NodeAction {
     * @return number of supported classes
     */
     private int resolveSupported(Node[] activatedNodes) {
-        int total = activatedNodes.length;
         int ret = 0;
 
         Class<?>[] cookies = getCookies();
 
-        for (int i = 0; i < total; i++) {
-            for (int j = 0; j < cookies.length; j++) {
+        for (Node n : activatedNodes) {
+            for (Class<?> cookie : cookies) {
                 // test for supported cookies
-                if (activatedNodes[i].getLookup().lookupItem(new Lookup.Template(cookies[j])) != null) {
+                @SuppressWarnings("unchecked")
+                Lookup.Template<?> templ = new Lookup.Template(cookie);
+                if (n.getLookup().lookupItem(templ) != null) {
                     ret++;
 
                     break;

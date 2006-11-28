@@ -592,7 +592,7 @@ bigloop:
 
             fields.put("explored", explored); // NOI18N
 
-            LinkedList selected = new LinkedList();
+            List<String[]> selected = new LinkedList<String[]>();
 
             for (int i = 0; i < selectedNodes.length; i++) {
                 if (isUnderRoot(selectedNodes[i])) {
@@ -678,7 +678,7 @@ bigloop:
         } else {
             String[] rootCtx = (String[]) ois.readObject();
             String[] exploredCtx = (String[]) ois.readObject();
-            LinkedList ll = new LinkedList();
+            List<String[]> ll = new LinkedList<String[]>();
 
             for (;;) {
                 String[] path = (String[]) ois.readObject();
@@ -696,8 +696,7 @@ bigloop:
     }
 
     private void restoreSelection(
-        final Node root, final String[] exploredCtx, final List selectedPaths /* of String[] */
-    ) {
+        final Node root, final String[] exploredCtx, final List</*String[]*/?> selectedPaths) {
         setRootContext(root);
 
         // XXX(-ttran) findPath() can take a long time and employs DataSystems
@@ -714,15 +713,14 @@ bigloop:
             new Runnable() {
                 public void run() {
                     // convert paths to Nodes
-                    List selNodes = new ArrayList(selectedPaths.size());
+                    List<Node> selNodes = new ArrayList<Node>(selectedPaths.size());
 
-                    for (Iterator iter = selectedPaths.iterator(); iter.hasNext();) {
-                        String[] path = (String[]) iter.next();
-                        selNodes.add(findPath(root, path));
+                    for (Object path : selectedPaths) {
+                        selNodes.add(findPath(root, (String[]) path));
                     }
 
                     // set the selection
-                    Node[] newSelection = (Node[]) selNodes.toArray(new Node[selNodes.size()]);
+                    Node[] newSelection = selNodes.toArray(new Node[selNodes.size()]);
 
                     if (exploredCtx != null) {
                         setExploredContext(findPath(root, exploredCtx), newSelection);
@@ -838,7 +836,7 @@ bigloop:
     * Then the root node is changed to Node.EMPTY
     */
     private class Listener extends NodeAdapter implements Runnable {
-        Collection removeList = new HashSet();
+        Collection<Node> removeList = new HashSet<Node>();
 
         Listener() {
         }
@@ -891,14 +889,14 @@ bigloop:
                 return;
             }
 
-            Collection remove;
+            Collection<Node> remove;
 
             synchronized (this) {
                 // atomically clears the list while keeping a copy.
                 // if another node is removed after this point, the selection
                 // will be updated later.
                 remove = removeList;
-                removeList = new HashSet();
+                removeList = new HashSet<Node>();
             }
 
             LinkedList<Node> newSel = new LinkedList<Node>(Arrays.asList(getSelectedNodes()));
