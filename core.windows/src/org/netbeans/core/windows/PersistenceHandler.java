@@ -26,11 +26,16 @@ import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
+import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.core.windows.persistence.*;
 import org.openide.awt.ToolbarPool;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.Repository;
+import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 import org.openide.windows.*;
 
@@ -89,13 +94,29 @@ final class PersistenceHandler implements PersistenceObserver {
             debugLog("## PersistenceHandler.load"); // NOI18N
         }
         
-        WindowManagerConfig wmc = PersistenceManager.getDefault().loadWindowSystem();
-
-        // In case of persistence problem fall back to predefined settings.
-        if(wmc == null) {
-            Logger.getLogger(PersistenceHandler.class.getName()).log(Level.WARNING, null,
-                              new java.lang.NullPointerException("Cannot load window system persistent data. Using internally predefined configuration")); // NOI18N
-            wmc = ConfigFactory.createDefaultConfig();
+        WindowManagerConfig wmc = null;
+        try {
+            wmc = PersistenceManager.getDefault().loadWindowSystem();
+        } catch (IOException exc) {
+            // Serious persistence problem -> try to reset
+            Exceptions.attachLocalizedMessage(exc, "Cannot load window system persistent data, user directory content is broken. Resetting to default layout..."); //NOI18N
+            Logger.getLogger(PersistenceHandler.class.getName()).log(Level.WARNING, null, exc); // NOI18N
+            // try to delete local winsys data and try once more
+            FileSystem fs = Repository.getDefault().getDefaultFileSystem();
+            FileObject rootFolder = fs.getRoot().getFileObject(PersistenceManager.ROOT_LOCAL_FOLDER);
+            if (null != rootFolder) {
+                try {
+                    rootFolder.delete();
+                    wmc = PersistenceManager.getDefault().loadWindowSystem();
+                } catch (IOException ioE) {
+                    Exceptions.attachLocalizedMessage(ioE, "Cannot load even default layout, using internally predefined configuration."); //NOI18N
+                    Logger.getLogger(PersistenceHandler.class.getName()).log(Level.WARNING, null, ioE);
+                    wmc = ConfigFactory.createDefaultConfig();
+                }
+            } else {
+                Logger.getLogger(PersistenceHandler.class.getName()).log(Level.WARNING, "Cannot even get access to local winsys configuration, using internally predefined configuration."); // NOI18N
+                wmc = ConfigFactory.createDefaultConfig();
+            }
         }
 
         ToolbarPool.getDefault().setPreferredIconSize(wmc.preferredToolbarIconSize);

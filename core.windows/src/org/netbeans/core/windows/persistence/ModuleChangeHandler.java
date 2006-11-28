@@ -19,6 +19,7 @@
 
 package org.netbeans.core.windows.persistence;
 
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.logging.Level;
 import org.netbeans.core.windows.Debug;
@@ -64,9 +65,17 @@ class ModuleChangeHandler implements FileChangeListener {
         }
         PersistenceManager pm = PersistenceManager.getDefault();
         
-        modesModuleFolder = pm.getModesModuleFolder();
-        groupsModuleFolder = pm.getGroupsModuleFolder();
-        componentsModuleFolder = pm.getComponentsModuleFolder();
+        try {
+            modesModuleFolder = pm.getModesModuleFolder();
+            groupsModuleFolder = pm.getGroupsModuleFolder();
+            componentsModuleFolder = pm.getComponentsModuleFolder();
+        } catch (IOException exc) {
+            PersistenceManager.LOG.log(Level.WARNING,
+            "[WinSys.ModuleChangeHandler.startHandling]" // NOI18N
+            + " Cannot get data folders.", exc); // NOI18N
+            return;
+        }
+            
         try {
             fs = modesModuleFolder.getFileSystem();
         } catch (FileStateInvalidException exc) {
@@ -285,8 +294,17 @@ class ModuleChangeHandler implements FileChangeListener {
      * later processing otherwise
      */
     private void processTCRef (final String modeName, FileObject tcRefFO) {
-        FileObject localSettings = PersistenceManager.getDefault().
-                getComponentsLocalFolder().getFileObject(tcRefFO.getName(),
+        FileObject compsFO = null;
+        try {
+            compsFO = PersistenceManager.getDefault().getComponentsLocalFolder();
+        } catch (IOException exc) {
+            PersistenceManager.LOG.log(Level.WARNING,
+            "[WinSys.ModuleChangeHandler.processTCRef]" // NOI18N
+            + " Cannot get components folder.", exc); // NOI18N
+            return;
+        }
+        
+        FileObject localSettings = compsFO.getFileObject(tcRefFO.getName(),
                 PersistenceManager.COMPONENT_EXT);
         if (localSettings != null) {
             // OK, settings file already processed, go on and add tc ref
@@ -335,7 +353,14 @@ class ModuleChangeHandler implements FileChangeListener {
      */
     private void addComponent(FileObject fo) {
         if (DEBUG) Debug.log(ModuleChangeHandler.class, "addComponent settingsName:" + fo.getNameExt());
-        PersistenceManager.getDefault().copySettingsFileIfNeeded(fo);
+        try {
+            PersistenceManager.getDefault().copySettingsFileIfNeeded(fo);
+        } catch (IOException exc) {
+            PersistenceManager.LOG.log(Level.WARNING,
+            "[WinSys.ModuleChangeHandler.addComponent]" // NOI18N
+            + " Cannot copy settings files.", exc); // NOI18N
+            return;
+        }
         // now process tc ref if it is waiting for us
         FileObject waitingTcRef = findWaitingTcRef(fo);
         if (waitingTcRef != null) {

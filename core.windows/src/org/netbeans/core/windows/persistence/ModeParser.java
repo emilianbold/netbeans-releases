@@ -464,7 +464,14 @@ class ModeParser {
      */
     private void readOrder () {
         if (localParentFolder == null) {
-            localParentFolder = PersistenceManager.getDefault().getModesLocalFolder();
+            try {
+                localParentFolder = PersistenceManager.getDefault().getModesLocalFolder();
+            }
+            catch (IOException ex) {
+                Logger.getLogger(ModeParser.class.getName()).log(
+                        Level.WARNING, "Cannot get access to lcoal modes folder", ex); // NOI18N
+                return;
+            }
         }
         FileObject localModeFolder = localParentFolder.getFileObject(modeName);
         if (localModeFolder == null) {

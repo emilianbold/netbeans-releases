@@ -205,7 +205,7 @@ public final class PersistenceManager implements PropertyChangeListener {
         usedTcIds.clear();
     }
     
-    FileObject getRootModuleFolder () {
+    FileObject getRootModuleFolder () throws IOException {
         try {
             if (rootModuleFolder == null) {
                 rootModuleFolder = FileUtil.createFolder(
@@ -217,12 +217,11 @@ public final class PersistenceManager implements PropertyChangeListener {
             String annotation = NbBundle.getMessage(PersistenceManager.class,
                 "EXC_RootFolder", ROOT_MODULE_FOLDER);
             Exceptions.attachLocalizedMessage(exc, annotation);
-            LOG.log(Level.WARNING, null, exc);
+            throw exc;
         }
-        return null;
     }
     
-    FileObject getRootLocalFolder () {
+    FileObject getRootLocalFolder () throws IOException {
         try {
             if (rootLocalFolder == null) {
                 rootLocalFolder = FileUtil.createFolder(
@@ -234,9 +233,8 @@ public final class PersistenceManager implements PropertyChangeListener {
             String annotation = NbBundle.getMessage(PersistenceManager.class,
                 "EXC_RootFolder", ROOT_LOCAL_FOLDER);
             Exceptions.attachLocalizedMessage(exc, annotation);
-            LOG.log(Level.WARNING, null, exc);
+            throw exc;
         }
-        return null;
     }
     
     /** Sets root module folder for window system configuration data. It is used
@@ -254,7 +252,7 @@ public final class PersistenceManager implements PropertyChangeListener {
     }
 
     /** @return Module folder for TopComponents */
-    public FileObject getComponentsModuleFolder () {
+    public FileObject getComponentsModuleFolder () throws IOException {
         try {
             if (compsModuleFolder == null) {
                 compsModuleFolder = FileUtil.createFolder(
@@ -266,14 +264,13 @@ public final class PersistenceManager implements PropertyChangeListener {
             String annotation = NbBundle.getMessage(PersistenceManager.class,
                 "EXC_CompsFolder", COMPS_FOLDER);
             Exceptions.attachLocalizedMessage(exc, annotation);
-            LOG.log(Level.WARNING, null, exc);
+            throw exc;
         }
-        return null;
     }
     
     /** @return Local folder for TopComponents. Do not cache ti because it can change
      * during project switch. */
-    public FileObject getComponentsLocalFolder () {
+    public FileObject getComponentsLocalFolder () throws IOException {
         try {
             FileObject compsLocalFolder = FileUtil.createFolder(
                 getRootLocalFolder(), COMPS_FOLDER
@@ -283,13 +280,12 @@ public final class PersistenceManager implements PropertyChangeListener {
             String annotation = NbBundle.getMessage(PersistenceManager.class,
                 "EXC_CompsFolder", COMPS_FOLDER);
             Exceptions.attachLocalizedMessage(exc, annotation);
-            LOG.log(Level.WARNING, null, exc);
+            throw exc;
         }
-        return null;
     }
     
     /** @return Module folder for groups */
-    public FileObject getGroupsModuleFolder () {
+    public FileObject getGroupsModuleFolder () throws IOException {
         try {
             if (groupsModuleFolder == null) {
                 groupsModuleFolder = FileUtil.createFolder(
@@ -301,13 +297,12 @@ public final class PersistenceManager implements PropertyChangeListener {
             String annotation = NbBundle.getMessage(PersistenceManager.class,
                 "EXC_GroupsFolder", GROUPS_FOLDER);
             Exceptions.attachLocalizedMessage(exc, annotation);
-            LOG.log(Level.WARNING, null, exc);
+            throw exc;
         }
-        return null;
     }
     
     /** @return Folder for groups */
-    public FileObject getGroupsLocalFolder () {
+    public FileObject getGroupsLocalFolder () throws IOException {
         try {
             if (groupsLocalFolder == null) {
                 groupsLocalFolder = FileUtil.createFolder(
@@ -319,13 +314,12 @@ public final class PersistenceManager implements PropertyChangeListener {
             String annotation = NbBundle.getMessage(PersistenceManager.class,
                 "EXC_GroupsFolder", GROUPS_FOLDER);
             Exceptions.attachLocalizedMessage(exc, annotation);
-            LOG.log(Level.WARNING, null, exc);
+            throw exc;
         }
-        return null;
     }
     
     /** @return Module folder for modes */
-    public FileObject getModesModuleFolder () {
+    public FileObject getModesModuleFolder () throws IOException {
         try {
             if (modesModuleFolder == null) {
                 modesModuleFolder = FileUtil.createFolder(
@@ -337,13 +331,12 @@ public final class PersistenceManager implements PropertyChangeListener {
             String annotation = NbBundle.getMessage(PersistenceManager.class,
                 "EXC_ModesFolder", MODES_FOLDER);
             Exceptions.attachLocalizedMessage(exc, annotation);
-            LOG.log(Level.WARNING, null, exc);
+            throw exc;
         }
-        return null;
     }
     
     /** @return Local folder for modes */
-    public FileObject getModesLocalFolder () {
+    public FileObject getModesLocalFolder () throws IOException {
         try {
             if (modesLocalFolder == null) {
                 modesLocalFolder = FileUtil.createFolder(
@@ -355,9 +348,8 @@ public final class PersistenceManager implements PropertyChangeListener {
             String annotation = NbBundle.getMessage(PersistenceManager.class,
                 "EXC_ModesFolder", MODES_FOLDER);
             Exceptions.attachLocalizedMessage(exc, annotation);
-            LOG.log(Level.WARNING, null, exc);
+            throw exc;
         }
-        return null;
     }
     
     /** Listens to property changes in InstanceDataObject. Used to clean top component
@@ -420,7 +412,12 @@ public final class PersistenceManager implements PropertyChangeListener {
         
         //Not found create new TopComponent Id
         if (isTopComponentProbablyPersistent(tc)) {
-            return createTopComponentPersistentID(tc, preferredID);
+            try {
+                return createTopComponentPersistentID(tc, preferredID);
+            } catch (IOException exc) {
+                LOG.log(Level.WARNING, "[Winsys.PersistenceManager.getGlobalTopComponentID]: Cannot create TC ID", exc); //NOI18N
+                return createTopComponentNonPersistentID(tc, preferredID);
+            }
         } else {
             return createTopComponentNonPersistentID(tc, preferredID);
         }
@@ -471,6 +468,11 @@ public final class PersistenceManager implements PropertyChangeListener {
         IOException resultExc = null;
         try {
             DataObject dob = findTopComponentDataObject(getComponentsLocalFolder(), stringId);
+            if (dob == null) {
+                // #84101, 85052: try to find component in module folder also, used in "safe" mode
+                // when loading winsys config from local folders failed for some IOExc reason
+                dob = findTopComponentDataObject(getComponentsModuleFolder(), stringId);
+            }
             if (dob != null) {
                 InstanceCookie ic = (InstanceCookie)dob.getCookie(InstanceCookie.class);
                 if (ic != null) {
@@ -657,7 +659,15 @@ public final class PersistenceManager implements PropertyChangeListener {
     /** Asks all top components active in the system to save their current state.
      */
     private void saveTopComponents (WindowManagerConfig wmc) {
-        DataFolder compsFolder = DataFolder.findFolder(getComponentsLocalFolder());
+        DataFolder compsFolder;
+        try {
+            compsFolder = DataFolder.findFolder(getComponentsLocalFolder());            
+        } catch (IOException exc) {
+            LOG.log(Level.WARNING,
+                "[WinSys.PersistenceManager.saveTopComponents]" // NOI18N
+                + " Cannot get components folder", exc); // NOI18N
+            return;
+        }
         Map<String, Reference<TopComponent>> copyIdToTopComponentMap;
         // must be synced, as Hashmap constructor iterates over original map
         synchronized(LOCK_IDS) {
@@ -810,7 +820,7 @@ public final class PersistenceManager implements PropertyChangeListener {
         return srcName;
     }
     
-    private String createTopComponentPersistentID (TopComponent tc, String preferredID) {
+    private String createTopComponentPersistentID (TopComponent tc, String preferredID) throws IOException {
         String compName = preferredID != null ? preferredID : null;
         // be prepared for null names, empty names and convert to filesystem friendly name
         if ((compName == null) || (compName.length() == 0)) {
@@ -850,7 +860,16 @@ public final class PersistenceManager implements PropertyChangeListener {
     private String restorePair (TopComponent tc, String id) {
         //System.out.println("++ PM.restorePair ENTER"
         //+ " tc:" + tc.getName() + " id:" + id);
-        FileObject fo = getComponentsLocalFolder().getFileObject(id, "settings");
+        FileObject compsFO = null;
+        try {
+            compsFO = getComponentsLocalFolder();
+        } catch (IOException exc) {
+            LOG.log(Level.WARNING,
+                "[WinSys.PersistenceManager.restorePair]" // NOI18N
+                + " Cannot get components folder", exc); // NOI18N
+            return null;
+        }
+        FileObject fo = compsFO.getFileObject(id, "settings");
         if (fo != null) {
             //System.out.println("++ PM.restorePair tc:" + tc.getName()
             //+ " id:" + id);
@@ -995,7 +1014,7 @@ public final class PersistenceManager implements PropertyChangeListener {
     /** Checks used TopComponent Ids. If TopComponent Id is not used its settings
      * file is deleted from local component folder.
      */
-    private void checkUsedTCId () {
+    private void checkUsedTCId () throws IOException {
         FileObject [] files = getComponentsLocalFolder().getChildren();
         for (int i = 0; i < files.length; i++) {
             if (!files[i].isFolder() && "settings".equals(files[i].getExt())) { // NOI18N
@@ -1024,7 +1043,7 @@ public final class PersistenceManager implements PropertyChangeListener {
     /** Loads window system configuration from disk.
      * @return window system configuration
      */
-    public WindowManagerConfig loadWindowSystem() {
+    public WindowManagerConfig loadWindowSystem () throws IOException {
 //        long start = System.currentTimeMillis();
         
         //Clear set of used tc_id
@@ -1035,12 +1054,7 @@ public final class PersistenceManager implements PropertyChangeListener {
         copySettingsFiles();
         
         WindowManagerParser wmParser = getWindowManagerParser();
-        WindowManagerConfig wmc = null;
-        try {
-            wmc = wmParser.load();
-        } catch (IOException exc) {
-            LOG.log(Level.WARNING, null, exc);
-        }
+        WindowManagerConfig wmc = wmParser.load();
         
         //Check used TcIds
         checkUsedTCId();
@@ -1147,7 +1161,7 @@ public final class PersistenceManager implements PropertyChangeListener {
     }
     
     /** Copy all settings files from module folder to local folder. */
-    private void copySettingsFiles () {
+    private void copySettingsFiles () throws IOException {
         //long start, end, diff;
         //start = System.currentTimeMillis();
         if (DEBUG) Debug.log(PersistenceManager.class, "copySettingsFiles ENTER");
@@ -1175,7 +1189,7 @@ public final class PersistenceManager implements PropertyChangeListener {
     
     /** Copy settings file from Module Components module folder (Windows2/Components)
      * to Local Components folder (Windows2Local/Components). */
-    private void copySettingsFile (FileObject fo) {
+    private void copySettingsFile (FileObject fo) throws IOException {
         if (DEBUG) Debug.log(PersistenceManager.class, "copySettingsFile fo:" + fo);
         FileObject destFolder = getComponentsLocalFolder();
         try {
@@ -1191,7 +1205,7 @@ public final class PersistenceManager implements PropertyChangeListener {
     /** Copies given file object into Local Components folder (Windows2Local/Components)
      * if it doesn't exist already
      */
-    void copySettingsFileIfNeeded (FileObject fo) {
+    void copySettingsFileIfNeeded (FileObject fo) throws IOException {
         FileObject localSettingsFO = getComponentsLocalFolder().getFileObject(fo.getNameExt());
         if (localSettingsFO == null) {
             copySettingsFile(fo);

@@ -126,7 +126,15 @@ public class WindowManagerParser {
                 modeParser = new ModeParser(modeName,tcRefNameLocalSet);
                 modeParserMap.put(modeName, modeParser);
             }
-            FileObject modesModuleFolder = pm.getModesModuleFolder();
+            FileObject modesModuleFolder = null;
+            try {
+                pm.getModesModuleFolder();
+            } catch (IOException exc) {
+                PersistenceManager.LOG.log(Level.WARNING,
+                    "[WinSys.WindowManagerParser.addMode]" // NOI18N
+                    + " Cannot get modes folder", exc); // NOI18N
+                return null;
+            }
             modeParser.setModuleParentFolder(modesModuleFolder);
             modeParser.setInModuleFolder(true);
             ModeConfig modeConfig = null;
@@ -169,7 +177,15 @@ public class WindowManagerParser {
                 groupParserMap.remove(groupName);
             }
             groupParser = new GroupParser(groupName);
-            FileObject groupsModuleFolder = pm.getGroupsModuleFolder();
+            FileObject groupsModuleFolder = null;
+            try {
+                pm.getGroupsModuleFolder();
+            } catch (IOException exc) {
+                PersistenceManager.LOG.log(Level.WARNING,
+                    "[WinSys.WindowManagerParser.addGroup]" // NOI18N
+                    + " Cannot get groups folder", exc); // NOI18N
+                return null;
+            }
             groupParser.setModuleParentFolder(groupsModuleFolder);
             groupParser.setInModuleFolder(true);
             //FileObject setsLocalFolder = pm.getGroupsLocalFolder();
@@ -677,7 +693,16 @@ public class WindowManagerParser {
     
     private void deleteLocalMode (String modeName) {
         if (DEBUG) Debug.log(WindowManagerParser.class, "deleteLocalMode" + " mo:" + modeName);
-        FileObject modesLocalFolder = pm.getRootLocalFolder().getFileObject(PersistenceManager.MODES_FOLDER);
+        FileObject rootFO = null;
+        try {
+            rootFO = pm.getRootLocalFolder();
+        } catch (IOException exc) {
+            PersistenceManager.LOG.log(Level.WARNING,
+                "[WinSys.WindowManagerParser.deleteLocalMode]" // NOI18N
+                + " Cannot get root local folder", exc); // NOI18N
+            return;
+        }
+        FileObject modesLocalFolder = rootFO.getFileObject(PersistenceManager.MODES_FOLDER);
         if (modesLocalFolder == null) {
             return;
         }
@@ -694,7 +719,16 @@ public class WindowManagerParser {
     
     private void deleteLocalGroup (String groupName) {
         if (DEBUG) Debug.log(WindowManagerParser.class, "deleteLocalGroup" + " groupName:" + groupName);
-        FileObject groupsLocalFolder = pm.getRootLocalFolder().getFileObject(PersistenceManager.GROUPS_FOLDER);
+        FileObject rootFO = null;
+        try {
+            rootFO = pm.getRootLocalFolder();
+        } catch (IOException exc) {
+            PersistenceManager.LOG.log(Level.WARNING,
+                "[WinSys.WindowManagerParser.deleteLocalGroup]" // NOI18N
+                + " Cannot get root local folder", exc); // NOI18N
+            return;
+        }
+        FileObject groupsLocalFolder = rootFO.getFileObject(PersistenceManager.GROUPS_FOLDER);
         if (groupsLocalFolder == null) {
             return;
         }
@@ -739,7 +773,7 @@ public class WindowManagerParser {
         public PropertyHandler () {
         }
         
-        private FileObject getConfigFOInput () {
+        private FileObject getConfigFOInput () throws IOException {
             FileObject rootFolder;
 
             rootFolder = pm.getRootLocalFolder();
