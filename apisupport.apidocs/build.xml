@@ -37,8 +37,8 @@ Microsystems, Inc. All Rights Reserved.
         <property file="../../nbbuild/build.properties"/>
         <mkdir dir="${docs.dir}"/>
         <ant dir="../../nbbuild" target="build-javadoc" inheritall="false">
-            <!-- Stable only: -->
-            <property name="config.javadoc.all" value="${config.javadoc.stable}"/>
+            <!-- Skip friend and experimental APIs: -->
+            <property name="config.javadoc.all" value="${config.javadoc.stable},${config.javadoc.devel},${config.javadoc.deprecated}"/>
             <!-- build into my personal javadoc build area -->
             <property name="building.apisupport/apidocs" value="true"/><!-- avoid recursion -->
 
