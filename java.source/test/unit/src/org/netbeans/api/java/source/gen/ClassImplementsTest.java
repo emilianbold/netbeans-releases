@@ -89,6 +89,7 @@ public class ClassImplementsTest extends GeneratorTestMDRCompat {
             }
         );
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
 
@@ -129,6 +130,7 @@ public class ClassImplementsTest extends GeneratorTestMDRCompat {
             }
         );
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
     
@@ -166,6 +168,7 @@ public class ClassImplementsTest extends GeneratorTestMDRCompat {
             }
         );
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
     
@@ -203,6 +206,7 @@ public class ClassImplementsTest extends GeneratorTestMDRCompat {
             }
         );
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
     
@@ -240,6 +244,7 @@ public class ClassImplementsTest extends GeneratorTestMDRCompat {
             }
         );
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
     
@@ -275,6 +280,7 @@ public class ClassImplementsTest extends GeneratorTestMDRCompat {
             }
         );
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
     
@@ -310,6 +316,7 @@ public class ClassImplementsTest extends GeneratorTestMDRCompat {
             }
         );
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
     
@@ -345,6 +352,7 @@ public class ClassImplementsTest extends GeneratorTestMDRCompat {
             }
         );
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
     
@@ -381,6 +389,7 @@ public class ClassImplementsTest extends GeneratorTestMDRCompat {
             }
         );
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
     
@@ -417,6 +426,7 @@ public class ClassImplementsTest extends GeneratorTestMDRCompat {
             }
         );
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
     
@@ -453,6 +463,7 @@ public class ClassImplementsTest extends GeneratorTestMDRCompat {
             }
         );
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
     
@@ -489,6 +500,7 @@ public class ClassImplementsTest extends GeneratorTestMDRCompat {
             }
         );
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
     
@@ -525,6 +537,7 @@ public class ClassImplementsTest extends GeneratorTestMDRCompat {
             }
         );
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
     
