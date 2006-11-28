@@ -26,6 +26,8 @@
 #include <commdlg.h>
 #include <tchar.h>
 
+// #define DEBUG 1
+
 static char* getUserHomeFromRegistry(char* userhome);
 static char* GetStringValue(HKEY key, const char *name);
 static DWORD GetDWordValue(HKEY key, const char *name);
@@ -152,14 +154,16 @@ int WINAPI
     start.wShowWindow = SW_HIDE;
 #endif
     
-    // printf("Cmdline: >%s<\ncwd >%s<\n", cmdline2, topdir);
+#ifdef DEBUG 
+    printf("Cmdline: >%s<\ncwd >%s<\n", cmdline2, topdir);
+#endif
     if (!CreateProcess (NULL, cmdline2,
                         NULL, NULL, TRUE, NORMAL_PRIORITY_CLASS,
                         NULL, 
                         _T(topdir), // lpCurrentDirectory
                         &start,
                         &pi)) {
-        sprintf (buf, "Cannot start the %s", appname);
+        sprintf (buf, "Cannot start %s", appname);
         ErrorExit(buf, "CreateProcess");
     } else {
         // Wait until child process exits.
@@ -435,7 +439,7 @@ void parseArgs(int argc, char *argv[]) {
         argv++;
         argc--;
 
-        if (0 == strcmp("-userdir", arg) || 0 == strcmp("--userdir", arg)) {
+        if (0 == strcmp("--userdir", arg)) {
             if (argc > 0) {
                 arg = *argv;
                 argv++;
@@ -447,7 +451,6 @@ void parseArgs(int argc, char *argv[]) {
         }
     }
 }
-
 
 int readClusterFile(const char* path) {
 
@@ -485,7 +488,6 @@ int readClusterFile(const char* path) {
 
     return 1;
 }
-
 
 int dirExists(const char* path) {
     WIN32_FIND_DATA ffd;

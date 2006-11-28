@@ -26,12 +26,14 @@
 #include <commdlg.h>
 #include <tchar.h>
 
+// #define DEBUG 1
+
 static char* getUserHomeFromRegistry(char* userhome);
 static char* GetStringValue(HKEY key, const char *name);
 static DWORD GetDWordValue(HKEY key, const char *name);
 static void parseConfigFile(const char* path);
-static int readClusterFile(const char* path);
 static void parseArgs(int argc, char *argv[]);
+static int readClusterFile(const char* path);
 static int dirExists(const char* path);
 static void ErrorExit(LPTSTR lpszMessage, LPTSTR lpszFunction);
 
@@ -195,7 +197,9 @@ int WINAPI
     start.wShowWindow = SW_HIDE;
 #endif
     
-    // printf("Cmdline: >%s<\ncwd >%s<\n", cmdline2, topdir);
+#ifdef DEBUG 
+    printf("Cmdline: >%s<\ncwd >%s<\n", cmdline2, topdir);
+#endif
     if (!CreateProcess (NULL, cmdline2,
                         NULL, NULL, TRUE, NORMAL_PRIORITY_CLASS,
                         NULL, 
@@ -234,7 +238,6 @@ char* getUserHomeFromRegistry(char* userhome)
     strcpy(userhome, path);
     return userhome;
 }
-
 
 
 char * GetStringValue(HKEY key, const char *name)
@@ -348,40 +351,6 @@ void parseConfigFile(const char* path) {
     }
     fclose(fin);
 }
-
-
-int readClusterFile(const char* path) {
-
-    char **dirs = defaultDirs;
-
-    FILE* fin = fopen(path, "r");
-    if (fin == NULL)
-        return 0;
-    
-    char line[2048], *pc;
-    
-    while (NULL != fgets(line, sizeof line, fin)) {
-        for (pc = line; *pc != '\0' && (*pc == ' ' || *pc == '\t' || *pc == '\n' || *pc == '\r'); pc++)
-            ;
-        if (*pc == '#')
-            continue;
-
-        char *s = pc;
-
-	while (*pc != '\0' && *pc != '\t' && *pc != '\n' && *pc != '\r')
-	    pc++;
-
-	*pc = '\0';
-
-	*dirs = strdup(s);
-	dirs++;
-    }
-    *dirs = NULL;
-    fclose(fin);
-
-    return 1;
-}
-
 
 #ifdef WINMAIN
 
@@ -505,7 +474,7 @@ void parseArgs(int argc, char *argv[]) {
         argv++;
         argc--;
 
-        if (0 == strcmp("-userdir", arg) || 0 == strcmp("--userdir", arg)) {
+        if (0 == strcmp("--userdir", arg)) {
             if (argc > 0) {
                 arg = *argv;
                 argv++;
@@ -516,6 +485,38 @@ void parseArgs(int argc, char *argv[]) {
             }
         }
     }
+}
+
+int readClusterFile(const char* path) {
+
+    char **dirs = defaultDirs;
+
+    FILE* fin = fopen(path, "r");
+    if (fin == NULL)
+        return 0;
+    
+    char line[2048], *pc;
+    
+    while (NULL != fgets(line, sizeof line, fin)) {
+        for (pc = line; *pc != '\0' && (*pc == ' ' || *pc == '\t' || *pc == '\n' || *pc == '\r'); pc++)
+            ;
+        if (*pc == '#')
+            continue;
+
+        char *s = pc;
+
+	while (*pc != '\0' && *pc != '\t' && *pc != '\n' && *pc != '\r')
+	    pc++;
+
+	*pc = '\0';
+
+	*dirs = strdup(s);
+	dirs++;
+    }
+    *dirs = NULL;
+    fclose(fin);
+
+    return 1;
 }
 
 int dirExists(const char* path) {
