@@ -72,10 +72,10 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
     // XXX createToStringMethod() could be moved to GenerationUtils
     // XXX init() commented out until annotation model is implemented
 
-    // XXX empty lines in generated hashCode()
-    // XXX comments are lost in method body passed as string
-    // XXX return 0, 1 in generated equals()
-    // XXX empty line in generated equals()
+    // XXX empty lines in generated hashCode() - issue 90186
+    // XXX comments are lost in method body passed as string - issue 89873
+    // XXX return 0, 1 in generated equals() - issue 90183
+    // XXX empty line in generated equals() - issue 90186
 
     private final Map<String, String> entityName2TableName = new HashMap<String, String>();
 
