@@ -103,7 +103,7 @@ public class HTMLLexer implements Lexer<HTMLTokenId> {
             this.state = INIT;
             this.scriptState = INIT;
         } else {
-            int encoded = ((Integer) state).intValue();
+            int encoded = ((Integer) info.state()).intValue();
             this.subState = encoded / 1000000;
             int remainder = encoded % 1000000;
             this.state    = remainder / 1000;
