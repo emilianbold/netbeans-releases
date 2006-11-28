@@ -75,8 +75,8 @@ public class WindowsNativeUtils extends NativeUtils {
     
     private static final String RUNONCE_KEY = "Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce";
     private static final String RUNONCE_DELETE_VALUE_NAME = "NBI Temporary Files Delete";
-
-        private static final String EXT_PREFIX = "NBI.";
+    
+    private static final String EXT_PREFIX = "NBI.";
     private static final String EXT_SUFFIX = "";
     
     
@@ -125,14 +125,16 @@ public class WindowsNativeUtils extends NativeUtils {
     private static final String EXT_HKCU_OPENWITHLIST_PROPERTY = "hkcuOpenWithList";
     
     private static final String CURRENT_USER_CLASSES = "Software\\Classes\\";
-    private final int clSection;
-    private final String clKey;
+    private int clSection;
+    private String clKey;
+    private int unistallSection;
     
     private boolean isUserAdminSet;
     private boolean isUserAdmin;
     
+    
     //////////////////////////////////////////////////////////////////////////
-
+    
     
     private static final WindowsRegistry registry = new WindowsRegistry();
     
@@ -151,26 +153,38 @@ public class WindowsNativeUtils extends NativeUtils {
         loadNativeLibrary(LIBRARY_PATH);
         //initializeForbiddenFiles(FORBIDDEN_DELETING_FILES_WINDOWS);
         initializeForbiddenFiles();
-            boolean result = false;
+        initializeRegistryKeys();
+    }
+    
+    private void initializeRegistryKeys() {
+        boolean result = false;
         try {
             result = isCurrentUserAdmin();
         } catch (NativeException ex) {
             LogManager.log(ex);
         }
-        clSection = (result) ? HKCR : HKCU;
-        clKey = (result) ? EMPTY_STRING : CURRENT_USER_CLASSES;
+        
+        try {
+            clSection = registry.canModifyKey(HKCR, "") ? HKCR : HKCU;
+            clKey = (result) ? EMPTY_STRING : CURRENT_USER_CLASSES;
+            unistallSection = registry.canModifyKey(HKLM,UNINSTALL_KEY) ? HKLM : HKCU;
+        } catch (NativeException ex) {
+            LogManager.log(ex);
+            clSection = HKCU;
+            clKey = CURRENT_USER_CLASSES;
+            unistallSection = HKCU;
+        }
     }
-    
     // parent implementation ////////////////////////////////////////////////////////
     public boolean isCurrentUserAdmin() throws NativeException {
-                if(isUserAdminSet) {
+        if(isUserAdminSet) {
             return isUserAdmin;
         }
         boolean result = isCurrentUserAdmin0();
         isUserAdmin = result;
         isUserAdminSet = true;
         return result;
-
+        
     }
     
     public File getDefaultApplicationsLocation() throws NativeException {
@@ -553,40 +567,40 @@ public class WindowsNativeUtils extends NativeUtils {
     private void addRemoveProgramsInstall(String uid, String displayName, String displayIcon, String installLocation, String uninstallString, HashMap<String, Object> parameters) throws NativeException {
         LogManager.log("Add new Add/Remove Programs entry with id [" + uid + "]");
         
-        String vacantUid = getVacantUid(uid);
+        String vacantUid = getVacantUninstallUid(uid);
         String key = UNINSTALL_KEY + WindowsRegistry.SEPARATOR + vacantUid;
         
-        registry.createKey(HKLM, key);
+        registry.createKey(unistallSection, key);
         
         if (displayName != null) {
             LogManager.log("Set '" + DISPLAY_NAME + "' = [" + displayName + "]");
             
-            registry.setStringValue(HKLM, key, DISPLAY_NAME, displayName, false);
+            registry.setStringValue(unistallSection, key, DISPLAY_NAME, displayName, false);
         }
         if (installLocation != null) {
             LogManager.log("Set '" + INSTALL_LOCATION + "' = [" + installLocation+ "]");
             
-            registry.setStringValue(HKLM, key, INSTALL_LOCATION, installLocation, false);
+            registry.setStringValue(unistallSection, key, INSTALL_LOCATION, installLocation, false);
         }
         if (displayIcon != null) {
             LogManager.log("Set '" + DISPLAY_ICON + "' = [" + displayIcon+ "]");
             
-            registry.setStringValue(HKLM, key, DISPLAY_ICON, displayIcon, false);
+            registry.setStringValue(unistallSection, key, DISPLAY_ICON, displayIcon, false);
         }
         if (uninstallString != null) {
             LogManager.log("Set '" + UNINSTALL_STRING + "' = [" + uninstallString+ "]");
             
-            registry.setStringValue(HKLM, key, UNINSTALL_STRING, uninstallString, false);
+            registry.setStringValue(unistallSection, key, UNINSTALL_STRING, uninstallString, false);
         }
         
         addAditionalParameters(vacantUid, parameters);
     }
     
     private void addRemoveProgramsUninstall(String uid, String installLocation) throws NativeException {
-        String properUid = getProperUid(uid, installLocation);
+        String properUid = getProperUninstallUid(uid, installLocation);
         
         if (properUid != null) {
-            registry.deleteKey(HKLM, UNINSTALL_KEY, properUid);
+            registry.deleteKey(unistallSection, UNINSTALL_KEY, properUid);
         }
     }
     
@@ -603,31 +617,31 @@ public class WindowsNativeUtils extends NativeUtils {
             if (value instanceof Short) {
                 LogManager.log("Type is short. Set REG_DWORD value");
                 
-                registry.set32BitValue(HKLM, key, name, ((Short) value).intValue());
+                registry.set32BitValue(unistallSection, key, name, ((Short) value).intValue());
             }  else if (value instanceof Integer) {
                 LogManager.log("Type is integer. Set REG_DWORD value");
                 
-                registry.set32BitValue(HKLM, key, name, ((Integer) value).intValue());
+                registry.set32BitValue(unistallSection, key, name, ((Integer) value).intValue());
             }  else if (value instanceof Long) {
                 LogManager.log("Type is long. Set REG_DWORD value");
                 
-                registry.set32BitValue(HKLM, key, name, ((Long) value).intValue());
+                registry.set32BitValue(unistallSection, key, name, ((Long) value).intValue());
             }  else if (value instanceof byte[]) {
                 LogManager.log("Type is byte[]. Set REG_BINARY value");
                 
-                registry.setBinaryValue(HKLM, key, name, (byte[]) value);
+                registry.setBinaryValue(unistallSection, key, name, (byte[]) value);
             }  else if (value instanceof String[]) {
                 LogManager.log("Type is String[]. Set REG_MULTI_SZ value");
                 
-                registry.setMultiStringValue(HKLM, key, name, (String[]) value);
+                registry.setMultiStringValue(unistallSection, key, name, (String[]) value);
             }  else if (value instanceof String) {
                 LogManager.log("Type is String. Set REG_SZ value");
                 
-                registry.setStringValue(HKLM, key, name, (String) value, false);
+                registry.setStringValue(unistallSection, key, name, (String) value, false);
             }  else {
                 LogManager.log("Type can`t be determined. Set REG_SZ value");
                 
-                registry.setStringValue(HKLM, key, name, value.toString(), false);
+                registry.setStringValue(unistallSection, key, name, value.toString(), false);
             }
         }
     }
@@ -636,16 +650,16 @@ public class WindowsNativeUtils extends NativeUtils {
         return NBI_UID_PREFIX + component.getUid() + "-" + component.getVersion().toString();
     }
     
-    private String getVacantUid(final String baseUid) throws NativeException {
+    private String getVacantUninstallUid(final String baseUid) throws NativeException {
         String vacantUid = baseUid;
         
         String key = UNINSTALL_KEY + WindowsRegistry.SEPARATOR + vacantUid;
-        if (registry.keyExists(HKLM, key)) {
+        if (registry.keyExists(unistallSection, key)) {
             for (int index = MIN_UID_INDEX; index < MAX_UID_INDEX; index++) {
                 vacantUid = baseUid + UID_SEPARATOR + index;
                 key = UNINSTALL_KEY + WindowsRegistry.SEPARATOR + vacantUid;
                 
-                if (!registry.keyExists(HKLM, key)) {
+                if (!registry.keyExists(unistallSection, key)) {
                     return vacantUid;
                 }
             }
@@ -655,25 +669,28 @@ public class WindowsNativeUtils extends NativeUtils {
         }
     }
     
-    private String getProperUid(final String baseUid, final String installLocation) throws NativeException {
+    private String getProperUninstallUid(final String baseUid, final String installLocation) throws NativeException {
         String properUid = baseUid;
         
         String key = UNINSTALL_KEY + WindowsRegistry.SEPARATOR + properUid;
-        if (registry.keyExists(HKLM, key) && registry.getStringValue(HKLM, key, INSTALL_LOCATION).equals(installLocation)) {
+        if (registry.keyExists(unistallSection, key) &&
+                registry.getStringValue(unistallSection, key, INSTALL_LOCATION).equals(installLocation)) {
             return properUid;
         } else {
             for (int index = MIN_UID_INDEX; index < MAX_UID_INDEX; index++) {
                 properUid = baseUid + UID_SEPARATOR + index;
                 key = UNINSTALL_KEY + WindowsRegistry.SEPARATOR + properUid;
                 
-                if (registry.keyExists(HKLM, key) && registry.getStringValue(HKLM, key, INSTALL_LOCATION).equals(installLocation)) {
+                if (registry.keyExists(unistallSection, key) &&
+                        registry.getStringValue(unistallSection, key, INSTALL_LOCATION).equals(installLocation)) {
                     return properUid;
                 }
             }
             return null;
         }
     }
-      public synchronized void setFileAssociation(FileExtension ext, SystemApplication app, Properties props)  throws NativeException {
+    
+    public synchronized void setFileAssociation(FileExtension ext, SystemApplication app, Properties props)  throws NativeException {
         if (ext==null && isEmpty(ext.getName())) {
             return;
         }

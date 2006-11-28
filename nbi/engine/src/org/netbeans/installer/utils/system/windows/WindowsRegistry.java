@@ -62,6 +62,9 @@ public class WindowsRegistry {
     
     public static final String SEPARATOR = "\\";
     
+    private static int KEY_MODIFY_LEVEL = 1;
+    private static int KEY_READ_LEVEL = 1;
+    
     /////////////////////////////////////////////////////////////////////////////
     // Instance
     
@@ -86,7 +89,7 @@ public class WindowsRegistry {
         validateKey(key);
         
         try {
-            return keyExists0(section, key);
+            return checkKeyAccess0(section, key,KEY_READ_LEVEL);
         } catch (UnsatisfiedLinkError e) {
             throw new NativeException("Cannot access native method", e);
         }
@@ -657,6 +660,17 @@ public class WindowsRegistry {
             throw new NativeException("Cannot access value -- key does not exist");
         }
     }
+    
+    public boolean canModifyKey(int section, String key) throws NativeException {
+        validateSection(section);
+        validateKey(key);
+        
+        try {
+            return checkKeyAccess0(section, key, KEY_MODIFY_LEVEL);
+        } catch (UnsatisfiedLinkError e) {
+            throw new NativeException("Cannot access native method", e);
+        }
+    }
     // miscellanea //////////////////////////////////////////////////////////////
     public String constructKey(String parent, String child) {
         return parent + SEPARATOR + child;
@@ -800,4 +814,5 @@ public class WindowsRegistry {
     
     private native void setNoneValue0(int section, String key, String name, Object value) throws NativeException;
     
+    private native boolean checkKeyAccess0(int section, String key, int level) throws NativeException;
 }
