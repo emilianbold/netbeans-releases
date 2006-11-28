@@ -23,23 +23,15 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.logging.Level;
 import junit.framework.TestCase;
-import junit.framework.*;
 import org.netbeans.junit.Log;
 
 /**
- *
  * @author Jaroslav Tulach
  */
 public class ExceptionsTest extends TestCase {
 
     public ExceptionsTest(String testName) {
         super(testName);
-    }
-
-    protected void setUp() throws Exception {
-    }
-
-    protected void tearDown() throws Exception {
     }
 
     public void testAttachMessage() {
