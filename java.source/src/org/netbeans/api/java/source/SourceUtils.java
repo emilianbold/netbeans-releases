@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
 import java.util.*;
 
 import javax.lang.model.element.*;
@@ -49,13 +50,13 @@ import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Name;
 
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
-import org.netbeans.api.java.source.ClassIndex.NameKind;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.modules.java.JavaDataLoader;
 import org.netbeans.modules.java.source.parsing.FileObjects;
-import org.netbeans.modules.java.source.usages.ClassIndexManager;
+import org.netbeans.modules.java.source.usages.Index;
 import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 
@@ -68,6 +69,9 @@ import org.openide.util.Exceptions;
  *
  * @author Dusan Balek
  */public class SourceUtils {    
+     
+     
+     private static final String PACKAGE_SUMMARY = "package-summary";   //NOI18N
     
     private SourceUtils() {}
     
@@ -356,6 +360,124 @@ import org.openide.util.Exceptions;
         }
         return null;        
     }
+    
+    /**
+     * Finds {@link URL} of a javadoc page for given element when available. This method 
+     * uses {@link JavadocForBinaryQuery} to find the javadoc page for the give element.
+     * For {@link TypeElement} or {@link Element}s enclosed by the {@link TypeElement}
+     * it returns the {@link URL} of the javadoc for top level {@link TypeElement}.
+     * For {@link PackageElement} it returns the package-summary.html for given package.
+     * @param element to find the Javadoc for
+     * @param cpInfo classpaths used to resolve
+     * @return the URL of the javadoc page or null when the javadoc is not available.
+     */
+    public static URL getJavadoc (Element element, final ClasspathInfo cpInfo) {      
+        if (element == null || cpInfo == null) {
+            throw new IllegalArgumentException ("Cannot pass null as an argument of the SourceUtils.getJavadoc");  //NOI18N
+        }
+        
+        ClassSymbol clsSym = null;
+        String pkgName;
+        String pageName;
+        if (element.getKind() == ElementKind.PACKAGE) {
+            List<? extends Element> els = element.getEnclosedElements();            
+            for (Element e :els) {
+                if (e.getKind().isClass() || e.getKind().isInterface()) {
+                    clsSym = (ClassSymbol) e;
+                    break;
+                }
+            }
+            if (clsSym == null) {
+                return null;
+            }
+            pkgName = FileObjects.convertPackage2Folder(((PackageElement)element).getQualifiedName().toString());
+            pageName = PACKAGE_SUMMARY;
+        }
+        else {
+            Element prev = null;
+            while (element.getKind() != ElementKind.PACKAGE) {
+                prev = element;
+                element = element.getEnclosingElement();
+            }
+            if (prev == null || (!prev.getKind().isClass() && !prev.getKind().isInterface())) {
+                return null;
+            }
+            clsSym = (ClassSymbol)prev;
+            pkgName = FileObjects.convertPackage2Folder(clsSym.getEnclosingElement().getQualifiedName().toString());
+            pageName = clsSym.getSimpleName().toString();
+        }
+        
+        if (clsSym.completer != null) {
+            clsSym.complete();
+        }
+        
+        URL sourceRoot = null;
+        Set<URL> binaries = new HashSet<URL>();        
+        try {
+            if (clsSym.classfile != null) {
+                FileObject  fo = URLMapper.findFileObject(clsSym.classfile.toUri().toURL());
+                StringTokenizer tk = new StringTokenizer(pkgName,"/");             //NOI18N
+                for (int i=0 ;fo != null && i<=tk.countTokens(); i++) {
+                    fo = fo.getParent();
+                }
+                if (fo != null) {
+                    URL url = fo.getURL();
+                    sourceRoot = Index.getSourceRootForClassFolder(url);
+                    if (sourceRoot == null) {
+                        binaries.add(url);
+                    }
+                }
+            }
+            if (sourceRoot == null && binaries.isEmpty() && clsSym.sourcefile != null) {
+                sourceRoot = clsSym.sourcefile.toUri().toURL();
+            }
+            if (sourceRoot != null) {
+                FileObject sourceFo = URLMapper.findFileObject(sourceRoot);
+                if (sourceFo != null) {
+                    ClassPath exec = ClassPath.getClassPath(sourceFo, ClassPath.EXECUTE);
+                    ClassPath compile = ClassPath.getClassPath(sourceFo, ClassPath.COMPILE);
+                    ClassPath source = ClassPath.getClassPath(sourceFo, ClassPath.SOURCE);
+                    Set<URL> roots = new HashSet<URL>();
+                    for (ClassPath.Entry e : exec.entries()) {
+                        roots.add(e.getURL());
+                    }
+                    for (ClassPath.Entry e : compile.entries()) {
+                        roots.remove(e.getURL());
+                    }
+                    List<FileObject> sourceRoots = Arrays.asList(source.getRoots());
+out:                for (URL e : roots) {
+                        FileObject[] res = SourceForBinaryQuery.findSourceRoots(e).getRoots();
+                        for (FileObject fo : res) {
+                            if (sourceRoots.contains(fo)) {
+                                binaries.add(e);
+                                continue out;
+                            }
+                        }
+                    }
+                }
+            }
+            for (URL binary : binaries) {
+                URL[] result = JavadocForBinaryQuery.findJavadoc(binary).getRoots();
+                ClassPath cp = ClassPathSupport.createClassPath(result);
+                FileObject fo = cp.findResource(pkgName);
+                if (fo != null) {
+                    for (FileObject child : fo.getChildren()) {
+                        if (pageName.equals(child.getName()) && FileObjects.HTML.equalsIgnoreCase(child.getExt())) {
+                            return child.getURL();
+                        }
+                    }
+                }
+            }
+            
+        } catch (MalformedURLException e) {
+            Exceptions.printStackTrace(e);
+        }
+        catch (FileStateInvalidException e) {
+            Exceptions.printStackTrace(e);
+        }
+        return null;
+    }
+    
     
     /**
      * Waits for the end of the initial scan, this helper method 
