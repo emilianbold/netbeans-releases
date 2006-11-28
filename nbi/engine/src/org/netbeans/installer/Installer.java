@@ -163,6 +163,7 @@ public class Installer {
         } else if (!localDirectory.canWrite()) {
             ErrorManager.notify(CRITICAL, "Cannot write to local directory - not enought permissions");
         }
+        
         createInstallerLockFile(localDirectory);
         
         final Wizard wizard = Wizard.getInstance();
@@ -170,6 +171,7 @@ public class Installer {
         wizard.open();
         wizard.executeComponent(new InitalizeRegistryAction());
         wizard.next();
+        
         cacheEngineLocally();
     }
     
