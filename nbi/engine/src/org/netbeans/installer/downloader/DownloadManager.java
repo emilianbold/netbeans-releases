@@ -43,13 +43,6 @@ public class DownloadManager {
         wd.mkdirs();
         queue = new DispatchedQueue(new File(wd, "state.xml"));
         queue.reset();
-        try {
-            //now reset becouse we can't work withstateful queue
-            //clear downloads it's temp. will FileManager not impl.
-            FileUtils.deleteFile(new File(Installer.DEFAULT_LOCAL_DIRECTORY_PATH, "downloads"));
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
     }
     
     public PumpingsQueue getQueue() {
