@@ -101,6 +101,22 @@ public class RunCommand extends HttpServlet {
                 registryManager.removeComponent(registry, uid, version);
             }
             
+            if (command.equals("update-group")) {
+                URL    url    = new URL(request.getRequestURL().toString());
+                String string = url.toString();
+                
+                String prefix = string.substring(0,
+                        string.indexOf(url.getFile())) +
+                        "/nbi/get-file?registry=" + registry + "&file=";
+                
+                registryManager.updateGroup(registry, archive, uid, version,
+                        prefix);
+            }
+            
+            if (command.equals("remove-group")) {
+                registryManager.removeGroup(registry, uid);
+            }
+            
             response.getWriter().write(
                     "The \"" + command + "\" command was successfully executed.");
             

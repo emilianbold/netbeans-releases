@@ -63,8 +63,11 @@
         <taskdef name="evaluate" 
                  classname="org.netbeans.installer.infra.build.ant.Evaluate" 
                  classpath="${lib.cls}"/>
-        <taskdef name="descriptor" 
-                 classname="org.netbeans.installer.infra.build.ant.Descriptor" 
+        <taskdef name="component-descriptor" 
+                 classname="org.netbeans.installer.infra.build.ant.ComponentDescriptor" 
+                 classpath="${lib.cls}"/>
+        <taskdef name="group-descriptor" 
+                 classname="org.netbeans.installer.infra.build.ant.GroupDescriptor" 
                  classpath="${lib.cls}"/>
         
         <condition property="checkout.from.trunk">
