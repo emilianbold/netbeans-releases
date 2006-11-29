@@ -38,6 +38,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.logging.Level;
 import org.netbeans.junit.NbTestCase;
 
 /**
@@ -48,6 +49,10 @@ public class NbCollectionsTest extends NbTestCase {
 
     public NbCollectionsTest(String name) {
         super(name);
+    }
+    
+    protected Level logLevel() {
+        return Level.SEVERE;
     }
 
     public void testCheckedSetByCopy() throws Exception {

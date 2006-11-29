@@ -34,6 +34,8 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.RandomAccess;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Utilities for working with generics.
@@ -47,13 +49,15 @@ import java.util.Set;
 public class NbCollections {
 
     private NbCollections() {}
+    
+    private static final Logger LOG = Logger.getLogger(NbCollections.class.getName());
 
     /**
      * Create a typesafe copy of a raw set.
      * @param rawSet an unchecked set
      * @param type the desired supertype of the entries
      * @param strict true to throw a <code>ClassCastException</code> if the raw set has an invalid entry,
-     *               false to quietly skip over such entries
+     *               false to skip over such entries (warnings may be logged)
      * @return a typed set guaranteed to contain only entries assignable
      *         to the named type (or they may be null)
      * @throws ClassCastException if some entry in the raw set was not well-typed, and only if <code>strict</code> was true
@@ -68,6 +72,8 @@ public class NbCollections {
             } catch (ClassCastException x) {
                 if (strict) {
                     throw x;
+                } else {
+                    LOG.log(Level.WARNING, "Element {0} not assignable to {1}", new Object[] {e, type});
                 }
             }
         }
@@ -79,7 +85,7 @@ public class NbCollections {
      * @param rawList an unchecked list
      * @param type the desired supertype of the entries
      * @param strict true to throw a <code>ClassCastException</code> if the raw list has an invalid entry,
-     *               false to quietly skip over such entries
+     *               false to skip over such entries (warnings may be logged)
      * @return a typed list guaranteed to contain only entries assignable
      *         to the named type (or they may be null)
      * @throws ClassCastException if some entry in the raw list was not well-typed, and only if <code>strict</code> was true
@@ -94,6 +100,8 @@ public class NbCollections {
             } catch (ClassCastException x) {
                 if (strict) {
                     throw x;
+                } else {
+                    LOG.log(Level.WARNING, "Element {0} not assignable to {1}", new Object[] {e, type});
                 }
             }
         }
@@ -106,7 +114,7 @@ public class NbCollections {
      * @param keyType the desired supertype of the keys
      * @param valueType the desired supertype of the values
      * @param strict true to throw a <code>ClassCastException</code> if the raw map has an invalid key or value,
-     *               false to quietly skip over such map entries
+     *               false to skip over such map entries (warnings may be logged)
      * @return a typed map guaranteed to contain only keys and values assignable
      *         to the named types (or they may be null)
      * @throws ClassCastException if some key or value in the raw map was not well-typed, and only if <code>strict</code> was true
@@ -121,6 +129,8 @@ public class NbCollections {
             } catch (ClassCastException x) {
                 if (strict) {
                     throw x;
+                } else {
+                    LOG.log(Level.WARNING, "Entry {0} not assignable to <{1},{2}>", new Object[] {e, keyType, valueType});
                 }
             }
         }
