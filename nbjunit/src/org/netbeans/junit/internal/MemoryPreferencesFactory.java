@@ -73,7 +73,7 @@ public class MemoryPreferencesFactory implements PreferencesFactory {
         }
         
         protected final String getSpi(String key) {
-            return (String)properties().getProperty(key);
+            return properties().getProperty(key);
         }
         
         protected final String[] childrenNamesSpi() throws BackingStoreException {
@@ -81,7 +81,7 @@ public class MemoryPreferencesFactory implements PreferencesFactory {
         }
         
         protected final String[] keysSpi() throws BackingStoreException {
-            return (String[])properties().keySet().toArray(new String[0]);
+            return properties().keySet().toArray(new String[0]);
         }
         
         protected final void putSpi(String key, String value) {
@@ -96,6 +96,20 @@ public class MemoryPreferencesFactory implements PreferencesFactory {
         protected  void flushSpi() throws BackingStoreException {}
         protected void syncSpi() throws BackingStoreException {
             properties().clear();
+        }
+        
+        @Override
+        public void put(String key, String value) {
+            try {
+                super.put(key, value);
+            } catch (IllegalArgumentException iae) {
+                if (iae.getMessage().contains("too long")) {
+                    // Not for us!
+                    putSpi(key, value);
+                } else {
+                    throw iae;
+                }
+            }
         }
         
         Properties properties()  {
