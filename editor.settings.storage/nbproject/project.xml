@@ -84,6 +84,7 @@ Microsystems, Inc. All Rights Reserved.
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.options.editor</friend>
+                <friend>org.netbeans.modules.languages</friend>
                 <package>org.netbeans.modules.editor.settings.storage.api</package>
             </friend-packages>
         </data>
