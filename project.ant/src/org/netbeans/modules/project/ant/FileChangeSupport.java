@@ -23,7 +23,6 @@ import java.io.File;
 import java.util.Map;
 import java.util.WeakHashMap;
 import org.openide.filesystems.FileObject;
-import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
 
