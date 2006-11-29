@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -33,7 +33,7 @@ import org.netbeans.spi.lexer.TokenFactory;
 public class HTMLLexer implements Lexer<HTMLTokenId> {
     
     private static final int EOF = LexerInput.EOF;
-
+    
     private LexerInput input;
     
     private TokenFactory<HTMLTokenId> tokenFactory;
@@ -41,8 +41,8 @@ public class HTMLLexer implements Lexer<HTMLTokenId> {
     public Object state() {
         return subState * 1000000 + state * 1000 + scriptState;
     }
-
-
+    
+    
     /** Internal state of the lexical analyzer before entering subanalyzer of
      * character references. It is initially set to INIT, but before first usage,
      * this will be overwritten with state, which originated transition to
@@ -54,10 +54,10 @@ public class HTMLLexer implements Lexer<HTMLTokenId> {
     /** indicated whether we are in a script */
     private int scriptState = INIT;
     
-    // internal 'in script' state. 'scriptState' internal state is set to it when the 
+    // internal 'in script' state. 'scriptState' internal state is set to it when the
     // analyzer goes into a script tag body
     private static final int ISI_SCRIPT = 1;
-            
+    
     // Internal states
     private static final int INIT = 0;
     private static final int ISI_TEXT = 1;    // Plain text between tags
@@ -139,15 +139,23 @@ public class HTMLLexer implements Lexer<HTMLTokenId> {
         //        return ( ch == '\u0020' || ch == '\u0009' || ch == '\u000c'
         //              || ch == '\u200b' || ch == '\n' || ch == '\r' );
     }
-
+    
     public Token<HTMLTokenId> nextToken() {
         int actChar;
         
         while (true) {
             actChar = input.read();
             
-            if (actChar == EOF)
-                break;
+            if (actChar == EOF) {
+                if(input.readLengthEOF() == 1) {
+                    return null; //just EOL is read
+                } else {
+                    //there is something else in the buffer except EOL
+                    //we will return last token now
+                    input.backup(1); //backup the EOL, we will return null in next nextToken() call
+                    break;
+                }
+            }
             
             //System.out.println("HTMLSyntax: parseToken tokenOffset=" + tokenOffset + ", actChar='" + actChar + "', offset=" + offset + ", state=" + getStateName(state) +
             //      ", stopOffset=" + stopOffset + ", lastBuffer=" + lastBuffer);
@@ -173,9 +181,10 @@ public class HTMLLexer implements Lexer<HTMLTokenId> {
                         case '&':
                             state = INIT;
                             input.backup(1);
-                            //XXX silly impl. needs to be changed so the html stuff is considered as script as well,
-                            //now just text is returned as script token
-                            return token(scriptState == INIT ? HTMLTokenId.TEXT : HTMLTokenId.SCRIPT); 
+                            if(input.readLength() > 1) { //is there any text before & or < ???
+                                return token(scriptState == INIT ? HTMLTokenId.TEXT : HTMLTokenId.SCRIPT);
+                            }
+                            break;
                     }
                     break;
                     
@@ -186,7 +195,7 @@ public class HTMLLexer implements Lexer<HTMLTokenId> {
                 case ISA_LT:         // PENDING other transitions - e.g '<?'
                     if( isAZ( actChar ) ) {   // <'a..Z'
                         state = ISI_TAG;
-                            input.backup(1);
+                        input.backup(1);
                         return token(HTMLTokenId.TAG_OPEN_SYMBOL);
                     }
                     switch( actChar ) {
@@ -225,12 +234,12 @@ public class HTMLLexer implements Lexer<HTMLTokenId> {
                     if( isName( actChar ) ) break;    // Still in endtag identifier, eat next char
                     state = ISP_ENDTAG_X;
                     input.backup(1);
-                    //test if the tagname is SCRIPT                    
+                    //test if the tagname is SCRIPT
                     if("script".equalsIgnoreCase(input.readText().toString())) { //NOI18N
                         scriptState = INIT;
                         //System.out.println("---end of script");
                     }
-
+                    
                     return token(HTMLTokenId.TAG_CLOSE);
                     
                     
@@ -265,11 +274,11 @@ public class HTMLLexer implements Lexer<HTMLTokenId> {
                     if( isName( actChar ) ) break;    // Still in tag identifier, eat next char
                     state = ISP_TAG_X;
                     input.backup(1);
-                    //test if the tagname is SCRIPT                    
+                    //test if the tagname is SCRIPT
                     if("script".equalsIgnoreCase(input.readText().toString())) { //NOI18N
                         scriptState = ISI_SCRIPT;
                         //System.out.println("+++start of script");
-                    }                    
+                    }
                     return token(HTMLTokenId.TAG_OPEN);
                     
                 case ISP_TAG_X:     // DONE
@@ -386,7 +395,7 @@ public class HTMLLexer implements Lexer<HTMLTokenId> {
                     
                 case ISI_VAL:
                     if( !isWS( actChar )
-                            && !(actChar == '/' || actChar == '>' || actChar == '<')) break;  // Consume whole value
+                    && !(actChar == '/' || actChar == '>' || actChar == '<')) break;  // Consume whole value
                     state = ISP_TAG_X;
                     input.backup(1);
                     return token(HTMLTokenId.VALUE);
@@ -690,13 +699,13 @@ public class HTMLLexer implements Lexer<HTMLTokenId> {
     }
     
     private Token<HTMLTokenId> token(HTMLTokenId id) {
-//        System.out.print("--- token(" + id + "; '" + input.readText().toString() + "')");
-//        if(input.readLength() == 0) {
-//            System.out.println("HTMLLexer error - zero length token!");
-//        }
+        System.out.print("--- token(" + id + "; '" + input.readText().toString() + "')");
+        if(input.readLength() == 0) {
+            System.out.println("HTMLLexer error - zero length token!");
+        }
         Token<HTMLTokenId> t = tokenFactory.createToken(id);
-//        System.out.println(t.id() + "; " + t.length());
+        System.out.println(t.id() + "; " + t.length());
         return t;
     }
-
+    
 }
