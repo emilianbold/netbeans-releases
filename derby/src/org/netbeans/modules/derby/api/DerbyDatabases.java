@@ -297,7 +297,7 @@ public final class DerbyDatabases {
         File systemHomeFile = ensureSystemHome();
         File sourceFO = InstalledFileLocator.getDefault().locate("modules/ext/derbysampledb.zip", null, false); // NOI18N
         FileObject systemHomeFO = FileUtil.toFileObject(systemHomeFile);
-        FileObject sampleFO = systemHomeFO.getFileObject(databaseName); // NOI18N
+        FileObject sampleFO = systemHomeFO.getFileObject(databaseName);
         if (sampleFO == null) {
             sampleFO = systemHomeFO.createFolder(databaseName);
             Util.extractZip(sourceFO, sampleFO);
