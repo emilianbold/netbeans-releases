@@ -23,8 +23,10 @@ import java.awt.Component;
 import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -140,11 +142,12 @@ public class PackageView {
         
         boolean hasSubfolders = false;
         boolean hasFiles = false;
+        List<FileObject> folders = new ArrayList<FileObject>();
         for (FileObject kid : fo.getChildren()) {
             // XXX could use PackageDisplayUtils.isSignificant here
             if (VisibilityQuery.getDefault().isVisible(kid)) {
                 if (kid.isFolder()) {
-                    findNonExcludedPackages(children, target, kid, group);
+                    folders.add(kid);
                     hasSubfolders = true;
                 } 
                 else {
@@ -159,6 +162,11 @@ public class PackageView {
             else {
                 children.add( fo, !hasFiles );
             }
+        }
+        for (FileObject kid : folders) {
+            // Do this after adding the parent, so we get a natural traversal.
+            // Also see PackageViewChildren.findChild: prefer to get root first.
+            findNonExcludedPackages(children, target, kid, group);
         }
     }
          

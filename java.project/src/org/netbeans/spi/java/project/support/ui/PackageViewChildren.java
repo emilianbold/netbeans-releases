@@ -37,7 +37,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
@@ -73,6 +72,7 @@ import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -163,8 +163,26 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
     }
     
     public Node findChild (String name) {
-        getNodes (true);
-        return super.findChild (name);
+        while (true) {
+            Node n = super.findChild(name);
+            if (n != null) {
+                // If already there, get it quickly.
+                return n;
+            }
+            // In case a project is made on a large existing source root,
+            // which happens to have a file in the root dir (so package node
+            // should exist), try to select the root package node soon; no need
+            // to wait for whole tree.
+            try {
+                if (task.waitFinished(5000)) {
+                    return super.findChild(name);
+                }
+                // refreshKeysAsync won't run since we are blocking EQ!
+                refreshKeys();
+            } catch (InterruptedException x) {
+                Exceptions.printStackTrace(x);
+            }
+        }
     }
     
     public void run() {
