@@ -28,7 +28,6 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -83,12 +82,12 @@ public class ProjectUtilities {
                 assert false : "DataObject must exist for " + fo;
                 return false;
             }
-            EditCookie ec = (EditCookie) dobj.getCookie (EditCookie.class);
-            OpenCookie oc = (OpenCookie) dobj.getCookie (OpenCookie.class);
+            EditCookie ec = dobj.getCookie(EditCookie.class);
+            OpenCookie oc = dobj.getCookie(OpenCookie.class);
             if (ec != null) {
-                ((EditCookie) ec).edit ();
+                ec.edit();
             } else if (oc != null) {
-                ((OpenCookie) oc).open ();
+                oc.open();
             } else {
                 if (ERR.isLoggable (ErrorManager.INFORMATIONAL)) ERR.log ("No EditCookie nor OpenCookie for " + dobj);
                 return false;
@@ -122,12 +121,7 @@ public class ProjectUtilities {
             List<Project> listOfProjects = Arrays.asList(projects);
             Set<DataObject> openFiles = new HashSet<DataObject>();
             final Set<TopComponent> tc2close = new HashSet<TopComponent>();
-            @SuppressWarnings(value = "unchecked")
-            Iterator<TopComponent> openTCs = WindowManager.getDefault().getRegistry().getOpened().iterator();
-
-            while (openTCs.hasNext()) {
-                TopComponent tc = openTCs.next();
-
+            for (TopComponent tc : WindowManager.getDefault().getRegistry().getOpened()) {
                 // #57621: check if the closed top component isn't instance of ExplorerManager.Provider e.g. Projects/Files tab, if yes then do skip this loop
                 if (tc instanceof ExplorerManager.Provider) {
                     continue;
@@ -139,7 +133,7 @@ public class ProjectUtilities {
                     !CloneableEditorSupport.EDITOR_MODE.equals(m.getName())) {
                     continue;
                 }
-                DataObject dobj = (DataObject) tc.getLookup().lookup(DataObject.class);
+                DataObject dobj = tc.getLookup().lookup(DataObject.class);
 
                 if (dobj != null) {
                     FileObject fobj = dobj.getPrimaryFile();
@@ -171,28 +165,21 @@ public class ProjectUtilities {
                 }
             }
             if (notifyUI) {
-                Iterator iter = DataObject.getRegistry().getModifiedSet().iterator();
+                for (DataObject dobj : DataObject.getRegistry().getModifiedSet()) {
+                    FileObject fobj = dobj.getPrimaryFile();
+                    Project owner = FileOwnerQuery.getOwner(fobj);
 
-                while (iter.hasNext()) {
-                    DataObject dobj = (DataObject) iter.next();
-
-                    if (dobj != null) {
-                        FileObject fobj = dobj.getPrimaryFile();
-                        Project owner = FileOwnerQuery.getOwner(fobj);
-
-                        if (listOfProjects.contains(owner) &&
-                            !openFiles.contains(dobj)) {
-                            openFiles.add(dobj);
-                        }
+                    if (listOfProjects.contains(owner) &&
+                        !openFiles.contains(dobj)) {
+                        openFiles.add(dobj);
                     }
                 }
             }
             if (!notifyUI ||
                 (!openFiles.isEmpty() && ExitDialog.showDialog(openFiles))) {
                 // close documents
-                Iterator it = tc2close.iterator();
-                while (it.hasNext()) {
-                    ((TopComponent) it.next()).close();
+                for (TopComponent tc : tc2close) {
+                    tc.close();
                 }
             } else {
                 // signal that close was vetoed
@@ -221,12 +208,11 @@ public class ProjectUtilities {
             public void run () {
                 Node root = ptLogial.getExplorerManager ().getRootContext ();
                 // Node projNode = root.getChildren ().findChild( p.getProjectDirectory().getName () );
-                Node[] nds = root.getChildren().getNodes();
                 Node projNode = null;
-                for (int i = 0; i < nds.length; i++) {
-                    Project prj = (Project)nds[i].getLookup().lookup(Project.class);
+                for (Node n : root.getChildren().getNodes()) {
+                    Project prj = n.getLookup().lookup(Project.class);
                     if (prj != null && prj.getProjectDirectory().equals(p.getProjectDirectory())) {
-                        projNode = nds[i];
+                        projNode = n;
                         break;
                     }
                 }
@@ -272,13 +258,13 @@ public class ProjectUtilities {
                 }
 
                 // next action -> expand && select main class in package view
-                final ProjectTab ptLogial  = ProjectTab.findDefault (ProjectTab.ID_LOGICAL);
-                final ProjectTab ptPhysical  = ProjectTab.findDefault (ProjectTab.ID_PHYSICAL);
+                final ProjectTab ptLogical = ProjectTab.findDefault(ProjectTab.ID_LOGICAL);
+                final ProjectTab ptPhysical = ProjectTab.findDefault(ProjectTab.ID_PHYSICAL);
                 // invoke later, Mutex.EVENT.writeAccess isn't suffice to 
                 // select && expand if the focus is outside ProjectTab
                 SwingUtilities.invokeLater (new Runnable () {
                     public void run () {
-                        boolean success = ptLogial.selectNode (newDo.getPrimaryFile ());
+                        boolean success = ptLogical.selectNode (newDo.getPrimaryFile ());
                         if (!success) {
                             ptPhysical.selectNode (newDo.getPrimaryFile ());
                         }
@@ -433,24 +419,21 @@ public class ProjectUtilities {
             return true;
         }
         
-        Map/*<Project, SortedSet<String>>*/ urls4project = OPEN_CLOSE_PROJECT_DOCUMENT_IMPL.close (projects, notifyUI);
+        Map<Project,SortedSet<String>> urls4project = OPEN_CLOSE_PROJECT_DOCUMENT_IMPL.close(projects, notifyUI);
 
         if (urls4project != null) {
             // store project's documents
             // loop all project being closed
-            Iterator loop = urls4project.keySet ().iterator ();
-            Project p;
-            while (loop.hasNext ()) {
-                p = (Project) loop.next ();
-                storeProjectOpenFiles (p, (SortedSet)urls4project.get (p));
+            for (Map.Entry<Project,SortedSet<String>> entry : urls4project.entrySet()) {
+                storeProjectOpenFiles(entry.getKey(), entry.getValue());
             }
         }
         
         return urls4project != null;
     }
     
-    static private void storeProjectOpenFiles (Project p, SortedSet/*<String>*/ urls) {
-        AuxiliaryConfiguration aux = (AuxiliaryConfiguration) p.getLookup ().lookup (AuxiliaryConfiguration.class);
+    static private void storeProjectOpenFiles (Project p, SortedSet<String> urls) {
+        AuxiliaryConfiguration aux = p.getLookup().lookup(AuxiliaryConfiguration.class);
         if (aux != null) {
             
             aux.removeConfigurationFragment (OPEN_FILES_ELEMENT, OPEN_FILES_NS, false);
@@ -461,10 +444,9 @@ public class ProjectUtilities {
             Element openFiles = xml.createElementNS (OPEN_FILES_NS, OPEN_FILES_ELEMENT);
             
             // loop all open files of given project
-            Iterator it = urls.iterator ();
-            while (it.hasNext ()) {
+            for (String url : urls) {
                 fileEl = openFiles.getOwnerDocument ().createElement (FILE_ELEMENT);
-                fileEl.appendChild (fileEl.getOwnerDocument ().createTextNode ((String)it.next ()));
+                fileEl.appendChild(fileEl.getOwnerDocument().createTextNode(url));
                 openFiles.appendChild (fileEl);
             }
             
@@ -480,7 +462,7 @@ public class ProjectUtilities {
         boolean dolog = ERR.isLoggable(ErrorManager.INFORMATIONAL);
         if (dolog) ERR.log("Trying to open files from " + p + "...");
         
-        AuxiliaryConfiguration aux = (AuxiliaryConfiguration) p.getLookup ().lookup (AuxiliaryConfiguration.class);
+        AuxiliaryConfiguration aux = p.getLookup().lookup(AuxiliaryConfiguration.class);
         
         if (aux == null) {
             if (dolog) ERR.log("No AuxiliaryConfiguration in " + p);
@@ -523,14 +505,14 @@ public class ProjectUtilities {
     
     // interface for handling project's documents stored in project private.xml
     // it serves for a unit test of OpenProjectList
-    static interface OpenCloseProjectDocument {
+    interface OpenCloseProjectDocument {
         
         // opens stored document in the document area
-        public boolean open (FileObject fo);
+        boolean open(FileObject fo);
         
         // closes documents of given projects and returns mapped document's urls by project
         // it's used as base for storing documents in project private.xml
-        public Map<Project,SortedSet<String>> close(Project[] projects, boolean notifyUI);
+        Map<Project,SortedSet<String>> close(Project[] projects, boolean notifyUI);
     }
     
 }
