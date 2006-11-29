@@ -212,6 +212,8 @@ public final class NbProxySelector extends ProxySelector {
     }
     
     private boolean dontUseProxy (String nonProxyHosts, String host) {
+        if (host == null) return false;
+
         boolean dontUseProxy = false;
         StringTokenizer st = new StringTokenizer (nonProxyHosts, "|", false);
         while (st.hasMoreTokens () && !dontUseProxy) {
