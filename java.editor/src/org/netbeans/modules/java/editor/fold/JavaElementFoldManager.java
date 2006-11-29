@@ -20,13 +20,14 @@ package org.netbeans.modules.java.editor.fold;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.SourcePositions;
-import com.sun.source.util.TreeScanner;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,33 +37,44 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import org.netbeans.api.editor.fold.Fold;
-import org.netbeans.api.editor.fold.FoldType;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.support.CancellableTreeScanner;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.timers.TimesCollector;
+import org.netbeans.editor.SettingsChangeEvent;
+import org.netbeans.editor.SettingsUtil;
+import org.netbeans.editor.ext.java.JavaFoldManager;
+import org.netbeans.editor.ext.java.JavaSettingsNames;
 import org.netbeans.modules.java.editor.semantic.ScanningCancellableTask;
 import org.netbeans.modules.java.editor.semantic.Utilities;
 import org.netbeans.spi.editor.fold.FoldHierarchyTransaction;
-import org.netbeans.spi.editor.fold.FoldManager;
 import org.netbeans.spi.editor.fold.FoldOperation;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author Jan Lahoda
  */
-public class JavaElementFoldManager implements FoldManager {
+public class JavaElementFoldManager extends JavaFoldManager {
     
     private FoldOperation operation;
     private FileObject    file;
     private JavaElementFoldTask task;
-    private boolean released = true;
+    
+    // Folding presets
+    private boolean foldImportsPreset;
+    private boolean foldInnerClassesPreset;
+    private boolean foldJavadocsPreset;
+    private boolean foldCodeBlocksPreset;
+    private boolean foldInitialCommentsPreset;
     
     /** Creates a new instance of JavaElementFoldManager */
     public JavaElementFoldManager() {
@@ -70,31 +82,21 @@ public class JavaElementFoldManager implements FoldManager {
 
     public void init(FoldOperation operation) {
         this.operation = operation;
+        
+        settingsChange(null);
     }
 
     public synchronized void initFolds(FoldHierarchyTransaction transaction) {
-        released = false;
-        new Init().run();
-    }
-    
-    private final class Init implements Runnable {
-        public void run() {
-            synchronized (JavaElementFoldManager.this) {
-                if (released)
-                    return ;
-            }
-            
-            Document doc = operation.getHierarchy().getComponent().getDocument();
-            DataObject od = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
-            
-            if (od != null) {
-                currentFolds = new HashMap<FoldInfo, Fold>();
-                task = JavaElementFoldTask.getTask(od.getPrimaryFile());
-                task.setJavaElementFoldManager(JavaElementFoldManager.this);
-            }
+        Document doc = operation.getHierarchy().getComponent().getDocument();
+        DataObject od = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
+        
+        if (od != null) {
+            currentFolds = new HashMap<FoldInfo, Fold>();
+            task = JavaElementFoldTask.getTask(od.getPrimaryFile());
+            task.setJavaElementFoldManager(JavaElementFoldManager.this);
         }
     }
-
+    
     public void insertUpdate(DocumentEvent evt, FoldHierarchyTransaction transaction) {
     }
 
@@ -105,24 +107,45 @@ public class JavaElementFoldManager implements FoldManager {
     }
 
     public void removeEmptyNotify(Fold emptyFold) {
-        currentFolds.remove(operation.getExtraInfo(emptyFold));
+        removeDamagedNotify(emptyFold);
     }
 
     public void removeDamagedNotify(Fold damagedFold) {
         currentFolds.remove(operation.getExtraInfo(damagedFold));
+        if (importsFold == damagedFold) {
+            importsFold = null;//not sure if this is correct...
+        }
+        if (initialCommentFold == damagedFold) {
+            initialCommentFold = null;//not sure if this is correct...
+        }
     }
 
     public void expandNotify(Fold expandedFold) {
     }
 
     public synchronized void release() {
-        released = true;
         if (task != null)
             task.setJavaElementFoldManager(null);
         
         task         = null;
         file         = null;
         currentFolds = null;
+        importsFold  = null;
+        initialCommentFold = null;
+    }
+    
+    public void settingsChange(SettingsChangeEvent evt) {
+        // Get folding presets
+        foldInitialCommentsPreset = getSetting(JavaSettingsNames.CODE_FOLDING_COLLAPSE_INITIAL_COMMENT);
+        foldImportsPreset = getSetting(JavaSettingsNames.CODE_FOLDING_COLLAPSE_IMPORT);
+        foldCodeBlocksPreset = getSetting(JavaSettingsNames.CODE_FOLDING_COLLAPSE_METHOD);
+        foldInnerClassesPreset = getSetting(JavaSettingsNames.CODE_FOLDING_COLLAPSE_INNERCLASS);
+        foldJavadocsPreset = getSetting(JavaSettingsNames.CODE_FOLDING_COLLAPSE_JAVADOC);
+    }
+    
+    private boolean getSetting(String settingName){
+        JTextComponent tc = operation.getHierarchy().getComponent();
+        return SettingsUtil.getBoolean(org.netbeans.editor.Utilities.getKitClass(tc), settingName, false);
     }
     
     static final class JavaElementFoldTask extends ScanningCancellableTask<CompilationInfo> {
@@ -147,6 +170,8 @@ public class JavaElementFoldManager implements FoldManager {
         }
         
         public void run(final CompilationInfo info) {
+            resume();
+            
             JavaElementFoldManager manager;
             
             //the synchronized section should be as limited as possible here
@@ -163,9 +188,15 @@ public class JavaElementFoldManager implements FoldManager {
             long startTime = System.currentTimeMillis();
 
             final CompilationUnitTree cu = info.getCompilationUnit();
-            final JavaElementFoldVisitor v = manager.new JavaElementFoldVisitor(cu, info.getTrees().getSourcePositions());
+            final JavaElementFoldVisitor v = manager.new JavaElementFoldVisitor(info, cu, info.getTrees().getSourcePositions());
             
             scan(v, cu, null);
+            
+            if (v.stopped || isCancelled())
+                return ;
+            
+            //check for initial fold:
+            v.checkInitialFold();
             
             if (v.stopped || isCancelled())
                 return ;
@@ -208,7 +239,7 @@ public class JavaElementFoldManager implements FoldManager {
                         return ;
                     
                     Map<FoldInfo, Fold> added   = new TreeMap();
-                    List<FoldInfo>          removed = new ArrayList<FoldInfo>(currentFolds.keySet());
+                    List<FoldInfo>      removed = new ArrayList<FoldInfo>(currentFolds.keySet());
                     
                     for (FoldInfo i : infos) {
                         if (removed.remove(i)) {
@@ -219,14 +250,39 @@ public class JavaElementFoldManager implements FoldManager {
                         int end   = i.end.getOffset();
                         
                         if (end > start) {
-                            Fold f    = operation.addToHierarchy(i.type, "{...}", false, start, end, 0, 0, i, tr);
+                            Fold f    = operation.addToHierarchy(i.template.getType(),
+                                                                 i.template.getDescription(),
+                                                                 i.collapseByDefault,
+                                                                 start,
+                                                                 end,
+                                                                 i.template.getStartGuardedLength(),
+                                                                 i.template.getEndGuardedLength(),
+                                                                 i,
+                                                                 tr);
                             
                             added.put(i, f);
+                            
+                            if (i.template == IMPORTS_FOLD_TEMPLATE) {
+                                importsFold = f;
+                            }
+                            if (i.template == INITIAL_COMMENT_FOLD_TEMPLATE) {
+                                initialCommentFold = f;
+                            }
                         }
                     }
                     
                     for (FoldInfo i : removed) {
-                        operation.removeFromHierarchy(currentFolds.remove(i), tr);
+                        Fold f = currentFolds.remove(i);
+                        
+                        operation.removeFromHierarchy(f, tr);
+                        
+                        if (importsFold == f ) {
+                            importsFold = null;
+                        }
+                        
+                        if (initialCommentFold == f) {
+                            initialCommentFold = f;
+                        }
                     }
                     
                     currentFolds.putAll(added);
@@ -245,23 +301,80 @@ public class JavaElementFoldManager implements FoldManager {
         }
     }
     
-    private static final FoldType TYPE_METHOD = new FoldType("java-element-method");
-    private static final FoldType TYPE_CLASS = new FoldType("java-element-class");
-    private static final FoldType TYPE_JAVADOC = new FoldType("java-element-javadoc");
-    private static final FoldType TYPE_INITIAL = new FoldType("java-element-initial");
-    
     private Map<FoldInfo, Fold> currentFolds;
+    private Fold initialCommentFold;
+    private Fold importsFold;
     
     private final class JavaElementFoldVisitor extends CancellableTreeScanner {
         
         private List<FoldInfo> folds = new ArrayList();
+        private CompilationInfo info;
         private CompilationUnitTree cu;
         private SourcePositions sp;
         private boolean stopped;
         
-        public JavaElementFoldVisitor(CompilationUnitTree cu, SourcePositions sp) {
+        public JavaElementFoldVisitor(CompilationInfo info, CompilationUnitTree cu, SourcePositions sp) {
+            this.info = info;
             this.cu = cu;
             this.sp = sp;
+        }
+        
+        public void checkInitialFold() {
+            try {
+                TokenHierarchy th = info.getTokenHiearchy();
+                TokenSequence<JavaTokenId>  ts = th.tokenSequence(JavaTokenId.language());
+                
+                while (ts.moveNext()) {
+                    Token<JavaTokenId> token = ts.token();
+                    
+                    if (token.id() == JavaTokenId.BLOCK_COMMENT) {
+                        Document doc   = operation.getHierarchy().getComponent().getDocument();
+                        int startOffset = ts.offset();
+                        boolean collapsed = foldInitialCommentsPreset;
+                        
+                        if (initialCommentFold != null) {
+                            collapsed = initialCommentFold.isCollapsed();
+                        }
+                        
+                        folds.add(new FoldInfo(doc, startOffset, startOffset + token.length(), INITIAL_COMMENT_FOLD_TEMPLATE, collapsed));
+                    }
+                    
+                    if (token.id() != JavaTokenId.WHITESPACE)
+                        break;
+                }
+            } catch (BadLocationException e) {
+                //the document probably changed, stop
+                stopped = true;
+            } catch (ConcurrentModificationException e) {
+                //from TokenSequence, document probably changed, stop
+                stopped = true;
+            }
+        }
+        
+        private void handleJavadoc(Tree t) throws BadLocationException, ConcurrentModificationException {
+            int start = (int) sp.getStartPosition(cu, t);
+            
+            if (start == (-1))
+                return ;
+            
+            TokenHierarchy th = info.getTokenHiearchy();
+            TokenSequence<JavaTokenId>  ts = th.tokenSequence(JavaTokenId.language());
+            
+            if (ts.move(start) == Integer.MAX_VALUE) {
+                return;//nothing
+            }
+            
+            while (ts.movePrevious()) {
+                Token<JavaTokenId> token = ts.token();
+                
+                if (token.id() == JavaTokenId.JAVADOC_COMMENT) {
+                    Document doc   = operation.getHierarchy().getComponent().getDocument();
+                    int startOffset = ts.offset();
+                    folds.add(new FoldInfo(doc, startOffset, startOffset + token.length(), JAVADOC_FOLD_TEMPLATE, foldJavadocsPreset));
+                }
+                if (token.id() != JavaTokenId.WHITESPACE)
+                    break;
+            }
         }
         
         @Override
@@ -275,9 +388,14 @@ public class JavaElementFoldManager implements FoldManager {
                 int end   = (int)sp.getEndPosition(cu, body);
                 
                 if (start != (-1) && end != (-1))
-                    folds.add(new FoldInfo(TYPE_METHOD, doc, start, end));
+                    folds.add(new FoldInfo(doc, start, end, CODE_BLOCK_FOLD_TEMPLATE, foldCodeBlocksPreset));
+                
+                handleJavadoc(node);
             } catch (BadLocationException e) {
                 //the document probably changed, stop
+                stopped = true;
+            } catch (ConcurrentModificationException e) {
+                //from TokenSequence, document probably changed, stop
                 stopped = true;
             }
             return null;
@@ -293,27 +411,69 @@ public class JavaElementFoldManager implements FoldManager {
                     int      end   = (int)sp.getEndPosition(cu, node);
                     
                     if (start != (-1) && end != (-1))
-                        folds.add(new FoldInfo(TYPE_CLASS, doc, start, end));
+                        folds.add(new FoldInfo(doc, start, end, CODE_BLOCK_FOLD_TEMPLATE, foldInnerClassesPreset));
+                    
+                    handleJavadoc(node);
+                } catch (BadLocationException e) {
+                    //the document probably changed, stop
+                    stopped = true;
+                } catch (ConcurrentModificationException e) {
+                    //from TokenSequence, document probably changed, stop
+                    stopped = true;
+                }
+            }
+            return null;
+        }
+        
+        @Override
+        public Object visitCompilationUnit(CompilationUnitTree node, Object p) {
+            int importsStart = Integer.MAX_VALUE;
+            int importsEnd   = -1;
+            
+            for (ImportTree imp : node.getImports()) {
+                int start = (int) sp.getStartPosition(cu, imp);
+                int end   = (int) sp.getEndPosition(cu, imp);
+                
+                if (importsStart > start)
+                    importsStart = start;
+                
+                if (end > importsEnd) {
+                    importsEnd = end;
+                }
+            }
+            
+            if (importsEnd != (-1) && importsStart != (-1)) {
+                try {
+                    Document doc   = operation.getHierarchy().getComponent().getDocument();
+                    boolean collapsed = foldImportsPreset;
+                    
+                    if (importsFold != null) {
+                        collapsed = importsFold.isCollapsed();
+                    }
+                    
+                    folds.add(new FoldInfo(doc, importsStart + 7/*"import ".length()*/, importsEnd, IMPORTS_FOLD_TEMPLATE, collapsed));
                 } catch (BadLocationException e) {
                     //the document probably changed, stop
                     stopped = true;
                 }
             }
-            return null;
+            return super.visitCompilationUnit(node, p);
         }
 
     }
     
     protected static final class FoldInfo implements Comparable {
         
-        private FoldType type;
         private Position start;
         private Position end;
+        private FoldTemplate template;
+        private boolean collapseByDefault;
         
-        public FoldInfo(FoldType type, Document doc, int start, int end) throws BadLocationException {
-            this.type = type;
+        public FoldInfo(Document doc, int start, int end, FoldTemplate template, boolean collapseByDefault) throws BadLocationException {
             this.start = doc.createPosition(start);
             this.end   = doc.createPosition(end);
+            this.template = template;
+            this.collapseByDefault = collapseByDefault;
         }
         
         public int hashCode() {
