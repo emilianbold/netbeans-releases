@@ -22,7 +22,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="unit-compiler">
         <!-- build lexer unit tests first (dir attribute has to be used to override basedir) -->
-        <ant dir="../../../lexer/test" target="buildtests"/> 
+        <ant dir="../../../lexer/test" target="buildtests" inheritall="false"/>
         <!-- compile html/lexer tests -->
         <antcall target="default-compiler"/>
     </target>
