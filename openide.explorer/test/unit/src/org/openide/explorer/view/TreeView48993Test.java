@@ -75,6 +75,10 @@ public class TreeView48993Test extends NbTestCase {
         }
     }
     
+    protected int timeOut() {
+        return 15000; // 15s
+    }
+
     public void testNotReentrantWhenDoingUpdate() throws Throwable {
         f = new JFrame();
         final MyChildren ch = new MyChildren();
@@ -152,8 +156,7 @@ public class TreeView48993Test extends NbTestCase {
             f.getContentPane().add(BorderLayout.CENTER, p);
             f.pack();
             f.setVisible(true);
-            boolean timedout = u.waitOn(10000);
-            assertFalse("First painted in 10s timeout", timedout);
+            u.waitOn(10000000);
             
             Thread.sleep(2000);
             ((VisualizerNode)Visualizer.findVisualizer(u)).getIcon(true, true); // this clears the internal cache
@@ -169,8 +172,7 @@ public class TreeView48993Test extends NbTestCase {
         f.repaint();
         f.setVisible(true);
         
-        boolean timedout = u.waitOn(10000); // Waits for getIcon to run
-        assertFalse("Node painted in 10s timeout", timedout); 
+        u.waitOn(10000000); // Waits for getIcon to run
         
         waitForAWT();
         
