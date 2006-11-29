@@ -37,7 +37,7 @@ public final class SimpleSection extends GuardedSection {
     }
 
     /**
-     * Set the text of the section.
+     * Sets the text of the section.
      * @param text the new text
      */
     public void setText(String text) {

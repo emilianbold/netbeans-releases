@@ -35,9 +35,9 @@ import org.netbeans.spi.editor.guards.GuardedEditorSupport;
 import org.netbeans.spi.editor.guards.GuardedSectionsProvider;
 
 /**
- * Helper class that simplifies writing particular {@link GuardedSectionsProvider}
+ * The helper class that simplifies writing particular {@link GuardedSectionsProvider}
  * implementations. Subclasses have to implement just {@link #readSections}
- * and {@link #writeSections}.
+ * and {@link #writeSections} methods.
  * 
  * @author Jan Pokorsky
  */
@@ -75,7 +75,8 @@ public abstract class AbstractGuardedSectionsProvider implements GuardedSections
     public abstract Result readSections(char[] content);
     
     /**
-     * Creates a simple section object to represent section read by the {@link IGuardedReader}.
+     * Creates a simple section object to represent section read by
+     * the {@link #readSections readSections}.
      * @param name the section name 
      * @param begin the start offset
      * @param end the end offset
@@ -89,12 +90,12 @@ public abstract class AbstractGuardedSectionsProvider implements GuardedSections
     
     /**
      * Creates an interior section object to represent section read by
-     * the {@link IGuardedReader}.
+     * the {@link #readSections readSections}.
      * @param name the section name
-     * @param header begin the start offset of the first guarded part
-     * @param header end the end offset of the first guarded part
-     * @param footer begin the start offset of the second guarded part
-     * @param footer end the end offset of the second guarded part
+     * @param headerBegin begin the start offset of the first guarded part
+     * @param headerEnd end the end offset of the first guarded part
+     * @param footerBegin begin the start offset of the second guarded part
+     * @param footerEnd end the end offset of the second guarded part
      * @return the interior section object
      * @exception BadLocationException  if the given position does not
      *   represent a valid location in the associated document

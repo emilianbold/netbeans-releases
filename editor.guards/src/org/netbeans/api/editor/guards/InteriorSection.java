@@ -18,13 +18,11 @@
  */
 package org.netbeans.api.editor.guards;
 
-import java.io.IOException;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
 import org.netbeans.modules.editor.guards.InteriorSectionImpl;
 
 /**
- * Represents an advanced guarded block.
+ * Represents an advanced guarded section.
  * It consists of three pieces: a header, body, and footer.
  * The header and footer are guarded but the body is not.
  */
@@ -38,7 +36,7 @@ public final class InteriorSection extends GuardedSection {
     }
 
     /**
-     * Set the text of the body.
+     * Sets the text of the body.
      * @param text the new text
      */
     public void setBody(String text) {
@@ -55,7 +53,7 @@ public final class InteriorSection extends GuardedSection {
     }
 
     /**
-     * Set the text of the header.
+     * Sets the text of the header.
      * @param text the new text
      */
     public void setHeader(String text) {
@@ -72,7 +70,7 @@ public final class InteriorSection extends GuardedSection {
     }
 
     /**
-     * Set the text of the footer.
+     * Sets the text of the footer.
      * Note that the footer of the section must have exactly one line.
      * So, all interior newline characters will be replaced by spaces.
      *
@@ -91,10 +89,18 @@ public final class InteriorSection extends GuardedSection {
         return getImpl().getFooter();
     }
     
+    /**
+     * Returns a position where the body starts
+     * @return the start position of the body part
+     */
     public Position getBodyStartPosition() {
         return getImpl().getBodyStartPosition();
     }
     
+    /**
+     * Returns a position where the body ends
+     * @return the end position of the body part
+     */
     public Position getBodyEndPosition() {
         return getImpl().getBodyEndPosition();
     }

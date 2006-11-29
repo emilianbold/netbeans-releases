@@ -30,18 +30,23 @@ import org.netbeans.modules.editor.guards.SimpleSectionImpl;
 
 /**
  * This is the entry point for clients to manipulate guarded sections
- * of the given document
+ * of the given document.
  *
  * @author Jan Pokorsky
  */
 public final class GuardedSectionManager {
 
+    /**
+     * Gets the manager instance.
+     * @param doc a document containing guarded sections
+     * @return the manager instance or <code>null</code>.
+     */
     public static GuardedSectionManager getInstance(StyledDocument doc) {
         return (GuardedSectionManager) doc.getProperty(GuardedSectionManager.class);
     }
 
     /**
-     * Try to find the simple section of the given name.
+     * Tries to find the simple section of the given name.
      * @param name the name of the requested section
      * @return the found guarded section or <code>null</code> if there is no section
      *         of the given name
@@ -52,7 +57,7 @@ public final class GuardedSectionManager {
     }
 
     /**
-     * Try to find the interior section of the given name.
+     * Tries to find the interior section of the given name.
      * @param name the name of the looked-for section
      * @return the found guarded section or <code>null</code> if there is no section
      *         of the given name
@@ -65,7 +70,7 @@ public final class GuardedSectionManager {
     /**
      * Creates an empty simple section at the given position.
      * The position must not be within any existing guarded section
-     * and the passed name must not be registered to other
+     * and the passed name must not be registered for other
      * already existing section. The created section will initially contain
      * one space and a newline.
      * @return SimpleSection instance that can be used for generating text into
@@ -85,8 +90,8 @@ public final class GuardedSectionManager {
      * The position must not be within any existing guarded section
      * and the passed name must not be registered to other
      * already existing section. The created section will initially contain
-     * one space and a newline.
-     * @return SimpleSection instance that can be used for generating text into
+     * one space and a newline in all its parts (header, body and footer).
+     * @return InteriorSection instance that can be used for generating text into
      * the protected region
      * @throws IllegalArgumentException if either the name has been already used, or
      * the position is inside another section or Java Element.
@@ -98,8 +103,8 @@ public final class GuardedSectionManager {
         return impl.createInteriorSection(pos, name);
     }
     
-    /** Get all sections.
-     * @return an iterator of {@link GuardedSection}s
+    /** Gets all sections.
+     * @return an iterable over {@link GuardedSection}s
      */
     public Iterable<GuardedSection> getGuardedSections() {
         return impl.getGuardedSections();

@@ -19,7 +19,6 @@
 package org.netbeans.api.editor.guards;
 
 import java.beans.PropertyVetoException;
-import java.io.IOException;
 import javax.swing.text.Position;
 import org.netbeans.modules.editor.guards.GuardedSectionImpl;
 
@@ -58,8 +57,8 @@ public class GuardedSection {
     }
 
     /**
-     * Deletes the text of the section and
-     * removes it from the table. The section will then be invalid
+     * Removes the section and the text of the section from the Document.
+     * The section will then be invalid
      * and it will be impossible to use its methods.
      */
     public void deleteSection() {
@@ -78,7 +77,6 @@ public class GuardedSection {
      * Removes the section from the Document, but retains the text contained
      * within. The method should be used to unprotect a region of code
      * instead of calling NbDocument.
-     * @return true if the operation succeeded.
      */
     public void removeSection() {
         impl.removeSection();
@@ -87,6 +85,7 @@ public class GuardedSection {
     /**
      * Gets the begin of section. To this position is set the caret
      * when section is open in the editor.
+     * @return the position to place the caret.
      */
     public Position getCaretPosition() {
         return impl.getCaretPosition();
@@ -107,6 +106,7 @@ public class GuardedSection {
      * @param pos position in question
      * @param permitHoles if false, guarded section is taken as a monolithic block
      * without any holes in it regardless of its complexity.
+     * @return <code>true</code> if the position is inside section.
      */
     public boolean contains(Position pos, boolean permitHoles) {
         return impl.contains(pos, permitHoles);
@@ -114,6 +114,7 @@ public class GuardedSection {
     
     /**
      * Returns the end position of the whole guarded section.
+     * @return the end position of the guarded section.
      */
     public Position getEndPosition() {
         return impl.getEndPosition();
@@ -121,6 +122,7 @@ public class GuardedSection {
     
     /** 
      * Returns the start position of the whole guarded section.
+     * @return the start position of the guarded section.
      */
     public Position getStartPosition() {
         return impl.getStartPosition();

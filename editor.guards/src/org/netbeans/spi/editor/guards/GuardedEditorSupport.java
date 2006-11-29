@@ -19,7 +19,6 @@
 
 package org.netbeans.spi.editor.guards;
 
-import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
 
 /**
@@ -30,6 +29,10 @@ import javax.swing.text.StyledDocument;
  */
 public interface GuardedEditorSupport {
     
+    /**
+     * Returns a document containing guarded sections
+     * @return the document
+     */
     StyledDocument getDocument();
     
 }

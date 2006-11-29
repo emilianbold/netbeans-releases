@@ -22,7 +22,7 @@ Microsystems, Inc. All Rights Reserved.
 ]>
 
 <api-answers
-  question-version="1.28"
+  question-version="1.29"
   module="editor/guards"
   author="jpokorsky@netbeans.org"
 >
@@ -48,18 +48,18 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-overall">
   <p>
-   <api group="java" name="GuardedSectionsAPI" type="export" category="devel">Guarded Sections API -
+   <api group="java" name="GuardedSectionsAPI" type="export" category="devel">
    The Guarded Sections module is supposed to operate over the Swing's <a href="@JDK@/javax/swing/text/StyledDocument.html"><code>StyledDocument</code></a>.
    It allows clients to manipulate named guarded sections that prevents user to
-   modify the content. So if you like to create, modify or delete guarded sections the <a href="org/netbeans/api/editor/guards/GuardedSectionManager.html">
+   modify the content. So if you like to create, modify or delete guarded sections the <a href="@org-netbeans-modules-editor-guards@/org/netbeans/api/editor/guards/GuardedSectionManager.html">
    <code>GuardedSectionManager</code></a> is the best place where to start.
    </api>
   </p>
   <p>
-   <api group="java" name="GuardedSectionsSPI" type="export" category="devel">Guarded Sections SPI -
+   <api group="java" name="GuardedSectionsSPI" type="export" category="devel">
    The module also allows to implement custom guarded section persistance in various content types like java, xml, ...
-   The easiest way is to subclass <a href="org/netbeans/spi/editor/guards/providers/AbstractGuardedSectionsProvider.html">
-   <code>AbstractGuardedSectionsProvider</code></a>.<br/>In order to bind guarded sections to your editor see <a href="org/netbeans/spi/editor/guards/GuardedSectionsFactory.html">
+   The easiest way is to subclass <a href="@org-netbeans-modules-editor-guards@/org/netbeans/spi/editor/guards/support/AbstractGuardedSectionsProvider.html">
+   <code>AbstractGuardedSectionsProvider</code></a>.<br/>In order to bind guarded sections to your editor see <a href="@org-netbeans-modules-editor-guards@/org/netbeans/spi/editor/guards/GuardedSectionsFactory.html">
    <code>GuardedSectionsFactory</code></a>.
    </api>
   </p>
@@ -595,7 +595,7 @@ Microsystems, Inc. All Rights Reserved.
   <p>
    <api name="org.netbeans.api.editor.guards.GuardedSectionManager" category="private" group="property" type="export">
     The <code>GuardedSectionManager</code> instance is physically stored as a property of
-    the document with key <code>GuardedSectionManager.class</code>. Modules should not depend on this.
+    the document with key <code>org.netbeans.api.editor.guards.GuardedSectionManager.class</code>. Modules should not depend on this.
    </api>
   </p>
  </answer>
@@ -828,7 +828,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="lookup-lookup">
   <p>
-   <api category="devel" group="lookup" name="GuardedSectionsFactory" type="export" url="org/netbeans/spi/editor/guards/GuardedSectionsFactory.html">
+   <api category="devel" group="lookup" name="GuardedSectionsFactory" type="export" url="@org-netbeans-modules-editor-guards@/org/netbeans/spi/editor/guards/GuardedSectionsFactory.html">
        Factories of custom providers that implements reading and writing guarded sections
        should be registered under <code>Editors/&lt;mime path&gt;</code>
        in the module layer file. The first one is chosen for the given mime path.
@@ -1163,6 +1163,32 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
  <answer id="security-policy">
+  <p>
+   No.
+  </p>
+ </answer>
+
+
+
+
+<!--
+        <question id="resources-preferences" when="final">
+            Does your module uses preferences via Preferences API? Does your module use NbPreferences or
+            or regular JDK Preferences ? Does it read, write or both ? 
+            Does it share preferences with other modules ? If so, then why ?
+            <hint>
+                You may use
+                    &lt;api type="export" group="preferences"
+                    name="preference node name" category="private"&gt;
+                    description of individual keys, where it is used, what it
+                    influences, whether the module reads/write it, etc.
+                    &lt;/api&gt;
+                Due to XML ID restrictions, rather than /org/netbeans/modules/foo give the "name" as org.netbeans.modules.foo.
+                Note that if you use NbPreferences this name will then be the same as the code name base of the module.
+            </hint>
+        </question>
+-->
+ <answer id="resources-preferences">
   <p>
    No.
   </p>

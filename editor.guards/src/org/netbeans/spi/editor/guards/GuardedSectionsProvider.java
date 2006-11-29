@@ -28,12 +28,28 @@ import org.netbeans.spi.editor.guards.support.AbstractGuardedSectionsProvider;
 
 /**
  * Subclasses should be able to read content containing guarded section marks 
- * and vice versa. For now you should subclass {@link AbstractGuardedSectionsProvider}.
+ * and vice versa. You should subclass {@link AbstractGuardedSectionsProvider}.
+ * Use this interface in case you load or save the {@link javax.swing.text.Document}.
  * @author Jan Pokorsky
  */
 public interface GuardedSectionsProvider {
+    
+    /**
+     * Creates a reader able to read persisted sections.
+     * @param stream stream containing persisted sections
+     * @param encoding encoding to decode read bytes 
+     * @return the reader
+     * @throws if the encoding is not supported
+     */
     Reader createGuardedReader(InputStream stream, String encoding) throws UnsupportedEncodingException;
 
+    /**
+     * Creates a writer able to write persisted sections.
+     * @param stream stream where the output should be written
+     * @param encoding encoding used by the writer
+     * @return the writer
+     * @throws if the encoding is not supported
+     */
     Writer createGuardedWriter(OutputStream stream, String encoding) throws UnsupportedEncodingException;
     
 }

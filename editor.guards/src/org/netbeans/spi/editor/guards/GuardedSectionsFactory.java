@@ -21,7 +21,6 @@ package org.netbeans.spi.editor.guards;
 
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
-import org.netbeans.spi.editor.guards.support.AbstractGuardedSectionsProvider;
 
 /**
  * The factory allows to look up {@link GuardedSectionsProvider} factories for given
@@ -34,6 +33,11 @@ import org.netbeans.spi.editor.guards.support.AbstractGuardedSectionsProvider;
  */
 public abstract class GuardedSectionsFactory {
 
+    /**
+     * Use this to find a proper factory instance for the passed mime path.
+     * @param mimePath a mime path
+     * @return the factory instance or <code>null</code>
+     */
     public static GuardedSectionsFactory find(String mimePath) {
         MimePath mp = MimePath.get(mimePath);
         GuardedSectionsFactory factory = null;
