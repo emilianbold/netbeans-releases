@@ -96,7 +96,7 @@ Microsystems, Inc. All Rights Reserved.
         <module name="j2ee/utilities" testtypes="unit" attributes="stable"/>
 <!--        <module name="j2ee/verification" testtypes="unit" attributes="stable"/> -->
         <module name="j2eeserver" testtypes="unit" attributes="stable"/>
-<!--        <module name="schema2beans" testtypes="unit" attributes="stable"/> -->
+        <module name="schema2beans" testtypes="unit" attributes="stable"/> 
         <module name="tomcatint/tomcat5" testtypes="unit" attributes="stable"/>
         <module name="web/core" testtypes="unit" attributes="stable"/>
         <module name="web/freeform" testtypes="unit" attributes="stable"/>
