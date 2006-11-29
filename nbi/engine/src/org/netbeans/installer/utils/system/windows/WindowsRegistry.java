@@ -21,6 +21,7 @@
 package org.netbeans.installer.utils.system.windows;
 
 import org.netbeans.installer.utils.exceptions.NativeException;
+import static org.netbeans.installer.utils.StringUtils.EMPTY_STRING;
 
 /**
  *
@@ -63,7 +64,7 @@ public class WindowsRegistry {
     public static final String SEPARATOR = "\\";
     
     private static int KEY_READ_LEVEL = 0;
-    private static int KEY_MODIFY_LEVEL = 1;    
+    private static int KEY_MODIFY_LEVEL = 1;
     
     /////////////////////////////////////////////////////////////////////////////
     // Instance
@@ -96,7 +97,7 @@ public class WindowsRegistry {
     }
     
     public boolean keyExists(int section, String parent, String child) throws NativeException {
-        validateSection(section);
+        //validateSection(section);
         validateKey(parent);
         validateKeyName(child);
         validateParenthood(parent, child);
@@ -117,8 +118,8 @@ public class WindowsRegistry {
      * @return <i>true</i> if the specified value exists, <i>false</i> otherwise
      */
     public boolean valueExists(int section, String key, String name) throws NativeException {
-        validateSection(section);
-        validateKey(key);
+        //validateSection(section);
+        //validateKey(key);
         validateValueName(name);
         
         if (keyExists(section, key)) {
@@ -141,8 +142,8 @@ public class WindowsRegistry {
      * @return <i>true</i> if the specified value exists, <i>false</i> otherwise
      */
     public boolean keyEmpty(int section, String key) throws NativeException {
-        validateSection(section);
-        validateKey(key);
+        //validateSection(section);
+        //validateKey(key);
         
         if (keyExists(section, key)) {
             try {
@@ -164,8 +165,8 @@ public class WindowsRegistry {
      * <br>Otherwise return the number of subkeys
      */
     public int countSubKeys(int section, String key) throws NativeException {
-        validateSection(section);
-        validateKey(key);
+        //validateSection(section);
+        //validateKey(key);
         
         if (keyExists(section, key)) {
             try {
@@ -185,8 +186,8 @@ public class WindowsRegistry {
      * <br>Otherwise return the number of values
      */
     public int countValues(int section, String key) throws NativeException {
-        validateSection(section);
-        validateKey(key);
+        //validateSection(section);
+        //validateKey(key);
         
         if (keyExists(section, key)) {
             try {
@@ -220,8 +221,8 @@ public class WindowsRegistry {
      * <br>Otherwise return the array of subkey names
      */
     public String[] getSubKeyNames(int section, String key) throws NativeException {
-        validateSection(section);
-        validateKey(key);
+        //validateSection(section);
+        //validateKey(key);
         
         if (keyExists(section, key)) {
             try {
@@ -241,8 +242,8 @@ public class WindowsRegistry {
      * <br>Otherwise return the array of value names
      */
     public String[] getValueNames(int section, String key) throws NativeException {
-        validateSection(section);
-        validateKey(key);
+        //validateSection(section);
+        //validateKey(key);
         
         if (keyExists(section, key)) {
             try {
@@ -278,9 +279,9 @@ public class WindowsRegistry {
      * <code>REG_QWORD</code>=<code>REG_QWORD_LITTLE_ENDIAN</code>
      */
     public int getValueType(int section, String key, String name) throws NativeException {
-        validateSection(section);
-        validateKey(key);
-        validateValueName(name);
+        //validateSection(section);
+        //validateKey(key);
+        //validateValueName(name);
         
         if (keyExists(section, key)) {
             if (valueExists(section, key, name)) {
@@ -320,10 +321,10 @@ public class WindowsRegistry {
      * <br> <i>false</i> otherwise
      */
     public void createKey(int section, String parent, String child) throws NativeException {
-        validateSection(section);
-        validateKey(parent);
-        validateKeyName(child);
-        validateParenthood(parent, child);
+        //validateSection(section);
+        //validateKey(parent);
+        //validateKeyName(child);
+        //validateParenthood(parent, child);
         
         if (!keyExists(section, parent, child)) {
             if (!keyExists(section, parent)) {
@@ -359,10 +360,10 @@ public class WindowsRegistry {
      * @return <i>true</i> if the specified key was deleted, <i>false</i> otherwise
      */
     public void deleteKey(int section, String parent, String child) throws NativeException {
-        validateSection(section);
-        validateKey(parent);
-        validateKeyName(child);
-        validateParenthood(parent, child);
+        //validateSection(section);
+        //validateKey(parent);
+        //validateKeyName(child);
+        //validateParenthood(parent, child);
         
         if (keyExists(section, parent, child)) {
             try {
@@ -383,9 +384,9 @@ public class WindowsRegistry {
      * @return <i>true</i> if the specified value was deleted, <i>false</i> otherwise
      */
     public void deleteValue(int section, String key, String name) throws NativeException {
-        validateSection(section);
-        validateKey(key);
-        validateValueName(name);
+        //validateSection(section);
+        //validateKey(key);
+        //validateValueName(name);
         
         if (keyExists(section, key)) {
             if (valueExists(section, key, name)) {
@@ -421,9 +422,9 @@ public class WindowsRegistry {
      * @return The value of the name, <i>null</i> in case of any error
      */
     public String getStringValue(int section, String key, String name, boolean expand) throws NativeException {
-        validateSection(section);
-        validateKey(key);
-        validateValueName(name);
+        //validateSection(section);
+        //validateKey(key);
+        //validateValueName(name);
         
         if (keyExists(section, key)) {
             if (valueExists(section, key, name)) {
@@ -467,8 +468,8 @@ public class WindowsRegistry {
      * <br> <i>false</i> otherwise
      */
     public void setStringValue(int section, String key, String name, String value, boolean expandable) throws NativeException {
-        validateSection(section);
-        validateKey(key);
+        //validateSection(section);
+        //validateKey(key);
         validateValueName(name);
         validateStringValue(value);
         
@@ -490,9 +491,9 @@ public class WindowsRegistry {
      * @return The value of the name, <i>-1</i> in case of any error
      */
     public int get32BitValue(int section, String key, String name) throws NativeException {
-        validateSection(section);
-        validateKey(key);
-        validateValueName(name);
+        //validateSection(section);
+        //validateKey(key);
+        //validateValueName(name);
         
         if (keyExists(section, key)) {
             if (valueExists(section, key, name)) {
@@ -518,8 +519,8 @@ public class WindowsRegistry {
      * <br> <i>false</i> otherwise
      */
     public void set32BitValue(int section, String key, String name, int value) throws NativeException {
-        validateSection(section);
-        validateKey(key);
+        //validateSection(section);
+        //validateKey(key);
         validateValueName(name);
         validate32BitValue(value);
         
@@ -541,9 +542,9 @@ public class WindowsRegistry {
      * @return The multri-string value of the name, <i>null</i> in case of any error
      */
     public String[] getMultiStringValue(int section, String key, String name) throws NativeException {
-        validateSection(section);
-        validateKey(key);
-        validateValueName(name);
+        //validateSection(section);
+        //validateKey(key);
+        //validateValueName(name);
         
         if (keyExists(section, key)) {
             if (valueExists(section, key, name)) {
@@ -569,8 +570,8 @@ public class WindowsRegistry {
      * <br> <i>false</i> otherwise
      */
     public void setMultiStringValue(int section, String key, String name, String[] value) throws NativeException {
-        validateSection(section);
-        validateKey(key);
+        //validateSection(section);
+        //validateKey(key);
         validateValueName(name);
         validateMultiStringValue(value);
         
@@ -594,9 +595,9 @@ public class WindowsRegistry {
      * @return The binary value of the name, <i>null</i> in case of any error
      */
     public byte[] getBinaryValue(int section, String key, String name) throws NativeException {
-        validateSection(section);
-        validateKey(key);
-        validateValueName(name);
+        //validateSection(section);
+        //validateKey(key);
+        //validateValueName(name);
         
         if (keyExists(section, key)) {
             if (valueExists(section, key, name)) {
@@ -622,8 +623,8 @@ public class WindowsRegistry {
      * <br> <i>false</i> otherwise
      */
     public void setBinaryValue(int section, String key, String name, byte[] value) throws NativeException {
-        validateSection(section);
-        validateKey(key);
+        //validateSection(section);
+        //validateKey(key);
         validateValueName(name);
         validateBinaryValue(value);
         
@@ -646,13 +647,13 @@ public class WindowsRegistry {
      * @param value The specified value
      */
     public void setNoneValue(int section, String key, String name, byte ... bytes) throws NativeException {
-        validateSection(section);
-        validateKey(key);
+        //validateSection(section);
+        //validateKey(key);
         validateValueName(name);
         
         if (keyExists(section, key)) {
             try {
-                setNoneValue0(section, key, name, bytes);                
+                setNoneValue0(section, key, name, bytes);
             } catch (UnsatisfiedLinkError e) {
                 throw new NativeException("Cannot access native method", e);
             }
@@ -661,7 +662,7 @@ public class WindowsRegistry {
         }
     }
     
-    /**    
+    /**
      * Checks whether the specified key exists and can be modified in the registry.
      *
      * @param section The section of the registry
@@ -669,11 +670,14 @@ public class WindowsRegistry {
      * @return <i>true</i> if the specified key can exists and can be modified, <i>false</i> otherwise
      */
     public boolean canModifyKey(int section, String key) throws NativeException {
-        validateSection(section);
-        validateKey(key);
-        
+        //validateSection(section);
+        //validateKey(key);
         try {
-            return checkKeyAccess0(section, key, KEY_MODIFY_LEVEL);
+            if(keyExists(section,key)) {
+                return checkKeyAccess0(section, key, KEY_MODIFY_LEVEL);
+            } else {
+                return canModifyKey(section,getKeyParent(key));
+            }
         } catch (UnsatisfiedLinkError e) {
             throw new NativeException("Cannot access native method", e);
         }
@@ -761,7 +765,7 @@ public class WindowsRegistry {
     
     private void validateStringValue(String value) throws NativeException {
         if (value == null) {
-            throw new NativeException("Strign value cannot be null");
+            throw new NativeException("String value cannot be null");
         }
     }
     
