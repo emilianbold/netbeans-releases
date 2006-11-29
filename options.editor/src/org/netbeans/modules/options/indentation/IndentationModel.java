@@ -21,8 +21,8 @@ package org.netbeans.modules.options.indentation;
 
 import java.lang.reflect.Method;
 import java.util.Iterator;
-
-import org.netbeans.editor.BaseKit;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.modules.editor.options.AllOptionsFolder;
 import org.netbeans.modules.editor.options.BaseOptions;
 
@@ -287,17 +287,7 @@ class IndentationModel {
     }
     
     private static BaseOptions getOptions (String mimeType) {
-        Iterator it = AllOptionsFolder.getDefault ().getInstalledOptions ().
-            iterator ();
-        while (it.hasNext ()) {
-            Class optionsClass = (Class) it.next ();
-            BaseOptions baseOptions = (BaseOptions) BaseOptions.findObject 
-                (optionsClass, true);
-            BaseKit kit = BaseKit.getKit (baseOptions.getKitClass ());
-            if (kit.getContentType ().equals (mimeType))
-                return baseOptions;
-        }
-        return null;
+        return (BaseOptions) MimeLookup.getLookup(MimePath.parse(mimeType)).lookup(BaseOptions.class);
     }
 }
 
