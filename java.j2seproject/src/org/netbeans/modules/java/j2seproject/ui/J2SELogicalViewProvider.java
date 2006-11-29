@@ -30,7 +30,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -53,10 +52,6 @@ import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties
 import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.netbeans.modules.java.j2seproject.SourceRoots;
 import org.netbeans.modules.java.j2seproject.UpdateHelper;
-import org.netbeans.modules.java.j2seproject.wsclient.J2SEProjectWebServicesClientSupport;
-import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
-import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientView;
-import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ActionProvider;
@@ -79,8 +74,6 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.FolderLookup;
 import org.openide.modules.SpecificationVersion;
 import org.openide.nodes.AbstractNode;
@@ -108,7 +101,7 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
     private final PropertyEvaluator evaluator;
     private final SubprojectProvider spp;
     private final ReferenceHelper resolver;
-    private List changeListeners;
+    private List<ChangeListener> changeListeners;
     
     public J2SELogicalViewProvider(J2SEProject project, UpdateHelper helper, PropertyEvaluator evaluator, SubprojectProvider spp, ReferenceHelper resolver) {
         this.project = project;
@@ -139,7 +132,7 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
     }
     
     public Node findPath(Node root, Object target) {
-        Project project = (Project) root.getLookup().lookup(Project.class);
+        Project project = root.getLookup().lookup(Project.class);
         if (project == null) {
             return null;
         }
@@ -151,9 +144,8 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
                 return null; // Don't waste time if project does not own the fo
             }
             
-            Node[] nodes = root.getChildren().getNodes(true);
-            for (int i = 0; i < nodes.length; i++) {
-                Node result = PackageView.findPath(nodes[i], target);
+            for (Node n : root.getChildren().getNodes(true)) {
+                Node result = PackageView.findPath(n, target);
                 if (result != null) {
                     return result;
                 }
@@ -167,7 +159,7 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
     
     public synchronized void addChangeListener(ChangeListener l) {
         if (this.changeListeners == null) {
-            this.changeListeners = new ArrayList();
+            this.changeListeners = new ArrayList<ChangeListener>();
         }
         this.changeListeners.add(l);
     }
@@ -190,25 +182,24 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
             if (this.changeListeners == null) {
                 return;
             }
-            _listeners = (ChangeListener[]) this.changeListeners.toArray(
-                    new ChangeListener[this.changeListeners.size()]);
+            _listeners = changeListeners.toArray(new ChangeListener[changeListeners.size()]);
         }
         ChangeEvent event = new ChangeEvent(this);
-        for (int i=0; i < _listeners.length; i++) {
-            _listeners[i].stateChanged(event);
+        for (ChangeListener l : _listeners) {
+            l.stateChanged(event);
         }
     }
     
     private static Lookup createLookup( Project project ) {
         DataFolder rootFolder = DataFolder.findFolder(project.getProjectDirectory());
         // XXX Remove root folder after FindAction rewrite
-        return Lookups.fixed(new Object[] {project, rootFolder});
+        return Lookups.fixed(project, rootFolder);
     }
     
     
     // Private innerclasses ----------------------------------------------------
     
-    private static final String[] BREAKABLE_PROPERTIES = new String[] {
+    private static final String[] BREAKABLE_PROPERTIES = {
         J2SEProjectProperties.JAVAC_CLASSPATH,
         J2SEProjectProperties.RUN_CLASSPATH,
         J2SEProjectProperties.DEBUG_CLASSPATH,
@@ -271,14 +262,14 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
         private boolean illegalState;   //Represents a state where project is not in legal state, eg invalid source/target level
         
         // icon badging >>>
-        private Set files;
-        private Map fileSystemListeners;
+        private Set<FileObject> files;
+        private Map<FileSystem,FileStatusListener> fileSystemListeners;
         private RequestProcessor.Task task;
         private final Object privateLock = new Object();
         private boolean iconChange;
         private boolean nameChange;
         private ChangeListener sourcesListener;
-        private Map groupsListeners;
+        private Map<SourceGroup,PropertyChangeListener> groupsListeners;
         //private Project project;
         // icon badging <<<
         
@@ -308,20 +299,15 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
         }
         
         
-        private final void setGroups(Collection groups) {
+        private final void setGroups(Collection<SourceGroup> groups) {
             if (groupsListeners != null) {
-                Iterator it = groupsListeners.keySet().iterator();
-                while (it.hasNext()) {
-                    SourceGroup group = (SourceGroup) it.next();
-                    PropertyChangeListener pcl = (PropertyChangeListener) groupsListeners.get(group);
-                    group.removePropertyChangeListener(pcl);
+                for (Map.Entry<SourceGroup,PropertyChangeListener> e : groupsListeners.entrySet()) {
+                    e.getKey().removePropertyChangeListener(e.getValue());
                 }
             }
-            groupsListeners = new HashMap();
-            Set roots = new HashSet();
-            Iterator it = groups.iterator();
-            while (it.hasNext()) {
-                SourceGroup group = (SourceGroup) it.next();
+            groupsListeners = new HashMap<SourceGroup,PropertyChangeListener>();
+            Set<FileObject> roots = new HashSet<FileObject>();
+            for (SourceGroup group : groups) {
                 PropertyChangeListener pcl = WeakListeners.propertyChange(this, group);
                 groupsListeners.put(group, pcl);
                 group.addPropertyChangeListener(pcl);
@@ -331,26 +317,21 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
             setFiles(roots);
         }
         
-        protected final void setFiles(Set files) {
+        protected final void setFiles(Set<FileObject> files) {
             if (fileSystemListeners != null) {
-                Iterator it = fileSystemListeners.keySet().iterator();
-                while (it.hasNext()) {
-                    FileSystem fs = (FileSystem) it.next();
-                    FileStatusListener fsl = (FileStatusListener) fileSystemListeners.get(fs);
-                    fs.removeFileStatusListener(fsl);
+                for (Map.Entry<FileSystem,FileStatusListener> e : fileSystemListeners.entrySet()) {
+                    e.getKey().removeFileStatusListener(e.getValue());
                 }
             }
             
-            fileSystemListeners = new HashMap();
+            fileSystemListeners = new HashMap<FileSystem,FileStatusListener>();
             this.files = files;
             if (files == null) {
                 return;
             }
             
-            Iterator it = files.iterator();
-            Set hookedFileSystems = new HashSet();
-            while (it.hasNext()) {
-                FileObject fo = (FileObject) it.next();
+            Set<FileSystem> hookedFileSystems = new HashSet<FileSystem>();
+            for (FileObject fo : files) {
                 try {
                     FileSystem fs = fo.getFileSystem();
                     if (hookedFileSystems.contains(fs)) {
@@ -382,9 +363,9 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
         public Image getIcon(int type) {
             Image img = getMyIcon(type);
             
-            if (files != null && files.iterator().hasNext()) {
+            if (files != null && !files.isEmpty()) {
                 try {
-                    FileObject fo = (FileObject) files.iterator().next();
+                    FileObject fo = files.iterator().next();
                     img = fo.getFileSystem().getStatus().annotateIcon(img, type, files);
                 } catch (FileStateInvalidException e) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
@@ -402,9 +383,9 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
         public Image getOpenedIcon(int type) {
             Image img = getMyOpenedIcon(type);
             
-            if (files != null && files.iterator().hasNext()) {
+            if (files != null && !files.isEmpty()) {
                 try {
-                    FileObject fo = (FileObject) files.iterator().next();
+                    FileObject fo = files.iterator().next();
                     img = fo.getFileSystem().getStatus().annotateIcon(img, type, files);
                 } catch (FileStateInvalidException e) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
@@ -444,9 +425,7 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
             
             synchronized (privateLock) {
                 if ((iconChange == false && event.isIconChange()) || (nameChange == false && event.isNameChange())) {
-                    Iterator it = files.iterator();
-                    while (it.hasNext()) {
-                        FileObject fo = (FileObject) it.next();
+                    for (FileObject fo : files) {
                         if (event.hasChanged(fo)) {
                             iconChange |= event.isIconChange();
                             nameChange |= event.isNameChange();
@@ -502,7 +481,7 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
             
             ResourceBundle bundle = NbBundle.getBundle(J2SELogicalViewProvider.class);
             
-            List actions = new ArrayList();
+            List<Action> actions = new ArrayList<Action>();
             
             actions.add(CommonProjectActions.newFileAction());
             actions.add(null);
@@ -526,32 +505,19 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
             actions.add(CommonProjectActions.deleteProjectAction());
             actions.add(null);
             actions.add(SystemAction.get(FindAction.class));
+            actions.add(null);
             
             // honor 57874 contact
             
-            try {
-                FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("Projects/Actions"); // NOI18N
-                if (fo != null) {
-                    DataObject dobj = DataObject.find(fo);
-                    FolderLookup actionRegistry = new FolderLookup((DataFolder)dobj);
-                    Lookup.Template query = new Lookup.Template(Object.class);
-                    Lookup lookup = actionRegistry.getLookup();
-                    Iterator it = lookup.lookup(query).allInstances().iterator();
-                    if (it.hasNext()) {
+            FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("Projects/Actions"); // NOI18N
+            if (fo != null) {
+                for (Object next : new FolderLookup(DataFolder.findFolder(fo)).getLookup().lookupAll(Object.class)) {
+                    if (next instanceof Action) {
+                        actions.add((Action) next);
+                    } else if (next instanceof JSeparator) {
                         actions.add(null);
                     }
-                    while (it.hasNext()) {
-                        Object next = it.next();
-                        if (next instanceof Action) {
-                            actions.add(next);
-                        } else if (next instanceof JSeparator) {
-                            actions.add(null);
-                        }
-                    }
                 }
-            } catch (DataObjectNotFoundException ex) {
-                // data folder for existing fileobject expected
-                ErrorManager.getDefault().notify(ex);
             }
             
             actions.add(null);
@@ -562,7 +528,7 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
             }
             actions.add(CommonProjectActions.customizeProjectAction());
             
-            return (Action[]) actions.toArray(new Action[actions.size()]);
+            return actions.toArray(new Action[actions.size()]);
             
         }
         
@@ -603,7 +569,7 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
                 // That's why I have to listen here also on JPM:
                 weakPCL = WeakListeners.propertyChange(this, JavaPlatformManager.getDefault());
                 JavaPlatformManager.getDefault().addPropertyChangeListener(weakPCL);
-                J2SELogicalViewProvider.this.addChangeListener((ChangeListener) WeakListeners.change(this, J2SELogicalViewProvider.this));
+                J2SELogicalViewProvider.this.addChangeListener(WeakListeners.change(this, J2SELogicalViewProvider.this));
             }
             
             public void actionPerformed(ActionEvent e) {
