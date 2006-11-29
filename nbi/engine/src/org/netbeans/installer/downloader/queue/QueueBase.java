@@ -127,7 +127,7 @@ public abstract class QueueBase implements PumpingsQueue {
         }
       };
       visitor.visit(queueState);
-    } catch (ParseException ex) {//todo:find out human reaction
+    } catch (ParseException ex) {
       LogManager.log("fail to load - parsing error occures");
       LogManager.log(ex);
     }
@@ -141,7 +141,7 @@ public abstract class QueueBase implements PumpingsQueue {
         DomUtil.addChild(root, (PumpingImpl) puming);
       }
       DomUtil.writeXmlFile(document, stateFile);
-    } catch (ParseException wontHappend) {//skip
+    } catch (ParseException wontHappend) {
       LogManager.log(wontHappend);
     } catch (IOException io) {
       LogManager.log("fail to dump - i/o error occures");

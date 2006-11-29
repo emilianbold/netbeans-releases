@@ -70,8 +70,8 @@ public class URLConnector {
   }
   
   private void addSystemProxies() {
-    String host = System.getProperty("http.proxyHost");
-    String stringPort = System.getProperty("http.proxyPort");
+    String host = System.getProperty("deployment.proxy.http.host");
+    String stringPort = System.getProperty("deployment.proxy.http.port");
     int port = stringPort != null ? Integer.parseInt(stringPort): -1;
     if (host != null && port != -1) {
       final Proxy httpProxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(host , port));
@@ -79,8 +79,8 @@ public class URLConnector {
       useProxy = true;
     }
     
-    host = System.getProperty("ftp.proxyHost");
-    stringPort = System.getProperty("ftp.proxyPort");
+    host = System.getProperty("deployment.proxy.ftp.host");
+    stringPort = System.getProperty("deployment.proxy.ftp.port");
     port = stringPort != null ? Integer.parseInt(stringPort): -1;
     if (host != null && port != -1) {
       final Proxy ftpProxy = new Proxy(Proxy.Type.SOCKS, new InetSocketAddress(host, port));
@@ -88,8 +88,8 @@ public class URLConnector {
       useProxy = true;
     }
     
-    host = System.getProperty("socksProxyHost");
-    stringPort = System.getProperty("socksProxyPort");
+    host = System.getProperty("deployment.proxy.socks.host");
+    stringPort = System.getProperty("deployment.proxy.socks.port");
     port = stringPort != null ? Integer.parseInt(stringPort): -1;
     if (host != null && port != -1) {
       final Proxy socksProxy = new Proxy(Proxy.Type.SOCKS, new InetSocketAddress(host, port));
