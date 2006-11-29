@@ -44,11 +44,13 @@ import org.openide.util.Lookup;
 public abstract class WindowManager extends Object implements Serializable {
     /** property change of workspaces.
      * @deprecated Do not use. Workspaces are not supported anymore. */
+    @Deprecated
     public static final String PROP_WORKSPACES = "workspaces"; // NOI18N
 
     /** property change of current workspace.
      * @deprecated Do not use. Workspaces are not supported anymore.
      */
+    @Deprecated
     public static final String PROP_CURRENT_WORKSPACE = "currentWorkspace"; // NOI18N
 
     /** Name of property for modes in the workspace.
@@ -72,7 +74,7 @@ public abstract class WindowManager extends Object implements Serializable {
      * @since 2.10
      */
     public static final WindowManager getDefault() {
-        WindowManager wmInstance = (WindowManager) Lookup.getDefault().lookup(WindowManager.class);
+        WindowManager wmInstance = Lookup.getDefault().lookup(WindowManager.class);
 
         return (wmInstance != null) ? wmInstance : getDummyInstance();
     }
@@ -127,7 +129,7 @@ public abstract class WindowManager extends Object implements Serializable {
     * @return the registry
     */
     protected TopComponent.Registry componentRegistry() {
-        return (TopComponent.Registry) org.openide.util.Lookup.getDefault().lookup(TopComponent.Registry.class);
+        return Lookup.getDefault().lookup(TopComponent.Registry.class);
     }
 
     /** Getter for component registry.
@@ -147,6 +149,7 @@ public abstract class WindowManager extends Object implements Serializable {
      * @param name the name of the workspace
      * @return new workspace
      * @deprecated Do not use. Workspaces are not supported anymore. */
+    @Deprecated
     public final Workspace createWorkspace(String name) {
         return createWorkspace(name, name);
     }
@@ -158,18 +161,21 @@ public abstract class WindowManager extends Object implements Serializable {
      * @param displayName the display name
      * @return the new workspace
      * @deprecated Do not use. Workspaces are not supported anymore. */
+    @Deprecated
     public abstract Workspace createWorkspace(String name, String displayName);
 
     /** Finds workspace given its name.
      * @param name the (code) name of workspace to find
      * @return workspace or null if not found
      * @deprecated Do not use. Workspaces are not supported anymore. */
+    @Deprecated
     public abstract Workspace findWorkspace(String name);
 
     /**
      * Gets a list of all workspaces.
      * @return an array of all known workspaces
      * @deprecated Do not use. Workspaces are not supported anymore. */
+    @Deprecated
     public abstract Workspace[] getWorkspaces();
 
     /** Sets new array of workspaces.
@@ -177,6 +183,7 @@ public abstract class WindowManager extends Object implements Serializable {
      * workspaces, or add or remove workspaces.
      * @param workspaces An array consisting of new workspaces.
      * @deprecated Do not use. Workspaces are not supported anymore. */
+    @Deprecated
     public abstract void setWorkspaces(Workspace[] workspaces);
 
     /**
@@ -184,6 +191,7 @@ public abstract class WindowManager extends Object implements Serializable {
      * @return the currently active workspace
      * @see Workspace#activate
      * @deprecated Do not use. Workspaces are not supported anymore. */
+    @Deprecated
     public abstract Workspace getCurrentWorkspace();
 
     /** Finds <code>TopComponentGroup</code> of given name.
@@ -214,6 +222,7 @@ public abstract class WindowManager extends Object implements Serializable {
      * @deprecated Do not use anymore.
      * See {@link WindowManager.Component} deprecation.
      */
+    @Deprecated
     protected static final Component findComponentManager(TopComponent tc) {
         return null;
     }
@@ -489,12 +498,13 @@ public abstract class WindowManager extends Object implements Serializable {
      * @deprecated Do not use anymore. This interface is replaced by bunch of protected methods
      * which name starts with topComponent prefix, i.e. {@link #topComponentOpen}, {@link #topComponentClose} etc. */
     @SuppressWarnings("deprecation")
+    @Deprecated
     protected interface Component extends java.io.Serializable {
         /**
          * Do not use.
          * @deprecated Only public by accident.
          */
-
+        @Deprecated
         /* public static final */ long serialVersionUID = 0L;
 
         /** Open the component on current workspace */
