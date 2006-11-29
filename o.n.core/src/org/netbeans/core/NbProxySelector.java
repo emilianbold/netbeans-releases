@@ -50,6 +50,7 @@ public final class NbProxySelector extends ProxySelector {
     public NbProxySelector () {
         original = super.getDefault ();
         log.fine ("Override the original ProxySelector: " + original);
+        log.fine ("java.net.useSystemProxies has been set to " + NetProperties.getBoolean ("java.net.useSystemProxies"));
         new ProxySettings ().addPreferenceChangeListener (new ProxySettingsListener ());
         copySettingsToSystem ();
     }
