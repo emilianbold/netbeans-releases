@@ -51,18 +51,26 @@ public class CheckEmptyTestbag extends NbTestCase {
 
     /** Test results. */
     public void testCheckResults() throws IOException, ClassNotFoundException, InterruptedException {
-        System.out.println("xtest.workdir="+System.getProperty("xtest.workdir"));
-        System.out.println("xtest.instance.results="+System.getProperty("xtest.instance.results"));
+        log("xtest.workdir="+System.getProperty("xtest.workdir"));
+        log("xtest.instance.results="+System.getProperty("xtest.instance.results"));
         File testFailuresFile = new File(System.getProperty("xtest.instance.results"), "xmlresults/testreport-failures.xml");
         assertTrue("Tests executed using instance should fail because of compilation error and file should exist: "+testFailuresFile, testFailuresFile.exists());
         XTestResultsReport report = XTestResultsReport.loadFromFile(testFailuresFile);
         TestRun testrun = report.xmlel_TestRun[0];
-        TestBag testbag = testrun.xmlel_TestBag[1];
-        UnitTestSuite unitTestSuite = testbag.xmlel_UnitTestSuite[0];
-        UnitTestCase unitTestCase = unitTestSuite.xmlel_UnitTestCase[0];
         // label used in org.netbeans.xtest.NbExecutor
         String label = "Empty testbag";
-        assertEquals("Testbag '"+label+"' should exist.", label, testbag.getName());
+        TestBag[] testBags = testrun.xmlel_TestBag;
+        TestBag testBag = null;
+        for (int i = 0; i < testBags.length; i++) {
+            log("TestBag name="+testBags[i].getName());
+            if(label.equals(testBags[i].getName())) {
+                testBag = testBags[i];
+                break;
+            }
+        }
+        assertNotNull("Testbag '"+label+"' should exist.", testBag);
+        UnitTestSuite unitTestSuite = testBag.xmlel_UnitTestSuite[0];
+        UnitTestCase unitTestCase = unitTestSuite.xmlel_UnitTestCase[0];
         label = "Critical Error";
         assertEquals("TestSuite '"+label+"' should exist.", label, unitTestSuite.getName());
         label = "loadingSuites";
