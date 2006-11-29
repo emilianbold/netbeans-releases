@@ -431,11 +431,12 @@ public final class TabbedHandler implements ChangeListener, ActionListener {
          * imagine.
          */
         private void handleActivation(MouseEvent evt) {
-            Component comp = (Component) evt.getSource();
-            
-            if (!(comp instanceof Component)) {
+            Object obj = evt.getSource();
+            if (!(obj instanceof Component)) {
                 return;
             }
+            Component comp = (Component) obj;
+            
             while (comp != null && !(comp instanceof ModeComponent)) {
                 if (comp instanceof JComponent) {
                     JComponent c = (JComponent)comp;
