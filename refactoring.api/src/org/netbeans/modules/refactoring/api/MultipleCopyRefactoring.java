@@ -17,49 +17,33 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.refactoring.spi.ui;
+package org.netbeans.modules.refactoring.api;
 
-import org.openide.util.Lookup;
 /**
  *
  * @author Jan Becicka
  */
-public abstract class ActionsImplementationProvider {
-    public Runnable renameImpl(Lookup selectedNodes) {
-        return null;
-    }
-    public boolean canRename(Lookup node) {
-        return false;
+public class MultipleCopyRefactoring extends AbstractRefactoring {
+
+    private Object[] object;
+    private Object target;
+    private String newName;
+
+    public MultipleCopyRefactoring (Object ... objectsToCopy) {
+        this.object = object;
     }
 
-    public boolean canFindUsages(Lookup lookup) {
-        return false;
+    public Object[] getRefactoredObjects() {
+        return object;
     }
 
-    public Runnable findUsagesImpl(Lookup lookup) {
-        return null;
-    }
-
-    public boolean canDelete(Lookup lookup) {
-        return false;
+    public void setTarget(Object target) {
+        this.target = target;
     }
     
-    public Runnable deleteImpl(Lookup lookup) {
-        return null;
-    }
-
-    public Runnable moveImpl(Lookup lookup) {
-        return null;
-    }
-
-    public boolean canMove(Lookup lookup) {
-        return false;
-    }
-    public Runnable copyImpl(Lookup lookup) {
-        return null;
-    }
-
-    public boolean canCopy(Lookup lookup) {
-        return false;
+    public Object getTarget() {
+        return target;
     }
 }
+
+

@@ -20,7 +20,6 @@ package org.netbeans.modules.refactoring.impl;
 
 import java.awt.datatransfer.Transferable;
 import java.io.IOException;
-import java.util.Dictionary;
 import java.util.Hashtable;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
@@ -43,6 +42,7 @@ public class ClipboardConvertor implements Convertor {
         Node[] nodes = NodeTransfer.nodes(t, NodeTransfer.CLIPBOARD_CUT);
         
         if (nodes!=null && nodes.length>0) {
+            //try to do move refactoring
             InstanceContent ic = new InstanceContent();
             for (Node n:nodes) {
                 ic.add((n));
@@ -54,21 +54,33 @@ public class ClipboardConvertor implements Convertor {
             if (move.isEnabled())
                 return NodeTransfer.createPaste(new RefactoringPaste(t, ic, move, d));
         }
+        nodes = NodeTransfer.nodes(t, NodeTransfer.CLIPBOARD_COPY);
+        if (nodes!=null && nodes.length>0) {
+            //try to do copy refactoring
+            InstanceContent ic = new InstanceContent();
+            for (Node n:nodes) {
+                ic.add((n));
+            }
+            Hashtable d = new Hashtable();
+            ic.add(d);
+            Lookup l = new AbstractLookup(ic);
+            Action copy = RefactoringActionsFactory.copyAction().createContextAwareInstance(l);
+            if (copy.isEnabled())
+                return NodeTransfer.createPaste(new RefactoringPaste(t, ic, copy, d));
+        }
         return t;
     }
-    
-    
     
     private class RefactoringPaste implements NodeTransfer.Paste {
         
         private Transferable delegate;
         private InstanceContent ic;
-        private Action move;
+        private Action refactor;
         private Hashtable d;
-        RefactoringPaste(Transferable t, InstanceContent ic, Action move, Hashtable d) {
+        RefactoringPaste(Transferable t, InstanceContent ic, Action refactor, Hashtable d) {
             delegate = t;
             this.ic = ic;
-            this.move = move;
+            this.refactor = refactor;
             this.d=d;
         }
         
@@ -90,15 +102,15 @@ public class ClipboardConvertor implements Convertor {
             }
             
             public boolean canHandle() {
-                if (move==null)
+                if (refactor==null)
                     return false;
-                return move.isEnabled();
+                return refactor.isEnabled();
             }
             public Transferable paste() throws IOException {
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
-                        if (move!=null) {
-                            move.actionPerformed(null);
+                        if (refactor!=null) {
+                            refactor.actionPerformed(null);
                         }
                     };
                 });
@@ -106,5 +118,4 @@ public class ClipboardConvertor implements Convertor {
             }
         }
     }
-    
 }

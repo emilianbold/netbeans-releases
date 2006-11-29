@@ -43,6 +43,9 @@ Microsystems, Inc. All Rights Reserved.
             <file name="MoveAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.refactoring.spi.impl.MoveAction"/>
             </file>
+            <file name="CopyAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.refactoring.spi.impl.CopyAction"/>
+            </file>
             
             
         </folder>
@@ -82,6 +85,7 @@ Microsystems, Inc. All Rights Reserved.
           <file name="org-netbeans-modules-refactoring-spi-impl-SafeDeleteAction.instance"/>
           <file name="org-netbeans-modules-refactoring-spi-impl-RenameAction.instance"/>
           <file name="org-netbeans-modules-refactoring-spi-impl-MoveAction.instance"/>
+          <file name="org-netbeans-modules-refactoring-spi-impl-CopyAction.instance"/>
     </folder>
 
   <folder name="Window">
@@ -173,6 +177,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="previewAll.org.netbeans.modules.refactoring.api.ExtractMethodRefactoring" boolvalue="false"/>
                 <attr name="previewAll.org.netbeans.modules.refactoring.api.SafeDeleteRefactoring" boolvalue="false"/>
                 <attr name="previewAll.org.netbeans.modules.refactoring.api.AnonymousToInnerRefactoring" boolvalue="false"/>
+                <attr name="previewAll.org.netbeans.modules.refactoring.api.SingleCopyRefactoring" boolvalue="false"/>
             </file>    
         </folder>
     </folder>

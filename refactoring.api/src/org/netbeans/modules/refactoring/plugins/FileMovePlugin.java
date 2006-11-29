@@ -19,9 +19,11 @@
 package org.netbeans.modules.refactoring.plugins;
 
 import java.io.IOException;
+import java.net.URL;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
+import org.netbeans.modules.refactoring.api.ui.UI;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImpl;
@@ -87,7 +89,7 @@ public class FileMovePlugin implements RefactoringPlugin {
             session.registerFileChange(new Runnable() {
                 public void run() {
                     try {
-                        FileObject target = (FileObject) refactoring.getTarget();
+                        FileObject target = UI.getOrCreateFolder((URL) refactoring.getTarget());
                         DataFolder targetFolder = DataFolder.findFolder(target);
                         DataObject.find(fo).move(targetFolder);
                     } catch (DataObjectNotFoundException ex) {

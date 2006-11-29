@@ -56,6 +56,8 @@ public class JavaRefactoringsFactory implements RefactoringPluginFactory {
             }
         } else if (refactoring instanceof MoveRefactoring) {
             return new MoveRefactoringPlugin((MoveRefactoring) refactoring);
+        } else if (refactoring instanceof SingleCopyRefactoring) {
+            return new CopyClassRefactoringPlugin((SingleCopyRefactoring) refactoring);
         }
         return null;
     }

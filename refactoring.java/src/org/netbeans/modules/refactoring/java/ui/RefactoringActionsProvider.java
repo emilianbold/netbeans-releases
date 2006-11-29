@@ -86,7 +86,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             return new NodeToFileObject(lookup.lookupAll(Node.class)) {
                 @Override
                 protected RefactoringUI createRefactoringUI(FileObject[] selectedElements) {
-                    String newName = (String) dictionary.get("name");
+                    String newName = getName(dictionary);
                     if (newName!=null) {
                         if (pkg[0]!= null)
                             return new RenameRefactoringUI(pkg[0], newName);
@@ -128,6 +128,54 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             return true;
         return false;
     }
+    
+    @Override
+    public Runnable copyImpl(final Lookup lookup) {
+        EditorCookie ec = lookup.lookup(EditorCookie.class);
+        final Dictionary dictionary = lookup.lookup(Dictionary.class);
+//        if (isFromEditor(ec)) {
+//            return new TextComponentRunnable(ec) {
+//                @Override
+//                protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info) {
+//                    Element selected = selectedElement.resolveElement(info);
+//                    if (selected.getKind() == ElementKind.PACKAGE || selected.getEnclosingElement().getKind() == ElementKind.PACKAGE) {
+//                        FileObject f = SourceUtils.getFile(selected, info.getClasspathInfo());
+//                        return new RenameRefactoringUI(f==null?info.getFileObject():f);
+//                    } else {
+//                        return new RenameRefactoringUI(selectedElement, info);
+//                    }
+//                }
+//            };
+//        } else {
+            return new NodeToFileObject(lookup.lookupAll(Node.class)) {
+                @Override
+                protected RefactoringUI createRefactoringUI(FileObject[] selectedElements) {
+                    return new CopyClassRefactoringUI(selectedElements[0], getTarget(dictionary), getPaste(dictionary));
+                }
+            };
+//        }
+    }
+
+    /**
+     * returns true if exactly one refactorable file is selected
+     */
+    @Override
+    public boolean canCopy(Lookup lookup) {
+        Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
+        if (nodes.size() != 1) {
+            return false;
+        }
+        Node n = nodes.iterator().next();
+        DataObject dob = n.getCookie(DataObject.class);
+        if (dob==null) {
+            return false;
+        }
+        FileObject fo = dob.getPrimaryFile();
+        if (RetoucheUtils.isRefactorable(fo)) { //NOI18N
+            return true;
+        }
+        return false;
+    }    
 
     @Override
     public boolean canFindUsages(Lookup lookup) {
@@ -207,6 +255,35 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         }
     }
     
+    private FileObject getTarget(Dictionary dict) {
+        if (dict==null)
+            return null;
+        Node n = (Node) dict.get("target"); //NOI18N
+        if (n==null)
+            return null;
+        DataObject dob = n.getCookie(DataObject.class);
+        if (dob!=null) {
+            FileObject fob = dob.getPrimaryFile();
+            if (!fob.isFolder())
+                return fob.getParent();
+            else
+                return fob;
+        }
+        return null;
+    }
+    
+    private PasteType getPaste(Dictionary dict) {
+        if (dict==null) 
+            return null;
+        return (PasteType) dict.get("paste"); //NOI18N
+    }
+    
+    private String getName(Dictionary dict) {
+        if (dict==null) 
+            return null;
+        return (String) dict.get("name"); //NOI18N
+    }
+    
     /**
      * returns true if there is at least one java file in the selection
      * and all java files are refactorable
@@ -215,7 +292,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
     public boolean canMove(Lookup lookup) {
         Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
         Dictionary dict = lookup.lookup(Dictionary.class);
-        if (dict!=null && dict.get("target") != null) {
+        if (getTarget(dict) != null) {
             //it is drag and drop
             Set<DataFolder> folders = new HashSet();
             boolean jdoFound = false;
@@ -292,15 +369,8 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             return new NodeToFileObject(lookup.lookupAll(Node.class)) {
                 @Override
                 protected RefactoringUI createRefactoringUI(FileObject[] selectedElements) {
-                    PasteType paste = (PasteType) dictionary.get("paste");
-                    Node target = (Node) dictionary.get("target");
-                    FileObject tar=null;
-                    if (target!=null) {
-                        tar = ((Node) target).getCookie(DataObject.class).getPrimaryFile();
-                        if (!tar.isFolder()) {
-                            tar=tar.getParent();
-                        }
-                    }
+                    PasteType paste = getPaste(dictionary);
+                    FileObject tar=getTarget(dictionary);
                     if (selectedElements.length == 1) {
                         try {
                             return new MoveClassUI(DataObject.find(selectedElements[0]), tar, paste);

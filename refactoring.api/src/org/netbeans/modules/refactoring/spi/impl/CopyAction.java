@@ -16,50 +16,39 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+package org.netbeans.modules.refactoring.spi.impl;
 
-package org.netbeans.modules.refactoring.spi.ui;
-
+import org.netbeans.modules.refactoring.api.impl.ActionsImplementationFactory;
+import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+
 /**
- *
  * @author Jan Becicka
  */
-public abstract class ActionsImplementationProvider {
-    public Runnable renameImpl(Lookup selectedNodes) {
-        return null;
-    }
-    public boolean canRename(Lookup node) {
-        return false;
-    }
+public class CopyAction extends RefactoringGlobalAction {
 
-    public boolean canFindUsages(Lookup lookup) {
-        return false;
-    }
-
-    public Runnable findUsagesImpl(Lookup lookup) {
-        return null;
-    }
-
-    public boolean canDelete(Lookup lookup) {
-        return false;
+    /**
+     * Creates a new instance of RenameAction
+     */
+    public CopyAction() {
+        super(NbBundle.getMessage(RenameAction.class, "LBL_CopyAction"), null);
+        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
     
-    public Runnable deleteImpl(Lookup lookup) {
-        return null;
+    public final void performAction(Lookup context) {
+        ActionsImplementationFactory.copyImpl(context).run();
+    }
+    
+    public org.openide.util.HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
     }
 
-    public Runnable moveImpl(Lookup lookup) {
-        return null;
-    }
-
-    public boolean canMove(Lookup lookup) {
+    protected boolean asynchronous() {
         return false;
     }
-    public Runnable copyImpl(Lookup lookup) {
-        return null;
-    }
 
-    public boolean canCopy(Lookup lookup) {
-        return false;
+    protected boolean enable(Lookup context) {
+        return ActionsImplementationFactory.canCopy(context);
     }
 }

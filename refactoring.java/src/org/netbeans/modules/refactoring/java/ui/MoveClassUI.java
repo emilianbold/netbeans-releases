@@ -31,7 +31,6 @@ import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUIBypass;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
@@ -107,7 +106,7 @@ public class MoveClassUI implements RefactoringUI, RefactoringUIBypass {
 
         URL url = URLMapper.findURL(panel.getRootFolder(), URLMapper.EXTERNAL);
         try {
-            refactoring.setTarget(URLMapper.findFileObject(new URL(url.toExternalForm() + "/" + panel.getPackageName().replace('.','/'))));
+            refactoring.setTarget(new URL(url.toExternalForm() + "/" + panel.getPackageName().replace('.','/')));
         } catch (MalformedURLException ex) {
             ex.printStackTrace();
         }

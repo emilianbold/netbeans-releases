@@ -20,9 +20,7 @@
 package org.netbeans.modules.refactoring.api.ui;
 
 import java.awt.event.ActionEvent;
-import org.netbeans.modules.refactoring.spi.impl.MoveAction;
-import org.netbeans.modules.refactoring.spi.impl.RenameAction;
-import org.netbeans.modules.refactoring.spi.impl.SafeDeleteAction;
+import org.netbeans.modules.refactoring.spi.impl.*;
 import org.openide.util.ContextAwareAction;
 
 /**
@@ -51,7 +49,7 @@ public final class RefactoringActionsFactory {
      * @return instance of RenameAction
      */
     public static ContextAwareAction renameAction() {
-        return (RenameAction) RenameAction.findObject(RenameAction.class, true);
+        return RenameAction.findObject(RenameAction.class, true);
     }
 
     /**
@@ -59,7 +57,7 @@ public final class RefactoringActionsFactory {
      * @return an instance of MoveAction
      */
     public static ContextAwareAction moveAction() {
-        return (MoveAction) MoveAction.findObject(MoveAction.class, true);
+        return MoveAction.findObject(MoveAction.class, true);
     }
     
     /**
@@ -67,7 +65,15 @@ public final class RefactoringActionsFactory {
      * @return an instance of SafeDeleteAction
      */
     public static ContextAwareAction safeDeleteAction() {
-        return (SafeDeleteAction) SafeDeleteAction.findObject(SafeDeleteAction.class, true);
+        return SafeDeleteAction.findObject(SafeDeleteAction.class, true);
+    }
+    
+    /**
+     * Factory method for CopyAction
+     * @return an instance of CopyAction
+     */
+    public static ContextAwareAction copyAction() {
+        return SafeDeleteAction.findObject(CopyAction.class, true);
     }
     
 

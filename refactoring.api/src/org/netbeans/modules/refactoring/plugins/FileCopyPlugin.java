@@ -18,22 +18,29 @@
  */
 package org.netbeans.modules.refactoring.plugins;
 
-import org.netbeans.modules.refactoring.api.CopyRefactoring;
-import org.netbeans.modules.refactoring.api.MoveRefactoring;
+import java.net.URL;
+import org.netbeans.modules.refactoring.api.SingleCopyRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.api.RefactoringSession;
+import org.netbeans.modules.refactoring.api.ui.UI;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
-
+import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImpl;
+import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.text.PositionBounds;
 
 /**
  *
  * @author  Jan Becicka
  */
 public class FileCopyPlugin implements RefactoringPlugin {
-    private CopyRefactoring refactoring;
-
+    private SingleCopyRefactoring refactoring;
+    
     /** Creates a new instance of WhereUsedQuery */
-    public FileCopyPlugin(CopyRefactoring refactoring) {
+    public FileCopyPlugin(SingleCopyRefactoring refactoring) {
         this.refactoring = refactoring;
     }
     
@@ -42,18 +49,60 @@ public class FileCopyPlugin implements RefactoringPlugin {
     }
     
     public Problem prepare(RefactoringElementsBag elements) {
+        elements.add(refactoring, new CopyFile((FileObject) refactoring.getRefactoredObject(), elements.getSession()));
         return null;
     }
     
     public Problem fastCheckParameters() {
         return null;
     }
-        
+    
     public Problem checkParameters() {
         return null;
     }
-
+    
     public void cancelRequest() {
     }
-
+    
+    private class CopyFile extends SimpleRefactoringElementImpl {
+        
+        private FileObject fo;
+        private RefactoringSession session;
+        public CopyFile(FileObject fo, RefactoringSession session) {
+            this.fo = fo;
+            this.session = session;
+        }
+        public String getText() {
+            return "Copy file " + fo.getNameExt();
+        }
+        
+        public String getDisplayText() {
+            return getText();
+        }
+        
+        public void performChange() {
+            try {
+                FileObject fo = UI.getOrCreateFolder((URL)refactoring.getTarget());
+                FileObject source = (FileObject) refactoring.getRefactoredObject();
+                DataObject dob = DataObject.find(source);
+                DataObject d = dob.copy(DataFolder.findFolder(fo));
+                d.rename(refactoring.getNewName());
+                refactoring.getContext().add(d.getPrimaryFile());
+            } catch (Exception ioe) {
+                ErrorManager.getDefault().notify(ioe);
+            }
+        }
+        
+        public Object getComposite() {
+            return fo;
+        }
+        
+        public FileObject getParentFile() {
+            return fo;
+        }
+        
+        public PositionBounds getPosition() {
+            return null;
+        }
+    }
 }

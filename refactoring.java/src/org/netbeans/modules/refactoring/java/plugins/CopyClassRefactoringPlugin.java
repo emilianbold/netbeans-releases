@@ -1,0 +1,190 @@
+/*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ *
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+package org.netbeans.modules.refactoring.java.plugins;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.util.TreePath;
+import java.io.IOException;
+import java.net.URL;
+import java.text.MessageFormat;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.StringTokenizer;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.ModificationResult;
+import org.netbeans.api.java.source.ModificationResult.Difference;
+import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.api.RenameRefactoring;
+import org.netbeans.modules.refactoring.api.SingleCopyRefactoring;
+import org.netbeans.modules.refactoring.api.ui.UI;
+import org.netbeans.modules.refactoring.java.DiffElement;
+import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.plugins.JavaRefactoringPlugin;
+import org.netbeans.modules.refactoring.java.ui.tree.ElementGripFactory;
+import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
+import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
+import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImpl;
+import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.text.PositionBounds;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
+
+
+/** Plugin that implements the core functionality of Copy Class Refactoring.
+ *
+ * @author Jan Becicka
+ */
+public class CopyClassRefactoringPlugin extends JavaRefactoringPlugin {
+    /** Reference to the parent refactoring instance */
+    private final SingleCopyRefactoring refactoring;
+    
+    /** Creates a new instance of PullUpRefactoringPlugin
+     * @param refactoring Parent refactoring instance.
+     */
+    CopyClassRefactoringPlugin(SingleCopyRefactoring refactoring) {
+        this.refactoring = refactoring;
+    }
+    
+    /** Checks pre-conditions of the refactoring.
+     * @return Problems found or <code>null</code>.
+     */
+    public Problem preCheck() {
+        return null;
+    }
+    
+    public Problem fastCheckParameters() {
+        if (!Utilities.isJavaIdentifier(refactoring.getNewName())) {
+            String msg = new MessageFormat(NbBundle.getMessage(RenameRefactoring.class, "ERR_InvalidIdentifier")).format(
+                new Object[] {refactoring.getNewName()}
+            );
+            return createProblem(null, true, msg);
+        }
+//        if (!isValidPackageName(refactoring.getTargetPackageName())) {
+//            String msg = new MessageFormat(NbBundle.getMessage(RenameRefactoring.class, "ERR_InvalidPackage")).format(
+//                new Object[] {refactoring.getTargetPackageName()}
+//            );
+//            return createProblem(null, true, msg);
+//        }
+//        String name = refactoring.getTargetPackageName().replace('.','/') + '/' + refactoring.getNewName() + ".java"; // NOI18N
+//        if (refactoring.getTargetClassPathRoot().getFileObject(name) != null)
+//            return createProblem(null, true, new MessageFormat(NbBundle.getMessage(MoveClassRefactoring.class, "ERR_ClassToMoveClashes")).format(new Object[]{refactoring.getNewName()}));
+        return null;
+    }
+    
+    private static boolean isValidPackageName(String name) {
+        StringTokenizer tokenizer = new StringTokenizer(name, "."); // NOI18N
+        while (tokenizer.hasMoreTokens()) {
+            if (!Utilities.isJavaIdentifier(tokenizer.nextToken())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public Problem checkParameters() {
+        return null;
+    }
+
+    public Problem prepare(RefactoringElementsBag refactoringElements) {
+        refactoringElements.add(refactoring, new CopyClass());
+        return null;
+    }
+    
+private class CopyClass extends SimpleRefactoringElementImpl implements RefactoringElementImplementation{
+        
+        public CopyClass () {
+        }
+        
+        public String getText() {
+            return getDisplayText ();
+        }
+    
+        public String getDisplayText() {
+            return new MessageFormat (NbBundle.getMessage(CopyClassRefactoringPlugin.class, "TXT_CopyClassToPackage")).format ( // NOI18N
+                new Object[] {refactoring.getNewName(), getTargetPackageName(), getParentFile().getName()}
+            );
+        }
+
+        public Object getComposite() {
+            return getParentFile();
+        }
+
+        public PositionBounds getPosition() {
+            return null;
+        }
+        public String getTargetPackageName() {
+            return "test";
+        }
+
+        public void performChange() {
+            try {
+                FileObject fo = UI.getOrCreateFolder((URL)refactoring.getTarget());
+                FileObject source = (FileObject) refactoring.getRefactoredObject();
+                String oldPackage = RetoucheUtils.getPackageName(source.getParent());
+                
+                FileObject newOne = refactoring.getContext().lookup(FileObject.class);
+                final Collection<ModificationResult> results = processFiles(
+                        Collections.singleton(newOne),
+                        new UpdateReferences(!fo.equals(source.getParent()), oldPackage));
+                results.iterator().next().commit();
+            } catch (Exception ioe) {
+                ErrorManager.getDefault().notify(ioe);
+            }
+            
+        }
+
+        public FileObject getParentFile() {
+            return (FileObject) refactoring.getRefactoredObject();
+        }
+    }     
+    
+    private class UpdateReferences implements CancellableTask<WorkingCopy> {
+
+        private boolean insertImport;
+        private String oldPackage;
+        public UpdateReferences(boolean insertImport, String oldPackage) {
+            this.insertImport = insertImport;
+            this.oldPackage = oldPackage;
+        }
+
+        public void cancel() {
+        }
+
+        public void run(WorkingCopy compiler) throws IOException {
+            compiler.toPhase(JavaSource.Phase.RESOLVED);
+            CompilationUnitTree cu = compiler.getCompilationUnit();
+            if (cu == null) {
+                ErrorManager.getDefault().log(ErrorManager.ERROR, "compiler.getCompilationUnit() is null " + compiler);
+                return;
+            }
+            
+            CopyTransformer findVisitor = new CopyTransformer(compiler, refactoring.getNewName(), insertImport, oldPackage);
+            findVisitor.scan(compiler.getCompilationUnit(), null);
+
+            for (TreePath tree : findVisitor.getUsages()) {
+                    ElementGripFactory.getDefault().put(compiler.getFileObject(), tree, compiler);
+          }
+            fireProgressListenerStep();
+        }
+    }          
+}

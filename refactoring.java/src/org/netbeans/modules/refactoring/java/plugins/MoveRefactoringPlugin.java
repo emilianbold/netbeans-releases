@@ -23,6 +23,7 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -192,7 +193,7 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
     }
     String getNewPackageName() {
         if (refactoring instanceof MoveRefactoring) {
-            return RetoucheUtils.getPackageName((FileObject)((MoveRefactoring) refactoring).getTarget());        
+            return RetoucheUtils.getPackageName((URL)((MoveRefactoring) refactoring).getTarget());        
         } else {
             return ((RenameRefactoring) refactoring).getNewName();
         }

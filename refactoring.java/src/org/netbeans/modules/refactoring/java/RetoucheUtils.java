@@ -20,6 +20,8 @@
 package org.netbeans.modules.refactoring.java;
 
 import java.awt.Color;
+import java.io.File;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
@@ -55,8 +57,10 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.Utilities;
 
 /**
@@ -244,11 +248,27 @@ public class RetoucheUtils {
     }
     
     public static String getPackageName(FileObject folder) {
-        assert folder.isFolder();
+        assert folder.isFolder() : "argument must be folder";
         return ClassPath.getClassPath(
                 folder, ClassPath.SOURCE)
                 .getResourceName(folder, '.', false);
     }
     
-}
+    public static String getPackageName(URL url) {
+        FileObject result = URLMapper.findFileObject(url);
+        if (result != null)
+            return getPackageName(result);
+        
+        File f = new File(url.getPath());
+        
+        do {
+            FileObject fo = FileUtil.toFileObject(f);
+            if (fo != null) {
+                return getPackageName(fo);
+            }
+            f = f.getParentFile();
+        } while (f!=null);
+        throw new IllegalArgumentException("Cannot create package name for url " + url);
+    }
     
+}
