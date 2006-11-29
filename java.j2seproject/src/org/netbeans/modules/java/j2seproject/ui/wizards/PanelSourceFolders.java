@@ -22,18 +22,14 @@ package org.netbeans.modules.java.j2seproject.ui.wizards;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.io.File;
-import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.List;
 import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
@@ -169,21 +165,25 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         //searchClassFiles (FileUtil.toFileObject (FileUtil.normalizeFile(new File (tests.getText ()))));
     }
     
-    private void searchClassFiles (File[] folders) throws WizardValidationException {
-        boolean found = false;
-        for (int i=0; i<folders.length; i++) {
-            FileObject folder = FileUtil.toFileObject(folders[i]);
-            if (folder != null) {
-                Enumeration en = folder.getData (true);
-                while (!found && en.hasMoreElements ()) {
-                    Object obj = en.nextElement ();
-                    assert obj instanceof FileObject : "Instance of FileObject: " + obj; // NOI18N
-                    FileObject fo = (FileObject) obj;
-                    found = "class".equals (fo.getExt ()) && !fo.isVirtual(); // NOI18N
-                }
+    private static void findClassFiles(File folder, List<File> files) {
+        File[] kids = folder.listFiles();
+        if (kids == null) {
+            return;
+        }
+        for (File kid : kids) {
+            if (kid.isFile() && kid.getName().endsWith(".class")) {
+                files.add(kid);
+            } else if (kid.isDirectory()) {
+                findClassFiles(kid, files);
             }
         }
-        if (found) {
+    }
+    private void searchClassFiles (File[] folders) throws WizardValidationException {
+        List<File> classFiles = new ArrayList<File>();
+        for (File folder : folders) {
+            findClassFiles(folder, classFiles);
+        }
+        if (!classFiles.isEmpty()) {
             JButton DELETE_OPTION = new JButton (NbBundle.getMessage (PanelSourceFolders.class, "TXT_DeleteOption")); // NOI18N
             JButton KEEP_OPTION = new JButton (NbBundle.getMessage (PanelSourceFolders.class, "TXT_KeepOption")); // NOI18N
             JButton CANCEL_OPTION = new JButton (NbBundle.getMessage (PanelSourceFolders.class, "TXT_CancelOption")); // NOI18N
@@ -201,29 +201,12 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
                     );
             Object result = DialogDisplayer.getDefault().notify(desc);
             if (DELETE_OPTION.equals (result)) {
-                deleteClassFiles (folders);
+                for (File f : classFiles) {
+                    f.delete(); // ignore if fails
+                }
             } else if (!KEEP_OPTION.equals (result)) {
                 // cancel, back to wizard
                 throw new WizardValidationException (this.sourcePanel, "", ""); // NOI18N
-            }
-        }
-    }
-    
-    private void deleteClassFiles (File[] folders) {
-        for (int i=0; i<folders.length; i++) {
-            FileObject folder = FileUtil.toFileObject(folders[i]);
-            Enumeration en = folder.getData (true);
-            while (en.hasMoreElements ()) {
-                Object obj = en.nextElement ();
-                assert obj instanceof FileObject : "Instance of FileObject: " + obj;
-                FileObject fo = (FileObject) obj;
-                try {
-                    if ("class".equals (fo.getExt ())) { // NOI18N
-                        fo.delete ();
-                    }
-                } catch (IOException ioe) {
-                    ErrorManager.getDefault ().notify (ioe);
-                }
             }
         }
     }
