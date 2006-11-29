@@ -18,7 +18,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<project name="java/lexer" default="netbeans" basedir=".">
+<project name="web/jspsyntax/lexer" default="netbeans" basedir=".">
 
     <import file="../../../nbbuild/templates/projectized.xml"/>
 

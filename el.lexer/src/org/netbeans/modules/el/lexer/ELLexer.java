@@ -111,7 +111,7 @@ public class ELLexer implements Lexer<ELTokenId> {
         if (info.state() == null) {
             this.state = INIT;
         } else {
-            this.state = ((Integer) state).intValue();
+            this.state = ((Integer) info.state()).intValue();
         }
     }
     
@@ -136,7 +136,7 @@ public class ELLexer implements Lexer<ELTokenId> {
             ch = input.read();
             
             if (ch == EOF) {
-                if(input.readLength() == 0) {
+                if(input.readLengthEOF() == 1) {
                     return null; //just EOL is read
                 } else {
                     //there is something else in the buffer except EOL
