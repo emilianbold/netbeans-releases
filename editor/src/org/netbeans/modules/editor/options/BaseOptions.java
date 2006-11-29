@@ -235,6 +235,9 @@ public class BaseOptions extends OptionSupport {
     private transient KeyBindingSettings keyBindingsSettings;    
     private transient LookupListener lookupListener;
     
+    private transient boolean coloringsInitialized = false;
+    private transient boolean keybindingsInitialized = false;
+    
     /** Map of Kit to Options */
     private static final HashMap kitClass2Options = new HashMap();
     
@@ -781,12 +784,15 @@ public class BaseOptions extends OptionSupport {
     }
     
     private List getKBList(){
-        if (usesNewOptionsDialog()){
-            updateKeybindingsFromNewOptionsDialogAttributes();
-        } else {
-            loadDefaultKeyBindings();
-            loadSettings(KeyBindingsMIMEProcessor.class);
-        } 
+        if (!keybindingsInitialized) {
+            keybindingsInitialized = true;
+            if (usesNewOptionsDialog()){
+                updateKeybindingsFromNewOptionsDialogAttributes();
+            } else {
+                loadDefaultKeyBindings();
+                loadSettings(KeyBindingsMIMEProcessor.class);
+            } 
+        }
         
         Class kitClass = getKitClass();
         Settings.KitAndValue[] kav = getSettingValueHierarchy(SettingsNames.KEY_BINDING_LIST);
@@ -1052,10 +1058,13 @@ public class BaseOptions extends OptionSupport {
     }
     
     public Map getColoringMap() {
-        if (usesNewOptionsDialog()) {
-            updateColoringsFromNewOptionsDialogAttributes();
-        } else {
-            loadSettings(FontsColorsMIMEProcessor.class);
+        if (!coloringsInitialized) {
+            coloringsInitialized = true;
+            if (usesNewOptionsDialog()) {
+                updateColoringsFromNewOptionsDialogAttributes();
+            } else {
+                loadSettings(FontsColorsMIMEProcessor.class);
+            }
         }
         
         return getColoringMap_old();
