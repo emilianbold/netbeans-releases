@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -79,11 +80,17 @@ public class KVFile {
      * @return the value stored under the given Key as a String
      */
     protected String getStringValue(Key key) {
-        byte[] value = getValue(key);
-        if(value==null) {
+        try {
+            byte[] value = getValue(key);
+
+            if (value == null) {
+                return null;
+            }
+            return new String(value, "UTF8");
+        } catch (UnsupportedEncodingException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
             return null;
-        }
-        return new String(value);
+        }              
     }
     
     /**
@@ -141,7 +148,6 @@ public class KVFile {
      */
     private void parse() throws IOException {        
         InputStream is = null;        
-        // XXX encoding ?
         try {            
             is = FileUtils.createInputStream(file);                                    
             int keyIdx = 0;
@@ -153,7 +159,7 @@ public class KVFile {
                int valueLength = readEntryLength(is);   // value length
                byte[] value = new byte[valueLength];
                is.read(value);
-               Key key = new Key(keyIdx, new String(keyName));
+               Key key = new Key(keyIdx, new String(keyName, "UTF8"));
                setKey(key);
                getMap().put(key, value);
                is.read(); // skip '\n'
@@ -227,7 +233,7 @@ public class KVFile {
                 sb.append("V "); // NOI18N
                 sb.append(value.length);
                 sb.append("\n"); // NOI18N
-                os.write(sb.toString().getBytes());    
+                os.write(sb.toString().getBytes("UTF8"));    
                 os.write(value);            
                 os.write("\n".getBytes()); // NOI18N
             }
