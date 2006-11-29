@@ -24,6 +24,8 @@ import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
+import org.netbeans.jemmy.operators.Operator;
+import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.test.subversion.operators.CheckoutWizardOperator;
@@ -47,6 +49,8 @@ public class CommitDataTest extends JellyTestCase {
     public File projectPath;
     public PrintStream stream;
     String os_name;
+    Operator.DefaultStringComparator comOperator; 
+    Operator.DefaultStringComparator oldOperator; 
     
     /** Creates a new instance of CommitDataTest */
     public CommitDataTest(String name) {
@@ -95,8 +99,11 @@ public class CommitDataTest extends JellyTestCase {
         VersioningOperator vo;
         
         stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
-        
+        comOperator = new Operator.DefaultStringComparator(true, true);
+        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+        Operator.setDefaultStringComparator(comOperator);
         CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
+        Operator.setDefaultStringComparator(oldOperator);
         RepositoryStepOperator rso = new RepositoryStepOperator();       
         
         //create repository... 
@@ -196,10 +203,13 @@ public class CommitDataTest extends JellyTestCase {
         String status;
         VersioningOperator vo = VersioningOperator.invoke();
         
-        CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
-        RepositoryStepOperator rso = new RepositoryStepOperator();       
-          
         stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
+        comOperator = new Operator.DefaultStringComparator(true, true);
+        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+        Operator.setDefaultStringComparator(comOperator);
+        CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
+        Operator.setDefaultStringComparator(oldOperator);
+        RepositoryStepOperator rso = new RepositoryStepOperator(); 
         
         //create repository... 
         File work = new File(TMP_PATH + File.separator + WORK_PATH + File.separator + "w" + System.currentTimeMillis());
@@ -299,10 +309,13 @@ public class CommitDataTest extends JellyTestCase {
         
         VersioningOperator vo = VersioningOperator.invoke();
         
-        CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
-        RepositoryStepOperator rso = new RepositoryStepOperator();       
-          
         stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
+        comOperator = new Operator.DefaultStringComparator(true, true);
+        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+        Operator.setDefaultStringComparator(comOperator);
+        CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
+        Operator.setDefaultStringComparator(oldOperator);
+        RepositoryStepOperator rso = new RepositoryStepOperator(); 
         
         //create repository... 
         File work = new File(TMP_PATH + File.separator + WORK_PATH + File.separator + "w" + System.currentTimeMillis());

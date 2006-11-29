@@ -31,6 +31,8 @@ import org.netbeans.test.subversion.utils.TestKit;
 import org.netbeans.junit.ide.ProjectSupport;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jemmy.operators.Operator;
+import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.test.subversion.operators.RepositoryBrowserOperator;
 
 /**
@@ -46,6 +48,8 @@ public class SearchHistoryUITest extends JellyTestCase{
     public File projectPath;
     public PrintStream stream;
     String os_name;
+    Operator.DefaultStringComparator comOperator; 
+    Operator.DefaultStringComparator oldOperator; 
     
     /** Creates a new instance of SearchHistoryUITest */
     public SearchHistoryUITest(String name) {
@@ -84,9 +88,12 @@ public class SearchHistoryUITest extends JellyTestCase{
         TestKit.closeProject(PROJECT_NAME);
         
         stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
-        VersioningOperator vo = VersioningOperator.invoke();
+        comOperator = new Operator.DefaultStringComparator(true, true);
+        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+        Operator.setDefaultStringComparator(comOperator);
         CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
-        RepositoryStepOperator rso = new RepositoryStepOperator();       
+        Operator.setDefaultStringComparator(oldOperator);
+        RepositoryStepOperator rso = new RepositoryStepOperator();           
         
         //create repository... 
         File work = new File(TMP_PATH + File.separator + WORK_PATH + File.separator + "w" + System.currentTimeMillis());
