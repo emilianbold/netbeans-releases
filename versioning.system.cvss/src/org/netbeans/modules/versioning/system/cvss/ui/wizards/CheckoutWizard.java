@@ -56,6 +56,8 @@ import org.netbeans.spi.project.ui.support.ProjectChooser;
 public final class CheckoutWizard implements ChangeListener{
 
     private static final String RECENT_DIRECTORY = "checkout.recentDirectory";
+    private static final String CHECKOUT_RECENT_MODULE = "checkout.recentModule";
+    private static final String CHECKOUT_RECENT_TAG = "checkout.recentTag";
 
     private WizardDescriptor wizard;
 
@@ -107,6 +109,8 @@ public final class CheckoutWizard implements ChangeListener{
     /** Called on sucessfull finish. */
     private void onFinished() {
         String checkout = modulePanel.workTextField.getText();
+        CvsModuleConfig.getDefault().getPreferences().put(CHECKOUT_RECENT_MODULE, modulePanel.moduleTextField.getText());
+        CvsModuleConfig.getDefault().getPreferences().put(CHECKOUT_RECENT_TAG, modulePanel.tagTextField.getText());
         Utils.insert(CvsModuleConfig.getDefault().getPreferences(), RECENT_DIRECTORY, checkout, 8);
     }
 
@@ -195,6 +199,9 @@ public final class CheckoutWizard implements ChangeListener{
             if (initialModule != null) {
                 modulePanel.moduleTextField.setText(initialModule);
             }
+
+            modulePanel.moduleTextField.setText(CvsModuleConfig.getDefault().getPreferences().get(CHECKOUT_RECENT_MODULE, ""));
+            modulePanel.tagTextField.setText(CvsModuleConfig.getDefault().getPreferences().get(CHECKOUT_RECENT_TAG, ""));
 
             String path = defaultWorkingDirectory().getPath();
             modulePanel.workTextField.setText(path);
