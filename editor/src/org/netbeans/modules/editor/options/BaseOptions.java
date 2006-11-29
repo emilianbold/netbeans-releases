@@ -76,6 +76,7 @@ import java.util.Set;
 import java.util.HashSet;
 import java.awt.RenderingHints;
 import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.modules.editor.NbEditorKit;
 import org.openide.filesystems.Repository;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
@@ -235,7 +236,7 @@ public class BaseOptions extends OptionSupport {
     private transient LookupListener lookupListener;
     
     /** Map of Kit to Options */
-//    private static final HashMap kitClass2Options = new HashMap();
+    private static final HashMap kitClass2Options = new HashMap();
     
     /** Code template expand key setting name */
     public static final String CODE_TEMPLATE_EXPAND_KEY = "code-template-expand-key"; // NOI18N
@@ -251,7 +252,12 @@ public class BaseOptions extends OptionSupport {
     
     public BaseOptions(Class kitClass, String typeName) {
         super(kitClass, typeName);
-//        kitClass2Options.put(kitClass, this);
+        kitClass2Options.put(kitClass, this);
+
+        // Hook up the settings initializer
+        Settings.Initializer si = getSettingsInitializer();
+        Settings.removeInitializer(si.getName());
+        Settings.addInitializer(si, Settings.OPTION_LEVEL);
     }
     
     public boolean usesNewOptionsDialog() {
@@ -279,38 +285,42 @@ public class BaseOptions extends OptionSupport {
     }
     
     public static BaseOptions getOptions(Class kitClass) {
-//        //check also all superclasses whether they are not in the 
-//        //kitClass2Options map
-//        Class c = kitClass;
-//        BaseOptions option = null;
-//        
-//        while (option == null && c != null) {
-//            option = (BaseOptions)kitClass2Options.get(c);
-//            if (option != null) 
-//                break;
-//            
-//            AllOptionsFolder.getDefault().loadMIMEOption(c, false);
-//            option = (BaseOptions)kitClass2Options.get(c);
-//            if (option != null)
-//                break;
-//            
-//            c = c.getSuperclass();
-//        }
-//        
-//        return option;
-    
-        // XXX: improve this by implementing BaseKit.guessMimeTypeFromKitClass
-        // it can lookup a kit class in all registered mime types and collect
-        // mime types where the kit class matches the one we are looking for
-        // this way there would be no need for kitClass.newInstance() ...
-        BaseKit kit = BaseKit.getKit(kitClass);
-        if (kit != null) {
-            String mimeType = kit.getContentType();
-            Lookup lookup = MimeLookup.getLookup(MimePath.parse(mimeType));
-            return (BaseOptions) lookup.lookup(BaseOptions.class);
-        } else {
-            return null;
+        BaseOptions options = null;
+
+        if (kitClass != BaseKit.class && kitClass != NbEditorKit.class) {
+            // XXX: improve this by implementing BaseKit.guessMimeTypeFromKitClass
+            // it can lookup a kit class in all registered mime types and collect
+            // mime types where the kit class matches the one we are looking for
+            // this way there would be no need for kitClass.newInstance() ...
+            BaseKit kit = BaseKit.getKit(kitClass);
+            if (kit != null) {
+                String mimeType = kit.getContentType();
+                Lookup lookup = MimeLookup.getLookup(MimePath.parse(mimeType));
+                options = (BaseOptions) lookup.lookup(BaseOptions.class);
+            }
         }
+        
+        // The old way of doing things
+        if (options == null) {
+            //check also all superclasses whether they are not in the 
+            //kitClass2Options map
+            Class c = kitClass;
+
+            while (c != null) {
+                options = (BaseOptions)kitClass2Options.get(c);
+                if (options != null) 
+                    break;
+
+                AllOptionsFolder.getDefault().loadMIMEOption(c, false);
+                options = (BaseOptions)kitClass2Options.get(c);
+                if (options != null)
+                    break;
+
+                c = c.getSuperclass();
+            }
+        }
+        
+        return options;
     }
 
     /** Listening for Settings.settings creation.*/
@@ -771,7 +781,9 @@ public class BaseOptions extends OptionSupport {
     }
     
     private List getKBList(){
-        if (!usesNewOptionsDialog()){
+        if (usesNewOptionsDialog()){
+            updateKeybindingsFromNewOptionsDialogAttributes();
+        } else {
             loadDefaultKeyBindings();
             loadSettings(KeyBindingsMIMEProcessor.class);
         } 
@@ -901,7 +913,7 @@ public class BaseOptions extends OptionSupport {
     }
     
     private void updateColoringsFromNewOptionsDialogAttributes(){
-        Map m = getColoringMap ();
+        Map m = getColoringMap_old();
         m.remove(null);
         FontColorSettings fcs = getFontColorSettings();
         if (fcs == null){
@@ -1040,9 +1052,16 @@ public class BaseOptions extends OptionSupport {
     }
     
     public Map getColoringMap() {
-        if (!usesNewOptionsDialog()){
+        if (usesNewOptionsDialog()) {
+            updateColoringsFromNewOptionsDialogAttributes();
+        } else {
             loadSettings(FontsColorsMIMEProcessor.class);
-        } 
+        }
+        
+        return getColoringMap_old();
+    }
+    
+    private Map getColoringMap_old() {
         Map settingsMap = SettingsUtil.getColoringMap(getKitClass(), false, true); // !!! !evaluateEvaluators
         if (settingsMap == null){
             org.netbeans.editor.Utilities.annotateLoggable(new NullPointerException("settingsMap is null for kit:"+getKitClass())); //NOI18N
@@ -1849,18 +1868,10 @@ public class BaseOptions extends OptionSupport {
     
     /** Load all available settings from XML files and initialize them */
     protected void loadXMLSettings(){
-        if (usesNewOptionsDialog()){
-            updateKeybindingsFromNewOptionsDialogAttributes();
-        } else {
-            getKeyBindingList();
-        }
+        getKeyBindingList();
         getAbbrevMap();
         getMacroMap();
-        if (usesNewOptionsDialog()){
-            updateColoringsFromNewOptionsDialogAttributes();
-        } else {
-            loadSettings(FontsColorsMIMEProcessor.class);
-        }
+        getColoringMap();
         loadSettings(PropertiesMIMEProcessor.class);
     }
 

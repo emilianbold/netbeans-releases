@@ -61,6 +61,8 @@ import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.EditorKit;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Keymap;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.MultiKeyBinding;
@@ -475,10 +477,9 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
         }
 
 	JTextComponent c = getComponent();
-        EditorKit kit = (c != null) ? Utilities.getKit(c) : null;
-        if (kit instanceof BaseKit) {
-            BaseKit baseKit = (BaseKit)kit;
-            BaseOptions options = BaseOptions.getOptions(kit.getClass());
+        String mimeType = NbEditorUtilities.getMimeType(c);
+        if (mimeType != null) {
+            BaseOptions options = (BaseOptions) MimeLookup.getLookup(MimePath.parse(mimeType)).lookup(BaseOptions.class);
             if (options != null) {
                 List kbl = options.getKeyBindingList();
                 if (kbl != null) {

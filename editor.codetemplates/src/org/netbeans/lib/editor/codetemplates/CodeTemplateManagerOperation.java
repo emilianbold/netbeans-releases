@@ -33,6 +33,7 @@ import javax.swing.event.EventListenerList;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.CodeTemplateDescription;
 import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsChangeEvent;
@@ -40,7 +41,7 @@ import org.netbeans.editor.SettingsChangeListener;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
 import org.netbeans.lib.editor.codetemplates.spi.*;
-import org.openide.text.CloneableEditorSupport;
+import org.netbeans.modules.editor.options.BaseOptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -309,13 +310,14 @@ implements LookupListener, Runnable, SettingsChangeListener {
     }
     
     public void run() {
-        Lookup.Result result = MimeLookup.getMimeLookup(getMimeType()).lookup(
+        Lookup lookup = MimeLookup.getLookup(MimePath.parse(getMimeType()));
+        Lookup.Result result = lookup.lookup(
                 new Lookup.Template(CodeTemplateProcessorFactory.class));
         
         processorFactories = result.allInstances();
         // [TODO] listen for changes
 
-        result = MimeLookup.getMimeLookup(getMimeType()).lookup(
+        result = lookup.lookup(
                 new Lookup.Template(CodeTemplateFilter.Factory.class));
         
         filterFactories = result.allInstances();
@@ -341,45 +343,43 @@ implements LookupListener, Runnable, SettingsChangeListener {
     
     private Collection updateDescriptionInstances(Collection descriptionsInstances) {
         descriptionsInstances = new ArrayList();
-        javax.swing.text.EditorKit kit = CloneableEditorSupport.getEditorKit(mimeType);
-        if (kit instanceof org.netbeans.editor.BaseKit) {
-            org.netbeans.modules.editor.options.BaseOptions baseOptions
-                    = org.netbeans.modules.editor.options.BaseOptions.getOptions(kit.getClass());
-            if (baseOptions != null) {
-                Map abbrevMap = baseOptions.getAbbrevMap();
-                if (abbrevMap != null) {
-                    for (Iterator entryIt = abbrevMap.entrySet().iterator(); entryIt.hasNext();) {
-                        Map.Entry entry = (Map.Entry)entryIt.next();
-                        String abbreviation = (String)entry.getKey();
-                        String abbrevText = (String)entry.getValue();
-                        
-                        String parametrizedText = abbrevText.replaceAll(
-                                "([^|]+)[|]([^|]+)", "$1\\${cursor}$2"); // NOI18N
-                        parametrizedText.replaceAll("[|][|]", "[|]"); // NOI18N
+        
+        Lookup lookup = MimeLookup.getLookup(MimePath.parse(mimeType));
+        BaseOptions baseOptions = (BaseOptions) lookup.lookup(BaseOptions.class);
+        if (baseOptions != null) {
+            Map abbrevMap = baseOptions.getAbbrevMap();
+            if (abbrevMap != null) {
+                for (Iterator entryIt = abbrevMap.entrySet().iterator(); entryIt.hasNext();) {
+                    Map.Entry entry = (Map.Entry)entryIt.next();
+                    String abbreviation = (String)entry.getKey();
+                    String abbrevText = (String)entry.getValue();
 
-                        String desc = abbrevText;
-                        int nlInd = abbrevText.indexOf('\n');
-                        if (nlInd != -1) {
-                            desc = abbrevText.substring(0, nlInd) + "..."; // NOI18N
-                        }
-                        StringBuffer htmlText = new StringBuffer();
-                        ParametrizedTextParser parser = new ParametrizedTextParser(null, desc);
-                        parser.parse();
-                        parser.appendHtmlText(htmlText);
-                        desc = htmlText.toString();
+                    String parametrizedText = abbrevText.replaceAll(
+                            "([^|]+)[|]([^|]+)", "$1\\${cursor}$2"); // NOI18N
+                    parametrizedText.replaceAll("[|][|]", "[|]"); // NOI18N
 
-                        CodeTemplateDescription ctd = new CodeTemplateDescription(
-                                abbreviation, desc, parametrizedText, null);
-                        descriptionsInstances.add(ctd);
-                        
+                    String desc = abbrevText;
+                    int nlInd = abbrevText.indexOf('\n');
+                    if (nlInd != -1) {
+                        desc = abbrevText.substring(0, nlInd) + "..."; // NOI18N
                     }
+                    StringBuffer htmlText = new StringBuffer();
+                    ParametrizedTextParser parser = new ParametrizedTextParser(null, desc);
+                    parser.parse();
+                    parser.appendHtmlText(htmlText);
+                    desc = htmlText.toString();
+
+                    CodeTemplateDescription ctd = new CodeTemplateDescription(
+                            abbreviation, desc, parametrizedText, null);
+                    descriptionsInstances.add(ctd);
+
                 }
-                
-                // Start listening on 'abbrevMap' changes
-                if (!settingsListeningInitialized) {
-                    settingsListeningInitialized = true;
-                    Settings.addSettingsChangeListener(this);
-                }
+            }
+
+            // Start listening on 'abbrevMap' changes
+            if (!settingsListeningInitialized) {
+                settingsListeningInitialized = true;
+                Settings.addSettingsChangeListener(this);
             }
         }
         return descriptionsInstances;

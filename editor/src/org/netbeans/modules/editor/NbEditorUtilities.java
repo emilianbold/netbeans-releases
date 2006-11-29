@@ -43,6 +43,7 @@ import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import java.util.MissingResourceException;
 import java.awt.Toolkit;
+import javax.swing.text.EditorKit;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -246,6 +247,26 @@ public class NbEditorUtilities {
         return (String)doc.getProperty(NbEditorDocument.MIME_TYPE_PROP);
     }
 
+    /**
+     * Gets the mime type of a document in the <code>JTextComponent</code>. If
+     * the mime type can't be determined this method will return <code>null</code>.
+     * 
+     * @param c The component to get the mime type for.
+     * 
+     * @return The conponent's mime type or <code>null</code>.
+     */
+    /* package */ static String getMimeType(JTextComponent c) {
+        Document doc = c.getDocument();
+        String mimeType = getMimeType(doc);
+        if (mimeType == null) {
+            EditorKit kit = c.getUI().getEditorKit(c);
+            if (kit != null) {
+                mimeType = kit.getContentType();
+            }
+        }
+        return mimeType;
+    }
+    
     /** Displays ErrorManager window with the localized message. If bundleKey parameter is not founded in bundle
      *  it is considered as displayable text value. */
     public static void invalidArgument(String bundleKey) {

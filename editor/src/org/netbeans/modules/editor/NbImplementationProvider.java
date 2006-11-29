@@ -21,7 +21,6 @@ package org.netbeans.modules.editor;
 
 import java.util.ResourceBundle;
 import java.awt.*;
-import java.awt.datatransfer.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +30,8 @@ import org.netbeans.editor.ImplementationProvider;
 
 import javax.swing.*;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.options.BaseOptions;
@@ -92,12 +93,12 @@ public class NbImplementationProvider extends ImplementationProvider {
         ArrayList retList = new ArrayList();   
         if (kitClass==null) return retList;
         BaseKit kit = BaseKit.getKit(kitClass);
-        String name = kit.getContentType();
-        if (name == null) {
+        String mimeType = kit.getContentType();
+        if (mimeType == null) {
             return retList; //empty
         }
 
-        BaseOptions bo = BaseOptions.getOptions(kitClass);
+        BaseOptions bo = (BaseOptions) MimeLookup.getLookup(MimePath.parse(mimeType)).lookup(BaseOptions.class);
         if (bo==null) return retList; //empty
 
         List files = bo.getOrderedMultiPropertyFolderFiles(GLYPH_GUTTER_ACTIONS_FOLDER_NAME);
