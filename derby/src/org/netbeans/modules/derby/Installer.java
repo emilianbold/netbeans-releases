@@ -51,6 +51,7 @@ public class Installer extends ModuleInstall {
         public void run() {
             if (SwingUtilities.isEventDispatchThread()) {
                 RequestProcessor.getDefault().post(this);
+                return;
             }
 
             JavaPlatform javaPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
