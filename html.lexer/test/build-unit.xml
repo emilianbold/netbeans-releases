@@ -21,16 +21,8 @@ Microsystems, Inc. All Rights Reserved.
     <import file="../../../nbbuild/templates/xtest-unit.xml"/>
     
     <target name="unit-compiler">
-        <!-- build lexer unit tests first -->
-        <!--<ant inheritall="false" antfile="../../../lexer/test/build.xml" target="buildtests"/>-->
-        <!-- The following is used instead of above because inheritAll="false"
-        doesn't work for all properties. -->
-        <property name="lexer.test.build.location" location="../../../lexer/test/build.xml"/>
-        <java classname="org.apache.tools.ant.Main" classpath="${java.class.path}" fork="true" failonerror="true">
-            <arg value="-f"/>
-            <arg value="${lexer.test.build.location}"/>
-            <arg value="buildtests"/>
-        </java>
+        <!-- build lexer unit tests first (dir attribute has to be used to override basedir) -->
+        <ant dir="../../../lexer/test" target="buildtests"/> 
         <!-- compile html/lexer tests -->
         <antcall target="default-compiler"/>
     </target>
