@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.websvc.api.jaxws.wsdlmodel;
 
-import com.sun.org.apache.xerces.internal.xni.QName;
 import com.sun.tools.ws.processor.model.Model;
 import com.sun.tools.ws.processor.model.Service;
 import java.util.*;

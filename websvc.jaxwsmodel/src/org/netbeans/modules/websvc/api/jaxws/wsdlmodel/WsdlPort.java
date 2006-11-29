@@ -24,7 +24,6 @@ import com.sun.tools.ws.processor.model.Port;
 import com.sun.tools.ws.wsdl.document.soap.SOAPStyle;
 import com.sun.xml.ws.encoding.soap.SOAPVersion;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 /**
