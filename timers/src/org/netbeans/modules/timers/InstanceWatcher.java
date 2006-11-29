@@ -37,11 +37,11 @@ import javax.swing.event.ChangeListener;
  */
 public class InstanceWatcher {
 
-    private ArrayList<WeakReference<Object>> references;    
+    private List<WeakReference<Object>> references;
     private ReferenceQueue queue;
     private static ExecutorService executor = Executors.newSingleThreadExecutor();
     
-    private transient ArrayList<WeakReference<ChangeListener>> changeListenerList;
+    private transient List<WeakReference<ChangeListener>> changeListenerList;
 
     
     /** Creates a new instance of InstanceWatcher */
@@ -51,13 +51,13 @@ public class InstanceWatcher {
         new FinalizingToken();
     }
            
-    public void add( Object instance ) {
+    public synchronized void add( Object instance ) {
         if ( ! contains( instance ) ) {
             references.add( new WeakReference( instance, queue ) );
         }
     }
     
-    private boolean contains( Object o ) {
+    private synchronized boolean contains( Object o ) {
         for( WeakReference r : references ) {
             if ( r.get() == o ) {
                 return true;
@@ -66,7 +66,7 @@ public class InstanceWatcher {
         return false;
     }
     
-    public int size() {
+    public synchronized int size() {
         removeNulls();
         return references.size();
     }
@@ -111,7 +111,7 @@ public class InstanceWatcher {
     
     // Private methods ---------------------------------------------------------    
     
-    private static <T> void cleanAndCopy( ArrayList<? extends Reference<T>> src, List<? super T> dest ) {
+    private static <T> void cleanAndCopy( List<? extends Reference<T>> src, List<? super T> dest ) {
         for( int i = src.size() - 1; i >= 0; i-- ) {
             T o = src.get(i).get();
             if( o == null ) {
@@ -124,7 +124,7 @@ public class InstanceWatcher {
     }
     
     
-    private void removeNulls() {
+    private synchronized void removeNulls() {
         cleanAndCopy( references, null ); 
     }
     
