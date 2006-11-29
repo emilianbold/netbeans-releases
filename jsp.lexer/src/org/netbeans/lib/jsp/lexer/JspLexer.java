@@ -128,12 +128,12 @@ public class JspLexer implements Lexer<JspTokenId> {
     }
     
     private Token<JspTokenId> token(JspTokenId id) {
-        System.out.print("JSP token(" + id + "; '" + input.readText().toString() + "')");
-        if(input.readLength() == 1) {
-            System.out.println("Error - token length is zero!; state = " + state);
+//        System.out.print("JSP token(" + id + "; '" + input.readText().toString() + "')");
+        if(input.readLength() == 0) {
+            new Exception("Error - token length is zero!; state = " + state).printStackTrace();
         }
         Token<JspTokenId> t = tokenFactory.createToken(id);
-        System.out.println(t.id() + "; " + t.length());
+//        System.out.println(t.id() + "; " + t.length());
         return t;
     }
     
@@ -796,16 +796,13 @@ public class JspLexer implements Lexer<JspTokenId> {
                                 state = ISI_DIR_I_WS;
                                 return token(JspTokenId.EOL);
                             } else { // return error first
-                                input.backup(1);
+//                                input.backup(1);
                                 return token(JspTokenId.ERROR);
                             }
                         case '%':
-                            state = ISI_TAGNAME;
-                            input.backup(1);
-                            return token(JspTokenId.ERROR);
                         case '\t':
                         case ' ':
-                            state = ISI_DIR_I_WS;
+                            state = ISP_DIR;
                             input.backup(1);
                             return token(JspTokenId.ERROR);
                     }
