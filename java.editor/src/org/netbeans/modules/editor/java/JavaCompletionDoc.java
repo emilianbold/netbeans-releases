@@ -23,9 +23,18 @@ import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.Hashtable;
+import java.util.Iterator;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeMirror;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import com.sun.javadoc.*;
@@ -66,10 +75,10 @@ public class JavaCompletionDoc implements CompletionDocumentation {
     private static final String INHERIT_DOC_TAG = "@inheritDoc"; //NOI18N
     
     public static final JavaCompletionDoc create(CompilationController controller, Element element) {
-        return new JavaCompletionDoc(controller, element);
+        return new JavaCompletionDoc(controller, element, null);
     }
     
-    private JavaCompletionDoc(CompilationController controller, Element element) {
+    private JavaCompletionDoc(CompilationController controller, Element element, URL url) {
         ElementUtilities eu = controller.getElementUtilities();
         this.cpInfo = controller.getClasspathInfo();
         this.doc = eu.javaDocFor(element);
@@ -83,7 +92,19 @@ public class JavaCompletionDoc implements CompletionDocumentation {
                     }
                 };
             }
-            docURL = SourceUtils.getJavadoc(element, cpInfo);
+            if (url != null) {
+                docURL = url;
+            } else {
+                docURL = SourceUtils.getJavadoc(element, cpInfo);
+                if (docURL != null) {
+                    CharSequence fragment = getFragment(element);
+                    if (fragment.length() > 0) {
+                        try {
+                            docURL = new URL(docURL.toExternalForm() + "#" + fragment); //NOI18N
+                        } catch (MalformedURLException e) {}
+                    }
+                }
+            }
         }
         this.content = prepareContent(eu);
     }
@@ -100,19 +121,46 @@ public class JavaCompletionDoc implements CompletionDocumentation {
         final CompletionDocumentation[] ret = new CompletionDocumentation[1];
         try {
             final ElementHandle<? extends Element> linkDoc = links.get(link);
-            if (linkDoc != null) {
-                FileObject fo = SourceUtils.getFile(linkDoc, cpInfo);
-                JavaSource js = fo != null ? JavaSource.forFileObject(fo) : JavaSource.create(cpInfo);
-                if (js != null) {
-                    js.runUserActionTask(new CancellableTask<CompilationController>() {
-                        public void run(CompilationController controller) throws IOException {
-                            controller.toPhase(Phase.ELEMENTS_RESOLVED);
-                            ret[0] = JavaCompletionDoc.create(controller, linkDoc.resolve(controller));
+            FileObject fo = linkDoc != null ? SourceUtils.getFile(linkDoc, cpInfo) : null;
+            JavaSource js = fo != null ? JavaSource.forFileObject(fo) : JavaSource.create(cpInfo);
+            if (js != null) {
+                js.runUserActionTask(new CancellableTask<CompilationController>() {
+                    public void run(CompilationController controller) throws IOException {
+                        controller.toPhase(Phase.ELEMENTS_RESOLVED);
+                        if (linkDoc != null) {
+                            ret[0] = new JavaCompletionDoc(controller, linkDoc.resolve(controller), null);
+                        } else {
+                            int idx = link.indexOf('#'); //NOI18N
+                            URI uri = URI.create(idx < 0 ? link : link.substring(0, idx));
+                            if (uri != null) {
+                                if (!uri.isAbsolute())
+                                    uri = uri.normalize();
+                                String path = uri.toString();
+                                int startIdx = path.lastIndexOf(".."); //NOI18N
+                                startIdx = startIdx < 0 ? 0 : startIdx + 3;
+                                int endIdx = path.lastIndexOf('.'); //NOI18N
+                                String clsName = path.substring(startIdx, endIdx).replace('/', '.'); //NOI18N
+                                Element e = controller.getElements().getTypeElement(clsName);
+                                if (e != null) {
+                                    if (idx >= 0) {
+                                        String fragment = link.substring(idx + 1);
+                                        idx = fragment.indexOf('('); //NOI18N
+                                        String name = idx < 0 ? fragment : fragment.substring(0, idx);
+                                        for (Element member : e.getEnclosedElements()) {
+                                            if (member.getSimpleName().contentEquals(name) && fragment.contentEquals(getFragment(member))) {
+                                                e = member;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    ret[0] = new JavaCompletionDoc(controller, e, new URL(docURL, link));
+                                }
+                            }
                         }
-                        public void cancel() {
-                        }
-                    }, true);
-                }
+                    }
+                    public void cancel() {
+                    }
+                }, true);
             }
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
@@ -156,7 +204,7 @@ public class JavaCompletionDoc implements CompletionDocumentation {
         return sb.toString();
     }
     
-    private StringBuilder getContainingClassOrPacakgeHeader(ElementUtilities eu, ProgramElementDoc peDoc) {
+    private CharSequence getContainingClassOrPacakgeHeader(ElementUtilities eu, ProgramElementDoc peDoc) {
         StringBuilder sb = new StringBuilder();
         ClassDoc cls = peDoc.containingClass();
         if (cls != null) {
@@ -174,12 +222,13 @@ public class JavaCompletionDoc implements CompletionDocumentation {
         return sb;
     }
     
-    private StringBuilder getMethodHeader(ElementUtilities eu, ExecutableMemberDoc mdoc) {
+    private CharSequence getMethodHeader(ElementUtilities eu, ExecutableMemberDoc mdoc) {
         StringBuilder sb = new StringBuilder();
         sb.append("<pre>"); //NOI18N
         sb.append(getAnnotations(eu, mdoc));
+        int len = sb.length();
         sb.append(Modifier.toString(mdoc.modifierSpecifier() &~ Modifier.NATIVE));
-        int len = sb.length() - 5;
+        len = sb.length() - len;
         TypeVariable[] tvars = mdoc.typeParameters();
         if (tvars.length > 0) {
             if (sb.length() > 0) {
@@ -207,8 +256,6 @@ public class JavaCompletionDoc implements CompletionDocumentation {
         String name = mdoc.name();
         len += name.length();
         sb.append(" <b>").append(name).append("</b>"); //NOI18N
-        StringBuilder pb = new StringBuilder();
-        pb.append('('); //NOI18N
         if (!mdoc.isAnnotationTypeElement()) {
             sb.append('('); //NOI18N
             len++;
@@ -217,22 +264,18 @@ public class JavaCompletionDoc implements CompletionDocumentation {
                 boolean varArg = i == params.length - 1 && mdoc.isVarArgs();
                 appendType(eu, sb, params[i].type(), varArg, false);
                 sb.append(' ').append(params[i].name()); //NOI18N
-                pb.append(params[i].type().qualifiedTypeName());
                 String dim = params[i].type().dimension();
                 if (dim.length() > 0) {
                     if (varArg)
                         dim = dim.substring(2) + "..."; //NOI18N
-                    pb.append(dim);
                 }
                 if (i < params.length - 1) {
                     sb.append(",\n"); //NOI18N
                     appendSpace(sb, len);
-                    pb.append(", "); //NOI18N
                 }
             }
             sb.append(')'); //NOI18N            
         }
-        pb.append(')'); //NOI18N
         Type[] exs = mdoc.thrownExceptionTypes();
         if (exs.length > 0) {
             sb.append("\nthrows "); //NOI18N
@@ -243,15 +286,10 @@ public class JavaCompletionDoc implements CompletionDocumentation {
             }
         }
         sb.append("</pre>"); //NOI18N
-        if (docURL != null) {
-            try {
-                docURL = new URL(docURL.toExternalForm() + "#" + mdoc.name() + pb.toString()); //NOI18N
-            } catch (MalformedURLException e) {}
-        }
         return sb;
     }
     
-    private StringBuilder getFieldHeader(ElementUtilities eu, FieldDoc fdoc) {
+    private CharSequence getFieldHeader(ElementUtilities eu, FieldDoc fdoc) {
         StringBuilder sb = new StringBuilder();
         sb.append("<pre>"); //NOI18N
         sb.append(getAnnotations(eu, fdoc));
@@ -261,15 +299,10 @@ public class JavaCompletionDoc implements CompletionDocumentation {
         appendType(eu, sb, fdoc.type(), false, false);
         sb.append(" <b>").append(fdoc.name()).append("</b>"); //NOI18N
         sb.append("</pre>"); //NOI18N
-        if (docURL != null) {
-            try {
-                docURL = new URL(docURL.toExternalForm() + "#" + fdoc.name()); //NOI18N
-            } catch (MalformedURLException e) {}
-        }
         return sb;
     }
     
-    private StringBuilder getClassHeader(ElementUtilities eu, ClassDoc cdoc) {
+    private CharSequence getClassHeader(ElementUtilities eu, ClassDoc cdoc) {
         StringBuilder sb = new StringBuilder();
         sb.append("<pre>"); //NOI18N
         sb.append(getAnnotations(eu, cdoc));
@@ -322,7 +355,7 @@ public class JavaCompletionDoc implements CompletionDocumentation {
         return sb;
     }
     
-    private StringBuilder getAnnotations(ElementUtilities eu, ProgramElementDoc peDoc) {
+    private CharSequence getAnnotations(ElementUtilities eu, ProgramElementDoc peDoc) {
         StringBuilder sb = new StringBuilder();
         for (AnnotationDesc annotationDesc : peDoc.annotations()) {
             appendType(eu, sb, annotationDesc.annotationType(), false, false);
@@ -364,7 +397,7 @@ public class JavaCompletionDoc implements CompletionDocumentation {
         }
     } 
     
-    private StringBuilder getTags(ElementUtilities eu, Doc doc) {
+    private CharSequence getTags(ElementUtilities eu, Doc doc) {
         StringBuilder see = new StringBuilder();
         StringBuilder par = new StringBuilder();
         StringBuilder thr = new StringBuilder();
@@ -383,7 +416,7 @@ public class JavaCompletionDoc implements CompletionDocumentation {
                 thr.append("<code>"); //NOI18N
                 Type exType = ((ThrowsTag)tag).exceptionType();
                 if (exType != null)
-                    createLink(thr, eu.elementFor(exType.asClassDoc()), exType.qualifiedTypeName());
+                    createLink(thr, eu.elementFor(exType.asClassDoc()), exType.simpleTypeName());
                 else
                     thr.append(((ThrowsTag)tag).exceptionName());
                 thr.append("</code>"); //NOI18N
@@ -398,14 +431,18 @@ public class JavaCompletionDoc implements CompletionDocumentation {
                 ret.append("<br>"); //NOI18N
             } else if (SEE_TAG.equals(tag.kind())) {
                 SeeTag stag = (SeeTag)tag;
-                String className = stag.referencedClassName();
+                ClassDoc refClass = stag.referencedClass();
                 String memberName = stag.referencedMemberName();
                 if (memberName != null) {
-                    createLink(see, eu.elementFor(stag.referencedMember()), className + "." + memberName); //NOI18N
-                    see.append("<br>"); //NOI18N
-                } else if (className != null) {
-                    createLink(see, eu.elementFor(stag.referencedClass()), className);
-                    see.append("<br>"); //NOI18N
+                    see.append("<code>"); //NOI18N
+                    createLink(see, eu.elementFor(stag.referencedMember()), refClass.simpleTypeName() + "." + memberName); //NOI18N
+                    see.append("</code>"); //NOI18N
+                    see.append(", "); //NOI18N
+                } else if (refClass != null) {
+                    see.append("<code>"); //NOI18N
+                    createLink(see, eu.elementFor(refClass), refClass.simpleTypeName());
+                    see.append("</code>"); //NOI18N
+                    see.append(", "); //NOI18N
                 }
             } else if (SINCE_TAG.equals(tag.kind())) {
                 since = tag.text();
@@ -421,26 +458,31 @@ public class JavaCompletionDoc implements CompletionDocumentation {
         if (thr.length() > 0) {
             sb.append("<b>").append(NbBundle.getMessage(JavaCompletionDoc.class, "JCD-throws")).append("</b><blockquote>").append(thr).append("</blockquote>"); //NOI18N
         }
-        if (see.length() > 0) {
-            sb.append("<b>").append(NbBundle.getMessage(JavaCompletionDoc.class, "JCD-see")).append("</b><blockquote>").append(see).append("</blockquote>"); //NOI18N
-        }
         if (since != null) {
             sb.append("<b>").append(NbBundle.getMessage(JavaCompletionDoc.class, "JCD-since")).append("</b><blockquote>").append(since).append("</blockquote>"); //NOI18N
+        }
+        int length = see.length();
+        if (length > 0) {
+            sb.append("<b>").append(NbBundle.getMessage(JavaCompletionDoc.class, "JCD-see")).append("</b><blockquote>").append(see.delete(length - 2, length)).append("</blockquote>"); //NOI18N
         }
         return sb;
     }
     
-    private StringBuilder inlineTags(ElementUtilities eu, Doc doc, Tag[] tags) {
+    private CharSequence inlineTags(ElementUtilities eu, Doc doc, Tag[] tags) {
         StringBuilder sb = new StringBuilder();
         for (Tag tag : tags) {
             if (SEE_TAG.equals(tag.kind())) {
                 SeeTag stag = (SeeTag)tag;
-                String className = stag.referencedClassName();
+                ClassDoc refClass = stag.referencedClass();
                 String memberName = stag.referencedMemberName();
                 if (memberName != null) {
-                    createLink(sb, eu.elementFor(stag.referencedMember()), className + "." + memberName); //NOI18N
-                } else if (className != null) {
-                    createLink(sb, eu.elementFor(stag.referencedClass()), className);
+                    sb.append("<code>"); //NOI18N
+                    createLink(sb, eu.elementFor(stag.referencedMember()), refClass.simpleTypeName() + "." + memberName); //NOI18N
+                    sb.append("</code>"); //NOI18N
+                } else if (refClass != null) {
+                    sb.append("<code>"); //NOI18N
+                    createLink(sb, eu.elementFor(refClass), refClass.simpleTypeName());
+                    sb.append("</code>"); //NOI18N
                 }
             } else if (INHERIT_DOC_TAG.equals(tag.kind())) {
                 if (doc.isMethod()) {
@@ -459,6 +501,43 @@ public class JavaCompletionDoc implements CompletionDocumentation {
         return sb;
     }
     
+    private CharSequence getFragment(Element e) {
+        StringBuilder sb = new StringBuilder();
+        if (!e.getKind().isClass() && !e.getKind().isInterface()) {
+            if (e.getKind() == ElementKind.CONSTRUCTOR) {
+                sb.append(e.getEnclosingElement().getSimpleName());
+            } else {
+                sb.append(e.getSimpleName());
+            }
+            if (e.getKind() == ElementKind.METHOD || e.getKind() == ElementKind.CONSTRUCTOR) {
+                ExecutableElement ee = (ExecutableElement)e;
+                sb.append('('); //NOI18N
+                for (Iterator<? extends VariableElement> it = ee.getParameters().iterator(); it.hasNext();) {
+                    VariableElement param = it.next();
+                    appendType(sb, param.asType(), ee.isVarArgs() && !it.hasNext());
+                    if (it.hasNext())
+                        sb.append(", ");
+                }
+                sb.append(')'); //NOI18N
+            }
+        }
+        return sb;
+    }
+    
+    private void appendType(StringBuilder sb, TypeMirror type, boolean varArg) {
+        switch (type.getKind()) {
+            case ARRAY:
+                appendType(sb, ((ArrayType)type).getComponentType(), false);
+                sb.append(varArg ? "..." : "[]"); //NOI18N
+                break;
+            case DECLARED:
+                sb.append(((TypeElement)((DeclaredType)type).asElement()).getQualifiedName());
+                break;
+            default:
+                sb.append(type);
+        }
+    }
+
     private void appendSpace(StringBuilder sb, int length) {
         while (length-- >= 0)
             sb.append(' '); //NOI18N            
