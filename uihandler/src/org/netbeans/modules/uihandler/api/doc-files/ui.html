@@ -1,0 +1,158 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><!-- -*- xhtml -*- -->
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>UI of Gestures Collector</title>
+<!--
+<link rel="stylesheet" type="text/css" href="http://www.netbeans.org/netbeans.css"/>
+-->
+</head>
+<body>
+<h1>UI of Gestures Collector</h1>
+<dl>
+ <dt><em>Version:</em></dt>
+ <dd>Nov 29, 2006</dd>
+ <dt><em>Author:</em></dt>
+ <dd>Jaroslav  Tulach</dd>
+ <dt><em>Abstract:</em></dt>
+ <dd>
+  <p>
+   Proposal of scenarios and UI to satisfy 
+   <a href="@TOP@/architecture-summary.html#answer-arch-usecases">usecases</a>
+   for UI Gestures Collector.
+  </p>
+ </dd>
+</dl>
+
+<h1>Scenarios</h1>
+
+<h3>Scenario: We need returning users</h3>
+
+<p>
+    Important user actions are recorded and remember in the memory 
+    when the UI Gestures Collector is installed. In order for the gesture
+    collector to be useful, it is necessary to convince the user to 
+    upload these information to our collecting server for processing.
+    As we need a wide range of submittions, it is important that the 
+    same user continous to submit these logs repeatedly.
+</p>
+
+<p>
+    When the user is about to exit the IDE, it is presented with a dialog
+    describing the purpose of UI Gestures Collector and is encouraged 
+    to submit the data to the server by pressing a button. When submitted,
+    a new browser window is opened showing confirmation of successful upload,
+    thanking the user for doing it and providing some useful information that
+    the user may need and would not know otherwise.
+</p>
+
+<p>
+    The range of "useful information" is wide and can be improved in future,
+    however for purposes of this document it is enough to think about it
+    just as a inteligent "Tip of the Day". Based on the submitted data and
+    possibly the previous UI logs already submitted to the server, it
+    is possible to select more appropriate "tip of the Day". In the simplest
+    scenario it is definitely possible to find out what project types the
+    user is using and not show tips about web projects, if it is writing just
+    plain Java applications.
+</p>
+
+<p>
+    By trading a useful information back for the user's submission of the UI Gestures
+    data, we establish an equal and benefitial relationship with them and 
+    encourage them to submit the data in future as well. It is believed
+    that mutually benefitial approach supports returning customers.
+</p>
+
+
+<h3>Scenario: We need confident users</h3>
+
+<p>
+    People do not generally like to send information about themselves to someone
+    else. We need to gain a certain amount of trust and convince them that
+    sending data gathered by UI Gestures Collector is safe. Indeed one 
+    way to built the trust up is the trading of useful information back as 
+    described in previous chapter, however this starts to work only for subsequent
+    submission, still we need to convince the user that first submission is safe.
+</p>
+
+<p>
+    To do that the user will be given a chance to view and examine the content
+    of the data to be submitted. The main submit screen will have a button to
+    open a view of the logged data, the user will be able to browse thru them
+    and then submit or cancel the transfer. There will be two views - one 
+    human friendly - a tree with records, icons, descriptions, etc.
+    Second raw data - some kind of not very human readable XML
+    in a text editor that represents the actual data to be sent to the logging
+    server.
+</p>
+
+<h1>Ascii Art</h1>
+
+
+<h3>Submittion Dialog</h3>
+
+<p>
+    This dialog appears when the user is closing the IDE.
+</p>
+
+<pre>
++-------------------------------------------------------------------------------+
+| UI Gestures Collector                                                       X |
++-------------------------------------------------------------------------------+
+|                                                                               |
+|                                                                               |
+|                                                                               |
+|                                                                               |
+|                                                                               |
+|                                                                               |
+|                                                                               |
+|         An HTML page describing the purpose of UI Gestures Collector          |
+|      encourages to send the data, for the trade of nice tip of the day        |
+|                                                                               |
+|                                                                               |
+|                                                                               |
+|                                                                               |
+|                                                                               |
+|                                                                               |
+|                                                                               |
+|                                                                               |
+|                                                                               |
+| [[_G_et Tip of the Day]] [[_V_iew the Data]]  [[_E_xit without sending data]] | 
++-------------------------------------------------------------------------------+
+</pre>
+
+
+<h3>Examination Dialog</h3>
+
+<p>
+    When the user chooses to see the data about the be transfered to the server,
+    then he will get following dialog.
+</p>
+
+<pre>
++-------------------------------------------------------------------------------+
+| UI Gestures Collector                                                       X |
++-------------------------------------------------------------------------------+
+| Structured | Raw |                                                            |
+|-------------------------------------------------------------------------------|
+|                                                                               |
+|                                                                               |
+|                                                                               |
+|                                                                               |
+|                                                                               |
+|         Either raw view or tree view depending on the selected tab            |
+|                                                                               |
+|                                                                               |
+|                                                                               |
+|                                                                               |
+|                                                                               |
+|                                                                               |
+|-------------------------------------------------------------------------------|
+|            [[_G_et Tip of the Day]] [[_E_xit without sending data]]           | 
++-------------------------------------------------------------------------------+
+</pre>
+
+
+</body>
+    
+</html>

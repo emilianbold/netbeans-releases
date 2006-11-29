@@ -189,6 +189,11 @@ Microsystems, Inc. All Rights Reserved.
              so they get enabled as soon as the UI logger module is enabled.
          </p>
      </usecase>
+     <p>
+         These usecases are realized as described in
+         <a href="@TOP@/org/netbeans/modules/uihandler/api/doc-files/ui.html">
+         here in provided UI specification</a>.
+     </p>
  </answer>
 
 <!--
