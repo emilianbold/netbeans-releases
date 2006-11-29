@@ -26,8 +26,8 @@ import java.util.Stack;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.modules.java.save.ListMatcher;
-import static org.netbeans.modules.java.save.ListMatcher.*;
+import org.netbeans.modules.java.source.save.ListMatcher;
+import static org.netbeans.modules.java.source.save.ListMatcher.*;
 
 /**
  * Test adding/removing separators.

@@ -37,7 +37,7 @@ import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.jackpot.model.CommentHandler;
 import org.netbeans.jackpot.model.CommentSet;
-import org.netbeans.modules.java.builder.CommentHandlerService;
+import org.netbeans.modules.java.source.builder.CommentHandlerService;
 
 /**
  *

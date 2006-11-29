@@ -33,7 +33,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.swing.Icon;
 import javax.swing.text.StyledDocument;
-import org.netbeans.modules.java.pretty.VeryPretty;
+import org.netbeans.modules.java.source.pretty.VeryPretty;
 import org.netbeans.modules.java.ui.Icons;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;

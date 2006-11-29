@@ -21,7 +21,7 @@ package org.netbeans.modules.java.builder;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.util.TreePath;
-import static org.netbeans.modules.java.builder.BufferRun.Kind.*;
+import static org.netbeans.modules.java.source.builder.BufferRun.Kind.*;
 import static org.netbeans.api.java.source.Comment.Style.*;
 import static com.sun.tools.javac.parser.Token.*;
 import java.beans.PropertyVetoException;

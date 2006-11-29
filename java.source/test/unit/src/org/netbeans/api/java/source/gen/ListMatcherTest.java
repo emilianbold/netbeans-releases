@@ -20,7 +20,7 @@ package org.netbeans.api.java.source.gen;
 
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.modules.java.save.ListMatcher;
+import org.netbeans.modules.java.source.save.ListMatcher;
 
 /**
  * Test ListMatcher.

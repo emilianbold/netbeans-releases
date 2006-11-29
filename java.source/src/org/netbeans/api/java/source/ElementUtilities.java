@@ -49,7 +49,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
-import org.netbeans.modules.java.builder.ElementsService;
+import org.netbeans.modules.java.source.builder.ElementsService;
 import org.netbeans.modules.java.source.JavadocEnv;
 
 /**

@@ -32,7 +32,7 @@ import java.util.Set;
 import org.netbeans.jackpot.model.CommentHandler;
 import org.netbeans.jackpot.model.CommentSet;
 import org.netbeans.jackpot.model.TreeMakerInt;
-import org.netbeans.modules.java.builder.CommentHandlerService;
+import org.netbeans.modules.java.source.builder.CommentHandlerService;
 
 /**
  * Factory interface for creating new com.sun.source.tree instances.  The

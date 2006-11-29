@@ -48,11 +48,11 @@ import org.netbeans.jackpot.engine.*;
 import org.netbeans.jackpot.query.QueryException;
 import org.netbeans.jackpot.transform.Transformer;
 import org.netbeans.jackpot.tree.RootTree;
-import org.netbeans.modules.java.builder.UndoListService;
-import org.netbeans.modules.java.builder.ASTService;
-import org.netbeans.modules.java.builder.DefaultEnvironment;
-import org.netbeans.modules.java.builder.TreeFactory;
-import org.netbeans.modules.java.save.Commit;
+import org.netbeans.modules.java.source.builder.UndoListService;
+import org.netbeans.modules.java.source.builder.ASTService;
+import org.netbeans.modules.java.source.builder.DefaultEnvironment;
+import org.netbeans.modules.java.source.builder.TreeFactory;
+import org.netbeans.modules.java.source.save.Commit;
 
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
