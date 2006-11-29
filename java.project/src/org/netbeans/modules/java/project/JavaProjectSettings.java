@@ -66,8 +66,11 @@ public class JavaProjectSettings {
      * {@link PackageViewSettings#TYPE_TREE}
      */
     public static void setPackageViewType(int type) {
-        prefs().putInt(PROP_PACKAGE_VIEW_TYPE, type);
-        pcs.firePropertyChange(PROP_PACKAGE_VIEW_TYPE, null, type);
+        int currentType = getPackageViewType();
+        if (currentType != type) {
+            prefs().putInt(PROP_PACKAGE_VIEW_TYPE, type);
+            pcs.firePropertyChange(PROP_PACKAGE_VIEW_TYPE, currentType, type);
+        }
     }
 
     public static boolean isShowAgainBrokenRefAlert() {
