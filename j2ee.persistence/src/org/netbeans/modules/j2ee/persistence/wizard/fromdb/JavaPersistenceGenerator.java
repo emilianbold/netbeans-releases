@@ -68,7 +68,7 @@ import org.openide.util.NbBundle;
  */
 public class JavaPersistenceGenerator implements PersistenceGenerator {
 
-    // XXX Javadoc for generated code missing in many places
+    // XXX Javadoc for generated code missing in many places - issue 90302
     // XXX createToStringMethod() could be moved to GenerationUtils
     // XXX init() commented out until annotation model is implemented
 
