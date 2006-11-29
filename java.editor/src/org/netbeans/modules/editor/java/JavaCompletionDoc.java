@@ -21,12 +21,15 @@ package org.netbeans.modules.editor.java;
 
 import java.awt.event.ActionEvent;
 import java.io.IOException;
+import java.lang.reflect.Modifier;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Hashtable;
 import javax.lang.model.element.Element;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import com.sun.javadoc.*;
+import com.sun.javadoc.AnnotationDesc.ElementValuePair;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
@@ -70,7 +73,6 @@ public class JavaCompletionDoc implements CompletionDocumentation {
         ElementUtilities eu = controller.getElementUtilities();
         this.cpInfo = controller.getClasspathInfo();
         this.doc = eu.javaDocFor(element);
-        this.content = prepareContent(eu);
         if (element != null) {
             final FileObject fo = SourceUtils.getFile(element, controller.getClasspathInfo());
             if (fo != null) {
@@ -81,7 +83,9 @@ public class JavaCompletionDoc implements CompletionDocumentation {
                     }
                 };
             }
+            docURL = SourceUtils.getJavadoc(element, cpInfo);
         }
+        this.content = prepareContent(eu);
     }
 
     public String getText() {
@@ -98,8 +102,9 @@ public class JavaCompletionDoc implements CompletionDocumentation {
             final ElementHandle<? extends Element> linkDoc = links.get(link);
             if (linkDoc != null) {
                 FileObject fo = SourceUtils.getFile(linkDoc, cpInfo);
-                if (fo != null) {
-                    JavaSource.forFileObject(fo).runUserActionTask(new CancellableTask<CompilationController>() {
+                JavaSource js = fo != null ? JavaSource.forFileObject(fo) : JavaSource.create(cpInfo);
+                if (js != null) {
+                    js.runUserActionTask(new CancellableTask<CompilationController>() {
                         public void run(CompilationController controller) throws IOException {
                             controller.toPhase(Phase.ELEMENTS_RESOLVED);
                             ret[0] = JavaCompletionDoc.create(controller, linkDoc.resolve(controller));
@@ -125,17 +130,25 @@ public class JavaCompletionDoc implements CompletionDocumentation {
             if (doc instanceof ProgramElementDoc) {
                 sb.append(getContainingClassOrPacakgeHeader(eu, (ProgramElementDoc)doc));
             }
-            if (doc.isMethod() || doc.isConstructor()) {
+            if (doc.isMethod() || doc.isConstructor() || doc.isAnnotationTypeElement()) {
                 sb.append(getMethodHeader(eu, (ExecutableMemberDoc)doc));
             } else if (doc.isField() || doc.isEnumConstant()) {
                 sb.append(getFieldHeader(eu, (FieldDoc)doc));
-            } else if (doc.isClass() || doc.isInterface()) {
+            } else if (doc.isClass() || doc.isInterface() || doc.isAnnotationType()) {
                 sb.append(getClassHeader(eu, (ClassDoc)doc));
             }
             sb.append("<p>"); //NOI18N
-            sb.append(inlineTags(eu, doc, doc.inlineTags()));
-            sb.append("</p><p>"); //NOI18N
-            sb.append(getTags(eu, doc));
+            if (doc.commentText().length() > 0) {
+                sb.append(inlineTags(eu, doc, doc.inlineTags()));
+                sb.append("</p><p>"); //NOI18N
+                sb.append(getTags(eu, doc));
+            } else {
+                String jdText = docURL != null ? HTMLJavadocParser.getJavadocText(docURL, false) : null;
+                if (jdText != null)
+                    sb.append(jdText);
+                else
+                    sb.append(NbBundle.getMessage(JavaCompletionDoc.class, "javadoc_content_not_found")); //NOI18N
+            }
             sb.append("</p>"); //NOI18N
         } else {
             sb.append(NbBundle.getMessage(JavaCompletionDoc.class, "javadoc_content_not_found")); //NOI18N
@@ -143,7 +156,7 @@ public class JavaCompletionDoc implements CompletionDocumentation {
         return sb.toString();
     }
     
-    private String getContainingClassOrPacakgeHeader(ElementUtilities eu, ProgramElementDoc peDoc) {
+    private StringBuilder getContainingClassOrPacakgeHeader(ElementUtilities eu, ProgramElementDoc peDoc) {
         StringBuilder sb = new StringBuilder();
         ClassDoc cls = peDoc.containingClass();
         if (cls != null) {
@@ -158,90 +171,200 @@ public class JavaCompletionDoc implements CompletionDocumentation {
                 sb.append("</b></font>"); //NOI18N)
             }
         }
-        return sb.toString();
+        return sb;
     }
     
-    private String getMethodHeader(ElementUtilities eu, ExecutableMemberDoc mdoc) {
+    private StringBuilder getMethodHeader(ElementUtilities eu, ExecutableMemberDoc mdoc) {
         StringBuilder sb = new StringBuilder();
         sb.append("<pre>"); //NOI18N
-        sb.append(mdoc.modifiers());
+        sb.append(getAnnotations(eu, mdoc));
+        sb.append(Modifier.toString(mdoc.modifierSpecifier() &~ Modifier.NATIVE));
         int len = sb.length() - 5;
-        if (mdoc.isMethod()) {
+        TypeVariable[] tvars = mdoc.typeParameters();
+        if (tvars.length > 0) {
             if (sb.length() > 0) {
                 sb.append(' '); //NOI18N
                 len++;
             }
-            len += appendType(eu, sb, ((MethodDoc)mdoc).returnType(), false);
+            sb.append("&lt;"); //NOI18N
+            for (int i = 0; i < tvars.length; i++) {
+                len += appendType(eu, sb, tvars[i], false, true);
+                if (i < tvars.length - 1) {
+                    sb.append(","); //NOI18N
+                    len++;
+                }
+            }
+            sb.append("&gt;"); //NOI18N
+            len += 2;
+        }
+        if (!mdoc.isConstructor()) {
+            if (sb.length() > 0) {
+                sb.append(' '); //NOI18N
+                len++;
+            }
+            len += appendType(eu, sb, ((MethodDoc)mdoc).returnType(), false, false);
         }
         String name = mdoc.name();
         len += name.length();
-        sb.append(" <b>").append(name).append("</b>("); //NOI18N
-        len++;
-        Parameter[] params = mdoc.parameters();
-        for(int i = 0; i < params.length; i++) {
-            appendType(eu, sb, params[i].type(), i == params.length - 1 && mdoc.isVarArgs());
-            sb.append(' ').append(params[i].name()); //NOI18N
-            if (i < params.length - 1) {
-                sb.append(",\n"); //NOI18N
-                appendSpace(sb, len);
+        sb.append(" <b>").append(name).append("</b>"); //NOI18N
+        StringBuilder pb = new StringBuilder();
+        pb.append('('); //NOI18N
+        if (!mdoc.isAnnotationTypeElement()) {
+            sb.append('('); //NOI18N
+            len++;
+            Parameter[] params = mdoc.parameters();
+            for(int i = 0; i < params.length; i++) {
+                boolean varArg = i == params.length - 1 && mdoc.isVarArgs();
+                appendType(eu, sb, params[i].type(), varArg, false);
+                sb.append(' ').append(params[i].name()); //NOI18N
+                pb.append(params[i].type().qualifiedTypeName());
+                String dim = params[i].type().dimension();
+                if (dim.length() > 0) {
+                    if (varArg)
+                        dim = dim.substring(2) + "..."; //NOI18N
+                    pb.append(dim);
+                }
+                if (i < params.length - 1) {
+                    sb.append(",\n"); //NOI18N
+                    appendSpace(sb, len);
+                    pb.append(", "); //NOI18N
+                }
             }
+            sb.append(')'); //NOI18N            
         }
-        sb.append(')'); //NOI18N
+        pb.append(')'); //NOI18N
         Type[] exs = mdoc.thrownExceptionTypes();
         if (exs.length > 0) {
             sb.append("\nthrows "); //NOI18N
             for (int i = 0; i < exs.length; i++) {
-                appendType(eu, sb, exs[i], false);
+                appendType(eu, sb, exs[i], false, false);
                 if (i < exs.length - 1)
                     sb.append(", "); //NOI18N
             }
         }
         sb.append("</pre>"); //NOI18N
-        return sb.toString();
+        if (docURL != null) {
+            try {
+                docURL = new URL(docURL.toExternalForm() + "#" + mdoc.name() + pb.toString()); //NOI18N
+            } catch (MalformedURLException e) {}
+        }
+        return sb;
     }
     
-    private String getFieldHeader(ElementUtilities eu, FieldDoc fdoc) {
+    private StringBuilder getFieldHeader(ElementUtilities eu, FieldDoc fdoc) {
         StringBuilder sb = new StringBuilder();
         sb.append("<pre>"); //NOI18N
+        sb.append(getAnnotations(eu, fdoc));
         sb.append(fdoc.modifiers());
         if (sb.length() > 0)
             sb.append(' '); //NOI18N
-        appendType(eu, sb, fdoc.type(), false);
+        appendType(eu, sb, fdoc.type(), false, false);
         sb.append(" <b>").append(fdoc.name()).append("</b>"); //NOI18N
         sb.append("</pre>"); //NOI18N
-        return sb.toString();
+        if (docURL != null) {
+            try {
+                docURL = new URL(docURL.toExternalForm() + "#" + fdoc.name()); //NOI18N
+            } catch (MalformedURLException e) {}
+        }
+        return sb;
     }
     
-    private String getClassHeader(ElementUtilities eu, ClassDoc cdoc) {
+    private StringBuilder getClassHeader(ElementUtilities eu, ClassDoc cdoc) {
         StringBuilder sb = new StringBuilder();
         sb.append("<pre>"); //NOI18N
-        sb.append(cdoc.modifiers());
+        sb.append(getAnnotations(eu, cdoc));
+        int mods = cdoc.modifierSpecifier() & ~Modifier.INTERFACE;
+        if (cdoc.isEnum())
+            mods &= ~Modifier.FINAL;
+        sb.append(Modifier.toString(mods));
         if (sb.length() > 0)
             sb.append(' '); //NOI18N
-        if (cdoc.isOrdinaryClass())
-            sb.append("class "); //NOI18N
+        if (cdoc.isAnnotationType())
+            sb.append("@interface "); //NOI18N
         else if (cdoc.isEnum())
             sb.append("enum "); //NOI18N
-        sb.append("<b>").append(cdoc.name()).append("</b>"); //NOI18N
-        Type supercls = cdoc.superclassType();
-        if (supercls != null) {
-            sb.append("\nextends "); //NOI18N
-            appendType(eu, sb, supercls, false);
+        else if (cdoc.isInterface())
+            sb.append("interface "); //NOI18N
+        else
+            sb.append("class "); //NOI18N            
+        sb.append("<b>").append(cdoc.name()); //NOI18N
+        TypeVariable[] tvars = cdoc.typeParameters();
+        if (tvars.length > 0) {
+            sb.append("&lt;"); //NOI18N
+            for (int i = 0; i < tvars.length; i++) {
+                appendType(eu, sb, tvars[i], false, true);
+                if (i < tvars.length - 1)
+                    sb.append(","); //NOI18N
+            }
+            sb.append("&gt;"); //NOI18N
         }
-        Type[] ifaces = cdoc.interfaceTypes();
-        if (ifaces.length > 0) {
-            sb.append("\nimplements "); //NOI18N
-            for (int i = 0; i < ifaces.length; i++) {
-                appendType(eu, sb, ifaces[i], false);
-                if (i < ifaces.length - 1)
-                    sb.append(", "); //NOI18N
+        sb.append("</b>"); //NOi18N
+        if (!cdoc.isAnnotationType()) {
+            if (cdoc.isClass()) {
+                Type supercls = cdoc.superclassType();
+                if (supercls != null) {
+                    sb.append("\nextends "); //NOI18N
+                    appendType(eu, sb, supercls, false, false);
+                }
+                
+            }
+            Type[] ifaces = cdoc.interfaceTypes();
+            if (ifaces.length > 0) {
+                sb.append(cdoc.isInterface() ? "\nextends " : "\nimplements "); //NOI18N
+                for (int i = 0; i < ifaces.length; i++) {
+                    appendType(eu, sb, ifaces[i], false, false);
+                    if (i < ifaces.length - 1)
+                        sb.append(", "); //NOI18N
+                }
             }
         }
         sb.append("</pre>"); //NOI18N
-        return sb.toString();
+        return sb;
     }
     
-    private String getTags(ElementUtilities eu, Doc doc) {
+    private StringBuilder getAnnotations(ElementUtilities eu, ProgramElementDoc peDoc) {
+        StringBuilder sb = new StringBuilder();
+        for (AnnotationDesc annotationDesc : peDoc.annotations()) {
+            appendType(eu, sb, annotationDesc.annotationType(), false, false);
+            ElementValuePair[] pairs = annotationDesc.elementValues();
+            if (pairs.length > 0) {
+                sb.append('('); //NOI18N
+                for (int i = 0; i < pairs.length; i++) {
+                    AnnotationTypeElementDoc ated = pairs[i].element();
+                    createLink(sb, eu.elementFor(ated), ated.name());
+                    sb.append('='); //NOI18N
+                    appendAnnotationValue(eu, sb, pairs[i].value());
+                    if (i < pairs.length - 1)
+                        sb.append(","); //NOI18N
+                }
+                sb.append(')'); //NOI18N
+            }
+            sb.append('\n'); //NOI18N
+        }
+        return sb;
+    }
+    
+    private void appendAnnotationValue(ElementUtilities eu, StringBuilder sb, AnnotationValue av) {
+        Object value = av.value();
+        if (value instanceof AnnotationValue[]) {
+            int length = ((AnnotationValue[])value).length;
+            if (length > 1)
+                sb.append('{'); //NOI18N
+            for(int i = 0; i < ((AnnotationValue[])value).length; i++) {
+                appendAnnotationValue(eu, sb, ((AnnotationValue[])value)[i]);
+                if (i < ((AnnotationValue[])value).length - 1)
+                    sb.append(","); //NOI18N
+            }
+            if (length > 1)
+                sb.append('}'); //NOI18N
+        } else if (value instanceof Doc) {
+            createLink(sb, eu.elementFor((Doc)value), ((Doc)value).name());
+        } else {
+            sb.append(value.toString());
+        }
+    } 
+    
+    private StringBuilder getTags(ElementUtilities eu, Doc doc) {
         StringBuilder see = new StringBuilder();
         StringBuilder par = new StringBuilder();
         StringBuilder thr = new StringBuilder();
@@ -304,10 +427,10 @@ public class JavaCompletionDoc implements CompletionDocumentation {
         if (since != null) {
             sb.append("<b>").append(NbBundle.getMessage(JavaCompletionDoc.class, "JCD-since")).append("</b><blockquote>").append(since).append("</blockquote>"); //NOI18N
         }
-        return sb.toString();
+        return sb;
     }
     
-    private String inlineTags(ElementUtilities eu, Doc doc, Tag[] tags) {
+    private StringBuilder inlineTags(ElementUtilities eu, Doc doc, Tag[] tags) {
         StringBuilder sb = new StringBuilder();
         for (Tag tag : tags) {
             if (SEE_TAG.equals(tag.kind())) {
@@ -333,7 +456,7 @@ public class JavaCompletionDoc implements CompletionDocumentation {
                 sb.append(tag.text());
             }
         }
-        return sb.toString();
+        return sb;
     }
     
     private void appendSpace(StringBuilder sb, int length) {
@@ -341,7 +464,7 @@ public class JavaCompletionDoc implements CompletionDocumentation {
             sb.append(' '); //NOI18N            
     }
     
-    private int appendType(ElementUtilities eu, StringBuilder sb, Type type, boolean varArg) {
+    private int appendType(ElementUtilities eu, StringBuilder sb, Type type, boolean varArg, boolean typeVar) {
         int len = 0;
         WildcardType wt = type.asWildcardType();
         if (wt != null) {
@@ -351,30 +474,51 @@ public class JavaCompletionDoc implements CompletionDocumentation {
             if (bounds != null && bounds.length > 0) {
                 sb.append(" extends "); //NOI18N
                 len += 9;
-                len += appendType(eu, sb, bounds[0], false);
+                len += appendType(eu, sb, bounds[0], false, false);
             }
             bounds = wt.superBounds();
             if (bounds != null && bounds.length > 0) {
                 sb.append(" super "); //NOI18N
                 len += 7;
-                len += appendType(eu, sb, bounds[0], false);
+                len += appendType(eu, sb, bounds[0], false, false);
             }
         } else {
-            len = createLink(sb, eu.elementFor(type.asClassDoc()), type.simpleTypeName());
-            ParameterizedType pt = type.asParameterizedType();
-            if (pt != null) {
-                Type[] targs = pt.typeArguments();
-                if (targs.length > 0) {
-                    sb.append("&lt;"); //NOI18N
-                    for (int j = 0; j < targs.length; j++) {
-                        len += appendType(eu, sb, targs[j], false);
-                        if (j < targs.length - 1) {
-                            sb.append(", "); //NOI18N
-                            len += 2;
+            TypeVariable tv = type.asTypeVariable();
+            if (tv != null) {
+                len += createLink(sb, null, tv.simpleTypeName());
+                Type[] bounds = tv.bounds();
+                if (typeVar && bounds != null && bounds.length > 0) {
+                    sb.append(" extends "); //NOI18N
+                    len += 9;
+                    for (int i = 0; i < bounds.length; i++) {
+                        len += appendType(eu, sb, bounds[i], false, false);
+                        if (i < bounds.length - 1) {
+                            sb.append(" & "); //NOI18N
+                            len += 3;
                         }
                     }
-                    sb.append("&gt;"); //NOI18N
-                    len += 2;
+                }
+            } else {
+                String tName = type.simpleTypeName();
+                ClassDoc cd = type.asClassDoc();
+                if (cd != null && cd.isAnnotationType())
+                    tName = "@" + tName; //NOI18N
+                len += createLink(sb, eu.elementFor(type.asClassDoc()), tName);
+                ParameterizedType pt = type.asParameterizedType();
+                if (pt != null) {
+                    Type[] targs = pt.typeArguments();
+                    if (targs.length > 0) {
+                        sb.append("&lt;"); //NOI18N
+                        for (int j = 0; j < targs.length; j++) {
+                            len += appendType(eu, sb, targs[j], false, false);
+                            if (j < targs.length - 1) {
+                                sb.append(","); //NOI18N
+                                len++;
+                            }
+                        }
+                        sb.append("&gt;"); //NOI18N
+                        len += 2;
+                    }
                 }
             }
         }
