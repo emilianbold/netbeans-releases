@@ -2,20 +2,20 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
- * 
+ *
  * $Id$
  */
 package org.netbeans.installer.downloader.connector;
@@ -61,45 +61,40 @@ public class URLConnector {
   public static URLConnector getConnector() {
     if (instance != null) return instance;
     instance = new URLConnector();
-     instance.settingFile = new File(DownloadManager.DM.getWd(),"settings.xml");
+    instance.settingFile = new File(DownloadManager.DM.getWd(),"settings.xml");
     if (instance.settingFile.exists()) {
-       instance.load();
-         LogManager.log("configuration was load from file: " + instance.settingFile);
-       } else LogManager.log("file not exist, default configuration was set!");
+      instance.load();
+      LogManager.log("configuration was load from file: " + instance.settingFile);
+    } else LogManager.log("file not exist, default configuration was set!");
     return instance;
   }
   
   private void addSystemProxies() {
-    String host = System.getProperty("deployment.proxy.http.host");
-    String stringPort = System.getProperty("deployment.proxy.http.port");
-    int port = stringPort != null ? Integer.parseInt(stringPort): -1;
+    addProxyFrom("http.proxyHost", "http.proxyPort", MyProxyType.HTTP);
+    addProxyFrom("ftp.proxyHost", "ftp.proxyPort", MyProxyType.FTP);
+    addProxyFrom("socksProxyHost", "socksProxyPort", MyProxyType.SOCKS);
+  }
+  
+  private void addDeploymentProxies() {
+    addProxyFrom("deployment.proxy.http.host", "deployment.proxy.http.port", MyProxyType.HTTP);
+    addProxyFrom("deployment.proxy.ftp.host", "deployment.proxy.ftp.port", MyProxyType.FTP);
+    addProxyFrom("deployment.proxy.socks.host", "deployment.proxy.socks.port", MyProxyType.SOCKS);
+  }
+  
+  private void addProxyFrom(String hostProp, String portProp, MyProxyType type) {
+    final String host = System.getProperty(hostProp);
+    final String stringPort = System.getProperty(portProp);
+    final int port = stringPort != null ? Integer.parseInt(stringPort): -1;
     if (host != null && port != -1) {
-      final Proxy httpProxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(host , port));
-      proxySelector.add(new MyProxy(httpProxy, MyProxyType.HTTP));
-      useProxy = true;
-    }
-    
-    host = System.getProperty("deployment.proxy.ftp.host");
-    stringPort = System.getProperty("deployment.proxy.ftp.port");
-    port = stringPort != null ? Integer.parseInt(stringPort): -1;
-    if (host != null && port != -1) {
-      final Proxy ftpProxy = new Proxy(Proxy.Type.SOCKS, new InetSocketAddress(host, port));
-      proxySelector.add(new MyProxy(ftpProxy, MyProxyType.FTP));
-      useProxy = true;
-    }
-    
-    host = System.getProperty("deployment.proxy.socks.host");
-    stringPort = System.getProperty("deployment.proxy.socks.port");
-    port = stringPort != null ? Integer.parseInt(stringPort): -1;
-    if (host != null && port != -1) {
-      final Proxy socksProxy = new Proxy(Proxy.Type.SOCKS, new InetSocketAddress(host, port));
-      proxySelector.add(new MyProxy(socksProxy, MyProxyType.SOCKS));
+      final Proxy socksProxy = new Proxy(type.getType(), new InetSocketAddress(host, port));
+      proxySelector.add(new MyProxy(socksProxy, type));
       useProxy = true;
     }
   }
   
   private URLConnector() {
     addSystemProxies();
+    addDeploymentProxies();
   }
   
   private void load() {
@@ -140,7 +135,7 @@ public class URLConnector {
     } catch(IOException ex) {
       LogManager.log("I/O error. Can't dump configuration");
     }  catch(ParseException wontHappend) {
-        LogManager.log("fatal error can't parse <connectSettings/>");
+      LogManager.log("fatal error can't parse <connectSettings/>");
     }
   }
   
@@ -206,10 +201,10 @@ public class URLConnector {
       return url.openConnection(Proxy.NO_PROXY);
     } catch(IOException ex) {
       LogManager.log("failed to connect throw proxy: " + proxy + " to url: " + url
-              + " " + ex.getClass().getName()+ ": " + ex.getMessage());
+        + " " + ex.getClass().getName()+ ": " + ex.getMessage());
       proxySelector.connectFailed(uri, proxy.address(), ex);
       throw new IOException("failed to connect throw proxy: " + proxy + " to url: " + url
-              + " " + ex.getClass().getName()+ ": " + ex.getMessage());
+        + " " + ex.getClass().getName()+ ": " + ex.getMessage());
     }
   }
   
