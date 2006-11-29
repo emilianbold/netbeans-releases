@@ -18,12 +18,16 @@
  */
 package org.netbeans.modules.java.editor.fold;
 
+import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
+import com.sun.source.util.TreePath;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -42,7 +46,7 @@ import javax.swing.text.Position;
 import org.netbeans.api.editor.fold.Fold;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.support.CancellableTreeScanner;
+import org.netbeans.api.java.source.support.CancellableTreePathScanner;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -52,7 +56,6 @@ import org.netbeans.editor.SettingsUtil;
 import org.netbeans.editor.ext.java.JavaFoldManager;
 import org.netbeans.editor.ext.java.JavaSettingsNames;
 import org.netbeans.modules.java.editor.semantic.ScanningCancellableTask;
-import org.netbeans.modules.java.editor.semantic.Utilities;
 import org.netbeans.spi.editor.fold.FoldHierarchyTransaction;
 import org.netbeans.spi.editor.fold.FoldOperation;
 import org.openide.ErrorManager;
@@ -305,7 +308,7 @@ public class JavaElementFoldManager extends JavaFoldManager {
     private Fold initialCommentFold;
     private Fold importsFold;
     
-    private final class JavaElementFoldVisitor extends CancellableTreeScanner {
+    private final class JavaElementFoldVisitor extends CancellableTreePathScanner {
         
         private List<FoldInfo> folds = new ArrayList();
         private CompilationInfo info;
@@ -372,25 +375,25 @@ public class JavaElementFoldManager extends JavaFoldManager {
                     int startOffset = ts.offset();
                     folds.add(new FoldInfo(doc, startOffset, startOffset + token.length(), JAVADOC_FOLD_TEMPLATE, foldJavadocsPreset));
                 }
-                if (token.id() != JavaTokenId.WHITESPACE)
+                if (   token.id() != JavaTokenId.WHITESPACE
+                    && token.id() != JavaTokenId.BLOCK_COMMENT
+                    && token.id() != JavaTokenId.LINE_COMMENT)
                     break;
             }
         }
         
-        @Override
-        public Object visitMethod(MethodTree node, Object p) {
-            super.visitMethod(node, p);
-            Tree body = node.getBody();
-            
+        private void handleTree(Tree node, Tree javadocTree, boolean handleOnlyJavadoc) {
             try {
-                Document doc = operation.getHierarchy().getComponent().getDocument();
-                int start = (int)sp.getStartPosition(cu, body);
-                int end   = (int)sp.getEndPosition(cu, body);
+                if (!handleOnlyJavadoc) {
+                    Document doc = operation.getHierarchy().getComponent().getDocument();
+                    int start = (int)sp.getStartPosition(cu, node);
+                    int end   = (int)sp.getEndPosition(cu, node);
+                    
+                    if (start != (-1) && end != (-1))
+                        folds.add(new FoldInfo(doc, start, end, CODE_BLOCK_FOLD_TEMPLATE, foldCodeBlocksPreset));
+                }
                 
-                if (start != (-1) && end != (-1))
-                    folds.add(new FoldInfo(doc, start, end, CODE_BLOCK_FOLD_TEMPLATE, foldCodeBlocksPreset));
-                
-                handleJavadoc(node);
+                handleJavadoc(javadocTree != null ? javadocTree : node);
             } catch (BadLocationException e) {
                 //the document probably changed, stop
                 stopped = true;
@@ -398,30 +401,39 @@ public class JavaElementFoldManager extends JavaFoldManager {
                 //from TokenSequence, document probably changed, stop
                 stopped = true;
             }
+        }
+        
+        @Override
+        public Object visitMethod(MethodTree node, Object p) {
+            super.visitMethod(node, p);
+            handleTree(node.getBody(), node, false);
             return null;
         }
 
         @Override
         public Object visitClass(ClassTree node, Object p) {
             super.visitClass(node, Boolean.TRUE);
-            if (p == Boolean.TRUE) {
-                try {
-                    Document doc   = operation.getHierarchy().getComponent().getDocument();
-                    int      start = Utilities.findBodyStart(node, cu, sp, doc);
-                    int      end   = (int)sp.getEndPosition(cu, node);
-                    
-                    if (start != (-1) && end != (-1))
-                        folds.add(new FoldInfo(doc, start, end, CODE_BLOCK_FOLD_TEMPLATE, foldInnerClassesPreset));
-                    
-                    handleJavadoc(node);
-                } catch (BadLocationException e) {
-                    //the document probably changed, stop
-                    stopped = true;
-                } catch (ConcurrentModificationException e) {
-                    //from TokenSequence, document probably changed, stop
-                    stopped = true;
-                }
+            handleTree(node, null, p != Boolean.TRUE);
+            return null;
+        }
+        
+        @Override
+        public Object visitVariable(VariableTree node,Object p) {
+            super.visitVariable(node, p);
+            handleTree(node, null, true);
+            return null;
+        }
+        
+        @Override
+        public Object visitBlock(BlockTree node, Object p) {
+            super.visitBlock(node, p);
+            //check static/dynamic initializer:
+            TreePath path = getCurrentPath();
+            
+            if (path.getParentPath().getLeaf().getKind() == Kind.CLASS) {
+                handleTree(node, null, false);
             }
+            
             return null;
         }
         
