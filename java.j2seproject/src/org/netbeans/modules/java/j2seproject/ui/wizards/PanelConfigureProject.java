@@ -21,7 +21,6 @@ package org.netbeans.modules.java.j2seproject.ui.wizards;
 
 import java.awt.Component;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
@@ -37,32 +36,22 @@ import org.openide.util.HelpCtx;
 final class PanelConfigureProject implements WizardDescriptor.Panel, WizardDescriptor.ValidatingPanel, WizardDescriptor.FinishablePanel {
     
     private WizardDescriptor wizardDescriptor;
-    private int type;
+    private NewJ2SEProjectWizardIterator.WizardType type;
     private PanelConfigureProjectVisual component;
     
-    /** Create the wizard panel descriptor. */
-    public PanelConfigureProject( int type ) {
+    public PanelConfigureProject(NewJ2SEProjectWizardIterator.WizardType type) {
         this.type = type;
     }
     
     public Component getComponent() {
         if (component == null) {
-            component = new PanelConfigureProjectVisual(this, this.type);
+            component = new PanelConfigureProjectVisual(this, type);
         }
         return component;
     }
     
     public HelpCtx getHelp() {
-        
-        switch ( type ) {
-            case NewJ2SEProjectWizardIterator.TYPE_APP:
-                return new HelpCtx( this.getClass().getName() + "_APP" ); // NOI18N
-            case NewJ2SEProjectWizardIterator.TYPE_LIB:
-                return new HelpCtx( this.getClass().getName() + "_LIB" ); // NOI18N
-            case NewJ2SEProjectWizardIterator.TYPE_EXT:
-                return new HelpCtx( this.getClass().getName() + "_EXT" ); // NOI18N
-        }        
-        return new HelpCtx( PanelConfigureProject.class );
+        return new HelpCtx(PanelConfigureProject.class.getName() + '_' + type);
     }
     
     public boolean isValid() {
@@ -70,7 +59,7 @@ final class PanelConfigureProject implements WizardDescriptor.Panel, WizardDescr
         return component.valid( wizardDescriptor );
     }
     
-    private final Set/*<ChangeListener>*/ listeners = new HashSet(1);
+    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
@@ -82,13 +71,13 @@ final class PanelConfigureProject implements WizardDescriptor.Panel, WizardDescr
         }
     }
     protected final void fireChangeEvent() {
-        Iterator it;
+        ChangeListener[] _listeners;
         synchronized (listeners) {
-            it = new HashSet(listeners).iterator();
+            _listeners = listeners.toArray(new ChangeListener[listeners.size()]);
         }
         ChangeEvent ev = new ChangeEvent(this);
-        while (it.hasNext()) {
-            ((ChangeListener)it.next()).stateChanged(ev);
+        for (ChangeListener l : _listeners) {
+            l.stateChanged(ev);
         }
     }
     
@@ -107,7 +96,7 @@ final class PanelConfigureProject implements WizardDescriptor.Panel, WizardDescr
     public void storeSettings(Object settings) {
         WizardDescriptor d = (WizardDescriptor)settings;
         component.store(d);
-        ((WizardDescriptor)d).putProperty ("NewProjectWizard_Title", null); // NOI18N
+        d.putProperty ("NewProjectWizard_Title", null); // NOI18N
     }
 
     public boolean isFinishPanel() {

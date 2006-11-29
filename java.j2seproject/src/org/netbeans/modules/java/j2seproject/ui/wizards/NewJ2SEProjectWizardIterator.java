@@ -24,7 +24,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.text.MessageFormat;
 import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -47,9 +46,7 @@ import org.openide.util.NbBundle;
  */
 public class NewJ2SEProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
 
-    static final int TYPE_APP = 0;
-    static final int TYPE_LIB = 1;
-    static final int TYPE_EXT = 2;
+    enum WizardType {APP, LIB, EXT}
     
     static final String PROP_NAME_INDEX = "nameIndex";      //NOI18N
 
@@ -57,57 +54,63 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.ProgressIn
 
     private static final long serialVersionUID = 1L;
     
-    private int type;
+    private WizardType type;
     
     /** Create a new wizard iterator. */
     public NewJ2SEProjectWizardIterator() {
-        this(TYPE_APP);
+        this(WizardType.APP);
     }
     
-    public NewJ2SEProjectWizardIterator(int type) {
+    public NewJ2SEProjectWizardIterator(WizardType type) {
         this.type = type;
     }
         
     public static NewJ2SEProjectWizardIterator library() {
-        return new NewJ2SEProjectWizardIterator( TYPE_LIB );
+        return new NewJ2SEProjectWizardIterator(WizardType.LIB);
     }
     
-    public static NewJ2SEProjectWizardIterator existing () {
-        return new NewJ2SEProjectWizardIterator( TYPE_EXT );
+    public static NewJ2SEProjectWizardIterator existing() {
+        return new NewJ2SEProjectWizardIterator(WizardType.EXT);
     }
 
-    private WizardDescriptor.Panel[] createPanels () {
-        return this.type == TYPE_EXT ?
-            new WizardDescriptor.Panel[] {
-                new PanelConfigureProject( this.type ),
-                new PanelSourceFolders.Panel()
-            } 
-            :new WizardDescriptor.Panel[] {
-                new PanelConfigureProject( this.type )
-            };
+    private WizardDescriptor.Panel[] createPanels() {
+        switch (type) {
+            case EXT:
+                return new WizardDescriptor.Panel[] {
+                    new PanelConfigureProject(type),
+                    new PanelSourceFolders.Panel()
+                };
+            default:
+                return new WizardDescriptor.Panel[] {
+                    new PanelConfigureProject(type)
+                };
+        }
     }
     
     private String[] createSteps() {
-        return this.type == TYPE_EXT ?
-            new String[] {                
-                NbBundle.getMessage(NewJ2SEProjectWizardIterator.class,"LAB_ConfigureProject"), 
-                NbBundle.getMessage(NewJ2SEProjectWizardIterator.class,"LAB_ConfigureSourceRoots"),
-            }
-            :new String[] {
-                NbBundle.getMessage(NewJ2SEProjectWizardIterator.class,"LAB_ConfigureProject"), 
-            };
+        switch (type) {
+            case EXT:
+                return new String[] {
+                    NbBundle.getMessage(NewJ2SEProjectWizardIterator.class,"LAB_ConfigureProject"),
+                    NbBundle.getMessage(NewJ2SEProjectWizardIterator.class,"LAB_ConfigureSourceRoots"),
+                };
+            default:
+                return new String[] {
+                    NbBundle.getMessage(NewJ2SEProjectWizardIterator.class,"LAB_ConfigureProject"),
+                };
+        }
     }
     
     
-    public Set/*<FileObject>*/ instantiate () throws IOException {
+    public Set<?> instantiate() throws IOException {
         assert false : "Cannot call this method if implements WizardDescriptor.ProgressInstantiatingIterator.";
         return null;
     }
         
-    public Set/*<FileObject>*/ instantiate (ProgressHandle handle) throws IOException {
+    public Set<FileObject> instantiate (ProgressHandle handle) throws IOException {
         handle.start (4);
         //handle.progress (NbBundle.getMessage (NewJ2SEProjectWizardIterator.class, "LBL_NewJ2SEProjectWizardIterator_WizardProgress_ReadingProperties"));
-        Set resultSet = new HashSet ();
+        Set<FileObject> resultSet = new HashSet<FileObject>();
         File dirF = (File)wiz.getProperty("projdir");        //NOI18N
         if (dirF != null) {
             dirF = FileUtil.normalizeFile(dirF);
@@ -115,20 +118,21 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.ProgressIn
         String name = (String)wiz.getProperty("name");        //NOI18N
         String mainClass = (String)wiz.getProperty("mainClass");        //NOI18N
         handle.progress (NbBundle.getMessage (NewJ2SEProjectWizardIterator.class, "LBL_NewJ2SEProjectWizardIterator_WizardProgress_CreatingProject"), 1);
-        if (this.type == TYPE_EXT) {
+        switch (type) {
+        case EXT:
             File[] sourceFolders = (File[])wiz.getProperty("sourceRoot");        //NOI18N
             File[] testFolders = (File[])wiz.getProperty("testRoot");            //NOI18N
             J2SEProjectGenerator.createProject(dirF, name, sourceFolders, testFolders, MANIFEST_FILE );
             handle.progress (2);
-            for (int i=0; i<sourceFolders.length; i++) {
-                FileObject srcFo = FileUtil.toFileObject(sourceFolders[i]);
+            for (File f : sourceFolders) {
+                FileObject srcFo = FileUtil.toFileObject(f);
                 if (srcFo != null) {
                     resultSet.add (srcFo);
                 }
             }
-        }
-        else {
-            AntProjectHelper h = J2SEProjectGenerator.createProject(dirF, name, mainClass, type == TYPE_APP ? MANIFEST_FILE : null);
+            break;
+        default:
+            AntProjectHelper h = J2SEProjectGenerator.createProject(dirF, name, mainClass, type == WizardType.APP ? MANIFEST_FILE : null);
             handle.progress (2);
             if (mainClass != null && mainClass.length () > 0) {
                 try {
@@ -148,23 +152,25 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.ProgressIn
             // }
         }
         FileObject dir = FileUtil.toFileObject(dirF);
-        if (type == TYPE_APP || type == TYPE_EXT) {
-            createManifest(dir);
+        switch (type) {
+            case APP:
+            case EXT:
+                createManifest(dir);
         }
         handle.progress (3);
 
         // Returning FileObject of project diretory. 
         // Project will be open and set as main
-        Integer index = (Integer) wiz.getProperty(PROP_NAME_INDEX);
-        switch (this.type) {
-            case TYPE_APP:
-                FoldersListSettings.getDefault().setNewApplicationCount(index.intValue());
+        int index = (Integer) wiz.getProperty(PROP_NAME_INDEX);
+        switch (type) {
+            case APP:
+                FoldersListSettings.getDefault().setNewApplicationCount(index);
                 break;
-            case TYPE_LIB:
-                FoldersListSettings.getDefault().setNewLibraryCount(index.intValue());
+            case LIB:
+                FoldersListSettings.getDefault().setNewLibraryCount(index);
                 break;
-            case TYPE_EXT:
-                FoldersListSettings.getDefault().setNewProjectCount(index.intValue());
+            case EXT:
+                FoldersListSettings.getDefault().setNewProjectCount(index);
                 break;
         }        
         resultSet.add (dir);
@@ -199,7 +205,7 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.ProgressIn
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent)c;
                 // Step #.
-                jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i)); // NOI18N
+                jc.putClientProperty("WizardPanel_contentSelectedIndex", i); // NOI18N
                 // Step name (actually the whole list for reference).
                 jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
             }
@@ -214,7 +220,8 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.ProgressIn
             this.wiz.putProperty("projdir",null);           //NOI18N
             this.wiz.putProperty("name",null);          //NOI18N
             this.wiz.putProperty("mainClass",null);         //NOI18N
-            if (this.type == TYPE_EXT) {
+            switch (type) {
+            case EXT:
                 this.wiz.putProperty("sourceRoot",null);    //NOI18N
                 this.wiz.putProperty("testRoot",null);      //NOI18N
             }
@@ -224,8 +231,7 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.ProgressIn
     }
     
     public String name() {
-        return MessageFormat.format (NbBundle.getMessage(NewJ2SEProjectWizardIterator.class,"LAB_IteratorName"),
-            new Object[] {new Integer (index + 1), new Integer (panels.length) });                                
+        return NbBundle.getMessage(NewJ2SEProjectWizardIterator.class, "LAB_IteratorName", index + 1, panels.length);
     }
     
     public boolean hasNext() {

@@ -27,7 +27,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Iterator;
-import javax.swing.Action;
+import java.util.List;
 import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -41,7 +41,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.netbeans.api.project.FileOwnerQuery;
 
 //XXX There should be a way how to add nonexistent test dir
 
@@ -286,7 +285,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
     
     static class Panel implements WizardDescriptor.ValidatingPanel {
         
-        private ArrayList listeners;        
+        private List<ChangeListener> listeners;
         private PanelSourceFolders component;
         private WizardDescriptor settings;
         
@@ -299,7 +298,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
 
         public void addChangeListener(ChangeListener l) {
             if (this.listeners == null) {
-                this.listeners = new ArrayList ();
+                this.listeners = new ArrayList<ChangeListener>();
             }
             this.listeners.add (l);
         }
@@ -339,16 +338,16 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         }        
         
         private void fireChangeEvent () {
-           Iterator it = null;
+           ChangeListener[] _listeners;
            synchronized (this) {
-               if (this.listeners == null) {
+               if (listeners == null) {
                    return;
                }
-               it = ((ArrayList)this.listeners.clone()).iterator();
+               _listeners = listeners.toArray(new ChangeListener[listeners.size()]);
            }
            ChangeEvent event = new ChangeEvent (this);
-           while (it.hasNext()) {
-               ((ChangeListener)it.next()).stateChanged(event);
+           for (ChangeListener l : _listeners) {
+               l.stateChanged(event);
            }
         }
                 

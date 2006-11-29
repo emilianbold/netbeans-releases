@@ -28,15 +28,12 @@ import java.text.MessageFormat;
 import java.util.StringTokenizer;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
- *
  * @author  phrebejk
  */
 public class PanelOptionsVisual extends SettingsPanel implements ActionListener, PropertyChangeListener {
@@ -46,23 +43,22 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
     private PanelConfigureProject panel;
     private boolean valid;
     
-    /** Creates new form PanelOptionsVisual */
-    public PanelOptionsVisual( PanelConfigureProject panel, int type ) {
+    public PanelOptionsVisual(PanelConfigureProject panel, NewJ2SEProjectWizardIterator.WizardType type) {
         initComponents();
         this.panel = panel;
 
         switch (type) {
-            case NewJ2SEProjectWizardIterator.TYPE_LIB:
+            case LIB:
                 setAsMainCheckBox.setVisible( false );
                 createMainCheckBox.setVisible( false );
                 mainClassTextField.setVisible( false );
                 break;
-            case NewJ2SEProjectWizardIterator.TYPE_APP:
+            case APP:
                 createMainCheckBox.addActionListener( this );
                 createMainCheckBox.setSelected( lastMainClassCheck );
                 mainClassTextField.setEnabled( lastMainClassCheck );
                 break;
-            case NewJ2SEProjectWizardIterator.TYPE_EXT:
+            case EXT:
                 setAsMainCheckBox.setVisible( true );
                 createMainCheckBox.setVisible( false );
                 mainClassTextField.setVisible( false );

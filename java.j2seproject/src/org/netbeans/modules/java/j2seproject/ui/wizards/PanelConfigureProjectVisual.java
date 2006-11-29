@@ -19,11 +19,7 @@
 
 package org.netbeans.modules.java.j2seproject.ui.wizards;
 
-import java.io.File;
 import javax.swing.JPanel;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.text.Document;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.NbBundle;
@@ -47,29 +43,29 @@ public class PanelConfigureProjectVisual extends JPanel {
     
     private PanelOptionsVisual optionsPanel;
     
-    private int type;
+    private NewJ2SEProjectWizardIterator.WizardType type;
     
-    /** Creates new form PanelInitProject */
-    public PanelConfigureProjectVisual( PanelConfigureProject panel, int type ) {
+    public PanelConfigureProjectVisual(PanelConfigureProject panel, NewJ2SEProjectWizardIterator.WizardType type) {
         this.panel = panel;
         initComponents();                
         this.type = type;
         setName(NbBundle.getMessage(PanelConfigureProjectVisual.class,"TXT_NameAndLoc")); // NOI18N
-        if (type == NewJ2SEProjectWizardIterator.TYPE_APP) {
+        switch (type) {
+        case APP:
             projectLocationPanel = new PanelProjectLocationVisual( panel, type );
             putClientProperty ("NewProjectWizard_Title", NbBundle.getMessage(PanelConfigureProjectVisual.class,"TXT_NewJavaApp")); // NOI18N
             jSeparator1.setVisible(true);
             getAccessibleContext ().setAccessibleName (NbBundle.getMessage(PanelConfigureProjectVisual.class,"TXT_NewJavaApp")); // NOI18N
             getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage(PanelConfigureProjectVisual.class,"ACSD_NewJavaApp")); // NOI18N
-        }                       
-        else if (type == NewJ2SEProjectWizardIterator.TYPE_LIB) {
+            break;
+        case LIB:
             projectLocationPanel = new PanelProjectLocationVisual( panel, type );
             jSeparator1.setVisible (false);
             putClientProperty ("NewProjectWizard_Title", NbBundle.getMessage(PanelConfigureProjectVisual.class,"TXT_NewJavaLib")); // NOI18N
             getAccessibleContext ().setAccessibleName (NbBundle.getMessage(PanelConfigureProjectVisual.class,"TXT_NewJavaLib")); // NOI18N
             getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage(PanelConfigureProjectVisual.class,"ACSD_NewJavaLib")); // NOI18N
-        }
-        else {
+            break;
+        case EXT:
             projectLocationPanel = new PanelProjectLocationExtSrc ( panel );
             jSeparator1.setVisible(true);
             putClientProperty ("NewProjectWizard_Title", NbBundle.getMessage(PanelConfigureProjectVisual.class,"TXT_JavaExtSourcesProjectLocation")); // NOI18N
@@ -88,8 +84,8 @@ public class PanelConfigureProjectVisual extends JPanel {
     }
     
     void read (WizardDescriptor d) {
-        Integer lastType = (Integer) d.getProperty("wizard-type");  //NOI18N        
-        if (lastType == null || lastType.intValue() != this.type) {
+        NewJ2SEProjectWizardIterator.WizardType lastType = (NewJ2SEProjectWizardIterator.WizardType) d.getProperty("wizard-type");  //NOI18N        
+        if (lastType == null || lastType != type) {
             //bugfix #46387 The type of project changed, reset values to defaults
             d.putProperty ("name", null);
             d.putProperty ("projdir",null);
@@ -99,7 +95,7 @@ public class PanelConfigureProjectVisual extends JPanel {
     }
     
     void store( WizardDescriptor d ) {
-        d.putProperty("wizard-type", new Integer(this.type));   //NOI18N
+        d.putProperty("wizard-type", type);   //NOI18N
         projectLocationPanel.store( d );
         optionsPanel.store( d );        
     }

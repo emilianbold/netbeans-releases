@@ -27,7 +27,6 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import org.netbeans.modules.java.j2seproject.ui.FoldersListSettings;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
@@ -45,10 +44,9 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     public static final String PROP_PROJECT_NAME = "projectName";      //NOI18N
     
     private PanelConfigureProject panel;
-    private int type;
+    private NewJ2SEProjectWizardIterator.WizardType type;
         
-    /** Creates new form PanelProjectLocationVisual */
-    public PanelProjectLocationVisual( PanelConfigureProject panel, int type ) {
+    public PanelProjectLocationVisual(PanelConfigureProject panel, NewJ2SEProjectWizardIterator.WizardType type) {
         initComponents();
         this.panel = panel;
         this.type = type;
@@ -261,17 +259,18 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         
         String projectName = (String) settings.getProperty ("name"); //NOI18N
         if (projectName == null) {
-            if (this.type == NewJ2SEProjectWizardIterator.TYPE_APP) {
+            switch (type) {
+            case APP:
                 int baseCount = FoldersListSettings.getDefault().getNewApplicationCount() + 1;
-                String formater = NbBundle.getMessage(PanelSourceFolders.class,"TXT_JavaApplication");
-                while ((projectName=validFreeProjectName(projectLocation, formater, baseCount))==null)
+                String formatter = NbBundle.getMessage(PanelSourceFolders.class,"TXT_JavaApplication");
+                while ((projectName=validFreeProjectName(projectLocation, formatter, baseCount))==null)
                     baseCount++;                
                 settings.putProperty (NewJ2SEProjectWizardIterator.PROP_NAME_INDEX, new Integer(baseCount));
-            }
-            else {                
-                int baseCount = FoldersListSettings.getDefault().getNewLibraryCount() + 1;
-                String formater = NbBundle.getMessage(PanelSourceFolders.class,"TXT_JavaLibrary");
-                while ((projectName=validFreeProjectName(projectLocation, formater, baseCount))==null)
+                break;
+            default:
+                baseCount = FoldersListSettings.getDefault().getNewLibraryCount() + 1;
+                formatter = NbBundle.getMessage(PanelSourceFolders.class,"TXT_JavaLibrary");
+                while ((projectName=validFreeProjectName(projectLocation, formatter, baseCount))==null)
                     baseCount++;                
                 settings.putProperty (NewJ2SEProjectWizardIterator.PROP_NAME_INDEX, new Integer(baseCount));
             }            
