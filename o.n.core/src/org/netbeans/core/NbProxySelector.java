@@ -18,9 +18,9 @@
  */
 
 package org.netbeans.core;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.net.Proxy;
 import java.net.Proxy;
 import java.net.ProxySelector;
 import java.net.SocketAddress;
@@ -51,7 +51,7 @@ public final class NbProxySelector extends ProxySelector {
         original = super.getDefault ();
         log.fine ("Override the original ProxySelector: " + original);
         log.fine ("java.net.useSystemProxies has been set to " + NetProperties.getBoolean ("java.net.useSystemProxies"));
-        new ProxySettings ().addPreferenceChangeListener (new ProxySettingsListener ());
+        ProxySettings.addPreferenceChangeListener (new ProxySettingsListener ());
         copySettingsToSystem ();
     }
     

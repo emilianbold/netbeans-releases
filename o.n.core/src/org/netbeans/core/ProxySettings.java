@@ -48,21 +48,8 @@ public class ProxySettings {
     public static final String PROXY_AUTHENTICATION_USERNAME = "proxyAuthenticationUsername";
     public static final String PROXY_AUTHENTICATION_PASSWORD = "proxyAuthenticationPassword";
     
-    // XXX Old stuff
-    /** proxy host VM property key */
-    public static final String KEY_PROXY_HOST = "http.proxyHost"; // NOI18N
-    /** proxy port VM property key */
-    public static final String KEY_PROXY_PORT = "http.proxyPort"; // NOI18N
-    /** non proxy hosts VM property key */
-    public static final String KEY_NON_PROXY_HOSTS = "http.nonProxyHosts"; // NOI18N
-    /** https proxy host VM property key */
-    public static final String KEY_HTTPS_PROXY_HOST = "https.proxyHost"; // NOI18N
-    /** https proxy port VM property key */
-    public static final String KEY_HTTPS_PROXY_PORT = "https.proxyPort"; // NOI18N    
-
     private static String presetNonProxyHosts;
-    private static String defaultUserNonProxyHosts;
-    
+
     /** No proxy is used to connect. */
     public static final int DIRECT_CONNECTION = 0;
     
@@ -71,11 +58,6 @@ public class ProxySettings {
     
     /** Manualy set proxy host and port. */
     public static final int MANUAL_SET_PROXY = 2;
-    
-    {
-        presetNonProxyHosts = System.getProperty (KEY_NON_PROXY_HOSTS, "");
-        defaultUserNonProxyHosts = getModifiedNonProxyHosts (getSystemNonProxyHosts ());
-    }
     
     private static Preferences getPreferences() {
         return NbPreferences.forModule (ProxySettings.class);
@@ -106,7 +88,7 @@ public class ProxySettings {
     }
     
     public static String getNonProxyHosts () {
-        return getPreferences ().get (NOT_PROXY_HOSTS, defaultUserNonProxyHosts);
+        return getPreferences ().get (NOT_PROXY_HOSTS, getDefaultUserNonProxyHosts ());
     }
     
     public static int getProxyType () {
@@ -184,7 +166,7 @@ public class ProxySettings {
         }
 
         public static String getNonProxyHosts () {
-            return getModifiedNonProxyHosts (getSystemNonProxyHosts ());
+            return getDefaultUserNonProxyHosts ();
         }
 
         // helper methods
@@ -242,10 +224,21 @@ public class ProxySettings {
 
         return systemProxy == null ? "" : systemProxy;
     }
+    
+    private static String getPresetNonProxyHosts () {
+        if (presetNonProxyHosts == null) {
+            presetNonProxyHosts = System.getProperty ("http.nonProxyHosts", "");
+        }
+        return presetNonProxyHosts;
+    }
+    
+    private static String getDefaultUserNonProxyHosts () {
+        return getModifiedNonProxyHosts (getSystemNonProxyHosts ());
+    }
 
     private static String getModifiedNonProxyHosts (String systemPreset) {
         String fromSystem = systemPreset.replaceAll (";", "|").replaceAll (",", "|"); //NOI18N
-        String fromUser = presetNonProxyHosts == null ? "" : presetNonProxyHosts.replaceAll (";", "|").replaceAll (",", "|"); //NOI18N
+        String fromUser = getPresetNonProxyHosts () == null ? "" : getPresetNonProxyHosts ().replaceAll (";", "|").replaceAll (",", "|"); //NOI18N
         if (Utilities.isWindows ()) {
             fromSystem = addReguralToNonProxyHosts (fromSystem);
         }
