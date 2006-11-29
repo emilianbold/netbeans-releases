@@ -97,9 +97,9 @@ public class CompletionJListOperator extends JListOperator {
             popupField.setAccessible(true);
             final Object popup = popupField.get(layout);
             //CompletionScrollPane.class
-            final Method getCSPaneMethod = popup.getClass().getDeclaredMethod(
-                    "getCompletionScrollPane", (Class[])null);
-            getCSPaneMethod.setAccessible(true);
+            final Field csPanefield = popup.getClass().getDeclaredField(
+                    "completionScrollPane");
+            csPanefield.setAccessible(true);
             Object compSPane = waitFor(new Waitable() {                
                 public Object actionProduced(Object obj) {
                     Object o = null;
@@ -107,7 +107,7 @@ public class CompletionJListOperator extends JListOperator {
                         return INSTANT_SUBSTITUTION;
                     }
                     try {
-                        o = getCSPaneMethod.invoke(popup, (Object[])null);
+                        o = csPanefield.get(popup);
                     } catch (Exception ex) {
                         throw new JemmyException("Invovation of " +
                                 "getCompletionScrollPane() failed", ex);
