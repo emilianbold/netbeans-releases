@@ -22,7 +22,7 @@ package org.netbeans.modules.web.jsf.dialogs;
 import java.util.Hashtable;
 import java.util.Iterator;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.j2ee.common.FQNSearch;
+//import org.netbeans.modules.j2ee.common.FQNSearch;
 import org.netbeans.modules.web.jsf.JSFConfigDataObject;
 import org.netbeans.modules.web.jsf.JSFConfigUtilities;
 import org.netbeans.modules.web.jsf.config.model.ManagedBean;
@@ -90,46 +90,44 @@ public class AddManagedBeanDialog extends javax.swing.JPanel implements Validati
 
         setLayout(new java.awt.GridBagLayout());
 
-        getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/dialogs/Bundle").getString("ACSD_AddManagedBeanDialog"));
-        getAccessibleContext().setAccessibleParent(this);
         jLabelClass.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(AddManagedBeanDialog.class, "MNE_ManagedBeanClass").charAt(0));
         jLabelClass.setLabelFor(jTextFieldClass);
-        jLabelClass.setText(org.openide.util.NbBundle.getMessage(AddManagedBeanDialog.class, "LBL_ManagedBeanClass"));
+        jLabelClass.setText(org.openide.util.NbBundle.getMessage(AddManagedBeanDialog.class, "LBL_ManagedBeanClass")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 12);
         add(jLabelClass, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(jTextFieldClass, gridBagConstraints);
-        jTextFieldClass.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/dialogs/Bundle").getString("ACSN_BeanClass"));
-        jTextFieldClass.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/dialogs/Bundle").getString("ACSD_BeanClass"));
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/dialogs/Bundle"); // NOI18N
+        jTextFieldClass.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_BeanClass")); // NOI18N
+        jTextFieldClass.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_BeanClass")); // NOI18N
 
         jButtonClass.setMnemonic(org.openide.util.NbBundle.getMessage(AddManagedBeanDialog.class, "MNE_Browse").charAt(0));
-        jButtonClass.setText(org.openide.util.NbBundle.getMessage(AddManagedBeanDialog.class, "LBL_Browse"));
+        jButtonClass.setText(org.openide.util.NbBundle.getMessage(AddManagedBeanDialog.class, "LBL_Browse")); // NOI18N
+        jButtonClass.setEnabled(false);
         jButtonClass.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButtonClassActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 11);
         add(jButtonClass, gridBagConstraints);
-        jButtonClass.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/dialogs/Bundle").getString("ACSD_Browse"));
+        jButtonClass.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_Browse")); // NOI18N
 
         jLabelScope.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(AddManagedBeanDialog.class, "MNE_Scope").charAt(0));
         jLabelScope.setLabelFor(jComboBoxScope);
-        jLabelScope.setText(org.openide.util.NbBundle.getMessage(AddManagedBeanDialog.class, "LBL_Scope"));
+        jLabelScope.setText(org.openide.util.NbBundle.getMessage(AddManagedBeanDialog.class, "LBL_Scope")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -144,12 +142,12 @@ public class AddManagedBeanDialog extends javax.swing.JPanel implements Validati
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(jComboBoxScope, gridBagConstraints);
-        jComboBoxScope.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/dialogs/Bundle").getString("ACSN_ManagedBeanScope"));
-        jComboBoxScope.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/dialogs/Bundle").getString("ACSD_Scope"));
+        jComboBoxScope.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_ManagedBeanScope")); // NOI18N
+        jComboBoxScope.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_Scope")); // NOI18N
 
         jLabelDesc.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(AddManagedBeanDialog.class, "MNE_BeanDescription").charAt(0));
         jLabelDesc.setLabelFor(jTextAreaDesc);
-        jLabelDesc.setText(org.openide.util.NbBundle.getMessage(AddManagedBeanDialog.class, "LBL_BeanDescription"));
+        jLabelDesc.setText(org.openide.util.NbBundle.getMessage(AddManagedBeanDialog.class, "LBL_BeanDescription")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -161,8 +159,8 @@ public class AddManagedBeanDialog extends javax.swing.JPanel implements Validati
         jTextAreaDesc.setColumns(20);
         jTextAreaDesc.setRows(5);
         jScrollPaneDesc.setViewportView(jTextAreaDesc);
-        jTextAreaDesc.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/dialogs/Bundle").getString("ACN_ManagedBeanDescription"));
-        jTextAreaDesc.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/dialogs/Bundle").getString("ACSD_BeanDescription"));
+        jTextAreaDesc.getAccessibleContext().setAccessibleName(bundle.getString("ACN_ManagedBeanDescription")); // NOI18N
+        jTextAreaDesc.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_BeanDescription")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -176,30 +174,31 @@ public class AddManagedBeanDialog extends javax.swing.JPanel implements Validati
 
         jLabelName.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/dialogs/Bundle").getString("MNE_ManagedBeanName").charAt(0));
         jLabelName.setLabelFor(jTextFieldName);
-        jLabelName.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/dialogs/Bundle").getString("LBL_Bean_Name"));
+        jLabelName.setText(bundle.getString("LBL_Bean_Name")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 5, 0);
         add(jLabelName, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 5, 0);
         add(jTextFieldName, gridBagConstraints);
-        jTextFieldName.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/dialogs/Bundle").getString("ACS_BeanName"));
-        jTextFieldName.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/dialogs/Bundle").getString("ACSD_BeanName"));
+        jTextFieldName.getAccessibleContext().setAccessibleName(bundle.getString("ACS_BeanName")); // NOI18N
+        jTextFieldName.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_BeanName")); // NOI18N
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+        getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_AddManagedBeanDialog")); // NOI18N
+        getAccessibleContext().setAccessibleParent(this);
+    }// </editor-fold>//GEN-END:initComponents
 
     private void jButtonClassActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonClassActionPerformed
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                FQNSearch.showFastOpen(jTextFieldClass);
+//TODO: RETOUCHE                
+//                FQNSearch.showFastOpen(jTextFieldClass);
             }
         });
     }//GEN-LAST:event_jButtonClassActionPerformed

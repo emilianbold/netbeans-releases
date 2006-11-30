@@ -31,12 +31,13 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.common.DelegatingWizardDescriptorPanel;
-import org.netbeans.modules.j2ee.persistence.dd.orm.model_1_0.Entity;
-import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
-import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
-import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
-import org.netbeans.modules.j2ee.persistence.wizard.PersistenceClientEntitySelection;
-import org.netbeans.modules.j2ee.persistence.wizard.Util;
+//TODO: RETOUCHE
+//import org.netbeans.modules.j2ee.persistence.dd.orm.model_1_0.Entity;
+//import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
+//import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
+//import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
+//import org.netbeans.modules.j2ee.persistence.wizard.PersistenceClientEntitySelection;
+//import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.JSFConfigUtilities;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -57,59 +58,60 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
     private transient WizardDescriptor.Panel[] panels;
     
     public Set instantiate(TemplateWizard wizard) throws IOException {
-        List<Entity> entities = (List<Entity>) wizard.getProperty(WizardProperties.ENTITY_CLASS);
-        String jsfFolder = (String) wizard.getProperty(WizardProperties.JSF_FOLDER);
-        Project project = Templates.getProject(wizard);
-        FileObject targetFolder = Templates.getTargetFolder(wizard);
-        String controllerPkg = (String) wizard.getProperty(WizardProperties.JSF_CLASSES_PACKAGE);
-        
-        PersistenceUnit persistenceUnit = 
-                (PersistenceUnit) wizard.getProperty(org.netbeans.modules.j2ee.persistence.wizard.WizardProperties.PERSISTENCE_UNIT);
-
-        if (persistenceUnit != null){
-            ProviderUtil.addPersistenceUnit(persistenceUnit, Templates.getProject(wizard));
-        }
-        
-        for (Entity entity : entities) {
-            String entityClass = entity.getClass2();
-            String simpleClassName = JSFClinetGenerator.simpleClassName(entityClass);
-            String firstLower = simpleClassName.substring(0, 1).toLowerCase() + simpleClassName.substring(1);
-            String folder = jsfFolder.endsWith("/") ? jsfFolder : jsfFolder + "/";
-            folder = folder + firstLower;
-            String controller = controllerPkg + "." + simpleClassName + "Controller";
-            JSFClinetGenerator.generateJSFPages(project, entityClass, folder, controller, targetFolder);
-        }
-        
-        return Collections.singleton(DataFolder.findFolder(targetFolder));
+//        List<Entity> entities = (List<Entity>) wizard.getProperty(WizardProperties.ENTITY_CLASS);
+//        String jsfFolder = (String) wizard.getProperty(WizardProperties.JSF_FOLDER);
+//        Project project = Templates.getProject(wizard);
+//        FileObject targetFolder = Templates.getTargetFolder(wizard);
+//        String controllerPkg = (String) wizard.getProperty(WizardProperties.JSF_CLASSES_PACKAGE);
+//        
+//        PersistenceUnit persistenceUnit = 
+//                (PersistenceUnit) wizard.getProperty(org.netbeans.modules.j2ee.persistence.wizard.WizardProperties.PERSISTENCE_UNIT);
+//
+//        if (persistenceUnit != null){
+//            ProviderUtil.addPersistenceUnit(persistenceUnit, Templates.getProject(wizard));
+//        }
+//        
+//        for (Entity entity : entities) {
+//            String entityClass = entity.getClass2();
+//            String simpleClassName = JSFClinetGenerator.simpleClassName(entityClass);
+//            String firstLower = simpleClassName.substring(0, 1).toLowerCase() + simpleClassName.substring(1);
+//            String folder = jsfFolder.endsWith("/") ? jsfFolder : jsfFolder + "/";
+//            folder = folder + firstLower;
+//            String controller = controllerPkg + "." + simpleClassName + "Controller";
+//            JSFClinetGenerator.generateJSFPages(project, entityClass, folder, controller, targetFolder);
+//        }
+//        
+//        return Collections.singleton(DataFolder.findFolder(targetFolder));
+        return null;
     }
 
     public void initialize(TemplateWizard wizard) {
-        index = 0;
-        // obtaining target folder
-        Project project = Templates.getProject( wizard );
-        DataFolder targetFolder=null;
-        try {
-            targetFolder = wizard.getTargetFolder();
-        } catch (IOException ex) {
-            targetFolder = DataFolder.findFolder(project.getProjectDirectory());
-        }
-        
-        SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        
-        WizardDescriptor.Panel secondPanel = new ValidationPanel(
-                new PersistenceClientEntitySelection(NbBundle.getMessage(PersistenceClientIterator.class, "LBL_EntityClasses"),
-                        new HelpCtx(PersistenceClientIterator.class.getName() + "$PersistenceClientEntitySelection"), wizard)); // NOI18N
-        WizardDescriptor.Panel thirdPanel = new PersistenceClientSetupPanel(project, wizard);
-//        WizardDescriptor.Panel javaPanel = JavaTemplates.createPackageChooser(project, sourceGroups, secondPanel);
-//        panels = new WizardDescriptor.Panel[] { javaPanel };
-        panels = new WizardDescriptor.Panel[] { secondPanel, thirdPanel };
-        String names[] = new String[] {
-            NbBundle.getMessage(PersistenceClientIterator.class, "LBL_EntityClasses"),
-            NbBundle.getMessage(PersistenceClientIterator.class, "LBL_JSFPagesAndClasses")
-        };
-        wizard.putProperty("NewFileWizard_Title", 
-            NbBundle.getMessage(PersistenceClientIterator.class, "Templates/Persistence/JsfFromDB"));
-        Util.mergeSteps(wizard, panels, names);
+//        index = 0;
+//        // obtaining target folder
+//        Project project = Templates.getProject( wizard );
+//        DataFolder targetFolder=null;
+//        try {
+//            targetFolder = wizard.getTargetFolder();
+//        } catch (IOException ex) {
+//            targetFolder = DataFolder.findFolder(project.getProjectDirectory());
+//        }
+//        
+//        SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+//        
+//        WizardDescriptor.Panel secondPanel = new ValidationPanel(
+//                new PersistenceClientEntitySelection(NbBundle.getMessage(PersistenceClientIterator.class, "LBL_EntityClasses"),
+//                        new HelpCtx(PersistenceClientIterator.class.getName() + "$PersistenceClientEntitySelection"), wizard)); // NOI18N
+//        WizardDescriptor.Panel thirdPanel = new PersistenceClientSetupPanel(project, wizard);
+////        WizardDescriptor.Panel javaPanel = JavaTemplates.createPackageChooser(project, sourceGroups, secondPanel);
+////        panels = new WizardDescriptor.Panel[] { javaPanel };
+//        panels = new WizardDescriptor.Panel[] { secondPanel, thirdPanel };
+//        String names[] = new String[] {
+//            NbBundle.getMessage(PersistenceClientIterator.class, "LBL_EntityClasses"),
+//            NbBundle.getMessage(PersistenceClientIterator.class, "LBL_JSFPagesAndClasses")
+//        };
+//        wizard.putProperty("NewFileWizard_Title", 
+//            NbBundle.getMessage(PersistenceClientIterator.class, "Templates/Persistence/JsfFromDB"));
+//        Util.mergeSteps(wizard, panels, names);
     }
 
     private String[] createSteps(String[] before, WizardDescriptor.Panel[] panels) {

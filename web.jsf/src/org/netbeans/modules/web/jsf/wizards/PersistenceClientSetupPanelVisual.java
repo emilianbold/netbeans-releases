@@ -32,12 +32,13 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.j2ee.common.FQNSearch;
-import org.netbeans.modules.j2ee.common.JMIUtils;
-import org.netbeans.modules.j2ee.persistence.dd.orm.model_1_0.Entity;
-import org.netbeans.modules.j2ee.persistence.wizard.fromdb.ChangeSupport;
-import org.netbeans.modules.j2ee.persistence.wizard.fromdb.SourceGroupSupport;
-import org.netbeans.modules.j2ee.persistence.wizard.fromdb.SourceGroupUISupport;
+//TODO: RETOUCHE
+//import org.netbeans.modules.j2ee.common.FQNSearch;
+//import org.netbeans.modules.j2ee.common.JMIUtils;
+//import org.netbeans.modules.j2ee.persistence.dd.orm.model_1_0.Entity;
+//import org.netbeans.modules.j2ee.persistence.wizard.fromdb.ChangeSupport;
+//import org.netbeans.modules.j2ee.persistence.wizard.fromdb.SourceGroupSupport;
+//import org.netbeans.modules.j2ee.persistence.wizard.fromdb.SourceGroupUISupport;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.jsf.JSFConfigUtilities;
@@ -59,7 +60,7 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
     private WizardDescriptor wizard;
     private Project project;
     private JTextComponent packageComboBoxEditor;
-    private ChangeSupport changeSupport = new ChangeSupport(this);
+//    private ChangeSupport changeSupport = new ChangeSupport(this);
     
     /** Creates new form CrudSetupPanel */
     public PersistenceClientSetupPanelVisual(WizardDescriptor wizard) {
@@ -216,40 +217,40 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
     // End of variables declaration//GEN-END:variables
     
     public void addChangeListener(ChangeListener listener) {
-        changeSupport.addChangeListener(listener);
+//        changeSupport.addChangeListener(listener);
     }
     
     boolean valid(WizardDescriptor wizard) {
-        List<Entity> entities = (List<Entity>) wizard.getProperty(WizardProperties.ENTITY_CLASS);
-        String controllerPkg = getPackage();
-        
-        boolean filesAlreadyExist = false;
-        String troubleMaker = "";
-        for (Entity entity : entities) {
-            String entityClass = entity.getClass2();
-            String simpleClassName = JSFClinetGenerator.simpleClassName(entityClass);
-            String firstLower = simpleClassName.substring(0, 1).toLowerCase() + simpleClassName.substring(1);
-            String folder = jsfFolder.getText().endsWith("/") ? jsfFolder.getText() : jsfFolder.getText() + "/";
-            folder = folder + firstLower;
-            String controller = controllerPkg + "." + simpleClassName + "Controller";
-            String fqn = getPackage().length() > 0 ? getPackage().replace('.', '/') + "/" + simpleClassName : simpleClassName;
-            if (getLocationValue().getRootFolder().getFileObject(fqn + "Controller.java") != null) {
-                filesAlreadyExist = true;
-                troubleMaker = controllerPkg + "." + simpleClassName + "Controller.java";
-                break;
-            }
-            if (getLocationValue().getRootFolder().getFileObject(fqn + "Converter.java") != null) {
-                filesAlreadyExist = true;
-                troubleMaker = controllerPkg + "." + simpleClassName + "Converter.java";
-                break;
-            }
-        }
-        if (filesAlreadyExist) {
-            wizard.putProperty("WizardPanel_errorMessage",                                  // NOI18N
-                NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "MSG_FilesAlreadyExist", troubleMaker));
-            return false;
-        }
-        wizard.putProperty("WizardPanel_errorMessage", null); // NOI18N
+//        List<Entity> entities = (List<Entity>) wizard.getProperty(WizardProperties.ENTITY_CLASS);
+//        String controllerPkg = getPackage();
+//        
+//        boolean filesAlreadyExist = false;
+//        String troubleMaker = "";
+//        for (Entity entity : entities) {
+//            String entityClass = entity.getClass2();
+//            String simpleClassName = JSFClinetGenerator.simpleClassName(entityClass);
+//            String firstLower = simpleClassName.substring(0, 1).toLowerCase() + simpleClassName.substring(1);
+//            String folder = jsfFolder.getText().endsWith("/") ? jsfFolder.getText() : jsfFolder.getText() + "/";
+//            folder = folder + firstLower;
+//            String controller = controllerPkg + "." + simpleClassName + "Controller";
+//            String fqn = getPackage().length() > 0 ? getPackage().replace('.', '/') + "/" + simpleClassName : simpleClassName;
+//            if (getLocationValue().getRootFolder().getFileObject(fqn + "Controller.java") != null) {
+//                filesAlreadyExist = true;
+//                troubleMaker = controllerPkg + "." + simpleClassName + "Controller.java";
+//                break;
+//            }
+//            if (getLocationValue().getRootFolder().getFileObject(fqn + "Converter.java") != null) {
+//                filesAlreadyExist = true;
+//                troubleMaker = controllerPkg + "." + simpleClassName + "Converter.java";
+//                break;
+//            }
+//        }
+//        if (filesAlreadyExist) {
+//            wizard.putProperty("WizardPanel_errorMessage",                                  // NOI18N
+//                NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "MSG_FilesAlreadyExist", troubleMaker));
+//            return false;
+//        }
+//        wizard.putProperty("WizardPanel_errorMessage", null); // NOI18N
         return true;
     }
     
@@ -263,7 +264,7 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
 
     private void locationChanged() {
         updateSourceGroupPackages();
-        changeSupport.fireChange();
+//        changeSupport.fireChange();
     }
     
     void read(WizardDescriptor settings) {
@@ -274,8 +275,8 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
         
         projectTextField.setText(ProjectUtils.getInformation(project).getDisplayName());
 
-        SourceGroup[] sourceGroups = SourceGroupSupport.getJavaSourceGroups(project);
-        SourceGroupUISupport.connect(locationComboBox, sourceGroups);
+//        SourceGroup[] sourceGroups = SourceGroupSupport.getJavaSourceGroups(project);
+//        SourceGroupUISupport.connect(locationComboBox, sourceGroups);
 
         packageComboBox.setRenderer(PackageView.listRenderer());
 
@@ -283,14 +284,14 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
 
         // set default source group and package cf. targetFolder
         if (targetFolder != null) {
-            SourceGroup targetSourceGroup = SourceGroupSupport.getFolderSourceGroup(sourceGroups, targetFolder);
-            if (targetSourceGroup != null) {
-                locationComboBox.setSelectedItem(targetSourceGroup);
-                String targetPackage = SourceGroupSupport.getPackageForFolder(targetSourceGroup, targetFolder);
-                if (targetPackage != null) {
-                    packageComboBoxEditor.setText(targetPackage);
-                }
-            }
+//            SourceGroup targetSourceGroup = SourceGroupSupport.getFolderSourceGroup(sourceGroups, targetFolder);
+//            if (targetSourceGroup != null) {
+//                locationComboBox.setSelectedItem(targetSourceGroup);
+//                String targetPackage = SourceGroupSupport.getPackageForFolder(targetSourceGroup, targetFolder);
+//                if (targetPackage != null) {
+//                    packageComboBoxEditor.setText(targetPackage);
+//                }
+//            }
             if (FileUtil.isParentOf(WebModule.getWebModule(
                     targetFolder).getDocumentBase(), targetFolder)) {
                 Sources s = (Sources) Templates.getProject(wizard).getLookup().lookup(Sources.class);
@@ -303,11 +304,11 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
     void store(WizardDescriptor settings) {
         settings.putProperty(WizardProperties.JSF_FOLDER, jsfFolder.getText());
         settings.putProperty(WizardProperties.JSF_CLASSES_PACKAGE, getPackage());
-        try {
-            Templates.setTargetFolder(settings, SourceGroupSupport.getFolderForPackage(getLocationValue(), getPackage()));
-        } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-        }
+//        try {
+////            Templates.setTargetFolder(settings, SourceGroupSupport.getFolderForPackage(getLocationValue(), getPackage()));
+//        } catch (IOException ex) {
+//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+//        }
     }
 
     private void updateSourceGroupPackages() {
@@ -321,15 +322,15 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
     }
     
     public void insertUpdate(DocumentEvent e) {
-        changeSupport.fireChange();
+//        changeSupport.fireChange();
     }
 
     public void removeUpdate(DocumentEvent e) {
-        changeSupport.fireChange();
+//        changeSupport.fireChange();
     }
 
     public void changedUpdate(DocumentEvent e) {
-        changeSupport.fireChange();
+//        changeSupport.fireChange();
     }
     
 }
