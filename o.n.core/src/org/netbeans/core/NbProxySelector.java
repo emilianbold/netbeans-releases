@@ -20,6 +20,7 @@
 package org.netbeans.core;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.ProxySelector;
@@ -34,7 +35,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
-import sun.net.NetProperties;
 
 /**
  *
@@ -44,13 +44,13 @@ public final class NbProxySelector extends ProxySelector {
     
     private ProxySelector original = null;
     private Logger log = Logger.getLogger (NbProxySelector.class.getName ());
-    private static int num = 0;
-    
+    private Object useSystemProxies;
+        
     /** Creates a new instance of NbProxySelector */
     public NbProxySelector () {
         original = super.getDefault ();
         log.fine ("Override the original ProxySelector: " + original);
-        log.fine ("java.net.useSystemProxies has been set to " + NetProperties.getBoolean ("java.net.useSystemProxies"));
+        log.fine ("java.net.useSystemProxies has been set to " + useSystemProxies ());
         ProxySettings.addPreferenceChangeListener (new ProxySettingsListener ());
         copySettingsToSystem ();
     }
@@ -61,8 +61,7 @@ public final class NbProxySelector extends ProxySelector {
         if (ProxySettings.DIRECT_CONNECTION == proxyType) {
             res = Collections.singletonList (Proxy.NO_PROXY);
         } else if (ProxySettings.AUTO_DETECT_PROXY == proxyType) {
-            // XXX What with Solaris or KDE?
-            if (NetProperties.getBoolean ("java.net.useSystemProxies")) {
+            if (useSystemProxies ()) {
                 res = original.select (uri);
             } else {
                 String protocol = uri.getScheme ();
@@ -234,5 +233,19 @@ public final class NbProxySelector extends ProxySelector {
             }
         }
         return dontUseProxy;
+    }
+    
+    // NetProperties is JDK vendor specific, access only by reflection
+    private boolean useSystemProxies () {
+        if (useSystemProxies == null) {
+            try {
+                Class clazz = Class.forName ("sun.net.NetProperties");
+                Method getBoolean = clazz.getMethod ("getBoolean", String.class);
+                useSystemProxies = getBoolean.invoke (null, "java.net.useSystemProxies");
+            } catch (Exception x) {
+                log.log (Level.FINEST, "Cannot get value of java.net.useSystemProxies bacause " + x.getMessage(), x);
+            }
+        }
+        return useSystemProxies != null && "true".equalsIgnoreCase (useSystemProxies.toString ());
     }
 }
