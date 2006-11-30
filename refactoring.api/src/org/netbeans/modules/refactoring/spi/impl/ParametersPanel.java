@@ -135,6 +135,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+
         progressPanel = new javax.swing.JPanel();
         innerPanel = new javax.swing.JPanel();
         label = new javax.swing.JLabel();
@@ -149,86 +150,80 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         containerPanel = new javax.swing.JPanel();
         pleaseWait = new javax.swing.JLabel();
 
-        setLayout(new java.awt.BorderLayout());
-
         setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        setName(java.util.ResourceBundle.getBundle("org/netbeans/modules/refactoring/spi/ui/Bundle").getString("LBL_FindUsagesDialog"));
-        getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/refactoring/spi/ui/Bundle").getString("LBL_FindUsagesDialog"));
-        getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/refactoring/spi/ui/Bundle").getString("ACSD_FindUsagesDialog"));
-        progressPanel.setLayout(new java.awt.BorderLayout());
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/refactoring/spi/impl/Bundle"); // NOI18N
+        setName(bundle.getString("LBL_FindUsagesDialog")); // NOI18N
+        setLayout(new java.awt.BorderLayout());
 
         progressPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 12, 0, 11));
         progressPanel.setOpaque(false);
+        progressPanel.setLayout(new java.awt.BorderLayout());
+
+        innerPanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(128, 128, 128)));
         innerPanel.setLayout(new java.awt.BorderLayout());
 
-        innerPanel.setBorder(javax.swing.BorderFactory.createLineBorder(java.awt.Color.gray));
         label.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         innerPanel.add(label, java.awt.BorderLayout.WEST);
 
         progressPanel.add(innerPanel, java.awt.BorderLayout.CENTER);
 
+        controlsPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 0, 5, 0));
         controlsPanel.setLayout(new java.awt.BorderLayout());
 
-        controlsPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 0, 5, 0));
+        buttonsPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         buttonsPanel.setLayout(new java.awt.GridLayout(1, 0, 5, 0));
 
-        buttonsPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        back.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/refactoring/spi/ui/Bundle").getString("MNEM_Back").charAt(0));
-        org.openide.awt.Mnemonics.setLocalizedText(back, org.openide.util.NbBundle.getBundle("org/netbeans/modules/refactoring/spi/ui/Bundle").getString("CTL_Back"));
+        back.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/refactoring/spi/impl/Bundle").getString("MNEM_Back").charAt(0));
+        org.openide.awt.Mnemonics.setLocalizedText(back, org.openide.util.NbBundle.getBundle("org/netbeans/modules/refactoring/spi/impl/Bundle").getString("CTL_Back")); // NOI18N
         back.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 backActionPerformed(evt);
             }
         });
-
         buttonsPanel.add(back);
-        back.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/refactoring/spi/ui/Bundle").getString("ACSD_Back"));
+        back.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_Back")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(next, org.openide.util.NbBundle.getBundle("org/netbeans/modules/refactoring/spi/ui/Bundle").getString("CTL_Finish"));
+        org.openide.awt.Mnemonics.setLocalizedText(next, org.openide.util.NbBundle.getBundle("org/netbeans/modules/refactoring/spi/impl/Bundle").getString("CTL_Finish")); // NOI18N
         next.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 nextActionPerformed(evt);
             }
         });
-
         buttonsPanel.add(next);
-        next.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/refactoring/spi/ui/Bundle").getString("ACSD_finish"));
+        next.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_finish")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(cancel, org.openide.util.NbBundle.getBundle("org/netbeans/modules/refactoring/spi/ui/Bundle").getString("CTL_Cancel"));
+        org.openide.awt.Mnemonics.setLocalizedText(cancel, org.openide.util.NbBundle.getBundle("org/netbeans/modules/refactoring/spi/impl/Bundle").getString("CTL_Cancel")); // NOI18N
         cancel.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cancelActionPerformed(evt);
             }
         });
-
         buttonsPanel.add(cancel);
-        cancel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/refactoring/spi/ui/Bundle").getString("ACSD_cancel"));
+        cancel.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_cancel")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(help, org.openide.util.NbBundle.getBundle("org/netbeans/modules/refactoring/spi/ui/Bundle").getString("CTL_Help"));
+        org.openide.awt.Mnemonics.setLocalizedText(help, org.openide.util.NbBundle.getBundle("org/netbeans/modules/refactoring/spi/impl/Bundle").getString("CTL_Help")); // NOI18N
         help.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 helpActionPerformed(evt);
             }
         });
-
         buttonsPanel.add(help);
-        help.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/refactoring/spi/ui/Bundle").getString("ACSD_help"));
+        help.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_help")); // NOI18N
 
         controlsPanel.add(buttonsPanel, java.awt.BorderLayout.EAST);
 
+        checkBoxPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         checkBoxPanel.setLayout(new java.awt.BorderLayout());
 
-        checkBoxPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         previewAll.setSelected(((Boolean) RefactoringModule.getOption(getPreviewKeyName(), Boolean.TRUE)).booleanValue());
-        org.openide.awt.Mnemonics.setLocalizedText(previewAll, org.openide.util.NbBundle.getBundle("org/netbeans/modules/refactoring/spi/ui/Bundle").getString("CTL_PreviewAll"));
+        org.openide.awt.Mnemonics.setLocalizedText(previewAll, org.openide.util.NbBundle.getBundle("org/netbeans/modules/refactoring/spi/impl/Bundle").getString("CTL_PreviewAll")); // NOI18N
         previewAll.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 previewAllItemStateChanged(evt);
             }
         });
-
         checkBoxPanel.add(previewAll, java.awt.BorderLayout.WEST);
-        previewAll.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/refactoring/spi/ui/Bundle").getString("ACSD_PreviewAll"));
+        previewAll.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_PreviewAll")); // NOI18N
 
         controlsPanel.add(checkBoxPanel, java.awt.BorderLayout.CENTER);
 
@@ -236,15 +231,18 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
 
         add(progressPanel, java.awt.BorderLayout.SOUTH);
 
+        containerPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         containerPanel.setLayout(new java.awt.BorderLayout());
 
-        containerPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         pleaseWait.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        org.openide.awt.Mnemonics.setLocalizedText(pleaseWait, org.openide.util.NbBundle.getBundle("org/netbeans/modules/refactoring/spi/ui/Bundle").getString("LBL_PleaseWait"));
+        org.openide.awt.Mnemonics.setLocalizedText(pleaseWait, org.openide.util.NbBundle.getBundle("org/netbeans/modules/refactoring/spi/impl/Bundle").getString("LBL_PleaseWait")); // NOI18N
         containerPanel.add(pleaseWait, java.awt.BorderLayout.CENTER);
+        pleaseWait.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ParametersPanel.class, "LBL_PleaseWait")); // NOI18N
 
         add(containerPanel, java.awt.BorderLayout.CENTER);
 
+        getAccessibleContext().setAccessibleName(bundle.getString("LBL_FindUsagesDialog")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_FindUsagesDialog")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void previewAllItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_previewAllItemStateChanged
@@ -426,7 +424,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         dialog.validate();
         if (customPanel!=null) {
             dialog.getAccessibleContext().setAccessibleName(rui.getName());
-            dialog.getAccessibleContext().setAccessibleDescription(ResourceBundle.getBundle("org/netbeans/modules/refactoring/spi/ui/Bundle").getString("ACSD_FindUsagesDialog"));
+            dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ParametersPanel.class, "ACSD_FindUsagesDialog"));
         }
         
         setCancelStuff();
@@ -529,7 +527,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
     
     private void placeCustomPanel() {
         if (customPanel == null) return;
-        org.openide.awt.Mnemonics.setLocalizedText(next, org.openide.util.NbBundle.getBundle("org/netbeans/modules/refactoring/spi/ui/Bundle").getString("CTL_Finish"));
+        org.openide.awt.Mnemonics.setLocalizedText(next, NbBundle.getMessage(ParametersPanel.class, "CTL_Finish"));
         customPanel.setBorder(new EmptyBorder(new Insets(12, 12, 11, 11)));
         containerPanel.removeAll();
         containerPanel.add(customPanel, BorderLayout.CENTER);
@@ -572,16 +570,16 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
                 String text;
                 switch (event.getOperationType()) {
                     case AbstractRefactoring.PARAMETERS_CHECK:
-                        text = NbBundle.getMessage(CustomRefactoringPanel.class, "LBL_ParametersCheck");
+                        text = NbBundle.getMessage(ParametersPanel.class, "LBL_ParametersCheck");
                         break;
                     case AbstractRefactoring.PREPARE:
-                        text = NbBundle.getMessage(CustomRefactoringPanel.class, "LBL_Prepare");
+                        text = NbBundle.getMessage(ParametersPanel.class, "LBL_Prepare");
                         break;
                     case AbstractRefactoring.PRE_CHECK:
-                        text = NbBundle.getMessage(CustomRefactoringPanel.class, "LBL_PreCheck");
+                        text = NbBundle.getMessage(ParametersPanel.class, "LBL_PreCheck");
                         break;
                     default:
-                        text = NbBundle.getMessage(CustomRefactoringPanel.class, "LBL_Usages");
+                        text = NbBundle.getMessage(ParametersPanel.class, "LBL_Usages");
                         break;
                 }
                 progressBar.setString(text); //NOI18N

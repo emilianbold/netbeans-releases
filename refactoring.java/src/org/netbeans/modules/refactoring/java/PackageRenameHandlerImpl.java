@@ -25,8 +25,8 @@ import java.util.Dictionary;
 import java.util.Hashtable;
 import javax.swing.Action;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
+import org.netbeans.modules.refactoring.java.plugins.RenameRefactoringPlugin;
 import org.netbeans.spi.java.project.support.ui.PackageRenameHandler;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -54,7 +54,7 @@ public class PackageRenameHandlerImpl implements PackageRenameHandler {
             //rename empty package and don't try to do any refactoring
             try {
                 if (!RetoucheUtils.isValidPackageName(newName)) {
-                    String msg = new MessageFormat(NbBundle.getMessage(AbstractRefactoring.class,"ERR_InvalidPackage")).format(
+                    String msg = new MessageFormat(NbBundle.getMessage(RenameRefactoringPlugin.class,"ERR_InvalidPackage")).format(
                             new Object[] {newName}
                     );
                     

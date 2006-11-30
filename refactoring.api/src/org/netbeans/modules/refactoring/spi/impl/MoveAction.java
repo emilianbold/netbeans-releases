@@ -32,7 +32,7 @@ public class MoveAction extends RefactoringGlobalAction {
      * Creates a new instance of MoveAction
      */
     public MoveAction() {
-        super (NbBundle.getMessage(MoveAction.class, "LBL_MoveClassAction"), null);
+        super (NbBundle.getMessage(MoveAction.class, "LBL_MoveAction"), null);
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
     

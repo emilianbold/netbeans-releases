@@ -192,7 +192,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
     
     private Problem checkParametersForMethod(boolean overriders, boolean usages) {
         if (!(usages || overriders)) {
-            return new Problem(true, NbBundle.getMessage(WhereUsedQuery.class, "MSG_NothingToFind"));
+            return new Problem(true, NbBundle.getMessage(JavaWhereUsedQueryPlugin.class, "MSG_NothingToFind"));
         } else
             return null;
     }

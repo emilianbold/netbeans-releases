@@ -1019,7 +1019,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
 //    }
 //    
     private static final String getString(String key) {
-        return NbBundle.getMessage(RenameRefactoring.class, key);
+        return NbBundle.getMessage(RenameRefactoringPlugin.class, key);
     }
     
 //    public void start(org.netbeans.modules.javacore.internalapi.ProgressEvent event) {

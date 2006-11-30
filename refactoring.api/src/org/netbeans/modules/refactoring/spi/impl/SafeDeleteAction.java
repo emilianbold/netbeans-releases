@@ -21,6 +21,7 @@ package org.netbeans.modules.refactoring.spi.impl;
 import org.netbeans.modules.refactoring.api.impl.ActionsImplementationFactory;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /** 
  * @author Jan Becicka
@@ -31,7 +32,7 @@ public class SafeDeleteAction extends RefactoringGlobalAction {
      * Creates a new instance of SafeDeleteAction
      */
     public SafeDeleteAction() {
-        super("SafeDelete", null);
+        super (NbBundle.getMessage(SafeDeleteAction.class, "LBL_SafeDel_Action"), null);
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
     

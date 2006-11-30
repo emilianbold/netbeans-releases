@@ -28,13 +28,11 @@ import java.util.StringTokenizer;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
-import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.api.SingleCopyRefactoring;
 import org.netbeans.modules.refactoring.api.ui.UI;
-import org.netbeans.modules.refactoring.java.DiffElement;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.plugins.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.java.ui.tree.ElementGripFactory;
@@ -43,8 +41,6 @@ import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImpl;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
 import org.openide.text.PositionBounds;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -74,7 +70,7 @@ public class CopyClassRefactoringPlugin extends JavaRefactoringPlugin {
     
     public Problem fastCheckParameters() {
         if (!Utilities.isJavaIdentifier(refactoring.getNewName())) {
-            String msg = new MessageFormat(NbBundle.getMessage(RenameRefactoring.class, "ERR_InvalidIdentifier")).format(
+            String msg = new MessageFormat(NbBundle.getMessage(CopyClassRefactoringPlugin.class, "ERR_InvalidIdentifier")).format(
                 new Object[] {refactoring.getNewName()}
             );
             return createProblem(null, true, msg);
