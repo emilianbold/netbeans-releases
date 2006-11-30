@@ -52,7 +52,6 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.editor.*;
 import org.netbeans.editor.ext.*;
 import org.netbeans.editor.ext.html.*;
-import org.netbeans.editor.ext.html.HTMLSyntaxSupport;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.html.editor.folding.HTMLFoldTypes;
 import org.netbeans.modules.lexer.editorbridge.LexerEditorKit;
@@ -568,8 +567,11 @@ public class HTMLKit extends LexerEditorKit implements org.openide.util.HelpCtx.
                     handleReaderImport(r, c, useRead);
                     imported = true;
                 } catch (UnsupportedFlavorException ufe) {
+                    //just ignore
                 } catch (BadLocationException ble) {
+                    //just ignore
                 } catch (IOException ioe) {
+                    //just ignore
                 }
             }
             return imported;

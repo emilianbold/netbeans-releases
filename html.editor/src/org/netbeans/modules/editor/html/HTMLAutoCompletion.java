@@ -62,10 +62,10 @@ class HTMLAutoCompletion {
             char ch) throws BadLocationException {
         if (doc.getSyntaxSupport() instanceof ExtSyntaxSupport) {
             if (ch == '=') {
-                completeQuotes(doc, dotPos, caret, ch);
+                completeQuotes(doc, dotPos, caret);
             } else if(ch == '"') {
                 //user has pressed quotation mark
-                handleQuotationMark(doc, dotPos, caret, ch);
+                handleQuotationMark(doc, dotPos, caret);
             } else {
                 //user has pressed a key so I need to cancel the "quotation consuming mode"
                 equalsSignInsertedOffset = -1;
@@ -78,7 +78,7 @@ class HTMLAutoCompletion {
         equalsSignInsertedOffset = -1;
     }
     
-    private static void handleQuotationMark(BaseDocument doc, int dotPos, Caret caret, char ch) throws BadLocationException {
+    private static void handleQuotationMark(BaseDocument doc, int dotPos, Caret caret) throws BadLocationException {
         if(equalsSignInsertedOffset != -1) {
             //test whether the cursor is between completed quotations: attrname="|"
             //this situation can happen when user autocompletes ="|",
@@ -97,7 +97,9 @@ class HTMLAutoCompletion {
                 TokenSequence ts = hi.tokenSequence();
                 
                 int diff = ts.move(dotPos);
-                if(diff >= ts.token().length() || diff == Integer.MAX_VALUE) return; //no token found
+                if(diff >= ts.token().length() || diff == Integer.MAX_VALUE) {
+                    return; //no token found
+                }
                 
                 Token token = ts.token();
                 if(token.id() == HTMLTokenId.VALUE) {
@@ -119,14 +121,16 @@ class HTMLAutoCompletion {
         equalsSignInsertedOffset = -1;
     }
     
-    private static void completeQuotes(BaseDocument doc, int dotPos, Caret caret, char ch) throws BadLocationException{
+    private static void completeQuotes(BaseDocument doc, int dotPos, Caret caret) throws BadLocationException{
         doc.readLock();
         try {
             TokenHierarchy hi = TokenHierarchy.get(doc);
             TokenSequence ts = hi.tokenSequence();
             
             int diff = ts.move(dotPos);
-            if(diff >= ts.token().length() || diff == Integer.MAX_VALUE) return; //no token found
+            if(diff >= ts.token().length() || diff == Integer.MAX_VALUE) {
+                return; //no token found
+            }
             
             Token token = ts.token();
             

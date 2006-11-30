@@ -55,27 +55,22 @@ public class HTMLCompletionProvider implements CompletionProvider {
     
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
         int type = ((HTMLSyntaxSupport)Utilities.getDocument(component).getSyntaxSupport()).checkCompletion(component, typedText, false);
-        if(type == ExtSyntaxSupport.COMPLETION_POPUP) return COMPLETION_QUERY_TYPE + DOCUMENTATION_QUERY_TYPE;
-        else return 0;
+        return type == ExtSyntaxSupport.COMPLETION_POPUP ? COMPLETION_QUERY_TYPE + DOCUMENTATION_QUERY_TYPE : 0;
     }
     
     public CompletionTask createTask(int queryType, JTextComponent component) {
-        if (queryType == COMPLETION_QUERY_TYPE)
-            return new AsyncCompletionTask(new Query(component.getCaret().getDot()), component);
-        else if (queryType == DOCUMENTATION_QUERY_TYPE)
-            return new AsyncCompletionTask(new DocQuery(null), component);
-        return null;
+        AsyncCompletionTask task = null;
+        if (queryType == COMPLETION_QUERY_TYPE) {
+            task = new AsyncCompletionTask(new Query(), component);
+        } else if (queryType == DOCUMENTATION_QUERY_TYPE) {
+            task = new AsyncCompletionTask(new DocQuery(null), component);
+        } 
+        return task;
     }
     
     static class Query extends AbstractQuery {
         
         private JTextComponent component;
-        
-        private int creationCaretOffset;
-        
-        Query(int caretOffset) {
-            this.creationCaretOffset = caretOffset;
-        }
         
         protected void prepareQuery(JTextComponent component) {
             this.component = component;
@@ -83,7 +78,9 @@ public class HTMLCompletionProvider implements CompletionProvider {
         
         protected void doQuery(CompletionResultSet resultSet, Document doc, int caretOffset) {
             HTMLCompletionQuery.HTMLCompletionResult res = (HTMLCompletionQuery.HTMLCompletionResult)queryImpl(component, caretOffset);
-            if(res == null) return ;
+            if(res == null) {
+                return ;
+            }
             
             List/*<CompletionItem>*/ results = res.getData();
             assert (results != null);
@@ -165,14 +162,14 @@ public class HTMLCompletionProvider implements CompletionProvider {
         //test whether the user typed an ending quotation in the attribute value
         doc.readLock();
         try {
-            TokenHierarchy hi = TokenHierarchy.get(doc);
-            TokenSequence ts = hi.tokenSequence();
+            TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
+            TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
             
-            int diff = ts.move(caretOffset);
-            if(diff >= ts.token().length() || diff == Integer.MAX_VALUE) return; //no token found
+            int diff = tokenSequence.move(caretOffset);
+            if(diff >= tokenSequence.token().length() || diff == Integer.MAX_VALUE) return; //no token found
             
-            Token ti = ts.token();
-            if(ti.id() == HTMLTokenId.TEXT && !ti.text().toString().startsWith("<") && !ti.text().toString().startsWith("&")) {
+            Token tokenItem = tokenSequence.token();
+            if(tokenItem.id() == HTMLTokenId.TEXT && !tokenItem.text().toString().startsWith("<") && !tokenItem.text().toString().startsWith("&")) {
                 hideCompletion();
             }
             
