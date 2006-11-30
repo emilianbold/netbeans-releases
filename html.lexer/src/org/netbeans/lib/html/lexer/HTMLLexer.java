@@ -181,7 +181,7 @@ public class HTMLLexer implements Lexer<HTMLTokenId> {
                         case '&':
                             state = INIT;
                             input.backup(1);
-                            if(input.readLength() > 1) { //is there any text before & or < ???
+                            if(input.readLength() > 0) { //is there any text before & or < ???
                                 return token(scriptState == INIT ? HTMLTokenId.TEXT : HTMLTokenId.SCRIPT);
                             }
                             break;
