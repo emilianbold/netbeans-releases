@@ -108,7 +108,6 @@ Microsystems, Inc. All Rights Reserved.
                 <friend>org.netbeans.modules.identity.profile.ui</friend>
                 <friend>org.netbeans.modules.j2ee.ejbjarproject</friend>
                 <friend>org.netbeans.modules.j2ee.refactoring</friend>
-                <friend>org.netbeans.modules.java.j2seproject</friend>
                 <friend>org.netbeans.modules.web.project</friend>
                 <friend>org.netbeans.modules.websvc.core</friend>
                 <friend>org.netbeans.modules.websvc.customization</friend>
