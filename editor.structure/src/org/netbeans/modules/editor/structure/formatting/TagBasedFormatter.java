@@ -29,8 +29,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Settings;
-import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtFormatter;
@@ -79,14 +77,19 @@ public abstract class TagBasedFormatter extends ExtFormatter  {
     
     protected int getIndentForTagParameter(BaseDocument doc, TokenItem tag) throws BadLocationException{
         int tagStartLine = Utilities.getLineOffset(doc, tag.getOffset());
-        TokenItem t = tag.getNext();
+        TokenItem currentToken = tag.getNext();
         
-        while (t != null && isWSTag(t) && tagStartLine == Utilities.getLineOffset(doc, t.getOffset())){
-            t = t.getNext();
+        /*
+         * Find the offset of the first attribute if it is specified on the same line as the opening of the tag
+         * e.g. <tag   |attr=
+         * 
+         */
+        while (currentToken != null && isWSTag(currentToken) && tagStartLine == Utilities.getLineOffset(doc, currentToken.getOffset())){
+            currentToken = currentToken.getNext();
         }
         
-        if (tag != null && !isWSTag(t) && tagStartLine == Utilities.getLineOffset(doc, t.getOffset())){
-            return t.getOffset() - Utilities.getRowIndent(doc, t.getOffset()) - Utilities.getRowStart(doc, t.getOffset());
+        if (tag != null && !isWSTag(currentToken) && tagStartLine == Utilities.getLineOffset(doc, currentToken.getOffset())){
+            return currentToken.getOffset() - Utilities.getRowIndent(doc, currentToken.getOffset()) - Utilities.getRowStart(doc, currentToken.getOffset());
         }
         
         return getShiftWidth(); // default;
@@ -143,14 +146,14 @@ public abstract class TagBasedFormatter extends ExtFormatter  {
                                 }
                                 
                                 // if there is only the closing symbol on the last line of tag do not indent it
-                                TokenItem t = token.getNext();
-                                while (Utilities.getLineOffset(doc, t.getOffset()) < lastTagLine
-                                        || isWSTag(t)){
+                                TokenItem currentToken = token.getNext();
+                                while (Utilities.getLineOffset(doc, currentToken.getOffset()) < lastTagLine
+                                        || isWSTag(currentToken)){
                                     
-                                    t = t.getNext();
+                                    currentToken = currentToken.getNext();
                                 }
                                 
-                                if (t.getOffset() == tagEndOffset){
+                                if (currentToken.getOffset() == tagEndOffset){
                                     indentsWithinTags[lastTagLine] = 0;
                                 }
                             }
@@ -425,12 +428,7 @@ public abstract class TagBasedFormatter extends ExtFormatter  {
         
         return true;
     }
-    
-    private boolean isClosingTagsPairingEnabled() {
-        Boolean val = (Boolean)Settings.getValue(getKitClass(), SettingsNames.PAIR_CHARACTERS_COMPLETION);
-        return val == null ? true : val.booleanValue();
-    }
-    
+
     protected static int getNumberOfLines(BaseDocument doc) throws BadLocationException{
         return Utilities.getLineOffset(doc, doc.getLength() - 1) + 1;
     }
@@ -462,23 +460,26 @@ public abstract class TagBasedFormatter extends ExtFormatter  {
     }
     
     protected class InitialIndentData{
-        private int indentLevelBias = 0;
-        private int indentBias = 0;
-        private int indentLevels[];
-        private int indentsWithinTags[];
+        private final int indentLevelBias;
+        private final int indentBias;
+        private final int indentLevels[];
+        private final int indentsWithinTags[];
         
         public InitialIndentData(BaseDocument doc, int indentLevels[], int indentsWithinTags[],
                 int firstRefBlockLine, int lastRefBlockLine) throws BadLocationException{
             
             int initialIndent = getInitialIndentFromPreviousLine(doc, firstRefBlockLine);
-            indentLevelBias = initialIndent / getShiftWidth() - (firstRefBlockLine > 0 ? indentLevels[firstRefBlockLine - 1] : 0);
+            int indentLevelBiasFromTheTop = initialIndent / getShiftWidth() - (firstRefBlockLine > 0 ? indentLevels[firstRefBlockLine - 1] : 0);
             
             int initialIndentFromTheBottom = getInitialIndentFromNextLine(doc, lastRefBlockLine);
             int indentLevelBiasFromTheBottom = initialIndentFromTheBottom / getShiftWidth() - (lastRefBlockLine < getNumberOfLines(doc) - 1 ? indentLevels[lastRefBlockLine + 1] : 0);
             
-            if (indentLevelBiasFromTheBottom > indentLevelBias){
+            if (indentLevelBiasFromTheBottom > indentLevelBiasFromTheTop){
                 indentLevelBias = indentLevelBiasFromTheBottom;
                 initialIndent = initialIndentFromTheBottom;
+            }
+            else{
+                indentLevelBias = indentLevelBiasFromTheTop;
             }
             
             indentBias = initialIndent % getShiftWidth();
@@ -500,8 +501,8 @@ public abstract class TagBasedFormatter extends ExtFormatter  {
     }
     
     protected static class TagIndentationData{
-        private String tagName;
-        private int line;
+        private final String tagName;
+        private final int line;
         private int closedOnLine;
         
         public TagIndentationData(String tagName, int line){
