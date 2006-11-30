@@ -1,0 +1,47 @@
+table.nodes-tree {
+    width:              100%;
+    margin:             10px auto 10px 0px;
+    border-collapse:    collapse;
+}
+
+table.nodes-tree tr {
+    border-top:         1px dotted #c0c0c0;
+    border-bottom:      1px dotted #c0c0c0;
+}
+
+table.nodes-tree td {
+    padding:            0px 0px 0px 0px;
+}
+
+table.nodes-tree td.tree-handle {
+    width:              16px;
+}
+
+table.nodes-tree td.tree-handle img {
+    cursor:             pointer;
+}
+
+table.nodes-tree td.icon {
+    width:              16px;
+}
+
+table.nodes-tree td.display-name {
+    padding:            2px 5px 2px 5px;
+    font-family:        Tahoma, Arial, sans-serif;
+    font-size:          12px;
+}
+
+table.nodes-tree td.option {
+    width:              16px;
+}
+
+table.nodes-tree td.option img {
+    cursor:             pointer;
+}
+
+table.nodes-tree td.children {
+}
+
+div#form-div {
+    display:            none;
+}

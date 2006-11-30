@@ -55,6 +55,8 @@ public class RunCommand extends HttpServlet {
         String version  = null;
         File   archive  = null;
         
+        String fallback = null;
+        
         try {
             if (isMultiPartFormData(request)) {
                 Map<String, Object> parameters = getParameters(request);
@@ -65,11 +67,15 @@ public class RunCommand extends HttpServlet {
                 version  = (String) parameters.get("version");
                 
                 archive  = (File) parameters.get("archive");
+                
+                fallback = (String) parameters.get("fallback");
             } else {
                 registry = request.getParameter("registry");
                 
                 uid      = request.getParameter("uid");
                 version  = request.getParameter("version");
+                
+                fallback = request.getParameter("fallback");
             }
             
             final String prefix = getHostUrl(request) +
@@ -105,6 +111,11 @@ public class RunCommand extends HttpServlet {
             
             response.getWriter().write(
                     "The \"" + command + "\" command was successfully executed.");
+            
+            if (fallback != null) {
+                response.setStatus(HttpServletResponse.SC_SEE_OTHER);
+                response.setHeader("Location", fallback);
+            }
         } catch (IOException e) {
             e.printStackTrace(new PrintWriter(response.getWriter()));
             

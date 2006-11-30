@@ -32,6 +32,10 @@
         <servlet-name>remove-group</servlet-name>
         <servlet-class>org.netbeans.installer.infra.server.admin.servlets.RemoveGroup</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>manage-registries</servlet-name>
+        <servlet-class>org.netbeans.installer.infra.server.admin.servlets.ManageRegistries</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>run-command</servlet-name>
         <url-pattern>/run-command</url-pattern>
@@ -63,6 +67,10 @@
     <servlet-mapping>
         <servlet-name>remove-group</servlet-name>
         <url-pattern>/remove-group</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>manage-registries</servlet-name>
+        <url-pattern>/manage-registries</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>
