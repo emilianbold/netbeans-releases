@@ -189,7 +189,9 @@ public class JavaJSPCompletionProvider implements CompletionProvider {
             JspSyntaxSupport sup = (JspSyntaxSupport)Utilities.getSyntaxSupport(component);
             TokenItem tokenAtCaretPos = sup.getTokenChain(caretOffset, caretOffset + 1);
 
-            if (tokenAtCaretPos.getTokenID() != JspDirectiveTokenContext.ATTR_VALUE){
+            if (tokenAtCaretPos == null || 
+                    tokenAtCaretPos.getTokenID() != JspDirectiveTokenContext.ATTR_VALUE){
+                
                 return null;
             }
 
