@@ -24,8 +24,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.api.queries.SharabilityQuery;
-//[retouche] import org.netbeans.modules.javacore.api.JavaModel;
-//[retouche] import org.netbeans.modules.javacore.JMManager;
 import org.netbeans.modules.refactoring.api.impl.APIAccessor;
 import org.netbeans.modules.refactoring.api.impl.ProgressSupport;
 import org.netbeans.modules.refactoring.api.impl.SPIAccessor;
@@ -137,21 +135,16 @@ public abstract class AbstractRefactoring {
      * were found.
      */
     public final Problem preCheck() {
-//[retouche]        JavaModel.getJavaRepository().beginTrans(true);
-        try {
-            //workaround for #68803
-//[retouche]            if (!(this instanceof WhereUsedQuery)) {
-//[retouche]                if (progressSupport != null)
-//[retouche]                    progressSupport.fireProgressListenerStart(this, ProgressEvent.START, -1);
-//[retouche]                setCP();
-//[retouche]                if (progressSupport != null)
-//[retouche]                    progressSupport.fireProgressListenerStop(this);
-//[retouche]            }
-            currentState = PRE_CHECK;
-            return pluginsPreCheck(null);
-        } finally {
-//[retouche]            JavaModel.getJavaRepository().endTrans();
-        }
+//        //workaround for #68803
+//        if (!(this instanceof WhereUsedQuery)) {
+//            if (progressSupport != null)
+//                progressSupport.fireProgressListenerStart(this, ProgressEvent.START, -1);
+//            setCP();
+//            if (progressSupport != null)
+//                progressSupport.fireProgressListenerStop(this);
+//        }
+        currentState = PRE_CHECK;
+        return pluginsPreCheck(null);
     }
     
     /** Collects and returns a set of refactoring elements - objects that
@@ -163,22 +156,16 @@ public abstract class AbstractRefactoring {
      * were found.
      */
     public final Problem prepare(RefactoringSession session) {
-//[retouche]        JavaModel.getJavaRepository().beginTrans(true);
-        try {
-            setCP();
-            Problem p = null;
-            if (currentState < PARAMETERS_CHECK) {
-                p = checkParameters();
-            }
-            if (p != null && p.isFatal())
-                return p;
-            
-            p = pluginsPrepare(p, session);
-            
-            return p;
-        } finally {
-//[retouche]            JavaModel.getJavaRepository().endTrans();
+        Problem p = null;
+        if (currentState < PARAMETERS_CHECK) {
+            p = checkParameters();
         }
+        if (p != null && p.isFatal())
+            return p;
+        
+        p = pluginsPrepare(p, session);
+        
+        return p;
     }
     
     /**
@@ -186,26 +173,21 @@ public abstract class AbstractRefactoring {
      * @return Returns instancef Problem or null
      */
     public final Problem checkParameters() {
-//[retouche]        JavaModel.getJavaRepository().beginTrans(true);
-        try {
-            //workaround for #68803
-//[retouche]            if (this instanceof WhereUsedQuery) {
-//[retouche]                if (progressSupport != null)
-//[retouche]                    progressSupport.fireProgressListenerStart(this, ProgressEvent.START, -1);
-                setCP();
-//[retouche]                if (progressSupport != null)
-//[retouche]                    progressSupport.fireProgressListenerStop(this);
-//[retouche]            } else {
-//[retouche]                setCP();
-//[retouche]            }
-            Problem p = fastCheckParameters();
-            if (p != null && p.isFatal())
-                return p;
-            currentState = PARAMETERS_CHECK;
-            return pluginsCheckParams(p);
-        } finally {
-//[retouche]            JavaModel.getJavaRepository().endTrans();
-        }
+//        //workaround for #68803
+//        if (this instanceof WhereUsedQuery) {
+//            if (progressSupport != null)
+//                progressSupport.fireProgressListenerStart(this, ProgressEvent.START, -1);
+//            setCP();
+//            if (progressSupport != null)
+//                progressSupport.fireProgressListenerStop(this);
+//        } else {
+//            setCP();
+//        }
+        Problem p = fastCheckParameters();
+        if (p != null && p.isFatal())
+            return p;
+        currentState = PARAMETERS_CHECK;
+        return pluginsCheckParams(p);
     }
     
     /**
@@ -214,28 +196,18 @@ public abstract class AbstractRefactoring {
      * @return Returns instance of Problem or null
      */
     public final Problem fastCheckParameters() {
-//[retouche]        JavaModel.getJavaRepository().beginTrans(true);
-        try {
-            // Do not set classpath - use default merged class path
-            // #57558
-            // setCP();
-            Problem p = null;
-            if (currentState < PRE_CHECK) {
-                p = preCheck();
-            }
-            if (p != null && p.isFatal())
-                return p;
-            return pluginsFastCheckParams(p);
-        } finally {
-//[retouche]            JavaModel.getJavaRepository().endTrans();
+        // Do not set classpath - use default merged class path
+        // #57558
+        // setCP();
+        Problem p = null;
+        if (currentState < PRE_CHECK) {
+            p = preCheck();
         }
+        if (p != null && p.isFatal())
+            return p;
+        return pluginsFastCheckParams(p);
     }
     
-    private void setCP() {
-//[retouche]        if (JMManager.getTransactionMutex().getClassPath() == null) {
-//[retouche]            setClassPath();
-//[retouche]        }
-    }
     /** Registers ProgressListener to receive events.
      * @param listener The listener to register.
      *
@@ -331,11 +303,12 @@ public abstract class AbstractRefactoring {
                 return problem;
         }
         
+        //TODO: 
         //following condition "!(this instanceof WhereUsedQuery)" is hotfix of #65785
         //correct solution would probably be this condition: "!isQuery()"
         //unfortunately isQuery() is not in AbstractRefactoring class, but in RefactoringIU
         //we should consider moving this method to AbstractRefactoring class in future release
-//[retouche]        if (!(this instanceof WhereUsedQuery)) {
+        if (!(this instanceof WhereUsedQuery)) {
             ReadOnlyFilesHandler handler = getROHandler();
             if (handler!=null) {
                 Collection files = SPIAccessor.DEFAULT.getReadOnlyFiles(elements);
@@ -357,7 +330,7 @@ public abstract class AbstractRefactoring {
                 }
                 problem = chainProblems(handler.createProblem(session, allFiles), problem);
             }
-//[retouche]        }
+        }
         
         return problem;
     }

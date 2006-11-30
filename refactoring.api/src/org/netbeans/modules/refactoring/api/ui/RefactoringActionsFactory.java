@@ -27,7 +27,7 @@ import org.openide.util.ContextAwareAction;
  * Factory class providing instances of refactoring actions.
  * <p><b>Usage:</b></p>
  * <pre>
- * ContextAwareAction rename = RefactoringActionsFactory.renameImpl().createContextAwareInstance(actionContext);
+ * ContextAwareAction rename = RefactoringActionsFactory.renameAction().createContextAwareInstance(actionContext);
  * rename.actionPerformed(RefactoringActionsFactory.DEFAULT_EVENT);
  * </pre>
  * 
@@ -35,6 +35,9 @@ import org.openide.util.ContextAwareAction;
  */
 public final class RefactoringActionsFactory {
     
+    /**
+     * defualt event for actionPerformed
+     */
     public static final ActionEvent DEFAULT_EVENT = new ActionEvent(new Object(), 0, null) {
         public void setSource(Object newSource) {        
             throw new UnsupportedOperationException();

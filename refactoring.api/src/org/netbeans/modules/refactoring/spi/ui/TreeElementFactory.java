@@ -19,11 +19,12 @@
 
 package org.netbeans.modules.refactoring.spi.ui;
 
-import java.util.Iterator;
 import org.openide.util.Lookup;
 
 /**
- *
+ * Factory which finds (or creates) TreeElement for given Object
+ * @see TreeElement
+ * @see TreeElementFactoryImplementation
  * @author Jan Becicka
  */
 public final class TreeElementFactory {
@@ -33,6 +34,9 @@ public final class TreeElementFactory {
 
     private TreeElementFactory() {}
 
+    /**
+     * @return TreeElement for given object
+     */
     public static TreeElement getTreeElement(Object object) {
         if (object == null) throw new IllegalArgumentException();
         for (TreeElementFactoryImplementation fac: implementations.allInstances()) {
@@ -44,6 +48,10 @@ public final class TreeElementFactory {
         return null;
     }
 
+    /**
+     * this method is implementation detail.
+     * It calls cleanUp on all known TreeElementFactoryImplementations
+     */
     public static void cleanUp() {
         for (TreeElementFactoryImplementation fac: implementations.allInstances()) {
             fac.cleanUp();

@@ -23,12 +23,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
-//[retouche] import org.netbeans.api.mdr.MDRepository;
-//[retouche] import org.netbeans.modules.javacore.api.JavaModel;
-//[retouche] import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 import org.netbeans.modules.refactoring.api.impl.ProgressSupport;
 import org.netbeans.modules.refactoring.api.impl.SPIAccessor;
-//[retouche] import org.netbeans.modules.refactoring.classpath.RefactoringClassPathImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.LifecycleManager;
@@ -39,9 +35,9 @@ import org.openide.LifecycleManager;
  * @author Martin Matula, Daniel Prusa, Jan Becicka
  */
 public final class RefactoringSession {
-    private final LinkedList internalList;
+    private final LinkedList<RefactoringElementImplementation> internalList;
     private final RefactoringElementsBag bag;
-    private final Collection refactoringElements;
+    private final Collection<RefactoringElement> refactoringElements;
     private final String description;
     private ProgressSupport progressSupport;
     private Collection<Runnable> commits;
@@ -56,30 +52,38 @@ public final class RefactoringSession {
         this.fileChanges =  new ArrayList();
     }
     
-    /** Creates a new refactoring session.
+    /** 
+     * Creates a new refactoring session.
      */
     public static RefactoringSession create(String description) {
         return new RefactoringSession(description);
     }
 
+    /**
+     * commits are called after all changes are performed
+     */
     public void registerCommit(Runnable commit) {
         commits.add(commit);
     }
     
+    
+    /**
+     * fileChanges are performed after all element changes
+     */
     public void registerFileChange(Runnable changes) {
         fileChanges.add(changes);
     }
     
+    /**
+     * process all elements from elements bags,
+     * do all fileChanges
+     * and call all commits
+     */
     public Problem doRefactoring(boolean saveAfterDone) {
         Iterator it = internalList.iterator();
         fireProgressListenerStart(0, internalList.size()+1);
         try {
-            //[retouche]MDRepository repository = JavaModel.getJavaRepository();
-            boolean fail = true;
-            //[retouche]repository.beginTrans(true);
-            //[retouche]JavaMetamodel.getUndoManager().setUndoDescription(description);
             try {
-                //[retouche]JavaModel.setClassPath(RefactoringClassPathImplementation.getDefault());
                 while (it.hasNext()) {
                     fireProgressListenerStep();
                     RefactoringElementImplementation element = (RefactoringElementImplementation) it.next();
@@ -87,7 +91,6 @@ public final class RefactoringSession {
                         element.performChange();
                     }
                 }
-                fail = false;
             } finally {
                 try {
                     for (Runnable commit:commits) {
@@ -96,11 +99,9 @@ public final class RefactoringSession {
                 } finally {
                     commits.clear();
                 }
-                //[retouche]repository.endTrans(fail);
             }
             if (saveAfterDone) {
                 LifecycleManager.getDefault().saveAll();
-                //[retouche]JavaMetamodel.getUndoManager().saveAll();
             }
             try {
                 for (Runnable fileChange:fileChanges) {
@@ -116,7 +117,10 @@ public final class RefactoringSession {
         return null;
     }
     
-    public Collection getRefactoringElements() {
+    /**
+     * get elements from session
+     */
+    public Collection<RefactoringElement> getRefactoringElements() {
         return refactoringElements;
     }
     
@@ -155,17 +159,17 @@ public final class RefactoringSession {
         }
     }
     
-    private class ElementsCollection extends AbstractCollection {
-        public Iterator iterator() {
+    private class ElementsCollection extends AbstractCollection<RefactoringElement> {
+        public Iterator<RefactoringElement> iterator() {
             return new Iterator() {
-                private final Iterator inner = internalList.iterator();
+                private final Iterator<RefactoringElementImplementation> inner = internalList.iterator();
 
                 public void remove() {
                     throw new UnsupportedOperationException();
                 }
                 
-                public Object next() {
-                    return new RefactoringElement((RefactoringElementImplementation) inner.next());
+                public RefactoringElement next() {
+                    return new RefactoringElement(inner.next());
                 }
                 
                 public boolean hasNext() {

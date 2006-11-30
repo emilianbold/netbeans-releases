@@ -20,27 +20,49 @@
 package org.netbeans.modules.refactoring.api;
 
 /**
- *
+ * Copy refactoring
+ * This class is just holder for parameters of Multiple Copy Refactoring. 
+ * Refactoring itself is implemented in plugins
+ * @see org.netbeans.modules.refactoring.spi.RefactoringPlugin
+ * @see org.netbeans.modules.refactoring.spi.RefactoringPluginFactory
+ * @see AbstractRefactoring
+ * @see RefactoringSession
  * @author Jan Becicka
  */
 public class MultipleCopyRefactoring extends AbstractRefactoring {
 
-    private Object[] object;
+    private Object[] objectsToCopy;
     private Object target;
-    private String newName;
 
+    /**
+     * @param objectsToCopy Objects to be copied.
+     * E.g. FileObjects in case of Java Refactoring
+     */
     public MultipleCopyRefactoring (Object ... objectsToCopy) {
-        this.object = object;
+        this.objectsToCopy = objectsToCopy;
     }
 
+    /** 
+     * getter for copied objects
+     */
     public Object[] getRefactoredObjects() {
-        return object;
+        return objectsToCopy;
     }
 
+    /**
+     * Target where copy should be created
+     * For instance Java Refactoring understands URL as target
+     * @param target
+     */
     public void setTarget(Object target) {
         this.target = target;
     }
     
+    /**
+     * Target where copy should be created
+     * For instance Java Refactoring understands URL as target
+     * @return target
+     */
     public Object getTarget() {
         return target;
     }

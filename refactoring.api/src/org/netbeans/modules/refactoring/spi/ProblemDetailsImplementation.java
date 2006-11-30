@@ -36,7 +36,7 @@ public interface ProblemDetailsImplementation {
      * This method will typically invoke component with ProblemDetails.
      * It is fully upon clients, how this component will be implemented.
      * @param rerunRefactoringAction this action is passed to client component
-     * @parent parent parent component, than can be closed by cancel method.
+     * @param parent parent component, than can be closed by cancel method.
      * to allow clients to rerun refactoring once the Problem is fixed.
      */
     void showDetails(Action rerunRefactoringAction, Cancellable parent);

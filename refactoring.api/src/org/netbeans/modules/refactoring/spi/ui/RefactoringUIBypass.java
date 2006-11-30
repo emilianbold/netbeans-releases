@@ -22,7 +22,6 @@ package org.netbeans.modules.refactoring.spi.ui;
 import java.io.IOException;
 
 /**
- *
  * @author Jan Becicka
  * XXX this should be improved
  */

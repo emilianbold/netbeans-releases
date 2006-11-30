@@ -20,10 +20,7 @@
 package org.netbeans.modules.refactoring.spi;
 
 import java.util.*;
-//[retouche] import org.netbeans.jmi.javamodel.Resource;
-//[retouche] import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.modules.refactoring.api.impl.APIAccessor;
-//[retouche]import org.netbeans.modules.refactoring.CheckUtils;
 import org.netbeans.modules.refactoring.api.impl.SPIAccessor;
 import org.netbeans.modules.refactoring.api.*;
 import org.openide.filesystems.FileObject;
@@ -37,14 +34,14 @@ public final class RefactoringElementsBag {
         SPIAccessor.DEFAULT = new AccessorImpl();
     }
     
-    private final List delegate;
+    private final List<RefactoringElementImplementation> delegate;
     private final RefactoringSession session;
-    private Collection readOnlyFiles = new HashSet();
+    private Collection<FileObject> readOnlyFiles = new HashSet();
     
     /**
      * Creates an instance of RefactoringElementsBag
      */
-    RefactoringElementsBag(RefactoringSession session, List delegate) {
+    RefactoringElementsBag(RefactoringSession session, List<RefactoringElementImplementation> delegate) {
         this.session = session;
         this.delegate = delegate;
     }
@@ -125,7 +122,7 @@ public final class RefactoringElementsBag {
         return session;
     }
     
-    Collection getReadOnlyFiles() {
+    Collection<FileObject> getReadOnlyFiles() {
         return readOnlyFiles;
     }
 }

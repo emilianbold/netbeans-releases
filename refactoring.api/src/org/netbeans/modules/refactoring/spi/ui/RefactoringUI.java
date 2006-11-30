@@ -18,11 +18,9 @@
  */
 package org.netbeans.modules.refactoring.spi.ui;
 
-import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.spi.impl.ParametersPanel;
 import org.openide.util.HelpCtx;
 
 /** Interface representing UI for a refactoring.
@@ -67,8 +65,14 @@ public interface RefactoringUI {
      */
     Problem setParameters();
     
+    /**
+     * check parameters of refactoring
+     */
     Problem checkParameters();
     
+    /**
+     * true, if refactoring has parameters
+     */
     boolean hasParameters();
     
     /** Returns underlying refactoring object.
@@ -76,5 +80,8 @@ public interface RefactoringUI {
      */
     AbstractRefactoring getRefactoring();
     
+    /**
+     * @return helpcontext
+     */
     public HelpCtx getHelpCtx();
 }

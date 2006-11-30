@@ -295,7 +295,7 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
     }
     
     private WhereUsedQuery createQuery(TreePathHandle tph) {
-        WhereUsedQuery<TreePathHandle> q = new WhereUsedQuery(tph);
+        WhereUsedQuery q = new WhereUsedQuery(tph);
         for (Object o:refactoring.getContext().lookupAll(Object.class)) {
             q.getContext().add(o);
         }

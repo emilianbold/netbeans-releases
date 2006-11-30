@@ -25,12 +25,15 @@ import org.netbeans.modules.refactoring.api.*;
  * Where used query does not do any "real" refactoring.
  * It just encapsulates parameters for Find Usages, which is implemented by
  * plugins.
- * @see org.netbeans.modules.refactoring.spi.RefactoringPluginFactory
+ * Refactoring itself is implemented in plugins
  * @see org.netbeans.modules.refactoring.spi.RefactoringPlugin
+ * @see org.netbeans.modules.refactoring.spi.RefactoringPluginFactory
+ * @see AbstractRefactoring
+ * @see RefactoringSession
  * @author Jan Becicka
  */
-public final class WhereUsedQuery<T> extends AbstractRefactoring {
-    private T  item;
+public final class WhereUsedQuery extends AbstractRefactoring {
+    private Object item;
     public static final String SEARCH_IN_COMMENTS = "SEARCH_IN_COMMENTS";
     public static final String FIND_REFERENCES = "FIND_REFERENCES";
     
@@ -38,25 +41,34 @@ public final class WhereUsedQuery<T> extends AbstractRefactoring {
      * Creates a new instance of WhereUsedQuery
      * @param item searched item
      */
-    public WhereUsedQuery(T item) {
+    public WhereUsedQuery(Object item) {
         this.item = item;
         putValue(FIND_REFERENCES, true);
     }
 
     /**
      * Getter for searched item
-     * @return searched item (typically JavaClass, Method or Field)
+     * @return searched item. Java module understands TreePathHandle to be a parameter
      */
-    public final T getRefactoredObject() {
+    public final Object getRefactoredObject() {
         return item;
     }    
     
-    public final void setRefactoredObject(T item) {
+    /**
+     * Getter for searched item
+     * @param item searched item. Java module understands TreePathHandle to be a parameter
+     */
+    public final void setRefactoredObject(Object item) {
         this.item = item;
     }
     
     private Hashtable hash = new Hashtable();
     
+    /**
+     * getter for various properties
+     * @see WhereUsedQuery#SEARCH_IN_COMMENTS
+     * @see WhereUsedQuery#FIND_REFERENCES
+     */
     public final boolean getBooleanValue(Object key) {
         Object o = hash.get(key);
         if (o instanceof Boolean) 
@@ -64,6 +76,11 @@ public final class WhereUsedQuery<T> extends AbstractRefactoring {
         return false;
     }
     
+    /**
+     * setter for various properties
+     * @see WhereUsedQuery#SEARCH_IN_COMMENTS
+     * @see WhereUsedQuery#FIND_REFERENCES
+     */
     public final void putValue(Object key, Object value) {
         hash.put(key, (Boolean) value);
     }

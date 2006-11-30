@@ -29,12 +29,9 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.javahelp.Help;
-//[retouche]import org.netbeans.api.mdr.MDRepository;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.refactoring.api.impl.RefactoringModule;
-//[retouche]import org.netbeans.modules.javacore.api.JavaModel;
-//[retouche]import org.netbeans.modules.refactoring.UndoWatcher;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
@@ -438,17 +435,11 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         
         RequestProcessor.Task task = RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-//[retouche]                MDRepository rep = JavaModel.getJavaRepository();
-//[retouche]                rep.beginTrans(true);
                 try {
-                    //rui.getRefactoring().setClassPath();
                     problem = rui.getRefactoring().preCheck();
                 } catch (RuntimeException e) {
                     setVisibleLater(false);
                     throw e;
-                }
-                finally {
-//[retouche]                    rep.endTrans();
                 }
                 if (problem != null) {
                     currentState = PRE_CHECK;
@@ -471,12 +462,9 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
                         });
                     if (!rui.hasParameters()) {
                         result = RefactoringSession.create(rui.getName());
-//[retouche]                        rep.beginTrans(true);
                         try {
-                            //rui.getRefactoring().setClassPath();
                             rui.getRefactoring().prepare(result);
                         } finally {
-//[retouche]                            rep.endTrans();
                             setVisibleLater(false);
                         }
                     } 
@@ -491,7 +479,6 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         if (rui != null) { 
             rui.getRefactoring().removeProgressListener(this);
         }
-        //JavaMetamodel.getManager().getProgressSupport().removeProgressListener(this);
         if (!cancelRequest)
             task.waitFinished(); 
         return result;
@@ -683,17 +670,11 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
                 }
             }
             
-//[retouche]            MDRepository rep = JavaModel.getJavaRepository();
-//[retouche]            rep.beginTrans(true);
             try {
-                //rui.getRefactoring().setClassPath();
                 problem = rui.getRefactoring().prepare(result);
             } catch (RuntimeException e) {
                 setVisibleLater(false);
                 throw e;
-            }
-            finally {
-//[retouche]                rep.endTrans();
             }
 	
             if (problem != null) {

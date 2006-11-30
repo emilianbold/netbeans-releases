@@ -21,8 +21,10 @@ package org.netbeans.modules.refactoring.api;
 
 /**
  * Refactoring to Safely Delete an element after checking its usages.
- * This refactoring internally uses the <CODE>WhereUsedQuery</CODE>
- * refactoring.
+ * @see org.netbeans.modules.refactoring.spi.RefactoringPlugin
+ * @see org.netbeans.modules.refactoring.spi.RefactoringPluginFactory
+ * @see AbstractRefactoring
+ * @see RefactoringSession
  * @author Bharath Ravikumar
  */
 public final class SafeDeleteRefactoring extends AbstractRefactoring {

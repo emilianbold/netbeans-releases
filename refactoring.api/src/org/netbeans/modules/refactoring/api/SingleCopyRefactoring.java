@@ -20,7 +20,13 @@
 package org.netbeans.modules.refactoring.api;
 
 /**
- *
+ * Copy refactoring
+ * This class is just holder for parameters of Single Copy Refactoring. 
+ * Refactoring itself is implemented in plugins
+ * @see org.netbeans.modules.refactoring.spi.RefactoringPlugin
+ * @see org.netbeans.modules.refactoring.spi.RefactoringPluginFactory
+ * @see AbstractRefactoring
+ * @see RefactoringSession
  * @author Jan Becicka
  */
 public class SingleCopyRefactoring extends AbstractRefactoring {
@@ -29,26 +35,49 @@ public class SingleCopyRefactoring extends AbstractRefactoring {
     private Object target;
     private String newName;
 
+    /**
+     * @param objectToCopy Object to be copied.
+     * E.g. FileObject in case of Java Refactoring
+     */
     public SingleCopyRefactoring (Object objectToCopy) {
         this.object = objectToCopy;
     }
 
+    /** 
+     * getter for copied objects
+     */
     public Object getRefactoredObject() {
         return object;
     }
 
+    /**
+     * Target where copy should be created
+     * For instance Java Refactoring understands URL as target
+     * @param target
+     */
     public void setTarget(Object target) {
         this.target = target;
     }
     
+    /**
+     * Target where copy should be created
+     * For instance Java Refactoring understands URL as target
+     * @return target
+     */
     public Object getTarget() {
         return target;
     }
     
+    /**
+     * getter for new name of copied file
+     */
     public String getNewName() {
         return newName;
     }
     
+    /**
+     * setter for new name of copied file
+     */
     public void setNewName(String newName) {
         this.newName = newName;
     }

@@ -20,7 +20,13 @@
 package org.netbeans.modules.refactoring.api;
 
 /**
- *
+ * Move refactoring
+ * This class is just holder for parameters of Move Refactgoring. 
+ * Refactoring itself is implemented in plugins
+ * @see org.netbeans.modules.refactoring.spi.RefactoringPlugin
+ * @see org.netbeans.modules.refactoring.spi.RefactoringPluginFactory
+ * @see AbstractRefactoring
+ * @see RefactoringSession
  * @author Jan Becicka
  */
 public final class MoveRefactoring extends AbstractRefactoring {
@@ -28,18 +34,35 @@ public final class MoveRefactoring extends AbstractRefactoring {
     private Object[] objectsToMove;
     private Object target;
 
+    /**
+     * @param objectsToMove Objects to be moved. E.g. FileObjects 
+     * or TreePathHandles in case of Java Refactoring
+     */
     public MoveRefactoring (Object ... objectsToMove) {
         this.objectsToMove = objectsToMove;
     }
 
+    /** 
+     * getter for moved objects
+     */
     public Object[] getRefactoredObjects() {
         return objectsToMove;
     }
 
+    /**
+     * Target for moving
+     * For instance Java Refactoring understands URL as target
+     * @param target
+     */
     public void setTarget(Object target) {
         this.target = target;
     }
-    
+
+    /**
+     * Target for moving
+     * For instance Java Refactoring understands URL as target
+     * @return target
+     */
     public Object getTarget() {
         return this.target;
     }

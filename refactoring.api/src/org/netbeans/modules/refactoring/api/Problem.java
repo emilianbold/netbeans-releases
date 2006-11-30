@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.refactoring.api;
 
-import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 
 /** Class used to represent problems encountered when performing
  * various refactoring calls. Problems can be chained (using setNext method)

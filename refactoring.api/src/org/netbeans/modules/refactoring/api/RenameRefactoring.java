@@ -18,11 +18,13 @@
  */
 package org.netbeans.modules.refactoring.api;
 
-import java.util.Collection;
-
 /**
- * Refactoring used for renaming classes,  fields and methods.
- * It rename definition and references.
+ * Refactoring used for renaming objects.
+ * In case of Java Refactoring it means classes, fields and methods.
+ * @see org.netbeans.modules.refactoring.spi.RefactoringPlugin
+ * @see org.netbeans.modules.refactoring.spi.RefactoringPluginFactory
+ * @see AbstractRefactoring
+ * @see RefactoringSession
  * @author Jan Becicka, Martin Matula, Pavel Flaska, Daniel Prusa
  */
 public final class RenameRefactoring extends AbstractRefactoring {
@@ -32,7 +34,8 @@ public final class RenameRefactoring extends AbstractRefactoring {
 
     /**
      * Creates a new instance of RenameRefactoring
-     * @param item Valid item is Method, JavaClass, Field, Parameter or LocalVariabe
+     * For instance Java Refactoring module understands FileObjects and TreePathHandles
+     * @param item 
      */
     public RenameRefactoring(Object item) {
         this.item = item;
@@ -56,7 +59,7 @@ public final class RenameRefactoring extends AbstractRefactoring {
     
     /**
      * Getter for property refactoredObject
-     * @return refactoredObject (e.g. field, method, class)
+     * @return refactoredObject (e.g. FileObject, TreePathHandle)
      */
     public Object getRefactoredObject() {
         return item;

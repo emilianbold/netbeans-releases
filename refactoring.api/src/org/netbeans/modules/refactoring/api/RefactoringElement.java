@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.refactoring.api;
 
-//[retouche] import org.netbeans.jmi.javamodel.Element;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.text.PositionBounds;
@@ -77,11 +76,17 @@ public final class RefactoringElement {
         impl.setEnabled(enabled);
     }
     
-    /** Returns Java element associated with this refactoring element.
-     * @return MDR Java element.
+    /** 
+     * Returns element associated with this refactoring element.
+     * @see org.netbeans.modules.refactoring.spi.ui.TreeElement
+     * @see org.netbeans.modules.refactoring.spi.ui.TreeElementFactoryImplementation 
+     * @return element.
      */
     public Object getComposite() {
-        return impl.getComposite();
+        Object o = impl.getComposite();
+        if (o==null)
+            return getParentFile();
+        return o;
     }
     
     /** Returns file that the element affects (relates to)

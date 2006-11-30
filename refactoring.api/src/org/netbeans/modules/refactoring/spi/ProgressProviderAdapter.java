@@ -19,15 +19,12 @@
 
 package org.netbeans.modules.refactoring.spi;
 
-import java.util.ArrayList;
-import java.util.Iterator;
 import org.netbeans.modules.refactoring.api.impl.ProgressSupport;
-import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.api.ProgressListener;
-import org.openide.ErrorManager;
 
 /**
- * Simple implementation of #ProgressProvider
+ * Simple implementation of ProgressProvider
+ * @see ProgressProvider
  * @author Jan Becicka
  */
 public class ProgressProviderAdapter implements ProgressProvider {

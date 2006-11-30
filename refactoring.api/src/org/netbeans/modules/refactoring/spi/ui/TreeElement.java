@@ -22,13 +22,30 @@ package org.netbeans.modules.refactoring.spi.ui;
 import javax.swing.Icon;
 
 /**
- *
+ * Tree Elements are shown in Refactoring Preview.
+ * If you want to implement your own TreeElements, you
+ * must register your TreeElementFactoryImplementation 
+ * @see TreeElementFactoryImplementation
+ * @see TreeElementFactory
  * @author Jan Becicka
  */
 public interface TreeElement {
+    /**
+     * @return parent of this TreeElement
+     */
     public TreeElement getParent(boolean isLogical);
+    
+    /**
+     * @return icon for this TreeElement
+     */
     public Icon getIcon();
+    /**
+     * @return text of this TreeElement
+     */
     public String getText(boolean isLogical);
+    /**
+     * @return corresponding object, usually RefactoringElement, FileObject
+     */
     public Object getUserObject();
 }
 

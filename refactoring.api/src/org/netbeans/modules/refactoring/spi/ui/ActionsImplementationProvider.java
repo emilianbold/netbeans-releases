@@ -21,45 +21,102 @@ package org.netbeans.modules.refactoring.spi.ui;
 
 import org.openide.util.Lookup;
 /**
+ * Create your own provider of this class and register it in META-INF services, if you want to
+ * create your own implementations of refactorin actions.
+ * For instance Java module wants to have refactoring rename action for java files.
+ * So Java Refactoring module must implement 2 methods. 
+ *
+ * <pre>
+ * public boolean canRename(Lookup lookup) {
+ *   Node[] nodes = lookup.lookupAll(Node.class);
+ *   if (..one node selected and the node belongs to java...)
+ *      return true;
+ *   else 
+ *      return fals;
+ * }
+ *
+ * public Runnable renameImpl(Lookup selectedNodes) {
+ *   Node[] nodes = lookup.lookupAll(Node.class);
+ *   final FileObject fo = getFileFromNode(nodes[0]);
+ *   return new Runnable() {
+ *     public void run() {
+ *       UI.openRefactoringUI(new RenameRefactoringUI(fo);
+ *     }
+ *   }    
+ * }
+ * </pre>     
  *
  * @author Jan Becicka
  */
 public abstract class ActionsImplementationProvider {
-    public Runnable renameImpl(Lookup selectedNodes) {
-        return null;
-    }
+    
+    /**
+     * @return true if provider can handle rename
+     */
     public boolean canRename(Lookup node) {
         return false;
     }
 
+    /**
+     * @return implementation of Rename Action
+     */
+    public Runnable renameImpl(Lookup selectedNodes) {
+        return null;
+    }
+
+    /**
+     * @return true if provider can handle find usages
+     */
     public boolean canFindUsages(Lookup lookup) {
         return false;
     }
 
+    /**
+     * @return implementation of Find Usages Action
+     */
     public Runnable findUsagesImpl(Lookup lookup) {
         return null;
     }
 
+    /**
+     * @return true if provider can handle delete
+     */
     public boolean canDelete(Lookup lookup) {
         return false;
     }
     
+    /**
+     * @return implementation of Delete Action
+     */
     public Runnable deleteImpl(Lookup lookup) {
         return null;
     }
 
+    /**
+     * @return true if provider can handle move
+     */
+    public boolean canMove(Lookup lookup) {
+        return false;
+    }
+
+    /**
+     * @return implementation of Move Action
+     */
     public Runnable moveImpl(Lookup lookup) {
         return null;
     }
 
-    public boolean canMove(Lookup lookup) {
-        return false;
-    }
-    public Runnable copyImpl(Lookup lookup) {
-        return null;
-    }
-
+    /**
+     * @return true if provider can handle copy
+     */
     public boolean canCopy(Lookup lookup) {
         return false;
+    }
+
+    /**
+     * @return implementation of Copy Action
+     */
+    public Runnable copyImpl(Lookup lookup) {
+        return null;
     }
 }
