@@ -55,7 +55,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.websvc.api.jaxws.project.GeneratedFilesHelper;
-import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
+import org.netbeans.modules.websvc.api.client.WebServicesClientConstants;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -732,10 +732,10 @@ public class AppClientProjectProperties {
         // update j2ee.platform.wscompile.classpath
         if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSCOMPILE)) {
             File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSCOMPILE);
-            privateProps.setProperty(WebServicesConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH, 
+            privateProps.setProperty(WebServicesClientConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH, 
                     Utils.toClasspathString(wsClasspath));
         } else {
-            privateProps.remove(WebServicesConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH);
+            privateProps.remove(WebServicesClientConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH);
         }
         
         // update j2ee.server.type

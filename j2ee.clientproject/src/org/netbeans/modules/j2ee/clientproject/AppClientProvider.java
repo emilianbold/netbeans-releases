@@ -38,10 +38,10 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectProperties;
-import org.netbeans.modules.j2ee.common.Util;
+//import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.dd.api.client.AppClient;
 import org.netbeans.modules.j2ee.dd.api.client.DDProvider;
-import org.netbeans.modules.j2ee.dd.api.webservices.Webservices;
+//import org.netbeans.modules.j2ee.dd.api.webservices.Webservices;
 import org.netbeans.modules.j2ee.deployment.common.api.EjbChangeDescriptor;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
@@ -49,13 +49,13 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.spi.ejbjar.CarImplementation;
 import org.netbeans.modules.schema2beans.BaseBean;
-import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
-import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
+//import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
+import org.netbeans.modules.websvc.api.client.WebServicesClientConstants;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
+//import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -206,15 +206,15 @@ public final class AppClientProvider extends J2eeModuleProvider
                 //PENDING find a better way to get the BB from WApp and remove the HACK from DDProvider!!
                 return DDProvider.getDefault().getBaseBean(appClient);
             }
-        } else if(J2eeModule.EJBSERVICES_XML.equals(location)){
+        }/* else if(J2eeModule.EJBSERVICES_XML.equals(location)){
             Webservices webServices = getWebservices();
             if(webServices != null){
                 return org.netbeans.modules.j2ee.dd.api.webservices.DDProvider.getDefault().getBaseBean(webServices);
             }
-        }
+        }*/
         return null;
     }
-    
+    /*
     private Webservices getWebservices() {
         if (Util.isJavaEE5orHigher(project)) {
             WebServicesSupport wss = WebServicesSupport.getWebServicesSupport(project.getProjectDirectory());
@@ -237,13 +237,13 @@ public final class AppClientProvider extends J2eeModuleProvider
         
         return null;
     }
-    
+    */
     public FileObject getDD() {
         FileObject metaInfFo = getMetaInf();
         if (metaInfFo==null) {
             return null;
         }
-        return metaInfFo.getFileObject(WebServicesConstants.WEBSERVICES_DD, "xml"); // NOI18N
+        return metaInfFo.getFileObject(WebServicesClientConstants.WEBSERVICES_DD, "xml"); // NOI18N
     }
     
     public EjbChangeDescriptor getEjbChanges(long timestamp) {

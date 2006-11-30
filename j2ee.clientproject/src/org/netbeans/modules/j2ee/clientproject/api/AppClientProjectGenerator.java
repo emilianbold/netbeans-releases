@@ -43,7 +43,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
+import org.netbeans.modules.websvc.api.client.WebServicesClientConstants;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
@@ -452,7 +452,7 @@ public class AppClientProjectGenerator {
         // set j2ee.platform.wscompile.classpath
         if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSCOMPILE)) {
             File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSCOMPILE);
-            ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH,
+            ep.setProperty(WebServicesClientConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH,
                     Utils.toClasspathString(wsClasspath));
         }
         
