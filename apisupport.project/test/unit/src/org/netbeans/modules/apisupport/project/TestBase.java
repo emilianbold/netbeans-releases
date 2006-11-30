@@ -84,6 +84,10 @@ import org.openide.filesystems.FileLock;
     
     protected File apisZip;
     
+    /** sample projects doesn't have datadir
+     */
+    protected static boolean noDataDir = false;
+    
     protected void setUp() throws Exception {
         super.setUp();
         cvsAvailable = isCVSAvailable();
@@ -93,8 +97,10 @@ import org.openide.filesystems.FileLock;
             assertNotNull("have a file object for nbcvsroot when using " + System.getProperty("java.class.path"), nbcvsroot);
             destDirF = file(nbcvsrootF, "nbbuild/netbeans").getAbsoluteFile();
             File extexamplesF = file(getDataDir(), EEP);
-            assertTrue("there is a dir " + extexamplesF, extexamplesF.isDirectory());
-            assertNotNull("have a file object for extexamples", FileUtil.toFileObject(extexamplesF));
+            if (!noDataDir) {
+                assertTrue("there is a dir " + extexamplesF, extexamplesF.isDirectory());
+                assertNotNull("have a file object for extexamples", FileUtil.toFileObject(extexamplesF));
+            }
         } else {
             destDirF = getXTestNBDestDir();
         }
@@ -108,7 +114,7 @@ import org.openide.filesystems.FileLock;
         
         // Nonexistent path, just for JavadocForBuiltModuleTest:
         apisZip = new File(getWorkDir(), "apis.zip");
-        File userPropertiesFile = initializeBuildProperties(getWorkDir(), getDataDir(), apisZip);
+        File userPropertiesFile = initializeBuildProperties(getWorkDir(), getDataDir(), apisZip,noDataDir);
         String[] suites = {
             // Suite projects:
             "suite1",
@@ -117,16 +123,18 @@ import org.openide.filesystems.FileLock;
             // Standalone module projects:
             "suite3/dummy-project",
         };
-        for (int i = 0; i < suites.length; i++) {
-            File platformPrivate = resolveEEPFile(suites[i] + "/nbproject/private/platform-private.properties");
-            Properties p = new Properties();
-            p.setProperty("user.properties.file", userPropertiesFile.getAbsolutePath());
-            platformPrivate.getParentFile().mkdirs();
-            OutputStream os = new FileOutputStream(platformPrivate);
-            try {
-                p.store(os, null);
-            } finally {
-                os.close();
+        if (!noDataDir) {
+            for (int i = 0; i < suites.length; i++) {
+                File platformPrivate = resolveEEPFile(suites[i] + "/nbproject/private/platform-private.properties");
+                Properties p = new Properties();
+                p.setProperty("user.properties.file", userPropertiesFile.getAbsolutePath());
+                platformPrivate.getParentFile().mkdirs();
+                OutputStream os = new FileOutputStream(platformPrivate);
+                try {
+                    p.store(os, null);
+                } finally {
+                    os.close();
+                }
             }
         }
         NbPlatform.reset();
@@ -145,10 +153,10 @@ import org.openide.filesystems.FileLock;
      * @return resulting properties file
      */
     public static File initializeBuildProperties(File workDir, File dataDir) throws Exception {
-        return initializeBuildProperties(workDir, dataDir, null);
+        return initializeBuildProperties(workDir, dataDir, null,noDataDir);
     }
     
-    private static File initializeBuildProperties(File workDir, File dataDir, File apisZip) throws Exception {
+    private static File initializeBuildProperties(File workDir, File dataDir, File apisZip,boolean noDataDir) throws Exception {
         File nbcvsrootF = getTestNBRoot();
         boolean cvsAvailable = isCVSAvailable();
         System.setProperty("netbeans.user", workDir.getAbsolutePath());
@@ -158,15 +166,17 @@ import org.openide.filesystems.FileLock;
         assertTrue("default platform available (" + defaultPlatform + ')', defaultPlatform.isDirectory());
         p.setProperty("nbplatform.default.netbeans.dest.dir", defaultPlatform.getAbsolutePath());
         p.setProperty("nbplatform.default.harness.dir", "${nbplatform.default.netbeans.dest.dir}/harness");
-        File customPlatform = file(file(dataDir, EEP), "/suite3/nbplatform");
-        assertTrue("custom platform available (" + customPlatform + ')', customPlatform.isDirectory());
-        p.setProperty("nbplatform.custom.netbeans.dest.dir", customPlatform.getAbsolutePath());
-        if (apisZip != null) {
-            p.setProperty("nbplatform.default.javadoc", apisZip.getAbsolutePath());
-        }
-        if (cvsAvailable) {
-            // Make source association work to find misc-project from its binary:
-            p.setProperty("nbplatform.default.sources", nbcvsrootF.getAbsolutePath() + ":" + file(file(dataDir, EEP), "/suite2").getAbsolutePath());
+        if (!noDataDir) {
+            File customPlatform = file(file(dataDir, EEP), "/suite3/nbplatform");
+            assertTrue("custom platform available (" + customPlatform + ')', customPlatform.isDirectory());
+            p.setProperty("nbplatform.custom.netbeans.dest.dir", customPlatform.getAbsolutePath());
+            if (apisZip != null) {
+                p.setProperty("nbplatform.default.javadoc", apisZip.getAbsolutePath());
+            }
+            if (cvsAvailable) {
+                // Make source association work to find misc-project from its binary:
+                p.setProperty("nbplatform.default.sources", nbcvsrootF.getAbsolutePath() + ":" + file(file(dataDir, EEP), "/suite2").getAbsolutePath());
+            }
         }
         OutputStream os = new FileOutputStream(userPropertiesFile);
         try {

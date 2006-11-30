@@ -54,6 +54,7 @@ public class BuildPaintapplicationTest extends TestBase {
     
     protected void setUp() throws Exception {
         clearWorkDir();
+        noDataDir = true;
         super.setUp();
         InstalledFileLocatorImpl.registerDestDir(destDirF);
         TestAntLogger.getDefault().setEnabled(true);
