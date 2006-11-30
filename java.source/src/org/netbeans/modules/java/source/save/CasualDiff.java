@@ -22,8 +22,10 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import java.io.IOException;
+import java.util.Arrays;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.source.builder.CommentHandlerService;
 import org.netbeans.modules.java.source.builder.ASTService;
@@ -82,7 +84,11 @@ public class CasualDiff {
     private VeryPretty printer;
     private int pointer;
     private Context context;
-    
+
+    /** provided for test only */
+    public CasualDiff() {
+    }
+
     protected CasualDiff(Context context, WorkingCopy workingCopy) {
         diffs = new ListBuffer<Diff>();
         comments = CommentHandlerService.instance(context);
@@ -98,7 +104,7 @@ public class CasualDiff {
         printer = new VeryPretty(context, JavaFormatOptions.getDefault());
     }
     
-    protected com.sun.tools.javac.util.List<Diff> getDiffs() {
+    public com.sun.tools.javac.util.List<Diff> getDiffs() {
         return diffs.toList();
     }
     
@@ -110,7 +116,10 @@ public class CasualDiff {
         CasualDiff td = new CasualDiff(context, copy);
         try {
             td.diffTree(oldTree, newTree);
-            LCSAlgorithm(td.workingCopy.getText(), td.output.toString(), td);
+//            LCSAlgorithm(td.workingCopy.getText(), td.output.toString(), td);
+            String resultSrc = td.output.toString();
+            
+            LCSAlgorithm(copy.getTokenHiearchy().tokenSequence(), TokenHierarchy.create(resultSrc, JavaTokenId.language()).tokenSequence(), td);
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -465,10 +474,12 @@ public class CasualDiff {
         }
     }
 
-    protected void diffBlock(JCBlock oldT, JCBlock newT) {
+    protected void diffBlock(JCBlock oldT, JCBlock newT) throws IOException, BadLocationException {
         if (oldT.flags != newT.flags)
             append(Diff.flags(oldT.pos, endPos(oldT), oldT.flags, newT.flags));
-        diffList(oldT.stats, newT.stats, LineInsertionType.BEFORE, oldT.pos + 1); // hint after open brace
+        VeryPretty bodyPrinter = new VeryPretty(context, JavaFormatOptions.getDefault());
+        diffList(oldT.stats, newT.stats, oldT.pos + 1, EstimatorFactory.members(), Measure.DEFAULT, bodyPrinter); // hint after open brace
+        System.err.println(bodyPrinter.toString());
     }
 
     protected void diffDoLoop(JCDoWhileLoop oldT, JCDoWhileLoop newT) {
@@ -1219,9 +1230,11 @@ public class CasualDiff {
                         if (ret[1] < 0) ret[1] = posHint;
                     }
                     int oldPos = getOldPos(item.element);
+                    boolean found = false;
                     if (oldPos > 0) {
                         for (JCTree oldT : oldList) {
                             if (oldPos == getOldPos(oldT)) {
+                                found = true;
                                 VeryPretty oldPrinter = this.printer;
                                 this.printer = new VeryPretty(context, JavaFormatOptions.getDefault());
                                 int index = oldList.indexOf(oldT);
@@ -1234,7 +1247,8 @@ public class CasualDiff {
                                 break;
                             }
                         }
-                    } else {
+                    }
+                    if (!found) {
                         if (j == 0 && !oldList.isEmpty()) {
                             posHint = estimator.getPositions(0)[0];
                         }
@@ -1978,5 +1992,135 @@ public class CasualDiff {
             d.append(diff);
         }
     }
+    
+    public static List<Diff> LCSAlgorithm(TokenSequence tsa, TokenSequence tsb, CasualDiff d) {
+        System.err.println("Using token sequence comparing...");
+        List<CharSequence> a = new ArrayList<CharSequence>();
+        List<CharSequence> b = new ArrayList<CharSequence>();
+        while (tsa.moveNext()) {
+            a.add(tsa.token().text().toString());
+        }
+        while (tsb.moveNext()) {
+            b.add(tsb.token().text().toString());
+        }
+        
+        int n = a.size();
+        int m = b.size();
+        int S[][] = new int[n+1][m+1];
+        int R[][] = new int[n+1][m+1];
+        int ii, jj;
 
+        // It is important to use <=, not <.  The next two for-loops are initialization
+        for(ii = 0; ii <= n; ++ii) {
+            S[ii][0] = 0;
+            R[ii][0] = UP;
+        }
+        for(jj = 0; jj <= m; ++jj) {
+            S[0][jj] = 0;
+            R[0][jj] = LEFT;
+        }
+
+        // This is the main dynamic programming loop that computes the score and
+        // backtracking arrays.
+        for(ii = 1; ii <= n; ++ii) {
+            for(jj = 1; jj <= m; ++jj) { 
+                if (a.get(ii-1).toString().equals(b.get(jj-1).toString())) {
+                    S[ii][jj] = S[ii-1][jj-1] + 1;
+                    R[ii][jj] = UP_AND_LEFT;
+                }
+
+                else {
+                    S[ii][jj] = S[ii-1][jj-1] + 0;
+                    R[ii][jj] = NEITHER;
+                }
+
+                if( S[ii-1][jj] >= S[ii][jj] ) {    
+                    S[ii][jj] = S[ii-1][jj];
+                    R[ii][jj] = UP;
+                }
+
+                if( S[ii][jj-1] >= S[ii][jj] ) {
+                    S[ii][jj] = S[ii][jj-1];
+                    R[ii][jj] = LEFT;
+                }
+            }
+        }
+
+        // The length of the longest substring is S[n][m]
+        ii = n; 
+        jj = m;
+        int pos = S[ii][jj] - 1;
+        CharSequence lcs[] = new CharSequence[ pos+1 ];
+        int previousState = UP_AND_LEFT, state = UP_AND_LEFT;
+        int changeStart = 0, changeEnd = 0;
+        StringBuilder insertCollector = new StringBuilder();
+        List<Diff> data = new ArrayList<Diff>(20);
+        // Trace the backtracking matrix.
+        while( ii > 0 || jj > 0 ) {
+            state = R[ii][jj];
+            if( R[ii][jj] == UP_AND_LEFT) {
+                ii--;
+                jj--;
+                lcs[pos--] = a.get(ii);
+                if (previousState == UP) {
+                    tsa.moveIndex(ii+1);
+                    changeStart = tsa.offset();
+                    data.add(0, Diff.delete(changeStart, changeEnd));
+                } else if (previousState == LEFT) {
+                    tsa.moveIndex(ii+1);
+                    changeStart = tsa.offset();
+                    data.add(0, Diff.insert(changeStart, insertCollector.toString(), null, "", LineInsertionType.NONE));
+                    insertCollector = new StringBuilder();
+                }
+            }
+    
+            else if (R[ii][jj] == UP) {
+                ii--;
+                if (previousState == LEFT) {
+                    tsa.moveIndex(ii+1);
+                    data.add(0, Diff.insert(tsa.offset(), insertCollector.toString(), null, "", LineInsertionType.NONE));
+                    insertCollector = new StringBuilder();
+                }
+                if (previousState != state) {
+                    tsa.moveIndex(ii+1);
+                    changeEnd = tsa.offset();
+                }
+            }
+    
+            else if( R[ii][jj] == LEFT ) {
+                jj--;
+                if (previousState == UP) {
+                    tsa.moveIndex(jj+1);
+                    changeStart = tsa.offset();
+                    data.add(0, Diff.delete(changeStart, changeEnd));
+                }
+                if (previousState != state) {
+                    tsa.moveIndex(jj+1);
+                    changeStart = tsa.offset();
+                }
+                insertCollector.insert(0, b.get(jj));
+            }
+            previousState = state;
+        }
+        if (state == previousState) {
+            if (state == LEFT) {
+                data.add(0, Diff.insert(0, insertCollector.toString(), null, "", LineInsertionType.NONE));
+            } else if (state == UP) {
+                data.add(0, Diff.delete(0, changeEnd));
+            }
+        }
+        for (Diff diff : data) {
+            d.append(diff);
+        }
+        return data;
+    }
+    
+    public static void main(String[] args) {
+        String prvni = "public static int a = 0;";
+        String druhy = "public static long b = 0;";
+        TokenHierarchy hierarchyA = TokenHierarchy.create(prvni, JavaTokenId.language());
+        TokenHierarchy hierarchyB = TokenHierarchy.create(druhy, JavaTokenId.language());
+        CasualDiff td = new CasualDiff(null, null);
+        LCSAlgorithm(hierarchyA.tokenSequence(), hierarchyB.tokenSequence(), td);
+    }
 }
