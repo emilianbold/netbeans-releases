@@ -288,9 +288,7 @@ Microsystems, Inc. All Rights Reserved.
                 -->
                 <friend>org.netbeans.modules.mobility.end2end</friend>
                 <friend>org.netbeans.modules.web.core</friend>
-                <!-- Commented out due to issue 89883
                 <friend>org.netbeans.modules.web.jsf</friend>
-                -->
                 <friend>org.netbeans.modules.web.project</friend>
                 <friend>org.netbeans.modules.web.struts</friend>
                 <!-- Commented out due to issue 89883
