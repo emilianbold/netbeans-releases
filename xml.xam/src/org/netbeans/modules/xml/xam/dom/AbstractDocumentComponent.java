@@ -816,6 +816,7 @@ public abstract class AbstractDocumentComponent<C extends DocumentComponent<C>>
         String oldVal = childElement == null ? null : getText(childElement);
         if (childElement == null) {
             childElement = getPeer().getOwnerDocument().createElementNS(qname.getNamespaceURI(), qname.getLocalPart());
+            getModel().getAccess().appendChild(getPeer(), childElement, this);
         }
         getModel().getAccess().setText(childElement, text, this);
         firePropertyChange(propertyName, oldVal, text);
