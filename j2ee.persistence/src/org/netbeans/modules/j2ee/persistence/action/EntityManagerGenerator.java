@@ -51,10 +51,6 @@ import org.openide.util.NbBundle;
 
 public class EntityManagerGenerator {
     
-    private static final String COMMENT_TODO =
-            "// TODO:\n" +
-            "// ";
-    
     /**
      * The fully qualified name of the target class.
      */
@@ -116,10 +112,9 @@ public class EntityManagerGenerator {
         if (success[0]) {
             targetSource.runModificationTask(task).commit();
         } else {
-            // TODO: RETOUCHE display notification
-//            NotifyDescriptor d = new NotifyDescriptor.Message(
-//                    NbBundle.getMessage(EntityManagerGenerator.class, "ERR_NotSupportedAMJTA"), NotifyDescriptor.INFORMATION_MESSAGE);
-//            DialogDisplayer.getDefault().notify(d);
+            NotifyDescriptor d = new NotifyDescriptor.Message(
+                    NbBundle.getMessage(EntityManagerGenerator.class, "ERR_NotSupportedAMJTA"), NotifyDescriptor.INFORMATION_MESSAGE);
+            DialogDisplayer.getDefault().notify(d);
         }
         
         return targetFo;
@@ -128,6 +123,7 @@ public class EntityManagerGenerator {
     
     private EntityManagerGenerationStrategy getStrategy(WorkingCopy workingCopy, TreeMaker make, ClassTree clazz, GenerationOptions options){
         J2eeModule j2eeModule = null;
+        PersistenceUnit persistenceUnit = getPersistenceUnit();
         
         // try to get J2eeModule
         Project project = FileOwnerQuery.getOwner(targetFo);
@@ -139,15 +135,15 @@ public class EntityManagerGenerator {
             j2eeModule = j2eeModuleProvider.getJ2eeModule();
         }
         
+        
         if (j2eeModule == null) {
             // Application-managed persistence context in J2SE project (Resource-transaction)
-            return new ApplicationManagedResourceTransactionInJ2SE(workingCopy, make, clazz, options);
+            return new ApplicationManagedResourceTransactionInJ2SE(workingCopy, make, clazz,persistenceUnit, options);
         } else {
-            PersistenceUnit pu = getPersistenceUnit();
             // it is Web or EJB, let's get all needed information
-            String jtaDataSource = pu.getJtaDataSource();
-            String nonJtaDataSource = pu.getNonJtaDataSource();
-            String transactionType = pu.getTransactionType();
+            String jtaDataSource = persistenceUnit.getJtaDataSource();
+            String nonJtaDataSource = persistenceUnit.getNonJtaDataSource();
+            String transactionType = persistenceUnit.getTransactionType();
             boolean isInjectionTarget = true; //!checkInjection || InjectionTargetQuery.isInjectionTarget(workingCopy.get));
             boolean isContainerManaged = (jtaDataSource != null && !jtaDataSource.equals("")) && (transactionType != null && transactionType.equals("JTA"));
             boolean isJTA = (transactionType == null || transactionType.equals("JTA")); // JTA is default value for transaction type in non-J2SE projects
@@ -155,9 +151,9 @@ public class EntityManagerGenerator {
             if (j2eeModule.getModuleType().equals(J2eeModule.WAR)) { // Web project
                 if (isContainerManaged) { // Container-managed persistence context
                     if (isInjectionTarget) { // servlet, JSF managed bean ...
-                        return new ContainerManagedJTAInjectableInEJB(workingCopy, make, clazz, options);
+                        return new ContainerManagedJTAInjectableInEJB(workingCopy, make, clazz,persistenceUnit, options);
                     } else { // other classes
-                        return new ContainerManagedJTAInjectableInWeb(workingCopy, make, clazz, options);
+                        return new ContainerManagedJTAInjectableInWeb(workingCopy, make, clazz, persistenceUnit, options);
                     }
                 } else { // Application-managed persistence context (Resource-transaction)
                     if (isJTA) { // JTA
@@ -170,16 +166,16 @@ public class EntityManagerGenerator {
                         }
                     } else { // Resource-transaction
                         if (isInjectionTarget) { // servlet, JSF managed bean ...
-                            return new ApplicationManagedResourceTransactionInjectableInWeb(workingCopy, make, clazz, options);
+                            return new ApplicationManagedResourceTransactionInjectableInWeb(workingCopy, make, clazz, persistenceUnit, options);
                         } else { // other classes
-                            return new ApplicationManagedResourceTransactionNonInjectableInWeb(workingCopy, make, clazz, options);
+                            return new ApplicationManagedResourceTransactionNonInjectableInWeb(workingCopy, make, clazz,persistenceUnit, options);
                         }
                     }
                 }
             } else if (j2eeModule.getModuleType().equals(J2eeModule.EJB)) { // EJB project
                 if (isContainerManaged) { // Container-managed persistence context
                     if (isInjectionTarget) { // session, MessageDriven
-                        return new ContainerManagedJTAInjectableInEJB(workingCopy, make, clazz, options);
+                        return new ContainerManagedJTAInjectableInEJB(workingCopy, make, clazz, persistenceUnit, options);
                     } else { // other classes
                         // ???
                         return null;
@@ -195,9 +191,9 @@ public class EntityManagerGenerator {
                         }
                     } else { // Resource-transaction
                         if (isInjectionTarget) { // session, MDB
-                            return new ApplicationManagedResourceTransactionInjectableInEJB(workingCopy, make, clazz, options);
+                            return new ApplicationManagedResourceTransactionInjectableInEJB(workingCopy, make, clazz, persistenceUnit, options);
                         } else { // other classes
-                            return new ApplicationManagedResourceTransactionNonInjectableInEJB(workingCopy, make,clazz, options);
+                            return new ApplicationManagedResourceTransactionNonInjectableInEJB(workingCopy, make,clazz, persistenceUnit, options);
                         }
                     }
                 }

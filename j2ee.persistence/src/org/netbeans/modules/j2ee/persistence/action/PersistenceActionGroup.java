@@ -67,7 +67,7 @@ public final class PersistenceActionGroup extends NodeAction {
     }
     
     /** List of system actions to be displayed within this one's toolbar or submenu. */
-    private static final SystemAction[] grouped() {
+    private static SystemAction[] grouped() {
         return new SystemAction[] {
             SystemAction.get(UseEntityManagerAction.class),
         };
@@ -87,9 +87,9 @@ public final class PersistenceActionGroup extends NodeAction {
         if (oneNodeSelected && hasPersistenceContext(activatedNodes[0])) {
             return new LazyMenu();
         }
-        JMenuItem i = super.getPopupPresenter();
-        i.setVisible(false);
-        return i;
+        JMenuItem menuItem = super.getPopupPresenter();
+        menuItem.setVisible(false);
+        return menuItem;
     }
 
     /**

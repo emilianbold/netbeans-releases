@@ -38,7 +38,6 @@ public final class UseEntityManagerAction extends NodeAction {
             return;
         }
         
-        //        JavaClass javaClass = JMIUtils.getJavaClassFromNode(activatedNodes[0]);
         FileObject target = activatedNodes[0].getCookie(DataObject.class).getPrimaryFile();
         
         EntityManagerGenerator emGenerator = new EntityManagerGenerator(target, target.getName());
@@ -49,20 +48,10 @@ public final class UseEntityManagerAction extends NodeAction {
         options.setOperation(GenerationOptions.Operation.PERSIST);
         options.setReturnType("void");
         try {
-//        Parameter p = JMIGenerationUtil.createParameter(javaClass, "object", Object.class.getName());
-//        String methodName = computeMethodName(javaClass, "persist", p);
-//        generate(javaClass, OPERATION_PERSIST, methodName, "void", p, null, true);
-            
-            //        options.
             emGenerator.generate(options);
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ex);
         }
-    }
-    
-    private FileObject getTarget(Node node){
-        DataObject dObj = node.getCookie(DataObject.class);
-        return dObj.getPrimaryFile();
     }
     
     public String getName() {
