@@ -109,11 +109,11 @@ public class TestDistFilter extends Task {
             try {
                 config = getConfig();
             } catch (SAXException ex) {
-                throw new BuildException(ex);
+                throw new BuildException("Error in parsing " + getConfigFile(),ex);
             } catch (ParserConfigurationException ex) {
-                throw new BuildException(ex);
+                throw new BuildException("Error in parsing " + getConfigFile(),ex);
             } catch (IOException ex) {
-                throw new BuildException(ex);
+                throw new BuildException("Error in parsing " + getConfigFile(),ex);
             }
             if (config == null) {
                 return false;
@@ -150,10 +150,13 @@ public class TestDistFilter extends Task {
         File getModuleDir() {
             return moduleDir;
         }
-
-        private Element getConfig() throws ParserConfigurationException, SAXException, IOException {
+        
+        private File getConfigFile () {
             String name = (unit) ? "cfg-unit.xml" : "cfg-qa-functional.xml";
-            File xml = new File(getModuleDir(),name);
+            return  new File(getModuleDir(),name);
+        }
+        private Element getConfig() throws ParserConfigurationException, SAXException, IOException {
+            File xml = getConfigFile();
             if (!xml.exists()) {
                 return null;
             }
