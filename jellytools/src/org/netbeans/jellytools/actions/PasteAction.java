@@ -28,15 +28,16 @@ import org.netbeans.jellytools.Bundle;
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
 public class PasteAction extends Action {
 
-    private static final String pastePopup = Bundle.getStringTrimmed("org.openide.actions.Bundle", "Paste");
-    private static final String pasteMenu = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Edit")
-                                            + "|" + pastePopup;
-    private static final KeyStroke keystroke = System.getProperty("os.name").toLowerCase().indexOf("mac") > -1 ?
+    protected static final String POPUP = Bundle.getStringTrimmed("org.openide.actions.Bundle", "Paste");
+    protected static final String MENU = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Edit")
+                                            + "|" + POPUP;
+    protected static final KeyStroke KEYSTROKE = System.getProperty("os.name").toLowerCase().indexOf("mac") > -1 ?
             KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.META_MASK) :
             KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.CTRL_MASK);
+    protected static final String SYSTEMCLASS = "org.openide.actions.PasteAction";
 
     /** creates new PasteAction instance */    
     public PasteAction() {
-        super(pasteMenu, pastePopup, "org.openide.actions.PasteAction", keystroke);
+        super(MENU, POPUP, SYSTEMCLASS, KEYSTROKE);
     }
 }
