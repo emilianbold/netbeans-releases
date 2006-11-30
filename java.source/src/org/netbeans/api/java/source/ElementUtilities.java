@@ -89,7 +89,7 @@ public final class ElementUtilities {
      * @return the binary name, see Java Language Specification 13.1
      * @throws IllegalArgumentException when the element is not a javac element
      */
-    public String getBinaryName (TypeElement element) throws IllegalArgumentException {
+    public static String getBinaryName (TypeElement element) throws IllegalArgumentException {
         if (element instanceof Symbol.TypeSymbol) {
             return ((Symbol.TypeSymbol)element).flatName().toString();
         }
