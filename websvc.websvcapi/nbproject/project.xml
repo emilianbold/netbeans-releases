@@ -113,13 +113,11 @@ Microsystems, Inc. All Rights Reserved.
             <friend-packages>
                 <friend>org.netbeans.modules.identity.profile.ui</friend>
                 <friend>org.netbeans.modules.j2ee.clientproject</friend>
-                <friend>org.netbeans.modules.j2ee.ejbfreeform</friend>
                 <friend>org.netbeans.modules.j2ee.ejbjarproject</friend>
                 <friend>org.netbeans.modules.j2ee.refactoring</friend>
                 <friend>org.netbeans.modules.j2ee.verification</friend>
                 <friend>org.netbeans.modules.web.project</friend>
                 <friend>org.netbeans.modules.websvc.core</friend>
-                <friend>org.netbeans.modules.websvc.wsitconf</friend>
                 <friend>org.netbeans.modules.websvc.dev</friend>
                 <friend>com.sun.rave.project.jsfproject</friend>
                 <package>org.netbeans.modules.websvc.api.webservices</package>
