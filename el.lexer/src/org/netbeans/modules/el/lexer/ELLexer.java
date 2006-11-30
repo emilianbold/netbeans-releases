@@ -865,12 +865,12 @@ public class ELLexer implements Lexer<ELTokenId> {
     }
     
     private Token<ELTokenId> token(ELTokenId id) {
-        System.out.print("EL token(" + id + "; '" + input.readText().toString() + "')");
-        if(input.readLength() == 0) {
-            System.out.println("HTMLLexer error - zero length token!");
-        }
+//        System.out.print("EL token(" + id + "; '" + input.readText().toString() + "')");
+//        if(input.readLength() == 0) {
+//            System.out.println("HTMLLexer error - zero length token!");
+//        }
         Token<ELTokenId> t = tokenFactory.createToken(id);
-        System.out.println(t.id() + "; " + t.length());
+//        System.out.println(t.id() + "; " + t.length());
         return t;
     }
     

@@ -699,12 +699,12 @@ public class HTMLLexer implements Lexer<HTMLTokenId> {
     }
     
     private Token<HTMLTokenId> token(HTMLTokenId id) {
-        System.out.print("--- token(" + id + "; '" + input.readText().toString() + "')");
-        if(input.readLength() == 0) {
-            System.out.println("\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! HTMLLexer error - zero length token!");
-        }
+//        System.out.print("--- token(" + id + "; '" + input.readText().toString() + "')");
+//        if(input.readLength() == 0) {
+//            System.out.println("\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! HTMLLexer error - zero length token!");
+//        }
         Token<HTMLTokenId> t = tokenFactory.createToken(id);
-        System.out.println(t.id() + "; " + t.length());
+//        System.out.println(t.id() + "; " + t.length());
         return t;
     }
     
