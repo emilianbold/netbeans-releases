@@ -112,7 +112,6 @@ Microsystems, Inc. All Rights Reserved.
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.identity.profile.ui</friend>
-                <friend>org.netbeans.modules.j2ee.clientproject</friend>
                 <friend>org.netbeans.modules.j2ee.ejbjarproject</friend>
                 <friend>org.netbeans.modules.j2ee.refactoring</friend>
                 <friend>org.netbeans.modules.web.project</friend>
