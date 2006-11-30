@@ -292,8 +292,8 @@ Microsystems, Inc. All Rights Reserved.
                 <friend>org.netbeans.modules.web.jsf</friend>
                 -->
                 <friend>org.netbeans.modules.web.project</friend>
-                <!-- Commented out due to issue 89883
                 <friend>org.netbeans.modules.web.struts</friend>
+                <!-- Commented out due to issue 89883
                 <friend>org.netbeans.modules.websvc.core</friend>
                 <friend>org.netbeans.modules.websvc.dev</friend>
                 -->
