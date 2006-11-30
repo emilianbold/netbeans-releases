@@ -31,14 +31,14 @@ import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.TokenID;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.Utilities;
-import org.netbeans.jmi.javamodel.JavaClass;
+//import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
+//import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.core.syntax.ELTokenContext;
 import org.netbeans.modules.web.core.syntax.JSPHyperlinkProvider;
-import org.netbeans.modules.web.core.syntax.JspJavaSyntaxSupport;
+//import org.netbeans.modules.web.core.syntax.JspJavaSyntaxSupport;
 import org.netbeans.modules.web.core.syntax.JspSyntaxSupport;
 import org.netbeans.modules.web.jsf.JSFConfigUtilities;
 import org.netbeans.modules.web.jsf.editor.JSFEditorUtilities;
@@ -195,7 +195,8 @@ public class JSFJSPHyperlinkProvider implements HyperlinkProvider {
                         return;
                     }
                     if (res == JSFELExpression.EL_JSF_BEAN){
-                        JavaClass bean = exp.getBean(exp.getExpression());
+                        //TODO: RETOUCHE
+                        /*JavaClass bean = exp.getBean(exp.getExpression());
                         Object item = exp.getPropertyDeclaration(exp.getExpression(), bean);
                         if (item == null)
                             item = exp.getMethodDeclaration(exp.getExpression(), bean);
@@ -203,6 +204,7 @@ public class JSFJSPHyperlinkProvider implements HyperlinkProvider {
                             Runnable run = new OpenJavaItem(item, sup);
                             JavaMetamodel.getManager().invokeAfterScanFinished(run, NbBundle.getMessage(JSPHyperlinkProvider.class, "MSG_goto-source"));
                         }
+                         **/
                     }
                 }
             }
@@ -289,14 +291,15 @@ public class JSFJSPHyperlinkProvider implements HyperlinkProvider {
         }
         
         public void run() {
-            JspJavaSyntaxSupport javaSup = (JspJavaSyntaxSupport)sup.get(JspJavaSyntaxSupport.class);
+            //TODO: RETOUCHE
+            /*JspJavaSyntaxSupport javaSup = (JspJavaSyntaxSupport)sup.get(JspJavaSyntaxSupport.class);
             if (item != null && javaSup != null) {
                 String itemDesc = null;
                 if ((itemDesc = javaSup.openSource(item, true)) != null){
                     String msg = NbBundle.getBundle(JSPHyperlinkProvider.class).getString("MSG_source_not_found");                            
                     org.openide.awt.StatusDisplayer.getDefault().setStatusText(msg);
                 }
-            }
+            }*/
         }
     }
 }

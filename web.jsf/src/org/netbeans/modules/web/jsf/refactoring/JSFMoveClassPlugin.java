@@ -21,19 +21,20 @@ package org.netbeans.modules.web.jsf.refactoring;
 
 import java.util.Collection;
 import java.util.List;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.Resource;
-import org.netbeans.modules.refactoring.api.MoveClassRefactoring;
-import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
-import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
+//TODO: RETOUCHE
+//import org.netbeans.jmi.javamodel.JavaClass;
+//import org.netbeans.jmi.javamodel.Resource;
+//import org.netbeans.modules.refactoring.api.MoveClassRefactoring;
+//import org.netbeans.modules.refactoring.api.Problem;
+//import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
+//import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.openide.ErrorManager;
 
 /**
  *
  * @author Petr Pisl
  */
-public class JSFMoveClassPlugin implements RefactoringPlugin{
+public class JSFMoveClassPlugin /*implements RefactoringPlugin*/{
     
     /** This one is important creature - makes sure that cycles between plugins won't appear */
     private static ThreadLocal semafor = new ThreadLocal();
@@ -41,46 +42,46 @@ public class JSFMoveClassPlugin implements RefactoringPlugin{
     private static final ErrorManager err =
             ErrorManager.getDefault().getInstance("org.netbeans.modules.web.jsf.refactoring");   // NOI18N
     
-    private final MoveClassRefactoring refactoring;
-    
-    /** Creates a new instance of JSFWhereUsedPlugin */
-    public JSFMoveClassPlugin(MoveClassRefactoring refactoring) {
-        this.refactoring = refactoring;
-    }
-    
-    public Problem preCheck() {
-        return null;
-    }
-    
-    public Problem checkParameters() {
-        return null;
-    }
-    
-    public Problem fastCheckParameters() {
-        return null;
-    }
-    
-    public void cancelRequest() {
-    }
-    
-    public Problem prepare(RefactoringElementsBag refactoringElements) {
-        if (semafor.get() == null) {
-            semafor.set(new Object());
-            Collection <Resource> resources = refactoring.getResources();
-            for (Resource resource : resources) {
-                String newPackageName = refactoring.getTargetPackageName(resource);
-                List <JavaClass> classes = resource.getClassifiers();
-                for (JavaClass jClass : classes) {
-                    String newClassName = newPackageName + "." + jClass.getSimpleName();
-                    List <Occurrences.OccurrenceItem> items = Occurrences.getAllOccurrences(jClass, newClassName);
-                    for (Occurrences.OccurrenceItem item : items) {
-                        refactoringElements.add(refactoring, new JSFRenamePlugin.JSFConfigRenameClassElement(item));
-                    }
-                }
-            }
-            semafor.set(null);
-        }        
-        return null;
-    }
+//    private final MoveClassRefactoring refactoring;
+//    
+//    /** Creates a new instance of JSFWhereUsedPlugin */
+//    public JSFMoveClassPlugin(MoveClassRefactoring refactoring) {
+//        this.refactoring = refactoring;
+//    }
+//    
+//    public Problem preCheck() {
+//        return null;
+//    }
+//    
+//    public Problem checkParameters() {
+//        return null;
+//    }
+//    
+//    public Problem fastCheckParameters() {
+//        return null;
+//    }
+//    
+//    public void cancelRequest() {
+//    }
+//    
+//    public Problem prepare(RefactoringElementsBag refactoringElements) {
+//        if (semafor.get() == null) {
+//            semafor.set(new Object());
+//            Collection <Resource> resources = refactoring.getResources();
+//            for (Resource resource : resources) {
+//                String newPackageName = refactoring.getTargetPackageName(resource);
+//                List <JavaClass> classes = resource.getClassifiers();
+//                for (JavaClass jClass : classes) {
+//                    String newClassName = newPackageName + "." + jClass.getSimpleName();
+//                    List <Occurrences.OccurrenceItem> items = Occurrences.getAllOccurrences(jClass, newClassName);
+//                    for (Occurrences.OccurrenceItem item : items) {
+//                        refactoringElements.add(refactoring, new JSFRenamePlugin.JSFConfigRenameClassElement(item));
+//                    }
+//                }
+//            }
+//            semafor.set(null);
+//        }        
+//        return null;
+//    }
     
 }

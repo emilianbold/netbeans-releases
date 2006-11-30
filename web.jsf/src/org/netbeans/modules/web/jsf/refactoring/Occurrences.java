@@ -19,22 +19,16 @@
 
 package org.netbeans.modules.web.jsf.refactoring;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JEditorPane;
-import javax.swing.SwingUtilities;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position.Bias;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.JSFConfigDataObject;
 import org.netbeans.modules.web.jsf.JSFConfigUtilities;
-import org.netbeans.modules.web.jsf.JSFFrameworkProvider;
 import org.netbeans.modules.web.jsf.config.model.Converter;
 import org.netbeans.modules.web.jsf.config.model.FacesConfig;
 import org.netbeans.modules.web.jsf.config.model.ManagedBean;
@@ -47,7 +41,6 @@ import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionBounds;
 import org.openide.text.PositionRef;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -55,12 +48,14 @@ import org.openide.util.RequestProcessor;
  */
 public class Occurrences {
     
+    private static final Logger LOGGER = Logger.getLogger(Occurrences.class.getName());
+    
     public static abstract class OccurrenceItem {
         protected JSFConfigDataObject config;
         protected String newValue;
         protected String oldValue;
-
-        public OccurrenceItem (JSFConfigDataObject config, String newValue, String oldValue){
+        
+        public OccurrenceItem(JSFConfigDataObject config, String newValue, String oldValue){
             this.config = config;
             this.newValue = newValue;
             this.oldValue = oldValue;
@@ -76,11 +71,11 @@ public class Occurrences {
             sb.append("&lt;").append(getXMLElementName()).append("&gt;</font><b>");   //NOI18N
             sb.append(oldValue).append("</b><font color=\"#0000FF\">&lt;/").append(getXMLElementName());//NOI18N
             sb.append("&gt;</font>");//NOI18N
-            return sb.toString();    
+            return sb.toString();
         }
         
         protected abstract String getXMLElementName();
-            
+        
         public abstract void performRename();
         public abstract void undoRename();
         public abstract String getRenameMessage();
@@ -101,19 +96,19 @@ public class Occurrences {
             return null;
         }
         
-        public PositionBounds getClassDefinitionPosition() { 
-            return createPosition(0, 0); 
+        public PositionBounds getClassDefinitionPosition() {
+            return createPosition(0, 0);
         };
         
-        public PositionBounds getElementDefinitionPosition() { 
-            return createPosition(0, 0);  
+        public PositionBounds getElementDefinitionPosition() {
+            return createPosition(0, 0);
         };
     }
     
     public static class ManagedBeanClassItem extends OccurrenceItem{
         private ManagedBean bean;
         
-        public ManagedBeanClassItem (JSFConfigDataObject config, ManagedBean bean, String newValue){
+        public ManagedBeanClassItem(JSFConfigDataObject config, ManagedBean bean, String newValue){
             super(config, newValue, bean.getManagedBeanClass());
             this.bean = bean;
         }
@@ -187,9 +182,9 @@ public class Occurrences {
             }
         }
         
-        public PositionBounds getClassDefinitionPosition() { 
+        public PositionBounds getClassDefinitionPosition() {
             PositionBounds position = null;
-            BaseDocument document = JSFEditorUtilities.getBaseDocument(config);             
+            BaseDocument document = JSFEditorUtilities.getBaseDocument(config);
             int [] offsets = JSFEditorUtilities.getManagedBeanDefinition(document, bean.getManagedBeanName());
             try {
                 String text = document.getText(offsets);
@@ -201,19 +196,19 @@ public class Occurrences {
             return position;
         };
         
-        public PositionBounds getElementDefinitionPosition() { 
+        public PositionBounds getElementDefinitionPosition() {
             PositionBounds position = null;
             BaseDocument document = JSFEditorUtilities.getBaseDocument(config);
             int [] offsets = JSFEditorUtilities.getManagedBeanDefinition(document, bean.getManagedBeanName());
             position =  createPosition(offsets[0], offsets[1]);
-            return position;  
+            return position;
         };
     }
     
     public static class ConverterClassItem extends OccurrenceItem {
         private Converter converter;
         
-        public ConverterClassItem (JSFConfigDataObject config, Converter converter, String newValue){
+        public ConverterClassItem(JSFConfigDataObject config, Converter converter, String newValue){
             super(config, newValue, converter.getConverterClass());
             this.converter = converter;
         }
@@ -237,7 +232,7 @@ public class Occurrences {
         public String getRenameMessage(){
             return NbBundle.getMessage(Occurrences.class, "MSG_ConverterClass_Rename", getElementText()); //NOI18N
         }
-
+        
         public void performSafeDelete() {
             try {
                 FacesConfig faces = config.getFacesConfig();
@@ -285,7 +280,7 @@ public class Occurrences {
             }
         }
         
-        public PositionBounds getClassDefinitionPosition() { 
+        public PositionBounds getClassDefinitionPosition() {
             PositionBounds position = null;
             BaseDocument document = JSFEditorUtilities.getBaseDocument(config);
             int [] offsets = JSFEditorUtilities.getConverterDefinition(document, converter.getConverterForClass());
@@ -299,19 +294,19 @@ public class Occurrences {
             return position;
         };
         
-        public PositionBounds getElementDefinitionPosition() { 
+        public PositionBounds getElementDefinitionPosition() {
             PositionBounds position = null;
             BaseDocument document = JSFEditorUtilities.getBaseDocument(config);
             int [] offsets = JSFEditorUtilities.getConverterDefinition(document, converter.getConverterForClass());
             position =  createPosition(offsets[0], offsets[1]);
-            return position;  
+            return position;
         };
     }
     
     public static class ConverterForClassItem extends OccurrenceItem {
         private Converter converter;
         
-        public ConverterForClassItem (JSFConfigDataObject config, Converter converter, String newValue){
+        public ConverterForClassItem(JSFConfigDataObject config, Converter converter, String newValue){
             super(config, newValue, converter.getConverterForClass());
             this.converter = converter;
         }
@@ -335,7 +330,7 @@ public class Occurrences {
         public String getRenameMessage(){
             return NbBundle.getMessage(Occurrences.class, "MSG_ConverterForClass_Rename", getElementText()); //NOI18N
         }
-
+        
         public void performSafeDelete() {
             try {
                 FacesConfig faces = config.getFacesConfig();
@@ -383,7 +378,7 @@ public class Occurrences {
             }
         }
         
-        public PositionBounds getClassDefinitionPosition() { 
+        public PositionBounds getClassDefinitionPosition() {
             PositionBounds position = null;
             BaseDocument document = JSFEditorUtilities.getBaseDocument(config);
             int [] offsets = JSFEditorUtilities.getConverterDefinition(document, converter.getConverterForClass());
@@ -397,26 +392,27 @@ public class Occurrences {
             return position;
         };
         
-        public PositionBounds getElementDefinitionPosition() { 
+        public PositionBounds getElementDefinitionPosition() {
             PositionBounds position = null;
             BaseDocument document = JSFEditorUtilities.getBaseDocument(config);
             int [] offsets = JSFEditorUtilities.getConverterDefinition(document, converter.getConverterForClass());
             position =  createPosition(offsets[0], offsets[1]);
-            return position;  
+            return position;
         };
     }
     
-    public static List <OccurrenceItem> getAllOccurrences(JavaClass javaClass, String newName){
+    public static List <OccurrenceItem> getAllOccurrences(WebModule wm, String oldName, String newName){
         List result = new ArrayList();
-    
-        FileObject foJava = JavaModel.getFileObject(javaClass.getResource());
-        WebModule wm =  WebModule.getWebModule(foJava);
+        assert wm != null;
+        assert oldName != null;
+        assert newName != null;
+        
+        LOGGER.fine("getAllOccurences("+ wm.getDocumentBase().getPath() + ", " + oldName + ", " + newName + ")");
         if (wm != null){
             // find all jsf configuration files in the web module
             FileObject[] configs = JSFConfigUtilities.getConfiFilesFO(wm.getDeploymentDescriptor());
-         
+            
             if (configs != null){
-                String type = javaClass.getName();
                 try {
                     for (int i = 0; i < configs.length; i++) {
                         DataObject dObject = DataObject.find(configs[i]);
@@ -425,14 +421,14 @@ public class Occurrences {
                             FacesConfig config = configDO.getFacesConfig();
                             Converter[] converters = config.getConverter();
                             for (int j = 0; j < converters.length; j++) {
-                                if (type.equals(converters[j].getConverterClass()))
+                                if (oldName.equals(converters[j].getConverterClass()))
                                     result.add(new ConverterClassItem(configDO, converters[j], newName));
-                                else if (type.equals(converters[j].getConverterForClass()))
+                                else if (oldName.equals(converters[j].getConverterForClass()))
                                     result.add(new ConverterForClassItem(configDO, converters[j], newName));
                             }
                             ManagedBean[] managedBeans = config.getManagedBean();
                             for (int j = 0; j < managedBeans.length; j++) {
-                                if (type.equals(managedBeans[j].getManagedBeanClass()))
+                                if (oldName.equals(managedBeans[j].getManagedBeanClass()))
                                     result.add(new ManagedBeanClassItem(configDO, managedBeans[j], newName));
                             }
                         }

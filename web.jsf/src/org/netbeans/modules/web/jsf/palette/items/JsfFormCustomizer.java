@@ -27,8 +27,9 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.j2ee.common.FQNSearch;
-import org.netbeans.modules.j2ee.common.JMIUtils;
+//TODO: RETOUCHE
+//import org.netbeans.modules.j2ee.common.FQNSearch;
+//import org.netbeans.modules.j2ee.common.JMIUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
@@ -238,7 +239,8 @@ public class JsfFormCustomizer extends javax.swing.JPanel implements DocumentLis
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        FQNSearch.showFastOpen(classTextField);
+        //TODO: RETOUCHE
+//        FQNSearch.showFastOpen(classTextField);
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void emptyItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_emptyItemStateChanged
@@ -258,11 +260,12 @@ public class JsfFormCustomizer extends javax.swing.JPanel implements DocumentLis
             detail.setEnabled(true);
             edit.setEnabled(true);
         }
-        boolean validClassName = empty.isSelected() || null != JMIUtils.findClass(classTextField.getText());
-        descriptor.setValid(hasModuleJsf && validClassName);
-        errorField.setText(hasModuleJsf ? 
-                (validClassName ? "" : java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/palette/items/Bundle").getString("MSG_InvalidClassName")) :
-                java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/palette/items/Bundle").getString("MSG_NoJSF"));
+        //TODO: RETOUCHE
+//        boolean validClassName = empty.isSelected() || null != JMIUtils.findClass(classTextField.getText());
+//        descriptor.setValid(hasModuleJsf && validClassName);
+//        errorField.setText(hasModuleJsf ? 
+//                (validClassName ? "" : java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/palette/items/Bundle").getString("MSG_InvalidClassName")) :
+//                java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/palette/items/Bundle").getString("MSG_NoJSF"));
     }
 
     public void insertUpdate(DocumentEvent e) {

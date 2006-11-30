@@ -19,23 +19,30 @@
 
 package org.netbeans.modules.web.jsf.refactoring;
 
+
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.Tree.Kind;
+import com.sun.source.util.TreePath;
+import java.io.IOException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
 import javax.swing.text.Position.Bias;
-import org.netbeans.jmi.javamodel.Element;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.modules.javacore.internalapi.ExternalChange;
-import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImpl;
-import org.netbeans.modules.web.jsf.editor.JSFEditorUtilities;
-import org.openide.ErrorManager;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.filesystems.FileObject;
-import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionBounds;
-import org.openide.text.PositionRef;
 
 /**
  *
@@ -43,12 +50,12 @@ import org.openide.text.PositionRef;
  */
 
 public class JSFRenamePlugin implements RefactoringPlugin {
-
+    
     /** This one is important creature - makes sure that cycles between plugins won't appear */
     private static ThreadLocal semafor = new ThreadLocal();
+    private TreePathHandle treePathHandle = null;
     
-    private static final ErrorManager err =
-            ErrorManager.getDefault().getInstance("org.netbeans.modules.web.jsf.refactoring");   // NOI18N
+    private static final Logger LOGGER = Logger.getLogger(JSFRenamePlugin.class.getName());
     
     private final RenameRefactoring refactoring;
     
@@ -58,17 +65,17 @@ public class JSFRenamePlugin implements RefactoringPlugin {
     }
     
     public Problem preCheck() {
-        err.log("preCheck() called.");
+        LOGGER.fine("preCheck() called.");
         return null;
     }
     
     public Problem checkParameters() {
-        err.log("checkParameters() called.");
+        LOGGER.fine("checkParameters() called.");
         return null;
     }
     
     public Problem fastCheckParameters() {
-        err.log("fastCheckParameters() called.");
+        LOGGER.fine("fastCheckParameters() called.");
         return null;
     }
     
@@ -79,16 +86,46 @@ public class JSFRenamePlugin implements RefactoringPlugin {
         if (semafor.get() == null) {
             semafor.set(new Object());
             Object element = refactoring.getRefactoredObject();
-            err.log("Prepare refactoring: " + element);                 // NOI18N
-
-            if (element instanceof JavaClass){
-                JavaClass jclass = (JavaClass) element;
-                String newType = renameClass(jclass.getName(), refactoring.getNewName());
-                List <Occurrences.OccurrenceItem> items = Occurrences.getAllOccurrences(jclass, newType);
+            LOGGER.fine("Prepare refactoring: " + element);                 // NOI18N
+            
+            if (element instanceof FileObject){
+                JavaSource source = JavaSource.forFileObject((FileObject) element);
+                try {
+                    source.runUserActionTask(new AbstractTask<CompilationController>() {
+                        public void cancel() {
+                        }
+                        
+                        public void run(CompilationController co) throws Exception {
+                            co.toPhase(JavaSource.Phase.RESOLVED);
+                            CompilationUnitTree cut = co.getCompilationUnit();
+                            treePathHandle = TreePathHandle.create(TreePath.getPath(cut, cut.getTypeDecls().get(0)), co);
+                            refactoring.getContext().add(co);
+                        }
+                    }, false);
+                } catch (IllegalArgumentException ex) {
+                    LOGGER.log(Level.WARNING, "Exception in JSFRenamePlugin", ex);
+                } catch (IOException ex) {
+                    LOGGER.log(Level.WARNING, "Exception in JSFRenamePlugin", ex);
+                }
+            }
+            else 
+                if (element instanceof TreePathHandle)
+                    treePathHandle = (TreePathHandle)element;
+            
+            if (treePathHandle != null && treePathHandle.getKind() == Kind.CLASS){
+                CompilationInfo info = refactoring.getContext().lookup(CompilationInfo.class);
+                Element el = treePathHandle.resolveElement(info);
+                TypeElement type = (TypeElement) el;
+                String oldFQN = type.getQualifiedName().toString();
+                String newFQN = renameClass(oldFQN, refactoring.getNewName());
+                WebModule wm = WebModule.getWebModule(treePathHandle.getFileObject());
+                List <Occurrences.OccurrenceItem> items = Occurrences.getAllOccurrences(wm, oldFQN, newFQN);
                 for (Occurrences.OccurrenceItem item : items) {
                     refactoringElements.add(refactoring, new JSFConfigRenameClassElement(item));
                 }
+
             }
+
             semafor.set(null);
         }
         return null;
@@ -119,7 +156,7 @@ public class JSFRenamePlugin implements RefactoringPlugin {
         return originalFullyQualifiedName.substring(0, lastDot + 1) + newName;
     }
     
-    public static class JSFConfigRenameClassElement extends SimpleRefactoringElementImpl implements ExternalChange {
+    public static class JSFConfigRenameClassElement extends SimpleRefactoringElementImpl {
         private Occurrences.OccurrenceItem item;
         
         JSFConfigRenameClassElement(Occurrences.OccurrenceItem item){
@@ -129,26 +166,22 @@ public class JSFRenamePlugin implements RefactoringPlugin {
         public String getText() {
             return getDisplayText();
         }
-            
+        
         public String getDisplayText() {
             return item.getRenameMessage();
         }
         
         public void performChange() {
-            JavaMetamodel.getManager().registerExtChange(this);
-        }
-        
-        public void performExternalChange() {
+            //JavaMetamodel.getManager().registerExtChange(this);
+            LOGGER.fine("JSFConfigRenameClassElement.performChange()");
             item.performRename();
         }
-
+        
         public void undoExternalChange() {
             item.undoRename();
         }
         
-        public Element getJavaElement() {
-            return null;
-        }
+        
         
         public FileObject getParentFile() {
             return item.getConfigDO().getPrimaryFile();
@@ -156,6 +189,10 @@ public class JSFRenamePlugin implements RefactoringPlugin {
         
         public PositionBounds getPosition() {
             return item.getClassDefinitionPosition();
+        }
+        
+        public Object getComposite() {
+            return item.getConfigDO().getPrimaryFile();
         }
     }
     

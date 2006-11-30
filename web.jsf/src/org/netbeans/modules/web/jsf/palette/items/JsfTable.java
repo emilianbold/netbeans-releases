@@ -28,12 +28,13 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.Method;
-import org.netbeans.modules.editor.NbEditorKit;
-import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.j2ee.common.JMIUtils;
-import org.netbeans.modules.javacore.api.JavaModel;
+//TODO: RETOUCHE
+//import org.netbeans.jmi.javamodel.JavaClass;
+//import org.netbeans.jmi.javamodel.Method;
+//import org.netbeans.modules.editor.NbEditorKit;
+//import org.netbeans.modules.editor.NbEditorUtilities;
+//import org.netbeans.modules.j2ee.common.JMIUtils;
+//import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.JSFConfigDataObject;
 import org.netbeans.modules.web.jsf.JSFConfigUtilities;
@@ -100,17 +101,17 @@ public class JsfTable implements ActiveEditorDrop {
         
         return accept;
     }
-    
+    //TODO: RETOUCHE
     private String createBody(JTextComponent target, boolean surroundWithFView) {
         StringBuffer sb = new StringBuffer();
         if (surroundWithFView) {
             sb.append("<f:view>\n");
         }
         sb.append(MessageFormat.format(BEGIN [formType], new Object [] {variable}));
-        JavaClass jc = JsfForm.resolveJavaClass(target, bean);
-        if (jc != null) {
-            createTable(jc, variable, sb, "", null);
-        }
+//        JavaClass jc = JsfForm.resolveJavaClass(target, bean);
+//        if (jc != null) {
+//            createTable(jc, variable, sb, "", null);
+//        }
         sb.append(END [formType]);
         if (surroundWithFView) {
             sb.append("</f:view>\n");
@@ -121,76 +122,76 @@ public class JsfTable implements ActiveEditorDrop {
     /** @param commands a message that will be added to the end of each line in table, 
      *  it will be formated using {0} = iterator variable
      */
-    public static void createTable(JavaClass bean, String variable, StringBuffer sb, String commands, String setupDetail) {
-        int formType = 1;
-        Method methods [] = JsfForm.getEntityMethods(bean);
-        boolean fieldAccess = JsfForm.isFieldAccess(bean);
-        for (int i = 0; i < methods.length; i++) {
-            if (methods[i].getName().startsWith("get")) {
-                int isRelationship = JsfForm.isRelationship(methods[i], fieldAccess);
-                String name = methods[i].getName().substring(3);
-                String propName = name.substring(0,1).toLowerCase() + name.substring(1);
-                if (setupDetail != null && JsfForm.isId(methods[i], fieldAccess)) {
-                    String managedBeanName = JSFClinetGenerator.getManagedBeanName(JSFClinetGenerator.simpleClassName(bean.getName()));
-                    sb.append(MessageFormat.format(ITEM [3], new Object [] {name, variable, propName, propName, managedBeanName + "." + setupDetail}));
-                } else if ("java.util.Date".equals(methods[i].getType().getName())) {
-                    //param 3 - temporal, param 4 - date/time format
-                    String temporal = JsfForm.getTemporal(methods[i], fieldAccess);
-                    if (temporal == null) {
-                        sb.append(MessageFormat.format(ITEM [formType], new Object [] {name, variable, propName}));
-                    } else {
-                        sb.append(MessageFormat.format(ITEM [2], new Object [] {name, variable, propName, temporal, JsfForm.getDateTimeFormat(temporal)}));
-                    }
-                } else if (isRelationship == JsfForm.REL_NONE || isRelationship == JsfForm.REL_TO_ONE) {
-                    sb.append(MessageFormat.format(ITEM [formType], new Object [] {name, variable, propName}));
-//links to related objects -- does not work correctly for composite IDs                    
-//                } else if (isRelationship == JsfForm.REL_TO_ONE) {
-//                    String managedBeanName = JSFClinetGenerator.getManagedBeanName(JSFClinetGenerator.simpleClassName(methods[i].getType().getName()));
-//                    String relatedIdProp = JSFClinetGenerator.getPropNameFromMethod(JsfForm.getIdGetter(fieldAccess, (JavaClass) methods[i].getType()).getName());
-//                    sb.append(MessageFormat.format(ITEM [3], new Object [] {name, variable, propName + "." + relatedIdProp , relatedIdProp, managedBeanName + "." + setupDetail}));
-                }
-            }
-        }
-        sb.append(MessageFormat.format(commands, new Object [] {"item"}));
-    }
-    
-    public ManagedBean[] getManagedBeanNames(JTextComponent target) {
-        managedBeans = new ArrayList();
-        FileObject f = JsfForm.getFO(target);
-        if (f != null) {
-            WebModule wm = WebModule.getWebModule(f);
-            String[] configFiles = JSFConfigUtilities.getConfigFiles(wm.getDeploymentDescriptor());
-            for (int i = 0; i < configFiles.length; i++) {
-                FileObject fo = wm.getDocumentBase().getFileObject(configFiles[i]);
-                try {
-                    JSFConfigDataObject configDO = (JSFConfigDataObject)DataObject.find(fo);
-                    FacesConfig config= configDO.getFacesConfig();
-                    managedBeans.addAll(Arrays.asList(config.getManagedBean()));
-                } catch (IOException ioex) {
-                    ErrorManager.getDefault().notify(ioex);
-                }
-            }
-        }
-        return (ManagedBean[]) managedBeans.toArray(new ManagedBean[managedBeans.size()]);
-    }
-        
-    
-    public String[] getMethodsForBean(ManagedBean bean, JTextComponent target) {
-        JavaClass cls = bean == null ? null : JMIUtils.findClass(bean.getManagedBeanClass(), JsfForm.getFO(target));
-        if (cls == null) {
-            return new String[0];
-        }
-        Method[] m = JMIUtils.getMethods(cls);
-        String[] names = new String[m.length];
-        for (int i = 0; i < m.length; i++) {
-            names[i] = m[i].getName();
-        }
-        return names;
-    }
-    
-    public String getVariable() {
-        return variable;
-    }
+//    public static void createTable(JavaClass bean, String variable, StringBuffer sb, String commands, String setupDetail) {
+//        int formType = 1;
+//        Method methods [] = JsfForm.getEntityMethods(bean);
+//        boolean fieldAccess = JsfForm.isFieldAccess(bean);
+//        for (int i = 0; i < methods.length; i++) {
+//            if (methods[i].getName().startsWith("get")) {
+//                int isRelationship = JsfForm.isRelationship(methods[i], fieldAccess);
+//                String name = methods[i].getName().substring(3);
+//                String propName = name.substring(0,1).toLowerCase() + name.substring(1);
+//                if (setupDetail != null && JsfForm.isId(methods[i], fieldAccess)) {
+//                    String managedBeanName = JSFClinetGenerator.getManagedBeanName(JSFClinetGenerator.simpleClassName(bean.getName()));
+//                    sb.append(MessageFormat.format(ITEM [3], new Object [] {name, variable, propName, propName, managedBeanName + "." + setupDetail}));
+//                } else if ("java.util.Date".equals(methods[i].getType().getName())) {
+//                    //param 3 - temporal, param 4 - date/time format
+//                    String temporal = JsfForm.getTemporal(methods[i], fieldAccess);
+//                    if (temporal == null) {
+//                        sb.append(MessageFormat.format(ITEM [formType], new Object [] {name, variable, propName}));
+//                    } else {
+//                        sb.append(MessageFormat.format(ITEM [2], new Object [] {name, variable, propName, temporal, JsfForm.getDateTimeFormat(temporal)}));
+//                    }
+//                } else if (isRelationship == JsfForm.REL_NONE || isRelationship == JsfForm.REL_TO_ONE) {
+//                    sb.append(MessageFormat.format(ITEM [formType], new Object [] {name, variable, propName}));
+////links to related objects -- does not work correctly for composite IDs                    
+////                } else if (isRelationship == JsfForm.REL_TO_ONE) {
+////                    String managedBeanName = JSFClinetGenerator.getManagedBeanName(JSFClinetGenerator.simpleClassName(methods[i].getType().getName()));
+////                    String relatedIdProp = JSFClinetGenerator.getPropNameFromMethod(JsfForm.getIdGetter(fieldAccess, (JavaClass) methods[i].getType()).getName());
+////                    sb.append(MessageFormat.format(ITEM [3], new Object [] {name, variable, propName + "." + relatedIdProp , relatedIdProp, managedBeanName + "." + setupDetail}));
+//                }
+//            }
+//        }
+//        sb.append(MessageFormat.format(commands, new Object [] {"item"}));
+//    }
+//    
+//    public ManagedBean[] getManagedBeanNames(JTextComponent target) {
+//        managedBeans = new ArrayList();
+//        FileObject f = JsfForm.getFO(target);
+//        if (f != null) {
+//            WebModule wm = WebModule.getWebModule(f);
+//            String[] configFiles = JSFConfigUtilities.getConfigFiles(wm.getDeploymentDescriptor());
+//            for (int i = 0; i < configFiles.length; i++) {
+//                FileObject fo = wm.getDocumentBase().getFileObject(configFiles[i]);
+//                try {
+//                    JSFConfigDataObject configDO = (JSFConfigDataObject)DataObject.find(fo);
+//                    FacesConfig config= configDO.getFacesConfig();
+//                    managedBeans.addAll(Arrays.asList(config.getManagedBean()));
+//                } catch (IOException ioex) {
+//                    ErrorManager.getDefault().notify(ioex);
+//                }
+//            }
+//        }
+//        return (ManagedBean[]) managedBeans.toArray(new ManagedBean[managedBeans.size()]);
+//    }
+//        
+//    
+//    public String[] getMethodsForBean(ManagedBean bean, JTextComponent target) {
+//        JavaClass cls = bean == null ? null : JMIUtils.findClass(bean.getManagedBeanClass(), JsfForm.getFO(target));
+//        if (cls == null) {
+//            return new String[0];
+//        }
+//        Method[] m = JMIUtils.getMethods(cls);
+//        String[] names = new String[m.length];
+//        for (int i = 0; i < m.length; i++) {
+//            names[i] = m[i].getName();
+//        }
+//        return names;
+//    }
+//    
+//    public String getVariable() {
+//        return variable;
+//    }
     
     public void setVariable(String variable) {
         this.variable = variable;

@@ -19,20 +19,30 @@
 
 package org.netbeans.modules.web.jsf.refactoring;
 
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.Tree.Kind;
+import com.sun.source.util.TreePath;
+import java.io.IOException;
 import java.util.List;
-import org.netbeans.jmi.javamodel.Element;
-import org.netbeans.jmi.javamodel.JavaClass;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
-import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImpl;
-import org.netbeans.modules.web.jsf.JSFConfigDataObject;
-import org.openide.ErrorManager;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.filesystems.FileObject;
 import org.openide.text.PositionBounds;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -43,10 +53,10 @@ public class JSFWhereUsedPlugin implements RefactoringPlugin{
     /** This one is important creature - makes sure that cycles between plugins won't appear */
     private static ThreadLocal semafor = new ThreadLocal();
     
-    private static final ErrorManager err =
-            ErrorManager.getDefault().getInstance("org.netbeans.modules.web.jsf.refactoring");   // NOI18N
+    private static final Logger LOGGER = Logger.getLogger(JSFWhereUsedPlugin.class.getName());
     
     private final WhereUsedQuery refactoring;
+    private TreePathHandle treePathHandle = null;
     
     /** Creates a new instance of JSFWhereUsedPlugin */
     public JSFWhereUsedPlugin(WhereUsedQuery refactoring) {
@@ -72,21 +82,78 @@ public class JSFWhereUsedPlugin implements RefactoringPlugin{
         if (semafor.get() == null) {
             semafor.set(new Object());
             Object element = refactoring.getRefactoredObject();
-            err.log("Prepare refactoring: " + element);                 // NOI18N
-
-            if (element instanceof JavaClass){
-                JavaClass jclass = (JavaClass) element;
-                List <Occurrences.OccurrenceItem> items = Occurrences.getAllOccurrences(jclass, "");
+            LOGGER.fine("Prepare refactoring: " + element);                 // NOI18N
+            
+            if (element instanceof TreePathHandle) {
+                treePathHandle = (TreePathHandle)element;
+                if (treePathHandle != null && treePathHandle.getKind() == Kind.CLASS){
+                    CompilationInfo info = refactoring.getContext().lookup(CompilationInfo.class);
+                    if (refactoring.getContext().lookup(CompilationInfo.class) == null){
+                        final ClasspathInfo cpInfo = refactoring.getContext().lookup(ClasspathInfo.class);
+                        JavaSource source = JavaSource.create(cpInfo, new FileObject[]{treePathHandle.getFileObject()});
+                        try{
+                            source.runUserActionTask(new AbstractTask<CompilationController>() {
+                                
+                                public void run(CompilationController co) throws Exception {
+                                    co.toPhase(JavaSource.Phase.RESOLVED);
+                                    refactoring.getContext().add(co);
+                                }
+                            }, false);
+                        } catch (IOException ex) {
+                            LOGGER.log(Level.WARNING, "Exception in JSFWhereUsedPlugin", ex);
+                        }
+                    }
+                    info = refactoring.getContext().lookup(CompilationInfo.class);
+                    Element el = treePathHandle.resolveElement(info);
+                    TypeElement type = (TypeElement) el;
+                    String fqnc = type.getQualifiedName().toString();
+                    WebModule wm = WebModule.getWebModule(treePathHandle.getFileObject());
+                    List <Occurrences.OccurrenceItem> items = Occurrences.getAllOccurrences(wm, fqnc,"");
+                    for (Occurrences.OccurrenceItem item : items) {
+                        refactoringElements.add(refactoring, new JSFWhereUsedElement(item));
+                    }
+                }
+            }
+            
+            /*if (element instanceof FileObject){
+                JavaSource source = JavaSource.forFileObject((FileObject) element);
+                try {
+                    source.runUserActionTask(new AbstractTask<CompilationController>() {
+                        public void cancel() {
+                        }
+             
+                        public void run(CompilationController co) throws Exception {
+                            co.toPhase(JavaSource.Phase.RESOLVED);
+                            CompilationUnitTree cut = co.getCompilationUnit();
+                            treePathHandle = TreePathHandle.create(TreePath.getPath(cut, cut.getTypeDecls().get(0)), co);
+                            refactoring.getContext().add(co);
+                        }
+                    }, false);
+                } catch (IllegalArgumentException ex) {
+                    LOGGER.log(Level.WARNING, "Exception in JSFWhereUsedPlugin", ex);
+                } catch (IOException ex) {
+                    LOGGER.log(Level.WARNING, "Exception in JSFWhereUsedPlugin", ex);
+                }
+            } else if (element instanceof TreePathHandle)
+                treePathHandle = (TreePathHandle)element;
+            if (treePathHandle != null && treePathHandle.getKind() == Kind.CLASS){
+                CompilationInfo info = refactoring.getContext().lookup(CompilationInfo.class);
+             
+                Element el = treePathHandle.resolveElement(info);
+                TypeElement type = (TypeElement) el;
+                String fqnc = type.getQualifiedName().toString();
+                WebModule wm = WebModule.getWebModule(treePathHandle.getFileObject());
+                List <Occurrences.OccurrenceItem> items = Occurrences.getAllOccurrences(wm, fqnc,"");
                 for (Occurrences.OccurrenceItem item : items) {
                     refactoringElements.add(refactoring, new JSFWhereUsedElement(item));
                 }
-            }
+            }*/
             semafor.set(null);
         }
         return null;
     }
     
-    public class JSFWhereUsedElement extends SimpleRefactoringElementImpl implements RefactoringElementImplementation {
+    public class JSFWhereUsedElement extends SimpleRefactoringElementImpl  {
         
         private Occurrences.OccurrenceItem item;
         
@@ -97,25 +164,29 @@ public class JSFWhereUsedPlugin implements RefactoringPlugin{
         public String getText() {
             return getDisplayText();
         }
-
+        
         public String getDisplayText() {
             return item.getWhereUsedMessage();
         }
-
+        
         public void performChange() {
         }
-
+        
         public Element getJavaElement() {
             return null;
         }
-
+        
         public FileObject getParentFile() {
             return item.getConfigDO().getPrimaryFile();
         }
-
+        
         public PositionBounds getPosition() {
             return item.getClassDefinitionPosition();
         }
-
+        
+        public Object getComposite() {
+            return item.getConfigDO().getPrimaryFile();
+        }
+        
     }
 }

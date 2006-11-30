@@ -20,15 +20,16 @@
 package org.netbeans.modules.web.jsf.refactoring;
 
 import java.util.List;
-import org.netbeans.jmi.javamodel.Element;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.modules.javacore.internalapi.ExternalChange;
-import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
-import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
-import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
-import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
-import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImpl;
+//TODO: RETOUCHE
+//import org.netbeans.jmi.javamodel.Element;
+//import org.netbeans.jmi.javamodel.JavaClass;
+//import org.netbeans.modules.javacore.internalapi.ExternalChange;
+//import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
+//import org.netbeans.modules.refactoring.api.Problem;
+//import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
+//import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
+//import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
+//import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImpl;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.text.PositionBounds;
@@ -37,95 +38,95 @@ import org.openide.text.PositionBounds;
  *
  * @author Petr Pisl
  */
-public class JSFSafeDeletePlugin implements RefactoringPlugin{
+public class JSFSafeDeletePlugin /*implements RefactoringPlugin*/{
     
-    /** This one is important creature - makes sure that cycles between plugins won't appear */
-    private static ThreadLocal semafor = new ThreadLocal();
-    
-    private SafeDeleteRefactoring refactoring;
-    
-    private static final ErrorManager err =
-            ErrorManager.getDefault().getInstance("org.netbeans.modules.web.jsf.refactoring");   // NOI18N
-    
-
-    
-    /** Creates a new instance of JSFWhereUsedPlugin */
-    public JSFSafeDeletePlugin(SafeDeleteRefactoring refactoring) {
-        this.refactoring = refactoring;
-    }
-    
-    public Problem preCheck() {
-        return null;
-    }
-    
-    public Problem checkParameters() {
-        return null;
-    }
-    
-    public Problem fastCheckParameters() {
-        return null;
-    }
-    
-    public void cancelRequest() {
-    }
-    
-    public Problem prepare(RefactoringElementsBag refactoringElements) {
-        if (semafor.get() == null) {
-            semafor.set(new Object());
-            Element[] elements = refactoring.getElementsToDelete();
-            for (int i = 0; i < elements.length; i++) {
-                if (elements[i] instanceof JavaClass){
-                    JavaClass jClass = (JavaClass) elements[i];
-                    List <Occurrences.OccurrenceItem> items = Occurrences.getAllOccurrences(jClass, "");
-                    for (Occurrences.OccurrenceItem item : items) {
-                        refactoringElements.add(refactoring, new JSFSafeDeleteClassElement(item));
-                    }
-                }
-            
-            } 
-            semafor.set(null);
-        }        
-        return null;
-    }
-    
-    
-    public static class JSFSafeDeleteClassElement extends SimpleRefactoringElementImpl implements ExternalChange {
-        private Occurrences.OccurrenceItem item;
-        
-        JSFSafeDeleteClassElement(Occurrences.OccurrenceItem item){
-            this.item = item;
-        }
-        
-        public String getText() {
-            return getDisplayText();
-        }
-            
-        public String getDisplayText() {
-            return item.getRenameMessage();
-        }
-        
-        public void performChange() {
-            JavaMetamodel.getManager().registerExtChange(this);
-        }
-        
-        public void performExternalChange() {
-            item.performSafeDelete();
-        }
-
-        public void undoExternalChange() {
-            item.undoSafeDelete();
-        }
-        
-        public Element getJavaElement() {
-            return null;
-        }
-        
-        public FileObject getParentFile() {
-            return item.getConfigDO().getPrimaryFile();
-        }
-        
-        public PositionBounds getPosition() {
-            return item.getElementDefinitionPosition();
-        }
-    }
+//    /** This one is important creature - makes sure that cycles between plugins won't appear */
+//    private static ThreadLocal semafor = new ThreadLocal();
+//    
+//    private SafeDeleteRefactoring refactoring;
+//    
+//    private static final ErrorManager err =
+//            ErrorManager.getDefault().getInstance("org.netbeans.modules.web.jsf.refactoring");   // NOI18N
+//    
+//
+//    
+//    /** Creates a new instance of JSFWhereUsedPlugin */
+//    public JSFSafeDeletePlugin(SafeDeleteRefactoring refactoring) {
+//        this.refactoring = refactoring;
+//    }
+//    
+//    public Problem preCheck() {
+//        return null;
+//    }
+//    
+//    public Problem checkParameters() {
+//        return null;
+//    }
+//    
+//    public Problem fastCheckParameters() {
+//        return null;
+//    }
+//    
+//    public void cancelRequest() {
+//    }
+//    
+//    public Problem prepare(RefactoringElementsBag refactoringElements) {
+//        if (semafor.get() == null) {
+//            semafor.set(new Object());
+//            Element[] elements = refactoring.getElementsToDelete();
+//            for (int i = 0; i < elements.length; i++) {
+//                if (elements[i] instanceof JavaClass){
+//                    JavaClass jClass = (JavaClass) elements[i];
+//                    List <Occurrences.OccurrenceItem> items = Occurrences.getAllOccurrences(jClass, "");
+//                    for (Occurrences.OccurrenceItem item : items) {
+//                        refactoringElements.add(refactoring, new JSFSafeDeleteClassElement(item));
+//                    }
+//                }
+//            
+//            } 
+//            semafor.set(null);
+//        }        
+//        return null;
+//    }
+//    
+//    
+//    public static class JSFSafeDeleteClassElement extends SimpleRefactoringElementImpl implements ExternalChange {
+//        private Occurrences.OccurrenceItem item;
+//        
+//        JSFSafeDeleteClassElement(Occurrences.OccurrenceItem item){
+//            this.item = item;
+//        }
+//        
+//        public String getText() {
+//            return getDisplayText();
+//        }
+//            
+//        public String getDisplayText() {
+//            return item.getRenameMessage();
+//        }
+//        
+//        public void performChange() {
+//            JavaMetamodel.getManager().registerExtChange(this);
+//        }
+//        
+//        public void performExternalChange() {
+//            item.performSafeDelete();
+//        }
+//
+//        public void undoExternalChange() {
+//            item.undoSafeDelete();
+//        }
+//        
+//        public Element getJavaElement() {
+//            return null;
+//        }
+//        
+//        public FileObject getParentFile() {
+//            return item.getConfigDO().getPrimaryFile();
+//        }
+//        
+//        public PositionBounds getPosition() {
+//            return item.getElementDefinitionPosition();
+//        }
+//    }
 }

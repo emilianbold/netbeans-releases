@@ -35,7 +35,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
-import org.netbeans.jmi.javamodel.Annotation;
+/*import org.netbeans.jmi.javamodel.Annotation;
 import org.netbeans.jmi.javamodel.AttributeValue;
 import org.netbeans.jmi.javamodel.Feature;
 import org.netbeans.jmi.javamodel.Field;
@@ -46,10 +46,10 @@ import org.netbeans.jmi.javamodel.NamedElement;
 import org.netbeans.jmi.javamodel.Parameter;
 import org.netbeans.jmi.javamodel.ParameterizedType;
 import org.netbeans.jmi.javamodel.Type;
-import org.netbeans.jmi.javamodel.VariableAccess;
+import org.netbeans.jmi.javamodel.VariableAccess;*/
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.j2ee.common.JMIUtils;
-import org.netbeans.modules.javacore.api.JavaModel;
+//import org.netbeans.modules.j2ee.common.JMIUtils;
+//import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.JSFConfigUtilities;
 import org.netbeans.modules.web.jsf.palette.JSFPaletteUtilities;
@@ -137,10 +137,12 @@ public class JsfForm implements ActiveEditorDrop {
             sb.append("<f:view>\n");
         }
         sb.append(MessageFormat.format(BEGIN [formType], new Object [] {variable}));
-        JavaClass jc = resolveJavaClass(target, bean);
+        //TODO: RETOUCHE
+       /* JavaClass jc = resolveJavaClass(target, bean);
         if (jc != null) {
             createForm(jc, formType, variable, sb, false);
         }
+        */
         sb.append(END [formType]);
         if (surroundWithFView) {
             sb.append("</f:view>\n");
@@ -152,7 +154,8 @@ public class JsfForm implements ActiveEditorDrop {
     public static final int REL_TO_ONE = 1;
     public static final int REL_TO_MANY = 2;
     
-    public static int isRelationship(Method m, boolean isFieldAccess) {
+    //TODO: RETOUCHE
+/*    public static int isRelationship(Method m, boolean isFieldAccess) {
         Feature f = isFieldAccess ? guessField(m) : m;
         if (f != null) {
             for(Iterator it = f.getAnnotations().iterator(); it.hasNext();) {
@@ -168,125 +171,125 @@ public class JsfForm implements ActiveEditorDrop {
             }
         }
         return REL_NONE;
-    }
+    }*/
     
-    public static Method getOtherSideOfRelation(Method m, boolean isFieldAccess) {
-        Type type = m.getType();
-        if (type instanceof ParameterizedType) {
-            MultipartId id = (MultipartId) m.getTypeName();
-            for (Iterator it = id.getTypeArguments().iterator(); it.hasNext();) {
-                MultipartId param = (MultipartId) it.next();
-                NamedElement parType = param.getElement();
-                if (param instanceof JavaClass) {
-                    type = (JavaClass) param;
-                }
-            }
-        }
-        
-        if (type instanceof JavaClass) {
-            JavaClass jc = (JavaClass) type;
-            //PENDING detect using mappedBy parameter of the relationship annotation!!
-            for(Method method : getEntityMethods(jc)) {
-                Type t = method.getType();
-                if (t instanceof ParameterizedType) {
-                    MultipartId id = (MultipartId) method.getTypeName();
-                    for (Iterator it = id.getTypeArguments().iterator(); it.hasNext();) {
-                        MultipartId param = (MultipartId) it.next();
-                        NamedElement parType = param.getElement();
-                        if (param instanceof JavaClass) {
-                            t = (JavaClass) param;
-                            break;
-                        }
-                    }
-                }
-                if (t instanceof JavaClass && m.getDeclaringClass().getName().equals(t.getName())) {
-                    return method;
-                }
-            }
-        }
-        return null;
-    }
+//    public static Method getOtherSideOfRelation(Method m, boolean isFieldAccess) {
+//        Type type = m.getType();
+//        if (type instanceof ParameterizedType) {
+//            MultipartId id = (MultipartId) m.getTypeName();
+//            for (Iterator it = id.getTypeArguments().iterator(); it.hasNext();) {
+//                MultipartId param = (MultipartId) it.next();
+//                NamedElement parType = param.getElement();
+//                if (param instanceof JavaClass) {
+//                    type = (JavaClass) param;
+//                }
+//            }
+//        }
+//        
+//        if (type instanceof JavaClass) {
+//            JavaClass jc = (JavaClass) type;
+//            //PENDING detect using mappedBy parameter of the relationship annotation!!
+//            for(Method method : getEntityMethods(jc)) {
+//                Type t = method.getType();
+//                if (t instanceof ParameterizedType) {
+//                    MultipartId id = (MultipartId) method.getTypeName();
+//                    for (Iterator it = id.getTypeArguments().iterator(); it.hasNext();) {
+//                        MultipartId param = (MultipartId) it.next();
+//                        NamedElement parType = param.getElement();
+//                        if (param instanceof JavaClass) {
+//                            t = (JavaClass) param;
+//                            break;
+//                        }
+//                    }
+//                }
+//                if (t instanceof JavaClass && m.getDeclaringClass().getName().equals(t.getName())) {
+//                    return method;
+//                }
+//            }
+//        }
+//        return null;
+//    }
     
     /** Returns all methods in class and its super classes which are entity
      * classes or mapped superclasses.
      */
-    public static Method[] getEntityMethods(JavaClass clazz) {
-        List<Method> result = new LinkedList();
-        JavaClass jc = clazz;
-        while (jc != null) {
-            boolean isEntityOrMapped = false;
-            for (Iterator it = jc.getAnnotations().iterator(); it.hasNext();) {
-                Annotation ann = (Annotation) it.next();
-                if (ann == null || ann.getType() == null) {
-                    //cannot resolve type, invalid code
-                    continue;
-                }
-                String annName = ann.getType().getName();
-                if ("javax.persistence.Entity".equals(annName) ||
-                        "javax.persistence.MappedSuperclass".equals(annName)) {
-                    isEntityOrMapped = true;
-                    break;
-                }
-            }
-            if (isEntityOrMapped) {
-                List features = jc.getFeatures();
-                for (Iterator it = features.iterator(); it.hasNext();) {
-                    Object o =  it.next();
-                    if (o instanceof Method) {
-                        result.add((Method)o);
-                    }
-                }
-            }
-            jc = jc.getSuperClass();
-        }
-        return (Method[]) result.toArray(new Method[result.size()]);
-    }
+//    public static Method[] getEntityMethods(JavaClass clazz) {
+//        List<Method> result = new LinkedList();
+//        JavaClass jc = clazz;
+//        while (jc != null) {
+//            boolean isEntityOrMapped = false;
+//            for (Iterator it = jc.getAnnotations().iterator(); it.hasNext();) {
+//                Annotation ann = (Annotation) it.next();
+//                if (ann == null || ann.getType() == null) {
+//                    //cannot resolve type, invalid code
+//                    continue;
+//                }
+//                String annName = ann.getType().getName();
+//                if ("javax.persistence.Entity".equals(annName) ||
+//                        "javax.persistence.MappedSuperclass".equals(annName)) {
+//                    isEntityOrMapped = true;
+//                    break;
+//                }
+//            }
+//            if (isEntityOrMapped) {
+//                List features = jc.getFeatures();
+//                for (Iterator it = features.iterator(); it.hasNext();) {
+//                    Object o =  it.next();
+//                    if (o instanceof Method) {
+//                        result.add((Method)o);
+//                    }
+//                }
+//            }
+//            jc = jc.getSuperClass();
+//        }
+//        return (Method[]) result.toArray(new Method[result.size()]);
+//    }
     
-    static boolean isId(Method m, boolean isFieldAccess) {
-        Feature f = isFieldAccess ? guessField(m) : m;
-        if (f != null) {
-            for(Iterator it = f.getAnnotations().iterator(); it.hasNext();) {
-                Annotation an = (Annotation) it.next();
-                String annName = an.getType().getName();
-                if ("javax.persistence.Id".equals(annName) ||
-                        "javax.persistence.EmbeddedId".equals(annName)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-    
-    static boolean isGenerated(Method m, boolean isFieldAccess) {
-        Feature f = isFieldAccess ? guessField(m) : m;
-        if (f != null) {
-            for(Iterator it = f.getAnnotations().iterator(); it.hasNext();) {
-                Annotation an = (Annotation) it.next();
-                if ("javax.persistence.GeneratedValue".equals(an.getType().getName())) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-    
-    static String getTemporal(Method m, boolean isFieldAccess) {
-        Feature f = isFieldAccess ? guessField(m) : m;
-        if (f != null) {
-            for(Iterator it = f.getAnnotations().iterator(); it.hasNext();) {
-                Annotation an = (Annotation) it.next();
-                if ("javax.persistence.Temporal".equals(an.getType().getName())) {
-                    AttributeValue temporalValue = (AttributeValue) an.getAttributeValues().get(0);
-                    if (temporalValue != null) {
-                        VariableAccess va = (VariableAccess) temporalValue.getValue();
-                        String temporal = va.getElement().getName();
-                        return temporal;
-                    }
-                }
-            }
-        }
-        return null;
-    }
+//    static boolean isId(Method m, boolean isFieldAccess) {
+//        Feature f = isFieldAccess ? guessField(m) : m;
+//        if (f != null) {
+//            for(Iterator it = f.getAnnotations().iterator(); it.hasNext();) {
+//                Annotation an = (Annotation) it.next();
+//                String annName = an.getType().getName();
+//                if ("javax.persistence.Id".equals(annName) ||
+//                        "javax.persistence.EmbeddedId".equals(annName)) {
+//                    return true;
+//                }
+//            }
+//        }
+//        return false;
+//    }
+//    
+//    static boolean isGenerated(Method m, boolean isFieldAccess) {
+//        Feature f = isFieldAccess ? guessField(m) : m;
+//        if (f != null) {
+//            for(Iterator it = f.getAnnotations().iterator(); it.hasNext();) {
+//                Annotation an = (Annotation) it.next();
+//                if ("javax.persistence.GeneratedValue".equals(an.getType().getName())) {
+//                    return true;
+//                }
+//            }
+//        }
+//        return false;
+//    }
+//    
+//    static String getTemporal(Method m, boolean isFieldAccess) {
+//        Feature f = isFieldAccess ? guessField(m) : m;
+//        if (f != null) {
+//            for(Iterator it = f.getAnnotations().iterator(); it.hasNext();) {
+//                Annotation an = (Annotation) it.next();
+//                if ("javax.persistence.Temporal".equals(an.getType().getName())) {
+//                    AttributeValue temporalValue = (AttributeValue) an.getAttributeValues().get(0);
+//                    if (temporalValue != null) {
+//                        VariableAccess va = (VariableAccess) temporalValue.getValue();
+//                        String temporal = va.getElement().getName();
+//                        return temporal;
+//                    }
+//                }
+//            }
+//        }
+//        return null;
+//    }
 
     static FileObject getFO(JTextComponent target) {
         Document doc = target.getDocument();
@@ -312,38 +315,38 @@ public class JsfForm implements ActiveEditorDrop {
         return ClassPathSupport.createClassPath((URL[]) urls.toArray(new URL[urls.size()]));
     }
     
-    public static JavaClass resolveJavaClass(FileObject foInClassPath, String bean) {
-        JavaClass jc = JMIUtils.findClass(bean, getFullClasspath(foInClassPath));
-        if (jc == null) { //try to add project to cp
-        	JavaClass clazzAnywhere = JMIUtils.findClass(bean);
-        	if (clazzAnywhere != null) {
-	            Project projectWithEntity = FileOwnerQuery.getOwner(JavaModel.getFileObject(clazzAnywhere.getResource()));
-	            Project project = FileOwnerQuery.getOwner(foInClassPath);
-    	        ProjectClassPathExtender pcpe = (ProjectClassPathExtender) project.getLookup().lookup(ProjectClassPathExtender.class);
-        	    AntArtifact artifact[] = AntArtifactQuery.findArtifactsByType(projectWithEntity, JavaProjectConstants.ARTIFACT_TYPE_JAR);
-	            try {
-    	            if (artifact.length > 0) {
-        	            pcpe.addAntArtifact(artifact[0], artifact[0].getArtifactLocations()[0]);
-            	    }
-                	jc = JMIUtils.findClass(bean, getFullClasspath(foInClassPath));
-	            } catch (IOException ex) {
-    	            ErrorManager.getDefault().notify(ex);
-        	    }
-        	}
-        }
-        return jc;
-    }
-    
-    static JavaClass resolveJavaClass(JTextComponent target, String bean) {
-        Document doc = target.getDocument();
-        if (doc != null) {
-            DataObject dobj = NbEditorUtilities.getDataObject(doc);
-            if (dobj != null) {
-                return resolveJavaClass(dobj.getPrimaryFile(), bean);
-            }
-        }
-        return null;
-    }
+//    public static JavaClass resolveJavaClass(FileObject foInClassPath, String bean) {
+//        JavaClass jc = JMIUtils.findClass(bean, getFullClasspath(foInClassPath));
+//        if (jc == null) { //try to add project to cp
+//        	JavaClass clazzAnywhere = JMIUtils.findClass(bean);
+//        	if (clazzAnywhere != null) {
+//	            Project projectWithEntity = FileOwnerQuery.getOwner(JavaModel.getFileObject(clazzAnywhere.getResource()));
+//	            Project project = FileOwnerQuery.getOwner(foInClassPath);
+//    	        ProjectClassPathExtender pcpe = (ProjectClassPathExtender) project.getLookup().lookup(ProjectClassPathExtender.class);
+//        	    AntArtifact artifact[] = AntArtifactQuery.findArtifactsByType(projectWithEntity, JavaProjectConstants.ARTIFACT_TYPE_JAR);
+//	            try {
+//    	            if (artifact.length > 0) {
+//        	            pcpe.addAntArtifact(artifact[0], artifact[0].getArtifactLocations()[0]);
+//            	    }
+//                	jc = JMIUtils.findClass(bean, getFullClasspath(foInClassPath));
+//	            } catch (IOException ex) {
+//    	            ErrorManager.getDefault().notify(ex);
+//        	    }
+//        	}
+//        }
+//        return jc;
+//    }
+//    
+//    static JavaClass resolveJavaClass(JTextComponent target, String bean) {
+//        Document doc = target.getDocument();
+//        if (doc != null) {
+//            DataObject dobj = NbEditorUtilities.getDataObject(doc);
+//            if (dobj != null) {
+//                return resolveJavaClass(dobj.getPrimaryFile(), bean);
+//            }
+//        }
+//        return null;
+//    }
             
     static boolean hasModuleJsf(JTextComponent target) {
         FileObject f = getFO(target);
@@ -355,86 +358,86 @@ public class JsfForm implements ActiveEditorDrop {
         return false;
     }
     
-    public static boolean isEntityClass(JavaClass jc) {
-        for(Annotation ann : (List <Annotation>) jc.getAnnotations()) {
-            if ("javax.persistence.Entity".equals(ann.getType().getName())) {
-                return true;
-            }
-        }
-        return false;
-    }
-    
-    public static boolean isEmbeddableClass(JavaClass jc) {
-        for(Annotation ann : (List <Annotation>) jc.getAnnotations()) {
-            if ("javax.persistence.Embeddable".equals(ann.getType().getName())) {
-                return true;
-            }
-        }
-        return false;
-    }
-    
-    public static boolean isFieldAccess(JavaClass clazz) {
-        boolean fieldAccess = false;
-        boolean accessTypeDetected = false;
-        JavaClass jc = clazz;
-        while (jc != null) {
-            List features = jc.getFeatures();
-            for (Iterator featuresIter = features.iterator(); featuresIter.hasNext() && !accessTypeDetected;) {
-                Feature feature = (Feature) featuresIter.next();
-                for (Iterator it = feature.getAnnotations().iterator(); it.hasNext() && !accessTypeDetected;) {
-                    Annotation ann = (Annotation) it.next();
-                    if (ann != null && ann.getType() != null) {
-                        String annName = ann.getType().getName();
-                        if ("javax.persistence.Id".equals(annName) ||
-                                "javax.persistence.EmbeddedId".equals(annName)) {
-                            if (feature instanceof Field) {
-                                fieldAccess = true;
-                            }
-                            accessTypeDetected = true;
-                        }
-                    }
-                }
-            }
-            if (!accessTypeDetected) {
-                ErrorManager.getDefault().log(ErrorManager.WARNING, "Failed to detect correct access type for class:" + jc.getName());
-            }
-            jc = jc.getSuperClass();
-        }
-        
-        return fieldAccess;
-    }
-
-    public static Field guessField(Method getter) {
-        String name = getter.getName().substring(3);
-        String guessFieldName = name.substring(0,1).toLowerCase() + name.substring(1);
-        for (Iterator featuresIter = getter.getDeclaringClass().getFeatures().iterator(); featuresIter.hasNext();) {
-            Feature feature = (Feature) featuresIter.next();
-            if (guessFieldName.equals(feature.getName()) && (feature instanceof Field)) {
-                return (Field) feature;
-            }
-        }
-        ErrorManager.getDefault().log(ErrorManager.WARNING, "Cannot detect the field associated with property: " + guessFieldName);
-        return null;
-    }
-
-    /** Check if there is a setter corresponding with the getter */
-    public static boolean isReadOnly(Method getter) {
-        String setterName = "set" + getter.getName().substring(3); //NOI18N
-        Type propertyType = getter.getType();
-        for (Iterator featuresIter = getter.getDeclaringClass().getFeatures().iterator(); featuresIter.hasNext();) {
-            Feature feature = (Feature) featuresIter.next();
-            if (setterName.equals(feature.getName()) && (feature instanceof Method)) {
-                Method setter = (Method) feature;
-                if (setter.getParameters().size() == 1) {
-                    Parameter firstParam = (Parameter) setter.getParameters().get(0);
-                    if (firstParam.getType().equals(propertyType)) {
-                        return false;
-                    }
-                }
-            }
-        }
-        return true;
-    }
+//    public static boolean isEntityClass(JavaClass jc) {
+//        for(Annotation ann : (List <Annotation>) jc.getAnnotations()) {
+//            if ("javax.persistence.Entity".equals(ann.getType().getName())) {
+//                return true;
+//            }
+//        }
+//        return false;
+//    }
+//    
+//    public static boolean isEmbeddableClass(JavaClass jc) {
+//        for(Annotation ann : (List <Annotation>) jc.getAnnotations()) {
+//            if ("javax.persistence.Embeddable".equals(ann.getType().getName())) {
+//                return true;
+//            }
+//        }
+//        return false;
+//    }
+//    
+//    public static boolean isFieldAccess(JavaClass clazz) {
+//        boolean fieldAccess = false;
+//        boolean accessTypeDetected = false;
+//        JavaClass jc = clazz;
+//        while (jc != null) {
+//            List features = jc.getFeatures();
+//            for (Iterator featuresIter = features.iterator(); featuresIter.hasNext() && !accessTypeDetected;) {
+//                Feature feature = (Feature) featuresIter.next();
+//                for (Iterator it = feature.getAnnotations().iterator(); it.hasNext() && !accessTypeDetected;) {
+//                    Annotation ann = (Annotation) it.next();
+//                    if (ann != null && ann.getType() != null) {
+//                        String annName = ann.getType().getName();
+//                        if ("javax.persistence.Id".equals(annName) ||
+//                                "javax.persistence.EmbeddedId".equals(annName)) {
+//                            if (feature instanceof Field) {
+//                                fieldAccess = true;
+//                            }
+//                            accessTypeDetected = true;
+//                        }
+//                    }
+//                }
+//            }
+//            if (!accessTypeDetected) {
+//                ErrorManager.getDefault().log(ErrorManager.WARNING, "Failed to detect correct access type for class:" + jc.getName());
+//            }
+//            jc = jc.getSuperClass();
+//        }
+//        
+//        return fieldAccess;
+//    }
+//
+//    public static Field guessField(Method getter) {
+//        String name = getter.getName().substring(3);
+//        String guessFieldName = name.substring(0,1).toLowerCase() + name.substring(1);
+//        for (Iterator featuresIter = getter.getDeclaringClass().getFeatures().iterator(); featuresIter.hasNext();) {
+//            Feature feature = (Feature) featuresIter.next();
+//            if (guessFieldName.equals(feature.getName()) && (feature instanceof Field)) {
+//                return (Field) feature;
+//            }
+//        }
+//        ErrorManager.getDefault().log(ErrorManager.WARNING, "Cannot detect the field associated with property: " + guessFieldName);
+//        return null;
+//    }
+//
+//    /** Check if there is a setter corresponding with the getter */
+//    public static boolean isReadOnly(Method getter) {
+//        String setterName = "set" + getter.getName().substring(3); //NOI18N
+//        Type propertyType = getter.getType();
+//        for (Iterator featuresIter = getter.getDeclaringClass().getFeatures().iterator(); featuresIter.hasNext();) {
+//            Feature feature = (Feature) featuresIter.next();
+//            if (setterName.equals(feature.getName()) && (feature instanceof Method)) {
+//                Method setter = (Method) feature;
+//                if (setter.getParameters().size() == 1) {
+//                    Parameter firstParam = (Parameter) setter.getParameters().get(0);
+//                    if (firstParam.getType().equals(propertyType)) {
+//                        return false;
+//                    }
+//                }
+//            }
+//        }
+//        return true;
+//    }
 
     static String getDateTimeFormat(String temporal) {
         if ("DATE".equals(temporal)) {
@@ -446,139 +449,139 @@ public class JsfForm implements ActiveEditorDrop {
         }
     }
     
-    public static void createForm(JavaClass bean, int formType, String variable, StringBuffer sb, boolean createSelectForRel) {
-        Method methods [] = getEntityMethods(bean);
-        boolean fieldAccess = isFieldAccess(bean);
-        for (int i = 0; i < methods.length; i++) {
-            if (methods[i].getName().startsWith("get")) {
-                int isRelationship = isRelationship(methods[i], fieldAccess);
-                String name = methods[i].getName().substring(3);
-                String propName = JSFClinetGenerator.getPropNameFromMethod(methods[i].getName());
-                if (formType == FORM_TYPE_NEW && 
-                        ((isId(methods[i], fieldAccess) && isGenerated(methods[i], fieldAccess))
-                        || isReadOnly(methods[i]))) {
-                    //skip if in create form if it is generated
-                } else if (formType == FORM_TYPE_EDIT && (isId(methods[i], fieldAccess) || isReadOnly(methods[i]))) {
-                    //make id non editable
-                    sb.append(MessageFormat.format(ITEM [FORM_TYPE_DETAIL], new Object [] {name, variable, propName}));
-                } else if ((formType == FORM_TYPE_NEW || formType == FORM_TYPE_EDIT) && "java.util.Date".equals(methods[i].getType().getName())) {
-                    String temporal = getTemporal(methods[i], fieldAccess);
-                    if (temporal == null) {
-                        sb.append(MessageFormat.format(ITEM [formType], new Object [] {name, variable, propName}));
-                    } else {
-                        //param 3 - temporal, param 4 - date/time format
-                        sb.append(MessageFormat.format(ITEM [5], new Object [] {name, variable, propName, temporal, getDateTimeFormat(temporal)}));
-                    }
-                } else if ((formType == FORM_TYPE_DETAIL && isRelationship == REL_TO_ONE) || isRelationship == REL_NONE) {
-                    //normal field (input or output text)
-                    sb.append(MessageFormat.format(ITEM [formType], new Object [] {name, variable, propName}));
-                } else if (isRelationship == REL_TO_ONE) {
-                    //combo box for editing toOne relationships
-                    sb.append(MessageFormat.format(formType == FORM_TYPE_EDIT ? ITEM [4] : ITEM[6]/* FORM_TYPE_NEW */, new Object [] {name, variable, propName, variable.substring(0, variable.lastIndexOf('.'))}));
-                }
-            }
-        }
-    }
-    
-    public static void createTablesForRelated(JavaClass bean, int formType, String variable, String idProperty, boolean isInjection, StringBuffer sb) {
-        Method methods [] = getEntityMethods(bean);
-        String simpleClass = JSFClinetGenerator.simpleClassName(bean.getName());
-        String managedBean = JSFClinetGenerator.getManagedBeanName(simpleClass);
-        boolean fieldAccess = isFieldAccess(bean);
-        //generate tables of objects with ToMany relationships
-        if (formType == FORM_TYPE_DETAIL) {
-            for (int i = 0; i < methods.length; i++) {
-                if (methods[i].getName().startsWith("get")) {
-                    int isRelationship = isRelationship(methods[i], fieldAccess);
-                    String name = methods[i].getName().substring(3);
-                    String methodName = methods[i].getName();
-                    String propName = JSFClinetGenerator.getPropNameFromMethod(methodName);
-                    if (isRelationship == REL_TO_MANY) {
-                        Method otherSide = getOtherSideOfRelation(methods[i], fieldAccess);
-                        int otherSideMultiplicity = REL_TO_ONE;
-                        if (otherSide != null) {
-                            JavaClass relClass = (JavaClass) otherSide.getDeclaringClass();
-                            boolean isRelFieldAccess = isFieldAccess(relClass);
-                            otherSideMultiplicity = isRelationship(otherSide, isRelFieldAccess);
-                        }
-                        MultipartId id = (MultipartId) methods[i].getTypeName();
-                        JavaClass jc = null;
-                        for (Iterator it = id.getTypeArguments().iterator(); it.hasNext();) {
-                            MultipartId param = (MultipartId) it.next();
-                            NamedElement parType = param.getElement();
-                            if (param instanceof JavaClass) {
-                                jc = (JavaClass) param;
-                                break;
-                            }
-                        }
-                        if (jc != null) {
-                            boolean relatedIsFieldAccess = isFieldAccess(jc);
-                            String relatedIdProperty = JSFClinetGenerator.getPropNameFromMethod(getIdGetter(relatedIsFieldAccess, jc).getName());
-                            String relatedClass = JSFClinetGenerator.simpleClassName(jc.getName());
-                            String relatedManagedBean = JSFClinetGenerator.getManagedBeanName(relatedClass);
-                            String detailManagedBean = JSFClinetGenerator.simpleClassName(bean.getName());
-                            sb.append("<h2>List of " + name + "</h2>\n");
-                            sb.append("<h:outputText rendered=\"#{not " + relatedManagedBean + ".detail" + relatedClass + "s.rowAvailable}\" value=\"No " + name + "\"/><br>\n");
-                            sb.append("<h:dataTable value=\"#{" + relatedManagedBean + ".detail" + relatedClass + "s}\" var=\"item\" \n");
-                            sb.append("border=\"1\" cellpadding=\"2\" cellspacing=\"0\" \n rendered=\"#{not empty " + relatedManagedBean + ".detail" + relatedClass + "s}\">\n"); //NOI18N
-                            String removeItems = "remove" + methodName.substring(3);
-                            String commands = " <h:column>\n <h:commandLink value=\"Destroy\" action=\"#'{'" + relatedManagedBean + ".destroyFrom" + detailManagedBean + "'}'\">\n" 
-                                    + "<f:param name=\"" + relatedIdProperty +"\" value=\"#'{'{0}." + relatedIdProperty + "'}'\"/>\n"
-                                    + "<f:param name=\"relatedId\" value=\"#'{'" + variable + "." + idProperty + "'}'\"/>\n"
-                                    + "</h:commandLink>\n  <h:outputText value=\" \"/>\n"
-                                    + " <h:commandLink value=\"Edit\" action=\"#'{'" + relatedManagedBean + ".editSetup'}'\">\n"
-                                    + "<f:param name=\"" + relatedIdProperty +"\" value=\"#'{'{0}." + relatedIdProperty + "'}'\"/>\n"
-                                    + "<h:outputText value=\" \"/>\n </h:commandLink>\n"
-                                    + (otherSideMultiplicity == REL_TO_MANY ? "<h:commandLink value=\"Remove\" action=\"#'{'" + managedBean + "." + removeItems + "'}'\"/>" : "")
-                                    + "</h:column>\n";
-                            
-                            JsfTable.createTable(jc, variable + "." + propName, sb, commands, "detailSetup");
-                            sb.append("</h:dataTable>\n");
-                            if (otherSideMultiplicity == REL_TO_MANY) {
-                                sb.append("<br>\n Add " + relatedClass + "s:\n <br>\n");
-                                String itemsToAdd = JSFClinetGenerator.getPropNameFromMethod(methodName + "ToAdd");
-                                sb.append("<h:selectManyListbox id=\"add" + relatedClass + "s\" value=\"#{" 
-                                        + managedBean + "." + itemsToAdd + "}\" title=\"Add " + name + ":\">\n");
-                                String availableItems = JSFClinetGenerator.getPropNameFromMethod(methodName + "Available");
-                                sb.append("<f:selectItems value=\"#{" + managedBean + "." + availableItems + "}\"/>\n");
-                                sb.append("</h:selectManyListbox>\n");
-                                String addItems = "add" + methodName.substring(3);
-                                sb.append("<h:commandButton value=\"Add\" action=\"#{" + managedBean + "." + addItems + "}\"/>\n <br>\n");
-                            }
-                            sb.append("<h:commandLink value=\"New " + name + "\" action=\"#{" + relatedManagedBean + ".createFrom" + detailManagedBean + "Setup}\">\n");
-                            sb.append("<f:param name=\"relatedId\" value=\"#{" + variable + "." + idProperty + "}\"/>\n");
-                            sb.append("</h:commandLink>\n <br>\n <br>\n");
-                        } else {
-                            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "cannot find referenced class: " + methods[i].getType().getName());
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    public static Method getIdGetter(final boolean isFieldAccess, final JavaClass jc) {
-        Method m[] = getEntityMethods(jc);
-        for (int j = 0; j < m.length; j++) {
-            if (m[j].getName().startsWith("get")) {
-                Feature f = isFieldAccess ? JsfForm.guessField(m[j]) : m[j];
-                if (f != null) {
-                    for (Iterator it = f.getAnnotations().iterator(); it.hasNext();) {
-                        Annotation ann = (Annotation) it.next();
-                        if (ann != null) {
-                            String annName = ann.getType().getName();
-                            if ("javax.persistence.Id".equals(annName) ||
-                                    "javax.persistence.EmbeddedId".equals(annName)) {
-                                return m[j];
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        ErrorManager.getDefault().log(ErrorManager.WARNING, "Cannot find ID getter in class: " + jc.getName());
-        return null;
-    }
+//    public static void createForm(JavaClass bean, int formType, String variable, StringBuffer sb, boolean createSelectForRel) {
+//        Method methods [] = getEntityMethods(bean);
+//        boolean fieldAccess = isFieldAccess(bean);
+//        for (int i = 0; i < methods.length; i++) {
+//            if (methods[i].getName().startsWith("get")) {
+//                int isRelationship = isRelationship(methods[i], fieldAccess);
+//                String name = methods[i].getName().substring(3);
+//                String propName = JSFClinetGenerator.getPropNameFromMethod(methods[i].getName());
+//                if (formType == FORM_TYPE_NEW && 
+//                        ((isId(methods[i], fieldAccess) && isGenerated(methods[i], fieldAccess))
+//                        || isReadOnly(methods[i]))) {
+//                    //skip if in create form if it is generated
+//                } else if (formType == FORM_TYPE_EDIT && (isId(methods[i], fieldAccess) || isReadOnly(methods[i]))) {
+//                    //make id non editable
+//                    sb.append(MessageFormat.format(ITEM [FORM_TYPE_DETAIL], new Object [] {name, variable, propName}));
+//                } else if ((formType == FORM_TYPE_NEW || formType == FORM_TYPE_EDIT) && "java.util.Date".equals(methods[i].getType().getName())) {
+//                    String temporal = getTemporal(methods[i], fieldAccess);
+//                    if (temporal == null) {
+//                        sb.append(MessageFormat.format(ITEM [formType], new Object [] {name, variable, propName}));
+//                    } else {
+//                        //param 3 - temporal, param 4 - date/time format
+//                        sb.append(MessageFormat.format(ITEM [5], new Object [] {name, variable, propName, temporal, getDateTimeFormat(temporal)}));
+//                    }
+//                } else if ((formType == FORM_TYPE_DETAIL && isRelationship == REL_TO_ONE) || isRelationship == REL_NONE) {
+//                    //normal field (input or output text)
+//                    sb.append(MessageFormat.format(ITEM [formType], new Object [] {name, variable, propName}));
+//                } else if (isRelationship == REL_TO_ONE) {
+//                    //combo box for editing toOne relationships
+//                    sb.append(MessageFormat.format(formType == FORM_TYPE_EDIT ? ITEM [4] : ITEM[6]/* FORM_TYPE_NEW */, new Object [] {name, variable, propName, variable.substring(0, variable.lastIndexOf('.'))}));
+//                }
+//            }
+//        }
+//    }
+//    
+//    public static void createTablesForRelated(JavaClass bean, int formType, String variable, String idProperty, boolean isInjection, StringBuffer sb) {
+//        Method methods [] = getEntityMethods(bean);
+//        String simpleClass = JSFClinetGenerator.simpleClassName(bean.getName());
+//        String managedBean = JSFClinetGenerator.getManagedBeanName(simpleClass);
+//        boolean fieldAccess = isFieldAccess(bean);
+//        //generate tables of objects with ToMany relationships
+//        if (formType == FORM_TYPE_DETAIL) {
+//            for (int i = 0; i < methods.length; i++) {
+//                if (methods[i].getName().startsWith("get")) {
+//                    int isRelationship = isRelationship(methods[i], fieldAccess);
+//                    String name = methods[i].getName().substring(3);
+//                    String methodName = methods[i].getName();
+//                    String propName = JSFClinetGenerator.getPropNameFromMethod(methodName);
+//                    if (isRelationship == REL_TO_MANY) {
+//                        Method otherSide = getOtherSideOfRelation(methods[i], fieldAccess);
+//                        int otherSideMultiplicity = REL_TO_ONE;
+//                        if (otherSide != null) {
+//                            JavaClass relClass = (JavaClass) otherSide.getDeclaringClass();
+//                            boolean isRelFieldAccess = isFieldAccess(relClass);
+//                            otherSideMultiplicity = isRelationship(otherSide, isRelFieldAccess);
+//                        }
+//                        MultipartId id = (MultipartId) methods[i].getTypeName();
+//                        JavaClass jc = null;
+//                        for (Iterator it = id.getTypeArguments().iterator(); it.hasNext();) {
+//                            MultipartId param = (MultipartId) it.next();
+//                            NamedElement parType = param.getElement();
+//                            if (param instanceof JavaClass) {
+//                                jc = (JavaClass) param;
+//                                break;
+//                            }
+//                        }
+//                        if (jc != null) {
+//                            boolean relatedIsFieldAccess = isFieldAccess(jc);
+//                            String relatedIdProperty = JSFClinetGenerator.getPropNameFromMethod(getIdGetter(relatedIsFieldAccess, jc).getName());
+//                            String relatedClass = JSFClinetGenerator.simpleClassName(jc.getName());
+//                            String relatedManagedBean = JSFClinetGenerator.getManagedBeanName(relatedClass);
+//                            String detailManagedBean = JSFClinetGenerator.simpleClassName(bean.getName());
+//                            sb.append("<h2>List of " + name + "</h2>\n");
+//                            sb.append("<h:outputText rendered=\"#{not " + relatedManagedBean + ".detail" + relatedClass + "s.rowAvailable}\" value=\"No " + name + "\"/><br>\n");
+//                            sb.append("<h:dataTable value=\"#{" + relatedManagedBean + ".detail" + relatedClass + "s}\" var=\"item\" \n");
+//                            sb.append("border=\"1\" cellpadding=\"2\" cellspacing=\"0\" \n rendered=\"#{not empty " + relatedManagedBean + ".detail" + relatedClass + "s}\">\n"); //NOI18N
+//                            String removeItems = "remove" + methodName.substring(3);
+//                            String commands = " <h:column>\n <h:commandLink value=\"Destroy\" action=\"#'{'" + relatedManagedBean + ".destroyFrom" + detailManagedBean + "'}'\">\n" 
+//                                    + "<f:param name=\"" + relatedIdProperty +"\" value=\"#'{'{0}." + relatedIdProperty + "'}'\"/>\n"
+//                                    + "<f:param name=\"relatedId\" value=\"#'{'" + variable + "." + idProperty + "'}'\"/>\n"
+//                                    + "</h:commandLink>\n  <h:outputText value=\" \"/>\n"
+//                                    + " <h:commandLink value=\"Edit\" action=\"#'{'" + relatedManagedBean + ".editSetup'}'\">\n"
+//                                    + "<f:param name=\"" + relatedIdProperty +"\" value=\"#'{'{0}." + relatedIdProperty + "'}'\"/>\n"
+//                                    + "<h:outputText value=\" \"/>\n </h:commandLink>\n"
+//                                    + (otherSideMultiplicity == REL_TO_MANY ? "<h:commandLink value=\"Remove\" action=\"#'{'" + managedBean + "." + removeItems + "'}'\"/>" : "")
+//                                    + "</h:column>\n";
+//                            
+//                            JsfTable.createTable(jc, variable + "." + propName, sb, commands, "detailSetup");
+//                            sb.append("</h:dataTable>\n");
+//                            if (otherSideMultiplicity == REL_TO_MANY) {
+//                                sb.append("<br>\n Add " + relatedClass + "s:\n <br>\n");
+//                                String itemsToAdd = JSFClinetGenerator.getPropNameFromMethod(methodName + "ToAdd");
+//                                sb.append("<h:selectManyListbox id=\"add" + relatedClass + "s\" value=\"#{" 
+//                                        + managedBean + "." + itemsToAdd + "}\" title=\"Add " + name + ":\">\n");
+//                                String availableItems = JSFClinetGenerator.getPropNameFromMethod(methodName + "Available");
+//                                sb.append("<f:selectItems value=\"#{" + managedBean + "." + availableItems + "}\"/>\n");
+//                                sb.append("</h:selectManyListbox>\n");
+//                                String addItems = "add" + methodName.substring(3);
+//                                sb.append("<h:commandButton value=\"Add\" action=\"#{" + managedBean + "." + addItems + "}\"/>\n <br>\n");
+//                            }
+//                            sb.append("<h:commandLink value=\"New " + name + "\" action=\"#{" + relatedManagedBean + ".createFrom" + detailManagedBean + "Setup}\">\n");
+//                            sb.append("<f:param name=\"relatedId\" value=\"#{" + variable + "." + idProperty + "}\"/>\n");
+//                            sb.append("</h:commandLink>\n <br>\n <br>\n");
+//                        } else {
+//                            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "cannot find referenced class: " + methods[i].getType().getName());
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
+//
+//    public static Method getIdGetter(final boolean isFieldAccess, final JavaClass jc) {
+//        Method m[] = getEntityMethods(jc);
+//        for (int j = 0; j < m.length; j++) {
+//            if (m[j].getName().startsWith("get")) {
+//                Feature f = isFieldAccess ? JsfForm.guessField(m[j]) : m[j];
+//                if (f != null) {
+//                    for (Iterator it = f.getAnnotations().iterator(); it.hasNext();) {
+//                        Annotation ann = (Annotation) it.next();
+//                        if (ann != null) {
+//                            String annName = ann.getType().getName();
+//                            if ("javax.persistence.Id".equals(annName) ||
+//                                    "javax.persistence.EmbeddedId".equals(annName)) {
+//                                return m[j];
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//        ErrorManager.getDefault().log(ErrorManager.WARNING, "Cannot find ID getter in class: " + jc.getName());
+//        return null;
+//    }
     
     public String getVariable() {
         return variable;

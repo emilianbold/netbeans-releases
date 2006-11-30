@@ -19,12 +19,14 @@
 
 package org.netbeans.modules.web.jsf.refactoring;
 
+import java.util.logging.Logger;
+import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.openide.ErrorManager;
-
+//TODO: RETOUCHE
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
-import org.netbeans.modules.refactoring.api.MoveClassRefactoring;
+//import org.netbeans.modules.refactoring.api.MoveClassRefactoring;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
-import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
+//import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
@@ -36,7 +38,7 @@ import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
 
 public class JSFRefactoringFactory implements RefactoringPluginFactory {
     
-    private static ErrorManager err = ErrorManager.getDefault().getInstance("org.netbeans.modules.web.jsf.refactoring");   // NOI18N
+    private static final Logger LOGGER = Logger.getLogger(JSFRefactoringFactory.class.getName());
 
     /** Creates a new instance of J2EERefactoringFactory */
     public JSFRefactoringFactory() { }
@@ -49,23 +51,25 @@ public class JSFRefactoringFactory implements RefactoringPluginFactory {
      */
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
 
-        err.log("Create instance called: " + refactoring);
+        LOGGER.fine("Create instance called: " + refactoring);
         if (refactoring instanceof RenameRefactoring) {
-            err.log("Rename refactoring");
+            LOGGER.fine("Rename refactoring");
             return new JSFRenamePlugin((RenameRefactoring) refactoring);
         }
-        if (refactoring instanceof WhereUsedQuery) {
-            err.log("Where used refactoring");
-            return new JSFWhereUsedPlugin((WhereUsedQuery)refactoring);
-        }
-        if (refactoring instanceof MoveClassRefactoring) {
-            err.log("Move class refactoring (also rename package is move class refactoring)");
-            return new JSFMoveClassPlugin((MoveClassRefactoring)refactoring);
-        }
-        if (refactoring instanceof SafeDeleteRefactoring) {
-            err.log("Safe delete refactoring");
-            return new JSFSafeDeletePlugin((SafeDeleteRefactoring)refactoring);
-        }
+        //TODO: RETOUCHE
+//        This refactoring deosn't work, because there is NPE during creating the ui tree. 
+//        if (refactoring instanceof WhereUsedQuery) {
+//            LOGGER.fine("Where used refactoring");
+//            return new JSFWhereUsedPlugin((WhereUsedQuery)refactoring);
+//        }
+//        if (refactoring instanceof MoveClassRefactoring) {
+//            err.log("Move class refactoring (also rename package is move class refactoring)");
+//            return new JSFMoveClassPlugin((MoveClassRefactoring)refactoring);
+//        }
+//        if (refactoring instanceof SafeDeleteRefactoring) {
+//            err.log("Safe delete refactoring");
+//            return new JSFSafeDeletePlugin((SafeDeleteRefactoring)refactoring);
+//        }
         return null;
     }
 }

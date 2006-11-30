@@ -32,14 +32,14 @@ import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.Method;
+//import org.netbeans.jmi.javamodel.JavaClass;
+//import org.netbeans.jmi.javamodel.Method;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.core.syntax.ELLayerTokenContext;
 import org.netbeans.modules.web.core.syntax.ELTokenContext;
 import org.netbeans.modules.web.core.syntax.JspSyntaxSupport;
-import org.netbeans.modules.web.core.syntax.completion.JMIUtil;
+//import org.netbeans.modules.web.core.syntax.completion.JMIUtil;
 import org.netbeans.modules.web.core.syntax.completion.JspCompletionItem;
 import org.netbeans.modules.web.jsf.config.model.ManagedBean;
 import org.netbeans.spi.editor.completion.*;
@@ -98,7 +98,8 @@ public class JSFELCompletionProvider implements CompletionProvider{
                         }
                         break;
                     case JSFELExpression.EL_JSF_BEAN:
-                        JavaClass mbean = elExpr.getBean(elExpr.getExpression());
+//TODO: RETOUCHE                        
+/*                        JavaClass mbean = elExpr.getBean(elExpr.getExpression());
                         // add property
                         Iterator iter = elExpr.getProperties(elExpr.getExpression(), mbean).iterator();
                         while (iter.hasNext()) {
@@ -113,7 +114,7 @@ public class JSFELCompletionProvider implements CompletionProvider{
                                 if (name.startsWith(elExpr.getReplace()))
                                     complItems.add(new JSFResultItem.JSFMethod(name, (String)iter.next()));
                             }
-                        }
+                        }*/
                         break;
                 }
                 for (int i = 0; i < complItems.size(); i++)

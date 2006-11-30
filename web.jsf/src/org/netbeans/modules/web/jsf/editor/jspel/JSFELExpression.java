@@ -24,14 +24,14 @@ import java.util.List;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.editor.TokenItem;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.Method;
+//import org.netbeans.jmi.javamodel.JavaClass;
+//import org.netbeans.jmi.javamodel.Method;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.core.syntax.ELTokenContext;
 import org.netbeans.modules.web.core.syntax.JspSyntaxSupport;
 import org.netbeans.modules.web.core.syntax.completion.ELExpression;
-import org.netbeans.modules.web.core.syntax.completion.JMIUtil;
+//import org.netbeans.modules.web.core.syntax.completion.JMIUtil;
 import org.netbeans.modules.web.jsf.config.model.ManagedBean;
 import org.openide.loaders.DataObject;
 
@@ -84,15 +84,15 @@ public class JSFELExpression extends ELExpression{
         }
         return value;
     }
-    
-    public JavaClass getBean(String elExp){
+//TODO: RETOUCHE    
+    /*public JavaClass getBean(String elExp){
         JavaClass javaClass = null;
         DataObject obj = NbEditorUtilities.getDataObject(sup.getDocument());
         
         if (elExp != null && !elExp.equals("") && obj != null){
             if (elExp.indexOf('.')> -1){
                 String beanName = elExp.substring(0,elExp.indexOf('.'));
-                List /*<JSFBean>*/beans = JSFBeanCache.getBeans(wm);
+                List <JSFBean>beans = JSFBeanCache.getBeans(wm);
                 ManagedBean bean;
                 for (int i = 0; i < beans.size(); i++) {
                     bean = (ManagedBean) beans.get(i);
@@ -105,8 +105,9 @@ public class JSFELExpression extends ELExpression{
         }
         return javaClass;
     }
-    
-    public List /*<String>*/ getMethods(String elExp, JavaClass bean){
+  */  
+    //TODO: RETOUCHE
+    /*public List <String> getMethods(String elExp, JavaClass bean){
         List methodList = new ArrayList();
         JavaClass javaClass = findLastJavaClass(elExp, bean);
         
@@ -126,12 +127,13 @@ public class JSFELExpression extends ELExpression{
             }
         }
         return methodList;
-    }
+    }*/
     
+//TODO: RETOUCHE
     /*  Returns a JMI object which corresponds to the property in the source file. 
      */
-    public Object getMethodDeclaration (String elExp, JavaClass bean){
-        JavaClass javaClass = findLastJavaClass(elExp, bean);;
+    /*public Object getMethodDeclaration (String elExp, JavaClass bean){
+      JavaClass javaClass = findLastJavaClass(elExp, bean);;
         String method = null;
         if (elExp.lastIndexOf('.') > -1)
             method = elExp.substring(elExp.lastIndexOf('.')+1);
@@ -146,5 +148,5 @@ public class JSFELExpression extends ELExpression{
             }
         }
         return null;
-    }
+    }*/
 }
