@@ -25,13 +25,18 @@
     
     <target name="all" depends="init,clean,build,release"/>
     
-    <target name="init" depends="-init"/>
+    <target name="init" depends="-init">
+        <evaluate property="engine.jar.file"/>
+    </target>
     
     <target name="clean" depends="init,-clean"/>
     
     <target name="build" depends="init,-build"/>
     
-    <target name="release" depends="init,build"/>
+    <target name="release" depends="init,build">
+        <update-engine url="${release.url}"
+                       archive="${work.dir}/${engine.jar.file}"/>
+    </target>
     
     <!-- =======================================================================
         Default Target

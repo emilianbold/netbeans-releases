@@ -47,8 +47,7 @@ public class RunCommand extends HttpServlet {
         UPLOADS.mkdirs();
     }
     
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String command  = (String) request.getAttribute("command");
         
         String registry = null;
@@ -56,23 +55,26 @@ public class RunCommand extends HttpServlet {
         String version  = null;
         File   archive  = null;
         
-        if (isMultiPartFormData(request)) {
-            Map<String, Object> parameters = getParameters(request);
-            
-            registry = (String) parameters.get("registry");
-            
-            uid      = (String) parameters.get("uid");
-            version  = (String) parameters.get("version");
-            
-            archive  = (File) parameters.get("archive");
-        } else {
-            registry = request.getParameter("registry");
-            
-            uid      = request.getParameter("uid");
-            version  = request.getParameter("version");
-        }
-        
         try {
+            if (isMultiPartFormData(request)) {
+                Map<String, Object> parameters = getParameters(request);
+                
+                registry = (String) parameters.get("registry");
+                
+                uid      = (String) parameters.get("uid");
+                version  = (String) parameters.get("version");
+                
+                archive  = (File) parameters.get("archive");
+            } else {
+                registry = request.getParameter("registry");
+                
+                uid      = request.getParameter("uid");
+                version  = request.getParameter("version");
+            }
+            
+            final String prefix = getHostUrl(request) +
+                    "/nbi/get-file?registry=" + registry + "&file=";
+            
             if (command.equals("add-registry")) {
                 registryManager.addRegistry(registry);
             }
@@ -86,15 +88,7 @@ public class RunCommand extends HttpServlet {
             }
             
             if (command.equals("update-component")) {
-                URL    url    = new URL(request.getRequestURL().toString());
-                String string = url.toString();
-                
-                String prefix = string.substring(0,
-                        string.indexOf(url.getFile())) +
-                        "/nbi/get-file?registry=" + registry + "&file=";
-                
-                registryManager.updateComponent(registry, archive, uid, version,
-                        prefix);
+                registryManager.updateComponent(registry, archive, uid, version, prefix);
             }
             
             if (command.equals("remove-component")) {
@@ -102,15 +96,7 @@ public class RunCommand extends HttpServlet {
             }
             
             if (command.equals("update-group")) {
-                URL    url    = new URL(request.getRequestURL().toString());
-                String string = url.toString();
-                
-                String prefix = string.substring(0,
-                        string.indexOf(url.getFile())) +
-                        "/nbi/get-file?registry=" + registry + "&file=";
-                
-                registryManager.updateGroup(registry, archive, uid, version,
-                        prefix);
+                registryManager.updateGroup(registry, archive, uid, version, prefix);
             }
             
             if (command.equals("remove-group")) {
@@ -119,11 +105,10 @@ public class RunCommand extends HttpServlet {
             
             response.getWriter().write(
                     "The \"" + command + "\" command was successfully executed.");
-            
         } catch (IOException e) {
             e.printStackTrace(new PrintWriter(response.getWriter()));
             
-//            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
         
         response.getWriter().close();
@@ -148,7 +133,7 @@ public class RunCommand extends HttpServlet {
         final String              boundary    = getBoundary(request);
         final String              endBoundary = boundary + "--";
         
-        byte[]       buffer    = new byte[boundary.length() * 2];
+        byte[]       buffer    = new byte[boundary.length() + 102400];
         byte[]       remainder = null;
         OutputStream output    = null;
         String       name      = null;

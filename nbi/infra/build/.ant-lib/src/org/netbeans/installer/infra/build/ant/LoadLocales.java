@@ -68,7 +68,7 @@ public class LoadLocales extends Task {
                     props.load(new FileInputStream(file));
                     
                     for (Object key: props.keySet()) {
-                        getProject().setProperty("" + key + "." + locale, AntUtils.convertToAscii("" + props.get(key)));
+                        getProject().setProperty("" + key + "." + locale, AntUtils.toAscii("" + props.get(key)));
                     }
                 }
             }

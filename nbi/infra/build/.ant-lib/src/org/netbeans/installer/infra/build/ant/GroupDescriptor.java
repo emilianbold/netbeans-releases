@@ -103,7 +103,7 @@ public class GroupDescriptor extends Task {
         builder.append("</group>\n");
         
         try {
-            AntUtils.writeFile(new File(file), builder);
+            AntUtils.write(new File(file), builder);
         } catch (IOException e) {
             throw new BuildException(e);
         }

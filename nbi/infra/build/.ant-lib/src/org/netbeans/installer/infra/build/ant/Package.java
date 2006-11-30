@@ -162,7 +162,7 @@ public class Package extends Task {
                 output.putNextEntry(jarEntry);
                 
                 fis = new FileInputStream(child);
-                AntUtils.copyStream(fis, output);
+                AntUtils.copy(fis, output);
                 fis.close();
             }
             
@@ -202,7 +202,7 @@ public class Package extends Task {
                 this.jarFile       = AntUtils.isJarFile(file);
                 if (jarFile) {
                     this.packedJarFile = false; // we cannot determine this
-                    this.signedJarFile = AntUtils.isSignedJarFile(file);
+                    this.signedJarFile = AntUtils.isSigned(file);
                 }
                 
                 this.lastModified  = file.lastModified();
