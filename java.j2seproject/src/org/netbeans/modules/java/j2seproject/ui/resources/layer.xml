@@ -96,13 +96,10 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="Run.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.j2seproject.ui.customizer.J2SECompositePanelProvider.createRun"/>
                 </file>
-                <attr name="Run.instance/WebServiceCategory" boolvalue="true"/>
-                <folder name="WebServiceCategory">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.j2seproject.ui.customizer.Bundle"/>
-                    <file name="Client.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.j2seproject.ui.customizer.J2SECompositePanelProvider.createWebServiceClients"/>
-                    </file>
-                </folder>
+                <attr name="Run.instance/Client.instance" boolvalue="true"/>
+                <file name="Client.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.j2seproject.ui.customizer.J2SECompositePanelProvider.createWebServiceClients"/>
+                </file>
             </folder>
             
             <folder name="Nodes">
