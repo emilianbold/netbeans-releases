@@ -177,6 +177,8 @@ public class Utilities {
     
     public static List<String> varNamesSuggestions(TypeMirror type, String prefix, Types types, Elements elements, Iterable<? extends Element> locals, boolean isConst) {
         List<String> result = new ArrayList<String>();
+        if (type == null)
+            return result;
         List<String> vnct = varNamesForType(type, types, elements);
         if (isConst) {
             List<String> ls = new ArrayList<String>(vnct.size());
