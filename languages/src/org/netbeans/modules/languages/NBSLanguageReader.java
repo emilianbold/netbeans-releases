@@ -273,7 +273,7 @@ public class NBSLanguageReader {
         Object      feature
     ) throws ParseException {
         if (Language.ACTION.equals (featureName)) {
-            if (identifier != null)
+            if (identifier == null)
                 throw new ParseException ("Syntax error.");
             if (!(feature instanceof Map))
                 throw new ParseException ("Syntax error.");

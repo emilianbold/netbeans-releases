@@ -203,6 +203,27 @@ public class LanguagesManager {
             ErrorManager.getDefault ().notify (ex);
         }
         
+        // init actions
+        List[] actionsList = (List[])l.getProperty(l.getMimeType(), Language.ACTION);
+        if (actionsList != null && actionsList[0] != null) {
+            for (Iterator iter = actionsList[0].iterator(); iter.hasNext(); ) {
+                Evaluator[] evals = (Evaluator[]) iter.next();
+                try {
+                    String actionName = (String) evals[0].evaluate();
+                    String performer = ((Evaluator.Method)evals[1]).getMethodName();
+                    String enabler = evals[2] instanceof Evaluator.Method ? 
+                        ((Evaluator.Method)evals[2]).getMethodName() : null;
+                    FileObject fobj = FileUtil.createData (root, 
+                            "Popup/" + spacesToDashes(actionName) + ".instance"); // NOI18N
+                    fobj.setAttribute("instanceCreate", new ActionCreator(new Object[] {
+                        actionName, performer, enabler})); // NOI18N
+                    fobj.setAttribute("instanceClass", "org.netbeans.modules.languages.GenericAction"); // NOI18N
+                } catch (IOException ex) {
+                    ErrorManager.getDefault ().notify (ex);
+                }
+            }
+        }
+        
         // init navigator
         if (l.supportsFeature (Language.NAVIGATOR)) {
             String foldFileName = "Navigator/Panels/" + l.getMimeType () + 
@@ -291,6 +312,15 @@ public class LanguagesManager {
         colorsMap.put (color, sas);
     }
     
+    private String spacesToDashes(String text) {
+        StringBuffer buf = new StringBuffer();
+        int length = text.length();
+        for (int x = 0; x < length; x++) {
+            char c = text.charAt(x);
+            buf.append(Character.isWhitespace(c) ? '_' : c);
+        }
+        return buf.toString();
+    }
     
     // innerclasses ............................................................
     
