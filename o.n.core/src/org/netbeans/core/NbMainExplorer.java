@@ -27,6 +27,8 @@ import java.util.*;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 
 import javax.swing.*;
 import javax.swing.event.*;
@@ -451,7 +453,7 @@ public final class NbMainExplorer extends CloneableTopComponent {
         /** composited view */
         protected TreeView view;
         /** listeners to the root context and IDE settings */
-        private PropertyChangeListener weakRcL, weakIdeL;
+        private PropertyChangeListener weakRcL;
         private NodeListener weakNRcL;
         private IDESettings ideSettings;
 
@@ -467,13 +469,17 @@ public final class NbMainExplorer extends CloneableTopComponent {
         public ExplorerTab () {
             super();
             // complete initialization of composited explorer actions
-            ideSettings = IDESettings.findObject(IDESettings.class, true);
+            ideSettings = IDESettings.getInstance();
             
             getActionMap().put("delete", ExplorerUtils.actionDelete(getExplorerManager(), ideSettings.getConfirmDelete ())); 
             
-            // attach listener to the changes of IDE settings
-            weakIdeL = WeakListeners.propertyChange(rcListener(), ideSettings);
-            ideSettings.addPropertyChangeListener(weakIdeL);
+            IDESettings.getPreferences().addPreferenceChangeListener(new PreferenceChangeListener() {
+                public void preferenceChange(PreferenceChangeEvent evt) {
+                    if (IDESettings.PROP_CONFIRM_DELETE.equals(evt.getKey())) {
+                        getActionMap().put("delete", ExplorerUtils.actionDelete(getExplorerManager(), ideSettings.getConfirmDelete ())); 
+                    }
+                }
+            });
         }
         
         /** Overriden to explicitely set persistence type of ExplorerTab
@@ -709,11 +715,6 @@ public final class NbMainExplorer extends CloneableTopComponent {
             public void propertyChange (PropertyChangeEvent evt) {
                 String propName = evt.getPropertyName();
                 Object source = evt.getSource();
-                if (source instanceof IDESettings) {
-                    // possible change in confirm delete settings
-                    getActionMap().put("delete", ExplorerUtils.actionDelete(getExplorerManager(), ((IDESettings)source).getConfirmDelete())); 
-                    return;
-                }
                 // root context node change
                 final Node n = (Node)source;
                 if (Node.PROP_DISPLAY_NAME.equals(propName) ||

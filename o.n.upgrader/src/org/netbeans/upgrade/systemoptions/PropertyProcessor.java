@@ -39,6 +39,7 @@ abstract class PropertyProcessor  {
         registerPropertyProcessor(new ListProcessor());//ProjectUISettings             
         registerPropertyProcessor(new URLProcessor());//ProjectUISettings             
         registerPropertyProcessor(new ColorProcessor());//FormLoaderSettings
+        registerPropertyProcessor(new StringPropertyProcessor());//ProxySettings
     }
     
 

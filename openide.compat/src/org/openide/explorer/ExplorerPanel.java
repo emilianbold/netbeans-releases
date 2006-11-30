@@ -22,6 +22,7 @@ import org.netbeans.core.IDESettings;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.WeakListeners;
 import org.openide.util.io.*;
 import org.openide.windows.TopComponent;
@@ -252,16 +253,14 @@ public class ExplorerPanel extends TopComponent implements ExplorerManager.Provi
     * @param confirmDelete <code>true</code> to confirm, <code>false</code> to delete at once
     */
     public static void setConfirmDelete(boolean confirmDelete) {
-        IDESettings ide = (IDESettings)IDESettings.findObject(IDESettings.class, true);
-        ide.setConfirmDelete(confirmDelete);
+        NbPreferences.root().node("/org/netbeans/core").putBoolean("confirmDelete",confirmDelete);//NOI18N
     }
 
     /** Are deletions confirmed on all Explorer panels?
     * @return <code>true</code> if they must be confirmed
     */
     public static boolean isConfirmDelete() {
-        IDESettings ide = (IDESettings)IDESettings.findObject(IDESettings.class, true);
-        return ide.getConfirmDelete();
+        return NbPreferences.root().node("/org/netbeans/core").getBoolean("confirmDelete",true);//NOI18N
     }
 
     /** Stores the manager */

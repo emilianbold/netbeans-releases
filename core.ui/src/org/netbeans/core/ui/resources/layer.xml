@@ -313,10 +313,6 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="helpID" stringvalue="org.netbeans.core.services.Browsers"/>
         </folder>
         
-        <file name="org-netbeans-core-IDESettings.settings" url="IDESettings.settings">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/ideSettings.gif"/>
-        </file>
         
         <file name="org-openide-text-PrintSettings.settings" url="PrintSettings.settings">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
@@ -365,10 +361,10 @@ Microsystems, Inc. All Rights Reserved.
                         <attr name="originalFile" stringvalue="Services/org-openide-text-PrintSettings.settings"/>
                     </file>
                     
-                    <file name="org-netbeans-core-IDESettings.shadow">
-                        <attr name="originalFile" stringvalue="Services/org-netbeans-core-IDESettings.settings"/>
+                    <file name="org-netbeans-core-IDESettingsNode.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.core.IDESettings.createViewNode"/>
                     </file>
-                    
+                                        
                     <file name="MIMEResolver.shadow">
                         <attr name="originalFile" stringvalue="Services/MIMEResolver"/>
                     </file>

@@ -19,20 +19,18 @@
 
 package org.netbeans.modules.masterfs;
 
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import org.netbeans.spi.queries.VisibilityQueryImplementation;
 import org.openide.filesystems.FileObject;
-import org.openide.options.SystemOption;
-import org.openide.util.Lookup;
-import org.openide.util.SharedClassObject;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
-import org.openide.util.Exceptions;
+import org.openide.util.NbPreferences;
 
 // XXX - one would expect this class in core but there is problem that 
 //core can't depened on project/queries at the moment 
@@ -47,7 +45,6 @@ import org.openide.util.Exceptions;
  */ 
 public class GlobalVisibilityQueryImpl implements VisibilityQueryImplementation {
     static GlobalVisibilityQueryImpl INSTANCE;
-    private SystemOption ideSettings;    
     private final List/*<ChangeListener>*/ listeners = new ArrayList();
     
     /**
@@ -61,6 +58,10 @@ public class GlobalVisibilityQueryImpl implements VisibilityQueryImplementation 
         INSTANCE = this;
     }
 
+    private static Preferences getPreferences() {
+        return NbPreferences.root().node("/org/netbeans/core");
+    }
+    
     public boolean isVisible(FileObject file) {
         return isVisible(file.getNameExt());
     }
@@ -109,38 +110,16 @@ public class GlobalVisibilityQueryImpl implements VisibilityQueryImplementation 
     }
 
     protected String getIgnoredFiles() {
-        String retVal = "";//NOI18N
-        try {
-            if (ideSettings == null) {
-                ClassLoader l = (ClassLoader) Lookup.getDefault().lookup(ClassLoader.class);
-                if (l == null) {
-                    l = getClass().getClassLoader();
+        String retval =  getPreferences().get(PROP_IGNORED_FILES, "^(CVS|SCCS|vssver\\.scc|#.*#|%.*%|\\.(cvsignore|svn|DS_Store)|_svn)$|~$|^\\..*$");//NOI18N;
+        getPreferences().addPreferenceChangeListener(new PreferenceChangeListener() {
+            public void preferenceChange(PreferenceChangeEvent evt) {
+                if (PROP_IGNORED_FILES.equals(evt.getKey())) {
+                    ignoreFilesPattern = null;
+                    fireChange();
                 }
-                Class clazz = l.loadClass("org.netbeans.core.IDESettings"); // NOI18N
-                ideSettings = (SystemOption) SharedClassObject.findObject(clazz, true);
-                if (ideSettings != null) {
-                    mIgnoredFiles = clazz.getMethod("getIgnoredFiles", null); // NOI18N
-                    ideSettings.addPropertyChangeListener(new PropertyChangeListener() {
-                        public void propertyChange(PropertyChangeEvent evt) {
-                            if (PROP_IGNORED_FILES.equals(evt.getPropertyName())) {
-                                ignoreFilesPattern = null;
-                                fireChange();
-                            }
-                        }
-                    });
-                }
+                
             }
-            retVal = (ideSettings != null && mIgnoredFiles != null) ? 
-                    (String) mIgnoredFiles.invoke(ideSettings, new Object[0]) : "";//NOI18N
-        } catch (ClassNotFoundException e) {
-            // OK, e.g. in a unit test.
-            ideSettings = null;
-        } catch (Exception e) {
-            ideSettings = null;
-            Exceptions.printStackTrace(e);
-        }
-        return retVal;
-    }
-
-
+        });                
+        return retval;
+    }    
 }

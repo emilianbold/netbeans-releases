@@ -45,10 +45,6 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
                                                "getHomePage", "setHomePage"), // NOI18N
                        new PropertyDescriptor (IDESettings.PROP_SHOW_FILE_EXTENSIONS, IDESettings.class,
                                                "getShowFileExtensions", "setShowFileExtensions"), // NOI18N
-                       new PropertyDescriptor (IDESettings.PROP_MODULES_SORT_MODE, IDESettings.class,
-                                               "getModulesSortMode", "setModulesSortMode"), // NOI18N
-                       new PropertyDescriptor (IDESettings.PROP_WWWBROWSER, IDESettings.class, 
-                                               "getWWWBrowser", "setWWWBrowser"), // NOI18N
                        new PropertyDescriptor (IDESettings.PROP_UIMODE, IDESettings.class, 
                                                "getUIMode", "setUIMode"), // NOI18N
                        new PropertyDescriptor (IDESettings.PROP_SHOW_TOOLTIPS_IN_IDE, IDESettings.class,
@@ -64,20 +60,16 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
             desc[1].setShortDescription (NbBundle.getMessage (IDESettingsBeanInfo.class, "HINT_HOME_PAGE"));
             
             desc[2].setHidden (true);
-            desc[3].setHidden (true);
 
-            desc[4].setDisplayName (NbBundle.getMessage (IDESettingsBeanInfo.class, "PROP_WWW_BROWSER"));
-            desc[4].setShortDescription (NbBundle.getMessage (IDESettingsBeanInfo.class, "HINT_WWW_BROWSER"));
+            desc[3].setDisplayName(bundleUIMode.getString("PROP_UI_Mode"));
+            desc[3].setShortDescription(bundleUIMode.getString("HINT_UI_Mode"));
+            desc[3].setPropertyEditorClass(UIModePropertyEditor.class);
 
-            desc[5].setDisplayName(bundleUIMode.getString("PROP_UI_Mode"));
-            desc[5].setShortDescription(bundleUIMode.getString("HINT_UI_Mode"));
-            desc[5].setPropertyEditorClass(UIModePropertyEditor.class);
-
-            desc[6].setDisplayName (NbBundle.getMessage (IDESettingsBeanInfo.class, "PROP_SHOW_TOOLTIPS_IN_IDE"));
-            desc[6].setShortDescription (NbBundle.getMessage (IDESettingsBeanInfo.class, "HINT_SHOW_TOOLTIPS_IN_IDE"));
+            desc[4].setDisplayName (NbBundle.getMessage (IDESettingsBeanInfo.class, "PROP_SHOW_TOOLTIPS_IN_IDE"));
+            desc[4].setShortDescription (NbBundle.getMessage (IDESettingsBeanInfo.class, "HINT_SHOW_TOOLTIPS_IN_IDE"));
             
-            desc[7].setDisplayName (NbBundle.getMessage (IDESettingsBeanInfo.class, "PROP_ignoredFiles"));
-            desc[7].setShortDescription (NbBundle.getMessage (IDESettingsBeanInfo.class,"HINT_ignoredFiles"));            
+            desc[5].setDisplayName (NbBundle.getMessage (IDESettingsBeanInfo.class, "PROP_ignoredFiles"));
+            desc[5].setShortDescription (NbBundle.getMessage (IDESettingsBeanInfo.class,"HINT_ignoredFiles"));            
             
             return desc;
         } catch (IntrospectionException ex) {

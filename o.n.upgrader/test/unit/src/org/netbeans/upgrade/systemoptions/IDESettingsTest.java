@@ -36,12 +36,13 @@ public class IDESettingsTest extends BasicTestForImport {
             "confirmDelete",
             "homePage",
             "modulesSortMode",
+            "proxyNonProxyHosts",
             "proxyType",
             "showFileExtensions",
             "showToolTipsInIDE",
             "useProxy",
-            "userProxyHost",
-            "userProxyPort"
+            "proxyHttpHost",
+            "proxyHttpPort"
         });
     }
     
@@ -80,11 +81,11 @@ public class IDESettingsTest extends BasicTestForImport {
     
     public void testProxyType() throws Exception{
         //java.lang.Integer
-        assertProperty("proxyType","0");
+        assertProperty("proxyType","1");
     }
     public void testShowFileExtensions() throws Exception{
         //java.lang.Boolean
-        assertProperty("showFileExtensions","true");
+        assertProperty("showFileExtensions","false");
     }
     
     public void testShowToolTipsInIDE() throws Exception{
@@ -97,13 +98,18 @@ public class IDESettingsTest extends BasicTestForImport {
         assertProperty("useProxy","false");
     }
     
-    public void testUserProxyHost() throws Exception{
+    public void testProxyHttpHost() throws Exception{
         //java.lang.String
-        assertProperty("userProxyHost","");
+        assertProperty("proxyHttpHost","");
     }
     
-    public void testUserProxyPort() throws Exception{
+    public void testProxyHttpPort() throws Exception{
         //java.lang.String
-        assertProperty("userProxyPort","0");
+        assertProperty("proxyHttpPort","");
     }
+
+    public void testProxyNonProxyHosts() throws Exception{
+        //java.lang.String
+        assertProperty("proxyNonProxyHosts","localhost|127.0.0.1");
+    }        
 }

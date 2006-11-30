@@ -362,7 +362,7 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
     void revalidateWindow () {
         // PENDING
         toolbarPanel().revalidate();
-        IDESettings settings = (IDESettings)IDESettings.findObject(IDESettings.class, true);
+        IDESettings settings = IDESettings.getInstance();
         int uiMode = settings.getUIMode();
         if (uiMode == 1) { // perform in SDI only
             java.awt.Window w = SwingUtilities.windowForComponent(toolbarPanel());

@@ -41,6 +41,10 @@ Microsystems, Inc. All Rights Reserved.
 
         <folder name="Hidden">
             <attr name="hidden" boolvalue="true" />
+            <file name="HtmlBrowserFactoryEditorForGeneralOptionsPanel.instance">
+                <attr name="instanceOf" stringvalue="org.netbeans.beaninfo.editors.HtmlBrowser$FactoryEditor"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.core.IDESettings.createHtmlBrowserFactoryEditor"/>
+            </file>                                
         </folder>
     </folder> 
 

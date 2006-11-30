@@ -23,7 +23,6 @@ import java.awt.Dialog;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URL;
@@ -33,6 +32,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
@@ -448,7 +449,7 @@ public abstract class NbTopManager {
     public static class NbBrowser {
         
         private HtmlBrowserComponent brComp;
-        private PropertyChangeListener idePCL;
+        private PreferenceChangeListener idePCL;
         private static Lookup.Result factoryResult;
         
         static {            
@@ -462,8 +463,7 @@ public abstract class NbTopManager {
         }
         
         public NbBrowser() {
-            IDESettings settings = IDESettings.findObject(IDESettings.class, true);
-            HtmlBrowser.Factory browser = settings.getWWWBrowser();
+            HtmlBrowser.Factory browser = IDESettings.getWWWBrowser();
             if (browser == null) {
                 // Fallback.
                 browser = new SwingBrowser();
@@ -518,20 +518,19 @@ public abstract class NbTopManager {
             }
             try {                
                 // listen on preffered browser change
-                idePCL = new PropertyChangeListener() {
-
-                    public void propertyChange(PropertyChangeEvent evt) {
-                        if (IDESettings.PROP_WWWBROWSER.equals(evt.getPropertyName())) {
+                idePCL = new PreferenceChangeListener() {
+                    public void preferenceChange(PreferenceChangeEvent evt) {
+                        if (IDESettings.PROP_WWWBROWSER.equals(evt.getKey())) {
                             ((NbURLDisplayer) HtmlBrowser.URLDisplayer.getDefault()).htmlViewer = null;
                             if (idePCL != null) {
-                                (IDESettings.findObject(IDESettings.class, true)).removePropertyChangeListener(idePCL);
+                                IDESettings.getPreferences().removePreferenceChangeListener(idePCL);
                                 idePCL = null;
                                 brComp = null;
                             }
                         }
                     }
                 };
-                (IDESettings.findObject(IDESettings.class, true)).addPropertyChangeListener(idePCL);
+                IDESettings.getPreferences().addPreferenceChangeListener(idePCL);
             }
             catch (Exception ex) {
                 Exceptions.printStackTrace(ex);

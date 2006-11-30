@@ -23,6 +23,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import org.openide.awt.HtmlBrowser;
@@ -32,19 +33,19 @@ import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
-import org.openide.options.SystemOption;
+import org.openide.nodes.BeanNode;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /** Global IDE settings.
  *
  * @author Ian Formanek
  */
-public class IDESettings extends SystemOption {
-    /** generated Serialized Version UID */
-    static final long serialVersionUID = 801136840705717911L;
+public class IDESettings  {    
+    private static final IDESettings INSTANCE = new IDESettings();
     
     /** showToolTipsInIDE property name */
     public static final String PROP_SHOW_TOOLTIPS_IN_IDE = "showToolTipsInIDE"; // NOI18N
@@ -54,8 +55,6 @@ public class IDESettings extends SystemOption {
     public static final String PROP_HOME_PAGE = "homePage"; // NOI18N
     /** show file extensions property name */
     public static final String PROP_SHOW_FILE_EXTENSIONS = "showFileExtensions"; // NOI18N
-    /** sorting style of Modules node */
-    public static final String PROP_MODULES_SORT_MODE = "modulesSortMode"; // NOI18N
     /** Web Browser prefered by user */
     public static final String PROP_WWWBROWSER = "WWWBrowser"; // NOI18N
     /** UI Mode */
@@ -68,35 +67,19 @@ public class IDESettings extends SystemOption {
      * in module org.netbeans.modules.masterfs.
      *
      */
-    public static final String PROP_IGNORED_FILES = "IgnoredFiles"; // NOI18N
+    public static final String PROP_IGNORED_FILES = "IgnoredFiles"; // NOI18N    
     
-    public static final int MODULES_SORT_UNSORTED = 0;
-    public static final int MODULES_SORT_DISPLAYNAME = 1;
-    public static final int MODULES_SORT_CODENAME = 2;
-    public static final int MODULES_SORT_ENABLED = 3;
-    public static final int MODULES_SORT_URL = 4;
-    public static final int MODULES_SORT_CATEGORY = 5;
-    
+   
     // ------------------------------------------
     // properties
-    
-    private static boolean showToolTips = true;
-    private static boolean confirmDelete = true;
-    private static int modulesSortMode = MODULES_SORT_CATEGORY;
-    
-    private static int uiMode = 2; // MDI default
-    
-    /**
-     * GlobalVisibilityQueryImpl in module org.netbeans.modules.masterfs reads this property (hidden dependency).
-     */
-    private static String ignoredFiles = "^(CVS|SCCS|vssver\\.scc|#.*#|%.*%|\\.(cvsignore|svn|DS_Store)|_svn)$|~$|^\\..*$"; //NOI18N
-    
-    // do NOT use constructore for setting default values
-    protected void initialize () {
-        // Set default values of properties
-        super.initialize ();
-        putProperty (PROP_WWWBROWSER, "", false);
+            
+    public static IDESettings getInstance() {
+        return INSTANCE;
     }
+    
+    static Preferences getPreferences() {
+        return NbPreferences.forModule(IDESettings.class);
+    } 
     
     // ------------------------------------------
     // property access methods
@@ -109,51 +92,30 @@ public class IDESettings extends SystemOption {
             throw new AssertionError (e);
         }
     }
-    
-    public int getModulesSortMode () {
-        return modulesSortMode;
-    }
-    
-    public void setModulesSortMode (int nue) {
-        int oldValue = modulesSortMode;
-        modulesSortMode = nue;
-        firePropertyChange (PROP_MODULES_SORT_MODE, Integer.valueOf (oldValue), Integer.valueOf (nue));
-    }
-    
+            
     /** Getter for ShowToolTipsInIDE
      * @return true if dialog will be shown*/
     public boolean getShowToolTipsInIDE () {
-        return showToolTips;
+        return getPreferences().getBoolean(PROP_SHOW_TOOLTIPS_IN_IDE, true);
     }
     
     /** Setter for ShowToolTipsInIDE
      * @param value true if on the next start of corona the dialog will be shown
      *              false otherwise */
     public void setShowToolTipsInIDE (boolean value) {
-        if (showToolTips == value) return;
-        showToolTips = value;
-        javax.swing.ToolTipManager.sharedInstance ().setEnabled (value);
-        // fire the PropertyChange
-        firePropertyChange (PROP_SHOW_TOOLTIPS_IN_IDE,
-                !showToolTips ? Boolean.TRUE : Boolean.FALSE,
-                showToolTips ? Boolean.TRUE : Boolean.FALSE);
+        getPreferences().putBoolean(PROP_SHOW_TOOLTIPS_IN_IDE, value);
     }
     
     /** Getter for ConfirmDelete
      * @param true if the user should asked for confirmation of object delete, false otherwise */
     public boolean getConfirmDelete () {
-        return confirmDelete;
+        return getPreferences().getBoolean(PROP_CONFIRM_DELETE, true);
     }
     
     /** Setter for ConfirmDelete
      * @param value if true the user is asked for confirmation of object delete, not if false */
     public void setConfirmDelete (boolean value) {
-        if (value == confirmDelete) return;
-        Boolean oldValue = confirmDelete ? Boolean.TRUE : Boolean.FALSE;
-        confirmDelete = value;
-        
-        // fire the PropertyChange
-        firePropertyChange (PROP_CONFIRM_DELETE, oldValue, confirmDelete ? Boolean.TRUE : Boolean.FALSE);
+        getPreferences().putBoolean(PROP_CONFIRM_DELETE, value);
     }
     
     /** This method must be overriden. It returns display name of this options.
@@ -191,7 +153,6 @@ public class IDESettings extends SystemOption {
     public void setShowFileExtensions (boolean s) {
         boolean old = getShowFileExtensions ();
         DataNode.setShowFileExtensions (s);
-        firePropertyChange (PROP_SHOW_FILE_EXTENSIONS, Boolean.valueOf (old), Boolean.valueOf (s));
     }
     
     /** Getter for preffered web browser.
@@ -202,9 +163,9 @@ public class IDESettings extends SystemOption {
      * @return prefered browser,
      * may return null if it is not possible to get the browser
      */
-    public HtmlBrowser.Factory getWWWBrowser () {
+    public static HtmlBrowser.Factory getWWWBrowser () {
         try {
-            Object obj = getProperty (PROP_WWWBROWSER);
+            Object obj = getPreferences().get(PROP_WWWBROWSER, null);
             
             if (obj instanceof String && !"".equals (obj)) {
                 // use new style
@@ -263,21 +224,21 @@ public class IDESettings extends SystemOption {
      *
      * @param brow prefered browser capable of providing implementation
      */
-    public void setWWWBrowser (HtmlBrowser.Factory brow) {
+    public static void setWWWBrowser (HtmlBrowser.Factory brow) {
         try {
             if (brow == null) {
-                putProperty (PROP_WWWBROWSER, "", true);
+                getPreferences().put(PROP_WWWBROWSER, "");//NOI18N
                 return;
             }
             
             Lookup.Item<HtmlBrowser.Factory> item =
                     Lookup.getDefault ().lookupItem (new Lookup.Template<HtmlBrowser.Factory> (HtmlBrowser.Factory.class, null, brow));
             if (item != null) {
-                putProperty (PROP_WWWBROWSER, item.getId (), true);
+                getPreferences().put(PROP_WWWBROWSER, item.getId ());
             } else {
                 // strange
                 Logger.getLogger (IDESettings.class.getName ()).warning ("IDESettings: Cannot find browser in lookup");// NOI18N
-                putProperty (PROP_WWWBROWSER, "", true);
+                getPreferences().put(PROP_WWWBROWSER, "");//NOI18N
             }
         } catch (Exception ex) {
             Exceptions.printStackTrace (ex);
@@ -286,39 +247,45 @@ public class IDESettings extends SystemOption {
     
     /** Sets ui mode (MDI, SDI, Dialog SDI...) */
     public void setUIMode (int uiMode) {
-        if (this.uiMode == uiMode) {
-            return;
-        }
-        int oldValue = this.uiMode;
-        this.uiMode = uiMode;
-        firePropertyChange (PROP_UIMODE, Integer.valueOf (oldValue), Integer.valueOf (uiMode));
+        getPreferences().putInt(PROP_UIMODE, uiMode);
     }
     
     public int getUIMode () {
-        return uiMode;
+        return getPreferences().getInt(PROP_UIMODE, 2);
     }
     
     // PRIVATE METHODS
     
     public String getIgnoredFiles () {
-        return ignoredFiles;
+        return getPreferences().get(PROP_IGNORED_FILES, "^(CVS|SCCS|vssver\\.scc|#.*#|%.*%|\\.(cvsignore|svn|DS_Store)|_svn)$|~$|^\\..*$"); //NOI18N
     }
     
-    public void setIgnoredFiles (String ignoredFiles) throws IllegalArgumentException {
-        if (!this.ignoredFiles.equals (ignoredFiles)) {
-            try {
-                String oldIgnoredfiles = this.ignoredFiles;
-                Pattern.compile (ignoredFiles);
-                IDESettings.ignoredFiles = ignoredFiles;
-                firePropertyChange (PROP_IGNORED_FILES, oldIgnoredfiles, ignoredFiles);
-            } catch (PatternSyntaxException e) {
-                IllegalArgumentException iae = new IllegalArgumentException ();
-                iae.initCause ( e );
-                UIExceptions.annotateUser (iae, e.getMessage (),
-                        e.getLocalizedMessage (), null, null);
-                throw iae;
-            }
+    public void setIgnoredFiles(String ignoredFiles) throws IllegalArgumentException {
+        try {
+            Pattern.compile(ignoredFiles);
+            getPreferences().put(PROP_IGNORED_FILES, ignoredFiles); //NOI18N
+        } catch (PatternSyntaxException e) {
+            IllegalArgumentException iae = new IllegalArgumentException();
+            iae.initCause( e );
+            UIExceptions.annotateUser(iae, e.getMessage(),
+                    e.getLocalizedMessage(), null, null);
+            throw iae;
         }
+    }    
+
+    private static BeanNode createViewNode() throws java.beans.IntrospectionException {
+        return new BeanNode(IDESettings.getInstance());
+    }         
+
+    private static org.netbeans.beaninfo.editors.HtmlBrowser.FactoryEditor createHtmlBrowserFactoryEditor()  {
+        return new org.netbeans.beaninfo.editors.HtmlBrowser.FactoryEditor(){
+            public void setValue(Object value) {
+                setWWWBrowser((HtmlBrowser.Factory)value);
+            }
+            
+            public Object getValue() {
+                return getWWWBrowser();
+            }            
+        };
     }
-    
 }
