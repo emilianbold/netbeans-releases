@@ -61,7 +61,7 @@ public class ContainerManagedJTAInjectableInEJBTest extends EntityManagerGenerat
     }
     
     protected EntityManagerGenerationStrategy getStrategy(WorkingCopy workingCopy, TreeMaker make, ClassTree clazz, GenerationOptions options){
-        return new ContainerManagedJTAInjectableInEJB(workingCopy, make, clazz, options);
+        return new ContainerManagedJTAInjectableInEJB(workingCopy, make, clazz, null, options);
     }
 }
 

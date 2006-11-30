@@ -61,7 +61,7 @@ public class ContainerManagedJTANonInjectableInWebTest extends EntityManagerGene
     }
     
     protected EntityManagerGenerationStrategy getStrategy(WorkingCopy workingCopy, TreeMaker make, ClassTree clazz, GenerationOptions options){
-        return new ContainerManagedJTANonInjectableInWeb(workingCopy, make, clazz, options);
+        return new ContainerManagedJTANonInjectableInWeb(workingCopy, make, clazz, null, options);
     }
 }
 

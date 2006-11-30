@@ -1,16 +1,21 @@
 package org.netbeans.test;
 
 import java.util.*;
+import javax.annotation.Resource;
+import javax.persistence.PersistenceContext;
 
-@javax.persistence.PersistenceContext(name = "persistence/LogicalName", unitName = "puName")
+@PersistenceContext(name = "persistence/LogicalName", unitName = "")
 public class Test {
+@Resource
+private javax.transaction.UserTransaction utx;
 
 protected void create(Object object) {
     try {
         javax.naming.Context ctx = (javax.naming.Context) new javax.naming.InitialContext().lookup("java:comp/env");
-        javax.persistence.EntityManager em = (javax.persistence.EntityManager) ctx.lookup("persistence/LogicalName");
 
         utx.begin();
+        javax.persistence.EntityManager em = (javax.persistence.EntityManager) ctx.lookup("persistence/LogicalName");
+
         em.persist(object);
         utx.commit();
     }

@@ -1,19 +1,11 @@
 package org.netbeans.test;
 
 import java.util.*;
+import javax.persistence.EntityManager;
 
 public class Test {
-private javax.persistence.EntityManager em;
-
-@javax.annotations.PostConstruct
-public void init() {
-    em = emf.createEntityManager();
-}
-
-@javax.annotations.PreDestroy
-public void destroy() {
-    em.close();
-}
+@javax.persistence.PersistenceContext
+private EntityManager em;
 
 public void create(Object object) {
     em.persist(object);

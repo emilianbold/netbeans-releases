@@ -7,10 +7,11 @@ public class Test {
 public void create(Object object) {
     try {
         javax.naming.Context ctx = new javax.naming.InitialContext();
-        javax.persistence.EntityManager em = (javax.persistence.EntityManager) ctx.lookup("java:comp/env/persistence/LogicalName");
         javax.transaction.UserTransaction utx = (javax.transaction.UserTransaction) ctx.lookup("java:comp/env/UserTransaction");
 
         utx.begin();
+        javax.persistence.EntityManager em = (javax.persistence.EntityManager) ctx.lookup("java:comp/env/persistence/LogicalName");
+
         em.persist(object);
         utx.commit();
     }
