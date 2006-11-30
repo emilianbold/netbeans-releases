@@ -154,6 +154,10 @@ public class WorkingCopy extends CompilationController {
         t.apply(tree);
     }
     
+    ChangeSet getChangeSet() {
+        return changes;
+    }
+    
     /**
      * Replaces the original tree <code>oldTree</code> with the new one -
      * <code>newTree</code>. <code>null</code> values are not allowed.

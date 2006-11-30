@@ -20,6 +20,7 @@
 package org.netbeans.api.java.source;
 
 import com.sun.source.util.TreePathScanner;
+import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -148,6 +149,61 @@ import org.openide.util.Exceptions;
     
     private static EnumSet JAVA_JFO_KIND = EnumSet.of(Kind.CLASS, Kind.SOURCE);
         
+    
+    /**Resolve full qualified name in the given context. Adds import as necessary.
+     * Returns name that resolved to a given FQN in given context (either simple name
+     * or full qualified name). Handles import conflicts.
+     * 
+     * <b>Note:</b> after calling this method, it is not permitted to rewrite copy.getCompilationUnit().
+     * 
+     * @param copy WorkingCopy over which the method should work
+     * @param context in which the fully qualified should be resolved
+     * @param fqn the fully qualified name to resolve
+     * @return either a simple name or a FQN that will resolve to given fqn in given context
+     */
+    public static String resolveImport(WorkingCopy copy, TreePath context, String fqn) throws NullPointerException, IOException {
+        if (copy == null)
+            throw new NullPointerException();
+        if (context == null)
+            throw new NullPointerException();
+        if (fqn == null)
+            throw new NullPointerException();
+        
+        CompilationUnitTree cut = copy.getCompilationUnit();
+        CompilationUnitTree nue = (CompilationUnitTree) copy.getChangeSet().getChange(cut);
+        
+        cut = nue != null ? nue : cut;
+        
+        Scope scope = copy.getTrees().getScope(context);
+        int lastDot = fqn.lastIndexOf('.');
+        String simpleName = fqn.substring(lastDot != (-1) ? lastDot + 1 : 0);
+        
+        while (scope != null) {
+            for (TypeElement te : ElementFilter.typesIn(scope.getLocalElements())) {
+                if (simpleName.equals(te.getSimpleName().toString())) {
+                    //either a clash or already imported:
+                    if (fqn.equals(te.getQualifiedName().toString())) {
+                        return simpleName;
+                    } else {
+                        return fqn;
+                    }
+                }
+            }
+            
+            scope = scope.getEnclosingScope();
+        }
+        
+        //not imported/visible so far by any means:
+        copy.rewrite(copy.getCompilationUnit(), addImports(cut, Collections.singletonList(fqn), copy.getTreeMaker()));
+        
+        TypeElement te = copy.getElements().getTypeElement(fqn);
+        
+        if (te != null) {
+            ((JCCompilationUnit) copy.getCompilationUnit()).namedImportScope.enterIfAbsent((Symbol) te);
+        }
+        
+        return simpleName;
+    }
     
     /**
      *

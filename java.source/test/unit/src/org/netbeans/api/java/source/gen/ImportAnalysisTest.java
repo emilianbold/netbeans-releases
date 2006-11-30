@@ -20,6 +20,7 @@
 package org.netbeans.api.java.source.gen;
 
 import com.sun.source.tree.*;
+import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,6 +35,8 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.jackpot.transform.Transformer;
 import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.FileStateInvalidException;
@@ -543,6 +546,73 @@ public class ImportAnalysisTest extends GeneratorTest {
         }
         );
         assertFiles("testImportAddedAfterThrows.pass");
+    }
+    
+    public void testAddImportThroughMethod1() throws IOException {
+        process(
+            new MutableTransformer<Void, Object>() {
+                public Void visitMethod(MethodTree node, Object p) {
+                    if ("<init>".contentEquals(node.getName())) {
+                        WorkingCopy wc = getWorkingCopy();
+                        int offset = (int) (wc.getTrees().getSourcePositions().getStartPosition(wc.getCompilationUnit(), node) + 1);
+                        TreePath context = wc.getTreeUtilities().pathFor(offset);
+                        try {
+                            assertEquals("List", SourceUtils.resolveImport(wc, context, "java.util.List"));
+                            assertEquals("java.awt.List", SourceUtils.resolveImport(wc, context, "java.awt.List"));
+                        } catch (IOException e) {
+                            throw new IllegalStateException(e);
+                        }
+                    }
+                    return null;
+                }
+            }
+        );
+        assertFiles("testAddImportThroughMethod1.pass");
+    }
+    
+    public void testAddImportThroughMethod2() throws IOException {
+        process(
+            new MutableTransformer<Void, Object>() {
+                public Void visitMethod(MethodTree node, Object p) {
+                    if ("<init>".contentEquals(node.getName())) {
+                        WorkingCopy wc = getWorkingCopy();
+                        int offset = (int) (wc.getTrees().getSourcePositions().getStartPosition(wc.getCompilationUnit(), node) + 1);
+                        TreePath context = wc.getTreeUtilities().pathFor(offset);
+                        try {
+                            assertEquals("List", SourceUtils.resolveImport(wc, context, "java.util.List"));
+                            assertEquals("java.awt.List", SourceUtils.resolveImport(wc, context, "java.awt.List"));
+                        } catch (IOException e) {
+                            throw new IllegalStateException(e);
+                        }
+                    }
+                    return null;
+                }
+            }
+        );
+        assertFiles("testAddImportThroughMethod2.pass");
+    }
+    
+    public void testAddImportThroughMethod3() throws IOException {
+        process(
+            new MutableTransformer<Void, Object>() {
+                public Void visitMethod(MethodTree node, Object p) {
+                    if ("<init>".contentEquals(node.getName())) {
+                        WorkingCopy wc = getWorkingCopy();
+                        int offset = (int) (wc.getTrees().getSourcePositions().getStartPosition(wc.getCompilationUnit(), node) + 1);
+                        TreePath context = wc.getTreeUtilities().pathFor(offset);
+                        try {
+                            assertEquals("List", SourceUtils.resolveImport(wc, context, "java.util.List"));
+                            assertEquals("Map", SourceUtils.resolveImport(wc, context, "java.util.Map"));
+                            assertEquals("java.awt.List", SourceUtils.resolveImport(wc, context, "java.awt.List"));
+                        } catch (IOException e) {
+                            throw new IllegalStateException(e);
+                        }
+                    }
+                    return null;
+                }
+            }
+        );
+        assertFiles("testAddImportThroughMethod3.pass");
     }
     
     String getSourcePckg() {
