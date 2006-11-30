@@ -248,12 +248,12 @@ public class ClassFileUtil {
             {
 		assert type instanceof TypeVariable;
 		TypeVariable tr = (TypeVariable) type;
-		TypeMirror lowerBound = tr.getLowerBound();	//XXX: Upper bound
-		if (lowerBound.getKind() == TypeKind.NULL) {
+		TypeMirror upperBound = tr.getUpperBound();
+		if (upperBound.getKind() == TypeKind.NULL) {
 		    sb.append ("Ljava/lang/Object;");       // NOI18N
 		}
 		else {
-		    encodeType(lowerBound, sb);
+		    encodeType(upperBound, sb);
 		}
 		break;
             }
