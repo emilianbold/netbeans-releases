@@ -40,13 +40,15 @@ Microsystems, Inc. All Rights Reserved.
                         <release-version>1</release-version>
                     </run-dependency>
                 </dependency>
-<!--                <dependency>
-                    <code-name-base>org.netbeans.modules.java</code-name-base>
+                <dependency>
+                    <code-name-base>org.netbeans.api.progress</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.17</specification-version>
+                        <specification-version>1.9</specification-version>
                     </run-dependency>
-                </dependency> -->
+                </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.java.platform</code-name-base>
                     <build-prerequisite/>
@@ -260,7 +262,7 @@ Microsystems, Inc. All Rights Reserved.
                         <code-name-base>org.netbeans.api.progress</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
-<!--                    <test-dependency>
+                    <!--                    <test-dependency>
                         <code-name-base>org.netbeans.modules.javacore</code-name-base>
                         <compile-dependency/>
                     </test-dependency>-->
@@ -285,7 +287,7 @@ Microsystems, Inc. All Rights Reserved.
                         <code-name-base>org.openide.util</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
-<!--                    <test-dependency>
+                    <!--                    <test-dependency>
                         <code-name-base>org.netbeans.api.mdr</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
@@ -305,7 +307,7 @@ Microsystems, Inc. All Rights Reserved.
                         <code-name-base>org.openide.filesystems</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
-<!--                    <test-dependency>
+                    <!--                    <test-dependency>
                         <code-name-base>org.netbeans.modules.jmiutils</code-name-base>
                         <compile-dependency/>
                     </test-dependency>-->

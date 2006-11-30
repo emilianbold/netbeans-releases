@@ -37,6 +37,8 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.java.project.PackageDisplayUtils;
@@ -44,9 +46,9 @@ import org.netbeans.modules.java.project.JavaProjectSettings;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
 /**
@@ -124,17 +126,26 @@ public class PackageView {
      *       non null PackageItems will be created.
      */    
     static void findNonExcludedPackages( PackageViewChildren children, FileObject fo ) {
-        findNonExcludedPackages( children, null, fo, null );
+        ProgressHandle progress = ProgressHandleFactory.createHandle(NbBundle.getMessage(PackageView.class, "PackageView.find_packages_progress", FileUtil.getFileDisplayName(fo)));
+        progress.start(1000);
+        findNonExcludedPackages(children, null, fo, null, progress, 0, 1000);
+        progress.finish();
     }
     
     static void findNonExcludedPackages(Collection<PackageItem> target, FileObject fo, SourceGroup group) {
-        findNonExcludedPackages( null, target, fo, group );
+        findNonExcludedPackages(null, target, fo, group, null, 0, 0);
     }
      
     
-    private static void findNonExcludedPackages(PackageViewChildren children, Collection<PackageItem> target, FileObject fo, SourceGroup group) {
+    private static void findNonExcludedPackages(PackageViewChildren children, Collection<PackageItem> target, FileObject fo, SourceGroup group, ProgressHandle progress, int start, int end) {
         
         assert fo.isFolder() : "Package view only accepts folders"; // NOI18N
+        
+        if (progress != null) {
+            String path = FileUtil.getRelativePath(children.getRoot(), fo);
+            assert path != null : fo + " in " + children.getRoot();
+            progress.progress(path.replace('/', '.'), start);
+        }
                
         if ( !VisibilityQuery.getDefault().isVisible( fo ) ) {
             return; // Don't show hidden packages
@@ -163,10 +174,15 @@ public class PackageView {
                 children.add( fo, !hasFiles );
             }
         }
-        for (FileObject kid : folders) {
-            // Do this after adding the parent, so we get a natural traversal.
-            // Also see PackageViewChildren.findChild: prefer to get root first.
-            findNonExcludedPackages(children, target, kid, group);
+        if (!folders.isEmpty()) {
+            int diff = (end - start) / folders.size();
+            int c = 0;
+            for (FileObject kid : folders) {
+                // Do this after adding the parent, so we get a pre-order traversal.
+                // Also see PackageViewChildren.findChild: prefer to get root first.
+                findNonExcludedPackages(children, target, kid, group, progress, start + c * diff, start + (c + 1) * diff);
+                c++;
+            }
         }
     }
          
