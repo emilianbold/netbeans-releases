@@ -20,13 +20,94 @@ Microsystems, Inc. All Rights Reserved.
 <!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
 
 <fontscolors>
-    <fontcolor name="jsp-el-EOL" default="default"/>
-    <fontcolor name="jsp-el-char-literal" foreColor="ff006f00" bgColor="fffdf2c4" default="default"/>
-    <fontcolor name="jsp-el-el-delimiter" foreColor="black" bgColor="fffdf2c4" default="default">
+    <!-- html tokens coloring - temporary hack - the Lexer draw layer requires this so far -->
+    <fontcolor name="html-argument" foreColor="ff007c00" default="identifier"/>
+    <fontcolor name="html-block-comment" foreColor="gray" default="comment"/>
+    <fontcolor name="html-character" foreColor="ffb20000" default="char"/>
+    <fontcolor name="html-error" foreColor="black" bgColor="pink" default="error"/>
+    <fontcolor name="html-operator" foreColor="ff007c00" default="operator"/>
+    <fontcolor name="html-sgml-comment" foreColor="gray" default="comment"/>
+    <fontcolor name="html-sgml-declaration" foreColor="ffbf9221" default="default"/>
+    <fontcolor name="html-tag" foreColor="blue" default="default"/>
+    <fontcolor name="html-text" default="default"/>
+    <fontcolor name="html-value" foreColor="ff99006b" default="default"/>
+    <fontcolor name="html-ws" default="whitespace"/>
+    <fontcolor name="html-script" bgColor="99ff99" default="default"/>
+    <!-- end of hack -->
+    
+    <!-- html tokens coloring - temporary hack - the Lexer draw layer requires this so far -->
+    <!--<fontcolor name="java-annotation" foreColor="ff006f00" bgColor="fffdf2c4" default="default"/>
+    <fontcolor name="java-block-comment" foreColor="ff737373" bgColor="fffdf2c4" default="default"/>
+    <fontcolor name="java-char-literal" foreColor="ff006f00" bgColor="fffdf2c4" default="default"/>
+    <fontcolor name="java-errors" foreColor="black" bgColor="pink" default="default"/>
+    <fontcolor name="java-identifier" bgColor="fffdf2c4" default="default"/>
+    <fontcolor name="java-keywords" foreColor="ff000099" bgColor="fffdf2c4" default="default">
         <font style="bold"/>
     </fontcolor>
+    <fontcolor name="java-layer-method" bgColor="fffdf2c4" default="default">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor name="java-line-comment" foreColor="ff737373" bgColor="fffdf2c4" default="default"/>
+    <fontcolor name="java-numeric-literals" foreColor="ff780000" bgColor="fffdf2c4" default="default"/>
+    <fontcolor name="java-operators" bgColor="fffdf2c4" default="default"/>
+    <fontcolor name="java-string-literal" foreColor="ff99006b" bgColor="fffdf2c4" default="default"/>
+    <fontcolor name="java-whitespace" bgColor="fffdf2c4" default="default"/>-->
+    <!-- end of hack -->
+    
+    <!-- JSP tokens -->
+    <fontcolor name="attribute-name" foreColor="ff007c00" bgColor="ffeff0eb" default="default"/>
+    <fontcolor name="attribute-value" foreColor="ff99006b" bgColor="ffeff0eb" default="default"/>
+    <fontcolor name="comment" foreColor="gray" default="default">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor name="error" foreColor="black" bgColor="pink" default="default">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor name="scriptlet-delimiter" foreColor="black" bgColor="fffdf2c4" default="default">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor name="symbol" foreColor="black" bgColor="ffeff0eb" default="default">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor name="tag-directive" foreColor="blue" bgColor="ffeff0eb" default="default">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor name="text" bgColor="fff2fd" c4default="default"/>
+    <fontcolor name="whitespace" foreColor="black" bgColor="ffeff0eb" default="default">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor name="scriptlet" bgColor="fffdf2c4" default="default"/>
+    <fontcolor name="scriptlet" bgColor="fffdf2c4" default="default"/>
+    <fontcolor name="expression-language" foreColor="black" bgColor="fffdf2c4" default="default">
+        <font style="bold"/>
+    </fontcolor>    
+    <!-- end of JSP tokens -->
+    
+    <!-- TODO: the following part has to be revised when lexer coloring is enabled by default -->
+    <fontcolor name="el-eol" default="default"/>
+    <fontcolor name="el-char-literal" foreColor="ff006f00" bgColor="fffdf2c4" default="default"/>
+    <fontcolor name="el-errors" foreColor="black" bgColor="pink" default="default"/>
+    <fontcolor name="el-identifier" foreColor="black" bgColor="fffdf2c4" default="default"/>
+    <fontcolor name="el-keywords" foreColor="ff000099" bgColor="fffdf2c4" default="default">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor name="el-layer-method" bgColor="fffdf2c4" default="default">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor name="el-numeric-literals" foreColor="ff780000" bgColor="fffdf2c4" default="default"/>
+    <fontcolor name="el-operator" foreColor="black" bgColor="fffdf2c4" default="default"/>
+    <fontcolor name="el-string" foreColor="ff99006b" bgColor="fffdf2c4" default="default"/>
+    <fontcolor name="el-tag-lib-prefix" foreColor="blue" bgColor="fffdf2c4" default="default">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor name="el-whitespace" foreColor="black" bgColor="fffdf2c4" default="default"/>
+    
+    <!-- TODO: the following part has to be revised when lexer coloring is enabled by default -->
+    <fontcolor name="jsp-el-EOL" default="default"/>
+    <fontcolor name="jsp-el-char-literal" foreColor="ff006f00" bgColor="fffdf2c4" default="default"/>
     <fontcolor name="jsp-el-errors" foreColor="black" bgColor="pink" default="default"/>
     <fontcolor name="jsp-el-identifier" foreColor="black" bgColor="fffdf2c4" default="default"/>
+    <fontcolor name="jsp-el-el-delimiter" foreColor="black" bgColor="fffdf2c4" default="default"/>
     <fontcolor name="jsp-el-keywords" foreColor="ff000099" bgColor="fffdf2c4" default="default">
         <font style="bold"/>
     </fontcolor>
@@ -40,6 +121,8 @@ Microsystems, Inc. All Rights Reserved.
         <font style="bold"/>
     </fontcolor>
     <fontcolor name="jsp-el-whitespace" foreColor="black" bgColor="fffdf2c4" default="default"/>
+    
+    
     <fontcolor name="jsp-error" foreColor="red" default="default"/>
     <fontcolor name="jsp-format-text" default="default"/>
     <fontcolor name="jsp-html-argument" foreColor="ff007c00" default="default"/>

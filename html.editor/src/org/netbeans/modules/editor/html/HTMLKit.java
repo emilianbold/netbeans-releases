@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -50,7 +50,6 @@ import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Language;
 
 import org.netbeans.editor.*;
-import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.ext.*;
 import org.netbeans.editor.ext.html.*;
 import org.netbeans.editor.ext.html.HTMLSyntaxSupport;
@@ -86,7 +85,8 @@ public class HTMLKit extends LexerEditorKit implements org.openide.util.HelpCtx.
     private static boolean setupReadersInitialized = false;
     
     //temporary - will be removed when lexer is stabilized
-    private static final boolean J2EE_LEXER_COLORING = Boolean.getBoolean("j2ee_lexer_coloring"); //NOI18N
+//    private static final boolean J2EE_LEXER_COLORING = Boolean.getBoolean("j2ee_lexer_coloring"); //NOI18N
+    private static final boolean J2EE_LEXER_COLORING = true;
     
     public HTMLKit(){
         if (!setupReadersInitialized){
@@ -104,9 +104,7 @@ public class HTMLKit extends LexerEditorKit implements org.openide.util.HelpCtx.
     }
     
     protected void initDocument(BaseDocument doc) {
-        /*doc.addLayer(new JavaDrawLayerFactory.JavaLayer(),
-                JavaDrawLayerFactory.JAVA_LAYER_VISIBILITY);*/
-        doc.addDocumentListener(new HTMLDrawLayerFactory.TagParenWatcher());
+        //add layers here
     }
     
     /** Create new instance of syntax coloring scanner
@@ -127,12 +125,12 @@ public class HTMLKit extends LexerEditorKit implements org.openide.util.HelpCtx.
         return null;
     }
     
-    /** used to create completion instance from completion provider 
-     * @deprecated
-     */
-    public Completion createCompletionForProvider(ExtEditorUI extEditorUI) {
-        return new HTMLCompletion(extEditorUI);
-    }
+//    /** used to create completion instance from completion provider
+//     * @deprecated
+//     */
+//    public Completion createCompletionForProvider(ExtEditorUI extEditorUI) {
+//        return new HTMLCompletion(extEditorUI);
+//    }
     
     /*
      * @Override()
@@ -245,19 +243,17 @@ public class HTMLKit extends LexerEditorKit implements org.openide.util.HelpCtx.
                     int dotPos = caret.getDot();
                     ExtSyntaxSupport sup = (ExtSyntaxSupport)doc.getSyntaxSupport();
                     
-                    TokenItem token = sup.getTokenChain(dotPos-1, dotPos);
-                    // is the token from HTML Syntax??
-                    if (token != null && token.getTokenContextPath().contains(HTMLTokenContext.contextPath)){
-                        if (dotPos > 0) {
-                            int[] matchBlk = sup.findMatchingBlock(dotPos - 1, false);
-                            if (matchBlk != null) {
-                                if (select) {
-                                    caret.moveDot(matchBlk[1]);
-                                } else {
-                                    caret.setDot(matchBlk[1]);
-                                }                            
+                    //TODO: check whether we are in HTML text
+                    if (dotPos > 0) {
+                        int[] matchBlk = sup.findMatchingBlock(dotPos - 1, false);
+                        if (matchBlk != null) {
+                            if (select) {
+                                caret.moveDot(matchBlk[1]);
+                            } else {
+                                caret.setDot(matchBlk[1]);
                             }
                         }
+                        
                     } else{   // If this is not token from HTML Syntax -> call the original action from editor.
                         super.actionPerformed(evt, target);
                     }
@@ -348,7 +344,7 @@ public class HTMLKit extends LexerEditorKit implements org.openide.util.HelpCtx.
                     } else if (plainFlavor == null && mime.startsWith("text/plain")) { //NOI18N
                         plainFlavor = flavors[i];
                     } else if (refFlavor == null && mime.startsWith("application/x-java-jvm-local-objectref") //NOI18N
-                            && flavors[i].getRepresentationClass() == java.lang.String.class) {
+                    && flavors[i].getRepresentationClass() == java.lang.String.class) {
                         refFlavor = flavors[i];
                     } else if (stringFlavor == null && flavors[i].equals(DataFlavor.stringFlavor)) {
                         stringFlavor = flavors[i];
@@ -370,7 +366,7 @@ public class HTMLKit extends LexerEditorKit implements org.openide.util.HelpCtx.
                 if (mime.startsWith("text/plain")) { //NOI18N
                     return flavors[i];
                 } else if (refFlavor == null && mime.startsWith("application/x-java-jvm-local-objectref") //NOI18N
-                        && flavors[i].getRepresentationClass() == java.lang.String.class) {
+                && flavors[i].getRepresentationClass() == java.lang.String.class) {
                     refFlavor = flavors[i];
                 } else if (stringFlavor == null && flavors[i].equals(DataFlavor.stringFlavor)) {
                     stringFlavor = flavors[i];
@@ -388,7 +384,7 @@ public class HTMLKit extends LexerEditorKit implements org.openide.util.HelpCtx.
          * Import the given stream data into the text component.
          */
         protected void handleReaderImport(Reader in, JTextComponent c, boolean useRead)
-                throws BadLocationException, IOException {
+        throws BadLocationException, IOException {
             if (useRead) {
                 int startPosition = c.getSelectionStart();
                 int endPosition = c.getSelectionEnd();
@@ -971,4 +967,4 @@ public class HTMLKit extends LexerEditorKit implements org.openide.util.HelpCtx.
     
     
 }
- 
+

@@ -19,58 +19,35 @@
 
 package org.netbeans.modules.editor.html;
 
-import java.awt.Color;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EventObject;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.completion.Completion;
-import org.netbeans.editor.Acceptor;
-import org.netbeans.editor.AcceptorFactory;
+import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Settings;
-import org.netbeans.editor.SettingsNames;
-import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.CompletionQuery;
 import org.netbeans.editor.ext.CompletionQuery.ResultItem;
-import org.netbeans.editor.ext.ExtEditorUI;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
+import org.netbeans.editor.ext.html.HTMLCompletionQuery;
 import org.netbeans.editor.ext.html.HTMLCompletionQuery.HTMLResultItem;
+import org.netbeans.editor.ext.html.HTMLSyntaxSupport;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
-import org.openide.ErrorManager;
-import org.netbeans.editor.ext.html.*;
 
 
-/**A testing Completion Provider that provides abbreviations as result.
+/**
+ * Implementation of {@link CompletionProvider} for HTML documents.
  *
- * @author Jan Lahoda
+ * @author Marek Fukala
  */
 public class HTMLCompletionProvider implements CompletionProvider {
-    
-    private static ErrorManager ERR = ErrorManager.getDefault();
-    
-    /**Whether only full match of the abbreviation code should be considered for the completion.
-     * E.g. if NON_EXACT_MATCH == true, ser| would provide System.err.println("|"); abbreviation,
-     * if NON_EXACT_MATCH == false, ser| would not provide the abbreviation, but serr| would.
-     */
-    //private static final boolean NON_EXACT_MATCH = Boolean.getBoolean("nebeans.editor.completion.abbreviations.nonexactmatch");
-    private static final boolean NON_EXACT_MATCH = true;
-    
-    /**
-     * Enable the AbbreviationsCompletionProvider
-     */
-    //private static final boolean ENABLED = Boolean.getBoolean("nebeans.editor.completion.abbreviations.enable");
-    private static final boolean ENABLED = true;
     
     /** Creates a new instance of JavaDocCompletionProvider */
     public HTMLCompletionProvider() {
@@ -154,8 +131,6 @@ public class HTMLCompletionProvider implements CompletionProvider {
     }
     
     private static CompletionQuery.Result queryImpl(JTextComponent component, int offset) {
-        if (!ENABLED) return null;
-        
         Class kitClass = Utilities.getKitClass(component);
         if (kitClass != null) {
             HTMLSyntaxSupport support = (HTMLSyntaxSupport)Utilities.getSyntaxSupport(component);
@@ -187,14 +162,22 @@ public class HTMLCompletionProvider implements CompletionProvider {
         //test whether we are just in text and eventually close the opened completion
         //this is handy after end tag autocompletion when user doesn't complete the
         //end tag and just types a text
-        HTMLSyntaxSupport sup = (HTMLSyntaxSupport)doc.getSyntaxSupport().get(HTMLSyntaxSupport.class);
+        //test whether the user typed an ending quotation in the attribute value
+        doc.readLock();
         try {
-            TokenItem ti = sup.getTokenChain(caretOffset <= 0 ? 0 : caretOffset - 1, caretOffset);
-            if(ti != null && ti.getTokenID() == HTMLTokenContext.TEXT && !ti.getImage().startsWith("<") && !ti.getImage().startsWith("&")) {
+            TokenHierarchy hi = TokenHierarchy.get(doc);
+            TokenSequence ts = hi.tokenSequence();
+            
+            int diff = ts.move(caretOffset);
+            if(diff >= ts.token().length() || diff == Integer.MAX_VALUE) return; //no token found
+            
+            Token ti = ts.token();
+            if(ti.id() == HTMLTokenId.TEXT && !ti.text().toString().startsWith("<") && !ti.text().toString().startsWith("&")) {
                 hideCompletion();
             }
-        }catch(BadLocationException e) {
-            //do nothing
+            
+        }finally {
+            doc.readUnlock();
         }
     }
     

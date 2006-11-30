@@ -22,19 +22,15 @@ package org.netbeans.modules.editor.html;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
+
+import org.netbeans.api.html.lexer.HTMLTokenId;
+
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
+
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.TokenID;
-import org.netbeans.editor.TokenProcessor;
-import org.netbeans.editor.TokenContextPath;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
-import org.netbeans.editor.SyntaxSupport;
-import org.netbeans.editor.TokenItem;
-import org.netbeans.editor.Settings;
-import org.netbeans.editor.Utilities;
-import org.netbeans.editor.ext.html.HTMLSyntaxSupport;
-import org.netbeans.editor.ext.html.HTMLTokenContext;
-
-
 
 /**
  * This static class groups the whole aspect of bracket
@@ -45,7 +41,7 @@ import org.netbeans.editor.ext.html.HTMLTokenContext;
  */
 class HTMLAutoCompletion {
     
-    //an index of lastly completed equals sign 
+    //an index of lastly completed equals sign
     private static int  equalsSignInsertedOffset = -1;
     
     /**
@@ -58,7 +54,7 @@ class HTMLAutoCompletion {
      * @param dotPos position of the character insertion
      * @param caret caret
      * @param ch the character that was inserted
-     * @throws BadLocationException if dotPos is not correct
+     * @throws BadLocationException
      */
     static void charInserted(BaseDocument doc,
             int dotPos,
@@ -82,7 +78,7 @@ class HTMLAutoCompletion {
         equalsSignInsertedOffset = -1;
     }
     
-    private static void handleQuotationMark(BaseDocument doc, int dotPos, Caret caret, char ch) throws BadLocationException{
+    private static void handleQuotationMark(BaseDocument doc, int dotPos, Caret caret, char ch) throws BadLocationException {
         if(equalsSignInsertedOffset != -1) {
             //test whether the cursor is between completed quotations: attrname="|"
             //this situation can happen when user autocompletes ="|",
@@ -91,22 +87,32 @@ class HTMLAutoCompletion {
                 //remove the quotation mark
                 doc.remove(dotPos,1);
                 caret.setDot(dotPos);
-            } 
+            }
             
         } else {
             //test whether the user typed an ending quotation in the attribute value
-            TokenItem token = ((HTMLSyntaxSupport)doc.getSyntaxSupport()).getTokenChain(dotPos > 0 ? dotPos-1 : 0, dotPos > 0 ? dotPos : 1);
-            if(token != null &&
-                    token.getTokenID() == HTMLTokenContext.VALUE) {
-                //test if the user inserted the qutation in an attribute value and before
-                //an already existing end quotation
-                //the text looks following in such a situation:
-                //
-                //  atrname="abcd|"", where offset of the | == dotPos
-                if("\"\"".equals(doc.getText(dotPos, 2))) {
-                    doc.remove(dotPos,1);
-                    caret.setDot(dotPos+1);
+            doc.readLock();
+            try {
+                TokenHierarchy hi = TokenHierarchy.get(doc);
+                TokenSequence ts = hi.tokenSequence();
+                
+                int diff = ts.move(dotPos);
+                if(diff >= ts.token().length() || diff == Integer.MAX_VALUE) return; //no token found
+                
+                Token token = ts.token();
+                if(token.id() == HTMLTokenId.VALUE) {
+                    //test if the user inserted the qutation in an attribute value and before
+                    //an already existing end quotation
+                    //the text looks following in such a situation:
+                    //
+                    //  atrname="abcd|"", where offset of the | == dotPos
+                    if("\"\"".equals(doc.getText(dotPos, 2))) {
+                        doc.remove(dotPos,1);
+                        caret.setDot(dotPos+1);
+                    }
                 }
+            }finally {
+                doc.readUnlock();
             }
         }
         //reset the semaphore
@@ -114,16 +120,29 @@ class HTMLAutoCompletion {
     }
     
     private static void completeQuotes(BaseDocument doc, int dotPos, Caret caret, char ch) throws BadLocationException{
-        TokenItem token = ((HTMLSyntaxSupport)doc.getSyntaxSupport()).getTokenChain(dotPos-1, dotPos);
-        //the given dotpos states the offset where the char was inserted, I need the offset after the new char
-        int dotPosAfterTypedChar = dotPos + 1;
-        if(token != null &&
-                token.getTokenID() == HTMLTokenContext.ARGUMENT) {
-            doc.insertString( dotPosAfterTypedChar, "\"\"" , null);
-            caret.setDot(dotPosAfterTypedChar + 1);
-            //mark the last autocomplete position
-            equalsSignInsertedOffset = dotPos;
+        doc.readLock();
+        try {
+            TokenHierarchy hi = TokenHierarchy.get(doc);
+            TokenSequence ts = hi.tokenSequence();
+            
+            int diff = ts.move(dotPos);
+            if(diff >= ts.token().length() || diff == Integer.MAX_VALUE) return; //no token found
+            
+            Token token = ts.token();
+            
+            int dotPosAfterTypedChar = dotPos + 1;
+            if(token != null &&
+                    token.id() == HTMLTokenId.ARGUMENT) {
+                doc.insertString( dotPosAfterTypedChar, "\"\"" , null);
+                caret.setDot(dotPosAfterTypedChar + 1);
+                //mark the last autocomplete position
+                equalsSignInsertedOffset = dotPos;
+            }
+            
+        }finally {
+            doc.readUnlock();
         }
+        
     }
     
     

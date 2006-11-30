@@ -24,7 +24,6 @@ import org.netbeans.editor.ext.html.HTMLSettingsInitializer;
 import org.netbeans.modules.editor.NbLocalizer;
 import org.netbeans.modules.editor.html.HTMLKit;
 import org.netbeans.modules.editor.html.NbHTMLSettingsInitializer;
-import org.netbeans.modules.html.editor.options.HTMLOptions;
 import org.netbeans.modules.html.editor.options.HTMLPrintOptions;
 import org.openide.modules.ModuleInstall;
 import org.openide.options.SystemOption;

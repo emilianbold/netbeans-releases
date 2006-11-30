@@ -23,17 +23,11 @@ import java.awt.Component;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
 import java.awt.Color;
-import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.ActionMap;
-import javax.swing.InputMap;
-import javax.swing.KeyStroke;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
@@ -43,11 +37,14 @@ import org.netbeans.editor.*;
 import org.netbeans.editor.SettingsUtil;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.*;
-import org.netbeans.editor.ext.CompletionQuery.ResultItem;
 import org.netbeans.editor.ext.html.dtd.*;
 import org.netbeans.editor.ext.html.javadoc.HelpManager;
 import org.netbeans.api.editor.completion.Completion;
-import org.netbeans.editor.ext.html.javadoc.TagHelpItem;
+import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
@@ -60,7 +57,8 @@ import org.openide.ErrorManager;
  * HTML completion results finder
  *
  * @author Petr Nejedly
- * @version 1.00
+ * @author Marek Fukala
+ * @version 1.10
  */
 public class HTMLCompletionQuery implements CompletionQuery {
     
@@ -87,7 +85,6 @@ public class HTMLCompletionQuery implements CompletionQuery {
         return query(component, kitClass, doc, offset, support);
     }
     
-    /* The code has been extracted from the original method to be better testable. */
     CompletionQuery.Result query(JTextComponent component, Class kitClass, BaseDocument doc, int offset, SyntaxSupport support) {
         if (kitClass != null) {
             lowerCase = SettingsUtil.getBoolean(kitClass,
@@ -102,108 +99,74 @@ public class HTMLCompletionQuery implements CompletionQuery {
         DTD dtd = sup.getDTD();
         if( dtd == null ) return null; // We have no knowledge about the structure!
         
-        
+        doc.readLock();
         try {
-            TokenItem item = null;
-            TokenItem prev = null;
+            TokenHierarchy hi = TokenHierarchy.get(doc);
+            TokenSequence ts = hi.tokenSequence();
+            
+            int diff = ts.move(offset);
+            if(diff == Integer.MAX_VALUE) return null; //no token found
+            
+            Token item = ts.token();
+            
             // are we inside token or between tokens
-            boolean inside = false;
+            boolean inside = item.offset(hi) < offset;
             
-            item = sup.getTokenChain( offset, offset+1 );
-            
-            if( item != null ) { // inside document
-                prev = item.getPrevious();
-                // this part of the code is smartcase deciding
-                if (prev != null){
-                    TokenItem prevv = prev;
-                    String prevvImage = prevv.getImage();
-                    int index = prevvImage.length() - 1;
-                    // is in the previous tag a letter?
-                    if (prevv != null && sup.isTag(prevv) &&
-                            prevv.getTokenID().getNumericID() == HTMLTokenContext.ARGUMENT_ID){
-                        while (index > -1 && !Character.isLetter(prevvImage.charAt(index)))
-                            index--;
-                    } else
-                        index = -1;
-                    
-                    // if not find first tag with a letter
-                    do {
-                        if(prevv.getTokenID() == HTMLTokenContext.TAG_OPEN
-                                || prevv.getTokenID() == HTMLTokenContext.TAG_CLOSE) {
-                            //found open or close tag text
-                            //scan the tag image for letters (I am not sure whether
-                            //the first character always has to be a letter)
-                            prevvImage = prevv.getImage();
-                            for(int i = 0;i < prevvImage.length(); i++) {
-                                char ch = prevvImage.charAt(i);
-                                if(Character.isLetter(ch)) {
-                                    index = i;
-                                    break;
-                                }
-                            }
-                        }
-                        prevv = prevv.getPrevious();
-                    } while(prevv != null && index == -1);
-                    
-                    // is there a previous tag with a letter?
-                    if (prevv != null && index != -1){
-                        lowerCase = !Character.isUpperCase(prevvImage.charAt(index));
-                    } else{
-                        lowerCase = true;
-                    }
-                    
+            if(!inside) { //use the previous token
+                if(ts.movePrevious()) {
+                    item = ts.token();
+                } else {
+                    return null; //no previous token - shouldn't happen
                 }
-                // end of smartcase deciding
-                inside = item.getOffset() < offset;
-            } else {                           // @ end of document
-                prev = sup.getTokenChain( offset-1, offset ); //!!!
             }
-            boolean begin = (prev == null && !inside);
-/*
-if( prev == null && !inside ) System.err.println( "Beginning of document, first token = " + item.getTokenID() );
-else if( item == null ) System.err.println( "End of document, last token = " + prev.getTokenID() );
-else if( ! inside ) System.err.println( "Between tokens " + prev.getTokenID() + " and " + item.getTokenID() );
-else System.err.println( "Inside token " + item.getTokenID() );
- */
             
-            if( begin ) return null;
+            Token tok = item;
+            //scan the token chain before the
+            while(!(tok.id() == HTMLTokenId.TAG_OPEN || tok.id() == HTMLTokenId.TAG_CLOSE) && ts.movePrevious()) {
+                tok = ts.token();
+            }
             
-            TokenID id = null;
-            List l = null;
+            //we found an open or close tag or encountered beginning of the file
+            if(ts.index() > 0) {
+                //found the tag
+                String tagName = tok.text().toString();
+                for(int i = 0;i < tagName.length(); i++) {
+                    char ch = tagName.charAt(i);
+                    if(Character.isLetter(ch)) {
+                        lowerCase = !Character.isUpperCase(tagName.charAt(i));
+                        break;
+                    }
+                }
+            } //else use the setting value
+            
+            //rewind token sequence back
+            ts.move(item.offset(hi));
+            
+            //get text before cursor
+            int itemOffset = item.offset(hi);
+            String preText = item.text().toString().substring( 0, offset - itemOffset );
+            TokenId id = item.id();
+            
+            List result = null;
             int len = 1;
-            int itemOffset = 0;
-            String preText = null;
-            if( inside ) {
-                id = item.getTokenID();
-                preText = item.getImage().substring( 0, offset - item.getOffset() );
-                itemOffset = item.getOffset();
-            } else {
-                id = prev.getTokenID();
-                preText = prev.getImage().substring( 0, offset - prev.getOffset() );
-                itemOffset = prev.getOffset();
-            }
-/* Here are completion finders, each have its own set of rules and source of results
- * They are now written just for testing rules, I will rewrite them to more compact
- * and faster, tree form, as soon as i'll have them all.
- */
             
             /* Character reference finder */
-            if( (id == HTMLTokenContext.TEXT || id == HTMLTokenContext.VALUE) && preText.endsWith( "&" ) ) { // NOI18N
-                l = translateCharRefs( offset-len, len, dtd.getCharRefList( "" ) );
-            } else if( id == HTMLTokenContext.CHARACTER ) {
+            if( (id == HTMLTokenId.TEXT || id == HTMLTokenId.VALUE) && preText.endsWith( "&" ) ) { // NOI18N
+                result = translateCharRefs( offset-len, len, dtd.getCharRefList( "" ) );
+            } else if( id == HTMLTokenId.CHARACTER ) {
                 if( inside || !preText.endsWith( ";" ) ) { // NOI18N
                     len = offset - itemOffset;
-                    l = translateCharRefs( offset-len, len, dtd.getCharRefList( preText.substring(1) ) );
+                    result = translateCharRefs( offset-len, len, dtd.getCharRefList( preText.substring(1) ) );
                 }
                 /* Tag finder */
-            } else if( id == HTMLTokenContext.TAG_OPEN) { // NOI18N
+            } else if( id == HTMLTokenId.TAG_OPEN) { // NOI18N
                 len = offset - itemOffset + 1; // minus the < char length
-                l = translateTags( itemOffset -1 , len, dtd.getElementList( preText ) );
+                result = translateTags( itemOffset -1 , len, dtd.getElementList( preText ) );
                 
                 //test whether there is only one item in the CC list
-                if(l.size() == 1) {
+                if(result.size() == 1) {
                     //test whether the CC is trying to complete an already COMPLETE token - the problematic situation
-                    TagItem ti = (TagItem)l.get(0); //there should only one item
+                    TagItem ti = (TagItem)result.get(0); //there should only one item
                     String itemText = ti.getItemText();
                     //itemText = itemText.substring(1, itemText.length() - 1); //remove the < > from the tag name
                     
@@ -211,50 +174,48 @@ else System.err.println( "Inside token " + item.getTokenID() );
                         //now I have to look ahead to get know whether
                         //there are some attributes or an end of the tag
                         
-                        //define how far to look ahead
-                        int lookLenght = 10; //default - thought up
-                        if(offset + lookLenght > doc.getLength()) lookLenght = doc.getLength() - offset;
+                        ts.move(offset);
+                        Token t = ts.token();
                         
-                        TokenItem aheadChainToken = sup.getTokenChain( offset, offset+lookLenght );
                         //test if next token is a whitespace and the next a tag token or an attribute token
-                        if(aheadChainToken != null && aheadChainToken.getTokenID().getNumericID() == HTMLTokenContext.WS_ID) {
-                            aheadChainToken = aheadChainToken.getNext();
-                            if(aheadChainToken != null &&
-                                    (aheadChainToken.getTokenID().getNumericID() == HTMLTokenContext.TAG_CLOSE_ID ||
-                                    aheadChainToken.getTokenID().getNumericID() == HTMLTokenContext.ARGUMENT_ID )) {
-                                //do not put the item into CC - otherwise it will break the completed tag
-                                l = null;
+                        if(t.id() == HTMLTokenId.WS) {
+                            if(ts.moveNext()) {
+                                t = ts.token();
+                                if((t.id() == HTMLTokenId.TAG_CLOSE || t.id() == HTMLTokenId.ARGUMENT )) {
+                                    //do not put the item into CC - otherwise it will break the completed tag
+                                    result = null;
+                                }
                             }
                         }
                     }
                 }
                 
                 
-            } else if( id != HTMLTokenContext.BLOCK_COMMENT &&  preText.endsWith( "<" ) ) { // NOI18N
+            } else if( id != HTMLTokenId.BLOCK_COMMENT &&  preText.endsWith( "<" ) ) { // NOI18N
                 // There will be lookup for possible StartTags, in SyntaxSupport
                 //                l = translateTags( offset-len, len, sup.getPossibleStartTags ( offset-len, "" ) );
-                l = translateTags( offset-len, len, dtd.getElementList( "" ) );
+                result = translateTags( offset-len, len, dtd.getElementList( "" ) );
                 
                 /* EndTag finder */
-            } else if( id == HTMLTokenContext.TEXT && preText.endsWith( "</" ) ) { // NOI18N
+            } else if( id == HTMLTokenId.TEXT && preText.endsWith( "</" ) ) { // NOI18N
                 len = 2;
-                l = sup.getPossibleEndTags( offset, "" );
-            } else if( id == HTMLTokenContext.TAG_OPEN_SYMBOL && preText.endsWith( "</" ) ) { // NOI18N
+                result = sup.getPossibleEndTags( offset, "" );
+            } else if( id == HTMLTokenId.TAG_OPEN_SYMBOL && preText.endsWith( "</" ) ) { // NOI18N
                 len = 2;
-                l = sup.getPossibleEndTags( offset, "" );
-            } else if( id == HTMLTokenContext.TAG_CLOSE) { // NOI18N
+                result = sup.getPossibleEndTags( offset, "" );
+            } else if( id == HTMLTokenId.TAG_CLOSE) { // NOI18N
                 len = offset - itemOffset;
-                l = sup.getPossibleEndTags( offset, preText);
+                result = sup.getPossibleEndTags( offset, preText);
                 
                 /*Argument finder */
             /* TBD: It is possible to have arg just next to quoted value of previous
              * arg, these rules doesn't match start of such arg this case because
              * of need for matching starting quote
              */
-            } else if(id == HTMLTokenContext.TAG_CLOSE_SYMBOL) {
-                l = sup.getAutocompletedEndTag(offset);
+            } else if(id == HTMLTokenId.TAG_CLOSE_SYMBOL) {
+                result = sup.getAutocompletedEndTag(offset);
                 
-            } else if( id == HTMLTokenContext.WS || id == HTMLTokenContext.ARGUMENT ) {
+            } else if( id == HTMLTokenId.WS || id == HTMLTokenId.ARGUMENT ) {
                 SyntaxElement elem = null;
                 try {
                     elem = sup.getElementChain( offset );
@@ -282,12 +243,12 @@ else System.err.println( "Inside token " + item.getTokenID() );
                     
                     if( tag == null ) return null; // unknown tag
                     
-                    String prefix = (id == HTMLTokenContext.ARGUMENT) ? preText : "";
+                    String prefix = (id == HTMLTokenId.ARGUMENT) ? preText : "";
                     len = prefix.length();
                     List possible = tag.getAttributeList( prefix ); // All attribs of given tag
                     Collection existing = tagElem.getAttributes(); // Attribs already used
                     
-                    String wordAtCursor = (item == null) ? null : item.getImage();
+                    String wordAtCursor = (item == null) ? null : item.text().toString();
                     // #BUGFIX 25261 because of being at the end of document the
                     // wordAtCursor must be checked for null to prevent NPE
                     // below
@@ -295,16 +256,16 @@ else System.err.println( "Inside token " + item.getTokenID() );
                         wordAtCursor = "";
                     }
                     
-                    l = new ArrayList();
+                    result = new ArrayList();
                     for( Iterator i = possible.iterator(); i.hasNext(); ) {
                         DTD.Attribute attr = (DTD.Attribute)i.next();
                         String aName = attr.getName();
                         if( aName.equals( prefix )
                         || (!existing.contains( aName.toUpperCase()) && !existing.contains( aName.toLowerCase()))
                         || (wordAtCursor.equals( aName ) && prefix.length() > 0))
-                            l.add( attr );
+                            result.add( attr );
                     }
-                    l = translateAttribs( offset-len, len, l, tag );
+                    result = translateAttribs( offset-len, len, result, tag );
                 }
                 
                 /* Value finder */
@@ -312,9 +273,18 @@ else System.err.println( "Inside token " + item.getTokenID() );
              * color,.... - may be better resolved by attr type, may be moved
              * to propertysheet
              */
-            } else if( id == HTMLTokenContext.VALUE || id == HTMLTokenContext.OPERATOR ||
-                    id == HTMLTokenContext.WS && (inside ? prev : prev.getPrevious()).getTokenID() == HTMLTokenContext.OPERATOR
-                    ) {
+            } else if( id == HTMLTokenId.VALUE || id == HTMLTokenId.OPERATOR || id == HTMLTokenId.WS ) {
+                
+                if(id == HTMLTokenId.WS) {
+                    //is the token before an operator? '<div color= |red>'
+                    ts.move(item.offset(hi));
+                    ts.movePrevious();
+                    Token t = ts.token();
+                    if(t.id() != HTMLTokenId.OPERATOR) {
+                        return null;
+                    }
+                }
+                
                 SyntaxElement elem = null;
                 try {
                     elem = sup.getElementChain( offset );
@@ -336,17 +306,22 @@ else System.err.println( "Inside token " + item.getTokenID() );
                     DTD.Element tag = dtd.getElement( tagName );
                     if( tag == null ) return null; // unknown tag
                     
-                    TokenItem argItem = prev;
-                    while( argItem != null && argItem.getTokenID() != HTMLTokenContext.ARGUMENT ) argItem = argItem.getPrevious();
-                    if( argItem == null ) return null; // no ArgItem
-                    String argName = argItem.getImage().toLowerCase();
+                    ts.move(item.offset(hi));
+                    Token argItem = ts.token();
+                    while(argItem.id() != HTMLTokenId.ARGUMENT && ts.movePrevious()) {
+                        argItem = ts.token();
+                    }
+                    
+                    if(argItem.id() != HTMLTokenId.ARGUMENT) return null; // no ArgItem
+                    
+                    String argName = argItem.text().toString().toLowerCase();
                     
                     DTD.Attribute arg = tag.getAttribute( argName );
                     if( arg == null || arg.getType() != DTD.Attribute.TYPE_SET ) return null;
                     
-                    if( id != HTMLTokenContext.VALUE ) {
+                    if( id != HTMLTokenId.VALUE ) {
                         len = 0;
-                        l = translateValues( offset-len, len, arg.getValueList( "" ) );
+                        result = translateValues( offset-len, len, arg.getValueList( "" ) );
                     } else {
                         len = offset - itemOffset;
                         
@@ -356,18 +331,21 @@ else System.err.println( "Inside token " + item.getTokenID() );
                             if(preText.substring(0,1).equals("\"")) quotationChar = "\""; // NOI18N
                         }
                         
-                        l = translateValues( offset-len, len, arg.getValueList( quotationChar == null ? preText : preText.substring(1)) , quotationChar );
+                        result = translateValues( offset-len, len, arg.getValueList( quotationChar == null ? preText : preText.substring(1)) , quotationChar );
                     }
                 }
             }
             
             //System.err.println("l = " + l );
-            if( l == null ) return null;
-            else return new HTMLCompletionResult( component, "Results for DOCTYPE " + dtd.getIdentifier(), l, offset, len ); // NOI18N
+            if( result == null ) return null;
+            else return new HTMLCompletionResult( component, "Results for DOCTYPE " + dtd.getIdentifier(), result, offset, len ); // NOI18N
             
-        } catch (BadLocationException e) {
-            e.printStackTrace();
+        } catch (BadLocationException ble) { 
+            ErrorManager.getDefault().notify(ble);
+        } finally {
+            doc.readUnlock();
         }
+        
         return null;
     }
     
@@ -657,8 +635,8 @@ else System.err.println( "Inside token " + item.getTokenID() );
             return replaced;
         }
         
-         @Override
-        protected void reformat(JTextComponent component, String text) {
+        @Override
+                protected void reformat(JTextComponent component, String text) {
             try {
                 BaseDocument doc = (BaseDocument)component.getDocument();
                 ExtFormatter f = (ExtFormatter)doc.getFormatter();
@@ -671,12 +649,12 @@ else System.err.println( "Inside token " + item.getTokenID() );
             }
         }
         
-         @Override
-        public CharSequence getInsertPrefix() {
-             //disable instant substitution
+        @Override
+                public CharSequence getInsertPrefix() {
+            //disable instant substitution
             return null;
         }
-         
+        
     }
     
     static class EndTagItem extends HTMLResultItem {
@@ -719,7 +697,7 @@ else System.err.println( "Inside token " + item.getTokenID() );
         }
         
         @Override
-        protected void reformat(JTextComponent component, String text) {
+                protected void reformat(JTextComponent component, String text) {
             try {
                 BaseDocument doc = (BaseDocument)component.getDocument();
                 ExtFormatter f = (ExtFormatter)doc.getFormatter();

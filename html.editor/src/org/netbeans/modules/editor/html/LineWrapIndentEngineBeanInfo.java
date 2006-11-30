@@ -22,7 +22,6 @@ package org.netbeans.modules.editor.html;
 import java.beans.BeanDescriptor;
 import java.util.MissingResourceException;
 import org.netbeans.modules.editor.FormatterIndentEngineBeanInfo;
-import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.util.NbBundle;
 
 /**

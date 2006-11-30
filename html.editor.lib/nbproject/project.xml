@@ -58,6 +58,24 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.html.lexer</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.lexer</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>2</release-version>
+                        <specification-version>1.10</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.filesystems</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -134,6 +152,10 @@ Microsystems, Inc. All Rights Reserved.
                         <code-name-base>org.netbeans.modules.lexer.editorbridge</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.lexer.nbbridge</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>                    
                 </test-type>
                 <test-type>
                     <name>qa-functional</name>

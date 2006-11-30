@@ -28,6 +28,8 @@ import org.netbeans.editor.TokenID;
 * @author Petr Nejedly
 * @author Miloslav Metelka
 * @version 1.00
+*
+* @deprecated Use Lexer API instead. See {@link HTMLLexer} and {@link HTMLTokenId}.
 */
 
 public class HTMLSyntax extends Syntax {

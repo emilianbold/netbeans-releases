@@ -56,10 +56,12 @@ public class HTMLFormatter extends TagBasedFormatter {
 	    
 	    if (token.getTokenID() == HTMLTokenContext.TAG_CLOSE_SYMBOL &&
 		    !token.getImage().endsWith("/>")){ //NOI18N
-		do {
-		    token = token.getPrevious();
-		}
-		while (token != null && !sup.isTag(token));
+
+            //ENABLE THIS
+//		do {
+//		    token = token.getPrevious();
+//		}
+//		while (token != null && !sup.isTag(token));
 		
 		return token;
 	    }

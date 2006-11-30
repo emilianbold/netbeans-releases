@@ -55,7 +55,6 @@ import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Formatter;
 import org.netbeans.editor.ext.CompletionJavaDoc;
 import org.netbeans.editor.ext.ExtKit;
-import org.netbeans.editor.ext.html.HTMLDrawLayerFactory;
 import org.netbeans.editor.ext.java.JavaDrawLayerFactory;
 import org.netbeans.editor.ext.html.HTMLSyntax;
 import org.netbeans.modules.editor.java.JavaKit;
@@ -88,8 +87,7 @@ public class JSPKit extends LexerEditorKit implements org.openide.util.HelpCtx.P
     
     public static final boolean debug = false;
     
-    //temporary - will be removed when lexer is stabilized
-    private static final boolean J2EE_LEXER_COLORING = Boolean.getBoolean("j2ee_lexer_coloring"); //NOI18N
+    private static final boolean J2EE_LEXER_COLORING = true;
 
     
     /** Default constructor */
@@ -253,7 +251,6 @@ public class JSPKit extends LexerEditorKit implements org.openide.util.HelpCtx.P
         doc.addLayer(new ELDrawLayerFactory.ELLayer(),
                 ELDrawLayerFactory.EL_LAYER_VISIBILITY);
         doc.addDocumentListener(new ELDrawLayerFactory.LParenWatcher());
-        doc.addDocumentListener(new HTMLDrawLayerFactory.TagParenWatcher());
     }
     
     public Formatter createFormatter() {

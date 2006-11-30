@@ -44,9 +44,10 @@ public class SyntaxElement {
     public static final int TYPE_TEXT = 3;
     public static final int TYPE_TAG = 4;
     public static final int TYPE_ENDTAG = 5;
+    public static final int TYPE_SCRIPT = 6;
       
     public static final String[] TYPE_NAMES = 
-            new String[]{"comment","declaration","error","text","tag","endtag"};
+            new String[]{"comment","declaration","error","text","tag","endtag","script"};
     
     private HTMLSyntaxSupport support;
     private SyntaxElement previous;

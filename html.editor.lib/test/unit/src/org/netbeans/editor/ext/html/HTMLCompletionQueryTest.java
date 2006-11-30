@@ -73,7 +73,7 @@ public class HTMLCompletionQueryTest extends TestBase {
     //helper methods ------------
     private void testCompletionResults(File inputFile) throws IOException, BadLocationException {
         String content = Utils.readFileContentToString(inputFile);
-        BaseDocument doc = new BaseDocument(HTMLKit.class, false);
+        BaseDocument doc = createDocument();
         doc.insertString(0,content,null);
         HTMLSyntaxSupport sup = new HTMLSyntaxSupport(doc);
         HTMLCompletionQuery query = new HTMLCompletionQuery();

@@ -1,133 +1,100 @@
 Element(text)[2039,2039] "
 
-Element(endtag)[2034,2038] " - "html"
-Element(tag)[2032,2033] " - "</" - {}
+Element(endtag)[2032,2038] " - "html"
 Element(text)[2031,2031] "
 
-Element(endtag)[2026,2030] " - "body"
-Element(tag)[2024,2025] " - "</" - {}
+Element(endtag)[2024,2030] " - "body"
 Element(text)[1997,2023] " err="true"/>
         
     
 Element(error)[1996,1996] "
-Element(tag)[1992,1995] " - "div" - {}
-Element(tag)[1991,1991] " - "<" - {}
+Element(tag)[1992,1996] " - "div" - {}
+Element(tag)[1991,1996] " - "div" - {}
 Element(text)[1979,1990] "
   
         
-Element(endtag)[1973,1978] " - "table"
-Element(tag)[1971,1972] " - "</" - {}
+Element(endtag)[1971,1978] " - "table"
 Element(text)[1962,1970] "
         
-Element(endtag)[1959,1961] " - "tr"
-Element(tag)[1957,1958] " - "</" - {}
+Element(endtag)[1957,1961] " - "tr"
 Element(text)[1944,1956] "
             
-Element(endtag)[1941,1943] " - "td"
-Element(tag)[1939,1940] " - "</" - {}
+Element(endtag)[1939,1943] " - "td"
 Element(text)[1922,1938] "
                 
-Element(endtag)[1918,1921] " - "div"
-Element(tag)[1916,1917] " - "</" - {}
+Element(endtag)[1916,1921] " - "div"
 Element(text)[1895,1915] "
                     
-Element(endtag)[1893,1894] " - "a"
-Element(tag)[1891,1892] " - "</" - {}
-Element(tag)[1809,1890] " - "img" - {src, alt, width, height, border, }
-Element(tag)[1808,1808] " - "<" - {}
+Element(endtag)[1891,1894] " - "a"
+Element(tag)[1808,1890] " - "img" - {src, alt, width, height, border, }
 Element(text)[1798,1807] "Read more 
-Element(tag)[1746,1797] " - "a" - {href, }
-Element(tag)[1745,1745] " - "<" - {}
+Element(tag)[1745,1797] " - "a" - {href, }
 Element(text)[1192,1744] "
                         This article explains how you can use the built-in features of NetBeans 5.0 to create JAX-WS 2.0 services quickly. Once the project has been created, it can be rebuilt (and tested!) with one command. While newer versions of NetBeans include the ability to create JAX-RPC 1.X web services, the JAX-WS 2.0 code is still under development. The steps to create a web service with JAX-WS 2.0 have been simplified, and you can turn a web application project in NetBeans into a web service with very few steps.
                         
-Element(endtag)[1189,1191] " - "h2"
-Element(tag)[1187,1188] " - "</" - {}
+Element(endtag)[1187,1191] " - "h2"
 Element(text)[1141,1186] "Building JAX-WS 2.0 Services with NetBeans 5.0
-Element(tag)[1075,1140] " - "h2" - {style, }
-Element(tag)[1074,1074] " - "<" - {}
+Element(tag)[1074,1140] " - "h2" - {style, }
 Element(text)[1049,1073] "
                         
-Element(endtag)[1047,1048] " - "a"
-Element(tag)[1045,1046] " - "</" - {}
-Element(tag)[847,1044] " - "img" - {src, alt, style, border, }
-Element(tag)[846,846] " - "<" - {}
-Element(tag)[738,845] " - "a" - {href, title, }
-Element(tag)[737,737] " - "<" - {}
+Element(endtag)[1045,1048] " - "a"
+Element(tag)[846,1044] " - "img" - {src, alt, style, border, }
+Element(tag)[737,845] " - "a" - {href, title, }
 Element(text)[712,736] "
                         
-Element(tag)[683,711] " - "div" - {style, }
-Element(tag)[682,682] " - "<" - {}
+Element(tag)[682,711] " - "div" - {style, }
 Element(text)[660,681] "
 
                     
-Element(tag)[626,659] " - "td" - {valign, style, }
-Element(tag)[625,625] " - "<" - {}
+Element(tag)[625,659] " - "td" - {valign, style, }
 Element(text)[608,624] "
                 
-Element(tag)[605,607] " - "tr" - {}
-Element(tag)[604,604] " - "<" - {}
+Element(tag)[604,607] " - "tr" - {}
 Element(text)[591,603] "
             
-Element(tag)[574,590] " - "table" - {border, }
-Element(tag)[573,573] " - "<" - {}
+Element(tag)[573,590] " - "table" - {border, }
 Element(text)[564,572] "
         
-Element(endtag)[560,563] " - "div"
-Element(tag)[558,559] " - "</" - {}
+Element(endtag)[558,563] " - "div"
 Element(text)[551,557] " &amp; 
-Element(tag)[547,550] " - "div" - {}
-Element(tag)[546,546] " - "<" - {}
+Element(tag)[546,550] " - "div" - {}
 Element(text)[537,545] "
         
-Element(tag)[532,536] " - "body" - {}
-Element(tag)[531,531] " - "<" - {}
+Element(tag)[531,536] " - "body" - {}
 Element(text)[526,530] "
     
-Element(endtag)[521,525] " - "head"
-Element(tag)[519,520] " - "</" - {}
+Element(endtag)[519,525] " - "head"
 Element(text)[509,518] "
     
     
-Element(endtag)[502,508] " - "script"
-Element(tag)[500,501] " - "</" - {}
-Element(text)[491,499] "
-        
-Element(comment)[379,490] "
-Element(text)[378,378] "
-
-Element(tag)[326,377] " - "script" - {language, type, }
-Element(tag)[325,325] " - "<" - {}
+Element(endtag)[500,508] " - "script"
+Element(script)[491,499] "
+Element(comment)[379,499] "
+Element(script)[378,378] "
+Element(tag)[325,377] " - "script" - {language, type, }
 Element(text)[316,324] "
         
-Element(endtag)[310,315] " - "style"
-Element(tag)[308,309] " - "</" - {}
+Element(endtag)[308,315] " - "style"
 Element(text)[226,307] "
             #search {height:100%;}
             #topmodule {align:right;}
         
-Element(tag)[204,225] " - "style" - {type, }
-Element(tag)[203,203] " - "<" - {}
+Element(tag)[203,225] " - "style" - {type, }
 Element(text)[189,202] "
     
         
-Element(endtag)[183,188] " - "title"
-Element(tag)[181,182] " - "</" - {}
+Element(endtag)[181,188] " - "title"
 Element(text)[175,180] "A page
-Element(tag)[169,174] " - "title" - {}
-Element(tag)[168,168] " - "<" - {}
+Element(tag)[168,174] " - "title" - {}
 Element(text)[159,167] "
         
-Element(tag)[92,158] " - "meta" - {http-equiv, content, }
-Element(tag)[91,91] " - "<" - {}
+Element(tag)[91,158] " - "meta" - {http-equiv, content, }
 Element(text)[82,90] "
         
-Element(tag)[77,81] " - "head" - {}
-Element(tag)[76,76] " - "<" - {}
+Element(tag)[76,81] " - "head" - {}
 Element(text)[71,75] "
     
-Element(tag)[66,70] " - "html" - {}
-Element(tag)[65,65] " - "<" - {}
+Element(tag)[65,70] " - "html" - {}
 Element(text)[63,64] "
 
 

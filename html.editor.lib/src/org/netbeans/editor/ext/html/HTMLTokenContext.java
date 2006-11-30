@@ -33,6 +33,8 @@ import org.netbeans.editor.Utilities;
 *
 * @author Miloslav Metelka
 * @version 1.00
+*
+* @deprecated Use Lexer API instead. See {@link HTMLTokenId}.
 */
 
 public class HTMLTokenContext extends TokenContext {

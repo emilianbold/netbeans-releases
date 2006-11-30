@@ -67,12 +67,12 @@
 64:Element(text)[63,64] "
 
 
-65:Element(tag)[65,65] " - "<" - {}
+65:Element(tag)[65,70] " - "html" - {}
 66:Element(tag)[66,70] " - "html" - {}
 67:Element(tag)[66,70] " - "html" - {}
 68:Element(tag)[66,70] " - "html" - {}
 69:Element(tag)[66,70] " - "html" - {}
-70:Element(tag)[66,70] " - "html" - {}
+70:Element(tag)[65,70] " - "html" - {}
 71:Element(text)[71,75] "
     
 72:Element(text)[71,75] "
@@ -83,12 +83,12 @@
     
 75:Element(text)[71,75] "
     
-76:Element(tag)[76,76] " - "<" - {}
+76:Element(tag)[76,81] " - "head" - {}
 77:Element(tag)[77,81] " - "head" - {}
 78:Element(tag)[77,81] " - "head" - {}
 79:Element(tag)[77,81] " - "head" - {}
 80:Element(tag)[77,81] " - "head" - {}
-81:Element(tag)[77,81] " - "head" - {}
+81:Element(tag)[76,81] " - "head" - {}
 82:Element(text)[82,90] "
         
 83:Element(text)[82,90] "
@@ -107,7 +107,7 @@
         
 90:Element(text)[82,90] "
         
-91:Element(tag)[91,91] " - "<" - {}
+91:Element(tag)[91,158] " - "meta" - {http-equiv, content, }
 92:Element(tag)[92,158] " - "meta" - {http-equiv, content, }
 93:Element(tag)[92,158] " - "meta" - {http-equiv, content, }
 94:Element(tag)[92,158] " - "meta" - {http-equiv, content, }
@@ -174,7 +174,7 @@
 155:Element(tag)[92,158] " - "meta" - {http-equiv, content, }
 156:Element(tag)[92,158] " - "meta" - {http-equiv, content, }
 157:Element(tag)[92,158] " - "meta" - {http-equiv, content, }
-158:Element(tag)[92,158] " - "meta" - {http-equiv, content, }
+158:Element(tag)[91,158] " - "meta" - {http-equiv, content, }
 159:Element(text)[159,167] "
         
 160:Element(text)[159,167] "
@@ -193,27 +193,27 @@
         
 167:Element(text)[159,167] "
         
-168:Element(tag)[168,168] " - "<" - {}
+168:Element(tag)[168,174] " - "title" - {}
 169:Element(tag)[169,174] " - "title" - {}
 170:Element(tag)[169,174] " - "title" - {}
 171:Element(tag)[169,174] " - "title" - {}
 172:Element(tag)[169,174] " - "title" - {}
 173:Element(tag)[169,174] " - "title" - {}
-174:Element(tag)[169,174] " - "title" - {}
+174:Element(tag)[168,174] " - "title" - {}
 175:Element(text)[175,180] "A page
 176:Element(text)[175,180] "A page
 177:Element(text)[175,180] "A page
 178:Element(text)[175,180] "A page
 179:Element(text)[175,180] "A page
 180:Element(text)[175,180] "A page
-181:Element(tag)[181,182] " - "</" - {}
-182:Element(tag)[181,182] " - "</" - {}
-183:Element(tag)[181,182] " - "</" - {}
-184:Element(tag)[181,182] " - "</" - {}
-185:Element(tag)[181,182] " - "</" - {}
-186:Element(tag)[181,182] " - "</" - {}
-187:Element(tag)[181,182] " - "</" - {}
-188:Element(endtag)[183,188] " - "title"
+181:Element(endtag)[181,188] " - "title"
+182:Element(endtag)[181,188] " - "title"
+183:Element(endtag)[181,188] " - "title"
+184:Element(endtag)[181,188] " - "title"
+185:Element(endtag)[181,188] " - "title"
+186:Element(endtag)[181,188] " - "title"
+187:Element(endtag)[181,188] " - "title"
+188:Element(endtag)[181,188] " - "title"
 189:Element(text)[189,202] "
     
         
@@ -256,7 +256,7 @@
 202:Element(text)[189,202] "
     
         
-203:Element(tag)[203,203] " - "<" - {}
+203:Element(tag)[203,225] " - "style" - {type, }
 204:Element(tag)[204,225] " - "style" - {type, }
 205:Element(tag)[204,225] " - "style" - {type, }
 206:Element(tag)[204,225] " - "style" - {type, }
@@ -278,7 +278,7 @@
 222:Element(tag)[204,225] " - "style" - {type, }
 223:Element(tag)[204,225] " - "style" - {type, }
 224:Element(tag)[204,225] " - "style" - {type, }
-225:Element(tag)[204,225] " - "style" - {type, }
+225:Element(tag)[203,225] " - "style" - {type, }
 226:Element(text)[226,307] "
             #search {height:100%;}
             #topmodule {align:right;}
@@ -607,14 +607,14 @@
             #search {height:100%;}
             #topmodule {align:right;}
         
-308:Element(tag)[308,309] " - "</" - {}
-309:Element(tag)[308,309] " - "</" - {}
-310:Element(tag)[308,309] " - "</" - {}
-311:Element(tag)[308,309] " - "</" - {}
-312:Element(tag)[308,309] " - "</" - {}
-313:Element(tag)[308,309] " - "</" - {}
-314:Element(tag)[308,309] " - "</" - {}
-315:Element(endtag)[310,315] " - "style"
+308:Element(endtag)[308,315] " - "style"
+309:Element(endtag)[308,315] " - "style"
+310:Element(endtag)[308,315] " - "style"
+311:Element(endtag)[308,315] " - "style"
+312:Element(endtag)[308,315] " - "style"
+313:Element(endtag)[308,315] " - "style"
+314:Element(endtag)[308,315] " - "style"
+315:Element(endtag)[308,315] " - "style"
 316:Element(text)[316,324] "
         
 317:Element(text)[316,324] "
@@ -633,7 +633,7 @@
         
 324:Element(text)[316,324] "
         
-325:Element(tag)[325,325] " - "<" - {}
+325:Element(tag)[325,377] " - "script" - {language, type, }
 326:Element(tag)[326,377] " - "script" - {language, type, }
 327:Element(tag)[326,377] " - "script" - {language, type, }
 328:Element(tag)[326,377] " - "script" - {language, type, }
@@ -685,148 +685,138 @@
 374:Element(tag)[326,377] " - "script" - {language, type, }
 375:Element(tag)[326,377] " - "script" - {language, type, }
 376:Element(tag)[326,377] " - "script" - {language, type, }
-377:Element(tag)[326,377] " - "script" - {language, type, }
-378:Element(text)[378,378] "
-
-379:Element(comment)[379,490] "
-380:Element(comment)[379,490] "
-381:Element(comment)[379,490] "
-382:Element(comment)[379,490] "
-383:Element(comment)[379,490] "
-384:Element(comment)[379,490] "
-385:Element(comment)[379,490] "
-386:Element(comment)[379,490] "
-387:Element(comment)[379,490] "
-388:Element(comment)[379,490] "
-389:Element(comment)[379,490] "
-390:Element(comment)[379,490] "
-391:Element(comment)[379,490] "
-392:Element(comment)[379,490] "
-393:Element(comment)[379,490] "
-394:Element(comment)[379,490] "
-395:Element(comment)[379,490] "
-396:Element(comment)[379,490] "
-397:Element(comment)[379,490] "
-398:Element(comment)[379,490] "
-399:Element(comment)[379,490] "
-400:Element(comment)[379,490] "
-401:Element(comment)[379,490] "
-402:Element(comment)[379,490] "
-403:Element(comment)[379,490] "
-404:Element(comment)[379,490] "
-405:Element(comment)[379,490] "
-406:Element(comment)[379,490] "
-407:Element(comment)[379,490] "
-408:Element(comment)[379,490] "
-409:Element(comment)[379,490] "
-410:Element(comment)[379,490] "
-411:Element(comment)[379,490] "
-412:Element(comment)[379,490] "
-413:Element(comment)[379,490] "
-414:Element(comment)[379,490] "
-415:Element(comment)[379,490] "
-416:Element(comment)[379,490] "
-417:Element(comment)[379,490] "
-418:Element(comment)[379,490] "
-419:Element(comment)[379,490] "
-420:Element(comment)[379,490] "
-421:Element(comment)[379,490] "
-422:Element(comment)[379,490] "
-423:Element(comment)[379,490] "
-424:Element(comment)[379,490] "
-425:Element(comment)[379,490] "
-426:Element(comment)[379,490] "
-427:Element(comment)[379,490] "
-428:Element(comment)[379,490] "
-429:Element(comment)[379,490] "
-430:Element(comment)[379,490] "
-431:Element(comment)[379,490] "
-432:Element(comment)[379,490] "
-433:Element(comment)[379,490] "
-434:Element(comment)[379,490] "
-435:Element(comment)[379,490] "
-436:Element(comment)[379,490] "
-437:Element(comment)[379,490] "
-438:Element(comment)[379,490] "
-439:Element(comment)[379,490] "
-440:Element(comment)[379,490] "
-441:Element(comment)[379,490] "
-442:Element(comment)[379,490] "
-443:Element(comment)[379,490] "
-444:Element(comment)[379,490] "
-445:Element(comment)[379,490] "
-446:Element(comment)[379,490] "
-447:Element(comment)[379,490] "
-448:Element(comment)[379,490] "
-449:Element(comment)[379,490] "
-450:Element(comment)[379,490] "
-451:Element(comment)[379,490] "
-452:Element(comment)[379,490] "
-453:Element(comment)[379,490] "
-454:Element(comment)[379,490] "
-455:Element(comment)[379,490] "
-456:Element(comment)[379,490] "
-457:Element(comment)[379,490] "
-458:Element(comment)[379,490] "
-459:Element(comment)[379,490] "
-460:Element(comment)[379,490] "
-461:Element(comment)[379,490] "
-462:Element(comment)[379,490] "
-463:Element(comment)[379,490] "
-464:Element(comment)[379,490] "
-465:Element(comment)[379,490] "
-466:Element(comment)[379,490] "
-467:Element(comment)[379,490] "
-468:Element(comment)[379,490] "
-469:Element(comment)[379,490] "
-470:Element(comment)[379,490] "
-471:Element(comment)[379,490] "
-472:Element(comment)[379,490] "
-473:Element(comment)[379,490] "
-474:Element(comment)[379,490] "
-475:Element(comment)[379,490] "
-476:Element(comment)[379,490] "
-477:Element(comment)[379,490] "
-478:Element(comment)[379,490] "
-479:Element(comment)[379,490] "
-480:Element(comment)[379,490] "
-481:Element(comment)[379,490] "
-482:Element(comment)[379,490] "
-483:Element(comment)[379,490] "
-484:Element(comment)[379,490] "
-485:Element(comment)[379,490] "
-486:Element(comment)[379,490] "
-487:Element(comment)[379,490] "
-488:Element(comment)[379,490] "
-489:Element(comment)[379,490] "
-490:Element(comment)[379,490] "
-491:Element(text)[491,499] "
-        
-492:Element(text)[491,499] "
-        
-493:Element(text)[491,499] "
-        
-494:Element(text)[491,499] "
-        
-495:Element(text)[491,499] "
-        
-496:Element(text)[491,499] "
-        
-497:Element(text)[491,499] "
-        
-498:Element(text)[491,499] "
-        
-499:Element(text)[491,499] "
-        
-500:Element(tag)[500,501] " - "</" - {}
-501:Element(tag)[500,501] " - "</" - {}
-502:Element(tag)[500,501] " - "</" - {}
-503:Element(tag)[500,501] " - "</" - {}
-504:Element(tag)[500,501] " - "</" - {}
-505:Element(tag)[500,501] " - "</" - {}
-506:Element(tag)[500,501] " - "</" - {}
-507:Element(tag)[500,501] " - "</" - {}
-508:Element(endtag)[502,508] " - "script"
+377:Element(tag)[325,377] " - "script" - {language, type, }
+378:Element(script)[378,378] "
+379:Element(comment)[379,499] "
+380:Element(comment)[379,499] "
+381:Element(comment)[379,499] "
+382:Element(comment)[379,499] "
+383:Element(comment)[379,499] "
+384:Element(comment)[379,499] "
+385:Element(comment)[379,499] "
+386:Element(comment)[379,499] "
+387:Element(comment)[379,499] "
+388:Element(comment)[379,499] "
+389:Element(comment)[379,499] "
+390:Element(comment)[379,499] "
+391:Element(comment)[379,499] "
+392:Element(comment)[379,499] "
+393:Element(comment)[379,499] "
+394:Element(comment)[379,499] "
+395:Element(comment)[379,499] "
+396:Element(comment)[379,499] "
+397:Element(comment)[379,499] "
+398:Element(comment)[379,499] "
+399:Element(comment)[379,499] "
+400:Element(comment)[379,499] "
+401:Element(comment)[379,499] "
+402:Element(comment)[379,499] "
+403:Element(comment)[379,499] "
+404:Element(comment)[379,499] "
+405:Element(comment)[379,499] "
+406:Element(comment)[379,499] "
+407:Element(comment)[379,499] "
+408:Element(comment)[379,499] "
+409:Element(comment)[379,499] "
+410:Element(comment)[379,499] "
+411:Element(comment)[379,499] "
+412:Element(comment)[379,499] "
+413:Element(comment)[379,499] "
+414:Element(comment)[379,499] "
+415:Element(comment)[379,499] "
+416:Element(comment)[379,499] "
+417:Element(comment)[379,499] "
+418:Element(comment)[379,499] "
+419:Element(comment)[379,499] "
+420:Element(comment)[379,499] "
+421:Element(comment)[379,499] "
+422:Element(comment)[379,499] "
+423:Element(comment)[379,499] "
+424:Element(comment)[379,499] "
+425:Element(comment)[379,499] "
+426:Element(comment)[379,499] "
+427:Element(comment)[379,499] "
+428:Element(comment)[379,499] "
+429:Element(comment)[379,499] "
+430:Element(comment)[379,499] "
+431:Element(comment)[379,499] "
+432:Element(comment)[379,499] "
+433:Element(comment)[379,499] "
+434:Element(comment)[379,499] "
+435:Element(comment)[379,499] "
+436:Element(comment)[379,499] "
+437:Element(comment)[379,499] "
+438:Element(comment)[379,499] "
+439:Element(comment)[379,499] "
+440:Element(comment)[379,499] "
+441:Element(comment)[379,499] "
+442:Element(comment)[379,499] "
+443:Element(comment)[379,499] "
+444:Element(comment)[379,499] "
+445:Element(comment)[379,499] "
+446:Element(comment)[379,499] "
+447:Element(comment)[379,499] "
+448:Element(comment)[379,499] "
+449:Element(comment)[379,499] "
+450:Element(comment)[379,499] "
+451:Element(comment)[379,499] "
+452:Element(comment)[379,499] "
+453:Element(comment)[379,499] "
+454:Element(comment)[379,499] "
+455:Element(comment)[379,499] "
+456:Element(comment)[379,499] "
+457:Element(comment)[379,499] "
+458:Element(comment)[379,499] "
+459:Element(comment)[379,499] "
+460:Element(comment)[379,499] "
+461:Element(comment)[379,499] "
+462:Element(comment)[379,499] "
+463:Element(comment)[379,499] "
+464:Element(comment)[379,499] "
+465:Element(comment)[379,499] "
+466:Element(comment)[379,499] "
+467:Element(comment)[379,499] "
+468:Element(comment)[379,499] "
+469:Element(comment)[379,499] "
+470:Element(comment)[379,499] "
+471:Element(comment)[379,499] "
+472:Element(comment)[379,499] "
+473:Element(comment)[379,499] "
+474:Element(comment)[379,499] "
+475:Element(comment)[379,499] "
+476:Element(comment)[379,499] "
+477:Element(comment)[379,499] "
+478:Element(comment)[379,499] "
+479:Element(comment)[379,499] "
+480:Element(comment)[379,499] "
+481:Element(comment)[379,499] "
+482:Element(comment)[379,499] "
+483:Element(comment)[379,499] "
+484:Element(comment)[379,499] "
+485:Element(comment)[379,499] "
+486:Element(comment)[379,499] "
+487:Element(comment)[379,499] "
+488:Element(comment)[379,499] "
+489:Element(comment)[379,499] "
+490:Element(comment)[379,499] "
+491:Element(script)[491,499] "
+492:Element(script)[491,499] "
+493:Element(script)[491,499] "
+494:Element(script)[491,499] "
+495:Element(script)[491,499] "
+496:Element(script)[491,499] "
+497:Element(script)[491,499] "
+498:Element(script)[491,499] "
+499:Element(script)[491,499] "
+500:Element(endtag)[500,508] " - "script"
+501:Element(endtag)[500,508] " - "script"
+502:Element(endtag)[500,508] " - "script"
+503:Element(endtag)[500,508] " - "script"
+504:Element(endtag)[500,508] " - "script"
+505:Element(endtag)[500,508] " - "script"
+506:Element(endtag)[500,508] " - "script"
+507:Element(endtag)[500,508] " - "script"
+508:Element(endtag)[500,508] " - "script"
 509:Element(text)[509,518] "
     
     
@@ -857,13 +847,13 @@
 518:Element(text)[509,518] "
     
     
-519:Element(tag)[519,520] " - "</" - {}
-520:Element(tag)[519,520] " - "</" - {}
-521:Element(tag)[519,520] " - "</" - {}
-522:Element(tag)[519,520] " - "</" - {}
-523:Element(tag)[519,520] " - "</" - {}
-524:Element(tag)[519,520] " - "</" - {}
-525:Element(endtag)[521,525] " - "head"
+519:Element(endtag)[519,525] " - "head"
+520:Element(endtag)[519,525] " - "head"
+521:Element(endtag)[519,525] " - "head"
+522:Element(endtag)[519,525] " - "head"
+523:Element(endtag)[519,525] " - "head"
+524:Element(endtag)[519,525] " - "head"
+525:Element(endtag)[519,525] " - "head"
 526:Element(text)[526,530] "
     
 527:Element(text)[526,530] "
@@ -874,12 +864,12 @@
     
 530:Element(text)[526,530] "
     
-531:Element(tag)[531,531] " - "<" - {}
+531:Element(tag)[531,536] " - "body" - {}
 532:Element(tag)[532,536] " - "body" - {}
 533:Element(tag)[532,536] " - "body" - {}
 534:Element(tag)[532,536] " - "body" - {}
 535:Element(tag)[532,536] " - "body" - {}
-536:Element(tag)[532,536] " - "body" - {}
+536:Element(tag)[531,536] " - "body" - {}
 537:Element(text)[537,545] "
         
 538:Element(text)[537,545] "
@@ -898,11 +888,11 @@
         
 545:Element(text)[537,545] "
         
-546:Element(tag)[546,546] " - "<" - {}
+546:Element(tag)[546,550] " - "div" - {}
 547:Element(tag)[547,550] " - "div" - {}
 548:Element(tag)[547,550] " - "div" - {}
 549:Element(tag)[547,550] " - "div" - {}
-550:Element(tag)[547,550] " - "div" - {}
+550:Element(tag)[546,550] " - "div" - {}
 551:Element(text)[551,557] " &amp; 
 552:Element(text)[551,557] " &amp; 
 553:Element(text)[551,557] " &amp; 
@@ -910,12 +900,12 @@
 555:Element(text)[551,557] " &amp; 
 556:Element(text)[551,557] " &amp; 
 557:Element(text)[551,557] " &amp; 
-558:Element(tag)[558,559] " - "</" - {}
-559:Element(tag)[558,559] " - "</" - {}
-560:Element(tag)[558,559] " - "</" - {}
-561:Element(tag)[558,559] " - "</" - {}
-562:Element(tag)[558,559] " - "</" - {}
-563:Element(endtag)[560,563] " - "div"
+558:Element(endtag)[558,563] " - "div"
+559:Element(endtag)[558,563] " - "div"
+560:Element(endtag)[558,563] " - "div"
+561:Element(endtag)[558,563] " - "div"
+562:Element(endtag)[558,563] " - "div"
+563:Element(endtag)[558,563] " - "div"
 564:Element(text)[564,572] "
         
 565:Element(text)[564,572] "
@@ -934,7 +924,7 @@
         
 572:Element(text)[564,572] "
         
-573:Element(tag)[573,573] " - "<" - {}
+573:Element(tag)[573,590] " - "table" - {border, }
 574:Element(tag)[574,590] " - "table" - {border, }
 575:Element(tag)[574,590] " - "table" - {border, }
 576:Element(tag)[574,590] " - "table" - {border, }
@@ -951,7 +941,7 @@
 587:Element(tag)[574,590] " - "table" - {border, }
 588:Element(tag)[574,590] " - "table" - {border, }
 589:Element(tag)[574,590] " - "table" - {border, }
-590:Element(tag)[574,590] " - "table" - {border, }
+590:Element(tag)[573,590] " - "table" - {border, }
 591:Element(text)[591,603] "
             
 592:Element(text)[591,603] "
@@ -978,10 +968,10 @@
             
 603:Element(text)[591,603] "
             
-604:Element(tag)[604,604] " - "<" - {}
+604:Element(tag)[604,607] " - "tr" - {}
 605:Element(tag)[605,607] " - "tr" - {}
 606:Element(tag)[605,607] " - "tr" - {}
-607:Element(tag)[605,607] " - "tr" - {}
+607:Element(tag)[604,607] " - "tr" - {}
 608:Element(text)[608,624] "
                 
 609:Element(text)[608,624] "
@@ -1016,7 +1006,7 @@
                 
 624:Element(text)[608,624] "
                 
-625:Element(tag)[625,625] " - "<" - {}
+625:Element(tag)[625,659] " - "td" - {valign, style, }
 626:Element(tag)[626,659] " - "td" - {valign, style, }
 627:Element(tag)[626,659] " - "td" - {valign, style, }
 628:Element(tag)[626,659] " - "td" - {valign, style, }
@@ -1050,7 +1040,7 @@
 656:Element(tag)[626,659] " - "td" - {valign, style, }
 657:Element(tag)[626,659] " - "td" - {valign, style, }
 658:Element(tag)[626,659] " - "td" - {valign, style, }
-659:Element(tag)[626,659] " - "td" - {valign, style, }
+659:Element(tag)[625,659] " - "td" - {valign, style, }
 660:Element(text)[660,681] "
 
                     
@@ -1117,7 +1107,7 @@
 681:Element(text)[660,681] "
 
                     
-682:Element(tag)[682,682] " - "<" - {}
+682:Element(tag)[682,711] " - "div" - {style, }
 683:Element(tag)[683,711] " - "div" - {style, }
 684:Element(tag)[683,711] " - "div" - {style, }
 685:Element(tag)[683,711] " - "div" - {style, }
@@ -1146,7 +1136,7 @@
 708:Element(tag)[683,711] " - "div" - {style, }
 709:Element(tag)[683,711] " - "div" - {style, }
 710:Element(tag)[683,711] " - "div" - {style, }
-711:Element(tag)[683,711] " - "div" - {style, }
+711:Element(tag)[682,711] " - "div" - {style, }
 712:Element(text)[712,736] "
                         
 713:Element(text)[712,736] "
@@ -1197,7 +1187,7 @@
                         
 736:Element(text)[712,736] "
                         
-737:Element(tag)[737,737] " - "<" - {}
+737:Element(tag)[737,845] " - "a" - {href, title, }
 738:Element(tag)[738,845] " - "a" - {href, title, }
 739:Element(tag)[738,845] " - "a" - {href, title, }
 740:Element(tag)[738,845] " - "a" - {href, title, }
@@ -1305,8 +1295,8 @@
 842:Element(tag)[738,845] " - "a" - {href, title, }
 843:Element(tag)[738,845] " - "a" - {href, title, }
 844:Element(tag)[738,845] " - "a" - {href, title, }
-845:Element(tag)[738,845] " - "a" - {href, title, }
-846:Element(tag)[846,846] " - "<" - {}
+845:Element(tag)[737,845] " - "a" - {href, title, }
+846:Element(tag)[846,1044] " - "img" - {src, alt, style, border, }
 847:Element(tag)[847,1044] " - "img" - {src, alt, style, border, }
 848:Element(tag)[847,1044] " - "img" - {src, alt, style, border, }
 849:Element(tag)[847,1044] " - "img" - {src, alt, style, border, }
@@ -1504,11 +1494,11 @@
 1041:Element(tag)[847,1044] " - "img" - {src, alt, style, border, }
 1042:Element(tag)[847,1044] " - "img" - {src, alt, style, border, }
 1043:Element(tag)[847,1044] " - "img" - {src, alt, style, border, }
-1044:Element(tag)[847,1044] " - "img" - {src, alt, style, border, }
-1045:Element(tag)[1045,1046] " - "</" - {}
-1046:Element(tag)[1045,1046] " - "</" - {}
-1047:Element(tag)[1045,1046] " - "</" - {}
-1048:Element(endtag)[1047,1048] " - "a"
+1044:Element(tag)[846,1044] " - "img" - {src, alt, style, border, }
+1045:Element(endtag)[1045,1048] " - "a"
+1046:Element(endtag)[1045,1048] " - "a"
+1047:Element(endtag)[1045,1048] " - "a"
+1048:Element(endtag)[1045,1048] " - "a"
 1049:Element(text)[1049,1073] "
                         
 1050:Element(text)[1049,1073] "
@@ -1559,7 +1549,7 @@
                         
 1073:Element(text)[1049,1073] "
                         
-1074:Element(tag)[1074,1074] " - "<" - {}
+1074:Element(tag)[1074,1140] " - "h2" - {style, }
 1075:Element(tag)[1075,1140] " - "h2" - {style, }
 1076:Element(tag)[1075,1140] " - "h2" - {style, }
 1077:Element(tag)[1075,1140] " - "h2" - {style, }
@@ -1625,7 +1615,7 @@
 1137:Element(tag)[1075,1140] " - "h2" - {style, }
 1138:Element(tag)[1075,1140] " - "h2" - {style, }
 1139:Element(tag)[1075,1140] " - "h2" - {style, }
-1140:Element(tag)[1075,1140] " - "h2" - {style, }
+1140:Element(tag)[1074,1140] " - "h2" - {style, }
 1141:Element(text)[1141,1186] "Building JAX-WS 2.0 Services with NetBeans 5.0
 1142:Element(text)[1141,1186] "Building JAX-WS 2.0 Services with NetBeans 5.0
 1143:Element(text)[1141,1186] "Building JAX-WS 2.0 Services with NetBeans 5.0
@@ -1672,11 +1662,11 @@
 1184:Element(text)[1141,1186] "Building JAX-WS 2.0 Services with NetBeans 5.0
 1185:Element(text)[1141,1186] "Building JAX-WS 2.0 Services with NetBeans 5.0
 1186:Element(text)[1141,1186] "Building JAX-WS 2.0 Services with NetBeans 5.0
-1187:Element(tag)[1187,1188] " - "</" - {}
-1188:Element(tag)[1187,1188] " - "</" - {}
-1189:Element(tag)[1187,1188] " - "</" - {}
-1190:Element(tag)[1187,1188] " - "</" - {}
-1191:Element(endtag)[1189,1191] " - "h2"
+1187:Element(endtag)[1187,1191] " - "h2"
+1188:Element(endtag)[1187,1191] " - "h2"
+1189:Element(endtag)[1187,1191] " - "h2"
+1190:Element(endtag)[1187,1191] " - "h2"
+1191:Element(endtag)[1187,1191] " - "h2"
 1192:Element(text)[1192,1744] "
                         This article explains how you can use the built-in features of NetBeans 5.0 to create JAX-WS 2.0 services quickly. Once the project has been created, it can be rebuilt (and tested!) with one command. While newer versions of NetBeans include the ability to create JAX-RPC 1.X web services, the JAX-WS 2.0 code is still under development. The steps to create a web service with JAX-WS 2.0 have been simplified, and you can turn a web application project in NetBeans into a web service with very few steps.
                         
@@ -3336,7 +3326,7 @@
 1744:Element(text)[1192,1744] "
                         This article explains how you can use the built-in features of NetBeans 5.0 to create JAX-WS 2.0 services quickly. Once the project has been created, it can be rebuilt (and tested!) with one command. While newer versions of NetBeans include the ability to create JAX-RPC 1.X web services, the JAX-WS 2.0 code is still under development. The steps to create a web service with JAX-WS 2.0 have been simplified, and you can turn a web application project in NetBeans into a web service with very few steps.
                         
-1745:Element(tag)[1745,1745] " - "<" - {}
+1745:Element(tag)[1745,1797] " - "a" - {href, }
 1746:Element(tag)[1746,1797] " - "a" - {href, }
 1747:Element(tag)[1746,1797] " - "a" - {href, }
 1748:Element(tag)[1746,1797] " - "a" - {href, }
@@ -3388,7 +3378,7 @@
 1794:Element(tag)[1746,1797] " - "a" - {href, }
 1795:Element(tag)[1746,1797] " - "a" - {href, }
 1796:Element(tag)[1746,1797] " - "a" - {href, }
-1797:Element(tag)[1746,1797] " - "a" - {href, }
+1797:Element(tag)[1745,1797] " - "a" - {href, }
 1798:Element(text)[1798,1807] "Read more 
 1799:Element(text)[1798,1807] "Read more 
 1800:Element(text)[1798,1807] "Read more 
@@ -3399,7 +3389,7 @@
 1805:Element(text)[1798,1807] "Read more 
 1806:Element(text)[1798,1807] "Read more 
 1807:Element(text)[1798,1807] "Read more 
-1808:Element(tag)[1808,1808] " - "<" - {}
+1808:Element(tag)[1808,1890] " - "img" - {src, alt, width, height, border, }
 1809:Element(tag)[1809,1890] " - "img" - {src, alt, width, height, border, }
 1810:Element(tag)[1809,1890] " - "img" - {src, alt, width, height, border, }
 1811:Element(tag)[1809,1890] " - "img" - {src, alt, width, height, border, }
@@ -3481,11 +3471,11 @@
 1887:Element(tag)[1809,1890] " - "img" - {src, alt, width, height, border, }
 1888:Element(tag)[1809,1890] " - "img" - {src, alt, width, height, border, }
 1889:Element(tag)[1809,1890] " - "img" - {src, alt, width, height, border, }
-1890:Element(tag)[1809,1890] " - "img" - {src, alt, width, height, border, }
-1891:Element(tag)[1891,1892] " - "</" - {}
-1892:Element(tag)[1891,1892] " - "</" - {}
-1893:Element(tag)[1891,1892] " - "</" - {}
-1894:Element(endtag)[1893,1894] " - "a"
+1890:Element(tag)[1808,1890] " - "img" - {src, alt, width, height, border, }
+1891:Element(endtag)[1891,1894] " - "a"
+1892:Element(endtag)[1891,1894] " - "a"
+1893:Element(endtag)[1891,1894] " - "a"
+1894:Element(endtag)[1891,1894] " - "a"
 1895:Element(text)[1895,1915] "
                     
 1896:Element(text)[1895,1915] "
@@ -3528,12 +3518,12 @@
                     
 1915:Element(text)[1895,1915] "
                     
-1916:Element(tag)[1916,1917] " - "</" - {}
-1917:Element(tag)[1916,1917] " - "</" - {}
-1918:Element(tag)[1916,1917] " - "</" - {}
-1919:Element(tag)[1916,1917] " - "</" - {}
-1920:Element(tag)[1916,1917] " - "</" - {}
-1921:Element(endtag)[1918,1921] " - "div"
+1916:Element(endtag)[1916,1921] " - "div"
+1917:Element(endtag)[1916,1921] " - "div"
+1918:Element(endtag)[1916,1921] " - "div"
+1919:Element(endtag)[1916,1921] " - "div"
+1920:Element(endtag)[1916,1921] " - "div"
+1921:Element(endtag)[1916,1921] " - "div"
 1922:Element(text)[1922,1938] "
                 
 1923:Element(text)[1922,1938] "
@@ -3568,11 +3558,11 @@
                 
 1938:Element(text)[1922,1938] "
                 
-1939:Element(tag)[1939,1940] " - "</" - {}
-1940:Element(tag)[1939,1940] " - "</" - {}
-1941:Element(tag)[1939,1940] " - "</" - {}
-1942:Element(tag)[1939,1940] " - "</" - {}
-1943:Element(endtag)[1941,1943] " - "td"
+1939:Element(endtag)[1939,1943] " - "td"
+1940:Element(endtag)[1939,1943] " - "td"
+1941:Element(endtag)[1939,1943] " - "td"
+1942:Element(endtag)[1939,1943] " - "td"
+1943:Element(endtag)[1939,1943] " - "td"
 1944:Element(text)[1944,1956] "
             
 1945:Element(text)[1944,1956] "
@@ -3599,11 +3589,11 @@
             
 1956:Element(text)[1944,1956] "
             
-1957:Element(tag)[1957,1958] " - "</" - {}
-1958:Element(tag)[1957,1958] " - "</" - {}
-1959:Element(tag)[1957,1958] " - "</" - {}
-1960:Element(tag)[1957,1958] " - "</" - {}
-1961:Element(endtag)[1959,1961] " - "tr"
+1957:Element(endtag)[1957,1961] " - "tr"
+1958:Element(endtag)[1957,1961] " - "tr"
+1959:Element(endtag)[1957,1961] " - "tr"
+1960:Element(endtag)[1957,1961] " - "tr"
+1961:Element(endtag)[1957,1961] " - "tr"
 1962:Element(text)[1962,1970] "
         
 1963:Element(text)[1962,1970] "
@@ -3622,14 +3612,14 @@
         
 1970:Element(text)[1962,1970] "
         
-1971:Element(tag)[1971,1972] " - "</" - {}
-1972:Element(tag)[1971,1972] " - "</" - {}
-1973:Element(tag)[1971,1972] " - "</" - {}
-1974:Element(tag)[1971,1972] " - "</" - {}
-1975:Element(tag)[1971,1972] " - "</" - {}
-1976:Element(tag)[1971,1972] " - "</" - {}
-1977:Element(tag)[1971,1972] " - "</" - {}
-1978:Element(endtag)[1973,1978] " - "table"
+1971:Element(endtag)[1971,1978] " - "table"
+1972:Element(endtag)[1971,1978] " - "table"
+1973:Element(endtag)[1971,1978] " - "table"
+1974:Element(endtag)[1971,1978] " - "table"
+1975:Element(endtag)[1971,1978] " - "table"
+1976:Element(endtag)[1971,1978] " - "table"
+1977:Element(endtag)[1971,1978] " - "table"
+1978:Element(endtag)[1971,1978] " - "table"
 1979:Element(text)[1979,1990] "
   
         
@@ -3666,11 +3656,11 @@
 1990:Element(text)[1979,1990] "
   
         
-1991:Element(tag)[1991,1991] " - "<" - {}
-1992:Element(tag)[1992,1995] " - "div" - {}
-1993:Element(tag)[1992,1995] " - "div" - {}
-1994:Element(tag)[1992,1995] " - "div" - {}
-1995:Element(tag)[1992,1995] " - "div" - {}
+1991:Element(tag)[1991,1996] " - "div" - {}
+1992:Element(tag)[1992,1996] " - "div" - {}
+1993:Element(tag)[1992,1996] " - "div" - {}
+1994:Element(tag)[1992,1996] " - "div" - {}
+1995:Element(tag)[1992,1996] " - "div" - {}
 1996:Element(error)[1996,1996] "
 1997:Element(text)[1997,2023] " err="true"/>
         
@@ -3753,21 +3743,21 @@
 2023:Element(text)[1997,2023] " err="true"/>
         
     
-2024:Element(tag)[2024,2025] " - "</" - {}
-2025:Element(tag)[2024,2025] " - "</" - {}
-2026:Element(tag)[2024,2025] " - "</" - {}
-2027:Element(tag)[2024,2025] " - "</" - {}
-2028:Element(tag)[2024,2025] " - "</" - {}
-2029:Element(tag)[2024,2025] " - "</" - {}
-2030:Element(endtag)[2026,2030] " - "body"
+2024:Element(endtag)[2024,2030] " - "body"
+2025:Element(endtag)[2024,2030] " - "body"
+2026:Element(endtag)[2024,2030] " - "body"
+2027:Element(endtag)[2024,2030] " - "body"
+2028:Element(endtag)[2024,2030] " - "body"
+2029:Element(endtag)[2024,2030] " - "body"
+2030:Element(endtag)[2024,2030] " - "body"
 2031:Element(text)[2031,2031] "
 
-2032:Element(tag)[2032,2033] " - "</" - {}
-2033:Element(tag)[2032,2033] " - "</" - {}
-2034:Element(tag)[2032,2033] " - "</" - {}
-2035:Element(tag)[2032,2033] " - "</" - {}
-2036:Element(tag)[2032,2033] " - "</" - {}
-2037:Element(tag)[2032,2033] " - "</" - {}
-2038:Element(endtag)[2034,2038] " - "html"
+2032:Element(endtag)[2032,2038] " - "html"
+2033:Element(endtag)[2032,2038] " - "html"
+2034:Element(endtag)[2032,2038] " - "html"
+2035:Element(endtag)[2032,2038] " - "html"
+2036:Element(endtag)[2032,2038] " - "html"
+2037:Element(endtag)[2032,2038] " - "html"
+2038:Element(endtag)[2032,2038] " - "html"
 2039:Element(text)[2039,2039] "
 
