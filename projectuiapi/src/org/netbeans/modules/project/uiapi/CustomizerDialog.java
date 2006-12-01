@@ -59,7 +59,7 @@ public class CustomizerDialog {
     private static final String COMMAND_OK = "OK";          // NOI18N
     private static final String COMMAND_CANCEL = "CANCEL";  // NOI18N
 
-    public static Dialog createDialog( ActionListener okOptionListener, JPanel innerPane,
+    public static Dialog createDialog( ActionListener okOptionListener, final CustomizerPane innerPane,
             HelpCtx helpCtx, final ProjectCustomizer.Category[] categories ) {
 
         ListeningButton okButton = new ListeningButton(
@@ -114,6 +114,7 @@ public class CustomizerDialog {
 
         dialog.addWindowListener(new WindowAdapter() {
             public void windowClosed(WindowEvent e) {
+                innerPane.clearPanelComponentCache();
                 List<ProjectCustomizer.Category> queue = new LinkedList<ProjectCustomizer.Category>(Arrays.asList(categories));
 
                 while (!queue.isEmpty()) {

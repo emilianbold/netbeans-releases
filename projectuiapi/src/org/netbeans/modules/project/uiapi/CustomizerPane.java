@@ -24,6 +24,7 @@ import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.HashMap;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -50,6 +51,8 @@ public class CustomizerPane extends JPanel
     private GridBagConstraints errMessConstraints = new GridBagConstraints();
     
     private ProjectCustomizer.CategoryComponentProvider componentProvider;
+    
+    private HashMap<ProjectCustomizer.Category, JComponent> panelCache = new HashMap<ProjectCustomizer.Category, JComponent>();
     
     //private DialogDescriptor dialogDescriptor;
     
@@ -147,6 +150,11 @@ public class CustomizerPane extends JPanel
     // End of variables declaration//GEN-END:variables
     
     
+    public void clearPanelComponentCache() {
+        //should only happen when closign teh customizer..
+        panelCache.clear();
+    }
+    
     // HelpCtx.Provider implementation -----------------------------------------
     
     public HelpCtx getHelpCtx() {        
@@ -182,7 +190,11 @@ public class CustomizerPane extends JPanel
             customizerPanel.remove( currentCustomizer );
         }
 
-        JComponent newCustomizer = componentProvider.create( newCategory );
+        JComponent newCustomizer = panelCache.get(newCategory);
+        if (newCustomizer == null && !panelCache.containsKey(newCustomizer)) {
+            newCustomizer = componentProvider.create( newCategory );
+            panelCache.put(newCategory, newCustomizer);
+        }
 
         if ( newCustomizer != null ) {
             Utilities.getCategoryChangeSupport(newCategory).addPropertyChangeListener(this);
