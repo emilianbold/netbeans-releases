@@ -1170,9 +1170,8 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         
         /** Paint bumps to specific Graphics. */
         public void paint (Graphics g) {
-            Dimension size = this.getSize ();
-            int height = size.height - BOTGAP;
             if (useSynthIcon()) {
+                int height = Toolbar.this.getHeight() - BOTGAP;
                 Icon icon = UIManager.getIcon("ToolBar.handleIcon");
                 Region region = Region.TOOL_BAR;
                 SynthLookAndFeel laf = (SynthLookAndFeel)UIManager.getLookAndFeel();
@@ -1212,6 +1211,8 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
                     Logger.getLogger(Toolbar.class.getName()).log(Level.WARNING, null, exc);
                 }                    
             } else {
+                Dimension size = this.getSize();
+                int height = size.height - BOTGAP;
                 g.setColor (this.getBackground ());
 
                 for (int x = 0; x+1 < size.width; x+=4) {
@@ -1238,7 +1239,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
 
         /** @return preferred size */
         public Dimension getPreferredSize () {
-            return this.getMinimumSize ();
+            return new Dimension(WIDTH,Toolbar.this.getHeight() - BOTGAP - TOPGAP);
         }
 
         public Dimension getMaximumSize () {
