@@ -134,7 +134,24 @@ public class WindowsNativeUtils extends NativeUtils {
     
     
     //////////////////////////////////////////////////////////////////////////
+    // file access
+    // windows API constants
+    private static final int FILE_READ_DATA = 0;
+    private static final int FILE_LIST_DIRECTORY = 0;
+    private static final int FILE_WRITE_DATA = 1;
+    private static final int FILE_ADD_FILE =1;
+    private static final int FILE_APPEND_DATA = 4;
+    private static final int FILE_ADD_SUBDIRECTORY = 4;
+    private static final int FILE_READ_EA = 8;
+    private static final int FILE_WRITE_EA = 16;
+    private static final int FILE_EXECUTE = 32;
+    private static final int FILE_TRAVERSE = 32;
+    private static final int FILE_DELETE_CHILD = 64;
+    private static final int FILE_READ_ATTRIBUTES = 128;
+    private static final int FILE_WRITE_ATTRIBUTES = 256;
+    private static final int FILE_DELETE = 65536;
     
+    //////////////////////////////////////////////////////////////////////////
     
     private static final WindowsRegistry registry = new WindowsRegistry();
     
@@ -690,10 +707,19 @@ public class WindowsNativeUtils extends NativeUtils {
         }
     }
     
-    public boolean checkFileAccess(File file, boolean isReadNotWrite) throws NativeException {
+    public boolean checkFileAccess(File file, boolean isReadNotModify) throws NativeException {
         int result = 0;
         try {
-            result = checkAccessTokenAccessLevel0(file.getPath(),(isReadNotWrite) ? 1 : 2);
+            int accessLevel = 0;
+            if(isReadNotModify) {
+                accessLevel = FILE_READ_DATA | FILE_LIST_DIRECTORY;                 
+            } else {
+                accessLevel  = FILE_ADD_FILE |
+                        FILE_ADD_SUBDIRECTORY |
+                        FILE_APPEND_DATA |
+                        FILE_WRITE_DATA;            
+            }
+            result = checkAccessTokenAccessLevel0(file.getPath(), accessLevel);
         } catch (UnsatisfiedLinkError e) {
             throw new NativeException("Cannot access native method", e);
         }

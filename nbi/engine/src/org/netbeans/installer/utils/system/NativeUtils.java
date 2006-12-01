@@ -104,7 +104,7 @@ public abstract class NativeUtils {
     
     public abstract void correctFilesPermissions(File parent) throws IOException;
     
-    public boolean checkFileAccess(File file, boolean isReadNotWrite) throws NativeException {
+    public boolean checkFileAccess(File file, boolean isReadNotModify) throws NativeException {
         return true;
     }
     // protected abstract ///////////////////////////////////////////////////////////

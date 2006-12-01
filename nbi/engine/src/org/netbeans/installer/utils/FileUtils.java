@@ -60,6 +60,7 @@ public final class FileUtils {
     
     public static final String SLASH       = "/";
     public static final String METAINF     = "META-INF";
+
     
     /////////////////////////////////////////////////////////////////////////////////
     // Static
@@ -502,30 +503,40 @@ public final class FileUtils {
     private static boolean canAccessDirectoryReal(File file, boolean isReadNotWrite) {
         if(isReadNotWrite) {
             boolean result = (file.listFiles()!=null);
-            //LogManager.log(ErrorLevel.DEBUG, "Real Level Access DIR: " + ((result) ? "TRUE" : "FALSE"));
+//            LogManager.indent();
+//            LogManager.log(ErrorLevel.DEBUG, "READ: Real Level Access DIR: " + ((result) ? "TRUE" : "FALSE"));
+//            LogManager.unindent();
             return result;
         } else {
             try {
                 FileUtils.createTempFile(file).delete();
-                //LogManager.log(ErrorLevel.DEBUG, "Real Level Access FILE: TRUE");
+//                LogManager.indent();
+//                LogManager.log(ErrorLevel.DEBUG, "WRITE: Real Level Access DIR: TRUE");
+//                LogManager.unindent();
                 return true;
             } catch (IOException e) {
-                //LogManager.log(ErrorLevel.DEBUG, "Real Level Access FILE: FALSE");
+//                LogManager.indent();
+//                LogManager.log(ErrorLevel.DEBUG, "WRITE: Real Level Access DIR: FALSE");
+//                LogManager.unindent();
                 return false;
             }
         }
     }
     private static boolean canAccessFileReal(File file, boolean isReadNotWrite) {
         Closeable stream = null;
+        LogManager.indent();
         try {
             stream = (isReadNotWrite) ? new FileInputStream(file) :
-                new FileOutputStream(file) ;
-            //LogManager.log(ErrorLevel.DEBUG, "Real Level Access File: TRUE");
+                new FileOutputStream(file) ;            
+            //LogManager.log(ErrorLevel.DEBUG, 
+            //        ((isReadNotWrite) ? "READ:" : "WRITE:") + "Real Level Access File: TRUE");
             return true;
         } catch (IOException ex) {
-            //LogManager.log(ErrorLevel.DEBUG, "Real Level Access File: FALSE");
+            //LogManager.log(ErrorLevel.DEBUG, 
+            //        ((isReadNotWrite) ? "READ:" : "WRITE:") + "Real Level Access File: FALSE");
             return false;
         } finally {
+            LogManager.unindent();
             if(stream!=null) {
                 try {
                     stream.close();
@@ -537,8 +548,9 @@ public final class FileUtils {
     }
     private static boolean canAccessFile(File checkingFile, boolean isReadNotWrite) {
         File file = checkingFile;
+        boolean existsingFile = file.exists();
         //if file doesn`t exist then get it existing parent
-        if(!file.exists()) {
+        if(!existsingFile) {
             File parent = file;
             do {
                 parent = parent.getParentFile();
@@ -549,8 +561,11 @@ public final class FileUtils {
             } else {
                 file = parent;
             }
-        }
-        //first of all check java implementation
+        } 
+        
+        //first of all check java implementation    
+        //LogManager.log("");
+        //LogManager.log( ((isReadNotWrite) ? "READ " : "WRITE ") + "Checking file(dir): " + file);
         if ((isReadNotWrite) ? file.canRead() : file.canWrite()) {
             boolean result = true;
             boolean needCheckDirectory = true;
@@ -558,6 +573,7 @@ public final class FileUtils {
             try {
                 // Native checking
                 result = SystemUtils.getNativeUtils().checkFileAccess(file, isReadNotWrite);
+                //LogManager.indent();
                 //LogManager.log(ErrorLevel.DEBUG, "OS Level Access File: " + ((result) ? "TRUE" : "FALSE"));
                 if(!isReadNotWrite) {
                     // we don`t want to check for writing if OS says smth specific
@@ -568,6 +584,7 @@ public final class FileUtils {
                 //LogManager.log(ErrorLevel.DEBUG, "OS Level Access File: ERROR!!!");
                 LogManager.log(ErrorLevel.MESSAGE, ex);
             }
+            //LogManager.unindent();
             if(!result) { // some limitations by OS
                 return false;
             }
@@ -580,7 +597,7 @@ public final class FileUtils {
                 return true;
             }
         } else {
-            //LogManager.log(ErrorLevel.DEBUG, "Java Level Access: FALSE");
+            LogManager.log(ErrorLevel.DEBUG, "Java Level Access: FALSE");
             return false;
         }
     }
