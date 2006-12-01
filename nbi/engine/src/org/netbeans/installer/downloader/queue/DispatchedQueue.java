@@ -51,7 +51,7 @@ public class DispatchedQueue extends QueueBase {
   public synchronized void reset() {
     final boolean wasActive = dispatcher.isActive();
     if (wasActive) dispatcher.stop();
-    for (String id: id2Pumping.keySet()) {
+    for (String id: id2Pumping.keySet().toArray(new String[0])) {
       delete(id);
     }
     if (wasActive) dispatcher.start();
