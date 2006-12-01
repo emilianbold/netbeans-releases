@@ -203,7 +203,7 @@ public class JavaSettingsDefaults extends ExtSettingsDefaults {
                 +    "${cursor}\n"
                 + "}\n"
         );
-        javaAbbrevMap.put("soutv", "System.out.print(\"${EXP instanceof=\"<any>\" default=\"exp\"} = \" + ${EXP});");
+        javaAbbrevMap.put("soutv", "System.out.println(\"${EXP instanceof=\"<any>\" default=\"exp\"} = \" + ${EXP});");
         javaAbbrevMap.put("whilen",
                 "while(${ENUM instanceof=\"java.util.Enumeration\" default=\"en\"}.hasMoreElements()) {\n"
                 +    "${TYPE rightSideType default=\"Object\"} ${ELEM newVarName default=\"elem\"} = ${TYPE_CAST cast default=\"\" editable=false} ${ENUM}.nextElement();\n"
