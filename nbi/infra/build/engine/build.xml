@@ -20,7 +20,12 @@
     $Id$
 ============================================================================ -->
 <project name="build-engine" default="usage" basedir=".">
+    <!-- load properties specific to this build script - we attempt to load 
+    them twice, since this build script is used both as a standalone script and
+    as a library -->
     <property file="${engine.dir}/build.properties"/>
+    <property file="build.properties"/>
+    
     <import file="${.common.dir}/build.xml" optional="false"/>
     
     <target name="all" depends="init,clean,build,release"/>
@@ -31,7 +36,14 @@
     
     <target name="clean" depends="init,-clean"/>
     
-    <target name="build" depends="init,-build"/>
+    <target name="build" depends="init,-build">
+        <signjar jar="${work.dir}/${engine.jar.file}" 
+                 keystore="${security.keystore}"
+                 storepass="${security.storepass}"
+                 alias="${security.alias}"/>
+        
+        <copy file="${work.dir}/${engine.jar.file}" todir="${dist.dir}"/>
+    </target>
     
     <target name="release" depends="init,build">
         <update-engine url="${release.url}"
