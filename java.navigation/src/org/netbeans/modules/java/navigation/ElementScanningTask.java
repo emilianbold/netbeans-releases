@@ -181,14 +181,13 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         private long getPosition( Element e ) {
              Trees trees = info.getTrees();
              CompilationUnitTree cut = info.getCompilationUnit();
-             TreePath treePath = trees.getPath(e);
+             Tree t = trees.getTree(e);
              
-             if ( treePath == null ) {
+             if ( t == null ) {
                  // Methods like values in Enums - should noty be shown in navigator
                  return -1;
              }
              
-             Tree t = treePath.getLeaf();
              SourcePositions sourcePositions = trees.getSourcePositions();
              
              return sourcePositions.getStartPosition(cut, t );
