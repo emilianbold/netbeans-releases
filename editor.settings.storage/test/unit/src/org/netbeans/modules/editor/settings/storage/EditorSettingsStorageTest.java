@@ -110,6 +110,39 @@ public class EditorSettingsStorageTest extends NbTestCase {
         assertEquals("Wrong waveUnderline color", 
             new Color(0x070809), attribs.getAttribute(EditorStyleConstants.WaveUnderlineColor));
     }
+
+    public void testFont() {
+        MimePath mimePath = MimePath.parse("text/x-type-A");
+        Lookup lookup = MimeLookup.getLookup(mimePath);
+        
+        FontColorSettings fcs = lookup.lookup(FontColorSettings.class);
+        assertNotNull("Can't find FontColorSettings", fcs);
+        
+        {
+        AttributeSet attribs = fcs.getTokenFontColors("test-font-cute-A");
+        assertNotNull("Can't find test-font-cute-A coloring", attribs);
+        assertEquals("Wrong font family", 
+            "Test Font Cute A", attribs.getAttribute(StyleConstants.FontFamily));
+        assertEquals("Wrong font size", 
+            new Integer(17), attribs.getAttribute(StyleConstants.FontSize));
+        assertEquals("Wrong font style (bold)", 
+            Boolean.TRUE, attribs.getAttribute(StyleConstants.Bold));
+        assertEquals("Wrong font style (italic)", 
+            Boolean.FALSE, attribs.getAttribute(StyleConstants.Italic));
+        }
+        {
+        AttributeSet attribs = fcs.getTokenFontColors("test-font-cute-B");
+        assertNotNull("Can't find test-font-cute-B coloring", attribs);
+        assertEquals("Wrong font family", 
+            "Test Font Cute B", attribs.getAttribute(StyleConstants.FontFamily));
+        assertEquals("Wrong font size", 
+            new Integer(13), attribs.getAttribute(StyleConstants.FontSize));
+        assertEquals("Wrong font style (bold)", 
+            Boolean.FALSE, attribs.getAttribute(StyleConstants.Bold));
+        assertEquals("Wrong font style (italic)", 
+            Boolean.TRUE, attribs.getAttribute(StyleConstants.Italic));
+        }
+    }
     
     private void checkSingleAttribute(String coloringName, Object attributeKey, int rgb) {
         MimePath mimePath = MimePath.parse("text/x-type-A");
