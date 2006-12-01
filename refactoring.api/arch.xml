@@ -115,7 +115,7 @@ Refactoring module functionality is covered by Refactoring Unit tests.
         </question>
 -->
  <answer id="arch-usecases">
- Refactoring module provides API refactorings. The idea is that at least the most elementary set of refactorings should be
+ Refactoring module provides API for refactorings. The idea is that at least the most elementary set of refactorings should be
  available via an API, so that the refactorings could be invoked programmatically. This is particulary useful when creating more
  complex refactorings. These can then be composed from the primitive refactorings accessible via an API using delegation. As an example we can use
  a simple rename refactoring. When renaming a class in a J2SE environment, simple rename refactoring (which renames all occurrences of
@@ -161,7 +161,8 @@ We can mention JSP files or deployment descriptors as an example.</li>
  The rest of this section provides simple orientational examples of API/SPI usage.
  <p/>
 <b>Refactoring API</b> can be used for programmatical invocation of refactorings and for pluging ui for these refactorings in.
-<p><i>Refactoring API Example:</i></p> Rename of java file<code>com/company/Test.java</code> to <code>com/company/RenamedTest.java</code>
+<p><i><b>Refactoring API Example:</b></i></p> 
+<i>Intention:</i> Programatically rename java file<code>com/company/Test.java</code> to <code>com/company/RenamedTest.java</code> and update references.
 <pre>
 
   	FileObject fo = ...com/company/Test.java...
@@ -187,9 +188,10 @@ We can mention JSP files or deployment descriptors as an example.</li>
 <b>Refactoring SPI</b> permit other modules to plug into existing refactorings and allow them to participate.
 Client of SPI must implement factory class <code>RefactoringPluginFactory</code> and register this class into Lookup.
 </p>
-<i>Refactoring SPI Example:</i>
+<i><b>Refactoring SPI Example 1:</b></i>
 <p>
-Plugin for RenameRefactoring which does rename in XML files 
+    <i>Intention:</i> Create a plugin for RenameRefactoring, which will participate in existing refactoring (let say in java refactoring) 
+    and renames references in XML files.
 </p>
 <pre>
 //implementation of factory class
@@ -258,23 +260,41 @@ public class J2EERenameRefactoringPlugin implements RefactoringPlugin {
         return null;
     }
 
-    public class XMLRenameRefactoringElement implements RefactoringElementImplementation, ExternalChange {
+    public class XMLRenameRefactoringElement implements RefactoringElementImplementation {
 
-        ...
-        public void performExternalChange() {
-           //do change
-        }
-        
-        public void undoExternalChange() {
-           //undo change
-        }
         public void performChange() {
-            JavaMetamodel.getManager().registerExtChange(this);
+            //do change
         }
     }
 </pre>
 
-<i>Refactoring SPI Example:</i>
+<i><b>Refactoring SPI Example 2:</b></i>
+<i>Intention:</i> Create a module, which will add Rename... to html files
+First you must create your ActionsImplementationProvider:
+<pre>
+public class MyProvider extends ActionsImplementationProvider {
+    
+  public boolean canRename(Lookup lookup) {
+    Node[] nodes = lookup.lookupAll(Node.class);
+    if (..one node selected and the node belongs to html...)
+      return true;
+    else 
+      return fals;
+ }
+
+  public Runnable renameImpl(Lookup selectedNodes) {
+    Node[] nodes = lookup.lookupAll(Node.class);
+    final FileObject fo = getFileFromNode(nodes[0]);
+    return new Runnable() {
+      public void run() {
+        UI.openRefactoringUI(new RenameRefactoringUI(fo);
+      }
+    }    
+  }
+}
+</pre>
+And of course your own RefactoringPlugin and RefactoringPluginFactory see Refactoring SPI Example 1.
+
  </answer>
 
 
@@ -414,7 +434,7 @@ Yes. We search for:
 <li>all instances of <api group="lookup" name="org.netbeans.modules.refactoring.spi.RefactoringPluginFactory" type="export" category="devel" /></li>
 <li>all instances of <api group="lookup" name="org.netbeans.modules.refactoring.spi.GuardedBlockHandlerFactory" type="export" category="devel" /></li>
 <li>an instance of  <api group="lookup" name="org.netbeans.modules.refactoring.spi.ReadOnlyFilesHandler" type="export" category="devel" /></li>
-<li>all instances of  <api group="lookup" name="org.netbeans.modules.refactoring.spi.RefactoringActionsFactoryImplementation" type="export" category="devel" /></li>
+<li>all instances of  <api group="lookup" name="org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider" type="export" category="devel" /></li>
 <li>all instances of  <api group="lookup" name="org.netbeans.modules.refactoring.spi.ui.TreeElementFactoryImplementation" type="export" category="devel" /></li>
 </ul>
  </answer>
