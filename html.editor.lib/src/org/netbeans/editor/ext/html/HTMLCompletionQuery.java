@@ -102,7 +102,17 @@ public class HTMLCompletionQuery implements CompletionQuery {
         doc.readLock();
         try {
             TokenHierarchy hi = TokenHierarchy.get(doc);
-            TokenSequence ts = hi.tokenSequence();
+            TokenSequence ts = hi.tokenSequence(HTMLTokenId.language());
+            if(ts == null) {
+                //HTML language is not top level one
+                ts = hi.tokenSequence();
+                int diff = ts.move(offset);
+                if(diff == Integer.MAX_VALUE) {
+                    return null; //no token found
+                } else {
+                    ts = ts.embedded(HTMLTokenId.language());
+                }
+            }
             
             int diff = ts.move(offset);
             if(diff == Integer.MAX_VALUE) return null; //no token found
@@ -340,7 +350,7 @@ public class HTMLCompletionQuery implements CompletionQuery {
             if( result == null ) return null;
             else return new HTMLCompletionResult( component, "Results for DOCTYPE " + dtd.getIdentifier(), result, offset, len ); // NOI18N
             
-        } catch (BadLocationException ble) { 
+        } catch (BadLocationException ble) {
             ErrorManager.getDefault().notify(ble);
         } finally {
             doc.readUnlock();

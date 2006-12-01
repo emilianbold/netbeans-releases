@@ -349,8 +349,9 @@ public class HTMLLexer implements Lexer<HTMLTokenId> {
                     switch( actChar ) {
                         case '/':
                         case '>':
-                            lexerState = INIT;
-                            return token(HTMLTokenId.TAG_OPEN);
+                            input.backup(1);
+                            lexerState = ISP_TAG_X;
+                            break;
                         case '<':
                             lexerState = INIT;
                             input.backup(1);
@@ -383,9 +384,11 @@ public class HTMLLexer implements Lexer<HTMLTokenId> {
                         case '"':
                             lexerState = ISI_VAL_DQUOT;
                             break;
+                        case '/':
                         case '>':
-                            lexerState = INIT;
-                            return token(HTMLTokenId.TAG_OPEN);
+                            input.backup(1);
+                            lexerState = ISP_TAG_X;
+                            break;
                         default:
                             lexerState = ISI_VAL; //everything else if attribute value
                             break;

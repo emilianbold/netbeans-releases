@@ -341,19 +341,29 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
         document.readLock();
         try {
             TokenHierarchy hi = TokenHierarchy.get(document);
-            TokenSequence ts = hi.tokenSequence();
+            TokenSequence ts = hi.tokenSequence(HTMLTokenId.language());
+            if(ts == null) {
+                //HTML language is not top level one
+                ts = hi.tokenSequence();
+                int diff = ts.move(offset);
+                if(diff == Integer.MAX_VALUE) {
+                    return null; //no token found
+                } else {
+                    ts = ts.embedded(HTMLTokenId.language());
+                }
+            }
             
-            int diff = ts.move(offset);
-            if(diff == Integer.MAX_VALUE) return null; //no token found
-            
-            Token item = ts.token();
-            
-            if(ts.language() != HTMLTokenId.language()) {
+            if(ts == null || ts.language() != HTMLTokenId.language()) {
                 //TODO - resolve embedded case
                 //now just the case where HTML is top level language is supported
                 ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "HTMLSyntaxSupport.getElementChain() - now just the case where HTML is top level language is supported!!!");
                 return null;
             }
+            
+            int diff = ts.move(offset);
+            if(diff == Integer.MAX_VALUE) return null; //no token found
+            
+            Token item = ts.token();
             
             int beginning = item.offset(hi);
             
@@ -464,10 +474,29 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
         document.readLock();
         try {
             TokenHierarchy hi = TokenHierarchy.get(document);
-            TokenSequence ts = hi.tokenSequence();
+            TokenSequence ts = hi.tokenSequence(HTMLTokenId.language());
+            
+            if(ts == null) {
+                //HTML language is not top level one
+                ts = hi.tokenSequence();
+                int diff = ts.move(offset);
+                if(diff == Integer.MAX_VALUE) {
+                    return null; //no token found
+                } else {
+                    ts = ts.embedded(HTMLTokenId.language());
+                }
+            }
+            
+            if(ts == null || ts.language() != HTMLTokenId.language()) {
+                //TODO - resolve embedded case
+                //now just the case where HTML is top level language is supported
+                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "HTMLSyntaxSupport.getElementChain() - now just the case where HTML is top level language is supported!!!");
+                return null;
+            }
             
             int diff = ts.move(offset);
             if(diff >= ts.token().length() || diff == Integer.MAX_VALUE) return null; //no token found
+            
             
             Token item = ts.token();
             int lastOffset = getTokenEnd( hi, item );
