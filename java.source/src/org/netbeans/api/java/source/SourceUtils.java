@@ -626,7 +626,7 @@ out:                for (URL e : roots) {
                 public void run(CompilationController control) throws Exception {
                     TypeElement type = control.getElements().getTypeElement(qualifiedName);
                     if (type == null) {
-
+                        return;
                     }
                     List<? extends ExecutableElement> methods = ElementFilter.methodsIn(type.getEnclosedElements());
                     for (ExecutableElement method : methods) {
