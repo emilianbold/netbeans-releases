@@ -72,7 +72,7 @@ Microsystems, Inc. All Rights Reserved.
     <fontcolor name="tag-directive" foreColor="blue" bgColor="ffeff0eb" default="default">
         <font style="bold"/>
     </fontcolor>
-    <fontcolor name="text" bgColor="fff2fd" c4default="default"/>
+    <fontcolor name="text" bgColor="fff2fd" default="default"/>
     <fontcolor name="whitespace" foreColor="black" bgColor="ffeff0eb" default="default">
         <font style="bold"/>
     </fontcolor>
