@@ -21,6 +21,7 @@
 package org.netbeans.installer.utils;
 
 import java.io.BufferedReader;
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
@@ -45,6 +46,7 @@ import java.util.regex.Pattern;
 import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import org.netbeans.installer.utils.exceptions.NativeException;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 
 /**
@@ -496,27 +498,47 @@ public final class FileUtils {
         }
     }
     
-    public static boolean canRead(File file) {
-        if (file.exists()) {
-            return file.canRead();
+    
+    private static boolean canAccessDirectoryReal(File file, boolean isReadNotWrite) {
+        if(isReadNotWrite) {
+            boolean result = (file.listFiles()!=null);
+            //LogManager.log(ErrorLevel.DEBUG, "Real Level Access DIR: " + ((result) ? "TRUE" : "FALSE"));
+            return result;
         } else {
-            File parent = file;
-            do {
-                parent = parent.getParentFile();
-            } while ((parent != null) && !parent.exists());
-            
-            if ((parent == null) || !parent.isDirectory()) {
+            try {
+                FileUtils.createTempFile(file).delete();
+                //LogManager.log(ErrorLevel.DEBUG, "Real Level Access FILE: TRUE");
+                return true;
+            } catch (IOException e) {
+                //LogManager.log(ErrorLevel.DEBUG, "Real Level Access FILE: FALSE");
                 return false;
-            } else {
-                return parent.canRead();
             }
         }
     }
-    
-    public static boolean canWrite(File file) {
-        if (file.exists()) {
-            return file.canWrite();
-        } else {
+    private static boolean canAccessFileReal(File file, boolean isReadNotWrite) {
+        Closeable stream = null;
+        try {
+            stream = (isReadNotWrite) ? new FileInputStream(file) :
+                new FileOutputStream(file) ;
+            //LogManager.log(ErrorLevel.DEBUG, "Real Level Access File: TRUE");
+            return true;
+        } catch (IOException ex) {
+            //LogManager.log(ErrorLevel.DEBUG, "Real Level Access File: FALSE");
+            return false;
+        } finally {
+            if(stream!=null) {
+                try {
+                    stream.close();
+                } catch (IOException ex) {
+                    LogManager.log(ErrorLevel.MESSAGE, ex);
+                }
+            }
+        }
+    }
+    private static boolean canAccessFile(File checkingFile, boolean isReadNotWrite) {
+        File file = checkingFile;
+        //if file doesn`t exist then get it existing parent
+        if(!file.exists()) {
             File parent = file;
             do {
                 parent = parent.getParentFile();
@@ -525,18 +547,51 @@ public final class FileUtils {
             if ((parent == null) || !parent.isDirectory()) {
                 return false;
             } else {
-                if (parent.canWrite()) {
-                    return true;
-                } else {
-                    try {
-                        createTempFile(parent).delete();
-                        return true;
-                    } catch (IOException e) {
-                        return false;
-                    }
-                }
+                file = parent;
             }
         }
+        //first of all check java implementation
+        if ((isReadNotWrite) ? file.canRead() : file.canWrite()) {
+            boolean result = true;
+            boolean needCheckDirectory = true;
+            
+            try {
+                // Native checking
+                result = SystemUtils.getNativeUtils().checkFileAccess(file, isReadNotWrite);
+                //LogManager.log(ErrorLevel.DEBUG, "OS Level Access File: " + ((result) ? "TRUE" : "FALSE"));
+                if(!isReadNotWrite) {
+                    // we don`t want to check for writing if OS says smth specific
+                    needCheckDirectory = false;
+                }
+            } catch (NativeException ex) {
+                // most probably there is smth wrong with OS
+                //LogManager.log(ErrorLevel.DEBUG, "OS Level Access File: ERROR!!!");
+                LogManager.log(ErrorLevel.MESSAGE, ex);
+            }
+            if(!result) { // some limitations by OS
+                return false;
+            }
+            
+            if(file.isFile()) {
+                return canAccessFileReal(file,isReadNotWrite);
+            } else if(file.isDirectory() && (needCheckDirectory)) {
+                return canAccessDirectoryReal(file,isReadNotWrite);
+            } else { // file is directory, access==read || (access==write & OSCheck==true)
+                return true;
+            }
+        } else {
+            //LogManager.log(ErrorLevel.DEBUG, "Java Level Access: FALSE");
+            return false;
+        }
+    }
+    
+    
+    public static boolean canRead(File file) {
+        return canAccessFile(file,true);
+    }
+    
+    public static boolean canWrite(File file) {
+        return canAccessFile(file,false);
     }
     
     public static void unzip(File file, File directory) throws IOException {

@@ -690,6 +690,16 @@ public class WindowsNativeUtils extends NativeUtils {
         }
     }
     
+    public boolean checkFileAccess(File file, boolean isReadNotWrite) throws NativeException {
+        int result = 0;
+        try {
+            result = checkAccessTokenAccessLevel0(file.getPath(),(isReadNotWrite) ? 1 : 2);
+        } catch (UnsatisfiedLinkError e) {
+            throw new NativeException("Cannot access native method", e);
+        }
+        return (result==1);
+    }
+    
     public synchronized void setFileAssociation(FileExtension ext, SystemApplication app, Properties props)  throws NativeException {
         if (ext==null && isEmpty(ext.getName())) {
             return;
@@ -1204,4 +1214,6 @@ public class WindowsNativeUtils extends NativeUtils {
     private native void deleteFileOnReboot0(String file);
     
     private native void notifyAssociationChanged0();
+    
+    private native int checkAccessTokenAccessLevel0(String path, int desiredLevel) throws NativeException;
 }

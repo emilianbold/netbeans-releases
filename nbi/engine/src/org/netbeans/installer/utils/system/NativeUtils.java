@@ -23,10 +23,8 @@ package org.netbeans.installer.utils.system;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import org.netbeans.installer.product.ProductComponent;
 import org.netbeans.installer.utils.helper.EnvironmentScope;
 import org.netbeans.installer.utils.helper.ErrorLevel;
@@ -106,6 +104,9 @@ public abstract class NativeUtils {
     
     public abstract void correctFilesPermissions(File parent) throws IOException;
     
+    public boolean checkFileAccess(File file, boolean isReadNotWrite) throws NativeException {
+        return true;
+    }
     // protected abstract ///////////////////////////////////////////////////////////
     protected abstract void scheduleCleanup(String libraryPath);
     
