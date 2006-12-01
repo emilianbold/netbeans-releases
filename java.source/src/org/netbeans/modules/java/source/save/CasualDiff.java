@@ -65,6 +65,7 @@ import org.netbeans.modules.java.source.save.TreeDiff.LineInsertionType;
 import static org.netbeans.modules.java.source.save.ListMatcher.*;
 import static com.sun.tools.javac.code.Flags.*;
 import static org.netbeans.modules.java.source.save.TreeDiff.*;
+import org.omg.PortableServer.THREAD_POLICY_ID;
 
 public class CasualDiff {
     protected ListBuffer<Diff> diffs;
@@ -462,16 +463,22 @@ public class CasualDiff {
         pointer = bounds[1];
     }
 
-    protected void diffVarDef(JCVariableDecl oldT, JCVariableDecl newT) throws IOException, BadLocationException {
-        if (nameChanged(oldT.name, newT.name))
-            append(Diff.name(oldT.pos, oldT.name, newT.name));
+    protected void diffVarDef(JCVariableDecl oldT, JCVariableDecl newT, int[] bounds) throws IOException, BadLocationException {
+        int localPointer = bounds[0];
         diffModifiers(oldT.mods, newT.mods, oldT);
         diffTree(oldT.vartype, newT.vartype);
+        if (nameChanged(oldT.name, newT.name)) {
+            printer.print(origText.substring(localPointer, oldT.pos));
+            printer.print(newT.name);
+            localPointer = oldT.pos + oldT.name.length();
+        }
         if (newT.init != null && oldT.init != null) {
             diffTree(oldT.init, newT.init);
         } else {
             diffTreeToken("=", endPos(oldT.init), oldT.init, newT.init, "");
         }
+        printer.print(origText.substring(localPointer, bounds[1]));
+//        pointer = bounds[1];
     }
 
     protected void diffBlock(JCBlock oldT, JCBlock newT) throws IOException, BadLocationException {
@@ -479,7 +486,6 @@ public class CasualDiff {
             append(Diff.flags(oldT.pos, endPos(oldT), oldT.flags, newT.flags));
         VeryPretty bodyPrinter = new VeryPretty(context, JavaFormatOptions.getDefault());
         diffList(oldT.stats, newT.stats, oldT.pos + 1, EstimatorFactory.members(), Measure.DEFAULT, bodyPrinter); // hint after open brace
-        System.err.println(bodyPrinter.toString());
     }
 
     protected void diffDoLoop(JCDoWhileLoop oldT, JCDoWhileLoop newT) {
@@ -1531,7 +1537,7 @@ public class CasualDiff {
               diffMethodDef((JCMethodDecl)oldT, (JCMethodDecl)newT, elementBounds);
               break;
           case JCTree.VARDEF:
-              diffVarDef((JCVariableDecl)oldT, (JCVariableDecl)newT);
+              diffVarDef((JCVariableDecl)oldT, (JCVariableDecl)newT, elementBounds);
               break;
           case JCTree.SKIP:
               break;
