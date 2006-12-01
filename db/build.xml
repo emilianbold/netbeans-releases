@@ -21,16 +21,35 @@ Microsystems, Inc. All Rights Reserved.
 
     <import file="../nbbuild/templates/projectized.xml"/>
 
-    <target name="compile-lib" depends="init">
+    <target name="init" depends="projectized.init">
+        <available property="have-jdbc-40" resource="java/sql/RowIdLifetime.class" classpath="${nbjdk.bootclasspath}"/>
+    </target>
+
+    <target name="compile-lib" depends="init,fake-jdbc-40">
         <mkdir dir="build/lib-classes" />
         <javac srcdir="libsrc" destdir="build/lib-classes" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4">
             <classpath>
                 <pathelement path="${lib.cp}"/>
+                <pathelement location="${fake-jdbc-40.build}"/>
             </classpath>
         </javac>
         <copy todir="build/lib-classes">
             <fileset dir="libsrc" excludes="${jar-excludes}" />
         </copy>
+    </target>
+
+    <target name="fake-jdbc-40" unless="have-jdbc-40">
+        <property name="fake-jdbc-40" value="build/fake-jdbc-40"/>
+        <property name="fake-jdbc-40.src" value="${fake-jdbc-40}/src"/>
+        <property name="fake-jdbc-40.build" value="${fake-jdbc-40}/build"/>
+        <mkdir dir="${fake-jdbc-40.src}/java/sql"/>
+        <echo file="${fake-jdbc-40.src}/java/sql/RowIdLifetime.java">
+            package java.sql;
+
+            public class RowIdLifetime {}
+        </echo>
+        <mkdir dir="${fake-jdbc-40.build}"/>
+        <javac srcdir="${fake-jdbc-40.src}" destdir="${fake-jdbc-40.build}"/>
     </target>
 
     <target name="jar-lib" depends="compile-lib">
