@@ -23,7 +23,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.modules.el.lexer.api.ELTokenId;
-import org.netbeans.modules.el.lexer.api.ELTokenId;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
@@ -41,17 +40,17 @@ import org.netbeans.spi.lexer.TokenFactory;
 
 public class ELLexer implements Lexer<ELTokenId> {
     
-    private static final Logger logger = Logger.getLogger(ELLexer.class.getName());
-    private static final boolean log = Boolean.getBoolean("j2ee_lexer_debug"); //NOI18N
+    private static final Logger LOGGER = Logger.getLogger(ELLexer.class.getName());
+    private static final boolean LOG = Boolean.getBoolean("j2ee_lexer_debug"); //NOI18N
     
     private static final int EOF = LexerInput.EOF;
     
-    private LexerInput input;
+    private final LexerInput input;
     
-    private TokenFactory<ELTokenId> tokenFactory;
+    private final TokenFactory<ELTokenId> tokenFactory;
     
     public Object state() {
-        return state;
+        return lexerState;
     }
     
     /** Internal state of the lexical analyzer before entering subanalyzer of
@@ -59,7 +58,7 @@ public class ELLexer implements Lexer<ELTokenId> {
      * this will be overwritten with state, which originated transition to
      * charref subanalyzer.
      */
-    private int state = INIT;
+    private int lexerState = INIT;
     
     
     /* Internal states used internally by analyzer. There
@@ -114,9 +113,9 @@ public class ELLexer implements Lexer<ELTokenId> {
         this.input = info.input();
         this.tokenFactory = info.tokenFactory();
         if (info.state() == null) {
-            this.state = INIT;
+            this.lexerState = INIT;
         } else {
-            this.state = ((Integer) info.state()).intValue();
+            this.lexerState = ((Integer) info.state()).intValue();
         }
     }
     
@@ -135,12 +134,12 @@ public class ELLexer implements Lexer<ELTokenId> {
      */
     public Token<ELTokenId> nextToken() {
         
-        int ch;
+        int actChar;
         
         while (true) {
-            ch = input.read();
+            actChar = input.read();
             
-            if (ch == EOF) {
+            if (actChar == EOF) {
                 if(input.readLengthEOF() == 1) {
                     return null; //just EOL is read
                 } else {
@@ -151,26 +150,26 @@ public class ELLexer implements Lexer<ELTokenId> {
                 }
             }
             
-            switch (state) { // switch by the current internal state
+            switch (lexerState) { // switch by the current internal state
                 case INIT:
                     
-                    switch (ch) {
+                    switch (actChar) {
                         case '"':
-                            state = ISI_STRING;
+                            lexerState = ISI_STRING;
                             break;
                         case '\'':
-                            state = ISI_CHAR;
+                            lexerState = ISI_CHAR;
                             break;
                         case '/':
                             return token(ELTokenId.DIV);
                         case '=':
-                            state = ISA_EQ;
+                            lexerState = ISA_EQ;
                             break;
                         case '>':
-                            state = ISA_GT;
+                            lexerState = ISA_GT;
                             break;
                         case '<':
-                            state = ISA_LT;
+                            lexerState = ISA_LT;
                             break;
                         case '+':
                             return token(ELTokenId.PLUS);
@@ -179,10 +178,10 @@ public class ELLexer implements Lexer<ELTokenId> {
                         case '*':
                             return token(ELTokenId.MUL);
                         case '|':
-                            state = ISA_PIPE;
+                            lexerState = ISA_PIPE;
                             break;
                         case '&':
-                            state = ISA_AND;
+                            lexerState = ISA_AND;
                             break;
                         case '[':
                             return token(ELTokenId.LBRACKET);
@@ -193,7 +192,7 @@ public class ELLexer implements Lexer<ELTokenId> {
                         case ':':
                             return token(ELTokenId.COLON);
                         case '!':
-                            state = ISA_EXCLAMATION;
+                            lexerState = ISA_EXCLAMATION;
                             break;
                         case '(':
                             return token(ELTokenId.LPAREN);
@@ -206,26 +205,26 @@ public class ELLexer implements Lexer<ELTokenId> {
                         case '\n':
                             return token(ELTokenId.EOL);
                         case '0':
-                            state = ISA_ZERO;
+                            lexerState = ISA_ZERO;
                             break;
                         case '.':
-                            state = ISA_DOT;
+                            lexerState = ISA_DOT;
                             break;
                         default:
                             // Check for whitespace
-                            if (Character.isWhitespace(ch)) {
-                                state = ISI_WHITESPACE;
+                            if (Character.isWhitespace(actChar)) {
+                                lexerState = ISI_WHITESPACE;
                                 break;
                             }
                             
                             // check whether it can be identifier
-                            if (Character.isJavaIdentifierStart(ch)){
-                                state = ISI_IDENTIFIER;
+                            if (Character.isJavaIdentifierStart(actChar)){
+                                lexerState = ISI_IDENTIFIER;
                                 break;
                             }
                             // Check for digit
-                            if (Character.isDigit(ch)) {
-                                state = ISI_INT;
+                            if (Character.isDigit(actChar)) {
+                                lexerState = ISI_INT;
                                 break;
                             }
                             return token(ELTokenId.INVALID_CHAR);
@@ -235,17 +234,17 @@ public class ELLexer implements Lexer<ELTokenId> {
                     
                     
                 case ISI_WHITESPACE: // white space
-                    if (!Character.isWhitespace(ch)) {
-                        state = INIT;
+                    if (!Character.isWhitespace(actChar)) {
+                        lexerState = INIT;
                         input.backup(1);
                         return token(ELTokenId.WHITESPACE);
                     }
                     break;
                     
                 case ISI_BRACKET:
-                    switch (ch){
+                    switch (actChar){
                         case ']':
-                            state = INIT;
+                            lexerState = INIT;
                             input.backup(1);
                             return token(ELTokenId.IDENTIFIER);
                         case '"':
@@ -275,40 +274,40 @@ public class ELLexer implements Lexer<ELTokenId> {
                         case '?':
                             return token(ELTokenId.QUESTION);
                         case '=':
-                            state = ISI_BRACKET_ISA_EQ;
+                            lexerState = ISI_BRACKET_ISA_EQ;
                             break;
                         case '>':
-                            state = ISI_BRACKET_ISA_GT;
+                            lexerState = ISI_BRACKET_ISA_GT;
                             break;
                         case '<':
-                            state = ISI_BRACKET_ISA_LT;
+                            lexerState = ISI_BRACKET_ISA_LT;
                             break;
                         case '|':
-                            state = ISI_BRACKET_ISA_PIPE;
+                            lexerState = ISI_BRACKET_ISA_PIPE;
                             break;
                         case '&':
-                            state = ISI_BRACKET_ISA_AND;
+                            lexerState = ISI_BRACKET_ISA_AND;
                             break;
                         case '0':
-                            state = ISI_BRACKET_ISA_ZERO;
+                            lexerState = ISI_BRACKET_ISA_ZERO;
                             break;
                         case '.':
-                            state = ISI_BRACKET_ISA_DOT;
+                            lexerState = ISI_BRACKET_ISA_DOT;
                             break;
                         default :
                             // Check for whitespace
-                            if (Character.isWhitespace(ch)) {
-                                state = ISI_BRACKET_A_WHITESPACE;
+                            if (Character.isWhitespace(actChar)) {
+                                lexerState = ISI_BRACKET_A_WHITESPACE;
                                 break;
                             }
-                            if (Character.isJavaIdentifierStart(ch)){
+                            if (Character.isJavaIdentifierStart(actChar)){
                                 // - System.out.print(" state->ISI_IDENTIFIER ");
-                                state = ISI_BRACKET_A_IDENTIFIER;
+                                lexerState = ISI_BRACKET_A_IDENTIFIER;
                                 break;
                             }
                             // Check for digit
-                            if (Character.isDigit(ch)) {
-                                state = ISI_BRACKET_ISI_INT;
+                            if (Character.isDigit(actChar)) {
+                                lexerState = ISI_BRACKET_ISI_INT;
                                 break;
                             }
                             return token(ELTokenId.INVALID_CHAR);
@@ -317,8 +316,8 @@ public class ELLexer implements Lexer<ELTokenId> {
                     break;
                     
                 case ISI_BRACKET_A_WHITESPACE:
-                    if (!Character.isWhitespace(ch)) {
-                        state = ISI_BRACKET;
+                    if (!Character.isWhitespace(actChar)) {
+                        lexerState = ISI_BRACKET;
                         input.backup(1);
                         return token(ELTokenId.WHITESPACE);
                     }
@@ -326,103 +325,106 @@ public class ELLexer implements Lexer<ELTokenId> {
                     
                 case ISI_BRACKET_ISA_EQ:
                 case ISA_EQ:
-                    switch (ch) {
+                    switch (actChar) {
                         case '=':
-                            state = INIT;
+                            lexerState = INIT;
                             return  token(ELTokenId.EQ_EQ);
                         default:
-                            state = (state == ISI_BRACKET_ISA_EQ) ? ISI_BRACKET : INIT;
+                            lexerState = (lexerState == ISI_BRACKET_ISA_EQ) ? ISI_BRACKET : INIT;
                             input.backup(1);
+                            break;
                     }
                     break;
                     
                 case ISI_BRACKET_ISA_GT:
                 case ISA_GT:
-                    switch (ch) {
+                    switch (actChar) {
                         case '=':
-                            state = INIT;
+                            lexerState = INIT;
                             return token(ELTokenId.GT_EQ);
                         default:
-                            state = (state == ISI_BRACKET_ISA_GT) ? ISI_BRACKET : INIT;
+                            lexerState = (lexerState == ISI_BRACKET_ISA_GT) ? ISI_BRACKET : INIT;
                             input.backup(1);
                             return token(ELTokenId.GT);
                     }
                     //break;
                 case ISI_BRACKET_ISA_LT:
                 case ISA_LT:
-                    switch (ch) {
+                    switch (actChar) {
                         case '=':
-                            state = INIT;
+                            lexerState = INIT;
                             return token(ELTokenId.LT_EQ);
                         default:
-                            state = (state == ISI_BRACKET_ISA_LT) ? ISI_BRACKET : INIT;
+                            lexerState = (lexerState == ISI_BRACKET_ISA_LT) ? ISI_BRACKET : INIT;
                             input.backup(1);
                             return token(ELTokenId.LT);
                     }
                     //break;
                 case ISI_BRACKET_ISA_PIPE:
                 case ISA_PIPE:
-                    switch (ch) {
+                    switch (actChar) {
                         case '|':
-                            state = INIT;
+                            lexerState = INIT;
                             return token(ELTokenId.OR_OR);
                         default:
-                            state = (state == ISI_BRACKET_ISA_PIPE) ? ISI_BRACKET : INIT;
+                            lexerState = (lexerState == ISI_BRACKET_ISA_PIPE) ? ISI_BRACKET : INIT;
                             input.backup(1);
+                            break;
                     }
                     break;
                 case ISI_BRACKET_ISA_AND:
                 case ISA_AND:
-                    switch (ch) {
+                    switch (actChar) {
                         case '&':
-                            state = INIT;
+                            lexerState = INIT;
                             return token(ELTokenId.AND_AND);
                         default:
-                            state = (state == ISI_BRACKET_ISA_AND) ? ISI_BRACKET : INIT;
+                            lexerState = (lexerState == ISI_BRACKET_ISA_AND) ? ISI_BRACKET : INIT;
                             input.backup(1);
+                            break;
                     }
                     break;
                 case ISA_EXCLAMATION:
-                    switch (ch) {
+                    switch (actChar) {
                         case '=':
-                            state = INIT;
+                            lexerState = INIT;
                             return token(ELTokenId.NOT_EQ);
                         default:
-                            state = INIT;
+                            lexerState = INIT;
                             input.backup(1);
                             return token(ELTokenId.NOT);
                     }
                 case ISI_STRING:
-                    switch (ch) {
+                    switch (actChar) {
                         case '\\':
-                            state = ISI_STRING_A_BSLASH;
+                            lexerState = ISI_STRING_A_BSLASH;
                             break;
                         case '\n':
-                            state = INIT;
+                            lexerState = INIT;
                             input.backup(1);
                             return token(ELTokenId.STRING_LITERAL);
                         case '"': // NOI18N
-                            state = INIT;
+                            lexerState = INIT;
                             return token(ELTokenId.STRING_LITERAL);
                     }
                     break;
                 case ISI_STRING_A_BSLASH:
-                    state = ISI_STRING;
+                    lexerState = ISI_STRING;
                     break;
                 case ISI_BRACKET_A_IDENTIFIER:
                 case ISI_IDENTIFIER:
-                    if (!(Character.isJavaIdentifierPart(ch))){
-                        switch (state){
+                    if (!(Character.isJavaIdentifierPart(actChar))){
+                        switch (lexerState){
                             case ISI_IDENTIFIER:
-                                state = INIT; break;
+                                lexerState = INIT; break;
                             case ISI_BRACKET_A_IDENTIFIER:
-                                state = ISI_BRACKET;
+                                lexerState = ISI_BRACKET;
                                 break;
                         }
                         Token<ELTokenId> tid = matchKeyword(input);
                         input.backup(1);
                         if (tid == null){
-                            if (ch == ':'){
+                            if (actChar == ':'){
                                 tid = token(ELTokenId.TAG_LIB_PREFIX);
                             } else{
                                 tid = token(ELTokenId.IDENTIFIER);
@@ -433,27 +435,27 @@ public class ELLexer implements Lexer<ELTokenId> {
                     break;
                     
                 case ISI_CHAR:
-                    switch (ch) {
+                    switch (actChar) {
                         case '\\':
-                            state = ISI_CHAR_A_BSLASH;
+                            lexerState = ISI_CHAR_A_BSLASH;
                             break;
                         case '\n':
-                            state = INIT;
+                            lexerState = INIT;
                             input.backup(1);
                             return token(ELTokenId.CHAR_LITERAL);
                         case '\'':
-                            state = INIT;
+                            lexerState = INIT;
                             return token(ELTokenId.CHAR_LITERAL);
                         default :
                             char prevChar = input.readText().charAt(input.readLength() - 1);
                             if (prevChar != '\'' && prevChar != '\\'){
-                                state = ISI_CHAR_STRING;
+                                lexerState = ISI_CHAR_STRING;
                             }
                     }
                     break;
                     
                 case ISI_CHAR_A_BSLASH:
-                    switch (ch) {
+                    switch (actChar) {
                         case '\'':
                         case '\\':
                             break;
@@ -461,29 +463,29 @@ public class ELLexer implements Lexer<ELTokenId> {
                             input.backup(1);
                             break;
                     }
-                    state = ISI_CHAR;
+                    lexerState = ISI_CHAR;
                     break;
                     
                 case ISI_CHAR_STRING:
                     // - System.out.print(" ISI_CHAR_STRING (");
-                    switch (ch) {
+                    switch (actChar) {
                         case '\\':
                             // - System.out.print(" state->ISI_CHAR_A_BSLASH )");
-                            state = ISI_CHAR_STRING_A_BSLASH;
+                            lexerState = ISI_CHAR_STRING_A_BSLASH;
                             break;
                         case '\n':
-                            state = INIT;
+                            lexerState = INIT;
                             input.backup(1);
                             return token(ELTokenId.STRING_LITERAL);
                         case '\'':
-                            state = INIT;
+                            lexerState = INIT;
                             return token(ELTokenId.STRING_LITERAL);
                     }
                     // - System.out.print(")");
                     break;
                     
                 case ISI_CHAR_STRING_A_BSLASH:
-                    switch (ch) {
+                    switch (actChar) {
                         case '\'':
                         case '\\':
                             break;
@@ -491,45 +493,45 @@ public class ELLexer implements Lexer<ELTokenId> {
                             input.backup(1);
                             break;
                     }
-                    state = ISI_CHAR_STRING;
+                    lexerState = ISI_CHAR_STRING;
                     break;
                     
                 case ISI_BRACKET_ISA_ZERO:
                 case ISA_ZERO:
-                    switch (ch) {
+                    switch (actChar) {
                         case '.':
-                            state = (state == ISI_BRACKET_ISA_ZERO) ? ISI_BRACKET_ISI_DOUBLE : ISI_DOUBLE;
+                            lexerState = (lexerState == ISI_BRACKET_ISA_ZERO) ? ISI_BRACKET_ISI_DOUBLE : ISI_DOUBLE;
                             break;
                         case 'x':
                         case 'X':
-                            state = (state == ISI_BRACKET_ISA_ZERO) ? ISI_BRACKET_ISI_HEX : ISI_HEX;
+                            lexerState = (lexerState == ISI_BRACKET_ISA_ZERO) ? ISI_BRACKET_ISI_HEX : ISI_HEX;
                             break;
                         case 'l':
                         case 'L':
-                            state = (state == ISI_BRACKET_ISA_ZERO) ? ISI_BRACKET : INIT;
+                            lexerState = (lexerState == ISI_BRACKET_ISA_ZERO) ? ISI_BRACKET : INIT;
                             return token(ELTokenId.LONG_LITERAL);
                         case 'f':
                         case 'F':
-                            state = (state == ISI_BRACKET_ISA_ZERO) ? ISI_BRACKET : INIT;
+                            lexerState = (lexerState == ISI_BRACKET_ISA_ZERO) ? ISI_BRACKET : INIT;
                             return token(ELTokenId.FLOAT_LITERAL);
                         case 'd':
                         case 'D':
-                            state = (state == ISI_BRACKET_ISA_ZERO) ? ISI_BRACKET : INIT;
+                            lexerState = (lexerState == ISI_BRACKET_ISA_ZERO) ? ISI_BRACKET : INIT;
                             return token(ELTokenId.DOUBLE_LITERAL);
                         case '8': // it's error to have '8' and '9' in octal number
                         case '9':
-                            state = (state == ISI_BRACKET_ISA_ZERO) ? ISI_BRACKET : INIT;
+                            lexerState = (lexerState == ISI_BRACKET_ISA_ZERO) ? ISI_BRACKET : INIT;
                             return token(ELTokenId.INVALID_OCTAL_LITERAL);
                         case 'e':
                         case 'E':
-                            state = (state == ISI_BRACKET_ISA_ZERO) ? ISI_BRACKET_ISI_DOUBLE_EXP : ISI_DOUBLE_EXP;
+                            lexerState = (lexerState == ISI_BRACKET_ISA_ZERO) ? ISI_BRACKET_ISI_DOUBLE_EXP : ISI_DOUBLE_EXP;
                             break;
                         default:
-                            if (Character.isDigit(ch)) { // '8' and '9' already handled
-                                state = (state == ISI_BRACKET_ISA_ZERO) ? ISI_BRACKET_ISI_OCTAL : ISI_OCTAL;
+                            if (Character.isDigit(actChar)) { // '8' and '9' already handled
+                                lexerState = (lexerState == ISI_BRACKET_ISA_ZERO) ? ISI_BRACKET_ISI_OCTAL : ISI_OCTAL;
                                 break;
                             }
-                            state = (state == ISI_BRACKET_ISA_ZERO) ? ISI_BRACKET : INIT;
+                            lexerState = (lexerState == ISI_BRACKET_ISA_ZERO) ? ISI_BRACKET : INIT;
                             input.backup(1);
                             return token(ELTokenId.INT_LITERAL);
                     }
@@ -537,29 +539,29 @@ public class ELLexer implements Lexer<ELTokenId> {
                     
                 case ISI_BRACKET_ISI_INT:
                 case ISI_INT:
-                    switch (ch) {
+                    switch (actChar) {
                         case 'l':
                         case 'L':
-                            state = (state == ISI_BRACKET_ISI_INT) ? ISI_BRACKET : INIT;
+                            lexerState = (lexerState == ISI_BRACKET_ISI_INT) ? ISI_BRACKET : INIT;
                             return token(ELTokenId.LONG_LITERAL);
                         case '.':
-                            state = (state == ISI_BRACKET_ISI_INT) ? ISI_BRACKET_ISI_DOUBLE : ISI_DOUBLE;
+                            lexerState = (lexerState == ISI_BRACKET_ISI_INT) ? ISI_BRACKET_ISI_DOUBLE : ISI_DOUBLE;
                             break;
                         case 'f':
                         case 'F':
-                            state = (state == ISI_BRACKET_ISI_INT) ? ISI_BRACKET : INIT;
+                            lexerState = (lexerState == ISI_BRACKET_ISI_INT) ? ISI_BRACKET : INIT;
                             return token(ELTokenId.FLOAT_LITERAL);
                         case 'd':
                         case 'D':
-                            state = (state == ISI_BRACKET_ISI_INT) ? ISI_BRACKET : INIT;
+                            lexerState = (lexerState == ISI_BRACKET_ISI_INT) ? ISI_BRACKET : INIT;
                             return token(ELTokenId.DOUBLE_LITERAL);
                         case 'e':
                         case 'E':
-                            state = ISI_DOUBLE_EXP;
+                            lexerState = ISI_DOUBLE_EXP;
                             break;
                         default:
-                            if (!(ch >= '0' && ch <= '9')) {
-                                state = (state == ISI_BRACKET_ISI_INT) ? ISI_BRACKET : INIT;
+                            if (!(actChar >= '0' && actChar <= '9')) {
+                                lexerState = (lexerState == ISI_BRACKET_ISI_INT) ? ISI_BRACKET : INIT;
                                 input.backup(1);
                                 return token(ELTokenId.INT_LITERAL);
                             }
@@ -568,8 +570,8 @@ public class ELLexer implements Lexer<ELTokenId> {
                     
                 case ISI_BRACKET_ISI_OCTAL:
                 case ISI_OCTAL:
-                    if (!(ch >= '0' && ch <= '7')) {
-                        state = (state == ISI_BRACKET_ISI_OCTAL) ? ISI_BRACKET : INIT;
+                    if (!(actChar >= '0' && actChar <= '7')) {
+                        lexerState = (lexerState == ISI_BRACKET_ISI_OCTAL) ? ISI_BRACKET : INIT;
                         input.backup(1);
                         return token(ELTokenId.OCTAL_LITERAL);
                     }
@@ -577,23 +579,23 @@ public class ELLexer implements Lexer<ELTokenId> {
                     
                 case ISI_BRACKET_ISI_DOUBLE:
                 case ISI_DOUBLE:
-                    switch (ch) {
+                    switch (actChar) {
                         case 'f':
                         case 'F':
-                            state = (state == ISI_BRACKET_ISI_DOUBLE) ? ISI_BRACKET : INIT;
+                            lexerState = (lexerState == ISI_BRACKET_ISI_DOUBLE) ? ISI_BRACKET : INIT;
                             return token(ELTokenId.FLOAT_LITERAL);
                         case 'd':
                         case 'D':
-                            state = (state == ISI_BRACKET_ISI_DOUBLE) ? ISI_BRACKET : INIT;
+                            lexerState = (lexerState == ISI_BRACKET_ISI_DOUBLE) ? ISI_BRACKET : INIT;
                             return token(ELTokenId.DOUBLE_LITERAL);
                         case 'e':
                         case 'E':
-                            state = (state == ISI_BRACKET_ISI_DOUBLE) ? ISI_BRACKET_ISI_DOUBLE_EXP : ISI_DOUBLE_EXP;
+                            lexerState = (lexerState == ISI_BRACKET_ISI_DOUBLE) ? ISI_BRACKET_ISI_DOUBLE_EXP : ISI_DOUBLE_EXP;
                             break;
                         default:
-                            if (!((ch >= '0' && ch <= '9')
-                            || ch == '.')) {
-                                state = (state == ISI_BRACKET_ISI_DOUBLE) ? ISI_BRACKET : INIT;
+                            if (!((actChar >= '0' && actChar <= '9')
+                            || actChar == '.')) {
+                                lexerState = (lexerState == ISI_BRACKET_ISI_DOUBLE) ? ISI_BRACKET : INIT;
                                 input.backup(1);
                                 return token(ELTokenId.DOUBLE_LITERAL);
                             }
@@ -602,23 +604,23 @@ public class ELLexer implements Lexer<ELTokenId> {
                     
                 case ISI_DOUBLE_EXP:
                 case ISI_BRACKET_ISI_DOUBLE_EXP:
-                    switch (ch) {
+                    switch (actChar) {
                         case 'f':
                         case 'F':
-                            state = (state == ISI_BRACKET_ISI_DOUBLE_EXP) ? ISI_BRACKET : INIT;
+                            lexerState = (lexerState == ISI_BRACKET_ISI_DOUBLE_EXP) ? ISI_BRACKET : INIT;
                             return token(ELTokenId.FLOAT_LITERAL);
                         case 'd':
                         case 'D':
-                            state = (state == ISI_BRACKET_ISI_DOUBLE_EXP) ? ISI_BRACKET : INIT;
+                            lexerState = (lexerState == ISI_BRACKET_ISI_DOUBLE_EXP) ? ISI_BRACKET : INIT;
                             return token(ELTokenId.DOUBLE_LITERAL);
                         case '-':
                         case '+':
-                            state = ISI_DOULE_EXP_ISA_SIGN;
+                            lexerState = ISI_DOULE_EXP_ISA_SIGN;
                             break;
                         default:
-                            if (!Character.isDigit(ch)){
+                            if (!Character.isDigit(actChar)){
                                 //|| ch == '-' || ch == '+')) {
-                                state = (state == ISI_BRACKET_ISI_DOUBLE_EXP) ? ISI_BRACKET : INIT;
+                                lexerState = (lexerState == ISI_BRACKET_ISI_DOUBLE_EXP) ? ISI_BRACKET : INIT;
                                 input.backup(1);
                                 return token(ELTokenId.DOUBLE_LITERAL);
                             }
@@ -627,8 +629,8 @@ public class ELLexer implements Lexer<ELTokenId> {
                     
                 case ISI_DOULE_EXP_ISA_SIGN:
                 case ISI_BRACKET_ISI_DOULE_EXP_ISA_SIGN:
-                    if (!Character.isDigit(ch)){
-                        state = (state == ISI_BRACKET_ISI_DOULE_EXP_ISA_SIGN) ? ISI_BRACKET : INIT;
+                    if (!Character.isDigit(actChar)){
+                        lexerState = (lexerState == ISI_BRACKET_ISI_DOULE_EXP_ISA_SIGN) ? ISI_BRACKET : INIT;
                         input.backup(1);
                         return token(ELTokenId.DOUBLE_LITERAL);
                     }
@@ -636,11 +638,11 @@ public class ELLexer implements Lexer<ELTokenId> {
                     
                 case ISI_BRACKET_ISI_HEX:
                 case ISI_HEX:
-                    if (!((ch >= 'a' && ch <= 'f')
-                    || (ch >= 'A' && ch <= 'F')
-                    || Character.isDigit(ch))
+                    if (!((actChar >= 'a' && actChar <= 'f')
+                    || (actChar >= 'A' && actChar <= 'F')
+                    || Character.isDigit(actChar))
                     ) {
-                        state = (state == ISI_BRACKET_ISI_HEX) ? ISI_BRACKET : INIT;
+                        lexerState = (lexerState == ISI_BRACKET_ISI_HEX) ? ISI_BRACKET : INIT;
                         input.backup(1);
                         return token(ELTokenId.HEX_LITERAL);
                     }
@@ -648,11 +650,11 @@ public class ELLexer implements Lexer<ELTokenId> {
                     
                 case ISI_BRACKET_ISA_DOT:
                 case ISA_DOT:
-                    if (Character.isDigit(ch)) {
-                        state = (state == ISI_BRACKET_ISA_DOT) ? ISI_BRACKET_ISI_DOUBLE : ISI_DOUBLE;
+                    if (Character.isDigit(actChar)) {
+                        lexerState = (lexerState == ISI_BRACKET_ISA_DOT) ? ISI_BRACKET_ISI_DOUBLE : ISI_DOUBLE;
                         
                     } else { // only single dot
-                        state = (state == ISI_BRACKET_ISA_DOT) ? ISI_BRACKET : INIT;
+                        lexerState = (lexerState == ISI_BRACKET_ISA_DOT) ? ISI_BRACKET : INIT;
                         input.backup(1);
                         return token(ELTokenId.DOT);
                     }
@@ -666,15 +668,17 @@ public class ELLexer implements Lexer<ELTokenId> {
          * Scanner first checks whether this is completely the last
          * available buffer.
          */
-        switch (state) {
+        switch (lexerState) {
             case INIT:
-                if (input.readLength() == 0)
+                if (input.readLength() == 0) {
                     return null;
+                }
+                break;
             case ISI_WHITESPACE:
-                state = INIT;
+                lexerState = INIT;
                 return token(ELTokenId.WHITESPACE);
             case ISI_IDENTIFIER:
-                state = INIT;
+                lexerState = INIT;
                 Token<ELTokenId> kwd = matchKeyword(input);
                 return (kwd != null) ? kwd : token(ELTokenId.IDENTIFIER);
             case ISI_STRING:
@@ -688,69 +692,69 @@ public class ELLexer implements Lexer<ELTokenId> {
                 return token(ELTokenId.STRING_LITERAL);
             case ISA_ZERO:
             case ISI_INT:
-                state = INIT;
+                lexerState = INIT;
                 return token(ELTokenId.INT_LITERAL);
             case ISI_OCTAL:
-                state = INIT;
+                lexerState = INIT;
                 return token(ELTokenId.OCTAL_LITERAL);
             case ISI_DOUBLE:
             case ISI_DOUBLE_EXP:
             case ISI_DOULE_EXP_ISA_SIGN:
             case ISI_BRACKET_ISI_DOULE_EXP_ISA_SIGN:
-                state = INIT;
+                lexerState = INIT;
                 return token(ELTokenId.DOUBLE_LITERAL);
             case ISI_HEX:
-                state = INIT;
+                lexerState = INIT;
                 return token(ELTokenId.HEX_LITERAL);
             case ISA_DOT:
-                state = INIT;
+                lexerState = INIT;
                 return token(ELTokenId.DOT);
             case ISA_EQ:
-                state = INIT;
+                lexerState = INIT;
                 return token(ELTokenId.EQ_EQ);
             case ISA_GT:
-                state = INIT;
+                lexerState = INIT;
                 return token(ELTokenId.GT);
             case ISA_LT:
-                state = INIT;
+                lexerState = INIT;
                 return token(ELTokenId.LT);
             case ISA_PIPE:
-                state = INIT;
+                lexerState = INIT;
                 return token(ELTokenId.OR_OR);
             case ISA_AND:
-                state = INIT;
+                lexerState = INIT;
                 return token(ELTokenId.AND_AND);
             case ISA_EXCLAMATION:
-                state = INIT;
+                lexerState = INIT;
                 return token(ELTokenId.NOT);
             case ISI_BRACKET:
             case ISI_BRACKET_A_IDENTIFIER:
-                state = INIT;
+                lexerState = INIT;
                 return token(ELTokenId.IDENTIFIER);
             case ISI_BRACKET_A_WHITESPACE:
-                state = ISI_BRACKET;
+                lexerState = ISI_BRACKET;
                 return token(ELTokenId.WHITESPACE);
             case ISI_BRACKET_ISA_EQ:
-                state = ISI_BRACKET;
+                lexerState = ISI_BRACKET;
                 return token(ELTokenId.EQ_EQ);
             case ISI_BRACKET_ISA_GT:
-                state = ISI_BRACKET;
+                lexerState = ISI_BRACKET;
                 return token(ELTokenId.GT_EQ);
             case ISI_BRACKET_ISA_LT:
-                state = ISI_BRACKET;
+                lexerState = ISI_BRACKET;
                 return token(ELTokenId.LT_EQ);
             case ISI_BRACKET_ISA_AND:
-                state = ISI_BRACKET;
+                lexerState = ISI_BRACKET;
                 return token(ELTokenId.AND_AND);
             case ISI_BRACKET_ISA_PIPE:
-                state = ISI_BRACKET;
+                lexerState = ISI_BRACKET;
                 return token(ELTokenId.OR_OR);
             case ISI_BRACKET_ISA_DOT:
-                state = ISI_BRACKET;
+                lexerState = ISI_BRACKET;
                 return token(ELTokenId.DOT);
             case ISI_BRACKET_ISA_ZERO:
             case ISI_BRACKET_ISI_INT:
-                state = ISI_BRACKET;
+                lexerState = ISI_BRACKET;
                 return token(ELTokenId.INT_LITERAL);
         }
         
@@ -759,10 +763,10 @@ public class ELLexer implements Lexer<ELTokenId> {
     }
     
     
-    public Token<ELTokenId> matchKeyword(LexerInput li) {
-        int len = li.readLength();
+    public Token<ELTokenId> matchKeyword(LexerInput lexerInput) {
+        int len = lexerInput.readLength();
         char[] buffer = new char[len];
-        String read = li.readText().toString();
+        String read = lexerInput.readText().toString();
         read.getChars(0, read.length(), buffer, 0);
         int offset = 0;
         
@@ -872,14 +876,14 @@ public class ELLexer implements Lexer<ELTokenId> {
         }
     }
     
-    private Token<ELTokenId> token(ELTokenId id) {
-        if(log) {
+    private Token<ELTokenId> token(ELTokenId tokenId) {
+        if(LOG) {
             if(input.readLength() == 0) {
-                logger.log(Level.INFO, "[" + this.getClass().getSimpleName() + "] Found zero length token: "); //NOI18N
+                LOGGER.log(Level.INFO, "[" + this.getClass().getSimpleName() + "] Found zero length token: "); //NOI18N
             }
-            logger.log(Level.INFO, "[" + this.getClass().getSimpleName() + "] token ('" + input.readText().toString() + "'; id=" + id + ")\n"); //NOI18N
+            LOGGER.log(Level.INFO, "[" + this.getClass().getSimpleName() + "] token ('" + input.readText().toString() + "'; id=" + tokenId + ")\n"); //NOI18N
         }
-        return tokenFactory.createToken(id);
+        return tokenFactory.createToken(tokenId);
     }
     
 }
