@@ -63,6 +63,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
 import org.openide.util.RequestProcessor;
@@ -121,6 +122,17 @@ public class BridgeImpl implements BridgeInterface {
                 return ((EnumeratedAttribute)c.newInstance()).getValues();
             } catch (Exception e) {
                 AntModule.err.notify(ErrorManager.INFORMATIONAL, e);
+            }
+        } else if (Enum.class.isAssignableFrom(c)) { // Ant 1.7.0 (#41058)
+            try {
+                Enum<?>[] vals = (Enum<?>[]) c.getMethod("values").invoke(null);
+                String[] names = new String[vals.length];
+                for (int i = 0; i < vals.length; i++) {
+                    names[i] = vals[i].name();
+                }
+                return names;
+            } catch (Exception x) {
+                Exceptions.printStackTrace(x);
             }
         }
         return null;

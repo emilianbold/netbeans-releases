@@ -77,6 +77,22 @@ public class IntrospectedInfoTest extends NbTestCase {
          */
     }
     
+    /* XXX uncomment when Ant 1.7.0 is integrated:
+    public void testEnumeratedAttributes() throws Exception {
+        ii.register("enumtask", EnumTask.class, "task");
+        String k1 = EnumTask.class.getName();
+        assertEquals(k1, ii.getDefs("task").get("enumtask"));
+        String k2 = EnumTask.E.class.getName();
+        assertEquals(Collections.singletonMap("attr", k2), ii.getAttributes(k1));
+        assertEquals("[chocolate, vanilla, strawberry]", Arrays.toString(ii.getTags(k2)));
+    }
+    
+    public static class EnumTask {
+        public enum E {chocolate, vanilla, strawberry}
+        public void setAttr(E e) {}
+    }
+     */
+    
     public static final class IFL extends InstalledFileLocator {
         public IFL() {
             //System.err.println("ant.home=" + System.getProperty("test.ant.home"));
