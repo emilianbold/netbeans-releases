@@ -21,7 +21,7 @@ package org.netbeans.modules.visual.action;
 import org.netbeans.api.visual.action.ResizeProvider;
 import org.netbeans.api.visual.action.ResizeStrategy;
 import org.netbeans.api.visual.action.WidgetAction;
-import org.netbeans.modules.visual.util.GeomUtil;
+import org.netbeans.api.visual.action.ResizeControlPointResolver;
 import org.netbeans.api.visual.widget.Widget;
 
 import java.awt.*;
@@ -35,6 +35,7 @@ import java.awt.event.MouseEvent;
 public final class ResizeAction extends WidgetAction.LockedAdapter {
 
     private ResizeStrategy strategy;
+    private ResizeControlPointResolver resolver;
     private ResizeProvider provider;
 
     private Widget resizingWidget = null;
@@ -43,8 +44,9 @@ public final class ResizeAction extends WidgetAction.LockedAdapter {
     private Insets insets;
     private Point dragSceneLocation = null;
 
-    public ResizeAction (ResizeStrategy strategy, ResizeProvider provider) {
+    public ResizeAction (ResizeStrategy strategy, ResizeControlPointResolver resolver, ResizeProvider provider) {
         this.strategy = strategy;
+        this.resolver = resolver;
         this.provider = provider;
     }
 
@@ -54,9 +56,8 @@ public final class ResizeAction extends WidgetAction.LockedAdapter {
 
     public State mousePressed (Widget widget, WidgetMouseEvent event) {
         if (event.getButton () == MouseEvent.BUTTON1  &&  event.getClickCount () == 1) {
-            Rectangle bounds = widget.getBounds ();
             insets = widget.getBorder ().getInsets ();
-            controlPoint = resolveControlPoint (bounds, insets, event.getPoint ());
+            controlPoint = resolver.resolveControlPoint (widget, event.getPoint ());
             if (controlPoint != null) {
                 resizingWidget = widget;
                 originalSceneRectangle = null;
@@ -72,40 +73,6 @@ public final class ResizeAction extends WidgetAction.LockedAdapter {
             }
         }
         return State.REJECTED;
-    }
-
-    private ResizeProvider.ControlPoint resolveControlPoint (Rectangle bounds, Insets insets, Point point) {
-        Point center = GeomUtil.center (bounds);
-        Dimension centerDimension = new Dimension (Math.max (insets.left, insets.right), Math.max (insets.top, insets.bottom));
-        if (point.y >= bounds.y + bounds.height - insets.bottom  &&  point.y < bounds.y + bounds.height) {
-
-            if (point.x >= bounds.x + bounds.width - insets.right  &&  point.x < bounds.x + bounds.width)
-                return ResizeProvider.ControlPoint.BOTTOM_RIGHT;
-            else if (point.x >= bounds.x  &&  point.x < bounds.x + insets.left)
-                return ResizeProvider.ControlPoint.BOTTOM_LEFT;
-            else if (point.x >= center.x - centerDimension.height / 2 && point.x < center.x + centerDimension.height - centerDimension.height / 2)
-                return ResizeProvider.ControlPoint.BOTTOM_CENTER;
-
-        } else if (point.y >= bounds.y  &&  point.y < bounds.y + insets.top) {
-
-            if (point.x >= bounds.x + bounds.width - insets.right  &&  point.x < bounds.x + bounds.width)
-                return ResizeProvider.ControlPoint.TOP_RIGHT;
-            else if (point.x >= bounds.x  &&  point.x < bounds.x + insets.left)
-                return ResizeProvider.ControlPoint.TOP_LEFT;
-            else
-            if (point.x >= center.x - centerDimension.height / 2 && point.x < center.x + centerDimension.height - centerDimension.height / 2)
-                return ResizeProvider.ControlPoint.TOP_CENTER;
-
-        } else if (point.y >= center.y - centerDimension.width / 2  &&  point.y < center.y + centerDimension.width - centerDimension.width / 2) {
-
-            if (point.x >= bounds.x + bounds.width - insets.right && point.x < bounds.x + bounds.width)
-                return ResizeProvider.ControlPoint.CENTER_RIGHT;
-            else if (point.x >= bounds.x && point.x < bounds.x + insets.left)
-                return ResizeProvider.ControlPoint.CENTER_LEFT;
-
-        }
-        // TODO - resolve CENTER points
-        return null;
     }
 
     public State mouseReleased (Widget widget, WidgetMouseEvent event) {

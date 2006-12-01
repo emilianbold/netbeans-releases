@@ -114,6 +114,8 @@ public final class ActionFactory {
         }
     };
 
+    private static final ResizeControlPointResolver RESIZE_CONTROL_POINT_RESOLVER_DEFAULT = new ResizeCornersControlPointResolver ();
+
     private static final WidgetAction MOVE_CONTROL_POINT_ACTION_FREE = createMoveControlPointAction (createFreeMoveControlPointProvider ());
 
     private static final WidgetAction MOVE_CONTROL_POINT_ACTION_ORTHOGONAL = createMoveControlPointAction (createOrthogonalMoveControlPointProvider ());
@@ -380,7 +382,8 @@ public final class ActionFactory {
     }
 
     /**
-     * Creates a resize action with a default (free without any restriction) strategy and default logic provider (the action affect preferredBounds of a widget where it is assigned).
+     * Creates a resize action with a default (free without any restriction) strategy and default logic provider (the action affect preferredBounds of a widget where it is assigned)
+     * default resize control point resolver.
      * @return the resize action
      */
     public static WidgetAction createResizeAction () {
@@ -388,14 +391,26 @@ public final class ActionFactory {
     }
 
     /**
-     * Creates a resize action with a specified resize strategy and provider.
+     * Creates a resize action with a specified resize strategy and provider and default resize control point resolver.
      * @param strategy the resize strategy; if null, then the default (free without any restriction) strategy is used
      * @param provider the resize logic provider; if null, then the default logic provider is used
      *            (the action affect preferredBounds of a widget where it is assigned)
      * @return the resize action
      */
     public static WidgetAction createResizeAction (ResizeStrategy strategy, ResizeProvider provider) {
-        return new ResizeAction (strategy != null ? strategy : createFreeResizeStategy (), provider != null ? provider : createDefaultResizeProvider ());
+        return createResizeAction (strategy, null, provider);
+    }
+
+    /**
+     * Creates a resize action with a specified resize strategy and provider.
+     * @param strategy the resize strategy; if null, then the default (free without any restriction) strategy is used
+     * @param resolver the resize control point resolver; if null, then the default (points are at corners and center of edges) is used
+     * @param provider the resize logic provider; if null, then the default logic provider is used
+     *            (the action affect preferredBounds of a widget where it is assigned)
+     * @return the resize action
+     */
+    public static WidgetAction createResizeAction (ResizeStrategy strategy, ResizeControlPointResolver resolver, ResizeProvider provider) {
+        return new ResizeAction (strategy != null ? strategy : createFreeResizeStategy (), resolver != null ? resolver : createDefaultResizeControlPointResolver (), provider != null ? provider : createDefaultResizeProvider ());
     }
 
     /**
@@ -537,6 +552,14 @@ public final class ActionFactory {
      */
     public static ResizeProvider createDefaultResizeProvider () {
         return RESIZE_PROVIDER_DEFAULT;
+    }
+
+    /**
+     * Creates a default resize control point resolver which is used in resize action.
+     * @return the resize control point resolver
+     */
+    public static ResizeControlPointResolver createDefaultResizeControlPointResolver () {
+        return RESIZE_CONTROL_POINT_RESOLVER_DEFAULT;
     }
 
     /**
