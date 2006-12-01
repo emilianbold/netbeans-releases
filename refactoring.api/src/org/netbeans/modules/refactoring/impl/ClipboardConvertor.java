@@ -85,20 +85,19 @@ public class ClipboardConvertor implements Convertor {
         }
         
         public PasteType[] types(Node target) {
-            RefactoringPasteType refactoringPaste = new RefactoringPasteType(delegate, target, ic);
+            RefactoringPasteType refactoringPaste = new RefactoringPasteType(delegate, target);
             if (refactoringPaste.canHandle())
                 return new PasteType[] {refactoringPaste};
                 return target.getPasteTypes(delegate);
         }
         
         private class RefactoringPasteType extends PasteType {
-            RefactoringPasteType(Transferable orig, Node target, InstanceContent ic) {
+            RefactoringPasteType(Transferable orig, Node target) {
                 d.clear();
                 d.put("target", target); //NOI18N
                 PasteType[] types = target.getPasteTypes(orig);
                 if (types.length>0)
                     d.put("paste", types[0]); //NOI18N
-                ic.add(d);
             }
             
             public boolean canHandle() {
