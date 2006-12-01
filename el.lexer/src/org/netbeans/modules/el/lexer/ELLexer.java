@@ -328,6 +328,7 @@ public class ELLexer implements Lexer<ELTokenId> {
                 case ISA_EQ:
                     switch (ch) {
                         case '=':
+                            state = INIT;
                             return  token(ELTokenId.EQ_EQ);
                         default:
                             state = (state == ISI_BRACKET_ISA_EQ) ? ISI_BRACKET : INIT;
@@ -339,6 +340,7 @@ public class ELLexer implements Lexer<ELTokenId> {
                 case ISA_GT:
                     switch (ch) {
                         case '=':
+                            state = INIT;
                             return token(ELTokenId.GT_EQ);
                         default:
                             state = (state == ISI_BRACKET_ISA_GT) ? ISI_BRACKET : INIT;
@@ -350,6 +352,7 @@ public class ELLexer implements Lexer<ELTokenId> {
                 case ISA_LT:
                     switch (ch) {
                         case '=':
+                            state = INIT;
                             return token(ELTokenId.LT_EQ);
                         default:
                             state = (state == ISI_BRACKET_ISA_LT) ? ISI_BRACKET : INIT;
@@ -872,9 +875,9 @@ public class ELLexer implements Lexer<ELTokenId> {
     private Token<ELTokenId> token(ELTokenId id) {
         if(log) {
             if(input.readLength() == 0) {
-                logger.log(Level.INFO, "Found zero length token: ");
+                logger.log(Level.INFO, "[" + this.getClass().getSimpleName() + "] Found zero length token: "); //NOI18N
             }
-            logger.log(Level.INFO, "[" + this.getClass().getSimpleName() + "] token ('" + input.readText().toString() + "'; id=" + id + ")\n");
+            logger.log(Level.INFO, "[" + this.getClass().getSimpleName() + "] token ('" + input.readText().toString() + "'; id=" + id + ")\n"); //NOI18N
         }
         return tokenFactory.createToken(id);
     }
