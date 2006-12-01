@@ -19,6 +19,8 @@
 
 package org.netbeans.lib.jsp.lexer;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.spi.lexer.Lexer;
@@ -36,6 +38,10 @@ import org.netbeans.spi.lexer.TokenFactory;
  */
 
 public class JspLexer implements Lexer<JspTokenId> {
+    
+    private static final Logger logger = Logger.getLogger(JspLexer.class.getName());
+    private static final boolean log = Boolean.getBoolean("j2ee_lexer_debug"); //NOI18N
+    
     
     private static final int EOF = LexerInput.EOF;
     
@@ -125,16 +131,6 @@ public class JspLexer implements Lexer<JspTokenId> {
     
     public boolean isIdentifierPart(char ch) {
         return Character.isJavaIdentifierPart(ch);
-    }
-    
-    private Token<JspTokenId> token(JspTokenId id) {
-//        System.out.print("JSP token(" + id + "; '" + input.readText().toString() + "')");
-        if(input.readLength() == 0) {
-            new Exception("Error - token length is zero!; state = " + state).printStackTrace();
-        }
-        Token<JspTokenId> t = tokenFactory.createToken(id);
-//        System.out.println(t.id() + "; " + t.length());
-        return t;
     }
     
     /** Determines whether a given string is a JSP tag. */
@@ -952,6 +948,17 @@ public class JspLexer implements Lexer<JspTokenId> {
         return null;
         
     }
+    
+    private Token<JspTokenId> token(JspTokenId id) {
+        if(log) {
+            if(input.readLength() == 0) {
+                logger.log(Level.INFO, "Found zero length token: ");
+            }
+            logger.log(Level.INFO, "[" + this.getClass().getSimpleName() + "] token ('" + input.readText().toString() + "'; id=" + id + "; state=" + state() + ")\n");
+        }
+        return tokenFactory.createToken(id);
+    }
+
     
 }
 

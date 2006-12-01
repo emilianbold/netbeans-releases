@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.el.lexer;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.modules.el.lexer.api.ELTokenId;
 import org.netbeans.modules.el.lexer.api.ELTokenId;
@@ -28,7 +30,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 import org.netbeans.spi.lexer.TokenFactory;
 
 /**
- * Lexical analyzer for Expression Language. 
+ * Lexical analyzer for Expression Language.
  * It does NOT recognizes the EL delimiters ${ } and #{ }
  *
  * @author Petr Pisl
@@ -38,6 +40,9 @@ import org.netbeans.spi.lexer.TokenFactory;
  */
 
 public class ELLexer implements Lexer<ELTokenId> {
+    
+    private static final Logger logger = Logger.getLogger(ELLexer.class.getName());
+    private static final boolean log = Boolean.getBoolean("j2ee_lexer_debug"); //NOI18N
     
     private static final int EOF = LexerInput.EOF;
     
@@ -865,13 +870,13 @@ public class ELLexer implements Lexer<ELTokenId> {
     }
     
     private Token<ELTokenId> token(ELTokenId id) {
-//        System.out.print("EL token(" + id + "; '" + input.readText().toString() + "')");
-//        if(input.readLength() == 0) {
-//            System.out.println("HTMLLexer error - zero length token!");
-//        }
-        Token<ELTokenId> t = tokenFactory.createToken(id);
-//        System.out.println(t.id() + "; " + t.length());
-        return t;
+        if(log) {
+            if(input.readLength() == 0) {
+                logger.log(Level.INFO, "Found zero length token: ");
+            }
+            logger.log(Level.INFO, "[" + this.getClass().getSimpleName() + "] token ('" + input.readText().toString() + "'; id=" + id + ")\n");
+        }
+        return tokenFactory.createToken(id);
     }
     
 }

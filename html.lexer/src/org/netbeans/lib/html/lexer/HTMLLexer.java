@@ -13,6 +13,8 @@
 
 package org.netbeans.lib.html.lexer;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.spi.lexer.Lexer;
@@ -31,6 +33,9 @@ import org.netbeans.spi.lexer.TokenFactory;
  */
 
 public class HTMLLexer implements Lexer<HTMLTokenId> {
+    
+    private static final Logger logger = Logger.getLogger(HTMLLexer.class.getName());
+    private static final boolean log = Boolean.getBoolean("j2ee_lexer_debug"); //NOI18N
     
     private static final int EOF = LexerInput.EOF;
     
@@ -699,13 +704,13 @@ public class HTMLLexer implements Lexer<HTMLTokenId> {
     }
     
     private Token<HTMLTokenId> token(HTMLTokenId id) {
-//        System.out.print("--- token(" + id + "; '" + input.readText().toString() + "')");
-//        if(input.readLength() == 0) {
-//            System.out.println("\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! HTMLLexer error - zero length token!");
-//        }
-        Token<HTMLTokenId> t = tokenFactory.createToken(id);
-//        System.out.println(t.id() + "; " + t.length());
-        return t;
+        if(log) {
+            if(input.readLength() == 0) {
+                logger.log(Level.INFO, "Found zero length token: ");
+            }
+            logger.log(Level.INFO, "[" + this.getClass().getSimpleName() + "] token ('" + input.readText().toString() + "'; id=" + id + "; state=" + state() + ")\n");
+        }
+        return tokenFactory.createToken(id);
     }
     
 }
