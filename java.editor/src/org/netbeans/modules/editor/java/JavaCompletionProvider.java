@@ -1320,6 +1320,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                         }
                         break;
                     case GT:
+                    case GTGT:
+                    case GTGTGT:
                         CompilationController controller = env.getController();
                         TypeMirror tm = controller.getTrees().getTypeMirror(new TreePath(path, nc.getIdentifier()));
                         addMembers(env, tm, ((DeclaredType)tm).asElement(), EnumSet.of(CONSTRUCTOR), null, false);
