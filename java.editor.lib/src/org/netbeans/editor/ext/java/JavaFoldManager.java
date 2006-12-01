@@ -53,7 +53,7 @@ public abstract class JavaFoldManager implements FoldManager {
         = new FoldTemplate(INITIAL_COMMENT_FOLD_TYPE, COMMENT_FOLD_DESCRIPTION, 2, 2);
 
     public static final FoldTemplate IMPORTS_FOLD_TEMPLATE
-        = new FoldTemplate(IMPORTS_FOLD_TYPE, IMPORTS_FOLD_DESCRIPTION, 7, 0);
+        = new FoldTemplate(IMPORTS_FOLD_TYPE, IMPORTS_FOLD_DESCRIPTION, 0, 0);
 
     public static final FoldTemplate JAVADOC_FOLD_TEMPLATE
         = new FoldTemplate(JAVADOC_FOLD_TYPE, JAVADOC_FOLD_DESCRIPTION, 3, 2);

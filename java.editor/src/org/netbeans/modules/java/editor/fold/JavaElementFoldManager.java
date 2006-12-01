@@ -56,6 +56,7 @@ import org.netbeans.editor.SettingsUtil;
 import org.netbeans.editor.ext.java.JavaFoldManager;
 import org.netbeans.editor.ext.java.JavaSettingsNames;
 import org.netbeans.modules.java.editor.semantic.ScanningCancellableTask;
+import org.netbeans.modules.java.editor.semantic.Utilities;
 import org.netbeans.spi.editor.fold.FoldHierarchyTransaction;
 import org.netbeans.spi.editor.fold.FoldOperation;
 import org.openide.ErrorManager;
@@ -252,7 +253,7 @@ public class JavaElementFoldManager extends JavaFoldManager {
                         int start = i.start.getOffset();
                         int end   = i.end.getOffset();
                         
-                        if (end > start) {
+                        if (end > start && (end - start) > (i.template.getStartGuardedLength() + i.template.getEndGuardedLength())) {
                             Fold f    = operation.addToHierarchy(i.template.getType(),
                                                                  i.template.getDescription(),
                                                                  i.collapseByDefault,
@@ -413,7 +414,24 @@ public class JavaElementFoldManager extends JavaFoldManager {
         @Override
         public Object visitClass(ClassTree node, Object p) {
             super.visitClass(node, Boolean.TRUE);
-            handleTree(node, null, p != Boolean.TRUE);
+            try {
+                if (p == Boolean.TRUE) {
+                    Document doc = operation.getHierarchy().getComponent().getDocument();
+                    int start = Utilities.findBodyStart(node, cu, sp, doc);
+                    int end   = (int)sp.getEndPosition(cu, node);
+                    
+                    if (start != (-1) && end != (-1))
+                        folds.add(new FoldInfo(doc, start, end, CODE_BLOCK_FOLD_TEMPLATE, foldInnerClassesPreset));
+                }
+                
+                handleJavadoc(node);
+            } catch (BadLocationException e) {
+                //the document probably changed, stop
+                stopped = true;
+            } catch (ConcurrentModificationException e) {
+                //from TokenSequence, document probably changed, stop
+                stopped = true;
+            }
             return null;
         }
         
@@ -463,7 +481,11 @@ public class JavaElementFoldManager extends JavaFoldManager {
                         collapsed = importsFold.isCollapsed();
                     }
                     
-                    folds.add(new FoldInfo(doc, importsStart + 7/*"import ".length()*/, importsEnd, IMPORTS_FOLD_TEMPLATE, collapsed));
+                    importsStart += 7/*"import ".length()*/;
+                    
+                    if (importsStart < importsEnd) {
+                        folds.add(new FoldInfo(doc, importsStart , importsEnd, IMPORTS_FOLD_TEMPLATE, collapsed));
+                    }
                 } catch (BadLocationException e) {
                     //the document probably changed, stop
                     stopped = true;
