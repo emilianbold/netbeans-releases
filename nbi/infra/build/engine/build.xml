@@ -20,8 +20,8 @@
     $Id$
 ============================================================================ -->
 <project name="build-engine" default="usage" basedir=".">
-    <property file="build.properties"/>
-    <import file="${common.dir}/common.xml" optional="false"/>
+    <property file="${engine.dir}/build.properties"/>
+    <import file="${.common.dir}/build.xml" optional="false"/>
     
     <target name="all" depends="init,clean,build,release"/>
     
@@ -45,7 +45,7 @@
         <echo>
             This script builds and releases NetBeans Installer engine. In order
             for it to function correctly, set the properties in 
-            build.properties, ${common.dir}/common.properties and 
+            build.properties, ${.common.dir}/common.properties and 
             ../common/native/*.properties
         </echo>
     </target>
