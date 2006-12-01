@@ -47,6 +47,7 @@ public class TimeComponentPanel extends javax.swing.JPanel implements PropertyCh
         initComponents();
         key2RowNumber = new HashMap<String, Integer>();
         TimesCollectorPeer.getDefault().addPropertyChangeListener(this);
+        fillIn();
     }
     
     /** This method is called from within the constructor to
@@ -178,7 +179,17 @@ public class TimeComponentPanel extends javax.swing.JPanel implements PropertyCh
         
         model.insertRow(row, new Object[] {desc.getMessage(), desc.getTime()});
     }
-        
+    
+    private void fillIn() {
+        DefaultListModel model = (DefaultListModel) jList1.getModel();
+
+        model.removeAllElements();
+
+        for (FileObject f : TimesCollectorPeer.getDefault().getFiles()) {
+            model.addElement(f);
+        }
+    }
+
     public void propertyChange(final PropertyChangeEvent evt) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
@@ -188,11 +199,7 @@ public class TimeComponentPanel extends javax.swing.JPanel implements PropertyCh
                     if (evt.getNewValue() != null) {
                         model.addElement(evt.getNewValue());
                     } else {
-                        model.removeAllElements();
-                        
-                        for (FileObject f : TimesCollectorPeer.getDefault().getFiles()) {
-                            model.addElement(f);
-                        }
+                        fillIn();
                     }
                 }
                 
