@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.editor.settings.storage;
 
+import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.Collection;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
@@ -134,6 +135,36 @@ public class SettingsProviderTest extends NbTestCase {
         KeyBindingSettings kbs = c.iterator().next();
         assertNotNull("KBS should not be null", kbs);
         assertTrue("Wrong kbs impl", kbs instanceof KeyBindingSettingsImpl.Immutable);
+    }
+
+    public void testLookupsCached() {
+        FontColorSettings fcs1 = MimeLookup.getLookup(MimePath.parse("text/x-type-A")).lookup(FontColorSettings.class);
+        FontColorSettings fcs2 = MimeLookup.getLookup(MimePath.parse("text/x-type-A")).lookup(FontColorSettings.class);
+        
+        assertSame("FontColorSettings instances should be the same", fcs1, fcs2);
+    }
+
+    public void testLookupsGCed() {
+        MimePath mimePath = MimePath.parse("text/x-type-A");
+        Lookup lookup = MimeLookup.getLookup(mimePath);
+        FontColorSettings fcs = lookup.lookup(FontColorSettings.class);
+
+        WeakReference<MimePath> mimePathRef = new WeakReference<MimePath>(mimePath);
+        WeakReference<Lookup> lookupRef = new WeakReference<Lookup>(lookup);
+        WeakReference<FontColorSettings> fcsRef = new WeakReference<FontColorSettings>(fcs);
+    
+        mimePath = null;
+        lookup = null;
+        fcs = null;
+        
+        // release text/x-type-A from MimePath's LRU
+        for(int i = 0; i < 10; i++) {
+            MimePath.parse("text/x-type-" + ('Z' + i));
+        }
+        
+        assertGC("MimePath hasn't been GCed", mimePathRef);
+        assertGC("Lookup hasn't been GCed", lookupRef);
+        assertGC("FCS hasn't been GCed", fcsRef);
     }
     
     public static Marker createMarker(FileObject f) {
