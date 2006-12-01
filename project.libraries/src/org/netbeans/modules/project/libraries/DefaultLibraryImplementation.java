@@ -121,18 +121,6 @@ public final class DefaultLibraryImplementation implements LibraryImplementation
         return "LibraryImplementation[Name="+this.name+"]"; //NOI18N
     }
 
-    public boolean equals (Object o) {
-        if (o instanceof DefaultLibraryImplementation) {
-            DefaultLibraryImplementation other = (DefaultLibraryImplementation) o;
-            return this.name == null ? other.name == null : this.name.equals(other.name);
-        }
-        return false;
-    }
-
-    public int hashCode () {
-        return this.name == null ? 0 : this.name.hashCode();
-    }
-
     private void firePropertyChange (String propName, Object oldValue, Object newValue) {
         List<PropertyChangeListener> ls;
         synchronized (this) {
