@@ -195,6 +195,14 @@ public class ProxyClassLoader extends ClassLoader {
         return null;
     }
     
+    private String stripInitialSlash(String resource) { // #90310
+        if (resource.startsWith("/")) {
+            LOGGER.log(Level.WARNING, "Should not use initial '/' in calls to ClassLoader.getResource(s): {0}", resource);
+            return resource.substring(1);
+        } else {
+            return resource;
+        }
+    }
 
     /**
      * Finds the resource with the given name. The implementation of
@@ -212,8 +220,10 @@ public class ProxyClassLoader extends ClassLoader {
      *      the resource could not be found.
      * @see #findResource(String)
      */
-    public final URL getResource(final String name) {
+    public final URL getResource(String name) {
         zombieCheck(name);
+        
+        name = stripInitialSlash(name);
         
         final int slashIdx = name.lastIndexOf('/');
         if (slashIdx == -1) {
@@ -298,6 +308,7 @@ public class ProxyClassLoader extends ClassLoader {
      */    
     protected final synchronized Enumeration<URL> findResources(String name) throws IOException {
         zombieCheck(name);
+        name = stripInitialSlash(name);
         final int slashIdx = name.lastIndexOf('/');
         if (slashIdx == -1) {
             printDefaultPackageWarning(name);
