@@ -17,6 +17,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.refactoring.java.ui;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import javax.swing.event.ChangeListener;
@@ -28,6 +29,7 @@ import org.netbeans.modules.refactoring.java.ui.CopyClassPanel;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
+import org.netbeans.modules.refactoring.spi.ui.RefactoringUIBypass;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.HelpCtx;
@@ -38,7 +40,7 @@ import org.openide.util.datatransfer.PasteType;
  *
  * @author Jan Becicka
  */
-public class CopyClassRefactoringUI implements RefactoringUI {
+public class CopyClassRefactoringUI implements RefactoringUI, RefactoringUIBypass {
     // reference to pull up refactoring this UI object corresponds to
     private final SingleCopyRefactoring refactoring;
     // UI panel for collecting parameters
@@ -62,10 +64,11 @@ public class CopyClassRefactoringUI implements RefactoringUI {
 
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         if (panel == null) {
+            FileObject target = targetFolder!=null?targetFolder:resource.getParent();
             panel = new CopyClassPanel(parent,
                     getName() + " - " + resource.getName(), 
-                    RetoucheUtils.getPackageName(targetFolder!=null?targetFolder:resource.getParent()), 
-                    resource);
+                    RetoucheUtils.getPackageName(target), 
+                    target);
             panel.setCombosEnabled(!(targetFolder!=null));
         }
         return panel;
@@ -111,5 +114,11 @@ public class CopyClassRefactoringUI implements RefactoringUI {
 
     public HelpCtx getHelpCtx() {
         return new HelpCtx(CopyClassRefactoringUI.class.getName());
+    }
+    public boolean isRefactoringBypassRequired() {
+        return !panel.isUpdateReferences();
+    }
+    public void doRefactoringBypass() throws IOException {
+        paste.paste();
     }
 }

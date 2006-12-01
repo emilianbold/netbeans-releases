@@ -143,7 +143,7 @@ public class CopyClassPanel extends CustomRefactoringPanel implements ActionList
         bottomPanel = new javax.swing.JPanel();
         newNameLabel = new javax.swing.JLabel();
         newNameTextField = new javax.swing.JTextField();
-        jCheckBox1 = new javax.swing.JCheckBox();
+        isUpdateReferences = new javax.swing.JCheckBox();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -228,22 +228,22 @@ public class CopyClassPanel extends CustomRefactoringPanel implements ActionList
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 0);
         add(newNameTextField, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jCheckBox1, org.openide.util.NbBundle.getMessage(CopyClassPanel.class, "LBL_CopyWithoutRefactoring")); // NOI18N
-        jCheckBox1.setBorder(javax.swing.BorderFactory.createEmptyBorder(4, 4, 0, 4));
-        jCheckBox1.setMargin(new java.awt.Insets(2, 2, 0, 2));
+        org.openide.awt.Mnemonics.setLocalizedText(isUpdateReferences, org.openide.util.NbBundle.getMessage(CopyClassPanel.class, "LBL_CopyWithoutRefactoring")); // NOI18N
+        isUpdateReferences.setBorder(javax.swing.BorderFactory.createEmptyBorder(4, 4, 0, 4));
+        isUpdateReferences.setMargin(new java.awt.Insets(2, 2, 0, 2));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        add(jCheckBox1, gridBagConstraints);
+        add(isUpdateReferences, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     protected javax.swing.JPanel bottomPanel;
-    private javax.swing.JCheckBox jCheckBox1;
+    private javax.swing.JCheckBox isUpdateReferences;
     private javax.swing.JLabel labelLocation;
     private javax.swing.JLabel labelPackage;
     private javax.swing.JLabel labelProject;
@@ -300,6 +300,13 @@ public class CopyClassPanel extends CustomRefactoringPanel implements ActionList
         newNameLabel.setVisible(visible);
         newNameTextField.setVisible(visible);
     }
+
+    public boolean isUpdateReferences() {
+        if (isUpdateReferences.isVisible() && isUpdateReferences.isSelected())
+            return false;
+        return true;
+    }
+    
     
     public String getNewName() {
         return newNameTextField.getText();
