@@ -91,6 +91,8 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
 	target.putClientProperty(InstantRenamePerformer.class, this);
 	
 	Highlighter.getDefault().setHighlights(getFileObject(), "instant-rename", newHighlights);
+        
+        target.select(mainRegion.getStartOffset(), mainRegion.getEndOffset());
     }
     
     private FileObject getFileObject() {

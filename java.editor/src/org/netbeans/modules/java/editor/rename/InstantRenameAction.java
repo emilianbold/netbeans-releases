@@ -102,6 +102,11 @@ public class InstantRenameAction extends BaseAction {
         }
     }
     
+    @Override
+    protected Class getShortDescriptionBundleClass() {
+        return InstantRenameAction.class;
+    }
+    
     private void doInstantRename(Set<Highlight> changePoints, JTextComponent target, int caret, String ident) throws BadLocationException {
         InstantRenamePerformer.performInstantRename(target, changePoints, caret);
     }
