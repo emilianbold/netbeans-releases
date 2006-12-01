@@ -22,11 +22,10 @@ package org.netbeans.installer.downloader.queue;
 
 import org.netbeans.installer.downloader.Pumping;
 import org.netbeans.installer.downloader.PumpingsQueue;
-import org.netbeans.installer.downloader.PumpingsQueueListener;
+import org.netbeans.installer.downloader.DownloadListener;
 import org.netbeans.installer.downloader.impl.PumpingImpl;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.exceptions.ParseException;
-import org.netbeans.installer.utils.helper.Pair;
 import org.netbeans.installer.utils.xml.DomUtil;
 import org.netbeans.installer.utils.xml.visitors.DomVisitor;
 import org.netbeans.installer.utils.xml.visitors.RecursiveDomVisitor;
@@ -49,9 +48,9 @@ public abstract class QueueBase implements PumpingsQueue {
   /**
    * @noinspection unchecked
    */
-  private static final WeakReference<PumpingsQueueListener>[] EMPTY_ARRAY = new WeakReference[0];
+  private static final WeakReference<DownloadListener>[] EMPTY_ARRAY = new WeakReference[0];
   
-  private final List<WeakReference<PumpingsQueueListener>> listeners;
+  private final List<WeakReference<DownloadListener>> listeners;
   
   protected final Map<String, PumpingImpl> id2Pumping = new HashMap<String, PumpingImpl>();
   
@@ -63,18 +62,18 @@ public abstract class QueueBase implements PumpingsQueue {
       load();
       LogManager.log("queue state was load from file: " + stateFile);
     } else LogManager.log("file not exist, queue is empty!");
-    listeners = new ArrayList<WeakReference<PumpingsQueueListener>>(3);
+    listeners = new ArrayList<WeakReference<DownloadListener>>(3);
   }
   
-  public synchronized void addListener(PumpingsQueueListener listener) {
+  public synchronized void addListener(DownloadListener listener) {
     if (!contains(listener)) {
-      listeners.add(new WeakReference<PumpingsQueueListener>(listener));
+      listeners.add(new WeakReference<DownloadListener>(listener));
     }
   }
   
-  private boolean contains(PumpingsQueueListener listener) {
-    for (WeakReference<PumpingsQueueListener> weak : listeners) {
-      final PumpingsQueueListener listen = weak.get();
+  private boolean contains(DownloadListener listener) {
+    for (WeakReference<DownloadListener> weak : listeners) {
+      final DownloadListener listen = weak.get();
       if (listen != null && listen.equals(listener)) return true;
     }
     return false;
@@ -93,14 +92,14 @@ public abstract class QueueBase implements PumpingsQueue {
     for (Object arg : args) {
       argsClasses.add(arg.getClass());
     }
-    final Method method = PumpingsQueueListener.class.getMethod(methodName, argsClasses.toArray(new Class[0]));
+    final Method method = DownloadListener.class.getMethod(methodName, argsClasses.toArray(new Class[0]));
     notifyListeners(method, args);
   }
   
   private synchronized void notifyListeners(Method mehtod, Object... args) {
-    WeakReference<PumpingsQueueListener>[] stub = listeners.toArray(EMPTY_ARRAY);
-    for (WeakReference<PumpingsQueueListener> ref : stub) {
-      final PumpingsQueueListener listener = ref.get();
+    WeakReference<DownloadListener>[] stub = listeners.toArray(EMPTY_ARRAY);
+    for (WeakReference<DownloadListener> ref : stub) {
+      final DownloadListener listener = ref.get();
       if (listener == null) continue;
       try {
         mehtod.invoke(listener, args);

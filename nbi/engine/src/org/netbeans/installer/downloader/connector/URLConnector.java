@@ -61,7 +61,7 @@ public class URLConnector {
   public static URLConnector getConnector() {
     if (instance != null) return instance;
     instance = new URLConnector();
-    instance.settingFile = new File(DownloadManager.DM.getWd(),"settings.xml");
+    instance.settingFile = new File(DownloadManager.instance.getWd(),"settings.xml");
     if (instance.settingFile.exists()) {
       instance.load();
       LogManager.log("configuration was load from file: " + instance.settingFile);

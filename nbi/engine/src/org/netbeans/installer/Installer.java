@@ -184,7 +184,7 @@ public class Installer {
      */
     public void cancel() {
         // shut down everything that needs it
-        DownloadManager.DM.terminate();
+        DownloadManager.instance.terminate();
         
         // exit with the cancel error code
         System.exit(CANCEL_ERRORCODE);
@@ -202,7 +202,7 @@ public class Installer {
         
         wizard.executeComponent(new FinalizeRegistryAction());
         wizard.close();
-        DownloadManager.DM.terminate();
+        DownloadManager.instance.terminate();
         System.exit(NORMAL_ERRORCODE);
     }
     
@@ -215,7 +215,7 @@ public class Installer {
      */
     public void criticalExit() {
         // exit immediately, as the system is apparently in a crashed state
-        DownloadManager.DM.terminate();
+        DownloadManager.instance.terminate();
         System.exit(CRITICAL_ERRORCODE);
     }
     

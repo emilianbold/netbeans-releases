@@ -16,30 +16,27 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  * 
- * $Id$
  */
 package org.netbeans.installer.downloader;
 
-import java.io.File;
-import java.net.URL;
-
 /**
+ *
  * @author Danila_Dugurov
  */
 
-public interface PumpingsQueue {
-
-    void addListener(DownloadListener listener);
-    
-    void reset();
-
-    Pumping getById(String id);
-
-    Pumping[] toArray();
-
-    Pumping add(URL url);//output in defualt folder
-    
-    Pumping add(URL url, File folder);
-
-    Pumping delete(String id);
+/**
+ * be aware of: If listener contract will be changed - analize carefully all fired events
+ * Some pices of code based on reflection and invocation, so
+ * NoSuchMethodException may occures.(It's implementation pitfalls)
+ */
+public interface DownloadListener {
+  
+  void pumpingUpdate(String id);
+  void pumpingStateChange(String id);
+  void pumpingAdd(String id);
+  void pumpingDelete(String id);
+  
+  void queueReset();
+  void pumpsInvoke();
+  void pumpsTerminate();
 }

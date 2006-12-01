@@ -21,7 +21,6 @@
 package org.netbeans.installer.utils;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,7 +29,6 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.installer.Installer;
@@ -38,7 +36,7 @@ import org.netbeans.installer.downloader.DownloadManager;
 import org.netbeans.installer.downloader.Pumping;
 import org.netbeans.installer.downloader.Pumping.Section;
 import org.netbeans.installer.downloader.PumpingsQueue;
-import org.netbeans.installer.downloader.PumpingsQueueListener;
+import org.netbeans.installer.downloader.DownloadListener;
 import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.utils.helper.Pair;
 import org.netbeans.installer.utils.progress.Progress;
@@ -55,10 +53,9 @@ public class FileProxy {
         tmpDir.mkdirs();
         tmpDir.deleteOnExit();
     }
-    final PumpingsQueue queue = DownloadManager.DM.getQueue();
-    PumpingsQueueListener listener = new MyListener();
+    DownloadListener listener = new MyListener();
     {
-        queue.addListener(listener);
+        DownloadManager.instance.registerListener(listener);
     }
     
     public static final FileProxy proxy = new FileProxy();
@@ -173,9 +170,9 @@ public class FileProxy {
     protected synchronized File getFile(final URL url,final Progress progress, boolean deleteOnExit) throws DownloadException {
         this.progress = progress;
         this.url = url;
-        final DownloadManager DM = DownloadManager.DM;
-        if (!DM.isActive()) DM.invoke();
-        queue.add(url);
+        if (!DownloadManager.instance.isActive())
+            DownloadManager.instance.invoke();
+        DownloadManager.instance.queue().add(url);
         try {
             wait();
         } catch (InterruptedException ex) {
@@ -188,9 +185,9 @@ public class FileProxy {
         return file;
     }
     
-    private class MyListener implements PumpingsQueueListener {
+    private class MyListener implements DownloadListener {
         public void pumpingUpdate(String id) {
-            final Pumping pumping = queue.getById(id);
+            final Pumping pumping = DownloadManager.instance.queue().getById(id);
             if (pumping != null) {
                 if (progress != null) {
                     progress.setDetail("downloding: " + pumping.declaredURL());
@@ -208,7 +205,7 @@ public class FileProxy {
         }
         
         public void pumpingStateChange(String id) {
-            final Pumping pumping = queue.getById(id);
+            final Pumping pumping = DownloadManager.instance.queue().getById(id);
             if (pumping != null) {
                 if (progress != null) {
                     progress.setDetail(pumping.state().toString().toLowerCase() +": "
@@ -229,7 +226,7 @@ public class FileProxy {
         }
         
         public void pumpingAdd(String id) {
-            final Pumping pumping = queue.getById(id);
+            final Pumping pumping = DownloadManager.instance.queue().getById(id);
             if (pumping != null) {
                 if (progress != null) {
                     progress.setDetail("scheduled: " + pumping.declaredURL());
