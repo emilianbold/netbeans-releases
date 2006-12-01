@@ -71,7 +71,7 @@ public class Kvetcher extends Task implements BuildListener {
         mailhost = mh;
     }
     
-    private List culprits = new ArrayList(20); // List<Culprit>
+    private List<Culprit> culprits = new ArrayList<Culprit>(20);
     public Culprit createCulprit() {
         Culprit c = new Culprit();
         culprits.add(c);
@@ -79,9 +79,9 @@ public class Kvetcher extends Task implements BuildListener {
     }
     
     public final class Culprit {
-        List to = new ArrayList(1); // List<Address>
-        List cc = new ArrayList(1); // List<Address>
-        List regexp = new ArrayList(5); // List<Regexp>
+        List<Address> to = new ArrayList<Address>(1);
+        List<Address> cc = new ArrayList<Address>(1);
+        List<Regexp> regexp = new ArrayList<Regexp>(5);
         public Address createTo() {
             Address a = new Address();
             to.add(a);
@@ -146,7 +146,7 @@ public class Kvetcher extends Task implements BuildListener {
         }
     }
     
-    private List messages = new ArrayList(1000); // List<String>
+    private List<String> messages = new ArrayList<String>(1000);
     
     public void execute() throws BuildException {
         if (target == null) throw new BuildException("set the target");
@@ -174,19 +174,13 @@ public class Kvetcher extends Task implements BuildListener {
     }
     
     private void sendMail() throws BuildException {
-        Iterator it = culprits.iterator();
-        while (it.hasNext()) {
+        for (Culprit c: culprits) {
             try {
-                Culprit c = (Culprit)it.next();
                 MailMessage mail = null;
                 //boolean send = false;
                 PrintStream ps = null;
-                Iterator it2 = messages.iterator();
-                while (it2.hasNext()) {
-                    String msg = (String)it2.next();
-                    Iterator it3 = c.regexp.iterator();
-                    while (it3.hasNext()) {
-                        Regexp r = (Regexp)it3.next();
+                for (String msg: messages) {
+                    for (Regexp r: c.regexp) {
                         Matcher m = r.pattern.matcher(msg);
                         if (m.find()) {
                             if (mail == null) {
@@ -195,13 +189,11 @@ public class Kvetcher extends Task implements BuildListener {
                                 mail = new MailMessage(mailhost);
                                 if (from == null) from = "kvetcher@" + mailhost;
                                 mail.from(from);
-                                Iterator it4 = c.to.iterator();
-                                while (it4.hasNext()) {
-                                    mail.to(((Address)it4.next()).name);
+                                for (Address a: c.to) {
+                                    mail.to(a.name);
                                 }
-                                it4 = c.cc.iterator();
-                                while (it4.hasNext()) {
-                                    mail.cc(((Address)it4.next()).name);
+                                for (Address a: c.cc) {
+                                    mail.cc(a.name);
                                 }
                                 mail.setSubject(subject);
                                 ps = mail.getPrintStream();

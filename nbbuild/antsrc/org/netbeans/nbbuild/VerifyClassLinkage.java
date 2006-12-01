@@ -109,24 +109,20 @@ public class VerifyClassLinkage extends Task {
         }
         try {
             // Map from class name (foo/Bar format) to true (found), false (not found), null (as yet unknown):
-            Map<String,Boolean> loadable = new HashMap();
-            Map/*<String,byte[]>*/ classfiles = new TreeMap();
-            read(jar, classfiles, new HashSet());
-            Iterator it = classfiles.keySet().iterator();
-            while (it.hasNext()) {
+            Map<String,Boolean> loadable = new HashMap<String,Boolean>();
+            Map<String,byte[]> classfiles = new TreeMap<String,byte[]>();
+            read(jar, classfiles, new HashSet<File>());
+            for (String clazz: classfiles.keySet()) {
                 // All classes we define are obviously loadable:
-                String clazz = (String) it.next();
                 loadable.put(clazz, Boolean.TRUE);
                 if (warnOnDefaultPackage && clazz.indexOf('/') == -1) {
                     log("Warning: class '" + clazz + "' found in default package", Project.MSG_WARN);
                 }
             }
             ClassLoader loader = new AntClassLoader(ClassLoader.getSystemClassLoader().getParent(), getProject(), classpath, true);
-            it = classfiles.entrySet().iterator();
-            while (it.hasNext()) {
-                Map.Entry entry = (Map.Entry) it.next();
-                String clazz = (String) entry.getKey();
-                byte[] data = (byte[]) entry.getValue();
+            for (Map.Entry<String, byte[]> entry: classfiles.entrySet()) {
+                String clazz = entry.getKey();
+                byte[] data = entry.getValue();
                 verify(clazz, data, loadable, loader);
             }
         } catch (IOException e) {
@@ -134,7 +130,7 @@ public class VerifyClassLinkage extends Task {
         }
     }
 
-    private void read(File jar, Map/*<String,byte[]>*/ classfiles, Set<File> alreadyRead) throws IOException {
+    private void read(File jar, Map<String,byte[]> classfiles, Set<File> alreadyRead) throws IOException {
         if (!alreadyRead.add(jar)) {
             log("Already read " + jar, Project.MSG_VERBOSE);
             return;

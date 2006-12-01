@@ -30,10 +30,8 @@ import org.apache.tools.ant.FileScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.taskdefs.Delete;
-import org.apache.tools.ant.taskdefs.Java;
 import org.apache.tools.ant.taskdefs.MatchingTask;
 import org.apache.tools.ant.taskdefs.Mkdir;
-import org.apache.tools.ant.taskdefs.Move;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.Mapper;
 import org.apache.tools.ant.types.Path;
@@ -53,7 +51,7 @@ public class JHIndexer extends MatchingTask {
     private File db;
     private File basedir;
     private String locale;
-    private List brandings = new LinkedList(); // List<BrandedFileSet>
+    private List<BrandedFileSet> brandings = new LinkedList<BrandedFileSet>();
 
     /** Set the location of <samp>jhall.jar</samp> or <samp>jsearch.jar</samp> (JavaHelp tools library). */
     public Path createClasspath() {
@@ -156,6 +154,7 @@ public class JHIndexer extends MatchingTask {
     }
     
     /** @deprecated Use {@link #createClasspath} instead. */
+    @Deprecated
     public void setJhall(File f) {
         log("The 'jhall' attribute to <jhindexer> is deprecated. Use a nested <classpath> instead.", Project.MSG_WARN);
         createClasspath().setLocation(f);
@@ -201,9 +200,7 @@ public class JHIndexer extends MatchingTask {
                 }
                 if (!brandings.isEmpty()) {
                     // Check these too!
-                    Iterator it = brandings.iterator();
-                    while (it.hasNext()) {
-                        FileSet fs = (FileSet)it.next();
+                    for(FileSet fs: brandings) {
                         FileScanner scanner2 = fs.getDirectoryScanner(getProject());
                         String[] files2 = scanner2.getIncludedFiles();
                         for (int i = 0; i < files2.length; i++) {
@@ -254,15 +251,13 @@ public class JHIndexer extends MatchingTask {
             copy.execute();
             // Now branded filesets. Must be done in order of branding, so that
             // more specific files override generic ones.
-            class BrandingLengthComparator implements Comparator {
-                public int compare(Object a, Object b) {
-                    return ((BrandedFileSet)a).branding.length() - ((BrandedFileSet)b).branding.length();
+            class BrandingLengthComparator implements Comparator<BrandedFileSet> {
+                public int compare(BrandedFileSet a, BrandedFileSet b) {
+                    return a.branding.length() - b.branding.length();
                 }
             }
             Collections.sort(brandings, new BrandingLengthComparator());
-            Iterator it = brandings.iterator();
-            while (it.hasNext()) {
-                BrandedFileSet s = (BrandedFileSet)it.next();
+            for (BrandedFileSet s: brandings) {
                 if (maxbranding != null && !s.branding.startsWith(maxbranding + "_")) {
                     throw new BuildException("Illegal branding: " + s.branding, getLocation());
                 }
@@ -340,12 +335,12 @@ public class JHIndexer extends MatchingTask {
                 try {
                     Class clazz = loader.loadClass ("com.sun.java.help.search.Indexer");
                     Method main = clazz.getMethod ("main", new Class[] { String[].class });
-                    List args = Arrays.asList(new String[] {
+                    List<String> args = Arrays.asList(new String[] {
                         "-c", config.getAbsolutePath(),
                         "-db", db.getAbsolutePath()
                     });
                     if (locale != null) {
-                        args = new ArrayList(args); // #35244
+                        args = new ArrayList<String>(args); // #35244
                         args.add("-locale");
                         args.add(locale);
                     }

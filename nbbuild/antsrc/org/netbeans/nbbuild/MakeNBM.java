@@ -199,6 +199,7 @@ public class MakeNBM extends Task {
             }
 	}
         /** @deprecated */
+        @Deprecated
         public void setName(String name) {
             getProject().log(getLocation() + ": the 'name' attribute on <license> is deprecated", Project.MSG_WARN);
         }
@@ -288,7 +289,7 @@ public class MakeNBM extends Task {
     private Signature signature = null;
     private long mostRecentInput = 0L;
     private boolean isStandardInclude = true;
-    private Vector externalPackages = null;
+    private Vector<ExternalPackage> externalPackages = null;
     
     /** Include netbeans directory - default is true */
     public void setIsStandardInclude(boolean isStandardInclude) {
@@ -308,6 +309,7 @@ public class MakeNBM extends Task {
     /** Module manifest needed for versioning.
      * @deprecated Use {@link #setModule} instead.
      */
+    @Deprecated
     public void setManifest(File manifest) {
         this.manifest = manifest;
         long lmod = manifest.lastModified();
@@ -386,7 +388,7 @@ public class MakeNBM extends Task {
     public ExternalPackage createExternalPackage(){
 	ExternalPackage externalPackage = new ExternalPackage ();
 	if (externalPackages == null)
-	    externalPackages = new Vector();
+	    externalPackages = new Vector<ExternalPackage>();
 	externalPackages.add( externalPackage );
 	return externalPackage;
     }
@@ -701,7 +703,7 @@ public class MakeNBM extends Task {
         }
         // Write manifest attributes.
         Element el = doc.createElement("manifest");
-        List attrNames = new ArrayList(attr.size()); // List<String>
+        List<String> attrNames = new ArrayList<String>(attr.size());
         Iterator it = attr.keySet().iterator();
         while (it.hasNext()) {
             attrNames.add(((Attributes.Name)it.next()).toString());

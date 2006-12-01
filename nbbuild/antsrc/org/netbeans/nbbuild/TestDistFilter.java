@@ -71,7 +71,7 @@ public class TestDistFilter extends Task {
     public static final String HARNESS_XTEST = "xtest";
 
     private File testDistDir;
-    Set<TestConf> possibleTests = new HashSet();
+    Set<TestConf> possibleTests = new HashSet<TestConf>();
     // "unit|qa_functional|all
     // default value is all
     private String testtype = TYPE_ALL;
@@ -260,7 +260,7 @@ public class TestDistFilter extends Task {
 
     private List getTestList(String testtype) {
         File root = new File (getTestDistDir(),testtype);
-        List <TestConf> testList = new ArrayList();
+        List <TestConf> testList = new ArrayList<TestConf>();
         if (!root.exists()) {
             return Collections.EMPTY_LIST;
         }
@@ -353,8 +353,8 @@ public class TestDistFilter extends Task {
        return false;        
     }
 
-    private Set getRequiredModulesSet() {
+    private Set<String> getRequiredModulesSet() {
         String names[] = getRequiredModules().split(",");
-        return new HashSet(Arrays.asList(names));
+        return new HashSet<String>(Arrays.asList(names));
     }
 }

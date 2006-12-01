@@ -55,14 +55,14 @@ import org.apache.tools.ant.types.*;
  */
 public class LocalizedJar extends MatchingTask {
 
-    private List localeKits = new LinkedList (); // List<FileSet>
-    private List locales = new LinkedList (); // List<LocaleOrB>
-    private List brandings = new LinkedList (); // List<LocaleOrB>
+    private List<FileSet> localeKits = new LinkedList<FileSet> ();
+    private List<LocaleOrB> locales = new LinkedList<LocaleOrB> ();
+    private List<LocaleOrB> brandings = new LinkedList<LocaleOrB> ();
     private File jarFile;
     private File baseDir;
     private boolean doCompress = false;
     private static long emptyCrc = new CRC32 ().getValue ();
-    private List filesets = new LinkedList (); // List<FileSet>
+    private List<FileSet> filesets = new LinkedList<FileSet> ();
     private File manifest;
     private boolean checkPathLocale = true ;
     private boolean warnMissingDir = false ;
@@ -224,20 +224,17 @@ public class LocalizedJar extends MatchingTask {
 
         //System.err.println ("Stage #1");
         // First find out which files need to be archived.
-        Map allFiles = new HashMap (); // all files to do something with; Map<String,File> from JAR path to actual file
+        Map<String, File> allFiles = new HashMap<String, File> (); // all files to do something with; Map<String,File> from JAR path to actual file
         // Populate it.
         {
-            List scanners = new ArrayList (filesets.size () + 1); // List<FileScanner>
+            List<FileScanner> scanners = new ArrayList<FileScanner> (filesets.size () + 1);
             if (baseDir != null) {
                 scanners.add (getDirectoryScanner (baseDir));
             }
-            Iterator it = filesets.iterator ();
-            while (it.hasNext ()) {
-                scanners.add(((FileSet) it.next()).getDirectoryScanner(getProject()));
+            for (FileSet fs: filesets) {
+                scanners.add(fs.getDirectoryScanner(getProject()));
             }
-            it = scanners.iterator ();
-            while (it.hasNext ()) {
-                FileScanner scanner = (FileScanner) it.next ();
+            for (FileScanner scanner: scanners) {
                 File thisBaseDir = scanner.getBasedir ();
                 String[] files = scanner.getIncludedFiles ();
                 for (int i = 0; i < files.length; i++) {
@@ -255,12 +252,11 @@ public class LocalizedJar extends MatchingTask {
         // Now find all files which should always be put into a locale
         // kit (e.g. dir/locale/name.jar, no special locale or
         // branding, but distinguished as localizable/brandable).
-        Set localeKitFiles = new HashSet (); // Set<File>; all locale-kit files
+        Set<File> localeKitFiles = new HashSet<File> (); // all locale-kit files
         // Populate this one.
         {
-            Iterator it = localeKits.iterator ();
-            while (it.hasNext ()) {
-                FileScanner scanner = ((FileSet) it.next()).getDirectoryScanner(getProject());
+            for (FileSet fs: localeKits) {
+                FileScanner scanner = fs.getDirectoryScanner(getProject());
                 File thisBaseDir = scanner.getBasedir ();
                 String[] files = scanner.getIncludedFiles ();
                 for (int i = 0; i < files.length; i++) {
@@ -271,41 +267,33 @@ public class LocalizedJar extends MatchingTask {
 
         //System.err.println ("Stage #3");
         // Compute list of supported locales and brandings.
-        List locales2 = new LinkedList (); // List<String>; all locales
-        List brandings2 = new LinkedList (); // List<String>; all brandings
+        List<String> locales2 = new LinkedList<String> ();
+        List<String> brandings2 = new LinkedList<String> (); // all brandings
         // Initialize above two.
-        {
-            Iterator it = locales.iterator ();
-            while (it.hasNext ()) {
-                locales2.add (((LocaleOrB) it.next ()).n);
-            }
-            it = brandings.iterator ();
-            while (it.hasNext ()) {
-                brandings2.add (((LocaleOrB) it.next ()).n);
-            }
-            class InverseLengthComparator implements Comparator {
-                public int compare (Object o1, Object o2) {
-                    String s1 = (String) o1;
-                    String s2 = (String) o2;
-                    return s2.length () - s1.length ();
-                }
-            }
-            Comparator c = new InverseLengthComparator ();
-            Collections.sort (locales2, c);
-            Collections.sort (brandings2, c);
+        
+        for (LocaleOrB lob: locales) {
+            locales2.add (lob.n);
         }
+        for (LocaleOrB lob: brandings) {
+            brandings2.add (lob.n);
+        }
+        class InverseLengthComparator implements Comparator<String> {
+            public int compare (String s1, String s2) {
+                return s2.length () - s1.length ();
+            }
+        }
+        Collections.sort (locales2, new InverseLengthComparator ());
+        Collections.sort (brandings2, new InverseLengthComparator ());
 
         //System.err.println ("Stage #4");
         // Analyze where everything goes.
-        Set jars = new HashSet (); // Set<File>; JAR files to build
-        Map localeMarks = new HashMap (); // Map<File,String>; JAR files to locale (or null for basic JAR, "-" for blank)
-        Map brandingMarks = new HashMap (); // Map<File,String>; JAR files to branding (or null for basic JAR, "-" for blank)
-        Map router = new HashMap (); // Map<File,Map<String,File>>; JAR files to map of JAR path to actual file (file may be null for dirs)
+        Set<File> jars = new HashSet<File> (); //JAR files to build
+        Map<File,String> localeMarks = new HashMap<File,String> (); // JAR files to locale (or null for basic JAR, "-" for blank)
+        Map<File,String> brandingMarks = new HashMap<File,String> (); // JAR files to branding (or null for basic JAR, "-" for blank)
+        Map<File,Map<String,File>> router = new HashMap<File,Map<String,File>> (); // JAR files to map of JAR path to actual file (file may be null for dirs)
         {
 	    String localeDir ;
-            Iterator it = allFiles.entrySet ().iterator ();
-            while (it.hasNext ()) {
-                Map.Entry entry = (Map.Entry) it.next ();
+            for (Map.Entry<String, File> entry: allFiles.entrySet()) {
                 String path = (String) entry.getKey ();
 
 log( "==> Examining file: " + path, Project.MSG_DEBUG) ;
@@ -393,9 +381,9 @@ log( "==> Examining file: " + path, Project.MSG_DEBUG) ;
                 if (thisjar != null) {
   	            log("    Adding file " + thisjar.getName() + " to 'jars' HashSet", Project.MSG_DEBUG);
                     jars.add (thisjar);
-                    Map files = (Map) router.get (thisjar);
+                    Map<String, File> files = router.get (thisjar);
                     if (files == null) {
-                        files = new TreeMap ();
+                        files = new TreeMap<String, File> ();
                         router.put (thisjar, files);
                     }
                     files.put (path, file);
@@ -406,20 +394,15 @@ log( "==> Examining file: " + path, Project.MSG_DEBUG) ;
         //System.err.println ("Stage #5");
         // Go through JARs one by one, and build them (if necessary).
         {
-            List jars2 = new ArrayList (jars);
-            class FileNameComparator implements Comparator {
-                public int compare (Object o1, Object o2) {
-                    File f1 = (File) o1;
-                    File f2 = (File) o2;
+            List<File> jars2 = new ArrayList<File> (jars);
+            class FileNameComparator implements Comparator<File> {
+                public int compare (File f1, File f2) {
                     return f1.toString ().compareTo (f2.toString ());
                 }
             }
-            Comparator c = new FileNameComparator ();
-            Collections.sort (jars2, c);
-            Iterator it = jars2.iterator ();
-            while (it.hasNext ()) {
-                File jar = (File) it.next ();
-                Map files = (Map) router.get (jar); // Map<String,File>
+            Collections.sort (jars2, new FileNameComparator ());
+            for (File jar: jars2) {
+                Map<String, File> files = router.get (jar);
                 if (jar.exists ()) {
                     // Do an up-to-date check first.
                     long time = jar.lastModified ();
@@ -446,9 +429,9 @@ log( "==> Examining file: " + path, Project.MSG_DEBUG) ;
                     ZipOutputStream out = new ZipOutputStream (new FileOutputStream (jar));
                     try {
                         out.setMethod (doCompress ? ZipOutputStream.DEFLATED : ZipOutputStream.STORED);
-                        String localeMark = (String) localeMarks.get (jar);
-                        String brandingMark = (String) brandingMarks.get (jar);
-                        Set addedDirs = new HashSet (); // Set<String>
+                        String localeMark = localeMarks.get (jar);
+                        String brandingMark = brandingMarks.get (jar);
+                        Set<String> addedDirs = new HashSet<String> ();
                         // Add the manifest.
                         InputStream is;
                         long time;
@@ -533,11 +516,9 @@ log( "==> Examining file: " + path, Project.MSG_DEBUG) ;
                         addToJar (new ByteArrayInputStream (bytes), new ByteArrayInputStream (bytes),
                                   out, "META-INF/MANIFEST.MF", time, addedDirs);
                         // Now regular files.
-                        Iterator it2 = files.entrySet ().iterator ();
-                        while (it2.hasNext ()) {
-                            Map.Entry entry = (Map.Entry) it2.next ();
-                            String path = (String) entry.getKey ();
-                            File file = (File) entry.getValue ();
+                        for (Map.Entry<String, File> entry: files.entrySet()) {
+                            String path = entry.getKey ();
+                            File file = entry.getValue ();
                             addToJar (new FileInputStream (file), new FileInputStream (file),
                                       out, path, file.lastModified (), addedDirs);
                         }
@@ -569,7 +550,7 @@ log( "==> Examining file: " + path, Project.MSG_DEBUG) ;
     } // end execute()
 
     private void addToJar (InputStream in1, InputStream in2, ZipOutputStream out,
-                           String path, long lastModified, Set addedDirs) throws IOException {
+                           String path, long lastModified, Set<String> addedDirs) throws IOException {
         try {
             if (path.endsWith ("/")) {
                 throw new IOException ("Bad path: " + path);
@@ -617,7 +598,7 @@ log( "==> Examining file: " + path, Project.MSG_DEBUG) ;
   // If the name of any parent directory of this file is the same as //
   // one of the locales, return the locale.			     //
   protected String checkInLocaleDir( File file,
-				     List locales) {
+				     List<String> locales) {
 
     // See if this functionality is disabled. //
     if( !checkPathLocale) {
@@ -625,13 +606,11 @@ log( "==> Examining file: " + path, Project.MSG_DEBUG) ;
     }
 
     int idx ;
-    String loc, locale_dir, ret = null ;
+    String locale_dir, ret = null ;
     String path = file.getPath() ;
-    Iterator iter = locales.iterator() ;
 
     // For each locale. //
-    while( iter.hasNext()) {
-      loc = (String) iter.next() ;
+    for (String loc: locales) {
 
       // If the path contains a dir with the same name as the //
       // locale.					      //
@@ -680,7 +659,7 @@ log( "==> Examining file: " + path, Project.MSG_DEBUG) ;
   }
 
   protected void addGlobals( String var_name,
-			     List list) {
+			     List<LocaleOrB> list) {
     String prop = null ;
     StringTokenizer tokenizer = null ;
     String tok = null ;
@@ -724,8 +703,6 @@ log( "==> Examining file: " + path, Project.MSG_DEBUG) ;
 
   // If any dir's don't exist, warn the user and return true. //
   protected boolean warnIfMissingDir() {
-    ListIterator iter ;
-    FileSet fileset ;
     File dir ;
     boolean ret = false ;
 
@@ -736,19 +713,14 @@ log( "==> Examining file: " + path, Project.MSG_DEBUG) ;
     }
 
     // For each fileset. //
-    iter = filesets.listIterator() ;
-    if( iter != null) {
-      while( iter.hasNext()) {
-
+    for (FileSet fileset: filesets) {
 	// Print warning if the dir doesn't exist. //
-	fileset = (FileSet) iter.next() ;
 	dir = fileset.getDir(getProject());
 	if( dir != null && !dir.exists()) {
 	  ret = true ;
 	  printMissingDirWarning( dir) ;
 	}
       }
-    }
     return( ret) ;
   }
 

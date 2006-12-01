@@ -26,9 +26,6 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Target;
 import org.apache.tools.ant.Task;
-import org.apache.tools.ant.taskdefs.Delete;
-import org.apache.tools.ant.taskdefs.Copy;
-import org.apache.tools.ant.types.FileSet;
 
 /** Pseudo-task to unpack a set of modules.
  * Causes the containing target to both depend on the building of the modules in
@@ -42,17 +39,17 @@ import org.apache.tools.ant.types.FileSet;
 public class NbMerge extends Task {
     
     private File dest;
-    private Vector modules = new Vector (); // list of modules defined by build.xml
-    private Vector buildmodules = new Vector (); // list of modules which will be built
-    private Vector fixedmodules = new Vector (); // list of fixed modules defined in build.xml
-    private Vector buildfixedmodules = new Vector (); // List of fixed modules which will be built
-    private Vector failedmodules = new Vector (); // List of failed modules
-    private Vector builtmodules = new Vector (); // list of successfully built modules
-    private Vector mergemodules = new Vector (); // list of successfully built modules
-    private Vector builttargets = new Vector (); // list of successfully built targets
+    private Vector<String> modules = new Vector<String> (); // list of modules defined by build.xml
+    private Vector<String> buildmodules = new Vector<String> (); // list of modules which will be built
+    private Vector<String> fixedmodules = new Vector<String> (); // list of fixed modules defined in build.xml
+    private Vector<String> buildfixedmodules = new Vector<String> (); // List of fixed modules which will be built
+    private Vector<String> failedmodules = new Vector<String> (); // List of failed modules
+    private Vector<String> builtmodules = new Vector<String> (); // list of successfully built modules
+    private Vector<String> mergemodules = new Vector<String> (); // list of successfully built modules
+    private Vector<String> builttargets = new Vector<String> (); // list of successfully built targets
     private String targetprefix = "all-";    
-    private List topdirs = new ArrayList (); // List<File>
-    private List suppress = new LinkedList (); // List<Suppress>
+    private List<File> topdirs = new ArrayList<File> ();
+    private List<Suppress> suppress = new LinkedList<Suppress> ();
     private boolean failonerror = true; // false = enable build success granularity
     private boolean mergedependentmodules = false; // merge also dependent modules
     private String dummyName;
@@ -86,7 +83,7 @@ public class NbMerge extends Task {
     /** Comma-separated list of fixed modules to include. */
     public void setFixedModules (String s) {
         StringTokenizer tok = new StringTokenizer (s, ", ");
-        fixedmodules = new Vector ();
+        fixedmodules = new Vector<String> ();
         while (tok.hasMoreTokens ())
             fixedmodules.addElement (tok.nextToken ());
     }
@@ -94,7 +91,7 @@ public class NbMerge extends Task {
     /** Comma-separated list of modules to include. */
     public void setModules (String s) {
         StringTokenizer tok = new StringTokenizer (s, ", ");
-        modules = new Vector ();
+        modules = new Vector<String> ();
         while (tok.hasMoreTokens ())
             modules.addElement (tok.nextToken ());
     }
@@ -181,15 +178,14 @@ public class NbMerge extends Task {
         getProject().addTarget(dummy);
 
         getProject().setProperty("fixedmodules-built",  "1" );
-        Vector fullList = getProject().topoSort(dummyName, targets);
+        @SuppressWarnings("unchecked")
+        Vector<Target> fullList = getProject().topoSort(dummyName, targets);
         // Now remove earlier ones: already done.
         Vector doneList = getProject().topoSort(getOwningTarget().getName(), targets);
-        List todo = new ArrayList(fullList.subList(0, fullList.indexOf(dummy)));
+        List<Target> todo = new ArrayList<Target>(fullList.subList(0, fullList.indexOf(dummy)));
         todo.removeAll(doneList.subList(0, doneList.indexOf(getOwningTarget())));
-        Iterator targit = todo.iterator();
         log("Going to execute targets " + todo);
-        while (targit.hasNext()) {
-            Target nexttargit = (Target)targit.next();
+        for (Target nexttargit: todo) {
             String targetname = nexttargit.getName();
             if ( builttargets.indexOf(targetname) < 0 ) {
                 // XXX poor replacement for Project.fireTargetStarted etc.
@@ -223,19 +219,21 @@ public class NbMerge extends Task {
                 dummy.setName (dummyName);
                 dummy.addDependency (targetprefix + module);
                 getProject().addTarget(dummy);
-                Vector fullList = getProject().topoSort(dummyName, targets);
+                @SuppressWarnings("unchecked")
+                Vector<Target> fullList = getProject().topoSort(dummyName, targets);
                 // Now remove earlier ones: already done.
-                Vector doneList = getProject().topoSort(getOwningTarget().getName(), targets);
-                List todo = new ArrayList(fullList.subList(0, fullList.indexOf(dummy)));
+                @SuppressWarnings("unchecked")
+                Vector<Target> doneList = getProject().topoSort(getOwningTarget().getName(), targets);
+                List<Target> todo = new ArrayList<Target>(fullList.subList(0, fullList.indexOf(dummy)));
                 todo.removeAll(doneList.subList(0, doneList.indexOf(getOwningTarget())));
                 
-                Iterator targit = todo.iterator();
+                Iterator<Target> targit = todo.iterator();
                 try {
                     while (targit.hasNext()) {
-                        Target nexttargit = (Target)targit.next();
+                        Target nexttargit = targit.next();
                         String targetname = nexttargit.getName();
                         if ( builttargets.indexOf(targetname) < 0 ) {
-                            System.out.println(""); System.out.println(targetname + ":");
+                            System.out.println(); System.out.println(targetname + ":");
                             nexttargit.execute();
                             builttargets.addElement(targetname);
                         }
@@ -295,7 +293,7 @@ public class NbMerge extends Task {
             
             if ( mergemodules.size() > 0 ) {
                 if ( builtmodulesproperty.length() > 0 ) {
-                    Vector setmodules = new Vector();
+                    Vector<String> setmodules = new Vector<String>();
                     // add all successfuly built modules
                     setmodules.addAll(mergemodules);
                     // remove all fixed modules (don't put fixed modules to modules list)
@@ -320,7 +318,7 @@ public class NbMerge extends Task {
 
     /** Do final data merge */
     private void dataMerge() throws BuildException {
-        List suppressedlocales = new LinkedList (); // List<String>
+        List<String> suppressedlocales = new LinkedList<String> ();
         Iterator it = suppress.iterator ();
         while (it.hasNext ()) {
             Suppress s = (Suppress) it.next ();

@@ -47,7 +47,7 @@ public class PrintCvsModules extends Task {
     /** Comma-separated list of modules to include. */
     public void setModules (String s) {
         StringTokenizer tok = new StringTokenizer (s, ", ");
-        modules = new ArrayList();
+        modules = new ArrayList<String>();
         while (tok.hasMoreTokens ())
             modules.add(tok.nextToken ());
     }
@@ -71,11 +71,9 @@ public class PrintCvsModules extends Task {
     }
 
     public void execute () throws BuildException {
-        Set<String> cvslist = new TreeSet();
+        Set<String> cvslist = new TreeSet<String>();
         cvslist.add("nbbuild");
-        Iterator modulesIt = modules.iterator();
-        while (modulesIt.hasNext()) {
-            String module = (String) modulesIt.next();
+        for (String module: modules) {
             int slash = module.indexOf('/');
             if (slash > 0) {
                 module = module.substring(0, slash);

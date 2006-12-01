@@ -55,10 +55,11 @@ import org.xml.sax.SAXException;
  */
 final class XMLUtil extends Object {
 
+    @SuppressWarnings("unchecked")
     private static final ThreadLocal<DocumentBuilder>[] builderTL = new ThreadLocal[4];
     static {
         for (int i = 0; i < 4; i++) {
-            builderTL[i] = new ThreadLocal();
+            builderTL[i] = new ThreadLocal<DocumentBuilder>();
         }
     }
     public static Document parse (
@@ -230,7 +231,7 @@ final class XMLUtil extends Object {
      */
     static List<Element> findSubElements(Element parent) throws IllegalArgumentException {
         NodeList l = parent.getChildNodes();
-        List<Element> elements = new ArrayList(l.getLength());
+        List<Element> elements = new ArrayList<Element>(l.getLength());
         for (int i = 0; i < l.getLength(); i++) {
             Node n = l.item(i);
             if (n.getNodeType() == Node.ELEMENT_NODE) {

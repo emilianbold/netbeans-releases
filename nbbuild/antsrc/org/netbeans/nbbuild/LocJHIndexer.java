@@ -181,13 +181,13 @@ public class LocJHIndexer extends MatchingTask {
     int idx, i ;
     FileSet fs ;
     File file ;
-    LinkedList dirs, regexps ;
+    LinkedList<String> dirs, regexps ;
     StringTokenizer st ;
     Path path ;
 
     // For each regular expression. //
-    dirs = new LinkedList() ;
-    regexps = new LinkedList() ;
+    dirs = new LinkedList<String>() ;
+    regexps = new LinkedList<String>() ;
     jhlib = getJhall() ;
     st = new StringTokenizer( jhlib, " 	\n,") ;
     while( st.hasMoreTokens()) {
@@ -207,8 +207,8 @@ public class LocJHIndexer extends MatchingTask {
     if( dirs.size() > 0) {
       path = jhindexer.createClasspath() ;
       for( i = 0; i < dirs.size(); i++) {
-	dir = (String) dirs.get( i) ;
-	regexp = (String) regexps.get( i) ;
+	dir = dirs.get( i) ;
+	regexp = regexps.get( i) ;
 	fs = new FileSet() ;
 	fs.setDir( new File( dir)) ;
 	fs.setIncludes( regexp) ;

@@ -34,6 +34,7 @@ import org.apache.tools.ant.*;
 * @author Jaroslav Tulach
 * @deprecated No longer used.
 */
+@Deprecated
 public class Postprocess extends Task {
     /** file to post process */
     private File file;

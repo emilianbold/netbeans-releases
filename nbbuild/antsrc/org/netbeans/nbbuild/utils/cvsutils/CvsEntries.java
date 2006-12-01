@@ -40,7 +40,7 @@ import java.util.*;
 
 public class CvsEntries {
 
-	private java.util.HashMap hash = new java.util.HashMap();
+	private java.util.HashMap<String, Entry> hash = new java.util.HashMap<String, Entry>();
 	private static final String DEFAULT_CVS_ENTRIES_FILENAME = "CVS/Entries";
 
 	// Constructors 
@@ -70,7 +70,7 @@ public class CvsEntries {
 	}
         
 	public String getRevnoByFileName(String fileName) {
-		Entry e = (Entry)hash.get(fileName);
+		Entry e = hash.get(fileName);
 		if (e == null ) {
 			return null;
 		} else {

@@ -51,7 +51,7 @@ public class ShorterPaths extends Task {
             this.dir = dir;
         }
     }
-    private List replacements = new LinkedList(); // List<Nestme>
+    private List<Replacement> replacements = new LinkedList<Replacement>(); // List<Nestme>
     public Replacement createReplacement() {
         Replacement r = new Replacement();
         replacements.add(r);
@@ -190,8 +190,7 @@ public class ShorterPaths extends Task {
             // file exists, try to to replace the path with ${a.prop}/relpath
             //
            path = file.getAbsolutePath();
-            for (Iterator rIt = replacements.iterator() ; rIt.hasNext() ; ) {
-                Replacement repl = (Replacement) rIt.next();
+           for (Replacement repl: replacements) {
                 String dirCan = repl.dir.getCanonicalPath();
                 if (path.startsWith(dirCan)) {
                     if (nbLibBuff.length() > 0 ) {

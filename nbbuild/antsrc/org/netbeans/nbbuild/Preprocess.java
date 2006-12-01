@@ -66,6 +66,7 @@ import org.apache.tools.ant.taskdefs.MatchingTask;
 * @author Jaroslav Tulach, Jesse Glick
 * @deprecated No longer used.
 */
+@Deprecated
 public class Preprocess extends MatchingTask {
     /** the format of begining of substitution */
     private static final String F_BEGIN = "/*nbif"; // NOI18N
@@ -85,7 +86,7 @@ public class Preprocess extends MatchingTask {
     /** copy all/copy modified */
     private boolean copyAll = false;
     /** switches to check in conditionals */
-    private List switches = new LinkedList (); // List<Switch>
+    private List<Switch> switches = new LinkedList<Switch> ();
     
     /** Setter for the source directory to scan. */
     public void setSrcDir (File f) {
@@ -144,10 +145,8 @@ public class Preprocess extends MatchingTask {
             " file(s) from directory " + src + " to " + dest;
         
         StringBuffer message2 = new StringBuffer ("Switches:");
-        Set ss = new HashSet ();
-        Iterator it = switches.iterator ();
-        while (it.hasNext ()) {
-            Switch s = (Switch) it.next ();
+        Set<String> ss = new HashSet<String> ();
+        for (Switch s: switches) {
             if (s.on) {
                 ss.add (s.name);
                 message2.append (' ');
@@ -235,6 +234,7 @@ public class Preprocess extends MatchingTask {
      * @param props properties to be considered on
      * @return true if the content of r has been modified
      */
+    @SuppressWarnings("fallthrough")
     private static boolean replace (
         BufferedReader r, Writer w, Set props // Set<String>
     ) throws IOException {

@@ -51,7 +51,7 @@ public class MakeUpdateDesc extends MatchingTask {
     protected boolean usedMatchingTask = false;
     /** Set of NBMs presented as a folder in the Update Center. */
     public /*static*/ class Group {
-        public Vector filesets = new Vector ();
+        public Vector<FileSet> filesets = new Vector<FileSet> ();
 	public String name;
 
         /** Displayed name of the group. */
@@ -76,9 +76,9 @@ public class MakeUpdateDesc extends MatchingTask {
 	}
     }
 
-    private Vector entityincludes = new Vector();
-    private Vector groups = new Vector ();
-    private Vector filesets = new Vector ();
+    private Vector<Entityinclude> entityincludes = new Vector<Entityinclude>();
+    private Vector<Group> groups = new Vector<Group> ();
+    private Vector<FileSet> filesets = new Vector<FileSet> ();
 
     private String desc_name;
     private File desc;
@@ -151,7 +151,7 @@ public class MakeUpdateDesc extends MatchingTask {
         Group root = new Group();
         root.setName("root"); //NOI18N
         for (int i=0; i < filesets.size(); i++) {
-            root.addFileSet((FileSet) filesets.elementAt(i));
+            root.addFileSet(filesets.elementAt(i));
         }
         groups.addElement(root);
 	if (desc.exists ()) {
@@ -161,9 +161,9 @@ public class MakeUpdateDesc extends MatchingTask {
 
 	CHECK:
             for (int i=0; i<groups.size(); i++) {
-		Group g = (Group) groups.elementAt(i);
+		Group g = groups.elementAt(i);
                 for (int j=0; j<g.filesets.size(); j++) {
-		    FileSet n = (FileSet) g.filesets.elementAt(j);
+		    FileSet n = g.filesets.elementAt(j);
                     if ( n != null ) {
                         DirectoryScanner ds = n.getDirectoryScanner(getProject());
                         String[] files = ds.getIncludedFiles();
@@ -259,23 +259,23 @@ public class MakeUpdateDesc extends MatchingTask {
                 }
 
                 pw.println ();
-		Map<String,Element> licenses = new HashMap();
-		java.util.Set licenseNames = new java.util.HashSet (); // Set<String>
+		Map<String,Element> licenses = new HashMap<String,Element>();
+		java.util.Set<String> licenseNames = new java.util.HashSet<String> ();
                 
                 Iterator<Map.Entry<String,List<Module>>> modulesByGroupIt = modulesByGroup.entrySet().iterator();
                 while (modulesByGroupIt.hasNext()) {
-                    Map.Entry<String,List<Module>> entry = (Map.Entry) modulesByGroupIt.next();
-                    String groupName = (String) entry.getKey();
+                    Map.Entry<String,List<Module>> entry = modulesByGroupIt.next();
+                    String groupName = entry.getKey();
                     // Don't indent; embedded descriptions would get indented otherwise.
                     log("Creating group \"" + groupName + "\"");
                     if (!groupName.equals("root")) {
                         pw.println("<module_group name=\"" + xmlEscape(groupName) + "\">");
                         pw.println();
                     }
-                    List<Module> modules = (List) entry.getValue();
+                    List<Module> modules = entry.getValue();
                     Iterator<Module> modulesIt = modules.iterator();
                     while (modulesIt.hasNext()) {
-                        Module m = (Module) modulesIt.next();
+                        Module m = modulesIt.next();
                         Element module = m.xml;
                         if (module.getAttribute("downloadsize").equals("0")) {
                             module.setAttribute("downloadsize", Long.toString(m.nbm.length()));
@@ -343,10 +343,10 @@ public class MakeUpdateDesc extends MatchingTask {
         Map<String,List<Module>> r = new LinkedHashMap<String,List<Module>>();
         for (int gi = 0; gi < groups.size(); gi++) {
             Group g = (Group) groups.elementAt(gi);
-            List<Module> modules = new ArrayList();
+            List<Module> modules = new ArrayList<Module>();
             r.put(g.name, modules);
             for (int fsi = 0; fsi < g.filesets.size(); fsi++) {
-                FileSet fs = (FileSet) g.filesets.elementAt(fsi);
+                FileSet fs = g.filesets.elementAt(fsi);
                 DirectoryScanner ds = fs.getDirectoryScanner(getProject());
                 String[] files = ds.getIncludedFiles();
                 for (int fid = 0; fid < files.length; fid++) {

@@ -277,7 +277,7 @@ public class MakeLNBM extends MatchingTask {
     private Signature signature = null;
     private long mostRecentInput = 0L;
     private boolean isStandardInclude = true;
-    private Vector externalPackages = null;
+    private Vector<ExternalPackage> externalPackages = null;
     private boolean manOrModReq = true ;
     private boolean manOrModReqSet = false ;
     private String langCode = null ;
@@ -305,6 +305,7 @@ public class MakeLNBM extends MatchingTask {
     /** Module manifest needed for versioning.
      * @deprecated Use {@link #setModule} instead.
      */
+    @Deprecated
     public void setManifest (File manifest) {
 	this.manifest = manifest;
 	long lmod = manifest.lastModified ();
@@ -368,7 +369,7 @@ public class MakeLNBM extends MatchingTask {
     public ExternalPackage createExternalPackage(){
 	ExternalPackage externalPackage = new ExternalPackage ();
 	if (externalPackages == null)
-	    externalPackages = new Vector();
+	    externalPackages = new Vector<ExternalPackage>();
 	externalPackages.add( externalPackage );
 	return externalPackage;
     }
@@ -521,15 +522,13 @@ public class MakeLNBM extends MatchingTask {
 		    if( attr != null) {
 		        ps.print ("  <manifest "); //NOI18N
 			boolean firstline = true;
-		        List attrNames = new ArrayList(attr.size()); // List<String>
-			Iterator it = attr.keySet().iterator();
+		        List<String> attrNames = new ArrayList<String>(attr.size());
+			Iterator<Object> it = attr.keySet().iterator();
 			while (it.hasNext()) {
 			    attrNames.add(((Attributes.Name)it.next()).toString());
 			}
 			Collections.sort(attrNames);
-			it = attrNames.iterator();
-			while (it.hasNext()) {
-			    String name = (String)it.next();
+                        for (String name: attrNames) {
 			    // Ignore irrelevant attributes (cf. www/www/dtds/autoupdate-catalog-2_0.dtd
 			    //  and www/www/dtds/autoupdate-info-1_0.dtd):
 			    if (! name.startsWith("OpenIDE-Module")) continue; //NOI18N
@@ -591,9 +590,9 @@ public class MakeLNBM extends MatchingTask {
                         ps.println("</module_notification>"); //NOI18N
 		    }
 		    if (externalPackages != null) {
-			Enumeration exp = externalPackages.elements();
+			Enumeration<ExternalPackage> exp = externalPackages.elements();
 			while (exp.hasMoreElements()) {
-			    ExternalPackage externalPackage = (ExternalPackage) exp.nextElement();
+			    ExternalPackage externalPackage = exp.nextElement();
 			    if (externalPackage.name == null || 
 				externalPackage.targetName == null ||
 				externalPackage.startUrl == null)

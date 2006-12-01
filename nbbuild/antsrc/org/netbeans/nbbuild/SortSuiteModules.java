@@ -80,8 +80,8 @@ public class SortSuiteModules extends Task {
         if (sortedModulesProperty == null) {
             throw new BuildException("Must set sortedModulesProperty");
         }
-        Map<String,File> basedirsByCNB = new TreeMap();
-        Map<String,List<String>> buildDeps = new HashMap();
+        Map<String,File> basedirsByCNB = new TreeMap<String,File>();
+        Map<String,List<String>> buildDeps = new HashMap<String,List<String>>();
         String[] pieces = unsortedModules.list();
         for (int i = 0; i < pieces.length; i++) {
             File d = new File(pieces[i]);
@@ -111,7 +111,7 @@ public class SortSuiteModules extends Task {
             }
             String cnb = XMLUtil.findText(cnbEl);
             basedirsByCNB.put(cnb, d);
-            List<String> deps = new LinkedList();
+            List<String> deps = new LinkedList<String>();
             Element depsEl = ParseProjectXml.findNBMElement(data, "module-dependencies");
             if (depsEl == null) {
                 throw new BuildException("Malformed project file " + projectXml, getLocation());
@@ -155,25 +155,20 @@ public class SortSuiteModules extends Task {
                 }
             }
         }
-        Iterator it = buildDeps.values().iterator();
-        while (it.hasNext()) {
-            List<String> deps = (List) it.next();
+        for (List<String> deps: buildDeps.values()) {
             deps.retainAll(basedirsByCNB.keySet());
         }
         // Stolen from org.openide.util.Utilities.topologicalSort, with various simplifications:
-        List<String> cnbs = new ArrayList();
-        List cRev = new ArrayList(basedirsByCNB.keySet());
-        Map finished = new HashMap();
-        it = cRev.iterator();
-        while (it.hasNext()) {
-            if (!visit((String) it.next(), buildDeps, finished, cnbs)) {
+        List<String> cnbs = new ArrayList<String>();
+        List<String> cRev = new ArrayList<String>(basedirsByCNB.keySet());
+        Map<String,Boolean> finished = new HashMap<String,Boolean>();
+        for (String s: cRev) {
+            if (!visit(s, buildDeps, finished, cnbs)) {
                 throw new BuildException("Cycles detected in dependency graph, cannot sort", getLocation());
             }
         }
         StringBuffer path = new StringBuffer();
-        it = cnbs.iterator();
-        while (it.hasNext()) {
-            String cnb = (String) it.next();
+        for (String cnb: cnbs) {
             assert basedirsByCNB.containsKey(cnb);
             if (path.length() > 0) {
                 path.append(File.pathSeparatorChar);
@@ -184,16 +179,15 @@ public class SortSuiteModules extends Task {
     }
     
     private static <String> boolean visit(String node, Map<String,List<String>> edges, Map<String,Boolean> finished, List<String> r) {
-        Boolean b = (Boolean) finished.get(node);
+        Boolean b = finished.get(node);
         if (b != null) {
             return b.booleanValue();
         }
-        List e = (List) edges.get(node);
+        List<String> e = edges.get(node);
         if (e != null) {
             finished.put(node, Boolean.FALSE);
-            Iterator it = e.iterator();
-            while (it.hasNext()) {
-                if (!visit((String) it.next(), edges, finished, r)) {
+            for (String s: e) {
+                if (!visit(s, edges, finished, r)) {
                     return false;
                 }
             }

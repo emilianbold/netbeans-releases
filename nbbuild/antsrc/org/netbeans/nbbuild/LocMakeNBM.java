@@ -20,7 +20,6 @@
 package org.netbeans.nbbuild;
 
 import java.io.* ;
-import java.net.MalformedURLException;
 import java.util.* ;
 
 import org.apache.tools.ant.* ;
@@ -107,8 +106,7 @@ public class LocMakeNBM extends Task {
   public void really_execute() throws BuildException {
     String locs, loc ;
     StringTokenizer stok ;
-    LinkedList build_locales = new LinkedList() ;
-    ListIterator iterator ;
+    LinkedList<String> build_locales = new LinkedList<String>() ;
 
     // Set default values. //
     if( mainDir == null) {
@@ -176,21 +174,19 @@ public class LocMakeNBM extends Task {
     }
 
     // For each locale that we need to build an NBM for. //
-    iterator = build_locales.listIterator() ;
+    ListIterator<String> iterator = build_locales.listIterator() ;
     while( iterator.hasNext()) {
 
       // Build the NBM for this locale. //
-      buildNbm( (String) iterator.next()) ;
+      buildNbm( iterator.next()) ;
     }
   }
 
   /** Build the NBM for this locale. */
   protected void buildNbm( String locale) throws BuildException {
     MakeLNBM makenbm ;
-    LinkedList list = new LinkedList() ;
-    ListIterator iterator ;
+    LinkedList<String> list = new LinkedList<String>() ;
     String includes = new String() ;
-    String s ;
     File licenseFile ;
     boolean first_time ;
     Delete del ;
@@ -258,14 +254,12 @@ public class LocMakeNBM extends Task {
     addLocalePatterns( list, locale) ;
 
     // Create a comma-separated list of include patterns. //
-    iterator = list.listIterator() ;
     first_time = true ;
-    while( iterator.hasNext()) {
-      s = (String) iterator.next() ;
+    for (String s1: list) {
       if( !first_time) {
 	includes += "," ; //NOI18N
       }
-      includes += s ;
+      includes += s1 ;
       first_time = false ;
     }
     // Add any extra includes that were specified. //
@@ -345,23 +339,19 @@ public class LocMakeNBM extends Task {
   /** Add the patterns to include the localized files for the given locale. */
   protected void addLocalePatterns( FileSet fs,
 				    String loc) {
-    LinkedList list = new LinkedList() ;
-    ListIterator iterator ;
+    LinkedList<String> list = new LinkedList<String>() ;
 
     // Get the list of patterns for this locale. //
     addLocalePatterns( list, loc) ;
 
-    // For each pattern for this locale. //
-    iterator = list.listIterator( 0) ;
-    while( iterator.hasNext()) {
-
+    for (String s: list) {
       // Add it to the includes list. //
-      fs.createInclude().setName( (String) iterator.next()) ;
+      fs.createInclude().setName(s) ;
     }
 
   }
 
-  protected void addLocalePatterns( LinkedList list,
+  protected void addLocalePatterns( LinkedList<String> list,
 				    String loc) {
 //    String dir = new String() ;
     String re = new String() ;
@@ -374,9 +364,9 @@ public class LocMakeNBM extends Task {
 //    list.add( new String( re)) ;
 
     re = "**/*_" + loc + ".*" ; // pattern is: ${dir}/**/*_${locale}.* //NOI18N
-    list.add( new String( re)) ;
+    list.add(re) ;
     re = "**/" + loc + "/" ;    // pattern is: ${dir}/${locale}/ //NOI18N
-    list.add( new String( re)) ;
+    list.add(re) ;
 
     addLocIncludes( list, loc) ;
 
@@ -390,7 +380,7 @@ public class LocMakeNBM extends Task {
     }
   }
 
-  protected void addLocIncludes( LinkedList list,
+  protected void addLocIncludes( LinkedList<String> list,
 				 String loc) {
     StringTokenizer tkzr ;
     String locInc, incLocale, incPattern ;
@@ -409,11 +399,11 @@ public class LocMakeNBM extends Task {
 	incLocale = locInc.substring( 0, idx) ;
 	incPattern = locInc.substring( idx+1) ;
 	if( incLocale.equals( loc)) {
-	  list.add( new String( incPattern)) ;
+	  list.add( incPattern) ;
 	}
       }
       else {
-	list.add( new String( locInc)) ;
+	list.add( locInc) ;
       }
     }
   }

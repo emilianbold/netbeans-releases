@@ -97,10 +97,10 @@ public class L10nTask extends MatchingTask {
 	private String buildDir;
 	private String distDir;
 	private Vector error = new Vector();
-	private Hashtable cvsEntriesCache=new Hashtable();
-	private Hashtable changed = new Hashtable();
-	private Hashtable generatedFileHash = new Hashtable();
-	private Hashtable fullPropHash = null ;
+	private Hashtable<String, CvsEntries> cvsEntriesCache=new Hashtable<String, CvsEntries>();
+	private Hashtable<String, String> changed = new Hashtable<String, String>();
+	private Hashtable<String, String> generatedFileHash = new Hashtable<String, String>();
+	private Hashtable<String, String> fullPropHash = null ;
 
 	private Project p;
 	private boolean readGlobalFile=false; //have we already read globalFile?
@@ -233,7 +233,7 @@ public class L10nTask extends MatchingTask {
 
 							}
 
-							ce = (CvsEntries)cvsEntriesCache.get(parentDirFullPath);
+							ce = cvsEntriesCache.get(parentDirFullPath);
 
 							if ( ce == null ) {
 								ce = new CvsEntries(parentDirFullPath);  //passing parentDirFullPath
@@ -241,7 +241,7 @@ public class L10nTask extends MatchingTask {
 							}
 
 							if ( generatedFileHash == null ) {
-								generatedFileHash=new Hashtable();	
+								generatedFileHash=new Hashtable<String, String>();	
 							}
 
 
@@ -262,7 +262,7 @@ public class L10nTask extends MatchingTask {
 								// System.out.println("CEREV: "+ceRev);
 								// compare revnos
 
-								String genRev = (String)generatedFileHash.get(localizableFiles[k]);
+								String genRev = generatedFileHash.get(localizableFiles[k]);
 								// if (DEBUG) System.out.println("GENREV "+genRev + "\tFN: "+localizableFiles[k]);
 
 								if ( genRev == null || ! ceRev.equals(genRev)) {
@@ -443,21 +443,21 @@ public class L10nTask extends MatchingTask {
 
 
 			if ( generatedFileHash == null ) {
-				generatedFileHash = new Hashtable();
+				generatedFileHash = new Hashtable<String, String>();
 			} else {
 
-				for (Enumeration g = generatedFileHash.keys() ; g.hasMoreElements() ;) {
-					String genFileKey = (String)g.nextElement();
+				for (Enumeration<String> g = generatedFileHash.keys() ; g.hasMoreElements() ;) {
+					String genFileKey = g.nextElement();
 					int lioTopDir =  genFileKey.lastIndexOf(topDir);
 					String moduleFileName = genFileKey.substring(lioTopDir+topDir.length()+1) ;
 
-					genWrite.write(moduleFileName+"\t"+(String)generatedFileHash.get(genFileKey)+"\n");
+					genWrite.write(moduleFileName+"\t"+generatedFileHash.get(genFileKey)+"\n");
 				}
 
 				// To make sure the changeFile & generatedFile appear in the tar,
 				// make them the first lines in the file.
-				for (Enumeration c = changed.keys() ; c.hasMoreElements() ;) {
-					String changedFileKey = (String)c.nextElement();
+				for (Enumeration<String> c = changed.keys() ; c.hasMoreElements() ;) {
+					String changedFileKey = c.nextElement();
 
 					int lio = changedFileKey.lastIndexOf(topDir+File.separator+module);
 					String moduleFileName;
@@ -580,13 +580,13 @@ public class L10nTask extends MatchingTask {
 		return lfs;
 	}
 
-	public Hashtable getGeneratedFiles(File topDir, String mod) {
+	public Hashtable<String, String> getGeneratedFiles(File topDir, String mod) {
 		// NOTE: This method will return 'null' 100% of the time if there 
 		// are no l10n.list.generated files.
 		// At this writing, this functionality is not used.
 		// EG 1/03
 
-		Hashtable h=new Hashtable();
+		Hashtable<String, String> h=new Hashtable<String, String>();
 		// Read generated File
 		try {
 
@@ -648,8 +648,7 @@ public class L10nTask extends MatchingTask {
 	}
 	public void setModules(String s) {
 		StringTokenizer st = new StringTokenizer(s,",");
-		String[] mods = new String[st.countTokens()];
-                HashSet modSet = new HashSet(); //This will guarantee that there will be no duplications
+                HashSet<String> modSet = new HashSet<String>(); //This will guarantee that there will be no duplications
                 String fullMod = null;
 		
 		while (st.hasMoreTokens()) {
@@ -668,11 +667,11 @@ public class L10nTask extends MatchingTask {
                         modSet.add( fullMod );
 		}
                 this.modules = new String[ modSet.size() ];
-                Iterator it = modSet.iterator();
+                Iterator<String> it = modSet.iterator();
                 
                 int i=0;
                 while( it.hasNext() )
-                    this.modules[i++] = (String) it.next();
+                    this.modules[i++] = it.next();
 		
 	}
 
@@ -703,7 +702,7 @@ public class L10nTask extends MatchingTask {
 
 						if (fullPropHash.containsKey(propertyName)) {
 							
-							value=(String)fullPropHash.get(propertyName);
+							value=fullPropHash.get(propertyName);
 							res = line.substring(line.indexOf("}")+1);	
 							pre= line.substring(0,line.indexOf("{")-1);
 							line=pre+value+res;
