@@ -85,26 +85,14 @@ public final class TreeUtilities {
     }
     
     public TreePath pathFor(int pos) {
-        return pathFor(pos, true);
-    }
-
-    public TreePath pathFor(int pos, boolean backwardBias) {
-        return pathFor(new TreePath(info.getCompilationUnit()), pos, backwardBias);
+        return pathFor(new TreePath(info.getCompilationUnit()), pos);
     }
 
     public TreePath pathFor(TreePath path, int pos) {
-        return pathFor(path, pos, true);
-    }
-
-    public TreePath pathFor(TreePath path, int pos, boolean backwardBias) {
-        return pathFor(path, pos, info.getTrees().getSourcePositions(), backwardBias);
+        return pathFor(path, pos, info.getTrees().getSourcePositions());
     }
 
     public TreePath pathFor(TreePath path, int pos, SourcePositions sourcePositions) {
-        return pathFor(path, pos, sourcePositions, true);
-    }
-
-    public TreePath pathFor(TreePath path, int pos, SourcePositions sourcePositions, boolean backwardBias) {
         if (info == null || path == null || sourcePositions == null)
             throw new IllegalArgumentException();
         
@@ -146,7 +134,7 @@ public final class TreeUtilities {
             path = result.path;
         }
         
-        if (!backwardBias || path.getLeaf() == path.getCompilationUnit())
+        if (path.getLeaf() == path.getCompilationUnit())
             return path;
         
         TokenSequence<JavaTokenId> tokenList = tokensFor(path.getLeaf(), sourcePositions);

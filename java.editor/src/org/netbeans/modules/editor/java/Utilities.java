@@ -50,6 +50,7 @@ public class Utilities {
     
     private static final String CAPTURED_WILDCARD = "<captured wildcard>"; //NOI18N
     private static final String ERROR = "<error>"; //NOI18N
+    private static final String UNKNOWN = "<unknown>"; //NOI18N
 
     private static boolean caseSensitive = true;
     private static SettingsChangeListener settingsListener = new SettingsListener();
@@ -134,20 +135,20 @@ public class Utilities {
         return null;
     }
     
-    public static String getTypeName(TypeMirror type, boolean fqn) {
+    public static CharSequence getTypeName(TypeMirror type, boolean fqn) {
         return getTypeName(type, fqn, false);
     }
     
-    public static String getTypeName(TypeMirror type, boolean fqn, boolean varArg) {
+    public static CharSequence getTypeName(TypeMirror type, boolean fqn, boolean varArg) {
 	if (type == null)
             return null;
-        return type.accept(new TypeNameVisitor(varArg),fqn);
+        return new TypeNameVisitor(varArg).visit(type, fqn);
     }
     
-    public static String getElementName(Element el, boolean fqn) {
+    public static CharSequence getElementName(Element el, boolean fqn) {
         if (el == null)
             return null;
-        return el.accept(new ElementNameVisitor(), fqn);
+        return new ElementNameVisitor().visit(el, fqn);
     }
     
     public static Collection<? extends Element> getForwardReferences(TreePath path, int pos, SourcePositions sourcePositions, Trees trees) {
@@ -364,110 +365,118 @@ public class Utilities {
         }
     }
 
-    private static class TypeNameVisitor extends SimpleTypeVisitor6<String,Boolean> {
+    private static class TypeNameVisitor extends SimpleTypeVisitor6<StringBuilder,Boolean> {
         
         private boolean varArg;
         
         private TypeNameVisitor(boolean varArg) {
+            super(new StringBuilder());
             this.varArg = varArg;
         }
         
         @Override
-        public String defaultAction(TypeMirror t, Boolean p) {
-            return t.toString();
+        public StringBuilder defaultAction(TypeMirror t, Boolean p) {
+            return DEFAULT_VALUE.append(t);
         }
         
         @Override
-        public String visitDeclared(DeclaredType t, Boolean p) {
-            TypeElement el = (TypeElement)t.asElement();
-            if (el == null)
-                return "<unknown>"; //NOI18N
-            StringBuffer sb = new StringBuffer();
-            sb.append(p ? el.getQualifiedName() : el.getSimpleName());
-            Iterator<? extends TypeMirror> it = t.getTypeArguments().iterator();
-            if (it.hasNext()) {
-                sb.append("<"); //NOI18N
-                while(it.hasNext()) {
-                    sb.append(it.next().accept(this, p));
-                    if (it.hasNext())
-                        sb.append(", "); //NOI18N
+        public StringBuilder visitDeclared(DeclaredType t, Boolean p) {
+            Element e = t.asElement();
+            if (e instanceof TypeElement) {
+                TypeElement te = (TypeElement)e;
+                DEFAULT_VALUE.append(p ? te.getQualifiedName() : te.getSimpleName());
+                Iterator<? extends TypeMirror> it = t.getTypeArguments().iterator();
+                if (it.hasNext()) {
+                    DEFAULT_VALUE.append("<"); //NOI18N
+                    while(it.hasNext()) {
+                        visit(it.next(), p);
+                        if (it.hasNext())
+                            DEFAULT_VALUE.append(", "); //NOI18N
+                    }
+                    DEFAULT_VALUE.append(">"); //NOI18N
                 }
-                sb.append(">"); //NOI18N
+                return DEFAULT_VALUE;                
+            } else {
+                return DEFAULT_VALUE.append(UNKNOWN); //NOI18N
             }
-            return sb.toString();
         }
                         
         @Override
-        public String visitArray(ArrayType t, Boolean p) {
-            String s = varArg ? "..." : "[]"; //NOI18N
+        public StringBuilder visitArray(ArrayType t, Boolean p) {
+            boolean isVarArg = varArg;
             varArg = false;
-            return t.getComponentType().accept(this, p) + s; //NOI18N;
+            visit(t.getComponentType(), p);
+            return DEFAULT_VALUE.append(isVarArg ? "..." : "[]"); //NOI18N
         }
 
         @Override
-        public String visitTypeVariable(TypeVariable t, Boolean p) {
+        public StringBuilder visitTypeVariable(TypeVariable t, Boolean p) {
             Element e = t.asElement();
             if (e != null) {
-                String name = e.getSimpleName().toString();
-                if (!CAPTURED_WILDCARD.equals(name))
-                    return name;
+                CharSequence name = e.getSimpleName();
+                if (!CAPTURED_WILDCARD.contentEquals(name))
+                    return DEFAULT_VALUE.append(name);
             }
-            StringBuffer sb = new StringBuffer();
-            sb.append("?"); //NOI18N
+            DEFAULT_VALUE.append("?"); //NOI18N
             TypeMirror bound = t.getLowerBound();
             if (bound != null && bound.getKind() != TypeKind.NULL) {
-                sb.append(" super "); //NOI18N
-                sb.append(bound.accept(this, p));
+                DEFAULT_VALUE.append(" super "); //NOI18N
+                visit(bound, p);
             } else {
                 bound = t.getUpperBound();
                 if (bound != null && bound.getKind() != TypeKind.NULL) {
-                    sb.append(" extends "); //NOI18N
+                    DEFAULT_VALUE.append(" extends "); //NOI18N
                     if (bound.getKind() == TypeKind.TYPEVAR)
                         bound = ((TypeVariable)bound).getLowerBound();
-                    sb.append(bound.accept(this, p));
+                    visit(bound, p);
                 }
             }
-            return sb.toString();
+            return DEFAULT_VALUE;
         }
 
         @Override
-        public String visitWildcard(WildcardType t, Boolean p) {
-            StringBuffer sb = new StringBuffer();
-            sb.append("?"); //NOI18N
+        public StringBuilder visitWildcard(WildcardType t, Boolean p) {
+            DEFAULT_VALUE.append("?"); //NOI18N
             TypeMirror bound = t.getSuperBound();
             if (bound == null) {
                 bound = t.getExtendsBound();
                 if (bound != null) {
-                    sb.append(" extends "); //NOI18N
+                    DEFAULT_VALUE.append(" extends "); //NOI18N
                     if (bound.getKind() == TypeKind.WILDCARD)
                         bound = ((WildcardType)bound).getSuperBound();
-                    sb.append(bound.accept(this, p));
+                    visit(bound, p);
                 }
             } else {
-                sb.append(" super "); //NOI18N
-                sb.append(bound.accept(this, p));
+                DEFAULT_VALUE.append(" super "); //NOI18N
+                visit(bound, p);
             }
-            return sb.toString();
+            return DEFAULT_VALUE;
         }
 
-        public String visitError(ErrorType t, Boolean p) {
-            TypeElement te = (TypeElement) t.asElement();
-            if (te == null)
-                return null;
-            return (p ? te.getQualifiedName() : te.getSimpleName()).toString();
-        }        
+        public StringBuilder visitError(ErrorType t, Boolean p) {
+            Element e = t.asElement();
+            if (e instanceof TypeElement) {
+                TypeElement te = (TypeElement)e;
+                return DEFAULT_VALUE.append(p ? te.getQualifiedName() : te.getSimpleName());
+            }
+            return DEFAULT_VALUE;
+        }
     }
     
-    private static class ElementNameVisitor extends SimpleElementVisitor6<String,Boolean> {
+    private static class ElementNameVisitor extends SimpleElementVisitor6<StringBuilder,Boolean> {
         
-	@Override
-        public String visitPackage(PackageElement e, Boolean p) {
-            return p ? e.getQualifiedName().toString() : e.getSimpleName().toString();
+        private ElementNameVisitor() {
+            super(new StringBuilder());
+        }
+
+        @Override
+        public StringBuilder visitPackage(PackageElement e, Boolean p) {
+            return DEFAULT_VALUE.append(p ? e.getQualifiedName() : e.getSimpleName());
         }
 
 	@Override
-        public String visitType(TypeElement e, Boolean p) {
-            return p ? e.getQualifiedName().toString() : e.getSimpleName().toString();
+        public StringBuilder visitType(TypeElement e, Boolean p) {
+            return DEFAULT_VALUE.append(p ? e.getQualifiedName() : e.getSimpleName());
         }        
     }    
 }

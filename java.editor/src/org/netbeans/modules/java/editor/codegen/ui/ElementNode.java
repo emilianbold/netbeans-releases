@@ -87,7 +87,7 @@ class ElementNode extends AbstractNode {
 
     private String getHtmlTypeName(TypeMirror t) {
         try {
-            return XMLUtil.toElementContent(Utilities.getTypeName(t, false));
+            return XMLUtil.toElementContent(Utilities.getTypeName(t, false).toString());
         } catch (CharConversionException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             return "";

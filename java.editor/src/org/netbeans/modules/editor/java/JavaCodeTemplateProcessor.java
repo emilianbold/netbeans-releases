@@ -90,7 +90,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                 String value = param.getValue().substring(param.getValue().lastIndexOf('.') + 1); //NOI18N
                 param.setValue(Utilities.getTypeName(entry.getValue(), false) + "." + value); //NOI18N
             } else {
-                param.setValue(Utilities.getTypeName(entry.getValue(), false));
+                param.setValue(Utilities.getTypeName(entry.getValue(), false).toString());
             }
         }
     }
@@ -115,7 +115,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                     String value = param.getValue().substring(param.getValue().lastIndexOf('.') + 1); //NOI18N
                     param.setValue(Utilities.getTypeName(entry.getValue(), false) + "." + value); //NOI18N
                 } else {
-                    param.setValue(Utilities.getTypeName(entry.getValue(), false));
+                    param.setValue(Utilities.getTypeName(entry.getValue(), false).toString());
                 }
             }
         }
@@ -136,8 +136,8 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                                     CodeTemplateParameter param = entry.getKey();
                                     TypeMirror tm = param2types.get(param);
                                     if (tm.getKind() == TypeKind.DECLARED) {
-                                        TreePath tp = copy.getTreeUtilities().pathFor(request.getInsertTextOffset() + param.getInsertTextOffset() + (INSTANCE_OF.equals(param2hints.get(param)) ? param.getValue().lastIndexOf('.') - 1 : param.getValue().length()), false);
-                                        imp.resolveImport(tp.getLeaf(), (DeclaredType)tm);
+                                        TreePath tp = copy.getTreeUtilities().pathFor(request.getInsertTextOffset() + param.getInsertTextOffset());
+                                        imp.resolveImport(tp, (DeclaredType)tm);
                                     }
                                 }
                             }
@@ -189,7 +189,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                 if (tm != null && tm.getKind() != TypeKind.ERROR) {
                     if (tm.getKind() == TypeKind.TYPEVAR)
                         tm = ((TypeVariable)tm).getUpperBound();
-                    String value = Utilities.getTypeName(tm, true);
+                    String value = Utilities.getTypeName(tm, true).toString();
                     if (value != null) {
                         param2hints.put(param, TYPE);
                         param2types.put(param, tm);
@@ -201,7 +201,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                 if (tm != null && tm.getKind() != TypeKind.ERROR) {
                     if (tm.getKind() == TypeKind.TYPEVAR)
                         tm = ((TypeVariable)tm).getUpperBound();
-                    String value = Utilities.getTypeName(tm, true);
+                    String value = Utilities.getTypeName(tm, true).toString();
                     if (value != null) {
                         param2hints.put(param, ITERABLE_ELEMENT_TYPE);
                         param2types.put(param, tm);
@@ -213,7 +213,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                 if (tm != null && tm.getKind() != TypeKind.ERROR) {
                     if (tm.getKind() == TypeKind.TYPEVAR)
                         tm = ((TypeVariable)tm).getUpperBound();
-                    String value = Utilities.getTypeName(tm, true);
+                    String value = Utilities.getTypeName(tm, true).toString();
                     if (value != null) {
                         param2hints.put(param, LEFT_SIDE_TYPE);
                         param2types.put(param, tm);
@@ -225,7 +225,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                 if (tm != null && tm.getKind() != TypeKind.ERROR) {
                     if (tm.getKind() == TypeKind.TYPEVAR)
                         tm = ((TypeVariable)tm).getUpperBound();
-                    String value = Utilities.getTypeName(tm, true);
+                    String value = Utilities.getTypeName(tm, true).toString();
                     if (value != null) {
                         param2hints.put(param, RIGHT_SIDE_TYPE);
                         param2types.put(param, tm);
@@ -239,7 +239,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                     param2types.remove(param);
                     return ""; //NOI18N
                 } else if (tm.getKind() != TypeKind.ERROR) {
-                    String value = Utilities.getTypeName(tm, true);
+                    String value = Utilities.getTypeName(tm, true).toString();
                     if (value != null) {
                         param2hints.put(param, CAST);
                         param2types.put(param, tm); //NOI18N

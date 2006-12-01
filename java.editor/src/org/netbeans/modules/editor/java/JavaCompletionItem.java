@@ -35,6 +35,7 @@ import javax.lang.model.type.*;
 import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.Position;
 
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.api.java.lexer.JavaTokenId;
@@ -408,10 +409,10 @@ public abstract class JavaCompletionItem implements CompletionItem {
             sb.append(getColor());
             if (isDeprecated)
                 sb.append(STRIKE);
-            sb.append(escape(Utilities.getTypeName(type, false)));
+            sb.append(escape(Utilities.getTypeName(type, false).toString()));
             if (isDeprecated)
                 sb.append(STRIKE_END);
-            String enclName = displayPkgName ? Utilities.getElementName(elem.getEnclosingElement(), true) : null;
+            CharSequence enclName = displayPkgName ? Utilities.getElementName(elem.getEnclosingElement(), true) : null;
             if (enclName != null && enclName.length() > 0) {
                 sb.append(COLOR_END);
                 sb.append(PKG_COLOR);
@@ -433,6 +434,38 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 return;
             }
             BaseDocument doc = (BaseDocument)c.getDocument();
+            final StringBuilder text = new StringBuilder();
+            if (toAdd != null && !toAdd.equals("\n")) {//NOI18N
+                TokenSequence<JavaTokenId> sequence = Utilities.getJavaTokenSequence(c, offset + len);
+                if (sequence == null) {
+                    text.append(toAdd);
+                    toAdd = null;
+                }
+                boolean added = false;
+                while(toAdd != null && toAdd.length() > 0) {
+                    String tokenText = sequence.token().text().toString();
+                    if (tokenText.startsWith(toAdd)) {
+                        len = sequence.offset() - offset + toAdd.length();
+                        text.append(toAdd);
+                        toAdd = null;
+                    } else if (toAdd.startsWith(tokenText)) {
+                        sequence.moveNext();
+                        len = sequence.offset() - offset;
+                        text.append(toAdd.substring(0, tokenText.length()));
+                        toAdd = toAdd.substring(tokenText.length());
+                        added = true;
+                    } else if (sequence.token().id() == JavaTokenId.WHITESPACE && sequence.token().text().toString().indexOf('\n') < 0) {//NOI18N
+                        if (!sequence.moveNext()) {
+                            text.append(toAdd);
+                            toAdd = null;
+                        }
+                    } else {
+                        if (!added)
+                            text.append(toAdd);
+                        toAdd = null;
+                    }
+                }
+            }
             boolean asTemplate = false;
             StringBuilder sb = new StringBuilder();
             int cnt = 1;
@@ -471,37 +504,6 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 sb.append('>'); //NOI18N
             }
             if (asTemplate) {
-                if (toAdd != null && !toAdd.equals("\n")) {//NOI18N
-                    TokenSequence<JavaTokenId> sequence = Utilities.getJavaTokenSequence(c, offset + len);
-                    if (sequence == null) {
-                        sb.append(toAdd);
-                        toAdd = null;
-                    }
-                    boolean added = false;
-                    while(toAdd != null && toAdd.length() > 0) {
-                        String tokenText = sequence.token().text().toString();
-                        if (tokenText.startsWith(toAdd)) {
-                            len = sequence.offset() - offset + toAdd.length();
-                            sb.append(toAdd);
-                            toAdd = null;
-                        } else if (toAdd.startsWith(tokenText)) {
-                            sequence.moveNext();
-                            len = sequence.offset() - offset;
-                            sb.append(toAdd.substring(0, tokenText.length()));
-                            toAdd = toAdd.substring(tokenText.length());
-                            added = true;
-                        } else if (sequence.token().id() == JavaTokenId.WHITESPACE && sequence.token().text().toString().indexOf('\n') < 0) {//NOI18N
-                            if (!sequence.moveNext()) {
-                                sb.append(toAdd);
-                                toAdd = null;
-                            }
-                        } else {
-                            if (!added)
-                                sb.append(toAdd);
-                            toAdd = null;
-                        }
-                    }
-                }
                 if (len > 0) {
                     doc.atomicLock();
                     try {
@@ -514,23 +516,38 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 }
                 CodeTemplateManager ctm = CodeTemplateManager.get(doc);
                 if (ctm != null) {
-                    ctm.createTemporary(sb.toString()).insert(c);
+                    ctm.createTemporary(sb.append(text).toString()).insert(c);
                 }
             } else {
-                super.substituteText(c, offset, len, toAdd);                
+                Position position = null;
                 try {
+                    position = doc.createPosition(offset);
                     JavaSource js = JavaSource.forDocument(doc);
-                    final int toAddLen = toAdd != null ? toAdd.length() : 0;
                     js.runModificationTask(new CancellableTask<WorkingCopy>() {
                         public void cancel() {
                         }
                         public void run(WorkingCopy copy) throws IOException {
                             copy.toPhase(JavaSource.Phase.RESOLVED);
-                            TreePath tp = copy.getTreeUtilities().pathFor(c.getSelectionEnd() - toAddLen, false);
-                            AutoImport.resolveImport(copy, tp.getLeaf(), copy.getTypes().getDeclaredType(elem));
+                            TreePath tp = copy.getTreeUtilities().pathFor(substitutionOffset);
+                            text.insert(0, AutoImport.resolveImport(copy, tp, copy.getTypes().getDeclaredType(elem)));
                         }
                     }).commit();
                 } catch (Exception ex) {
+                }
+                // Update the text
+                doc.atomicLock();
+                try {
+                    if (position != null)
+                        offset = position.getOffset();
+                    String textToReplace = doc.getText(offset, len);
+                    if (textToReplace.contentEquals(text)) return;
+                    
+                    doc.remove(offset, len);
+                    doc.insertString(offset, text.toString(), null);
+                } catch (BadLocationException e) {
+                    // Can't update
+                } finally {
+                    doc.atomicUnlock();
                 }
             }
         }
@@ -665,7 +682,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
         
         protected String getRightHtmlText() {
-            return escape(Utilities.getTypeName(type, false));
+            return escape(Utilities.getTypeName(type, false).toString());
         }
         
         protected ImageIcon getIcon(){
@@ -737,7 +754,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
         
         protected String getRightHtmlText() {
-            return escape(Utilities.getTypeName(type, false));
+            return escape(Utilities.getTypeName(type, false).toString());
         }
         
         protected ImageIcon getIcon(){
@@ -869,7 +886,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             Iterator<? extends VariableElement> it = elem.getParameters().iterator();
             Iterator<? extends TypeMirror> tIt = type.getParameterTypes().iterator();
             while(it.hasNext() && tIt.hasNext()) {
-                lText.append(escape(Utilities.getTypeName(tIt.next(), false, elem.isVarArgs() && !tIt.hasNext())));
+                lText.append(escape(Utilities.getTypeName(tIt.next(), false, elem.isVarArgs() && !tIt.hasNext()).toString()));
                 lText.append(' ');
                 lText.append(PARAMETER_NAME_COLOR);
                 lText.append(it.next().getSimpleName());
@@ -887,7 +904,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
         
         protected String getRightHtmlText() {
-            return escape(Utilities.getTypeName(type.getReturnType(), false));
+            return escape(Utilities.getTypeName(type.getReturnType(), false).toString());
         }
         
         public CompletionTask createDocumentationTask() {
@@ -1227,7 +1244,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             Iterator<? extends VariableElement> it = elem.getParameters().iterator();
             Iterator<? extends TypeMirror> tIt = type.getParameterTypes().iterator();
             while(it.hasNext() && tIt.hasNext()) {
-                lText.append(escape(Utilities.getTypeName(tIt.next(), false, elem.isVarArgs() && !tIt.hasNext())));
+                lText.append(escape(Utilities.getTypeName(tIt.next(), false, elem.isVarArgs() && !tIt.hasNext()).toString()));
                 lText.append(' ');
                 lText.append(PARAMETER_NAME_COLOR);
                 lText.append(it.next().getSimpleName());
@@ -1566,7 +1583,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
         
         protected String getRightHtmlText() {
-            return escape(Utilities.getTypeName(type.getReturnType(), false));
+            return escape(Utilities.getTypeName(type.getReturnType(), false).toString());
         }
         
         public String toString() {
@@ -1632,7 +1649,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         protected String getLeftHtmlText() {
             StringBuilder lText = new StringBuilder();
             lText.append(memberElem.getKind().isField() ? FIELD_COLOR : METHOD_COLOR);
-            lText.append(escape(Utilities.getTypeName(type, false)));
+            lText.append(escape(Utilities.getTypeName(type, false).toString()));
             lText.append('.');
             if (isDeprecated)
                 lText.append(STRIKE);
@@ -1645,7 +1662,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 Iterator<? extends VariableElement> it = ((ExecutableElement)memberElem).getParameters().iterator();
                 Iterator<? extends TypeMirror> tIt = ((ExecutableType)memberType).getParameterTypes().iterator();
                 while(it.hasNext() && tIt.hasNext()) {
-                    lText.append(escape(Utilities.getTypeName(tIt.next(), false, ((ExecutableElement)memberElem).isVarArgs() && !tIt.hasNext())));
+                    lText.append(escape(Utilities.getTypeName(tIt.next(), false, ((ExecutableElement)memberElem).isVarArgs() && !tIt.hasNext()).toString()));
                     lText.append(' '); //NOI18N
                     lText.append(PARAMETER_NAME_COLOR);
                     lText.append(it.next().getSimpleName());
@@ -1660,7 +1677,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
         
         protected String getRightHtmlText() {
-            return escape(Utilities.getTypeName(memberElem.getKind().isField() ? memberType : ((ExecutableType)memberType).getReturnType(), false));
+            return escape(Utilities.getTypeName(memberElem.getKind().isField() ? memberType : ((ExecutableType)memberType).getReturnType(), false).toString());
         }
         
         protected ImageIcon getIcon(){
@@ -1883,7 +1900,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             Iterator<? extends VariableElement> it = fields.iterator();
             while(it.hasNext()) {
                 VariableElement ve = it.next();
-                lText.append(escape(Utilities.getTypeName(ve.asType(), false)));
+                lText.append(escape(Utilities.getTypeName(ve.asType(), false).toString()));
                 lText.append(' '); //NOI18N
                 lText.append(PARAMETER_NAME_COLOR);
                 lText.append(ve.getSimpleName());

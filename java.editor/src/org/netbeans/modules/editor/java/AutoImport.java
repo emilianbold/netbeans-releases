@@ -19,24 +19,34 @@
 
 package org.netbeans.modules.editor.java;
 
-import com.sun.source.tree.*;
-import com.sun.source.util.TreeScanner;
-
 import java.util.Iterator;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.*;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ErrorType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
+import javax.lang.model.type.WildcardType;
+import javax.lang.model.util.SimpleTypeVisitor6;
 
-import org.netbeans.api.java.source.ElementHandle;
+import com.sun.source.util.TreePath;
+
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.WorkingCopy;
 
 /**
  *
  * @author Dusan Balek
  */
-public class AutoImport extends TreeScanner<Void, Void> {
+public class AutoImport extends SimpleTypeVisitor6<Void, Void> {
+
+    private static final String CAPTURED_WILDCARD = "<captured wildcard>"; //NOI18N
 
     private WorkingCopy copy;
-    private TypeMirror type;
+    private StringBuilder builder;
+    private TreePath path;
 
     private AutoImport(WorkingCopy copy) {
         this.copy = copy;
@@ -46,70 +56,105 @@ public class AutoImport extends TreeScanner<Void, Void> {
         return new AutoImport(copy);
     }
     
-    public static void resolveImport(WorkingCopy copy, Tree tree, TypeMirror type) {
+    public static CharSequence resolveImport(WorkingCopy copy, TreePath treePath, TypeMirror type) {
         AutoImport imp = new AutoImport(copy);
-        imp.resolveImport(tree, type);
+        return imp.resolveImport(treePath, type);
     }
     
-    public void resolveImport(Tree tree, TypeMirror type) {
-        switch(tree.getKind()) {
-            case IDENTIFIER:
-            case PARAMETERIZED_TYPE:
-                this.type = type;
-                scan(tree, null);                
-        }
+    public CharSequence resolveImport(TreePath treePath, TypeMirror type) {
+        this.builder = new StringBuilder();
+        this.path = treePath;
+        visit(type, null);
+        return builder;
     }
     
     @Override
-    public Void visitIdentifier(IdentifierTree node, Void p) {
-        assert type.getKind() == TypeKind.DECLARED;
-        ElementHandle<TypeElement> handle = ElementHandle.create((TypeElement)((DeclaredType)type).asElement());
-        TypeElement e = handle.resolve(copy);        
-        assert node.getName().contentEquals(e.getSimpleName());
-        Tree t = copy.getTreeMaker().QualIdent(e);
-        copy.rewrite(node, t);
+    public Void defaultAction(TypeMirror type, Void p) {
+        builder.append(type);
         return null;
     }
-
+        
     @Override
-    public Void visitParameterizedType(ParameterizedTypeTree node, Void p) {
-        assert type.getKind() == TypeKind.DECLARED;
-	    scan(node.getType(), null);
-        Iterator<? extends TypeMirror> args = ((DeclaredType)type).getTypeArguments().iterator();
-        for (Tree ta : node.getTypeArguments())
-            if (args.hasNext()) {
-                type = args.next();
-                scan(ta, null);
+    public Void visitArray(ArrayType type, Void p) {
+        visit(type.getComponentType());
+        builder.append("[]"); //NOI18N
+        return null;
+    }
+    
+    @Override
+    public Void visitDeclared(DeclaredType type, Void p) {
+        String name = ((TypeElement)type.asElement()).getQualifiedName().toString();
+        try {
+            name = SourceUtils.resolveImport(copy, path, name);
+        } catch (Exception e) {
+        }
+        builder.append(name);
+        Iterator<? extends TypeMirror> it = type.getTypeArguments().iterator();
+        if (it.hasNext()) {
+            builder.append('<'); //NOI18N
+            while(it.hasNext()) {
+                visit(it.next());
+                if (it.hasNext())
+                    builder.append(", "); //NOI18N
             }
+            builder.append('>'); //NOI18N
+        }
         return null;
     }
     
     @Override
-    public Void visitWildcard(WildcardTree node, Void p) {
-        if (type.getKind() == TypeKind.WILDCARD) {
-            TypeMirror bound = ((WildcardType) type).getExtendsBound();
-            if (bound == null)
-                bound = ((WildcardType) type).getSuperBound();
-            type = bound;
+    public Void visitTypeVariable(TypeVariable type, Void p) {
+        Element e = type.asElement();
+        if (e != null) {
+            CharSequence name = e.getSimpleName();
+            if (!CAPTURED_WILDCARD.contentEquals(name)) {
+                builder.append(name);
+                return null;
+            }
         }
-        else if (type.getKind() == TypeKind.TYPEVAR) {
-            TypeMirror bound = ((TypeVariable) type).getLowerBound();
-            if (bound == null || bound.getKind() == TypeKind.NULL)
-                bound = ((TypeVariable) type).getUpperBound();
-            type = bound.getKind() == TypeKind.NULL ? null : bound;
+        builder.append("?"); //NOI18N
+        TypeMirror bound = type.getLowerBound();
+        if (bound != null && bound.getKind() != TypeKind.NULL) {
+            builder.append(" super "); //NOI18N
+            visit(bound);
         } else {
-            type = null;
+            bound = type.getUpperBound();
+            if (bound != null && bound.getKind() != TypeKind.NULL) {
+                builder.append(" extends "); //NOI18N
+                if (bound.getKind() == TypeKind.TYPEVAR)
+                    bound = ((TypeVariable)bound).getLowerBound();
+                visit(bound);
+            }
         }
-        if (type != null)
-	        scan(node.getBound(), null);
         return null;
-    }    
+    }
 
     @Override
-    public java.lang.Void visitArrayType(ArrayTypeTree node, Void p) {
-        assert type.getKind() == TypeKind.ARRAY;
-        type = ((ArrayType) type).getComponentType();
-        scan(node.getType(), null);
+    public Void visitWildcard(WildcardType type, Void p) {
+        builder.append("?"); //NOI18N
+        TypeMirror bound = type.getSuperBound();
+        if (bound == null) {
+            bound = type.getExtendsBound();
+            if (bound != null) {
+                builder.append(" extends "); //NOI18N
+                if (bound.getKind() == TypeKind.WILDCARD)
+                    bound = ((WildcardType)bound).getSuperBound();
+                visit(bound);
+            }
+        } else {
+            builder.append(" super "); //NOI18N
+            visit(bound);
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitError(ErrorType type, Void p) {
+        Element e = type.asElement();
+        if (e instanceof TypeElement) {
+            TypeElement te = (TypeElement)e;
+            builder.append(te.getSimpleName());            
+        }
         return null;
     }
 }
