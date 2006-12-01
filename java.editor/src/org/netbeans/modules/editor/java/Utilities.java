@@ -141,13 +141,13 @@ public class Utilities {
     
     public static CharSequence getTypeName(TypeMirror type, boolean fqn, boolean varArg) {
 	if (type == null)
-            return null;
+            return ""; //NOI18N
         return new TypeNameVisitor(varArg).visit(type, fqn);
     }
     
     public static CharSequence getElementName(Element el, boolean fqn) {
         if (el == null)
-            return null;
+            return ""; //NOI18N
         return new ElementNameVisitor().visit(el, fqn);
     }
     
