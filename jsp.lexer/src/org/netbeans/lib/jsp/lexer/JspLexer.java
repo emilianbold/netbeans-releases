@@ -38,30 +38,30 @@ import org.netbeans.spi.lexer.TokenFactory;
  */
 
 public class JspLexer implements Lexer<JspTokenId> {
-    
+
     private static final Logger LOGGER = Logger.getLogger(JspLexer.class.getName());
     private static final boolean LOG = Boolean.getBoolean("j2ee_lexer_debug"); //NOI18N
-    
-    
+
+
     private static final int EOF = LexerInput.EOF;
-    
+
     private final LexerInput input;
-    
+
     private final TokenFactory<JspTokenId> tokenFactory;
-    
+
     public Object state() {
         return lexerState + lexerStateBeforeEL * 1000;
     }
-    
+
     //main internal lexer state
     private int lexerState = INIT;
-    
+
     //secondary internal state for EL expressions in JSP
-    //is it used to eliminate a number of lexer states when EL is found - 
-    //we have 8 states just in attribute value so I would have to copy the EL 
+    //is it used to eliminate a number of lexer states when EL is found -
+    //we have 8 states just in attribute value so I would have to copy the EL
     //recognition code eight-times.
-    private int lexerStateBeforeEL = INIT; 
-    
+    private int lexerStateBeforeEL = INIT;
+
     // Internal analyzer states
     // general
     private static final int INIT                =  0;  // initial lexer state = content language
@@ -92,7 +92,7 @@ public class JspLexer implements Lexer<JspTokenId> {
     // comments (+directives)
     private static final int ISA_LT_PC           = 24; // after '<%' - comment or directive or scriptlet
     private static final int ISI_JSP_COMMENT     = 25; // after <%-
-    
+
     private static final int ISI_JSP_COMMENT_M   = 26; // inside JSP comment after -
     private static final int ISI_JSP_COMMENT_MM  = 27; // inside JSP comment after --
     private static final int ISI_JSP_COMMENT_MMP = 28; // inside JSP comment after --%
@@ -103,19 +103,21 @@ public class JspLexer implements Lexer<JspTokenId> {
     private static final int ISI_TAG_ERROR       = 30; // error in tag, can be cleared by > or \n
     private static final int ISI_DIR_ERROR       = 31; // error in directive, can be cleared by %>, \n, \t or space
     private static final int ISI_DIR_ERROR_P     = 32; // error in directive after %, can be cleared by > or \n
-    
+
     private static final int ISA_LT_PC_AT        = 33; // after '<%@' (directive)
     private static final int ISA_LT_SLASH        = 34; // after '</' sequence
     private static final int ISA_LT_PC_DASH      = 35; // after <%- ;not comment yet
-    
+
     private static final int ISI_SCRIPTLET       = 36; // inside java scriptlet/declaration/expression
     private static final int ISP_SCRIPTLET_PC   = 37; // just after % in scriptlet
-    
+
     //expression language
-    
+
     //EL in content language
     private static final int ISA_EL_DELIM        = 38; //after $ or # in content language
     private static final int ISI_EL              = 39; //expression language in content (after ${ or #{ )
+
+    private static final int ISA_BS             = 40; //after backslash in text - needed to disable EL by scaping # or $
     
     public JspLexer(LexerRestartInfo<JspTokenId> info) {
         this.input = info.input();
@@ -128,18 +130,18 @@ public class JspLexer implements Lexer<JspTokenId> {
             lexerState = encoded % 1000;
         }
     }
-    
+
     public boolean isIdentifierPart(char character) {
         return Character.isJavaIdentifierPart(character);
     }
-    
+
     /** Determines whether a given string is a JSP tag. */
     protected boolean isJspTag(String tagName) {
         boolean canBeJsp = tagName.startsWith("jsp:");  // NOI18N
         //TODO handle custom tags from JSP parser here
         return canBeJsp;
     }
-    
+
     /** Looks ahead into the character buffer and checks if a jsp tag name follows. */
     private boolean followsJspTag() {
         int actChar;
@@ -162,12 +164,12 @@ public class JspLexer implements Lexer<JspTokenId> {
             }
         }
     }
-    
+
     public Token<JspTokenId> nextToken() {
         int actChar;
         while (true) {
             actChar = input.read();
-            
+
             if (actChar == EOF) {
                 if(input.readLengthEOF() == 1) {
                     return null; //just EOL is read
@@ -178,7 +180,7 @@ public class JspLexer implements Lexer<JspTokenId> {
                     break;
                 }
             }
-            
+
             switch (lexerState) {
                 case INIT:
                     switch (actChar) {
@@ -190,11 +192,20 @@ public class JspLexer implements Lexer<JspTokenId> {
 //                        default:
 //                            state = ISI_ERROR;
 //                            break;
+                        case '\\':
+                                lexerState = ISA_BS;
+                                break;
                         case '$':
                         case '#': //maybe expression language
                             lexerStateBeforeEL = lexerState; //remember main state
-                            lexerState = ISA_EL_DELIM; 
+                            lexerState = ISA_EL_DELIM;
                             break;
+                    }
+                    break;
+
+                case ISA_BS:
+                    if(actChar != '\\') {
+                        lexerState = INIT; //prevent scaped EL in text being recognized
                     }
                     break;
                     
@@ -215,7 +226,7 @@ public class JspLexer implements Lexer<JspTokenId> {
                             lexerStateBeforeEL = INIT;
                     }
                     break;
-                    
+
                 case ISI_EL:
                     if(actChar == '}') {
                         //return EL token
@@ -225,7 +236,7 @@ public class JspLexer implements Lexer<JspTokenId> {
                     }
                     //stay in EL
                     break;
-                    
+
                 case ISA_LT:
                     if (Character.isLetter(actChar) ||
                             (actChar == '_')
@@ -248,7 +259,7 @@ public class JspLexer implements Lexer<JspTokenId> {
 //                        input.backup(1);
 //                        return token(JspTokenId.SYMBOL);
                     }
-                    
+
                     switch (actChar) {
                         case '/':
                             lexerState = ISA_LT_SLASH;
@@ -266,7 +277,7 @@ public class JspLexer implements Lexer<JspTokenId> {
 //                            break;
                     }
                     break;
-                    
+
                 case ISA_LT_SLASH:
                     if (Character.isLetter(actChar) ||
                             (actChar == '_')) {
@@ -288,14 +299,14 @@ public class JspLexer implements Lexer<JspTokenId> {
                             break;
                         }
                     }
-                    
+
                     //everyting alse is an error
                     lexerState = ISI_TAG_ERROR;
                     break;
-                    
+
                 case ISI_TAGNAME:
                 case ISI_DIRNAME:
-                    
+
                     if (!(Character.isLetter(actChar) ||
                             Character.isDigit(actChar) ||
                             (actChar == '_') ||
@@ -324,7 +335,7 @@ public class JspLexer implements Lexer<JspTokenId> {
                         return token(JspTokenId.TAG);
                     }
                     break;
-                    
+
                 case ISP_TAG:
                 case ISP_DIR:
                     if (Character.isLetter(actChar) ||
@@ -400,7 +411,7 @@ public class JspLexer implements Lexer<JspTokenId> {
                             break;
                     }
                     break;
-                    
+
                 case ISI_TAG_I_WS:
                 case ISI_DIR_I_WS:
                     switch (actChar) {
@@ -418,7 +429,7 @@ public class JspLexer implements Lexer<JspTokenId> {
                             return token(JspTokenId.WHITESPACE);
                     }
                     break;
-                    
+
                 case ISI_ENDTAG:
                     if (!(Character.isLetter(actChar) ||
                             Character.isDigit(actChar) ||
@@ -431,7 +442,7 @@ public class JspLexer implements Lexer<JspTokenId> {
                         return token(JspTokenId.TAG);
                     }
                     break;
-                    
+
                 case ISI_TAG_ATTR:
                 case ISI_DIR_ATTR:
                     if (!(Character.isLetter(actChar) ||
@@ -445,7 +456,7 @@ public class JspLexer implements Lexer<JspTokenId> {
                         return token(JspTokenId.ATTRIBUTE);
                     }
                     break;
-                    
+
                 case ISP_TAG_EQ:
                 case ISP_DIR_EQ:
                     switch (actChar) {
@@ -473,7 +484,7 @@ public class JspLexer implements Lexer<JspTokenId> {
                             break;
                     }
                     break;
-                    
+
                 case ISI_TAG_STRING:
                 case ISI_DIR_STRING:
                 case ISI_TAG_STRING2:
@@ -482,12 +493,12 @@ public class JspLexer implements Lexer<JspTokenId> {
                         lexerState = ((lexerState == ISI_TAG_STRING) ? ISP_TAG : ISP_DIR);
                         return token(JspTokenId.ATTR_VALUE);
                     }
-                    
+
                     if ((actChar == '\'') && ((lexerState == ISI_TAG_STRING2) || (lexerState == ISI_DIR_STRING2))) {
                         lexerState = ((lexerState == ISI_TAG_STRING2) ? ISP_TAG : ISP_DIR);
                         return token(JspTokenId.ATTR_VALUE);
                     }
-                    
+
                     switch (actChar) {
                         case '\\':
                             switch (lexerState) {
@@ -515,15 +526,22 @@ public class JspLexer implements Lexer<JspTokenId> {
 //                            }
                         case '$':
                         case '#':
-                            lexerStateBeforeEL = lexerState; //remember main state
-                            lexerState = ISA_EL_DELIM;
+                            if(input.readLength() > 1) {
+                                //return part of the attribute value before EL
+                                input.backup(1); //backup $ or #
+                                return token(JspTokenId.ATTR_VALUE);
+                            } else {
+                                lexerStateBeforeEL = lexerState; //remember main state
+                                lexerState = ISA_EL_DELIM;
+                            }
                             break;
-                            
+
                         default:
-                            //stay in ISI_TAG_STRING/2;
+                            break;//stay in ISI_TAG_STRING/2;
+
                     }
                     break;
-                    
+
                 case ISI_TAG_STRING_B:
                 case ISI_DIR_STRING_B:
                 case ISI_TAG_STRING2_B:
@@ -532,6 +550,8 @@ public class JspLexer implements Lexer<JspTokenId> {
                         case '"':
                         case '\'':
                         case '\\':
+                        case '$':
+                        case '#':
                             break;
                         default:
                             input.backup(1);
@@ -552,7 +572,7 @@ public class JspLexer implements Lexer<JspTokenId> {
                             break;
                     }
                     break;
-                    
+
                 case ISA_ENDSLASH:
                     switch (actChar) {
                         case '>':
@@ -569,7 +589,7 @@ public class JspLexer implements Lexer<JspTokenId> {
                             return token(JspTokenId.SYMBOL);
                     }
                     //break; not reached
-                    
+
                 case ISA_ENDPC:
                     switch (actChar) {
                         case '>':
@@ -586,7 +606,7 @@ public class JspLexer implements Lexer<JspTokenId> {
                             return token(JspTokenId.SYMBOL);
                     }
                     //break; not reached
-                    
+
                 case ISA_LT_PC:
                     switch (actChar) {
                         case '@':
@@ -629,7 +649,7 @@ public class JspLexer implements Lexer<JspTokenId> {
                             }
                     }
                     break;
-                    
+
                 case ISI_SCRIPTLET:
                     switch(actChar) {
                         case '%':
@@ -637,7 +657,7 @@ public class JspLexer implements Lexer<JspTokenId> {
                             break;
                     }
                     break;
-                    
+
                 case ISP_SCRIPTLET_PC:
                     switch(actChar) {
                         case '>':
@@ -656,7 +676,7 @@ public class JspLexer implements Lexer<JspTokenId> {
                             break;
                     }
                     break;
-                    
+
                 case ISA_LT_PC_DASH:
                     switch(actChar) {
                         case '-':
@@ -675,7 +695,7 @@ public class JspLexer implements Lexer<JspTokenId> {
                             lexerState = INIT; //XXX how to handle content language?
                             return token(JspTokenId.TEXT); //marek: should I token here????
                     }
-                    
+
                     // JSP states
                 case ISI_JSP_COMMENT:
                     switch (actChar) {
@@ -691,7 +711,7 @@ public class JspLexer implements Lexer<JspTokenId> {
                             break;
                     }
                     break;
-                    
+
                 case ISI_JSP_COMMENT_M:
                     switch (actChar) {
                         case '\n':
@@ -710,7 +730,7 @@ public class JspLexer implements Lexer<JspTokenId> {
                             break;
                     }
                     break;
-                    
+
                 case ISI_JSP_COMMENT_MM:
                     switch (actChar) {
                         case '\n':
@@ -732,7 +752,7 @@ public class JspLexer implements Lexer<JspTokenId> {
                             break;
                     }
                     break;
-                    
+
                 case ISI_JSP_COMMENT_MMP:
                     switch (actChar) {
                         case '\n':
@@ -752,7 +772,7 @@ public class JspLexer implements Lexer<JspTokenId> {
                             break;
                     }
                     break;
-                    
+
                 case ISI_ERROR:
                     switch (actChar) {
                         case '\n':
@@ -765,7 +785,7 @@ public class JspLexer implements Lexer<JspTokenId> {
                             return token(JspTokenId.ERROR);
                     }
                     break;
-                    
+
                 case ISI_TAG_ERROR:
                     switch (actChar) {
                         case '\n':
@@ -786,7 +806,7 @@ public class JspLexer implements Lexer<JspTokenId> {
                             break;
                     }
                     break;
-                    
+
                 case ISI_DIR_ERROR:
                     switch (actChar) {
                         case '\n':
@@ -807,7 +827,7 @@ public class JspLexer implements Lexer<JspTokenId> {
                             break;
                     }
                     break;
-                    
+
                 case ISI_DIR_ERROR_P:
                     switch (actChar) {
                         case '\n':
@@ -826,7 +846,7 @@ public class JspLexer implements Lexer<JspTokenId> {
                             break;
                     }
                     break;
-                    
+
 //                case ISA_END_JSP:
 //                    if (input.readLength() == 1) {
 //                        offset++;
@@ -836,7 +856,7 @@ public class JspLexer implements Lexer<JspTokenId> {
 //                        return JspTokenId.TEXT;
 //                    }
 //                    //break;
-                    
+
                     // added states
                 case ISA_LT_PC_AT:
                     if (Character.isLetter(actChar) ||
@@ -847,7 +867,7 @@ public class JspLexer implements Lexer<JspTokenId> {
 //                        input.backup(1);
 //                        return decide_jsp_tag_token();
                     }
-                    
+
                     switch (actChar) {
                         case '\n':
                             if (input.readLength() == 1) { // no char
@@ -860,15 +880,15 @@ public class JspLexer implements Lexer<JspTokenId> {
                             break;
                     }
                     break;
-                    
+
             }
-            
+
         }
-        
+
         // At this stage there's no more text in the scanned buffer.
         // Scanner first checks whether this is completely the last
         // available buffer.
-        
+
         switch(lexerState) {
             case INIT:
                 if (input.readLength() == 0) {
@@ -951,11 +971,11 @@ public class JspLexer implements Lexer<JspTokenId> {
             default:
                 break;
         }
-        
+
         return null;
-        
+
     }
-    
+
     private Token<JspTokenId> token(JspTokenId tokenId) {
         if(LOG) {
             if(input.readLength() == 0) {
@@ -966,6 +986,6 @@ public class JspLexer implements Lexer<JspTokenId> {
         return tokenFactory.createToken(tokenId);
     }
 
-    
+
 }
 
