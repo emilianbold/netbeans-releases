@@ -40,7 +40,8 @@
         <signjar jar="${work.dir}/${engine.jar.file}" 
                  keystore="${security.keystore}"
                  storepass="${security.storepass}"
-                 alias="${security.alias}"/>
+                 alias="${security.alias}"
+                 maxmemory="${security.application.xmx}"/>
         
         <copy file="${work.dir}/${engine.jar.file}" todir="${dist.dir}"/>
     </target>

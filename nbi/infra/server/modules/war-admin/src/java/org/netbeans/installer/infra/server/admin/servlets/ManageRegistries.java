@@ -25,37 +25,88 @@ public class ManageRegistries extends HttpServlet {
     
     protected void processRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         response.setContentType("text/html; charset=UTF-8");
+        
+        List<String> registries = registryManager.getRegistries();
+        
         PrintWriter out = response.getWriter();
         
+        out.println("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">");
         out.println("<html>");
-        out.println("<head>");
-        out.println("<link rel=\"stylesheet\" href=\"css/main.css\" type=\"text/css\"/>");
-        out.println("<script src=\"js/main.js\" type=\"text/javascript\"/>");
-        out.println("</head>");
-        out.println("<body>");
-        
-        for (String name: registryManager.getRegistries()) {
-            ProductTreeNode node = registryManager.getRegistryRoot(name);
-            out.println("<h1>" + name + "</h1>");
-            out.println("<div id=\"registry-" + name + "\">");
-            
-            buildRegistryTable(out, name, node);
-            
-            out.println("</div>");
+        out.println("    <head>");
+        out.println("        <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">");
+        out.println("        <title>Registries Manager</title>");
+        out.println("        <link rel=\"stylesheet\" href=\"css/main.css\" type=\"text/css\"/>");
+        out.println("        <script src=\"js/main.js\" type=\"text/javascript\"/>");
+        out.println("    </head>");
+        out.println("    <body onload=\"update_current_registry()\">");
+        out.println("        <div class=\"top-menu\">");
+        out.println("            <a href=\"javascript: add_registry();\">Add Registry</a> |");
+        if (registries.size() > 0) {
+            out.println("            <a href=\"javascript: remove_registry();\">Remove Registry</a> |");
+        } else {
+            out.println("            Remove Registry |");
         }
-        
-        out.println("<div id=\"form-div\">");
-        out.println("<form name=\"Form\" method=\"post\" enctype=\"multipart/form-data\">");
-        out.println("<input type=\"hidden\" name=\"fallback\" value=\"" + request.getRequestURL() + "\"/>");
-        out.println("<input type=\"hidden\" name=\"registry\"/>");
-        out.println("<input type=\"hidden\" name=\"uid\"/>");
-        out.println("<input type=\"hidden\" name=\"version\"/>");
-        out.println("<input type=\"file\" name=\"archive\"/>");
-        out.println("<input type=\"submit\"/>");
-        out.println("</form>");
-        out.println("</div>");
-        
-        out.println("</body>");
+        out.println("            <a href=\"javascript: update_engine();\">Update Engine</a>");
+        out.println("        </div>");
+        out.println("        ");
+        if (registries.size() == 0) {
+            out.println("        <p>");
+            out.println("            Currently there are no existing registries on this server.");
+            out.println("        </p>");
+        } else {
+            String selected = request.getParameter("registry");
+            
+            out.println("        <select id=\"registries-select\" onchange=\"update_current_registry()\">");
+            for (String registry: registries) {
+                out.println("            <option value=\"" + registry + "\"" + (registry.equals(selected) ? " selected" : "") + ">" + registry + "</option>");
+            }
+            out.println("        </select>");
+            
+            for (String registry: registries) {
+                ProductTreeNode node = registryManager.getRegistryRoot(registry);
+                out.println("        <div class=\"registry\" id=\"registry-" + registry + "\">");
+                
+                buildRegistryTable(out, registry, node);
+                
+                out.println("        </div>");
+            }
+        }
+        out.println("        ");
+        out.println("        <form name=\"Form\" method=\"post\" enctype=\"multipart/form-data\">");
+        out.println("            <input type=\"hidden\" name=\"fallback_base\" value=\"" + request.getRequestURL() + "\"/>");
+        out.println("            <input type=\"hidden\" name=\"fallback\"/>");
+        out.println("            <input type=\"hidden\" name=\"uid\"/>");
+        out.println("            <input type=\"hidden\" name=\"version\"/>");
+        out.println("            <div class=\"pop-up\" id=\"form-registry\">");
+        out.println("                <table>");
+        out.println("                    <tr>");
+        out.println("                        <td colspan=\"2\">Please define a name for a new registry.</td>");
+        out.println("                    </tr>");
+        out.println("                    <tr>");
+        out.println("                        <td><input type=\"text\" name=\"registry\" style=\"width: 100%\"/></td>");
+        out.println("                        <td><input type=\"submit\"/></td>");
+        out.println("                    </tr>");
+        out.println("                    <tr>");
+        out.println("                        <td colspan=\"2\"><a href=\"javascript: close_form_registry()\">close window</a></td>");
+        out.println("                    </tr>");
+        out.println("                </table>");
+        out.println("            </div>");
+        out.println("            <div class=\"pop-up\" id=\"form-archive\">");
+        out.println("                <table>");
+        out.println("                    <tr>");
+        out.println("                        <td colspan=\"2\">Please point to a package.</td>");
+        out.println("                    </tr>");
+        out.println("                    <tr>");
+        out.println("                        <td><input type=\"file\" name=\"archive\" style=\"width: 100%\"/></td>");
+        out.println("                        <td><input type=\"submit\"/></td>");
+        out.println("                    </tr>");
+        out.println("                    <tr>");
+        out.println("                        <td colspan=\"2\"><a href=\"javascript: close_form_archive()\">close window</a></td>");
+        out.println("                    </tr>");
+        out.println("                </table>");
+        out.println("            </div>");
+        out.println("        </form>");
+        out.println("    </body>");
         out.println("</html>");
         
         out.close();
@@ -70,19 +121,20 @@ public class ManageRegistries extends HttpServlet {
     }
     
     private void buildRegistryTable(PrintWriter out, String registry, ProductTreeNode root) {
-        out.println("<table class=\"nodes-tree\" style=\"width: 60%\">");
+        out.println("            <table class=\"registry\">");
         
         final ArrayList<ProductTreeNode> nodes = new ArrayList<ProductTreeNode>();
         nodes.add(root);
         
         buildRegistryNodes(out, registry, nodes);
         
-        out.println("</table>");
+        out.println("            </table>");
     }
     
     private void buildRegistryNodes(PrintWriter out, String registry, List<ProductTreeNode> nodes) {
         for (ProductTreeNode node: nodes) {
-            final String icon        = node.getIconUri() == null ? "img/default-icon.png" : node.getIconUri();
+            final String icon        = node.getIconUri() == null 
+                    ? "img/default-icon.png" : node.getIconUri();
             final String displayName = node.getDisplayName();
             final String treeHandle  = "img/tree-handle-open.png";
             
@@ -101,14 +153,18 @@ public class ManageRegistries extends HttpServlet {
             
             String id = registry + "-" + uid + "-" + version + "-" + type;
             
-            out.println("<tr id=\"" + id + "\">");
+            out.println("                <tr id=\"" + id + "\">");
             
-            out.println("<td class=\"tree-handle\"><img src=\"" + treeHandle + "\" onclick=\"openclose('" + id + "-children')\"/></td>");
-            out.println("<td class=\"icon\"><img src=\"" + icon + "\"/></td>");
-            out.println("<td class=\"display-name\">" + displayName + "</td>");
-            out.println("<td class=\"option\"><img src=\"img/delete.png\" onclick=\"remove('" + registry + "', '" + uid + "', '" + version + "')\"/></td>");
-            out.println("<td class=\"option\"><img src=\"img/add-component.png\" onclick=\"addComponent('" + registry + "', '" + uid + "', '" + version + "')\"/></td>");
-            out.println("<td class=\"option\"><img src=\"img/add-group.png\" onclick=\"addGroup('" + registry + "', '" + uid + "', '" + version + "')\"/></td>");
+            out.println("                    <td class=\"tree-handle\"><img src=\"" + treeHandle + "\" onclick=\"openclose('" + id + "-children')\"/></td>");
+            out.println("                    <td class=\"icon\"><img src=\"" + icon + "\"/></td>");
+            out.println("                    <td class=\"display-name\">" + displayName + "</td>");
+            if (node.getParent() != null) {
+                out.println("                    <td class=\"option\"><a href=\"javascript: remove_component('" + uid + "', '" + version + "')\">Remove</a></td>");
+            } else {
+                out.println("                    <td class=\"option\"></td>");
+            }
+            out.println("                    <td class=\"option\"><a href=\"javascript: add_component('" + uid + "', '" + version + "')\">Add Component</a></td>");
+            out.println("                    <td class=\"option\"><a href=\"javascript: add_group('" + uid + "', '" + version + "')\">Add Group</a></td>");
             
             out.println("</tr>");
             
@@ -116,10 +172,10 @@ public class ManageRegistries extends HttpServlet {
                 out.println("<tr id=\"" + id + "-children\">");
                 
                 out.println("<td class=\"tree-handle\">&nbsp;</td>");
-                out.println("<td colspan=\"5\" class=\"children\">");
+                out.print("<td colspan=\"5\" class=\"children\">");
                 out.println("<table class=\"nodes-tree\" style=\"margin: 0px 0px 0px 0px\">");
                 buildRegistryNodes(out, registry, node.getChildren());
-                out.println("</table>");
+                out.print("</table>");
                 out.println("</td>");
                 
                 out.println("</tr>");

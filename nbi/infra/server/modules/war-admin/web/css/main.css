@@ -1,47 +1,99 @@
-table.nodes-tree {
+body {
+    margin:             0px 0px 0px 0px;
+    padding:            10px 10px 10px 10px;
+    background-color:   #ffffff;
+    font-family:        Verdana, Arial, sans-serif;
+    font-size:          12px;
+}
+
+div.top-menu {
+    margin:             0px 0px 10px 0px;
+    padding:            5px 10px 5px 10px;
+    border:             1px solid #c0c0c0;
+    background-color:   #eeeeee;
+}
+
+select#registries-select {
+    margin:             10px 0px 10px 0px;
+    width:              700px;
+}
+
+div.registry {
+    margin:             10px 0px 10px 0px;
+    width:              700px;
+}
+
+table.registry {
     width:              100%;
-    margin:             10px auto 10px 0px;
+    margin:             0px 0px 0px 0px;
+    border:             1px solid #ff0000;
     border-collapse:    collapse;
 }
 
-table.nodes-tree tr {
-    border-top:         1px dotted #c0c0c0;
-    border-bottom:      1px dotted #c0c0c0;
+table.registry tr {
+    border:             0px solid #ffffff;
 }
 
-table.nodes-tree td {
+table.registry td {
+    border:             0px solid #ffffff;
     padding:            0px 0px 0px 0px;
 }
 
-table.nodes-tree td.tree-handle {
+table.registry td.tree-handle {
     width:              16px;
 }
 
-table.nodes-tree td.tree-handle img {
+table.registry td.tree-handle img {
     cursor:             pointer;
 }
 
-table.nodes-tree td.icon {
-    width:              16px;
+table.registry td.icon {
 }
 
-table.nodes-tree td.display-name {
+table.registry td.display-name {
+    width:              100%;
     padding:            2px 5px 2px 5px;
     font-family:        Tahoma, Arial, sans-serif;
     font-size:          12px;
 }
 
-table.nodes-tree td.option {
-    width:              16px;
+table.registry td.option {
+    padding:            2px 5px 2px 5px;
+    font-family:        Tahoma, Arial, sans-serif;
+    font-size:          12px;
+    white-space:        nowrap;
 }
 
-table.nodes-tree td.option img {
-    cursor:             pointer;
+table.registry td.children {
+    border:             1px solid #000000;
 }
 
-table.nodes-tree td.children {
-}
-
-div#form-div {
+div.pop-up {
+    width:              300px;
+    border:             1px solid black;
+    background-color:   #eeeeee;
     display:            none;
+    padding:            50px 10px 50px 10px;
+}
+
+div#form-registry {
+    position:           absolute;
+    top:                200px;
+    left:               200px;
+}
+
+div#form-archive {
+    position:           absolute;
+    top:                200px;
+    left:               200px;
+}
+
+div.pop-up table {
+    width:              100%;
+    margin:             auto 0px auto 0px;
+    border-collapse:    collapse;
+}
+
+div.pop-up table td {
+    padding:            2px 5px 2px 5px;
 }
