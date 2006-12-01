@@ -22,7 +22,6 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import java.io.IOException;
-import java.util.Arrays;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -47,8 +46,6 @@ import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Position;
 import java.util.ArrayList;
-
-import java.util.Iterator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
@@ -65,7 +62,6 @@ import org.netbeans.modules.java.source.save.TreeDiff.LineInsertionType;
 import static org.netbeans.modules.java.source.save.ListMatcher.*;
 import static com.sun.tools.javac.code.Flags.*;
 import static org.netbeans.modules.java.source.save.TreeDiff.*;
-import org.omg.PortableServer.THREAD_POLICY_ID;
 
 public class CasualDiff {
     protected ListBuffer<Diff> diffs;
@@ -212,6 +208,7 @@ public class CasualDiff {
             output.writeTo(origText.substring(pointer));
         } catch (Exception e) {
             Logger.getAnonymousLogger().log(Level.ALL, "Chyba!", e);
+            System.err.println(e);
         }
     }
     
@@ -296,7 +293,7 @@ public class CasualDiff {
         tokenSequence.moveNext();
         int insertHint = TokenUtilities.moveNext(tokenSequence, tokenSequence.offset());
         printer.reset(0);
-        diffModifiers(oldT.mods, newT.mods, oldT);
+        localPointer = diffModifiers(oldT.mods, newT.mods, oldT, localPointer);
         if (nameChanged(oldT.name, newT.name)) {
             printer.print(origText.substring(localPointer, insertHint));
             printer.print(newT.name);
@@ -397,7 +394,7 @@ public class CasualDiff {
     protected void diffMethodDef(JCMethodDecl oldT, JCMethodDecl newT, int[] bounds) throws IOException, BadLocationException {
         printer.reset(currentIndentLevel);
         int localPointer = bounds[0];
-        diffModifiers(oldT.mods, newT.mods, oldT);
+        localPointer = diffModifiers(oldT.mods, newT.mods, oldT, localPointer);
         diffTree(oldT.restype, newT.restype);
         int posHint;
         if (oldT.typarams.isEmpty()) {
@@ -465,7 +462,7 @@ public class CasualDiff {
 
     protected void diffVarDef(JCVariableDecl oldT, JCVariableDecl newT, int[] bounds) throws IOException, BadLocationException {
         int localPointer = bounds[0];
-        diffModifiers(oldT.mods, newT.mods, oldT);
+        localPointer = diffModifiers(oldT.mods, newT.mods, oldT, localPointer);
         diffTree(oldT.vartype, newT.vartype);
         if (nameChanged(oldT.name, newT.name)) {
             printer.print(origText.substring(localPointer, oldT.pos));
@@ -716,18 +713,30 @@ public class CasualDiff {
         diffParameterList(oldT.args, newT.args);
     }
     
-    protected void diffModifiers(JCModifiers oldT, JCModifiers newT, JCTree parent) throws IOException, BadLocationException {
+    protected int diffModifiers(JCModifiers oldT, JCModifiers newT, JCTree parent, int lastPrinted) throws IOException, BadLocationException {
         if (oldT == newT) {
-            return;
+            // modifiers wasn't changed, return the position lastPrinted.
+            return lastPrinted;
         }
         int oldPos = oldT.pos != Position.NOPOS ? getOldPos(oldT) : getOldPos(parent);
-        if (oldT.flags != newT.flags)
-            append(Diff.flags(oldPos, 
-                              oldPos == oldT.pos ? endPos(oldT) : oldPos,
-                              oldT.flags, newT.flags));
+        printer.print(origText.substring(lastPrinted, lastPrinted = oldPos));
+        if (oldT.flags != newT.flags) {
+            int endPos = endPos(oldT);
+            if (endPos > 0) {
+                printer.print(newT.toString().trim());
+                lastPrinted = endPos;
+            } else {
+                printer.print(newT.toString());
+            }
+        }
+//            append(Diff.flags(oldPos, 
+//                              oldPos == oldT.pos ? endPos(oldT) : oldPos,
+//                              oldT.flags, newT.flags));
         LineInsertionType insertLine = oldT.annotations.nonEmpty() ? 
             LineInsertionType.BEFORE : LineInsertionType.AFTER;
-        diffList(oldT.annotations, newT.annotations, insertLine, oldPos);
+        // todo (#pf): Skip the annotation for the time being - bug!
+        // diffList(oldT.annotations, newT.annotations, insertLine, oldPos);
+        return lastPrinted;
     }
     
     protected void diffLetExpr(LetExpr oldT, LetExpr newT) {
@@ -1196,20 +1205,20 @@ public class CasualDiff {
         }
         assert oldList != null && newList != null;
         
-        ListMatcher<JCExpression> matcher = ListMatcher.<JCExpression>instance(
-                (List<JCExpression>) oldList, 
-                (List<JCExpression>) newList,
+        ListMatcher<JCTree> matcher = ListMatcher.instance(
+                oldList, 
+                newList,
                 measure
         );
         if (!matcher.match()) {
             return ret;
         }
-        ResultItem<JCExpression>[] result = matcher.getResult();
+        ResultItem<JCTree>[] result = matcher.getResult();
         int posHint = initialPos;
         estimator.initialize(oldList, workingCopy);
         int i = 0;
         for (int j = 0; j < result.length; j++) {
-            ResultItem<JCExpression> item = result[j];
+            ResultItem<JCTree> item = result[j];
             switch (item.operation) {
                 case MODIFY: {
                     assert true : "Modify is no longer operated!";
@@ -1235,11 +1244,12 @@ public class CasualDiff {
                         if (ret[0] < 0) ret[0] = posHint;
                         if (ret[1] < 0) ret[1] = posHint;
                     }
-                    int oldPos = getOldPos(item.element);
+                    int oldPos = item.element.getKind() != Kind.VARIABLE ? getOldPos(item.element) : item.element.pos;
                     boolean found = false;
                     if (oldPos > 0) {
                         for (JCTree oldT : oldList) {
-                            if (oldPos == getOldPos(oldT)) {
+                            int oldNodePos = oldT.getKind() != Kind.VARIABLE ? getOldPos(oldT) : oldT.pos;
+                            if (oldPos == oldNodePos) {
                                 found = true;
                                 VeryPretty oldPrinter = this.printer;
                                 this.printer = new VeryPretty(context, JavaFormatOptions.getDefault());
@@ -2030,6 +2040,13 @@ public class CasualDiff {
         // backtracking arrays.
         for(ii = 1; ii <= n; ++ii) {
             for(jj = 1; jj <= m; ++jj) { 
+                // todo (#pf): This code is prototype only, 
+                // there is similiar several points to optimization, e.g. use token
+                // id's for keywords and fixed tokens - just whitespaces, comments
+                // and identifier has to contain text comparison. This perhaps
+                // improves performance. But no data are available now. Text comparision
+                // should be done through char seq. comparison instead of strings.
+                // There are helper methods in lexer to do that correctly.
                 if (a.get(ii-1).toString().equals(b.get(jj-1).toString())) {
                     S[ii][jj] = S[ii-1][jj-1] + 1;
                     R[ii][jj] = UP_AND_LEFT;

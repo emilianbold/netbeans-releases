@@ -73,8 +73,8 @@ public final class ListMatcher<E> {
      * @param  newL  new array of elements to compare.
      * @return       created instance.
      */
-    public static <T> ListMatcher<T> instance(List<T> oldL, List<T> newL) {
-        return new ListMatcher(oldL, newL);
+    public static <T> ListMatcher<T> instance(List<? extends T> oldL, List<? extends T> newL) {
+        return new ListMatcher<T>(oldL, newL);
     }
 
     /**
@@ -85,8 +85,8 @@ public final class ListMatcher<E> {
      * @param  comparator  used for comparing elements.
      * @return       created instance.
      */
-    public static <T> ListMatcher<T> instance(List<T> oldL, List<T> newL, Measure measure) {
-        return new ListMatcher(oldL, newL, measure);
+    public static <T> ListMatcher<T> instance(List<? extends T> oldL, List<? extends T> newL, Measure measure) {
+        return new ListMatcher<T>(oldL, newL, measure);
     }
     /**
      * Creates the instance of <tt>ListMatcher</tt> class.
@@ -96,7 +96,7 @@ public final class ListMatcher<E> {
      * @return       created instance.
      */
     public static <T> ListMatcher<T> instance(T[] oldL, T[] newL) {
-        return new ListMatcher(oldL, newL);
+        return new ListMatcher<T>(oldL, newL);
     }
 
     /**
