@@ -26,6 +26,7 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.editor.settings.KeyBindingSettings;
+import org.netbeans.core.startup.Main;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
@@ -48,11 +49,18 @@ public class SettingsProviderTest extends NbTestCase {
             new URL[] {
                 getClass().getClassLoader().getResource(
                         "org/netbeans/modules/editor/settings/storage/test-layer.xml"),
+                getClass().getClassLoader().getResource(
+                        "org/netbeans/modules/editor/settings/storage/layer.xml"),
             },
             getWorkDir(),
             new Object[] {},
             getClass().getClassLoader()
         );
+
+        // This is here to initialize Nb URL factory (org.netbeans.core.startup),
+        // which is needed by Nb EntityCatalog (org.netbeans.core).
+        // Also see the test dependencies in project.xml
+        Main.initializeURLFactory();
     }
     
     public void testSpecialTestMimeType() throws Exception {

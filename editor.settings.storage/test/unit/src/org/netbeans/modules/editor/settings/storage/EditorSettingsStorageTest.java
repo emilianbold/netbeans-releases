@@ -36,6 +36,7 @@ import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.editor.settings.KeyBindingSettings;
 import org.netbeans.api.editor.settings.MultiKeyBinding;
+import org.netbeans.core.startup.Main;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.editor.settings.storage.api.FontColorSettingsFactory;
 import org.netbeans.modules.editor.settings.storage.api.KeyBindingSettingsFactory;
@@ -63,11 +64,18 @@ public class EditorSettingsStorageTest extends NbTestCase {
             new URL[] {
                 getClass().getClassLoader().getResource(
                         "org/netbeans/modules/editor/settings/storage/test-layer.xml"),
+                getClass().getClassLoader().getResource(
+                        "org/netbeans/modules/editor/settings/storage/layer.xml"),
             },
             getWorkDir(),
             new Object[] {},
             getClass().getClassLoader()
         );
+
+        // This is here to initialize Nb URL factory (org.netbeans.core.startup),
+        // which is needed by Nb EntityCatalog (org.netbeans.core).
+        // Also see the test dependencies in project.xml
+        Main.initializeURLFactory();
     }
 
     public void testBgColor() {
