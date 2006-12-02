@@ -80,14 +80,11 @@ public class MakeUpdateDesc extends MatchingTask {
     private Vector<Group> groups = new Vector<Group> ();
     private Vector<FileSet> filesets = new Vector<FileSet> ();
 
-    private String desc_name;
     private File desc;
-    private File desc_ent;
 
     /** Description file to create. */
-    public void setDesc (String d) {
-	desc_name = d;
-        desc = new File (desc_name);
+    public void setDesc(File d) {
+        desc = d;
     }
 
     /** Module group to create **/
@@ -208,14 +205,14 @@ public class MakeUpdateDesc extends MatchingTask {
                 
             if ( entityincludes.size() > 0 ) {
                     // prepare .ent file
-                    String ent_name=desc_name.toString();                
+                    String ent_name = desc.getAbsolutePath();
                     int xml_idx = ent_name.indexOf(".xml"); //NOI18N
                     if (xml_idx != -1) {
                         ent_name = ent_name.substring (0, xml_idx) + ".ent"; //NOI18N
                     } else {
                         ent_name = ent_name + ".ent"; //NOI18N
                     }
-                    desc_ent = new File(ent_name);               
+                    File desc_ent = new File(ent_name);
                     desc_ent.delete();
                     if (targetClustersDefined) {
                         pw.println("<!DOCTYPE module_updates PUBLIC \"-//NetBeans//DTD Autoupdate Catalog 2.4//EN\" \"http://www.netbeans.org/dtds/autoupdate-catalog-2_4.dtd\" [");
@@ -227,7 +224,7 @@ public class MakeUpdateDesc extends MatchingTask {
                     pw.println ("    <!ENTITY entity SYSTEM \"" + xmlEscape(desc_ent.getName()) + "\">"); //NOI18N
                     int inc_num=0;
                     for (int i=0; i<entityincludes.size(); i++) {
-                        Entityinclude ei = (Entityinclude) entityincludes.elementAt(i);
+                        Entityinclude ei = entityincludes.elementAt(i);
                         pw.println ("    <!ENTITY include" + i + " SYSTEM \"" + xmlEscape(ei.file) + "\">"); //NOI18N
                     }
                     pw.println ("]>"); //NOI18N
@@ -341,8 +338,7 @@ public class MakeUpdateDesc extends MatchingTask {
     
     private Map<String,List<Module>> loadNBMs() throws BuildException {
         Map<String,List<Module>> r = new LinkedHashMap<String,List<Module>>();
-        for (int gi = 0; gi < groups.size(); gi++) {
-            Group g = (Group) groups.elementAt(gi);
+        for (Group g : groups) {
             List<Module> modules = new ArrayList<Module>();
             r.put(g.name, modules);
             for (int fsi = 0; fsi < g.filesets.size(); fsi++) {
