@@ -34,7 +34,9 @@
         <evaluate property="engine.jar.file"/>
     </target>
     
-    <target name="clean" depends="init,-clean"/>
+    <target name="clean" depends="init,-clean">
+        <delete file="${dist.dir}/${engine.jar.file}"/>
+    </target>
     
     <target name="build" depends="init,-build">
         <signjar jar="${work.dir}/${engine.jar.file}" 
