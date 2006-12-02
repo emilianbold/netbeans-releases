@@ -28,11 +28,11 @@ import java.util.regex.Pattern;
  * @author Kirill Sorokin
  */
 public class Version {
-    private int major;
-    private int minor;
-    private int micro;
-    private int update;
-    private int build;
+    private long major;
+    private long minor;
+    private long micro;
+    private long update;
+    private long build;
     
     private String string;
     
@@ -41,19 +41,19 @@ public class Version {
             String[] split = versionString.split("[\\._\\-]+"); //NOI18N
             
             if (split.length > 0) {
-                major = new Integer(split[0]);
+                major = new Long(split[0]);
             }
             if (split.length > 1) {
-                minor = new Integer(split[1]);
+                minor = new Long(split[1]);
             }
             if (split.length > 2) {
-                micro = new Integer(split[2]);
+                micro = new Long(split[2]);
             }
             if (split.length > 3) {
-                update = new Integer(split[3]);
+                update = new Long(split[3]);
             }
             if (split.length > 4) {
-                build = new Integer(split[4]);
+                build = new Long(split[4]);
             }
         } else {
             string = versionString;
@@ -122,23 +122,23 @@ public class Version {
         return false;
     }
     
-    public int getMajor() {
+    public long getMajor() {
         return major;
     }
     
-    public int getMinor() {
+    public long getMinor() {
         return minor;
     }
     
-    public int getMicro() {
+    public long getMicro() {
         return micro;
     }
     
-    public int getUpdate() {
+    public long getUpdate() {
         return update;
     }
     
-    public int getBuild() {
+    public long getBuild() {
         return build;
     }
     
