@@ -800,9 +800,12 @@ jnlp.signjar.password - allow you to sign your app with your own private key, if
 jnlp.signjar.vendor - you can override this to be the default dname for the keystore
 
 jnlp.platform.codebase - can point to a shared repository which can be generated
-  by ant -f nbbuild/build.xml build-jnlp Then your war file will contain only 
-  modules of your suite and platform modules will be referenced by value of this
-  property
+  by ant -f nbbuild/build.xml build-jnlp. Then your WAR file will contain only 
+  modules of your suite and platform modules will be referenced by the value of
+  this property. Sample values with prebuilt binaries (good for testing):
+http://www.netbeans.org/download/5_0/jnlp/
+http://www.netbeans.org/download/6_0/jnlp/
+http://deadlock.nbextras.org/hudson/job/javadoc-nbms/lastSuccessfulBuild/artifact/nbbuild/build/jnlp/
 
 jnlp.verify.excludes - the default implementation of "jnlp" task in common.xml
   does verification and compares that all files from module NBM are really
