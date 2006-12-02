@@ -117,9 +117,11 @@ Microsystems, Inc. All Rights Reserved.
             </fileset>
         </signjar>
         <pathconvert property="ant-jar-resources" pathsep="'/&gt;&#10;    &lt;jar href='">
-            <fileset dir="${jnlp.dest.dir}">
-                <include name="apache-ant*.jar"/>
-            </fileset>
+            <path>
+                <fileset dir="${jnlp.dest.dir}">
+                    <include name="apache-ant*.jar"/>
+                </fileset>
+            </path>
             <mapper type="glob" from="${jnlp.dest.dir}${file.separator}*" to="*"/>
         </pathconvert>
         <echo file="${jnlp.dest.dir}/org-apache-tools-ant-module.jnlp"><![CDATA[<?xml version='1.0' encoding='UTF-8'?>
