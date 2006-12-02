@@ -40,27 +40,21 @@ function update_engine() {
 
 function update_current_registry() {
     var select = document.getElementById("registries-select");
-    var registry = select.options[select.selectedIndex].value;
-    document.forms["Form"].registry.value = registry;
     
-    for (i = 0; i < select.options.length; i++) {
-        var value = select.options[i].value;
-        document.getElementById("registry-" + value).style.display = "none";
-    }
-    
-    document.getElementById("registry-" + registry).style.display = "block";
-    
-    document.forms["Form"].fallback.value = document.forms["Form"].fallback_base.value + "?registry=" + registry;
-}
-
-
-function _expand(id) {
-    var row = document.getElementById(id);
-    
-    if (row.style.display == "none") {
-        row.style.display = "table-row";
+    if (select != null) {
+        var registry = select.options[select.selectedIndex].value;
+        document.forms["Form"].registry.value = registry;
+        
+        for (i = 0; i < select.options.length; i++) {
+            var value = select.options[i].value;
+            document.getElementById("registry-" + value).style.display = "none";
+        }
+        
+        document.getElementById("registry-" + registry).style.display = "block";
+        
+        document.forms["Form"].fallback.value = document.forms["Form"].fallback_base.value + "?registry=" + registry;
     } else {
-        row.style.display = "none";
+        document.forms["Form"].fallback.value = document.forms["Form"].fallback_base.value;
     }
 }
 
@@ -92,4 +86,14 @@ function add_group(uid, version) {
     document.forms["Form"].version.value = version;
     
     show_form_archive();
+}
+
+function _expand(id) {
+    var row = document.getElementById(id);
+    
+    if (row.style.display == "none") {
+        row.style.display = "table-row";
+    } else {
+        row.style.display = "none";
+    }
 }

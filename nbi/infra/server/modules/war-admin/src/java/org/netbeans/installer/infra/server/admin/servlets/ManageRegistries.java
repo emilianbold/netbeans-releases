@@ -33,10 +33,10 @@ public class ManageRegistries extends HttpServlet {
         out.println("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">");
         out.println("<html>");
         out.println("    <head>");
-        out.println("        <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">");
+        out.println("        <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"/>");
         out.println("        <title>Registries Manager</title>");
         out.println("        <link rel=\"stylesheet\" href=\"css/main.css\" type=\"text/css\"/>");
-        out.println("        <script src=\"js/main.js\" type=\"text/javascript\"/>");
+        out.println("        <script src=\"js/main.js\" type=\"text/javascript\"></script>");
         out.println("    </head>");
         out.println("    <body onload=\"update_current_registry()\">");
         out.println("        <div class=\"top-menu\">");
@@ -83,7 +83,7 @@ public class ManageRegistries extends HttpServlet {
         out.println("                        <td colspan=\"2\">Please define a name for a new registry.</td>");
         out.println("                    </tr>");
         out.println("                    <tr>");
-        out.println("                        <td><input type=\"text\" name=\"registry\" style=\"width: 100%\"/></td>");
+        out.println("                        <td style=\"width: 100%\"><input type=\"text\" name=\"registry\" style=\"width: 100%\"/></td>");
         out.println("                        <td><input type=\"submit\"/></td>");
         out.println("                    </tr>");
         out.println("                    <tr>");
@@ -97,7 +97,7 @@ public class ManageRegistries extends HttpServlet {
         out.println("                        <td colspan=\"2\">Please point to a package.</td>");
         out.println("                    </tr>");
         out.println("                    <tr>");
-        out.println("                        <td><input type=\"file\" name=\"archive\" style=\"width: 100%\"/></td>");
+        out.println("                        <td style=\"width: 100%\"><input type=\"file\" name=\"archive\" style=\"width: 100%\"/></td>");
         out.println("                        <td><input type=\"submit\"/></td>");
         out.println("                    </tr>");
         out.println("                    <tr>");
@@ -133,10 +133,21 @@ public class ManageRegistries extends HttpServlet {
     
     private void buildRegistryNodes(PrintWriter out, String registry, List<ProductTreeNode> nodes) {
         for (ProductTreeNode node: nodes) {
-            final String icon        = node.getIconUri() == null 
-                    ? "img/default-icon.png" : node.getIconUri();
-            final String displayName = node.getDisplayName();
-            final String treeHandle  = "img/tree-handle-open.png";
+            String icon        = null;
+            String displayName = node.getDisplayName();
+            String treeHandle  = null;
+            
+            if (node.getIconUri() == null) {
+                icon = "img/default-icon.png";
+            } else {
+                icon = node.getIconUri();
+            }
+            
+            if (node.getChildren().size() > 0) {
+                treeHandle  = "img/tree-handle-open.png";
+            } else {
+                treeHandle  = "img/tree-handle-empty.png";
+            }
             
             String uid     = node.getUid();
             String version = null;
@@ -155,7 +166,7 @@ public class ManageRegistries extends HttpServlet {
             
             out.println("                <tr id=\"" + id + "\">");
             
-            out.println("                    <td class=\"tree-handle\"><img src=\"" + treeHandle + "\" onclick=\"openclose('" + id + "-children')\"/></td>");
+            out.println("                    <td class=\"tree-handle\"><img src=\"" + treeHandle + "\" onclick=\"_expand('" + id + "-children')\"/></td>");
             out.println("                    <td class=\"icon\"><img src=\"" + icon + "\"/></td>");
             out.println("                    <td class=\"display-name\">" + displayName + "</td>");
             if (node.getParent() != null) {
@@ -166,14 +177,14 @@ public class ManageRegistries extends HttpServlet {
             out.println("                    <td class=\"option\"><a href=\"javascript: add_component('" + uid + "', '" + version + "')\">Add Component</a></td>");
             out.println("                    <td class=\"option\"><a href=\"javascript: add_group('" + uid + "', '" + version + "')\">Add Group</a></td>");
             
-            out.println("</tr>");
+            out.println("                </tr>");
             
             if (node.getChildren().size() > 0) {
                 out.println("<tr id=\"" + id + "-children\">");
                 
-                out.println("<td class=\"tree-handle\">&nbsp;</td>");
+                out.println("<td class=\"tree-handle\"></td>");
                 out.print("<td colspan=\"5\" class=\"children\">");
-                out.println("<table class=\"nodes-tree\" style=\"margin: 0px 0px 0px 0px\">");
+                out.println("<table class=\"registry\">");
                 buildRegistryNodes(out, registry, node.getChildren());
                 out.print("</table>");
                 out.println("</td>");

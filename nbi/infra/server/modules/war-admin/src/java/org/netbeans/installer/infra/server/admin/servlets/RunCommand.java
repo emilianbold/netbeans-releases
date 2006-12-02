@@ -8,6 +8,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -79,7 +80,7 @@ public class RunCommand extends HttpServlet {
             }
             
             final String prefix = getHostUrl(request) +
-                    "/nbi/get-file?registry=" + registry + "&file=";
+                    "/nbi/get-file?registry=" + URLEncoder.encode(registry, "UTF-8") + "&file=";
             
             if (command.equals("add-registry")) {
                 registryManager.addRegistry(registry);
@@ -111,6 +112,10 @@ public class RunCommand extends HttpServlet {
             
             response.getWriter().write(
                     "The \"" + command + "\" command was successfully executed.");
+            
+            if (archive != null) {
+                archive.delete();
+            }
             
             if (fallback != null) {
                 response.setStatus(HttpServletResponse.SC_SEE_OTHER);
