@@ -26,11 +26,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Result;
@@ -42,10 +43,15 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
+import org.netbeans.installer.utils.helper.Dependency;
+import org.netbeans.installer.utils.helper.DependencyType;
 import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.utils.exceptions.ParseException;
+import org.netbeans.installer.utils.exceptions.UnrecognizedObjectException;
 import org.netbeans.installer.utils.exceptions.XMLException;
 import org.netbeans.installer.utils.helper.ErrorLevel;
+import org.netbeans.installer.utils.helper.ExtendedURI;
+import org.netbeans.installer.utils.helper.Version;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -283,6 +289,39 @@ public abstract class XMLUtils {
         }
         
         return properties;
+    }
+    
+    public static Dependency parseDependency(Element element) throws ParseException {
+        try {
+            DependencyType type    = DependencyType.parseDependencyType(element.getNodeName());
+            String         uid     = XMLUtils.getAttribute(element, "uid");
+            Version        lower   = new Version(XMLUtils.getAttribute(element, "version-lower"));
+            Version        upper   = new Version(XMLUtils.getAttribute(element, "version-upper"));
+            Version        desired = new Version(XMLUtils.getAttribute(element, "version-desired"));
+            
+            return new Dependency(type, uid, lower, upper, desired);
+        } catch (UnrecognizedObjectException e) {
+            throw new ParseException("Cannot parse dependency", e);
+        }
+    }
+    
+    public static ExtendedURI parseExtendedUri(Element element) throws ParseException {
+        try {
+            URI    uri           = new URI(XMLUtils.getChildNodeTextContent(element, "default-uri"));
+            long   estimatedSize = Long.parseLong(XMLUtils.getAttribute(element, "size"));
+            String md5           = XMLUtils.getAttribute(element, "md5");
+            String crc32         = XMLUtils.getAttribute(element, "crc32");
+            
+            if (uri.getScheme().equals("file")) {
+                return new ExtendedURI(uri, uri, estimatedSize, md5, crc32);
+            } else {
+                return new ExtendedURI(uri, estimatedSize, md5, crc32);
+            }
+        } catch (URISyntaxException e) {
+            throw new ParseException("Cannot parse extended URI", e);
+        } catch (NumberFormatException e) {
+            throw new ParseException("Cannot parse extended URI", e);
+        }
     }
     
     // private //////////////////////////////////////////////////////////////////////
