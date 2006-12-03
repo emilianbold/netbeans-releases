@@ -40,7 +40,7 @@ public class PumpingUtil {
       int index = 2;
       int dotPosition = fileName.lastIndexOf('.');
       while (file.exists()) {
-         final String insert = "(" + index + ")";
+         final String insert = "." + index;
          String newName;
          if (dotPosition == -1) newName = fileName + insert;
          else {

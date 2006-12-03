@@ -71,8 +71,8 @@
             <xsd:enumeration value="linux"/>
             <xsd:enumeration value="solaris-x86"/>
             <xsd:enumeration value="solaris-sparc"/>
-            <xsd:enumeration value="macos-x-ppc"/>
-            <xsd:enumeration value="macos-x-x86"/>
+            <xsd:enumeration value="macosx-ppc"/>
+            <xsd:enumeration value="macosx-x86"/>
         </xsd:restriction>
     </xsd:simpleType>
     

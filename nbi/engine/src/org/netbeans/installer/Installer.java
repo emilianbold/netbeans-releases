@@ -140,6 +140,10 @@ public class Installer {
         
         setLookAndFeel();
         
+        cacheEngineLocally();
+        
+        createInstallerLockFile(localDirectory);
+        
         LogManager.unindent();
         LogManager.log(MESSAGE, "... finished initializing the installer engine");
     }
@@ -164,15 +168,11 @@ public class Installer {
             ErrorManager.notify(CRITICAL, "Cannot write to local directory - not enought permissions");
         }
         
-        createInstallerLockFile(localDirectory);
-        
         final Wizard wizard = Wizard.getInstance();
         
         wizard.open();
         wizard.executeComponent(new InitalizeRegistryAction());
         wizard.next();
-        
-        cacheEngineLocally();
     }
     
     /**
