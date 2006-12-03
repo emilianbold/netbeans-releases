@@ -180,16 +180,16 @@ public class ManageRegistries extends HttpServlet {
             out.println("                </tr>");
             
             if (node.getChildren().size() > 0) {
-                out.println("<tr id=\"" + id + "-children\">");
+                out.println("                <tr id=\"" + id + "-children\">");
                 
-                out.println("<td class=\"tree-handle\"></td>");
-                out.print("<td colspan=\"5\" class=\"children\">");
-                out.println("<table class=\"registry\">");
+                out.println("                    <td class=\"tree-handle\"></td>");
+                out.println("                    <td colspan=\"5\" class=\"children\">");
+                out.println("                    <table class=\"registry\">");
                 buildRegistryNodes(out, registry, node.getChildren());
-                out.print("</table>");
-                out.println("</td>");
+                out.println("                    </table>");
+                out.println("                    </td>");
                 
-                out.println("</tr>");
+                out.println("                </tr>");
             }
         }
     }

@@ -79,8 +79,11 @@ public class RunCommand extends HttpServlet {
                 fallback = request.getParameter("fallback");
             }
             
-            final String prefix = getHostUrl(request) +
-                    "/nbi/get-file?registry=" + URLEncoder.encode(registry, "UTF-8") + "&file=";
+            String prefix = null;
+            if (registry != null) {
+                prefix = getHostUrl(request) + "/nbi/get-file?registry=" +
+                        URLEncoder.encode(registry, "UTF-8") + "&file=";
+            }
             
             if (command.equals("add-registry")) {
                 registryManager.addRegistry(registry);

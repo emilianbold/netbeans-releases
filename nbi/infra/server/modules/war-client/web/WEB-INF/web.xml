@@ -9,12 +9,20 @@
         <servlet-class>org.netbeans.installer.infra.server.client.servlets.GetFile</servlet-class>
     </servlet>
     <servlet>
-        <servlet-name>get-engine</servlet-name>
-        <servlet-class>org.netbeans.installer.infra.server.client.servlets.GetEngine</servlet-class>
+        <servlet-name>get-engine.jar</servlet-name>
+        <servlet-class>org.netbeans.installer.infra.server.client.servlets.GetEngineJar</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>install</servlet-name>
         <servlet-class>org.netbeans.installer.infra.server.client.servlets.Install</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>registries</servlet-name>
+        <servlet-class>org.netbeans.installer.infra.server.client.servlets.Registries</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>create-bundle</servlet-name>
+        <servlet-class>org.netbeans.installer.infra.server.client.servlets.CreateBundle</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>get-registry</servlet-name>
@@ -25,12 +33,20 @@
         <url-pattern>/get-file</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
-        <servlet-name>get-engine</servlet-name>
-        <url-pattern>/get-engine</url-pattern>
+        <servlet-name>get-engine.jar</servlet-name>
+        <url-pattern>/get-engine.jar</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>install</servlet-name>
         <url-pattern>/install</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>registries</servlet-name>
+        <url-pattern>/registries</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>create-bundle</servlet-name>
+        <url-pattern>/create-bundle</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>
@@ -38,6 +54,6 @@
         </session-timeout>
     </session-config>
     <welcome-file-list>
-        <welcome-file>install</welcome-file>
+        <welcome-file>registries</welcome-file>
         </welcome-file-list>
 </web-app>

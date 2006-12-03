@@ -3,6 +3,7 @@ package org.netbeans.installer.infra.server.client.servlets;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -41,21 +42,32 @@ public class Install extends HttpServlet {
             "</jnlp>";
     
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-//        response.setContentType("application/x-java-jnlp-file");
-        response.setContentType("text/plain");
+        response.setContentType("application/x-java-jnlp-file");
+//        response.setContentType("text/plain");
         
-        String name = request.getParameter("registry");
-        if (name == null) {
-            name = "default";
+        String[] names = request.getParameterValues("registry");
+        if ((names == null) || (names.length == 0)) {
+            names = new String[]{"default"};
         }
         
-        String codebase = getServerUrl(request) + getServletContext().getContextPath();
-        String jnlp     = "install?registry=" + name;
+        String codebase = 
+                getServerUrl(request) + getServletContext().getContextPath();
         
-        String engine   = codebase + "/get-engine";
-        String registry = codebase + "/get-registry?registry=" + name;
+        String jnlp = "install?true=true";
+        for (String name: names) {
+            jnlp += "&registry=" + URLEncoder.encode(name, "UTF-8");
+        }
         
-        response.getWriter().write(StringUtils.format(JNLP_STUB, codebase, jnlp, engine, registry));
+        String engine   = codebase + "/get-engine.jar";
+        
+        String registry = "";
+        for (String name: names) {
+            registry += codebase + "/get-registry?registry=" + URLEncoder.encode(name, "UTF-8") + "\n";
+        }
+        registry = registry.trim();
+        
+        response.getWriter().write(
+                StringUtils.format(JNLP_STUB, codebase, jnlp, engine, registry));
         response.getWriter().close();
     }
     

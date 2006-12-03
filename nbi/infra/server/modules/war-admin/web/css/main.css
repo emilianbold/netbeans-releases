@@ -6,12 +6,19 @@ body {
     font-size:          12px;
 }
 
+p {
+    width:              700px;
+    margin:             0px 0px 10px 0px;
+    padding:            5px 10px 5px 10px;
+    background-color:   #fcfcfc;
+}
+
 div.top-menu {
     width:              700px;
     margin:             0px 0px 10px 0px;
     padding:            5px 10px 5px 10px;
     border:             1px solid #c0c0c0;
-    background-color:   #eeeeee;
+    background-color:   #fcfcfc;
 }
 
 select#registries-select {
@@ -72,7 +79,7 @@ table.registry td.children {
 div.pop-up {
     width:              500px;
     border:             1px solid black;
-    background-color:   #eeeeee;
+    background-color:   #fcfcfc;
     display:            none;
     padding:            50px 10px 50px 10px;
 }
