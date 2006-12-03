@@ -344,7 +344,15 @@ public final class FileUtils {
     }
     
     public static File createTempFile(File parent) throws IOException {
+        return createTempFile(parent, true);
+    }
+    
+    public static File createTempFile(File parent, boolean create) throws IOException {
         File file = File.createTempFile("nbi-", ".tmp", parent);
+        
+        if (!create) {
+            file.delete();
+        }
         
         file.deleteOnExit();
         
