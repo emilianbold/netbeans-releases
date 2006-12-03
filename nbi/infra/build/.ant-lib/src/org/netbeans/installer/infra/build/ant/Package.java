@@ -29,6 +29,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
+import java.util.zip.ZipOutputStream;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 import org.netbeans.installer.infra.build.ant.utils.AntUtils;
@@ -67,11 +68,13 @@ public class Package extends Task {
         
         String string       = null;
         
-        File   file         = new File(fileName);
-        File   directory    = new File(directoryName);
+        File file      = new File(fileName);
+        File directory = new File(directoryName);
         
+        JarOutputStream output = null;
         try {
-            JarOutputStream output = new JarOutputStream(new FileOutputStream(file));
+            output = new JarOutputStream(new FileOutputStream(file));
+            output.setLevel(9);
             
             log("browsing, packing, archiving directory");
             offset = directory.getCanonicalPath().length();
@@ -118,23 +121,24 @@ public class Package extends Task {
         for (File child: parent.listFiles()) {
             log("    visiting " + child);
             
-            String    childPath = child.getAbsolutePath();
-            String    childName = childPath.substring(offset + 1).replace('\\', '/');
+            String    path     = child.getAbsolutePath();
+            String    name     = path.substring(offset + 1).replace('\\', '/');
+            FileEntry entry    = null;
+            JarEntry  jarEntry = null;
             
-            FileEntry childEntry;
-            JarEntry  jarEntry;
             if (child.isDirectory()) {
-                childName = childName + "/";
-                childEntry = new FileEntry(child, childName);
+                log("        archiving directory: " + name);
                 
-                log("        archiving directory: " + childName);
-                output.putNextEntry(new JarEntry(childName));
+                name  = name + "/";
+                entry = new FileEntry(child, name);
+                
+                output.putNextEntry(new JarEntry(name));
                 
                 browse(child, output);
             } else {
-                childEntry = new FileEntry(child, childName);
+                entry = new FileEntry(child, name);
                 
-                if (childEntry.isJarFile() && !childEntry.isSignedJarFile()) {
+                if (entry.isJarFile() && !entry.isSignedJarFile()) {
                     File temp   = new File(child.getPath() + ".tmp");
                     File packed = new File(child.getPath() + ".pack.gz");
                     
@@ -144,21 +148,22 @@ public class Package extends Task {
                         child.delete();
                         temp.delete();
                         
-                        child     = packed;
-                        childName = packed.getPath().substring(offset + 1).replace('\\', '/');
+                        child = packed;
+                        name  = packed.getPath().
+                                substring(offset + 1).replace('\\', '/');
                         
-                        childEntry = new FileEntry(child, childName);
-                        childEntry.setPackedJarFile(true);
+                        entry = new FileEntry(child, name);
+                        entry.setPackedJarFile(true);
                     } else {
                         packed.delete();
                         temp.delete();
                     }
                 }
                 
-                log("        archiving file: " + childName);
-                jarEntry = new JarEntry(childName);
-                jarEntry.setTime(childEntry.getLastModified());
-                jarEntry.setSize(childEntry.getSize());
+                log("        archiving file: " + name);
+                jarEntry = new JarEntry(name);
+                jarEntry.setTime(entry.getLastModified());
+                jarEntry.setSize(entry.getSize());
                 output.putNextEntry(jarEntry);
                 
                 fis = new FileInputStream(child);
@@ -166,7 +171,7 @@ public class Package extends Task {
                 fis.close();
             }
             
-            entries.add(childEntry);
+            entries.add(entry);
         }
     }
     
