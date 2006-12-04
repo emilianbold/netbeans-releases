@@ -25,6 +25,7 @@ import java.nio.ByteOrder;
 import java.nio.CharBuffer;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
@@ -57,8 +58,8 @@ public class JavaFlyTokensTest extends NbTestCase {
         r.read(cb);
         cb.rewind();
         String text = cb.toString();
-        TokenHierarchy hi = TokenHierarchy.create(text, JavaTokenId.language());
-        TokenSequence ts = hi.tokenSequence();
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, JavaTokenId.language());
+        TokenSequence<? extends TokenId> ts = hi.tokenSequence();
         
         System.err.println("Flyweight tokens: " + LexerTestUtilities.flyweightTokenCount(ts)
                 + "\nTotal tokens: " + ts.tokenCount()

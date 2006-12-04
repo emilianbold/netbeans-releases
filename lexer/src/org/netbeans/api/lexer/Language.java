@@ -32,6 +32,8 @@ import org.netbeans.lib.lexer.LexerApiPackageAccessor;
 import org.netbeans.lib.lexer.LexerSpiPackageAccessor;
 import org.netbeans.lib.lexer.TokenIdSet;
 import org.netbeans.lib.lexer.TokenHierarchyOperation;
+import org.netbeans.lib.lexer.inc.TokenChangeInfo;
+import org.netbeans.lib.lexer.inc.TokenHierarchyEventInfo;
 import org.netbeans.lib.lexer.inc.TokenListChange;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 
@@ -404,7 +406,7 @@ public final class Language<T extends TokenId> {
         // List.get(0) is a Map[category, list-of-[category]].
         // List.get(1) is a Map[category1, Map[category2, list-of-[category1;category2]]].
         // etc.
-        List<Map<String,?>> catMapsList = new ArrayList<Map<String,?>>(4);
+        List<Map<String,Object>> catMapsList = new ArrayList<Map<String,Object>>(4);
         // All categories for a single token id
         List<String> idCats = new ArrayList<String>(4);
         for (T id : ids) {
@@ -431,9 +433,9 @@ public final class Language<T extends TokenId> {
      *
      * @param catMapsList non-null list of cached maps.
      *  <br/>
-     *  List.get(0) is a Map[category, list-of-[category]].
+     *  List.get(0) is a Map[category, list-containing-[category]].
      *  <br/>
-     *  List.get(1) is a Map[category1, Map[category2, list-of-[category1;category2]]].
+     *  List.get(1) is a Map[category1, Map[category2, list-containing-[category1;category2]]].
      *  <br/>
      *  etc.
      *
@@ -443,33 +445,35 @@ public final class Language<T extends TokenId> {
      * of all categories or 1 for returning non-primary categories.
      * @return non-null cached list of categories with contents equal to idCats.
      */
-    @SuppressWarnings("unchecked")
-    private static List<String> findCatList(List<Map<String,?>> catMapsList, List<String> idCats, int startIndex) {
+    private static List<String> findCatList(List<Map<String,Object>> catMapsList, List<String> idCats, int startIndex) {
         int size = idCats.size() - startIndex;
         if (size <= 0) {
             return Collections.emptyList();
         }
         while (catMapsList.size() < size) {
-            catMapsList.add(new HashMap<String,Map<String,?>>());
+            catMapsList.add(new HashMap<String,Object>());
         }
         // Find the catList as the last item in the cascaded search through the maps
-        Map<String,?> m = catMapsList.get(--size);
-        for (int i = startIndex; i < size; i++) { 
-            Map<String,Map> catMap = (Map<String,Map>)m.get(idCats.get(i));
+        Map<String,Object> m = catMapsList.get(--size);
+        for (int i = startIndex; i < size; i++) {
+            @SuppressWarnings("unchecked")
+            Map<String,Object> catMap = (Map<String,Object>)m.get(idCats.get(i));
             if (catMap == null) {
-                catMap = new HashMap<String,Map>();
-                ((Map<String,Map>)m).put(idCats.get(i), catMap);
+                catMap = new HashMap<String,Object>();
+//                Map<String,Map<String,Object>> 
+                m.put(idCats.get(i), catMap);
             }
             m = catMap;
         }
 
+        @SuppressWarnings("unchecked")
         List<String> catList = (List<String>)m.get(idCats.get(size));
         if (catList == null) {
             catList = new ArrayList<String>(idCats.size() - startIndex);
             catList.addAll((startIndex > 0)
                     ? idCats.subList(startIndex, idCats.size())
                     : idCats);
-            ((Map<String,List<String>>)m).put(idCats.get(size), catList);
+            m.put(idCats.get(size), catList);
         }
         return catList;
     }
@@ -507,7 +511,7 @@ public final class Language<T extends TokenId> {
     }
     
     public String toString() {
-        return "LH: " + languageHierarchy;
+        return mimeType + ", LH: " + languageHierarchy;
     }
     
     private void checkMemberId(T id) {
@@ -549,23 +553,33 @@ public final class Language<T extends TokenId> {
             return new Language<T>(languageHierarchy);
         }
         
-        public LanguageHierarchy languageHierarchy(
-        Language language) {
+        public <T extends TokenId> LanguageHierarchy<T> languageHierarchy(
+        Language<T> language) {
             return language.languageHierarchy();
         }
         
         public <I> TokenHierarchy<I> createTokenHierarchy(
-        TokenHierarchyOperation<I> tokenHierarchyOperation) {
+        TokenHierarchyOperation<I,?> tokenHierarchyOperation) {
             return new TokenHierarchy<I>(tokenHierarchyOperation);
         }
         
         public TokenHierarchyEvent createTokenChangeEvent(
-        TokenHierarchy tokenHierarchy, TokenListChange change) {
-            return new TokenHierarchyEvent(change);
+        TokenHierarchyEventInfo info) {
+            return new TokenHierarchyEvent(info);
         }
 
-        public TokenHierarchyOperation tokenHierarchyOperation(
-        TokenHierarchy tokenHierarchy) {
+        public <T extends TokenId> TokenChange<T> createTokenChange(
+        TokenChangeInfo<T> info) {
+            return new TokenChange<T>(info);
+        }
+        
+        public <T extends TokenId> TokenChangeInfo<T> tokenChangeInfo(
+        TokenChange<T> tokenChange) {
+            return tokenChange.info();
+        }
+        
+        public <I> TokenHierarchyOperation<I,?> tokenHierarchyOperation(
+        TokenHierarchy<I> tokenHierarchy) {
             return tokenHierarchy.operation();
         }
 

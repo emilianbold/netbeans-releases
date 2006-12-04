@@ -19,13 +19,23 @@
 
 package org.netbeans.lib.lexer;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
+import org.netbeans.lib.lexer.token.DefaultToken;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.lib.lexer.token.TextToken;
+import org.netbeans.spi.lexer.LanguageEmbedding;
+import org.netbeans.spi.lexer.TokenFactory;
 import org.netbeans.spi.lexer.TokenValidator;
+import org.openide.util.WeakListeners;
 
 /**
  * The operation behind the language hierarchy.
@@ -34,20 +44,91 @@ import org.netbeans.spi.lexer.TokenValidator;
  * @version 1.00
  */
 
-public final class LanguageOperation<T extends TokenId> {
+public final class LanguageOperation<T extends TokenId> implements PropertyChangeListener {
     
-    private static final Object NULL = new Object();
+    private static final int MAX_START_SKIP_LENGTH_CACHED = 10;
     
+    private static final int MAX_END_SKIP_LENGTH_CACHED = 10;
+    
+    private static final TokenValidator<TokenId> NULL_VALIDATOR
+            = new TokenValidator<TokenId>() {
+                public Token<TokenId> validateToken(Token<TokenId> token,
+                TokenFactory<TokenId> factory,
+                CharSequence tokenText, int modRelOffset,
+                int removedLength, CharSequence removedText,
+                int insertedLength, CharSequence insertedText) {
+                    return null;
+                }
+    };
+    
+    /**
+     * Find the language paths either for this language only
+     * or from TokenHierarchyOperation when adding a new default or custom embedding
+     * to the token hierarchy.
+     * <br/>
+     * As a language may finally be embedded in itself (e.g. someone might
+     * want to syntax color java code snippet embedded in javadoc)
+     * this method must prevent creation of infinite language paths
+     * by using exploredLanguages parameter.
+     * 
+     * @param existingLanguagePaths set of language paths that are already known.
+     *  This set is not modified by the method.
+     * @param newLanguagePaths newly discovered language paths will be added to this set.
+     * @param exploredLanguages used for checking whether the subpaths containing
+     *  this language were already discovered.
+     * @param lp language path that will be checked. It must contain the "language"
+     *  parameter as the most embedded language.
+     * @param language language which token ids will be checked whether they contain
+     *  default embeddings or not.
+     */
+    public static <T extends TokenId> void findLanguagePaths(
+    Set<LanguagePath> existingLanguagePaths, Set<LanguagePath> newLanguagePaths,
+    Set<Language<? extends TokenId>> exploredLanguages, LanguagePath lp,
+    Language<T> language) {
+        // Get the complete language path
+        if (!existingLanguagePaths.contains(lp)) {
+            newLanguagePaths.add(lp);
+        }
+        if (!exploredLanguages.contains(language)) {
+            exploredLanguages.add(language);
+            Set<T> ids = language.tokenIds();
+            for (T id : ids) {
+                // Create a fake empty token
+                DefaultToken<T> emptyToken = new DefaultToken<T>(id);
+                LanguageEmbedding<? extends TokenId> embedding
+                        = LexerUtilsConstants.findEmbedding(emptyToken, lp, null);
+                if (embedding != null) {
+                    LanguagePath elp = LanguagePath.get(lp, embedding.language());
+                    findLanguagePaths(existingLanguagePaths, newLanguagePaths,
+                            exploredLanguages, elp, embedding.language());
+                }
+            }
+        }
+    }
+    
+
     private LanguageHierarchy<T> languageHierarchy;
     
     private Language<T> language;
     
-    private Object[] tokenValidators;
+    /** Embeddings caached by start skip length and end skip length. */
+    private LanguageEmbedding<T>[][] cachedEmbeddings;
+    
+    private LanguageEmbedding<T>[][] cachedJoinSectionsEmbeddings;
+    
+    private TokenValidator<T>[] tokenValidators;
+    
+    private Set<LanguagePath> languagePaths;
+    
+    private Set<Language<? extends TokenId>> exploredLanguages;
     
     private FlyItem<T>[] flyItems;
     
     public LanguageOperation(LanguageHierarchy<T> languageHierarchy) {
         this.languageHierarchy = languageHierarchy;
+        // Listen on changes in language manager
+        LanguageManager.getInstance().addPropertyChangeListener(
+        WeakListeners.create(PropertyChangeListener.class, this, LanguageManager.getInstance()));
     }
     
     public LanguageHierarchy<T> languageHierarchy() {
@@ -76,20 +157,20 @@ public final class LanguageOperation<T extends TokenId> {
         return language;
     }
     
-    public synchronized TokenValidator tokenValidator(TokenId id) {
+    public synchronized TokenValidator<T> tokenValidator(T id) {
         if (tokenValidators == null) {
-            tokenValidators = new Object[language.maxOrdinal() + 1];
+            tokenValidators = allocateTokenValidatorArray(language.maxOrdinal() + 1);
         }
         // Not synced intentionally (no problem to create dup instances)
-        Object o = tokenValidators[id.ordinal()];
-        if (o == null) {
-            o = LexerSpiPackageAccessor.get().createTokenValidator(languageHierarchy(), id);
-            if (o == null) {
-                o = NULL;
+        TokenValidator<T> validator = tokenValidators[id.ordinal()];
+        if (validator == null) {
+            validator = LexerSpiPackageAccessor.get().createTokenValidator(languageHierarchy(), id);
+            if (validator == null) {
+                validator = nullValidator();
             }
-            tokenValidators[id.ordinal()] = o;
+            tokenValidators[id.ordinal()] = validator;
         }
-        return (o == NULL) ? null : (TokenValidator)o;
+        return (validator == nullValidator()) ? null : validator;
     }
     
     public synchronized TextToken<T> getFlyweightToken(T id, String text) {
@@ -127,6 +208,96 @@ public final class LanguageOperation<T extends TokenId> {
         }
         assert (token != null); // Should return non-null token
         return token;
+    }
+    
+    /**
+     * Get cached or create a new embedding with the language of this operation
+     * and the given start and end skip lengths.
+     * @return non-null embedding.
+     */
+    public synchronized LanguageEmbedding<T> getEmbedding(
+    int startSkipLength, int endSkipLength, boolean joinSections) {
+        LanguageEmbedding<T>[][] ce = joinSections ? cachedJoinSectionsEmbeddings : cachedEmbeddings;
+        if (ce == null || startSkipLength >= ce.length) {
+            if (startSkipLength > MAX_START_SKIP_LENGTH_CACHED)
+                return createEmbedding(startSkipLength, endSkipLength, joinSections);
+            @SuppressWarnings("unchecked")
+            LanguageEmbedding<T>[][] tmp = (LanguageEmbedding<T>[][])
+                    new LanguageEmbedding[startSkipLength + 1][];
+            if (ce != null)
+                System.arraycopy(ce, 0, tmp, 0, ce.length);
+            ce = tmp;
+            if (joinSections)
+                cachedJoinSectionsEmbeddings = ce;
+            else
+                cachedEmbeddings = ce;
+        }
+        LanguageEmbedding<T>[] byESL = ce[startSkipLength];
+        if (byESL == null || endSkipLength >= byESL.length) { // given endSkipLength not cached
+            if (endSkipLength > MAX_END_SKIP_LENGTH_CACHED)
+                return createEmbedding(startSkipLength, endSkipLength, joinSections);
+            @SuppressWarnings("unchecked")
+            LanguageEmbedding<T>[] tmp = (LanguageEmbedding<T>[])
+                    new LanguageEmbedding[endSkipLength + 1];
+            if (byESL != null)
+                System.arraycopy(byESL, 0, tmp, 0, byESL.length);
+            byESL = tmp;
+            ce[startSkipLength] = byESL;
+        }
+        LanguageEmbedding<T> e = byESL[endSkipLength];
+        if (e == null) {
+            e = createEmbedding(startSkipLength, endSkipLength, joinSections);
+            byESL[endSkipLength] = e;
+        }
+        return e;
+    }
+    
+    private LanguageEmbedding<T> createEmbedding(int startSkipLength, int endSkipLength, boolean joinSections) {
+        return LexerSpiPackageAccessor.get().createLanguageEmbedding(
+                language(), startSkipLength, endSkipLength, joinSections);
+    }
+    
+    /**
+     * Get static language paths for this language.
+     */
+    public Set<LanguagePath> languagePaths() {
+        Set<LanguagePath> lps;
+        synchronized (this) {
+            lps = languagePaths;
+        }
+        if (lps == null) {
+            lps = new HashSet<LanguagePath>();
+            Set<LanguagePath> existingLps = Collections.emptySet();
+            Set<Language<? extends TokenId>> exploredLangs = new HashSet<Language<? extends TokenId>>();
+            findLanguagePaths(existingLps, lps, exploredLangs, LanguagePath.get(language()), language());
+            synchronized (this) {
+                languagePaths = lps;
+                exploredLanguages = exploredLangs;
+            }
+        }
+        return lps;
+    }
+    
+    public Set<Language<? extends TokenId>> exploredLanguages() {
+        languagePaths(); // Init exploredLanguages
+        return exploredLanguages;
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        synchronized (this) {
+            languagePaths = null;
+            exploredLanguages = null;
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private final TokenValidator<T> nullValidator() {
+        return (TokenValidator<T>)NULL_VALIDATOR;
+    }
+
+    @SuppressWarnings("unchecked")
+    private final TokenValidator<T>[] allocateTokenValidatorArray(int length) {
+        return (TokenValidator<T>[]) new TokenValidator[length];
     }
 
     private static final class FlyItem<T extends TokenId> {

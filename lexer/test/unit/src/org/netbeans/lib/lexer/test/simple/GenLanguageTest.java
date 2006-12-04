@@ -45,8 +45,8 @@ public class GenLanguageTest extends TestCase {
 
     public void testTokenIds() {
         // Check that token ids are all present and correctly ordered
-        Language language  = GenLanguage.language();
-        Set ids = language.tokenIds();
+        Language<TokenId> language  = GenLanguage.language();
+        Set<TokenId> ids = language.tokenIds();
         assertTrue("Invalid ids.size() - expected " + IDS_SIZE, ids.size() == IDS_SIZE);
         
         TokenId[] idArray = {
@@ -66,14 +66,13 @@ public class GenLanguageTest extends TestCase {
         };
 
         // Check operations with ids
-        Collection testIds = Arrays.asList(idArray);
+        Collection<TokenId> testIds = Arrays.asList(idArray);
         LexerTestUtilities.assertCollectionsEqual("Ids do not match with test ones",
                 ids, testIds);
         
         // Check that ids.iterator() is ordered by ordinal
         int ind = 0;
-        for (Iterator it = ids.iterator(); it.hasNext();) {
-            TokenId id = (TokenId) it.next();
+        for (TokenId id : ids) {
             assertTrue("Token ids not sorted by ordinal at index=" + ind, id == idArray[ind]);
             ind++;
             assertSame(language.tokenId(id.name()), id);
@@ -153,7 +152,7 @@ public class GenLanguageTest extends TestCase {
                 language.tokenCategoryMembers("comment")
         );
                 
-        @SuppressWarnings("unchecked") List testIdCats
+        List<String> testIdCats
             = language.tokenCategories(GenLanguage.IDENTIFIER_ID);
         LexerTestUtilities.assertCollectionsEqual(
                 Arrays.asList(new String[] {
@@ -162,7 +161,7 @@ public class GenLanguageTest extends TestCase {
                 testIdCats
         );
 
-        @SuppressWarnings("unchecked") List testIdCats2
+        List<String> testIdCats2
             = language.tokenCategories(GenLanguage.PLUS_ID);
         LexerTestUtilities.assertCollectionsEqual(
                 Arrays.asList(new String[] {
@@ -174,7 +173,7 @@ public class GenLanguageTest extends TestCase {
 
 
         // Check Language.merge()
-        @SuppressWarnings("unchecked") Collection mergedIds
+        Collection<TokenId> mergedIds
                 = language.merge(
                     Arrays.asList(new TokenId[] { GenLanguage.IDENTIFIER_ID }),
                     language.merge(language.tokenCategoryMembers("comment"),

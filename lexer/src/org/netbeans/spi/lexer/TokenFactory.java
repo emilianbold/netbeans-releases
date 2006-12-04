@@ -59,9 +59,9 @@ public final class TokenFactory<T extends TokenId> {
             "" // empty skip token text NOI18N
         );
     
-    private final LexerInputOperation operation;
+    private final LexerInputOperation<T> operation;
     
-    TokenFactory(LexerInputOperation operation) {
+    TokenFactory(LexerInputOperation<T> operation) {
         this.operation = operation;
     }
 
@@ -150,8 +150,7 @@ public final class TokenFactory<T extends TokenId> {
             if (operation.tokenRecognized(text.length(), false)) { // Create preprocessed token
                 return new PreprocessedTextToken<T>(id, operation.tokenLength());
             } else if (operation.isFlyTokenAllowed()) {
-                @SuppressWarnings("unchecked") // NOI18N
-                LanguageOperation<T> langOp = (LanguageOperation<T>)operation.languageOperation();
+                LanguageOperation<T> langOp = operation.languageOperation();
                 return langOp.getFlyweightToken(id, text);
             } else { // return non-flyweight token
                 return new DefaultToken<T>(id, operation.tokenLength());

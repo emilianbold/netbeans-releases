@@ -249,8 +249,7 @@ public class TestRandomModify {
         junit.framework.TestCase.fail();
         TokenHierarchy hi = TokenHierarchy.get(doc);
         TokenHierarchy snapshot = hi.createSnapshot();
-        @SuppressWarnings("unchecked")
-        Language<TokenId> language = (Language<TokenId>)
+        Language<? extends TokenId> language = (Language<? extends TokenId>)
                 doc.getProperty(Language.class);
         TokenHierarchy batchMirror = TokenHierarchy.create(doc.getText(0, doc.getLength()), language);
         snapshots.add(new SnapshotDescription(snapshot, batchMirror));
@@ -303,11 +302,11 @@ public class TestRandomModify {
         doc.remove(0, doc.getLength());
     }
     
-    public final Language language() {
-        return (Language)doc.getProperty(Language.class);
+    public final Language<? extends TokenId> language() {
+        return (Language<? extends TokenId>)doc.getProperty(Language.class);
     }
     
-    public final void setLanguage(Language language) {
+    public final void setLanguage(Language<? extends TokenId> language) {
         doc.putProperty(Language.class, language);
     }
     
@@ -318,7 +317,7 @@ public class TestRandomModify {
     protected void checkConsistency() throws Exception {
         if (!isSkipLexerConsistencyCheck()) {
             if (isDebugHierarchy()) {
-                TokenHierarchy hi = TokenHierarchy.get(doc);
+                TokenHierarchy<?> hi = TokenHierarchy.get(doc);
                 if (hi != null) {
                     System.err.println("DEBUG hierarchy:\n" + hi.tokenSequence());
                 }
@@ -328,8 +327,8 @@ public class TestRandomModify {
             
             for (int i = 0; i < snapshots.size(); i++) {
                 SnapshotDescription sd = snapshots.get(i);
-                TokenHierarchy bm = sd.batchMirror();
-                TokenHierarchy s = sd.snapshot();
+                TokenHierarchy<?> bm = sd.batchMirror();
+                TokenHierarchy<?> s = sd.snapshot();
                 if (isDebugOperation()) {
                     System.err.println("Comparing snapshot " + i + " of " + snapshots.size());
                 }
@@ -342,9 +341,9 @@ public class TestRandomModify {
     
     private static final class SnapshotDescription {
         
-        private final TokenHierarchy snapshot;
+        private final TokenHierarchy<?> snapshot;
         
-        private final TokenHierarchy batchMirror;
+        private final TokenHierarchy<?> batchMirror;
         
         public SnapshotDescription(TokenHierarchy snapshot, TokenHierarchy batchMirror) {
             this.snapshot = snapshot;

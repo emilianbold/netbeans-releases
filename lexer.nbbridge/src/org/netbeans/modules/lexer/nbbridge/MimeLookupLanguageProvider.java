@@ -45,8 +45,9 @@ public final class MimeLookupLanguageProvider extends LanguageProvider {
         return (Language<? extends TokenId>)lookup.lookup(Language.class);
     }
 
-    public LanguageEmbedding findLanguageEmbedding(LanguagePath tokenLanguage, Token token, InputAttributes inputAttributes) {
-        Lookup lookup = MimeLookup.getLookup(MimePath.parse(tokenLanguage.mimePath()));
+    public LanguageEmbedding<? extends TokenId> findLanguageEmbedding(
+    Token<? extends TokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
+        Lookup lookup = MimeLookup.getLookup(MimePath.parse(languagePath.mimePath()));
         LanguagesEmbeddingMap map = lookup.lookup(LanguagesEmbeddingMap.class);
         return map == null ? null : map.getLanguageEmbeddingForTokenName(token.id().name());
     }

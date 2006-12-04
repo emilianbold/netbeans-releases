@@ -63,7 +63,7 @@ public class TextToken<T extends TokenId> extends AbstractToken<T> {
         this.text = text;
     }
     
-    private TextToken(T id, TokenList tokenList, int rawOffset, CharSequence text) {
+    private TextToken(T id, TokenList<T> tokenList, int rawOffset, CharSequence text) {
         super(id, tokenList, rawOffset);
         assert (text != null);
         this.text = text;
@@ -77,7 +77,7 @@ public class TextToken<T extends TokenId> extends AbstractToken<T> {
         return text;
     }
     
-    public final TextToken<T> createCopy(TokenList tokenList, int rawOffset) {
+    public final TextToken<T> createCopy(TokenList<T> tokenList, int rawOffset) {
         return new TextToken<T>(id(), tokenList, rawOffset, text());
     }
     

@@ -65,19 +65,10 @@ public class SimpleLanguageProvider extends LanguageProvider {
         }
     }
 
-    public LanguageEmbedding findLanguageEmbedding(LanguagePath tokenLanguage, Token token, InputAttributes inputAttributes) {
-        if ("text/x-simple-plain".equals(tokenLanguage.mimePath()) && token.id().name().equals("WORD")) {
-            return new LanguageEmbedding() {
-                public int endSkipLength() {
-                    return 0;
-                }
-                public Language<? extends TokenId> language() {
-                    return SimpleCharTokenId.language();
-                }
-                public int startSkipLength() {
-                    return 0;
-                }
-            };
+    public LanguageEmbedding<? extends TokenId> findLanguageEmbedding(
+    Token<? extends TokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
+        if ("text/x-simple-plain".equals(languagePath.mimePath()) && token.id().name().equals("WORD")) {
+            return LanguageEmbedding.create(SimpleCharTokenId.language(), 0, 0);
         } else {
             return null;
         }

@@ -19,8 +19,9 @@
 
 package org.netbeans.api.lexer;
 
+import org.netbeans.lib.lexer.LexerUtilsConstants;
 import org.netbeans.lib.lexer.TokenList;
-import org.netbeans.lib.lexer.inc.TokenListChange;
+import org.netbeans.lib.lexer.inc.TokenChangeInfo;
 
 /**
  * Token change describes modification on one level of a token hierarchy.
@@ -28,7 +29,7 @@ import org.netbeans.lib.lexer.inc.TokenListChange;
  * If there is only one token that was modified
  * and there was a language embedding in that token then
  * most of the embedded tokens can usually be retained.
- * This defines an embedded change accessible by {@link #embedded()}.
+ * This defines an embedded change accessible by {@link #embeddedChange(int)}.
  * <br/>
  * There may possibly be multiple levels of the embedded changes.
  *
@@ -38,42 +39,49 @@ import org.netbeans.lib.lexer.inc.TokenListChange;
 
 public final class TokenChange<T extends TokenId> {
     
-    private final TokenListChange tokenListChange;
+    private final TokenChangeInfo<T> info;
     
-    TokenChange(TokenListChange tokenListChange) {
-        this.tokenListChange = tokenListChange;
+    TokenChange(TokenChangeInfo<T> info) {
+        this.info = info;
     }
 
     /**
-     * Get embedded token change.
-     * <br/>
-     * If there is only one token that was modified
-     * and there was a language embedding in that token then
-     * there is possibility that the new token will be similar
-     * to the old one and the embedded tokens can be retained
-     * and just updated by another token change.
-     * <br/>
-     * In such case there will be an embedded token change.
+     * Get number of embedded changes contained in this change.
      *
-     * @return valid embedded token change or null if there
-     *  is no embedded token change.
+     * @return >=0 number of embedded changes.
      */
-    public TokenChange<? extends TokenId> embedded() {
-        return null; // TODO
+    public int embeddedChangeCount() {
+        return info.embeddedChanges().length;
+    }
+    
+    /**
+     * Get embedded change at the given index.
+     *
+     * @param index 0 &lt;= index &lt;= embeddedChangeCount() index of the embedded change.
+     * @return non-null embedded token change.
+     */
+    public TokenChange<? extends TokenId> embeddedChange(int index) {
+        return info.embeddedChanges()[index];
     }
 
     /**
-     * Get embedded token change of the given type
-     * only if it's of the given language.
+     * Get embedded token change of the given type.
      *
      * @return non-null token change or null if the embedded token change
      *  satisfies the condition <code>(embedded().language() == language)</code>.
      *  Null is returned otherwise.
      */
-    public <T extends TokenId> TokenChange<T> embedded(Language<T> language) {
-        @SuppressWarnings("unchecked")
-        TokenChange<T> e = (TokenChange<T>)embedded();
-        return (e != null && e.language() == language) ? e : null;
+    public <T extends TokenId> TokenChange<T> embeddedChange(Language<T> language) {
+        TokenChange<? extends TokenId>[] ecs = info.embeddedChanges();
+        for (int i = ecs.length - 1; i >= 0; i--) {
+            TokenChange<? extends TokenId> c = ecs[i];
+            if (c.language() == language) {
+                @SuppressWarnings("unchecked")
+                TokenChange<T> ec = (TokenChange<T>)c;
+                return ec;
+            }
+        }
+        return null;
     }
 
     /**
@@ -81,11 +89,7 @@ public final class TokenChange<T extends TokenId> {
      * used by tokens contained in this token change.
      */
     public Language<T> language() {
-        // No need to check as the token sequence should already
-        // be obtained originally for the inner language
-        @SuppressWarnings("unchecked") Language<T> l
-                = (Language<T>)languagePath().innerLanguage();
-        return l;
+        return LexerUtilsConstants.mostEmbeddedLanguage(languagePath());
     }
     
     /**
@@ -93,80 +97,32 @@ public final class TokenChange<T extends TokenId> {
      * in this token sequence (containing outer language levels as well).
      */
     public LanguagePath languagePath() {
-        return tokenListChange.languagePath();
+        return info.currentTokenList().languagePath();
     }
 
     /**
-     * Get start offset of the modification
-     * that caused this token change.
-     * <br/>
-     * For token hierarchy rebuilds this is the start offset
-     * of the area being rebuilt.
-     */
-    public int offset() {
-        return tokenListChange.offset();
-    }
-    
-    /**
-     * Get number of characters inserted by the text modification
-     * that caused this token change.
-     * <br/>
-     * For token hierarchy rebuilds this is the length
-     * of the area being rebuilt.
-     */
-    public int insertedLength() {
-        return tokenListChange.insertedLength();
-    }
-    
-    /**
-     * Get number of characters removed by the text modification
-     * that caused this token change.
-     * <br/>
-     * For token hierarchy rebuilds this is the length
-     * of the area being rebuilt.
-     */
-    public int removedLength() {
-        return tokenListChange.removedLength();
-    }
-    
-    /**
      * Get index of the first token being modified.
      */
-    public int tokenIndex() {
-        return tokenListChange.tokenIndex();
-    }
-    
-    /**
-     * Get number of tokens removed.
-     */
-    public int removedTokenCount() {
-        return tokenListChange.removedTokenList().tokenCount();
+    public int index() {
+        return info.index();
     }
     
     /**
      * Get offset of the first token that was modified.
      * <br/>
-     * The returned value is always equal or below the {@link #offset()} value.
-     * <br/>
-     * If there were any removed tokens then this is a start offset
-     * of the first removed token.
-     * <br/>
-     * If there were only added tokens (no removed tokens)
-     * then this is the start offset of the first added token.
+     * If there were any added/removed tokens then this is a start offset
+     * of the first added/removed token.
      */
-    public int modifiedTokensStartOffset() {
-        return tokenListChange.modifiedTokensStartOffset();
+    public int offset() {
+        return info.offset();
     }
     
     /**
-     * Get end offset of the last token that was removed
-     * (in the original offset space before the removal was done).
-     * <br/>
-     * If there were no removed tokens then the result of this method
-     * is equal to {@link #modifiedTokensStartOffset()}.
+     * Get number of removed tokens contained in this token change.
      */
-    public int removedTokensEndOffset() {
-        return tokenListChange.removedTokensEndOffset();
+    public int removedTokenCount() {
+        TokenList<? extends TokenId> rtl = info.removedTokenList();
+        return (rtl != null) ? rtl.tokenCount() : 0;
     }
     
     /**
@@ -182,26 +138,16 @@ public final class TokenChange<T extends TokenId> {
      *  or null if there were no removed tokens.
      */
     public TokenSequence<T> removedTokenSequence() {
-        return new TokenSequence<T>(tokenListChange.removedTokenList());
+        return new TokenSequence<T>(info.removedTokenList());
     }
  
     /**
      * Get number of the tokens added by this token change.
      */
     public int addedTokenCount() {
-        return tokenListChange.addedTokenCount();
+        return info.addedTokenCount();
     }
     
-    /**
-     * Get end offset of the last token that was added.
-     * <br/>
-     * If there were no added tokens then the result of this method
-     * is equal to {@link #modifiedTokensStartOffset()}.
-     */
-    public int addedTokensEndOffset() {
-        return tokenListChange.addedTokensEndOffset();
-    }
-
     /**
      * Get the token sequence that corresponds to the current state
      * of the token hierarchy.
@@ -210,18 +156,14 @@ public final class TokenChange<T extends TokenId> {
      * the token sequence at the corresponding embedded level.
      */
     public TokenSequence<T> currentTokenSequence() {
-        return new TokenSequence<T>(tokenListChange.currentTokenList());
-    }
-    
-    /**
-     * Get token hierarchy where this change occurred.
-     */
-    public TokenHierarchy<?> tokenHierarchy() {
-        return tokenListChange.tokenHierarchyOperation().tokenHierarchy();
+        return new TokenSequence<T>(info.currentTokenList());
     }
 
-    TokenListChange tokenListChange() {
-        return tokenListChange;
+    /**
+     * Used by package-private accessor.
+     */
+    TokenChangeInfo<T> info() {
+        return info;
     }
 
 }

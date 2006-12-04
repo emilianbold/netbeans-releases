@@ -238,40 +238,15 @@ public enum JavaTokenId implements TokenId {
             return new JavaLexer(info);
         }
 
-        protected LanguageEmbedding embedding(
-        Token<JavaTokenId> token, boolean tokenComplete,
-        LanguagePath languagePath, InputAttributes inputAttributes) {
+        protected LanguageEmbedding<? extends TokenId> embedding(
+        Token<JavaTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
             // Test language embedding in the block comment
             switch (token.id()) {
                 case JAVADOC_COMMENT:
-                    return new LanguageEmbedding() {
-                        public Language<? extends TokenId> language() {
-                            return JavadocTokenId.language();
-                        }
-                        
-                        public int startSkipLength() {
-                            return 3;
-                        }
-                        
-                        public int endSkipLength() {
-                            return 2;
-                        }
-                    };
+                    return LanguageEmbedding.create(JavadocTokenId.language(), 3, 2);
                 case STRING_LITERAL:
                 case STRING_LITERAL_INCOMPLETE:
-                    return new LanguageEmbedding() {
-                        public Language<? extends TokenId> language() {
-                            return JavaStringTokenId.language();
-                        }
-                        
-                        public int startSkipLength() {
-                            return 1;
-                        }
-                        
-                        public int endSkipLength() {
-                            return 1;
-                        }
-                    };
+                    return LanguageEmbedding.create(JavaStringTokenId.language(), 1, 1);
             }
             return null; // No embedding
         }

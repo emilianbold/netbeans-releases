@@ -22,11 +22,8 @@ package org.netbeans.lib.lexer.inc;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.lexer.LanguagePath;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenHierarchyEvent;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.lexer.LAState;
-import org.netbeans.lib.lexer.LexerSpiPackageAccessor;
-import org.netbeans.lib.lexer.TokenHierarchyOperation;
 import org.netbeans.lib.lexer.TokenList;
 import org.netbeans.lib.lexer.token.AbstractToken;
 
@@ -41,192 +38,48 @@ import org.netbeans.lib.lexer.token.AbstractToken;
  * @version 1.00
  */
 
-public final class TokenListChange {
+public final class TokenListChange<T extends TokenId> {
     
-    private static final AbstractToken[] EMPTY_TOKEN_ARRAY = new AbstractToken[0];
-
-    private SharedInfo sharedInfo;
-
-    private LanguagePath languagePath;
+    private final TokenChangeInfo<T> tokenChangeInfo;
     
-    private RemovedTokenList removedTokenList;
-    
-    private TokenList currentTokenList;
-    
-    private List<AbstractToken> addedTokens;
+    private List<AbstractToken<T>> addedTokens;
 
     private LAState laState;
 
-    /**
-     * Offset of the first removed token.
-     */
-    private int removedTokensOffset;
-    
-    private int addedTokenCount;
-
-    private int tokenIndex;
-
-    private int modifiedTokensStartOffset;
-
-    private int removedTokensEndOffset;
-
-    private int addedTokensEndOffset;
-    
     private int offsetGapIndex;
-
-    private TokenListChange child;
-
-
-    public TokenListChange(TokenHierarchyOperation tokenHierarchyOperation, TokenHierarchyEvent.Type type,
-    int offset, int removedLength, CharSequence removedText, int insertedLength) {
-        
-        // Initial checks
-        if (offset < 0) {
-            throw new IllegalArgumentException("offset=" + offset + " < 0"); // NOI18N
-        }
-        if (removedLength < 0) {
-            throw new IllegalArgumentException("removedLength=" + removedLength + " < 0"); // NOI18N
-        }
-        if (insertedLength < 0) {
-            throw new IllegalArgumentException("insertedLength=" + insertedLength + " < 0"); // NOI18N
-        }
-
-        sharedInfo = new SharedInfo(tokenHierarchyOperation, type, offset, removedLength, removedText, insertedLength);
-    }
-
-    public TokenListChange(TokenListChange parentChange) {
-        this.sharedInfo = parentChange.sharedInfo();
-        parentChange.setChild(this);
-    }
-
-    public TokenHierarchyOperation tokenHierarchyOperation() {
-        return sharedInfo.tokenHierarchyOperation();
+    
+    private int removedEndOffset;
+    
+    private int addedEndOffset;
+    
+    public TokenListChange(TokenList<T> tokenList) {
+        tokenChangeInfo = new TokenChangeInfo<T>(tokenList);
     }
     
-    public TokenHierarchyEvent.Type type() {
-        return sharedInfo.type();
-    }
-    
-    public int offset() {
-        return sharedInfo.offset();
-    }
-    
-    public int removedLength() {
-        return sharedInfo.removedLength();
-    }
-    
-    public CharSequence removedText() {
-        return sharedInfo.removedText();
-    }
-
-    public OriginalText originalText() {
-        return sharedInfo.originalText();
-    }
-    
-    public int insertedLength() {
-        return sharedInfo.insertedLength();
-    }
-    
-    public CharSequence insertedText() {
-        return null;
+    public TokenChangeInfo<T> tokenChangeInfo() {
+        return tokenChangeInfo;
     }
     
     public LanguagePath languagePath() {
-        return languagePath;
+        return tokenChangeInfo.currentTokenList().languagePath();
+    }
+
+    public int index() {
+        return tokenChangeInfo.index();
+    }
+
+    public void setIndex(int tokenIndex) {
+        tokenChangeInfo.setIndex(tokenIndex);
     }
     
-    public void setLanguagePath(LanguagePath languagePath) {
-        this.languagePath = languagePath;
+    public int offset() {
+        return tokenChangeInfo.offset();
+    }
+
+    public void setOffset(int offset) {
+        tokenChangeInfo.setOffset(offset);
     }
     
-    public int removedTokenCount() {
-        return removedTokenList.tokenCount();
-    }
-    
-    public int addedTokenCount() {
-        return addedTokenCount;
-    }
-
-    public void setAddedTokenCount(int addedTokenCount) {
-        this.addedTokenCount = addedTokenCount;
-    }
-    
-    public TokenList currentTokenList() {
-        return currentTokenList;
-    }
-    
-    public void setCurrentTokenList(TokenList tokenList) {
-        this.currentTokenList = tokenList;
-    }
-
-    public int tokenIndex() {
-        return tokenIndex;
-    }
-
-    public void setTokenIndex(int tokenIndex) {
-        this.tokenIndex = tokenIndex;
-    }
-    
-    public RemovedTokenList removedTokenList() {
-        return removedTokenList;
-    }
-    
-    public void initRemovedTokenList(Object[] removedTokensOrBranches) {
-        removedTokenList = new RemovedTokenList(this, removedTokensOrBranches);
-    }
-    
-    public void addToken(AbstractToken token, int lookahead, Object state) {
-        if (addedTokens == null) {
-            addedTokens = new ArrayList<AbstractToken>(2);
-            laState = LAState.empty();
-        }
-        addedTokens.add(token);
-        laState = laState.add(lookahead, state);
-    }
-    
-    public List<AbstractToken> addedTokens() {
-        return addedTokens;
-    }
-
-    public LAState laState() {
-        return laState;
-    }
-
-    public void clearAddedTokens() {
-        addedTokens = null;
-        laState = null;
-    }
-
-    public void noChange(TokenList tokenList) {
-        this.currentTokenList = tokenList;
-        this.removedTokenList = new RemovedTokenList(this, EMPTY_TOKEN_ARRAY);
-        setTokenIndex(-1);
-    }
-
-    public int modifiedTokensStartOffset() {
-        return modifiedTokensStartOffset;
-    }
-
-    public void setModifiedTokensStartOffset(int modifiedTokensStartOffset) {
-        this.modifiedTokensStartOffset = modifiedTokensStartOffset;
-    }
-
-    public int removedTokensEndOffset() {
-        return removedTokensEndOffset;
-    }
-
-    public void setRemovedTokensEndOffset(int removedTokensEndOffset) {
-        this.removedTokensEndOffset = removedTokensEndOffset;
-    }
-
-    public int addedTokensEndOffset() {
-        return addedTokensEndOffset;
-    }
-
-    public void setAddedTokensEndOffset(int addedTokensEndOffset) {
-        this.addedTokensEndOffset = addedTokensEndOffset;
-    }
-
     public int offsetGapIndex() {
         return offsetGapIndex;
     }
@@ -235,89 +88,46 @@ public final class TokenListChange {
         this.offsetGapIndex = offsetGapIndex;
     }
 
-    public TokenListChange child() {
-        return child;
+    public void addToken(AbstractToken<T> token, int lookahead, Object state) {
+        if (addedTokens == null) {
+            addedTokens = new ArrayList<AbstractToken<T>>(2);
+            laState = LAState.empty();
+        }
+        addedTokens.add(token);
+        laState = laState.add(lookahead, state);
+    }
+    
+    public List<AbstractToken<T>> addedTokens() {
+        return addedTokens;
+    }
+    
+    public void syncAddedTokenCount() {
+        tokenChangeInfo.setAddedTokenCount(addedTokens.size());
     }
 
-    void setChild(TokenListChange child) {
-        assert (this.child == null);
-        this.child = child;
+    public void setRemovedTokens(Object[] removedTokensOrBranches) {
+        tokenChangeInfo.setRemovedTokenList(new RemovedTokenList<T>(
+                languagePath(), removedTokensOrBranches));
     }
-
-    SharedInfo sharedInfo() {
-        return sharedInfo;
+    
+    public int removedEndOffset() {
+        return removedEndOffset;
     }
-
-
-
-    private static final class SharedInfo {
-
-        private final TokenHierarchyOperation tokenHierarchyOperation;
-        
-        private final TokenHierarchyEvent.Type type;
-        
-        private final int offset;
-        
-        private final int removedLength;
-        
-        private final CharSequence removedText;
-        
-        private final int insertedLength;
-        
-        private OriginalText originalText;
-
-        SharedInfo(TokenHierarchyOperation tokenHierarchyOperation, TokenHierarchyEvent.Type type,
-        int offset, int removedLength, CharSequence removedText, int insertedLength) {
-            this.tokenHierarchyOperation = tokenHierarchyOperation;
-            this.type = type;
-            this.offset = offset;
-            this.removedLength = removedLength;
-            this.removedText = removedText;
-            this.insertedLength = insertedLength;
-        }
-
-        public TokenHierarchyOperation tokenHierarchyOperation() {
-            return tokenHierarchyOperation;
-        }
-        
-        public TokenHierarchyEvent.Type type() {
-            return type;
-        }
-        
-        public int offset() {
-            return offset;
-        }
-        
-        public int removedLength() {
-            return removedLength;
-        }
-        
-        public CharSequence removedText() {
-            return removedText;
-        }
-        
-        public int insertedLength() {
-            return insertedLength;
-        }
-        
-        public OriginalText originalText() {
-            if (originalText == null) {
-                if (removedLength != 0 && removedText == null) {
-                    throw new IllegalStateException("Cannot obtain removed text for " // NOI18N
-                            + tokenHierarchyOperation.mutableInputSource()
-                            + " which breaks token snapshots operation and" // NOI18N
-                            + " token text retaining after token's removal." // NOI18N
-                            + " Valid removedText in TokenHierarchyControl.textModified()" // NOI18N
-                            + " should be provided." // NOI18N
-                            );
-                }
-                originalText = new OriginalText(
-                        LexerSpiPackageAccessor.get().text(tokenHierarchyOperation.mutableTextInput()),
-                        offset, removedText, insertedLength
-                        );
-            }
-            return originalText;
-        }
- }
+    
+    public void setRemovedEndOffset(int removedEndOffset) {
+        this.removedEndOffset = removedEndOffset;
+    }
+    
+    public int addedEndOffset() {
+        return addedEndOffset;
+    }
+    
+    public void setAddedEndOffset(int addedEndOffset) {
+        this.addedEndOffset = addedEndOffset;
+    }
+    
+    public LAState laState() {
+        return laState;
+    }
 
 }

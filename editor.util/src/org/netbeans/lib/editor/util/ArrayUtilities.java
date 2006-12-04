@@ -19,6 +19,10 @@
 
 package org.netbeans.lib.editor.util;
 
+import java.util.AbstractList;
+import java.util.List;
+import java.util.RandomAccess;
+
 /**
  * Utility methods related to arrays.
  *
@@ -183,6 +187,18 @@ public final class ArrayUtilities {
         sb.append("]: ");
     }
     
+    /**
+     * Return unmodifiable list for the given array.
+     * <br/>
+     * Unlike <code>Collections.unmodifiableList()</code> this method
+     * does not use any extra wrappers etc.
+     *
+     * @since 1.14
+     */
+    public static <E> List<E> unmodifiableList(E[] array) {
+        return new UnmodifiableList<E>(array);
+    }
+    
     public static String toString(Object[] array) {
         StringBuilder sb = new StringBuilder();
         int maxDigitCount = digitCount(array.length);
@@ -203,6 +219,47 @@ public final class ArrayUtilities {
             sb.append('\n');
         }
         return sb.toString();
+    }
+    
+    private static final class UnmodifiableList<E> extends AbstractList<E>
+    implements RandomAccess {
+        
+        private E[] array;
+        
+        UnmodifiableList(E[] array) {
+            this.array = array;
+        }
+        
+        public E get(int index) {
+            if (index >= 0 && index < array.length) {
+                return array[index];
+            } else {
+                throw new IndexOutOfBoundsException("index = " + index + ", size = " + array.length); //NOI18N
+            }
+        }
+        
+        public int size() {
+            return array.length;
+        }
+        
+
+        public Object[] toArray() {
+            return array.clone();
+        }
+        
+        public <T> T[] toArray(T[] a) {
+            if (a.length < array.length) {
+                @SuppressWarnings("unchecked")
+                T[] aa = (T[])java.lang.reflect.Array.
+                        newInstance(a.getClass().getComponentType(), array.length);
+                a = aa;
+            }
+            System.arraycopy(array, 0, a, 0, array.length);
+            if (a.length > array.length)
+                a[array.length] = null;
+            return a;
+        }
+
     }
 
 }

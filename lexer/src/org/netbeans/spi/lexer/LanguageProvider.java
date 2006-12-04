@@ -80,7 +80,7 @@ public abstract class LanguageProvider {
      * embedded in a given token.
      * 
      * <p>If a <code>Token</code> contains text in a different language that could
-     * further be used for lexing this <code>Token</code> the framework will try
+     * further be used for lexing of this <code>Token</code> the framework will try
      * to find out the <code>Language</code> of that language by asking
      * the <code>Token</code>'s own <code>Language</code> first and then
      * by consulting registered <code>LanguageProvider</code>s. The <code>LanguageProvider</code>s
@@ -88,11 +88,10 @@ public abstract class LanguageProvider {
      * care about and <code>null</code> for the rest. The first non-null
      * <code>LanguageEmbedding</code> found will be used.
      * 
-     * 
-     * @param tokenLanguage The <code>LanguagePath</code> of the token, which
-     *   embedded language should be returned.
      * @param token The <code>Token</code> to get the <code>Language</code>
      *   for.
+     * @param languagePath The <code>LanguagePath</code> of the token, which
+     *   embedded language should be returned.
      * @param inputAttributes The attributes that could affect the creation of
      *   the embedded <code>Language</code>. It may be <code>null</code>
      *   if there are no extra attributes.
@@ -101,8 +100,8 @@ public abstract class LanguageProvider {
      *   or <code>null</code> if the token can't embedd any language
      *   or the token is unknown to this <code>LanguageProvider</code>.
      */
-    public abstract LanguageEmbedding findLanguageEmbedding(
-    LanguagePath tokenLanguage, Token token, InputAttributes inputAttributes);
+    public abstract LanguageEmbedding<? extends TokenId> findLanguageEmbedding(
+    Token<? extends TokenId> token, LanguagePath languagePath, InputAttributes inputAttributes);
     
     /**
      * Add a listener for change notifications.

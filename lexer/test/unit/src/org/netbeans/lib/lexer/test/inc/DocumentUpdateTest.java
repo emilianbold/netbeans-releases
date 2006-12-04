@@ -15,6 +15,7 @@ package org.netbeans.lib.lexer.test.inc;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
@@ -40,11 +41,11 @@ public class DocumentUpdateTest extends NbTestCase {
         
         d.insertString(0, "\"\\t\\b\\t test\"", null);
         
-        TokenHierarchy h = TokenHierarchy.get(d);
+        TokenHierarchy<?> h = TokenHierarchy.get(d);
         
         h.tokenSequence().tokenCount();
         
-        TokenSequence s = h.tokenSequence();
+        TokenSequence<? extends TokenId> s = h.tokenSequence();
         
         assertTrue(s.moveNext());
         
@@ -60,11 +61,11 @@ public class DocumentUpdateTest extends NbTestCase {
         
         d.insertString(0, "\"\\t\\b\\b\\t sfdsffffffffff\"", null);
         
-        TokenHierarchy h = TokenHierarchy.get(d);
+        TokenHierarchy<?> h = TokenHierarchy.get(d);
         
         h.tokenSequence().tokenCount();
         
-        TokenSequence s = h.tokenSequence();
+        TokenSequence<? extends TokenId> s = h.tokenSequence();
         
         assertTrue(s.moveNext());
         
@@ -80,11 +81,11 @@ public class DocumentUpdateTest extends NbTestCase {
         
         d.insertString(0, "\"t\"", null);
         
-        TokenHierarchy h = TokenHierarchy.get(d);
+        TokenHierarchy<?> h = TokenHierarchy.get(d);
         
         h.tokenSequence().tokenCount();
         
-        TokenSequence s = h.tokenSequence();
+        TokenSequence<? extends TokenId> s = h.tokenSequence();
         
         assertTrue(s.moveNext());
         
@@ -100,7 +101,7 @@ public class DocumentUpdateTest extends NbTestCase {
         
         assertTrue(s.moveNext());
         
-        TokenSequence e = s.embedded();
+        TokenSequence<? extends TokenId> e = s.embedded();
         
         assertNotNull(e);
         

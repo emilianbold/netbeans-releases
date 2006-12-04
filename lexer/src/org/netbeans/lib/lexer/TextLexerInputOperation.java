@@ -19,7 +19,6 @@
 
 package org.netbeans.lib.lexer;
 
-import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.lib.lexer.token.AbstractToken;
@@ -31,7 +30,7 @@ import org.netbeans.lib.lexer.token.AbstractToken;
  * @version 1.00
  */
 
-public class TextLexerInputOperation extends LexerInputOperation {
+public class TextLexerInputOperation<T extends TokenId> extends LexerInputOperation<T> {
 
     /**
      * Input text from which the reading of characters is done.
@@ -46,11 +45,11 @@ public class TextLexerInputOperation extends LexerInputOperation {
     private int readEndIndex;
     
 
-    public TextLexerInputOperation(TokenList tokenList, CharSequence inputText) {
+    public TextLexerInputOperation(TokenList<T> tokenList, CharSequence inputText) {
         this(tokenList, 0, null, inputText, 0, 0, inputText.length());
     }
 
-    public TextLexerInputOperation(TokenList tokenList, int tokenIndex,
+    public TextLexerInputOperation(TokenList<T> tokenList, int tokenIndex,
     Object lexerRestartState, CharSequence inputText, int inputTextStartOffset,
     int startOffset, int endOffset) {
         super(tokenList, tokenIndex, lexerRestartState);
@@ -79,7 +78,7 @@ public class TextLexerInputOperation extends LexerInputOperation {
         return inputText.charAt(tokenStartIndex() + index);
     }
 
-    public void approveToken(AbstractToken token) {
+    public void approveToken(AbstractToken<T> token) {
         int tokenLength = tokenLength();
         if (isSkipToken(token)) {
             preventFlyToken();

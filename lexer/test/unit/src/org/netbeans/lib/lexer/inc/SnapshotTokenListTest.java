@@ -15,6 +15,7 @@ package org.netbeans.lib.lexer.inc;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
@@ -42,8 +43,8 @@ public class SnapshotTokenListTest extends NbTestCase {
         
         d.insertString(0, "ident ident /** @see X */", null);
         
-        TokenHierarchy h = TokenHierarchy.get(d).createSnapshot();
-        TokenSequence ts = h.tokenSequence();
+        TokenHierarchy<?> h = TokenHierarchy.get(d).createSnapshot();
+        TokenSequence<? extends TokenId> ts = h.tokenSequence();
         
         LexerTestUtilities.assertNextTokenEquals(ts, SimpleTokenId.IDENTIFIER, "ident");
         assertEquals(0, ts.offset());
@@ -60,7 +61,7 @@ public class SnapshotTokenListTest extends NbTestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, SimpleTokenId.JAVADOC_COMMENT, "/** @see X */");
         assertEquals(12, ts.offset());
         
-        TokenSequence inner = ts.embedded();
+        TokenSequence<? extends TokenId> inner = ts.embedded();
         
         assertNotNull(inner);
         

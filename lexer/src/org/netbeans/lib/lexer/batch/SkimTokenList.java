@@ -21,10 +21,11 @@ package org.netbeans.lib.lexer.batch;
 
 import java.util.Set;
 import org.netbeans.api.lexer.LanguagePath;
-import org.netbeans.lib.lexer.BranchTokenList;
+import org.netbeans.lib.lexer.EmbeddingContainer;
 import org.netbeans.lib.lexer.TokenList;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.TokenId;
+import org.netbeans.lib.lexer.TokenHierarchyOperation;
 import org.netbeans.lib.lexer.token.AbstractToken;
 
 /**
@@ -42,22 +43,22 @@ import org.netbeans.lib.lexer.token.AbstractToken;
  * @version 1.00
  */
 
-public final class SkimTokenList implements TokenList {
+public final class SkimTokenList<T extends TokenId> implements TokenList<T> {
     
-    private CopyTextTokenList tokenList;
+    private CopyTextTokenList<T> tokenList;
     
     private int startOffset;
     
     private char[] text;
     
     
-    public SkimTokenList(CopyTextTokenList tokenList, int startOffset, char[] text) {
+    public SkimTokenList(CopyTextTokenList<T> tokenList, int startOffset, char[] text) {
         this.tokenList = tokenList;
         this.startOffset = startOffset;
         this.text = text;
     }
 
-    public CopyTextTokenList getTokenList() {
+    public CopyTextTokenList<T> getTokenList() {
         return tokenList;
     }
     
@@ -86,13 +87,13 @@ public final class SkimTokenList implements TokenList {
         return 0;
     }
 
-    public Object tokenOrBranch(int index) {
-        return tokenList.tokenOrBranch(index);
+    public Object tokenOrEmbeddingContainer(int index) {
+        return tokenList.tokenOrEmbeddingContainer(index);
     }
     
-    public <T extends TokenId> AbstractToken<T> createNonFlyToken(
+    public AbstractToken<T> replaceFlyToken(
     int index, AbstractToken<T> flyToken, int offset) {
-        return tokenList.createNonFlyToken(index, flyToken, offset);
+        return tokenList.replaceFlyToken(index, flyToken, offset);
     }
     
 
@@ -116,16 +117,20 @@ public final class SkimTokenList implements TokenList {
         return tokenList.tokenCountCurrent();
     }
 
-    public TokenList root() {
+    public TokenList<? extends TokenId> root() {
         return tokenList.root();
     }
 
+    public TokenHierarchyOperation<?,? extends TokenId> tokenHierarchyOperation() {
+        return tokenList.tokenHierarchyOperation();
+    }
+    
     public LanguagePath languagePath() {
         return tokenList.languagePath();
     }
 
-    public void wrapToken(int index, BranchTokenList wrapper) {
-        tokenList.wrapToken(index, wrapper);
+    public void wrapToken(int index, EmbeddingContainer embeddingContainer) {
+        tokenList.wrapToken(index, embeddingContainer);
     }
 
     public InputAttributes inputAttributes() {
@@ -136,7 +141,7 @@ public final class SkimTokenList implements TokenList {
         return tokenList.isContinuous();
     }
 
-    public Set<? extends TokenId> skipTokenIds() {
+    public Set<T> skipTokenIds() {
         return tokenList.skipTokenIds();
     }
 

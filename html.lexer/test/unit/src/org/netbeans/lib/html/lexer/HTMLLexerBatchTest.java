@@ -22,6 +22,7 @@ package org.netbeans.lib.html.lexer;
 import junit.framework.TestCase;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
 
@@ -47,8 +48,8 @@ public class HTMLLexerBatchTest extends TestCase {
     public void testJspTags() {
         String text = "<jsp:useBean name=\"pkg.myBean\"/><!--comment-->abc&gt;def<tag attr=\"value\"></tag>";
                 
-        TokenHierarchy hi = TokenHierarchy.create(text, HTMLTokenId.language());
-        TokenSequence ts = hi.tokenSequence();
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, HTMLTokenId.language());
+        TokenSequence<? extends TokenId> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, HTMLTokenId.TAG_OPEN_SYMBOL, "<");
         LexerTestUtilities.assertNextTokenEquals(ts, HTMLTokenId.TAG_OPEN, "jsp:useBean");
         LexerTestUtilities.assertNextTokenEquals(ts, HTMLTokenId.WS, " ");

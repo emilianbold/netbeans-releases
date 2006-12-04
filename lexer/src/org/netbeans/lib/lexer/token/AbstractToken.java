@@ -23,10 +23,9 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
-import org.netbeans.lib.lexer.BranchTokenList;
+import org.netbeans.lib.lexer.EmbeddedTokenList;
 import org.netbeans.lib.lexer.LexerApiPackageAccessor;
 import org.netbeans.lib.lexer.TokenList;
-import org.netbeans.lib.lexer.inc.IncTokenList;
 
 /**
  * Abstract token is base class of all token implementations used in the lexer module.
@@ -39,7 +38,7 @@ public abstract class AbstractToken<T extends TokenId> extends Token<T> implemen
     
     private final T id; // 12 bytes (8-super + 4)
 
-    private TokenList tokenList; // 16 bytes
+    private TokenList<T> tokenList; // 16 bytes
     
     private int rawOffset; // 20 bytes
 
@@ -51,7 +50,7 @@ public abstract class AbstractToken<T extends TokenId> extends Token<T> implemen
         this.id = id;
     }
     
-    AbstractToken(T id, TokenList tokenList, int rawOffset) {
+    AbstractToken(T id, TokenList<T> tokenList, int rawOffset) {
         this.id = id;
         this.tokenList = tokenList;
         this.rawOffset = rawOffset;
@@ -73,8 +72,8 @@ public abstract class AbstractToken<T extends TokenId> extends Token<T> implemen
      */
     public CharSequence text() {
         if (tokenList != null) {
-            if (tokenList.getClass() == BranchTokenList.class) {
-                ((BranchTokenList)tokenList).updateStartOffset();
+            if (tokenList.getClass() == EmbeddedTokenList.class) {
+                ((EmbeddedTokenList)tokenList).updateStartOffset();
             }
             return this;
         } else {
@@ -85,14 +84,14 @@ public abstract class AbstractToken<T extends TokenId> extends Token<T> implemen
     /**
      * Get token list to which this token delegates its operation.
      */
-    public final TokenList tokenList() {
+    public final TokenList<T> tokenList() {
         return tokenList;
     }
 
     /**
      * Release this token from being attached to its parent token list.
      */
-    public final void setTokenList(TokenList tokenList) {
+    public final void setTokenList(TokenList<T> tokenList) {
         this.tokenList = tokenList;
     }
 
@@ -126,7 +125,7 @@ public abstract class AbstractToken<T extends TokenId> extends Token<T> implemen
         return false;
     }
 
-    public final int offset(TokenHierarchy tokenHierarchy) {
+    public final int offset(TokenHierarchy<?> tokenHierarchy) {
         if (rawOffset == -1) { // flyweight token
             return -1;
         }

@@ -19,6 +19,7 @@
 
 package org.netbeans.lib.lexer.inc;
 
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.lexer.LexerInputOperation;
 import org.netbeans.lib.lexer.TokenList;
 
@@ -29,7 +30,7 @@ import org.netbeans.lib.lexer.TokenList;
  * @version 1.00
  */
 
-public interface MutableTokenList extends TokenList {
+public interface MutableTokenList<T extends TokenId> extends TokenList<T> {
 
     /**
      * Return token or branch token list at the requested index
@@ -38,12 +39,12 @@ public interface MutableTokenList extends TokenList {
      * Also do not perform any checks regarding index validity
      * - only items below {@link #tokenCountCurrent()} will be requested.
      */
-    Object tokenOrBranchUnsync(int index);
+    Object tokenOrEmbeddingContainerUnsync(int index);
     
     /**
      * Create lexer input operation used for relexing of the input.
      */
-    LexerInputOperation createLexerInputOperation(
+    LexerInputOperation<T> createLexerInputOperation(
     int tokenIndex, int relexOffset, Object relexState);
     
     /**
@@ -57,6 +58,7 @@ public interface MutableTokenList extends TokenList {
     /**
      * Update the token list by replacing tokens according to the given change.
      */
-    void replaceTokens(TokenListChange change, int removeTokenCount);
+    void replaceTokens(TokenHierarchyEventInfo eventInfo,
+    TokenListChange<T> change, int removeTokenCount);
     
 }

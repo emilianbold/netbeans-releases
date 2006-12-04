@@ -25,6 +25,7 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.lib.lexer.LexerInputOperation;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.TokenId;
+import org.netbeans.lib.lexer.TokenHierarchyOperation;
 
 
 /**
@@ -36,20 +37,20 @@ import org.netbeans.api.lexer.TokenId;
  * @version 1.00
  */
 
-public final class CopyTextTokenList extends BatchTokenList {
+public final class CopyTextTokenList<T extends TokenId> extends BatchTokenList<T> {
     
     /** Either reader or char sequence */
     private final Object input;
     
-    public CopyTextTokenList(Reader inputReader,
-    Language<? extends TokenId> language, Set<? extends TokenId> skipTokenIds, InputAttributes inputAttributes) {
-        super(language, skipTokenIds, inputAttributes);
+    public CopyTextTokenList(TokenHierarchyOperation<?,T> tokenHierarchyOperation, Reader inputReader,
+    Language<T> language, Set<T> skipTokenIds, InputAttributes inputAttributes) {
+        super(tokenHierarchyOperation, language, skipTokenIds, inputAttributes);
         this.input = inputReader;
     }
     
-    public CopyTextTokenList(CharSequence inputText,
-    Language<? extends TokenId> language, Set<? extends TokenId> skipTokenIds, InputAttributes inputAttributes) {
-        super(language, skipTokenIds, inputAttributes);
+    public CopyTextTokenList(TokenHierarchyOperation<?,T> tokenHierarchyOperation, CharSequence inputText,
+    Language<T> language, Set<T> skipTokenIds, InputAttributes inputAttributes) {
+        super(tokenHierarchyOperation, language, skipTokenIds, inputAttributes);
         this.input = inputText;
     }
     
@@ -69,10 +70,10 @@ public final class CopyTextTokenList extends BatchTokenList {
         throw new IllegalStateException("Should never be called"); // NOI18N
     }
 
-    protected LexerInputOperation createLexerInputOperation() {
+    protected LexerInputOperation<T> createLexerInputOperation() {
         return (input instanceof Reader)
-            ? new SkimLexerInputOperation(this, (Reader)input)
-            : new SkimLexerInputOperation(this, (CharSequence)input);
+            ? new SkimLexerInputOperation<T>(this, (Reader)input)
+            : new SkimLexerInputOperation<T>(this, (CharSequence)input);
     }
 
 }

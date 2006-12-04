@@ -109,7 +109,7 @@ public final class TokenHierarchy<I> { // "I" stands for mutable input source
     CharSequence inputText, boolean copyInputText,
     Language<T> language, Set<T> skipTokenIds, InputAttributes inputAttributes) {
 
-        return new TokenHierarchyOperation<Void>(inputText, copyInputText,
+        return new TokenHierarchyOperation<Void,T>(inputText, copyInputText,
                 language, skipTokenIds, inputAttributes).tokenHierarchy();
     }
 
@@ -139,14 +139,14 @@ public final class TokenHierarchy<I> { // "I" stands for mutable input source
     Reader inputReader,
     Language<T> language, Set<T> skipTokenIds, InputAttributes inputAttributes) {
 
-        return new TokenHierarchyOperation<Void>(inputReader,
+        return new TokenHierarchyOperation<Void,T>(inputReader,
                 language, skipTokenIds, inputAttributes).tokenHierarchy();
     }
     
 
-    private TokenHierarchyOperation<I> operation;
+    private TokenHierarchyOperation<I,?> operation;
 
-    TokenHierarchy(TokenHierarchyOperation<I> operation) {
+    TokenHierarchy(TokenHierarchyOperation<I,?> operation) {
         this.operation = operation;
     }
 
@@ -159,8 +159,9 @@ public final class TokenHierarchy<I> { // "I" stands for mutable input source
      * @return non-null token sequence of the top level of the token hierarchy.
      */
     public TokenSequence<? extends TokenId> tokenSequence() {
-        @SuppressWarnings("unchecked") TokenSequence<? extends TokenId> ts
-                = new TokenSequence(operation.checkedTokenList());
+        @SuppressWarnings("unchecked")
+        TokenSequence<? extends TokenId> ts = new TokenSequence<TokenId>(
+                (TokenList<TokenId>)operation.checkedTokenList());
         return ts;
     }
 
@@ -174,25 +175,32 @@ public final class TokenHierarchy<I> { // "I" stands for mutable input source
      *
      */
     public <T extends TokenId> TokenSequence<T> tokenSequence(Language<T> language) {
-        TokenList tokenList = operation.checkedTokenList();
-        @SuppressWarnings("unchecked") TokenSequence<T> ts
+        TokenList<? extends TokenId> tokenList = operation.checkedTokenList();
+        @SuppressWarnings("unchecked")
+        TokenSequence<T> ts
                 = (tokenList.languagePath().topLanguage() == language)
-                    ? new TokenSequence(tokenList)
+                    ? new TokenSequence<T>((TokenList<T>)tokenList)
                     : null;
         return ts;
     }
     
     /**
-     * Whether this provider supports token changes (upon change of the underlying
-     * text input) or not.
+     * Get a set of language paths used by this token hierarchy.
      * <br/>
-     * If changes are not supported then it has no sense
-     * to attach token change listeners (though it's allowed)
-     * as they would never be fired.
-     * <br/>
-     * Token hierarchy snapshots do not fire token change events.
+     * The set includes "static" paths that are those reachable by traversing
+     * token ids of the top language and searching for the default embeddings
+     * that could be created by
+     * {@link org.netbeans.spi.lexer.LanguageHierarchy#embedding(Token,LanguagePath,InputAttributes)}.
+     * 
+     */
+    public Set<LanguagePath> languagePaths() {
+        return operation.languagePaths();
+    }
+
+    /**
+     * Whether input text of this token hierarchy is mutable or not.
      *
-     * @return true if this provider supports token changes or false otherwise.
+     * @return true if the input text is mutable or false otherwise.
      */
     public boolean isMutable() {
         return operation.isMutable();
@@ -213,8 +221,7 @@ public final class TokenHierarchy<I> { // "I" stands for mutable input source
      *  was not created over mutable input source.
      */
     public I mutableInputSource() {
-        @SuppressWarnings("unchecked") I input = (I)operation.mutableInputSource();
-        return input;
+        return operation.mutableInputSource();
     }
     
     /**
@@ -397,7 +404,7 @@ public final class TokenHierarchy<I> { // "I" stands for mutable input source
      * Obtaining of token hierarchy operation is only intended to be done
      * by package accessor.
      */
-    TokenHierarchyOperation<I> operation() {
+    TokenHierarchyOperation<I,?> operation() {
         return operation;
     }
 

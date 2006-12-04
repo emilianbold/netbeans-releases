@@ -14,8 +14,8 @@
 package org.netbeans.lib.lexer.test.simple;
 
 import junit.framework.TestCase;
-import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.lexer.LexerUtilsConstants;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
@@ -41,8 +41,8 @@ public class FlyTokensTest extends TestCase {
         // Both "public" and " " are flyweight
         String text = "public public public public public public public ";
         int commentTextStartOffset = 5;
-        TokenHierarchy hi = TokenHierarchy.create(text, SimpleTokenId.language());
-        TokenSequence ts = hi.tokenSequence();
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, SimpleTokenId.language());
+        TokenSequence<? extends TokenId> ts = hi.tokenSequence();
         int firstNonFlyIndex = -1;
         int secondNonFlyIndex = -1;
         int tokenIndex = 0;

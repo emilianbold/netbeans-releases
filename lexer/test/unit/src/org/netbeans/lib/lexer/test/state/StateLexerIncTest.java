@@ -18,6 +18,7 @@ import junit.framework.TestCase;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
 import org.netbeans.lib.lexer.test.ModificationTextDocument;
@@ -45,8 +46,8 @@ public class StateLexerIncTest extends TestCase {
         InputAttributes attrs = new InputAttributes();
         doc.putProperty(InputAttributes.class, attrs);
         doc.putProperty(Language.class, StateTokenId.language());
-        TokenHierarchy hi = TokenHierarchy.get(doc);
-        TokenSequence ts = hi.tokenSequence();
+        TokenHierarchy<?> hi = TokenHierarchy.get(doc);
+        TokenSequence<? extends TokenId> ts = hi.tokenSequence();
         assertFalse(ts.moveNext());
         
         // Insert text into document

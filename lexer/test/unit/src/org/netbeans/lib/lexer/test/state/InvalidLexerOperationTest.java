@@ -18,6 +18,7 @@ import junit.framework.TestCase;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
 import org.netbeans.lib.lexer.test.ModificationTextDocument;
@@ -50,8 +51,8 @@ public class InvalidLexerOperationTest extends TestCase {
         doc.insertString(0, text, null);
         // Put the language now into the document so that lexing starts from scratch
         doc.putProperty(Language.class, StateTokenId.language());
-        TokenHierarchy hi = TokenHierarchy.get(doc);
-        TokenSequence ts = hi.tokenSequence();
+        TokenHierarchy<?> hi = TokenHierarchy.get(doc);
+        TokenSequence<? extends TokenId> ts = hi.tokenSequence();
 
         ts = hi.tokenSequence();
         assertTrue(ts.moveNext());

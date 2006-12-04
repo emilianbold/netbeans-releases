@@ -35,7 +35,7 @@ public class SLanguageProvider extends LanguageProvider {
         return null;
     }
 
-    public LanguageEmbedding findLanguageEmbedding (LanguagePath tokenLanguage, Token token, InputAttributes inputAttributes) {
+    public LanguageEmbedding<? extends TokenId> findLanguageEmbedding (Token<? extends TokenId> token, LanguagePath tokenLanguage, InputAttributes inputAttributes) {
         return null;
     }
 }

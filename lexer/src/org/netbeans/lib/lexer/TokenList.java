@@ -43,7 +43,7 @@ import org.netbeans.lib.lexer.token.AbstractToken;
  *     to store the token characters in multiple arrays
  *     and to correctly compute the tokens' starting offsets.
  *   <li>IncTokenList</li> - token list for mutable-input environment.
- *   <li>BranchTokenList</li> - token list for language embedding
+ *   <li>EmbeddedTokenList</li> - token list for a single language embedding
  *     suitable for both batch and incremental environments.
  * </ul>
  *
@@ -51,7 +51,7 @@ import org.netbeans.lib.lexer.token.AbstractToken;
  * @version 1.00
  */
 
-public interface TokenList {
+public interface TokenList<T extends TokenId> {
     
     /**
      * Language path of this token list.
@@ -59,7 +59,7 @@ public interface TokenList {
     LanguagePath languagePath();
     
     /**
-     * Get token or {@link BranchTokenList} at given index in this list.
+     * Get token or {@link EmbeddingContainer} at given index in this list.
      * <br/>
      * The method's implementation may need to be synchronized as multiple
      * threads can access it at the same time.
@@ -70,7 +70,7 @@ public interface TokenList {
      * @param &gt;=0 index of the token in this list.
      * @return valid token or null if the index is too high.
      */
-    Object tokenOrBranch(int index);
+    Object tokenOrEmbeddingContainer(int index);
 
     /**
      * Replace flyweight token at the given index with its non-flyweight copy.
@@ -82,14 +82,23 @@ public interface TokenList {
      * @param offset >=0 absolute offset where the flyweight token resides.
      * @return non-flyweight token instance.
      */
-    <T extends TokenId> AbstractToken<T> createNonFlyToken(int index,
-    AbstractToken<T> flyToken, int offset);
+    AbstractToken<T> replaceFlyToken(int index, AbstractToken<T> flyToken, int offset);
+    
+    /**
+     * Wrap the token by a branch token list due to language embedding
+     * that exists for the token.
+     *
+     * @param index existing index in this token list at which the token
+     *  should be wrapped with the embedding info.
+     * @param embeddingContainer embedding info that should wrap the token.
+     */
+    void wrapToken(int index, EmbeddingContainer<T> embeddingContainer);
     
     /**
      * Get absolute offset of the token at the given index in the token list.
      * <br>
      * This method can only be called if the token at the given index
-     * was already fetched by {@link tokenOrBranch(int)}.
+     * was already fetched by {@link tokenOrEmbeddingContainer(int)}.
      * <br/>
      * For branch token lists this method is only expected to be called
      * after {@link #updateStartOffsetShift()} was called so it does not perform
@@ -164,15 +173,15 @@ public interface TokenList {
     char childTokenCharAt(int rawOffset, int index);
 
     /**
-     * Wrap the token by a branch token list due to language embedding
-     * that exists for the token.
-     */
-    void wrapToken(int index, BranchTokenList wrapper);
-    
-    /**
      * Get the root token list of the token list hierarchy.
      */
-    TokenList root();
+    TokenList<? extends TokenId> root();
+    
+    /**
+     * Get token hierarchy operation for this token list or null
+     * if this token list does not have any token hierarchy.
+     */
+    TokenHierarchyOperation<?,? extends TokenId> tokenHierarchyOperation();
     
     /**
      * Extra attributes related to the input being lexed.
@@ -236,6 +245,6 @@ public interface TokenList {
     /**
      * Get set of token ids to be skipped during token creation.
      */
-    Set<? extends TokenId> skipTokenIds();
+    Set<T> skipTokenIds();
 
 }

@@ -14,9 +14,9 @@
 package org.netbeans.lib.lexer.test.simple;
 
 import junit.framework.TestCase;
-import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
 
@@ -41,8 +41,8 @@ public class SimpleLexerBatchTest extends TestCase {
         String commentText = "/* test comment  */";
         String text = "abc+ " + commentText + "def public publica publi static x";
         int commentTextStartOffset = 5;
-        TokenHierarchy hi = TokenHierarchy.create(text, SimpleTokenId.language());
-        TokenSequence ts = hi.tokenSequence();
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, SimpleTokenId.language());
+        TokenSequence<? extends TokenId> ts = hi.tokenSequence();
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "abc", 0);
         assertTrue(ts.moveNext());
@@ -84,7 +84,7 @@ public class SimpleLexerBatchTest extends TestCase {
         LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.BLOCK_COMMENT, commentText, commentTextStartOffset);
 
         // Test embedded token sequence
-        TokenSequence embedded = ts.embedded();
+        TokenSequence<? extends TokenId> embedded = ts.embedded();
         assertNotNull("Null embedded sequence", embedded);
         assertTrue(embedded.moveNext());
         offset = commentTextStartOffset + 2; // skip "/*"
@@ -114,12 +114,12 @@ public class SimpleLexerBatchTest extends TestCase {
 
         long tm;
         tm = System.currentTimeMillis();
-        TokenHierarchy hi = TokenHierarchy.create(text, SimpleTokenId.language());
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, SimpleTokenId.language());
         tm = System.currentTimeMillis() - tm;
         assertTrue("Timeout tm = " + tm + "msec", tm < 100); // Should be fast
         
         tm = System.currentTimeMillis();
-        TokenSequence ts = hi.tokenSequence();
+        TokenSequence<? extends TokenId> ts = hi.tokenSequence();
         tm = System.currentTimeMillis() - tm;
         assertTrue("Timeout tm = " + tm + "msec", tm < 100); // Should be fast
         

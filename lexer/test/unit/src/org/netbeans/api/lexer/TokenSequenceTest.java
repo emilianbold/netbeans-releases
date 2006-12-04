@@ -45,8 +45,8 @@ public class TokenSequenceTest extends NbTestCase {
     
     public void testMove() {
         String text = "abc+defg";
-        TokenHierarchy hi = TokenHierarchy.create(text, SimpleTokenId.language());
-        TokenSequence ts = hi.tokenSequence();
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, SimpleTokenId.language());
+        TokenSequence<? extends TokenId> ts = hi.tokenSequence();
         
         // Fail if no "move*" method called yet
         try {
@@ -87,7 +87,7 @@ public class TokenSequenceTest extends NbTestCase {
 
         
         // Test subsequences
-        TokenSequence sub = ts.subSequence(1, 6);
+        TokenSequence<? extends TokenId> sub = ts.subSequence(1, 6);
         assertTrue(sub.moveNext());
         LexerTestUtilities.assertTokenEquals(sub, SimpleTokenId.IDENTIFIER, "abc", 0);
         assertTrue(sub.moveNext());
@@ -117,9 +117,9 @@ public class TokenSequenceTest extends NbTestCase {
         assertTrue(skipTokenIds.contains(SimpleTokenId.MINUS));
         assertFalse(skipTokenIds.contains(SimpleTokenId.IDENTIFIER));
 
-        TokenHierarchy hi = TokenHierarchy.create(text, false,
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, false,
                 SimpleTokenId.language(), skipTokenIds, null);
-        TokenSequence ts = hi.tokenSequence();
+        TokenSequence<? extends TokenId> ts = hi.tokenSequence();
         
         // Fail if no "move*" method called yet
         try {
@@ -165,7 +165,7 @@ public class TokenSequenceTest extends NbTestCase {
         
         
         // Test subsequences
-        TokenSequence sub = ts.subSequence(1, 6);
+        TokenSequence<? extends TokenId> sub = ts.subSequence(1, 6);
         assertTrue(sub.moveNext());
         LexerTestUtilities.assertTokenEquals(sub, SimpleTokenId.IDENTIFIER, "abc", 1);
         assertTrue(sub.moveNext());
@@ -228,8 +228,8 @@ public class TokenSequenceTest extends NbTestCase {
         Reader r = new StringReader(text);
         
         try {
-            TokenHierarchy hi = TokenHierarchy.create(r, SimpleTokenId.language(), skipTokenIds, null);
-            TokenSequence ts = hi.tokenSequence();
+            TokenHierarchy<?> hi = TokenHierarchy.create(r, SimpleTokenId.language(), skipTokenIds, null);
+            TokenSequence<? extends TokenId> ts = hi.tokenSequence();
             
             ts.tokenCount();
         } finally {
@@ -239,8 +239,8 @@ public class TokenSequenceTest extends NbTestCase {
     
     public void testMoveEmpty() {
         String text = "";
-        TokenHierarchy hi = TokenHierarchy.create(text, SimpleTokenId.language());
-        TokenSequence ts = hi.tokenSequence();
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, SimpleTokenId.language());
+        TokenSequence<? extends TokenId> ts = hi.tokenSequence();
 
         // Expect no tokens
         assertFalse(ts.moveNext());
@@ -256,7 +256,7 @@ public class TokenSequenceTest extends NbTestCase {
         assertEquals(ts.move(10), Integer.MAX_VALUE);
         
         // Test subsequences
-        TokenSequence sub = ts.subSequence(1, 6);
+        TokenSequence<? extends TokenId> sub = ts.subSequence(1, 6);
         assertFalse(sub.moveNext());
         sub = ts.subSequence(1, 6);
         assertEquals(Integer.MAX_VALUE, sub.move(1));
@@ -274,8 +274,8 @@ public class TokenSequenceTest extends NbTestCase {
     
     public void testTokenSize() {
         String text = "abc+";
-        TokenHierarchy hi = TokenHierarchy.create(text, SimpleTokenId.language());
-        TokenSequence ts = hi.tokenSequence();
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, SimpleTokenId.language());
+        TokenSequence<? extends TokenId> ts = hi.tokenSequence();
         
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "abc", 0);

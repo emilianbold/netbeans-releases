@@ -19,14 +19,7 @@
 
 package org.netbeans.lib.lexer.token;
 
-import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
-import org.netbeans.lib.editor.util.CharSequenceUtilities;
-import org.netbeans.lib.lexer.BranchTokenList;
-import org.netbeans.lib.lexer.LexerApiPackageAccessor;
-import org.netbeans.lib.lexer.TokenList;
-import org.netbeans.lib.lexer.inc.IncTokenList;
 
 /**
  * Default token which by default obtains text from its background storage.
@@ -55,6 +48,14 @@ public class DefaultToken<T extends TokenId> extends AbstractToken<T> implements
         super(id);
         assert (length > 0) : "Token length=" + length + " <= 0"; // NOI18N
         this.length = length;
+    }
+    
+    /**
+     * Construct a special zero-length token.
+     */
+    public DefaultToken(T id) {
+        super(id);
+        this.length = 0;
     }
 
     public final int length() {

@@ -32,7 +32,7 @@ import org.netbeans.spi.lexer.TokenFactory;
  * @version 1.00
  */
 
-public class HTMLLexer implements Lexer<HTMLTokenId> {
+public final class HTMLLexer implements Lexer<HTMLTokenId> {
     
     private static final Logger LOGGER = Logger.getLogger(HTMLLexer.class.getName());
     private static final boolean LOG = Boolean.getBoolean("j2ee_lexer_debug"); //NOI18N

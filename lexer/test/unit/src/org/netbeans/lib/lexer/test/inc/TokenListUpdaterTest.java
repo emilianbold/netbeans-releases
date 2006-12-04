@@ -18,6 +18,7 @@ import javax.swing.text.Document;
 import junit.framework.TestCase;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
 import org.netbeans.lib.lexer.test.ModificationTextDocument;
@@ -47,9 +48,9 @@ public class TokenListUpdaterTest extends TestCase {
         doc.insertString(0, text, null);
 
         doc.putProperty(Language.class, SimpleTokenId.language());
-        TokenHierarchy hi = TokenHierarchy.get(doc);
+        TokenHierarchy<?> hi = TokenHierarchy.get(doc);
         assertNotNull("Null token hierarchy for document", hi);
-        TokenSequence ts = hi.tokenSequence();
+        TokenSequence<? extends TokenId> ts = hi.tokenSequence();
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "abc", 0);
         assertTrue(ts.moveNext());
@@ -85,8 +86,8 @@ public class TokenListUpdaterTest extends TestCase {
         doc.insertString(0, text, null);
 
         doc.putProperty(Language.class, SimpleTokenId.language());
-        TokenHierarchy hi = TokenHierarchy.get(doc);
-        TokenSequence ts = hi.tokenSequence();
+        TokenHierarchy<?> hi = TokenHierarchy.get(doc);
+        TokenSequence<? extends TokenId> ts = hi.tokenSequence();
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "a", 0);
         assertTrue(ts.moveNext());
@@ -114,8 +115,8 @@ public class TokenListUpdaterTest extends TestCase {
         doc.insertString(0, text, null);
 
         doc.putProperty(Language.class, SimpleTokenId.language());
-        TokenHierarchy hi = TokenHierarchy.get(doc);
-        TokenSequence ts = hi.tokenSequence();
+        TokenHierarchy<?> hi = TokenHierarchy.get(doc);
+        TokenSequence<? extends TokenId> ts = hi.tokenSequence();
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "a", 0);
         
@@ -141,8 +142,8 @@ public class TokenListUpdaterTest extends TestCase {
         doc.insertString(0, text, null);
 
         doc.putProperty(Language.class, SimpleTokenId.language());
-        TokenHierarchy hi = TokenHierarchy.get(doc);
-        TokenSequence ts = hi.tokenSequence();
+        TokenHierarchy<?> hi = TokenHierarchy.get(doc);
+        TokenSequence<? extends TokenId> ts = hi.tokenSequence();
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "a", 0);
         
@@ -172,8 +173,8 @@ public class TokenListUpdaterTest extends TestCase {
         doc.insertString(0, text, null);
 
         doc.putProperty(Language.class, SimpleTokenId.language());
-        TokenHierarchy hi = TokenHierarchy.get(doc);
-        TokenSequence ts = hi.tokenSequence();
+        TokenHierarchy<?> hi = TokenHierarchy.get(doc);
+        TokenSequence<? extends TokenId> ts = hi.tokenSequence();
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "a", 0);
         assertTrue(ts.moveNext());
@@ -205,8 +206,8 @@ public class TokenListUpdaterTest extends TestCase {
         doc.insertString(0, text, null);
 
         doc.putProperty(Language.class, SimpleTokenId.language());
-        TokenHierarchy hi = TokenHierarchy.get(doc);
-        TokenSequence ts = hi.tokenSequence();
+        TokenHierarchy<?> hi = TokenHierarchy.get(doc);
+        TokenSequence<? extends TokenId> ts = hi.tokenSequence();
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "a", 0);
         
@@ -236,12 +237,12 @@ public class TokenListUpdaterTest extends TestCase {
         doc.insertString(0, text, null);
 
         doc.putProperty(Language.class, SimpleTokenId.language());
-        TokenHierarchy hi = TokenHierarchy.get(doc);
+        TokenHierarchy<?> hi = TokenHierarchy.get(doc);
         
         // Insert "-"
         doc.insertString(2, "-", null);
 
-        TokenSequence ts = hi.tokenSequence();
+        TokenSequence<? extends TokenId> ts = hi.tokenSequence();
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "a", 0);
         assertTrue(ts.moveNext());

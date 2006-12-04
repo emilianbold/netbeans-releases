@@ -20,7 +20,6 @@
 package org.netbeans.lib.lexer.token;
 
 import org.netbeans.api.lexer.TokenId;
-import org.netbeans.lib.lexer.TokenList;
 
 /**
  * Token with a custom text and the token length likely different

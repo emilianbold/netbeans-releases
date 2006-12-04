@@ -20,7 +20,7 @@
 package org.netbeans.api.lexer;
 
 import java.util.ConcurrentModificationException;
-import org.netbeans.lib.lexer.BranchTokenList;
+import org.netbeans.lib.lexer.EmbeddingContainer;
 import org.netbeans.lib.lexer.SubSequenceTokenList;
 import org.netbeans.lib.lexer.LexerUtilsConstants;
 import org.netbeans.lib.lexer.TokenList;
@@ -61,7 +61,7 @@ import org.netbeans.lib.lexer.token.AbstractToken;
 
 public final class TokenSequence<T extends TokenId> {
     
-    private TokenList tokenList; // 8 + 4 = 12 bytes
+    private TokenList<T> tokenList; // 8 + 4 = 12 bytes
     
     private AbstractToken<T> token; // 16 bytes
     
@@ -78,11 +78,20 @@ public final class TokenSequence<T extends TokenId> {
      * changes (by modification) this token sequence will become invalid.
      */
     private final int modCount; // 28 bytes
+    
+    /**
+     * Parent token indexes allow to effectively determine parent tokens
+     * in the tree token hierarchy.
+     * <br/>
+     * The first index corresponds to the top language in the hierarchy
+     * and the ones that follow point to subsequent embedded levels.
+     */
+    private int[] parentTokenIndexes; // 32 bytes
 
     /**
      * Package-private constructor used by API accessor.
      */
-    TokenSequence(TokenList tokenList) {
+    TokenSequence(TokenList<T> tokenList) {
         this.tokenList = tokenList;
         this.modCount = tokenList.modCount();
     }
@@ -92,11 +101,7 @@ public final class TokenSequence<T extends TokenId> {
      * used by tokens in this token sequence.
      */
     public Language<T> language() {
-        // No need to check as the token sequence should already
-        // be obtained originally for the inner language
-        @SuppressWarnings("unchecked") Language<T> l
-                = (Language<T>)languagePath().innerLanguage();
-        return l;
+        return LexerUtilsConstants.mostEmbeddedLanguage(languagePath());
     }
 
     /**
@@ -157,7 +162,7 @@ public final class TokenSequence<T extends TokenId> {
     public Token<T> offsetToken() {
         checkToken();
         if (token.isFlyweight()) {
-            token = tokenList.createNonFlyToken(tokenIndex, token, offset());
+            token = tokenList.replaceFlyToken(tokenIndex, token, offset());
         }
         return token;
     }
@@ -195,10 +200,16 @@ public final class TokenSequence<T extends TokenId> {
         return tokenIndex;
     }
 
-     /**
-     * Get the embedded token sequence if the token
+    /**
+     * Get embedded token sequence if the token
      * to which this token sequence is currently positioned
      * has a language embedding.
+     * <br/>
+     * If there is a custom embedding created by
+     * {@link #createEmbedding(Language,int,int)} it will be returned
+     * instead of the default embedding
+     * (the one created by <code>LanguageHierarchy.embedding()</code>
+     * or <code>LanguageProvider</code>).
      *
      * @return embedded sequence or null if no embedding exists for this token.
      * @throws IllegalStateException if this token sequence was not positioned
@@ -206,35 +217,86 @@ public final class TokenSequence<T extends TokenId> {
      */
     public TokenSequence<? extends TokenId> embedded() {
         checkToken();
-        TokenList branchTokenList = BranchTokenList.getOrCreate(tokenList, tokenIndex);
-        if (branchTokenList != null) {
-            TokenList tl = tokenList;
+        return embeddedImpl(null);
+    }
+    
+    private <ET extends TokenId> TokenSequence<ET> embeddedImpl(Language<ET> embeddedLanguage) {
+        TokenList<ET> embeddedTokenList
+                = EmbeddingContainer.getEmbedding(tokenList, tokenIndex, embeddedLanguage);
+        if (embeddedTokenList != null) {
+            TokenList<T> tl = tokenList;
             if (tokenList.getClass() == SubSequenceTokenList.class) {
-                tl = ((SubSequenceTokenList)tokenList).delegate();
+                tl = ((SubSequenceTokenList<T>)tokenList).delegate();
             }
 
             if (tl.getClass() == FilterSnapshotTokenList.class) {
-                branchTokenList = new FilterSnapshotTokenList(branchTokenList,
-                        ((FilterSnapshotTokenList)tl).tokenOffsetDiff());
+                embeddedTokenList = new FilterSnapshotTokenList<ET>(embeddedTokenList,
+                        ((FilterSnapshotTokenList<T>)tl).tokenOffsetDiff());
 
             } else if (tl.getClass() == SnapshotTokenList.class) {
-                branchTokenList = new FilterSnapshotTokenList(branchTokenList,
+                embeddedTokenList = new FilterSnapshotTokenList<ET>(embeddedTokenList,
                         offset() - token().offset(null));
             }
-            return new TokenSequence<TokenId>(branchTokenList);
+            return new TokenSequence<ET>(embeddedTokenList);
 
         } else // Embedded token list does not exist
             return null;
     }
 
     /**
-     * Created embedded token sequence of the given type or return null
-     * if the embedded token sequence does not exist or it has a different type.
+     * Get embedded token sequence if the token
+     * to which this token sequence is currently positioned
+     * has a language embedding.
      */
     public <ET extends TokenId> TokenSequence<ET> embedded(Language<ET> embeddedLanguage) {
-        @SuppressWarnings("unchecked")
-        TokenSequence<ET> ets = (TokenSequence<ET>)embedded();
-        return (ets != null && ets.language() == embeddedLanguage) ? ets : null;
+        checkToken();
+        return embeddedImpl(embeddedLanguage);
+    }
+
+    /**
+     * Create language embedding without joining of the embedded sections.
+     *
+     * @see #createEmbedding(Language, int, int, boolean)
+     */
+    public boolean createEmbedding(Language<? extends TokenId> embeddedLanguage,
+    int startSkipLength, int endSkipLength) {
+        return createEmbedding(embeddedLanguage, startSkipLength, endSkipLength, false);
+    }
+
+    /**
+     * Create language embedding described by the given parameters.
+     * <br/>
+     * If the underying text input is mutable then this method should only be called
+     * within a read lock over the text input.
+     *
+     * @param embeddedLanguage non-null embedded language
+     * @param startSkipLength &gt;=0 number of characters in an initial part of the token
+     *  for which the language embedding is defined that should be excluded
+     *  from the embedded section. The excluded characters will not be lexed
+     *  and there will be no tokens created for them.
+     * @param endSkipLength &gt;=0 number of characters at the end of the token
+     *  for which the language embedding is defined that should be excluded
+     *  from the embedded section. The excluded characters will not be lexed
+     *  and there will be no tokens created for them.
+     * @param joinSections whether sections with this embedding should be joined
+     *  across the input source or whether they should stay separate.
+     *  <br/>
+     *  For example for HTML sections embedded in JSP this flag should be true:
+     *  <pre>
+     *   &lt;!-- HTML comment start
+     *       &lt;% System.out.println("Hello"); %&gt;
+            still in HTML comment --&lt;
+     *  </pre>
+     *  <br/>
+     *  Only the embedded sections with the same language path can be joined.
+     * @return true if the embedding was created successfully or false if an embedding
+     *  with the given language already exists for this token.
+     */
+    public boolean createEmbedding(Language<? extends TokenId> embeddedLanguage,
+    int startSkipLength, int endSkipLength, boolean joinSections) {
+        checkToken();
+        return EmbeddingContainer.createEmbedding(tokenList, tokenIndex,
+                embeddedLanguage, startSkipLength, endSkipLength, joinSections);
     }
 
     /**
@@ -253,10 +315,10 @@ public final class TokenSequence<T extends TokenId> {
     public boolean moveNext() {
         checkModCount();
         tokenIndex++;
-        Object tokenOrBranch = tokenList.tokenOrBranch(tokenIndex);
-        if (tokenOrBranch != null) {
+        Object tokenOrEmbeddingContainer = tokenList.tokenOrEmbeddingContainer(tokenIndex);
+        if (tokenOrEmbeddingContainer != null) {
             AbstractToken origToken = token;
-            assignToken(tokenOrBranch);
+            assignToken(tokenOrEmbeddingContainer);
             if (tokenOffset != -1) {
                 // If the token list is continuous or the fetched token
                 // is flyweight (there cannot be a gap before flyweight token)
@@ -328,10 +390,10 @@ public final class TokenSequence<T extends TokenId> {
         if (index < 0) {
             return false;
         }
-        Object tokenOrBranch = tokenList.tokenOrBranch(index);
-        if (tokenOrBranch != null) { // enough tokens
+        Object tokenOrEmbeddingContainer = tokenList.tokenOrEmbeddingContainer(index);
+        if (tokenOrEmbeddingContainer != null) { // enough tokens
             this.tokenIndex = index;
-            assignToken(tokenOrBranch);
+            assignToken(tokenOrEmbeddingContainer);
             tokenOffset = -1;
             return true;
 
@@ -409,7 +471,7 @@ public final class TokenSequence<T extends TokenId> {
         // when asked by clients.
         int tokenCount = tokenList.tokenCountCurrent(); // presently created token count
         if (tokenCount == 0) { // no tokens yet -> attempt to create at least one
-            if (tokenList.tokenOrBranch(0) == null) { // really no tokens at all
+            if (tokenList.tokenOrEmbeddingContainer(0) == null) { // really no tokens at all
                 // In this case the token sequence could not be positioned yet
                 // so no need to reset "index" or other vars
                 return Integer.MAX_VALUE;
@@ -426,9 +488,9 @@ public final class TokenSequence<T extends TokenId> {
             // there may be gaps between tokens due to token id filter use.
             int tokenLength = LexerUtilsConstants.token(tokenList, tokenCount - 1).length();
             while (offset >= prevTokenOffset + tokenLength) { // above present token
-                Object tokenOrBranch = tokenList.tokenOrBranch(tokenCount);
-                if (tokenOrBranch != null) {
-                    AbstractToken t = LexerUtilsConstants.token(tokenOrBranch);
+                Object tokenOrEmbeddingContainer = tokenList.tokenOrEmbeddingContainer(tokenCount);
+                if (tokenOrEmbeddingContainer != null) {
+                    AbstractToken t = LexerUtilsConstants.token(tokenOrEmbeddingContainer);
                     if (t.isFlyweight()) { // need to use previous tokenLength
                         prevTokenOffset += tokenLength;
                     } else { // non-flyweight token - retrieve offset
@@ -547,32 +609,31 @@ public final class TokenSequence<T extends TokenId> {
      */
     public TokenSequence<T> subSequence(int startOffset, int endOffset) {
         checkModCount(); // Ensure subsequences on valid token sequences only
-        TokenList tl;
+        TokenList<T> tl;
         if (tokenList.getClass() == SubSequenceTokenList.class) {
-            SubSequenceTokenList stl = (SubSequenceTokenList)tokenList;
+            SubSequenceTokenList<T> stl = (SubSequenceTokenList<T>)tokenList;
             tl = stl.delegate();
             startOffset = Math.max(startOffset, stl.limitStartOffset());
             endOffset = Math.min(endOffset, stl.limitEndOffset());
         } else // Regular token list
             tl = tokenList;
-        return new TokenSequence<T>(new SubSequenceTokenList(tl, startOffset, endOffset));
+        return new TokenSequence<T>(new SubSequenceTokenList<T>(tl, startOffset, endOffset));
     }
     
     public String toString() {
         return LexerUtilsConstants.appendTokenList(null, tokenList, tokenIndex).toString();
     }
+    
+    int[] parentTokenIndexes() {
+        return parentTokenIndexes;
+    }
 
-    @SuppressWarnings("unchecked")
-    private void assignToken(Object tokenOrBranch) {
-        if (tokenOrBranch.getClass() == BranchTokenList.class) {
-            token = (AbstractToken<T>)((BranchTokenList)tokenOrBranch).branchToken();
-        } else {
-            token = (AbstractToken<T>)tokenOrBranch;
-        }
+    private void assignToken(Object tokenOrEmbeddingContainer) {
+        token = LexerUtilsConstants.token(tokenOrEmbeddingContainer);
     }
     
     private void assignToken() {
-        assignToken(tokenList.tokenOrBranch(tokenIndex));
+        assignToken(tokenList.tokenOrEmbeddingContainer(tokenIndex));
     }
 
     private void checkToken() {

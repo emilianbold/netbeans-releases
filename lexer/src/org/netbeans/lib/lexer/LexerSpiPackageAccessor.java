@@ -68,40 +68,43 @@ public abstract class LexerSpiPackageAccessor {
 
     public abstract <T extends TokenId> Map<String,Collection<T>> createTokenCategories(LanguageHierarchy<T> languageHierarchy);
     
-    public abstract Lexer createLexer(LanguageHierarchy languageHierarchy, LexerRestartInfo info);
+    public abstract <T extends TokenId> Lexer<T> createLexer(LanguageHierarchy<T> languageHierarchy, LexerRestartInfo<T> info);
     
     public abstract <T extends TokenId> LexerRestartInfo<T> createLexerRestartInfo(
     LexerInput input, TokenFactory<T> tokenFactory, Object state,
     LanguagePath languagePath, InputAttributes inputAttributes);
     
-    public abstract String mimeType(LanguageHierarchy languageHierarchy);
+    public abstract String mimeType(LanguageHierarchy<? extends TokenId> languageHierarchy);
     
-    public abstract LanguageEmbedding embedding(
-    LanguageHierarchy languageHierarchy, Token token, boolean tokenComplete,
+    public abstract <T extends TokenId> LanguageEmbedding<? extends TokenId> embedding(
+    LanguageHierarchy<T> languageHierarchy, Token<T> token,
     LanguagePath languagePath, InputAttributes inputAttributes);
     
-    public abstract TokenValidator createTokenValidator(LanguageHierarchy languageHierarchy, TokenId id);
+    public abstract <T extends TokenId> TokenValidator<T> createTokenValidator(LanguageHierarchy<T> languageHierarchy, T id);
 
-    public abstract CharPreprocessor createCharPreprocessor(LanguageHierarchy languageHierarchy);
+    public abstract CharPreprocessor createCharPreprocessor(LanguageHierarchy<? extends TokenId> languageHierarchy);
 
-    public abstract boolean isRetainTokenText(LanguageHierarchy languageHierarchy, TokenId id);
+    public abstract <T extends TokenId> boolean isRetainTokenText(LanguageHierarchy<T> languageHierarchy, T id);
 
-    public abstract LanguageOperation operation(LanguageHierarchy languageHierarchy);
+    public abstract <T extends TokenId> LanguageOperation<T> operation(LanguageHierarchy<T> languageHierarchy);
     
-    public abstract LexerInput createLexerInput(CharProvider charProvider);
+public abstract LexerInput createLexerInput(CharProvider charProvider);
     
     public abstract void init(CharPreprocessor preprocessor, CharPreprocessorOperation operation);
     
     public abstract void preprocessChar(CharPreprocessor preprocessor);
     
     public abstract Language<? extends TokenId> language(MutableTextInput<?> mti);
+    
+    public abstract <T extends TokenId> LanguageEmbedding<T> createLanguageEmbedding(
+    Language<T> language, int startSkipLength, int endSkipLength, boolean joinSections);
 
-    public abstract CharSequence text(MutableTextInput mti);
+    public abstract CharSequence text(MutableTextInput<?> mti);
     
-    public abstract InputAttributes inputAttributes(MutableTextInput mti);
+    public abstract InputAttributes inputAttributes(MutableTextInput<?> mti);
     
-    public abstract Object inputSource(MutableTextInput mti);
+    public abstract <I> I inputSource(MutableTextInput<I> mti);
     
-    public abstract TokenFactory createTokenFactory(LexerInputOperation lexerInputOperation);
+    public abstract <T extends TokenId> TokenFactory<T> createTokenFactory(LexerInputOperation<T> lexerInputOperation);
     
 }

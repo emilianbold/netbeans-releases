@@ -21,10 +21,8 @@ package org.netbeans.lib.lexer.batch;
 
 import java.io.IOException;
 import java.io.Reader;
-import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.lexer.LexerInputOperation;
-import org.netbeans.lib.lexer.LexerUtilsConstants;
 import org.netbeans.lib.lexer.TokenList;
 import org.netbeans.lib.lexer.token.AbstractToken;
 import org.netbeans.spi.lexer.LexerInput;
@@ -36,7 +34,7 @@ import org.netbeans.spi.lexer.LexerInput;
  * @version 1.00
  */
 
-public final class SkimLexerInputOperation extends LexerInputOperation {
+public final class SkimLexerInputOperation<T extends TokenId> extends LexerInputOperation<T> {
     
     private static final char[] EMPTY_CHAR_ARRAY = new char[0];
     
@@ -99,7 +97,7 @@ public final class SkimLexerInputOperation extends LexerInputOperation {
     /**
      * Actual token cluster where the tokens are being placed.
      */
-    private SkimTokenList cluster;
+    private SkimTokenList<T> cluster;
 
     private int clusterTextEndIndex;
     
@@ -118,13 +116,13 @@ public final class SkimLexerInputOperation extends LexerInputOperation {
      */
     private int offsetShift;
     
-    public SkimLexerInputOperation(TokenList tokenList, Reader reader) {
+    public SkimLexerInputOperation(TokenList<T> tokenList, Reader reader) {
         super(tokenList, 0, null);
         this.reader = reader;
         this.readCharArray = new char[DEFAULT_READ_CHAR_ARRAY_SIZE];
     }
     
-    public SkimLexerInputOperation(TokenList tokenList, CharSequence readCharSequence) {
+    public SkimLexerInputOperation(TokenList<T> tokenList, CharSequence readCharSequence) {
         super(tokenList, 0, null);
         this.readCharSequence = readCharSequence;
         this.readEndIndex = readCharSequence.length();
@@ -157,7 +155,7 @@ public final class SkimLexerInputOperation extends LexerInputOperation {
             : readCharSequence.charAt(index);
     }
     
-    public void approveToken(AbstractToken token) {
+    public void approveToken(AbstractToken<T> token) {
         int tokenLength = token.length();
         if (isSkipToken(token)) {
             preventFlyToken();
@@ -183,7 +181,7 @@ public final class SkimLexerInputOperation extends LexerInputOperation {
                     clusterSize = tokenLength;
                 }
                 defaultClusterSize = clusterSize;
-                cluster = new SkimTokenList((CopyTextTokenList)tokenList(),
+                cluster = new SkimTokenList<T>((CopyTextTokenList<T>)tokenList(),
                         clusterStartOffset, new char[clusterSize]);
             }
 

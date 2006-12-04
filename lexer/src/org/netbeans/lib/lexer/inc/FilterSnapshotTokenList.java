@@ -23,8 +23,8 @@ import java.util.Set;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenId;
-import org.netbeans.lib.lexer.BranchTokenList;
-import org.netbeans.lib.lexer.LexerUtilsConstants;
+import org.netbeans.lib.lexer.EmbeddingContainer;
+import org.netbeans.lib.lexer.TokenHierarchyOperation;
 import org.netbeans.lib.lexer.TokenList;
 import org.netbeans.lib.lexer.token.AbstractToken;
 
@@ -53,10 +53,10 @@ import org.netbeans.lib.lexer.token.AbstractToken;
  * @version 1.00
  */
 
-public final class FilterSnapshotTokenList implements TokenList {
+public final class FilterSnapshotTokenList<T extends TokenId> implements TokenList<T> {
     
     /** Original token list. */
-    private TokenList tokenList;
+    private TokenList<T> tokenList;
     
     /**
      * Difference of the offsets retrieved from tokenList.offset(index)
@@ -64,7 +64,7 @@ public final class FilterSnapshotTokenList implements TokenList {
      */
     private int tokenOffsetDiff;
     
-    public FilterSnapshotTokenList(TokenList tokenList, int tokenOffsetDiff) {
+    public FilterSnapshotTokenList(TokenList<T> tokenList, int tokenOffsetDiff) {
         this.tokenList = tokenList;
         this.tokenOffsetDiff = tokenOffsetDiff;
     }
@@ -77,12 +77,12 @@ public final class FilterSnapshotTokenList implements TokenList {
         return tokenOffsetDiff;
     }
     
-    public Object tokenOrBranch(int index) {
-        return tokenList.tokenOrBranch(index);
+    public Object tokenOrEmbeddingContainer(int index) {
+        return tokenList.tokenOrEmbeddingContainer(index);
     }
 
-    public <T extends TokenId> AbstractToken<T> createNonFlyToken(int index, AbstractToken<T> flyToken, int offset) {
-        return tokenList.createNonFlyToken(index, flyToken, offset);
+    public AbstractToken<T> replaceFlyToken(int index, AbstractToken<T> flyToken, int offset) {
+        return tokenList.replaceFlyToken(index, flyToken, offset);
     }
 
     public int tokenOffset(int index) {
@@ -113,14 +113,18 @@ public final class FilterSnapshotTokenList implements TokenList {
         throw new IllegalStateException("Unexpected call.");
     }
 
-    public void wrapToken(int index, BranchTokenList wrapper) {
-        tokenList.wrapToken(index, wrapper);
+    public void wrapToken(int index, EmbeddingContainer<T> embeddingContainer) {
+        tokenList.wrapToken(index, embeddingContainer);
     }
 
-    public TokenList root() {
-        throw new IllegalStateException("Unexpected call.");
+    public TokenList<? extends TokenId> root() {
+        return tokenList.root();
     }
-
+    
+    public TokenHierarchyOperation<?,? extends TokenId> tokenHierarchyOperation() {
+        return tokenList.tokenHierarchyOperation();
+    }
+    
     public InputAttributes inputAttributes() {
         return tokenList.inputAttributes();
     }
@@ -138,7 +142,7 @@ public final class FilterSnapshotTokenList implements TokenList {
         return tokenList.isContinuous();
     }
 
-    public Set<? extends TokenId> skipTokenIds() {
+    public Set<T> skipTokenIds() {
         return tokenList.skipTokenIds();
     }
     

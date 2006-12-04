@@ -73,7 +73,7 @@ public final class LanguagePath {
      * @return non-null language path.
      */
     public static LanguagePath get(Language<? extends TokenId> language) {
-        return get(EMPTY, language);
+        return get(null, language);
     }
     
     /**
@@ -85,12 +85,14 @@ public final class LanguagePath {
      * <br/>
      * By using this method language paths with arbitrary depth can be created.
      *
-     * @param prefix non-null prefix language path determining the context in which
-     *   the language is embedded.
+     * @param prefix prefix language path determining the context in which
+     *   the language is embedded or null if there is no prefix.
      * @param language non-null language.
      * @return non-null language path.
      */
     public static LanguagePath get(LanguagePath prefix, Language<? extends TokenId> language) {
+        if (prefix == null)
+            prefix = EMPTY;
         return prefix.createEmbedded(language);
     }
     
@@ -324,7 +326,6 @@ public final class LanguagePath {
         }
     }
     
-    @SuppressWarnings("unchecked")
     private Language<? extends TokenId>[] allocateLanguageArray(int length) {
         return (Language<? extends TokenId>[])(new Language[length]);
     }

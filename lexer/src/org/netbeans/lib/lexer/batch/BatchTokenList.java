@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.Set;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
-import org.netbeans.lib.lexer.BranchTokenList;
+import org.netbeans.lib.lexer.EmbeddingContainer;
 import org.netbeans.lib.lexer.LAState;
 import org.netbeans.lib.lexer.TokenList;
 import org.netbeans.lib.lexer.LexerInputOperation;
@@ -31,6 +31,7 @@ import org.netbeans.lib.lexer.LexerUtilsConstants;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
+import org.netbeans.lib.lexer.TokenHierarchyOperation;
 import org.netbeans.lib.lexer.token.AbstractToken;
 import org.netbeans.lib.lexer.token.TextToken;
 
@@ -42,7 +43,8 @@ import org.netbeans.lib.lexer.token.TextToken;
  * @version 1.00
  */
 
-public abstract class BatchTokenList extends ArrayList<Object> implements TokenList {
+public abstract class BatchTokenList<T extends TokenId>
+extends ArrayList<Object> implements TokenList<T> {
     
     /** Flag for additional correctness checks (may degrade performance). */
     private static final boolean testing = Boolean.getBoolean("netbeans.debug.lexer.test");
@@ -60,24 +62,27 @@ public abstract class BatchTokenList extends ArrayList<Object> implements TokenL
         BatchTokenList.maintainLAState = maintainLAState;
     }
     
+    private final TokenHierarchyOperation<?,T> tokenHierarchyOperation;
+    
     private final LanguagePath languagePath;
     
-    private final Set<? extends TokenId> skipTokenIds;
+    private final Set<T> skipTokenIds;
     
     private final InputAttributes inputAttributes;
     
     /**
      * Lexer input used for lexing of the input.
      */
-    private LexerInputOperation lexerInputOperation;
+    private LexerInputOperation<T> lexerInputOperation;
 
     private LAState laState;
     
     private boolean inited;
     
     
-    public BatchTokenList(Language<? extends TokenId> language,
-    Set<? extends TokenId> skipTokenIds, InputAttributes inputAttributes) {
+    public BatchTokenList(TokenHierarchyOperation<?,T> tokenHierarchyOperation,
+    Language<T> language, Set<T> skipTokenIds, InputAttributes inputAttributes) {
+        this.tokenHierarchyOperation = tokenHierarchyOperation;
         this.languagePath = LanguagePath.get(language);
         this.skipTokenIds = skipTokenIds;
         this.inputAttributes = inputAttributes;
@@ -88,16 +93,20 @@ public abstract class BatchTokenList extends ArrayList<Object> implements TokenL
 
     public abstract char childTokenCharAt(int rawOffset, int index);
 
-    protected abstract LexerInputOperation createLexerInputOperation();
+    protected abstract LexerInputOperation<T> createLexerInputOperation();
 
     protected void init() {
         lexerInputOperation = createLexerInputOperation();
     }
     
-    public TokenList root() {
+    public TokenList<? extends TokenId> root() {
         return this; // this list should always be the root list of the token hierarchy
     }
-
+    
+    public TokenHierarchyOperation<?,? extends TokenId> tokenHierarchyOperation() {
+        return tokenHierarchyOperation;
+    }
+    
     public LanguagePath languagePath() {
         return languagePath;
     }
@@ -108,7 +117,7 @@ public abstract class BatchTokenList extends ArrayList<Object> implements TokenL
             inited = true;
         }
         if (lexerInputOperation != null) { // still lexing
-            tokenOrBranchImpl(Integer.MAX_VALUE);
+            tokenOrEmbeddingContainerImpl(Integer.MAX_VALUE);
         }
         return size();
     }
@@ -123,7 +132,7 @@ public abstract class BatchTokenList extends ArrayList<Object> implements TokenL
     }
 
     public int tokenOffset(int index) {
-        Token<? extends TokenId> token = existingToken(index);
+        Token<T> token = existingToken(index);
         int offset;
         if (token.isFlyweight()) {
             offset = 0;
@@ -141,17 +150,17 @@ public abstract class BatchTokenList extends ArrayList<Object> implements TokenL
         return offset;
     }
 
-    public synchronized Object tokenOrBranch(int index) {
-        return tokenOrBranchImpl(index);
+    public synchronized Object tokenOrEmbeddingContainer(int index) {
+        return tokenOrEmbeddingContainerImpl(index);
     }
     
-    private Object tokenOrBranchImpl(int index) {
+    private Object tokenOrEmbeddingContainerImpl(int index) {
         if (!inited) {
             init();
             inited = true;
         }
         while (lexerInputOperation != null && index >= size()) {
-            Token token = lexerInputOperation.nextToken();
+            Token<T> token = lexerInputOperation.nextToken();
             if (token != null) { // lexer returned valid token
                 add(token);
                 if (laState != null) { // maintaining lookaheads and states
@@ -166,15 +175,8 @@ public abstract class BatchTokenList extends ArrayList<Object> implements TokenL
         return (index < size()) ? get(index) : null;
     }
     
-    private Token<? extends TokenId> existingToken(int index) {
+    private Token<T> existingToken(int index) {
         return LexerUtilsConstants.token(get(index));
-    }
-
-    public synchronized <T extends TokenId> AbstractToken<T> createNonFlyToken(
-    int index, AbstractToken<T> flyToken, int offset) {
-        TextToken<T> nonFlyToken = ((TextToken<T>)flyToken).createCopy(this, offset);
-        set(index, nonFlyToken);
-        return nonFlyToken;
     }
 
     public int lookahead(int index) {
@@ -189,8 +191,15 @@ public abstract class BatchTokenList extends ArrayList<Object> implements TokenL
         return -1; // immutable input
     }
     
-    public void wrapToken(int index, BranchTokenList wrapper) {
-        set(index, wrapper);
+    public synchronized AbstractToken<T> replaceFlyToken(
+    int index, AbstractToken<T> flyToken, int offset) {
+        TextToken<T> nonFlyToken = ((TextToken<T>)flyToken).createCopy(this, offset);
+        set(index, nonFlyToken);
+        return nonFlyToken;
+    }
+
+    public void wrapToken(int index, EmbeddingContainer embeddingContainer) {
+        set(index, embeddingContainer);
     }
 
     public InputAttributes inputAttributes() {
@@ -201,7 +210,7 @@ public abstract class BatchTokenList extends ArrayList<Object> implements TokenL
         return (skipTokenIds == null);
     }
     
-    public Set<? extends TokenId> skipTokenIds() {
+    public Set<T> skipTokenIds() {
         return skipTokenIds;
     }
 

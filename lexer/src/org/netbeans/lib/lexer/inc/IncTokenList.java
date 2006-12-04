@@ -27,12 +27,13 @@ import org.netbeans.lib.lexer.LexerSpiPackageAccessor;
 import org.netbeans.lib.lexer.TextLexerInputOperation;
 import org.netbeans.lib.lexer.TokenList;
 import org.netbeans.lib.editor.util.FlyOffsetGapList;
-import org.netbeans.lib.lexer.BranchTokenList;
+import org.netbeans.lib.lexer.EmbeddingContainer;
 import org.netbeans.lib.lexer.LexerInputOperation;
 import org.netbeans.lib.lexer.LexerUtilsConstants;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
+import org.netbeans.lib.lexer.TokenHierarchyOperation;
 import org.netbeans.spi.lexer.MutableTextInput;
 import org.netbeans.lib.lexer.token.AbstractToken;
 import org.netbeans.lib.lexer.token.TextToken;
@@ -55,9 +56,12 @@ import org.netbeans.lib.lexer.token.TextToken;
  * @version 1.00
  */
 
-public final class IncTokenList extends FlyOffsetGapList<Object> implements MutableTokenList {
+public final class IncTokenList<T extends TokenId>
+extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
+    
+    private final TokenHierarchyOperation<?,T> tokenHierarchyOperation;
 
-    private final MutableTextInput mutableTextInput;
+    private final MutableTextInput<?> mutableTextInput;
     
     private final LanguagePath languagePath;
     
@@ -68,7 +72,7 @@ public final class IncTokenList extends FlyOffsetGapList<Object> implements Muta
     /**
      * Lexer input operation used for lexing of the input.
      */
-    private LexerInputOperation lexerInputOperation;
+    private LexerInputOperation<T> lexerInputOperation;
     
     private boolean inited;
     
@@ -77,7 +81,9 @@ public final class IncTokenList extends FlyOffsetGapList<Object> implements Muta
     private LAState laState;
     
     
-    public IncTokenList(MutableTextInput mutableTextInput) {
+    public IncTokenList(TokenHierarchyOperation<?,T> tokenHierarchyOperation,
+    MutableTextInput<?> mutableTextInput) {
+        this.tokenHierarchyOperation = tokenHierarchyOperation;
         this.mutableTextInput = mutableTextInput;
         this.languagePath = LanguagePath.get(
                 LexerSpiPackageAccessor.get().language(mutableTextInput));
@@ -87,7 +93,7 @@ public final class IncTokenList extends FlyOffsetGapList<Object> implements Muta
     }
     
     private void init() {
-        lexerInputOperation = new TextLexerInputOperation(this, text);
+        lexerInputOperation = new TextLexerInputOperation<T>(this, text);
     }
     
     public LanguagePath languagePath() {
@@ -100,7 +106,7 @@ public final class IncTokenList extends FlyOffsetGapList<Object> implements Muta
             inited = true;
         }
         if (lexerInputOperation != null) { // still lexing
-            tokenOrBranchImpl(Integer.MAX_VALUE);
+            tokenOrEmbeddingContainerImpl(Integer.MAX_VALUE);
         }
         return size();
     }
@@ -131,11 +137,11 @@ public final class IncTokenList extends FlyOffsetGapList<Object> implements Muta
         rootModCount++;
     }
     
-    public synchronized Object tokenOrBranch(int index) {
-        return tokenOrBranchImpl(index);
+    public synchronized Object tokenOrEmbeddingContainer(int index) {
+        return tokenOrEmbeddingContainerImpl(index);
     }
     
-    private Object tokenOrBranchImpl(int index) {
+    private Object tokenOrEmbeddingContainerImpl(int index) {
         if (!inited) {
             init();
             inited = true;
@@ -156,15 +162,15 @@ public final class IncTokenList extends FlyOffsetGapList<Object> implements Muta
         return (index < size()) ? get(index) : null;
     }
     
-    public synchronized <T extends TokenId> AbstractToken<T> createNonFlyToken(
+    public synchronized AbstractToken<T> replaceFlyToken(
     int index, AbstractToken<T> flyToken, int offset) {
         TextToken<T> nonFlyToken = ((TextToken<T>)flyToken).createCopy(this, offset2Raw(offset));
         set(index, nonFlyToken);
         return nonFlyToken;
     }
 
-    public synchronized void wrapToken(int index, BranchTokenList wrapper) {
-        set(index, wrapper);
+    public synchronized void wrapToken(int index, EmbeddingContainer embeddingContainer) {
+        set(index, embeddingContainer);
     }
 
     public InputAttributes inputAttributes() {
@@ -181,7 +187,7 @@ public final class IncTokenList extends FlyOffsetGapList<Object> implements Muta
     
     protected boolean isElementFlyweight(Object elem) {
         // token wrapper always contains non-flyweight token
-        return (elem.getClass() != BranchTokenList.class)
+        return (elem.getClass() != EmbeddingContainer.class)
             && ((AbstractToken)elem).isFlyweight();
     }
     
@@ -189,13 +195,13 @@ public final class IncTokenList extends FlyOffsetGapList<Object> implements Muta
         return LexerUtilsConstants.token(elem).length();
     }
     
-    private AbstractToken existingToken(int index) {
-        // Must use synced tokenOrBranch() because of possible change
+    private AbstractToken<T> existingToken(int index) {
+        // Must use synced tokenOrEmbeddingContainer() because of possible change
         // of the underlying list impl when adding lazily requested tokens
-        return LexerUtilsConstants.token(tokenOrBranch(index));
+        return LexerUtilsConstants.token(tokenOrEmbeddingContainer(index));
     }
 
-    public Object tokenOrBranchUnsync(int index) {
+    public Object tokenOrEmbeddingContainerUnsync(int index) {
         // Solely for token list updater or token hierarchy snapshots
         // having single-threaded exclusive write access
         return get(index);
@@ -213,14 +219,18 @@ public final class IncTokenList extends FlyOffsetGapList<Object> implements Muta
         return size();
     }
 
-    public TokenList root() {
+    public TokenList<? extends TokenId> root() {
         return this;
     }
 
-    public LexerInputOperation createLexerInputOperation(
+    public TokenHierarchyOperation<?,? extends TokenId> tokenHierarchyOperation() {
+        return tokenHierarchyOperation;
+    }
+    
+    public LexerInputOperation<T> createLexerInputOperation(
     int tokenIndex, int relexOffset, Object relexState) {
         // Used for mutable lists only so maintain LA and state
-        return new TextLexerInputOperation(this, tokenIndex, relexState,
+        return new TextLexerInputOperation<T>(this, tokenIndex, relexState,
                 text, 0, relexOffset, text.length());
     }
 
@@ -228,15 +238,16 @@ public final class IncTokenList extends FlyOffsetGapList<Object> implements Muta
         return inited && (lexerInputOperation == null);
     }
 
-    public void replaceTokens(TokenListChange change, int removeTokenCount) {
-        int index = change.tokenIndex();
+    public void replaceTokens(TokenHierarchyEventInfo eventInfo,
+    TokenListChange<T> change, int removeTokenCount) {
+        int index = change.index();
         // Remove obsolete tokens (original offsets are retained)
         Object[] removedTokensOrBranches = new Object[removeTokenCount];
         copyElements(index, index + removeTokenCount, removedTokensOrBranches, 0);
-        int offset = change.modifiedTokensStartOffset();
+        int offset = change.offset();
         for (int i = 0; i < removeTokenCount; i++) {
-            Object tokenOrBranch = removedTokensOrBranches[i];
-            AbstractToken token = LexerUtilsConstants.token(tokenOrBranch);
+            Object tokenOrEmbeddingContainer = removedTokensOrBranches[i];
+            AbstractToken<T> token = LexerUtilsConstants.token(tokenOrEmbeddingContainer);
             if (!token.isFlyweight()) {
                 updateElementOffsetRemove(token);
                 token.setTokenList(null);
@@ -245,11 +256,11 @@ public final class IncTokenList extends FlyOffsetGapList<Object> implements Muta
         }
         remove(index, removeTokenCount); // Retain original offsets
         laState.remove(index, removeTokenCount); // Remove lookaheads and states
-        change.initRemovedTokenList(removedTokensOrBranches);
-        change.setRemovedTokensEndOffset(offset);
+        change.setRemovedTokens(removedTokensOrBranches);
+        change.setRemovedEndOffset(offset);
 
         // Move and fix the gap according to the performed modification.
-        int diffLength = change.insertedLength() - change.removedLength();
+        int diffLength = eventInfo.insertedLength() - eventInfo.removedLength();
         if (offsetGapStart() != change.offset()) {
             // Minimum of the index of the first removed index and original computed index
             moveOffsetGap(change.offset(), Math.min(index, change.offsetGapIndex()));
@@ -257,16 +268,15 @@ public final class IncTokenList extends FlyOffsetGapList<Object> implements Muta
         updateOffsetGapLength(-diffLength);
 
         // Add created tokens.
-        List<AbstractToken> addedTokens = change.addedTokens();
+        List<AbstractToken<T>> addedTokens = change.addedTokens();
         if (addedTokens != null) {
             for (int i = 0; i < addedTokens.size(); i++) {
-                AbstractToken token = (AbstractToken)addedTokens.get(i);
+                AbstractToken<T> token = addedTokens.get(i);
                 updateElementOffsetAdd(token);
             }
             addAll(index, addedTokens);
             laState = laState.addAll(index, change.laState());
-            change.setAddedTokenCount(addedTokens.size());
-            change.clearAddedTokens();
+            change.syncAddedTokenCount();
         }
     }
     
@@ -286,7 +296,7 @@ public final class IncTokenList extends FlyOffsetGapList<Object> implements Muta
         return true;
     }
 
-    public Set<? extends TokenId> skipTokenIds() {
+    public Set<T> skipTokenIds() {
         return null;
     }
 

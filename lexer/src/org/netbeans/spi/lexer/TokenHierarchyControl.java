@@ -35,17 +35,21 @@ public final class TokenHierarchyControl<I> {
 
     private MutableTextInput<I> input;
 
-    private TokenHierarchyOperation<I> operation;
+    private TokenHierarchyOperation<I,?> operation;
 
     TokenHierarchyControl(MutableTextInput<I> input) {
         this.input = input;
     }
     
-    private void init() {
+    private <T extends TokenId> void init() {
         Language<? extends TokenId> language = input.language();
         if (language != null) {
-            this.operation = new TokenHierarchyOperation<I>(input, language);
+            this.operation = createOperation(language);
         }
+    }
+    
+    private <T extends TokenId> TokenHierarchyOperation<I,T> createOperation(Language<T> language) {
+        return new TokenHierarchyOperation<I,T>(input, language);
     }
     
     public synchronized TokenHierarchy<I> tokenHierarchy() {

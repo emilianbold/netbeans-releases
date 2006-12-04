@@ -93,33 +93,9 @@ public enum JspTokenId implements TokenId {
                 LanguagePath languagePath, InputAttributes inputAttributes) {
             switch(token.id()) {
                 case TEXT:
-                    return new LanguageEmbedding() {
-                        public Language<? extends TokenId> language() {
-                            return HTMLTokenId.language();
-                        }
-                        
-                        public int startSkipLength() {
-                            return 0;
-                        }
-                        
-                        public int endSkipLength() {
-                            return 0;
-                        }
-                    };
+                    return LanguageEmbedding.create(HTMLTokenId.language(), 0, 0);
                 case EL:
-                    return new LanguageEmbedding() {
-                        public Language<? extends TokenId> language() {
-                            return ELTokenId.language();
-                        }
-                        
-                        public int startSkipLength() {
-                            return 2;
-                        }
-                        
-                        public int endSkipLength() {
-                            return 1;
-                        }
-                    };
+                    return LanguageEmbedding.create(ELTokenId.language(), 2, 1);
                     //                case SCRIPTLET:
                     //                    return new LanguageEmbedding() {
                     //                        public LanguageDescription language() {

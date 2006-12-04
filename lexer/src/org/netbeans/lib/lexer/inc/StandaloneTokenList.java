@@ -23,7 +23,8 @@ import java.util.Set;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenId;
-import org.netbeans.lib.lexer.BranchTokenList;
+import org.netbeans.lib.lexer.EmbeddingContainer;
+import org.netbeans.lib.lexer.TokenHierarchyOperation;
 import org.netbeans.lib.lexer.TokenList;
 import org.netbeans.lib.lexer.token.AbstractToken;
 
@@ -35,7 +36,7 @@ import org.netbeans.lib.lexer.token.AbstractToken;
  * @version 1.00
  */
 
-public final class StandaloneTokenList implements TokenList {
+public final class StandaloneTokenList<T extends TokenId> implements TokenList<T> {
 
     private char[] tokenText;
 
@@ -50,11 +51,11 @@ public final class StandaloneTokenList implements TokenList {
         return languagePath;
     }
     
-    public Object tokenOrBranch(int index) {
+    public Object tokenOrEmbeddingContainer(int index) {
         throw new IllegalStateException("Not expected to be called"); // NOI18N
     }
 
-    public <T extends TokenId> AbstractToken<T> createNonFlyToken(
+    public AbstractToken<T> replaceFlyToken(
     int index, AbstractToken<T> flyToken, int offset) {
         throw new IllegalStateException("Not expected to be called"); // NOI18N
     }
@@ -92,12 +93,16 @@ public final class StandaloneTokenList implements TokenList {
         return tokenText[index];
     }
 
-    public void wrapToken(int index, BranchTokenList wrapper) {
+    public void wrapToken(int index, EmbeddingContainer embeddingContainer) {
         throw new IllegalStateException("Branching of standalone tokens not supported"); // NOI18N
     }
     
-    public TokenList root() {
+    public TokenList<? extends TokenId> root() {
         return this;
+    }
+    
+    public TokenHierarchyOperation<?,? extends TokenId> tokenHierarchyOperation() {
+        return null;
     }
     
     public InputAttributes inputAttributes() {
@@ -108,7 +113,7 @@ public final class StandaloneTokenList implements TokenList {
         return true;
     }
 
-    public Set<? extends TokenId> skipTokenIds() {
+    public Set<T> skipTokenIds() {
         return null;
     }
 

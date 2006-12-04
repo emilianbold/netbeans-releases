@@ -19,7 +19,8 @@
 
 package org.netbeans.lib.lexer.inc;
 
-import org.netbeans.lib.lexer.BranchTokenList;
+import org.netbeans.api.lexer.TokenId;
+import org.netbeans.lib.lexer.EmbeddedTokenList;
 import org.netbeans.lib.lexer.LanguageOperation;
 import org.netbeans.lib.lexer.LexerInputOperation;
 import org.netbeans.lib.lexer.LexerUtilsConstants;
@@ -88,15 +89,16 @@ public final class TokenListUpdater {
      * Use incremental algorithm to update the list of tokens
      * after a modification done in the underlying storage.
      */
-    public static void update(MutableTokenList tokenList, TokenListChange change) {
+    public static <T extends TokenId> void update(MutableTokenList<T> tokenList,
+    TokenHierarchyEventInfo eventInfo, TokenListChange<T> change) {
         // Ensure the offsets in token list are up-to-date
-        if (tokenList.getClass() == BranchTokenList.class) {
-            ((BranchTokenList)tokenList).updateStartOffset();
+        if (tokenList.getClass() == EmbeddedTokenList.class) {
+            ((EmbeddedTokenList<? extends TokenId>)tokenList).updateStartOffset();
         }
 
         // Fetch offset where the modification occurred
-        int modOffset = change.offset();
-        LanguageOperation languageOperation = LexerUtilsConstants.languageOperation(
+        int modOffset = eventInfo.modificationOffset();
+        LanguageOperation<T> languageOperation = LexerUtilsConstants.mostEmbeddedLanguageOperation(
                 tokenList.languagePath());
 
         int tokenCount = tokenList.tokenCountCurrent(); // presently created token count
@@ -105,7 +107,7 @@ public final class TokenListUpdater {
         // (for modification right at the begining of modified token)
         // then the token will be attempted to be validated (without running
         // a lexer).
-        AbstractToken modToken;
+        AbstractToken<T> modToken;
         // modTokenOffset holds begining of the token in which the modification occurred.
         int modTokenOffset;
         // index points to the modified token
@@ -190,13 +192,13 @@ public final class TokenListUpdater {
             relexIndex = index;
             relexOffset = modTokenOffset;
             // Can validate modToken if removal does not span whole token
-            if (modToken != null && change.removedLength() < modToken.length()) {
+            if (modToken != null && eventInfo.removedLength() < modToken.length()) {
                 attemptValidation = true;
             }
 
         } else { // Previous token exists
             // Check for insert-only right at the end of the previous token
-            if (modOffset == modTokenOffset && change.removedLength() == 0) {
+            if (modOffset == modTokenOffset && eventInfo.removedLength() == 0) {
                 index--; // move to previous token
                 modToken = token(tokenList, index);
                 modTokenOffset -= modToken.length();
@@ -208,7 +210,7 @@ public final class TokenListUpdater {
                 relexIndex = index;
                 relexOffset = modTokenOffset;
                 // Check whether modification was localized to modToken only
-                if (modOffset + change.removedLength() < modTokenOffset + modToken.length()) {
+                if (modOffset + eventInfo.removedLength() < modTokenOffset + modToken.length()) {
                     attemptValidation = true;
                 }
 
@@ -218,7 +220,7 @@ public final class TokenListUpdater {
                 
                 // Go back and mark all affected tokens for removals
                 while (relexIndex >= 0) {
-                    AbstractToken token = token(tokenList, relexIndex);
+                    AbstractToken<T> token = token(tokenList, relexIndex);
                     // Check if token was not affected by modification
                     if (relexOffset + tokenList.lookahead(relexIndex) <= modOffset) {
                         break;
@@ -244,7 +246,7 @@ public final class TokenListUpdater {
             TokenValidator tokenValidator = languageOperation.tokenValidator(modToken.id());
             if (tokenValidator != null
                 && (tokenList.getClass() != IncTokenList.class
-                    || change.tokenHierarchyOperation().canModifyToken(index, modToken))
+                    || eventInfo.tokenHierarchyOperation().canModifyToken(index, modToken))
             ) {
                     
 //                if (tokenValidator.validateToken(modToken, modOffset - modTokenOffset, modRelOffset,
@@ -262,7 +264,7 @@ public final class TokenListUpdater {
             // by iterating forward
             if (index < tokenCount) {
                 matchOffset = modTokenOffset + modToken.length();
-                int removeEndOffset = modOffset + change.removedLength();
+                int removeEndOffset = modOffset + eventInfo.removedLength();
                 while (matchOffset < removeEndOffset && index + 1 < tokenCount) {
                     index++;
                     matchOffset += token(tokenList, index).length();
@@ -276,8 +278,8 @@ public final class TokenListUpdater {
         Object relexState = (relexIndex > 0) ? tokenList.state(relexIndex - 1) : null;
         // Update the matchOffset so that it corresponds to the state
         // after the modification
-        matchOffset += change.insertedLength() - change.removedLength();
-        change.setModifiedTokensStartOffset(relexOffset);
+        matchOffset += eventInfo.insertedLength() - eventInfo.removedLength();
+        change.setOffset(relexOffset);
         
         // Variables' values:
         // 'index' - points to modified token. Or index == tokenCount for modification
@@ -312,11 +314,11 @@ public final class TokenListUpdater {
         }
 
         if (relex) { // Start relexing
-            LexerInputOperation lexerInputOperation
+            LexerInputOperation<T> lexerInputOperation
                     = tokenList.createLexerInputOperation(relexIndex, relexOffset, relexState);
 
             do { // Fetch new tokens from lexer as necessary
-                AbstractToken token = lexerInputOperation.nextToken();
+                AbstractToken<T> token = lexerInputOperation.nextToken();
                 if (token == null) {
                     attemptValidation = false;
                     break;
@@ -424,18 +426,15 @@ public final class TokenListUpdater {
         }
 
         // Now ensure that the original tokens will be replaced by the relexed ones.
-        change.setTokenIndex(relexIndex);
-        change.setCurrentTokenList(tokenList);
-        change.setAddedTokensEndOffset(relexOffset);
-        tokenList.replaceTokens(change,
+        change.setIndex(relexIndex);
+        change.setAddedEndOffset(relexOffset);
+        tokenList.replaceTokens(eventInfo, change,
             (modToken != null) ? (index - relexIndex + 1) : (index - relexIndex));
     }
     
-    private static AbstractToken token(MutableTokenList tokenList, int index) {
-        Object tokenOrBranch = tokenList.tokenOrBranchUnsync(index); // Unsync impl suffices
-        return (tokenOrBranch.getClass() == BranchTokenList.class)
-            ? (AbstractToken)((BranchTokenList)tokenOrBranch).branchToken()
-            : (AbstractToken)tokenOrBranch;
+    private static <T extends TokenId> AbstractToken<T> token(MutableTokenList<T> tokenList, int index) {
+        Object tokenOrEmbeddingContainer = tokenList.tokenOrEmbeddingContainerUnsync(index); // Unsync impl suffices
+        return LexerUtilsConstants.token(tokenOrEmbeddingContainer);
     }
 
 }

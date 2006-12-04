@@ -57,7 +57,7 @@ public final class LexerTestUtilities {
     /**
      * @see #assertTokenEquals(String, TokenSequence, TokenId, String, int)
      */
-    public static void assertTokenEquals(TokenSequence ts, TokenId id, String text, int offset) {
+    public static void assertTokenEquals(TokenSequence<? extends TokenId> ts, TokenId id, String text, int offset) {
         assertTokenEquals(null, ts, id, text, offset);
     }
 
@@ -67,9 +67,9 @@ public final class LexerTestUtilities {
      *
      * @param offset expected offset. It may be -1 to prevent offset testing.
      */
-    public static void assertTokenEquals(String message, TokenSequence ts, TokenId id, String text, int offset) {
+    public static void assertTokenEquals(String message, TokenSequence<? extends TokenId> ts, TokenId id, String text, int offset) {
         message = messagePrefix(message);
-        Token t = ts.token();
+        Token<? extends TokenId> t = ts.token();
         TokenId tId = t.id();
         TestCase.assertEquals(message + "Invalid token.id()", id, tId);
         CharSequence tText = t.text();
@@ -92,12 +92,12 @@ public final class LexerTestUtilities {
         }
     }
     
-    public static void assertTokenEquals(TokenSequence ts, TokenId id, String text, int offset,
+    public static void assertTokenEquals(TokenSequence<? extends TokenId> ts, TokenId id, String text, int offset,
     int lookahead, Object state) {
         assertTokenEquals(null, ts, id, text, offset, lookahead, state);
     }
 
-    public static void assertTokenEquals(String message, TokenSequence ts, TokenId id, String text, int offset,
+    public static void assertTokenEquals(String message, TokenSequence<? extends TokenId> ts, TokenId id, String text, int offset,
     int lookahead, Object state) {
         assertTokenEquals(message, ts, id, text, offset);
 
@@ -133,11 +133,11 @@ public final class LexerTestUtilities {
     /**
      * Assert that the next token in the token sequence
      */
-    public static void assertNextTokenEquals(TokenSequence ts, TokenId id, String text) {
+    public static void assertNextTokenEquals(TokenSequence<? extends TokenId> ts, TokenId id, String text) {
         assertNextTokenEquals(null, ts, id, text);
     }
 
-    public static void assertNextTokenEquals(String message, TokenSequence ts, TokenId id, String text) {
+    public static void assertNextTokenEquals(String message, TokenSequence<? extends TokenId> ts, TokenId id, String text) {
         String messagePrefix = messagePrefix(message);
         TestCase.assertTrue(messagePrefix + "No next token available", ts.moveNext());
         assertTokenEquals(message, ts, id, text, -1);
@@ -147,8 +147,8 @@ public final class LexerTestUtilities {
      * @see #assertTokenSequencesEqual(String,TokenSequence,TokenHierarchy,TokenSequence,TokenHierarchy,boolean)
      */
     public static void assertTokenSequencesEqual(
-    TokenSequence expected, TokenHierarchy expectedHi,
-    TokenSequence actual, TokenHierarchy actualHi,
+    TokenSequence<? extends TokenId> expected, TokenHierarchy<?> expectedHi,
+    TokenSequence<? extends TokenId> actual, TokenHierarchy<?> actualHi,
     boolean testLookaheadAndState) {
         assertTokenSequencesEqual(null, expected, expectedHi, actual, actualHi, testLookaheadAndState);
     }
@@ -170,8 +170,8 @@ public final class LexerTestUtilities {
      *  be false because snapshots do not hold lookaheads and states.
      */
     public static void assertTokenSequencesEqual(String message,
-    TokenSequence expected, TokenHierarchy expectedHi,
-    TokenSequence actual, TokenHierarchy actualHi,
+    TokenSequence<? extends TokenId> expected, TokenHierarchy<?> expectedHi,
+    TokenSequence<? extends TokenId> actual, TokenHierarchy<?> actualHi,
     boolean testLookaheadAndState) {
         boolean success = false;
         try {
@@ -192,10 +192,10 @@ public final class LexerTestUtilities {
     }
 
     private static void assertTokensEqual(String message,
-    TokenSequence ts, TokenHierarchy tokenHierarchy,
-    TokenSequence ts2, TokenHierarchy tokenHierarchy2, boolean testLookaheadAndState) {
-        Token t = ts.token();
-        Token t2 = ts2.token();
+    TokenSequence<? extends TokenId> ts, TokenHierarchy tokenHierarchy,
+    TokenSequence<? extends TokenId> ts2, TokenHierarchy tokenHierarchy2, boolean testLookaheadAndState) {
+        Token<? extends TokenId> t = ts.token();
+        Token<? extends TokenId> t2 = ts2.token();
 
         message = messagePrefix(message);
         TestCase.assertEquals(message + "Invalid token id", t.id(), t2.id());
@@ -218,7 +218,7 @@ public final class LexerTestUtilities {
      * @param ts non-null token sequence.
      * @return number of flyweight tokens in the token sequence.
      */
-    public static int flyweightTokenCount(TokenSequence ts) {
+    public static int flyweightTokenCount(TokenSequence<? extends TokenId> ts) {
         int flyTokenCount = 0;
         ts.moveIndex(0);
         while (ts.moveNext()) {
@@ -237,7 +237,7 @@ public final class LexerTestUtilities {
      * @return number of characters contained in the flyweight tokens
      *  in the token sequence.
      */
-    public static int flyweightTextLength(TokenSequence ts) {
+    public static int flyweightTextLength(TokenSequence<? extends TokenId> ts) {
         int flyTokenTextLength = 0;
         ts.moveIndex(0);
         while (ts.moveNext()) {
@@ -255,7 +255,7 @@ public final class LexerTestUtilities {
      * @return non-null list containing number of the flyweight tokens that have the length
      *  equal to the index in the list.
      */
-    public static List<Integer> flyweightDistribution(TokenSequence ts) {
+    public static List<Integer> flyweightDistribution(TokenSequence<? extends TokenId> ts) {
         List<Integer> distribution = new ArrayList<Integer>();
         ts.moveIndex(0);
         while (ts.moveNext()) {
@@ -300,9 +300,8 @@ public final class LexerTestUtilities {
     }
     
     public static void incCheck(Document doc, boolean nested) {
-        TokenHierarchy thInc = TokenHierarchy.get(doc);
-        @SuppressWarnings("unchecked")
-        Language<TokenId> language = (Language<TokenId>)
+        TokenHierarchy<?> thInc = TokenHierarchy.get(doc);
+        Language<? extends TokenId> language = (Language<? extends TokenId>)
                 doc.getProperty(Language.class);
         String docText = null;
         try {
@@ -311,7 +310,7 @@ public final class LexerTestUtilities {
             e.printStackTrace();
             TestCase.fail("BadLocationException occurred");
         }
-        TokenHierarchy thBatch = TokenHierarchy.create(docText, language);
+        TokenHierarchy<?> thBatch = TokenHierarchy.create(docText, language);
         boolean success = false;
         try {
             // Compare lookaheads and states as well
@@ -321,7 +320,7 @@ public final class LexerTestUtilities {
         } finally {
             if (!success) {
                 System.err.println("BATCH token sequence dump:\n" + thBatch.tokenSequence());
-                TokenHierarchy lastHi = (TokenHierarchy)doc.getProperty(LAST_TOKEN_HIERARCHY);
+                TokenHierarchy<?> lastHi = (TokenHierarchy<?>)doc.getProperty(LAST_TOKEN_HIERARCHY);
                 if (lastHi != null) {
                     System.err.println("PREVIOUS token sequence dump:\n" + lastHi.tokenSequence());
                 }
@@ -329,7 +328,7 @@ public final class LexerTestUtilities {
         }
         
         // Check the change since last modification
-        TokenHierarchy lastHi = (TokenHierarchy)doc.getProperty(LAST_TOKEN_HIERARCHY);
+        TokenHierarchy<?> lastHi = (TokenHierarchy<?>)doc.getProperty(LAST_TOKEN_HIERARCHY);
         if (lastHi != null) {
             // TODO comparison
         }
@@ -349,7 +348,7 @@ public final class LexerTestUtilities {
      * <br/>
      * The method uses reflection to get reference to tokenList field in token sequence.
      */
-    public static int lookahead(TokenSequence ts) {
+    public static int lookahead(TokenSequence<? extends TokenId> ts) {
         return tokenList(ts).lookahead(ts.index());
     }
 
@@ -358,7 +357,7 @@ public final class LexerTestUtilities {
      * <br/>
      * The method uses reflection to get reference to tokenList field in token sequence.
      */
-    public static Object state(TokenSequence ts) {
+    public static Object state(TokenSequence<? extends TokenId> ts) {
         return tokenList(ts).state(ts.index());
     }
 
@@ -411,13 +410,15 @@ public final class LexerTestUtilities {
     /**
      * Get token list from the given token sequence for testing purposes.
      */
-    public static TokenList tokenList(TokenSequence ts) {
+    public static <T extends TokenId> TokenList<T> tokenList(TokenSequence<T> ts) {
         try {
             if (tokenListField == null) {
                 tokenListField = ts.getClass().getDeclaredField("tokenList");
                 tokenListField.setAccessible(true);
             }
-            return (TokenList)tokenListField.get(ts);
+            @SuppressWarnings("unchecked")
+            TokenList<T> tl = (TokenList<T>)tokenListField.get(ts);
+            return tl;
         } catch (Exception e) {
             TestCase.fail(e.getMessage());
             return null; // never reached

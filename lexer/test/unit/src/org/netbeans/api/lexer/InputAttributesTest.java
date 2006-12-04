@@ -63,8 +63,8 @@ public class InputAttributesTest extends TestCase {
         String text = "public static private";
 
         // Default version recognizes "static" keyword
-        TokenHierarchy hi = TokenHierarchy.create(text, SimpleTokenId.language());
-        TokenSequence ts = hi.tokenSequence();
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, SimpleTokenId.language());
+        TokenSequence<? extends TokenId> ts = hi.tokenSequence();
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.PUBLIC, "public", 0);
         assertTrue(ts.moveNext());

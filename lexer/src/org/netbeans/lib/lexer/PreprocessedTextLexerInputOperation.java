@@ -19,10 +19,8 @@
 
 package org.netbeans.lib.lexer;
 
-import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.spi.lexer.LexerInput;
-import org.netbeans.lib.lexer.token.AbstractToken;
 
 /**
  * Used when branching a token with preprocessed text.
@@ -31,7 +29,7 @@ import org.netbeans.lib.lexer.token.AbstractToken;
  * @version 1.00
  */
 
-public final class PreprocessedTextLexerInputOperation extends TextLexerInputOperation {
+public final class PreprocessedTextLexerInputOperation<T extends TokenId> extends TextLexerInputOperation<T> {
 
     private final PreprocessedTextStorage preprocessedText;
 
@@ -45,11 +43,11 @@ public final class PreprocessedTextLexerInputOperation extends TextLexerInputOpe
     
     private int tokenEndRawLengthShift;
 
-    public PreprocessedTextLexerInputOperation(TokenList tokenList, PreprocessedTextStorage prepText) {
+    public PreprocessedTextLexerInputOperation(TokenList<T> tokenList, PreprocessedTextStorage prepText) {
         this(tokenList, 0, null, prepText, 0, 0, prepText.length());
     }
 
-    public PreprocessedTextLexerInputOperation(TokenList tokenList, int tokenIndex,
+    public PreprocessedTextLexerInputOperation(TokenList<T> tokenList, int tokenIndex,
     Object lexerRestartState, PreprocessedTextStorage prepText, int prepTextStartOffset,
     int startOffset, int endOffset) {
         super(tokenList, tokenIndex, lexerRestartState, prepText,

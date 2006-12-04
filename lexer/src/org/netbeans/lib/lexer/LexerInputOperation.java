@@ -41,7 +41,7 @@ import org.netbeans.spi.lexer.TokenFactory;
  * @version 1.00
  */
 
-public abstract class LexerInputOperation implements CharProvider {
+public abstract class LexerInputOperation<T extends TokenId> implements CharProvider {
     
     /** Flag for additional correctness checks (may degrade performance). */
     private static final boolean testing = Boolean.getBoolean("netbeans.debug.lexer.test");
@@ -71,11 +71,11 @@ public abstract class LexerInputOperation implements CharProvider {
      */
     private int tokenLength;
     
-    private final TokenList tokenList;
+    private final TokenList<T> tokenList;
     
     private final boolean mutableInput;
     
-    private final Lexer lexer;
+    private final Lexer<T> lexer;
     
     /**
      * Start of the token being currently recognized.
@@ -99,7 +99,7 @@ public abstract class LexerInputOperation implements CharProvider {
 
     private CharProvider.ExtraPreprocessedChars extraPreprocessedChars;
 
-    public LexerInputOperation(TokenList tokenList, int tokenIndex, Object lexerRestartState) {
+    public LexerInputOperation(TokenList<T> tokenList, int tokenIndex, Object lexerRestartState) {
         this.tokenList = tokenList;
         this.mutableInput = (tokenList.modCount() != -1);
         // Determine flySequenceLength setting
@@ -110,8 +110,8 @@ public abstract class LexerInputOperation implements CharProvider {
         }
         
         LanguagePath languagePath = tokenList.languagePath();
-        LanguageOperation languageOperation = LexerUtilsConstants.languageOperation(languagePath);
-        TokenFactory tokenFactory = LexerSpiPackageAccessor.get().createTokenFactory(this);
+        LanguageOperation<T> languageOperation = LexerUtilsConstants.mostEmbeddedLanguageOperation(languagePath);
+        TokenFactory<T> tokenFactory = LexerSpiPackageAccessor.get().createTokenFactory(this);
         
         // Check whether character preprocessing is necessary
         CharPreprocessor p = LexerSpiPackageAccessor.get().createCharPreprocessor(
@@ -130,8 +130,7 @@ public abstract class LexerInputOperation implements CharProvider {
         LexerInput lexerInput = LexerSpiPackageAccessor.get().createLexerInput(
                 (preprocessorOperation != null) ? preprocessorOperation : this);
 
-        @SuppressWarnings("unchecked")
-        LexerRestartInfo info = LexerSpiPackageAccessor.get().createLexerRestartInfo(
+        LexerRestartInfo<T> info = LexerSpiPackageAccessor.get().createLexerRestartInfo(
                 lexerInput, tokenFactory, lexerRestartState,
                 tokenList.languagePath(), inputAttributes());
         lexer = LexerSpiPackageAccessor.get().createLexer(
@@ -142,9 +141,9 @@ public abstract class LexerInputOperation implements CharProvider {
     
     public abstract char readExisting(int index);
     
-    public abstract void approveToken(AbstractToken token);
+    public abstract void approveToken(AbstractToken<T> token);
 
-    public Set<? extends TokenId> skipTokenIds() {
+    public Set<T> skipTokenIds() {
         return tokenList.skipTokenIds();
     }
     
@@ -220,7 +219,7 @@ public abstract class LexerInputOperation implements CharProvider {
         lookaheadIndex -= tokenLength;
     }
     
-    protected final TokenList tokenList() {
+    protected final TokenList<T> tokenList() {
         return tokenList;
     }
     
@@ -244,11 +243,11 @@ public abstract class LexerInputOperation implements CharProvider {
         return isMutableInput() || testing;
     }
     
-    public AbstractToken nextToken() {
+    public AbstractToken<T> nextToken() {
         assert (!lexerFinished);
-        AbstractToken token;
-        do {
-            token = (AbstractToken)lexer().nextToken();
+        while (true) {
+            @SuppressWarnings("unchecked")
+            AbstractToken<T> token = (AbstractToken<T>)lexer().nextToken();
             if (token == null) {
                 LexerUtilsConstants.checkLexerInputFinished(
                         (preprocessorOperation != null) ? (CharProvider)preprocessorOperation : this, this);
@@ -257,8 +256,10 @@ public abstract class LexerInputOperation implements CharProvider {
             } else {
                 approveToken(token);
             }
-        } while (token == TokenFactory.SKIP_TOKEN);
-        return token;
+            if (token == TokenFactory.SKIP_TOKEN)
+                continue; // Fetch next token
+            return token;
+        }
     }
     
     /**
@@ -299,7 +300,7 @@ public abstract class LexerInputOperation implements CharProvider {
         preprocessErrorList.add(error);
     }
 
-    public final void initPreprocessedToken(AbstractToken token) {
+    public final void initPreprocessedToken(AbstractToken<T> token) {
         CharPreprocessorError error = null;
         if (preprocessErrorList != null && preprocessErrorList.size() > 0) {
             for (int i = preprocessErrorList.size() - 1; i >= 0; i--) {
@@ -329,8 +330,8 @@ public abstract class LexerInputOperation implements CharProvider {
         // No extra preprocessed characters
     }
     
-    public final LanguageOperation languageOperation() {
-        return LexerUtilsConstants.languageOperation(tokenList.languagePath());
+    public final LanguageOperation<T> languageOperation() {
+        return LexerUtilsConstants.mostEmbeddedLanguageOperation(tokenList.languagePath());
     }
     
     public final Object lexerState() {
@@ -353,7 +354,7 @@ public abstract class LexerInputOperation implements CharProvider {
         flySequenceLength = 0;
     }
     
-    protected final boolean isSkipToken(AbstractToken token) {
+    protected final boolean isSkipToken(AbstractToken<T> token) {
         return (token == TokenFactory.SKIP_TOKEN);
     }
     

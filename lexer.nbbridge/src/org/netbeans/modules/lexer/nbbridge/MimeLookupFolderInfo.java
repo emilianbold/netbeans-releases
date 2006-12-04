@@ -60,7 +60,8 @@ public class MimeLookupFolderInfo implements Class2LayerFolder, InstanceProvider
     }
 
     public Object createInstance(List fileObjectList) {
-        HashMap<String, LanguageEmbedding> map = new HashMap<String, LanguageEmbedding>();
+        HashMap<String, LanguageEmbedding<? extends TokenId>> map
+                = new HashMap<String, LanguageEmbedding<? extends TokenId>>();
         
         for(Object o : fileObjectList) {
             assert o instanceof FileObject : "fileObjectList should contain FileObjects and not " + o; //NOI18N
@@ -75,7 +76,7 @@ public class MimeLookupFolderInfo implements Class2LayerFolder, InstanceProvider
                 if (isMimeTypeValid(mimeType)) {
                     Language<? extends TokenId> language = LanguageManager.getInstance().findLanguage(mimeType);
                     if (language != null) {
-                        map.put(f.getName(), new EL(language, startSkipLength, endSkipLength));
+                        map.put(f.getName(), LanguageEmbedding.create(language, startSkipLength, endSkipLength));
                     } else {
                         LOG.warning("Can't find Language for mime type '" + mimeType + "', ignoring."); //NOI18N
                     }
@@ -136,28 +137,4 @@ public class MimeLookupFolderInfo implements Class2LayerFolder, InstanceProvider
         }
     }
     
-    private static final class EL extends LanguageEmbedding {
-        
-        private Language<? extends TokenId> language;
-        private int startSkipLength;
-        private int endSkipLength;
-
-        public EL(Language<? extends TokenId> language, int startSkipLength, int endSkipLength) {
-            this.language = language;
-            this.startSkipLength = startSkipLength;
-            this.endSkipLength = endSkipLength;
-        }
-        
-        public Language<? extends TokenId> language() {
-            return language;
-        }
-
-        public int startSkipLength() {
-            return startSkipLength;
-        }
-
-        public int endSkipLength() {
-            return endSkipLength;
-        }
-    } // End of EL class
 }

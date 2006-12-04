@@ -200,9 +200,10 @@ public abstract class LanguageHierarchy<T extends TokenId> {
      * list which would not be possible if the token would be flyweight.
      *
      * @param token non-null token for which the language embedding will be resolved.
-     * @param tokenComplete true if the given token was completely lexed. False
-     *  in case when just the initial token part is known and the embedded lexer
-     *  will influence where the token will physically end.
+     *  <br/>
+     *  The token may have a zero length <code>({@link Token#length()} == 0)</code>
+     *  in case the language infrastructure performs a poll for all embedded
+     *  languages for the 
      *
      * @param languagePath non-null language path at which the language embedding
      *  is being created. It may be used for obtaining appropriate information
@@ -214,7 +215,7 @@ public abstract class LanguageHierarchy<T extends TokenId> {
      * @return language embedding instance or null if there is no language embedding
      *  for this token.
      */
-    protected LanguageEmbedding embedding(Token<T> token, boolean tokenComplete,
+    protected LanguageEmbedding<? extends TokenId> embedding(Token<T> token,
     LanguagePath languagePath, InputAttributes inputAttributes) {
         return null; // No extra hardcoded embedding by default
     }
@@ -309,23 +310,21 @@ public abstract class LanguageHierarchy<T extends TokenId> {
             return languageHierarchy.createTokenCategories();
         }
 
-        public String mimeType(LanguageHierarchy languageHierarchy) {
+        public String mimeType(LanguageHierarchy<? extends TokenId> languageHierarchy) {
             return languageHierarchy.mimeType();
         }
 
-        public LanguageOperation operation(LanguageHierarchy languageHierarchy) {
+        public <T extends TokenId> LanguageOperation<T> operation(LanguageHierarchy<T> languageHierarchy) {
             return languageHierarchy.operation;
         }
         
-        @SuppressWarnings("unchecked")
-        public LanguageEmbedding embedding(LanguageHierarchy languageHierarchy,
-        Token token, boolean tokenComplete,
-        LanguagePath languagePath, InputAttributes inputAttributes) {
-            return languageHierarchy.embedding(token, tokenComplete, languagePath, inputAttributes);
+        public <T extends TokenId> LanguageEmbedding<? extends TokenId> embedding(LanguageHierarchy<T> languageHierarchy,
+        Token<T> token, LanguagePath languagePath, InputAttributes inputAttributes) {
+            return languageHierarchy.embedding(token, languagePath, inputAttributes);
         }
 
-        @SuppressWarnings("unchecked")
-        public Lexer createLexer(LanguageHierarchy languageHierarchy, LexerRestartInfo info) {
+        public <T extends TokenId> Lexer<T> createLexer(
+        LanguageHierarchy<T> languageHierarchy, LexerRestartInfo<T> info) {
             return languageHierarchy.createLexer(info);
         }
 
@@ -335,13 +334,13 @@ public abstract class LanguageHierarchy<T extends TokenId> {
             return new LexerRestartInfo<T>(input, tokenFactory, state, languagePath, inputAttributes);
         }
 
-        @SuppressWarnings("unchecked")
-        public TokenValidator createTokenValidator(LanguageHierarchy languageHierarchy, TokenId id) {
+        public <T extends TokenId> TokenValidator<T> createTokenValidator(
+        LanguageHierarchy<T> languageHierarchy, T id) {
             return languageHierarchy.createTokenValidator(id);
         }
 
-        @SuppressWarnings("unchecked")
-        public boolean isRetainTokenText(LanguageHierarchy languageHierarchy, TokenId id) {
+        public <T extends TokenId> boolean isRetainTokenText(
+        LanguageHierarchy<T> languageHierarchy, T id) {
             return languageHierarchy.isRetainTokenText(id);
         }
 
@@ -365,21 +364,26 @@ public abstract class LanguageHierarchy<T extends TokenId> {
             return mti.language();
         }
 
-        public CharSequence text(MutableTextInput mti) {
+        public <T extends TokenId> LanguageEmbedding<T> createLanguageEmbedding(
+        Language<T> language, int startSkipLength, int endSkipLength, boolean joinSections) {
+            return new LanguageEmbedding<T>(language, startSkipLength, endSkipLength, joinSections);
+        }
+
+        public CharSequence text(MutableTextInput<?> mti) {
             return mti.text();
         }
 
-        public InputAttributes inputAttributes(MutableTextInput mti) {
+        public InputAttributes inputAttributes(MutableTextInput<?> mti) {
             return mti.inputAttributes();
         }
 
-        public Object inputSource(MutableTextInput mti) {
+        public <I> I inputSource(MutableTextInput<I> mti) {
             return mti.inputSource();
         }
 
-        @SuppressWarnings("unchecked")
-        public TokenFactory createTokenFactory(LexerInputOperation lexerInputOperation) {
-            return new TokenFactory(lexerInputOperation);
+        public <T extends TokenId> TokenFactory<T> createTokenFactory(
+        LexerInputOperation<T> lexerInputOperation) {
+            return new TokenFactory<T>(lexerInputOperation);
         }
 
     }

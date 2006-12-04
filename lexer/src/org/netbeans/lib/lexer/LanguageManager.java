@@ -60,17 +60,8 @@ public final class LanguageManager extends LanguageProvider implements LookupLis
         }
     }.language();
     
-    private static final LanguageEmbedding NO_LANG_EMBEDDING = new LanguageEmbedding() {
-        public int endSkipLength() {
-            return 0;
-        }
-        public Language<? extends TokenId> language() {
-            return NO_LANG;
-        }
-        public int startSkipLength() {
-            return 0;
-        }
-    };
+    private static final LanguageEmbedding<TokenId> NO_LANG_EMBEDDING
+            = LanguageEmbedding.create(NO_LANG, 0, 0);
     
     private static LanguageManager instance = null;
     
@@ -86,8 +77,8 @@ public final class LanguageManager extends LanguageProvider implements LookupLis
     private List<LanguageProvider> providers = Collections.<LanguageProvider>emptyList();
     private HashMap<String, WeakReference<Language<? extends TokenId>>> langCache
             = new HashMap<String, WeakReference<Language<? extends TokenId>>>();
-    private WeakHashMap<Token, WeakReference<LanguageEmbedding>> tokenLangCache
-            = new WeakHashMap<Token, WeakReference<LanguageEmbedding>>();
+    private WeakHashMap<Token, WeakReference<LanguageEmbedding<? extends TokenId>>> tokenLangCache
+            = new WeakHashMap<Token, WeakReference<LanguageEmbedding<? extends TokenId>>>();
     
     private final String LOCK = new String("LanguageManager.LOCK");
     
@@ -125,14 +116,15 @@ public final class LanguageManager extends LanguageProvider implements LookupLis
         }
     }
 
-    public LanguageEmbedding findLanguageEmbedding(LanguagePath tokenLanguage, Token token, InputAttributes inputAttributes) {
+    public LanguageEmbedding<? extends TokenId> findLanguageEmbedding(
+    Token<? extends TokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
         synchronized(LOCK) {
-            WeakReference<LanguageEmbedding> ref = tokenLangCache.get(token);
-            LanguageEmbedding lang = ref == null ? null : ref.get();
+            WeakReference<LanguageEmbedding<? extends TokenId>> ref = tokenLangCache.get(token);
+            LanguageEmbedding<? extends TokenId> lang = ref == null ? null : ref.get();
             
             if (lang == null) {
                 for(LanguageProvider p : providers) {
-                    if (null != (lang = p.findLanguageEmbedding(tokenLanguage, token, inputAttributes))) {
+                    if (null != (lang = p.findLanguageEmbedding(token, languagePath, inputAttributes))) {
                         break;
                     }
                 }
@@ -141,7 +133,7 @@ public final class LanguageManager extends LanguageProvider implements LookupLis
                     lang = NO_LANG_EMBEDDING;
                 }
                 
-                tokenLangCache.put(token, new WeakReference<LanguageEmbedding>(lang));
+                tokenLangCache.put(token, new WeakReference<LanguageEmbedding<? extends TokenId>>(lang));
             }
             
             return lang == NO_LANG_EMBEDDING ? null : lang;
@@ -175,6 +167,8 @@ public final class LanguageManager extends LanguageProvider implements LookupLis
                 tokenLangCache.clear();
             }
         }
+        // Forward firing of the property change to registered clients
+        firePropertyChange(evt.getPropertyName());
     }
     
     // -------------------------------------------------------------------

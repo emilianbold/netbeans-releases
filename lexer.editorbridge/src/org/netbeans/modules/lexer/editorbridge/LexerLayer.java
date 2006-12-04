@@ -336,8 +336,8 @@ class LexerLayer extends DrawLayer.AbstractLayer {
 
         public void tokenHierarchyChanged(TokenHierarchyEvent evt) {
             javax.swing.plaf.TextUI ui = (javax.swing.plaf.TextUI)component.getUI();
-            int startRepaintOffset = evt.tokenChange().modifiedTokensStartOffset();
-            int endRepaintOffset = Math.max(evt.tokenChange().addedTokensEndOffset(), startRepaintOffset + 1);
+            int startRepaintOffset = evt.affectedStartOffset();
+            int endRepaintOffset = Math.max(evt.affectedEndOffset(), startRepaintOffset + 1);
             ui.damageRange(component, startRepaintOffset, endRepaintOffset);
         }
 

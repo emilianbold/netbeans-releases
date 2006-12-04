@@ -19,13 +19,13 @@
 
 package org.netbeans.lib.lexer;
 
-import java.util.Collection;
-import java.util.Map;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.TokenChange;
 import org.netbeans.api.lexer.TokenHierarchyEvent;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
-import org.netbeans.lib.lexer.inc.TokenListChange;
+import org.netbeans.lib.lexer.inc.TokenChangeInfo;
+import org.netbeans.lib.lexer.inc.TokenHierarchyEventInfo;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 
 
@@ -60,16 +60,22 @@ public abstract class LexerApiPackageAccessor {
     public abstract <T extends TokenId> Language<T> createLanguage(
     LanguageHierarchy<T> languageHierarchy);
 
-    public abstract LanguageHierarchy languageHierarchy(
-    Language language);
+    public abstract <T extends TokenId> LanguageHierarchy<T> languageHierarchy(
+    Language<T> language);
 
     public abstract <I> TokenHierarchy<I> createTokenHierarchy(
-    TokenHierarchyOperation<I> tokenHierarchyOperation);
+    TokenHierarchyOperation<I,?> tokenHierarchyOperation);
     
     public abstract TokenHierarchyEvent createTokenChangeEvent(
-    TokenHierarchy tokenHierarchy, TokenListChange change);
+    TokenHierarchyEventInfo info);
     
-    public abstract TokenHierarchyOperation tokenHierarchyOperation(
-    TokenHierarchy tokenHierarchy);
+    public abstract <T extends TokenId> TokenChange<T> createTokenChange(
+    TokenChangeInfo<T> info);
+    
+    public abstract <T extends TokenId> TokenChangeInfo<T> tokenChangeInfo(
+    TokenChange<T> tokenChange);
+    
+    public abstract <I> TokenHierarchyOperation<I,?> tokenHierarchyOperation(
+    TokenHierarchy<I> tokenHierarchy);
     
 }

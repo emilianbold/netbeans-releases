@@ -170,7 +170,7 @@ public abstract class Token<T extends TokenId> {
      * @return >=0 offset of the token in the input or <code>-1</code>
      *  if this token is flyweight.
      */
-    public abstract int offset(TokenHierarchy tokenHierarchy);
+    public abstract int offset(TokenHierarchy<?> tokenHierarchy);
     
     /**
      * Checks whether this token instance is used for multiple occurrences

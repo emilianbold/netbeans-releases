@@ -39,17 +39,17 @@ import org.netbeans.lib.lexer.token.AbstractToken;
  * @version 1.00
  */
 
-public final class SubSequenceTokenList implements TokenList {
+public final class SubSequenceTokenList<T extends TokenId> implements TokenList<T> {
     
     /**
      * Token list to which this filtering token list delegates.
      */
-    private TokenList tokenList;
+    private TokenList<T> tokenList;
     
     /**
      * Last retrieved token's end offset.
      */
-    private AbstractToken lastToken;
+    private AbstractToken<T> lastToken;
     
     /**
      * Last retrieved token index.
@@ -83,7 +83,7 @@ public final class SubSequenceTokenList implements TokenList {
      */
     private int limitEndIndex;
     
-    public SubSequenceTokenList(TokenList tokenList, int limitStartOffset, int limitEndOffset) {
+    public SubSequenceTokenList(TokenList<T> tokenList, int limitStartOffset, int limitEndOffset) {
         this.tokenList = tokenList;
         this.limitStartOffset = limitStartOffset;
         this.limitEndOffset = limitEndOffset;
@@ -94,11 +94,11 @@ public final class SubSequenceTokenList implements TokenList {
             if (diff != Integer.MAX_VALUE) { // some tokens exist
                 if (diff >= lastToken.length()) {
                     lastTokenIndex++;
-                    Object tokenOrBranch = tokenList.tokenOrBranch(lastTokenIndex);
-                    if (tokenOrBranch != null &&
+                    Object tokenOrEmbeddingContainer = tokenList.tokenOrEmbeddingContainer(lastTokenIndex);
+                    if (tokenOrEmbeddingContainer != null &&
                         (lastTokenOffset = tokenList.tokenOffset(lastTokenIndex)) < limitEndOffset
                     ) {
-                        lastToken = LexerUtilsConstants.token(tokenOrBranch);
+                        lastToken = LexerUtilsConstants.token(tokenOrEmbeddingContainer);
                         limitStartIndex = lastTokenIndex;
                         limitEndIndex = Integer.MAX_VALUE; // To be computed later
                     } // Otherwise limitStartIndex and limitEndIndex remain zero => no tokens
@@ -113,15 +113,15 @@ public final class SubSequenceTokenList implements TokenList {
 
         } else {// Lower bound is zero => limitStartIndex is zero
             // Check first token (done here for simpler tokenCount() etc.)
-            Object tokenOrBranch = tokenList.tokenOrBranch(0);
-            if (tokenOrBranch != null && (lastTokenOffset = tokenList.tokenOffset(0)) < limitEndOffset) {
-                lastToken = LexerUtilsConstants.token(tokenOrBranch); // lastTokenIndex remains zero
+            Object tokenOrEmbeddingContainer = tokenList.tokenOrEmbeddingContainer(0);
+            if (tokenOrEmbeddingContainer != null && (lastTokenOffset = tokenList.tokenOffset(0)) < limitEndOffset) {
+                lastToken = LexerUtilsConstants.token(tokenOrEmbeddingContainer); // lastTokenIndex remains zero
                 limitEndIndex = Integer.MAX_VALUE;
             } // Otherwise limitEndIndex remain zero => no tokens
         }
     }
 
-    public TokenList delegate() {
+    public TokenList<T> delegate() {
         return tokenList;
     }
     
@@ -133,7 +133,7 @@ public final class SubSequenceTokenList implements TokenList {
         return limitEndOffset;
     }
     
-    public Object tokenOrBranch(int index) {
+    public Object tokenOrEmbeddingContainer(int index) {
         if (limitStartIndex == -1) // No tokens
             return null;
         index += limitStartIndex; // Shift to underlying tokenList indices
@@ -142,8 +142,8 @@ public final class SubSequenceTokenList implements TokenList {
                 case -1: // Prev to lastToken - must exist
                     if (index < limitStartIndex)
                         return null;
-                    Object tokenOrBranch = tokenList.tokenOrBranch(index);
-                    AbstractToken token = LexerUtilsConstants.token(tokenOrBranch);
+                    Object tokenOrEmbeddingContainer = tokenList.tokenOrEmbeddingContainer(index);
+                    AbstractToken<T> token = LexerUtilsConstants.token(tokenOrEmbeddingContainer);
                     lastTokenIndex = index;
                     // If the token list is continuous or the original token
                     // is flyweight (there cannot be a gap before flyweight token)
@@ -154,15 +154,15 @@ public final class SubSequenceTokenList implements TokenList {
                     else // Compute offset through tokenList
                         lastTokenOffset = tokenList.tokenOffset(index);
                     lastToken = token;
-                    return tokenOrBranch;
+                    return tokenOrEmbeddingContainer;
 
                 case 0: // Last token
                     return lastToken;
 
                 case 1: // Next to lastToken
-                    tokenOrBranch = tokenList.tokenOrBranch(index);
-                    if (tokenOrBranch != null) {
-                        token = LexerUtilsConstants.token(tokenOrBranch);
+                    tokenOrEmbeddingContainer = tokenList.tokenOrEmbeddingContainer(index);
+                    if (tokenOrEmbeddingContainer != null) {
+                        token = LexerUtilsConstants.token(tokenOrEmbeddingContainer);
                         // If the token list is continuous or the fetched token
                         // is flyweight (there cannot be a gap before flyweight token)
                         // the original offset can be just increased
@@ -177,22 +177,22 @@ public final class SubSequenceTokenList implements TokenList {
                             lastToken = token;
                             lastTokenIndex = index;
                             lastTokenOffset = tokenOffset;
-                            return tokenOrBranch;
+                            return tokenOrEmbeddingContainer;
                         } // above upper bound
                     }
                     limitEndIndex = index; // lastToken at prev index was valid so may assign this
                     return null;
 
                 default: // Not related to lastToken
-                    tokenOrBranch = tokenList.tokenOrBranch(index);
-                    if (tokenOrBranch != null) {
+                    tokenOrEmbeddingContainer = tokenList.tokenOrEmbeddingContainer(index);
+                    if (tokenOrEmbeddingContainer != null) {
                         int tokenOffset = tokenList.tokenOffset(index);
                         // Check the offset to be below upper bound
                         if (tokenOffset < limitEndOffset) { // below upper offset bound
-                            lastToken = LexerUtilsConstants.token(tokenOrBranch);
+                            lastToken = LexerUtilsConstants.token(tokenOrEmbeddingContainer);
                             lastTokenIndex = index;
                             lastTokenOffset = tokenOffset;
-                            return tokenOrBranch;
+                            return tokenOrEmbeddingContainer;
                         } // >=limitEndOffset
                     } // index too high
                     // As the null gets returned all the tokens that could
@@ -208,7 +208,7 @@ public final class SubSequenceTokenList implements TokenList {
             // As limitEndIndex is inited it will no longer use lastToken caching
             // because TokenSequence will use its own similar caching for token offsets.
             return (index < limitEndIndex)
-                ? tokenList.tokenOrBranch(index)
+                ? tokenList.tokenOrEmbeddingContainer(index)
                 : null;
         }
     }
@@ -240,8 +240,8 @@ public final class SubSequenceTokenList implements TokenList {
         return tcc - limitStartIndex;
     }
 
-    public <T extends TokenId> AbstractToken<T> createNonFlyToken(int index, AbstractToken<T> flyToken, int offset) {
-        return tokenList.createNonFlyToken(index + limitStartIndex, flyToken, offset);
+    public AbstractToken<T> replaceFlyToken(int index, AbstractToken<T> flyToken, int offset) {
+        return tokenList.replaceFlyToken(index + limitStartIndex, flyToken, offset);
     }
 
     public int modCount() {
@@ -260,14 +260,18 @@ public final class SubSequenceTokenList implements TokenList {
         throw new IllegalStateException("Unexpected call.");
     }
 
-    public void wrapToken(int index, BranchTokenList wrapper) {
-        tokenList.wrapToken(limitStartIndex + index, wrapper);
+    public void wrapToken(int index, EmbeddingContainer<T> embeddingContainer) {
+        tokenList.wrapToken(limitStartIndex + index, embeddingContainer);
     }
 
-    public TokenList root() {
+    public TokenList<? extends TokenId> root() {
         return tokenList.root();
     }
 
+    public TokenHierarchyOperation<?,? extends TokenId> tokenHierarchyOperation() {
+        return tokenList.tokenHierarchyOperation();
+    }
+    
     public InputAttributes inputAttributes() {
         return tokenList.inputAttributes();
     }
@@ -285,11 +289,11 @@ public final class SubSequenceTokenList implements TokenList {
         return tokenList.isContinuous();
     }
 
-    public Set<? extends TokenId> skipTokenIds() {
+    public Set<T> skipTokenIds() {
         return tokenList.skipTokenIds();
     }
     
-    private AbstractToken token(int index) {
+    private AbstractToken<T> token(int index) {
         return LexerUtilsConstants.token(tokenList, index);
     }
     
@@ -305,7 +309,7 @@ public final class SubSequenceTokenList implements TokenList {
     private int move(int offset) {
         int tokenCount = tokenList.tokenCountCurrent(); // presently created token count
         if (tokenCount == 0) { // no tokens yet -> attempt to create at least one
-            if (tokenList.tokenOrBranch(0) == null) { // really no tokens at all
+            if (tokenList.tokenOrEmbeddingContainer(0) == null) { // really no tokens at all
                 // In this case the token sequence could not be positioned yet
                 // so no need to reset "index" or other vars
                 return Integer.MAX_VALUE;
@@ -323,9 +327,9 @@ public final class SubSequenceTokenList implements TokenList {
             lastToken = token(tokenCount - 1);
             int tokenLength = lastToken.length();
             while (offset >= lastTokenOffset + tokenLength) { // above present token
-                Object tokenOrBranch = tokenList.tokenOrBranch(tokenCount);
-                if (tokenOrBranch != null) {
-                    lastToken = LexerUtilsConstants.token(tokenOrBranch);
+                Object tokenOrEmbeddingContainer = tokenList.tokenOrEmbeddingContainer(tokenCount);
+                if (tokenOrEmbeddingContainer != null) {
+                    lastToken = LexerUtilsConstants.token(tokenOrEmbeddingContainer);
                     if (lastToken.isFlyweight()) { // need to use previous tokenLength
                         lastTokenOffset += tokenLength;
                     } else { // non-flyweight token - retrieve offset
