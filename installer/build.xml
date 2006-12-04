@@ -23,9 +23,11 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="clean" description="clean all subprojects">
     <ant antfile="asbundle/build.xml" target="clean" inheritAll="false"/>
+    <ant antfile="cdc/build.xml" target="clean" inheritAll="false"/>
     <ant antfile="cnd/build.xml" target="clean" inheritAll="false"/>
     <ant antfile="coreide/build.xml" target="clean" inheritAll="false"/>
     <ant antfile="j2ee/build.xml" target="clean" inheritAll="false"/>
+    <ant antfile="jbossbundle/build.xml" target="clean" inheritAll="false"/>
     <ant antfile="jdkbundle/build.xml" target="clean" inheritAll="false"/>
     <ant antfile="mac/build.xml" target="clean" inheritAll="false"/>
     <ant antfile="mobility/build.xml" target="clean" inheritAll="false"/>
