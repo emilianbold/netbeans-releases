@@ -307,8 +307,25 @@ public class HighlightingPanel extends JPanel implements ActionListener, Propert
         Vector categories = getCategories (currentProfile);
 	AttributeSet category = (AttributeSet) categories.get (index);
         
-        // set values
         listen = false;
+        
+        // set defaults
+        AttributeSet defAs = getDefaultColoring();
+        if (defAs != null) {
+            Color inheritedForeground = (Color) defAs.getAttribute(StyleConstants.Foreground);
+            if (inheritedForeground == null) {
+                inheritedForeground = Color.black;
+            }
+            ColorComboBox.setInheritedColor(cbForeground, inheritedForeground);
+            
+            Color inheritedBackground = (Color) defAs.getAttribute(StyleConstants.Background);
+            if (inheritedBackground == null) {
+                inheritedBackground = Color.white;
+            }
+            ColorComboBox.setInheritedColor(cbBackground, inheritedBackground);
+        }
+        
+        // set values
         ColorComboBox.setColor (
             cbForeground, 
             (Color) category.getAttribute (StyleConstants.Foreground)
@@ -318,6 +335,20 @@ public class HighlightingPanel extends JPanel implements ActionListener, Propert
             (Color) category.getAttribute (StyleConstants.Background)
         );
         listen = true;
+    }
+    
+    private AttributeSet getDefaultColoring() {
+        Collection/*<AttributeSet>*/ defaults = colorModel.getCategories(currentProfile, ColorModel.ALL_LANGUAGES);
+        
+        for(Iterator i = defaults.iterator(); i.hasNext(); ) {
+            AttributeSet as = (AttributeSet) i.next();
+            String name = (String) as.getAttribute(StyleConstants.NameAttribute);
+            if (name != null && "default".equals(name)) { //NOI18N
+                return as;
+            }
+        }
+        
+        return null;
     }
     
     private Vector getCategories (String profile) {

@@ -302,7 +302,26 @@ PropertyChangeListener {
         cbForeground.setEnabled (true);
         cbBackground.setEnabled (true);
         cbWaveUnderlined.setEnabled (true);
+        
         listen = false;
+        
+        // set defaults
+        AttributeSet defAs = getDefaultColoring();
+        if (defAs != null) {
+            Color inheritedForeground = (Color) defAs.getAttribute(StyleConstants.Foreground);
+            if (inheritedForeground == null) {
+                inheritedForeground = Color.black;
+            }
+            ColorComboBox.setInheritedColor(cbForeground, inheritedForeground);
+            
+            Color inheritedBackground = (Color) defAs.getAttribute(StyleConstants.Background);
+            if (inheritedBackground == null) {
+                inheritedBackground = Color.white;
+            }
+            ColorComboBox.setInheritedColor(cbBackground, inheritedBackground);
+        }
+
+        // set values
         Vector annotations = getAnnotations (currentScheme);
         AttributeSet c = (AttributeSet) annotations.get (index);
         ColorComboBox.setColor (
@@ -318,6 +337,20 @@ PropertyChangeListener {
             (Color) c.getAttribute (EditorStyleConstants.WaveUnderlineColor)
         );
         listen = true;
+    }
+    
+    private AttributeSet getDefaultColoring() {
+        Collection/*<AttributeSet>*/ defaults = colorModel.getCategories(currentScheme, ColorModel.ALL_LANGUAGES);
+        
+        for(Iterator i = defaults.iterator(); i.hasNext(); ) {
+            AttributeSet as = (AttributeSet) i.next();
+            String name = (String) as.getAttribute(StyleConstants.NameAttribute);
+            if (name != null && "default".equals(name)) { //NOI18N
+                return as;
+            }
+        }
+        
+        return null;
     }
     
     private Vector getAnnotations (String scheme) {
