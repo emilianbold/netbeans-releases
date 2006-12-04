@@ -193,6 +193,18 @@ public class HandlerButtonListener implements ActionListener{
                 } catch(IOException exp) {
                         ErrorManager.getDefault().notify(exp);
                 }
+                
+                //delete the handler xml file
+                try{
+                    lock = handlerFO.lock();
+                    handlerFO.delete(lock);
+                }catch(Exception e){
+                    ErrorManager.getDefault().notify(e);
+                } finally{
+                    if(lock != null){
+                        lock.releaseLock();
+                    }
+                }
             } else{
                 try{
                     lock = handlerFO.lock();
