@@ -53,9 +53,9 @@ public class ClassMemberTest extends GeneratorTest {
         suite.addTest(new ClassMemberTest("testAddAtIndex2"));
         suite.addTest(new ClassMemberTest("testAddToEmpty"));
         suite.addTest(new ClassMemberTest("testAddConstructor"));
-        suite.addTest(new ClassMemberTest("testInsertFieldToIndex0"));
-//        System.setProperty("generatorType", "svobodny");
-        return suite;
+        suite.addTest(new ClassMemberTest("testModifyFieldName"));
+//        suite.addTest(new ClassMemberTest("testModifyModifiers"));
+          return suite;
     }
     
     public void testAddAtIndex0() throws Exception {
@@ -73,7 +73,7 @@ public class ClassMemberTest extends GeneratorTest {
             "package hierbas.del.litoral;\n\n" +
             "public class Test {\n" +
             "    \n" +
-            "    public void newlyCreatedMethod(int a,float b) throws java.io.IOException {\n" + 
+            "    public void newlyCreatedMethod(int a, float b) throws java.io.IOException {\n" + 
             "    }\n" +
             "    \n" +
             "    public void taragui() {\n" +
@@ -127,7 +127,7 @@ public class ClassMemberTest extends GeneratorTest {
             "    \n" +
             "    public void newlyCreatedMethod(int a, float b) throws java.io.IOException {\n" +
             "    }\n" +
-            "    \n" +
+            "\n" +
             "}\n";
 
         JavaSource src = getJavaSource(testFile);
@@ -137,7 +137,6 @@ public class ClassMemberTest extends GeneratorTest {
                 workingCopy.toPhase(Phase.RESOLVED);
                 CompilationUnitTree cut = workingCopy.getCompilationUnit();
                 TreeMaker make = workingCopy.getTreeMaker();
-
                 for (Tree typeDecl : cut.getTypeDecls()) {
                     // ensure that it is correct type declaration, i.e. class
                     if (Tree.Kind.CLASS == typeDecl.getKind()) {
@@ -167,10 +166,9 @@ public class ClassMemberTest extends GeneratorTest {
             );
         String golden =
             "package hierbas.del.litoral;\n\n" +
-            "public class Test {\n" +
-            "\n" +
-            "public void newlyCreatedMethod(int a, float b) throws java.io.IOException {\n" +
-            "}\n" +
+            "public class Test {\n\n" +
+            "    public void newlyCreatedMethod(int a, float b) throws java.io.IOException {\n" +
+            "    }\n" +
             "}\n";
 
         JavaSource src = getJavaSource(testFile);
@@ -287,6 +285,7 @@ public class ClassMemberTest extends GeneratorTest {
         String golden =
             "package hierbas.del.litoral;\n\n" +
             "public class Test {\n" +
+            "    \n" +
             "    String prefix;\n" +
             "    \n" +
             "    int i = 0;\n" +
@@ -318,6 +317,102 @@ public class ClassMemberTest extends GeneratorTest {
                 }
             }
             public void cancel() {}
+        };
+        src.runModificationTask(task).commit();    
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testModifyFieldName() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    \n" +
+            "    int i = 0;\n" +
+            "    \n" +
+            "    public Test() {\n" +
+            "    }\n" +
+            "    \n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    \n" +
+            "    int newFieldName = 0;\n" +
+            "    \n" +
+            "    public Test() {\n" +
+            "    }\n" +
+            "    \n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                        VariableTree variable = (VariableTree) ((ClassTree) typeDecl).getMembers().get(0);
+                        VariableTree copy = make.setLabel(variable, "newFieldName");
+                        workingCopy.rewrite(variable, copy);
+                    }
+                }
+            }
+            public void cancel() {}
+        };
+        src.runModificationTask(task).commit();    
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testModifyModifiers() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    \n" +
+            "    private int i = 0;\n" +
+            "    \n" +
+            "    public Test() {\n" +
+            "    }\n" +
+            "    \n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    \n" +
+            "    public int i = 0;\n" +
+            "    \n" +
+            "    public Test() {\n" +
+            "    }\n" +
+            "    \n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                        VariableTree variable = (VariableTree) ((ClassTree) typeDecl).getMembers().get(0);
+                        ModifiersTree mods = variable.getModifiers();
+                        workingCopy.rewrite(mods, make.Modifiers(Collections.<Modifier>singleton(Modifier.PUBLIC)));
+                    }
+                }
+            }
+            
+            public void cancel() {
+            }
         };
         src.runModificationTask(task).commit();    
         String res = TestUtilities.copyFileToString(testFile);
