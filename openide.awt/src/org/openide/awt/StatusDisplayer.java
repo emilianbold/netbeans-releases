@@ -67,6 +67,10 @@ public abstract class StatusDisplayer {
      * until the AWT event queue is ready for it - so if you are hogging
      * the event queue the text will not appear until you release it
      * (finish your work or display a modal dialog, for example).
+     *  <p class="nonnormative">Default implementation of status line in NetBeans
+     * displays the text in status line and clears it after a while. 
+     * Also there is no guarantee how long the text will be displayed as 
+     * it can be replaced with new call to this method at any time.
      * @param text the text to be shown
      */
     public abstract void setStatusText(String text);
