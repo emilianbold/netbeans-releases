@@ -33,6 +33,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.Position.Bias;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Coloring;
 import org.netbeans.lib.editor.codetemplates.SyncDocumentRegion;
 import org.netbeans.lib.editor.util.swing.MutablePositionRegion;
@@ -85,7 +86,10 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
 	
 	region = new SyncDocumentRegion(doc, regions);
 	
-	doc.addDocumentListener(this);
+        if (doc instanceof BaseDocument) {
+            ((BaseDocument) doc).setPostModificationDocumentListener(this);
+        }
+        
 	target.addKeyListener(this);
 	
 	target.putClientProperty(InstantRenamePerformer.class, this);
@@ -156,7 +160,9 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
 
     private void release() {
 	target.putClientProperty(InstantRenamePerformer.class, null);
-	doc.removeDocumentListener(this);
+        if (doc instanceof BaseDocument) {
+            ((BaseDocument) doc).setPostModificationDocumentListener(null);
+        }
 	target.removeKeyListener(this);
 	Highlighter.getDefault().setHighlights(getFileObject(), "instant-rename", Collections.emptyList());
 
