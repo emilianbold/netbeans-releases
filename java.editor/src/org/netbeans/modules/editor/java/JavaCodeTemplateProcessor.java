@@ -27,12 +27,11 @@ import java.util.*;
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
 import javax.lang.model.util.Types;
-import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 
 import org.netbeans.api.java.source.*;
 import org.netbeans.lib.editor.codetemplates.spi.*;
-import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -82,17 +81,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                 }
             }
         }
-        for (Map.Entry<CodeTemplateParameter, TypeMirror> entry : param2types.entrySet()) {            
-            CodeTemplateParameter param = entry.getKey();            
-            if (CAST.equals(param2hints.get(param))) {
-                param.setValue("(" + Utilities.getTypeName(entry.getValue(), false) + ")"); //NOI18N
-            } else if (INSTANCE_OF.equals(param2hints.get(param))) {
-                String value = param.getValue().substring(param.getValue().lastIndexOf('.') + 1); //NOI18N
-                param.setValue(Utilities.getTypeName(entry.getValue(), false) + "." + value); //NOI18N
-            } else {
-                param.setValue(Utilities.getTypeName(entry.getValue(), false).toString());
-            }
-        }
+        updateImports();
     }
     
     public void parameterValueChanged(CodeTemplateParameter masterParameter, boolean typingChange) {
@@ -107,46 +96,30 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                     param2types.remove(param);
                 }
             }
-            for (Map.Entry<CodeTemplateParameter, TypeMirror> entry : param2types.entrySet()) {
-                CodeTemplateParameter param = entry.getKey();
-                if (CAST.equals(param2hints.get(param))) {
-                    param.setValue("(" + Utilities.getTypeName(entry.getValue(), false) + ")"); //NOI18N
-                } else if (INSTANCE_OF.equals(param2hints.get(param))) {
-                    String value = param.getValue().substring(param.getValue().lastIndexOf('.') + 1); //NOI18N
-                    param.setValue(Utilities.getTypeName(entry.getValue(), false) + "." + value); //NOI18N
-                } else {
-                    param.setValue(Utilities.getTypeName(entry.getValue(), false).toString());
-                }
-            }
+            updateImports();                    
         }
     }
     
     public void release() {
-        if (param2types.size() > 0) {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    try {
-                        cInfo.getJavaSource().runModificationTask(new CancellableTask<WorkingCopy>() {
-                            public void cancel() {
-                            }
-                            public void run(WorkingCopy copy) throws IOException {
-                                copy.toPhase(JavaSource.Phase.RESOLVED);
-                                AutoImport imp = AutoImport.get(copy);
-                                for (Map.Entry<CodeTemplateParameter, TypeMirror> entry : param2types.entrySet()) {
-                                    CodeTemplateParameter param = entry.getKey();
-                                    TypeMirror tm = param2types.get(param);
-                                    if (tm.getKind() == TypeKind.DECLARED) {
-                                        TreePath tp = copy.getTreeUtilities().pathFor(request.getInsertTextOffset() + param.getInsertTextOffset());
-                                        imp.resolveImport(tp, (DeclaredType)tm);
-                                    }
-                                }
-                            }
-                        }).commit();
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
-                    }
+    }
+    
+    private void updateImports() {
+        if (!param2types.isEmpty()) {
+            AutoImport imp = AutoImport.get(cInfo);
+            for (Map.Entry<CodeTemplateParameter, TypeMirror> entry : param2types.entrySet()) {
+                CodeTemplateParameter param = entry.getKey();
+                TypeMirror tm = param2types.get(param);
+                TreePath tp = cInfo.getTreeUtilities().pathFor(request.getInsertTextOffset() + param.getInsertTextOffset());
+                CharSequence typeName = imp.resolveImport(tp, (DeclaredType)tm);
+                if (CAST.equals(param2hints.get(param))) {
+                    param.setValue("(" + typeName + ")"); //NOI18N
+                } else if (INSTANCE_OF.equals(param2hints.get(param))) {
+                    String value = param.getValue().substring(param.getValue().lastIndexOf('.') + 1); //NOI18N
+                    param.setValue(typeName + "." + value); //NOI18N
+                } else {
+                    param.setValue(typeName.toString());
                 }
-            });
+            }
         }
     }
     
@@ -166,7 +139,8 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                     if (ve != null) {
                         param2hints.put(param, INSTANCE_OF);
                         TypeMirror tm = ve.getEnclosingElement().asType();
-                        param2types.put(param, tm);
+                        if (tm.getKind() == TypeKind.DECLARED)
+                            param2types.put(param, tm);
                         return Utilities.getTypeName(tm, true) + "." + ve.getSimpleName();
                     } else {
                         return valueOf((String)entry.getValue());
@@ -192,7 +166,8 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                     String value = Utilities.getTypeName(tm, true).toString();
                     if (value != null) {
                         param2hints.put(param, TYPE);
-                        param2types.put(param, tm);
+                        if (tm.getKind() == TypeKind.DECLARED)
+                            param2types.put(param, tm);
                         return value;
                     }
                 }
@@ -204,7 +179,8 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                     String value = Utilities.getTypeName(tm, true).toString();
                     if (value != null) {
                         param2hints.put(param, ITERABLE_ELEMENT_TYPE);
-                        param2types.put(param, tm);
+                        if (tm.getKind() == TypeKind.DECLARED)
+                            param2types.put(param, tm);
                         return value;
                     }
                 }
@@ -216,7 +192,8 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                     String value = Utilities.getTypeName(tm, true).toString();
                     if (value != null) {
                         param2hints.put(param, LEFT_SIDE_TYPE);
-                        param2types.put(param, tm);
+                        if (tm.getKind() == TypeKind.DECLARED)
+                            param2types.put(param, tm);
                         return value;
                     }
                 }
@@ -228,7 +205,8 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                     String value = Utilities.getTypeName(tm, true).toString();
                     if (value != null) {
                         param2hints.put(param, RIGHT_SIDE_TYPE);
-                        param2types.put(param, tm);
+                        if (tm.getKind() == TypeKind.DECLARED)
+                            param2types.put(param, tm);
                         return value;
                     }
                 }
@@ -242,7 +220,8 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                     String value = Utilities.getTypeName(tm, true).toString();
                     if (value != null) {
                         param2hints.put(param, CAST);
-                        param2types.put(param, tm); //NOI18N
+                        if (tm.getKind() == TypeKind.DECLARED)
+                            param2types.put(param, tm); //NOI18N
                         return "(" + value + ")"; //NOI18N
                     }
                 }
@@ -532,7 +511,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                         }
                     },false);
                 } catch(IOException ioe) {
-                    ErrorManager.getDefault().notify(ioe);
+                    Exceptions.printStackTrace(ioe);
                 }
             }
         }

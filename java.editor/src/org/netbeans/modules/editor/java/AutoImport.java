@@ -20,6 +20,8 @@
 package org.netbeans.modules.editor.java;
 
 import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
@@ -33,8 +35,8 @@ import javax.lang.model.util.SimpleTypeVisitor6;
 
 import com.sun.source.util.TreePath;
 
+import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.api.java.source.WorkingCopy;
 
 /**
  *
@@ -44,20 +46,20 @@ public class AutoImport extends SimpleTypeVisitor6<Void, Void> {
 
     private static final String CAPTURED_WILDCARD = "<captured wildcard>"; //NOI18N
 
-    private WorkingCopy copy;
+    private CompilationInfo info;
     private StringBuilder builder;
     private TreePath path;
 
-    private AutoImport(WorkingCopy copy) {
-        this.copy = copy;
+    private AutoImport(CompilationInfo info) {
+        this.info = info;
     }
 
-    public static AutoImport get(WorkingCopy copy) {
-        return new AutoImport(copy);
+    public static AutoImport get(CompilationInfo info) {
+        return new AutoImport(info);
     }
     
-    public static CharSequence resolveImport(WorkingCopy copy, TreePath treePath, TypeMirror type) {
-        AutoImport imp = new AutoImport(copy);
+    public static CharSequence resolveImport(CompilationInfo info, TreePath treePath, TypeMirror type) {
+        AutoImport imp = new AutoImport(info);
         return imp.resolveImport(treePath, type);
     }
     
@@ -85,8 +87,9 @@ public class AutoImport extends SimpleTypeVisitor6<Void, Void> {
     public Void visitDeclared(DeclaredType type, Void p) {
         String name = ((TypeElement)type.asElement()).getQualifiedName().toString();
         try {
-            name = SourceUtils.resolveImport(copy, path, name);
+            name = SourceUtils.resolveImport(info, path, name);
         } catch (Exception e) {
+            Logger.getLogger("global").log(Level.INFO, null, e); //NOI18N
         }
         builder.append(name);
         Iterator<? extends TypeMirror> it = type.getTypeArguments().iterator();

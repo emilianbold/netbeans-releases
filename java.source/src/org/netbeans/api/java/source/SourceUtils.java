@@ -19,8 +19,6 @@
 
 package org.netbeans.api.java.source;
 
-import com.sun.source.util.TreePathScanner;
-import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -39,6 +37,7 @@ import javax.tools.JavaFileObject.Kind;
 
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.TreePathScanner;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.code.Flags;
@@ -47,14 +46,17 @@ import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.*;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.model.JavacElements;
+import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Name;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.JavaDataLoader;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.usages.Index;
@@ -65,14 +67,15 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author Dusan Balek
- */public class SourceUtils {    
+ */
+public class SourceUtils {    
      
-     
-     private static final String PACKAGE_SUMMARY = "package-summary";   //NOI18N
+    private static final String PACKAGE_SUMMARY = "package-summary";   //NOI18N
     
     private SourceUtils() {}
     
@@ -96,7 +99,6 @@ import org.openide.util.Exceptions;
         return null;
     }
     
-
     public static Element getImplementationOf(CompilationInfo info, ExecutableElement method, TypeElement origin) {
         Context c = ((JavacTaskImpl) info.getJavacTask()).getContext();
         return ((MethodSymbol)method).implementation((TypeSymbol)origin, com.sun.tools.javac.code.Types.instance(c), true);
@@ -150,31 +152,34 @@ import org.openide.util.Exceptions;
     private static EnumSet JAVA_JFO_KIND = EnumSet.of(Kind.CLASS, Kind.SOURCE);
         
     
-    /**Resolve full qualified name in the given context. Adds import as necessary.
+    /**Resolve full qualified name in the given context. Adds import statement as necessary.
      * Returns name that resolved to a given FQN in given context (either simple name
      * or full qualified name). Handles import conflicts.
      * 
-     * <b>Note:</b> after calling this method, it is not permitted to rewrite copy.getCompilationUnit().
+     * <br><b>Note:</b> if the <code>info</code> passed to this method is not an instance of {@link WorkingCopy},
+     * missing import statement is added from a separate modification task executed asynchronously.
+     * <br><b>Note:</b> after calling this method, it is not permitted to rewrite copy.getCompilationUnit().
      * 
-     * @param copy WorkingCopy over which the method should work
+     * @param info CompilationInfo over which the method should work
      * @param context in which the fully qualified should be resolved
      * @param fqn the fully qualified name to resolve
      * @return either a simple name or a FQN that will resolve to given fqn in given context
      */
-    public static String resolveImport(WorkingCopy copy, TreePath context, String fqn) throws NullPointerException, IOException {
-        if (copy == null)
+    public static String resolveImport(final CompilationInfo info, final TreePath context, final String fqn) throws NullPointerException, IOException {
+        if (info == null)
             throw new NullPointerException();
         if (context == null)
             throw new NullPointerException();
         if (fqn == null)
             throw new NullPointerException();
         
-        CompilationUnitTree cut = copy.getCompilationUnit();
-        CompilationUnitTree nue = (CompilationUnitTree) copy.getChangeSet().getChange(cut);
+        CompilationUnitTree cut = info.getCompilationUnit();
+        if (info instanceof WorkingCopy) {
+            CompilationUnitTree nue = (CompilationUnitTree) ((WorkingCopy)info).getChangeSet().getChange(cut);
+            cut = nue != null ? nue : cut;
+        }
         
-        cut = nue != null ? nue : cut;
-        
-        Scope scope = copy.getTrees().getScope(context);
+        Scope scope = info.getTrees().getScope(context);
         int lastDot = fqn.lastIndexOf('.');
         String simpleName = fqn.substring(lastDot != (-1) ? lastDot + 1 : 0);
         
@@ -194,12 +199,29 @@ import org.openide.util.Exceptions;
         }
         
         //not imported/visible so far by any means:
-        copy.rewrite(copy.getCompilationUnit(), addImports(cut, Collections.singletonList(fqn), copy.getTreeMaker()));
-        
-        TypeElement te = copy.getElements().getTypeElement(fqn);
-        
+        if (info instanceof WorkingCopy) {
+            ((WorkingCopy)info).rewrite(info.getCompilationUnit(), addImports(cut, Collections.singletonList(fqn), ((WorkingCopy)info).getTreeMaker()));
+        } else {
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    try {
+                        info.getJavaSource().runModificationTask(new CancellableTask<WorkingCopy>() {
+                            public void cancel() {
+                            }
+                            public void run(WorkingCopy copy) throws Exception {
+                                copy.toPhase(Phase.ELEMENTS_RESOLVED);
+                                copy.rewrite(copy.getCompilationUnit(), addImports(copy.getCompilationUnit(), Collections.singletonList(fqn), copy.getTreeMaker()));                                
+                            }
+                        }).commit();
+                    } catch (IOException ioe) {
+                        Exceptions.printStackTrace(ioe);
+                    }
+                }
+            });
+        }
+        TypeElement te = info.getElements().getTypeElement(fqn);
         if (te != null) {
-            ((JCCompilationUnit) copy.getCompilationUnit()).namedImportScope.enterIfAbsent((Symbol) te);
+            ((JCCompilationUnit) info.getCompilationUnit()).namedImportScope.enterIfAbsent((Symbol) te);
         }
         
         return simpleName;
