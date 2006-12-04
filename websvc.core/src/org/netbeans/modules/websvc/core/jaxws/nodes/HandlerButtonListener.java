@@ -18,6 +18,11 @@
  */
 package org.netbeans.modules.websvc.core.jaxws.nodes;
 
+import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ExpressionTree;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
@@ -26,15 +31,17 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.List;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.TypeElement;
 import javax.swing.DefaultListModel;
 import javax.swing.ListModel;
-// Retouche
-//import org.netbeans.jmi.javamodel.Annotation;
-//import org.netbeans.jmi.javamodel.AttributeValue;
-//import org.netbeans.jmi.javamodel.JavaClass;
-//import org.netbeans.modules.j2ee.common.JMIUtils;
-//import org.netbeans.modules.j2ee.common.JMIGenerationUtil;
-//import org.netbeans.modules.javacore.api.JavaModel;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.j2ee.common.source.GenerationUtils;
 import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.core.webservices.ui.panels.MessageHandlerPanel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Handler;
@@ -50,7 +57,7 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Roderico Cruz
+ * @author Roderico Cruz, Milan Kuchtiak
  */
 public class HandlerButtonListener implements ActionListener{
     MessageHandlerPanel panel;
@@ -78,109 +85,139 @@ public class HandlerButtonListener implements ActionListener{
         this.isNew = isNew;
     }
     public void actionPerformed(ActionEvent evt) {
-// Retouche
-//        if(evt.getSource() == NotifyDescriptor.OK_OPTION) {
-//            if(isNew){
-//                //add annotation
-//                JMIUtils.beginJmiTransaction(true);
-//                String servicehandlerFileName = service.getName() + "_handler"; //NOI18N
-//                final FileObject parent = JavaModel.getFileObject(implBeanClass.getResource()).getParent();
-//                final String handlerFileName = FileUtil.findFreeFileName(parent, servicehandlerFileName, "xml");
-//                ArrayList<AttributeValue> attrList = new ArrayList<AttributeValue>();
-//                AttributeValue attrValue = JMIGenerationUtil.createAttributeValue(
-//                        implBeanClass, "name", service.getName() + "_handlerChain");
-//                attrList.add(attrValue);
-//                attrValue = JMIGenerationUtil.createAttributeValue(
-//                        implBeanClass, "file", handlerFileName + ".xml");
-//                attrList.add(attrValue);
-//                implBeanClass.getAnnotations().add(JMIGenerationUtil.
-//                        createAnnotation(implBeanClass,"javax.jws.HandlerChain",attrList)); //NOI18N
-//                JMIUtils.endJmiTransaction();
-//                
-//                handlerFO = parent.getFileObject(handlerFileName, "xml");
-//                if(handlerFO == null){
-//                    //create handler file
-//                    try {
-//                        WSUtils.retrieveHandlerConfigFromResource(parent,handlerFileName + ".xml");
-//                        handlerFO = parent.getFileObject(handlerFileName, "xml");
-//                    }catch(Exception exp){
-//                        ErrorManager.getDefault().notify(exp);
-//                    }
-//                }
-//                //initialize handlerChains
-//                try{
-//                    handlerChains =
-//                            HandlerChainsProvider.getDefault().getHandlerChains(handlerFO);
-//                }catch(Exception e){
-//                    ErrorManager.getDefault().notify(e);
-//                    return; //TODO handle this
-//                }
-//            }
-//            DefaultListModel listModel = panel.getListModel();
-//            chain = handlerChains.getHandlerChains()[0];
-//            //add new handlers
-//            for(int i = 0; i < listModel.getSize(); i++){
-//                String className = (String)listModel.getElementAt(i);
-//                if(isNewHandler(className, chain)){
-//                    chain.addHandler(className, className);
-//                }
-//            }
-//            //remove handlers that have been deleted
-//            Handler[] handlers = chain.getHandlers();
-//            for(int j = 0; j < handlers.length; j++){
-//                Handler handler = handlers[j];
-//                String clsName = handler.getHandlerClass();
-//                if(!isInModel(clsName, listModel)){
-//                    chain.removeHandler(clsName);
-//                }
-//            }
-//            //if handler chain has no handlers, delete the annotation
-//            // and delete the handler xml file
-//            FileLock lock = null;
-//            OutputStream out = null;
-//            if(chain.getHandlers().length == 0){
-//                Annotation handlerAnnotation = JaxWsNode.getAnnotation(implBeanClass, "HandlerChain");
-//                if(handlerAnnotation != null){
-//                    JMIUtils.beginJmiTransaction(true);
-//                    implBeanClass.getAnnotations().remove(handlerAnnotation);
-//                    JMIUtils.endJmiTransaction();
-//                }
-//                
-//                //delete the handler xml file
-//                try{
-//                    lock = handlerFO.lock();
-//                    handlerFO.delete(lock);
-//                }catch(Exception e){
-//                    ErrorManager.getDefault().notify(e);
-//                } finally{
-//                    if(lock != null){
-//                        lock.releaseLock();
-//                    }
-//                }
-//            } else{
-//                try{
-//                    lock = handlerFO.lock();
-//                    out = handlerFO.getOutputStream(lock);
-//                    handlerChains.write(out);
-//                }catch(Exception e){
-//                    ErrorManager.getDefault().notify(e);
-//                }finally{
-//                    if(lock != null){
-//                        lock.releaseLock();
-//                    }
-//                    if (out != null){
-//                        try{
-//                            out.close();
-//                        } catch(IOException ioe){
-//                            ErrorManager.getDefault().notify(ioe);
-//                        }
-//                    }
-//                }
-//            }
-//        }
+        if(evt.getSource() == NotifyDescriptor.OK_OPTION) {
+            if (isNew) {
+                //add annotation
+                String servicehandlerFileName = service.getName() + "_handler"; //NOI18N
+                FileObject parent = implBeanClass.getParent();
+                final String handlerFileName = FileUtil.findFreeFileName(parent, servicehandlerFileName, "xml");
+                CancellableTask modificationTask = new CancellableTask<WorkingCopy>() {
+                    public void run(WorkingCopy workingCopy) throws IOException {
+                        workingCopy.toPhase(Phase.RESOLVED);
+                        GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
+                        if (genUtils!=null) {
+                            TreeMaker make = workingCopy.getTreeMaker();
+                            TypeElement chainElement = workingCopy.getElements().getTypeElement("javax.jws.HandlerChain"); //NOI18N
+                            List<ExpressionTree> attrs = new ArrayList<ExpressionTree>();
+                            AssignmentTree attr1 = make.Assignment(make.Identifier("name"), make.Literal(service.getName() + "_handlerChain"));
+
+                            AssignmentTree attr2 = make.Assignment(make.Identifier("file"), make.Literal(handlerFileName + ".xml"));
+                            attrs.add(attr1);attrs.add(attr2);
+                            AnnotationTree chainAnnotation = make.Annotation(
+                                    make.QualIdent(chainElement), 
+                                    attrs
+                            );
+                            ClassTree javaClass = genUtils.getClassTree();
+                            ClassTree modifiedClass = genUtils.addAnnotation(javaClass, chainAnnotation);
+                            workingCopy.rewrite(javaClass, modifiedClass);
+                        }
+                    }
+                    public void cancel() {}
+                };
+                JavaSource targetSource = JavaSource.forFileObject(implBeanClass);
+                try {
+                    targetSource.runModificationTask(modificationTask).commit();
+                } catch(IOException exp) {
+                        ErrorManager.getDefault().notify(exp);
+                }
+                
+                handlerFO = parent.getFileObject(handlerFileName, "xml");
+                if(handlerFO == null) {
+                    //create handler file
+                    try {
+                        WSUtils.retrieveHandlerConfigFromResource(parent,handlerFileName + ".xml");
+                        handlerFO = parent.getFileObject(handlerFileName, "xml");
+                    }catch(Exception exp){
+                        ErrorManager.getDefault().notify(exp);
+                    }
+                }
+                //initialize handlerChains
+                try{
+                    handlerChains =
+                            HandlerChainsProvider.getDefault().getHandlerChains(handlerFO);
+                }catch(Exception e){
+                    ErrorManager.getDefault().notify(e);
+                    return; //TODO handle this
+                }
+            }
+            DefaultListModel listModel = panel.getListModel();
+            chain = handlerChains.getHandlerChains()[0];
+            //add new handlers
+            for(int i = 0; i < listModel.getSize(); i++){
+                String className = (String)listModel.getElementAt(i);
+                if(isNewHandler(className, chain)){
+                    chain.addHandler(className, className);
+                }
+            }
+            //remove handlers that have been deleted
+            Handler[] handlers = chain.getHandlers();
+            for(int j = 0; j < handlers.length; j++){
+                Handler handler = handlers[j];
+                String clsName = handler.getHandlerClass();
+                if(!isInModel(clsName, listModel)){
+                    chain.removeHandler(clsName);
+                }
+            }
+            //if handler chain has no handlers, delete the annotation
+            // and delete the handler xml file
+            FileLock lock = null;
+            OutputStream out = null;
+            if(chain.getHandlers().length == 0) {
+                
+                CancellableTask modificationTask = new CancellableTask<WorkingCopy>() {
+                    public void run(WorkingCopy workingCopy) throws IOException {
+                        workingCopy.toPhase(Phase.RESOLVED);
+                        GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
+                        if (genUtils!=null) {
+                            TreeMaker make = workingCopy.getTreeMaker();
+                            AnnotationMirror chainAnnotation = JaxWsNode.getAnnotation(workingCopy, genUtils, "javax.jws.HandlerChain"); //NOI18N
+                            if (chainAnnotation!=null) {
+                                ClassTree classTree = genUtils.getClassTree();
+                                AnnotationTree anotTree = (AnnotationTree)workingCopy.getTrees().getTree(genUtils.getTypeElement(),chainAnnotation);
+                                ClassTree modifiedClass = make.Class(
+                                    make.removeModifiersAnnotation(classTree.getModifiers(), anotTree),
+                                    classTree.getSimpleName(),
+                                    classTree.getTypeParameters(),
+                                    classTree.getExtendsClause(),
+                                    (List<ExpressionTree>)classTree.getImplementsClause(),
+                                    classTree.getMembers());
+                                workingCopy.rewrite(classTree, modifiedClass);
+                            }
+                        }
+                    }
+                    public void cancel() {}
+                };
+                JavaSource targetSource = JavaSource.forFileObject(implBeanClass);
+                try {
+                    targetSource.runModificationTask(modificationTask).commit();
+                } catch(IOException exp) {
+                        ErrorManager.getDefault().notify(exp);
+                }
+            } else{
+                try{
+                    lock = handlerFO.lock();
+                    out = handlerFO.getOutputStream(lock);
+                    handlerChains.write(out);
+                }catch(Exception e){
+                    ErrorManager.getDefault().notify(e);
+                }finally{
+                    if(lock != null){
+                        lock.releaseLock();
+                    }
+                    if (out != null){
+                        try{
+                            out.close();
+                        } catch(IOException ioe){
+                            ErrorManager.getDefault().notify(ioe);
+                        }
+                    }
+                }
+            }
+            
+        }
     }
     
-    private boolean isInModel(String className, ListModel model){
+    private boolean isInModel(String className, ListModel model) {
         for(int i = 0; i < model.getSize(); i++){
             String cls = (String)model.getElementAt(i);
             if(className.equals(cls)){
@@ -216,5 +253,4 @@ public class HandlerButtonListener implements ActionListener{
         br.close();
         return sb.toString();
     }
-    
 }

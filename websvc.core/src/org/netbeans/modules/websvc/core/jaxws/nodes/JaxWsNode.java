@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.websvc.core.jaxws.nodes;
 
+import java.awt.Dialog;
 import java.awt.Image;
 import java.awt.datatransfer.Transferable;
 import java.io.IOException;
@@ -26,6 +27,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
@@ -50,14 +52,20 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.api.jaxws.project.GeneratedFilesHelper;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Endpoints;
+import org.netbeans.modules.websvc.api.jaxws.project.config.Handler;
+import org.netbeans.modules.websvc.api.jaxws.project.config.HandlerChain;
+import org.netbeans.modules.websvc.api.jaxws.project.config.HandlerChains;
+import org.netbeans.modules.websvc.api.jaxws.project.config.HandlerChainsProvider;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
 import org.netbeans.modules.websvc.core.WebServiceReference;
 import org.netbeans.modules.websvc.core.WebServiceTransferable;
 import org.netbeans.modules.websvc.core.jaxws.actions.AddOperationAction;
 import org.netbeans.modules.websvc.core.jaxws.actions.JaxWsRefreshAction;
 import org.netbeans.modules.websvc.core.jaxws.actions.WsTesterPageAction;
+import org.netbeans.modules.websvc.core.jaxws.nodes.HandlerButtonListener;
 import org.netbeans.modules.websvc.core.webservices.action.ConfigureHandlerAction;
 import org.netbeans.modules.websvc.core.webservices.action.ConfigureHandlerCookie;
+import org.netbeans.modules.websvc.core.webservices.ui.panels.MessageHandlerPanel;
 import org.netbeans.modules.websvc.core.wseditor.support.EditWSAttributesCookie;
 import org.netbeans.modules.websvc.core.wseditor.support.WSEditAttributesAction;
 import org.netbeans.modules.websvc.jaxws.api.JaxWsRefreshCookie;
@@ -65,6 +73,7 @@ import org.netbeans.modules.websvc.jaxws.api.JaxWsTesterCookie;
 import org.netbeans.modules.websvc.jaxws.api.JaxWsWsdlCookie;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.actions.DeleteAction;
@@ -94,7 +103,6 @@ public class JaxWsNode extends AbstractNode implements OpenCookie, JaxWsWsdlCook
     Service service;
     FileObject srcRoot;
     JaxWsModel jaxWsModel;
-    // Retouche
     private FileObject implBeanClass;
     InstanceContent content;
     Project project;
@@ -179,11 +187,7 @@ public class JaxWsNode extends AbstractNode implements OpenCookie, JaxWsWsdlCook
     
     private OpenCookie getOpenCookie() {
         OpenCookie oc = null;
-        // Retouche
-        //JavaClass ce = getImplBeanClass();
         FileObject f = getImplBean();
-        //if (ce != null) {
-            //FileObject f = JavaModel.getFileObject(ce.getResource());
             if (f != null) {
                 try {
                     DataObject d = DataObject.find(f);
@@ -563,78 +567,85 @@ public class JaxWsNode extends AbstractNode implements OpenCookie, JaxWsWsdlCook
      * Implementation of the ConfigureHandlerCookie
      */
     public void configureHandler() {
-        boolean isNew = false;
-// Retouche
-//        implBeanClass = getImplBeanClass();
-//        ArrayList<String> handlerClasses = new ArrayList<String>();
-//        FileObject handlerFO = null;
-//        HandlerChains handlerChains = null;
-//        //obtain the handler config file, if any from annotation in implbean
-//        String handlerFileName = null;
-//        Annotation handlerAnnotation = getAnnotation(implBeanClass, "HandlerChain");
-//        
-//        if(handlerAnnotation != null){
-//            List<AttributeValue> attrs = handlerAnnotation.getAttributeValues();
-//            for(AttributeValue attr : attrs){
-//                String attrName = attr.getName();
-//                if(attrName.equals("file")){
-//                    StringLiteral fileValue = (StringLiteral)attr.getValue();
-//                    handlerFileName = fileValue.getValue();
-//                    break;
-//                }
-//            }
-//            //look for handlerFile in the same directory as the implbean
-//            FileObject f = JavaModel.getFileObject(implBeanClass.getResource());
-//            handlerFO = f.getParent().getFileObject(handlerFileName);
-//            if(handlerFO != null){
-//                try{
-//                    handlerChains =
-//                            HandlerChainsProvider.getDefault().getHandlerChains(handlerFO);
-//                }catch(Exception e){
-//                    ErrorManager.getDefault().notify(e);
-//                    return; //TODO handle this
-//                }
-//                HandlerChain[] handlerChainArray = handlerChains.getHandlerChains();
-//                //there is always only one, so get the first one
-//                HandlerChain chain = handlerChainArray[0];
-//                Handler[] handlers = chain.getHandlers();
-//                for(int i = 0; i < handlers.length; i++){
-//                    handlerClasses.add(handlers[i].getHandlerClass());
-//                }
-//            } else{  //unable to find the handler file, display a warning
-//                NotifyDescriptor.Message dialogDesc
-//                        = new NotifyDescriptor.Message(NbBundle.getMessage(JaxWsNode.class,
-//                        "MSG_HANDLER_FILE_NOT_FOUND", handlerFileName), NotifyDescriptor.INFORMATION_MESSAGE);
-//                DialogDisplayer.getDefault().notify(dialogDesc);
-//            }
-//            
-//        } else{
-//            isNew = true;
-//        }
-//        final MessageHandlerPanel panel = new MessageHandlerPanel(project,
-//                (String[])handlerClasses.toArray(new String[handlerClasses.size()]), true, service.getName());
-//        String title = NbBundle.getMessage(JaxWsNode.class,"TTL_MessageHandlerPanel");
-//        DialogDescriptor dialogDesc = new DialogDescriptor(panel, title);
-//        dialogDesc.setButtonListener(new HandlerButtonListener( panel,
-//                handlerChains, handlerFO, implBeanClass, service, isNew));
-//        Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDesc);
-//        dialog.setVisible(true);
+        FileObject implBeanFo = getImplBean();
+        List<String> handlerClasses = new ArrayList<String>();
+        FileObject handlerFO = null;
+        HandlerChains handlerChains = null;
+        //obtain the handler config file, if any from annotation in implbean
+        final String[] handlerFileName = new String[1];
+        final boolean[] isNew = new boolean[]{true};
+        JavaSource implBeanJavaSrc = JavaSource.forFileObject(implBeanFo);
+        CancellableTask task = new CancellableTask<CompilationController>() {
+            public void run(CompilationController controller) throws IOException {
+                controller.toPhase(Phase.ELEMENTS_RESOLVED);
+                SourceUtils srcUtils = SourceUtils.newInstance(controller);
+                AnnotationMirror handlerAnnotation = getAnnotation(controller, srcUtils, "javax.jws.HandlerChain");
+                if (handlerAnnotation!=null) {
+                    isNew[0] = false;
+                    Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = handlerAnnotation.getElementValues();
+                    for(ExecutableElement ex:expressions.keySet()) {
+                        if (ex.getSimpleName().contentEquals("file")) { 
+                            handlerFileName[0] = (String)expressions.get(ex).getValue();
+                            break;
+                        }
+                    }
+                }
+            }
+            public void cancel() {}
+        };
+        try {
+            implBeanJavaSrc.runUserActionTask(task, true);
+        } catch (IOException ex) {
+            ErrorManager.getDefault().notify(ex);
+        }
         
+        if (!isNew[0] && handlerFileName[0]!=null) {
+            // look for handlerFile in the same directory as the implbean
+            handlerFO = implBeanFo.getParent().getFileObject(handlerFileName[0]);
+            if (handlerFO!=null) {
+                try{
+                    handlerChains =
+                            HandlerChainsProvider.getDefault().getHandlerChains(handlerFO);
+                }catch(Exception e){
+                    ErrorManager.getDefault().notify(e);
+                    return; //TODO handle this
+                }
+                HandlerChain[] handlerChainArray = handlerChains.getHandlerChains();
+                //there is always only one, so get the first one
+                HandlerChain chain = handlerChainArray[0];
+                Handler[] handlers = chain.getHandlers();
+                for(int i = 0; i < handlers.length; i++){
+                    handlerClasses.add(handlers[i].getHandlerClass());
+                }
+            } else {  //unable to find the handler file, display a warning
+                NotifyDescriptor.Message dialogDesc
+                        = new NotifyDescriptor.Message(NbBundle.getMessage(JaxWsNode.class,
+                        "MSG_HANDLER_FILE_NOT_FOUND", handlerFileName), NotifyDescriptor.INFORMATION_MESSAGE);
+                DialogDisplayer.getDefault().notify(dialogDesc);
+            }
+        }
+        final MessageHandlerPanel panel = new MessageHandlerPanel(project,
+                (String[])handlerClasses.toArray(new String[handlerClasses.size()]), true, service.getName());
+        String title = NbBundle.getMessage(JaxWsNode.class,"TTL_MessageHandlerPanel");
+        DialogDescriptor dialogDesc = new DialogDescriptor(panel, title);
+        dialogDesc.setButtonListener(new HandlerButtonListener( panel,
+                handlerChains, handlerFO, implBeanFo, service, isNew[0]));
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDesc);
+        dialog.setVisible(true);
     }
-// Retouche    
-//    public static Annotation getAnnotation(AnnotableElement element, String annotationType) {
-//        Collection<Annotation> annotations = element.getAnnotations();
-//        for(Annotation annotation : annotations) {
-//            if(annotation.getType() == null) {
-//                continue;
-//            }
-//            String name = annotation.getType().getName();
-//            if (name.indexOf(annotationType) != -1) {
-//                return annotation;
-//            }
-//        }
-//        return null;
-//    }
+  
+    static AnnotationMirror getAnnotation(CompilationController controller, SourceUtils srcUtils, String annotationType) {
+        TypeElement anElement = controller.getElements().getTypeElement(annotationType);
+        if (anElement!=null) {
+            List<? extends AnnotationMirror> annotations = srcUtils.getTypeElement().getAnnotationMirrors();
+            for(AnnotationMirror annotation : annotations) {
+                if (controller.getTypes().isSameType(anElement.asType(), annotation.getAnnotationType())) {
+                    return annotation;
+                }
+            }
+        }
+        return null;
+    }
     
     private boolean isJsr109Supported(Project project) {
         JAXWSSupport wss = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());
