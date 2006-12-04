@@ -79,6 +79,12 @@ public class URLConnector {
     addProxyFrom("deployment.proxy.http.host", "deployment.proxy.http.port", MyProxyType.HTTP);
     addProxyFrom("deployment.proxy.ftp.host", "deployment.proxy.ftp.port", MyProxyType.FTP);
     addProxyFrom("deployment.proxy.socks.host", "deployment.proxy.socks.port", MyProxyType.SOCKS);
+    if ("direct".equalsIgnoreCase(System.getProperty("javaplugin.proxy.config.type")))
+      useProxy = false;
+  }
+  
+  private void configureByPassList() {
+    addByPassHostsFrom("deployment.proxy.bypass.list");
   }
   
   private void addProxyFrom(String hostProp, String portProp, MyProxyType type) {
@@ -92,9 +98,18 @@ public class URLConnector {
     }
   }
   
+  private void addByPassHostsFrom(String byPassProp) {
+    final String byPassList = System.getProperty(byPassProp);
+    if (byPassList == null) return;
+    for (String host : byPassList.split(",")) {
+      proxySelector.addByPassHost(host);
+    }
+  }
+  
   private URLConnector() {
     addSystemProxies();
     addDeploymentProxies();
+    configureByPassList();
   }
   
   private void load() {
@@ -147,6 +162,14 @@ public class URLConnector {
   public void removeProxy(MyProxyType type) {
     proxySelector.remove(type);
     dump();
+  }
+  
+  public void addByPassHost(String host) {
+    proxySelector.addByPassHost(host);
+  }
+  
+  public String[] getByPassHosts() {
+    proxySelector.getByPass();
   }
   
   public void setReadTimeout(int readTimeout) {
