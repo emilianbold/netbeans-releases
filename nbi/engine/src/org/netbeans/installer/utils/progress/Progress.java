@@ -20,7 +20,9 @@
  */
 package org.netbeans.installer.utils.progress;
 
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  *
@@ -43,7 +45,7 @@ public class Progress {
     private ProgressListener synchronizer = null;
     private Progress         source       = null;
     
-    private Vector<ProgressListener> listeners = new Vector<ProgressListener>();
+    private List<ProgressListener> listeners = new ArrayList<ProgressListener>();
     
     // constructors /////////////////////////////////////////////////////////////////
     public Progress() {
@@ -160,6 +162,7 @@ public class Progress {
     
     // listeners ////////////////////////////////////////////////////////////////////
     public void addProgressListener(ProgressListener listener) {
+      if (listener == null) return;
         synchronized (listeners) {
             listeners.add(listener);
         }
