@@ -199,9 +199,9 @@ public class JspCompletionQuery implements CompletionQuery {
     private void setResultItemsOffset(List/*<CompletionItem>*/ items, int removeLength, int ccoffset) {
         Iterator i = items.iterator();
         while(i.hasNext()) {
-            ResultItem ri = (ResultItem)i.next();
-            if(ri instanceof org.netbeans.modules.web.core.syntax.completion.ResultItem) 
-                ((org.netbeans.modules.web.core.syntax.completion.ResultItem)ri).setSubstituteOffset(ccoffset - removeLength);
+            Object obj = i.next();
+            if(obj instanceof org.netbeans.modules.web.core.syntax.completion.ResultItem) 
+                ((org.netbeans.modules.web.core.syntax.completion.ResultItem)obj).setSubstituteOffset(ccoffset - removeLength);
         }
     }
     

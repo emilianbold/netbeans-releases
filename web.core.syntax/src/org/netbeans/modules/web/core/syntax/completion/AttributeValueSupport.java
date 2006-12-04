@@ -56,7 +56,7 @@ public abstract class AttributeValueSupport extends Object {
         supports = new HashMap();
         // jsp:useBean
         putSupport(new AttrSupports.ScopeSupport(true, "jsp:useBean", "scope"));     // NOI18N
-//        putSupport(new AttrSupports.PackageClassSupport(true, "jsp:useBean", "class")); // NOI18N
+        putSupport(new AttrSupports.PackageClassSupport(true, "jsp:useBean", "class")); // NOI18N
         // jsp:getProperty, jsp:setProperty
         putSupport(new AttrSupports.GetSetPropertyName(true, "jsp:getProperty", "name")); // NOI18N
         putSupport(new AttrSupports.GetSetPropertyName(true, "jsp:setProperty", "name")); // NOI18N
@@ -66,8 +66,8 @@ public abstract class AttributeValueSupport extends Object {
         putSupport(new AttrSupports.TaglibURI());
         putSupport(new AttrSupports.TaglibTagdir());
         // @page
-//        putSupport(new AttrSupports.PackageClassSupport(false, "page", "import")); // NOI18N
-//        putSupport(new AttrSupports.PackageClassSupport(false, "page", "extends")); // NOI18N
+        putSupport(new AttrSupports.PackageClassSupport(false, "page", "import")); // NOI18N
+        putSupport(new AttrSupports.PackageClassSupport(false, "page", "extends")); // NOI18N
         putSupport(new AttrSupports.PageLanguage());
         putSupport(new AttrSupports.TrueFalseSupport(false, "page", "session")); // NOI18N
         putSupport(new AttrSupports.TrueFalseSupport(false, "page", "autoFlush")); // NOI18N
@@ -77,7 +77,7 @@ public abstract class AttributeValueSupport extends Object {
         putSupport(new AttrSupports.EncodingSupport(false, "page", "pageEncoding")); // NOI18N
         putSupport(new AttrSupports.TrueFalseSupport(false, "page", "isELIgnored")); // NOI18N
         // @tag 
-//        putSupport(new AttrSupports.PackageClassSupport(false, "tag", "import")); // NOI18N
+        putSupport(new AttrSupports.PackageClassSupport(false, "tag", "import")); // NOI18N
         putSupport(new AttrSupports.EncodingSupport(false, "tag", "pageEncoding")); // NOI18N
         putSupport(new AttrSupports.TrueFalseSupport(false, "tag", "isELIgnored")); // NOI18N
         putSupport(new AttrSupports.FilenameSupport(false, "tag", "small-icon")); // NOI18N
@@ -89,7 +89,7 @@ public abstract class AttributeValueSupport extends Object {
         // @variable
         putSupport(new AttrSupports.TrueFalseSupport(false, "variable", "declare")); // NOI18N
         putSupport(new AttrSupports.VariableScopeSupport(false, "variable", "scope")); // NOI18N
-//        putSupport(new AttrSupports.PackageClassSupport(false, "variable", "variable-class")); // NOI18N
+        putSupport(new AttrSupports.PackageClassSupport(false, "variable", "variable-class")); // NOI18N
         // @include
         putSupport(new AttrSupports.FilenameSupport (false, "include", "file")); //NOI18N
         putSupport(new AttrSupports.FilenameSupport (true, "jsp:directive.include", "file")); //NOI18N
@@ -105,8 +105,8 @@ public abstract class AttributeValueSupport extends Object {
         // PENDING - add supports for known attributes
         
         // jsp:directive.page
-//        putSupport(new AttrSupports.PackageClassSupport(true, "jsp:directive.page", "import")); // NOI18N
-//        putSupport(new AttrSupports.PackageClassSupport(true, "jsp:directive.page", "extends")); // NOI18N
+        putSupport(new AttrSupports.PackageClassSupport(true, "jsp:directive.page", "import")); // NOI18N
+        putSupport(new AttrSupports.PackageClassSupport(true, "jsp:directive.page", "extends")); // NOI18N
         putSupport(new AttrSupports.TrueFalseSupport(true, "jsp:directive.page", "session")); // NOI18N
         putSupport(new AttrSupports.TrueFalseSupport(true, "jsp:directive.page", "autoFlush")); // NOI18N
         putSupport(new AttrSupports.TrueFalseSupport(true, "jsp:directive.page", "isThreadSafe")); // NOI18N
