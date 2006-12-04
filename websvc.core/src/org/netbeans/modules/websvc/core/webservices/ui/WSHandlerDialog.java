@@ -134,9 +134,16 @@ public class WSHandlerDialog {
                             accepted = false;
                             break;
                         }
-                        
                         final boolean[] isHandler = new boolean[]{false};
+                        
                         JavaSource javaSource = JavaSource.forFileObject(javaClassFo);
+                        if(javaSource == null){
+                            errMsg = NbBundle.getMessage(WSHandlerDialog.class,
+                                    "NotJavaClass_msg");
+                            accepted = false;
+                            break;
+                        }
+                        
                         CancellableTask task = new CancellableTask<CompilationController>() {
                             public void run(CompilationController controller) throws IOException {
                                 controller.toPhase(Phase.ELEMENTS_RESOLVED);
