@@ -169,7 +169,7 @@ public class URLConnector {
   }
   
   public String[] getByPassHosts() {
-    proxySelector.getByPass();
+    return proxySelector.getByPass();
   }
   
   public void setReadTimeout(int readTimeout) {
