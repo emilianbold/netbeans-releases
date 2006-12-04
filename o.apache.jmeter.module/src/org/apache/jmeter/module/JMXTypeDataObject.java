@@ -19,7 +19,7 @@ public class JMXTypeDataObject extends MultiDataObject {
     super(pf, loader);
     CookieSet cookies = getCookieSet();
     
-    cookies.add(new JMeterEditable(getPrimaryFile()));
+    cookies.add(new JMeterEditable());
   }
   
   protected Node createNodeDelegate() {

@@ -56,7 +56,11 @@ import org.apache.jmeter.util.JMeterUtils;
 import org.apache.jmeter.visualizers.Visualizer;
 import org.apache.jorphan.collections.HashTree;
 import org.apache.jorphan.collections.HashTreeTraverser;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Utilities;
@@ -312,10 +316,10 @@ public class JMeterIntegrationEngine {
   }
   
   public Process externalEdit(final String scriptPath) throws IOException {
-//    final String cmdProcessor = (Utilities.isWindows() ? "call" : "sh");
+    //    final String cmdProcessor = (Utilities.isWindows() ? "call" : "sh");
     final String jmeterRoot = jmeterPath + File.separator + "bin";
     final String jmeterExecutable = jmeterRoot + File.separator + "jmeter" + (Utilities.isWindows() ? ".bat" : "");
-
+    
     String[] params = null;
     System.out.println("Userdir = " + jmeterRoot);
     System.out.println("Scirptpath = " + decoratePath(scriptPath));
@@ -352,17 +356,17 @@ public class JMeterIntegrationEngine {
   }
   
   public static void clearLog() {
-//    try {
-//      File file = new File(getLogPath());
-//      if (file.exists()) {
-//        file.delete();
-//      }
-//      if (file.createNewFile()) {
-//        LoggingManager.setTarget(new FileWriter(file));
-//      }
-//    } catch (IOException e) {
-//      // IGNORE
-//    }
+    //    try {
+    //      File file = new File(getLogPath());
+    //      if (file.exists()) {
+    //        file.delete();
+    //      }
+    //      if (file.createNewFile()) {
+    //        LoggingManager.setTarget(new FileWriter(file));
+    //      }
+    //    } catch (IOException e) {
+    //      // IGNORE
+    //    }
   }
   
   /**
@@ -379,7 +383,7 @@ public class JMeterIntegrationEngine {
       jmeterPath = jmeterPath.substring(0, jmeterPath.lastIndexOf("modules" + File.separator + "jmeter") + ("modules" + File.separator + "jmeter").length()); // NOI18N
       System.out.println("Modified JMeter path = " + jmeterPath);
       // change user.dir property - it's required by JMeter
-//      System.setProperty("user.dir", jmeterPath + File.separator + "bin"); // NOI18N
+      //      System.setProperty("user.dir", jmeterPath + File.separator + "bin"); // NOI18N
       // set JMeter home
       JMeterUtils.setJMeterHome(jmeterPath);
       // add plugins to classpath
@@ -404,19 +408,44 @@ public class JMeterIntegrationEngine {
       
       // call getProperties - this call also initializes the properties (pretty nasty hack)
       JMeterUtils.getProperties(userDir.getCanonicalPath());
-//
-//      // initialize the rest of JMeter - JMeter initializes some static fields within the constructor -> it's hell
+      //
+      //      // initialize the rest of JMeter - JMeter initializes some static fields within the constructor -> it's hell
       JMeterUtils.setLocale(Locale.getDefault());
-//      LoggingManager.setTarget(new FileWriter(getLogPath()));
+      //      LoggingManager.setTarget(new FileWriter(getLogPath()));
     } catch (IOException e) {
       throw new InitializationException(e);
     }
   }
   
   private HashTree parseJMeterTree(final String planPath) {
-    File planFile = new File(planPath);
-    return parseJMeterTree(FileUtil.toFileObject(planFile));
+    FileObject planFile = FileUtil.toFileObject(new File(planPath));
+    planFile.removeFileChangeListener(scriptChangeListener);
+    planFile.addFileChangeListener(scriptChangeListener);
+    return parseJMeterTree(planFile);
   }
+  
+  private FileChangeListener scriptChangeListener = new FileChangeListener() {
+    
+    public void fileFolderCreated(FileEvent fe) {}
+    
+    public void fileDataCreated(FileEvent fe) {}
+    
+    public void fileChanged(FileEvent fe) {
+      FileObject fo = fe.getFile();
+      HashTree newTree = parseJMeterTree(fo);
+      testPlans.put(FileUtil.toFile(fo).getAbsolutePath(), newTree);
+    }
+    
+    public void fileDeleted(FileEvent fe) {
+      testPlans.remove(fe.getFile().getPath());
+    }
+    
+    public void fileRenamed(FileRenameEvent fe) {
+      System.out.println("here hozno ");
+    }
+    
+    public void fileAttributeChanged(FileAttributeEvent fe) {}
+  };
   
   private HashTree parseJMeterTree(final FileObject file) {
     InputStream planInputStream = null;
@@ -431,6 +460,7 @@ public class JMeterIntegrationEngine {
     } catch (Exception e) {
       e.printStackTrace();
     }
+    
     return rootTree;
   }
   

@@ -21,7 +21,6 @@ package org.apache.jmeter.module.cookies;
 
 import org.apache.jmeter.module.integration.JMeterIntegrationEngine;
 import org.openide.ErrorManager;
-import org.openide.cookies.EditCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
@@ -33,16 +32,8 @@ import org.openide.windows.TopComponent;
  * @author Jaroslav Bachorik
  */
 public class JMeterEditable implements Node.Cookie {
-  private FileObject primaryFile;
   
-  /**
-   * Creates a new instance of JMeterEditable
-   */
-  public JMeterEditable(final FileObject primary) {
-    primaryFile = primary;
-  }
-  
-  public void edit() {
+  public void edit(FileObject primaryFile) {
     final TopComponent currentComponent = TopComponent.getRegistry().getActivated();
     try {
       currentComponent.setCursor(org.openide.util.Utilities.createProgressCursor(currentComponent));

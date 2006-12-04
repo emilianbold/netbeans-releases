@@ -21,6 +21,7 @@ package org.apache.jmeter.module;
 
 import org.apache.jmeter.module.cookies.JMeterEditable;
 import org.openide.cookies.EditCookie;
+import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -31,8 +32,9 @@ public final class ExternalEditAction extends CookieAction {
   
   protected void performAction(final Node[] activatedNodes) {
     final JMeterEditable c = (JMeterEditable) activatedNodes[0].getCookie(JMeterEditable.class);
+    final DataObject dobj = (DataObject)activatedNodes[0].getCookie(DataObject.class);
     
-    c.edit();
+    c.edit(dobj.getPrimaryFile());
   }
   
   protected int mode() {
