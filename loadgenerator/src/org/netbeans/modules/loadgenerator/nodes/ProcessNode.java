@@ -30,6 +30,7 @@ import org.netbeans.modules.loadgenerator.actions.StopAction;
 import org.netbeans.modules.loadgenerator.spi.ProcessInstance;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
 /**
@@ -73,7 +74,7 @@ public class ProcessNode extends AbstractNode {
   
   @Override
   public String getDisplayName() {
-    return (provider.isRunning() ? "Running " : "Stopped ") + provider.getDisplayName();
+    return (provider.isRunning() ? NbBundle.getMessage(ProcessNode.class, "ProcessNode_Running") : NbBundle.getMessage(ProcessNode.class, "ProcessNode_Stopped")) + provider.getDisplayName(); // NOI18N
   }
   
   @Override

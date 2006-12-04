@@ -123,7 +123,7 @@ public class EngineManagerImpl implements EngineManager, ProcessInstanceListener
   public Collection<Engine> findEngines(final String extension) {
     Collection<Engine> providers = new ArrayList<Engine>();
     Collection<? extends Engine> result = Lookup.getDefault().lookupAll(Engine.class);
-    
+
     for(Engine provider : result) {
       if (provider.getSupportedExtensions().contains(extension)) {
         providers.add(provider);

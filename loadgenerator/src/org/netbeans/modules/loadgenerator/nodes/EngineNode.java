@@ -77,6 +77,10 @@ public class EngineNode extends AbstractNode {
     refreshChildren();
   }
   
+  public Engine getProvider() {
+    return this.provider;
+  }
+  
   @Override
   public String getDisplayName() {
     return provider.getDisplayName();
@@ -111,5 +115,15 @@ public class EngineNode extends AbstractNode {
       nodes.add(node);
     }
     getChildren().add(nodes.toArray(new Node[]{}));
+  }
+  
+  public boolean equals(Object anotherObject) {
+    if (anotherObject instanceof EngineNode) return provider.equals(((EngineNode)anotherObject).provider);
+    if (anotherObject instanceof Engine) return provider.equals(anotherObject);
+    return false;
+  }
+  
+  public int hashCode() {
+    return provider.hashCode();
   }
 }
