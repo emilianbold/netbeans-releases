@@ -22,8 +22,8 @@ package org.netbeans.modules.j2ee.common.source;
 import com.sun.source.tree.*;
 import com.sun.source.util.*;
 import java.io.IOException;
-import java.lang.annotation.ElementType;
 import javax.lang.model.element.*;
+import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -255,7 +255,27 @@ public class SourceUtilsTest extends NbTestCase {
                 SourceUtils srcUtils = SourceUtils.newInstance(controller);
                 assertTrue(srcUtils.isSubtype("java.io.Serializable"));
                 assertFalse(srcUtils.isSubtype("java.lang.Cloneable"));
-                assertFalse(srcUtils.isSubtype("not.likely.to.exist.Type"));
+            }
+        });
+    }
+
+    public void testIsSubtypeGenerics() throws Exception {
+        TestUtilities.copyStringToFileObject(testFO,
+                "package foo;" +
+                "import java.util.Enumeration;" +
+                "public class TestClass implements Enumeration<String> {" +
+                "    public boolean hasMoreElement() {" +
+                "        return false;" +
+                "    }" +
+                "    public String nextElement() {" +
+                "        return null;" +
+                "    }" +
+                "}");
+        runUserActionTask(testFO, new AbstractTask<CompilationController>() {
+            public void run(CompilationController controller) throws Exception {
+                SourceUtils srcUtils = SourceUtils.newInstance(controller);
+                assertTrue(srcUtils.isSubtype("java.util.Enumeration<String>"));
+                assertFalse(srcUtils.isSubtype("java.util.Enumeration<Object>"));
             }
         });
     }

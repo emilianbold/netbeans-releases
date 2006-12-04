@@ -188,19 +188,19 @@ public class SourceUtils {
     }
 
     /**
-     * Returns true if the given type is a subtype of {@link #getTypeElement}.
+     * Returns true if {@link #getTypeElement} is a subtype of the given type.
      *
-     * @param  typeName the fully-qualified name of a type.
-     * @returns true if the passed type is a subtype of {@link #getTypeElement},
-     *         false otherwise (including when the type given by the
-     *         <code>typeName</code> parameter could not be found).
+     * @param  type the string representation of a type. The type will be parsed
+     *         in the context of {@link #getTypeElement}.
+     * @return true {@link #getTypeElement} is a subtype of the given type,
+     *         false otherwise.
      */
-    public boolean isSubtype(String typeName) {
-        Parameters.notNull("typeName", typeName); // NOI18N
+    public boolean isSubtype(String type) {
+        Parameters.notNull("type", type); // NOI18N
 
-        TypeElement typeElement = getCompilationController().getElements().getTypeElement(typeName);
-        if (typeElement != null) {
-            return getCompilationController().getTypes().isSubtype(getTypeElement().asType(), typeElement.asType());
+        TypeMirror typeMirror = getCompilationController().getTreeUtilities().parseType(type, getTypeElement());
+        if (typeMirror != null) {
+            return getCompilationController().getTypes().isSubtype(getTypeElement().asType(), typeMirror);
         }
         return false;
     }
