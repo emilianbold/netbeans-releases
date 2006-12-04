@@ -20,6 +20,7 @@
 package org.netbeans.modules.refactoring.api.ui;
 
 import java.awt.event.ActionEvent;
+import javax.swing.Action;
 import org.netbeans.modules.refactoring.spi.impl.*;
 import org.openide.util.ContextAwareAction;
 
@@ -77,6 +78,30 @@ public final class RefactoringActionsFactory {
      */
     public static ContextAwareAction copyAction() {
         return SafeDeleteAction.findObject(CopyAction.class, true);
+    }
+    
+    /**
+     * Factory method for WhereUsedAction
+     * @return an instance of WhereUsedAction
+     */
+    public static ContextAwareAction whereUsedAction() {
+        return WhereUsedAction.findObject(WhereUsedAction.class, true);
+    }
+    
+    /**
+     * Factory method for RSMEditorAction
+     * @return an instance of RSMEditorAction
+     */
+    public static Action editorSubmenuAction() {
+        return RSMEditorAction.findObject(RSMEditorAction.class, true);
+    }
+    
+    /**
+     * Factory method for RSMDataObjectAction
+     * @return an instance of RSMDataObjectAction
+     */
+    public static ContextAwareAction popupSubmenuAction() {
+        return RSMDataObjectAction.findObject(RSMDataObjectAction.class, true);
     }
     
 

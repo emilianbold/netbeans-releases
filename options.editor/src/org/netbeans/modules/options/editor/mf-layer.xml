@@ -185,10 +185,10 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="Find.shadow">
                     <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-FindAction.instance"/>
                 </file>
-<!--retouche:-->
-<!--                <file name="Find Usages.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-WhereUsedAction.instance"/>
-                </file>-->
+
+                <file name="Find Usages.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance"/>
+                </file>
                 <file name="Find in Projects.shadow">
                     <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-search-project-ProjectsSearchAction.instance"/>
                 </file>
@@ -359,13 +359,22 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="Refactor">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.options.editor.Bundle"/>
                 <file name="Rename.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-spi-impl-RenameAction.instance"/>
+                    <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-api-ui-RenameAction.instance"/>
                 </file>
                 <file name="Redo.shadow">
                     <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-spi-impl-RedoAction.instance"/>
                 </file>
                 <file name="Undo.shadow">
                     <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-spi-impl-UndoAction.instance"/>
+                </file>
+                <file name="Move.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-api-ui-MoveAction.instance"/>
+                </file>
+                <file name="SafelyDelete.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-api-ui-SafeDeleteAction.instance"/>
+                </file>
+                <file name="Copy.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-api-ui-CopyAction.instance"/>
                 </file>
 <!--retouche:-->
 <!--                <file name="Change Method Parameters.shadow">
@@ -389,17 +398,11 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="Move Inner to Outer Level.shadow">
                     <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-InnerToOuterAction.instance"/>
                 </file>
-                <file name="Move Class.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-MoveClassAction.instance"/>
-                </file>
                 <file name="Pull Up.shadow">
                     <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-PullUpAction.instance"/>
                 </file>
                 <file name="Push Down.shadow">
                     <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-PushDownAction.instance"/>
-                </file>
-                <file name="Safely Delete....shadow">
-                    <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-SafeDeleteAction.instance"/>
                 </file>
                 <file name="Use Supertype Where Possible....shadow">
                     <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-UseSuperTypeAction.instance"/>

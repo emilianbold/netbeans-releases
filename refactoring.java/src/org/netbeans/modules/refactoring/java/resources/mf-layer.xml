@@ -19,4 +19,60 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <filesystem>
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="x-java">
+                <folder name="Popup">
+                    <file name="org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance">
+                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.whereUsedAction"/>
+                    </file>
+                    <file name="org-netbeans-modules-refactoring-api-ui-RSMEditorAction.instance">
+                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.editorSubmenuAction"/>
+                    </file>
+                    
+                    <attr name="SeparatorAfterGoToHelp.instance/org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance" boolvalue="true"/>
+                    <attr name="org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance/org-netbeans-modules-refactoring-api-ui-RSMEditorAction.instance" boolvalue="true"/>        
+                    <attr name="org-netbeans-modules-refactoring-api-ui-RSMEditorAction.instance/format" boolvalue="true"/>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+  <folder name="Loaders">
+    <folder name="text">
+        <folder name="x-java">
+            <folder name="Actions">
+              <attr boolvalue="true" name="DeleteAction.instance/SaveAsTemplateAction.instance"/>
+              <attr boolvalue="true" name="SaveAsTemplateAction.instance/RefactoringWhereUsed.instance"/>
+              <attr boolvalue="true" name="Separator4.instance/RefactoringWhereUsed.instance"/>
+              <file name="RefactoringWhereUsed.instance">
+                  <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.whereUsedAction"/>
+              </file>
+              <attr boolvalue="true" name="RefactoringWhereUsed.instance/RefactoringAll.instance"/>
+              <file name="RefactoringAll.instance">
+                  <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.popupSubmenuAction"/>
+              </file>
+              <attr boolvalue="true" name="RefactoringAll.instance/RefactoringSeparator-1.instance"/>
+              <file name="RefactoringSeparator-1.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+              </file>
+              <attr boolvalue="true" name="RefactoringSeparator-1.instance/ToolsAction.instance"/>
+              <file name="RenameAction.instance_hidden"/>
+            </folder>
+        </folder>
+    </folder>
+    
+    <folder name="folder">
+        <folder name="any">
+            <folder name="Actions">
+              <attr boolvalue="true" name="DeleteAction.instance/RefactoringAll.instance"/>
+              <file name="RefactoringAll.instance">
+                  <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.popupSubmenuAction"/>
+              </file>
+              <attr boolvalue="true" name="RefactoringAll.instance/Separator3.instance"/>
+              <file name="RenameAction.instance_hidden"/>
+            </folder>
+        </folder>
+    </folder>
+  </folder> 
+    
 </filesystem>
