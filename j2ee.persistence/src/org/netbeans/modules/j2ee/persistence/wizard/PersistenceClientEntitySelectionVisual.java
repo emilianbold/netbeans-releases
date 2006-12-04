@@ -41,14 +41,16 @@ import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.dd.ORMMetadata;
 import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardPanel.TableGeneration;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceMetadata;
-import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
+// TODO: RETOUCHE
+//import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
 import org.netbeans.modules.j2ee.persistence.dd.orm.model_1_0.Entity;
 import org.netbeans.modules.j2ee.persistence.dd.orm.model_1_0.EntityMappings;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.ChangeSupport;
-import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
+// TODO: RETOUCHE
+//import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
@@ -69,8 +71,8 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
     boolean waitingForEntities;
     private List<EntityMappings> waitForMappings = new ArrayList<EntityMappings>();
     private PersistenceUnit persistenceUnit;
-    
-    private EntityClosure entityClosure;
+    // TODO: RETOUCHE
+    //    private EntityClosure entityClosure;
     
     
     
@@ -89,8 +91,8 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
     }
     
     /**
-     * @return PersistenceUnit that was created by invoking the PU wizard from 
-     * this wizard or <code>null</code> if there was already a persistence unit, i.e. 
+     * @return PersistenceUnit that was created by invoking the PU wizard from
+     * this wizard or <code>null</code> if there was already a persistence unit, i.e.
      * there was no reason to create a new persistence unit from this wizard.
      */
     public PersistenceUnit getPersistenceUnit() {
@@ -267,7 +269,7 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
     private void cbAddRelatedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbAddRelatedActionPerformed
         listSelected.clearSelection();
         listAvailable.clearSelection();
-        entityClosure.setClosureEnabled(cbAddRelated.isSelected());
+        //        entityClosure.setClosureEnabled(cbAddRelated.isSelected());
         
         changeSupport.fireChange();
     }//GEN-LAST:event_cbAddRelatedActionPerformed
@@ -276,20 +278,21 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
         persistenceUnit = Util.buildPersistenceUnitUsingWizard(project, null, TableGeneration.CREATE);
         if (persistenceUnit != null){
             updatePersistenceUnitButton();
-            waitForMappings.add(PersistenceUtils.getAnnotationEntityMappings(project));
+            // TODO: RETOUCHE
+            //waitForMappings.add(PersistenceUtils.getAnnotationEntityMappings(project));
             changeSupport.fireChange();
         }
     }//GEN-LAST:event_createPUButtonActionPerformed
     
     private void buttonRemoveAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonRemoveAllActionPerformed
-        entityClosure.removeAllEntities();
+        //        entityClosure.removeAllEntities();
         listSelected.clearSelection();
         updateButtons();
         changeSupport.fireChange();
     }//GEN-LAST:event_buttonRemoveAllActionPerformed
     
     private void buttonAddAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonAddAllActionPerformed
-        entityClosure.addAllEntities();
+        //        entityClosure.addAllEntities();
         listAvailable.clearSelection();
         updateButtons();
         changeSupport.fireChange();
@@ -301,7 +304,7 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
         for (int i = 0; i < selected.length; i++) {
             sel.add((Entity) selected[i]);
         }
-        entityClosure.removeEntities(sel);
+        //        entityClosure.removeEntities(sel);
         listSelected.clearSelection();
         updateButtons();
         
@@ -314,7 +317,7 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
         for (int i = 0; i < selected.length; i++) {
             sel.add((Entity) selected[i]);
         }
-        entityClosure.addEntities(sel);
+        //        entityClosure.addEntities(sel);
         listAvailable.clearSelection();
         updateButtons();
         
@@ -349,12 +352,15 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
             return false;
         }
         
-        if (JavaMetamodel.getManager().isScanInProgress()) {
+        // TODO: RETOUCHE
+        //        if (JavaMetamodel.getManager().isScanInProgress()) {
+        if (false){
             if (!waitingForScan) {
                 waitingForScan = true;
                 RequestProcessor.Task task = RequestProcessor.getDefault().create(new Runnable() {
                     public void run() {
-                        JavaMetamodel.getManager().waitScanFinished();
+                        // TODO: RETOUCHE
+                        //JavaMetamodel.getManager().waitScanFinished();
                         waitingForScan = false;
                         changeSupport.fireChange();
                         updateButtons();
@@ -373,7 +379,8 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
                     public void run() {
                         ORMMetadata.getDefault().waitScanFinished();
                         synchronized (this) {
-                            entityClosure.addAvaliableEntities(PersistenceUtils.getEntityClasses(waitForMappings));
+                            // TODO: RETOUCHE
+                            //                            entityClosure.addAvaliableEntities(PersistenceUtils.getEntityClasses(waitForMappings));
                             waitForMappings.clear();
                         }
                         waitingForEntities = false;
@@ -388,7 +395,7 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
         } else {
             synchronized (this) {
                 if (waitForMappings.size() > 0) {
-                    entityClosure.addAvaliableEntities(PersistenceUtils.getEntityClasses(waitForMappings));
+                    //                    entityClosure.addAvaliableEntities(PersistenceUtils.getEntityClasses(waitForMappings));
                     waitForMappings.clear();
                     updateButtons();
                 }
@@ -405,28 +412,30 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
     
     void read(WizardDescriptor settings) {
         project = Templates.getProject(settings);
-        try {
+//        try {
             synchronized (this) {
                 waitForMappings.clear();
                 if (getPersistenceUnit() == null){
-                    waitForMappings.addAll(PersistenceUtils.getEntityMappings(project));
+                    // TODO: RETOUCHE
+                    //                    waitForMappings.addAll(PersistenceUtils.getEntityMappings(project));
                 } else {
                     // there are no persistence units in the project but one was created from this wizard
-                    waitForMappings.add(PersistenceUtils.getAnnotationEntityMappings(project));
+                    // TODO: RETOUCHE
+                    //                    waitForMappings.add(PersistenceUtils.getAnnotationEntityMappings(project));
                 }
             }
-        } catch (IOException e) {
-            ErrorManager.getDefault().notify(e);
-        }
-        entityClosure = new EntityClosure(Collections.<Entity>emptySet());
-        entityClosure.setClosureEnabled(cbAddRelated.isSelected());
-        listAvailable.setModel(new EntityListModel(entityClosure, true));
-        listSelected.setModel(new EntityListModel(entityClosure, false));
+//        } catch (IOException e) {
+//            ErrorManager.getDefault().notify(e);
+//        }
+        //        entityClosure = new EntityClosure(Collections.<Entity>emptySet());
+        //        entityClosure.setClosureEnabled(cbAddRelated.isSelected());
+        //        listAvailable.setModel(new EntityListModel(entityClosure, true));
+        //        listSelected.setModel(new EntityListModel(entityClosure, false));
         List<Entity> entites = (List<Entity>) settings.getProperty(WizardProperties.ENTITY_CLASS);
         if (entites == null) {
             entites = new ArrayList();
         }
-        entityClosure.addEntities(new HashSet<Entity>(entites));
+        //        entityClosure.addEntities(new HashSet<Entity>(entites));
         
         updateButtons();
         updatePersistenceUnitButton();
@@ -442,28 +451,29 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
     
     private void updateButtons() {
         buttonAdd.setEnabled(listAvailable.getSelectedValues().length > 0);
-        buttonAddAll.setEnabled(entityClosure.getAvailableEntities().size() > 0);
+        //        buttonAddAll.setEnabled(entityClosure.getAvailableEntities().size() > 0);
         buttonRemove.setEnabled(listSelected.getSelectedValues().length > 0);
-        buttonRemoveAll.setEnabled(entityClosure.getSelectedEntities().size() > 0);
+        //        buttonRemoveAll.setEnabled(entityClosure.getSelectedEntities().size() > 0);
     }
     
     public void updatePersistenceUnitButton() {
         boolean visible = getPersistenceUnit() == null;
         if (ProviderUtil.isValidServerInstanceOrNone(project) && visible) {
-            PersistenceScope scopes[] = PersistenceUtils.getPersistenceScopes(project);
-            for (int i = 0; i < scopes.length; i++) {
-                FileObject persistenceXml = scopes[i].getPersistenceXml();
-                if (persistenceXml != null) {
-                    try {
-                        Persistence persistence = PersistenceMetadata.getDefault().getRoot(persistenceXml);
-                        if (persistence.getPersistenceUnit().length > 0) {
-                            visible = false;
-                            break;
-                        }
-                    } catch (IOException ex) {
-                    }
-                }
-            }
+            // TODO: RETOUCHE
+            //            PersistenceScope scopes[] = PersistenceUtils.getPersistenceScopes(project);
+            //            for (int i = 0; i < scopes.length; i++) {
+            //                FileObject persistenceXml = scopes[i].getPersistenceXml();
+            //                if (persistenceXml != null) {
+            //                    try {
+            //                        Persistence persistence = PersistenceMetadata.getDefault().getRoot(persistenceXml);
+            //                        if (persistence.getPersistenceUnit().length > 0) {
+            //                            visible = false;
+            //                            break;
+            //                        }
+            //                    } catch (IOException ex) {
+            //                    }
+            //                }
+            //            }
         }
         createPUButton.setVisible(visible);
     }
@@ -477,14 +487,15 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
     private final ListCellRenderer ENTITY_LIST_RENDERER = new EntityListCellRenderer();
     
     private class EntityListModel extends AbstractListModel implements ChangeListener {
-        private EntityClosure entityClosure;
+        //        private EntityClosure entityClosure;
         private List <Entity> entities = new ArrayList<Entity>();
         private boolean available;
         
-        EntityListModel(EntityClosure entityClosure, boolean available) {
-            this.entityClosure = entityClosure;
+        // TODO: RETOUCHE
+        EntityListModel(/*EntityClosure entityClosure*/ Object entityClosure, boolean available) {
+            //            this.entityClosure = entityClosure;
             this.available = available;
-            entityClosure.addChangeListener(this);
+            //            entityClosure.addChangeListener(this);
             refresh();
         }
         
@@ -506,7 +517,7 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
         
         private void refresh() {
             int oldSize = getSize();
-            entities = new ArrayList(available ? entityClosure.getAvailableEntities() : entityClosure.getSelectedEntities());
+            //            entities = new ArrayList(available ? entityClosure.getAvailableEntities() : entityClosure.getSelectedEntities());
             Collections.sort(entities, ENTITY_COMPARATOR);
             fireContentsChanged(this, 0, Math.max(oldSize, getSize()));
         }
@@ -538,7 +549,7 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
                 setBackground(list.getBackground());
                 setForeground(list.getForeground());
             }
-            setEnabled(entityClosure.getAvailableEntities().contains(value) || entityClosure.getWantedEntities().contains(value));
+            //            setEnabled(entityClosure.getAvailableEntities().contains(value) || entityClosure.getWantedEntities().contains(value));
             setFont(list.getFont());
             setText(text);
             return this;

@@ -22,10 +22,7 @@ package org.netbeans.modules.j2ee.persistence.dd;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import org.netbeans.modules.j2ee.metadata.MergedProvider;
 import org.netbeans.modules.j2ee.metadata.MetadataUnit;
-import org.netbeans.modules.j2ee.metadata.NNMDRListener;
-import org.netbeans.modules.j2ee.persistence.dd.orm.ORMNNListener;
 import org.netbeans.modules.j2ee.persistence.dd.orm.model_1_0.EntityMappings;
 
 /**
@@ -33,17 +30,18 @@ import org.netbeans.modules.j2ee.persistence.dd.orm.model_1_0.EntityMappings;
  * Provided model is merged representation of metadata defined in both
  * annotations and deployment descriptor with filled default values
  * as defined in persistence specification.
-
+ *
  * @author  Martin Adamek
  */
 public final class ORMMetadata {
     private static final ORMMetadata instance = new ORMMetadata();
     private Map<MetadataUnit, EntityMappings> annotationDDMap;
-
+    
     private ORMMetadata() {
-        annotationDDMap = new HashMap<MetadataUnit, EntityMappings>(5);
+        // TODO: RETOUCHE
+        //        annotationDDMap = new HashMap<MetadataUnit, EntityMappings>(5);
     }
-
+    
     /**
      * Use this to get singleton instance of provider
      *
@@ -52,42 +50,36 @@ public final class ORMMetadata {
     public static ORMMetadata getDefault() {
         return instance;
     }
-
+    
     /**
      * Provides root element as defined in persistence_ORM.xsd
      *
      * @param mu unit providing ORM metadata defined in annotations and deployment descriptor.
      * It can be retrieved from {@link PersistenceProvider}
-     * @return root element of schema or null if it doesn't exist for provided 
+     * @return root element of schema or null if it doesn't exist for provided
      * MetadataUnit
      * @throws java.io.IOException
      * @see PersistenceProvider
      */
     public EntityMappings getRoot(MetadataUnit mu) throws IOException {
-        EntityMappings annotationRoot = getAnnotationRoot(mu);
-        EntityMappings entityMappings = (EntityMappings) MergedProvider.getDefault().getRoot(annotationRoot, null);
-        return entityMappings;
+        // TODO: RETOUCHE
+        //        EntityMappings annotationRoot = getAnnotationRoot(mu);
+        //        EntityMappings entityMappings = (EntityMappings) MergedProvider.getDefault().getRoot(annotationRoot, null);
+        //        return entityMappings;
+        return null;
     }
     
-    private synchronized EntityMappings getAnnotationRoot(MetadataUnit mu) {
-        if (mu == null) {
-            return null;
-        }
-        EntityMappings entityMappings = (EntityMappings) annotationDDMap.get(mu);
-        if (entityMappings != null) {
-            return entityMappings;
-        }
-        entityMappings = new org.netbeans.modules.j2ee.persistence.dd.orm.model_1_0.EntityMappings();
-        annotationDDMap.put(mu, entityMappings);
-        NNMDRListener.getDefault().addAnnotationListener(new ORMNNListener(entityMappings, mu.getClassPath()));
-        return entityMappings;
-    }
-
+    
+    
     public boolean isScanInProgress() {
-        return NNMDRListener.getDefault().isScanInProgress();
+        // TODO: RETOUCHE
+        //        return NNMDRListener.getDefault().isScanInProgress();
+        return false;
     }
     
     public void waitScanFinished() {
-        NNMDRListener.getDefault().waitScanFinished();
+        // TODO: RETOUCHE
+        //NNMDRListener.getDefault().waitScanFinished();
+        return;
     }
 }

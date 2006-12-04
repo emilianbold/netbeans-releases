@@ -82,9 +82,11 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Editors">
         <folder name="text">
             <folder name="x-java">
+                <!-- TODO: RETOUCHE
                 <folder name="CompletionProviders">
                     <file name="org-netbeans-modules-j2ee-persistence-editor-completion-NNCompletionProvider.instance"/>
                 </folder>
+                -->
                 <folder name="Popup">
                     <attr name="org-netbeans-modules-j2ee-ejbcore-ui-logicalview-ejb-action-EJBActionGroup.instance/org-netbeans-modules-j2ee-persistence-action-PersistenceActionGroup.shadow" boolvalue="true"/>
                     <file name="org-netbeans-modules-j2ee-persistence-action-PersistenceActionGroup.shadow">
@@ -145,6 +147,7 @@ Microsystems, Inc. All Rights Reserved.
                     <file name="sep-4.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     </file>
+                    <!-- TODO: RETOUCHE
                     <attr name="sep-4.instance/org-netbeans-modules-xml-tools-actions-CheckAction.instance" boolvalue="true"/>
                     <file name="org-netbeans-modules-xml-tools-actions-CheckAction.instance"/>
                     <attr name="org-netbeans-modules-xml-tools-actions-CheckAction.instance/org-netbeans-modules-xml-tools-actions-ValidateAction.instance" boolvalue="true" />
@@ -153,6 +156,7 @@ Microsystems, Inc. All Rights Reserved.
                     <file name="sep-5.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     </file> 
+                    -->
                     <attr name="sep-5.instance/org-openide-actions-ToolsAction.instance" boolvalue="true"/>
                     <file name="org-openide-actions-ToolsAction.instance"/>
                     <attr name="org-openide-actions-ToolsAction.instance/org-openide-actions-PropertiesAction.instance" boolvalue="true"/>

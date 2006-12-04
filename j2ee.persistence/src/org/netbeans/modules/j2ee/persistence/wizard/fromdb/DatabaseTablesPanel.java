@@ -47,7 +47,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
-import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -808,12 +807,15 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
                 return false;
             }
 
-            if (JavaMetamodel.getManager().isScanInProgress()) {
+            // TODO: RETOUCHE
+//            if (JavaMetamodel.getManager().isScanInProgress()) {
+            if (false){
                 if (!waitingForScan) {
                     waitingForScan = true;
                     RequestProcessor.Task task = RequestProcessor.getDefault().create(new Runnable() {
                         public void run() {
-                            JavaMetamodel.getManager().waitScanFinished();
+                            // TODO: RETOUCHE
+//                            JavaMetamodel.getManager().waitScanFinished();
                             waitingForScan = false;
                             changeSupport.fireChange();
                         }
