@@ -118,10 +118,16 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
         document.readLock();
         try {
             TokenHierarchy hi = TokenHierarchy.get(document);
-            TokenSequence ts = hi.tokenSequence();
+            TokenSequence ts = tokenSequence(hi, offset);
+            if(ts == null) {
+                //no suitable token sequence found
+                return null;
+            }
             
             int diff = ts.move(offset);
-            if(diff == Integer.MAX_VALUE) return null; //no token found
+            if(diff == Integer.MAX_VALUE) {
+                return null; //no token found
+            }
             
             Token token = ts.token();
             
@@ -341,18 +347,7 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
         document.readLock();
         try {
             TokenHierarchy hi = TokenHierarchy.get(document);
-            TokenSequence ts = hi.tokenSequence(HTMLTokenId.language());
-            if(ts == null) {
-                //HTML language is not top level one
-                ts = hi.tokenSequence();
-                int diff = ts.move(offset);
-                if(diff == Integer.MAX_VALUE) {
-                    return null; //no token found
-                } else {
-                    ts = ts.embedded(HTMLTokenId.language());
-                }
-            }
-            
+            TokenSequence ts = tokenSequence(hi, offset);
             if(ts == null || ts.language() != HTMLTokenId.language()) {
                 //TODO - resolve embedded case
                 //now just the case where HTML is top level language is supported
@@ -474,19 +469,11 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
         document.readLock();
         try {
             TokenHierarchy hi = TokenHierarchy.get(document);
-            TokenSequence ts = hi.tokenSequence(HTMLTokenId.language());
-            
+            TokenSequence ts = tokenSequence(hi, offset);
             if(ts == null) {
-                //HTML language is not top level one
-                ts = hi.tokenSequence();
-                int diff = ts.move(offset);
-                if(diff == Integer.MAX_VALUE) {
-                    return null; //no token found
-                } else {
-                    ts = ts.embedded(HTMLTokenId.language());
-                }
+                //no suitable token sequence found
+                return null;
             }
-            
             if(ts == null || ts.language() != HTMLTokenId.language()) {
                 //TODO - resolve embedded case
                 //now just the case where HTML is top level language is supported
@@ -582,7 +569,7 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
             }
             
             
-            if( item.id() == HTMLTokenId.TAG_CLOSE || (item.id() == HTMLTokenId.TAG_OPEN_SYMBOL && 
+            if( item.id() == HTMLTokenId.TAG_CLOSE || (item.id() == HTMLTokenId.TAG_OPEN_SYMBOL &&
                     item.text().toString().equals("</"))) { //NOI18N
                 // endtag // NOI18N
                 String name = item.text().toString();
@@ -607,7 +594,7 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
             }
             
             if( item.id() == HTMLTokenId.TAG_OPEN || (item.id() == HTMLTokenId.TAG_OPEN_SYMBOL &&
-                    !item.text().toString().equals("</"))) { //NOI18N) 
+                    !item.text().toString().equals("</"))) { //NOI18N)
                 // starttag
                 String name = item.text().toString();
                 ArrayList attrs = new ArrayList();
@@ -727,7 +714,11 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
                 doc.readLock();
                 try {
                     TokenHierarchy hi = TokenHierarchy.get(doc);
-                    TokenSequence ts = hi.tokenSequence();
+                    TokenSequence ts = tokenSequence(hi, dotPos - 1);
+                    if(ts == null) {
+                        //no suitable token sequence found
+                        return COMPLETION_POST_REFRESH;
+                    }
                     
                     int diff = ts.move(dotPos-1);
                     if(diff != Integer.MAX_VALUE) {
@@ -775,5 +766,19 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
                 ( t.id() == HTMLTokenId.TAG_CLOSE));
     }
     
+    private static TokenSequence tokenSequence(TokenHierarchy hi, int offset) {
+        TokenSequence ts = hi.tokenSequence(HTMLTokenId.language());
+        if(ts == null) {
+            //HTML language is not top level one
+            ts = hi.tokenSequence();
+            int diff = ts.move(offset);
+            if(diff == Integer.MAX_VALUE) {
+                return null; //no token found
+            } else {
+                ts = ts.embedded(HTMLTokenId.language());
+            }
+        }
+        return ts;
+    }
     
 }
