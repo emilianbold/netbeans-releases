@@ -197,14 +197,17 @@ public final class EntityMethodController extends AbstractMethodController {
 //        return null;
 //    }
     
+    @Override
     public boolean hasJavaImplementation(MethodModel intfView) {
         return hasJavaImplementation(getMethodTypeFromInterface(intfView));
     }
 
+    @Override
     public boolean hasJavaImplementation(MethodType methodType) {
         return !(isCMP() && (isFinder(methodType.getKind()) || isSelect(methodType.getKind())));
     }
 
+    @Override
     public MethodType getMethodTypeFromImpl(MethodModel implView) {
         MethodType methodType = null;
         if (implView.getName().startsWith("ejbCreate") || implView.getName().startsWith("ejbPostCreate")) { //NOI18N
@@ -219,6 +222,7 @@ public final class EntityMethodController extends AbstractMethodController {
         return methodType;
     }
 
+    @Override
     public MethodType getMethodTypeFromInterface(MethodModel clientView) {
         String cName = clientView.getClassName();
         MethodType methodType;
@@ -541,6 +545,7 @@ public final class EntityMethodController extends AbstractMethodController {
         return findInClass(classElement, method) ? method : null;
     }
 
+    @Override
     public boolean supportsMethodType(MethodType.Kind methodType) {
         return !isSelect(methodType) || isCMP();
     }

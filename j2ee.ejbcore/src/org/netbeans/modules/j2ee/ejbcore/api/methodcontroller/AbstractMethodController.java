@@ -84,6 +84,7 @@ public abstract class AbstractMethodController extends EjbMethodController {
     public abstract GenerateFromImpl createGenerateFromImpl();
     public abstract GenerateFromIntf createGenerateFromIntf();
     
+    @Override
     public final MethodModel createAndAdd(MethodModel clientView, boolean local, boolean isComponent) {
         String home = null;
         String component = null;
@@ -135,6 +136,7 @@ public abstract class AbstractMethodController extends EjbMethodController {
 //        }
     }
     
+    @Override
     public final void createAndAddInterface(MethodModel beanImpl, boolean local) {
         MethodType methodType = getMethodTypeFromImpl(beanImpl);
         GenerateFromImpl generateFromImpl = createGenerateFromImpl();
@@ -172,6 +174,7 @@ public abstract class AbstractMethodController extends EjbMethodController {
 
     }
     
+    @Override
     public final void createAndAddImpl(MethodModel intfView) {
         MethodType methodType = getMethodTypeFromInterface(intfView);
         GenerateFromIntf generateFromIntf = createGenerateFromIntf();
@@ -201,6 +204,7 @@ public abstract class AbstractMethodController extends EjbMethodController {
         return methods;
     }
     
+    @Override
     public final List<MethodModel> getImplementation(MethodModel intfView) {
         List<MethodModel> methods = getImplementationMethods(intfView);
         List<MethodModel> result = new ArrayList<MethodModel>(methods.size());
@@ -213,6 +217,7 @@ public abstract class AbstractMethodController extends EjbMethodController {
         return result;
     }
     
+    @Override
     public final MethodModel getInterface(MethodModel beanImpl, boolean local) {
         MethodType methodType = getMethodTypeFromImpl(beanImpl);
         assert methodType != null: "method cannot be used in interface";
@@ -236,6 +241,7 @@ public abstract class AbstractMethodController extends EjbMethodController {
     /** Performs the check if the method is defined in apporpriate interface
      * @return false if the interface is found but does not contain matching method.
      */
+    @Override
     public boolean hasMethodInInterface(MethodModel method, MethodType methodType, boolean local) {
         String intf = null;
         if (methodType.getKind() == MethodType.Kind.BUSINESS) {
@@ -327,10 +333,12 @@ public abstract class AbstractMethodController extends EjbMethodController {
         return result;
     }
     
+    @Override
     public final String getBeanClass() {
         return model.getEjbClass() == null ? null : model.getEjbClass();
     }
     
+    @Override
     public final List<String> getLocalInterfaces() {
         if (!hasLocal()) {
             return Collections.<String>emptyList();
@@ -346,6 +354,7 @@ public abstract class AbstractMethodController extends EjbMethodController {
         return resultList;
     }
     
+    @Override
     public final List<String> getRemoteInterfaces() {
         if (!hasRemote()) {
             return Collections.<String>emptyList();
@@ -360,6 +369,7 @@ public abstract class AbstractMethodController extends EjbMethodController {
         return resultList;
     }
     
+    @Override
     public final void delete(String clazz, MethodModel interfaceMethod, boolean local) {
         List<MethodModel> impls = getImplementation(interfaceMethod);
         boolean checkOther = local ? hasRemote() : hasLocal();
@@ -385,6 +395,7 @@ public abstract class AbstractMethodController extends EjbMethodController {
         }
     }
     
+    @Override
     public boolean hasRemote() {
         String intf = model.getHome();
         if (!simplified) {
@@ -399,6 +410,7 @@ public abstract class AbstractMethodController extends EjbMethodController {
         return true;
     }
     
+    @Override
     public boolean hasLocal() {
         String intf = model.getLocalHome();
         if (!simplified) {
@@ -413,15 +425,18 @@ public abstract class AbstractMethodController extends EjbMethodController {
         return true;
     }
     
+    @Override
     public MethodModel getPrimaryImplementation(MethodModel intfView) {
         List<MethodModel> impls = getImplementation(intfView);
         return impls.isEmpty() ? null : impls.get(0);
     }
     
+    @Override
     public String getRemote() {
         return model.getRemote();
     }
     
+    @Override
     public String getLocal() {
         return model.getLocal();
     }

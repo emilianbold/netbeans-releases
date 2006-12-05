@@ -40,14 +40,17 @@ public final class SessionMethodController extends AbstractMethodController {
         this.model = model;
     }
 
+    @Override
     public boolean hasJavaImplementation(MethodModel intfView) {
         return true;
     }
 
+    @Override
     public boolean hasJavaImplementation(MethodType methodType) {
         return true;
     }
     
+    @Override
     public MethodType getMethodTypeFromImpl(MethodModel implView) {
         MethodType methodType = null;
         if (implView.getName().startsWith("ejbCreate")) {
@@ -58,6 +61,7 @@ public final class SessionMethodController extends AbstractMethodController {
         return methodType;
     }
 
+    @Override
     public MethodType getMethodTypeFromInterface(MethodModel clientView) {
         assert clientView.getClassName() != null: "declaring class cannot be null";
         // see if the interface is home or local home, otherwise assume business
@@ -80,6 +84,7 @@ public final class SessionMethodController extends AbstractMethodController {
         return new SessionGenerateFromIntfVisitor();
     }
 
+    @Override
     public boolean supportsMethodType(MethodType.Kind methodType) {
         boolean stateless = Session.SESSION_TYPE_STATELESS.equals(model.getSessionType());
         boolean simplified = model.getRoot().getVersion().doubleValue() > 2.1;
