@@ -1013,10 +1013,14 @@ public class ModuleManagerTest extends SetupHid {
         mgr.mutexPrivileged().enterWriteAccess();
         Module m1 = createModule(mgr, "OpenIDE-Module: m1\nOpenIDE-Module-Needs: tok\n");
         Module m2 = createModule(mgr, "OpenIDE-Module: m2\nOpenIDE-Module-Module-Dependencies: m1\n");
-        //assertEquals(1, m2.getProblems().size());
         assertEquals(Collections.emptyList(), mgr.simulateEnable(Collections.singleton(m2)));
         Module m3 = createModule(mgr, "OpenIDE-Module: m3\nOpenIDE-Module-Provides: tok\n");
         assertEquals(new HashSet<Module>(Arrays.asList(m1, m2, m3)), new HashSet<Module>(mgr.simulateEnable(Collections.singleton(m2))));
+        mgr = new ModuleManager(installer, ev);
+        mgr.mutexPrivileged().enterWriteAccess();
+        m1 = createModule(mgr, "OpenIDE-Module: m1\nOpenIDE-Module-Requires: tok\n");
+        m2 = createModule(mgr, "OpenIDE-Module: m2\nOpenIDE-Module-Module-Dependencies: m1\nOpenIDE-Module-Provides: tok\n");
+        assertEquals(Collections.emptyList(), mgr.simulateEnable(Collections.singleton(m2)));
     }
     
     public void testSimpleProvNeeds() throws Exception {
@@ -1339,6 +1343,7 @@ public class ModuleManagerTest extends SetupHid {
     }
 
     private void doRecommendsWithAProviderWithoutAProvider(boolean recommends) throws Exception {
+        // ========= XXX recommends parameter is unused! ===========
         FakeModuleInstaller installer = new FakeModuleInstaller();
         FakeEvents ev = new FakeEvents();
         ModuleManager mgr = new ModuleManager(installer, ev);
@@ -1366,7 +1371,7 @@ public class ModuleManagerTest extends SetupHid {
             assertEquals(null, deps.get(m2));
 
             List<Module> toEnable = mgr.simulateEnable(new HashSet<Module>(m2List));
-            assertEquals("cannot enable while provider of bla is missing", Collections.emptyList(), toEnable);
+            assertEquals("cannot enable while provider of bla is missing", Collections.singletonList(m2), toEnable);
 
 
 //            try {

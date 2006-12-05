@@ -71,7 +71,8 @@ public final class ModuleManager {
 
     // for any module, set of known failed dependencies or problems,
     // or null if this has not been computed yet
-    private final Map<Module,Set<Union2<Dependency,InvalidException>>> moduleProblems = new HashMap<Module,Set<Union2<Dependency,InvalidException>>>(100);
+    private final Map<Module,Set<Union2<Dependency,InvalidException>>> moduleProblemsWithoutNeeds = new HashMap<Module,Set<Union2<Dependency,InvalidException>>>(100);
+    private final Map<Module,Set<Union2<Dependency,InvalidException>>> moduleProblemsWithNeeds = new HashMap<Module,Set<Union2<Dependency,InvalidException>>>(100);
 
     // modules providing a given requires token; set may never be empty
     private final Map<String,Set<Module>> providersOf = new HashMap<String,Set<Module>>(25);
@@ -696,7 +697,8 @@ public final class ModuleManager {
         // of "soft" problems (interdependencies between modules).
         // Also clear any "hard" problems associated with this module, as they
         // may now have been fixed.
-        moduleProblems.remove(m);
+        moduleProblemsWithoutNeeds.remove(m);
+        moduleProblemsWithNeeds.remove(m);
         firer.change(new ChangeFirer.Change(m, Module.PROP_PROBLEMS, null, null));
         clearProblemCache();
         firer.fire();
@@ -833,7 +835,7 @@ public final class ModuleManager {
                 // Remember that there was a problem with this guy.
                 Module bad = ie.getModule();
                 if (bad == null) throw new IllegalStateException("Problem with no associated module: " + ie); // NOI18N
-                Set<Union2<Dependency,InvalidException>> probs = moduleProblems.get(bad);
+                Set<Union2<Dependency,InvalidException>> probs = moduleProblemsWithNeeds.get(bad);
                 if (probs == null) throw new IllegalStateException("Were trying to install a module that had never been checked: " + bad); // NOI18N
                 if (! probs.isEmpty()) throw new IllegalStateException("Were trying to install a module that was known to be bad: " + bad); // NOI18N
                 // Record for posterity.
@@ -1104,9 +1106,8 @@ public final class ModuleManager {
                         // and continue with the others, try to add them too...
                     }
                 }
-                // XXX sometimes fails, but not reproducible in a unit test.
                 // Logic is that missingDependencies(m) should contain dep in this case.
-                assert foundOne : "Should have found a nonproblematic provider of " + dep + " among " + providers + " with willEnable=" + willEnable + " mightEnable=" + mightEnable;
+                assert foundOne || dep.getType() == Dependency.TYPE_RECOMMENDS : "Should have found a nonproblematic provider of " + dep + " among " + providers + " with willEnable=" + willEnable + " mightEnable=" + mightEnable;
             }
             // else some other kind of dependency that does not concern us
         }
@@ -1322,77 +1323,23 @@ public final class ModuleManager {
     // Access from Module.getProblems, q.v.
     // The probed module must not be currently enabled or fixed.
     Set<Union2<Dependency,InvalidException>> missingDependencies(Module probed) {
+        return missingDependencies(probed, true);
+    }
+    Set<Union2<Dependency,InvalidException>> missingDependencies(Module probed, boolean withNeeds) {
         // We need to synchronize here because though this method may be called
         // only within a read mutex, it can write to moduleProblems. Other places
         // where moduleProblems are used are write-mutex only and so do not have
         // to worry about contention.
-        synchronized (moduleProblems) {
-            Set<Union2<Dependency,InvalidException>> result;
-            ArrayList<NeedsCheck> check = new ArrayList<NeedsCheck>();
-            result = _missingDependencies(probed, check);
-            LOOP: while (result.isEmpty()) {
-                for (NeedsCheck needs : check) {
-                    String token = needs.dep.getName();
-                    Set<Module> providers = providersOf.get(token);
-                    if (providers == null) {
-                        if (needs.dep.getType() == Dependency.TYPE_NEEDS) {
-                            // Nobody provides it. This dep failed.
-                            result.add(Union2.<Dependency,InvalidException>createFirst(needs.dep));
-                        } else {
-                            // TYPE_RECOMMENDS is ok if not present
-                            assert needs.dep.getType() == Dependency.TYPE_RECOMMENDS;
-                        }
-                    } else {
-                        // We have some possible providers. Check that at least one is good.
-                        boolean foundOne = false;
-                        Set<Module> possibleModules = new HashSet<Module>();
-                        for (Module other : providers) {
-                            if (other.isEnabled()) {
-                                foundOne = true;
-                                break;
-                            }
-                        }
-                        if (!foundOne) {
-                            for (Module m : providers) {
-                                ArrayList<NeedsCheck> arr = new ArrayList<NeedsCheck>();
-                                if (!_missingDependencies(m, arr).isEmpty()) {
-                                    continue;
-                                }
-                                
-                                if (!arr.isEmpty()) {
-                                    check.addAll(arr);
-                                    // restart the check
-                                    continue LOOP;
-                                }
-                            }
-                            
-                        }
-                    }
-                }
-                break LOOP;
-            }
-            return result;
-        }
-    }
-    
-    private static class NeedsCheck {
-        public final Module module;
-        public final Dependency dep;
-        public NeedsCheck(Module m, Dependency d) {
-            this.module = m;
-            this.dep = d;
-        }
-        public String toString() {
-            return "(" + module + "," + dep + ")"; // NOI18N
-        }
-    }
-    
-    private Set<Union2<Dependency,InvalidException>> _missingDependencies(Module probed, Collection<NeedsCheck> nonOrderingCheck) {
-            Set<Union2<Dependency,InvalidException>> probs = moduleProblems.get(probed);
+        synchronized (moduleProblemsWithNeeds) {
+            Map<Module,Set<Union2<Dependency,InvalidException>>> mP = (withNeeds ? moduleProblemsWithNeeds : moduleProblemsWithoutNeeds);
+            Set<Union2<Dependency,InvalidException>> probs = mP.get(probed);
             if (probs == null) {
                 probs = new HashSet<Union2<Dependency,InvalidException>>(8);
+                if (withNeeds) {
+                    probs.addAll(missingDependencies(probed, false));
+                }
                 probs.add(PROBING_IN_PROCESS);
-                moduleProblems.put(probed, probs);
+                mP.put(probed, probs);
                 for (Dependency dep : probed.getDependenciesArray()) {
                     if (dep.getType() == Dependency.TYPE_PACKAGE) {
                         // Can't check it in advance. Assume it is OK; if not
@@ -1457,7 +1404,8 @@ public final class ModuleManager {
                         if (! other.isEnabled()) {
                             // Need to make sure the other one is not missing anything either.
                             // Nor that it depends (directly on indirectly) on this one.
-                            if (! _missingDependencies(other, nonOrderingCheck).isEmpty()) {
+                            if ((!withNeeds && !missingDependencies(other, false).isEmpty()) ||
+                                    (withNeeds && !isAlmostEmpty(missingDependencies(other, true)))) {
                                 // This is a little subtle. Either the other module had real
                                 // problems, in which case our dependency on it is not legit.
                                 // Or, the other actually depends cyclically on this one. In
@@ -1476,7 +1424,7 @@ public final class ModuleManager {
                             // on it if we need it.
                         }
                         // Already-installed modules are of course fine.
-                    } else if (dep.getType() == Dependency.TYPE_REQUIRES) {
+                    } else if (dep.getType() == Dependency.TYPE_REQUIRES || (withNeeds && dep.getType() == Dependency.TYPE_NEEDS)) {
                         // Works much like a regular module dependency. However it only
                         // fails if there are no satisfying modules with no problems.
                         String token = dep.getName();
@@ -1488,10 +1436,14 @@ public final class ModuleManager {
                             // We have some possible providers. Check that at least one is good.
                             boolean foundOne = false;
                             for (Module other : providers) {
+                                if (foundOne) {
+                                    break;
+                                }
                                 if (other.isEnabled()) {
                                     foundOne = true;
                                 } else {
-                                    if (_missingDependencies(other, nonOrderingCheck).isEmpty()) {
+                                    if ((!withNeeds && missingDependencies(other, false).isEmpty()) ||
+                                            (withNeeds && isAlmostEmpty(missingDependencies(other, true)))) {
                                         // See comment above for regular module deps
                                         // re. use of PROBING_IN_PROCESS.
                                         foundOne = true;
@@ -1503,10 +1455,7 @@ public final class ModuleManager {
                                 probs.add(Union2.<Dependency,InvalidException>createFirst(dep));
                             }
                         }
-                    } else if (dep.getType() == Dependency.TYPE_NEEDS || dep.getType() == Dependency.TYPE_RECOMMENDS) {
-                        nonOrderingCheck.add(new NeedsCheck(probed, dep));
-                    } else {
-                        assert dep.getType() == Dependency.TYPE_JAVA;
+                    } else if (dep.getType() == Dependency.TYPE_JAVA) {
                         // Java dependency. Fixed for whole VM session, safe to check once and keep.
                         if (! Util.checkJavaDependency(dep)) {
                             // Bad.
@@ -1517,6 +1466,10 @@ public final class ModuleManager {
                 probs.remove(PROBING_IN_PROCESS);
             }
             return probs;
+        }
+    }
+    private static boolean isAlmostEmpty(Set<Union2<Dependency,InvalidException>> probs) {
+        return probs.isEmpty() || probs.equals(Collections.singleton(PROBING_IN_PROCESS));
     }
 
     /** Forget about any possible "soft" problems there might have been.
@@ -1530,7 +1483,11 @@ public final class ModuleManager {
      * return a different result).
      */
     private void clearProblemCache() {
-        Iterator<Map.Entry<Module,Set<Union2<Dependency,InvalidException>>>> it = moduleProblems.entrySet().iterator();
+        clearProblemCache(moduleProblemsWithoutNeeds);
+        clearProblemCache(moduleProblemsWithNeeds);
+    }
+    private void clearProblemCache(Map<Module,Set<Union2<Dependency,InvalidException>>> mP) {
+        Iterator<Map.Entry<Module,Set<Union2<Dependency,InvalidException>>>> it = mP.entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry<Module,Set<Union2<Dependency,InvalidException>>> entry = it.next();
             Module m = entry.getKey();
