@@ -84,6 +84,8 @@ public class SectionImpl implements Section, DomExternalizable {
       } else if (length == -1) {
         return Collections.singletonList(Pair.create("Range", "bytes=" + offset + "-"));
       }
+    } else {
+      offset = start;
     }
     return Collections.emptyList();
   }

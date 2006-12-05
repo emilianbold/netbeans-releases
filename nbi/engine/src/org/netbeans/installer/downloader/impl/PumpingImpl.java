@@ -21,7 +21,7 @@
 package org.netbeans.installer.downloader.impl;
 
 import org.netbeans.installer.downloader.Pumping;
-import org.netbeans.installer.downloader.PumpingMode;
+import org.netbeans.installer.downloader.DownloadMode;
 
 import java.io.File;
 import java.io.IOException;
@@ -60,7 +60,7 @@ public class PumpingImpl implements Pumping, DomExternalizable {
   protected Date lastModif = new Date(0);
   protected List<SectionImpl> sections = new LinkedList<SectionImpl>();
   protected State state = State.NOT_PROCESSED;
-  protected PumpingMode mode = PumpingMode.SINGLE_THREAD;
+  protected DownloadMode mode = DownloadMode.SINGLE_THREAD;
 
   public PumpingImpl(URL url, File folder, QueueBase queue) {
     this(queue);
@@ -98,7 +98,7 @@ public class PumpingImpl implements Pumping, DomExternalizable {
     return length;
   }
 
-  public PumpingMode mode() {
+  public DownloadMode mode() {
     return mode;
   }
 
@@ -124,7 +124,7 @@ public class PumpingImpl implements Pumping, DomExternalizable {
   }
 
   public SectionImpl getSection() {
-    if (mode == PumpingMode.SINGLE_THREAD || !acceptBytes) {
+    if (mode == DownloadMode.SINGLE_THREAD || !acceptBytes) {
       if (sections.isEmpty()) sections.add(new SectionImpl(this, 0, length));
       return sections.get(0);
     }

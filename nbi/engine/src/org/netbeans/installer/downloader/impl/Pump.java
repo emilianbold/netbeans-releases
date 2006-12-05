@@ -2,24 +2,25 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
- * 
+ *
  * $Id$
  */
 package org.netbeans.installer.downloader.impl;
 
+import java.security.NoSuchAlgorithmException;
 import org.netbeans.installer.downloader.Pumping;
 import org.netbeans.installer.downloader.connector.URLConnector;
 import org.netbeans.installer.downloader.dispatcher.Process;
@@ -30,40 +31,43 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Date;
+import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.StreamUtils;
+import org.netbeans.installer.utils.helper.URLUtil;
 
 /**
  * @author Danila_Dugurov
  */
 public class Pump implements Process {
-
+  
   private static final int ATTEMPT_TIME_DELAY = 5 * 1000;
   private static final int MAX_ATTEMPT_COUNT = 15;
-
+  
   final PumpingImpl pummping;
   URLConnector connector = URLConnector.getConnector();
-
+  
   InputStream in;
   OutputStream out;
-
+  
   public Pump(Pumping pumping) {
     this.pummping = (PumpingImpl) pumping;
   }
-
+  
   public PumpingImpl pumping() {
     return pummping;
   }
-
+  
   public void init() {
   }
-
+  
   public void run() {
     if (!initPumping()) return;
     pummping.fireChanges("pumpingUpdate");
     processPumping();
+    //verifyPumping();
   }
-
+  
   private boolean initPumping() {
     int attemptCount = 0;
     while (attemptCount < MAX_ATTEMPT_COUNT) {
@@ -90,14 +94,14 @@ public class Pump implements Process {
         try {
           if (in != null) in.close();
         } catch (IOException ignored) {
-            LogManager.log(ignored);
+          LogManager.log(ignored);
         }
       }
     }
     pummping.changeState(Pumping.State.FAILED);
     return false;
   }
-
+  
   private void initPumping(URLConnection connection) throws IOException {
     final Date lastModif = new Date(connection.getLastModified());
     final URL realUrl = connection.getURL();
@@ -106,7 +110,7 @@ public class Pump implements Process {
     final long length = connection.getContentLength();
     pummping.init(realUrl, length, lastModif, acceptBytes);
   }
-
+  
   private boolean processPumping() {
     int attemptCount = 0;
     while (attemptCount < MAX_ATTEMPT_COUNT) {
@@ -141,35 +145,63 @@ public class Pump implements Process {
         if (in != null) try {
           in.close();
         } catch (IOException ignored) {
-            LogManager.log(ignored);
+          LogManager.log(ignored);
         }
         if (out != null) try {
           out.close();
         } catch (IOException ignored) {
-            LogManager.log(ignored);
+          LogManager.log(ignored);
         }
       }
     }
     pummping.changeState(Pumping.State.FAILED);
     return false;
   }
-
+  
   private boolean exitOnInterrupt() {
     if (!Thread.interrupted()) return false;
     pummping.changeState(Pumping.State.INTERRUPTED);
     return true;
   }
-
+  
+  private boolean verifyPumping() {
+    final URL checksum = URLUtil.create(pummping.realURL().toString() + ".md5");
+    int attemptCount = 0;
+    while (attemptCount < MAX_ATTEMPT_COUNT) {
+      try {
+        final URLConnection connection = connector.establishConnection(checksum);
+        in = connection.getInputStream();
+        final String md5 = StreamUtils.readStream(in).toString();
+        try {
+          return md5.equals(FileUtils.getFileMD5String(pumping().outputFile()));
+        } catch (NoSuchAlgorithmException ex) {
+          LogManager.log("checksum algorithm not supported", ex);
+        }
+      } catch (IOException ex) {
+        if (exitOnInterrupt()) return false;
+        attemptCount++;
+        try {
+          pummping.changeState(Pumping.State.WAITING);
+          Thread.sleep(ATTEMPT_TIME_DELAY);
+        } catch (InterruptedException exit) {
+          pummping.changeState(Pumping.State.INTERRUPTED);
+          return false;
+        }
+      }
+    }
+    return false;
+  }
+  
   public void terminate() {
     if (in != null) try {
       in.close();
     } catch (IOException ignored) {
-        LogManager.log(ignored);
+      LogManager.log(ignored);
     }
     if (out != null) try {
       out.close();
     } catch (IOException ignored) {
-        LogManager.log(ignored);
+      LogManager.log(ignored);
     }
   }
 }

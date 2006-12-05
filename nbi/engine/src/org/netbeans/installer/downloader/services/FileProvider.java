@@ -28,7 +28,6 @@ import org.netbeans.installer.downloader.DownloadListener;
 import org.netbeans.installer.downloader.DownloadManager;
 import org.netbeans.installer.downloader.Pumping;
 import org.netbeans.installer.downloader.Pumping.State;
-
 /**
  *
  * @author Danila_Dugurov
@@ -61,20 +60,30 @@ public class FileProvider {
     }
   }
   
+  public synchronized boolean isInCache(URL url) {
+    return cache.isIn(url);
+  }
+  
+  public synchronized void asynchDownload(URL url) {
+    if (isInCache(url)) return;
+    if (scheduledURL2State.containsKey(url)) return;
+    if (!downloadManager.isActive()) downloadManager.invoke();
+    scheduledURL2State.put(url, State.NOT_PROCESSED);
+    downloadManager.queue().add(url);
+  }
+  
+  //methods below needs thread to capture url in ConcurrencyManager
+  //otherwise NotResourceOwnerException occurs.
+  
   public synchronized File get(URL url) throws InterruptedException {
     while (true) {
       final File file = tryGet(url);
       if (file != null) return file;
-      download(url);
+      asynchDownload(url);
       wait();
-      switch(scheduledURL2State.get(url)) {
-        case FINISHED:
-          scheduledURL2State.remove(url);
-          break;
-        case FAILED:
-          scheduledURL2State.remove(url);
-          return null;
-      }
+      if (scheduledURL2State.containsKey(url) && scheduledURL2State.get(url) == State.FAILED)
+        scheduledURL2State.remove(url);
+      return null;// this temporary. unlike good reaction to return null if faild to load!
     }
   }
   
@@ -89,13 +98,6 @@ public class FileProvider {
     return cache.delete(url);
   }
   
-  private void download(URL url) {
-    if (!downloadManager.isActive()) downloadManager.invoke();
-    if (scheduledURL2State.containsKey(url)) return;
-    scheduledURL2State.put(url, State.NOT_PROCESSED);
-    downloadManager.queue().add(url);
-  }
-  
   private class MyListener extends EmptyQueueListener {
     public void pumpingStateChange(String id) {
       final Pumping pumping = downloadManager.queue().getById(id);
@@ -104,6 +106,7 @@ public class FileProvider {
       switch(pumping.state()) {
         case FINISHED: {
           cache.put(url, pumping.outputFile());
+          scheduledURL2State.remove(url);
         }
         case FAILED:
           synchronized(FileProvider.this) {
