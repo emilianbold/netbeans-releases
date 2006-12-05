@@ -56,6 +56,7 @@ public class DbStorageTest extends NbTestCase {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new DbStorageTest("testStoreSystemInfo"));
         suite.addTest(new DbStorageTest("testStorePerformanceData"));
+        suite.addTest(new DbStorageTest("testStoreEmptyString"));
         suite.addTest(new DbStorageTest("testStoreUnitTestCase"));
         suite.addTest(new DbStorageTest("testStoreUnitTestSuite"));
         suite.addTest(new DbStorageTest("testStoreTestBag"));
@@ -135,7 +136,7 @@ public class DbStorageTest extends NbTestCase {
             int perfDataNameRunOrder = ((Number)dBUtils.queryFirst("PERFDATANAME", "RUNORDER", "NAME", "DUMMYPERFORMANCEDATA")).intValue();
             assertEquals("PERFDATANAME.RUNORDER has wrong value.", performanceData.getRunOrder(), perfDataNameRunOrder);
             int perfDataNameThreshold = ((Number)dBUtils.queryFirst("PERFDATANAME", "THRESHOLD", "NAME", "DUMMYPERFORMANCEDATA")).intValue();
-            assertEquals("PERFDATANAME.UNIT has wrong value.", performanceData.getThreshold(), perfDataNameThreshold);
+            assertEquals("PERFDATANAME.THRESHOLD has wrong value.", performanceData.getThreshold(), perfDataNameThreshold);
             long performanceDataValue = ((Number)dBUtils.queryFirst("PERFORMANCEDATA", "VALUE", "PERFDATANAME_ID", perfDataNameId)).longValue();
             assertEquals("PERFORMANCEDATA.VALUE has wrong value.", performanceData.getValue(), performanceDataValue);
         } finally {
@@ -145,7 +146,47 @@ public class DbStorageTest extends NbTestCase {
             connection.close();
         }
     }
-    
+
+    /** Test that we correctly handle empty strings (look at DbUtils.insertAutoIncrement()).
+     * The problem is that statement.setObject(i, "") inserts null into Oracle database. Then we
+     * cannot find it when searching for empty string. We need to prevent such
+     * inconsistency and that's why we set null value for empty strings.
+     * - create PerformanceData with empty string for unit
+     * - insert PerformanceData to database
+     * - check PerformanceData with correct values is inserted
+     * - delete inserted PerformanceData
+     */
+    public void testStoreEmptyString() throws Exception {
+        PerformanceData performanceData = new PerformanceData();
+        performanceData.setName("DUMMYPERFORMANCEDATA");
+        performanceData.setRunOrder(1);
+        performanceData.setThreshold(10);
+        performanceData.setUnit("");
+        performanceData.setValue(100);
+
+        Object perfDataNameId = null;
+        try {
+            long testSuiteId = ((Number)dBUtils.getFirst("TESTSUITE", "ID")).longValue();
+            dbs.storePerformanceData(performanceData, testSuiteId);
+            connection.commit();
+            perfDataNameId = dBUtils.queryFirst("PERFDATANAME", "ID", "NAME", "DUMMYPERFORMANCEDATA");
+            assertNotNull("PerformanceData not inserted into PERFDATANAME", perfDataNameId);
+            Object perfDataNameUnit = dBUtils.queryFirst("PERFDATANAME", "UNIT", "NAME", "DUMMYPERFORMANCEDATA");
+            assertNull("PERFDATANAME.UNIT should be null.", perfDataNameUnit);
+            int perfDataNameRunOrder = ((Number)dBUtils.queryFirst("PERFDATANAME", "RUNORDER", "NAME", "DUMMYPERFORMANCEDATA")).intValue();
+            assertEquals("PERFDATANAME.RUNORDER has wrong value.", performanceData.getRunOrder(), perfDataNameRunOrder);
+            int perfDataNameThreshold = ((Number)dBUtils.queryFirst("PERFDATANAME", "THRESHOLD", "NAME", "DUMMYPERFORMANCEDATA")).intValue();
+            assertEquals("PERFDATANAME.THRESHOLD has wrong value.", performanceData.getThreshold(), perfDataNameThreshold);
+            long performanceDataValue = ((Number)dBUtils.queryFirst("PERFORMANCEDATA", "VALUE", "PERFDATANAME_ID", perfDataNameId)).longValue();
+            assertEquals("PERFORMANCEDATA.VALUE has wrong value.", performanceData.getValue(), performanceDataValue);
+        } finally {
+            // delete test data
+            dBUtils.deleteFromTable("PERFORMANCEDATA", "PERFDATANAME_ID = '"+perfDataNameId+"'");
+            dBUtils.deleteFromTable("PERFDATANAME", "ID = '"+perfDataNameId+"'");
+            connection.close();
+        }
+    }
+
     /** Test storeUnitTestCase method.
      * - create UnitTestCase bean
      * - insert UnitTestCase to database

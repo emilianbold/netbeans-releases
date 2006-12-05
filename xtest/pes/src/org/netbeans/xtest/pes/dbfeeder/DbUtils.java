@@ -310,6 +310,14 @@ public class DbUtils {
     }
     
     public Object insertAutoIncrement(String table, String autoIncrementColumn, String[] columns, Object values[]) throws SQLException {
+        // statement.setObject(i, "") inserts null into Oracle database. Then we
+        // have problem when searching for empty string. We need to prevent such
+        // inconsistency and that's why we set null value for empty strings.
+        for(int i=0;i<values.length;i++) {
+            if(values[i] instanceof String && values[i].toString().length()==0) {
+                values[i] = null;
+            }
+        }
         insert(table, columns, values);
         return queryLast(table, autoIncrementColumn, columns, values);
     }

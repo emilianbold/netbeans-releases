@@ -12,8 +12,8 @@
       <to>ffj-xtest-admins@sun.com</to>
     </mail>
     <database>
-        <username>xtest</username>
-        <password>xtest</password>
+        <username>newxtest2</username>
+        <password>newxtest2</password>
         <driverClass>oracle.jdbc.driver.OracleDriver</driverClass>
         <URL>jdbc:oracle:thin:@xtest-db.czech:1521:xtest</URL>
     </database>
