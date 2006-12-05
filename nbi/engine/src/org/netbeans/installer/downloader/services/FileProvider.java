@@ -81,9 +81,10 @@ public class FileProvider {
       if (file != null) return file;
       asynchDownload(url);
       wait();
-      if (scheduledURL2State.containsKey(url) && scheduledURL2State.get(url) == State.FAILED)
+      if (scheduledURL2State.containsKey(url) && scheduledURL2State.get(url) == State.FAILED) {
         scheduledURL2State.remove(url);
-      return null;// this temporary. unlike good reaction to return null if faild to load!
+        return null;// this temporary. unlike good reaction to return null if faild to load!
+      }
     }
   }
   

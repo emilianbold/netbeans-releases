@@ -49,8 +49,7 @@ public class PersistentCache {
     stateFile = new File(DownloadManager.instance.getWd(), "cacheState.xml");
     if (!stateFile.exists()) {
       LogManager.log("cache file not exist so treat it as cache is Empty");
-    }
-    load();
+    } else load();
   }
   
   public boolean isIn(URL url) {
@@ -99,9 +98,9 @@ public class PersistentCache {
       };
       visitor.visit(state);
     } catch (ParseException ex) {
-      ex.printStackTrace();
+      LogManager.log(ex);
     } catch (IOException ex) {
-      ex.printStackTrace();
+      LogManager.log(ex);
     }
   }
   

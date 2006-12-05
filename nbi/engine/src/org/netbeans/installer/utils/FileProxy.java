@@ -37,8 +37,10 @@ import org.netbeans.installer.downloader.Pumping;
 import org.netbeans.installer.downloader.Pumping.Section;
 import org.netbeans.installer.downloader.PumpingsQueue;
 import org.netbeans.installer.downloader.DownloadListener;
+import org.netbeans.installer.downloader.services.FileConcurrencyManager;
 import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.utils.helper.Pair;
+import org.netbeans.installer.utils.progress.DownloadProgress;
 import org.netbeans.installer.utils.progress.Progress;
 
 /**
@@ -46,205 +48,138 @@ import org.netbeans.installer.utils.progress.Progress;
  * @author Danila_Dugurov
  */
 public class FileProxy {
-    
-    private final File tmpDir = new File(Installer.DEFAULT_LOCAL_DIRECTORY_PATH, "tmp");
-    private final Map<String, File> cache = new HashMap<String, File>();
-    {
-        tmpDir.mkdirs();
-        tmpDir.deleteOnExit();
+  
+  private final File tmpDir = new File(Installer.DEFAULT_LOCAL_DIRECTORY_PATH, "tmp");
+  private final Map<String, File> cache = new HashMap<String, File>();
+  {
+    tmpDir.mkdirs();
+    tmpDir.deleteOnExit();
+  }
+  
+  public static final FileProxy proxy = new FileProxy();
+  
+  public static FileProxy getInstance() {
+    return proxy;
+  }
+  
+  public void deleteFile(String uri) throws IOException {
+    final File file = cache.get(uri);
+    if (uri != null && uri.startsWith("file")) return;
+    if (file != null) FileUtils.deleteFile(file);
+    cache.remove(uri);
+  }
+  
+  public void deleteFile(URI uri) throws IOException {
+    deleteFile(uri.toString());
+  }
+  public void deleteFile(URL url) throws IOException {
+    deleteFile(url.toString());
+  }
+  
+  public File getFile(URL url) throws DownloadException {
+    return getFile(url, null, false);
+  }
+  public File getFile(String uri) throws DownloadException {
+    return getFile(uri, null, null);
+  }
+  
+  public File getFile(String uri, boolean deleteOnExit) throws DownloadException {
+    return getFile(uri, null, null, deleteOnExit);
+  }
+  
+  public File getFile(String uri, ClassLoader loader) throws DownloadException {
+    return getFile(uri, null, loader);
+  }
+  
+  public File getFile(URI uri, Progress progress)  throws DownloadException {
+    return getFile(uri, progress, null, false);
+  }
+  
+  public File getFile(String uri, Progress progress, ClassLoader loader) throws DownloadException{
+    return getFile(uri, progress, loader, false);
+  }
+  
+  public File getFile(String uri, Progress progress, ClassLoader loader, boolean deleteOnExit) throws DownloadException {
+    final URI myUri;
+    try {
+      myUri = new URI(uri);
+    } catch (URISyntaxException ex) {
+      throw new DownloadException("uri:" + uri, ex);
     }
-    DownloadListener listener = new MyListener();
-    {
-        DownloadManager.instance.registerListener(listener);
+    return getFile(myUri, progress, loader, deleteOnExit);
+  }
+  
+  public File getFile(URI uri, boolean deleteOnExit) throws DownloadException {
+    return getFile(uri, null, null, deleteOnExit);
+  }
+  
+  public File getFile(URI uri) throws DownloadException {
+    return getFile(uri, null, null, false);
+  }
+  
+  public File getFile(URI uri, Progress progress, ClassLoader loader, boolean deleteOnExit) throws DownloadException {
+    if (cache.containsKey(uri.toString()) && cache.get(uri.toString()).exists()) {
+      return cache.get(uri.toString());
     }
-    
-    public static final FileProxy proxy = new FileProxy();
-    
-    public static FileProxy getInstance() {
-        return proxy;
-    }
-    
-    public void deleteFile(String uri) throws IOException {
-        final File file = cache.get(uri);
-        if (uri != null && uri.startsWith("file")) return;
-        if (file != null) FileUtils.deleteFile(file);
-        cache.remove(uri);
-    }
-    
-    public void deleteFile(URI uri) throws IOException {
-        deleteFile(uri.toString());
-    }
-    public void deleteFile(URL url) throws IOException {
-        deleteFile(url.toString());
-    }
-    
-    public File getFile(URL url) throws DownloadException {
-        return getFile(url, null, false);
-    }
-    public File getFile(String uri) throws DownloadException {
-        return getFile(uri, null, null);
-    }
-    
-    public File getFile(String uri, boolean deleteOnExit) throws DownloadException {
-        return getFile(uri, null, null, deleteOnExit);
-    }
-    
-    public File getFile(String uri, ClassLoader loader) throws DownloadException {
-        return getFile(uri, null, loader);
-    }
-    
-    public File getFile(URI uri, Progress progress)  throws DownloadException {
-        return getFile(uri, progress, null, false);
-    }
-    
-    public File getFile(String uri, Progress progress, ClassLoader loader) throws DownloadException{
-        return getFile(uri, progress, loader, false);
-    }
-    
-    public File getFile(String uri, Progress progress, ClassLoader loader, boolean deleteOnExit) throws DownloadException {
-        final URI myUri;
-        try {
-            myUri = new URI(uri);
-        } catch (URISyntaxException ex) {
-            throw new DownloadException("uri:" + uri, ex);
+    if (uri.getScheme().equals("file")) {
+      File file = new File(uri);
+      if (!file.exists()) throw new DownloadException("file not exist: " + uri);
+      return file;
+    } else if (uri.getScheme().equals("resource")) {
+      OutputStream out  = null;
+      try {
+        String path = uri.getSchemeSpecificPart();
+        File file = new File(tmpDir, path.substring(path.lastIndexOf('/')));
+        String fileName = file.getName();
+        File parent = file.getParentFile();
+        for (int i = 0; file.exists(); i++) {
+          file = new File(parent, fileName + "." + i);
         }
-        return getFile(myUri, progress, loader, deleteOnExit);
-    }
-    
-    public File getFile(URI uri, boolean deleteOnExit) throws DownloadException {
-        return getFile(uri, null, null, deleteOnExit);
-    }
-    
-    public File getFile(URI uri) throws DownloadException {
-        return getFile(uri, null, null, false);
-    }
-    
-    public File getFile(URI uri, Progress progress, ClassLoader loader, boolean deleteOnExit) throws DownloadException {
-        if (cache.containsKey(uri.toString()) && cache.get(uri.toString()).exists()) {
-            return cache.get(uri.toString());
-        }
-        if (uri.getScheme().equals("file")) {
-            File file = new File(uri);
-            if (!file.exists()) throw new DownloadException("file not exist: " + uri);
-            return file;
-        } else if (uri.getScheme().equals("resource")) {
-            OutputStream out  = null;
-            try {
-                String path = uri.getSchemeSpecificPart();
-                File file = new File(tmpDir, path.substring(path.lastIndexOf('/')));
-                String fileName = file.getName();
-                File parent = file.getParentFile();
-                for (int i = 0; file.exists(); i++) {
-                    file = new File(parent, fileName + "." + i);
-                }
-                file.createNewFile();
-                file.deleteOnExit();
-                final InputStream resource = (loader != null ? loader: getClass().getClassLoader()).getResourceAsStream(uri.getSchemeSpecificPart());
-                out = new FileOutputStream(file);
-                if (resource == null) throw new DownloadException("resource:" + uri + "not found");
-                StreamUtils.transferData(resource, out);
-                cache.put(uri.toString(), file);
-                return file;
-            } catch(IOException ex) {
-                throw new DownloadException("I/O error has occures", ex);
-            } finally {
-                if (out != null)
-                    try {
-                        out.close();
-                    } catch (IOException ignord) {}
-            }
-        } else if (uri.getScheme().startsWith("http")) {
-            try {
-                final File file = getFile(uri.toURL(), progress, deleteOnExit);
-                cache.put(uri.toString(), file);
-                return file;
-            } catch(MalformedURLException ex) {
-                throw new DownloadException("malformed url: " + uri, ex);
-            }
-        }
-        throw new DownloadException("unsupported sheme: " + uri.getScheme());
-    }
-    
-    Progress progress;
-    URL url;
-    protected synchronized File getFile(final URL url,final Progress progress, boolean deleteOnExit) throws DownloadException {
-        this.progress = progress;
-        this.url = url;
-        if (!DownloadManager.instance.isActive())
-            DownloadManager.instance.invoke();
-        DownloadManager.instance.queue().add(url);
-        try {
-            wait();
-        } catch (InterruptedException ex) {
-            ex.printStackTrace();
-        }
-        final File file = cache.get(url.toString());
-        if (file == null) throw new DownloadException("faild to download" + url);
-        if (deleteOnExit) file.deleteOnExit();
-        this.progress = null;
+        file.createNewFile();
+        file.deleteOnExit();
+        final InputStream resource = (loader != null ? loader: getClass().getClassLoader()).getResourceAsStream(uri.getSchemeSpecificPart());
+        out = new FileOutputStream(file);
+        if (resource == null) throw new DownloadException("resource:" + uri + "not found");
+        StreamUtils.transferData(resource, out);
+        cache.put(uri.toString(), file);
         return file;
+      } catch(IOException ex) {
+        throw new DownloadException("I/O error has occures", ex);
+      } finally {
+        if (out != null)
+          try {
+            out.close();
+          } catch (IOException ignord) {}
+      }
+    } else if (uri.getScheme().startsWith("http")) {
+      try {
+        final File file = getFile(uri.toURL(), progress, deleteOnExit);
+        cache.put(uri.toString(), file);
+        return file;
+      } catch(MalformedURLException ex) {
+        throw new DownloadException("malformed url: " + uri, ex);
+      }
     }
-    
-    private class MyListener implements DownloadListener {
-        public void pumpingUpdate(String id) {
-            final Pumping pumping = DownloadManager.instance.queue().getById(id);
-            if (pumping != null) {
-                if (progress != null) {
-                    progress.setDetail("downloding: " + pumping.declaredURL());
-                    if (pumping.length() > 0) {
-                        final long length = pumping.length();
-                        long per = 0;
-                        for (Section section: pumping.getSections()) {
-                            final Pair<Long, Long> pair = section.getRange();
-                            per += section.offset() - pair.getFirst();
-                        }
-                        progress.setPercentage((int)(per * 100 / length));
-                    }
-                }
-            }
-        }
-        
-        public void pumpingStateChange(String id) {
-            final Pumping pumping = DownloadManager.instance.queue().getById(id);
-            if (pumping != null) {
-                if (progress != null) {
-                    progress.setDetail(pumping.state().toString().toLowerCase() +": "
-                        + pumping.declaredURL());
-                }
-                switch (pumping.state()) {
-                    case FINISHED:
-                        cache.put(url.toString(), pumping.outputFile());
-                    case FAILED: synchronized (FileProxy.this) {
-                        FileProxy.this.notify();
-                    }
-                }
-            } else {
-                synchronized (FileProxy.this) {
-                    FileProxy.this.notify();
-                }
-            }
-        }
-        
-        public void pumpingAdd(String id) {
-            final Pumping pumping = DownloadManager.instance.queue().getById(id);
-            if (pumping != null) {
-                if (progress != null) {
-                    progress.setDetail("scheduled: " + pumping.declaredURL());
-                }
-            }
-        }
-        
-        
-        public void pumpingDelete(String id) {
-        }
-        
-        public void queueReset() {
-        }
-        
-        public void pumpsInvoke() {
-        }
-        
-        public void pumpsTerminate() {
-        }
+    throw new DownloadException("unsupported sheme: " + uri.getScheme());
+  }
+  
+  protected File getFile(final URL url,final Progress progress, boolean deleteOnExit) throws DownloadException {
+    final FileConcurrencyManager concurrency = FileConcurrencyManager.getManager();
+    final DownloadProgress dlProgress = new DownloadProgress(progress);
+    DownloadManager.instance.registerListener(dlProgress);
+    File file = null;
+    try {
+      concurrency.captureByURL(url);
+      file = concurrency.getProvider().get(url);
+      // ofcouse some work with file must be in this section however
+      //here I write this pice of code as an example how to use cuncurrency and provider
+    } catch (InterruptedException interupt) {
+      LogManager.log("interrupted externaly.");
+    } finally {
+      concurrency.releaseFile(url);
     }
+    if (file == null) throw new DownloadException("faild to download" + url);
+    if (deleteOnExit) file.deleteOnExit();
+    return file;
+  }
 }
