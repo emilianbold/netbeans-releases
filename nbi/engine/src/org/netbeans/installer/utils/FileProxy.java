@@ -47,6 +47,7 @@ import org.netbeans.installer.utils.progress.Progress;
  *
  * @author Danila_Dugurov
  */
+//todo: This class already ready to die.
 public class FileProxy {
   
   private final File tmpDir = new File(Installer.DEFAULT_LOCAL_DIRECTORY_PATH, "tmp");
