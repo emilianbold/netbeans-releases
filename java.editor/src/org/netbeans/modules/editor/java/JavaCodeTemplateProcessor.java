@@ -346,10 +346,10 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
             StatementTree stmt = tu.parseStatement(request.getInsertText(), sourcePositions);
             if (errChecker.containsErrors(stmt))
                 return null;
-            tu.attributeTree(stmt, scope);
             TreePath path = tu.pathFor(new TreePath(treePath, stmt), caretOffset, sourcePositions[0]);
             TreePath loop = Utilities.getPathElementOfKind(Tree.Kind.ENHANCED_FOR_LOOP, path);
             if (loop != null) {
+                tu.attributeTree(stmt, scope);
                 TypeMirror type = cInfo.getTrees().getTypeMirror(new TreePath(loop, ((EnhancedForLoopTree)loop.getLeaf()).getExpression()));
                 switch (type.getKind()) {
                     case ARRAY:
@@ -375,11 +375,11 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
             StatementTree stmt = tu.parseStatement(request.getInsertText(), sourcePositions);
             if (errChecker.containsErrors(stmt))
                 return null;
-            tu.attributeTree(stmt, scope);
             TreePath path = tu.pathFor(new TreePath(treePath, stmt), caretOffset, sourcePositions[0]);
             TreePath tree = Utilities.getPathElementOfKind(EnumSet.of(Tree.Kind.ASSIGNMENT, Tree.Kind.VARIABLE), path);
             if (tree == null)
                 return null;
+            tu.attributeTree(stmt, scope);
             if (tree.getLeaf().getKind() == Tree.Kind.ASSIGNMENT) {
                 AssignmentTree as = (AssignmentTree)tree.getLeaf();
                 TreePath type = new TreePath(tree, left ? as.getVariable() : as.getExpression());
@@ -401,11 +401,11 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
             StatementTree stmt = tu.parseStatement(request.getInsertText(), sourcePositions);
             if (errChecker.containsErrors(stmt))
                 return null;
-            tu.attributeTree(stmt, scope);
             TreePath path = tu.pathFor(new TreePath(treePath, stmt), caretOffset, sourcePositions[0]);
             TreePath tree = Utilities.getPathElementOfKind(EnumSet.of(Tree.Kind.ASSIGNMENT, Tree.Kind.VARIABLE), path);
             if (tree == null)
                 return null;
+            tu.attributeTree(stmt, scope);
             if (tree.getLeaf().getKind() == Tree.Kind.ASSIGNMENT) {
                 AssignmentTree as = (AssignmentTree)tree.getLeaf();
                 TypeMirror left = cInfo.getTrees().getTypeMirror(new TreePath(tree, as.getVariable()));
@@ -445,13 +445,26 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
             StatementTree stmt = tu.parseStatement(request.getInsertText(), sourcePositions);
             if (errChecker.containsErrors(stmt))
                 return null;
-            tu.attributeTree(stmt, scope);
             TreePath path = tu.pathFor(new TreePath(treePath, stmt), caretOffset, sourcePositions[0]);
             TreePath decl = Utilities.getPathElementOfKind(Tree.Kind.VARIABLE, path);
             if (decl != null) {
+                Scope s = tu.attributeTreeTo(stmt, scope, decl.getLeaf());
                 TypeMirror type = cInfo.getTrees().getTypeMirror(decl);
                 boolean isConst = ((VariableTree)decl.getLeaf()).getModifiers().getFlags().containsAll(EnumSet.of(Modifier.FINAL, Modifier.STATIC));
-                Iterator<String> names = Utilities.varNamesSuggestions(type, null, cInfo.getTypes(), cInfo.getElements(), locals, isConst).iterator();
+                final Name varName = ((VariableTree)decl.getLeaf()).getName();
+                ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
+                    public boolean accept(Element e, TypeMirror t) {
+                        switch(e.getKind()) {
+                            case EXCEPTION_PARAMETER:
+                            case LOCAL_VARIABLE:
+                            case PARAMETER:
+                                return varName != e.getSimpleName();
+                            default:
+                                return false;
+                        }
+                    }
+                };
+                Iterator<String> names = Utilities.varNamesSuggestions(type, null, cInfo.getTypes(), cInfo.getElements(), cInfo.getElementUtilities().getLocalVars(s, acceptor), isConst).iterator();
                 if (names.hasNext())
                     return names.next();
             }
