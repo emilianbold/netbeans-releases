@@ -21,10 +21,11 @@ package org.netbeans.modules.options.indentation;
 
 import java.lang.reflect.Method;
 import java.util.Iterator;
+import java.util.Set;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
-import org.netbeans.modules.editor.options.AllOptionsFolder;
 import org.netbeans.modules.editor.options.BaseOptions;
+import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 
 import org.openide.text.IndentEngine;
 import org.openide.util.Lookup;
@@ -241,12 +242,10 @@ class IndentationModel {
         Object parameterValue,
         Class parameterType
     ) {
-        Iterator it = AllOptionsFolder.getDefault ().getInstalledOptions ().
-            iterator ();
-        while (it.hasNext ()) {
-            Class optionsClass = (Class) it.next ();
-            BaseOptions baseOptions = (BaseOptions) BaseOptions.findObject 
-                (optionsClass, true);
+        Set mimeTypes = EditorSettings.getDefault().getMimeTypes();
+        for(Iterator i = mimeTypes.iterator(); i.hasNext(); ) {
+            String mimeType = (String) i.next();
+            BaseOptions baseOptions = (BaseOptions) MimeLookup.getLookup(MimePath.parse(mimeType)).lookup(BaseOptions.class);
             IndentEngine indentEngine = baseOptions.getIndentEngine ();
             try {
                 // HACK

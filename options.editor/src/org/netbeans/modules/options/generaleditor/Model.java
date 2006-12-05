@@ -22,11 +22,12 @@ package org.netbeans.modules.options.generaleditor;
 import java.lang.reflect.Method;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.editor.SettingsNames;
-import org.netbeans.modules.editor.options.AllOptionsFolder;
 import org.netbeans.modules.editor.options.BaseOptions;
+import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 
 
 public class Model {
@@ -96,12 +97,10 @@ public class Model {
         );
         javaOptions.setCodeFoldingProps (javaFoldingMap);
         
-        Iterator it = AllOptionsFolder.getDefault ().getInstalledOptions ().
-            iterator ();
-        while (it.hasNext ()) {
-            Class optionsClass = (Class) it.next ();
-            BaseOptions baseOptions = (BaseOptions) BaseOptions.findObject 
-                (optionsClass, true);
+        Set mimeTypes = EditorSettings.getDefault().getMimeTypes();
+        for(Iterator i = mimeTypes.iterator(); i.hasNext(); ) {
+            String mimeType = (String) i.next();
+            BaseOptions baseOptions = (BaseOptions) MimeLookup.getLookup(MimePath.parse(mimeType)).lookup(BaseOptions.class);
             Map m = baseOptions.getCodeFoldingProps ();
             m.put (
                 SettingsNames.CODE_FOLDING_ENABLE,
@@ -141,12 +140,11 @@ public class Model {
         boolean completionInstantSubstitution,
         boolean completionCaseSensitive
     ) {
-        Iterator it = AllOptionsFolder.getDefault ().getInstalledOptions ().
-            iterator ();
-        while (it.hasNext ()) {
-            Class optionsClass = (Class) it.next ();
-            BaseOptions baseOptions = (BaseOptions) BaseOptions.findObject 
-                (optionsClass, true);
+        Set mimeTypes = EditorSettings.getDefault().getMimeTypes();
+        for(Iterator i = mimeTypes.iterator(); i.hasNext(); ) {
+            String mimeType = (String) i.next();
+            BaseOptions baseOptions = (BaseOptions) MimeLookup.getLookup(MimePath.parse(mimeType)).lookup(BaseOptions.class);
+
             try {
                 Method method = baseOptions.getClass ().getMethod (
                     "setPairCharactersCompletion",
