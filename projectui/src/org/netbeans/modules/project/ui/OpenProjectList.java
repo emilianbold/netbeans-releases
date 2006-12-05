@@ -20,6 +20,7 @@
 package org.netbeans.modules.project.ui;
 
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.Frame;
 import java.awt.Rectangle;
 import java.beans.PropertyChangeListener;
@@ -176,6 +177,14 @@ public final class OpenProjectList {
         long start = System.currentTimeMillis();
         
 	if (asynchronously) {
+            if (!EventQueue.isDispatchThread()) { // #89935
+                EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        open(projects, openSubprojects, asynchronously);
+                    }
+                });
+                return;
+            }
 	    final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(OpenProjectList.class, "CAP_Opening_Projects"));
 	    final Frame mainWindow = WindowManager.getDefault().getMainWindow();
 	    final JDialog dialog = new JDialog(mainWindow, NbBundle.getMessage(OpenProjectList.class, "LBL_Opening_Projects_Progress"), true);
@@ -724,7 +733,7 @@ public final class OpenProjectList {
     }
 
     private static String[] getRecommendedTypes (Project project) {
-        RecommendedTemplates rt = (RecommendedTemplates)project.getLookup().lookup( RecommendedTemplates.class );
+        RecommendedTemplates rt = project.getLookup().lookup(RecommendedTemplates.class);
         return rt == null ? null :rt.getRecommendedTypes();
     }
     
