@@ -18,18 +18,12 @@
  */
 package org.netbeans.modules.j2ee.ejbcore.api.methodcontroller;
 
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.StatementTree;
-import com.sun.source.util.SourcePositions;
-import com.sun.source.util.TreePath;
-import com.sun.source.util.Trees;
+import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
+import org.netbeans.modules.j2ee.common.method.MethodModel;
 import java.util.Collections;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
-import org.netbeans.api.java.source.TreeUtilities;
-import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.j2ee.common.method.MethodModel;
+import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType.BusinessMethodType;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType.CreateMethodType;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType.FinderMethodType;
@@ -40,71 +34,51 @@ import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType.HomeMet
  * @author Chris Webster
  * @author Martin Adamek
  */
-class SessionGenerateFromIntfVisitor implements MethodType.MethodTypeVisitor, AbstractMethodController.GenerateFromIntf {
+final class SessionGenerateFromIntfVisitor implements MethodType.MethodTypeVisitor, AbstractMethodController.GenerateFromIntf {
 
-    private final WorkingCopy workingCopy;
-    private ExecutableElement implMethod;
+    private MethodModel implMethod;
     private static final String TODO = "//TODO implement "; //NOI18N
-    
-    public SessionGenerateFromIntfVisitor(WorkingCopy workingCopy) {
-        this.workingCopy = workingCopy;
-    }
     
     public void getInterfaceMethodFromImpl(MethodType methodType) {
         methodType.accept(this);
     }
     
-    public ExecutableElement getImplMethod() {
+    public MethodModel getImplMethod() {
         return implMethod;
     }
     
-    public ExecutableElement getSecondaryMethod() {
+    public MethodModel getSecondaryMethod() {
         return null;
     }
     
     public void visit(BusinessMethodType bmt) {
-        implMethod = bmt.getMethodElement().resolve(workingCopy);
-        TypeMirror type= implMethod.getReturnType();
-
-        SourcePositions[] positions = new SourcePositions[1];
-        TreeUtilities treeUtilities = workingCopy.getTreeUtilities();
-        String body = TODO + implMethod.getSimpleName() + EntityGenerateFromIntfVisitor.getReturnStatement(type);
-        StatementTree bodyTree = treeUtilities.parseStatement(body, positions);
-        
-        MethodTree resultTree = AbstractMethodController.modifyMethod(
-                workingCopy, 
-                implMethod, 
-                Collections.singleton(Modifier.PUBLIC), 
-                null, null, null, null,
-                workingCopy.getTreeMaker().Block(Collections.singletonList(bodyTree), false)
+        implMethod = bmt.getMethodElement();
+        String body = TODO + implMethod.getName() + EntityGenerateFromIntfVisitor.getReturnStatement(implMethod.getReturnType());
+        implMethod = MethodModelSupport.createMethodModel(
+                implMethod.getName(), 
+                implMethod.getReturnType(),
+                body,
+                implMethod.getClassName(),
+                implMethod.getParameters(),
+                implMethod.getExceptions(),
+                Collections.singleton(Modifier.PUBLIC)
                 );
-        Trees trees = workingCopy.getTrees();
-        TreePath treePath = trees.getPath(workingCopy.getCompilationUnit(), resultTree);
-        implMethod = (ExecutableElement) trees.getElement(treePath);
     }
        
     public void visit(CreateMethodType cmt) {
-        implMethod = cmt.getMethodElement().resolve(workingCopy);
-        String origName = implMethod.getSimpleName().toString();
-        String newName = prependAndUpper(origName,"ejb"); //NOI18N
-        
-        SourcePositions[] positions = new SourcePositions[1];
-        TreeUtilities treeUtilities = workingCopy.getTreeUtilities();
+        implMethod = cmt.getMethodElement();
+        String origName = implMethod.getName();
+        String newName = prependAndUpper(origName, "ejb"); //NOI18N
         String body = TODO + newName;
-        StatementTree bodyTree = treeUtilities.parseStatement(body, positions);
-        
-        MethodTree resultTree = AbstractMethodController.modifyMethod(
-                workingCopy, 
-                implMethod, 
-                Collections.singleton(Modifier.PUBLIC), 
+        implMethod = MethodModelSupport.createMethodModel(
                 newName, 
-                workingCopy.getTreeMaker().PrimitiveType(TypeKind.VOID),
-                null, null,
-                workingCopy.getTreeMaker().Block(Collections.singletonList(bodyTree), false)
+                "void",
+                body,
+                implMethod.getClassName(),
+                implMethod.getParameters(),
+                implMethod.getExceptions(),
+                Collections.singleton(Modifier.PUBLIC)
                 );
-        Trees trees = workingCopy.getTrees();
-        TreePath treePath = trees.getPath(workingCopy.getCompilationUnit(), resultTree);
-        implMethod = (ExecutableElement) trees.getElement(treePath);
     }
     
     public void visit(HomeMethodType hmt) {

@@ -19,11 +19,10 @@
 
 package org.netbeans.modules.j2ee.ejbcore.api.methodcontroller;
 
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
-import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.j2ee.common.method.MethodModel;
+import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -32,16 +31,16 @@ import org.netbeans.modules.j2ee.dd.api.ejb.Session;
  */
 public final class SessionMethodController extends AbstractMethodController {
 
-    private final WorkingCopy workingCopy;
+    private final FileObject ejbClassFO;
     private final Session model;
 
-    public SessionMethodController(WorkingCopy workingCopy, Session model) {
-        super(workingCopy, model);
-        this.workingCopy = workingCopy;
+    public SessionMethodController(FileObject ejbClassFO, Session model) {
+        super(ejbClassFO, model);
+        this.ejbClassFO = ejbClassFO;
         this.model = model;
     }
 
-    public boolean hasJavaImplementation(ExecutableElement intfView) {
+    public boolean hasJavaImplementation(MethodModel intfView) {
         return true;
     }
 
@@ -49,36 +48,36 @@ public final class SessionMethodController extends AbstractMethodController {
         return true;
     }
     
-    public MethodType getMethodTypeFromImpl(ExecutableElement implView) {
+    public MethodType getMethodTypeFromImpl(MethodModel implView) {
         MethodType methodType = null;
-        if (implView.getSimpleName().toString().startsWith("ejbCreate")) {
-            methodType = new MethodType.CreateMethodType(ElementHandle.create(implView));
-        } else if (!implView.getSimpleName().toString().startsWith("ejb")) {
-            methodType = new MethodType.BusinessMethodType(ElementHandle.create(implView));
+        if (implView.getName().startsWith("ejbCreate")) {
+            methodType = new MethodType.CreateMethodType(implView);
+        } else if (!implView.getName().startsWith("ejb")) {
+            methodType = new MethodType.BusinessMethodType(implView);
         }
         return methodType;
     }
 
-    public MethodType getMethodTypeFromInterface(ExecutableElement clientView) {
-        assert clientView.getEnclosingElement() != null: "declaring class cannot be null";
+    public MethodType getMethodTypeFromInterface(MethodModel clientView) {
+        assert clientView.getClassName() != null: "declaring class cannot be null";
         // see if the interface is home or local home, otherwise assume business
-        String cName = ((TypeElement) clientView.getEnclosingElement()).getQualifiedName().toString();
+        String cName = clientView.getClassName();
         MethodType methodType = null;
         if (cName.equals(model.getLocalHome()) || 
             cName.equals(model.getHome())) {
-            methodType = new MethodType.CreateMethodType(ElementHandle.create(clientView));
+            methodType = new MethodType.CreateMethodType(clientView);
         } else {
-            methodType = new MethodType.BusinessMethodType(ElementHandle.create(clientView));
+            methodType = new MethodType.BusinessMethodType(clientView);
         }
         return methodType;
     }
 
     public AbstractMethodController.GenerateFromImpl createGenerateFromImpl() {
-        return new SessionGenerateFromImplVisitor(workingCopy);
+        return new SessionGenerateFromImplVisitor();
     }
 
     public AbstractMethodController.GenerateFromIntf createGenerateFromIntf() {
-        return new SessionGenerateFromIntfVisitor(workingCopy);
+        return new SessionGenerateFromIntfVisitor();
     }
 
     public boolean supportsMethodType(MethodType.Kind methodType) {

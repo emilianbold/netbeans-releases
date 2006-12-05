@@ -18,24 +18,25 @@
  */
 package org.netbeans.modules.j2ee.ejbcore.api.methodcontroller;
 
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.StatementTree;
-import com.sun.source.util.SourcePositions;
-import com.sun.source.util.TreePath;
-import com.sun.source.util.Trees;
+import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
+import org.netbeans.modules.j2ee.common.method.MethodModel;
+import java.io.IOException;
 import java.util.Collections;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
-import org.netbeans.api.java.source.TreeUtilities;
-import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.modules.j2ee.common.source.AbstractTask;
+import org.netbeans.modules.j2ee.common.method.MethodModel;
+import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType.BusinessMethodType;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType.CreateMethodType;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType.FinderMethodType;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType.HomeMethodType;
+import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -44,14 +45,15 @@ import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType.HomeMet
  */
 class EntityGenerateFromIntfVisitor implements MethodType.MethodTypeVisitor, AbstractMethodController.GenerateFromIntf {
 
-    private final WorkingCopy workingCopy;
-    private ExecutableElement implMethod;
-    private ExecutableElement secondaryMethod;
-    private final Entity entity;
     private static final String TODO = "//TODO implement "; //NOI18N
     
-    public EntityGenerateFromIntfVisitor(WorkingCopy workingCopy, Entity entity) {
-        this.workingCopy = workingCopy;
+    private final FileObject ejbClassFO;
+    private final Entity entity;
+    private MethodModel implMethod;
+    private MethodModel secondaryMethod;
+    
+    public EntityGenerateFromIntfVisitor(FileObject ejbClassFO, Entity entity) {
+        this.ejbClassFO = ejbClassFO;
         this.entity = entity;
     }
     
@@ -59,162 +61,143 @@ class EntityGenerateFromIntfVisitor implements MethodType.MethodTypeVisitor, Abs
         methodType.accept(this);
     }
     
-    public ExecutableElement getImplMethod() {
+    public MethodModel getImplMethod() {
         return implMethod;
     }
     
-    public ExecutableElement getSecondaryMethod() {
+    public MethodModel getSecondaryMethod() {
         return secondaryMethod;
     }
     
     public void visit(BusinessMethodType bmt) {
-        implMethod = bmt.getMethodElement().resolve(workingCopy);
-        
-        SourcePositions[] positions = new SourcePositions[1];
-        TreeUtilities treeUtilities = workingCopy.getTreeUtilities();
-        String body = TODO + implMethod.getSimpleName();
-        TypeMirror type = implMethod.getReturnType();
-        body += getReturnStatement(type);
-        StatementTree bodyTree = treeUtilities.parseStatement(body, positions);
-        
-        MethodTree resultTree = AbstractMethodController.modifyMethod(
-                workingCopy, 
-                implMethod, 
-                Collections.singleton(Modifier.PUBLIC), 
-                null, null, null, null,
-                workingCopy.getTreeMaker().Block(Collections.singletonList(bodyTree), false)
+        implMethod = bmt.getMethodElement();
+        String body = TODO + implMethod.getName();
+        body += implMethod.getReturnType();
+        implMethod = MethodModelSupport.createMethodModel(
+                implMethod.getName(), 
+                implMethod.getReturnType(),
+                body,
+                implMethod.getClassName(),
+                implMethod.getParameters(),
+                implMethod.getExceptions(),
+                Collections.singleton(Modifier.PUBLIC)
                 );
-        Trees trees = workingCopy.getTrees();
-        TreePath treePath = trees.getPath(workingCopy.getCompilationUnit(), resultTree);
-        implMethod = (ExecutableElement) trees.getElement(treePath);
     }
     
     public void visit(CreateMethodType cmt) {
-        implMethod = cmt.getMethodElement().resolve(workingCopy);
-        String origName = implMethod.getSimpleName().toString();
+        implMethod = cmt.getMethodElement();
+        String origName = implMethod.getName();
         String newName = prependAndUpper(origName,"ejb"); //NOI18N
-        TypeElement type = workingCopy.getElements().getTypeElement(entity.getPrimKeyClass());
-        
-        SourcePositions[] positions = new SourcePositions[1];
-        TreeUtilities treeUtilities = workingCopy.getTreeUtilities();
-        TypeMirror typeMirror = type.asType();
-        String body = TODO + newName + getReturnStatement(typeMirror);
-        StatementTree bodyTree = treeUtilities.parseStatement(body, positions);
-        
-        MethodTree resultTree = AbstractMethodController.modifyMethod(
-                workingCopy, 
-                implMethod, 
-                Collections.singleton(Modifier.PUBLIC), 
+        String type = entity.getPrimKeyClass();
+        String body = TODO + newName + type;
+        implMethod = MethodModelSupport.createMethodModel(
                 newName, 
-                workingCopy.getTrees().getTree(type), 
-                null, null,
-                workingCopy.getTreeMaker().Block(Collections.singletonList(bodyTree), false)
+                type,
+                body,
+                implMethod.getClassName(),
+                implMethod.getParameters(),
+                implMethod.getExceptions(),
+                Collections.singleton(Modifier.PUBLIC)
                 );
-        Trees trees = workingCopy.getTrees();
-        TreePath treePath = trees.getPath(workingCopy.getCompilationUnit(), resultTree);
-        implMethod = (ExecutableElement) trees.getElement(treePath);
-        
-        secondaryMethod = cmt.getMethodElement().resolve(workingCopy);
-        origName = secondaryMethod.getSimpleName().toString();
+        secondaryMethod = cmt.getMethodElement();
+        origName = secondaryMethod.getName();
         newName = prependAndUpper(origName,"ejbPost"); //NOI18N
-        
-        positions = new SourcePositions[1];
         body = TODO + newName;
-        bodyTree = treeUtilities.parseStatement(body, positions);
-        
-        resultTree = AbstractMethodController.modifyMethod(
-                workingCopy, 
-                secondaryMethod, 
-                Collections.singleton(Modifier.PUBLIC), 
+        secondaryMethod = MethodModelSupport.createMethodModel(
                 newName, 
-                workingCopy.getTreeMaker().PrimitiveType(TypeKind.VOID),
-                null, null,
-                workingCopy.getTreeMaker().Block(Collections.singletonList(bodyTree), false)
+                "void",
+                body,
+                secondaryMethod.getClassName(),
+                secondaryMethod.getParameters(),
+                secondaryMethod.getExceptions(),
+                Collections.singleton(Modifier.PUBLIC)
                 );
-        treePath = trees.getPath(workingCopy.getCompilationUnit(), resultTree);
-        secondaryMethod = (ExecutableElement) trees.getElement(treePath);
     }
     
     public void visit(HomeMethodType hmt) {
-        implMethod = hmt.getMethodElement().resolve(workingCopy);
-        String origName = implMethod.getSimpleName().toString();
+        implMethod = hmt.getMethodElement();
+        String origName = implMethod.getName();
         String newName = prependAndUpper(origName,"ejbHome"); //NOI18N
-        
-        SourcePositions[] positions = new SourcePositions[1];
-        TreeUtilities treeUtilities = workingCopy.getTreeUtilities();
-        String body = TODO + implMethod.getSimpleName() + getReturnStatement(implMethod.asType());
-        StatementTree bodyTree = treeUtilities.parseStatement(body, positions);
-        
-        MethodTree resultTree = AbstractMethodController.modifyMethod(
-                workingCopy, 
-                implMethod, 
-                Collections.singleton(Modifier.PUBLIC), 
+        String body = TODO + implMethod.getName() + implMethod.getReturnType();
+        implMethod = MethodModelSupport.createMethodModel(
                 newName, 
-                null, null, null,
-                workingCopy.getTreeMaker().Block(Collections.singletonList(bodyTree), false)
+                implMethod.getReturnType(),
+                body,
+                implMethod.getClassName(),
+                implMethod.getParameters(),
+                implMethod.getExceptions(),
+                Collections.singleton(Modifier.PUBLIC)
                 );
-        Trees trees = workingCopy.getTrees();
-        TreePath treePath = trees.getPath(workingCopy.getCompilationUnit(), resultTree);
-        implMethod = (ExecutableElement) trees.getElement(treePath);
     }
     
     public void visit(FinderMethodType fmt) {
-        implMethod = fmt.getMethodElement().resolve(workingCopy);
-        String origName = implMethod.getSimpleName().toString();
+        implMethod = fmt.getMethodElement();
+        String origName = implMethod.getName();
         String newName = prependAndUpper(origName,"ejb"); //NOI18N
-        
-        SourcePositions[] positions = new SourcePositions[1];
-        TreeUtilities treeUtilities = workingCopy.getTreeUtilities();
-        String body = TODO + implMethod.getSimpleName() + getReturnStatement(implMethod.asType());
-        StatementTree bodyTree = treeUtilities.parseStatement(body, positions);
-        
-        TypeElement collectionType = workingCopy.getElements().getTypeElement(java.util.Collection.class.getName());
-        boolean isAssignable = workingCopy.getTypes().isSubtype(implMethod.asType(), collectionType.asType());
-        TypeElement pkType = workingCopy.getElements().getTypeElement(entity.getPrimKeyClass());
-        
-        MethodTree resultTree = AbstractMethodController.modifyMethod(
-                workingCopy, 
-                implMethod, 
-                Collections.singleton(Modifier.PUBLIC), 
+        String body = TODO + implMethod.getName() + implMethod.getReturnType();
+        String collectionType = java.util.Collection.class.getName();
+        String implMethodElement = implMethod.getReturnType();
+        boolean isAssignable = false;
+        try {
+            isAssignable = isSubtype(implMethodElement, collectionType);
+        } catch (IOException e) {
+            ErrorManager.getDefault().notify(e);
+        }
+        implMethod = MethodModelSupport.createMethodModel(
                 newName, 
-                isAssignable ? null : workingCopy.getTrees().getTree(pkType),
-                null, null,
-                workingCopy.getTreeMaker().Block(Collections.singletonList(bodyTree), false)
+                isAssignable ? "void" : entity.getPrimKeyClass(),
+                body,
+                implMethod.getClassName(),
+                implMethod.getParameters(),
+                implMethod.getExceptions(),
+                Collections.singleton(Modifier.PUBLIC)
                 );
-        Trees trees = workingCopy.getTrees();
-        TreePath treePath = trees.getPath(workingCopy.getCompilationUnit(), resultTree);
-        implMethod = (ExecutableElement) trees.getElement(treePath);
+    }
+    
+    private boolean isSubtype(final String className1, final String className2) throws IOException {
+        JavaSource javaSource = JavaSource.forFileObject(ejbClassFO);
+        final boolean[] result = new boolean[] {false};
+        javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+            public void run(CompilationController controller) throws Exception {
+                controller.toPhase(Phase.ELEMENTS_RESOLVED);
+                TypeElement typeElement1 = controller.getElements().getTypeElement(className1);
+                TypeElement typeElement2 = controller.getElements().getTypeElement(className2);
+                result[0] = controller.getTypes().isSubtype(typeElement1.asType(), typeElement2.asType());
+            }
+        }, true);
+        return result[0];
     }
     
     private String prependAndUpper(String fullName, String prefix) {
         StringBuffer stringBuffer = new StringBuffer(fullName);
         stringBuffer.setCharAt(0, Character.toUpperCase(stringBuffer.charAt(0)));
-        return prefix+stringBuffer.toString();
+        return prefix + stringBuffer.toString();
     }
     
-    public static String getReturnStatement(TypeMirror type) {
+    public static String getReturnStatement(String type) {
         String result = "";
-        if (TypeKind.VOID == type.getKind()) {
+        if ("void".equals(type)) {
             
-        } else if (TypeKind.BOOLEAN == type.getKind()){
+        } else if ("boolean".equals(type)) {
             result = "\nreturn false;";
-        } else if (TypeKind.BYTE == type.getKind()){
+        } else if ("byte".equals(type)) {
             result = "\nreturn 0;";
-        } else if (TypeKind.CHAR == type.getKind()){
+        } else if ("char".equals(type)) {
             result ="\nreturn '0';";
-        } else if (TypeKind.DOUBLE == type.getKind()){
+        } else if ("double".equals(type)) {
             result ="\nreturn 0.0;";
-        } else if (TypeKind.FLOAT == type.getKind()){
+        } else if ("float".equals(type)) {
             result ="\nreturn 0;";
-        } else if (TypeKind.INT == type.getKind()){
+        } else if ("int".equals(type)) {
             result ="\nreturn 0;";
-        } else if (TypeKind.LONG == type.getKind()){
+        } else if ("long".equals(type)) {
             result ="\nreturn 0;";
-        } else if (TypeKind.SHORT == type.getKind()){
+        } else if ("short".equals(type)) {
             result ="\nreturn 0;";
         } else{
             result ="\nreturn null;";
         }
         return result;
     }
+
 }

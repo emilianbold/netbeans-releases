@@ -26,6 +26,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ant.AntArtifact;
@@ -144,6 +145,7 @@ public final class EjbViewController {
             final TypeElement[] result = new TypeElement[1];
             javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
                 public void run(CompilationController compilationController) throws Exception {
+                    compilationController.toPhase(Phase.ELEMENTS_RESOLVED);
                     result[0] = compilationController.getElements().getTypeElement(ejb.getEjbClass());
                 }
             }, true);

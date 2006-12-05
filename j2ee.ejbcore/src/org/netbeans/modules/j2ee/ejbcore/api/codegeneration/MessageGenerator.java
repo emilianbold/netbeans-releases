@@ -32,6 +32,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
@@ -183,6 +184,7 @@ public class MessageGenerator {
         JavaSource javaSource = JavaSource.forFileObject(fo);
         javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws Exception {
+                workingCopy.toPhase(Phase.ELEMENTS_RESOLVED);
                 GenerationUtils generationUtils = GenerationUtils.newInstance(workingCopy);
                 TreeMaker treeMaker = workingCopy.getTreeMaker();
                 Trees trees = workingCopy.getTrees();

@@ -19,8 +19,8 @@
 
 package org.netbeans.modules.j2ee.ejbcore.api.methodcontroller;
 
-import javax.lang.model.element.ExecutableElement;
-import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.modules.j2ee.common.method.MethodModel;
+import org.netbeans.modules.j2ee.common.method.MethodModel;
 
 /**
  * Provide simple instance of the visitor pattern to use for code generation.
@@ -30,9 +30,9 @@ public abstract class MethodType {
 
     public enum Kind {BUSINESS, SELECT, CREATE, FINDER, HOME}
     
-    private final ElementHandle<ExecutableElement> methodHandle;
+    private final MethodModel methodHandle;
     
-    public MethodType(ElementHandle<ExecutableElement> methodHandle) {
+    public MethodType(MethodModel methodHandle) {
         this.methodHandle = methodHandle;
     }
     
@@ -40,7 +40,7 @@ public abstract class MethodType {
     
     public abstract Kind getKind();
     
-    public final ElementHandle<ExecutableElement> getMethodElement() {
+    public final MethodModel getMethodElement() {
         return methodHandle;
     }
     
@@ -52,7 +52,7 @@ public abstract class MethodType {
     }
     
     public static class BusinessMethodType extends MethodType {
-        public BusinessMethodType(ElementHandle<ExecutableElement> methodHandle) {
+        public BusinessMethodType(MethodModel methodHandle) {
             super(methodHandle);
         }
         
@@ -66,7 +66,7 @@ public abstract class MethodType {
     }
     
     public static class SelectMethodType extends MethodType {
-        public SelectMethodType(ElementHandle<ExecutableElement> methodHandle) {
+        public SelectMethodType(MethodModel methodHandle) {
             super(methodHandle);
         }
         
@@ -80,7 +80,7 @@ public abstract class MethodType {
     }
     
     public static class CreateMethodType extends MethodType {
-        public CreateMethodType(ElementHandle<ExecutableElement> methodHandle) {
+        public CreateMethodType(MethodModel methodHandle) {
             super(methodHandle);
         }
         
@@ -94,7 +94,7 @@ public abstract class MethodType {
     }
     
     public static class HomeMethodType extends MethodType {
-        public HomeMethodType(ElementHandle<ExecutableElement> methodHandle) {
+        public HomeMethodType(MethodModel methodHandle) {
             super(methodHandle);
         }
         
@@ -108,7 +108,7 @@ public abstract class MethodType {
     }
     
     public static class FinderMethodType extends MethodType {
-        public FinderMethodType(ElementHandle<ExecutableElement> methodHandle) {
+        public FinderMethodType(MethodModel methodHandle) {
             super(methodHandle);
         }
         

@@ -19,13 +19,20 @@
 
 package org.netbeans.modules.j2ee.ejbcore;
 
+import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
+import org.netbeans.modules.j2ee.common.method.MethodModel;
 import java.net.URI;
 import java.util.ArrayList;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
 import org.netbeans.modules.j2ee.common.queries.api.InjectionTargetQuery;
+import org.netbeans.modules.j2ee.common.source.AbstractTask;
+import org.netbeans.modules.j2ee.common.method.MethodModel;
+import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
 import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
@@ -41,13 +48,12 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
-import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -151,43 +157,86 @@ public class Utils {
     
     // utils for ejb code synchronization
     
-    public static boolean canExposeInLocal(WorkingCopy workingCopy, ExecutableElement me) {
-        Set<Modifier> modifiers = me.getModifiers();
-        boolean signatureOk = modifiers.contains(Modifier.PUBLIC) && !modifiers.contains(Modifier.STATIC);
-        if (signatureOk) {
-            Element enclosingElement = me.getEnclosingElement();
-            if (ElementKind.CLASS == enclosingElement.getKind()) {
-                TypeElement clzDef = (TypeElement) enclosingElement;
-                EjbMethodController c = EjbMethodController.createFromClass(workingCopy, clzDef);
-                return c != null && c.hasLocal() && !c.hasMethodInInterface(me, c.getMethodTypeFromImpl(me), true);
+    public static boolean canExposeInLocal(FileObject ejbClassFO, final ElementHandle<ExecutableElement> methodHandle) throws IOException {
+        JavaSource javaSource = JavaSource.forFileObject(ejbClassFO);
+        final String[] ejbClassName = new String[1];
+        final MethodModel[] methodModel = new MethodModel[1];
+        javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws Exception {
+                workingCopy.toPhase(Phase.ELEMENTS_RESOLVED);
+                ExecutableElement me = methodHandle.resolve(workingCopy);
+                Set<Modifier> modifiers = me.getModifiers();
+                boolean signatureOk = modifiers.contains(Modifier.PUBLIC) && !modifiers.contains(Modifier.STATIC);
+                if (signatureOk) {
+                    Element enclosingElement = me.getEnclosingElement();
+                    ejbClassName[0] = ((TypeElement) enclosingElement).getQualifiedName().toString();
+                    methodModel[0] = MethodModelSupport.createMethodModel(workingCopy, me);
+                }
             }
+        });
+        if (methodModel[0] != null) {
+            EjbMethodController c = EjbMethodController.createFromClass(ejbClassFO, ejbClassName[0]);
+            return c != null && c.hasLocal() && !c.hasMethodInInterface(methodModel[0], c.getMethodTypeFromImpl(methodModel[0]), true);
         }
         return false;
     }
     
-    
-    public static void exposeInLocal(WorkingCopy workingCopy, ExecutableElement method) {
-        EjbMethodController c = EjbMethodController.create(workingCopy, method);
-        c.createAndAddInterface(method, true);
+    public static void exposeInLocal(FileObject ejbClassFO, final ElementHandle<ExecutableElement> methodHandle) throws IOException {
+        JavaSource javaSource = JavaSource.forFileObject(ejbClassFO);
+        final String[] ejbClassName = new String[1];
+        final MethodModel[] methodModel = new MethodModel[1];
+        javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws Exception {
+                workingCopy.toPhase(Phase.ELEMENTS_RESOLVED);
+                ExecutableElement method = methodHandle.resolve(workingCopy);
+                Element enclosingElement = method.getEnclosingElement();
+                ejbClassName[0] = ((TypeElement) enclosingElement).getQualifiedName().toString();
+                methodModel[0] = MethodModelSupport.createMethodModel(workingCopy, method);
+            }
+        });
+        EjbMethodController c = EjbMethodController.createFromClass(ejbClassFO, ejbClassName[0]);
+        c.createAndAddInterface(methodModel[0], true);
     }
     
-    public static boolean canExposeInRemote(WorkingCopy workingCopy, ExecutableElement me) {
-        Set<Modifier> modifiers = me.getModifiers();
-        boolean signatureOk = modifiers.contains(Modifier.PUBLIC) && !modifiers.contains(Modifier.STATIC);
-        if (signatureOk) {
-            Element enclosingElement = me.getEnclosingElement();
-            if (ElementKind.CLASS == enclosingElement.getKind()) {
-                TypeElement clzDef = (TypeElement) enclosingElement;
-                EjbMethodController c = EjbMethodController.createFromClass(workingCopy, clzDef);
-                return c != null && c.hasRemote() && !c.hasMethodInInterface(me, c.getMethodTypeFromImpl(me), false);
+    public static boolean canExposeInRemote(FileObject ejbClassFO, final ElementHandle<ExecutableElement> methodHandle) throws IOException {
+        JavaSource javaSource = JavaSource.forFileObject(ejbClassFO);
+        final String[] ejbClassName = new String[1];
+        final MethodModel[] methodModel = new MethodModel[1];
+        javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws Exception {
+                workingCopy.toPhase(Phase.ELEMENTS_RESOLVED);
+                ExecutableElement me = methodHandle.resolve(workingCopy);
+                Set<Modifier> modifiers = me.getModifiers();
+                boolean signatureOk = modifiers.contains(Modifier.PUBLIC) && !modifiers.contains(Modifier.STATIC);
+                if (signatureOk) {
+                    Element enclosingElement = me.getEnclosingElement();
+                    ejbClassName[0] = ((TypeElement) enclosingElement).getQualifiedName().toString();
+                    methodModel[0] = MethodModelSupport.createMethodModel(workingCopy, me);
+                }
             }
+        });
+        if (methodModel[0] != null) {
+            EjbMethodController c = EjbMethodController.createFromClass(ejbClassFO, ejbClassName[0]);
+            return c != null && c.hasRemote() && !c.hasMethodInInterface(methodModel[0], c.getMethodTypeFromImpl(methodModel[0]), true);
         }
         return false;
     }
     
-    public static void exposeInRemote(WorkingCopy workingCopy, ExecutableElement me) {
-        EjbMethodController c = EjbMethodController.create(workingCopy, me);
-        c.createAndAddInterface(me, false);
+    public static void exposeInRemote(FileObject ejbClassFO, final ElementHandle<ExecutableElement> methodHandle) throws IOException {
+        JavaSource javaSource = JavaSource.forFileObject(ejbClassFO);
+        final String[] ejbClassName = new String[1];
+        final MethodModel[] methodModel = new MethodModel[1];
+        javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws Exception {
+                workingCopy.toPhase(Phase.ELEMENTS_RESOLVED);
+                ExecutableElement method = methodHandle.resolve(workingCopy);
+                Element enclosingElement = method.getEnclosingElement();
+                ejbClassName[0] = ((TypeElement) enclosingElement).getQualifiedName().toString();
+                methodModel[0] = MethodModelSupport.createMethodModel(workingCopy, method);
+            }
+        });
+        EjbMethodController c = EjbMethodController.createFromClass(ejbClassFO, ejbClassName[0]);
+        c.createAndAddInterface(methodModel[0], false);
     }
     
     public static void addReference(WorkingCopy workingCopy, TypeElement beanClass, EjbReference ref, String serviceLocator, boolean remote,
@@ -421,28 +470,28 @@ public class Utils {
         return null;
     }
     
-    public static ExecutableElement[] getMethods(EjbMethodController c, boolean checkLocal, boolean checkRemote) {
-        List<ExecutableElement> methods = new ArrayList<ExecutableElement>();
-        List features;
-        for (ExecutableElement method : ElementFilter.methodsIn(c.getBeanClass().getEnclosedElements())) {
-            methods.add(method);
-        }
-        if (checkLocal) {
-            for (TypeElement interfaceCE : c.getLocalInterfaces()) {
-                for (ExecutableElement method : ElementFilter.methodsIn(interfaceCE.getEnclosedElements())) {
-                    methods.add(method);
-                }
-            }
-        }
-        if (checkRemote) {
-            for (TypeElement interfaceCE : c.getRemoteInterfaces()) {
-                for (ExecutableElement method : ElementFilter.methodsIn(interfaceCE.getEnclosedElements())) {
-                    methods.add(method);
-                }
-            }
-        }
-        ExecutableElement[] methodsArray = methods.toArray(new ExecutableElement[methods.size()]);
-        return methodsArray;
-    }
+//    public static ExecutableElement[] getMethods(EjbMethodController c, boolean checkLocal, boolean checkRemote) {
+//        List<ExecutableElement> methods = new ArrayList<ExecutableElement>();
+//        List features;
+//        for (ExecutableElement method : ElementFilter.methodsIn(c.getBeanClass().getEnclosedElements())) {
+//            methods.add(method);
+//        }
+//        if (checkLocal) {
+//            for (TypeElement interfaceCE : c.getLocalInterfaces()) {
+//                for (ExecutableElement method : ElementFilter.methodsIn(interfaceCE.getEnclosedElements())) {
+//                    methods.add(method);
+//                }
+//            }
+//        }
+//        if (checkRemote) {
+//            for (TypeElement interfaceCE : c.getRemoteInterfaces()) {
+//                for (ExecutableElement method : ElementFilter.methodsIn(interfaceCE.getEnclosedElements())) {
+//                    methods.add(method);
+//                }
+//            }
+//        }
+//        ExecutableElement[] methodsArray = methods.toArray(new ExecutableElement[methods.size()]);
+//        return methodsArray;
+//    }
     
 }

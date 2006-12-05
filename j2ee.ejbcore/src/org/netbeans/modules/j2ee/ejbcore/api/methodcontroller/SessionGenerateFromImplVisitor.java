@@ -18,14 +18,12 @@
  */
 package org.netbeans.modules.j2ee.ejbcore.api.methodcontroller;
 
-import com.sun.source.tree.MethodTree;
-import com.sun.source.util.TreePath;
-import com.sun.source.util.Trees;
+import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
+import org.netbeans.modules.j2ee.common.method.MethodModel;
 import java.util.Collections;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeElement;
-import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.j2ee.common.method.MethodModel;
+import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType.BusinessMethodType;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType.CreateMethodType;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType.FinderMethodType;
@@ -36,54 +34,45 @@ import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType.HomeMet
  * @author Chris Webster
  * @author Martin Adamek
  */
-class SessionGenerateFromImplVisitor implements MethodType.MethodTypeVisitor, AbstractMethodController.GenerateFromImpl {
+final class SessionGenerateFromImplVisitor implements MethodType.MethodTypeVisitor, AbstractMethodController.GenerateFromImpl {
 
-    private final WorkingCopy workingCopy;
-    private ExecutableElement intfMethod;
-    private TypeElement destination;
-    private TypeElement home;
-    private TypeElement component;
+    private MethodModel intfMethod;
+    private String destination;
+    private String home;
+    private String component;
 
-    public SessionGenerateFromImplVisitor(WorkingCopy workingCopy) {
-        this.workingCopy = workingCopy;
-    }
-    
-    public void getInterfaceMethodFromImpl(MethodType methodType, TypeElement home, TypeElement component) {
+    public void getInterfaceMethodFromImpl(MethodType methodType, String home, String component) {
         this.home = home;
         this.component = component;
         methodType.accept(this);
     }
     
-    public ExecutableElement getInterfaceMethod() {
+    public MethodModel getInterfaceMethod() {
         return intfMethod;
     }
     
-    public TypeElement getDestinationInterface() {
+    public String getDestinationInterface() {
         return destination;
     }
     
     public void visit(BusinessMethodType bmt) {
-        intfMethod = bmt.getMethodElement().resolve(workingCopy);
+        intfMethod = bmt.getMethodElement();
         destination = component;
     }
        
     public void visit(CreateMethodType cmt) {
-        intfMethod = cmt.getMethodElement().resolve(workingCopy);
-        String origName = intfMethod.getSimpleName().toString();
+        intfMethod = cmt.getMethodElement();
+        String origName = intfMethod.getName();
         String newName = chopAndUpper(origName,"ejb"); //NOI18N
-        
-        MethodTree resultTree = AbstractMethodController.modifyMethod(
-                workingCopy, 
-                intfMethod, 
-                Collections.singleton(Modifier.PUBLIC), 
+        intfMethod = MethodModelSupport.createMethodModel(
                 newName, 
-                workingCopy.getTrees().getTree(home),
-                null, null, null
+                home,
+                intfMethod.getBody(),
+                intfMethod.getClassName(),
+                intfMethod.getParameters(),
+                intfMethod.getExceptions(),
+                Collections.singleton(Modifier.PUBLIC)
                 );
-        Trees trees = workingCopy.getTrees();
-        TreePath treePath = trees.getPath(workingCopy.getCompilationUnit(), resultTree);
-        intfMethod = (ExecutableElement) trees.getElement(treePath);
-        
         destination = home;
     }
     
@@ -101,4 +90,5 @@ class SessionGenerateFromImplVisitor implements MethodType.MethodTypeVisitor, Ab
          buffer.setCharAt(0, Character.toLowerCase(buffer.charAt(0)));
          return buffer.toString();
     }
+    
 }

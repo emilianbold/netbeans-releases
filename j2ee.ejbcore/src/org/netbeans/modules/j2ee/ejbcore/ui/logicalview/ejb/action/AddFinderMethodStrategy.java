@@ -18,25 +18,17 @@
  */
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.util.TreePath;
-import com.sun.source.util.Trees;
+
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeMirror;
-import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.j2ee.common.source.AbstractTask;
-import org.netbeans.modules.j2ee.common.source.SourceUtils;
-import org.netbeans.modules.j2ee.common.ui.nodes.MethodCollectorFactory;
-import org.netbeans.modules.j2ee.common.ui.nodes.MethodCustomizer;
-import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.AbstractMethodController;
+import org.netbeans.modules.j2ee.common.method.MethodCollectorFactory;
+import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
+import org.netbeans.modules.j2ee.common.method.MethodModel;
+import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.MethodsNode;
@@ -55,31 +47,22 @@ public class AddFinderMethodStrategy extends AbstractAddMethodStrategy {
         super (NbBundle.getMessage(AddFinderMethodStrategy.class, "LBL_AddFinderMethodAction"));
     }
     
-    protected MethodType getPrototypeMethod(FileObject fileObject, ElementHandle<TypeElement> classHandle) throws IOException {
+    protected MethodType getPrototypeMethod(FileObject fileObject, String classHandle) throws IOException {
         return getFinderPrototypeMethod(fileObject, classHandle);
     }
 
-    public static MethodType getFinderPrototypeMethod(FileObject fileObject, ElementHandle<TypeElement> classHandle) throws IOException {
+    public static MethodType getFinderPrototypeMethod(FileObject fileObject, String classHandle) throws IOException {
         final MethodType[] result = new MethodType[1];
-        JavaSource javaSource = JavaSource.forFileObject(fileObject);
-        javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
-            public void run(WorkingCopy workingCopy) throws Exception {
-                workingCopy.toPhase(Phase.ELEMENTS_RESOLVED);
-                ExecutableElement method = AbstractMethodController.createMethod(workingCopy, "findBy");
-                TypeElement exceptionElement = workingCopy.getElements().getTypeElement("javax.ejb.FinderException");
-                ExpressionTree throwsClause = workingCopy.getTreeMaker().QualIdent(exceptionElement);
-                MethodTree methodTree = AbstractMethodController.modifyMethod(workingCopy, method, 
-                        null, null, null, null, 
-                        Collections.<ExpressionTree>singletonList(throwsClause),
-                        null);
-                Trees trees = workingCopy.getTrees();
-                TreePath treePath = trees.getPath(workingCopy.getCompilationUnit(), methodTree);
-                ExecutableElement prototypeMethod = (ExecutableElement) trees.getElement(treePath);
-                ElementHandle<ExecutableElement> methodHandle = ElementHandle.create(prototypeMethod);
-                result[0] = new MethodType.FinderMethodType(methodHandle);
-            }
-        });
-        return result[0];
+        MethodModel method = MethodModelSupport.createMethodModel(
+                "findBy",
+                "void",
+                "",
+                null,
+                Collections.<MethodModel.VariableModel>emptyList(),
+                Collections.singletonList("javax.ejb.FinderException"),
+                Collections.<Modifier>emptySet()
+                );
+        return new MethodType.FinderMethodType(method);
     }
 
     protected MethodCustomizer createDialog(FileObject fileObject, final MethodType pType) throws IOException {
@@ -88,20 +71,14 @@ public class AddFinderMethodStrategy extends AbstractAddMethodStrategy {
 
     protected MethodCustomizer createFinderDialog(FileObject fileObject, final MethodType pType) throws IOException{
         final MethodCustomizer[] result = new MethodCustomizer[1];
-        JavaSource javaSource = JavaSource.forFileObject(fileObject);
-        javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
-            public void run(WorkingCopy workingCopy) throws Exception {
-                workingCopy.toPhase(Phase.ELEMENTS_RESOLVED);
-                MethodsNode methodsNode = getMethodsNode();
-                TypeElement clazz = SourceUtils.newInstance(workingCopy).getTypeElement();
-                EjbMethodController ejbMethodController = EjbMethodController.createFromClass(workingCopy, clazz);
-                boolean local = methodsNode == null ? ejbMethodController.hasLocal() : (methodsNode.isLocal() && ejbMethodController.hasLocal());
-                boolean remote = methodsNode == null ? ejbMethodController.hasRemote() : (!methodsNode.isLocal() && ejbMethodController.hasRemote());
-                boolean javaImpl = ejbMethodController.hasJavaImplementation(pType);
-                result[0] = MethodCollectorFactory.finderCollector(
-                        pType.getMethodElement(), ejbMethodController.hasRemote(), ejbMethodController.hasLocal(), !javaImpl, remote, local);
-            }
-        });
+        String className = _RetoucheUtil.getMainClassName(fileObject);
+        EjbMethodController ejbMethodController = EjbMethodController.createFromClass(fileObject, className);
+       MethodsNode methodsNode = getMethodsNode();
+        boolean local = methodsNode == null ? ejbMethodController.hasLocal() : (methodsNode.isLocal() && ejbMethodController.hasLocal());
+        boolean remote = methodsNode == null ? ejbMethodController.hasRemote() : (!methodsNode.isLocal() && ejbMethodController.hasRemote());
+        boolean javaImpl = ejbMethodController.hasJavaImplementation(pType);
+        result[0] = MethodCollectorFactory.finderCollector(
+                pType.getMethodElement(), ejbMethodController.hasRemote(), ejbMethodController.hasLocal(), !javaImpl, remote, local);
         return result[0];
     }
 

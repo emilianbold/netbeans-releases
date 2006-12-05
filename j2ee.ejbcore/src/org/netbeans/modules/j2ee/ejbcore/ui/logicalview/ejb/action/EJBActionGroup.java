@@ -98,21 +98,21 @@ public class EJBActionGroup extends NodeAction implements Presenter.Popup {
         }
         FileObject fileObject = activatedNodes[0].getLookup().lookup(FileObject.class);
         JavaSource javaSource = JavaSource.forFileObject(fileObject);
-        final boolean[] result = new boolean[] {false};
+        final String[] className = new String[1];
         try {
             javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
                 public void run(WorkingCopy workingCopy) throws Exception {
                     workingCopy.toPhase(Phase.ELEMENTS_RESOLVED);
                     //TODO: RETOUCHE get selected class from Node
                     TypeElement typeElement = SourceUtils.newInstance(workingCopy).getTypeElement();
-                    EjbMethodController ejbMethodController = EjbMethodController.createFromClass(workingCopy, typeElement);
-                    result[0] = (ejbMethodController != null);
+                    className[0] = typeElement.getQualifiedName().toString();
                 }
             });
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ex);
         }
-        return result[0];
+        EjbMethodController ejbMethodController = EjbMethodController.createFromClass(fileObject, className[0]);
+        return ejbMethodController != null;
     }
     
     protected void performAction(org.openide.nodes.Node[] activatedNodes) {

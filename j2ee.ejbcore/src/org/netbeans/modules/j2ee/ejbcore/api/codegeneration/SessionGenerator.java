@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -82,6 +83,7 @@ public class SessionGenerator extends EntityAndSessionGenerator {
             JavaSource javaSource = JavaSource.forFileObject(beanClassFO);
             ModificationResult modificationResult = javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
                 public void run(WorkingCopy workingCopy) throws Exception {
+                    workingCopy.toPhase(Phase.ELEMENTS_RESOLVED);
                     GenerationUtils generationUtils = GenerationUtils.newInstance(workingCopy);
                     TypeElement javaClass = generationUtils.getTypeElement();
                     beanClass[0] = javaClass.getQualifiedName().toString();
@@ -132,6 +134,7 @@ public class SessionGenerator extends EntityAndSessionGenerator {
             JavaSource javaSource = JavaSource.forFileObject(beanClassFO);
             javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
                 public void run(WorkingCopy workingCopy) throws Exception {
+                    workingCopy.toPhase(Phase.ELEMENTS_RESOLVED);
                     TypeElement typeElement = workingCopy.getElements().getTypeElement(localBusIfName);
                     addSimpleAnnotationToClass(workingCopy, typeElement, "javax.ejb.Local");
                 }
@@ -142,6 +145,7 @@ public class SessionGenerator extends EntityAndSessionGenerator {
             JavaSource javaSource = JavaSource.forFileObject(beanClassFO);
             javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
                 public void run(WorkingCopy workingCopy) throws Exception {
+                    workingCopy.toPhase(Phase.ELEMENTS_RESOLVED);
                     TypeElement typeElement = workingCopy.getElements().getTypeElement(remoteBusIfName);
                     addSimpleAnnotationToClass(workingCopy, typeElement, "javax.ejb.Remote");
                 }
@@ -239,6 +243,7 @@ public class SessionGenerator extends EntityAndSessionGenerator {
         JavaSource javaSource = JavaSource.forFileObject(beanClassFO);
         ModificationResult modificationResult = javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws Exception {
+                workingCopy.toPhase(Phase.ELEMENTS_RESOLVED);
                 GenerationUtils generationUtils = GenerationUtils.newInstance(workingCopy);
                 TypeElement javaClass = generationUtils.getTypeElement();
                 addSimpleAnnotationToClass(workingCopy, javaClass, annotationTypeName);

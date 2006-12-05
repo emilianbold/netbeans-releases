@@ -18,18 +18,14 @@
  */
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
+import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action._RetoucheUtil;
+import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action._RetoucheUtil;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
-import javax.lang.model.element.TypeElement;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.j2ee.common.source.AbstractTask;
-import org.netbeans.modules.j2ee.common.source.SourceUtils;
+import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action._RetoucheUtil;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType;
 import org.openide.ErrorManager;
@@ -70,22 +66,17 @@ public abstract class AbstractAddMethodAction extends AbstractAction implements 
             return false;
         }
         FileObject fileObject = activatedNodes[0].getLookup().lookup(FileObject.class);
-        JavaSource javaSource = JavaSource.forFileObject(fileObject);
-        final boolean[] result = new boolean[] {false};
-        final MethodType.Kind prototypeMethodType = strategy.getPrototypeMethodKind();
+        MethodType.Kind prototypeMethodType = strategy.getPrototypeMethodKind();
         try {
-            javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
-                public void run(WorkingCopy workingCopy) throws Exception {
-                    //TODO: RETOUCHE get selected class from Node
-                    TypeElement typeElement = SourceUtils.newInstance(workingCopy).getTypeElement();
-                    EjbMethodController ejbMethodController = EjbMethodController.createFromClass(workingCopy, typeElement);
-                    result[0] = (ejbMethodController != null) && ejbMethodController.supportsMethodType(prototypeMethodType);
-                }
-            });
+            String className = _RetoucheUtil.getMainClassName(fileObject);
+            if (className != null) {
+                EjbMethodController ejbMethodController = EjbMethodController.createFromClass(fileObject, className);
+                return (ejbMethodController != null) && ejbMethodController.supportsMethodType(prototypeMethodType);
+            }
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ex);
         }
-        return result[0];
+        return false;
     }
     
     public void actionPerformed(ActionEvent actionEvent) {
@@ -97,25 +88,13 @@ public abstract class AbstractAddMethodAction extends AbstractAction implements 
             return;
         }
         FileObject fileObject = activatedNodes[0].getLookup().lookup(FileObject.class);
-        JavaSource javaSource = JavaSource.forFileObject(fileObject);
-        final ElementHandle<TypeElement>[] classHandle = new ElementHandle[1];
         try {
-            javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
-                public void run(CompilationController compilationController) throws Exception {
-                    //TODO: RETOUCHE get selected class from Node, now main one is taken
-                    TypeElement typeElement = SourceUtils.newInstance(compilationController).getTypeElement();
-                    classHandle[0] = ElementHandle.create(typeElement);
-                }
-            }, true);
+            String className = _RetoucheUtil.getMainClassName(fileObject);
+            if (className != null) {
+                strategy.addMethod(fileObject, className);
+            }
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ex);
-        }
-        if (classHandle[0] != null) {
-            try {
-                strategy.addMethod(fileObject, classHandle[0]);
-            } catch (IOException e) {
-                ErrorManager.getDefault().notify(e);
-            }
         }
     }
 
