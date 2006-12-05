@@ -18,7 +18,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<project name="jspsyntax/test-unit" basedir="." default="all">
+<project name="html/editor/test-unit" basedir="." default="all">
 
     <!-- Imports default qa-functional-compiler and runidetest executor.
     jemmy and jellytools jars are on classpath for both. -->
