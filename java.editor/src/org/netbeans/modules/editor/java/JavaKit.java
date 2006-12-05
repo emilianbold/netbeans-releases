@@ -242,10 +242,63 @@ public class JavaKit extends LexerEditorKit {
         protected void insertString(BaseDocument doc, int dotPos,
                                     Caret caret, String str,
                                     boolean overwrite) throws BadLocationException {
-            super.insertString(doc, dotPos, caret, str, overwrite);
-            BracketCompletion.charInserted(doc, dotPos, caret, str.charAt(0));
+            char insertedChar = str.charAt(0);
+            if (insertedChar == '\"' || insertedChar == '\''){
+                boolean inserted = BracketCompletion.completeQuote(doc, dotPos, caret, insertedChar);
+                if (inserted){
+                    caret.setDot(dotPos+1);
+                }else{
+                    super.insertString(doc, dotPos, caret, str, overwrite);
+                    
+                }
+            } else {
+                super.insertString(doc, dotPos, caret, str, overwrite);
+                BracketCompletion.charInserted(doc, dotPos, caret, insertedChar);
+            }
         }
-
+        
+        protected void replaceSelection(JTextComponent target,
+                int dotPos,
+                Caret caret,
+                String str,
+                boolean overwrite)
+                throws BadLocationException {
+            char insertedChar = str.charAt(0);
+            Document doc = target.getDocument();
+            if (insertedChar == '\"' || insertedChar == '\''){
+                if (doc != null) {
+                    try {
+                        boolean inserted = false;
+                        int p0 = Math.min(caret.getDot(), caret.getMark());
+                        int p1 = Math.max(caret.getDot(), caret.getMark());
+                        if (p0 != p1) {
+                            doc.remove(p0, p1 - p0);
+                        }
+                        int caretPosition = caret.getDot();
+                        if (doc instanceof BaseDocument){
+                            inserted = BracketCompletion.completeQuote(
+                                    (BaseDocument)doc,
+                                    caretPosition,
+                                    caret, insertedChar);
+                        }
+                        if (inserted){
+                            caret.setDot(caretPosition+1);
+                        } else {
+                            if (str != null && str.length() > 0) {
+                                doc.insertString(p0, str, null);
+                            }
+                        }
+                    } catch (BadLocationException e) {
+                        e.printStackTrace();
+                    }
+                }
+            } else {
+                super.replaceSelection(target, dotPos, caret, str, overwrite);
+                if (doc instanceof BaseDocument){
+                    BracketCompletion.charInserted((BaseDocument)doc, caret.getDot()-1, caret, insertedChar);
+                }
+            }
+        }
     }
 
 
