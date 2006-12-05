@@ -131,10 +131,12 @@ public enum ELTokenId implements TokenId {
     }
     
     private static final Language<ELTokenId> language = new LanguageHierarchy<ELTokenId>() {
+        @Override
         protected Collection<ELTokenId> createTokenIds() {
             return EnumSet.allOf(ELTokenId.class);
         }
         
+        @Override
         protected Map<String,Collection<ELTokenId>> createTokenCategories() {
             Map<String,Collection<ELTokenId>> cats = new HashMap<String,Collection<ELTokenId>>();
             
@@ -149,17 +151,19 @@ public enum ELTokenId implements TokenId {
             return cats;
         }
         
-        public Lexer<ELTokenId> createLexer(LexerRestartInfo<ELTokenId> info) {
+        @Override
+        protected Lexer<ELTokenId> createLexer(LexerRestartInfo<ELTokenId> info) {
             return new ELLexer(info);
         }
         
-        public LanguageEmbedding embedding(
-                Token<ELTokenId> token, boolean tokenComplete,
-                LanguagePath languagePath, InputAttributes inputAttributes) {
+        @Override
+        public LanguageEmbedding<? extends TokenId> embedding(
+        Token<ELTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
             return null; // No embedding
         }
         
-        public String mimeType() {
+        @Override
+        protected String mimeType() {
             return "text/x-el"; //???
         }
     }.language();

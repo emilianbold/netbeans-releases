@@ -80,10 +80,12 @@ public enum XMLTokenId implements TokenId {
     }
 
     private static final Language<XMLTokenId> language = new LanguageHierarchy<XMLTokenId>() {
+        @Override
         protected Collection<XMLTokenId> createTokenIds() {
             return EnumSet.allOf(XMLTokenId.class);
         }
         
+        @Override
         protected Map<String,Collection<XMLTokenId>> createTokenCategories() {
             Map<String,Collection<XMLTokenId>> cats = new HashMap<String,Collection<XMLTokenId>>();
             
@@ -95,16 +97,18 @@ public enum XMLTokenId implements TokenId {
             return cats;
         }
         
+        @Override
         public Lexer<XMLTokenId> createLexer(LexerRestartInfo<XMLTokenId> info) {
             return new XMLLexer(info);
         }
         
-        public LanguageEmbedding embedding(
-        Token<XMLTokenId> token, boolean tokenComplete,
-        LanguagePath languagePath, InputAttributes inputAttributes) {
+        @Override
+        public LanguageEmbedding<? extends TokenId> embedding(
+        Token<XMLTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
             return null; // No embedding
         }
         
+        @Override
         public String mimeType() {
             return "text/xml";
         }
