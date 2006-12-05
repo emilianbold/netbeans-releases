@@ -13,12 +13,14 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
+import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.languages.LibrarySupport;
 import org.netbeans.modules.languages.fold.DatabaseManager;
 import org.netbeans.modules.languages.parser.ASTNode;
@@ -31,6 +33,8 @@ import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
+import org.openide.util.Lookup;
+import org.openide.windows.TopComponent;
 
 /**
  *
@@ -177,6 +181,57 @@ public class JavaScript {
         return completionDescriptions;
     }
     
+    
+    public static void performDeleteCurrentMethod (ASTNode node) {
+        Lookup lookup = TopComponent.getRegistry().getActivated().getLookup();
+        EditorCookie ec = (EditorCookie) lookup.lookup(EditorCookie.class);
+        NbEditorDocument doc = (NbEditorDocument)ec.getDocument();
+        JEditorPane[] panes = ec.getOpenedPanes();
+        if (panes == null || panes.length == 0) {
+            return;
+        }
+        int position = panes[0].getCaretPosition();
+        PTPath path = node.findPath(position);
+        ASTNode methodNode = null;
+        for (Iterator iter = path.iterator(); iter.hasNext(); ) {
+            Object obj = iter.next();
+            if (!(obj instanceof ASTNode))
+                break;
+            ASTNode n = (ASTNode) obj;
+            if ("FunctionDeclaration".equals(n.getNT())) { // NOI18N
+                methodNode = n;
+            } // if
+        } // for
+        if (methodNode != null) {
+            try {
+                doc.remove(methodNode.getOffset(), methodNode.getLength());
+            } catch (BadLocationException e) {
+                ErrorManager.getDefault().notify(e);
+            }
+        }
+    }
+     
+    public static boolean enabledDeleteCurrentMethod (ASTNode node) {
+        Lookup lookup = TopComponent.getRegistry().getActivated().getLookup();
+        EditorCookie ec = (EditorCookie) lookup.lookup(EditorCookie.class);
+        NbEditorDocument doc = (NbEditorDocument)ec.getDocument();
+        JEditorPane[] panes = ec.getOpenedPanes();
+        if (panes == null || panes.length == 0) {
+            return false;
+        }
+        int position = panes[0].getCaretPosition();
+        PTPath path = node.findPath(position);
+        for (Iterator iter = path.iterator(); iter.hasNext(); ) {
+            Object obj = iter.next();
+            if (!(obj instanceof ASTNode))
+                return false;
+            ASTNode n = (ASTNode) obj;
+            if ("FunctionDeclaration".equals(n.getNT())) { // NOI18N
+                return true;
+            } // if
+        } // for
+        return false;
+    }
     
     // helper methods ..........................................................
     

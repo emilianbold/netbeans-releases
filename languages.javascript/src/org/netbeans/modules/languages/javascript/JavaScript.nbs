@@ -371,3 +371,11 @@ PROPERTIES {
     projectsViewIcon:"org/netbeans/modules/languages/javascript/JavaScript.jpg";
 }
 
+########### actions ############################################################
+
+ACTION:delete_method {
+    name:"Delete Current Method";
+    performer:org.netbeans.modules.languages.javascript.JavaScript.performDeleteCurrentMethod;
+    enabled:org.netbeans.modules.languages.javascript.JavaScript.enabledDeleteCurrentMethod;
+    explorer:"false";
+}
