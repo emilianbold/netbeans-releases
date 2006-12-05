@@ -39,7 +39,6 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Utilities;
-import org.openide.util.actions.SystemAction;
 
 /** Node representing an Element
  *
@@ -137,18 +136,18 @@ public class ElementNode extends AbstractNode {
         if ( ch instanceof ElementChilren ) {           
            HashSet<Description> oldSubs = new HashSet<Description>( description.subs );
 
-           // Now refresh keys
-           ((ElementChilren)ch).resetKeys(newDescription.subs, newDescription.ui.getFilters());
-
            
            // Create a hashtable which maps Description to node.
            // We will then identify the nodes by the description. The trick is 
            // that the new and old description are equal and have the same hashcode
-           Node[] nodes = ch.getNodes();           
+           Node[] nodes = ch.getNodes( true );           
            HashMap<Description,ElementNode> oldD2node = new HashMap<Description,ElementNode>();           
            for (Node node : nodes) {
                oldD2node.put(((ElementNode)node).description, (ElementNode)node);
            }
+           
+           // Now refresh keys
+           ((ElementChilren)ch).resetKeys(newDescription.subs, newDescription.ui.getFilters());
 
            
            // Reread nodes
@@ -188,7 +187,7 @@ public class ElementNode extends AbstractNode {
         }
         
         protected Node[] createNodes(Description key) {
-            return new Node[] {new  ElementNode((Description) key)};
+            return new Node[] {new  ElementNode(key)};
         }
         
         void resetKeys( List<Description> descriptions, ClassMemberFilters filters ) {            
