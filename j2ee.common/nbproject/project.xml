@@ -283,7 +283,7 @@ Microsystems, Inc. All Rights Reserved.
                 <!-- Commented out due to issue 89883
                 <friend>org.netbeans.modules.j2ee.ejbjarproject</friend>
                 -->
-		<friend>org.netbeans.modules.j2ee.persistence</friend>
+                <friend>org.netbeans.modules.j2ee.persistence</friend>
                 <!-- Commented out due to issue 89883
                 <friend>org.netbeans.modules.j2ee.refactoring</friend>
                 <friend>org.netbeans.modules.j2ee.verification</friend>
