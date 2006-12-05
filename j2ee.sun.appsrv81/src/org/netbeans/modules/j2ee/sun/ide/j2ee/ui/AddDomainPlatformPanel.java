@@ -196,6 +196,11 @@ class AddDomainPlatformPanel implements WizardDescriptor.FinishablePanel,
                         wiz.putProperty(AddDomainWizardIterator.PASSWORD, password);
                         wiz.putProperty(AddDomainWizardIterator.USER_NAME,username);
                     }
+                } else {
+                    wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,
+                            NbBundle.getMessage(AddDomainPlatformPanel.class,
+                            "Msg_NoDefaultDomainsAvailable"));                      //NOI18N
+                    retVal = false;
                 }
             } else if (selectedType == AddDomainWizardIterator.REMOTE) {
                 wiz.putProperty(AddDomainWizardIterator.TYPE, selectedType);
