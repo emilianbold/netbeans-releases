@@ -47,8 +47,6 @@ public class InitJobTest extends NbTestCase {
     Thread edThread;
     /** test component */
     SimpleInitComp comp;
-    /** parent, main frame */
-    private Frame frame;
     
     /** Creates a new instance of UtilProgressCursorTest */
     public InitJobTest(String testName) {
@@ -64,30 +62,24 @@ public class InitJobTest extends NbTestCase {
      * impl conforms to the API behaviour described in javadoc *
      */
     public void testInitJob() throws Exception {
-        System.out.println("Testing simple init job run");
         initializeSimple();
         comp = new SimpleInitComp();
         Utilities.attachInitJob(comp, comp);
-        frame = new Frame();
-        frame.setSize(100, 100);
-        frame.setVisible(true);
-        dlg = new Dialog(frame, true);
-        dlg.setSize(50, 50);
+        Frame f = new Frame();
+        f.setVisible(true);
+        dlg = new Dialog(f, true);
         dlg.add(comp);
         dlg.setVisible(true);
     }
     
     public void testCancelAbility() throws Exception {
-        System.out.println("Testing cancel ability of async init job");
         initializeSimple();
         initCancelResults();
         CancelInitComp comp = new CancelInitComp();
         Utilities.attachInitJob(comp, comp);
-        frame = new Frame();
-        frame.setSize(100, 100);
-        frame.setVisible(true);
-        dlg = new Dialog(frame, true);
-        dlg.setSize(50, 50);
+        Frame f = new Frame();
+        f.setVisible(true);
+        dlg = new Dialog(f, true);
         dlg.add(comp);
         dlg.setVisible(true);
     }
@@ -185,7 +177,6 @@ public class InitJobTest extends NbTestCase {
         }
     }
     
-    /** Disposer of windows */
     private final class TimerListener implements ActionListener {
         /** true for cancel test, false otherwise */
         private boolean cancel;
@@ -194,7 +185,6 @@ public class InitJobTest extends NbTestCase {
         }
         public void actionPerformed(ActionEvent e) {
             dlg.dispose();
-            frame.dispose();
             if (cancel) {
                 checkCancelResults();
             } else {
