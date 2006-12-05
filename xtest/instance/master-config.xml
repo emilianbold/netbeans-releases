@@ -50,8 +50,6 @@ Microsystems, Inc. All Rights Reserved.
         <module name="ant/freeform" testtypes="unit" attributes="stable"/>
         <module name="ant/grammar" testtypes="unit" attributes="stable"/>
         <module name="ant/project" testtypes="unit" attributes="stable"/>
-        <!-- Temp removed, cannot run on test4u, needs to be fixed -->
-        <!-- <module name="apisupport/project" testtypes="unit"  attributes="stable"/> -->
         <module name="java/api" testtypes="unit" attributes="stable"/>
         <module name="java/freeform" testtypes="unit" attributes="stable"/>
         <module name="java/j2seplatform" testtypes="unit" attributes="stable"/>
@@ -124,6 +122,9 @@ Microsystems, Inc. All Rights Reserved.
         
         <module name="ide/launcher/upgrade" testtypes="unit" attributes="stable" />
         <module name="apisupport/project" testtypes ="unit" attributes="stable"/>
+        <module name="apisupport/samples/feedreder-sample-ui" testtypes ="unit" attributes="stable"/>
+        <module name="apisupport/samples/PaintApp-sample-ui" testtypes ="unit" attributes="stable"/>
+        <module name="apisupport/harness" testtypes ="unit" attributes="stable"/>
         <!-- does not run: core/multiview -->
         <!-- other candidate modules in current default moduleconfig (except J2EE team): debuggercore debuggerjpda editor editor/fold editor/util mdr refactoring tasklist tasklist/core tasklist/docscan tasklist/suggestions tasklist/usertasks -->
     </config>
