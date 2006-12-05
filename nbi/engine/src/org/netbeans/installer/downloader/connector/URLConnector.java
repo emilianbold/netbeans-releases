@@ -168,6 +168,10 @@ public class URLConnector {
     proxySelector.addByPassHost(host);
   }
   
+  public void clearByPassList() {
+    proxySelector.clearByPassList();
+  }
+  
   public String[] getByPassHosts() {
     return proxySelector.getByPass();
   }

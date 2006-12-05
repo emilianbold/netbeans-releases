@@ -63,6 +63,10 @@ public class MyProxySelector extends ProxySelector implements DomExternalizable 
     byPassSet.add(host);
   }
   
+  public void clearByPassList() {
+    byPassSet.clear();
+  }
+  
   public String[] getByPass() {
     return byPassSet.toArray(new String[0]);
   }
