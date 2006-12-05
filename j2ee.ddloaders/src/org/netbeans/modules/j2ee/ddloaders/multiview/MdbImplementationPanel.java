@@ -21,12 +21,9 @@ package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.netbeans.modules.j2ee.dd.api.ejb.MessageDriven;
 import org.netbeans.modules.j2ee.ddloaders.multiview.ui.MdbImplementationForm;
-import org.netbeans.modules.j2ee.common.JMIUtils;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 import org.netbeans.modules.xml.multiview.ui.LinkButton;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.jmi.javamodel.JavaClass;
 import org.openide.filesystems.FileObject;
 
 import javax.swing.*;
@@ -60,13 +57,13 @@ public class MdbImplementationPanel extends MdbImplementationForm {
         JButton moveClassButton = getMoveClassButton();
         moveClassButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                Utils.activateMoveClassUI(messageDriven.getEjbClass());
+//                Utils.activateMoveClassUI(messageDriven.getEjbClass());
             }
         });
         JButton renameClassButton = getRenameClassButton();
         renameClassButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                Utils.activateRenameClassUI(messageDriven.getEjbClass());
+//                Utils.activateRenameClassUI(messageDriven.getEjbClass());
             }
         });
         LinkButton.initLinkButton(getBeanClassLinkButton(), this, null, LINK_BEAN);
@@ -83,9 +80,9 @@ public class MdbImplementationPanel extends MdbImplementationForm {
     public void linkButtonPressed(Object ddBean, String ddProperty) {
         if(ddProperty == LINK_BEAN) {
             final FileObject ejbJarFile = dataObject.getPrimaryFile();
-            final ClassPath sourceClassPath = Utils.getSourceClassPath(ejbJarFile);
-            JavaClass beanClass = (JavaClass) JMIUtils.resolveType(messageDriven.getEjbClass());
-            Utils.openEditorFor(ejbJarFile, beanClass);
+//            final ClassPath sourceClassPath = Utils.getSourceClassPath(ejbJarFile);
+//            JavaClass beanClass = (JavaClass) JMIUtils.resolveType(messageDriven.getEjbClass());
+//            Utils.openEditorFor(ejbJarFile, beanClass);
         }
     }
 }

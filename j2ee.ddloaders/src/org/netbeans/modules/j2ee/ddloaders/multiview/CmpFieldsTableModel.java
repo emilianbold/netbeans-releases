@@ -83,16 +83,16 @@ public class CmpFieldsTableModel extends InnerTableModel {
         switch (columnIndex) {
             case 0:
                 return helper.getFieldName();
-            case 1:
-                return helper.getTypeString();
-            case 2:
-                return new Boolean(helper.hasLocalGetter());
-            case 3:
-                return new Boolean(helper.hasLocalSetter());
-            case 4:
-                return new Boolean(helper.hasRemoteGetter());
-            case 5:
-                return new Boolean(helper.hasRemoteSetter());
+//            case 1:
+//                return helper.getTypeString();
+//            case 2:
+//                return new Boolean(helper.hasLocalGetter());
+//            case 3:
+//                return new Boolean(helper.hasLocalSetter());
+//            case 4:
+//                return new Boolean(helper.hasRemoteGetter());
+//            case 5:
+//                return new Boolean(helper.hasRemoteSetter());
             case 6:
                 return helper.getDefaultDescription();
         }
@@ -105,9 +105,9 @@ public class CmpFieldsTableModel extends InnerTableModel {
             case 0:
                 helper.setFieldName((String) value);
                 break;
-            case 1:
-                helper.setType((String) value);
-                break;
+//            case 1:
+//                helper.setType((String) value);
+//                break;
             case 2:
                 helper.setLocalGetter(((Boolean) value).booleanValue());
                 break;

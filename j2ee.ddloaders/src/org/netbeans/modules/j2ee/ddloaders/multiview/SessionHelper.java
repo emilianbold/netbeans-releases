@@ -30,7 +30,7 @@ public class SessionHelper extends EntityAndSessionHelper {
 
     public SessionHelper(EjbJarMultiViewDataObject ejbJarMultiViewDataObject, Session session) {
         super(ejbJarMultiViewDataObject, session);
-        abstractMethodController = new SessionMethodController(session, sourceClassPath);
+//        abstractMethodController = new SessionMethodController(session, sourceClassPath);
     }
 
     protected EntityAndSessionGenerator getGenerator() {

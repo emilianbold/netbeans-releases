@@ -18,32 +18,25 @@
  */
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.MultipartId;
-import org.netbeans.jmi.javamodel.Type;
-import org.netbeans.jmi.javamodel.Method;
-import org.netbeans.jmi.javamodel.Parameter;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.ddloaders.multiview.ui.BrowseFolders;
-import org.netbeans.modules.j2ee.common.JMIUtils;
 import org.netbeans.modules.j2ee.spi.ejbjar.support.J2eeProjectView;
-import org.netbeans.modules.java.JavaDataObject;
-import org.netbeans.modules.java.ui.nodes.SourceNodes;
-import org.netbeans.modules.javacore.api.JavaModel;
-import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
-import org.netbeans.spi.java.classpath.ClassPathFactory;
-import org.netbeans.spi.java.classpath.ClassPathImplementation;
-import org.netbeans.spi.java.classpath.PathResourceImplementation;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+//import org.netbeans.modules.java.JavaDataObject;
+//import org.netbeans.modules.java.ui.nodes.SourceNodes;
+//import org.netbeans.modules.javacore.api.JavaModel;
+//import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
+//import org.netbeans.spi.java.classpath.ClassPathFactory;
+//import org.netbeans.spi.java.classpath.ClassPathImplementation;
+//import org.netbeans.spi.java.classpath.PathResourceImplementation;
+//import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.OpenCookie;
@@ -68,6 +61,7 @@ import java.rmi.RemoteException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Iterator;
+import org.netbeans.api.java.classpath.ClassPath;
 
 /**
  * @author pfiala
@@ -178,13 +172,13 @@ public class Utils {
     public static void removeClass(ClassPath classPath, String className) {
         FileObject sourceFile = getSourceFile(classPath, className);
         if (sourceFile != null) {
-            try {
-                JavaDataObject.find(sourceFile).delete();
-            } catch (DataObjectNotFoundException e) {
-                notifyError(e);
-            } catch (IOException e) {
-                notifyError(e);
-            }
+//            try {
+////                JavaDataObject.find(sourceFile).delete();
+//            } catch (DataObjectNotFoundException e) {
+//                notifyError(e);
+//            } catch (IOException e) {
+//                notifyError(e);
+//            }
         }
     }
 
@@ -215,126 +209,126 @@ public class Utils {
         return classPath.findResource(packageToPath(className) + ".java");
     }
 
-    public static Node createEntityNode(FileObject ejbJarFile, ClassPath classPath, Entity entity) {
-        //todo:
-        //classPath = getSourceClassPath(ejbJarFile);
-        EjbJar ejbJar;
-        try {
-            ejbJar = DDProvider.getDefault().getDDRoot(ejbJarFile);
-        } catch (IOException e) {
-            notifyError(e);
-            return null;
-        }
-        return J2eeProjectView.getEjbNodesFactory().createEntityNode (entity, ejbJar, classPath, ejbJarFile);
-    }
+//    public static Node createEntityNode(FileObject ejbJarFile, ClassPath classPath, Entity entity) {
+//        //todo:
+//        //classPath = getSourceClassPath(ejbJarFile);
+//        EjbJar ejbJar;
+//        try {
+//            ejbJar = DDProvider.getDefault().getDDRoot(ejbJarFile);
+//        } catch (IOException e) {
+//            notifyError(e);
+//            return null;
+//        }
+//        return J2eeProjectView.getEjbNodesFactory().createEntityNode (entity, ejbJar, classPath, ejbJarFile);
+//    }
 
-    public static ClassPath getSourceClassPath(FileObject ejbJarFile) {
-        Sources sources = ProjectUtils.getSources(FileOwnerQuery.getOwner(ejbJarFile));
-        SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        ClassPath srcClassPath = ClassPathFactory.createClassPath(new ClassPathImpl(groups));
-        ClassPath bootClassPath = ClassPath.getClassPath(ejbJarFile, ClassPath.BOOT);
-        return ClassPathSupport.createProxyClassPath(new ClassPath[]{srcClassPath, bootClassPath});
-    }
+//    public static ClassPath getSourceClassPath(FileObject ejbJarFile) {
+//        Sources sources = ProjectUtils.getSources(FileOwnerQuery.getOwner(ejbJarFile));
+//        SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+//        ClassPath srcClassPath = ClassPathFactory.createClassPath(new ClassPathImpl(groups));
+//        ClassPath bootClassPath = ClassPath.getClassPath(ejbJarFile, ClassPath.BOOT);
+//        return ClassPathSupport.createProxyClassPath(new ClassPath[]{srcClassPath, bootClassPath});
+//    }
 
-    public static Method getMethod(JavaClass javaClass, Method method) {
-        if (javaClass == null || method == null) {
-            return null;
-        } else {
-            List parameters = new LinkedList();
-            for (Iterator it = method.getParameters().iterator(); it.hasNext();) {
-                parameters.add(((Parameter) it.next()).getType());
-            }
-            return javaClass.getMethod(method.getName(), parameters, false);
-        }
-    }
+//    public static Method getMethod(JavaClass javaClass, Method method) {
+//        if (javaClass == null || method == null) {
+//            return null;
+//        } else {
+//            List parameters = new LinkedList();
+//            for (Iterator it = method.getParameters().iterator(); it.hasNext();) {
+//                parameters.add(((Parameter) it.next()).getType());
+//            }
+//            return javaClass.getMethod(method.getName(), parameters, false);
+//        }
+//    }
 
-    public static void addMethod(JavaClass javaClass, Method prototype) {
-        addMethod(javaClass, prototype, false);
-    }
+//    public static void addMethod(JavaClass javaClass, Method prototype) {
+//        addMethod(javaClass, prototype, false);
+//    }
 
-    public static void addMethod(JavaClass javaClass, Method prototype, boolean remote) {
-        if (prototype != null) {
-            addMethod(javaClass, prototype, remote, prototype.getModifiers());
-        }
-    }
-
-    public static void addMethod(JavaClass interfaceClass, Method prototype, boolean remote, int modifiers) {
-        if (interfaceClass == null || prototype == null) {
-            return;
-        }
-        if (getMethod(interfaceClass, prototype) != null) {
-            return;
-        }
-        beginJmiTransaction(true);
-        boolean rollback = true;
-        try {
-            Method method = JMIUtils.createMethod(interfaceClass);
-            method.setName(prototype.getName());
-            Type type = prototype.getType();
-            if (type != null) {
-                method.setType(JMIUtils.resolveType(type.getName()));
-            }
-            JMIUtils.replaceParameters(method, prototype.getParameters());
-            method.setModifiers(modifiers);
-            if (remote) {
-                JMIUtils.addException(method, RemoteException.class.getName());
-            }
-            for (Iterator it = prototype.getExceptionNames().iterator(); it.hasNext();) {
-                MultipartId mpId= (MultipartId) it.next();
-                String exceptionName = mpId.getName();
-                if (!"RemoteException".equals(exceptionName) && !"java.rmi.RemoteException".equals(exceptionName)) {
-                    JMIUtils.addException(method, exceptionName);
-                }
-            }
-            getContents(interfaceClass).add(method);
-            rollback = false;
-        } finally {
-            endJmiTransaction(rollback);
-        }
-    }
-
-    public static List getContents(JavaClass javaClass) {
-        return ((JavaClass) JMIUtils.resolveType(javaClass.getName())).getContents();
-    }
-
-    public static void removeMethod(JavaClass javaClass, Method method) {
-        if (javaClass == null || method == null) {
-            return;
-        }
-        beginJmiTransaction(true);
-        boolean rollback = true;
-        try {
-            getContents(javaClass).remove(getMethod(javaClass, method));
-            rollback = false;
-        } finally {
-            endJmiTransaction(rollback);
-        }
-    }
-
-    private static Lookup createClassRefactoringLookup(String fullClassName) {
-        Node node = SourceNodes.getExplorerFactory().createClassNode((JavaClass) JMIUtils.resolveType(fullClassName));
-        InstanceContent ic = new InstanceContent();
-        ic.add(node);
-        return new AbstractLookup(ic);
-    }
-
-    public static void activateRenameClassUI(String fullClassName) {
-        Lookup lookup = createClassRefactoringLookup(fullClassName);
-        final Action action = RefactoringActionsFactory.renameAction().createContextAwareInstance(lookup);
-        action.actionPerformed(RefactoringActionsFactory.DEFAULT_EVENT);
-    }
-
-    public static void activateMoveClassUI(String fullClassName) {
-        Lookup lookup = createClassRefactoringLookup(fullClassName);
-        final Action action = RefactoringActionsFactory.moveClassAction().createContextAwareInstance(lookup);
-        action.actionPerformed(RefactoringActionsFactory.DEFAULT_EVENT);
-    }
-
-    public static void renameMethod(Method method, String name) {
-        if (method != null) {
-            method.setName(name);
-        }
-    }
+//    public static void addMethod(JavaClass javaClass, Method prototype, boolean remote) {
+//        if (prototype != null) {
+//            addMethod(javaClass, prototype, remote, prototype.getModifiers());
+//        }
+//    }
+//
+//    public static void addMethod(JavaClass interfaceClass, Method prototype, boolean remote, int modifiers) {
+//        if (interfaceClass == null || prototype == null) {
+//            return;
+//        }
+//        if (getMethod(interfaceClass, prototype) != null) {
+//            return;
+//        }
+//        beginJmiTransaction(true);
+//        boolean rollback = true;
+//        try {
+//            Method method = JMIUtils.createMethod(interfaceClass);
+//            method.setName(prototype.getName());
+//            Type type = prototype.getType();
+//            if (type != null) {
+//                method.setType(JMIUtils.resolveType(type.getName()));
+//            }
+//            JMIUtils.replaceParameters(method, prototype.getParameters());
+//            method.setModifiers(modifiers);
+//            if (remote) {
+//                JMIUtils.addException(method, RemoteException.class.getName());
+//            }
+//            for (Iterator it = prototype.getExceptionNames().iterator(); it.hasNext();) {
+//                MultipartId mpId= (MultipartId) it.next();
+//                String exceptionName = mpId.getName();
+//                if (!"RemoteException".equals(exceptionName) && !"java.rmi.RemoteException".equals(exceptionName)) {
+//                    JMIUtils.addException(method, exceptionName);
+//                }
+//            }
+//            getContents(interfaceClass).add(method);
+//            rollback = false;
+//        } finally {
+//            endJmiTransaction(rollback);
+//        }
+//    }
+//
+//    public static List getContents(JavaClass javaClass) {
+//        return ((JavaClass) JMIUtils.resolveType(javaClass.getName())).getContents();
+//    }
+//
+//    public static void removeMethod(JavaClass javaClass, Method method) {
+//        if (javaClass == null || method == null) {
+//            return;
+//        }
+//        beginJmiTransaction(true);
+//        boolean rollback = true;
+//        try {
+//            getContents(javaClass).remove(getMethod(javaClass, method));
+//            rollback = false;
+//        } finally {
+//            endJmiTransaction(rollback);
+//        }
+//    }
+//
+//    private static Lookup createClassRefactoringLookup(String fullClassName) {
+//        Node node = SourceNodes.getExplorerFactory().createClassNode((JavaClass) JMIUtils.resolveType(fullClassName));
+//        InstanceContent ic = new InstanceContent();
+//        ic.add(node);
+//        return new AbstractLookup(ic);
+//    }
+//
+//    public static void activateRenameClassUI(String fullClassName) {
+//        Lookup lookup = createClassRefactoringLookup(fullClassName);
+//        final Action action = RefactoringActionsFactory.renameAction().createContextAwareInstance(lookup);
+//        action.actionPerformed(RefactoringActionsFactory.DEFAULT_EVENT);
+//    }
+//
+//    public static void activateMoveClassUI(String fullClassName) {
+//        Lookup lookup = createClassRefactoringLookup(fullClassName);
+//        final Action action = RefactoringActionsFactory.moveClassAction().createContextAwareInstance(lookup);
+//        action.actionPerformed(RefactoringActionsFactory.DEFAULT_EVENT);
+//    }
+//
+//    public static void renameMethod(Method method, String name) {
+//        if (method != null) {
+//            method.setName(name);
+//        }
+//    }
 
     public static String getEjbDisplayName(Ejb ejb) {
         String name = ejb.getDefaultDisplayName();
@@ -347,31 +341,31 @@ public class Utils {
         return name;
     }
 
-    /**
-     * Opens source of given class
-     * @param ejbJarFile
-     * @param javaClass
-     */
-    public static void openEditorFor(FileObject ejbJarFile, JavaClass javaClass) {
-        if (javaClass == null) {
-            return;
-        }
-        FileObject sourceFile = getSourceFile(getSourceClassPath(ejbJarFile), javaClass.getName());
-        if (sourceFile != null) {
-            DataObject javaDo;
-            try {
-                javaDo = DataObject.find(sourceFile);
-            } catch (DataObjectNotFoundException e) {
-                DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(getBundleMessage("MSG_sourceNotFound")));
-                return;
-            }
-            OpenCookie cookie = (OpenCookie) javaDo.getCookie(OpenCookie.class);
-            if (cookie != null) {
-                cookie.open();
-            }
-        }
-    }
+//    /**
+//     * Opens source of given class
+//     * @param ejbJarFile
+//     * @param javaClass
+//     */
+//    public static void openEditorFor(FileObject ejbJarFile, JavaClass javaClass) {
+//        if (javaClass == null) {
+//            return;
+//        }
+//        FileObject sourceFile = getSourceFile(getSourceClassPath(ejbJarFile), javaClass.getName());
+//        if (sourceFile != null) {
+//            DataObject javaDo;
+//            try {
+//                javaDo = DataObject.find(sourceFile);
+//            } catch (DataObjectNotFoundException e) {
+//                DialogDisplayer.getDefault().notify(
+//                        new NotifyDescriptor.Message(getBundleMessage("MSG_sourceNotFound")));
+//                return;
+//            }
+//            OpenCookie cookie = (OpenCookie) javaDo.getCookie(OpenCookie.class);
+//            if (cookie != null) {
+//                cookie.open();
+//            }
+//        }
+//    }
 
     /**
      * Make sure that the code will run in AWT dispatch thread
@@ -381,67 +375,67 @@ public class Utils {
         org.netbeans.modules.xml.multiview.Utils.runInAwtDispatchThread(runnable);
     }
 
-    public static void changeParameterType(final Method method, Type type) {
-        if (method != null) {
-            Parameter parameter = (Parameter) method.getParameters().get(0);
-            parameter.setType(type);
-        }
-    }
+//    public static void changeParameterType(final Method method, Type type) {
+//        if (method != null) {
+//            Parameter parameter = (Parameter) method.getParameters().get(0);
+//            parameter.setType(type);
+//        }
+//    }
+//
+//    public static void beginJmiTransaction(boolean writeAccess) {
+//        JavaModel.getJavaRepository().beginTrans(writeAccess);
+//    }
+//
+//    public static void endJmiTransaction(boolean rollback) {
+//        JavaModel.getJavaRepository().endTrans(rollback);
+//    }
 
-    public static void beginJmiTransaction(boolean writeAccess) {
-        JavaModel.getJavaRepository().beginTrans(writeAccess);
-    }
-
-    public static void endJmiTransaction(boolean rollback) {
-        JavaModel.getJavaRepository().endTrans(rollback);
-    }
-
-    private static class ClassPathImpl implements ClassPathImplementation {
-
-        private List resources = new LinkedList();
-
-        private class PathResourceImpl implements PathResourceImplementation {
-
-            URL[] roots;
-
-            public PathResourceImpl(URL root) {
-                this.roots = new URL[]{root};
-            }
-
-            public URL[] getRoots() {
-                return roots;
-            }
-
-            public ClassPathImplementation getContent() {
-                return ClassPathImpl.this;
-            }
-
-            public void addPropertyChangeListener(PropertyChangeListener listener) {
-            }
-
-            public void removePropertyChangeListener(PropertyChangeListener listener) {
-            }
-        }
-
-        public ClassPathImpl(SourceGroup[] groups) {
-            for (int i = 0; i < groups.length; i++) {
-                SourceGroup group = groups[i];
-                try {
-                    resources.add(new PathResourceImpl(group.getRootFolder().getURL()));
-                } catch (FileStateInvalidException e) {
-                    notifyError(e);
-                }
-            }
-        }
-
-        public java.util.List /*<PathResourceImplementation>*/ getResources() {
-            return resources;
-        }
-
-        public void addPropertyChangeListener(PropertyChangeListener listener) {
-        }
-
-        public void removePropertyChangeListener(PropertyChangeListener listener) {
-        }
-    }
+//    private static class ClassPathImpl implements ClassPathImplementation {
+//
+//        private List resources = new LinkedList();
+//
+//        private class PathResourceImpl implements PathResourceImplementation {
+//
+//            URL[] roots;
+//
+//            public PathResourceImpl(URL root) {
+//                this.roots = new URL[]{root};
+//            }
+//
+//            public URL[] getRoots() {
+//                return roots;
+//            }
+//
+//            public ClassPathImplementation getContent() {
+//                return ClassPathImpl.this;
+//            }
+//
+//            public void addPropertyChangeListener(PropertyChangeListener listener) {
+//            }
+//
+//            public void removePropertyChangeListener(PropertyChangeListener listener) {
+//            }
+//        }
+//
+//        public ClassPathImpl(SourceGroup[] groups) {
+//            for (int i = 0; i < groups.length; i++) {
+//                SourceGroup group = groups[i];
+//                try {
+//                    resources.add(new PathResourceImpl(group.getRootFolder().getURL()));
+//                } catch (FileStateInvalidException e) {
+//                    notifyError(e);
+//                }
+//            }
+//        }
+//
+//        public java.util.List /*<PathResourceImplementation>*/ getResources() {
+//            return resources;
+//        }
+//
+//        public void addPropertyChangeListener(PropertyChangeListener listener) {
+//        }
+//
+//        public void removePropertyChangeListener(PropertyChangeListener listener) {
+//        }
+//    }
 }

@@ -23,11 +23,9 @@ import org.netbeans.modules.j2ee.ejbcore.api.ui.CallEjb;
 import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
 import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
-import org.netbeans.modules.j2ee.common.JMIUtils;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
 import org.netbeans.modules.xml.multiview.ui.ConfirmDialog;
 import org.openide.util.NbBundle;
-import org.netbeans.jmi.javamodel.JavaClass;
 
 /**
  * @author pfiala
@@ -58,10 +56,10 @@ public class EjbReferencesTableModel extends InnerTableModel {
     }
     
     public int addRow() {
-        JavaClass beanClass = (JavaClass) JMIUtils.resolveType(ejb.getEjbClass());
-        if (CallEjb.showCallEjbDialog(beanClass, NbBundle.getMessage(EjbReferencesTableModel.class, "LBL_AddEjbReference"))) { // NOI18N
-            modelUpdatedFromUI();
-        }
+//        JavaClass beanClass = (JavaClass) JMIUtils.resolveType(ejb.getEjbClass());
+//        if (CallEjb.showCallEjbDialog(beanClass, NbBundle.getMessage(EjbReferencesTableModel.class, "LBL_AddEjbReference"))) { // NOI18N
+//            modelUpdatedFromUI();
+//        }
         return -1;
     }
     

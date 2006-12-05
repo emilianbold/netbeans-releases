@@ -19,31 +19,17 @@
 
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
-import java.lang.reflect.Modifier;
-import java.rmi.RemoteException;
 import java.util.ArrayList;
-import javax.jmi.reflect.JmiException;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.jmi.javamodel.ClassMember;
-import org.netbeans.jmi.javamodel.Import;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.Method;
-import org.netbeans.jmi.javamodel.Resource;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
-import org.netbeans.modules.j2ee.ejbcore.api.codegeneration.EjbGenerationUtil;
 import org.netbeans.modules.j2ee.ejbcore.api.codegeneration.EntityAndSessionGenerator;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.AbstractMethodController;
-import org.netbeans.modules.j2ee.common.JMIUtils;
-import org.netbeans.modules.javacore.api.JavaModel;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -58,7 +44,7 @@ public abstract class EntityAndSessionHelper implements PropertyChangeListener, 
     protected final EjbJarMultiViewDataObject ejbJarMultiViewDataObject;
     protected final FileObject ejbJarFile;
     
-    protected ClassPath sourceClassPath;
+//    protected ClassPath sourceClassPath;
     
     private List listeners = new LinkedList();
     public AbstractMethodController abstractMethodController;
@@ -67,49 +53,49 @@ public abstract class EntityAndSessionHelper implements PropertyChangeListener, 
         this.ejb = ejb;
         this.ejbJarMultiViewDataObject = ejbJarMultiViewDataObject;
         this.ejbJarFile = ejbJarMultiViewDataObject.getPrimaryFile();
-        sourceClassPath = Utils.getSourceClassPath(ejbJarFile);
+//        sourceClassPath = Utils.getSourceClassPath(ejbJarFile);
         ejbJarMultiViewDataObject.getEjbJar().addPropertyChangeListener(this);
     }
     
-    public JavaClass getLocalBusinessInterfaceClass() {
-        return abstractMethodController.getBeanInterface(true, true);
-    }
+//    public JavaClass getLocalBusinessInterfaceClass() {
+//        return abstractMethodController.getBeanInterface(true, true);
+//    }
     
-    public JavaClass getRemoteBusinessInterfaceClass() {
-        return abstractMethodController.getBeanInterface(false, true);
-    }
+//    public JavaClass getRemoteBusinessInterfaceClass() {
+//        return abstractMethodController.getBeanInterface(false, true);
+//    }
     
     public void removeInterfaces(boolean local) {
-        JMIUtils.beginJmiTransaction(true);
-        boolean rollback = true;
-        try {
-            if (local) {
-                Utils.removeClass(sourceClassPath, ejb.getLocalHome());
-                removeBeanInterface(ejb.getLocal());
-                JavaClass businessInterfaceClass = getLocalBusinessInterfaceClass();
-                if (businessInterfaceClass != null) {
-                    removeBeanInterface(businessInterfaceClass.getName());
-                }
-            } else {
-                Utils.removeClass(sourceClassPath, ejb.getHome());
-                removeBeanInterface(ejb.getRemote());
-                JavaClass businessInterfaceClass = getRemoteBusinessInterfaceClass();
-                if (businessInterfaceClass != null) {
-                    removeBeanInterface(businessInterfaceClass.getName());
-                }
-            }
-            rollback = false;
-        } finally {
-            JMIUtils.endJmiTransaction(rollback);
-        }
-        if (local) {
-            ejb.setLocal(null);
-            ejb.setLocalHome(null);
-        } else {
-            ejb.setRemote(null);
-            ejb.setHome(null);
-        }
-        modelUpdatedFromUI();
+//        JMIUtils.beginJmiTransaction(true);
+//        boolean rollback = true;
+//        try {
+//            if (local) {
+//                Utils.removeClass(sourceClassPath, ejb.getLocalHome());
+//                removeBeanInterface(ejb.getLocal());
+//                JavaClass businessInterfaceClass = getLocalBusinessInterfaceClass();
+//                if (businessInterfaceClass != null) {
+//                    removeBeanInterface(businessInterfaceClass.getName());
+//                }
+//            } else {
+//                Utils.removeClass(sourceClassPath, ejb.getHome());
+//                removeBeanInterface(ejb.getRemote());
+//                JavaClass businessInterfaceClass = getRemoteBusinessInterfaceClass();
+//                if (businessInterfaceClass != null) {
+//                    removeBeanInterface(businessInterfaceClass.getName());
+//                }
+//            }
+//            rollback = false;
+//        } finally {
+//            JMIUtils.endJmiTransaction(rollback);
+//        }
+//        if (local) {
+//            ejb.setLocal(null);
+//            ejb.setLocalHome(null);
+//        } else {
+//            ejb.setRemote(null);
+//            ejb.setHome(null);
+//        }
+//        modelUpdatedFromUI();
     }
     
     public void modelUpdatedFromUI() {
@@ -117,8 +103,8 @@ public abstract class EntityAndSessionHelper implements PropertyChangeListener, 
     }
     
     private void removeBeanInterface(String name) {
-        JMIUtils.removeInterface(getBeanClass(), name);
-        Utils.removeClass(sourceClassPath, name);
+//        JMIUtils.removeInterface(getBeanClass(), name);
+//        Utils.removeClass(sourceClassPath, name);
     }
     
     public String getEjbClass() {
@@ -141,77 +127,77 @@ public abstract class EntityAndSessionHelper implements PropertyChangeListener, 
         return ejb.getHome();
     }
     
-    public String getBusinessInterfaceName(boolean local) {
-        JavaClass beanInterface = abstractMethodController.getBeanInterface(local, true);
-        if (beanInterface == null) {
-            return null;
-        }
-        String name = beanInterface.getName();
-        String componentInterfaceName = local ? ejb.getLocal() : ejb.getRemote();
-        if (componentInterfaceName == null || componentInterfaceName.equals(name)) {
-            return null;
-        } else {
-            return name;
-        }
-    }
+//    public String getBusinessInterfaceName(boolean local) {
+//        JavaClass beanInterface = abstractMethodController.getBeanInterface(local, true);
+//        if (beanInterface == null) {
+//            return null;
+//        }
+//        String name = beanInterface.getName();
+//        String componentInterfaceName = local ? ejb.getLocal() : ejb.getRemote();
+//        if (componentInterfaceName == null || componentInterfaceName.equals(name)) {
+//            return null;
+//        } else {
+//            return name;
+//        }
+//    }
     
     public void addInterfaces(boolean local) {
         EntityAndSessionGenerator generator = getGenerator();
         String packageName = Utils.getPackage(ejb.getEjbClass());
-        FileObject packageFile = Utils.getPackageFile(sourceClassPath, packageName);
-        String ejbName = ejb.getEjbName();
-        try {
-            JMIUtils.beginJmiTransaction(true);
-            boolean rollback = true;
-            String componentInterfaceName;
-            String homeInterfaceName;
-            String oppositeComponentInterfaceName;
-            String oppositeHomeInterfaceName;
-            try {
-                if (local) {
-                    componentInterfaceName = EjbGenerationUtil.getLocalName(packageName, ejbName);
-                    homeInterfaceName = EjbGenerationUtil.getLocalHomeName(packageName, ejbName);
-                    oppositeComponentInterfaceName = ejb.getRemote();
-                    oppositeHomeInterfaceName = ejb.getHome();
-                    componentInterfaceName = generator.generateLocal(packageName, packageFile, componentInterfaceName, ejbName);
-                    if (oppositeComponentInterfaceName != null && oppositeHomeInterfaceName != null) {
-                        generateHomeInterface(oppositeHomeInterfaceName, homeInterfaceName, oppositeComponentInterfaceName, componentInterfaceName,  false, packageFile);
-                    } else {
-                        homeInterfaceName = generator.generateLocalHome(packageName, packageFile, homeInterfaceName, componentInterfaceName, ejbName);
-                        String businessInterfaceName = EjbGenerationUtil.getLocalBusinessInterfaceName(packageName, ejbName);
-                        generator.generateBusinessInterfaces(packageName, packageFile, businessInterfaceName, ejbName, ejb.getEjbClass(), componentInterfaceName);
-                    }
-                } else {
-                    componentInterfaceName = EjbGenerationUtil.getRemoteName(packageName, ejbName);
-                    homeInterfaceName = EjbGenerationUtil.getHomeName(packageName, ejbName);
-                    oppositeComponentInterfaceName = ejb.getLocal();
-                    oppositeHomeInterfaceName = ejb.getLocalHome();
-                    componentInterfaceName = generator.generateRemote(packageName, packageFile, componentInterfaceName, ejbName);
-                    if (oppositeComponentInterfaceName != null && oppositeHomeInterfaceName != null) {
-                        generateHomeInterface(oppositeHomeInterfaceName, homeInterfaceName, oppositeComponentInterfaceName, componentInterfaceName, true, packageFile);
-                    } else {
-                        homeInterfaceName = generator.generateHome(packageName, packageFile, homeInterfaceName, componentInterfaceName, ejbName);
-                        String businessInterfaceName = EjbGenerationUtil.getBusinessInterfaceName(packageName, ejbName);
-                        generator.generateBusinessInterfaces(packageName, packageFile, businessInterfaceName, ejbName, ejb.getEjbClass(), componentInterfaceName);
-                    }
-                }
-                if (local) {
-                    ejb.setLocal(componentInterfaceName);
-                    ejb.setLocalHome(homeInterfaceName);
-                } else {
-                    ejb.setRemote(componentInterfaceName);
-                    ejb.setHome(homeInterfaceName);
-                }
-                rollback = false;
-            } catch (JmiException jmie) {
-                ErrorManager.getDefault().notify(jmie);
-            } finally {
-                JMIUtils.endJmiTransaction(rollback);
-            }
-            modelUpdatedFromUI();
-        } catch (IOException e) {
-            Utils.notifyError(e);
-        }
+//        FileObject packageFile = Utils.getPackageFile(sourceClassPath, packageName);
+//        String ejbName = ejb.getEjbName();
+//        try {
+//            JMIUtils.beginJmiTransaction(true);
+//            boolean rollback = true;
+//            String componentInterfaceName;
+//            String homeInterfaceName;
+//            String oppositeComponentInterfaceName;
+//            String oppositeHomeInterfaceName;
+//            try {
+//                if (local) {
+//                    componentInterfaceName = EjbGenerationUtil.getLocalName(packageName, ejbName);
+//                    homeInterfaceName = EjbGenerationUtil.getLocalHomeName(packageName, ejbName);
+//                    oppositeComponentInterfaceName = ejb.getRemote();
+//                    oppositeHomeInterfaceName = ejb.getHome();
+//                    componentInterfaceName = generator.generateLocal(packageName, packageFile, componentInterfaceName, ejbName);
+//                    if (oppositeComponentInterfaceName != null && oppositeHomeInterfaceName != null) {
+//                        generateHomeInterface(oppositeHomeInterfaceName, homeInterfaceName, oppositeComponentInterfaceName, componentInterfaceName,  false, packageFile);
+//                    } else {
+//                        homeInterfaceName = generator.generateLocalHome(packageName, packageFile, homeInterfaceName, componentInterfaceName, ejbName);
+//                        String businessInterfaceName = EjbGenerationUtil.getLocalBusinessInterfaceName(packageName, ejbName);
+//                        generator.generateBusinessInterfaces(packageName, packageFile, businessInterfaceName, ejbName, ejb.getEjbClass(), componentInterfaceName);
+//                    }
+//                } else {
+//                    componentInterfaceName = EjbGenerationUtil.getRemoteName(packageName, ejbName);
+//                    homeInterfaceName = EjbGenerationUtil.getHomeName(packageName, ejbName);
+//                    oppositeComponentInterfaceName = ejb.getLocal();
+//                    oppositeHomeInterfaceName = ejb.getLocalHome();
+//                    componentInterfaceName = generator.generateRemote(packageName, packageFile, componentInterfaceName, ejbName);
+//                    if (oppositeComponentInterfaceName != null && oppositeHomeInterfaceName != null) {
+//                        generateHomeInterface(oppositeHomeInterfaceName, homeInterfaceName, oppositeComponentInterfaceName, componentInterfaceName, true, packageFile);
+//                    } else {
+//                        homeInterfaceName = generator.generateHome(packageName, packageFile, homeInterfaceName, componentInterfaceName, ejbName);
+//                        String businessInterfaceName = EjbGenerationUtil.getBusinessInterfaceName(packageName, ejbName);
+//                        generator.generateBusinessInterfaces(packageName, packageFile, businessInterfaceName, ejbName, ejb.getEjbClass(), componentInterfaceName);
+//                    }
+//                }
+//                if (local) {
+//                    ejb.setLocal(componentInterfaceName);
+//                    ejb.setLocalHome(homeInterfaceName);
+//                } else {
+//                    ejb.setRemote(componentInterfaceName);
+//                    ejb.setHome(homeInterfaceName);
+//                }
+//                rollback = false;
+//            } catch (JmiException jmie) {
+//                ErrorManager.getDefault().notify(jmie);
+//            } finally {
+//                JMIUtils.endJmiTransaction(rollback);
+//            }
+//            modelUpdatedFromUI();
+//        } catch (IOException e) {
+//            Utils.notifyError(e);
+//        }
     }
     
     /**
@@ -228,52 +214,52 @@ public abstract class EntityAndSessionHelper implements PropertyChangeListener, 
      */
     private static void generateHomeInterface(String oldHome, String newHome, String oldBusiness, String newBusiness, boolean remote, FileObject foForClasspath) throws IOException {
         boolean rollback = true;
-        try {
-            JMIUtils.beginJmiTransaction(true);
-            JavaClass oldIfClass = JMIUtils.findClass(oldHome, foForClasspath);
-            if (oldIfClass != null) {
-                FileObject oldIfFO = JavaModel.getFileObject(oldIfClass.getResource());
-                if (oldIfFO != null) {
-                    JavaClass newIfClass = JMIUtils.createClass(oldIfClass, newHome);
-                    newIfClass.setModifiers(Modifier.PUBLIC | Modifier.INTERFACE);
-                    FileObject newIfFo = oldIfFO.getParent().createData(newIfClass.getSimpleName(), oldIfFO.getExt());
-                    Resource resource = JavaModel.getResource(newIfFo);
-                    resource.setPackageName(oldIfClass.getResource().getPackageName());
-                    resource.getClassifiers().add(newIfClass);
-                    for (Iterator it = oldIfClass.getResource().getImports().iterator(); it.hasNext();) {
-                        Import imp = (Import) it.next();
-                        resource.addImport((Import) imp.duplicate());
-                    }
-                    // add EJBHome or EJBLocalHome as supertype
-                    if (remote) {
-                        newIfClass.getInterfaceNames().add(JMIUtils.createMultipartId(newIfClass, "javax.ejb.EJBHome"));
-                        newIfClass.setJavadocText("This is the remote home interface for " + newIfClass.getSimpleName() + " enterprise bean");
-                    } else {
-                        newIfClass.getInterfaceNames().add(JMIUtils.createMultipartId(newIfClass, "javax.ejb.EJBLocalHome"));
-                        newIfClass.setJavadocText("This is the local home interface for " + newIfClass.getSimpleName() + " enterprise bean");
-                    }
-                    for (Iterator it = getImportantHomeMethods(oldIfClass).iterator(); it.hasNext();) {
-                        Method originalMethod = (Method) it.next();
-                        Method method = JMIUtils.duplicate(originalMethod);
-                        method.setModifiers(0);
-                        if (oldBusiness != null && newBusiness != null) {
-                            if (method.getType().getName().indexOf(oldBusiness.substring(oldBusiness.lastIndexOf(".") + 1)) != -1) {
-                                method.setTypeName(JMIUtils.createMultipartId(method, newBusiness));
-                            }
-                        }
-                        if (remote) {
-                            JMIUtils.addException(method, RemoteException.class.getName());
-                        }
-                        newIfClass.getContents().add(method);
-                    }
-                }
-            }
-            rollback = false;
-        } catch (JmiException jmie) {
-            ErrorManager.getDefault().notify(jmie);
-        } finally {
-            JMIUtils.endJmiTransaction(rollback);
-        }
+//        try {
+//            JMIUtils.beginJmiTransaction(true);
+//            JavaClass oldIfClass = JMIUtils.findClass(oldHome, foForClasspath);
+//            if (oldIfClass != null) {
+//                FileObject oldIfFO = JavaModel.getFileObject(oldIfClass.getResource());
+//                if (oldIfFO != null) {
+//                    JavaClass newIfClass = JMIUtils.createClass(oldIfClass, newHome);
+//                    newIfClass.setModifiers(Modifier.PUBLIC | Modifier.INTERFACE);
+//                    FileObject newIfFo = oldIfFO.getParent().createData(newIfClass.getSimpleName(), oldIfFO.getExt());
+//                    Resource resource = JavaModel.getResource(newIfFo);
+//                    resource.setPackageName(oldIfClass.getResource().getPackageName());
+//                    resource.getClassifiers().add(newIfClass);
+//                    for (Iterator it = oldIfClass.getResource().getImports().iterator(); it.hasNext();) {
+//                        Import imp = (Import) it.next();
+//                        resource.addImport((Import) imp.duplicate());
+//                    }
+//                    // add EJBHome or EJBLocalHome as supertype
+//                    if (remote) {
+//                        newIfClass.getInterfaceNames().add(JMIUtils.createMultipartId(newIfClass, "javax.ejb.EJBHome"));
+//                        newIfClass.setJavadocText("This is the remote home interface for " + newIfClass.getSimpleName() + " enterprise bean");
+//                    } else {
+//                        newIfClass.getInterfaceNames().add(JMIUtils.createMultipartId(newIfClass, "javax.ejb.EJBLocalHome"));
+//                        newIfClass.setJavadocText("This is the local home interface for " + newIfClass.getSimpleName() + " enterprise bean");
+//                    }
+//                    for (Iterator it = getImportantHomeMethods(oldIfClass).iterator(); it.hasNext();) {
+//                        Method originalMethod = (Method) it.next();
+//                        Method method = JMIUtils.duplicate(originalMethod);
+//                        method.setModifiers(0);
+//                        if (oldBusiness != null && newBusiness != null) {
+//                            if (method.getType().getName().indexOf(oldBusiness.substring(oldBusiness.lastIndexOf(".") + 1)) != -1) {
+//                                method.setTypeName(JMIUtils.createMultipartId(method, newBusiness));
+//                            }
+//                        }
+//                        if (remote) {
+//                            JMIUtils.addException(method, RemoteException.class.getName());
+//                        }
+//                        newIfClass.getContents().add(method);
+//                    }
+//                }
+//            }
+//            rollback = false;
+//        } catch (JmiException jmie) {
+//            ErrorManager.getDefault().notify(jmie);
+//        } finally {
+//            JMIUtils.endJmiTransaction(rollback);
+//        }
     }
     
     /**
@@ -282,35 +268,36 @@ public abstract class EntityAndSessionHelper implements PropertyChangeListener, 
      * @param homeInterface
      * @return collection of method or empty collection if no methods found
      */
-    private static Collection getImportantHomeMethods(JavaClass homeInterface) {
-        Collection result = new ArrayList();
-        for (Iterator it = homeInterface.getContents().iterator(); it.hasNext();) {
-            ClassMember classMember = (ClassMember) ((ClassMember) it.next()).duplicate();
-            if (classMember instanceof Method && Modifier.isInterface(homeInterface.getModifiers())) {
-                Method method = (Method) classMember;
-                if (method.getName().startsWith("create") || method.getName().equals("findByPrimaryKey")) {
-                    if (!result.contains(method)){
-                        result.add(method);
-                    }
-                }
-            }
-        }
-        return result;
-    }
+//        private static Collection getImportantHomeMethods(JavaClass homeInterface) {
+//            Collection result = new ArrayList();
+//        for (Iterator it = homeInterface.getContents().iterator(); it.hasNext();) {
+//            ClassMember classMember = (ClassMember) ((ClassMember) it.next()).duplicate();
+//            if (classMember instanceof Method && Modifier.isInterface(homeInterface.getModifiers())) {
+//                Method method = (Method) classMember;
+//                if (method.getName().startsWith("create") || method.getName().equals("findByPrimaryKey")) {
+//                    if (!result.contains(method)){
+//                        result.add(method);
+//                    }
+//                }
+//            }
+//        }
+//        return result;
+//    }
     
     protected abstract EntityAndSessionGenerator getGenerator();
     
-    public JavaClass getLocalHomeInterfaceClass() {
-        return abstractMethodController.getBeanInterface(true, false);
-        
-    }
+//    public JavaClass getLocalHomeInterfaceClass() {
+//        return abstractMethodController.getBeanInterface(true, false);
+//        
+//    }
     
-    public JavaClass getHomeInterfaceClass() {
-        return abstractMethodController.getBeanInterface(false, false);
-    }
+//    public JavaClass getHomeInterfaceClass() {
+//        return abstractMethodController.getBeanInterface(false, false);
+//    }
     
     protected Node createEntityNode() {
-        return Utils.createEntityNode(ejbJarFile, sourceClassPath, (Entity) ejb);
+//        return Utils.createEntityNode(ejbJarFile, sourceClassPath, (Entity) ejb);
+        return null;
     }
     
     public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -330,7 +317,7 @@ public abstract class EntityAndSessionHelper implements PropertyChangeListener, 
     public void propertyChange(PropertyChangeEvent evt) {
     }
     
-    public JavaClass getBeanClass() {
-        return abstractMethodController.getBeanClass();
-    }
+//    public JavaClass getBeanClass() {
+//        return abstractMethodController.getBeanClass();
+//    }
 }

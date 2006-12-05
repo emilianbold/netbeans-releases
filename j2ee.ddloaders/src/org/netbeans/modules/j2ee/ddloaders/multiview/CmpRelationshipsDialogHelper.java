@@ -25,11 +25,7 @@ import org.netbeans.modules.j2ee.dd.api.ejb.EjbRelation;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.dd.api.ejb.Relationships;
 import org.netbeans.modules.j2ee.ddloaders.multiview.ui.CmpRelationshipsForm;
-import org.netbeans.modules.j2ee.common.JMIUtils;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EntityMethodController;
-import org.netbeans.jmi.javamodel.Method;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.Type;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 
@@ -75,8 +71,8 @@ public class CmpRelationshipsDialogHelper {
         private String origFieldName;
         private String origFieldType;
         private EntityHelper origEntityHelper;
-        protected Method origGetterMethod;
-        protected Method origSetterMethod;
+//        protected Method origGetterMethod;
+//        protected Method origSetterMethod;
         protected boolean origGetter;
         protected boolean origSetter;
 
@@ -127,17 +123,17 @@ public class CmpRelationshipsDialogHelper {
             boolean setterChanged = origSetter != setter || fieldChanged;
             if (ejbNameChanged || fieldChanged || getterChanged || setterChanged) {
                 if (origEntityHelper != null) {
-                    if (getterChanged) {
-                        Utils.removeMethod(origEntityHelper.getLocalBusinessInterfaceClass(), origGetterMethod);
-                    }
-                    if (setterChanged) {
-                        Utils.removeMethod(origEntityHelper.getLocalBusinessInterfaceClass(), origSetterMethod);
-                    }
-                    if (fieldChanged) {
-                        JavaClass beanClass = origEntityHelper.getBeanClass();
-                        Utils.removeMethod(beanClass, origGetterMethod);
-                        Utils.removeMethod(beanClass, origSetterMethod);
-                    }
+//                    if (getterChanged) {
+//                        Utils.removeMethod(origEntityHelper.getLocalBusinessInterfaceClass(), origGetterMethod);
+//                    }
+//                    if (setterChanged) {
+//                        Utils.removeMethod(origEntityHelper.getLocalBusinessInterfaceClass(), origSetterMethod);
+//                    }
+//                    if (fieldChanged) {
+//                        JavaClass beanClass = origEntityHelper.getBeanClass();
+//                        Utils.removeMethod(beanClass, origGetterMethod);
+//                        Utils.removeMethod(beanClass, origSetterMethod);
+//                    }
                 }
                 if (fieldName != null) {
                     EntityHelper entityHelper;
@@ -149,29 +145,29 @@ public class CmpRelationshipsDialogHelper {
                     }
                     if (entityHelper != null) {
                         EntityMethodController entityMethodController = entityHelper.getEntityMethodController();
-                        entityMethodController.beginWriteJmiTransaction();
-                        boolean rollback = true;
-                        try {
-                            String typeName = fieldType == null ? getEntity(opositeEjbName).getLocal() : fieldType;
-                            Type type = JMIUtils.resolveType(typeName);
-                            Method getterMethod = entityHelper.getGetterMethod(fieldName);
-                            if (getterMethod == null) {
-                                getterMethod = entityHelper.createAccessMethod(fieldName, type, true);
-                            }
-                            Method setterMethod = entityHelper.getSetterMethod(fieldName, getterMethod);
-                            if (setterMethod == null) {
-                                setterMethod = entityHelper.createAccessMethod(fieldName, type, false);
-                            }
-                            if (getter && getterChanged) {
-                                entityMethodController.addMethod(getterMethod, true, true);
-                            }
-                            if (setter && setterChanged) {
-                                entityMethodController.addMethod(setterMethod, true, true);
-                            }
-                            rollback = false;
-                        } finally {
-                            entityMethodController.endWriteJmiTransaction(rollback);
-                        }
+//                        entityMethodController.beginWriteJmiTransaction();
+//                        boolean rollback = true;
+//                        try {
+//                            String typeName = fieldType == null ? getEntity(opositeEjbName).getLocal() : fieldType;
+//                            Type type = JMIUtils.resolveType(typeName);
+//                            Method getterMethod = entityHelper.getGetterMethod(fieldName);
+//                            if (getterMethod == null) {
+//                                getterMethod = entityHelper.createAccessMethod(fieldName, type, true);
+//                            }
+//                            Method setterMethod = entityHelper.getSetterMethod(fieldName, getterMethod);
+//                            if (setterMethod == null) {
+//                                setterMethod = entityHelper.createAccessMethod(fieldName, type, false);
+//                            }
+//                            if (getter && getterChanged) {
+//                                entityMethodController.addMethod(getterMethod, true, true);
+//                            }
+//                            if (setter && setterChanged) {
+//                                entityMethodController.addMethod(setterMethod, true, true);
+//                            }
+//                            rollback = false;
+//                        } finally {
+//                            entityMethodController.endWriteJmiTransaction(rollback);
+//                        }
                     }
                 }
             }
@@ -261,11 +257,11 @@ public class CmpRelationshipsDialogHelper {
                 origFieldName = field.getCmrFieldName();
                 origFieldType = field.getCmrFieldType();
                 if (origEntityHelper != null) {
-                    origGetterMethod = origEntityHelper.getGetterMethod(origFieldName);
-                    origSetterMethod = origEntityHelper.getSetterMethod(origFieldName, origGetterMethod);
-                    JavaClass localBusinessInterfaceClass = origEntityHelper.getLocalBusinessInterfaceClass();
-                    origGetter = Utils.getMethod(localBusinessInterfaceClass, origGetterMethod) != null;
-                    origSetter = Utils.getMethod(localBusinessInterfaceClass, origSetterMethod) != null;
+////                    origGetterMethod = origEntityHelper.getGetterMethod(origFieldName);
+////                    origSetterMethod = origEntityHelper.getSetterMethod(origFieldName, origGetterMethod);
+////                    JavaClass localBusinessInterfaceClass = origEntityHelper.getLocalBusinessInterfaceClass();
+//                    origGetter = Utils.getMethod(localBusinessInterfaceClass, origGetterMethod) != null;
+//                    origSetter = Utils.getMethod(localBusinessInterfaceClass, origSetterMethod) != null;
                     lastGetter = origGetter;
                     lastSetter = origSetter;
                     setLocalGetter(origGetter);
@@ -506,17 +502,17 @@ public class CmpRelationshipsDialogHelper {
 
         private final JLabel errorLabel;
         private final DialogDescriptor dialogDescriptor;
-        protected JMIUtils.ClassPathScanHelper classPathScanHelper;
+//        protected JMIUtils.ClassPathScanHelper classPathScanHelper;
 
         public DialogListener(JLabel errorLabel, DialogDescriptor dialogDescriptor) {
             this.errorLabel = errorLabel;
             this.dialogDescriptor = dialogDescriptor;
-            classPathScanHelper = new JMIUtils.ClassPathScanHelper() {
-                public void scanFinished() {
-                    validateFields();
-                }
-            };
-        }
+//                classPathScanHelper = new JMIUtils.ClassPathScanHelper() {
+//                    public void scanFinished() {
+//                        validateFields();
+//                    }
+//                };
+            }
 
         public void changedUpdate(DocumentEvent e) {
             validateFields();
@@ -544,7 +540,7 @@ public class CmpRelationshipsDialogHelper {
 
             final String roleNameA = roleA.getRoleName();
             final String roleNameB = roleB.getRoleName();
-            if (classPathScanHelper.isScanInProgress()) {
+            if (false /*classPathScanHelper.isScanInProgress()*/) {
                 errorLabel.setText(Utils.getBundleMessage("LBL_ScanningInProgress"));
             } else if (roleNameA != null && roleNameA.equals(roleNameB)) {
                 errorLabel.setText(Utils.getBundleMessage("MSG_SameRoleNames"));

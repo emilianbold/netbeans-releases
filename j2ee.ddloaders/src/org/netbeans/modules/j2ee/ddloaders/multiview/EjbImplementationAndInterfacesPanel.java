@@ -25,7 +25,6 @@ import org.netbeans.modules.xml.multiview.ItemCheckBoxHelper;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;
 import org.netbeans.modules.xml.multiview.ui.LinkButton;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
-import org.netbeans.jmi.javamodel.JavaClass;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 
@@ -116,14 +115,14 @@ public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInt
 
         moveClassButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                Utils.activateMoveClassUI(className);
+//                Utils.activateMoveClassUI(className);
                 moveClassButton.setEnabled(false);
                 renameClassButton.setEnabled(false);
             }
         });
         renameClassButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                Utils.activateRenameClassUI(className);
+//                Utils.activateRenameClassUI(className);
                 moveClassButton.setEnabled(false);
                 renameClassButton.setEnabled(false);
             }
@@ -201,26 +200,26 @@ public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInt
     private void removeInterfaces(boolean local) {
         String componentInterface = local ? helper.getLocal() : helper.getRemote();
         String homeInterface = local ? helper.getLocalHome() : helper.getHome();
-        String businessInterfaceName = helper.getBusinessInterfaceName(local);
-        String msg;
-        if (businessInterfaceName == null) {
-            msg = Utils.getBundleMessage("MSG_RemoveInterfaces", homeInterface, componentInterface);
-        } else {
-            msg = Utils.getBundleMessage("MSG_RemoveInterfaces2", homeInterface, componentInterface,
-                    businessInterfaceName);
-        }
+//        String businessInterfaceName = helper.getBusinessInterfaceName(local);
+//        String msg;
+//        if (businessInterfaceName == null) {
+//            msg = Utils.getBundleMessage("MSG_RemoveInterfaces", homeInterface, componentInterface);
+//        } else {
+//            msg = Utils.getBundleMessage("MSG_RemoveInterfaces2", homeInterface, componentInterface,
+//                    businessInterfaceName);
+//        }
         String interfaceType = Utils.getBundleMessage(local ? "TXT_Local" : "TXT_Remote");
         String title = Utils.getBundleMessage("LBL_RemoveInterfaces", interfaceType);
-        NotifyDescriptor descriptor = new NotifyDescriptor(msg, title, NotifyDescriptor.YES_NO_OPTION,
-                NotifyDescriptor.WARNING_MESSAGE, null, null);
-        DialogDisplayer.getDefault().notify(descriptor);
-        if (NotifyDescriptor.YES_OPTION == descriptor.getValue()) {
-            try {
-                helper.removeInterfaces(local);
-            } finally {
-                scheduleRefreshView();
-            }
-        }
+//        NotifyDescriptor descriptor = new NotifyDescriptor(msg, title, NotifyDescriptor.YES_NO_OPTION,
+//                NotifyDescriptor.WARNING_MESSAGE, null, null);
+//        DialogDisplayer.getDefault().notify(descriptor);
+//        if (NotifyDescriptor.YES_OPTION == descriptor.getValue()) {
+//            try {
+//                helper.removeInterfaces(local);
+//            } finally {
+//                scheduleRefreshView();
+//            }
+//        }
     }
 
     public void refreshView() {
@@ -245,23 +244,23 @@ public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInt
     }
 
     public void linkButtonPressed(Object ddBean, String ddProperty) {
-        JavaClass javaClass;
-        if(ddProperty == LINK_BEAN) {
-            javaClass = helper.getBeanClass();
-        } else if(ddProperty == LINK_LOCAL) {
-            javaClass = helper.getLocalBusinessInterfaceClass();
-        } else if(ddProperty == LINK_LOCAL_HOME) {
-            javaClass = helper.getLocalHomeInterfaceClass();
-        } else if(ddProperty == LINK_REMOTE) {
-            javaClass = helper.getRemoteBusinessInterfaceClass();
-        } else if (ddProperty == LINK_REMOTE_HOME) {
-            javaClass = helper.getHomeInterfaceClass();
-        } else {
-            javaClass = null;
-        }
-        if (javaClass != null) {
-            Utils.openEditorFor(helper.ejbJarFile, javaClass);
-        }
+//        JavaClass javaClass;
+//        if(ddProperty == LINK_BEAN) {
+//            javaClass = helper.getBeanClass();
+//        } else if(ddProperty == LINK_LOCAL) {
+//            javaClass = helper.getLocalBusinessInterfaceClass();
+//        } else if(ddProperty == LINK_LOCAL_HOME) {
+//            javaClass = helper.getLocalHomeInterfaceClass();
+//        } else if(ddProperty == LINK_REMOTE) {
+//            javaClass = helper.getRemoteBusinessInterfaceClass();
+//        } else if (ddProperty == LINK_REMOTE_HOME) {
+//            javaClass = helper.getHomeInterfaceClass();
+//        } else {
+//            javaClass = null;
+//        }
+//        if (javaClass != null) {
+//            Utils.openEditorFor(helper.ejbJarFile, javaClass);
+//        }
     }
 
 }
