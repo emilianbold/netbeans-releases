@@ -460,7 +460,7 @@ public class CasualDiff {
         pointer = bounds[1];
     }
 
-    protected void diffVarDef(JCVariableDecl oldT, JCVariableDecl newT, int[] bounds) throws IOException, BadLocationException {
+    protected int diffVarDef(JCVariableDecl oldT, JCVariableDecl newT, int[] bounds) throws IOException, BadLocationException {
         int localPointer = bounds[0];
         localPointer = diffModifiers(oldT.mods, newT.mods, oldT, localPointer);
         diffTree(oldT.vartype, newT.vartype);
@@ -470,12 +470,12 @@ public class CasualDiff {
             localPointer = oldT.pos + oldT.name.length();
         }
         if (newT.init != null && oldT.init != null) {
-            diffTree(oldT.init, newT.init);
+            localPointer = diffTree(oldT.init, newT.init, new int[] { localPointer, endPos(oldT.init) });
         } else {
             diffTreeToken("=", endPos(oldT.init), oldT.init, newT.init, "");
         }
         printer.print(origText.substring(localPointer, bounds[1]));
-//        pointer = bounds[1];
+        return bounds[1];
     }
 
     protected void diffBlock(JCBlock oldT, JCBlock newT) throws IOException, BadLocationException {
@@ -596,14 +596,15 @@ public class CasualDiff {
         diffParameterList(oldT.args, newT.args);
     }
 
-    protected void diffNewClass(JCNewClass oldT, JCNewClass newT) {
+    protected int diffNewClass(JCNewClass oldT, JCNewClass newT, int[] bounds) {
+        int localPointer = bounds[0];
         diffTree(oldT.encl, newT.encl);
         diffParameterList(oldT.typeargs, newT.typeargs);
-        diffTree(oldT.clazz, newT.clazz);
+        localPointer = diffTree(oldT.clazz, newT.clazz, localPointer);
         diffParameterList(oldT.args, newT.args);
         diffTree(oldT.def, newT.def);
-        if (oldT.constructor != newT.constructor)
-            append(Diff.name(oldT.pos, oldT.constructor.name, newT.constructor.name));
+        printer.print(origText.substring(localPointer, bounds[1]));
+        return bounds[1];
     }
 
     protected void diffNewArray(JCNewArray oldT, JCNewArray newT) {
@@ -667,9 +668,13 @@ public class CasualDiff {
             append(Diff.name(oldT.pos, oldT.name, newT.name));
     }
 
-    protected void diffIdent(JCIdent oldT, JCIdent newT) {
-        if (nameChanged(oldT.name, newT.name))
-            append(Diff.name(oldT.pos, oldT.name, newT.name));
+    protected int diffIdent(JCIdent oldT, JCIdent newT, int lastPrinted) {
+        if (nameChanged(oldT.name, newT.name)) {
+            printer.print(origText.substring(lastPrinted, getOldPos(oldT)));
+            printer.print(newT.name);
+            return endPos(oldT);
+        }
+        return lastPrinted;
     }
 
     protected void diffLiteral(JCLiteral oldT, JCLiteral newT) {
@@ -1505,32 +1510,42 @@ public class CasualDiff {
      * @param  oldT  original tree in source code
      * @param  newT  tree to repace the original tree
      */
-    protected void diffTree(JCTree oldT, JCTree newT, int[] elementBounds) {
+    protected int diffTree(JCTree oldT, JCTree newT, int[] elementBounds) {
         if (oldT == null && newT != null)
             throw new IllegalArgumentException("Null is not allowed in parameters.");
  
         try {
-            diffTreeX(oldT, newT, elementBounds);
+            return diffTreeX(oldT, newT, elementBounds);
         } catch (Exception e) {
-            Logger.getAnonymousLogger().log(Level.ALL, "Chyba!", e);
+            Logger.getAnonymousLogger().log(Level.ALL, "Err!", e);
         }
+        return -1;
     }
     
     private void diffTree(JCTree oldT, JCTree newT) {
         diffTree(oldT, newT, new int[] { -1, -1 });
     }
     
-    private void diffTreeX(JCTree oldT, JCTree newT, int[] elementBounds) throws IOException, BadLocationException {
+    private int diffTree(JCTree oldT, JCTree newT, int lastPrinted) {
+        return diffTree(oldT, newT, new int[] { lastPrinted, -1 });
+    }
+    
+    private int diffTreeX(JCTree oldT, JCTree newT, int[] elementBounds) throws IOException, BadLocationException {
         if (oldT == newT)
-            return;
+            return elementBounds[0];
         diffPrecedingComments(oldT, newT);
 
         int oldPos = getOldPos(oldT);
 
-        if ((oldT.tag != JCTree.TOPLEVEL && oldT.tag != JCTree.METHODDEF && oldT.tag != JCTree.CLASSDEF && oldT.tag != JCTree.VARDEF) &&
+        // todo (#pf): use this just for the non-rewritten places.
+        if ((oldT.tag != JCTree.TOPLEVEL && 
+             oldT.tag != JCTree.METHODDEF && 
+             oldT.tag != JCTree.CLASSDEF && 
+             oldT.tag != JCTree.VARDEF &&
+             oldT.tag != JCTree.IDENT) &&
             (oldT.tag != newT.tag || newT.pos == Query.NOPOS || oldT.type != newT.type)) {
             append(Diff.modify(oldT, oldPos, newT));
-            return;
+            return oldPos;
         }
 
         switch (oldT.tag) {
@@ -1547,8 +1562,7 @@ public class CasualDiff {
               diffMethodDef((JCMethodDecl)oldT, (JCMethodDecl)newT, elementBounds);
               break;
           case JCTree.VARDEF:
-              diffVarDef((JCVariableDecl)oldT, (JCVariableDecl)newT, elementBounds);
-              break;
+              return diffVarDef((JCVariableDecl)oldT, (JCVariableDecl)newT, elementBounds);
           case JCTree.SKIP:
               break;
           case JCTree.BLOCK:
@@ -1612,8 +1626,7 @@ public class CasualDiff {
               diffApply((JCMethodInvocation)oldT, (JCMethodInvocation)newT);
               break;
           case JCTree.NEWCLASS:
-              diffNewClass((JCNewClass)oldT, (JCNewClass)newT);
-              break;
+              return diffNewClass((JCNewClass)oldT, (JCNewClass)newT, elementBounds);
           case JCTree.NEWARRAY:
               diffNewArray((JCNewArray)oldT, (JCNewArray)newT);
               break;
@@ -1636,8 +1649,7 @@ public class CasualDiff {
               diffSelect((JCFieldAccess)oldT, (JCFieldAccess)newT);
               break;
           case JCTree.IDENT:
-              diffIdent((JCIdent)oldT, (JCIdent)newT);
-              break;
+              return diffIdent((JCIdent)oldT, (JCIdent)newT, elementBounds[0]);
           case JCTree.LITERAL:
               diffLiteral((JCLiteral)oldT, (JCLiteral)newT);
               break;
@@ -1720,6 +1732,7 @@ public class CasualDiff {
               throw new AssertionError(msg);
         }
         diffTrailingComments(oldT, newT);
+        return -1;
     }
 
     protected boolean listsMatch(List<? extends JCTree> oldList, List<? extends JCTree> newList) {
