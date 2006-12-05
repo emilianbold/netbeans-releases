@@ -21,7 +21,6 @@ package org.netbeans.modules.web.jsf.refactoring;
 
 import java.util.logging.Logger;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
-import org.openide.ErrorManager;
 //TODO: RETOUCHE
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 //import org.netbeans.modules.refactoring.api.MoveClassRefactoring;
@@ -56,12 +55,11 @@ public class JSFRefactoringFactory implements RefactoringPluginFactory {
             LOGGER.fine("Rename refactoring");
             return new JSFRenamePlugin((RenameRefactoring) refactoring);
         }
+        if (refactoring instanceof WhereUsedQuery) {
+            LOGGER.fine("Where used refactoring");
+            return new JSFWhereUsedPlugin((WhereUsedQuery)refactoring);
+        }
         //TODO: RETOUCHE
-//        This refactoring deosn't work, because there is NPE during creating the ui tree. 
-//        if (refactoring instanceof WhereUsedQuery) {
-//            LOGGER.fine("Where used refactoring");
-//            return new JSFWhereUsedPlugin((WhereUsedQuery)refactoring);
-//        }
 //        if (refactoring instanceof MoveClassRefactoring) {
 //            err.log("Move class refactoring (also rename package is move class refactoring)");
 //            return new JSFMoveClassPlugin((MoveClassRefactoring)refactoring);
