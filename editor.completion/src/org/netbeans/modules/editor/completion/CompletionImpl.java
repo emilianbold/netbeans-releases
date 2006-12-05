@@ -812,19 +812,19 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
      */
     void requestShowDocumentationPane(Result result) {
         final CompletionResultSetImpl resultSet = findFirstValidResult(result.getResultSets());
-        if (resultSet != null) {
-            runInAWT(new Runnable() {
-                public void run() {
-                    synchronized (CompletionImpl.this) {
+        runInAWT(new Runnable() {
+            public void run() {
+                synchronized (CompletionImpl.this) {
+                    if (resultSet != null) {
                         layout.showDocumentation(
                                 resultSet.getDocumentation(), resultSet.getAnchorOffset());
+                    } else {
+                        documentationCancel();
+                        layout.hideDocumentation();
                     }
                 }
-            });
-        } else {
-            documentationCancel();
-            layout.hideDocumentation();
-        }
+            }
+        });
     }
 
     /**
