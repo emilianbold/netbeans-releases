@@ -30,12 +30,10 @@ import org.openide.filesystems.FileObject;
  * @author Tomas Zezula
  */
 public class DefaultSourceLevelQueryImpl implements SourceLevelQueryImplementation {
-    
+
     private static final String JAVA_EXT = "java";  //NOI18N
-    
-    /** Creates a new instance of DefaultSourceLevelQueryImpl */
-    public DefaultSourceLevelQueryImpl() {
-    }
+
+    public DefaultSourceLevelQueryImpl() {}
 
     public String getSourceLevel(final FileObject javaFile) {
         assert javaFile != null : "javaFile has to be non null";   //NOI18N
@@ -43,11 +41,15 @@ public class DefaultSourceLevelQueryImpl implements SourceLevelQueryImplementati
         if (JAVA_EXT.equalsIgnoreCase (ext)) {
             JavaPlatform jp = JavaPlatformManager.getDefault().getDefaultPlatform();
             assert jp != null : "JavaPlatformManager.getDefaultPlatform returned null";     //NOI18N
-            return jp.getSpecification().getVersion().toString();
+            String s = jp.getSpecification().getVersion().toString();
+            if (s.equals("1.6") || s.equals("1.7")) {
+                // #89131: these levels are not actually distinct from 1.5.
+                return "1.5";
+            } else {
+                return s;
+            }
         }
         return null;
     }
-    
-    
-    
+
 }
