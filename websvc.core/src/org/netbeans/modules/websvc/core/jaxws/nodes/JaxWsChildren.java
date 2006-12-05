@@ -80,10 +80,6 @@ import org.xml.sax.SAXException;
 public class JaxWsChildren extends Children.Keys/* implements MDRChangeListener  */{
     private static final java.awt.Image OPERATION_BADGE =
         org.openide.util.Utilities.loadImage( "org/netbeans/modules/websvc/core/webservices/ui/resources/wsoperation.png" ); //NOI18N
-
-    // Retouche
-    //private JavaClass implClass;
-    //private List<ExecutableElement> methods;
     
     private FileObject implClass;
     private Service service;
@@ -104,14 +100,6 @@ public class JaxWsChildren extends Children.Keys/* implements MDRChangeListener 
 //    public ComponentMethodViewStrategy createViewStrategy() {
 //        WSComponentMethodViewStrategy strategy = WSComponentMethodViewStrategy.instance();
 //        return strategy;
-//    }
-//    
-//    private JavaClass getImplementationClass() {
-//        String implBean = service.getImplementationClass();
-//        if(implBean != null) {
-//            return JMIUtils.findClass(implBean, srcRoot);
-//        }
-//        return null;
 //    }
 //    
     

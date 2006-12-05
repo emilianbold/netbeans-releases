@@ -121,10 +121,6 @@ public class JaxWsNode extends AbstractNode implements OpenCookie, JaxWsWsdlCook
         content.add(this);
         content.add(service);
         content.add(srcRoot);
-        // Retouche
-        //addImplClassToContent(content);
-        //implBeanClass = getImplBean();
-        //content.add(implBeanClass);
         project = FileOwnerQuery.getOwner(srcRoot);
     }
     

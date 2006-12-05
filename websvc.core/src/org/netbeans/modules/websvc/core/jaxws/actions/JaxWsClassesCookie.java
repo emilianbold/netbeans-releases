@@ -17,14 +17,12 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.websvc.core.jaxws.actions;
-// Retouche
-// import org.netbeans.jmi.javamodel.Method;
 import com.sun.source.tree.MethodTree;
 import org.openide.nodes.Node;
 
 /*
- * Provides a facility for obtaining the SEI and implementation bean
- * of a JSR 109 web service.
+ * Provides a facility for obtaining the addOperation feature
+ * of a JAX-WS web service.
  */
 public interface JaxWsClassesCookie extends Node.Cookie {
     
