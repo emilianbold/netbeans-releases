@@ -52,7 +52,7 @@ public class TreeElementFactoryImpl implements TreeElementFactoryImplementation 
             FileObject fo = (FileObject) o;
             if (fo.isFolder()) {
                 SourceGroup sg = FolderTreeElement.getSourceGroup(fo);
-                if (fo.equals(sg.getRootFolder())) 
+                if (sg!=null && fo.equals(sg.getRootFolder())) 
                     result = new SourceGroupTreeElement(sg);
                 else 
                     result = new FolderTreeElement(fo);
