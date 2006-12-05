@@ -20,7 +20,6 @@
 package org.netbeans.modules.j2ee.ejbcore.api.methodcontroller;
 
 import org.netbeans.modules.j2ee.common.method.MethodModel;
-import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.openide.filesystems.FileObject;
 
@@ -63,17 +62,12 @@ public final class SessionMethodController extends AbstractMethodController {
 
     @Override
     public MethodType getMethodTypeFromInterface(MethodModel clientView) {
-        assert clientView.getClassName() != null: "declaring class cannot be null";
         // see if the interface is home or local home, otherwise assume business
-        String cName = clientView.getClassName();
-        MethodType methodType = null;
-        if (cName.equals(model.getLocalHome()) || 
-            cName.equals(model.getHome())) {
-            methodType = new MethodType.CreateMethodType(clientView);
+        if (findInClass(model.getLocalHome(), clientView) || findInClass(model.getHome(), clientView)) {
+            return new MethodType.CreateMethodType(clientView);
         } else {
-            methodType = new MethodType.BusinessMethodType(clientView);
+            return new MethodType.BusinessMethodType(clientView);
         }
-        return methodType;
     }
 
     public AbstractMethodController.GenerateFromImpl createGenerateFromImpl() {

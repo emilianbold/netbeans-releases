@@ -30,8 +30,6 @@ import java.util.Set;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import org.netbeans.modules.j2ee.common.method.MethodModel;
-import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.dd.api.ejb.CmpField;
 import org.netbeans.modules.j2ee.dd.api.ejb.CmrField;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
@@ -110,14 +108,14 @@ public final class EntityMethodController extends AbstractMethodController {
         for (String clazz : getLocalInterfaces()) {
             MethodModel method = getFinderMethod(clazz, fieldName, getGetterMethod(getBeanClass(), fieldName));
             if (method != null) {
-                removeMethodFromClass(method.getClassName(), method);
+                removeMethodFromClass(clazz, method);
             }
         }
         // remove findBy<field> method from remote interfaces (should be only in remote home)
         for (String clazz : getRemoteInterfaces()) {
             MethodModel method = getFinderMethod(clazz, fieldName, getGetterMethod(getBeanClass(), fieldName));
             if (method != null) {
-                removeMethodFromClass(method.getClassName(), method);
+                removeMethodFromClass(clazz, method);
             }
         }
         removeMethodsFromBean(getMethods(fieldName));
@@ -146,19 +144,19 @@ public final class EntityMethodController extends AbstractMethodController {
         for (MethodModel method : methods) {
             // remove get/set<field> from local/remote/business interfaces
             if (hasLocal()) {
-                MethodModel methodToRemove = getInterface(method, true);
-                if (methodToRemove != null) {
-                    removeMethodFromClass(methodToRemove.getClassName(), methodToRemove);
+                ClassMethodPair classMethodPair = getInterface(method, true);
+                if (classMethodPair != null) {
+                    removeMethodFromClass(classMethodPair.getClassName(), classMethodPair.getMethodModel());
                 }
             }
             if (hasRemote()) {
-                MethodModel methodToRemove = getInterface(method, false);
-                if (methodToRemove != null) {
-                    removeMethodFromClass(methodToRemove.getClassName(), methodToRemove);
+                ClassMethodPair classMethodPair = getInterface(method, false);
+                if (classMethodPair != null) {
+                    removeMethodFromClass(classMethodPair.getClassName(), classMethodPair.getMethodModel());
                 }
             }
             // remove get/set<field> from main bean class
-            removeMethodFromClass(method.getClassName(), method);
+            removeMethodFromClass(getBeanClass(), method);
         }
     }
 
@@ -224,10 +222,8 @@ public final class EntityMethodController extends AbstractMethodController {
 
     @Override
     public MethodType getMethodTypeFromInterface(MethodModel clientView) {
-        String cName = clientView.getClassName();
         MethodType methodType;
-        if (cName.equals(model.getLocalHome()) ||
-            cName.equals(model.getHome())) {
+        if (findInClass(model.getLocalHome(), clientView) || findInClass(model.getHome(), clientView)) {
             if (clientView.getName().startsWith("create")) { //NOI18N
                 methodType = new MethodType.CreateMethodType(clientView);
             } else if (clientView.getName().startsWith("find")) { //NOI18N
@@ -338,7 +334,6 @@ public final class EntityMethodController extends AbstractMethodController {
                 getMethodName(fieldName, true),
                 "void",
                 "",
-                null,
                 Collections.singletonList(field),
                 exceptions,
                 modifiers
@@ -353,7 +348,6 @@ public final class EntityMethodController extends AbstractMethodController {
                 getMethodName(fieldName, false),
                 "void",
                 "",
-                null,
                 Collections.singletonList(field),
                 exceptions,
                 modifiers
@@ -505,7 +499,6 @@ public final class EntityMethodController extends AbstractMethodController {
                 method.getName(), 
                 method.getReturnType(),
                 method.getBody(),
-                method.getClassName(),
                 Collections.singletonList(MethodModelSupport.createVariableModel(type, "arg0")),
                 method.getExceptions(),
                 method.getModifiers()
@@ -537,7 +530,6 @@ public final class EntityMethodController extends AbstractMethodController {
                 getMethodName(fieldName, true),
                 "void",
                 "",
-                null,
                 Collections.singletonList(MethodModelSupport.createVariableModel(getterMethod.getReturnType(), "arg0")),
                 Collections.<String>emptyList(),
                 Collections.<Modifier>emptySet()

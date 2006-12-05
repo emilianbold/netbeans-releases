@@ -57,7 +57,6 @@ public class AddFinderMethodStrategy extends AbstractAddMethodStrategy {
                 "findBy",
                 "void",
                 "",
-                null,
                 Collections.<MethodModel.VariableModel>emptyList(),
                 Collections.singletonList("javax.ejb.FinderException"),
                 Collections.<Modifier>emptySet()

@@ -34,8 +34,6 @@ public final class MethodModel {
     private final String name;
     private final String returnType;
     private final String body;
-    /** null if no parent class exists yet */
-    private final String className;
     /** unmodifiable list */
     private final List<VariableModel> parameters;
     /** unmodifiable list */
@@ -44,12 +42,10 @@ public final class MethodModel {
     private final Set<Modifier> modifiers;
     
     // package-private for MethodModelSupport's factory methods
-    MethodModel(String name, String returnType, String body, String className,
-            List<VariableModel> parameters, List<String> exceptions, Set<Modifier> modifiers) {
+    MethodModel(String name, String returnType, String body, List<VariableModel> parameters, List<String> exceptions, Set<Modifier> modifiers) {
         this.name = name;
         this.returnType = returnType;
         this.body = body;
-        this.className = className;
         this.parameters = Collections.unmodifiableList(parameters);
         this.exceptions = Collections.unmodifiableList(exceptions);
         this.modifiers = Collections.unmodifiableSet(modifiers);
@@ -95,10 +91,6 @@ public final class MethodModel {
     
     public String getBody() {
         return body;
-    }
-    
-    public String getClassName() {
-        return className;
     }
     
     public List<VariableModel> getParameters() {

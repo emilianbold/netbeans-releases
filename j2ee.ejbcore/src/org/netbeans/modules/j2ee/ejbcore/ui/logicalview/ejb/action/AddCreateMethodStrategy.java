@@ -53,7 +53,6 @@ public class AddCreateMethodStrategy extends AbstractAddMethodStrategy {
                 "create",
                 "void",
                 "",
-                null,
                 Collections.<MethodModel.VariableModel>emptyList(),
                 Collections.singletonList("javax.ejb.CreateException"),
                 Collections.<Modifier>emptySet()

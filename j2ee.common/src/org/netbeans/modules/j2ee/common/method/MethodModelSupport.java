@@ -58,7 +58,6 @@ public final class MethodModelSupport {
                 name,
                 "void",
                 "",
-                null,
                 Collections.<VariableModel>emptyList(),
                 Collections.<String>emptyList(),
                 Collections.<Modifier>emptySet()
@@ -81,16 +80,15 @@ public final class MethodModelSupport {
                 getTypeName(workingCopy, method.getReturnType()),
                 //TODO: RETOUCHE get body of method
                 "",
-                ((TypeElement) method.getEnclosingElement()).getQualifiedName().toString(),
                 parameters,
                 exceptions,
                 method.getModifiers()
                 );
     }
     
-    public static MethodModel createMethodModel(String name, String returnType, String body, String className,
+    public static MethodModel createMethodModel(String name, String returnType, String body,
             List<MethodModel.VariableModel> parameters, List<String> exceptions, Set<Modifier> modifiers) {
-        return new MethodModel(name, returnType, body, className, parameters, exceptions, modifiers);
+        return new MethodModel(name, returnType, body, parameters, exceptions, modifiers);
     }
     
     public static MethodModel.VariableModel createVariableModel(WorkingCopy workingCopy, VariableElement variableElement) {

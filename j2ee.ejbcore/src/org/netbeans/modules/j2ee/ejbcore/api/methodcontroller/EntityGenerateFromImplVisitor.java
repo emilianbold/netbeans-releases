@@ -18,8 +18,6 @@
  */
 package org.netbeans.modules.j2ee.ejbcore.api.methodcontroller;
 
-import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
-import org.netbeans.modules.j2ee.common.method.MethodModel;
 import java.util.Collection;
 import java.util.Set;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
@@ -76,7 +74,6 @@ class EntityGenerateFromImplVisitor implements MethodType.MethodTypeVisitor, Abs
                 newName, 
                 intfMethod.getReturnType(),
                 intfMethod.getBody(),
-                intfMethod.getClassName(),
                 intfMethod.getParameters(),
                 intfMethod.getExceptions(),
                 intfMethod.getModifiers()
@@ -92,7 +89,6 @@ class EntityGenerateFromImplVisitor implements MethodType.MethodTypeVisitor, Abs
                 newName, 
                 intfMethod.getReturnType(),
                 intfMethod.getBody(),
-                intfMethod.getClassName(),
                 intfMethod.getParameters(),
                 intfMethod.getExceptions(),
                 intfMethod.getModifiers()
@@ -113,7 +109,6 @@ class EntityGenerateFromImplVisitor implements MethodType.MethodTypeVisitor, Abs
                 newName, 
                 changeType ? component : intfMethod.getReturnType(),
                 intfMethod.getBody(),
-                intfMethod.getClassName(),
                 intfMethod.getParameters(),
                 intfMethod.getExceptions(),
                 intfMethod.getModifiers()

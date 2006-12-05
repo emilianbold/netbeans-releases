@@ -18,8 +18,6 @@
  */
 package org.netbeans.modules.j2ee.ejbcore.api.methodcontroller;
 
-import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
-import org.netbeans.modules.j2ee.common.method.MethodModel;
 import java.util.Collections;
 import javax.lang.model.element.Modifier;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
@@ -68,7 +66,6 @@ final class SessionGenerateFromImplVisitor implements MethodType.MethodTypeVisit
                 newName, 
                 home,
                 intfMethod.getBody(),
-                intfMethod.getClassName(),
                 intfMethod.getParameters(),
                 intfMethod.getExceptions(),
                 Collections.singleton(Modifier.PUBLIC)

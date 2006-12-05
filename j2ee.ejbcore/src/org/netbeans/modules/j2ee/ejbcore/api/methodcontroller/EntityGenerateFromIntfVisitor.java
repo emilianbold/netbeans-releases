@@ -18,8 +18,6 @@
  */
 package org.netbeans.modules.j2ee.ejbcore.api.methodcontroller;
 
-import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
-import org.netbeans.modules.j2ee.common.method.MethodModel;
 import java.io.IOException;
 import java.util.Collections;
 import javax.lang.model.element.Modifier;
@@ -77,7 +75,6 @@ class EntityGenerateFromIntfVisitor implements MethodType.MethodTypeVisitor, Abs
                 implMethod.getName(), 
                 implMethod.getReturnType(),
                 body,
-                implMethod.getClassName(),
                 implMethod.getParameters(),
                 implMethod.getExceptions(),
                 Collections.singleton(Modifier.PUBLIC)
@@ -94,7 +91,6 @@ class EntityGenerateFromIntfVisitor implements MethodType.MethodTypeVisitor, Abs
                 newName, 
                 type,
                 body,
-                implMethod.getClassName(),
                 implMethod.getParameters(),
                 implMethod.getExceptions(),
                 Collections.singleton(Modifier.PUBLIC)
@@ -107,7 +103,6 @@ class EntityGenerateFromIntfVisitor implements MethodType.MethodTypeVisitor, Abs
                 newName, 
                 "void",
                 body,
-                secondaryMethod.getClassName(),
                 secondaryMethod.getParameters(),
                 secondaryMethod.getExceptions(),
                 Collections.singleton(Modifier.PUBLIC)
@@ -123,7 +118,6 @@ class EntityGenerateFromIntfVisitor implements MethodType.MethodTypeVisitor, Abs
                 newName, 
                 implMethod.getReturnType(),
                 body,
-                implMethod.getClassName(),
                 implMethod.getParameters(),
                 implMethod.getExceptions(),
                 Collections.singleton(Modifier.PUBLIC)
@@ -147,7 +141,6 @@ class EntityGenerateFromIntfVisitor implements MethodType.MethodTypeVisitor, Abs
                 newName, 
                 isAssignable ? "void" : entity.getPrimKeyClass(),
                 body,
-                implMethod.getClassName(),
                 implMethod.getParameters(),
                 implMethod.getExceptions(),
                 Collections.singleton(Modifier.PUBLIC)

@@ -19,11 +19,6 @@
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 
-import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
-import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
-import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
-import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
-import org.netbeans.modules.j2ee.common.method.MethodModel;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -127,7 +122,6 @@ public abstract class AbstractAddMethodStrategy {
                     method.getName(), 
                     localReturn,
                     method.getBody(),
-                    method.getClassName(),
                     method.getParameters(),
                     method.getExceptions(),
                     method.getModifiers()
@@ -141,7 +135,6 @@ public abstract class AbstractAddMethodStrategy {
                     method.getName(), 
                     remoteReturn,
                     method.getBody(),
-                    method.getClassName(),
                     method.getParameters(),
                     method.getExceptions(),
                     method.getModifiers()

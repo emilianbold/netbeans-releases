@@ -22,7 +22,6 @@ import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.MethodTree;
 import com.sun.source.util.Trees;
 import java.io.IOException;
 import java.rmi.RemoteException;
@@ -37,7 +36,6 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
-import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -45,8 +43,6 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
-import org.netbeans.modules.j2ee.common.method.MethodModel;
-import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -158,8 +154,6 @@ public abstract class AbstractMethodController extends EjbMethodController {
                 method.getName(), 
                 method.getReturnType(),
                 method.getBody(),
-                null,
-//                method.getClassName(),
                 method.getParameters(),
                 method.getExceptions(),
                 Collections.<Modifier>emptySet()
@@ -218,7 +212,7 @@ public abstract class AbstractMethodController extends EjbMethodController {
     }
     
     @Override
-    public final MethodModel getInterface(MethodModel beanImpl, boolean local) {
+    public final ClassMethodPair getInterface(MethodModel beanImpl, boolean local) {
         MethodType methodType = getMethodTypeFromImpl(beanImpl);
         assert methodType != null: "method cannot be used in interface";
         GenerateFromImpl generateFromImpl = createGenerateFromImpl();
@@ -233,8 +227,9 @@ public abstract class AbstractMethodController extends EjbMethodController {
         }
         generateFromImpl.getInterfaceMethodFromImpl(methodType,home,component);
         MethodModel interfaceMethodModel = generateFromImpl.getInterfaceMethod();
-        boolean exists = findInClass(generateFromImpl.getDestinationInterface(), interfaceMethodModel);
-        return exists ? interfaceMethodModel : null;
+        String destinationInterface = generateFromImpl.getDestinationInterface();
+        boolean exists = findInClass(destinationInterface, interfaceMethodModel);
+        return exists ? new ClassMethodPair(destinationInterface, interfaceMethodModel) : null;
     }
     
     
@@ -253,7 +248,6 @@ public abstract class AbstractMethodController extends EjbMethodController {
                     name,
                     type,
                     method.getBody(),
-                    null,//method.getClassName(),
                     method.getParameters(),
                     method.getExceptions(),
                     method.getModifiers()
@@ -284,7 +278,6 @@ public abstract class AbstractMethodController extends EjbMethodController {
                     method.getName(),
                     method.getReturnType(),
                     method.getBody(),
-                    null,//method.getClassName(),
                     method.getParameters(),
                     exceptions,
                     method.getModifiers()
@@ -370,15 +363,16 @@ public abstract class AbstractMethodController extends EjbMethodController {
     }
     
     @Override
-    public final void delete(String clazz, MethodModel interfaceMethod, boolean local) {
+    public final void delete(MethodModel interfaceMethod, boolean local) {
         List<MethodModel> impls = getImplementation(interfaceMethod);
         boolean checkOther = local ? hasRemote() : hasLocal();
         if (!impls.isEmpty()) {
             for (MethodModel impl : impls) {
                 if (impl != null) { // could be null here if the method is missing
-                    if (((checkOther && getInterface(impl, !local) == null)) || !checkOther) {
+                    ClassMethodPair classMethodPair = getInterface(impl, !local);
+                    if (((checkOther &&  classMethodPair == null)) || !checkOther) {
                         try {
-                            removeMethodFromClass(impl.getClassName(), impl);
+                            removeMethodFromClass(classMethodPair.getClassName(), classMethodPair.getMethodModel());
                         } catch (IOException e) {
                             ErrorManager.getDefault().notify(e);
                         }
@@ -387,7 +381,7 @@ public abstract class AbstractMethodController extends EjbMethodController {
                 }
             }
             try {
-                removeMethodFromClass(clazz, interfaceMethod);
+                removeMethodFromClass(getBeanClass(), interfaceMethod);
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(e);
             }
@@ -550,7 +544,7 @@ public abstract class AbstractMethodController extends EjbMethodController {
                     workingCopy.rewrite(classTree, modifiedClassTree);
                 }
             }
-        }).commit();;
+        }).commit();
     }
 
     /**

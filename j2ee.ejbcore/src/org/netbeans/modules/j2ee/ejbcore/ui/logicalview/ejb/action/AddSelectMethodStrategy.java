@@ -19,16 +19,6 @@
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 
-import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action._RetoucheUtil;
-import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
-import org.netbeans.modules.j2ee.common.method.MethodCollectorFactory;
-import org.netbeans.modules.j2ee.common.method.MethodCollectorFactory;
-import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
-import org.netbeans.modules.j2ee.common.method.MethodCollectorFactory;
-import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
-import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
-import org.netbeans.modules.j2ee.common.method.MethodModel;
-import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action._RetoucheUtil;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
@@ -39,7 +29,6 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.j2ee.common.method.MethodCollectorFactory;
 import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
-import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action._RetoucheUtil;
 import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EntityMethodController;
@@ -69,7 +58,6 @@ public class AddSelectMethodStrategy extends AbstractAddMethodStrategy {
                 "ejbSelectBy",
                 "int",
                 "",
-                null,
                 Collections.<MethodModel.VariableModel>emptyList(),
                 Collections.singletonList("javax.ejb.FinderException"),
                 modifiers

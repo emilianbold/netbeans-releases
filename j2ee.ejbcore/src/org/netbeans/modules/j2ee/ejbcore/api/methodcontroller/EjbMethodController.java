@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.j2ee.ejbcore.api.methodcontroller;
 
-import org.netbeans.modules.j2ee.common.method.MethodModel;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
@@ -90,7 +89,7 @@ public abstract class EjbMethodController {
      * @param beanImpl implementation method
      * @param local true if local method should be returned false otherwise
      */
-    public abstract MethodModel getInterface(MethodModel beanImpl, boolean local);
+    public abstract ClassMethodPair getInterface(MethodModel beanImpl, boolean local);
     
     /** Return if the passed method is implementation of method defined 
      * in local or remote interface.
@@ -135,11 +134,33 @@ public abstract class EjbMethodController {
      */
     public abstract void createAndAddImpl(MethodModel clientView);
     
-    public abstract void delete(String clazz, MethodModel interfaceMethod, boolean local);
+    public abstract void delete(MethodModel interfaceMethod, boolean local);
     
     /** Checks if given method type is supported by controller.
      * @param type One of <code>METHOD_</code> constants in @link{MethodType}
      */
     public abstract boolean supportsMethodType(MethodType.Kind type);
     public abstract MethodModel createAndAdd(MethodModel clientView, boolean local, boolean component);
+    
+    
+    /** Immutable type representing method and its enclosing class */
+    protected static final class ClassMethodPair {
+        
+        private final String className;
+        private final MethodModel methodModel;
+        
+        public ClassMethodPair(String className, MethodModel methodModel) {
+            this.className = className;
+            this.methodModel = methodModel;
+        }
+        
+        public String getClassName() {
+            return className;
+        }
+        
+        public MethodModel getMethodModel() {
+            return methodModel;
+        }
+        
+    }
 }
