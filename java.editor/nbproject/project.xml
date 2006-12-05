@@ -326,21 +326,18 @@ Microsystems, Inc. All Rights Reserved.
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.editor.fold</code-name-base>
                         <compile-dependency/>
-                    </test-dependency>                    
+                    </test-dependency>
                     <test-dependency>
                         <code-name-base>org.openide.filesystems</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
-                      <code-name-base>org.openide.loaders</code-name-base>
-                      <compile-dependency/>
-                  </test-dependency>
+                        <code-name-base>org.openide.loaders</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages>
-                <package>org.netbeans.modules.editor.java</package>
-                <package>org.netbeans.modules.java.editor.highlighter</package>
-            </public-packages>
+            <public-packages/>
         </data>
     </configuration>
 </project>

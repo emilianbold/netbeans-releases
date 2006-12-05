@@ -3,5 +3,4 @@ OpenIDE-Module: org.netbeans.modules.web.core.syntax/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/web/core/syntax/Bundle.properties
 OpenIDE-Module-Install: org/netbeans/modules/web/core/syntax/RestoreColoring.class
 OpenIDE-Module-Layer: org/netbeans/modules/web/core/syntax/layer.xml
-OpenIDE-Module-Specification-Version: 1.24
 
