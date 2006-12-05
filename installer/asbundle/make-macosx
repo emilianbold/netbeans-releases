@@ -2,5 +2,5 @@
 # $AS_INSTALLER_PATH is location of SJS AS installer
 ant \
 -Dismp.home=$IS_HOME \
--Das.installer=$AS_INSTALLER_PATH/sjsas_pe-9_0-mac.zip \
+-Das.installer=$AS_INSTALLER_PATH/sjsas_pe-9_0_01-mac.zip \
 build-macosx
