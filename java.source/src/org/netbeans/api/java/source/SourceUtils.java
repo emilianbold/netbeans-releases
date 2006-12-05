@@ -515,12 +515,21 @@ public class SourceUtils {
                     ClassPath exec = ClassPath.getClassPath(sourceFo, ClassPath.EXECUTE);
                     ClassPath compile = ClassPath.getClassPath(sourceFo, ClassPath.COMPILE);
                     ClassPath source = ClassPath.getClassPath(sourceFo, ClassPath.SOURCE);
+                    if (exec == null) {
+                        exec = compile;
+                        compile = null;
+                    }
+                    if (exec == null || source == null) {
+                        return null;
+                    }
                     Set<URL> roots = new HashSet<URL>();
                     for (ClassPath.Entry e : exec.entries()) {
                         roots.add(e.getURL());
                     }
-                    for (ClassPath.Entry e : compile.entries()) {
-                        roots.remove(e.getURL());
+                    if (compile != null) {
+                        for (ClassPath.Entry e : compile.entries()) {
+                            roots.remove(e.getURL());
+                        }
                     }
                     List<FileObject> sourceRoots = Arrays.asList(source.getRoots());
 out:                for (URL e : roots) {
