@@ -20,6 +20,7 @@
 package org.netbeans.modules.derby;
 
 import java.awt.Image;
+import java.beans.BeanDescriptor;
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
@@ -64,5 +65,11 @@ public class DerbyOptionsBeanInfo extends SimpleBeanInfo {
         }
         
         return image != null ? image : super.getIcon(type);
+    }
+
+    public BeanDescriptor getBeanDescriptor() {
+        BeanDescriptor descriptor = new BeanDescriptor(DerbyOptions.class);
+        descriptor.setName(NbBundle.getMessage(DerbyOptionsBeanInfo.class, "LBL_DerbyOptions"));
+        return descriptor;
     }
 }
