@@ -66,9 +66,7 @@ public class TokenHierarchyEventTest extends NbTestCase {
         LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.WHITESPACE, " ", 7);
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "ghi", 8);
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.WHITESPACE, " ", 11);
-        assertTrue(ts.moveNext());
+        assertFalse(ts.moveNext());
         
         // Do insert
         doc.insertString(5, "x", null);
@@ -79,63 +77,12 @@ public class TokenHierarchyEventTest extends NbTestCase {
         TokenChange<? extends TokenId> tc = evt.tokenChange();
         assertNotNull(tc);
         assertEquals(2, tc.index());
-        assertEquals(15, tc.offset());
-        assertEquals(0, tc.addedTokenCount());
-        assertEquals(0, tc.removedTokenCount());
+        assertEquals(4, tc.offset());
+        assertEquals(1, tc.addedTokenCount());
+        assertEquals(1, tc.removedTokenCount());
         assertEquals(SimpleTokenId.language(), tc.language());
-        assertEquals(1, tc.embeddedChangeCount());
-        TokenChange<? extends TokenId> etc = tc.embeddedChange(0);
-        assertEquals(0, etc.index());
-        assertEquals(18, etc.offset());
-        assertEquals(0, etc.addedTokenCount()); // 0 to allow for lazy lexing where this would be unknowns
-        assertEquals(0, etc.removedTokenCount());
-        assertEquals(SimpleTokenId.language(), etc.language());
-        assertEquals(0, etc.embeddedChangeCount());
+        assertEquals(0, tc.embeddedChangeCount());
         
-        // Test the contents of the embedded sequence
-        TokenSequence<? extends TokenId> ets = ts.embedded();
-        assertTrue(ets.moveNext());
-        LexerTestUtilities.assertTokenEquals(ets, SimpleTokenId.IDENTIFIER, "line", 18);
-        assertTrue(ets.moveNext());
-        LexerTestUtilities.assertTokenEquals(ets, SimpleTokenId.WHITESPACE, " ", 22);
-        assertTrue(ets.moveNext());
-        LexerTestUtilities.assertTokenEquals(ets, SimpleTokenId.IDENTIFIER, "comment", 23);
-        assertFalse(ets.moveNext());
-        
-        // Move main TS back and try extra embedding on comment
-        assertTrue(ts.movePrevious());
-        assertTrue(ts.createEmbedding(SimpleTokenId.language(), 2, 2));
-        ets = ts.embedded(); // Should be the explicit one
-        assertTrue(ets.moveNext());
-        LexerTestUtilities.assertTokenEquals(ets, SimpleTokenId.IDENTIFIER, "def", 5);
-        assertTrue(ets.moveNext());
-        LexerTestUtilities.assertTokenEquals(ets, SimpleTokenId.WHITESPACE, " ", 8);
-        assertTrue(ets.moveNext());
-        LexerTestUtilities.assertTokenEquals(ets, SimpleTokenId.IDENTIFIER, "ghi", 9);
-        assertTrue(ets.moveNext());
-        LexerTestUtilities.assertTokenEquals(ets, SimpleTokenId.WHITESPACE, " ", 12);
-        assertFalse(ets.moveNext());
-        
-        // Get the default embedding - should be available as well
-        ets = ts.embedded(SimplePlainTokenId.language()); // Should be the explicit one
-        assertTrue(ets.moveNext());
-        LexerTestUtilities.assertTokenEquals(ets, SimplePlainTokenId.WORD, "def", 5);
-        assertTrue(ets.moveNext());
-        LexerTestUtilities.assertTokenEquals(ets, SimplePlainTokenId.WHITESPACE, " ", 8);
-        assertTrue(ets.moveNext());
-        LexerTestUtilities.assertTokenEquals(ets, SimplePlainTokenId.WORD, "ghi", 9);
-        assertTrue(ets.moveNext());
-        LexerTestUtilities.assertTokenEquals(ets, SimplePlainTokenId.WHITESPACE, " ", 12);
-        assertFalse(ets.moveNext());
-    }
-    
-    public void testEmbeddingCaching() throws Exception {
-        LanguageEmbedding<? extends TokenId> e = LanguageEmbedding.create(SimpleTokenId.language(), 2, 1);
-        assertSame(SimpleTokenId.language(), e.language());
-        assertSame(2, e.startSkipLength());
-        assertSame(1, e.endSkipLength());
-        LanguageEmbedding<? extends TokenId> e2 = LanguageEmbedding.create(SimpleTokenId.language(), 2, 1);
-        assertSame(e, e2);
     }
     
     private static final class THListener implements TokenHierarchyListener {
