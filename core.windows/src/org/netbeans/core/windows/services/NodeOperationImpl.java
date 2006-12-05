@@ -29,7 +29,6 @@ import org.netbeans.core.NbMainExplorer;
 import org.netbeans.core.NbSheet;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.*;
 import org.openide.util.HelpCtx;
@@ -45,6 +44,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.HashSet;
 import java.util.Set;
+import javax.swing.border.EmptyBorder;
 
 
 // XXX Before as org.netbeans.core.NbNodeOperation.
@@ -259,6 +259,7 @@ public final class NodeOperationImpl extends NodeOperation {
     public Node[] select (String title, String rootTitle, Node root, NodeAcceptor acceptor, Component top)
     throws UserCancelException {
         final FileSelector selector = new FileSelector(rootTitle, root, acceptor, top);
+        selector.setBorder(new EmptyBorder(12, 12, 0, 12));
         DialogDescriptor dd = new DialogDescriptor(selector, title, true, 
                                                    selector.getOptions(), 
                                                    selector.getSelectOption(), DialogDescriptor.DEFAULT_ALIGN,
