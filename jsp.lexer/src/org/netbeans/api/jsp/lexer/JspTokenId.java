@@ -88,9 +88,8 @@ public enum JspTokenId implements TokenId {
             return new JspLexer(info);
         }
         
-        public LanguageEmbedding embedding(
-                Token<JspTokenId> token, boolean tokenComplete,
-                LanguagePath languagePath, InputAttributes inputAttributes) {
+        public LanguageEmbedding<? extends TokenId> embedding(
+        Token<JspTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
             switch(token.id()) {
                 case TEXT:
                     return LanguageEmbedding.create(HTMLTokenId.language(), 0, 0);
