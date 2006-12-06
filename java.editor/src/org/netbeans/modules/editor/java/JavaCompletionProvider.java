@@ -99,6 +99,7 @@ public class JavaCompletionProvider implements CompletionProvider {
         private static final String SPACE = " "; //NOI18N
         private static final String COLON = ":"; //NOI18N
         private static final String SEMI = ";"; //NOI18N
+        private static final String EMPTY = ""; //NOI18N
         
         private static final String ABSTRACT_KEYWORD = "abstract"; //NOI18N
         private static final String ASSERT_KEYWORD = "assert"; //NOI18N
@@ -203,7 +204,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             int newCaretOffset = component.getSelectionStart();
             if (newCaretOffset >= caretOffset) {
                 try {
-                    if (isJavaIdentifierPart(component.getDocument().getText(caretOffset, newCaretOffset - caretOffset)))
+                    if (getJavaIdentifierPart(component.getDocument().getText(caretOffset, newCaretOffset - caretOffset)) != null)
                         return;
                 } catch (BadLocationException e) {
                 }
@@ -257,16 +258,21 @@ public class JavaCompletionProvider implements CompletionProvider {
             filterPrefix = null;
             int newOffset = component.getSelectionStart();
             if ((queryType & COMPLETION_QUERY_TYPE) != 0) {
-                if (newOffset >= caretOffset) {
-                    if (anchorOffset > -1) {
+                int offset = Math.min(anchorOffset, caretOffset);
+                if (offset > -1) {
+                    if (newOffset < offset)
+                        return true;
+                    if (newOffset >= caretOffset) {
                         try {
-                            String prefix = component.getDocument().getText(anchorOffset, newOffset - anchorOffset);
-                            if (isJavaIdentifierPart(prefix))
-                                filterPrefix = prefix;
+                            String prefix = component.getDocument().getText(offset, newOffset - offset);
+                            filterPrefix = getJavaIdentifierPart(prefix);
+                            if (filterPrefix != null && filterPrefix.length() == 0)
+                                anchorOffset = newOffset;
                         } catch (BadLocationException e) {}
+                        return true;
                     }
                 }
-                return filterPrefix != null;
+                return false;
             } else if (queryType == TOOLTIP_QUERY_TYPE) {
                 try {
                     if (newOffset - caretOffset > 0)
@@ -283,8 +289,13 @@ public class JavaCompletionProvider implements CompletionProvider {
         protected void filter(CompletionResultSet resultSet) {
             try {
                 if ((queryType & COMPLETION_QUERY_TYPE) != 0) {
-                    if (results != null)
-                        resultSet.addAllItems(getFilteredData(results, filterPrefix));
+                    if (filterPrefix != null) {
+                        if (results != null)
+                            resultSet.addAllItems(getFilteredData(results, filterPrefix));
+                    } else {
+                        Completion.get().hideDocumentation();
+                        Completion.get().hideCompletion();
+                    }
                 } else if (queryType == TOOLTIP_QUERY_TYPE) {
                     resultSet.setToolTip(toolTip);
                 }
@@ -2379,7 +2390,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 return;
             int offset = env.getOffset();
             if (fqnPrefix == null)
-                fqnPrefix = ""; //NOI18N
+                fqnPrefix = EMPTY;
             for (String pkgName : env.getController().getClasspathInfo().getClassIndex().getPackageNames(fqnPrefix, true,EnumSet.allOf(ClassIndex.SearchScope.class)))
                 if (pkgName.length() > 0)
                     results.add(JavaCompletionItem.createPackageItem(pkgName, offset, false));
@@ -2449,7 +2460,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             int offset = env.getOffset();
             String prefix = env.getPrefix();
             CompilationController controller = env.getController();
-            for(ElementHandle<TypeElement> name : controller.getJavaSource().getClasspathInfo().getClassIndex().getDeclaredTypes(prefix != null ? prefix : "", Utilities.isCaseSensitive() ? ClassIndex.NameKind.PREFIX : ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX, EnumSet.allOf(ClassIndex.SearchScope.class))) { //NOI18N
+            for(ElementHandle<TypeElement> name : controller.getJavaSource().getClasspathInfo().getClassIndex().getDeclaredTypes(prefix != null ? prefix : EMPTY, Utilities.isCaseSensitive() ? ClassIndex.NameKind.PREFIX : ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX, EnumSet.allOf(ClassIndex.SearchScope.class))) {
                 results.add(LazyTypeCompletionItem.create(name.getQualifiedName(), kinds, offset, controller));
             }
         }
@@ -2900,15 +2911,20 @@ public class JavaCompletionProvider implements CompletionProvider {
             }
             return false;
         }
-        private boolean isJavaIdentifierPart(String text) {
+        private String getJavaIdentifierPart(String text) {
+            int idx = -1;
             for (int i = 0; i < text.length(); i++) {
-                if (!(Character.isJavaIdentifierPart(text.charAt(i))) ) {
-                    return false;
+                if (idx < 0) {
+                    if (Character.isWhitespace(text.charAt(i)))
+                        continue;
+                    idx = i;
                 }
+                if (!(Character.isJavaIdentifierPart(text.charAt(i))))
+                    return null;
             }
-            return true;
+            return idx < 0 ? EMPTY : text.substring(idx);
         }
-        
+
         private Collection getFilteredData(Collection<JavaCompletionItem> data, String prefix) {
             if (prefix.length() == 0)
                 return data;

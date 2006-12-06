@@ -176,6 +176,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     JTextComponent component = (JTextComponent)evt.getSource();
                     int caretOffset = component.getSelectionEnd();
                     substituteText(component, substitutionOffset, caretOffset - substitutionOffset, Character.toString(evt.getKeyChar()));
+                    if (evt.getKeyChar() == '.')
+                        Completion.get().showCompletion();
                     evt.consume();
                     break;
             }

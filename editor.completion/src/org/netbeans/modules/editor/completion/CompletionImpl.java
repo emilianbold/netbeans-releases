@@ -751,7 +751,9 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                 // Show documentation as well if set by default
                 if (CompletionSettings.INSTANCE.documentationAutoPopup()) {
                     if (noSuggestions) {
-                        hideDocumentation();
+                        docAutoPopupTimer.stop(); // Ensure the popup timer gets stopped
+                        documentationCancel();
+                        layout.hideDocumentation();
                     } else {
                         restartDocumentationAutoPopupTimer();
                     }
