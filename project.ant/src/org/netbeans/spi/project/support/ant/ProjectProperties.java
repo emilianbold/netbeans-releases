@@ -27,11 +27,9 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.ProjectManager;
@@ -46,6 +44,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Mutex;
+import org.openide.util.NbCollections;
 import org.openide.util.RequestProcessor;
 import org.openide.util.UserQuestionException;
 import org.openide.util.Utilities;
@@ -78,6 +77,14 @@ final class ProjectProperties {
      */
     public ProjectProperties(AntProjectHelper helper) {
         this.helper = helper;
+    }
+
+    /**
+     * Reclaim some memory by discarding cache.
+     * @see "issue #90195"
+     */
+    public void clear() {
+        properties.clear();
     }
     
     /**
@@ -367,17 +374,10 @@ final class ProjectProperties {
      */
     public PropertyProvider getStockPropertyPreprovider() {
         if (stockPropertyPreprovider == null) {
-            Map<String,String> m = new HashMap<String,String>();
+            Map<String,String> m;
             Properties p = System.getProperties();
             synchronized (p) {
-                for (Map.Entry<Object,Object> entry : p.entrySet()) {
-                    try {
-                        m.put((String) entry.getKey(), (String) entry.getValue());
-                    } catch (ClassCastException e) {
-                        Logger.getLogger(ProjectProperties.class.getName()).warning(
-                                "WARNING: removing non-String-valued system property " + entry.getKey() + "=" + entry.getValue() + " (cf. #45788)");
-                    }
-                }
+                m = NbCollections.checkedMapByCopy(p, String.class, String.class, false);
             }
             m.put("basedir", FileUtil.toFile(helper.getProjectDirectory()).getAbsolutePath()); // NOI18N
             File antJar = InstalledFileLocator.getDefault().locate("ant/lib/ant.jar", "org.apache.tools.ant.module", false); // NOI18N

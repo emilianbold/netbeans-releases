@@ -145,6 +145,13 @@ public final class AntProjectHelper {
      * Xerces' DOM is not thread-safe <em>even for reading<em> (#50198).
      */
     private final Set<String> modifiedMetadataPaths = new HashSet<String>();
+
+    /**
+     * Task to remove cached metadata after some time, if it is not being actively used.
+     * @see "issue #90195"
+     */
+    private final RequestProcessor.Task clearUnmodifiedMetadataTask;
+    private static final int CLEAR_UNMODIFIED_METADATA_TIMEOUT = 15000;
     
     /**
      * Registered listeners.
@@ -190,6 +197,17 @@ public final class AntProjectHelper {
         fileListener = new FileListener();
         FileChangeSupport.DEFAULT.addListener(fileListener, resolveFile(PROJECT_XML_PATH));
         FileChangeSupport.DEFAULT.addListener(fileListener, resolveFile(PRIVATE_XML_PATH));
+        clearUnmodifiedMetadataTask = RP.post(new Runnable() {
+            public void run() {
+                synchronized (modifiedMetadataPaths) {
+                    if (modifiedMetadataPaths.isEmpty()) {
+                        AntProjectHelper.this.projectXml = null;
+                        privateXml = null;
+                        properties.clear();
+                    }
+                }
+            }
+        }, CLEAR_UNMODIFIED_METADATA_TIMEOUT);
     }
     
     /**
@@ -206,6 +224,7 @@ public final class AntProjectHelper {
     private Document getConfigurationXml(boolean shared) {
         assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
         assert Thread.holdsLock(modifiedMetadataPaths);
+        clearUnmodifiedMetadataTask.schedule(CLEAR_UNMODIFIED_METADATA_TIMEOUT);
         Document xml = shared ? projectXml : privateXml;
         if (xml == null) {
             String path = shared ? PROJECT_XML_PATH : PRIVATE_XML_PATH;
@@ -339,6 +358,7 @@ public final class AntProjectHelper {
                                         privateXml = null;
                                     }
                                 }
+                                clearUnmodifiedMetadataTask.schedule(CLEAR_UNMODIFIED_METADATA_TIMEOUT);
                                 fireExternalChange(path);
                                 cancelPendingHook();
                             }
@@ -552,6 +572,7 @@ public final class AntProjectHelper {
                         throw e;
                     }
                 }
+                clearUnmodifiedMetadataTask.schedule(CLEAR_UNMODIFIED_METADATA_TIMEOUT);
             }
         } finally {
             // #57791: release locks outside synchronized block.
@@ -614,6 +635,7 @@ public final class AntProjectHelper {
         if (path.equals(AntProjectHelper.PROJECT_XML_PATH) || path.equals(AntProjectHelper.PRIVATE_XML_PATH)) {
             throw new IllegalArgumentException("Attempt to load properties from a project XML file"); // NOI18N
         }
+        clearUnmodifiedMetadataTask.schedule(CLEAR_UNMODIFIED_METADATA_TIMEOUT);
         return ProjectManager.mutex().readAccess(new Mutex.Action<EditableProperties>() {
             public EditableProperties run() {
                 return properties.getProperties(path);
@@ -641,6 +663,7 @@ public final class AntProjectHelper {
         if (path.equals(AntProjectHelper.PROJECT_XML_PATH) || path.equals(AntProjectHelper.PRIVATE_XML_PATH)) {
             throw new IllegalArgumentException("Attempt to store properties from a project XML file"); // NOI18N
         }
+        clearUnmodifiedMetadataTask.schedule(CLEAR_UNMODIFIED_METADATA_TIMEOUT);
         ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
             public Void run() {
                 if (properties.putProperties(path, props)) {
@@ -660,6 +683,7 @@ public final class AntProjectHelper {
      * @return a property provider implementation
      */
     public PropertyProvider getPropertyProvider(final String path) {
+        clearUnmodifiedMetadataTask.schedule(CLEAR_UNMODIFIED_METADATA_TIMEOUT);
         if (path.equals(AntProjectHelper.PROJECT_XML_PATH) || path.equals(AntProjectHelper.PRIVATE_XML_PATH)) {
             throw new IllegalArgumentException("Attempt to store properties from a project XML file"); // NOI18N
         }
@@ -1044,6 +1068,7 @@ public final class AntProjectHelper {
      * @see PropertyUtils#sequentialPropertyEvaluator
      */
     public PropertyProvider getStockPropertyPreprovider() {
+        clearUnmodifiedMetadataTask.schedule(CLEAR_UNMODIFIED_METADATA_TIMEOUT);
         return properties.getStockPropertyPreprovider();
     }
     
@@ -1058,6 +1083,7 @@ public final class AntProjectHelper {
      * @return a standard property evaluator
      */
     public PropertyEvaluator getStandardPropertyEvaluator() {
+        clearUnmodifiedMetadataTask.schedule(CLEAR_UNMODIFIED_METADATA_TIMEOUT);
         return properties.getStandardPropertyEvaluator();
     }
     
