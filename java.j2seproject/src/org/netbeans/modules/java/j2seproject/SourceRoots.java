@@ -192,6 +192,7 @@ public final class SourceRoots {
                                     if (!f.exists()) {
                                         url = new URL(url.toExternalForm() + "/"); // NOI18N
                                     }
+                                    assert url.toExternalForm().endsWith("/") : "#90639 violation for " + url + "; " + f + " exists? " + f.exists() + " dir? " + f.isDirectory() + " file? " + f.isFile();
                                     result.add(url);
                                 } catch (MalformedURLException e) {
                                     ErrorManager.getDefault().notify(e);
