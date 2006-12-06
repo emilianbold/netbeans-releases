@@ -16,11 +16,13 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
@@ -473,7 +475,25 @@ public class NBSLanguageReader {
                 throw new ParseException ("Syntax error.");
             if (!(feature instanceof Map))
                 throw new ParseException ("Syntax error.");
+            
+            String c = getString ((Map) feature, "context", true);
+            String first = null;
+            StringTokenizer st = new StringTokenizer (c, ",");
+            Set cs = new HashSet ();
+            while (st.hasMoreElements ())
+                if (first == null)
+                    first = st.nextToken ().trim ();
+                else
+                    cs.add (st.nextToken ().trim ());
+            ((Map) feature).put ("context", new Object[] {first, cs});
+            
             language.addFeature (featureName, identifier, feature);
+//            Set s = (Set) language.getProperty (language.getMimeType (), "contexts");
+//            if (s == null) {
+//                s = new HashSet ();
+//                language.addProperty ("contexts", s);
+//            }
+//            s.add (cs);
         } else
         if (Language.TOOLTIP.equals (featureName)) {
             if (identifier == null)

@@ -10,6 +10,7 @@
 package org.netbeans.modules.languages.javascript;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
@@ -17,6 +18,7 @@ import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
+import javax.swing.text.StyledDocument;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -35,6 +37,7 @@ import org.openide.text.Line;
 import org.openide.text.NbDocument;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
+
 
 /**
  *
@@ -75,8 +78,15 @@ public class JavaScript {
 
     public static Runnable hyperlink (PTPath path) {
         SToken t = (SToken) path.getLeaf ();
+        ASTNode n = path.size () > 1 ? 
+            (ASTNode) path.get (path.size () - 2) :
+            null;
         String name = t.getIdentifier ();
-        final Line.Part l = (Line.Part) DatabaseManager.get (name);
+        List list = DatabaseManager.get (n, name, false);
+        if (list.isEmpty ()) 
+            list = DatabaseManager.get (DatabaseManager.FOLDER, name);
+        if (list.isEmpty ()) return null;
+        final Line.Part l = (Line.Part) list.get (0);
         if (l == null) return null;
         DataObject dataObject = (DataObject) l.getLine ().getLookup ().
             lookup (DataObject.class);
@@ -141,7 +151,13 @@ public class JavaScript {
             completionItems.addAll (getLibrary ().getItems ("keyword"));
             completionItems.addAll (getLibrary ().getItems ("root"));
         }
-        return completionItems;
+        ArrayList l = new ArrayList ();
+        Collection c = DatabaseManager.getIds ((ASTNode) path.get (path.size () - 2), true);
+        l.addAll (c);
+        c = DatabaseManager.getIds (DatabaseManager.FOLDER);
+        l.addAll (c);
+        l.addAll (completionItems);
+        return l;
     }
 
     private static List completionDescriptions;
@@ -149,6 +165,7 @@ public class JavaScript {
     public static List completionDescriptions (PTPath path) {
         if (completionDescriptions == null) {
             List tags = completionItems (path);
+            tags = completionItems;
             completionDescriptions = new ArrayList (tags.size ());
             Iterator it = tags.iterator ();
             while (it.hasNext ()) {
@@ -178,7 +195,13 @@ public class JavaScript {
                 }
             }
         }
-        return completionDescriptions;
+        ArrayList l = new ArrayList ();
+        Collection c = DatabaseManager.getIds ((ASTNode) path.get (path.size () - 2), true);
+        l.addAll (c);
+        c = DatabaseManager.getIds (DatabaseManager.FOLDER);
+        l.addAll (c);
+        l.addAll (completionDescriptions);
+        return l;
     }
     
     

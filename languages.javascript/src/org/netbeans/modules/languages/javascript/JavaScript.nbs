@@ -337,17 +337,17 @@ COMPLETION:js-whitespace {
 }
 
 STORE:VariableDeclaration {
-    context:current_project;
+    context:"Folder,Block";
     name:"$js-identifier$";
 }
 
 STORE:FunctionDeclaration {
-    context:current_project;
+    context:"Folder,Block";
     name:"$js-identifier$";
 }
 
 STORE:PropertyNameAndValue {
-    context:current_project;
+    context:"Folder,Block";
     name:"$PropertyName$";
 }
 
