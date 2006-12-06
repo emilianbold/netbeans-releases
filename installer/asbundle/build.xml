@@ -24,8 +24,6 @@ Microsystems, Inc. All Rights Reserved.
   <property file="nbproject/private/private.properties"/>  
   <property file="build.properties" />
 
-  <property name="storage.builder" location="../../java/storagebuilder/dist/storagebuilder.jar"/>
-  <property name="preparse.files" location="../../java/storagebuilder/preparse-files.txt"/>
   <property name="nb.dir" location="../../nbbuild/netbeans"/>
   <property name="nb.dir.tmp" location="build/netbeans"/>
 
@@ -139,10 +137,6 @@ Microsystems, Inc. All Rights Reserved.
         <arg value="as.installer=${as.installer}"/>
         <arg value="-alias"/>
         <arg value="as.scripts.dir=build/scripts"/>
-        <arg value="-alias"/>
-        <arg value="storage.builder=${storage.builder}"/>
-        <arg value="-alias"/>
-        <arg value="sb.scripts.dir=build/storagebuilder"/>
         <classpath>
           <pathelement path="build/classes" />
           <path refid="ismp.cp"/>
@@ -153,16 +147,12 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="build-linux" depends="init, clean-build, compile, create-statefile, copy-netbeans, run-pack">
     <copy file="scripts/as-unix-install.template" tofile="build/scripts/as-unix-install.template"/>
-    <copy file="${preparse.files}"
-          tofile="build/storagebuilder/preparse-files.txt"/>
     <build-installer input.ismp.project="as-linux"/>
     <move file="build/disk1/setuplinux.bin" tofile="dist/${installer.basename}-linux.bin"/>
   </target>
   
   <target name="build-linux-ml" depends="init-ml, clean-build, compile, create-statefile, xsl-linux-ml, copy-netbeans, run-pack">
     <copy file="scripts/as-unix-install.template" tofile="build/scripts/as-unix-install.template"/>
-    <copy file="${preparse.files}"
-          tofile="build/storagebuilder/preparse-files.txt"/>
     <build-installer input.ismp.project="as-linux-ml"/>
     <move file="build/disk1/setuplinux.bin" tofile="dist/${installer.basename}-linux-ml.bin"/>
     <delete file="as-linux-ml.uip"/>
@@ -170,16 +160,12 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="build-solaris-sparc" depends="init, clean-build, compile, create-statefile, copy-netbeans, run-pack">
     <copy file="scripts/as-unix-install.template" tofile="build/scripts/as-unix-install.template"/>
-    <copy file="${preparse.files}"
-          tofile="build/storagebuilder/preparse-files.txt"/>
     <build-installer input.ismp.project="as-solaris-sparc"/>
     <move file="build/disk1/setupSolarisSparc.bin" tofile="dist/${installer.basename}-solsparc.bin"/>
   </target>
   
   <target name="build-solaris-sparc-ml" depends="init-ml, clean-build, compile, create-statefile, xsl-solaris-sparc-ml, copy-netbeans, run-pack">
     <copy file="scripts/as-unix-install.template" tofile="build/scripts/as-unix-install.template"/>
-    <copy file="${preparse.files}"
-          tofile="build/storagebuilder/preparse-files.txt"/>
     <build-installer input.ismp.project="as-solaris-sparc-ml"/>
     <delete file="as-solaris-sparc-ml.uip"/>
     <move file="build/disk1/setupSolarisSparc.bin" tofile="dist/${installer.basename}-solsparc-ml.bin"/>
@@ -187,16 +173,12 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="build-solaris-x86" depends="init, clean-build, compile, create-statefile, copy-netbeans, run-pack">
     <copy file="scripts/as-unix-install.template" tofile="build/scripts/as-unix-install.template"/>
-    <copy file="${preparse.files}"
-          tofile="build/storagebuilder/preparse-files.txt"/>
     <build-installer input.ismp.project="as-solaris-x86"/>
     <move file="build/disk1/setupSolarisX86.bin" tofile="dist/${installer.basename}-solx86.bin"/>
   </target>
   
   <target name="build-solaris-x86-ml" depends="init-ml, clean-build, compile, create-statefile, xsl-solaris-x86-ml, copy-netbeans, run-pack">
     <copy file="scripts/as-unix-install.template" tofile="build/scripts/as-unix-install.template"/>
-    <copy file="${preparse.files}"
-          tofile="build/storagebuilder/preparse-files.txt"/>
     <build-installer input.ismp.project="as-solaris-x86-ml"/>
     <delete file="as-solaris-x86-ml.uip"/>
     <move file="build/disk1/setupSolarisX86.bin" tofile="dist/${installer.basename}-solx86-ml.bin"/>
@@ -205,8 +187,6 @@ Microsystems, Inc. All Rights Reserved.
   <target name="build-windows" depends="init, clean-build, compile, create-statefile, copy-netbeans, run-pack">
     <mkdir dir="build/scripts/as_setup"/>
     <copy file="scripts/as-win-install.template" tofile="build/scripts/as_setup/as-win-install.template"/>
-    <copy file="${preparse.files}"
-          tofile="build/storagebuilder/preparse-files.txt"/>
     <move file="build/scripts/statefile" todir="build/scripts/as_setup"/>
     <exec os="Linux SunOS" executable="unzip">
       <arg line="${as.installer} -d build/scripts/as_setup"/>
@@ -220,8 +200,6 @@ Microsystems, Inc. All Rights Reserved.
   <target name="build-windows-ml" depends="init-ml, clean-build, compile, create-statefile, xsl-windows-ml, copy-netbeans, run-pack">
     <mkdir dir="build/scripts/as_setup"/>
     <copy file="scripts/as-win-install.template" tofile="build/scripts/as_setup/as-win-install.template"/>
-    <copy file="${preparse.files}"
-          tofile="build/storagebuilder/preparse-files.txt"/>
     <move file="build/scripts/statefile" todir="build/scripts/as_setup"/>
     <exec os="Linux SunOS" executable="unzip">
       <arg line="${as.installer} -d build/scripts/as_setup"/>
@@ -236,8 +214,6 @@ Microsystems, Inc. All Rights Reserved.
   <target name="build-macosx" depends="init, clean-build, compile, create-statefile, copy-netbeans, run-pack, create-app">
     <mkdir dir="build/scripts/as_setup"/>
     <copy file="scripts/as-macosx-install.template" tofile="build/scripts/as_setup/as-macosx-install.template"/>
-    <copy file="${preparse.files}"
-          tofile="build/storagebuilder/preparse-files.txt"/>
     <move file="build/scripts/statefile" todir="build/scripts/as_setup"/>
     <exec os="Linux SunOS" executable="unzip">
       <arg line="${as.installer} -d build/scripts/as_setup"/>
@@ -251,8 +227,6 @@ Microsystems, Inc. All Rights Reserved.
   <target name="build-macosx-ml" depends="init-ml, clean-build, compile, create-statefile, copy-netbeans, run-pack, create-app, xsl-macosx-ml">
     <mkdir dir="build/scripts/as_setup"/>
     <copy file="scripts/as-macosx-install.template" tofile="build/scripts/as_setup/as-macosx-install.template"/>
-    <copy file="${preparse.files}"
-          tofile="build/storagebuilder/preparse-files.txt"/>
     <move file="build/scripts/statefile" todir="build/scripts/as_setup"/>
     <exec os="Linux SunOS" executable="unzip">
       <arg line="${as.installer} -d build/scripts/as_setup"/>
