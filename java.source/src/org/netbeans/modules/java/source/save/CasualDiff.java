@@ -282,16 +282,19 @@ public class CasualDiff {
     // parameter which delegates to original one visitMethodDef().
     private Name origClassName = null;
     
-    protected void diffClassDef(JCClassDecl oldT, JCClassDecl newT, int[] bounds) throws IOException, BadLocationException {
-        int localPointer = bounds[0];
+    protected int diffClassDef(JCClassDecl oldT, JCClassDecl newT, int[] bounds) throws IOException, BadLocationException {
+        int localPointer =  bounds[0];
+        int insertHint = localPointer;
         currentIndentLevel += 4;
         JCTree opar = oldParent;
         oldParent = oldT;
         JCTree npar = newParent;
         newParent = newT;
+        // skip the section when printing anonymous class
+        if (anonClass == false) {
         tokenSequence.move(oldT.pos);
         tokenSequence.moveNext();
-        int insertHint = TokenUtilities.moveNext(tokenSequence, tokenSequence.offset());
+        insertHint = TokenUtilities.moveNext(tokenSequence, tokenSequence.offset());
         printer.reset(0);
         localPointer = diffModifiers(oldT.mods, newT.mods, oldT, localPointer);
         if (nameChanged(oldT.name, newT.name)) {
@@ -374,6 +377,11 @@ public class CasualDiff {
             JCTree t = oldT.defs.head.pos == oldT.pos ? oldT.defs.tail.head : oldT.defs.head;
             if (t != null) insertHint = t.getStartPosition();
         }
+        } else {
+            insertHint = TokenUtilities.moveFwdToToken(tokenSequence, getOldPos(oldT), JavaTokenId.LBRACE);
+            tokenSequence.moveNext();
+            insertHint = tokenSequence.offset();
+        }
         VeryPretty mujPrinter = new VeryPretty(context, JavaFormatOptions.getDefault());
         mujPrinter.enclClassName = newT.getSimpleName();
         int[] pos = diffList(filterHidden(oldT.defs), filterHidden(newT.defs), insertHint, EstimatorFactory.members(), Measure.DEFAULT, mujPrinter);
@@ -389,9 +397,11 @@ public class CasualDiff {
         newParent = npar;
         // the reference is no longer needed.
         origClassName = null;
+        currentIndentLevel -= 4;
+        return bounds[1];
     }
 
-    protected void diffMethodDef(JCMethodDecl oldT, JCMethodDecl newT, int[] bounds) throws IOException, BadLocationException {
+    protected int diffMethodDef(JCMethodDecl oldT, JCMethodDecl newT, int[] bounds) throws IOException, BadLocationException {
         printer.reset(currentIndentLevel);
         int localPointer = bounds[0];
         localPointer = diffModifiers(oldT.mods, newT.mods, oldT, localPointer);
@@ -454,10 +464,10 @@ public class CasualDiff {
             printer.print(origText.substring(localPointer, localPointer = posHint));
         localPointer = diffList2(oldT.thrown, newT.thrown, posHint, EstimatorFactory.throwz());
         posHint = endPos(oldT) - 1;
-        diffTree(oldT.body, newT.body);
+        localPointer = diffTree(oldT.body, newT.body, localPointer);
         diffTree(oldT.defaultValue, newT.defaultValue);
         printer.print(origText.substring(localPointer, bounds[1]));
-        pointer = bounds[1];
+        return bounds[1];
     }
 
     protected int diffVarDef(JCVariableDecl oldT, JCVariableDecl newT, int[] bounds) throws IOException, BadLocationException {
@@ -478,11 +488,24 @@ public class CasualDiff {
         return bounds[1];
     }
 
-    protected void diffBlock(JCBlock oldT, JCBlock newT) throws IOException, BadLocationException {
+    protected int diffBlock(JCBlock oldT, JCBlock newT, int lastPrinted) throws IOException, BadLocationException {
+        int localPointer = lastPrinted;
         if (oldT.flags != newT.flags)
             append(Diff.flags(oldT.pos, endPos(oldT), oldT.flags, newT.flags));
         VeryPretty bodyPrinter = new VeryPretty(context, JavaFormatOptions.getDefault());
-        diffList(oldT.stats, newT.stats, oldT.pos + 1, EstimatorFactory.members(), Measure.DEFAULT, bodyPrinter); // hint after open brace
+        currentIndentLevel += 4;
+        bodyPrinter.reset(currentIndentLevel);
+        int[] pos = diffList(oldT.stats, newT.stats, oldT.pos + 1, EstimatorFactory.members(), Measure.DEFAULT, bodyPrinter); // hint after open brace
+        if (localPointer < pos[0]) {
+            printer.print(origText.substring(localPointer, pos[0]));
+        }
+        localPointer = pos[1];
+        printer.print(bodyPrinter.toString());
+        if (localPointer < endPos(oldT)) {
+            printer.print(origText.substring(localPointer, localPointer = endPos(oldT)));
+        }
+        currentIndentLevel -= 4;
+        return localPointer;
     }
 
     protected void diffDoLoop(JCDoWhileLoop oldT, JCDoWhileLoop newT) {
@@ -561,8 +584,9 @@ public class CasualDiff {
         }
     }
 
-    protected void diffExec(JCExpressionStatement oldT, JCExpressionStatement newT) {
-        diffTree(oldT.expr, newT.expr);
+    protected int diffExec(JCExpressionStatement oldT, JCExpressionStatement newT, int[] elementBounds) {
+        int retVal = diffTree(oldT.expr, newT.expr, elementBounds);
+        return retVal;
     }
 
     protected void diffBreak(JCBreak oldT, JCBreak newT) {
@@ -596,13 +620,19 @@ public class CasualDiff {
         diffParameterList(oldT.args, newT.args);
     }
 
+    boolean anonClass = false;
+    
     protected int diffNewClass(JCNewClass oldT, JCNewClass newT, int[] bounds) {
         int localPointer = bounds[0];
         diffTree(oldT.encl, newT.encl);
         diffParameterList(oldT.typeargs, newT.typeargs);
         localPointer = diffTree(oldT.clazz, newT.clazz, localPointer);
         diffParameterList(oldT.args, newT.args);
-        diffTree(oldT.def, newT.def);
+        // let diffClassDef() method notified that anonymous class is printed.
+        printer.print(origText.substring(localPointer, getOldPos(oldT.def)));
+        anonClass = true; 
+        localPointer = diffTree(oldT.def, newT.def, new int[] { getOldPos(oldT.def), endPos(oldT.def)});
+        anonClass = false;
         printer.print(origText.substring(localPointer, bounds[1]));
         return bounds[1];
     }
@@ -1534,7 +1564,7 @@ public class CasualDiff {
         if (oldT == newT)
             return elementBounds[0];
         diffPrecedingComments(oldT, newT);
-
+        int retVal = -1;
         int oldPos = getOldPos(oldT);
 
         // todo (#pf): use this just for the non-rewritten places.
@@ -1542,7 +1572,9 @@ public class CasualDiff {
              oldT.tag != JCTree.METHODDEF && 
              oldT.tag != JCTree.CLASSDEF && 
              oldT.tag != JCTree.VARDEF &&
-             oldT.tag != JCTree.IDENT) &&
+             oldT.tag != JCTree.IDENT &&
+             oldT.tag != JCTree.EXEC &&
+             oldT.tag != JCTree.NEWCLASS) &&
             (oldT.tag != newT.tag || newT.pos == Query.NOPOS || oldT.type != newT.type)) {
             append(Diff.modify(oldT, oldPos, newT));
             return oldPos;
@@ -1556,17 +1588,17 @@ public class CasualDiff {
               diffImport((JCImport)oldT, (JCImport)newT);
               break;
           case JCTree.CLASSDEF:
-              diffClassDef((JCClassDecl)oldT, (JCClassDecl)newT, elementBounds);
+              retVal = diffClassDef((JCClassDecl)oldT, (JCClassDecl)newT, elementBounds);
               break;
           case JCTree.METHODDEF:
-              diffMethodDef((JCMethodDecl)oldT, (JCMethodDecl)newT, elementBounds);
+              retVal = diffMethodDef((JCMethodDecl)oldT, (JCMethodDecl)newT, elementBounds);
               break;
           case JCTree.VARDEF:
               return diffVarDef((JCVariableDecl)oldT, (JCVariableDecl)newT, elementBounds);
           case JCTree.SKIP:
               break;
           case JCTree.BLOCK:
-              diffBlock((JCBlock)oldT, (JCBlock)newT);
+              retVal = diffBlock((JCBlock)oldT, (JCBlock)newT, elementBounds[0]);
               break;
           case JCTree.DOLOOP:
               diffDoLoop((JCDoWhileLoop)oldT, (JCDoWhileLoop)newT);
@@ -1605,7 +1637,7 @@ public class CasualDiff {
               diffIf((JCIf)oldT, (JCIf)newT);
               break;
           case JCTree.EXEC:
-              diffExec((JCExpressionStatement)oldT, (JCExpressionStatement)newT);
+              retVal = diffExec((JCExpressionStatement)oldT, (JCExpressionStatement)newT, elementBounds);
               break;
           case JCTree.BREAK:
               diffBreak((JCBreak)oldT, (JCBreak)newT);
@@ -1626,7 +1658,8 @@ public class CasualDiff {
               diffApply((JCMethodInvocation)oldT, (JCMethodInvocation)newT);
               break;
           case JCTree.NEWCLASS:
-              return diffNewClass((JCNewClass)oldT, (JCNewClass)newT, elementBounds);
+              retVal = diffNewClass((JCNewClass)oldT, (JCNewClass)newT, elementBounds);
+              break;
           case JCTree.NEWARRAY:
               diffNewArray((JCNewArray)oldT, (JCNewArray)newT);
               break;
@@ -1649,7 +1682,8 @@ public class CasualDiff {
               diffSelect((JCFieldAccess)oldT, (JCFieldAccess)newT);
               break;
           case JCTree.IDENT:
-              return diffIdent((JCIdent)oldT, (JCIdent)newT, elementBounds[0]);
+              retVal = diffIdent((JCIdent)oldT, (JCIdent)newT, elementBounds[0]);
+              break;
           case JCTree.LITERAL:
               diffLiteral((JCLiteral)oldT, (JCLiteral)newT);
               break;
@@ -1732,7 +1766,7 @@ public class CasualDiff {
               throw new AssertionError(msg);
         }
         diffTrailingComments(oldT, newT);
-        return -1;
+        return retVal;
     }
 
     protected boolean listsMatch(List<? extends JCTree> oldList, List<? extends JCTree> newList) {
