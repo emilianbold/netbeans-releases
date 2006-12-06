@@ -14,8 +14,11 @@ import javax.swing.table.TableModel;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.JTableOperator;
+import org.netbeans.jemmy.operators.Operator;
+import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.test.subversion.operators.CommitStepOperator;
 import org.netbeans.test.subversion.operators.CreateNewFolderOperator;
@@ -38,6 +41,8 @@ public class ImportUITest extends JellyTestCase {
     public static final String PROJECT_NAME = "SVNApplication";
     public File projectPath;
     String os_name;
+    Operator.DefaultStringComparator comOperator; 
+    Operator.DefaultStringComparator oldOperator;
     
     /** Creates a new instance of ImportUITest */
     public ImportUITest(String name) {
@@ -82,8 +87,12 @@ public class ImportUITest extends JellyTestCase {
         RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
         RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);
         projectPath = TestKit.prepareProject("General", "Java Application", PROJECT_NAME);
-        
-        ImportWizardOperator iwo = ImportWizardOperator.invoke(ProjectsTabOperator.invoke().getProjectRootNode(PROJECT_NAME));
+        comOperator = new Operator.DefaultStringComparator(true, true);
+        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+        Node node = new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME);
+        Operator.setDefaultStringComparator(comOperator);
+        ImportWizardOperator iwo = ImportWizardOperator.invoke(node);
+        Operator.setDefaultStringComparator(oldOperator);
         iwo.cancel();
         
         //TestKit.removeAllData(PROJECT_NAME);
@@ -99,7 +108,12 @@ public class ImportUITest extends JellyTestCase {
         RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);
         projectPath = TestKit.prepareProject("General", "Java Application", PROJECT_NAME);
         
-        ImportWizardOperator iwo = ImportWizardOperator.invoke(ProjectsTabOperator.invoke().getProjectRootNode(PROJECT_NAME));
+        comOperator = new Operator.DefaultStringComparator(true, true);
+        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+        Node node = new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME);
+        Operator.setDefaultStringComparator(comOperator);
+        ImportWizardOperator iwo = ImportWizardOperator.invoke(node);
+        Operator.setDefaultStringComparator(oldOperator);
         RepositoryStepOperator rso = new RepositoryStepOperator();
         //rso.verify();
         rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
@@ -145,7 +159,12 @@ public class ImportUITest extends JellyTestCase {
         RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");      
         projectPath = TestKit.prepareProject("General", "Java Application", PROJECT_NAME);
         
-        ImportWizardOperator iwo = ImportWizardOperator.invoke(ProjectsTabOperator.invoke().getProjectRootNode(PROJECT_NAME));
+        comOperator = new Operator.DefaultStringComparator(true, true);
+        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+        Node node = new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME);
+        Operator.setDefaultStringComparator(comOperator);
+        ImportWizardOperator iwo = ImportWizardOperator.invoke(node);
+        Operator.setDefaultStringComparator(oldOperator);
         RepositoryStepOperator rso = new RepositoryStepOperator();
         //rso.verify();
         rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
@@ -212,7 +231,12 @@ public class ImportUITest extends JellyTestCase {
         RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");      
         projectPath = TestKit.prepareProject("General", "Java Application", PROJECT_NAME);
         
-        ImportWizardOperator iwo = ImportWizardOperator.invoke(ProjectsTabOperator.invoke().getProjectRootNode(PROJECT_NAME));
+        comOperator = new Operator.DefaultStringComparator(true, true);
+        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+        Node node = new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME);
+        Operator.setDefaultStringComparator(comOperator);
+        ImportWizardOperator iwo = ImportWizardOperator.invoke(node);
+        Operator.setDefaultStringComparator(oldOperator);
         RepositoryStepOperator rso = new RepositoryStepOperator();
         //rso.verify();
         rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
@@ -257,7 +281,12 @@ public class ImportUITest extends JellyTestCase {
         RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");      
         projectPath = TestKit.prepareProject("General", "Java Application", PROJECT_NAME);
         
-        ImportWizardOperator iwo = ImportWizardOperator.invoke(ProjectsTabOperator.invoke().getProjectRootNode(PROJECT_NAME));
+        comOperator = new Operator.DefaultStringComparator(true, true);
+        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+        Node node = new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME);
+        Operator.setDefaultStringComparator(comOperator);
+        ImportWizardOperator iwo = ImportWizardOperator.invoke(node);
+        Operator.setDefaultStringComparator(oldOperator);
         RepositoryStepOperator rso = new RepositoryStepOperator();
         //rso.verify();
         rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));

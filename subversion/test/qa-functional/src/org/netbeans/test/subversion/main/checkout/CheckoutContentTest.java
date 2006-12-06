@@ -19,6 +19,8 @@ import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.Operator;
+import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.test.subversion.operators.CheckoutWizardOperator;
@@ -39,6 +41,8 @@ public class CheckoutContentTest extends JellyTestCase {
     public static final String PROJECT_NAME = "JavaApp";
     public File projectPath;
     String os_name;
+    Operator.DefaultStringComparator comOperator; 
+    Operator.DefaultStringComparator oldOperator;
     
     /**
      * Creates a new instance of CheckoutContentTest
@@ -80,8 +84,13 @@ public class CheckoutContentTest extends JellyTestCase {
         TestKit.closeProject(PROJECT_NAME);
         OutputTabOperator oto;
         OutputOperator oo = OutputOperator.invoke();
+        
+        comOperator = new Operator.DefaultStringComparator(true, true);
+        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+        Operator.setDefaultStringComparator(comOperator);
         CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
-        RepositoryStepOperator rso = new RepositoryStepOperator();       
+        Operator.setDefaultStringComparator(oldOperator);
+        RepositoryStepOperator rso = new RepositoryStepOperator();
         
         //create repository... 
         File work = new File(TMP_PATH + File.separator + WORK_PATH + File.separator + "w" + System.currentTimeMillis());
@@ -119,7 +128,11 @@ public class CheckoutContentTest extends JellyTestCase {
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);    
         TestKit.closeProject(PROJECT_NAME);
         
+        comOperator = new Operator.DefaultStringComparator(true, true);
+        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+        Operator.setDefaultStringComparator(comOperator);
         CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
+        Operator.setDefaultStringComparator(oldOperator);
         RepositoryStepOperator rso = new RepositoryStepOperator();
         
         //create repository... 

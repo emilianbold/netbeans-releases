@@ -37,6 +37,8 @@ import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JFileChooserOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.netbeans.jemmy.operators.Operator;
+import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.test.subversion.operators.CheckoutWizardOperator;
 import org.netbeans.test.subversion.operators.RepositoryBrowserOperator;
@@ -57,6 +59,8 @@ public class CheckoutUITest extends JellyTestCase{
     public static final String PROJECT_NAME = "SVNApplication";
     public File projectPath;
     String os_name;
+    Operator.DefaultStringComparator comOperator; 
+    Operator.DefaultStringComparator oldOperator;
     
     /** Creates a new instance of CheckoutUITest */
     public CheckoutUITest(String name) {
@@ -85,11 +89,11 @@ public class CheckoutUITest extends JellyTestCase{
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        //suite.addTest(new CheckoutUITest("testInvokeClose"));
-        //suite.addTest(new CheckoutUITest("testChangeAccessTypes"));
-        //suite.addTest(new CheckoutUITest("testIncorrentUrl"));        
+        suite.addTest(new CheckoutUITest("testInvokeClose"));
+        suite.addTest(new CheckoutUITest("testChangeAccessTypes"));
+        suite.addTest(new CheckoutUITest("testIncorrentUrl"));        
         suite.addTest(new CheckoutUITest("testAvailableFields"));
-        //suite.addTest(new CheckoutUITest("testRepositoryFolder"));        
+        suite.addTest(new CheckoutUITest("testRepositoryFolder"));        
         return suite;
     }
     
@@ -104,7 +108,11 @@ public class CheckoutUITest extends JellyTestCase{
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
         
+        comOperator = new Operator.DefaultStringComparator(true, true);
+        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+        Operator.setDefaultStringComparator(comOperator);
         CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
+        Operator.setDefaultStringComparator(oldOperator);
         RepositoryStepOperator rso = new RepositoryStepOperator();
         rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE);
         Thread.sleep(1000);
@@ -134,7 +142,11 @@ public class CheckoutUITest extends JellyTestCase{
     public void testIncorrentUrl() throws Exception {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
+        comOperator = new Operator.DefaultStringComparator(true, true);
+        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+        Operator.setDefaultStringComparator(comOperator);
         CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
+        Operator.setDefaultStringComparator(oldOperator);
         RepositoryStepOperator rso = new RepositoryStepOperator();
         //wrong file
         rso.setRepositoryURL("dfile:///");
@@ -164,9 +176,13 @@ public class CheckoutUITest extends JellyTestCase{
     public void testAvailableFields() throws Exception {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
-        CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
-        RepositoryStepOperator rso = new RepositoryStepOperator();
         
+        comOperator = new Operator.DefaultStringComparator(true, true);
+        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+        Operator.setDefaultStringComparator(comOperator);
+        CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
+        Operator.setDefaultStringComparator(oldOperator);
+        RepositoryStepOperator rso = new RepositoryStepOperator();
         //file
         rso.selectRepositoryURL(RepositoryStepOperator.ITEM_FILE);
         TimeoutExpiredException tee = null;
@@ -300,7 +316,12 @@ public class CheckoutUITest extends JellyTestCase{
     public void testRepositoryFolder() throws Exception {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);    
+        
+        comOperator = new Operator.DefaultStringComparator(true, true);
+        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+        Operator.setDefaultStringComparator(comOperator);
         CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
+        Operator.setDefaultStringComparator(oldOperator);
         RepositoryStepOperator rso = new RepositoryStepOperator();
     
         //create repository... 
@@ -342,7 +363,12 @@ public class CheckoutUITest extends JellyTestCase{
     public void testStopProcess() throws Exception {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);    
+        
+        comOperator = new Operator.DefaultStringComparator(true, true);
+        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+        Operator.setDefaultStringComparator(comOperator);
         CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
+        Operator.setDefaultStringComparator(oldOperator);
         RepositoryStepOperator rso = new RepositoryStepOperator();
     
         //create repository... 

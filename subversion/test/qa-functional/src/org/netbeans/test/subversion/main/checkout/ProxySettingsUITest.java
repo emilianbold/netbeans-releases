@@ -13,6 +13,8 @@ import junit.textui.TestRunner;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
+import org.netbeans.jemmy.operators.Operator;
+import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.test.subversion.operators.CheckoutWizardOperator;
 import org.netbeans.test.subversion.operators.ProxyConfigurationOperator;
@@ -25,6 +27,8 @@ import org.netbeans.test.subversion.operators.RepositoryStepOperator;
 public class ProxySettingsUITest extends JellyTestCase {
     
     String os_name;
+    Operator.DefaultStringComparator comOperator; 
+    Operator.DefaultStringComparator oldOperator;
     
     /** Creates a new instance of ProxySettingsUITest */
     public ProxySettingsUITest(String name) {
@@ -61,7 +65,11 @@ public class ProxySettingsUITest extends JellyTestCase {
     public void testProxySettings() {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
+        comOperator = new Operator.DefaultStringComparator(true, true);
+        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+        Operator.setDefaultStringComparator(comOperator);
         CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
+        Operator.setDefaultStringComparator(oldOperator);
         RepositoryStepOperator co1so = new RepositoryStepOperator();
         co1so.setRepositoryURL(RepositoryStepOperator.ITEM_HTTPS + "localhost");
         ProxyConfigurationOperator pco = co1so.invokeProxy();
@@ -81,7 +89,11 @@ public class ProxySettingsUITest extends JellyTestCase {
     public void testProxyBeforeUrl() throws Exception {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
+        comOperator = new Operator.DefaultStringComparator(true, true);
+        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+        Operator.setDefaultStringComparator(comOperator);
         CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
+        Operator.setDefaultStringComparator(oldOperator);
         RepositoryStepOperator co1so = new RepositoryStepOperator();
         co1so.setRepositoryURL(RepositoryStepOperator.ITEM_HTTPS);
                 
