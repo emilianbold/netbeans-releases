@@ -39,6 +39,8 @@ import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JProgressBarOperator;
+import org.netbeans.jemmy.operators.Operator;
+import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 /**
@@ -53,6 +55,8 @@ public class TagTest extends JellyTestCase {
     final String projectName = "ForImport";
     final String pathToMain = "forimport|Main.java";
     final String PROTOCOL_FOLDER = "protocol";
+    Operator.DefaultStringComparator comOperator; 
+    Operator.DefaultStringComparator oldOperator;
     
     /** Creates a new instance of TagTest */
     public TagTest(String name) {
@@ -97,7 +101,11 @@ public class TagTest extends JellyTestCase {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         OutputOperator oo = OutputOperator.invoke();
+        comOperator = new Operator.DefaultStringComparator(true, true);
+        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+        Operator.setDefaultStringComparator(comOperator);
         CheckoutWizardOperator cwo = CheckoutWizardOperator.invoke();
+        Operator.setDefaultStringComparator(oldOperator);
         CVSRootStepOperator crso = new CVSRootStepOperator();
         //JComboBoxOperator combo = new JComboBoxOperator(crso, 0);
         crso.setCVSRoot(":pserver:anoncvs@localhost:/cvs");
@@ -165,7 +173,7 @@ public class TagTest extends JellyTestCase {
         open.push();
         ProjectSupport.waitScanFinished();
         //create new elements for testing
-        TestKit.createNewElements(null);
+        TestKit.createNewElements(projectName);
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");
     }
     

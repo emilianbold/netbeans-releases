@@ -28,6 +28,8 @@ import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JProgressBarOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
+import org.netbeans.jemmy.operators.Operator;
+import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 
@@ -43,6 +45,8 @@ public class DeleteTest extends JellyTestCase {
     final String pathToMain = "forimport|Main.java";
     final String PROTOCOL_FOLDER = "protocol";
     static File cacheFolder;
+    Operator.DefaultStringComparator comOperator; 
+    Operator.DefaultStringComparator oldOperator;
     
     /** Creates a new instance of DeleteTest */
     public DeleteTest(String name) {
@@ -85,7 +89,11 @@ public class DeleteTest extends JellyTestCase {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         OutputOperator oo = OutputOperator.invoke();
+        comOperator = new Operator.DefaultStringComparator(true, true);
+        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+        Operator.setDefaultStringComparator(comOperator);
         CheckoutWizardOperator cwo = CheckoutWizardOperator.invoke();
+        Operator.setDefaultStringComparator(oldOperator);
         CVSRootStepOperator crso = new CVSRootStepOperator();
         //JComboBoxOperator combo = new JComboBoxOperator(crso, 0);
         crso.setCVSRoot(":pserver:anoncvs@localhost:/cvs");

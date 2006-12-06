@@ -33,6 +33,8 @@ import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JFileChooserOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.netbeans.jemmy.operators.Operator;
+import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 
@@ -56,6 +58,8 @@ public class UpdateTest extends JellyTestCase {
     static String sessionCVSroot;
     boolean unix = false;
     final String projectName = "CVS Client Library";
+    Operator.DefaultStringComparator comOperator; 
+    Operator.DefaultStringComparator oldOperator;
     
     /** Creates a new instance of UpdateTest */
     public UpdateTest(String name) {
@@ -1612,7 +1616,11 @@ public class UpdateTest extends JellyTestCase {
         File work = new File("/tmp/work/w" + System.currentTimeMillis());
         work.mkdir();
         OutputOperator oo = OutputOperator.invoke();
+        comOperator = new Operator.DefaultStringComparator(true, true);
+        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+        Operator.setDefaultStringComparator(comOperator);
         CheckoutWizardOperator cwo = CheckoutWizardOperator.invoke();
+        Operator.setDefaultStringComparator(oldOperator);
         CVSRootStepOperator crso = new CVSRootStepOperator();
         //JComboBoxOperator combo = new JComboBoxOperator(crso, 0);
         crso.setCVSRoot(cvsRoot);

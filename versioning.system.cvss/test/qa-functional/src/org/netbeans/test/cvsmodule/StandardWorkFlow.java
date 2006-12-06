@@ -40,6 +40,8 @@ import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JProgressBarOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.netbeans.jemmy.operators.Operator;
+import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 
@@ -55,6 +57,8 @@ public class StandardWorkFlow extends JellyTestCase {
     final String pathToMain = "forimport|Main.java";
     final String PROTOCOL_FOLDER = "protocol";
     static File cacheFolder;
+    Operator.DefaultStringComparator comOperator; 
+    Operator.DefaultStringComparator oldOperator;
     
     /**
      * Creates a new instance of CheckOutWizardTest
@@ -112,7 +116,11 @@ public class StandardWorkFlow extends JellyTestCase {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         OutputOperator oo = OutputOperator.invoke();
+        comOperator = new Operator.DefaultStringComparator(true, true);
+        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+        Operator.setDefaultStringComparator(comOperator);
         CheckoutWizardOperator cwo = CheckoutWizardOperator.invoke();
+        Operator.setDefaultStringComparator(oldOperator);
         CVSRootStepOperator crso = new CVSRootStepOperator();
         //JComboBoxOperator combo = new JComboBoxOperator(crso, 0);
         crso.setCVSRoot(":pserver:anoncvs@localhost:/cvs");
@@ -659,15 +667,15 @@ public class StandardWorkFlow extends JellyTestCase {
         bo.setBranchName("MyNewBranch");
         bo.checkSwitchToThisBranchAftewards(false);
         bo.checkTagBeforeBranching(false);
+        oto = new OutputTabOperator(sessionCVSroot); 
+        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);        
         bo.branch();
-        
+        Thread.sleep(1000);
         //oo = OutputOperator.invoke();
         //oto.waitText("Branching \"ForImport [Main]\" finished");
         oto.waitText("Branch");
         oto.waitText("ForImport");
         oto.waitText("finished");
-        Thread.sleep(1000);
-        
         cvss.stop();
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");
     }
@@ -692,16 +700,16 @@ public class StandardWorkFlow extends JellyTestCase {
         cvsRoot = cvss.getCvsRoot();
         
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", cvsRoot);
-        
+        oto = new OutputTabOperator(sessionCVSroot);
+        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
         SwitchToBranchOperator sbo = SwitchToBranchOperator.invoke(rootNode);
         sbo.switchToBranch();
         sbo.setBranch("MyNewBranch");
         sbo.pushSwitch();
-        
+        Thread.sleep(1000);
         //oo = OutputOperator.invoke();
         oto.waitText(" to Branch finished");
-        Thread.sleep(1000);
-        
+               
         cvss.stop();
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");
         
@@ -732,10 +740,12 @@ public class StandardWorkFlow extends JellyTestCase {
         JButtonOperator btnYes = new JButtonOperator(nbDialog, "Yes");
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", cvss.getCvsRoot());
         btnYes.push();
-        
+        Thread.sleep(1000);
+        oto = new OutputTabOperator(sessionCVSroot);
+        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
         oto.waitText("Reverting finished");
         cvss.stop();
-        Thread.sleep(1000);
+        
         
         nodeIDE = (org.openide.nodes.Node) nodeMain.getOpenideNode();
         assertNull("No color for node expected", nodeIDE.getHtmlDisplayName());
@@ -766,7 +776,10 @@ public class StandardWorkFlow extends JellyTestCase {
         
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", cvss.getCvsRoot() + "," + cvss2.getCvsRoot());
         Node nodeMain = new Node(new SourcePackagesNode("ForImport"), "forimport|Main.java");
+        oto = new OutputTabOperator(sessionCVSroot);
+        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
         nodeMain.performPopupAction("CVS|Show Annotations");
+        Thread.sleep(1000);
         oto.waitText("Loading Annotations finished");
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");
         cvss.stop(); 

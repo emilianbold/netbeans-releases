@@ -31,6 +31,8 @@ import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JProgressBarOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
+import org.netbeans.jemmy.operators.Operator;
+import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 
@@ -46,6 +48,8 @@ public class UpdateErrorTest extends JellyTestCase {
     final String pathToMain = "forimport|Main.java";
     static File cacheFolder;
     String PROTOCOL_FOLDER = "protocol";
+    Operator.DefaultStringComparator comOperator; 
+    Operator.DefaultStringComparator oldOperator;
     
     /**
      * Creates a new instance of UpdateErrorTest
@@ -71,7 +75,11 @@ public class UpdateErrorTest extends JellyTestCase {
         PROTOCOL_FOLDER = "protocol";
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 18000);
+        comOperator = new Operator.DefaultStringComparator(true, true);
+        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+        Operator.setDefaultStringComparator(comOperator);
         CheckoutWizardOperator cwo = CheckoutWizardOperator.invoke();
+        Operator.setDefaultStringComparator(oldOperator);
         CVSRootStepOperator crso = new CVSRootStepOperator();
         //JComboBoxOperator combo = new JComboBoxOperator(crso, 0);
         crso.setCVSRoot(":pserver:anoncvs@localhost:/cvs");

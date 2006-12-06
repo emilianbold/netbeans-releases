@@ -45,6 +45,8 @@ import org.netbeans.jemmy.operators.JPasswordFieldOperator;
 import org.netbeans.jemmy.operators.JProgressBarOperator;
 import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.netbeans.jemmy.operators.Operator;
+import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.ide.ProjectSupport;
@@ -58,6 +60,8 @@ public class CheckOutWizardTest extends JellyTestCase {
     final String projectName = "ForImport";
     final String pathToMain = "forimport|Main.java";
     final String PROTOCOL_FOLDER = "protocol";
+    Operator.DefaultStringComparator comOperator; 
+    Operator.DefaultStringComparator oldOperator; 
     
     /**
      * Creates a new instance of CheckOutWizardTest
@@ -128,7 +132,11 @@ public class CheckOutWizardTest extends JellyTestCase {
     }
     
     public void testCheckoutWizardLocal() {
+        comOperator = new Operator.DefaultStringComparator(true, true);
+        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+        Operator.setDefaultStringComparator(comOperator);
         CheckoutWizardOperator cwo = CheckoutWizardOperator.invoke();
+        Operator.setDefaultStringComparator(oldOperator);
         CVSRootStepOperator crso = new CVSRootStepOperator();
         crso.setCVSRoot(":local:/cvs");
         
@@ -150,7 +158,11 @@ public class CheckOutWizardTest extends JellyTestCase {
     }
     
     public void testCheckoutWizardFork() {
+        comOperator = new Operator.DefaultStringComparator(true, true);
+        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+        Operator.setDefaultStringComparator(comOperator);
         CheckoutWizardOperator cwo = CheckoutWizardOperator.invoke();
+        Operator.setDefaultStringComparator(oldOperator);
         CVSRootStepOperator crso = new CVSRootStepOperator();
         crso.setCVSRoot(":fork:/cvs");
         
@@ -172,7 +184,11 @@ public class CheckOutWizardTest extends JellyTestCase {
     }
     
     public void testCheckoutWizardPserver() {
+        comOperator = new Operator.DefaultStringComparator(true, true);
+        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+        Operator.setDefaultStringComparator(comOperator);
         CheckoutWizardOperator cwo = CheckoutWizardOperator.invoke();
+        Operator.setDefaultStringComparator(oldOperator);
         CVSRootStepOperator crso = new CVSRootStepOperator();
         
         crso.setCVSRoot(":pserver:test@localhost:2401/cvs");
@@ -209,7 +225,11 @@ public class CheckOutWizardTest extends JellyTestCase {
     }
     
     public void testCheckoutWizardExt() {
+        comOperator = new Operator.DefaultStringComparator(true, true);
+        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+        Operator.setDefaultStringComparator(comOperator);
         CheckoutWizardOperator cwo = CheckoutWizardOperator.invoke();
+        Operator.setDefaultStringComparator(oldOperator);
         CVSRootStepOperator crso = new CVSRootStepOperator();
         crso.setCVSRoot(":ext:test@localhost:2401/cvs");
         crso.rbUseInternalSSH().setSelected(true);
@@ -251,7 +271,11 @@ public class CheckOutWizardTest extends JellyTestCase {
         int am;
         String[] cvsRoots = new String[] {":local:/cvs", ":fork:/cvs", ":pserver:test@localhost:2401/cvs", ":ext:test@localhost:2401/cvs"};
         String[] accessMethods = new String[] {"local", "fork", "pserver", "ext"};
+        comOperator = new Operator.DefaultStringComparator(true, true);
+        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+        Operator.setDefaultStringComparator(comOperator);
         CheckoutWizardOperator cwo = CheckoutWizardOperator.invoke();
+        Operator.setDefaultStringComparator(oldOperator);
         CVSRootStepOperator crso = new CVSRootStepOperator();
         EditCVSRootOperator ecro;
         for (int i = 0; i < 10; i++) {
@@ -296,7 +320,11 @@ public class CheckOutWizardTest extends JellyTestCase {
     
     /** Tests proxy customizer. */
     public void testProxy() {
+        comOperator = new Operator.DefaultStringComparator(true, true);
+        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+        Operator.setDefaultStringComparator(comOperator);
         CheckoutWizardOperator cwo = CheckoutWizardOperator.invoke();
+        Operator.setDefaultStringComparator(oldOperator);
         CVSRootStepOperator cvsRootOper = new CVSRootStepOperator();
         cvsRootOper.setCVSRoot(":pserver:test@localhost:2401/cvs");
         ProxyConfigurationOperator proxyOper = cvsRootOper.proxyConfiguration();
@@ -315,7 +343,11 @@ public class CheckOutWizardTest extends JellyTestCase {
     
     public void testPserverUI() {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        comOperator = new Operator.DefaultStringComparator(true, true);
+        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+        Operator.setDefaultStringComparator(comOperator);
         CheckoutWizardOperator cwo = CheckoutWizardOperator.invoke();
+        Operator.setDefaultStringComparator(oldOperator);
         CVSRootStepOperator crso = new CVSRootStepOperator();
         
         //Invalid CVS Root
@@ -349,7 +381,11 @@ public class CheckOutWizardTest extends JellyTestCase {
     
     public void testLocalUI() {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        comOperator = new Operator.DefaultStringComparator(true, true);
+        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+        Operator.setDefaultStringComparator(comOperator);
         CheckoutWizardOperator cwo = CheckoutWizardOperator.invoke();
+        Operator.setDefaultStringComparator(oldOperator);
         CVSRootStepOperator crso = new CVSRootStepOperator();
         
         //Invalid CVS Root
@@ -383,7 +419,11 @@ public class CheckOutWizardTest extends JellyTestCase {
     
     public void testForkUI() {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        comOperator = new Operator.DefaultStringComparator(true, true);
+        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+        Operator.setDefaultStringComparator(comOperator);
         CheckoutWizardOperator cwo = CheckoutWizardOperator.invoke();
+        Operator.setDefaultStringComparator(oldOperator);
         CVSRootStepOperator crso = new CVSRootStepOperator();
         
         //Invalid CVS Root
@@ -416,7 +456,11 @@ public class CheckOutWizardTest extends JellyTestCase {
     
     public void testExtUI() {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        comOperator = new Operator.DefaultStringComparator(true, true);
+        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+        Operator.setDefaultStringComparator(comOperator);
         CheckoutWizardOperator cwo = CheckoutWizardOperator.invoke();
+        Operator.setDefaultStringComparator(oldOperator);
         CVSRootStepOperator crso = new CVSRootStepOperator();
         crso.setCVSRoot(":ext:test@localhost:2401/cvs");
         //Invalid CVS Root
@@ -453,7 +497,11 @@ public class CheckOutWizardTest extends JellyTestCase {
     
     public void testEditCVSRootDialogUI() {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        comOperator = new Operator.DefaultStringComparator(true, true);
+        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+        Operator.setDefaultStringComparator(comOperator);
         CheckoutWizardOperator cwo = CheckoutWizardOperator.invoke();
+        Operator.setDefaultStringComparator(oldOperator);
         CVSRootStepOperator crso = new CVSRootStepOperator();
         EditCVSRootOperator ecro = crso.edit();
         try {
@@ -491,7 +539,11 @@ public class CheckOutWizardTest extends JellyTestCase {
     public void testPserverLoginFailed() throws Exception{
         //invoke CVSCheckoutWizard
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        comOperator = new Operator.DefaultStringComparator(true, true);
+        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+        Operator.setDefaultStringComparator(comOperator);
         CheckoutWizardOperator cwo = CheckoutWizardOperator.invoke();
+        Operator.setDefaultStringComparator(oldOperator);
         final CVSRootStepOperator crso = new CVSRootStepOperator();
         crso.setCVSRoot(":pserver:test@localhost:/cvs");
         
@@ -534,7 +586,11 @@ public class CheckOutWizardTest extends JellyTestCase {
     public void testPserverLoginSuccess() throws Exception{
         //invoke CVSCheckoutWizard
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        comOperator = new Operator.DefaultStringComparator(true, true);
+        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+        Operator.setDefaultStringComparator(comOperator);
         CheckoutWizardOperator cwo = CheckoutWizardOperator.invoke();
+        Operator.setDefaultStringComparator(oldOperator);
         final CVSRootStepOperator crso = new CVSRootStepOperator();
         ProxyConfigurationOperator pco = crso.proxyConfiguration();
         pco.noProxyDirectConnection();
@@ -571,7 +627,11 @@ public class CheckOutWizardTest extends JellyTestCase {
     public void testRepositoryBrowsing() throws Exception {
         String CVSroot = "";
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        comOperator = new Operator.DefaultStringComparator(true, true);
+        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+        Operator.setDefaultStringComparator(comOperator);
         CheckoutWizardOperator cwo = CheckoutWizardOperator.invoke();
+        Operator.setDefaultStringComparator(oldOperator);
         CVSRootStepOperator crso = new CVSRootStepOperator();
         
         JComboBoxOperator combo = new JComboBoxOperator(crso, 0);
@@ -623,7 +683,11 @@ public class CheckOutWizardTest extends JellyTestCase {
     public void testAliasBrowsing() throws Exception {
         String CVSroot = "";
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        comOperator = new Operator.DefaultStringComparator(true, true);
+        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+        Operator.setDefaultStringComparator(comOperator);
         CheckoutWizardOperator cwo = CheckoutWizardOperator.invoke();
+        Operator.setDefaultStringComparator(oldOperator);
         CVSRootStepOperator crso = new CVSRootStepOperator();
         
         JComboBoxOperator combo = new JComboBoxOperator(crso, 0);
@@ -674,7 +738,11 @@ public class CheckOutWizardTest extends JellyTestCase {
     public void testBranchBrowsing() throws Exception {
         String CVSroot;
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        comOperator = new Operator.DefaultStringComparator(true, true);
+        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+        Operator.setDefaultStringComparator(comOperator);
         CheckoutWizardOperator cwo = CheckoutWizardOperator.invoke();
+        Operator.setDefaultStringComparator(oldOperator);
         CVSRootStepOperator crso = new CVSRootStepOperator();
         
         crso.setCVSRoot(":pserver:anoncvs@localhost:/cvs");
@@ -733,7 +801,11 @@ public class CheckOutWizardTest extends JellyTestCase {
     public void testTagBrowsing() throws Exception {
         String CVSroot;
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        comOperator = new Operator.DefaultStringComparator(true, true);
+        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+        Operator.setDefaultStringComparator(comOperator);
         CheckoutWizardOperator cwo = CheckoutWizardOperator.invoke();
+        Operator.setDefaultStringComparator(oldOperator);
         CVSRootStepOperator crso = new CVSRootStepOperator();
         
         crso.setCVSRoot(":pserver:anoncvs@localhost:/cvs");
@@ -802,7 +874,11 @@ public class CheckOutWizardTest extends JellyTestCase {
     
     public void testCheckWizardSecondStepUI() throws Exception {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        comOperator = new Operator.DefaultStringComparator(true, true);
+        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+        Operator.setDefaultStringComparator(comOperator);
         CheckoutWizardOperator cwo = CheckoutWizardOperator.invoke();
+        Operator.setDefaultStringComparator(oldOperator);
         final CVSRootStepOperator crso = new CVSRootStepOperator();
         crso.setCVSRoot(":pserver:anoncvs@localhost:/cvs");
         crso.setPassword("");
@@ -883,7 +959,11 @@ public class CheckOutWizardTest extends JellyTestCase {
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         String sessionCVSroot;
         OutputOperator oo = OutputOperator.invoke();
+        comOperator = new Operator.DefaultStringComparator(true, true);
+        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+        Operator.setDefaultStringComparator(comOperator);
         CheckoutWizardOperator cwo = CheckoutWizardOperator.invoke();
+        Operator.setDefaultStringComparator(oldOperator);
         CVSRootStepOperator crso = new CVSRootStepOperator();
         
         crso.setCVSRoot(":pserver:anoncvs@localhost:/cvs");

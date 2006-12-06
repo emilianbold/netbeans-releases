@@ -44,6 +44,8 @@ import org.netbeans.jemmy.operators.JPasswordFieldOperator;
 import org.netbeans.jemmy.operators.JProgressBarOperator;
 import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.netbeans.jemmy.operators.Operator;
+import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 /**
@@ -58,6 +60,8 @@ public class ImportWizardTest extends JellyTestCase {
     final String projectName = "ForImport";
     final String pathToMain = "forimport|Main.java";
     final String PROTOCOL_FOLDER = "protocol";
+    Operator.DefaultStringComparator comOperator; 
+    Operator.DefaultStringComparator oldOperator;
     
     /**
      * @param args the command line arguments
@@ -113,7 +117,13 @@ public class ImportWizardTest extends JellyTestCase {
     
     public void testImportWizardPserverUI() {   
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        
+        comOperator = new Operator.DefaultStringComparator(true, true);
+        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+        Operator.setDefaultStringComparator(comOperator);
         ImportWizardOperator iwo = ImportWizardOperator.invoke(ProjectsTabOperator.invoke().getProjectRootNode(projectName));
+        Operator.setDefaultStringComparator(oldOperator);
+        
         CVSRootStepOperator crso = new CVSRootStepOperator();
         crso.setCVSRoot(":local:/cvs");
         //Invalid CVS Root
@@ -147,7 +157,11 @@ public class ImportWizardTest extends JellyTestCase {
     
     public void testImportWizardLocalUI() {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        comOperator = new Operator.DefaultStringComparator(true, true);
+        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+        Operator.setDefaultStringComparator(comOperator);
         ImportWizardOperator iwo = ImportWizardOperator.invoke(ProjectsTabOperator.invoke().getProjectRootNode(projectName));
+        Operator.setDefaultStringComparator(oldOperator);
         CVSRootStepOperator crso = new CVSRootStepOperator();
         crso.setCVSRoot(":local:/cvs");
         //Invalid CVS Root
@@ -180,7 +194,11 @@ public class ImportWizardTest extends JellyTestCase {
     
     public void testImportWizardForkUI() {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        comOperator = new Operator.DefaultStringComparator(true, true);
+        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+        Operator.setDefaultStringComparator(comOperator);
         ImportWizardOperator iwo = ImportWizardOperator.invoke(ProjectsTabOperator.invoke().getProjectRootNode(projectName));
+        Operator.setDefaultStringComparator(oldOperator);
         CVSRootStepOperator crso = new CVSRootStepOperator();
         crso.setCVSRoot(":fork:/cvs");
         //Invalid CVS Root
@@ -214,7 +232,11 @@ public class ImportWizardTest extends JellyTestCase {
     
     public void testImportWizardExtUI() {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        comOperator = new Operator.DefaultStringComparator(true, true);
+        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+        Operator.setDefaultStringComparator(comOperator);
         ImportWizardOperator iwo = ImportWizardOperator.invoke(ProjectsTabOperator.invoke().getProjectRootNode(projectName));
+        Operator.setDefaultStringComparator(oldOperator);
         CVSRootStepOperator crso = new CVSRootStepOperator();
         crso.setCVSRoot(":ext:test@localhost:2401/cvs");
         //Invalid CVS Root
@@ -252,7 +274,11 @@ public class ImportWizardTest extends JellyTestCase {
     public void testImportWizardLoginSuccess() throws Exception {
         //invoke CVSCheckoutWizard
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        comOperator = new Operator.DefaultStringComparator(true, true);
+        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+        Operator.setDefaultStringComparator(comOperator);
         ImportWizardOperator iwo = ImportWizardOperator.invoke(ProjectsTabOperator.invoke().getProjectRootNode(projectName));
+        Operator.setDefaultStringComparator(oldOperator);
         final CVSRootStepOperator crso = new CVSRootStepOperator();
         crso.setCVSRoot(":pserver:test@localhost:/cvs");
         ProxyConfigurationOperator pco = crso.proxyConfiguration();
@@ -289,7 +315,11 @@ public class ImportWizardTest extends JellyTestCase {
     }
     
     public void testImportWizardExt() {
+        comOperator = new Operator.DefaultStringComparator(true, true);
+        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+        Operator.setDefaultStringComparator(comOperator);
         ImportWizardOperator iwo = ImportWizardOperator.invoke(ProjectsTabOperator.invoke().getProjectRootNode(projectName));
+        Operator.setDefaultStringComparator(oldOperator);
         CVSRootStepOperator crso = new CVSRootStepOperator();
         crso.setCVSRoot(":ext:test@localhost:2401/cvs");
         crso.rbUseInternalSSH().setSelected(true);
@@ -327,7 +357,11 @@ public class ImportWizardTest extends JellyTestCase {
     }
     
     public void testImportWizardLocal() {
+        comOperator = new Operator.DefaultStringComparator(true, true);
+        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+        Operator.setDefaultStringComparator(comOperator);
         ImportWizardOperator iwo = ImportWizardOperator.invoke(ProjectsTabOperator.invoke().getProjectRootNode(projectName));
+        Operator.setDefaultStringComparator(oldOperator);
         CVSRootStepOperator crso = new CVSRootStepOperator();
         crso.setCVSRoot(":local:/cvs");
         
@@ -349,7 +383,11 @@ public class ImportWizardTest extends JellyTestCase {
     }
     
     public void testImportWizardFork() {
+        comOperator = new Operator.DefaultStringComparator(true, true);
+        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+        Operator.setDefaultStringComparator(comOperator);
         ImportWizardOperator iwo = ImportWizardOperator.invoke(ProjectsTabOperator.invoke().getProjectRootNode(projectName));
+        Operator.setDefaultStringComparator(oldOperator);
         CVSRootStepOperator crso = new CVSRootStepOperator();
         crso.setCVSRoot(":fork:/cvs");
         
@@ -371,7 +409,11 @@ public class ImportWizardTest extends JellyTestCase {
     }
     
     public void testImportWizardPserver() {
+        comOperator = new Operator.DefaultStringComparator(true, true);
+        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+        Operator.setDefaultStringComparator(comOperator);
         ImportWizardOperator iwo = ImportWizardOperator.invoke(ProjectsTabOperator.invoke().getProjectRootNode(projectName));
+        Operator.setDefaultStringComparator(oldOperator);
         CVSRootStepOperator crso = new CVSRootStepOperator();
         
         crso.setCVSRoot(":pserver:test@localhost:2401/cvs");
@@ -410,7 +452,11 @@ public class ImportWizardTest extends JellyTestCase {
     
     public void testImportWizardSecondStepUI() throws Exception {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        comOperator = new Operator.DefaultStringComparator(true, true);
+        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+        Operator.setDefaultStringComparator(comOperator);
         ImportWizardOperator iwo = ImportWizardOperator.invoke(ProjectsTabOperator.invoke().getProjectRootNode(projectName));
+        Operator.setDefaultStringComparator(oldOperator);
         final CVSRootStepOperator crso = new CVSRootStepOperator();
         crso.setCVSRoot(":pserver:test@localhost:/cvs");
         ProxyConfigurationOperator pco = crso.proxyConfiguration();
@@ -473,7 +519,11 @@ public class ImportWizardTest extends JellyTestCase {
         OutputOperator oo = OutputOperator.invoke();
         TestKit.unversionProject(file, projectName);
         
+        comOperator = new Operator.DefaultStringComparator(true, true);
+        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+        Operator.setDefaultStringComparator(comOperator);
         ImportWizardOperator iwo = ImportWizardOperator.invoke(ProjectsTabOperator.invoke().getProjectRootNode(projectName));
+        Operator.setDefaultStringComparator(oldOperator);
         CVSRootStepOperator crso = new CVSRootStepOperator();
         JComboBoxOperator combo = new JComboBoxOperator(crso, 0);
         crso.setCVSRoot(":pserver:test@localhost:/cvs");

@@ -1,4 +1,23 @@
 /*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ *
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ *
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+/*
  * CommittingCvs11Test.java
  *
  * Created on 08 March 2006, 11:03
@@ -11,7 +30,6 @@ package org.netbeans.test.cvsmodule;
 
 import java.io.File;
 import java.io.InputStream;
-import javax.swing.ListModel;
 import javax.swing.table.TableModel;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
@@ -19,27 +37,21 @@ import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.OutputTabOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.modules.javacvs.BranchOperator;
 import org.netbeans.jellytools.modules.javacvs.CVSRootStepOperator;
 import org.netbeans.jellytools.modules.javacvs.CheckoutWizardOperator;
 import org.netbeans.jellytools.modules.javacvs.CommitOperator;
-import org.netbeans.jellytools.modules.javacvs.DiffOperator;
 import org.netbeans.jellytools.modules.javacvs.ModuleToCheckoutStepOperator;
 import org.netbeans.jellytools.modules.javacvs.ProxyConfigurationOperator;
-import org.netbeans.jellytools.modules.javacvs.SearchHistoryOperator;
-import org.netbeans.jellytools.modules.javacvs.SwitchToBranchOperator;
 import org.netbeans.jellytools.modules.javacvs.VersioningOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
-import org.netbeans.jemmy.operators.DialogOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JProgressBarOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
-import org.netbeans.junit.AssertionFailedErrorException;
+import org.netbeans.jemmy.operators.Operator;
+import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 /**
@@ -54,6 +66,8 @@ public class CommittingCvs12Test extends JellyTestCase {
     final String pathToMain = "forimport|Main.java";
     static File cacheFolder;
     String PROTOCOL_FOLDER = "protocol";
+    Operator.DefaultStringComparator comOperator; 
+    Operator.DefaultStringComparator oldOperator;
 
     /**
      * Creates a new instance of CommittingCvs11Test
@@ -79,7 +93,11 @@ public class CommittingCvs12Test extends JellyTestCase {
         PROTOCOL_FOLDER = "protocol";
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 18000);
+        comOperator = new Operator.DefaultStringComparator(true, true);
+        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+        Operator.setDefaultStringComparator(comOperator);
         CheckoutWizardOperator cwo = CheckoutWizardOperator.invoke();
+        Operator.setDefaultStringComparator(oldOperator);
         CVSRootStepOperator crso = new CVSRootStepOperator();
         //JComboBoxOperator combo = new JComboBoxOperator(crso, 0);
         crso.setCVSRoot(":pserver:anoncvs@localhost:/cvs");
@@ -244,9 +262,13 @@ public class CommittingCvs12Test extends JellyTestCase {
         cvss = new PseudoCvsServer(in);
         new Thread(cvss).start();
         CVSroot = cvss.getCvsRoot();
+        oto = new OutputTabOperator(sessionCVSroot);
+        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", CVSroot);
         packNode.performPopupAction("CVS|Show Changes");
         Thread.sleep(1000);
+        oto.waitText("Refreshing");
+        oto.waitText("finished");
         cvss.stop();
         
         oo = OutputOperator.invoke();
