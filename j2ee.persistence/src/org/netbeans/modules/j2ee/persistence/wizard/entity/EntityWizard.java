@@ -53,7 +53,7 @@ import org.openide.filesystems.FileObject;
 
 /**
  * A wizard for creating entity classes.
- * 
+ *
  * @author Martin Adamek
  * @author Erno Mononen
  */
@@ -136,15 +136,15 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
     
     /**
      * Generates an entity class and adds it to an appropriate persistence unit
-     *  if needed. 
+     *  if needed.
      * @param targetFolder the target folder for the entity.
      * @param targetName the target name of the entity.
-     * @param primaryKeyClassName the name of the primary key class, needs to be 
+     * @param primaryKeyClassName the name of the primary key class, needs to be
      *  resolvable in the generated entity's scope.
      * @param isAccessProperty defines the access strategy for the id field.
      * @return a FileObject representing the generated entity.
      */
-    public static FileObject generateEntity(FileObject targetFolder, String targetName, 
+    public static FileObject generateEntity(FileObject targetFolder, String targetName,
             final String primaryKeyClassName, final boolean isAccessProperty) throws IOException {
         
         FileObject entityFo = GenerationUtils.createClass(targetFolder, targetName, null);
@@ -157,10 +157,15 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
                 TreeMaker make = workingCopy.getTreeMaker();
                 
                 String idFieldName = "id"; // NO18N
-
+                
                 // resolve the fully qualified name for the primary key class
-                TypeMirror type = workingCopy.getTreeUtilities().parseType(primaryKeyClassName, genUtils.getTypeElement());
-                String primaryKeyType = ((TypeElement) workingCopy.getTypes().asElement(type)).getQualifiedName().toString();
+                String primaryKeyType = null;
+                if (isPrimitiveType(primaryKeyClassName)){
+                    primaryKeyType = primaryKeyClassName;
+                } else {
+                    TypeMirror type = workingCopy.getTreeUtilities().parseType(primaryKeyClassName, genUtils.getTypeElement());
+                    primaryKeyType = ((TypeElement) workingCopy.getTypes().asElement(type)).getQualifiedName().toString();
+                }
                 
                 VariableTree idField = genUtils.createField(genUtils.createModifiers(Modifier.PRIVATE), idFieldName, primaryKeyType);
                 ModifiersTree idMethodModifiers = genUtils.createModifiers(Modifier.PUBLIC);
@@ -169,7 +174,7 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
                 AnnotationTree idAnnotation = genUtils.createAnnotation("javax.persistence.Id"); //NO18N
                 ExpressionTree generationStrategy = genUtils.createAnnotationArgument("strategy", "javax.persistence.GenerationType", "AUTO"); //NO18N
                 AnnotationTree generatedValueAnnotation = genUtils.createAnnotation("javax.persistence.GeneratedValue", Collections.singletonList(generationStrategy)); //NO18N
-
+                
                 if (isAccessProperty){
                     idField = genUtils.addAnnotation(idField, idAnnotation);
                     idField = genUtils.addAnnotation(idField, generatedValueAnnotation);
@@ -183,7 +188,6 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
                 modifiedClazz = make.addClassMember(modifiedClazz, idGetter);
                 modifiedClazz = genUtils.addImplementsClause(modifiedClazz, "java.io.Serializable");
                 modifiedClazz = genUtils.addAnnotation(modifiedClazz, genUtils.createAnnotation("javax.persistence.Entity"));
-                
                 workingCopy.rewrite(clazz, modifiedClazz);
             }
         };
@@ -200,6 +204,16 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
             }
         }
         return entityFo;
+    }
+    
+    private static boolean isPrimitiveType(String typeName){
+        String[] primitiveTypes = {"boolean", "byte", "short", "int", "long", "char", "float", "double"};
+        for (String type : primitiveTypes){
+            if (type.equals(typeName)){
+                return true;
+            }
+        }
+        return false;
     }
     
     /**
