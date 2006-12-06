@@ -30,6 +30,8 @@ import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action._RetoucheUtil;
 import java.io.IOException;
+import java.util.Collections;
+import javax.lang.model.element.Modifier;
 import org.netbeans.modules.j2ee.common.method.MethodCollectorFactory;
 import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
@@ -55,7 +57,14 @@ public class AddBusinessMethodStrategy extends AbstractAddMethodStrategy {
     }
     
     protected MethodType getPrototypeMethod(FileObject fileObject, String classHandle) throws IOException {
-        MethodModel methodModel = MethodModelSupport.createMethodModel("businessMethod");
+        MethodModel methodModel = MethodModelSupport.createMethodModel(
+                "businessMethod",
+                "void",
+                "",
+                Collections.<MethodModel.VariableModel>emptyList(),
+                Collections.<String>emptyList(),
+                Collections.<Modifier>emptySet()
+                );
         return new MethodType.BusinessMethodType(methodModel);
     }
 

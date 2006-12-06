@@ -18,21 +18,13 @@
  */
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
-import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action._RetoucheUtil;
-import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
-import org.netbeans.modules.j2ee.common.method.MethodCollectorFactory;
-import org.netbeans.modules.j2ee.common.method.MethodCollectorFactory;
-import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
-import org.netbeans.modules.j2ee.common.method.MethodCollectorFactory;
-import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
-import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
-import org.netbeans.modules.j2ee.common.method.MethodModel;
-import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action._RetoucheUtil;
+
 import java.io.IOException;
+import java.util.Collections;
+import javax.lang.model.element.Modifier;
 import org.netbeans.modules.j2ee.common.method.MethodCollectorFactory;
 import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
-import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action._RetoucheUtil;
 import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType;
@@ -55,7 +47,14 @@ public class AddHomeMethodStrategy extends AbstractAddMethodStrategy {
     }
     
     protected MethodType getPrototypeMethod(FileObject fileObject, String classHandle) throws IOException {
-        MethodModel method = MethodModelSupport.createMethodModel("homeMethod");
+        MethodModel method = MethodModelSupport.createMethodModel(
+                "homeMethod",
+                "void",
+                "",
+                Collections.<MethodModel.VariableModel>emptyList(),
+                Collections.<String>emptyList(),
+                Collections.<Modifier>emptySet()
+                );
         return new MethodType.HomeMethodType(method);
     }
 

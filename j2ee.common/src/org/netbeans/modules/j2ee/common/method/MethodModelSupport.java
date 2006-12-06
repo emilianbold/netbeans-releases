@@ -53,17 +53,6 @@ public final class MethodModelSupport {
     
     private MethodModelSupport() {}
     
-    public static MethodModel createMethodModel(String name) {
-        return createMethodModel(
-                name,
-                "void",
-                "",
-                Collections.<VariableModel>emptyList(),
-                Collections.<String>emptyList(),
-                Collections.<Modifier>emptySet()
-                );
-    }
-    
     public static MethodModel createMethodModel(WorkingCopy workingCopy, ExecutableElement method) {
         List<VariableModel> parameters = new ArrayList<VariableModel>();
         for (VariableElement variableElement : method.getParameters()) {

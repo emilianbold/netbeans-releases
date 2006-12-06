@@ -475,7 +475,14 @@ public final class EntityMethodController extends AbstractMethodController {
         if (javaClass == null || fieldName == null) {
             return null;
         }
-        MethodModel method =  MethodModelSupport.createMethodModel(getMethodName(fieldName, true));
+        MethodModel method =  MethodModelSupport.createMethodModel(
+                getMethodName(fieldName, true),
+                "void",
+                "",
+                Collections.<MethodModel.VariableModel>emptyList(),
+                Collections.<String>emptyList(),
+                Collections.<Modifier>emptySet()
+                );
         return findInClass(javaClass, method) ? method : null;
     }
 
@@ -494,14 +501,13 @@ public final class EntityMethodController extends AbstractMethodController {
         if (type == null) {
             return null;
         }
-        MethodModel method = MethodModelSupport.createMethodModel(getMethodName(fieldName, true));
-        method = MethodModelSupport.createMethodModel(
-                method.getName(), 
-                method.getReturnType(),
-                method.getBody(),
+        MethodModel method = MethodModelSupport.createMethodModel(
+                getMethodName(fieldName, true), 
+                "void",
+                "",
                 Collections.singletonList(MethodModelSupport.createVariableModel(type, "arg0")),
-                method.getExceptions(),
-                method.getModifiers()
+                Collections.<String>emptyList(),
+                Collections.<Modifier>emptySet()
                 );
         return findInClass(classElement, method) ? method : null;
     }
