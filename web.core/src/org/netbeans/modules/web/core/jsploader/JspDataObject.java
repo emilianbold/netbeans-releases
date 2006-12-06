@@ -19,38 +19,24 @@
 
 package org.netbeans.modules.web.core.jsploader;
 
-import java.util.Iterator;
-import java.util.Collection;
-import java.util.Vector;
-import java.util.HashMap;
-import java.util.Date;
-import java.util.Locale;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.io.IOException;
-import java.io.File;
 import java.lang.ref.WeakReference;
 import java.nio.charset.Charset;
+import java.util.Date;
 import java.util.EventListener;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.StyledDocument;
 
 import org.openide.*;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
-import org.openide.windows.*;
-import org.openide.text.*;
 import org.openide.util.*;
-import org.openide.util.actions.*;
 import org.openide.nodes.Node;
 import org.openide.nodes.CookieSet;
 
 import org.netbeans.modules.web.core.QueryStringCookie;
-import org.netbeans.modules.web.api.webmodule.WebModule;
-
-//import org.netbeans.modules.java.Util;
 import org.netbeans.modules.web.core.WebExecSupport;
 
 /** Object that provides main functionality for internet data loader.
@@ -67,6 +53,8 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
 //    public static final String PROP_ENCODING = "encoding"; // NOI18N
     public static final String PROP_SERVER_CHANGE = "PROP_SERVER_CHANGE";// NOI18N
     public static final String PROP_REQUEST_PARAMS = "PROP_REQUEST_PARAMS"; //NOI18N
+
+    static final String ATTR_FILE_ENCODING = "Content-Encoding"; // NOI18N
 
     transient private EditorCookie servletEdit;
     transient protected JspServletDataObject servletDataObject;
@@ -109,18 +97,17 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         return editorSupport;
     }
 
-    //TODO: RETOUCHE
-//    protected EditorCookie createServletEditor() {
-//        return new ServletEditor(this);
-//    }
-//    
+    protected EditorCookie createServletEditor() {
+        return new ServletEditor(this);
+    }
+
     public synchronized CompileData getPlugin() {
         if (compileData == null) {
             if ( firstStart ) {
-		firstStart=false;
+                firstStart=false;
             }
-   	    compileData = new CompileData(this);
-//       	    checkRefreshServlet();
+            compileData = new CompileData(this);
+       	    checkRefreshServlet();
         }
         return compileData;
     }
@@ -217,92 +204,92 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
      * This does not need to be synchronized, because the calling method
      * getPlugin() is synchronized.
      */
-      //TODO: RETOUCHE - ServletDataObject is 'disabled'
-//    private void checkRefreshServlet() {
-//
-//        final DataObject oldServlet = servletDataObject;
-//	if(debug) System.out.println("refreshing servlet, old = " + oldServlet); // NOI18N
-//
-//        // dataobject
-//        try {
-//            FileObject servletFileObject = updateServletFileObject();
-//            if(debug) System.out.println("refreshing servlet, new servletFile = " + servletFileObject); // NOI18N
-//            if (servletFileObject != null) {
-//                // if the file has not changed, just return
-//                if ((oldServlet != null) && 
-//                    (oldServlet.getPrimaryFile() == servletFileObject) &&
-//                    (servletFileObject.lastModified().equals(servletDataObjectDate)))
-//                    return; // performance
-//                
-//                // set the origin JSP page
-//                JspServletDataObject.setSourceJspPage(servletFileObject, this);
-//                
-//                //set the preferred DataLoader
-//                DataLoaderPool.setPreferredLoader(servletFileObject, DataLoader.getLoader(JspServletDataLoader.class));
-//                
-//                
-//                // now the loader should recognize that this servlet was generated from a JSP
-//                DataObject dObj= DataObject.find(servletFileObject);
-//                if (debug) {
-//                    System.out.println("checkRefr::servletDObj=" +  // NOI18N
-//                        ((dObj == null) ? "null" : dObj.getClass().getName()) + // NOI18N
-//                        "/" + dObj); // NOI18N
-//                }
-//                /*if (!(dObj instanceof JspServletDataObject)) {
-//                    // need to re-recognize
-//                    dObj = rerecognize(dObj);
-//                }*/
-//                if (dObj instanceof JspServletDataObject) {
-//                    servletDataObject = (JspServletDataObject)dObj;
-//                    servletDataObjectDate = dObj.getPrimaryFile().lastModified();
-//                }
-//                // set the encoding of the generated servlet
-//                String encoding = compileData.getServletEncoding();
-//                if (encoding != null) {
-//                    if (!"".equals(encoding)) {
-//                        try {
-//                            Charset.forName(encoding);
-//                        } catch (IllegalArgumentException ex) {
-//                            IOException t = new IOException(
-//                                NbBundle.getMessage(JspDataObject.class, "FMT_UnsupportedEncoding", encoding)
-//                            );
-//                            ErrorManager.getDefault().annotate(t, ex);
-//                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);
-//                        }
-//                    } else
-//                        encoding = null;
-//                }
-//                try {
-//                    // actually set the encoding
-//                    Util.setFileEncoding(servletFileObject, encoding);
-//                } catch (IOException ex) {
-//                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-//                }
-//            }
-//            else
-//                servletDataObject = null;
-//        }
-//        catch (IOException e) {
-//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-//            servletDataObject = null;
-//        }
-//
-//        // editor
-//        if ((oldServlet == null)/*&&(servletDataObject != null)*/) {
-//        } else {
-//            RequestProcessor.postRequest(
-//                new Runnable() {
-//                    public void run() {
-//                        updateServletEditor();
-//                        // Bugfix 31143: oldValue must be null, since if oldValue == newValue, no change will be fired
-//                        JspDataObject.this.firePropertyChange0(PROP_SERVLET_DATAOBJECT, null, getServletDataObject());
-//                        // the state of some CookieActions may need to be updated
-//                        JspDataObject.this.firePropertyChange0(PROP_COOKIE, null, null);
-//                    }
-//                }
-//            );
-//        }
-//    }
+    private void checkRefreshServlet() {
+
+        final DataObject oldServlet = servletDataObject;
+        if (debug)
+            System.out.println("refreshing servlet, old = " + oldServlet); // NOI18N
+
+        // dataobject
+        try {
+            FileObject servletFileObject = updateServletFileObject();
+            if(debug) System.out.println("refreshing servlet, new servletFile = " + servletFileObject); // NOI18N
+            if (servletFileObject != null) {
+                // if the file has not changed, just return
+                if ((oldServlet != null) && 
+                    (oldServlet.getPrimaryFile() == servletFileObject) &&
+                    (servletFileObject.lastModified().equals(servletDataObjectDate)))
+                    return; // performance
+                
+                // set the origin JSP page
+                JspServletDataObject.setSourceJspPage(servletFileObject, this);
+                
+                //set the preferred DataLoader
+                DataLoaderPool.setPreferredLoader(servletFileObject, DataLoader.getLoader(JspServletDataLoader.class));
+                
+                
+                // now the loader should recognize that this servlet was generated from a JSP
+                DataObject dObj= DataObject.find(servletFileObject);
+                if (debug) {
+                    System.out.println("checkRefr::servletDObj=" +  // NOI18N
+                        ((dObj == null) ? "null" : dObj.getClass().getName()) + // NOI18N
+                        "/" + dObj); // NOI18N
+                }
+                /*if (!(dObj instanceof JspServletDataObject)) {
+                    // need to re-recognize
+                    dObj = rerecognize(dObj);
+                }*/
+                if (dObj instanceof JspServletDataObject) {
+                    servletDataObject = (JspServletDataObject)dObj;
+                    servletDataObjectDate = dObj.getPrimaryFile().lastModified();
+                }
+                // set the encoding of the generated servlet
+                String encoding = compileData.getServletEncoding();
+                if (encoding != null) {
+                    if (!"".equals(encoding)) {
+                        try {
+                            Charset.forName(encoding);
+                        } catch (IllegalArgumentException ex) {
+                            IOException t = new IOException(
+                                NbBundle.getMessage(JspDataObject.class, "FMT_UnsupportedEncoding", encoding)
+                            );
+                            ErrorManager.getDefault().annotate(t, ex);
+                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);
+                        }
+                    } else
+                        encoding = null;
+                }
+                try {
+                    // actually set the encoding
+                    servletFileObject.setAttribute(ATTR_FILE_ENCODING, encoding); //NOI18N
+                } catch (IOException ex) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                }
+            }
+            else
+                servletDataObject = null;
+        }
+        catch (IOException e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            servletDataObject = null;
+        }
+
+        // editor
+        if ((oldServlet == null)/*&&(servletDataObject != null)*/) {
+        } else {
+            RequestProcessor.postRequest(
+                new Runnable() {
+                    public void run() {
+                        updateServletEditor();
+                        // Bugfix 31143: oldValue must be null, since if oldValue == newValue, no change will be fired
+                        JspDataObject.this.firePropertyChange0(PROP_SERVLET_DATAOBJECT, null, getServletDataObject());
+                        // the state of some CookieActions may need to be updated
+                        JspDataObject.this.firePropertyChange0(PROP_COOKIE, null, null);
+                    }
+                }
+            );
+        }
+    }
     
     /** This method causes a DataObject to be re-recognized by the loader system.
     *  This is a poor practice and should not be normally used, as it uses reflection 
@@ -329,29 +316,29 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         super.firePropertyChange(propertyName, oldValue, newValue);
     }
     
-//    /** Returns an editor for the servlet. Architecturally, a better solution would be to attach a cookie for 
-//     * editing the servlet, but we choose this approach for performance reasons - this allows lazy initialization of
-//     * the editor (unlike the cookie). */
-//    public EditorCookie getServletEditor() {
-//        DataObject obj = getServletDataObject();
-//        if ((obj == null) != (servletEdit == null))
-//            updateServletEditor();
-//        return servletEdit;
-//    }
-//    
-//    private void updateServletEditor() {
-//        if (servletDataObject == null) {
-//            if (servletEdit != null) {
-//                servletEdit.close();
-//                servletEdit = null;
-//            }
-//        }
-//        else {
-//            if (servletEdit == null) {
-//                servletEdit = createServletEditor();
-//            }
-//        }
-//    }
+    /** Returns an editor for the servlet. Architecturally, a better solution would be to attach a cookie for 
+     * editing the servlet, but we choose this approach for performance reasons - this allows lazy initialization of
+     * the editor (unlike the cookie). */
+    public EditorCookie getServletEditor() {
+        DataObject obj = getServletDataObject();
+        if ((obj == null) != (servletEdit == null))
+            updateServletEditor();
+        return servletEdit;
+    }
+    
+    private void updateServletEditor() {
+        if (servletDataObject == null) {
+            if (servletEdit != null) {
+                servletEdit.close();
+                servletEdit = null;
+            }
+        }
+        else {
+            if (servletEdit == null) {
+                servletEdit = createServletEditor();
+            }
+        }
+    }
 
 
     /** Gets the current fileobject of the servlet corresponding to this JSP or null if may not exist.

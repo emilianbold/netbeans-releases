@@ -21,12 +21,12 @@ package org.netbeans.modules.web.core.jsploader;
 
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
-import org.openide.cookies.EditorCookie;
-import org.openide.util.actions.CookieAction;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.CookieAction;
 
 /**
 * Edit an object.
@@ -115,20 +115,19 @@ public class EditServletAction extends CookieAction {
         for (int i = 0; i < activatedNodes.length; i++) {
             JspDataObject jspdo = (JspDataObject)activatedNodes[i].getCookie(JspDataObject.class);
             if (jspdo != null) {
-                //TODO: RETOUCHE
-//                jspdo.refreshPlugin(true);
-//                EditorCookie cook = jspdo.getServletEditor();
-//                if (cook != null)
-//                    cook.open ();
-//                else {
-//                    //show error dialog
-//                    String msg = NbBundle.getMessage(EditServletAction.class, "ERR_CantEditServlet");
-//                    String title = NbBundle.getMessage(EditServletAction.class, "EditServlet");
-//                    NotifyDescriptor descriptor = new NotifyDescriptor(msg, title,
-//                            NotifyDescriptor.DEFAULT_OPTION, NotifyDescriptor.ERROR_MESSAGE,
-//                            new Object[]{NotifyDescriptor.OK_OPTION}, null);
-//                    DialogDisplayer.getDefault().notify(descriptor);
-//                }
+                jspdo.refreshPlugin(true);
+                EditorCookie cook = jspdo.getServletEditor();
+                if (cook != null)
+                    cook.open ();
+                else {
+                    //show error dialog
+                    String msg = NbBundle.getMessage(EditServletAction.class, "ERR_CantEditServlet");
+                    String title = NbBundle.getMessage(EditServletAction.class, "EditServlet");
+                    NotifyDescriptor descriptor = new NotifyDescriptor(msg, title,
+                            NotifyDescriptor.DEFAULT_OPTION, NotifyDescriptor.ERROR_MESSAGE,
+                            new Object[]{NotifyDescriptor.OK_OPTION}, null);
+                    DialogDisplayer.getDefault().notify(descriptor);
+                }
             }
         }
     }
