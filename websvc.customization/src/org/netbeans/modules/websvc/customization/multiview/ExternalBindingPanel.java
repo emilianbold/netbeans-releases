@@ -29,7 +29,6 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.JComponent;
-import javax.swing.text.Document;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Binding;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
@@ -143,7 +142,7 @@ public class ExternalBindingPanel extends SaveableSectionInnerPanel {
                     
                     DataObject dobj = DataObject.find(copiedBinding);
                     String relativePath = panel.getRelativePathToWsdl();
-                    boolean changed = org.netbeans.modules.websvc.core.Utilities.addRelativeWsdlLocation(copiedBinding, relativePath);
+                    boolean changed = org.netbeans.modules.websvc.core.jaxws.JaxWsUtils.addRelativeWsdlLocation(copiedBinding, relativePath);
                     if(changed){
                         if(dobj != null){
                             SaveCookie sc = (SaveCookie)dobj.getCookie(SaveCookie.class);

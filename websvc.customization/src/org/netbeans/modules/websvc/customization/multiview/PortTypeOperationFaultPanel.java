@@ -27,12 +27,11 @@ package org.netbeans.modules.websvc.customization.multiview;
 import java.awt.Color;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.io.IOException;
 import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.text.JTextComponent;
-import org.netbeans.modules.websvc.core.Utilities;
+import org.netbeans.modules.websvc.core.jaxws.JaxWsUtils;
 import org.netbeans.modules.websvc.core.wseditor.spi.SaveSetter;
 import org.netbeans.modules.websvc.customization.model.CustomizationComponentFactory;
 import org.netbeans.modules.websvc.customization.model.JavaClass;
@@ -42,10 +41,8 @@ import org.netbeans.modules.xml.multiview.ui.SectionVisualTheme;
 import org.netbeans.modules.xml.wsdl.model.Fault;
 import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.openide.ErrorManager;
 import org.openide.util.WeakListeners;
 import org.netbeans.modules.xml.multiview.Error;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -146,7 +143,7 @@ public class PortTypeOperationFaultPanel extends SaveableSectionInnerPanel {
             String text = javaClassText.getText();
             if(text != null && !text.trim().equals("")
             && !defaultJavaClassCB.isSelected()){
-                if(!Utilities.isJavaIdentifier(text)){
+                if(!JaxWsUtils.isJavaIdentifier(text)){
                     return;
                 }
                 if(ee.size() == 1){  //there is existing extensibility element
@@ -212,7 +209,7 @@ public class PortTypeOperationFaultPanel extends SaveableSectionInnerPanel {
     
     public void documentChanged(JTextComponent comp, String val) {
         if(comp == javaClassText){
-            if(!Utilities.isJavaIdentifier(val)){
+            if(!JaxWsUtils.isJavaIdentifier(val)){
                 getSectionView().getErrorPanel().
                         setError(new Error(Error.TYPE_FATAL,
                         Error.ERROR_MESSAGE, val, comp));

@@ -30,12 +30,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.io.IOException;
 import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
-import org.netbeans.modules.websvc.core.Utilities;
+import org.netbeans.modules.websvc.core.jaxws.JaxWsUtils;
 import org.netbeans.modules.websvc.customization.model.JavaMethod;
 import org.netbeans.modules.websvc.customization.model.PortCustomization;
 import org.netbeans.modules.websvc.customization.model.Provider;
@@ -47,7 +46,6 @@ import org.netbeans.modules.xml.wsdl.model.Service;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponentFactory;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
@@ -254,7 +252,7 @@ public class PortPanel extends SaveableSectionInnerPanel {
             String text = portAccessMethodText.getText();
             if(text != null && !text.trim().equals("")
             && !defaultMethodCB.isSelected()){ //Java method was specified
-                if(!Utilities.isJavaIdentifier(text)){
+                if(!JaxWsUtils.isJavaIdentifier(text)){
                     return;
                 }
                 if(ee.size() == 1){  //there is existing extensibility element
@@ -321,7 +319,7 @@ public class PortPanel extends SaveableSectionInnerPanel {
     
     public void documentChanged(JTextComponent comp, String val) {
         if(comp == portAccessMethodText){
-            if(!Utilities.isJavaIdentifier(val)){
+            if(!JaxWsUtils.isJavaIdentifier(val)){
                 getSectionView().getErrorPanel().
                         setError(new Error(Error.TYPE_FATAL,
                         Error.ERROR_MESSAGE, val, comp));

@@ -32,12 +32,11 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
 import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.text.JTextComponent;
-import org.netbeans.modules.websvc.core.Utilities;
+import org.netbeans.modules.websvc.core.jaxws.JaxWsUtils;
 import org.netbeans.modules.websvc.customization.model.CustomizationComponentFactory;
 import org.netbeans.modules.websvc.customization.model.DefinitionsCustomization;
 import org.netbeans.modules.websvc.customization.model.EnableAsyncMapping;
@@ -50,7 +49,6 @@ import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.openide.ErrorManager;
 import org.openide.util.WeakListeners;
 import org.netbeans.modules.xml.multiview.Error;
 import org.openide.nodes.Node;
@@ -262,7 +260,7 @@ public class PortTypePanel extends SaveableSectionInnerPanel {
             String text = javaClassText.getText();
             if(text != null && !text.trim().equals("")
             && !defaultJavaClassCB.isSelected()){
-                if(!Utilities.isJavaIdentifier(text)){
+                if(!JaxWsUtils.isJavaIdentifier(text)){
                     return;
                 }
                 if(ee.size() == 1){  //there is existing extensibility element
@@ -399,7 +397,7 @@ public class PortTypePanel extends SaveableSectionInnerPanel {
     
     public void documentChanged(JTextComponent comp, String val) {
         if(comp == javaClassText){
-            if(!Utilities.isJavaIdentifier(val)){
+            if(!JaxWsUtils.isJavaIdentifier(val)){
                 getSectionView().getErrorPanel().
                         setError(new Error(Error.TYPE_FATAL,
                         Error.ERROR_MESSAGE, val, comp));
