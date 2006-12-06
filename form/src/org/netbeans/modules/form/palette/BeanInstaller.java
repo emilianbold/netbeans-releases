@@ -19,6 +19,9 @@
 
 package org.netbeans.modules.form.palette;
 
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
 import java.lang.ref.WeakReference;
 import java.util.jar.*;
 import java.util.*;
@@ -27,6 +30,14 @@ import java.lang.reflect.Modifier;
 import java.text.MessageFormat;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.modules.classfile.ClassFile;
 import org.netbeans.modules.classfile.Method;
 
@@ -65,8 +76,8 @@ public final class BeanInstaller {
     /** Installs beans represented by given nodes (selected by the user). Lets
      * the user choose the palette category. */
     public static void installBeans(Node[] nodes) {       
-        final List beans = new LinkedList();
-        final List unableToInstall = new LinkedList();                        
+        final List<ClassSource> beans = new LinkedList<ClassSource>();
+        final List<String> unableToInstall = new LinkedList<String>();                        
         for (int i=0; i < nodes.length; i++) {            
             DataObject dobj = (DataObject) nodes[i].getCookie(DataObject.class);
             if (dobj == null)
@@ -74,12 +85,12 @@ public final class BeanInstaller {
 
             final FileObject fo = dobj.getPrimaryFile();            
             JavaClassHandler handler = new JavaClassHandler() {
-                public void handle(ClassFile javaClass) {
+                public void handle(String className) {
                     ClassSource classSource = 
-                            ClassPathUtils.getProjectClassSource(fo, javaClass.getName().getExternalName());
+                            ClassPathUtils.getProjectClassSource(fo, className);
                     if (classSource == null) {
                         // Issue 47947
-                        unableToInstall.add(javaClass.getName().getExternalName());
+                        unableToInstall.add(className);
                     } else {
                         beans.add(classSource);
                     }                
@@ -248,9 +259,9 @@ public final class BeanInstaller {
      * be JavaBeans. */
     private static void scanFolderForBeans(FileObject folder, final Map beans, final String root) {
         JavaClassHandler handler = new JavaClassHandler() {
-            public void handle(ClassFile javaClass) {
+            public void handle(String className) {
                 ItemInfo ii = new ItemInfo();
-                ii.classname = javaClass.getName().getExternalName();
+                ii.classname = className;
                 ii.source = root;
                 beans.put(ii.classname, ii);                            
             }
@@ -275,16 +286,59 @@ public final class BeanInstaller {
     
     private static void scanFileObject(FileObject folder, final FileObject fileObject, final JavaClassHandler handler) {          
         if ("class".equals(fileObject.getExt())) { // NOI18N
-            processClassTypeElement(fileObject, handler);
+            processClassFile(fileObject, handler);
+        } else if ("java".equals(fileObject.getExt())) { // NOI18N
+            processJavaFile(fileObject, handler);
         }
     }     
     
-    private static void processClassTypeElement(FileObject classFO, JavaClassHandler handler) {
+    private static void processJavaFile(final FileObject javaFO, final JavaClassHandler handler) {
+        try {
+            JavaSource js = JavaSource.forFileObject(javaFO);
+            js.runUserActionTask(new CancellableTask<CompilationController>() {
+                public void cancel() {
+                }
+
+                public void run(CompilationController ctrl) throws Exception {
+                    ctrl.toPhase(Phase.ELEMENTS_RESOLVED);
+                    TypeElement clazz = findClass(ctrl, javaFO.getName());
+                    if (clazz != null && isDeclaredAsJavaBean(clazz)) {
+                        handler.handle(clazz.getQualifiedName().toString());
+                    }
+                }
+            }, true);
+        } catch (IOException ex) {
+            Logger.getLogger(BeanInstaller.class.getClass().getName()).
+                    log(Level.SEVERE, javaFO.toString(), ex);
+        }
+    }
+    
+    private static TypeElement findClass(CompilationController ctrl, String className) {
+        for (Tree decl : ctrl.getCompilationUnit().getTypeDecls()) {
+            if (className.equals(((ClassTree) decl).getSimpleName().toString())) {
+                TreePath path = ctrl.getTrees().getPath(ctrl.getCompilationUnit(), decl);
+                TypeElement clazz = (TypeElement) ctrl.getTrees().getElement(path);
+                return clazz;
+            }
+        }
+        return null;
+    }
+    
+    private static void processClassFile(FileObject classFO, JavaClassHandler handler) {
         try {
             // XXX rewrite this to use javax.lang.model.element.* as soon as JavaSource introduce .class files support
-            ClassFile clazz = new ClassFile(classFO.getInputStream(), false);
-            if (isDeclaredAsJavaBean(clazz)) {
-                handler.handle(clazz);
+            InputStream is = null;
+            ClassFile clazz;
+            try {
+                is = classFO.getInputStream();
+                clazz = new ClassFile(is, false);
+            } finally {
+                if (is != null) {
+                    is.close();
+                }
+            }
+            if (clazz != null && isDeclaredAsJavaBean(clazz)) {
+                handler.handle(clazz.getName().getExternalName());
             }
         } catch (IOException ex) {
             Logger.getLogger(BeanInstaller.class.getClass().getName()).
@@ -293,6 +347,26 @@ public final class BeanInstaller {
         
     }
         
+    public static boolean isDeclaredAsJavaBean(TypeElement clazz) {
+        Set<javax.lang.model.element.Modifier> mods = clazz.getModifiers();
+        if (ElementKind.CLASS != clazz.getKind() ||
+                !mods.contains(javax.lang.model.element.Modifier.PUBLIC) ||
+                mods.contains(javax.lang.model.element.Modifier.ABSTRACT)) {
+            return false;
+        }
+        
+        for (Element member : clazz.getEnclosedElements()) {
+            mods = member.getModifiers();
+            if (ElementKind.CONSTRUCTOR == member.getKind() &&
+                    mods.contains(javax.lang.model.element.Modifier.PUBLIC) &&
+                    ((ExecutableElement) member).getParameters().isEmpty()) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
     public static boolean isDeclaredAsJavaBean(ClassFile clazz) {
         int access = clazz.getAccess();
         
@@ -304,8 +378,8 @@ public final class BeanInstaller {
         
         for (Object omethod : clazz.getMethods()) {
             Method method = (Method) omethod;
-            if (method.isPublic() && !method.isAbstract() &&
-                    method.getParameters().isEmpty() && "<init>".equals(method.getName())) { // NOI18N
+            if (method.isPublic() && method.getParameters().isEmpty() &&
+                    "<init>".equals(method.getName())) { // NOI18N
                 return true;
             }
         }
@@ -341,7 +415,7 @@ public final class BeanInstaller {
     }
     
     private interface JavaClassHandler {        
-        public void handle(ClassFile javaClass);        
+        public void handle(String className);        
     }
     
 }
