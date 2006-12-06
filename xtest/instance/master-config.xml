@@ -122,7 +122,7 @@ Microsystems, Inc. All Rights Reserved.
         
         <module name="ide/launcher/upgrade" testtypes="unit" attributes="stable" />
         <module name="apisupport/project" testtypes ="unit" attributes="stable"/>
-        <module name="apisupport/samples/feedreder-sample-ui" testtypes ="unit" attributes="stable"/>
+        <module name="apisupport/samples/feedreader-sample-ui" testtypes ="unit" attributes="stable"/>
         <module name="apisupport/samples/PaintApp-sample-ui" testtypes ="unit" attributes="stable"/>
         <module name="apisupport/harness" testtypes ="unit" attributes="stable"/>
         <!-- does not run: core/multiview -->
