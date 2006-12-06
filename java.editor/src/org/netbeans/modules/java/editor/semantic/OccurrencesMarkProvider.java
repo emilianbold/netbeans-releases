@@ -65,40 +65,52 @@ public class OccurrencesMarkProvider extends MarkProvider {
         return joint;
     }
     
-    public synchronized void setSematic(Collection<Highlight> s) {
-        semantic = new ArrayList<Mark>();
+    public void setSematic(Collection<Highlight> s) {
+        List<Mark> old;
+        List<Mark> nue;
         
-        for (Highlight h : s) {
-            if (h != null && h instanceof Mark && ((Mark) h).getEnhancedColor() != null)
-                semantic.add((Mark) h);
+        synchronized (this) {
+            semantic = new ArrayList<Mark>();
+            
+            for (Highlight h : s) {
+                if (h != null && h instanceof Mark && ((Mark) h).getEnhancedColor() != null)
+                    semantic.add((Mark) h);
+            }
+            
+            old = joint;
+            
+            nue = joint = new ArrayList<Mark>();
+            
+            joint.addAll(semantic);
+            joint.addAll(occurrences);
         }
         
-        List<Mark> old = joint;
-        
-        joint = new ArrayList<Mark>();
-        
-        joint.addAll(semantic);
-        joint.addAll(occurrences);
-        
-        firePropertyChange(PROP_MARKS, old, joint);
+        //#85919: fire outside the lock:
+        firePropertyChange(PROP_MARKS, old, nue);
     }
     
-    public synchronized void setOccurrences(Collection<Highlight> s) {
-        occurrences = new ArrayList<Mark>();
+    public void setOccurrences(Collection<Highlight> s) {
+        List<Mark> old;
+        List<Mark> nue;
         
-        for (Highlight h : s) {
-            if (h != null && h instanceof Mark && ((Mark) h).getEnhancedColor() != null)
-                occurrences.add((Mark) h);
+        synchronized (this) {
+            occurrences = new ArrayList<Mark>();
+            
+            for (Highlight h : s) {
+                if (h != null && h instanceof Mark && ((Mark) h).getEnhancedColor() != null)
+                    occurrences.add((Mark) h);
+            }
+            
+            old = joint;
+            
+            nue = joint = new ArrayList<Mark>();
+            
+            joint.addAll(semantic);
+            joint.addAll(occurrences);
         }
         
-        List<Mark> old = joint;
-        
-        joint = new ArrayList<Mark>();
-        
-        joint.addAll(semantic);
-        joint.addAll(occurrences);
-        
-        firePropertyChange(PROP_MARKS, old, joint);
+        //#85919: fire outside the lock:
+        firePropertyChange(PROP_MARKS, old, nue);
     }
     
 }
