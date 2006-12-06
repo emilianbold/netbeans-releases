@@ -212,7 +212,7 @@ class with its static methods that provide its instance for the given input sour
     <br/>
     There are two ways of specifying what language is embedded in a token. The language
     can either be specified explicitly (hardcoded) in the
-<a href="@org-netbeans-modules-lexer@/org/netbeans/spi/lexer/LanguageHierarchy.html#embedding(org.netbeans.api.lexer.Token,%20boolean,%20org.netbeans.api.lexer.LanguagePath,%20org.netbeans.api.lexer.InputAttributes)">LanguageHierarchy.embedding()</a>
+<a href="@org-netbeans-modules-lexer@/org/netbeans/spi/lexer/LanguageHierarchy.html#embedding(org.netbeans.api.lexer.Token,%20org.netbeans.api.lexer.LanguagePath,%20org.netbeans.api.lexer.InputAttributes)">LanguageHierarchy.embedding()</a>
     method or there can be a
 <a href="@org-netbeans-modules-lexer@/org/netbeans/spi/lexer/LanguageProvider.html">LanguageProvider</a>
     registered in the default Lookup, which will create a
@@ -536,17 +536,11 @@ public enum CalcTokenId implements TokenId {
             return cats;
         }
 
-        public Lexer&lt;CalcTokenId&gt; createLexer(LexerRestartInfo&lt;CalcTokenId&gt; info) {
+        protected Lexer&lt;CalcTokenId&gt; createLexer(LexerRestartInfo&lt;CalcTokenId&gt; info) {
             return new CalcLexer(info);
         }
 
-        public LanguageEmbedding embedding(
-        Token&lt;CalcTokenId&gt; token, boolean tokenComplete,
-        LanguagePath languagePath, InputAttributes inputAttributes) {
-            return null; // No embedding
-        }
-
-        public String mimeType() {
+        protected String mimeType() {
             return "text/x-calc";
         }
         
