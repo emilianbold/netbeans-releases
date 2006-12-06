@@ -40,14 +40,17 @@ public enum StateTokenId implements TokenId {
     
     private static final Language<StateTokenId> lang = new LanguageHierarchy<StateTokenId>() {
 
+        @Override
         protected String mimeType() {
             return "text/x-simple";
         }
 
+        @Override
         protected Collection<StateTokenId> createTokenIds() {
             return EnumSet.allOf(StateTokenId.class);
         }
 
+        @Override
         protected Lexer<StateTokenId> createLexer(LexerRestartInfo<StateTokenId> info) {
             return new StateLexer(info);
         }

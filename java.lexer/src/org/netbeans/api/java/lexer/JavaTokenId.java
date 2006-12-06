@@ -190,14 +190,17 @@ public enum JavaTokenId implements TokenId {
 
     private static final Language<JavaTokenId> language = new LanguageHierarchy<JavaTokenId>() {
 
+        @Override
         protected String mimeType() {
             return "text/x-java";
         }
 
+        @Override
         protected Collection<JavaTokenId> createTokenIds() {
             return EnumSet.allOf(JavaTokenId.class);
         }
         
+        @Override
         protected Map<String,Collection<JavaTokenId>> createTokenCategories() {
             Map<String,Collection<JavaTokenId>> cats = new HashMap<String,Collection<JavaTokenId>>();
             // Incomplete tokens
@@ -234,10 +237,12 @@ public enum JavaTokenId implements TokenId {
             return cats;
         }
 
+        @Override
         protected Lexer<JavaTokenId> createLexer(LexerRestartInfo<JavaTokenId> info) {
             return new JavaLexer(info);
         }
 
+        @Override
         protected LanguageEmbedding<? extends TokenId> embedding(
         Token<JavaTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
             // Test language embedding in the block comment

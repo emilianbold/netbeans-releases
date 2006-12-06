@@ -46,16 +46,19 @@ public enum SimplePlainTokenId implements TokenId {
     }
     
     private static final Language<SimplePlainTokenId> language = new LanguageHierarchy<SimplePlainTokenId>() {
-        
+
+        @Override
         protected Collection<SimplePlainTokenId> createTokenIds() {
             return EnumSet.allOf(SimplePlainTokenId.class);
         }
         
-        public Lexer<SimplePlainTokenId> createLexer(LexerRestartInfo<SimplePlainTokenId> info) {
+        @Override
+        protected Lexer<SimplePlainTokenId> createLexer(LexerRestartInfo<SimplePlainTokenId> info) {
             return new SimplePlainLexer(info);
         }
         
-        public String mimeType() {
+        @Override
+        protected String mimeType() {
             return "text/x-simple-plain";
         }
         

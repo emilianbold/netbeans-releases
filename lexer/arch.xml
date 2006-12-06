@@ -521,10 +521,12 @@ public enum CalcTokenId implements TokenId {
     }
 
     private static final Language&lt;CalcTokenId&gt; language = new LanguageHierarchy&lt;CalcTokenId&gt;() {
+        <code>@Override</code>
         protected Collection&lt;CalcTokenId&gt; createTokenIds() {
             return EnumSet.allOf(CalcTokenId.class);
         }
         
+        <code>@Override</code>
         protected Map&lt;String,Collection&lt;CalcTokenId&gt;&gt; createTokenCategories() {
             Map&lt;String,Collection&lt;CalcTokenId&gt;&gt; cats = new HashMap&lt;String,Collection&lt;CalcTokenId&gt;&gt;();
 
@@ -536,10 +538,12 @@ public enum CalcTokenId implements TokenId {
             return cats;
         }
 
+        <code>@Override</code>
         protected Lexer&lt;CalcTokenId&gt; createLexer(LexerRestartInfo&lt;CalcTokenId&gt; info) {
             return new CalcLexer(info);
         }
 
+        <code>@Override</code>
         protected String mimeType() {
             return "text/x-calc";
         }

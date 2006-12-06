@@ -41,14 +41,17 @@ public enum TextAsSingleTokenTokenId implements TokenId {
     
     private static final Language<TextAsSingleTokenTokenId> lang = new LanguageHierarchy<TextAsSingleTokenTokenId>() {
 
+        @Override
         protected String mimeType() {
             return "text/x-eof-mark";
         }
 
+        @Override
         protected Collection<TextAsSingleTokenTokenId> createTokenIds() {
             return EnumSet.allOf(TextAsSingleTokenTokenId.class);
         }
 
+        @Override
         protected Lexer<TextAsSingleTokenTokenId> createLexer(LexerRestartInfo<TextAsSingleTokenTokenId> info) {
             return new TextAsSingleTokenLexer(info);
         }

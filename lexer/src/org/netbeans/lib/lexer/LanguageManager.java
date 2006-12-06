@@ -49,12 +49,15 @@ import org.openide.util.LookupListener;
 public final class LanguageManager extends LanguageProvider implements LookupListener, PropertyChangeListener {
     
     private static final Language<TokenId> NO_LANG = new LanguageHierarchy<TokenId>() {
+        @Override
         protected Lexer<TokenId> createLexer(LexerRestartInfo<TokenId> info) {
             return null;
         }
+        @Override
         protected Collection<TokenId> createTokenIds() {
             return Collections.emptyList();
         }
+        @Override
         protected String mimeType() {
             return "obscure/no-language-marker"; //NOI18N
         }

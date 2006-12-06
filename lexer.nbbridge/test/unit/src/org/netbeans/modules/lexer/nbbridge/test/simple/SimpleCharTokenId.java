@@ -47,17 +47,19 @@ public enum SimpleCharTokenId implements TokenId {
     private static final Language<SimpleCharTokenId> language
     = new LanguageHierarchy<SimpleCharTokenId>() {
 
+        @Override
         protected Collection<SimpleCharTokenId> createTokenIds() {
             return EnumSet.allOf(SimpleCharTokenId.class);
         }
         
+        @Override
         public Lexer<SimpleCharTokenId> createLexer(LexerRestartInfo<SimpleCharTokenId> info) {
             return new SimpleCharLexer(info);
         }
 
+        @Override
         public LanguageEmbedding embedding(
-        Token<SimpleCharTokenId> token, boolean tokenComplete,
-        LanguagePath languagePath, InputAttributes inputAttributes) {
+        Token<SimpleCharTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
             return null; // No embedding
         }
 

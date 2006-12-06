@@ -103,14 +103,17 @@ public enum TokenDumpTokenId implements TokenId {
     
     private static final Language<TokenDumpTokenId> lang = new LanguageHierarchy<TokenDumpTokenId>() {
 
+        @Override
         protected String mimeType() {
             return "text/x-eof-mark";
         }
 
+        @Override
         protected Collection<TokenDumpTokenId> createTokenIds() {
             return EnumSet.allOf(TokenDumpTokenId.class);
         }
 
+        @Override
         protected Lexer<TokenDumpTokenId> createLexer(LexerRestartInfo<TokenDumpTokenId> info) {
             return new TokenDumpLexer(info);
         }

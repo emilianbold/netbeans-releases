@@ -74,14 +74,17 @@ import org.netbeans.lib.lexer.TokenIdImpl;
  *
  *
  *     private static final Language&lt;MyTokenId&gt; language = new LanguageHierarchy&lt;MyTokenId&gt;() {
+ *         <code>@Override</code>
  *         protected String mimeType() {
  *             return "text/x-my";
  *         }
  *
+ *         <code>@Override</code>
  *         protected Collection&lt;MyTokenId&gt; createTokenIds() {
  *             return EnumSet.allOf(MyTokenId.class);
  *         }
  *
+ *         <code>@Override</code>
  *         protected Lexer&lt;MyTokenId&gt; createLexer(LexerInput input, TokenFactory&lt;MyTokenId&gt; tokenFactory, Object state) {
  *             return new MyLexer(input, tokenFactory, state);
  *         }

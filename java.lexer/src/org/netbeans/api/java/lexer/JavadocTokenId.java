@@ -59,19 +59,23 @@ public enum JavadocTokenId implements TokenId {
     }
 
     private static final Language<JavadocTokenId> language = new LanguageHierarchy<JavadocTokenId>() {
+        @Override
         protected Collection<JavadocTokenId> createTokenIds() {
             return EnumSet.allOf(JavadocTokenId.class);
         }
         
+        @Override
         protected Map<String,Collection<JavadocTokenId>> createTokenCategories() {
             return null; // no extra categories
         }
 
+        @Override
         protected Lexer<JavadocTokenId> createLexer(LexerRestartInfo<JavadocTokenId> info) {
             return new JavadocLexer(info);
         }
 
-        public String mimeType() {
+        @Override
+        protected String mimeType() {
             return "text/x-javadoc";
         }
     }.language();

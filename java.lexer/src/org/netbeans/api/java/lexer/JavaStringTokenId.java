@@ -66,19 +66,23 @@ public enum JavaStringTokenId implements TokenId {
     }
 
     private static final Language<JavaStringTokenId> language = new LanguageHierarchy<JavaStringTokenId>() {
+        @Override
         protected Collection<JavaStringTokenId> createTokenIds() {
             return EnumSet.allOf(JavaStringTokenId.class);
         }
         
+        @Override
         protected Map<String, Collection<JavaStringTokenId>> createTokenCategories() {
             return null; // no extra categories
         }
 
+        @Override
         protected Lexer<JavaStringTokenId> createLexer(LexerRestartInfo<JavaStringTokenId> info) {
             return new JavaStringLexer(info);
         }
 
-        public String mimeType() {
+        @Override
+        protected String mimeType() {
             return "text/x-java-string";
         }
     }.language();

@@ -73,10 +73,12 @@ public enum HTMLTokenId implements TokenId {
     }
 
     private static final Language<HTMLTokenId> language = new LanguageHierarchy<HTMLTokenId>() {
+        @Override
         protected Collection<HTMLTokenId> createTokenIds() {
             return EnumSet.allOf(HTMLTokenId.class);
         }
         
+        @Override
         protected Map<String,Collection<HTMLTokenId>> createTokenCategories() {
             //Map<String,Collection<HTMLTokenId>> cats = new HashMap<String,Collection<HTMLTokenId>>();
             // Additional literals being a lexical error
@@ -84,17 +86,19 @@ public enum HTMLTokenId implements TokenId {
             return null;
         }
         
-        public Lexer<HTMLTokenId> createLexer(LexerRestartInfo<HTMLTokenId> info) {
+        @Override
+        protected Lexer<HTMLTokenId> createLexer(LexerRestartInfo<HTMLTokenId> info) {
             return new HTMLLexer(info);
         }
         
-        public LanguageEmbedding embedding(
-        Token<HTMLTokenId> token, boolean tokenComplete,
-        LanguagePath languagePath, InputAttributes inputAttributes) {
+        @Override
+        protected LanguageEmbedding embedding(
+        Token<HTMLTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
             return null; // No embedding
         }
         
-        public String mimeType() {
+        @Override
+        protected String mimeType() {
             return "text/html";
         }
     }.language();

@@ -73,10 +73,12 @@ public enum JspTokenId implements TokenId {
 
     // Token ids declaration
     private static final Language<JspTokenId> language = new LanguageHierarchy<JspTokenId>() {
+        @Override
         protected Collection<JspTokenId> createTokenIds() {
             return EnumSet.allOf(JspTokenId.class);
         }
         
+        @Override
         protected Map<String,Collection<JspTokenId>> createTokenCategories() {
             //Map<String,Collection<JspTokenId>> cats = new HashMap<String,Collection<JspTokenId>>();
             // Additional literals being a lexical error
@@ -84,11 +86,13 @@ public enum JspTokenId implements TokenId {
             return null;
         }
         
-        public Lexer<JspTokenId> createLexer(LexerRestartInfo<JspTokenId> info) {
+        @Override
+        protected Lexer<JspTokenId> createLexer(LexerRestartInfo<JspTokenId> info) {
             return new JspLexer(info);
         }
         
-        public LanguageEmbedding<? extends TokenId> embedding(
+        @Override
+        protected LanguageEmbedding<? extends TokenId> embedding(
         Token<JspTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
             switch(token.id()) {
                 case TEXT:
@@ -114,7 +118,8 @@ public enum JspTokenId implements TokenId {
             }
         }
         
-        public String mimeType() {
+        @Override
+        protected String mimeType() {
             return "text/html";
         }
     }.language();
