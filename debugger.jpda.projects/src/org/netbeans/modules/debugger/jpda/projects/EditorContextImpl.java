@@ -60,8 +60,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.editor.Coloring;
-import org.netbeans.modules.editor.highlights.spi.Highlight;
+import org.netbeans.api.java.source.ElementUtilities;
 
 import org.openide.ErrorManager;
 
@@ -688,21 +687,8 @@ public class EditorContextImpl extends EditorContext {
                         return;
                     
                     Scope scope = ci.getTreeUtilities().scopeFor(offset);
-                    TypeElement te = scope.getEnclosingClass();
-                    // TODO: HACK!!! - toString() is not a suitable method for that. Request a real API!
-                    String className = te.toString();
-                    int nameStart = className.lastIndexOf(' ');
-                    if (nameStart > 0) { // a name like <anonymous org.mypackage.MyClass$1>
-                        className = className.substring(nameStart + 1);
-                        if (className.endsWith(">")) {
-                            className = className.substring(0, className.length() - 1);
-                        }
-                    } else {
-                        // replace all '.' inner-class delimiters with '$' to get the binary name
-                        // TODO: request API that would provide the binary name.
-                        className = getBinaryName(te);
-                    }
-                    result[0] = className;
+                    TypeElement te = scope.getEnclosingClass();                    
+                    result[0] = ElementUtilities.getBinaryName(te);
                 }
             }, true);
             return result[0];
@@ -743,24 +729,7 @@ public class EditorContextImpl extends EditorContext {
         return "";
          */
     }
-    
-    static String getBinaryName(TypeElement te) {
-        Element e = te.getEnclosingElement();
-        while (e != null && !(e instanceof TypeElement)) {
-            e = e.getEnclosingElement();
-        }
-        if (e != null) {
-            TypeElement enclosingClass = (TypeElement) e;
-            CharSequence simpleName = te.getSimpleName();
-            if (simpleName == null || simpleName.length() == 0) {
-                return getBinaryName(enclosingClass);
-            } else {
-                return getBinaryName(enclosingClass) + '$' + simpleName;
-            }
-        } else {
-            return te.getQualifiedName().toString();
-        }
-    }
+        
     
     /*
     public Operation[] getOperations(String url, final int lineNumber,
@@ -1019,7 +988,7 @@ public class EditorContextImpl extends EditorContext {
                         Scope scope = ci.getTreeUtilities().scopeFor(offset);
                         TypeElement te = scope.getEnclosingClass();
                         if (te != null) {
-                            currentElementPtr[0] = getBinaryName(te);
+                            currentElementPtr[0] = ElementUtilities.getBinaryName(te);
                         }
                     } else if (kind == ElementKind.METHOD) {
                         Scope scope = ci.getTreeUtilities().scopeFor(offset);
