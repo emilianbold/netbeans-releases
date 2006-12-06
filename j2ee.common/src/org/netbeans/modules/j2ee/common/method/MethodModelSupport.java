@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.j2ee.common.method;
 
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
 import org.netbeans.api.java.source.CompilationController;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
@@ -32,7 +34,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
@@ -82,7 +83,7 @@ public final class MethodModelSupport {
     
     public static MethodModel.VariableModel createVariableModel(WorkingCopy workingCopy, VariableElement variableElement) {
         return createVariableModel(
-                getTypeName(workingCopy, variableElement.asType()), 
+                getTypeName(workingCopy, variableElement.asType()),
                 variableElement.getSimpleName().toString()
                 );
     }
@@ -187,14 +188,37 @@ public final class MethodModelSupport {
         return workingCopy.getTreeMaker().QualIdent(typeElement);
     }
     
-    //TODO: RETOUCHE move/reuse in SourceUtil
-     private static String getTypeName(CompilationController controller, TypeMirror typeMirror) {
-        Element element = controller.getTypes().asElement(typeMirror);
-        if (ElementKind.CLASS == element.getKind()) {
-            return ((TypeElement) element).getQualifiedName().toString();
-        } else {
-            return element.getSimpleName().toString();
+    //TODO: RETOUCHE move/reuse in SourceUtil, or best - get from java/source!
+    // package private only for unit test
+    static String getTypeName(CompilationController controller, TypeMirror typeMirror) {
+        TypeKind typeKind = typeMirror.getKind();
+        switch (typeKind) {
+            case BOOLEAN : return "boolean";
+            case BYTE : return "byte";
+            case CHAR : return "char";
+            case DOUBLE : return "double";
+            case FLOAT : return "float";
+            case INT : return "int";
+            case LONG : return "long";
+            case SHORT : return "short";
+            case VOID : return "void";
+            case DECLARED : 
+                Element element = controller.getTypes().asElement(typeMirror);
+                return ((TypeElement) element).getQualifiedName().toString();
+            case ARRAY : 
+                ArrayType arrayType = (ArrayType) typeMirror;
+                Element componentTypeElement = controller.getTypes().asElement(arrayType.getComponentType());
+                return ((TypeElement) componentTypeElement).getQualifiedName().toString() + "[]";
+            case ERROR :
+            case EXECUTABLE :
+            case NONE :
+            case NULL :
+            case OTHER :
+            case PACKAGE :
+            case TYPEVAR :
+            case WILDCARD : break;
         }
+        return null;
     }
     
 }
