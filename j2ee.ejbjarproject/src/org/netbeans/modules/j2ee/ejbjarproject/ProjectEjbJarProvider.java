@@ -22,14 +22,13 @@ package org.netbeans.modules.j2ee.ejbjarproject;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
-import org.netbeans.modules.j2ee.ejbcore.spi.ProjectPropertiesSupport;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarProvider;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarsInProject;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
 
-public class ProjectEjbJarProvider implements EjbJarProvider, EjbJarsInProject, ProjectPropertiesSupport {
+public class ProjectEjbJarProvider implements EjbJarProvider, EjbJarsInProject/*, ProjectPropertiesSupport*/ {
     
     private EjbJarProject project;
     

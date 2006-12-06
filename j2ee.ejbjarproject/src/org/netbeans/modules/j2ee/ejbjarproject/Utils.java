@@ -18,27 +18,14 @@
  */
 
 package org.netbeans.modules.j2ee.ejbjarproject;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.jmi.javamodel.JavaModelPackage;
-import org.netbeans.jmi.javamodel.Type;
-import org.netbeans.jmi.javamodel.UnresolvedClass;
-import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
-import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
-import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.javacore.api.JavaModel;
-import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
-import org.netbeans.modules.javacore.jmiimpl.javamodel.MethodImpl;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
-
 import javax.swing.*;
 import java.io.File;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -46,15 +33,9 @@ import java.util.Set;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.jmi.javamodel.ClassDefinition;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.Method;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeAppProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 
 
 public class Utils {
@@ -119,15 +100,6 @@ public class Utils {
 
     public static void setSteps(WizardDescriptor.Panel[] panels, String[] steps) {
         setSteps(panels, steps, steps, 0);
-    }
-
-    /**
-     * JMI transaction must be started and JMI classpath must be set to use this method
-     */
-    public static boolean isModified(JavaClass ce) {        
-        DataObject dataObject = JavaMetamodel.getManager().getDataObject(ce.getResource());
-        assert dataObject != null: ("DataObject not found for " + ce.getName());
-        return dataObject.isModified();
     }
 
     public static boolean areInSameJ2EEApp(Project p1, Project p2) {
@@ -199,21 +171,4 @@ public class Utils {
         return (Project []) filteredResults.toArray(new Project[filteredResults.size()]);
     }
 
-    // Copied from j2ee/utilities JMIUtils
-    public static JavaClass findClass(String className) {
-        JavaClass result = (JavaClass) resolveType(className);
-        return result instanceof UnresolvedClass ? null : result;
-    }
-
-    // Copied from j2ee/utilities JMIUtils
-    public static Type resolveType(String typeName) {
-        Type type = JavaModel.getDefaultExtent().getType().resolve(typeName);
-        if (type instanceof UnresolvedClass) {
-            Type basicType = JavaModel.getDefaultExtent().getType().resolve("java.lang." + typeName);  // NOI18N;
-            if (!(basicType instanceof UnresolvedClass)) {
-                return basicType;
-            }
-        }
-        return type;
-    }
 }

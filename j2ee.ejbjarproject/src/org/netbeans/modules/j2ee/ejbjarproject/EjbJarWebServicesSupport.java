@@ -21,23 +21,12 @@ package org.netbeans.modules.j2ee.ejbjarproject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.io.IOException;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.jmi.javamodel.Field;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.JavaModelPackage;
-import org.netbeans.jmi.javamodel.Method;
-import org.netbeans.jmi.javamodel.MultipartId;
-import org.netbeans.jmi.javamodel.Parameter;
 import org.netbeans.modules.j2ee.metadata.ClassPathSupport;
-import org.netbeans.modules.j2ee.ejbcore.api.codegeneration.SessionGenerator;
-import org.netbeans.modules.javacore.api.JavaModel;
-import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
-import org.netbeans.modules.javacore.internalapi.JavaModelUtil;
 import org.netbeans.modules.websvc.api.client.WebServicesClientConstants;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -69,8 +58,6 @@ import org.netbeans.modules.websvc.api.webservices.WsCompileEditorSupport;
 import org.netbeans.modules.websvc.api.webservices.StubDescriptor;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import static org.netbeans.modules.websvc.spi.webservices.WebServicesConstants.*;
-
-import java.lang.reflect.Modifier;
 import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathProviderImpl;
 
 /**
@@ -94,8 +81,10 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl{
     
     //implementation of WebServicesSupportImpl
     public String generateImplementationBean(String wsName, FileObject pkg, Project project, String delegateData)throws java.io.IOException {
-        SessionGenerator sessionGenerator = new SessionGenerator();
-        return sessionGenerator.generateWebServiceImplBean(wsName, pkg, project, delegateData);
+        //TODO: RETOUCHE waiting for ejbcore
+//        SessionGenerator sessionGenerator = new SessionGenerator();
+//        return sessionGenerator.generateWebServiceImplBean(wsName, pkg, project, delegateData);
+        return null;
     }
     
     public void addServiceImpl(String serviceName, FileObject configFile, boolean fromWSDL) {
@@ -628,94 +617,95 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl{
     }
     
     public void addInfrastructure(String implBeanClass, FileObject pkg){
-        boolean rollbackFlag = true; // rollback the transaction by default
-        JavaModel.getJavaRepository().beginTrans(true);
-        try {
-            JavaModel.setClassPath(pkg);
-            JavaMetamodel.getManager().waitScanFinished();
-            JavaClass clazz = Utils.findClass(implBeanClass);
-            
-            if (clazz == null) {
-                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, 
-                        "EjbJarWSSupport.addInfrastructure: Class not found: " + implBeanClass + " for package: " + pkg); //NOI18N
-                return;
-            }
-            
-            //remove java.rmi.Remote interface
-            List interfaces = clazz.getInterfaceNames();
-            for (Iterator it = interfaces.iterator(); it.hasNext();) {
-               MultipartId interfaceId = (MultipartId) it.next();
-               if (interfaceId.getElement().getName().equals("java.rmi.Remote")) {
-                   interfaces.remove(interfaceId);
-                   break;
-               }
-            }
-            
-            MultipartId id = JavaModelUtil.resolveImportsForClass(clazz, Utils.findClass("javax.ejb.SessionBean"));
-            if (id!=null) interfaces.add(id);
-
-            JavaModelPackage jmp = (JavaModelPackage) clazz.refImmediatePackage();
-            
-            //add javax.ejb.SessionContext field
-            JavaClass sessionCtx = Utils.findClass("javax.ejb.SessionContext");
-            Field field = jmp.getField().createField();
-            field.setType(sessionCtx);
-            field.setName("context");
-            clazz.getContents().add(0,field);
-            
-            //add setSessionContext(javax.ejb.SessionContext aContext) method
-            Method sessionCtxMethod = jmp.getMethod().createMethod();
-            sessionCtxMethod.setName("setSessionContext");
-            Parameter ctxParam = jmp.getParameter().createParameter(
-                    "aContext", 
-                    Collections.EMPTY_LIST,
-                    false, 
-                    jmp.getMultipartId().createMultipartId(sessionCtx.getName(), null, null), // type name
-                    0,
-                    false);
-            sessionCtxMethod.getParameters().add(ctxParam);
-            sessionCtxMethod.setType(Utils.resolveType("void"));
-            sessionCtxMethod.setModifiers(Modifier.PUBLIC);
-            sessionCtxMethod.setBodyText("context = aContext;");
-            sessionCtxMethod.setJavadocText("@see javax.ejb.SessionBean#setSessionContext(javax.ejb.SessionContext)");
-            clazz.getContents().add(sessionCtxMethod);
-            
-            //add ejbActivate method
-            Method ejbActivateMethod = jmp.getMethod().createMethod();
-            ejbActivateMethod.setName("ejbActivate");
-            ejbActivateMethod.setType(Utils.resolveType("void"));
-            ejbActivateMethod.setModifiers(Modifier.PUBLIC);
-            ejbActivateMethod.setJavadocText("@see javax.ejb.SessionBean#ejbActivate()");
-            clazz.getContents().add(ejbActivateMethod);
-            
-            //add ejbPassivate method
-            Method ejbPassivateMethod = jmp.getMethod().createMethod();
-            ejbPassivateMethod.setName("ejbPassivate");
-            ejbPassivateMethod.setType(Utils.resolveType("void"));
-            ejbPassivateMethod.setModifiers(Modifier.PUBLIC);
-            ejbPassivateMethod.setJavadocText("@see javax.ejb.SessionBean#ejbPassivate()");
-            clazz.getContents().add(ejbPassivateMethod);
-            
-            //add ejbRemove method
-            Method ejbRemoveMethod = jmp.getMethod().createMethod();
-            ejbRemoveMethod.setName("ejbRemove");
-            ejbRemoveMethod.setType(Utils.resolveType("void"));
-            ejbRemoveMethod.setModifiers(Modifier.PUBLIC);
-            ejbRemoveMethod.setJavadocText("@see javax.ejb.SessionBean#ejbRemove()");
-            clazz.getContents().add(ejbRemoveMethod);
-            
-            //add ejbCreate method
-            Method ejbCreateMethod = jmp.getMethod().createMethod();
-            ejbCreateMethod.setName("ejbCreate");
-            ejbCreateMethod.setType(Utils.resolveType("void"));
-            ejbCreateMethod.setModifiers(Modifier.PUBLIC);
-            ejbCreateMethod.setJavadocText("See section 7.10.3 of the EJB 2.0 specification\nSee section 7.11.3 of the EJB 2.1 specification");
-            clazz.getContents().add(ejbCreateMethod);
-            
-            rollbackFlag=false;
-        } finally {
-            JavaModel.getJavaRepository().endTrans(rollbackFlag);
-        }
+        //TODO: RETOUCHE webservices
+//        boolean rollbackFlag = true; // rollback the transaction by default
+//        JavaModel.getJavaRepository().beginTrans(true);
+//        try {
+//            JavaModel.setClassPath(pkg);
+//            JavaMetamodel.getManager().waitScanFinished();
+//            JavaClass clazz = Utils.findClass(implBeanClass);
+//            
+//            if (clazz == null) {
+//                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, 
+//                        "EjbJarWSSupport.addInfrastructure: Class not found: " + implBeanClass + " for package: " + pkg); //NOI18N
+//                return;
+//            }
+//            
+//            //remove java.rmi.Remote interface
+//            List interfaces = clazz.getInterfaceNames();
+//            for (Iterator it = interfaces.iterator(); it.hasNext();) {
+//               MultipartId interfaceId = (MultipartId) it.next();
+//               if (interfaceId.getElement().getName().equals("java.rmi.Remote")) {
+//                   interfaces.remove(interfaceId);
+//                   break;
+//               }
+//            }
+//            
+//            MultipartId id = JavaModelUtil.resolveImportsForClass(clazz, Utils.findClass("javax.ejb.SessionBean"));
+//            if (id!=null) interfaces.add(id);
+//
+//            JavaModelPackage jmp = (JavaModelPackage) clazz.refImmediatePackage();
+//            
+//            //add javax.ejb.SessionContext field
+//            JavaClass sessionCtx = Utils.findClass("javax.ejb.SessionContext");
+//            Field field = jmp.getField().createField();
+//            field.setType(sessionCtx);
+//            field.setName("context");
+//            clazz.getContents().add(0,field);
+//            
+//            //add setSessionContext(javax.ejb.SessionContext aContext) method
+//            Method sessionCtxMethod = jmp.getMethod().createMethod();
+//            sessionCtxMethod.setName("setSessionContext");
+//            Parameter ctxParam = jmp.getParameter().createParameter(
+//                    "aContext", 
+//                    Collections.EMPTY_LIST,
+//                    false, 
+//                    jmp.getMultipartId().createMultipartId(sessionCtx.getName(), null, null), // type name
+//                    0,
+//                    false);
+//            sessionCtxMethod.getParameters().add(ctxParam);
+//            sessionCtxMethod.setType(Utils.resolveType("void"));
+//            sessionCtxMethod.setModifiers(Modifier.PUBLIC);
+//            sessionCtxMethod.setBodyText("context = aContext;");
+//            sessionCtxMethod.setJavadocText("@see javax.ejb.SessionBean#setSessionContext(javax.ejb.SessionContext)");
+//            clazz.getContents().add(sessionCtxMethod);
+//            
+//            //add ejbActivate method
+//            Method ejbActivateMethod = jmp.getMethod().createMethod();
+//            ejbActivateMethod.setName("ejbActivate");
+//            ejbActivateMethod.setType(Utils.resolveType("void"));
+//            ejbActivateMethod.setModifiers(Modifier.PUBLIC);
+//            ejbActivateMethod.setJavadocText("@see javax.ejb.SessionBean#ejbActivate()");
+//            clazz.getContents().add(ejbActivateMethod);
+//            
+//            //add ejbPassivate method
+//            Method ejbPassivateMethod = jmp.getMethod().createMethod();
+//            ejbPassivateMethod.setName("ejbPassivate");
+//            ejbPassivateMethod.setType(Utils.resolveType("void"));
+//            ejbPassivateMethod.setModifiers(Modifier.PUBLIC);
+//            ejbPassivateMethod.setJavadocText("@see javax.ejb.SessionBean#ejbPassivate()");
+//            clazz.getContents().add(ejbPassivateMethod);
+//            
+//            //add ejbRemove method
+//            Method ejbRemoveMethod = jmp.getMethod().createMethod();
+//            ejbRemoveMethod.setName("ejbRemove");
+//            ejbRemoveMethod.setType(Utils.resolveType("void"));
+//            ejbRemoveMethod.setModifiers(Modifier.PUBLIC);
+//            ejbRemoveMethod.setJavadocText("@see javax.ejb.SessionBean#ejbRemove()");
+//            clazz.getContents().add(ejbRemoveMethod);
+//            
+//            //add ejbCreate method
+//            Method ejbCreateMethod = jmp.getMethod().createMethod();
+//            ejbCreateMethod.setName("ejbCreate");
+//            ejbCreateMethod.setType(Utils.resolveType("void"));
+//            ejbCreateMethod.setModifiers(Modifier.PUBLIC);
+//            ejbCreateMethod.setJavadocText("See section 7.10.3 of the EJB 2.0 specification\nSee section 7.11.3 of the EJB 2.1 specification");
+//            clazz.getContents().add(ejbCreateMethod);
+//            
+//            rollbackFlag=false;
+//        } finally {
+//            JavaModel.getJavaRepository().endTrans(rollbackFlag);
+//        }
     }
     
     private EjbJar getEjbJar() {

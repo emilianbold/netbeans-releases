@@ -272,9 +272,7 @@ Microsystems, Inc. All Rights Reserved.
                 <friend>org.netbeans.modules.j2ee.ejbcore</friend>
                 -->
                 <friend>org.netbeans.modules.j2ee.ejbfreeform</friend>
-                <!-- Commented out due to issue 89883
                 <friend>org.netbeans.modules.j2ee.ejbjarproject</friend>
-                -->
                 <friend>org.netbeans.modules.j2ee.persistence</friend>
                 <!-- Commented out due to issue 89883
                 <friend>org.netbeans.modules.j2ee.refactoring</friend>

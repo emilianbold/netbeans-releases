@@ -26,10 +26,8 @@ import java.util.Properties;
 import java.util.regex.Pattern;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.jmi.javamodel.Resource;
+import org.netbeans.modules.j2ee.common.source.SourceUtils;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
@@ -45,7 +43,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.*;
-import org.netbeans.api.project.ProjectInformation;
 
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 
@@ -331,27 +328,12 @@ class EjbJarActionProvider implements ActionProvider {
      * or SourceCookie doesn't contain the main method
      */    
     final public static boolean hasMainMethod (FileObject fo) {
-        // support for unit testing
-        /*if (MainClassChooser.unitTestingSupport_hasMainMethodResult != null) {
-            return MainClassChooser.unitTestingSupport_hasMainMethodResult.booleanValue ();
-        }
-        */
-        if (fo == null) {
-            // ??? maybe better should be thrown IAE
+        try {
+            return SourceUtils.hasMainMethod(fo);
+        } catch (IOException ex) {
+            ErrorManager.getDefault().notify(ex);
             return false;
         }
-        boolean has = false;
-        JavaModel.getJavaRepository ().beginTrans (false);
-        
-        try {
-            JavaModel.setClassPath(fo);
-            Resource res = JavaModel.getResource (fo);
-            assert res != null : "Resource found for FileObject " + fo;
-            has = !res.getMain().isEmpty();
-        } finally {
-            JavaModel.getJavaRepository ().endTrans ();
-        }
-        return has;
     }
     
     public boolean isActionEnabled( String command, Lookup context ) {
