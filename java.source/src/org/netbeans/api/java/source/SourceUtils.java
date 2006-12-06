@@ -174,32 +174,59 @@ public class SourceUtils {
             throw new NullPointerException();
         
         CompilationUnitTree cut = info.getCompilationUnit();
-        if (info instanceof WorkingCopy) {
-            CompilationUnitTree nue = (CompilationUnitTree) ((WorkingCopy)info).getChangeSet().getChange(cut);
-            cut = nue != null ? nue : cut;
-        }
-        
+        Element el = info.getTrees().getElement(new TreePath(cut));
+        PackageElement pkg = el != null && el.getKind() == ElementKind.PACKAGE ? (PackageElement)el : null;
         Scope scope = info.getTrees().getScope(context);
-        int lastDot = fqn.lastIndexOf('.');
-        String simpleName = fqn.substring(lastDot != (-1) ? lastDot + 1 : 0);
-        
-        while (scope != null) {
-            for (TypeElement te : ElementFilter.typesIn(scope.getLocalElements())) {
-                if (simpleName.equals(te.getSimpleName().toString())) {
-                    //either a clash or already imported:
-                    if (fqn.equals(te.getQualifiedName().toString())) {
-                        return simpleName;
-                    } else {
-                        return fqn;
+        String qName = fqn;
+        StringBuilder sqName = new StringBuilder();
+        String sName = null;
+        boolean clashing = false;
+        while(qName != null && qName.length() > 0) {
+            int lastDot = qName.lastIndexOf('.');
+            String simple = qName.substring(lastDot < 0 ? 0 : lastDot + 1);
+            if (sName == null)
+                sName = simple;
+            else
+                sqName.insert(0, '.');
+            sqName.insert(0, simple);
+            TypeElement te = info.getElements().getTypeElement(qName);
+            if (te != null) {
+                Scope s = scope;
+                while (s != null) {
+                    for (TypeElement e : ElementFilter.typesIn(s.getLocalElements())) {
+                        if (simple.contentEquals(e.getSimpleName())) {
+                            //either a clash or already imported:
+                            if (qName.contentEquals(e.getQualifiedName())) {
+                                return sqName.toString();
+                            } else if (fqn == qName) {
+                                clashing = true;
+                            }
+                        }
+                    }
+                    s = s.getEnclosingScope();
+                }
+                if (pkg != null) {
+                    for (TypeElement e : ElementFilter.typesIn(pkg.getEnclosedElements())) {
+                        if (simple.contentEquals(e.getSimpleName())) {
+                            //either a clash or already imported:
+                            if (qName.contentEquals(e.getQualifiedName())) {
+                                return sqName.toString();
+                            } else if (fqn == qName) {
+                                clashing = true;
+                            }
+                        }
                     }
                 }
             }
-            
-            scope = scope.getEnclosingScope();
+            qName = lastDot < 0 ? null : qName.substring(0, lastDot);
         }
+        if (clashing)
+            return fqn;
         
         //not imported/visible so far by any means:
         if (info instanceof WorkingCopy) {
+            CompilationUnitTree nue = (CompilationUnitTree) ((WorkingCopy)info).getChangeSet().getChange(cut);
+            cut = nue != null ? nue : cut;
             ((WorkingCopy)info).rewrite(info.getCompilationUnit(), addImports(cut, Collections.singletonList(fqn), ((WorkingCopy)info).getTreeMaker()));
         } else {
             RequestProcessor.getDefault().post(new Runnable() {
@@ -224,7 +251,7 @@ public class SourceUtils {
             ((JCCompilationUnit) info.getCompilationUnit()).namedImportScope.enterIfAbsent((Symbol) te);
         }
         
-        return simpleName;
+        return sName;
     }
     
     /**

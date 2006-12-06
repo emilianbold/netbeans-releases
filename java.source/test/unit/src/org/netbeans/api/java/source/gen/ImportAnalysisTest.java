@@ -615,6 +615,48 @@ public class ImportAnalysisTest extends GeneratorTest {
         assertFiles("testAddImportThroughMethod3.pass");
     }
     
+    public void testAddImportThroughMethod4() throws IOException {
+        process(
+            new MutableTransformer<Void, Object>() {
+                public Void visitMethod(MethodTree node, Object p) {
+                    if ("<init>".contentEquals(node.getName())) {
+                        WorkingCopy wc = getWorkingCopy();
+                        int offset = (int) (wc.getTrees().getSourcePositions().getStartPosition(wc.getCompilationUnit(), node) + 1);
+                        TreePath context = wc.getTreeUtilities().pathFor(offset);
+                        try {
+                            assertEquals("SuperClassTest", SourceUtils.resolveImport(wc, context, "org.netbeans.test.codegen.SuperClassTest"));
+                        } catch (IOException e) {
+                            throw new IllegalStateException(e);
+                        }
+                    }
+                    return null;
+                }
+            }
+        );
+        assertFiles("testAddImportThroughMethod4.pass");
+    }
+
+    public void testAddImportThroughMethod5() throws IOException {
+        process(
+            new MutableTransformer<Void, Object>() {
+                public Void visitMethod(MethodTree node, Object p) {
+                    if ("<init>".contentEquals(node.getName())) {
+                        WorkingCopy wc = getWorkingCopy();
+                        int offset = (int) (wc.getTrees().getSourcePositions().getStartPosition(wc.getCompilationUnit(), node) + 1);
+                        TreePath context = wc.getTreeUtilities().pathFor(offset);
+                        try {
+                            assertEquals("SuperClassTest.FirstInnerClass", SourceUtils.resolveImport(wc, context, "org.netbeans.test.codegen.SuperClassTest.FirstInnerClass"));
+                        } catch (IOException e) {
+                            throw new IllegalStateException(e);
+                        }
+                    }
+                    return null;
+                }
+            }
+        );
+        assertFiles("testAddImportThroughMethod4.pass");
+    }
+    
     String getSourcePckg() {
         return "org/netbeans/test/codegen/";
     }
