@@ -100,7 +100,7 @@ public final class MethodModelSupport {
             for (VariableModel parameter : methodModel.getParameters()) {
                 VariableTree variableTree = treeMaker.Variable(
                         treeMaker.Modifiers(Collections.<Modifier>emptySet()),
-                        "arg" + index++,
+                        parameter.getName(),
                         getTypeTree(workingCopy, parameter.getType()),
                         null
                         );
