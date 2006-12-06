@@ -1152,7 +1152,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
         try {
             str = findRefsFromRoot(ref.get(), rootsHint);
         } catch (Exception e) {
-            fail(e.getMessage());
+            throw new AssertionFailedErrorException(e);
         }
         fail(text + ":\n" + str);
     }
