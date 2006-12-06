@@ -25,6 +25,7 @@ import javax.swing.text.Document;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenId;
+import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.lib.lexer.LanguageManager;
 import org.netbeans.spi.lexer.*;
@@ -66,9 +67,8 @@ extends MutableTextInput<D> implements DocumentListener {
     public DocumentInput(D doc) {
         this.doc = doc;
         this.text = DocumentUtilities.getText(doc);
-        
-        doc.addDocumentListener(this);
-        
+        // Add document listener with the appropriate priority (if priority listening is supported)
+        DocumentUtilities.addDocumentListener(doc, this, DocumentListenerPriority.LEXER);
     }
     
     public Language<? extends TokenId> language() {

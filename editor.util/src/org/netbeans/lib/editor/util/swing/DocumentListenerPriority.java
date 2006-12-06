@@ -29,7 +29,14 @@ package org.netbeans.lib.editor.util.swing;
 public final class DocumentListenerPriority {
 
     /**
-     * Fold update gets notified first (prior view updates etc.).
+     * Lexer gets notified early to allow other levels to use the udpated
+     * token list.
+     */
+    public static final DocumentListenerPriority LEXER
+            = new DocumentListenerPriority(5, "lexer"); // NOI18N
+
+    /**
+     * Fold update gets notified prior default level.
      */
     public static final DocumentListenerPriority FOLD_UPDATE
             = new DocumentListenerPriority(4, "fold-update"); // NOI18N
