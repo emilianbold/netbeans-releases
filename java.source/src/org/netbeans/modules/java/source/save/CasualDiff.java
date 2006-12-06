@@ -422,7 +422,7 @@ public class CasualDiff {
                 }
                 else {
                     printer.print(newT.name);
-                    localPointer = oldT.pos + newT.name.length();
+                    localPointer = oldT.pos + oldT.name.length();
                 }
             } else {
                 printer.print(origText.substring(localPointer, localPointer = (oldT.pos + oldT.name.length())));
