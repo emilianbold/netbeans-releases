@@ -33,6 +33,8 @@ import java.util.Collections;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -137,7 +139,8 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
      *  if needed. 
      * @param targetFolder the target folder for the entity.
      * @param targetName the target name of the entity.
-     * @param primaryKeyClassName the fully qualified name of the primary key class.
+     * @param primaryKeyClassName the name of the primary key class, needs to be 
+     *  resolvable in the generated entity's scope.
      * @param isAccessProperty defines the access strategy for the id field.
      * @return a FileObject representing the generated entity.
      */
@@ -151,23 +154,31 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
             public void run(WorkingCopy workingCopy) throws Exception {
                 GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
                 ClassTree clazz = genUtils.getClassTree();
+                TreeMaker make = workingCopy.getTreeMaker();
                 
                 String idFieldName = "id"; // NO18N
-                VariableTree idField = genUtils.createField(genUtils.createModifiers(Modifier.PRIVATE), idFieldName, primaryKeyClassName);
-                ModifiersTree idMethodModifiers = genUtils.createModifiers(Modifier.PUBLIC);
-                MethodTree idGetter = genUtils.createPropertyGetterMethod(idMethodModifiers, idFieldName, primaryKeyClassName);
-                MethodTree idSetter = genUtils.createPropertySetterMethod(idMethodModifiers, idFieldName, primaryKeyClassName);
-                ExpressionTree generationStrategy = genUtils.createAnnotationArgument("strategy", "javax.persistence.GenerationType", "AUTO"); //NO18N
-                AnnotationTree idAnnotation = genUtils.createAnnotation("javax.persistence.Id", Collections.singletonList(generationStrategy)); //NO18N
+
+                // resolve the fully qualified name for the primary key class
+                TypeMirror type = workingCopy.getTreeUtilities().parseType(primaryKeyClassName, genUtils.getTypeElement());
+                String primaryKeyType = ((TypeElement) workingCopy.getTypes().asElement(type)).getQualifiedName().toString();
                 
+                VariableTree idField = genUtils.createField(genUtils.createModifiers(Modifier.PRIVATE), idFieldName, primaryKeyType);
+                ModifiersTree idMethodModifiers = genUtils.createModifiers(Modifier.PUBLIC);
+                MethodTree idGetter = genUtils.createPropertyGetterMethod(idMethodModifiers, idFieldName, primaryKeyType);
+                MethodTree idSetter = genUtils.createPropertySetterMethod(idMethodModifiers, idFieldName, primaryKeyType);
+                AnnotationTree idAnnotation = genUtils.createAnnotation("javax.persistence.Id"); //NO18N
+                ExpressionTree generationStrategy = genUtils.createAnnotationArgument("strategy", "javax.persistence.GenerationType", "AUTO"); //NO18N
+                AnnotationTree generatedValueAnnotation = genUtils.createAnnotation("javax.persistence.GeneratedValue", Collections.singletonList(generationStrategy)); //NO18N
+
                 if (isAccessProperty){
                     idField = genUtils.addAnnotation(idField, idAnnotation);
+                    idField = genUtils.addAnnotation(idField, generatedValueAnnotation);
                 } else {
                     idGetter = genUtils.addAnnotation(idGetter, idAnnotation);
+                    idGetter = genUtils.addAnnotation(idGetter, generatedValueAnnotation);
                 }
                 ClassTree modifiedClazz = genUtils.addClassFields(clazz, Collections.singletonList(idField));
                 
-                TreeMaker make = workingCopy.getTreeMaker();
                 modifiedClazz = make.addClassMember(modifiedClazz, idSetter);
                 modifiedClazz = make.addClassMember(modifiedClazz, idGetter);
                 modifiedClazz = genUtils.addImplementsClause(modifiedClazz, "java.io.Serializable");

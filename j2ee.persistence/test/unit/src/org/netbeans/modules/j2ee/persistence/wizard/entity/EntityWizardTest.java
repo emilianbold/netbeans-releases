@@ -38,12 +38,14 @@ public class EntityWizardTest extends SourceTestSupport{
     }
     
     public void testGenerateEntityFieldAccess() throws Exception {
-        FileObject result = EntityWizard.generateEntity(FileUtil.toFileObject(getWorkDir()), "MyEntity", "java.lang.Long", true);
+        FileObject result = EntityWizard.generateEntity(FileUtil.toFileObject(getWorkDir()), "MyEntity", "Long", true);
+        print(result);
         assertFile(result);
     }
     
     public void testGenerateEntityPropertyAccess() throws Exception {
         FileObject result = EntityWizard.generateEntity(FileUtil.toFileObject(getWorkDir()), "MyEntity", "java.lang.Long", false);
+        print(result);
         assertFile(result);
     }
     
