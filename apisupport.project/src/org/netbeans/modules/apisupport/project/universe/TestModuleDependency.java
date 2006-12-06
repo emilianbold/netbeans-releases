@@ -27,7 +27,7 @@ import java.util.Comparator;
  * 
  * @author pzajac
  */
-public class TestModuleDependency {
+public class TestModuleDependency implements Comparable {
     
     public static final String UNIT = "unit"; // NOI18N
     public static final String QA_FUNCTIONAL = "qa-functional"; // NOI18N 
@@ -84,4 +84,33 @@ public class TestModuleDependency {
         this.compile = compile;
     }
     
+    // td1 equals td2 iff cnb and all three boolean fileds of td are the same
+    public boolean equals(Object o){
+        if(o instanceof TestModuleDependency) {
+            TestModuleDependency tmd = (TestModuleDependency) o;
+            return tmd.isCompile() == this.isCompile()
+                    && tmd.isRecursive() == this.isRecursive()
+                    && tmd.isTest() == this.isTest()
+                    && tmd.getModule().getCodeNameBase().equals(this.getModule().getCodeNameBase());
+        } else {
+            return false;
+}
+    }
+    
+    //compare only on cnb. ATTENTION, compareTo is not consistent with equals method!
+    //i.e. two instances of TestModuleDependency can be nonequal, and tmd1.compareTo(tmd2)
+    // can return 0
+    public int compareTo(Object o) {
+        TestModuleDependency tmd = (TestModuleDependency) o;
+        return this.module.getCodeNameBase().compareTo(tmd.module.getCodeNameBase());
+    }
+    
+    //hash from CNB only
+    public int hashCode(){
+        int hash = module.getCodeNameBase().hashCode();
+//        if(test)  hash*=5;
+//        if(recursive)  hash*=7;
+//        if(compile) hash*=11;
+        return hash;
+    }
 }

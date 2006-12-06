@@ -49,6 +49,7 @@ import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
 import org.netbeans.modules.apisupport.project.ui.customizer.SingleModuleProperties;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+import org.netbeans.modules.apisupport.project.universe.TestModuleDependency;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -282,7 +283,7 @@ final class LibrariesNode extends AbstractNode {
         private final NbModuleProject project;
         
         ProjectDependencyNode(final ModuleDependency dep, final NbModuleProject project) {
-            super(Children.LEAF, Lookups.fixed(new Object[] { dep, project }));
+            super(Children.LEAF, Lookups.fixed(new Object[] { dep, project, dep.getModuleEntry() }));
             this.dep = dep;
             this.project = project;
             ModuleEntry me = dep.getModuleEntry();
@@ -473,16 +474,15 @@ final class LibrariesNode extends AbstractNode {
         
     }
     
-    private static final class OpenProjectAction extends CookieAction {
+    static final class OpenProjectAction extends CookieAction {
         
         protected void performAction(Node[] activatedNodes) {
             try {
                 final Project[] projects = new Project[activatedNodes.length];
                 for (int i = 0; i < activatedNodes.length; i++) {
-                    ModuleDependency dep = (ModuleDependency) activatedNodes[i].
-                            getLookup().lookup(ModuleDependency.class);
-                    assert dep != null;
-                    File prjDir = dep.getModuleEntry().getSourceLocation();
+                    ModuleEntry me = (ModuleEntry) activatedNodes[i].getLookup().lookup(ModuleEntry.class);
+                    assert me != null;
+                    File prjDir = me.getSourceLocation();
                     assert prjDir != null;
                     Project project = ProjectManager.getDefault().findProject(FileUtil.toFileObject(prjDir));
                     assert project != null;
@@ -521,7 +521,7 @@ final class LibrariesNode extends AbstractNode {
         }
         
         protected Class[] cookieClasses() {
-            return new Class[] { ModuleDependency.class };
+            return new Class[] { ModuleDependency.class, TestModuleDependency.class };
         }
         
     }

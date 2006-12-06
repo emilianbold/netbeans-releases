@@ -242,9 +242,20 @@ public final class ModuleLogicalView implements LogicalViewProvider {
             }
             l.add(IMPORTANT_FILES_NAME);
             l.add(LibrariesNode.LIBRARIES_NAME);
+            if(resolveFileObjectFromProperty("test.unit.src.dir") != null) { //NOI18N
+                l.add(UnitTestLibrariesNode.UNIT_TEST_LIBRARIES_NAME);
+            }
             setKeys(l);
         }
         
+        private FileObject resolveFileObjectFromProperty(String property){
+            String filename = project.evaluator().getProperty(property);
+            if (filename == null) {
+                return null;
+            }
+            return project.getHelper().resolveFileObject(filename);
+        }
+
         protected void removeNotify() {
             ProjectUtils.getSources(project).removeChangeListener(this);
             setKeys(Collections.EMPTY_SET);
@@ -259,20 +270,19 @@ public final class ModuleLogicalView implements LogicalViewProvider {
                 n = new ImportantFilesNode(project);
             } else if (key == LibrariesNode.LIBRARIES_NAME) {
                 n = new LibrariesNode(project);
+            } else if (key == UnitTestLibrariesNode.UNIT_TEST_LIBRARIES_NAME) {
+                n = new UnitTestLibrariesNode(project);
             } else {
                 throw new AssertionError("Unknown key: " + key);
             }
             return new Node[] {n};
         }
         
+       
         private SourceGroup makeJavadocDocfilesSourceGroup() {
             String propname = "javadoc.docfiles"; // NOI18N
-            String prop = project.evaluator().getProperty(propname);
-            if (prop == null) {
-                return null;
-            }
-            FileObject root = project.getHelper().resolveFileObject(prop);
-            if (root == null) {
+            FileObject root = resolveFileObjectFromProperty(propname);
+            if(root == null) {
                 return null;
             }
             return GenericSources.group(project, root, propname, NbBundle.getMessage(ModuleLogicalView.class, "LBL_extra_javadoc_files"), null, null);

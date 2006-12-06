@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -37,7 +38,9 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
+import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+import org.netbeans.modules.apisupport.project.universe.TestModuleDependency;
 import org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -471,6 +474,102 @@ public class ProjectXMLManagerTest extends TestBase {
         ProjectManager.getDefault().saveProject(testingProject);
         validate(testingProject, true);
     }
+    
+  
+    public void testRemoveTestDependency() throws Exception {
+        final String UNIT = TestModuleDependency.UNIT;
+        final String QAFUNC = TestModuleDependency.QA_FUNCTIONAL;
+        final NbModuleProject testingProject = generateTestingProject();
+        final ProjectXMLManager pxm = new ProjectXMLManager(testingProject);
+        final String cnb = "org.netbeans.modules.java.project";
+        final String cnb2 = "org.netbeans.modules.project.ant";
+        File projectDir = FileUtil.toFile(testingProject.getProjectDirectory());
+        ModuleList ml = ModuleList.getModuleList(projectDir);
+        ModuleEntry meJP = testingProject.getModuleList().getEntry(cnb);
+        ModuleEntry meAnt = testingProject.getModuleList().getEntry(cnb2);
+        TestModuleDependency tdJP_001 = new TestModuleDependency(meJP, false, false, true);
+        TestModuleDependency tdAnt_111 = new TestModuleDependency(meAnt, true, true, true);
+        //add two unit test dependencies
+        pxm.addTestDependency(UNIT, tdJP_001);
+        pxm.addTestDependency(UNIT, tdAnt_111);
+        ProjectManager.getDefault().saveProject(testingProject);
+        //try wrong usage of remove
+        assertFalse("no such cnb under QA func.", pxm.removeTestDependency(QAFUNC, cnb));
+        assertFalse("no such cnb under UNIT func.", pxm.removeTestDependency(UNIT, "someCNB"));
+        Set setBefore = (Set) pxm.getTestDependencies(ml).get(UNIT);
+        assertEquals("unit test type contains two TD", 2 , setBefore.size());
+        //remove first one
+        assertTrue("one should be found && removed", pxm.removeTestDependency(UNIT, cnb));        
+        ProjectManager.getDefault().saveProject(testingProject);
+        //try to remove just removed
+        assertFalse("this was just removed", pxm.removeTestDependency(UNIT, cnb));        
+        Set setNow = (Set) pxm.getTestDependencies(ml).get(UNIT);
+        assertEquals("unit test type contains one TD", 1 , setNow.size());
+        //remove last one
+        assertTrue("all unit test deps have been removed", pxm.removeTestDependency(UNIT, cnb2));
+        ProjectManager.getDefault().saveProject(testingProject);
+        Set setAfter = (Set) pxm.getTestDependencies(ml).get(UNIT);
+        assertTrue("unit test type is empty now", setAfter.isEmpty());
+    }
+    
+    public void testAddTestDependency () throws Exception{
+        final String UNIT = TestModuleDependency.UNIT;
+        final String QAFUNC = TestModuleDependency.QA_FUNCTIONAL;
+        
+        final NbModuleProject testingProject = generateTestingProject();
+        final ProjectXMLManager pxm = new ProjectXMLManager(testingProject);
+        File projectDir = FileUtil.toFile(testingProject.getProjectDirectory());
+        ModuleList ml = ModuleList.getModuleList(projectDir);
+        ModuleEntry meJP = testingProject.getModuleList().getEntry(
+                "org.netbeans.modules.java.project");
+        ModuleEntry meAnt = testingProject.getModuleList().getEntry(
+                "org.netbeans.modules.project.ant");
+        ModuleEntry meDialogs = testingProject.getModuleList().getEntry(
+                "org.openide.dialogs");
+        
+        TestModuleDependency tdJP_001 = new TestModuleDependency(meJP, false, false, true);
+        TestModuleDependency tdJP_010 = new TestModuleDependency(meJP, false, true, false);
+        TestModuleDependency tdAnt_111 = new TestModuleDependency(meAnt, true, true, true);
+        TestModuleDependency tdDialogs_000 = new TestModuleDependency(meDialogs, false, false, false);
+        
+        Map mapOfTD;
+        HashSet unitTD;
+        HashSet qafuncTD;
+        
+        mapOfTD = pxm.getTestDependencies(ml);
+        assertTrue("currently no TD", mapOfTD.isEmpty());
+        //first, add one unit test dep
+        pxm.addTestDependency(UNIT, tdJP_001);
+        ProjectManager.getDefault().saveProject(testingProject);
+        mapOfTD = pxm.getTestDependencies(ml);
+        assertEquals("map has already unit test type", 1, mapOfTD.size());
+        unitTD = (HashSet) mapOfTD.get(UNIT);
+        qafuncTD = (HashSet) mapOfTD.get(QAFUNC);
+        assertEquals("set with unit TD has one TD", 1, unitTD.size());
+        assertNull("set with qafunc TD does not exist", qafuncTD);
+        //now add 2 other  unit test dep;
+        pxm.addTestDependency(UNIT, tdDialogs_000);
+        ProjectManager.getDefault().saveProject(testingProject);
+        pxm.addTestDependency(UNIT, tdAnt_111);
+        ProjectManager.getDefault().saveProject(testingProject);
+        mapOfTD = pxm.getTestDependencies(ml);
+        assertEquals("map still has only unit test type", 1, mapOfTD.size());
+        unitTD = (HashSet) mapOfTD.get(UNIT);
+        assertEquals("set with unit TD has now three TD", 3, unitTD.size());
+        //now add qa-func test dependency
+        pxm.addTestDependency(QAFUNC, tdJP_010);
+        ProjectManager.getDefault().saveProject(testingProject);
+        mapOfTD = pxm.getTestDependencies(ml);
+        unitTD = (HashSet) mapOfTD.get(UNIT);
+        qafuncTD = (HashSet) mapOfTD.get(QAFUNC);
+        assertEquals("map has both test types", 2, mapOfTD.size());
+        assertEquals("set with unit TD has still three TD", 3, unitTD.size());
+        assertEquals("set with qafunc TD has one TD", 1, qafuncTD.size());
+        //TODO: rewrite order checking method to be able to check properly test dependencies order
+        validate(testingProject, false);
+    }
+    
+    
     
     private NbModuleProject generateTestingProject() throws Exception {
         FileObject fo = TestBase.generateStandaloneModuleDirectory(getWorkDir(), "testing");

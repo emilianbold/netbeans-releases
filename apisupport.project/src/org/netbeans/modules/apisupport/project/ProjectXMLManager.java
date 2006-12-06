@@ -47,6 +47,7 @@ import org.w3c.dom.Element;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.modules.apisupport.project.universe.TestModuleDependency;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
@@ -92,6 +93,7 @@ public final class ProjectXMLManager {
     private static final String TEST_DEPENDENCY_RECURSIVE = "recursive"; // NOI18N
     private static final String TEST_DEPENDENCY_COMPILE = "compile-dependency"; // NOI18N
     private static final String TEST_DEPENDENCY_TEST = "test"; // NOI18N
+    private static final String TEST_TYPE = "test-type"; //NOI18N
     
     private final NbModuleProject project;
     private NbPlatform customPlaf;
@@ -374,10 +376,154 @@ public final class ProjectXMLManager {
     }
     
     /**
+     * Removes test dependency under type <code>testType</code>, indentified
+     * by <code>cnbToRemove</code>. Does not remove whole 610test type even if
+     * removed test dependency was the last one.
+     */
+    public boolean removeTestDependency(String testType, String cnbToRemove){
+        boolean wasRemoved = false;
+        Element confData = getConfData();
+        Element testModuleDependenciesEl = findTestDependenciesElement(confData);
+        List/*<Element>*/ testTypesList = Util.findSubElements(testModuleDependenciesEl);
+        Element testTypeRemoveEl = null;
+        for (Iterator it = testTypesList.iterator(); it.hasNext(); ) {
+            Element type = (Element)it.next();
+            Element nameEl = findElement(type, TEST_TYPE_NAME);
+            String nameOfType = Util.findText(nameEl);
+            if (testType.equals(nameOfType)) {
+                testTypeRemoveEl = type;
+            }
+        }
+        //found such a test type
+        if (testTypeRemoveEl != null){
+            List/*<Element>*/ testDepList = Util.findSubElements(testTypeRemoveEl);
+            for (Iterator it = testDepList.iterator(); it.hasNext();) {
+                Element el = (Element) it.next();
+                Element cnbEl = findElement(el, TEST_DEPENDENCY_CNB);
+                if(cnbEl == null) {
+                    continue;   //name node, continue
+                }
+                String cnb = Util.findText(cnbEl);
+                if (cnbToRemove.equals(cnb)) {
+                    // found test dependency with desired CNB
+                    testTypeRemoveEl.removeChild(el);
+                    wasRemoved = true;
+                    project.putPrimaryConfigurationData(confData);
+                }
+            }
+        }
+        return wasRemoved;
+    }
+    
+    /**
+     * Adds new test dependency to <code>project.xml</code>. Currently only two test types are
+     * supported - <code>UNIT</code> and <code>QA_FUNCTIONAL</code>. Test dependencies under 
+     * test types are sorted by CNB.
+     */
+    public void addTestDependency(String testType, TestModuleDependency newTestDep) throws IOException {
+        final String UNIT = TestModuleDependency.UNIT;
+        final String QA_FUNCTIONAL = TestModuleDependency.QA_FUNCTIONAL;
+        assert (UNIT.equals(testType) || QA_FUNCTIONAL.equals(testType)) : "Current impl.supports only " + QA_FUNCTIONAL +
+                " or " + UNIT + " tests"; // NOI18N
+        File projectDir = FileUtil.toFile(project.getProjectDirectory());
+        ModuleList ml = ModuleList.getModuleList(projectDir);
+        Map map = new HashMap(getTestDependencies(ml));
+        Set testDependenciesSet = (Set) map.get(testType);
+        if(testDependenciesSet == null) {
+            testDependenciesSet = new TreeSet();
+            map.put(testType, testDependenciesSet);
+        } else {
+            testDependenciesSet = new TreeSet();
+            testDependenciesSet.addAll((Set) map.get(testType));
+        }
+        if (!testDependenciesSet.add(newTestDep)) {
+            return; //nothing new to add, dep is already there, finished
+        }
+        Element confData = getConfData();
+        Document doc = confData.getOwnerDocument();
+        Element testModuleDependenciesEl = findTestDependenciesElement(confData);
+        if (testModuleDependenciesEl == null) {      // test dependencies element does not exist, create it
+            Element before = findPublicPackagesElement(confData);
+            if (before == null) {
+                before = findFriendsElement(confData);
+            }
+            assert before != null : "There must be " + PUBLIC_PACKAGES + " or " // NOI18N
+                    + FRIEND_PACKAGES + " element according to XSD"; // NOI18N
+            testModuleDependenciesEl= createModuleElement(doc, TEST_DEPENDENCIES);
+            confData.insertBefore(testModuleDependenciesEl, before);
+        }
+        Element testTypeEl = null;
+        List listOfTestTypes = Util.findSubElements(testModuleDependenciesEl);
+        //iterate through test types to determine if testType exist
+        for (Iterator it = listOfTestTypes.iterator(); it.hasNext();) {
+            Element tt = (Element) it.next();
+            Node nameNode = findElement(tt, "name");
+            assert nameNode!=null : "should be some child with name";
+            //Node nameNode = tt.getFirstChild();
+            //nameNode.getNodeName()
+            assert (TEST_TYPE_NAME.equals(nameNode.getLocalName()))  : "name node should be first child, but was:"+nameNode.getLocalName() + 
+                    "or" + nameNode.getNodeName(); //NOI18N
+//equals
+            if(nameNode.getTextContent() == testType) {
+                testTypeEl = tt;
+            }
+        }
+        //? new or existing test type?
+        if (testTypeEl == null){
+            //this test type, does not exist, create it, and add new test dependency
+            Element newTestTypeEl = createNewTestTypeElement(doc, testType);
+            testModuleDependenciesEl.appendChild(newTestTypeEl);
+            createTestModuleDependencyElement(newTestTypeEl, newTestDep);
+            project.putPrimaryConfigurationData(confData);
+            return;
+        } else {
+            //testtype exists, refresh it
+            Node beforeWhat = testTypeEl.getNextSibling();
+            testModuleDependenciesEl.removeChild(testTypeEl);
+            Element refreshedTestTypeEl = createNewTestTypeElement(doc, testType);
+            if(beforeWhat == null) {
+                testModuleDependenciesEl.appendChild(refreshedTestTypeEl);
+            } else {
+                testModuleDependenciesEl.insertBefore(refreshedTestTypeEl, beforeWhat);
+            }
+            for (Iterator it = testDependenciesSet.iterator(); it.hasNext(); ) {
+                TestModuleDependency tmd = (TestModuleDependency) it.next();
+                createTestModuleDependencyElement(refreshedTestTypeEl, tmd);
+                project.putPrimaryConfigurationData(confData);
+            }
+        }
+    }
+    
+    private Element createNewTestTypeElement(Document doc, String testTypeName){
+        Element newTestTypeEl = createModuleElement(doc, TEST_TYPE);
+        Element nameOfTestTypeEl = createModuleElement(doc, TEST_TYPE_NAME, testTypeName);
+        newTestTypeEl.appendChild(nameOfTestTypeEl);
+        return newTestTypeEl;
+    }
+    
+    
+    private void createTestModuleDependencyElement(Element testTypeElement, TestModuleDependency tmd) {
+        Document doc = testTypeElement.getOwnerDocument();
+        Element tde = createModuleElement(doc, TEST_DEPENDENCY);
+        testTypeElement.appendChild(tde);
+        tde.appendChild(createModuleElement(doc, TEST_DEPENDENCY_CNB, tmd.getModule().getCodeNameBase()));
+        if(tmd.isRecursive()) {
+            tde.appendChild(createModuleElement(doc, TEST_DEPENDENCY_RECURSIVE));
+        }
+        if(tmd.isCompile()) {
+            tde.appendChild(createModuleElement(doc, TEST_DEPENDENCY_COMPILE));
+        }
+        if(tmd.isTest()) {
+            tde.appendChild(createModuleElement(doc, TEST_DEPENDENCY_TEST));
+        }
+    }
+    
+    
+    /**
      * Gives a map from test type (e.g. <em>unit</em> or <em>qa-functional</em>)
      * to the set of {@link TestModuleDependency dependencies} belonging to it.
      */
-    Map<String,Set<TestModuleDependency>> getTestDependencies(final ModuleList ml) {
+    public Map<String,Set<TestModuleDependency>> getTestDependencies(final ModuleList ml) {
         Element testDepsEl = findTestDependenciesElement(getConfData());
         
         Map<String,Set<TestModuleDependency>> testDeps = new HashMap();
