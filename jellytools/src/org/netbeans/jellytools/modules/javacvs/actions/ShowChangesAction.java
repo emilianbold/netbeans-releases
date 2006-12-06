@@ -21,15 +21,19 @@ package org.netbeans.jellytools.modules.javacvs.actions;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.actions.Action;
 
-/** Used to call "CVS|Show Changes" popup or "CVS|Show Changes..." main menu item.
+/** Used to call "CVS|Show Changes" popup or "Versioning|Show Changes..." main menu item.
  * @see Action
  * @author Jiri.Skrivanek@sun.com
  */
 public class ShowChangesAction extends Action {
 
+    /** "Versioning" menu item. */
+    private static final String VERSIONING_ITEM = Bundle.getStringTrimmed(
+           "org.netbeans.modules.versioning.Bundle", "Menu/Window/Versioning");
     // "CVS"
     private static final String CVS_ITEM = Bundle.getStringTrimmed(
-            "org.netbeans.modules.versioning.system.cvss.Bundle", "Menu/CVS");
+            "org.netbeans.modules.versioning.system.cvss.ui.actions.Bundle",
+            "CTL_MenuItem_CVSCommands_Label");
     // "Show Changes"
     private static final String SHOW_POPUP_ITEM = Bundle.getStringTrimmed(
             "org.netbeans.modules.versioning.system.cvss.Bundle",
@@ -41,7 +45,7 @@ public class ShowChangesAction extends Action {
     
     /** Creates new ShowChangesAction instance. */
     public ShowChangesAction() {
-        super(CVS_ITEM+"|"+SHOW_ITEM, CVS_ITEM+"|"+SHOW_POPUP_ITEM);
+        super(VERSIONING_ITEM+"|"+SHOW_ITEM, CVS_ITEM+"|"+SHOW_POPUP_ITEM);
     }
     
     /** Performs main menu with exact file name.
@@ -50,7 +54,7 @@ public class ShowChangesAction extends Action {
     public void performMenu(String filename) {
         String oldMenuPath = this.menuPath;
         // CVS|Commit "filename"...
-        this.menuPath = CVS_ITEM+"|"+
+        this.menuPath = VERSIONING_ITEM+"|"+
             Bundle.getStringTrimmed(
                 "org.netbeans.modules.versioning.system.cvss.ui.actions.status.Bundle",
                 "CTL_MenuItem_Status_Context",

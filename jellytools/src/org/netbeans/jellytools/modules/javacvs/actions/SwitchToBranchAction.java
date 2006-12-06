@@ -21,15 +21,19 @@ package org.netbeans.jellytools.modules.javacvs.actions;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 
-/** Used to call "CVS|Switch to Branch..." popup or "CVS|Branches|Switch to Branch" main menu item.
+/** Used to call "CVS|Switch to Branch..." popup or "Versioning|Branches|Switch to Branch" main menu item.
  * @see ActionNoBlock
  * @author Jiri.Skrivanek@sun.com
  */
 public class SwitchToBranchAction extends ActionNoBlock {
 
+    /** "Versioning" menu item. */
+    private static final String VERSIONING_ITEM = Bundle.getStringTrimmed(
+           "org.netbeans.modules.versioning.Bundle", "Menu/Window/Versioning");
     // "CVS"
     private static final String CVS_ITEM = Bundle.getStringTrimmed(
-            "org.netbeans.modules.versioning.system.cvss.Bundle", "Menu/CVS");
+            "org.netbeans.modules.versioning.system.cvss.ui.actions.Bundle",
+            "CTL_MenuItem_CVSCommands_Label");
     // "Switch to Branch..."
     private static final String SWITCH_TO_BRANCH_POPUP_ITEM = Bundle.getStringTrimmed(
             "org.netbeans.modules.versioning.system.cvss.ui.actions.tag.Bundle",
@@ -46,7 +50,7 @@ public class SwitchToBranchAction extends ActionNoBlock {
     
     /** Creates new SwitchToBranchAction instance. */
     public SwitchToBranchAction() {
-        super(CVS_ITEM+"|"+BRANCHES_ITEM+"|"+SWITCH_TO_BRANCH_ITEM, CVS_ITEM+"|"+SWITCH_TO_BRANCH_POPUP_ITEM);
+        super(VERSIONING_ITEM+"|"+BRANCHES_ITEM+"|"+SWITCH_TO_BRANCH_ITEM, CVS_ITEM+"|"+SWITCH_TO_BRANCH_POPUP_ITEM);
     }
 
     /** Performs main menu with exact file name.
@@ -55,7 +59,7 @@ public class SwitchToBranchAction extends ActionNoBlock {
     public void performMenu(String filename) {
         String oldMenuPath = this.menuPath;
         // CVS|Branches|Branch "filename"
-        this.menuPath = CVS_ITEM+"|"+BRANCHES_ITEM+"|"+
+        this.menuPath = VERSIONING_ITEM+"|"+BRANCHES_ITEM+"|"+
                 Bundle.getStringTrimmed("org.netbeans.modules.versioning.system.cvss.ui.actions.tag.Bundle",
                                         "CTL_MenuItem_SwitchBranch_Context",
                                         new String[] {filename});

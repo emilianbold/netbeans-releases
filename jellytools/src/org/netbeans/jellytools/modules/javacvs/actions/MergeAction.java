@@ -22,15 +22,19 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 
 /** Used to call "CVS|Merge Changes from Branch..." popup or
- * "CVS|Branches|Merge Changes from Branch..." main menu item.
+ * "Versioning|Branches|Merge Changes from Branch..." main menu item.
  * @see ActionNoBlock
  * @author Jiri.Skrivanek@sun.com
  */
 public class MergeAction extends ActionNoBlock {
 
+    /** "Versioning" menu item. */
+    private static final String VERSIONING_ITEM = Bundle.getStringTrimmed(
+           "org.netbeans.modules.versioning.Bundle", "Menu/Window/Versioning");
     // "CVS"
     private static final String CVS_ITEM = Bundle.getStringTrimmed(
-            "org.netbeans.modules.versioning.system.cvss.Bundle", "Menu/CVS");
+            "org.netbeans.modules.versioning.system.cvss.ui.actions.Bundle",
+            "CTL_MenuItem_CVSCommands_Label");
     // "Merge Changes from Branch..."
     private static final String MERGE_POPUP_ITEM = Bundle.getStringTrimmed(
             "org.netbeans.modules.versioning.system.cvss.ui.actions.tag.Bundle",
@@ -42,7 +46,7 @@ public class MergeAction extends ActionNoBlock {
     
     /** Creates new MergeAction instance. */
     public MergeAction() {
-        super(CVS_ITEM+"|"+BRANCHES_ITEM+"|"+MERGE_POPUP_ITEM, CVS_ITEM+"|"+MERGE_POPUP_ITEM);
+        super(VERSIONING_ITEM+"|"+BRANCHES_ITEM+"|"+MERGE_POPUP_ITEM, CVS_ITEM+"|"+MERGE_POPUP_ITEM);
     }
 }
 

@@ -21,15 +21,19 @@ package org.netbeans.jellytools.modules.javacvs.actions;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.actions.Action;
 
-/** Used to call "CVS|Diff..." popup or "CVS|Diff" main menu item.
+/** Used to call "CVS|Diff..." popup or "Versioning|Diff" main menu item.
  * @see Action
  * @author Jiri.Skrivanek@sun.com
  */
 public class DiffAction extends Action {
 
+    /** "Versioning" menu item. */
+    private static final String VERSIONING_ITEM = Bundle.getStringTrimmed(
+           "org.netbeans.modules.versioning.Bundle", "Menu/Window/Versioning");
     // "CVS"
     private static final String CVS_ITEM = Bundle.getStringTrimmed(
-            "org.netbeans.modules.versioning.system.cvss.Bundle", "Menu/CVS");
+            "org.netbeans.modules.versioning.system.cvss.ui.actions.Bundle",
+            "CTL_MenuItem_CVSCommands_Label");
     // "Diff..."
     private static final String DIFF_POPUP_ITEM = Bundle.getStringTrimmed(
             "org.netbeans.modules.versioning.system.cvss.Bundle",
@@ -42,7 +46,7 @@ public class DiffAction extends Action {
     
     /** Creates new DiffAction instance. */
     public DiffAction() {
-        super(CVS_ITEM+"|"+DIFF_ITEM, CVS_ITEM+"|"+DIFF_POPUP_ITEM);
+        super(VERSIONING_ITEM+"|"+DIFF_ITEM, CVS_ITEM+"|"+DIFF_POPUP_ITEM);
     }
 
     /** Performs main menu with exact name.
@@ -51,7 +55,7 @@ public class DiffAction extends Action {
     public void performMenu(String filename) {
         String oldMenuPath = this.menuPath;
         // CVS|Branches|Branch "filename"
-        this.menuPath = CVS_ITEM+"|"+DIFF_ITEM+"|"+
+        this.menuPath = VERSIONING_ITEM+"|"+DIFF_ITEM+"|"+
                 Bundle.getStringTrimmed(
                 "org.netbeans.modules.versioning.system.cvss.ui.actions.diff.Bundle",
                 "CTL_MenuItem_Diff_Context",

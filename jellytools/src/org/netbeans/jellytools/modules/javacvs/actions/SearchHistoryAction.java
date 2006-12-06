@@ -21,15 +21,19 @@ package org.netbeans.jellytools.modules.javacvs.actions;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.actions.Action;
 
-/** Used to call "CVS|Search History..." popup or "CVS|Search History..." main menu item.
+/** Used to call "CVS|Search History..." popup or "Versioning|Search History..." main menu item.
  * @see Action
  * @author Jiri.Skrivanek@sun.com
  */
 public class SearchHistoryAction extends Action {
 
+    /** "Versioning" menu item. */
+    private static final String VERSIONING_ITEM = Bundle.getStringTrimmed(
+           "org.netbeans.modules.versioning.Bundle", "Menu/Window/Versioning");
     // "CVS"
     private static final String CVS_ITEM = Bundle.getStringTrimmed(
-            "org.netbeans.modules.versioning.system.cvss.Bundle", "Menu/CVS");
+            "org.netbeans.modules.versioning.system.cvss.ui.actions.Bundle",
+            "CTL_MenuItem_CVSCommands_Label");
     // "Search History..."
     private static final String SEARCH_POPUP_ITEM = Bundle.getStringTrimmed(
             "org.netbeans.modules.versioning.system.cvss.Bundle",
@@ -41,7 +45,7 @@ public class SearchHistoryAction extends Action {
     
     /** Creates new SearchHistory instance. */
     public SearchHistoryAction() {
-        super(CVS_ITEM+"|"+SEARCH_ITEM, CVS_ITEM+"|"+SEARCH_POPUP_ITEM);
+        super(VERSIONING_ITEM+"|"+SEARCH_ITEM, CVS_ITEM+"|"+SEARCH_POPUP_ITEM);
     }
     
     /** Performs main menu with exact file name.
@@ -50,7 +54,7 @@ public class SearchHistoryAction extends Action {
     public void performMenu(String filename) {
         String oldMenuPath = this.menuPath;
         // CVS|Search "filename" History...
-        this.menuPath = CVS_ITEM+"|"+
+        this.menuPath = VERSIONING_ITEM+"|"+
             Bundle.getStringTrimmed(
                 "org.netbeans.modules.versioning.system.cvss.ui.actions.log.Bundle",
                 "CTL_MenuItem_SearchHistory_Context",

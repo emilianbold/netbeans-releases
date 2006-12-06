@@ -21,15 +21,19 @@ package org.netbeans.jellytools.modules.javacvs.actions;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 
-/** Used to call "CVS|Branch" popup or "CVS|Branches|Branch main menu item.
+/** Used to call "CVS|Branch" popup or "Versioning|Branches|Branch main menu item.
  * @see ActionNoBlock
  * @author Jiri.Skrivanek@sun.com
  */
 public class BranchAction extends ActionNoBlock {
 
+    /** "Versioning" menu item. */
+    private static final String VERSIONING_ITEM = Bundle.getStringTrimmed(
+           "org.netbeans.modules.versioning.Bundle", "Menu/Window/Versioning");
     // "CVS"
-    private static final String CVS_ITEM = Bundle.getStringTrimmed(
-            "org.netbeans.modules.versioning.system.cvss.Bundle", "Menu/CVS");
+    private static final String CVS_ITEM = Bundle.getString(
+            "org.netbeans.modules.versioning.system.cvss.ui.actions.Bundle",
+            "CTL_MenuItem_CVSCommands_Label");
     // "Branch..."
     private static final String BRANCH_POPUP_ITEM = Bundle.getStringTrimmed(
             "org.netbeans.modules.versioning.system.cvss.Bundle",
@@ -46,7 +50,7 @@ public class BranchAction extends ActionNoBlock {
     
     /** Creates new BranchAction instance. */
     public BranchAction() {
-        super(CVS_ITEM+"|"+BRANCHES_ITEM+"|"+BRANCH_ITEM, CVS_ITEM+"|"+BRANCH_POPUP_ITEM);
+        super(VERSIONING_ITEM+"|"+BRANCHES_ITEM+"|"+BRANCH_ITEM, CVS_ITEM+"|"+BRANCH_POPUP_ITEM);
     }
 
     /** Performs main menu with exact name.
@@ -55,7 +59,7 @@ public class BranchAction extends ActionNoBlock {
     public void performMenu(String filename) {
         String oldMenuPath = this.menuPath;
         // CVS|Branches|Branch "filename"
-        this.menuPath = CVS_ITEM+"|"+BRANCHES_ITEM+"|"+
+        this.menuPath = VERSIONING_ITEM+"|"+BRANCHES_ITEM+"|"+
                 Bundle.getStringTrimmed("org.netbeans.modules.versioning.system.cvss.ui.actions.tag.Bundle", 
                                         "CTL_MenuItem_Branch_Context", 
                                         new String[] {filename});

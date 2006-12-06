@@ -63,15 +63,18 @@ public class VersioningOperator extends TopComponentOperator {
         super(waitTopComponent(null, VERSIONING_TITLE, 0, new VersioningSubchooser()));
     }
     
-    /** Invokes Window|Versioning main menu item and returns new instance of
+    /** Invokes Window|Versioning|CVS main menu item and returns new instance of
      * VersioningOperator.
      * @return new instance of VersioningOperator */
     public static VersioningOperator invoke() {
         String windowItem = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Window");
         String versioningItem = Bundle.getStringTrimmed(
-                "org.netbeans.modules.versioning.system.cvss.ui.actions.status.Bundle",
-                "BK0001");
-        new Action(windowItem+"|"+versioningItem, null).perform();
+                        "org.netbeans.modules.versioning.Bundle",
+                        "Menu/Window/Versioning");
+        String cvsItem = Bundle.getString(
+                        "org.netbeans.modules.versioning.system.cvss.ui.actions.Bundle",
+                        "CTL_MenuItem_CVSCommands_Label");
+        new Action(windowItem+"|"+versioningItem+"|"+cvsItem, null).perform();
         return new VersioningOperator();
     }
     

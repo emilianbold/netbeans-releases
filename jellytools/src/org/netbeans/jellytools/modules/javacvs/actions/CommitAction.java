@@ -21,15 +21,19 @@ package org.netbeans.jellytools.modules.javacvs.actions;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 
-/** Used to call "CVS|Commit..." popup or "CVS|Commit..." main menu item.
+/** Used to call "CVS|Commit..." popup or "Versioning|Commit..." main menu item.
  * @see ActionNoBlock
  * @author Jiri.Skrivanek@sun.com
  */
 public class CommitAction extends ActionNoBlock {
 
+    /** "Versioning" menu item. */
+    private static final String VERSIONING_ITEM = Bundle.getStringTrimmed(
+           "org.netbeans.modules.versioning.Bundle", "Menu/Window/Versioning");
     // "CVS"
     private static final String CVS_ITEM = Bundle.getStringTrimmed(
-            "org.netbeans.modules.versioning.system.cvss.Bundle", "Menu/CVS");
+            "org.netbeans.modules.versioning.system.cvss.ui.actions.Bundle",
+            "CTL_MenuItem_CVSCommands_Label");
     // "Commit..."
     private static final String COMMIT_POPUP_ITEM = Bundle.getStringTrimmed(
             "org.netbeans.modules.versioning.system.cvss.Bundle",
@@ -41,7 +45,7 @@ public class CommitAction extends ActionNoBlock {
     
     /** Creates new CommitAction instance. */
     public CommitAction() {
-        super(CVS_ITEM+"|"+COMMIT_ITEM, CVS_ITEM+"|"+COMMIT_POPUP_ITEM);
+        super(VERSIONING_ITEM+"|"+COMMIT_ITEM, CVS_ITEM+"|"+COMMIT_POPUP_ITEM);
     }
     
     /** Performs main menu with exact file name.
@@ -50,7 +54,7 @@ public class CommitAction extends ActionNoBlock {
     public void performMenu(String filename) {
         String oldMenuPath = this.menuPath;
         // CVS|Commit "filename"...
-        this.menuPath = CVS_ITEM+"|"+
+        this.menuPath = VERSIONING_ITEM+"|"+
             Bundle.getStringTrimmed(
                 "org.netbeans.modules.versioning.system.cvss.ui.actions.commit.Bundle",
                 "CTL_MenuItem_Commit_Context",
