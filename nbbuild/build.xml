@@ -1199,16 +1199,20 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <loadfile srcfile="CVS/Root" property="cvsroot.with.newline" failonerror="false"/>
       <property name="cvsroot.with.newline" value=":pserver:anoncvs@cvs.netbeans.org:/cvs&#13;&#10;"/>
       <echo file="${cvsinfo}">cvsroot=${cvsroot.with.newline}</echo>
-      <loadfile srcfile="CVS/Tag" property="cvstag.with.T.and.newline" failonerror="false"/>
-      <property name="cvstag.with.T.and.newline" value="T"/>
-      <echo file="${cvsinfo}" append="true">cvstag.with.T=${cvstag.with.T.and.newline}</echo>
+      <loadfile srcfile="CVS/Tag" property="cvstag.with.TD.and.newline" failonerror="false"/>
+      <property name="cvstag.with.TD.and.newline" value="T"/>
+      <echo file="${cvsinfo}" append="true">cvstag.with.TD=${cvstag.with.TD.and.newline}</echo>
       <property file="${cvsinfo}"/>
       <delete file="${cvsinfo}"/>
       <pathconvert property="cvstag">
-          <map from="/T" to=""/>
-          <path path="/${cvstag.with.T}"/>
+          <regexpmapper from="/T(.+)|/D.*" to="\1"/>
+          <path path="/${cvstag.with.TD}"/>
       </pathconvert>
-      <cvs command="checkout -P" compressionlevel="6" cvsroot="${cvsroot}" dest=".." package="${cvsmodules} jemmy jellytools xtest" tag="${cvstag}" quiet="true" failonerror="true"/>
+      <pathconvert property="cvsdate">
+          <regexpmapper from="/D(.+)|/T.*" to="\1"/>
+          <path path="/${cvstag.with.TD}"/>
+      </pathconvert>
+      <cvs command="checkout -P" compressionlevel="6" cvsroot="${cvsroot}" dest=".." package="${cvsmodules} jemmy jellytools xtest" tag="${cvstag}" date="${cvsdate}" quiet="true" failonerror="true"/>
   </target>
 
   <target name="check-commit-validation">
