@@ -32,8 +32,6 @@ Microsystems, Inc. All Rights Reserved.
 
     <executor name="code" antfile="build-unit.xml" target="run-unit-test"/>
 
-    <executor name="ide" antfile="build-unit.xml" target="run_ide_tests" default="true"/>
-
     <compiler name="unit-compiler" antfile="../../../../nbbuild/templates/xtest-unit.xml" target="default-compiler" default="true"/>
     
 </mconfig>
