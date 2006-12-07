@@ -26,7 +26,6 @@ import java.util.Properties;
 import java.util.regex.Pattern;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
-import org.netbeans.modules.j2ee.common.source.SourceUtils;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -39,6 +38,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 import org.netbeans.api.debugger.*;
 import org.netbeans.api.debugger.jpda.*;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
@@ -202,8 +202,7 @@ class EjbJarActionProvider implements ActionProvider {
                     }
                     clazz = clazz.replace('/','.');
 
-                    if (hasMainMethod(file)) {
-
+                    if (!SourceUtils.getMainClasses(file).isEmpty()) {
                         p.setProperty("run.class", clazz); // NOI18N
                         targetNames = (String[]) commands.get(COMMAND_RUN_SINGLE);
                     } else {
@@ -230,7 +229,7 @@ class EjbJarActionProvider implements ActionProvider {
         //DEBUGGING PART
         } else if (command.equals (COMMAND_DEBUG) || command.equals(COMMAND_DEBUG_SINGLE)) {
             FileObject[] javaFiles = findJavaSources(context);
-            if (javaFiles != null && javaFiles.length == 1 && hasMainMethod(javaFiles[0])) {
+            if (javaFiles != null && javaFiles.length == 1 && !SourceUtils.getMainClasses(javaFiles[0]).isEmpty()) {
                 FileObject javaFile = javaFiles[0];
                 // debug Java with Main method
                 String clazz = FileUtil.getRelativePath(getRoot(project.getSourceRoots().getRoots(), javaFile), javaFile);
@@ -318,22 +317,6 @@ class EjbJarActionProvider implements ActionProvider {
         // Convert foo/FooTest.java -> foo.FooTest
         p.setProperty("test.class", path.substring(0, path.length() - 5).replace('/', '.')); // NOI18N
         return new String[] {"debug-test"}; // NOI18N
-    }
-    
-    // THIS METHOD IS (almost) COPIED FROM org.netbeans.modules.java.j2seproject.J2SEProjectUtil
-    /** Checks if given file object contains the main method.
-     *
-     * @param classFO file object represents java 
-     * @return false if parameter is null or doesn't contain SourceCookie
-     * or SourceCookie doesn't contain the main method
-     */    
-    final public static boolean hasMainMethod (FileObject fo) {
-        try {
-            return SourceUtils.hasMainMethod(fo);
-        } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);
-            return false;
-        }
     }
     
     public boolean isActionEnabled( String command, Lookup context ) {

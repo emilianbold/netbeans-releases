@@ -97,33 +97,6 @@ public class SourceUtils {
 
     // </editor-fold>
 
-    // <editor-fold desc="Public static methods">
-
-    /**
-     * Returns true if the public top-level element (if any) in the given
-     * file contains a <code>public static void main(String[])</code> method.
-     *
-     * @param  fileObject the file to search for a main method.
-     * @return true if a main method was found, false otherwise.
-     */
-    public static boolean hasMainMethod(FileObject fileObject) throws IOException {
-        Parameters.notNull("fileObject", fileObject); // NOI18N
-
-        JavaSource javaSource = JavaSource.forFileObject(fileObject);
-        final boolean[] result = { false };
-        javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
-            public void run(CompilationController controller) throws Exception {
-                SourceUtils sourceUtils = SourceUtils.newInstance(controller);
-                if (sourceUtils != null) {
-                    result[0] = sourceUtils.hasMainMethod();
-                }
-            }
-        }, true);
-        return result[0];
-    }
-
-    // </editor-fold>
-
     // <editor-fold defaultstate="collapsed" desc="Non-public static methods">
 
     /**
@@ -201,20 +174,6 @@ public class SourceUtils {
         TypeMirror typeMirror = getCompilationController().getTreeUtilities().parseType(type, getTypeElement());
         if (typeMirror != null) {
             return getCompilationController().getTypes().isSubtype(getTypeElement().asType(), typeMirror);
-        }
-        return false;
-    }
-
-    // TODO: will be replaced by Tomas's implementation from J2SE Project
-    // covered by hasMainMethod(FileObject) test
-    /**
-     * Returns true if {@link #getTypeElement} has a main method.
-     */
-    public boolean hasMainMethod() throws IOException {
-        for (ExecutableElement method : ElementFilter.methodsIn(getTypeElement().getEnclosedElements())) {
-            if (isMainMethod(method)) {
-                return true;
-            }
         }
         return false;
     }

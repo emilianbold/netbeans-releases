@@ -23,7 +23,6 @@ import com.sun.source.tree.*;
 import com.sun.source.util.*;
 import java.io.IOException;
 import javax.lang.model.element.*;
-import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -143,106 +142,6 @@ public class SourceUtilsTest extends NbTestCase {
                 assertNull(srcUtils.getDefaultConstructor());
             }
         });
-    }
-
-    public void testHasMainMethod() throws Exception {
-        TestUtilities.copyStringToFileObject(testFO,
-                "package foo;" +
-                "public class TestClass {" +
-                "   public TestClass() { " +
-                "   }" +
-                "   public static void main(String[] args) {" +
-                "   }" +
-                "   public void method() {" +
-                "   }" +
-                "}");
-        assertTrue(SourceUtils.hasMainMethod(testFO));
-
-        TestUtilities.copyStringToFileObject(testFO,
-                "package foo;" +
-                "public class TestClass {" +
-                "   public TestClass() { " +
-                "   }" +
-                "   public void method1() {" +
-                "   }" +
-                "   public static void main(String[] args) {" +
-                "   }" +
-                "   public void method2() {" +
-                "   }" +
-                "}");
-        assertTrue(SourceUtils.hasMainMethod(testFO));
-
-        TestUtilities.copyStringToFileObject(testFO,
-                "package foo;" +
-                "public class TestClass {" +
-                "   public TestClass() { " +
-                "   }" +
-                "   public void method() {" +
-                "   }" +
-                "   public static void main(String[] args) {" +
-                "   }" +
-                "}");
-        assertTrue(SourceUtils.hasMainMethod(testFO));
-
-        TestUtilities.copyStringToFileObject(testFO,
-                "package foo;" +
-                "public class TestClass {" +
-                "   public TestClass() { " +
-                "   }" +
-                "   static void main(String[] args) {" +
-                "   }" +
-                "   public void method() {" +
-                "   }" +
-                "   public static void main(Integer[] args) {" +
-                "   }" +
-                "}");
-        assertFalse(SourceUtils.hasMainMethod(testFO));
-
-        TestUtilities.copyStringToFileObject(testFO,
-                "package foo;" +
-                "public class TestClass {" +
-                "   public TestClass() { " +
-                "   }" +
-                "   public static boolean main(String[] args) {" +
-                "   }" +
-                "   public void method() {" +
-                "   }" +
-                "   public static void main() {" +
-                "   }" +
-                "}");
-        assertFalse(SourceUtils.hasMainMethod(testFO));
-
-        TestUtilities.copyStringToFileObject(testFO,
-                "package foo;" +
-                "public class TestClass {" +
-                "   public TestClass() { " +
-                "   }" +
-                "   public void main(String[] args) {" +
-                "   }" +
-                "   public void method() {" +
-                "   }" +
-                "}");
-        assertFalse(SourceUtils.hasMainMethod(testFO));
-
-        TestUtilities.copyStringToFileObject(testFO,
-                "package foo;" +
-                "public interface TestClass {" +
-                "   public TestClass() { " +
-                "   }" +
-                "   public void main(String[] args) {" +
-                "   }" +
-                "   public void method() {" +
-                "   }" +
-                "}");
-        assertFalse(SourceUtils.hasMainMethod(testFO));
-
-        TestUtilities.copyStringToFileObject(testFO,
-                "package foo;" +
-                "public class TestClass {" +
-                "   public TestClass() {" +
-                "   }" +
-                "}");
-        assertFalse(SourceUtils.hasMainMethod(testFO));
     }
 
     public void testIsSubtype() throws Exception {
