@@ -427,4 +427,10 @@ final class ResultTreeModel implements TreeModel {
         }
     }
     
+    /** Returns display name of the root node.
+     * @return display name of the root node.
+     */
+    public String toString() {
+        return super.toString() + "[" + rootDisplayName + "]"; // NOI18N
+    }
 }

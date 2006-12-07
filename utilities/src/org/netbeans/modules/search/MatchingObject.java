@@ -635,4 +635,10 @@ final class MatchingObject {
         }
     }
 
+    /** Returns name of this node.
+     * @return name of this node.
+     */
+    public String toString() {
+        return super.toString() + "[" + getName()+ "]"; // NOI18N
+    }
 }
