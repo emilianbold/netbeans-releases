@@ -54,7 +54,7 @@ public abstract class SceneLayout {
         scene.addSceneListener (listener);
     }
 
-    private void deatach () {
+    private void detach () {
         synchronized (this) {
             if (! attached)
                 return;
@@ -96,7 +96,7 @@ public abstract class SceneLayout {
         }
 
         public void sceneValidated () {
-            deatach ();
+            detach ();
             performLayout ();
         }
     }
