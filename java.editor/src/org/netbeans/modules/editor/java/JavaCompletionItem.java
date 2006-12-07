@@ -32,6 +32,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
+import javax.lang.model.util.Elements;
 import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
@@ -56,7 +57,7 @@ import org.openide.xml.XMLUtil;
 public abstract class JavaCompletionItem implements CompletionItem {
         
     public static final JavaCompletionItem createKeywordItem(String kwd, String postfix, int substitutionOffset) {
-        return new KeywordItem(kwd, postfix, substitutionOffset);
+        return new KeywordItem(kwd, 0, postfix, substitutionOffset);
     }
     
     public static final JavaCompletionItem createPackageItem(String pkgFQN, int substitutionOffset, boolean isDeprecated) {
@@ -66,16 +67,42 @@ public abstract class JavaCompletionItem implements CompletionItem {
     public static final JavaCompletionItem createTypeItem(TypeElement elem, DeclaredType type, int substitutionOffset, boolean displayPkgName, boolean isDeprecated) {
         switch (elem.getKind()) {
             case CLASS:
-                return new ClassItem(elem, type, substitutionOffset, displayPkgName, isDeprecated);
+                return new ClassItem(elem, type, 0, substitutionOffset, displayPkgName, isDeprecated);
             case INTERFACE:
-                return new InterfaceItem(elem, type, substitutionOffset, displayPkgName, isDeprecated);
+                return new InterfaceItem(elem, type, 0, substitutionOffset, displayPkgName, isDeprecated);
             case ENUM:
-                return new EnumItem(elem, type, substitutionOffset, displayPkgName, isDeprecated);
+                return new EnumItem(elem, type, 0, substitutionOffset, displayPkgName, isDeprecated);
             case ANNOTATION_TYPE:
-                return new AnnotationItem(elem, type, substitutionOffset, displayPkgName, isDeprecated);
+                return new AnnotationItem(elem, type, 0, substitutionOffset, displayPkgName, isDeprecated);
             default:
                 throw new IllegalArgumentException("kind=" + elem.getKind());
         }
+    }
+    
+    public static final JavaCompletionItem createArrayItem(ArrayType type, int substitutionOffset, Elements elements) {
+        int dim = 0;
+        TypeMirror tm = type;
+        while(tm.getKind() == TypeKind.ARRAY) {
+            tm = ((ArrayType)tm).getComponentType();
+            dim++;
+        }
+        if (tm.getKind().isPrimitive())
+            return new KeywordItem(tm.toString(), dim, null, substitutionOffset);
+        if (tm.getKind() == TypeKind.DECLARED) {
+            DeclaredType dt = (DeclaredType)tm;
+            TypeElement elem = (TypeElement)dt.asElement();
+            switch (elem.getKind()) {
+                case CLASS:
+                    return new ClassItem(elem, dt, dim, substitutionOffset, true, elements.isDeprecated(elem));
+                case INTERFACE:
+                    return new InterfaceItem(elem, dt, dim, substitutionOffset, true, elements.isDeprecated(elem));
+                case ENUM:
+                    return new EnumItem(elem, dt, dim, substitutionOffset, true, elements.isDeprecated(elem));
+                case ANNOTATION_TYPE:
+                    return new AnnotationItem(elem, dt, dim, substitutionOffset, true, elements.isDeprecated(elem));
+            }
+        }
+        throw new IllegalArgumentException("array element kind=" + tm.getKind());
     }
     
     public static final JavaCompletionItem createTypeParameterItem(TypeParameterElement elem, int substitutionOffset) {
@@ -275,11 +302,13 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private static ImageIcon icon;
         
         private String kwd;
+        private int dim;
         private String postfix;
 
-        private KeywordItem(String kwd, String postfix, int substitutionOffset) {
+        private KeywordItem(String kwd, int dim, String postfix, int substitutionOffset) {
             super(substitutionOffset);
             this.kwd = kwd;
+            this.dim = dim;
             this.postfix = postfix;
         }
         
@@ -301,11 +330,77 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
         
         protected String getLeftHtmlText() {
-            return KEYWORD_COLOR + BOLD + kwd + BOLD_END + COLOR_END;
+            StringBuilder sb = new StringBuilder();
+            sb.append(KEYWORD_COLOR);
+            sb.append(BOLD);
+            sb.append(kwd);
+            for(int i = 0; i < dim; i++)
+                sb.append("[]"); //NOI18N
+            sb.append(BOLD_END);
+            sb.append(COLOR_END);
+            return sb.toString();
         }
         
         protected void substituteText(JTextComponent c, int offset, int len, String toAdd) {
-            super.substituteText(c, offset, len, toAdd != null ? toAdd : postfix);
+            if (dim == 0) {
+                super.substituteText(c, offset, len, toAdd != null ? toAdd : postfix);
+                return;
+            }
+            BaseDocument doc = (BaseDocument)c.getDocument();
+            final StringBuilder text = new StringBuilder();
+            if (toAdd != null && !toAdd.equals("\n")) {//NOI18N
+                TokenSequence<JavaTokenId> sequence = Utilities.getJavaTokenSequence(c, offset + len);
+                if (sequence == null) {
+                    text.append(toAdd);
+                    toAdd = null;
+                }
+                boolean added = false;
+                while(toAdd != null && toAdd.length() > 0) {
+                    String tokenText = sequence.token().text().toString();
+                    if (tokenText.startsWith(toAdd)) {
+                        len = sequence.offset() - offset + toAdd.length();
+                        text.append(toAdd);
+                        toAdd = null;
+                    } else if (toAdd.startsWith(tokenText)) {
+                        sequence.moveNext();
+                        len = sequence.offset() - offset;
+                        text.append(toAdd.substring(0, tokenText.length()));
+                        toAdd = toAdd.substring(tokenText.length());
+                        added = true;
+                    } else if (sequence.token().id() == JavaTokenId.WHITESPACE && sequence.token().text().toString().indexOf('\n') < 0) {//NOI18N
+                        if (!sequence.moveNext()) {
+                            text.append(toAdd);
+                            toAdd = null;
+                        }
+                    } else {
+                        if (!added)
+                            text.append(toAdd);
+                        toAdd = null;
+                    }
+                }
+            }
+            StringBuilder sb = new StringBuilder();
+            int cnt = 1;
+            sb.append(kwd);
+            for(int i = 0; i < dim; i++) {
+                sb.append("[${PAR"); //NOI18N
+                sb.append(cnt++);
+                sb.append(" instanceof=\"int\" default=\"\"}]"); //NOI18N                
+            }
+            if (len > 0) {
+                doc.atomicLock();
+                try {
+                    doc.remove(offset, len);
+                } catch (BadLocationException e) {
+                    // Can't update
+                } finally {
+                    doc.atomicUnlock();
+                }
+            }
+            CodeTemplateManager ctm = CodeTemplateManager.get(doc);
+            if (ctm != null) {
+                ctm.createTemporary(sb.append(text).toString()).insert(c);
+            }
         }
     
         public String toString() {
@@ -374,13 +469,15 @@ public abstract class JavaCompletionItem implements CompletionItem {
         
         private TypeElement elem;
         private DeclaredType type;
+        private int dim;
         private boolean displayPkgName;
         private boolean isDeprecated;
         
-        private ClassItem(TypeElement elem, DeclaredType type, int substitutionOffset, boolean displayPkgName, boolean isDeprecated) {
+        private ClassItem(TypeElement elem, DeclaredType type, int dim, int substitutionOffset, boolean displayPkgName, boolean isDeprecated) {
             super(substitutionOffset);
             this.elem = elem;
             this.type = type;
+            this.dim = dim;
             this.displayPkgName = displayPkgName;
             this.isDeprecated = isDeprecated;
         }
@@ -412,6 +509,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
             if (isDeprecated)
                 sb.append(STRIKE);
             sb.append(escape(Utilities.getTypeName(type, false).toString()));
+            for(int i = 0; i < dim; i++)
+                sb.append("[]"); //NOI18N
             if (isDeprecated)
                 sb.append(STRIKE_END);
             CharSequence enclName = displayPkgName ? Utilities.getElementName(elem.getEnclosingElement(), true) : null;
@@ -505,6 +604,12 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 }
                 sb.append('>'); //NOI18N
             }
+            for(int i = 0; i < dim; i++) {
+                sb.append("[${PAR"); //NOI18N
+                sb.append(cnt++);
+                sb.append(" instanceof=\"int\" default=\"\"}]"); //NOI18N                
+                asTemplate = true;
+            }
             if (asTemplate) {
                 if (len > 0) {
                     doc.atomicLock();
@@ -565,8 +670,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private static final String INTERFACE_COLOR = "<font color=#404040>"; //NOI18N
         private static ImageIcon icon;
         
-        private InterfaceItem(TypeElement elem, DeclaredType type, int substitutionOffset, boolean displayPkgName, boolean isDeprecated) {
-            super(elem, type, substitutionOffset, displayPkgName, isDeprecated);
+        private InterfaceItem(TypeElement elem, DeclaredType type, int dim, int substitutionOffset, boolean displayPkgName, boolean isDeprecated) {
+            super(elem, type, dim, substitutionOffset, displayPkgName, isDeprecated);
         }
 
         protected ImageIcon getIcon(){
@@ -584,8 +689,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private static final String ENUM = "org/netbeans/modules/editor/resources/completion/enum.png"; // NOI18N
         private static ImageIcon icon;
         
-        private EnumItem(TypeElement elem, DeclaredType type, int substitutionOffset, boolean displayPkgName, boolean isDeprecated) {
-        super(elem, type, substitutionOffset, displayPkgName, isDeprecated);
+        private EnumItem(TypeElement elem, DeclaredType type, int dim, int substitutionOffset, boolean displayPkgName, boolean isDeprecated) {
+        super(elem, type, dim, substitutionOffset, displayPkgName, isDeprecated);
         }
 
         protected ImageIcon getIcon(){
@@ -599,8 +704,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private static final String ANNOTATION = "org/netbeans/modules/editor/resources/completion/annotation_type.png"; // NOI18N
         private static ImageIcon icon;
         
-        private AnnotationItem(TypeElement elem, DeclaredType type, int substitutionOffset, boolean displayPkgName, boolean isDeprecated) {
-            super(elem, type, substitutionOffset, displayPkgName, isDeprecated);
+        private AnnotationItem(TypeElement elem, DeclaredType type, int dim, int substitutionOffset, boolean displayPkgName, boolean isDeprecated) {
+            super(elem, type, dim, substitutionOffset, displayPkgName, isDeprecated);
         }
 
         protected ImageIcon getIcon(){

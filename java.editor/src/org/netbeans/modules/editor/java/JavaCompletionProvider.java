@@ -1313,9 +1313,12 @@ public class JavaCompletionProvider implements CompletionProvider {
                         if (queryType == COMPLETION_SMART_QUERY_TYPE) {
                             Set<TypeMirror> smarts = getSmartTypes(env);
                             if (smarts != null)
-                                for (TypeMirror smart : smarts)
+                                for (TypeMirror smart : smarts) {
                                     if (smart.getKind() == TypeKind.DECLARED)
                                         addSubtypesOf(env, (DeclaredType)smart);
+                                    else if (smart.getKind() == TypeKind.ARRAY)
+                                        results.add(JavaCompletionItem.createArrayItem((ArrayType)smart, offset, env.getController().getElements()));
+                                }
                         } else {
                             String prefix = env.getPrefix();
                             CompilationController controller = env.getController();
