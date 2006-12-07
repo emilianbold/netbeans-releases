@@ -325,9 +325,9 @@ public class BaseTest extends JellyTestCase {
         
         
         
-        //        Action saveAction;
-        //        saveAction = new Action("File|Save", null);
-        //        saveAction.perform();
+                Action saveAction;
+                saveAction = new Action("File|Save", null);
+                saveAction.perform();
         
     }
     
