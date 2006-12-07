@@ -21,6 +21,7 @@
 package org.netbeans.installer.downloader.queue;
 
 import org.netbeans.installer.Installer;
+import org.netbeans.installer.downloader.DownloadManager;
 import org.netbeans.installer.downloader.Pumping;
 import static org.netbeans.installer.downloader.Pumping.State;
 import org.netbeans.installer.downloader.dispatcher.ProcessDispatcher;
@@ -63,9 +64,7 @@ public class DispatchedQueue extends QueueBase {
   }
   
   public synchronized Pumping add(URL url) {
-    final File downloads = new File(Installer.DEFAULT_LOCAL_DIRECTORY_PATH, "downloads");
-    downloads.mkdirs();
-    return add(url, downloads);
+    return add(url, DownloadManager.instance.defaultFolder());
   }
   
   public synchronized Pumping add(URL url, File folder) {

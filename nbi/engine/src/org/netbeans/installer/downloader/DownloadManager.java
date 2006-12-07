@@ -37,9 +37,11 @@ public class DownloadManager {
   
   private final DispatchedQueue queue;
   private final File wd;
+  private static File defaultFolder;
   
   private DownloadManager() {
     wd = new File(Installer.DEFAULT_LOCAL_DIRECTORY_PATH, "wd");
+    defaultFolder = new File(Installer.DEFAULT_LOCAL_DIRECTORY_PATH, "downloads");
     wd.mkdirs();
     queue = new DispatchedQueue(new File(wd, "state.xml"));
     queue.reset();
@@ -58,7 +60,6 @@ public class DownloadManager {
   }
   
   public void terminate() {
-    System.out.println("terminating dispatcher");
     queue.terminate();
   }
   
@@ -68,5 +69,10 @@ public class DownloadManager {
   
   public File getWd() {
     return  wd;
+  }
+  
+  public File defaultFolder() {
+    defaultFolder.mkdirs();
+    return defaultFolder;
   }
 }

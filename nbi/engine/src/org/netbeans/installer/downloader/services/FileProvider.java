@@ -23,7 +23,6 @@ import java.io.File;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.netbeans.installer.downloader.DownloadListener;
 import org.netbeans.installer.downloader.DownloadManager;
 import org.netbeans.installer.downloader.Pumping;
@@ -32,6 +31,7 @@ import org.netbeans.installer.downloader.Pumping.State;
  *
  * @author Danila_Dugurov
  */
+//todo: may be very general synchronization - optimize!
 public class FileProvider {
   
   private final DownloadManager downloadManager = DownloadManager.instance;
@@ -64,23 +64,40 @@ public class FileProvider {
     return cache.isIn(url);
   }
   
-  public synchronized void asynchDownload(URL url) {
+  public synchronized void asynchDownload(URL url, File folder) {
     if (isInCache(url)) return;
     if (scheduledURL2State.containsKey(url)) return;
     if (!downloadManager.isActive()) downloadManager.invoke();
     scheduledURL2State.put(url, State.NOT_PROCESSED);
-    downloadManager.queue().add(url);
+    downloadManager.queue().add(url, folder != null ? folder: downloadManager.defaultFolder());
   }
   
   //methods below needs thread to capture url in ConcurrencyManager
   //otherwise NotResourceOwnerException occurs.
   
   public synchronized File get(URL url) throws InterruptedException {
+    return get(url, null, true);
+  }
+  
+  public synchronized File get(URL url, File folder) throws InterruptedException {
+    return get(url, folder, true);
+  }
+  
+  public synchronized File get(URL url, boolean useCache) throws InterruptedException {
+    return get(url, null, useCache);
+  }
+  
+  public synchronized File get(URL url, File folder, boolean useCache) throws InterruptedException {
     while (true) {
       final File file = tryGet(url);
-      if (file != null) return file;
-      asynchDownload(url);
+      if (file != null) {
+        if (useCache) return file;
+        cache.delete(url);
+        useCache = true;
+      }
+      asynchDownload(url, folder);
       wait();
+      //todo: refactor this agly pice of code below
       if (scheduledURL2State.containsKey(url) && scheduledURL2State.get(url) == State.FAILED) {
         scheduledURL2State.remove(url);
         return null;// this temporary. unlike good reaction to return null if faild to load!
