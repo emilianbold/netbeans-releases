@@ -42,9 +42,6 @@ Microsystems, Inc. All Rights Reserved.
                     </file>
                     <attr name="SeparatorAfterConfigs.instance/generate-goto-popup" boolvalue="true"/>
                 </folder>
-                <folder name="Hints">
-                    <file name="org-netbeans-modules-mobility-editor-hints-PreprocessorHintsProvider.instance"/>
-                </folder>
                 <folder name="CompletionProviders">
                     <file name="org-netbeans-modules-mobility-editor-PPCompletionProvider.instance"/>
                 </folder>

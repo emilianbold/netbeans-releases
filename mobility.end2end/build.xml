@@ -17,11 +17,8 @@ The Original Software is NetBeans. The Initial Developer of the Original
 Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-
-<project name="org.netbeans.modules.mobility.end2end" default="netbeans" basedir=".">
-    <description>Builds, tests, and runs the project org.netbeans.modules.mobility.end2end.</description>
-    <import file="nbproject/build-impl.xml"/>
- 
+<project basedir="." default="netbeans" name="mobility/end2end">
+    <import file="../../nbbuild/templates/projectized.xml"/>
     <target name="corelib" depends="init">
         <mkdir dir="build/coreclasses"/>
         <javac srcdir="corelibsrc" destdir="build/coreclasses" source="1.5" debug="true" deprecation="true">
@@ -30,9 +27,9 @@ Microsystems, Inc. All Rights Reserved.
             </classpath>
         </javac>
         <copy todir="build/coreclasses">
-            <fileset dir="corelibsrc" excludesfile="${suite.dir}/standard-jar-excludes.txt"/>
+            <fileset dir="corelibsrc" excludesfile="../standard-jar-excludes.txt"/>
         </copy>
-	<echo>Creating Templates</echo>
+        <echo>Creating Templates</echo>
         <pathconvert property="src.templates" pathSep=" ">
             <path>
                 <fileset dir="templates">
@@ -40,11 +37,11 @@ Microsystems, Inc. All Rights Reserved.
                 </fileset>
             </path>
         </pathconvert>
- 	<java classname="org.netbeans.mobility.end2end.core.template.TemplateMain"
-		fork="true" failonerror="true">
-	    <classpath>
-		<pathelement location="build/coreclasses"/>
-	    </classpath>
+        <java classname="org.netbeans.mobility.end2end.core.template.TemplateMain"
+                fork="true" failonerror="true">
+            <classpath>
+                <pathelement location="build/coreclasses"/>
+            </classpath>
             <arg line = "-d build/coreclasses"/>
             <arg line = "-javaDir build/coreclasses/org/netbeans/mobility/end2end/core/template"/>
             <arg line = "-classpath build/coreclasses"/>
@@ -52,11 +49,11 @@ Microsystems, Inc. All Rights Reserved.
             <arg line = "-dataClass org.netbeans.mobility.end2end.core.model.JavonMapping"/>
             <arg line = "-outputClass org.netbeans.mobility.end2end.core.model.JavonOutput"/>
             <arg line = "${src.templates}"/>
-	</java>    
+        </java>    
         <mkdir dir="${cluster}/modules/ext"/>
         <jar jarfile="${cluster}/modules/ext/${end2end-core.jar}" compress="false">
             <fileset dir="build/coreclasses">
-               <excludesfile name="${suite.dir}/standard-jar-excludes.txt"/>
+               <excludesfile name="../standard-jar-excludes.txt"/>
             </fileset>
         </jar>
     </target>

@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='ISO-8859-1' ?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 The contents of this file are subject to the terms of the Common Development
 and Distribution License (the License). You may not use this file except in
@@ -17,7 +17,6 @@ The Original Software is NetBeans. The Initial Developer of the Original
 Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-
-<project name="mobility/javahelp" default="netbeans" basedir=".">
-    <import file="nbproject/build-impl.xml"/>
+<project basedir="." default="netbeans" name="mobility/javahelp">
+    <import file="../../nbbuild/templates/projectized.xml"/>
 </project>

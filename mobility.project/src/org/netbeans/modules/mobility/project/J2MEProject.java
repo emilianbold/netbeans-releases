@@ -639,6 +639,7 @@ public final class J2MEProject implements Project, AntProjectListener {
         }
 
         public synchronized InputStream getInputStream() throws IOException {
+            boolean log = Boolean.getBoolean("mobility.report.composed.stylesheets");//NOI18N
             byte[] data = cache.get(getURL());
             if (data == null) {
                 DataFolder root = DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().findResource(getURL().getPath()));
@@ -652,16 +653,20 @@ public final class J2MEProject implements Project, AntProjectListener {
                         for (int j=0; j<subParts.length; j++) {
                             FileObject fo = subParts[j].getPrimaryFile();
                             if (fo.isData() && isAuthorized(fo)) {
-                                sb.append(read(subParts[j].getPrimaryFile(), lastTarget));
+                                String s = read(subParts[j].getPrimaryFile(), lastTarget);
+                                sb.append(s);
                                 subTargets.append(',').append(subParts[j].getName());
+                                if (log) ErrorManager.getDefault().log(ErrorManager.WARNING, fo.getURL().toExternalForm() + '\n' + s + '\n');
                             } 
                         }
                         lastTarget = subTargets.toString();
                     } else {
                         FileObject fo = mainParts[i].getPrimaryFile();
                         if (isAuthorized(fo)) {
-                            sb.append(read(fo, lastTarget));
+                            String s = read(fo, lastTarget);
+                            sb.append(s);
                             lastTarget = mainParts[i].getName();
+                            if (log) ErrorManager.getDefault().log(ErrorManager.WARNING, fo.getURL().toExternalForm() + '\n' + s + '\n');
                         }
                     }
                 }
@@ -669,6 +674,7 @@ public final class J2MEProject implements Project, AntProjectListener {
                 synchronized (cache) {
                     cache.put(getURL(), data);
                 }
+                if (log) ErrorManager.getDefault().log(ErrorManager.WARNING, getURL().toExternalForm() + '\n' + sb.toString() + '\n');
             }
             return new ByteArrayInputStream(data);
         }
@@ -690,70 +696,71 @@ public final class J2MEProject implements Project, AntProjectListener {
         
     }
     
-    private static final Set<File> FRIENDS_JARS = collectFriendJars();
-    
-    private static Set<String> getFriends() {
-        Iterator<? extends ModuleInfo> it = Lookup.getDefault().lookupResult(ModuleInfo.class).allInstances().iterator();
-        while (it.hasNext()) {
-            ModuleInfo mi = it.next();
-            if ("org.netbeans.modules.mobility.project".equals(mi.getCodeNameBase())) {  //NOI18N
-                HashSet<String> friends = new HashSet<String>(Arrays.asList(((String)mi.getAttribute("OpenIDE-Module-Friends")).split("[,\\s]+"))); //NOI18N
-                friends.add("org.netbeans.modules.mobility.project"); //NOI18N
-                return friends;
-            }
-        }
-        return null;
-    }
-    
-    private static Set<File> collectFriendJars() {
-        Set<String> friends = getFriends();
-        if (friends == null) return null;
-        Set<File> jars = new HashSet<File>();
-        Iterator<? extends ModuleInfo> it = Lookup.getDefault().lookupResult(ModuleInfo.class).allInstances().iterator();
-        while (it.hasNext()) {
-            ModuleInfo mi = it.next();
-            if (friends.contains(mi.getCodeNameBase())) try {
-                Field f = mi.getClass().getDeclaredField("jar");//NOI18N
-                f.setAccessible(true);
-                File ff = (File)f.get(mi); //gettings field jar from StandardModule
-                if (ff != null) jars.add(ff);
-            } catch (Exception e) {};
-        }
-        if (jars.size() == 0) {
-            ErrorManager.getDefault().log(ErrorManager.WARNING, "Mobility Project Buildsystem cannot collect list of friend JARs."); //NOI18N
-            return null;
-        }
-        return jars;
-    }
+//    private static final Set<File> FRIENDS_JARS = collectFriendJars();
+//    
+//    private static Set<String> getFriends() {
+//        Iterator<? extends ModuleInfo> it = Lookup.getDefault().lookupResult(ModuleInfo.class).allInstances().iterator();
+//        while (it.hasNext()) {
+//            ModuleInfo mi = it.next();
+//            if ("org.netbeans.modules.mobility.project".equals(mi.getCodeNameBase())) {  //NOI18N
+//                HashSet<String> friends = new HashSet<String>(Arrays.asList(((String)mi.getAttribute("OpenIDE-Module-Friends")).split("[,\\s]+"))); //NOI18N
+//                friends.add("org.netbeans.modules.mobility.project"); //NOI18N
+//                return friends;
+//            }
+//        }
+//        return null;
+//    }
+//    
+//    private static Set<File> collectFriendJars() {
+//        Set<String> friends = getFriends();
+//        if (friends == null) return null;
+//        Set<File> jars = new HashSet<File>();
+//        Iterator<? extends ModuleInfo> it = Lookup.getDefault().lookupResult(ModuleInfo.class).allInstances().iterator();
+//        while (it.hasNext()) {
+//            ModuleInfo mi = it.next();
+//            if (friends.contains(mi.getCodeNameBase())) try {
+//                Field f = mi.getClass().getDeclaredField("jar");//NOI18N
+//                f.setAccessible(true);
+//                File ff = (File)f.get(mi); //gettings field jar from StandardModule
+//                if (ff != null) jars.add(ff);
+//            } catch (Exception e) {};
+//        }
+//        if (jars.size() == 0) {
+//            ErrorManager.getDefault().log(ErrorManager.WARNING, "Mobility Project Buildsystem cannot collect list of friend JARs."); //NOI18N
+//            return null;
+//        }
+//        return jars;
+//    }
     
     private static boolean isAuthorized(FileObject fo) {
-        if (fo.isFolder() || FRIENDS_JARS == null) return true;
-        URL u = null;
-        try {
-            u = fo.getURL();
-            //looking for MultiFileObject.leader field
-            Field f = fo.getClass().getDeclaredField("leader"); //NOI18N
-            f.setAccessible(true);
-            fo = (FileObject)f.get(fo); //getting the leader FileObject...
-            fo = (FileObject)f.get(fo); //...twice
-            File ff = FileUtil.toFile(fo);
-            if (ff == null) { //FileObject does not represent physical file
-                f = fo.getClass().getDeclaredField("uri"); //looking for BFSFile.uri field //NOI18N
-                f.setAccessible(true);
-                String s = (String)f.get(fo);
-                if (s == null) return true; //the uri field is not declared - empty file
-                u = new URL(s);
-                 //URL points to module jar content, no other protocols are allowed and the jar must be listed as friend
-                if ("jar".equals(u.getProtocol()) && FRIENDS_JARS.contains(new File(FileUtil.getArchiveFile(u).toURI()))) return true;  //NOI18N
-            } else {  //FileObject represents physical file (userdir or installdir / config /...) - this is not allowed
-                u = ff.toURL();
-            }
-            ErrorManager.getDefault().log(ErrorManager.WARNING, "Unauthorized access to Mobility Project Build System from: " + String.valueOf(u)); //NOI18N
-            return false;
-        } catch (Exception e) {
-            ErrorManager.getDefault().log(ErrorManager.WARNING, "Cannot verify access authorization to Mobility Project Build System from: " + String.valueOf(u)); //NOI18N
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-            return true;
-        }
+//        if (fo.isFolder() || FRIENDS_JARS == null) return true;
+//        URL u = null;
+//        try {
+//            u = fo.getURL();
+//            //looking for MultiFileObject.leader field
+//            Field f = fo.getClass().getDeclaredField("leader"); //NOI18N
+//            f.setAccessible(true);
+//            fo = (FileObject)f.get(fo); //getting the leader FileObject...
+//            fo = (FileObject)f.get(fo); //...twice
+//            File ff = FileUtil.toFile(fo);
+//            if (ff == null) { //FileObject does not represent physical file
+//                f = fo.getClass().getDeclaredField("uri"); //looking for BFSFile.uri field //NOI18N
+//                f.setAccessible(true);
+//                String s = (String)f.get(fo);
+//                if (s == null) return true; //the uri field is not declared - empty file
+//                u = new URL(s);
+//                 //URL points to module jar content, no other protocols are allowed and the jar must be listed as friend
+//                if ("jar".equals(u.getProtocol()) && FRIENDS_JARS.contains(new File(FileUtil.getArchiveFile(u).toURI()))) return true;  //NOI18N
+//            } else {  //FileObject represents physical file (userdir or installdir / config /...) - this is not allowed
+//                u = ff.toURL();
+//            }
+//            ErrorManager.getDefault().log(ErrorManager.WARNING, "Unauthorized access to Mobility Project Build System from: " + String.valueOf(u)); //NOI18N
+//            return false;
+//        } catch (Exception e) {
+//            ErrorManager.getDefault().log(ErrorManager.WARNING, "Cannot verify access authorization to Mobility Project Build System from: " + String.valueOf(u)); //NOI18N
+//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+//            return true;
+//        }
+        return true;
     }
 }

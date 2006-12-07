@@ -17,18 +17,13 @@ The Original Software is NetBeans. The Initial Developer of the Original
 Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-<!-- You may freely edit this file. See harness/README in the NetBeans platform -->
-<!-- for some information on what you could do (e.g. targets to override). -->
-<!-- If you delete this file and reopen the project it will be recreated. -->
-<project name="org.netbeans.modules.mobility.proguard" default="netbeans" basedir=".">
-    <description>Builds, tests, and runs the project org.netbeans.modules.mobility.proguard.</description>
-    <import file="nbproject/build-impl.xml"/>
-
+<project basedir="." default="netbeans" name="mobility/proguard">
+    <import file="../../nbbuild/templates/projectized.xml"/>
     <target name="netbeans-extra" depends="release"/>
 
     <target name="release" depends="init">
         <mkdir dir="${cluster}/external/proguard"/>
-	<copy file="external/notice.txt" todir="${cluster}/external/proguard"/>
-	<copy file="external/proguard3.5.jar" todir="${cluster}/external/proguard"/>
+        <copy file="external/notice.txt" todir="${cluster}/external/proguard"/>
+        <copy file="external/proguard3.5.jar" todir="${cluster}/external/proguard"/>
     </target>
 </project>

@@ -20,7 +20,7 @@ Microsystems, Inc. All Rights Reserved.
 <project xmlns="http://www.netbeans.org/ns/project/1">
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
-        <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
             <code-name-base>org.netbeans.modules.mobility.end2end</code-name-base>
             <module-dependencies>
                 <dependency>
@@ -407,7 +407,6 @@ Microsystems, Inc. All Rights Reserved.
             <class-path-extension>
                 <runtime-relative-path>ext/org-netbeans-mobility-end2end-core.jar</runtime-relative-path>
             </class-path-extension>
-            <suite-component/>
             <extra-compilation-unit>
                 <package-root>corelibsrc</package-root>
                 <classpath/>

@@ -2,9 +2,8 @@
 <project xmlns="http://www.netbeans.org/ns/project/1">
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
-        <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
             <code-name-base>org.netbeans.modules.mobility.licensing</code-name-base>
-            <suite-component/>
             <module-dependencies>
                 <dependency>
                     <code-name-base>org.openide.filesystems</code-name-base>

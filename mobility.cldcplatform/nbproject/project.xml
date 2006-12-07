@@ -20,10 +20,9 @@ Microsystems, Inc. All Rights Reserved.
 <project xmlns="http://www.netbeans.org/ns/project/1">
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
-        <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
             <code-name-base>org.netbeans.modules.mobility.cldcplatform</code-name-base>
             <javadoc/>
-            <suite-component/>
             <module-dependencies>
                 <dependency>
                     <code-name-base>org.netbeans.api.java</code-name-base>
