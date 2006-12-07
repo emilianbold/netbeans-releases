@@ -96,21 +96,21 @@ public class OptionsPanel extends JPanel {
         this(null);
     }
     
-    public OptionsPanel (String categoryName) {        
+    public OptionsPanel (String categoryID) {        
         // init UI components, layout and actions, and add some default values
-        initUI(categoryName);        
+        initUI(categoryID);        
     }
     
-    private String getCategoryName(String categoryName) {
-        return categoryName == null ? model.getCategoryNames()[0] : categoryName;
+    private String getCategoryID(String categoryID) {
+        return categoryID == null ? model.getCategoryIDs()[0] : categoryID;
     }
         
-    void initCurrentCategory (final String categoryName) {                    
+    void initCurrentCategory (final String categoryID) {                    
         //generalpanel should be moved to core/options and then could be implemented better
         //generalpanel doesn't need lookup
-        boolean isGeneralPanel = "&General".equals(getCategoryName(categoryName));//NOI18N
+        boolean isGeneralPanel = "General".equals(getCategoryID(categoryID));//NOI18N
         if (model.isLookupInitialized() || isGeneralPanel) {
-            setCurrentCategory(model.getCategory(getCategoryName(categoryName)));
+            setCurrentCategory(model.getCategory(getCategoryID(categoryID)));
             initActions();                        
         } else {
             RequestProcessor.getDefault().post(new Runnable() {
@@ -122,7 +122,7 @@ public class OptionsPanel extends JPanel {
                             final Cursor cursor = frame.getCursor();
                             frame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                             setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                            setCurrentCategory(model.getCategory(getCategoryName(categoryName)));
+                            setCurrentCategory(model.getCategory(getCategoryID(categoryID)));
                             initActions();
                             // reset cursor
                             frame.setCursor(cursor);
@@ -137,10 +137,10 @@ public class OptionsPanel extends JPanel {
     private void setCurrentCategory (final CategoryModel.Category category) {
         CategoryModel.Category oldCategory = model.getCurrent();
         if (oldCategory != null) {
-            ((CategoryButton) buttons.get (oldCategory.getCategoryName())).setNormal ();
+            ((CategoryButton) buttons.get (oldCategory.getID())).setNormal ();
         }
         if (category != null) {
-            ((CategoryButton) buttons.get (category.getCategoryName())).setSelected ();
+            ((CategoryButton) buttons.get (category.getID())).setSelected ();
         }
         
         model.setCurrent(category);                
@@ -167,7 +167,7 @@ public class OptionsPanel extends JPanel {
                     repaint ();
                 }
                 if (model.getCurrent() != null) {
-                    ((CategoryButton) buttons.get (model.getCurrentCategoryName())).requestFocus ();
+                    ((CategoryButton) buttons.get (model.getCurrentCategoryID())).requestFocus ();
                 }
             }
         });
@@ -274,7 +274,7 @@ public class OptionsPanel extends JPanel {
         }        
                 
         if (categoryName != null) {
-            CategoryModel.Category c = model.getCategory(getCategoryName(categoryName));
+            CategoryModel.Category c = model.getCategory(getCategoryID(categoryName));
             Icon icon = c.getIcon();
             if (icon != null) {
                 lTitle.setIcon(icon);
@@ -322,7 +322,7 @@ public class OptionsPanel extends JPanel {
         buttons = new LinkedHashMap();
         
         // add new buttons
-        String[] names = model.getCategoryNames();
+        String[] names = model.getCategoryIDs();
         for (int i = 0; i < names.length; i++) {
             CategoryModel.Category category = model.getCategory(names[i]);
             addButton (category);            
@@ -360,7 +360,7 @@ public class OptionsPanel extends JPanel {
             gbc.gridy = index;
             pCategories2.add (button, gbc);
         }
-        buttons.put (category.getCategoryName(), button);
+        buttons.put (category.getID(), button);
     }
     
     private void removeButton (CategoryButton button) {
@@ -536,8 +536,8 @@ public class OptionsPanel extends JPanel {
                 setBackground(highlighted);
             }
             if (!category.isHighlited()) {
-                if (model.getHighlitedCategoryName() != null) {
-                    CategoryButton b = (CategoryButton)buttons.get(model.getHighlitedCategoryName());
+                if (model.getHighlitedCategoryID() != null) {
+                    CategoryButton b = (CategoryButton)buttons.get(model.getHighlitedCategoryID());
                     if (b != null && !b.category.isCurrent()) {
                         b.setNormal();
                     }

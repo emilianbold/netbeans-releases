@@ -33,6 +33,7 @@ import javax.swing.Icon;
 import javax.swing.JComponent;
 import org.netbeans.spi.options.OptionsCategory;
 import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
@@ -49,18 +50,18 @@ public final class CategoryModel  {
     private static WeakReference instance = new WeakReference(null);
     private final RequestProcessor RP = new RequestProcessor();
     
-    private String currentCategoryName = null;
-    private String highlitedCategoryName = null;    
-    private final Map/**<String, CategoryItem>*/ names2CategoryItems = Collections.synchronizedMap(new LinkedHashMap());
+    private String currentCategoryID = null;
+    private String highlitedCategoryID = null;    
+    private final Map/**<String, CategoryItem>*/ id2Category = Collections.synchronizedMap(new LinkedHashMap());
     private MasterLookup masterLookup;
     private final RequestProcessor.Task masterLookupTask = RP.create(new Runnable() {
         public void run() {
             //SwingUtilities.invokeLater(new Runnable() {
                 //public void run() {
-                    String[] names = getCategoryNames();
+                    String[] categoryIDs = getCategoryIDs();
                     List all = new ArrayList();
-                    for (int i = 0; i < names.length; i++) {
-                        Category item = getCategory(names[i]);
+                    for (int i = 0; i < categoryIDs.length; i++) {
+                        Category item = getCategory(categoryIDs[i]);
                         Lookup lkp = item.getLookup();
                         assert lkp != null;
                         if (lkp != Lookup.EMPTY) {
@@ -79,10 +80,10 @@ public final class CategoryModel  {
             for (Iterator it = all.iterator(); it.hasNext();) {
                 OptionsCategory oc = (OptionsCategory) it.next();
                 Category cat = new Category(oc);
-                temp.put(cat.getCategoryName(), cat);
+                temp.put(cat.getID(), cat);
             }
-            names2CategoryItems.clear();
-            names2CategoryItems.putAll(temp);
+            id2Category.clear();
+            id2Category.putAll(temp);
             masterLookupTask.schedule(0);
         }
     },true);
@@ -113,38 +114,38 @@ public final class CategoryModel  {
         categoryTask.waitFinished();
     }
         
-    String getCurrentCategoryName() {
-        return verifyCategoryName(currentCategoryName);
+    String getCurrentCategoryID() {
+        return verifyCategoryID(currentCategoryID);
     }
 
-    String getHighlitedCategoryName() {
-        return verifyCategoryName(highlitedCategoryName);
+    String getHighlitedCategoryID() {
+        return verifyCategoryID(highlitedCategoryID);
     }
         
-    private String verifyCategoryName(String categName) {
-        String retval = findCurrentCategoryName(categName) != -1 ? categName : null;
+    private String verifyCategoryID(String categoryID) {
+        String retval = findCurrentCategoryID(categoryID) != -1 ? categoryID : null;
         if (retval == null) {
-            String[] names = getCategoryNames();
-            if (names.length > 0) {
-                retval = categName = names[0];
+            String[] categoryIDs = getCategoryIDs();
+            if (categoryIDs.length > 0) {
+                retval = categoryID = categoryIDs[0];
             }
         }
         return retval;
     }
     
-    private int findCurrentCategoryName(String name) {
-        return name == null ? -1 : Arrays.asList(getCategoryNames()).indexOf(name);
+    private int findCurrentCategoryID(String categoryID) {
+        return categoryID == null ? -1 : Arrays.asList(getCategoryIDs()).indexOf(categoryID);
     }
     
-    String[] getCategoryNames() {
+    String[] getCategoryIDs() {
         categoryTask.waitFinished();
-        Set keys = names2CategoryItems.keySet();
+        Set keys = id2Category.keySet();        
         return (String[])keys.toArray(new String[keys.size()]);
     }
     
     Category getCurrent() {
-        String name =  getCurrentCategoryName();
-        return (name == null) ? null : getCategory(name);
+        String categoryID =  getCurrentCategoryID();
+        return (categoryID == null) ? null : getCategory(categoryID);
     }
     
     void setCurrent(Category item) {
@@ -161,34 +162,34 @@ public final class CategoryModel  {
     }
     
     void update(PropertyChangeListener l, boolean force) {
-        String[] names = getCategoryNames();
-        for (int i = 0; i < names.length; i++) {
-            CategoryModel.Category item = getCategory(names[i]);
+        String[] categoryIDs = getCategoryIDs();
+        for (int i = 0; i < categoryIDs.length; i++) {
+            CategoryModel.Category item = getCategory(categoryIDs[i]);
             item.update(l, force);
         }
     }
     
     void save() {
-        String[] names = getCategoryNames();
-        for (int i = 0; i < names.length; i++) {
-            CategoryModel.Category item = getCategory(names[i]);
+        String[] categoryIDs = getCategoryIDs();
+        for (int i = 0; i < categoryIDs.length; i++) {
+            CategoryModel.Category item = getCategory(categoryIDs[i]);
             item.applyChanges();
         }
     }
     
     void cancel() {
-        String[] names = getCategoryNames();
-        for (int i = 0; i < names.length; i++) {
-            CategoryModel.Category item = getCategory(names[i]);
+        String[] categoryIDs = getCategoryIDs();
+        for (int i = 0; i < categoryIDs.length; i++) {
+            CategoryModel.Category item = getCategory(categoryIDs[i]);
             item.cancel();
         }
     }
     
     boolean dataValid() {
         boolean retval = true;
-        String[] names = getCategoryNames();
-        for (int i = 0; retval && i < names.length; i++) {
-            CategoryModel.Category item = getCategory(names[i]);
+        String[] categoryIDs = getCategoryIDs();
+        for (int i = 0; retval && i < categoryIDs.length; i++) {
+            CategoryModel.Category item = getCategory(categoryIDs[i]);
             retval = item.isValid();
         }
         return retval;
@@ -196,9 +197,9 @@ public final class CategoryModel  {
     
     boolean isChanged() {
         boolean retval = false;
-        String[] names = getCategoryNames();
-        for (int i = 0; !retval && i < names.length; i++) {
-            CategoryModel.Category item = getCategory(names[i]);
+        String[] categoryIDs = getCategoryIDs();
+        for (int i = 0; !retval && i < categoryIDs.length; i++) {
+            CategoryModel.Category item = getCategory(categoryIDs[i]);
             retval = item.isChanged();
         }
         return retval;
@@ -206,33 +207,33 @@ public final class CategoryModel  {
     
     
     void setNextCategoryAsCurrent() {
-        int idx =  findCurrentCategoryName(getCurrentCategoryName());
-        String[] names = getCategoryNames();
-        if (idx >= 0 && idx+1 < names.length) {
-            currentCategoryName = names[idx+1];
+        int idx =  findCurrentCategoryID(getCurrentCategoryID());
+        String[] categoryIDs = getCategoryIDs();
+        if (idx >= 0 && idx+1 < categoryIDs.length) {
+            currentCategoryID = categoryIDs[idx+1];
         }  else {
-            currentCategoryName = null;
+            currentCategoryID = null;
         }
     }
     
     void setPreviousCategoryAsCurrent() {
-        int idx =  findCurrentCategoryName(getCurrentCategoryName());
-        String[] names = getCategoryNames();
-        if (idx >= 0 && idx < names.length && names.length > 0) {
+        int idx =  findCurrentCategoryID(getCurrentCategoryID());
+        String[] categoryIDs = getCategoryIDs();
+        if (idx >= 0 && idx < categoryIDs.length && categoryIDs.length > 0) {
             if (idx-1 >= 0) {
-                currentCategoryName = names[idx-1];
+                currentCategoryID = categoryIDs[idx-1];
             }  else {
-                currentCategoryName = names[names.length-1];
+                currentCategoryID = categoryIDs[categoryIDs.length-1];
             }
         } else {
-            currentCategoryName = null;
+            currentCategoryID = null;
         }
     }
     
     
-    Category getCategory(String categoryName) {
+    Category getCategory(String categoryID) {
         categoryTask.waitFinished();
-        return (Category)names2CategoryItems.get(categoryName);
+        return (Category)id2Category.get(categoryID);
     }
         
     private MasterLookup getMasterLookup() {
@@ -243,11 +244,9 @@ public final class CategoryModel  {
     }
     
     private static List loadOptionsCategories() {
-        FileObject fo = Repository.getDefault().getDefaultFileSystem().
-                findResource("OptionsDialog");                            // NOI18N
+        FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("OptionsDialog");// NOI18N
         if (fo != null) {
-            Lookup lookup = new FolderLookup(DataFolder.findFolder(fo)).
-                    getLookup();
+            Lookup lookup = new FolderLookup(DataFolder.findFolder(fo)).getLookup();
             return Collections.unmodifiableList(new ArrayList(lookup.lookup(
                     new Lookup.Template(OptionsCategory.class)
                     ).allInstances()));
@@ -268,23 +267,31 @@ public final class CategoryModel  {
         }
         
         boolean isCurrent() {
-            return getCategoryName().equals(getCurrentCategoryName());
+            return getID().equals(getCurrentCategoryID());
         }
         
         boolean isHighlited() {
-            return getCategoryName().equals(getHighlitedCategoryName());
+            return getID().equals(getHighlitedCategoryID());
         }
                 
         private void setCurrent() {
-            currentCategoryName = getCategoryName();
+            currentCategoryID = getID();
         }
 
         private void setHighlited() {
-            highlitedCategoryName = getCategoryName();
+            highlitedCategoryID = getID();
         }
                         
         public Icon getIcon() {
             return category.getIcon();
+        }
+
+        //whatever ID representing category (category name, just mnemonic, ...)
+        //for impl. #74855: Add an API for opening the Options dialog
+        public  String getID() {
+            String id = getCategoryName();
+            int i = Mnemonics.findMnemonicAmpersand(id);
+            return (i == -1) ? id : (id.substring(0,i) + id.substring(i+1,id.length()));
         }
         
         public String getCategoryName() {
