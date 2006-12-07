@@ -18,6 +18,7 @@
  */
 package org.netbeans.core;
 
+import java.awt.KeyboardFocusManager;
 import java.awt.Window;
 import java.lang.ref.WeakReference;
 import javax.swing.SwingUtilities;
@@ -78,7 +79,8 @@ public class NbClipboardTest extends NbTestCase {
        
         tc.close();
         w.dispose();
-       
+
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().clearGlobalFocusOwner();
         
         WeakReference<Object> ref = new WeakReference<Object>(w);
         w = null;
