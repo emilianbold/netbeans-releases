@@ -45,41 +45,10 @@ public final class AdvancedPanel extends JPanel {
 
     
     TabbedPanel     tabbedPanel;
-    private Model   model;
+    private final Model   model = new Model ();
     
     
-    AdvancedPanel () {
-        
-        // init components
-        tabbedPanel = new WhiteTabbedPanel (
-            model = new Model (), 
-            TabbedPanel.EXPAND_SOME // expansionPolicy 
-        );
-        tabbedPanel.setBorder (null);
-        tabbedPanel.addActionListener (new ActionListener () {
-            public void actionPerformed (ActionEvent e) {
-                firePropertyChange (OptionsPanelController.PROP_HELP_CTX, null, null);
-            }
-        });
-        JScrollPane scrollPane = new JScrollPane (tabbedPanel);
-        scrollPane.getVerticalScrollBar ().setUnitIncrement (20);
-        
-        // define layout
-        setLayout (new BorderLayout ());
-        add (scrollPane, BorderLayout.CENTER);
-        
-        int preferredWith = 0;
-        Iterator it = model.getCategories ().iterator ();
-        while (it.hasNext ()) {
-            String category = (String) it.next ();
-            JComponent component = model.getPanel (category);
-            preferredWith = Math.max (
-                preferredWith, 
-                component.getPreferredSize ().width + 22
-            );
-        }
-        setPreferredSize (new Dimension (preferredWith, 100));
-    }
+    AdvancedPanel () {}
     
     public void update () {
         model.update ();
@@ -109,7 +78,33 @@ public final class AdvancedPanel extends JPanel {
         return model.getLookup ();
     }
     
-    void setLoookup (Lookup masterLookup) {
+    void init (Lookup masterLookup) {
+        // init components
+        tabbedPanel = new WhiteTabbedPanel (model, TabbedPanel.EXPAND_SOME); // expansionPolicy         
+        tabbedPanel.setBorder (null);
+        tabbedPanel.addActionListener (new ActionListener () {
+            public void actionPerformed (ActionEvent e) {
+                firePropertyChange (OptionsPanelController.PROP_HELP_CTX, null, null);
+            }
+        });
+        JScrollPane scrollPane = new JScrollPane (tabbedPanel);
+        scrollPane.getVerticalScrollBar ().setUnitIncrement (20);
+        
+        // define layout
+        setLayout (new BorderLayout ());
+        add (scrollPane, BorderLayout.CENTER);
+        
+        int preferredWith = 0;
+        Iterator it = model.getCategories ().iterator ();
+        while (it.hasNext ()) {
+            String category = (String) it.next ();
+            JComponent component = model.getPanel (category);
+            preferredWith = Math.max (
+                preferredWith, 
+                component.getPreferredSize ().width + 22
+            );
+        }
+        setPreferredSize (new Dimension (preferredWith, 100));        
         model.setLoookup (masterLookup);
     }
 }

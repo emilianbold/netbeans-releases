@@ -59,7 +59,7 @@ public final class AdvancedPanelController extends OptionsPanelController {
     }
     
     public JComponent getComponent (Lookup masterLookup) {
-        getAdvancedPanel ().setLoookup (masterLookup);
+        getAdvancedPanel ().init (masterLookup);
         return getAdvancedPanel ();
     }
     

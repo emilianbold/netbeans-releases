@@ -35,6 +35,7 @@ import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.SwingUtilities;
 import org.netbeans.spi.options.OptionsPanelController;
 
 import org.openide.DialogDescriptor;
@@ -69,6 +70,11 @@ public class OptionsWindowAction extends AbstractAction {
     }
 
     public void actionPerformed (ActionEvent evt) {     
+        showOptionsDialog(null);
+    }
+    
+    
+    public void showOptionsDialog (String categoryName) {
         if (dialog != null) {
             // dialog already opened
             dialog.setVisible (true);
@@ -82,11 +88,12 @@ public class OptionsWindowAction extends AbstractAction {
         
         OptionsPanel optionsPanel = null;
         if (descriptor == null) {
+            optionsPanel = categoryName == null ? new OptionsPanel () : new OptionsPanel(categoryName);
+            
             // create new DialogDescriptor for options dialog
             JButton bClassic = (JButton) loc (new JButton (), "CTL_Classic");//NOI18N
             JButton bOK = (JButton) loc (new JButton (), "CTL_OK");//NOI18N
 
-            optionsPanel = new OptionsPanel ();
             descriptor = new DialogDescriptor (
                 optionsPanel,
                 loc ("CTL_Options_Dialog_Title"),
@@ -113,11 +120,12 @@ public class OptionsWindowAction extends AbstractAction {
             log.fine("Create new Options Dialog"); //NOI18N
         } else {
             optionsPanel = (OptionsPanel) descriptor.getMessage ();
-            optionsPanel.update ();
+            optionsPanel.update ();            
             log.fine("Reopen Options Dialog"); //NOI18N
         }
         
         dialog = DialogDisplayer.getDefault ().createDialog (descriptor);
+        optionsPanel.initCurrentCategory(categoryName);
         dialog.setVisible (true);
         dialog.addWindowListener (new MyWindowListener (optionsPanel));
         descriptor = null;
@@ -162,20 +170,15 @@ public class OptionsWindowAction extends AbstractAction {
         }
         
         public void propertyChange (PropertyChangeEvent ev) {
-            if (ev.getPropertyName ().equals (
-                "buran" + OptionsPanelController.PROP_HELP_CTX)               //NOI18N
-            )
+            if (ev.getPropertyName ().equals ("buran" + OptionsPanelController.PROP_HELP_CTX)) {               //NOI18N            
                 descriptor.setHelpCtx (optionsPanel.getHelpCtx ());
-            else
-            if (ev.getPropertyName ().equals (
-                "buran" + OptionsPanelController.PROP_VALID)                  //NOI18N
-            )
+            } else if (ev.getPropertyName ().equals ("buran" + OptionsPanelController.PROP_VALID)) {                  //NOI18N            
                 bOK.setEnabled (optionsPanel.dataValid ());
+            }
         }
         
         public void actionPerformed (ActionEvent e) {
-            if (dialog == null) 
-                return; //WORKARROUND for some bug in NbPresenter
+            if (dialog == null) return; //WORKARROUND for some bug in NbPresenter
                 // listener is called twice ...
             if (e.getSource () == bOK) {
                 log.fine("Options Dialog - Ok pressed."); //NOI18N
@@ -274,14 +277,16 @@ public class OptionsWindowAction extends AbstractAction {
             if (dialog == null) return;
             log.fine("Options Dialog - windowClosed "); //NOI18N
             RequestProcessor.getDefault ().post (new Runnable () {
-               public void run () {
-                    optionsPanel.cancel ();
-               } 
+                public void run() {
+                    optionsPanel.cancel();
+                }
             });
-            dialog = null;
+            dialog = null;            
         }
 
-        public void windowClosed (WindowEvent e) {}
+        public void windowClosed (WindowEvent e) {
+            optionsPanel.storeUserSize();
+        }
         public void windowDeactivated (WindowEvent e) {}
         public void windowOpened (WindowEvent e) {}
         public void windowIconified (WindowEvent e) {}
@@ -290,15 +295,19 @@ public class OptionsWindowAction extends AbstractAction {
     }
     
     class OpenOptionsListener implements ActionListener {
-        public void actionPerformed (ActionEvent e) {
-            RequestProcessor.getDefault ().post (new Runnable () {
-                public void run () {
-                    log.fine("Options Dialog - Back to modern."); //NOI18N
-                    OptionsWindowAction.this.actionPerformed 
-                        (new ActionEvent (this, 0, "Open"));
+        public void actionPerformed(ActionEvent e) {
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            log.fine("Options Dialog - Back to modern."); //NOI18N
+                            OptionsWindowAction.this.actionPerformed
+                                    (new ActionEvent(this, 0, "Open"));
+                            
+                        }
+                    });
                 }
             });
         }
-    }
-}
+    }}
 
