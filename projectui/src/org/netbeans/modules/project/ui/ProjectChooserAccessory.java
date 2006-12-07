@@ -60,8 +60,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 /**
- *
- * @author  phrebejk
+ * Special component on side of project filechooser.
  */
 public class ProjectChooserAccessory extends javax.swing.JPanel
     implements ActionListener, PropertyChangeListener {
@@ -652,7 +651,8 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                 if ( currentProjects == null ) {
                     return;
                 }
-                if (subprojectsCache == null) {
+                Map<Project,Set<? extends Project>> cache = subprojectsCache;
+                if (cache == null) {
                     return;
                 }
 
@@ -660,7 +660,7 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
 
                 List<Project> subprojects = new ArrayList<Project>(currentProjects.size() * 5);
                 for (Project p : currentProjects) {
-                    addSubprojects(p, subprojects, subprojectsCache); // Find the projects recursively
+                    addSubprojects(p, subprojects, cache); // Find the projects recursively
                 }
 
 		List<String> subprojectNames = new ArrayList<String>(subprojects.size());
