@@ -1239,6 +1239,14 @@ public class JavaCompletionProvider implements CompletionProvider {
                                 }
                             }
                             Element el = controller.getTrees().getElement(expPath);
+                            if (el != null && (el.getKind().isClass() || el.getKind().isInterface()) && queryType == COMPLETION_QUERY_TYPE) {
+                                if (parent.getKind() == Tree.Kind.NEW_CLASS && ((NewClassTree)parent).getIdentifier() == fa && prefix != null) {
+                                    String typeName = Utilities.getElementName(el, true) + "." + prefix; //NOI18N
+                                    TypeMirror tm = controller.getTreeUtilities().parseType(typeName, env.getScope().getEnclosingClass());
+                                    if (tm != null && tm.getKind() == TypeKind.DECLARED)
+                                        addMembers(env, tm, ((DeclaredType)tm).asElement(), EnumSet.of(CONSTRUCTOR), null, inImport);
+                                }
+                            }
                             if (exs != null) {
                                 Elements elements = controller.getElements();
                                 for (TypeMirror ex : exs)
