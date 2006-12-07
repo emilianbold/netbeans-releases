@@ -26,7 +26,6 @@ Microsystems, Inc. All Rights Reserved.
   <property name="appversion" value="6.0 Development Version"/>
   <property name="version" value="6.0 Development Version"/>
   <property name="nbClusterDir" value="nb6.0"/>
-  <property name="nbPlatformDir" value="platform7"/>
   
   <property name="appdir" value="${appname}.app"/>
   <property name="tarball-name" value="netbeans6.0dev-macosx.tar.gz"/>
@@ -53,8 +52,6 @@ Creating NetBeans.app bundle using ${nb.dir} as master
     <delete file="${appdir}/Contents/Resources/NetBeans/bin/nb.exe"/>
     <delete file="${appdir}/Contents/Resources/NetBeans/bin/netbeans.cmd"/>
     <delete file="${appdir}/Contents/Resources/NetBeans/bin/netbeans.exe"/>
-    <delete file="${appdir}/Contents/Resources/NetBeans/${nbPlatformDir}/lib/nbexec.cmd"/>
-    <delete file="${appdir}/Contents/Resources/NetBeans/${nbPlatformDir}/lib/nbexec.exe"/>
  
     <echo message="Copying the icon into the correct place" />
     <copy file="${appdir}/Contents/Resources/NetBeans/${nbClusterDir}/netbeans.icns" todir="${appdir}/Contents/Resources"/>
