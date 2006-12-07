@@ -116,7 +116,7 @@ public class CasualDiff {
 //            LCSAlgorithm(td.workingCopy.getText(), td.output.toString(), td);
             String resultSrc = td.output.toString();
             
-            LCSAlgorithm(copy.getTokenHiearchy().tokenSequence(), TokenHierarchy.create(resultSrc, JavaTokenId.language()).tokenSequence(), td);
+            makeTextDiff(copy.getTokenHiearchy().tokenSequence(), TokenHierarchy.create(resultSrc, JavaTokenId.language()).tokenSequence(), td);
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -404,7 +404,15 @@ public class CasualDiff {
     protected int diffMethodDef(JCMethodDecl oldT, JCMethodDecl newT, int[] bounds) throws IOException, BadLocationException {
         printer.reset(currentIndentLevel);
         int localPointer = bounds[0];
-        localPointer = diffModifiers(oldT.mods, newT.mods, oldT, localPointer);
+        if (oldT.mods != newT.mods) {
+            if (newT.mods.toString().length() > 0) {
+                localPointer = diffModifiers(oldT.mods, newT.mods, oldT, localPointer);
+            } else {
+                int oldPos = getOldPos(oldT.mods);
+                printer.print(origText.substring(localPointer, oldPos));
+                localPointer = getOldPos(oldT.restype);
+            }
+        }
         diffTree(oldT.restype, newT.restype);
         int posHint;
         if (oldT.typarams.isEmpty()) {
@@ -472,7 +480,15 @@ public class CasualDiff {
 
     protected int diffVarDef(JCVariableDecl oldT, JCVariableDecl newT, int[] bounds) throws IOException, BadLocationException {
         int localPointer = bounds[0];
-        localPointer = diffModifiers(oldT.mods, newT.mods, oldT, localPointer);
+        if (oldT.mods != newT.mods) {
+            if (newT.mods.toString().length() > 0) {
+                localPointer = diffModifiers(oldT.mods, newT.mods, oldT, localPointer);
+            } else {
+                int oldPos = getOldPos(oldT.mods);
+                printer.print(origText.substring(localPointer, oldPos));
+                localPointer = oldT.vartype.pos;
+            }
+        }
         diffTree(oldT.vartype, newT.vartype);
         if (nameChanged(oldT.name, newT.name)) {
             printer.print(origText.substring(localPointer, oldT.pos));
@@ -764,11 +780,6 @@ public class CasualDiff {
                 printer.print(newT.toString());
             }
         }
-//            append(Diff.flags(oldPos, 
-//                              oldPos == oldT.pos ? endPos(oldT) : oldPos,
-//                              oldT.flags, newT.flags));
-        LineInsertionType insertLine = oldT.annotations.nonEmpty() ? 
-            LineInsertionType.BEFORE : LineInsertionType.AFTER;
         // todo (#pf): Skip the annotation for the time being - bug!
         // diffList(oldT.annotations, newT.annotations, insertLine, oldPos);
         return lastPrinted;
@@ -2056,7 +2067,7 @@ public class CasualDiff {
         }
     }
     
-    public static List<Diff> LCSAlgorithm(TokenSequence tsa, TokenSequence tsb, CasualDiff d) {
+    public static List<Diff> makeTextDiff(TokenSequence tsa, TokenSequence tsb, CasualDiff d) {
         System.err.println("Using token sequence comparing...");
         List<CharSequence> a = new ArrayList<CharSequence>();
         List<CharSequence> b = new ArrayList<CharSequence>();
@@ -2185,12 +2196,4 @@ public class CasualDiff {
         return data;
     }
     
-    public static void main(String[] args) {
-        String prvni = "public static int a = 0;";
-        String druhy = "public static long b = 0;";
-        TokenHierarchy hierarchyA = TokenHierarchy.create(prvni, JavaTokenId.language());
-        TokenHierarchy hierarchyB = TokenHierarchy.create(druhy, JavaTokenId.language());
-        CasualDiff td = new CasualDiff(null, null);
-        LCSAlgorithm(hierarchyA.tokenSequence(), hierarchyB.tokenSequence(), td);
-    }
 }
