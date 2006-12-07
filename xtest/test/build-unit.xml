@@ -35,7 +35,8 @@ Microsystems, Inc. All Rights Reserved.
         doesn't work for all properties. Property xtest.config is set when run 
         on Test4U.
         -->
-        <java classname="org.apache.tools.ant.Main" classpath="${java.class.path}" fork="true">
+        <java classname="org.apache.tools.ant.Main" classpath="${java.class.path}" fork="true"
+                input="dummy"> <!-- #90576 - otherwise it freezes when calling InetAddress.getLocalHost. -->
             <arg value="-f"/>
             <arg file="instance/build.xml"/>
             <arg value="runtests"/>
