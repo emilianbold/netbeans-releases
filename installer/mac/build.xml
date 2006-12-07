@@ -50,7 +50,6 @@ Creating NetBeans.app bundle using ${nb.dir} as master
 
     <echo message="Delete launchers for another platforms"/>
     <delete file="${appdir}/Contents/Resources/NetBeans/bin/nb.exe"/>
-    <delete file="${appdir}/Contents/Resources/NetBeans/bin/netbeans.cmd"/>
     <delete file="${appdir}/Contents/Resources/NetBeans/bin/netbeans.exe"/>
  
     <echo message="Copying the icon into the correct place" />

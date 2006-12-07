@@ -415,14 +415,14 @@ public class PostInstallFixupAction extends ProductAction {
                 binFiles[++i] = "nb.exe";
                 binFiles[++i] = "netbeans.exe";
             }
-            if (!Util.isOS2OS()) {
+            if (!Util.isOS2OS()) {// XXX gone anyway
                 binFiles[++i] = "netbeans.cmd";
             }
             if (!Util.isOpenVMSOS())
                 binFiles[++i] = "runideopenvms.com";
             if (!Util.isMacOSX())
                 binFiles[++i] = "macosx_launcher.dmg";
-            if (!Util.isOS2OS())
+            if (!Util.isOS2OS())// XXX gone anyway
                 binFiles[++i] = "runideos2.cmd";
             if (Util.isWindowsOS() || Util.isOpenVMSOS() || Util.isOS2OS()) {
                 binFiles[++i] = "netbeans";

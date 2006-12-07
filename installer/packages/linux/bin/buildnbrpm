@@ -89,6 +89,7 @@ function unzipNB()
     NB_BIN=$NB_BLD_TMP/netbeans
     exitIfNotDir "$NB_BIN"
     # remove files which are not acceptable or needed by JDS
+    # XXX nbexec.cmd gone anyway
     rm $NB_BIN/platform5/lib/nbexec.cmd \
        $NB_BIN/platform5/lib/nbexec.exe \
        $NB_BIN/platform5/update_tracking/* \

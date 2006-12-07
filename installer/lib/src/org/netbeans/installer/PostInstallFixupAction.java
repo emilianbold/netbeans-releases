@@ -306,6 +306,7 @@ public class PostInstallFixupAction extends ProductAction {
                 binFiles[++i] = "nb.exe";
                 binFiles[++i] = "netbeans.exe";
             }
+            // XXX O2/2 gone, this can probably be deleted
             if (!Util.isOS2OS()) {
                 binFiles[++i] = "netbeans.cmd";
             }
@@ -313,6 +314,7 @@ public class PostInstallFixupAction extends ProductAction {
                 binFiles[++i] = "runideopenvms.com";
             if (!Util.isMacOSX())
                 binFiles[++i] = "macosx_launcher.dmg";
+            // XXX ditto
             if (!Util.isOS2OS())
                 binFiles[++i] = "runideos2.cmd";
             if (Util.isWindowsOS() || Util.isOpenVMSOS() || Util.isOS2OS()) {

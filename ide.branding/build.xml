@@ -36,7 +36,6 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
       <include name="**/*_nb.jar"/>
       <include name="modules/org-netbeans-modules-ide-branding.jar" />
       <include name="config/Modules/org-netbeans-modules-ide-branding.xml" />
-      <include name="nbos2icons.zip" />
       <include name="netbeans.icns" />
       <include name="netbeans.png" />
       <include name="shortcuts.pdf" />
@@ -106,7 +105,6 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
     <copy todir="${cluster}" file="release/DISTRIBUTION.txt"/>
     <copy todir="${cluster}" file="release/THIRDPARTYLICENSE.txt"/>
 -->
-    <copy todir="${cluster}" file="../launcher/os2/nbos2icons.zip"/>
   </target>
   
   <target name="jars" depends="init">

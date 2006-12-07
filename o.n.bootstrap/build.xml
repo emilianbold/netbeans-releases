@@ -43,12 +43,6 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="../launcher/unix/nbexec" todir="${cluster}/lib" />
         <chmod file="${cluster}/lib/nbexec" perm="ugo+rx"/>
         <copy file="../launcher/windows/nbexec.exe" todir="${cluster}/lib/" />
-        <copy file="../launcher/os2/nbexec.cmd" todir="${cluster}/lib/" />
-
-        <fixcrlf srcdir="${cluster}/lib" eol="crlf">
-            <include name="**/*.bat"/>
-            <include name="**/*.cmd"/>
-        </fixcrlf>
         <fixcrlf srcdir="${cluster}/lib" eol="lf">
             <include name="**/*.sh"/>
             <include name="**/ide.cfg"/>

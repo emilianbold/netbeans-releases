@@ -490,9 +490,7 @@ Link to<A HREF="overview-summary.html">Non-frame version.</A>
     <chmod file="${netbeans.dest.dir}/bin/netbeans" perm="ugo+rx"/>
     <copy file="../ide/launcher/windows/netbeans.exe" todir="${netbeans.dest.dir}/bin" />
     <copy file="../ide/launcher/windows/nb.exe" todir="${netbeans.dest.dir}/bin" />
-    <copy file="../ide/launcher/os2/netbeans.cmd" todir="${netbeans.dest.dir}/bin" />
     <!-- if anybody knows better place for icons, let me know: jtulach@netbeans.org -->
-    <copy file="../ide/launcher/os2/nbos2icons.zip" todir="${netbeans.dest.dir}/${nb.cluster.nb.dir}/" />
 
     <mkdir dir="${netbeans.dest.dir}/etc" />
     <copy file="../ide/launcher/netbeans.conf" todir="${netbeans.dest.dir}/etc" />
@@ -504,10 +502,6 @@ Link to<A HREF="overview-summary.html">Non-frame version.</A>
       <include name="etc/netbeans.clusters" />
       <include name="bin/netbeans" />      
       <include name="${nb.cluster.platform.dir}/lib/nbexec" />      
-    </fixcrlf>
-    <fixcrlf eol="crlf" srcdir="${netbeans.dest.dir}" >
-      <include name="bin/netbeans.cmd" />      
-      <include name="${nb.cluster.platform.dir}/lib/nbexec.cmd" />      
     </fixcrlf>
 
     <echo file="${netbeans.dest.dir}/build_info">NetBeans dev build
