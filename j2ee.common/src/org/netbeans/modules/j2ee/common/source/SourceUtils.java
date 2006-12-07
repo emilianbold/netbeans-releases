@@ -205,6 +205,20 @@ public class SourceUtils {
         return false;
     }
 
+    // TODO: will be replaced by Tomas's implementation from J2SE Project
+    // covered by hasMainMethod(FileObject) test
+    /**
+     * Returns true if {@link #getTypeElement} has a main method.
+     */
+    public boolean hasMainMethod() throws IOException {
+        for (ExecutableElement method : ElementFilter.methodsIn(getTypeElement().getEnclosedElements())) {
+            if (isMainMethod(method)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Non-public methods">
@@ -233,19 +247,6 @@ public class SourceUtils {
             }
         }
         return null;
-    }
-
-    // TODO: will be replaced by Tomas's implementation from J2SE Project
-    /**
-     * Returns true if {@link #getTypeElement} has a main method.
-     */
-    private boolean hasMainMethod() throws IOException {
-        for (ExecutableElement method : ElementFilter.methodsIn(getTypeElement().getEnclosedElements())) {
-            if (isMainMethod(method)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**
