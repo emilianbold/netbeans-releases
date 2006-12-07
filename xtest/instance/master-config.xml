@@ -159,8 +159,7 @@ Microsystems, Inc. All Rights Reserved.
         <module name="properties" testtypes="qa-functional" attributes="validation"/>
 -->
         <module name="jellytools" testtypes="unit" attributes="stable"/>
-<!-- TEMPORARILY DISABLED , FREEZING ON WINDOWS
-<module name="xtest" testtypes="unit" attributes="stable"/> -->
+        <module name="xtest" testtypes="unit" attributes="stable"/>
         <module name="xtest/nbjunit/ide" testtypes="unit" attributes="stable"/>
         <module name="xtest/plugins_src/ide" testtypes="unit" attributes="stable"/>
 <!--<module name="apisupport/refactoring" testtypes="qa-functional" attributes="validation"/>-->
