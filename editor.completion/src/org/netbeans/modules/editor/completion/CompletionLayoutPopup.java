@@ -20,6 +20,7 @@
 package org.netbeans.modules.editor.completion;
 
 import java.awt.Dimension;
+import java.awt.GraphicsConfiguration;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
@@ -110,9 +111,10 @@ abstract class CompletionLayoutPopup {
     final Rectangle getScreenBounds() {
         if (screenBounds == null) {
 	    JTextComponent editorComponent = getEditorComponent();
-            screenBounds = (editorComponent != null)
-		? editorComponent.getGraphicsConfiguration().getBounds()
-		: new Rectangle();
+            GraphicsConfiguration configuration = editorComponent != null
+                    ? editorComponent.getGraphicsConfiguration() : null;
+            screenBounds = configuration != null
+                    ? configuration.getBounds() : new Rectangle();
         }
         return screenBounds;
     }
