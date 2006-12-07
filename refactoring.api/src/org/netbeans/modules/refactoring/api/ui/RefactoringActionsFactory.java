@@ -28,10 +28,13 @@ import org.openide.util.ContextAwareAction;
  * Factory class providing instances of refactoring actions.
  * <p><b>Usage:</b></p>
  * <pre>
- * ContextAwareAction rename = RefactoringActionsFactory.renameAction().createContextAwareInstance(actionContext);
- * rename.actionPerformed(RefactoringActionsFactory.DEFAULT_EVENT);
+ * InstanceContent ic = new InstanceContent();
+ * ic.add(node);
+ * Lookup l = new AbstractLookup(ic);
+ * Action a = RefactoringActionsFactory.renameAction().createContextAwareInstance(l);
+ * a.actionPerformed(RefactoringActionsFactory.DEFAULT_EVENT);
  * </pre>
- * 
+ *
  * @author Jan Becicka
  */
 public final class RefactoringActionsFactory {
