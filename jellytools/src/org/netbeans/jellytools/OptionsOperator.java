@@ -359,7 +359,7 @@ public class OptionsOperator extends NbDialogOperator {
         final StringComparator comparator = this.getComparator();
         new JLabelOperator(this, new ComponentChooser() {
             public boolean checkComponent(Component comp) {
-                if(comp.getClass().getName().equals("org.netbeans.modules.options.OptionsPanel$Button")) { // NOI18N
+                if(comp.getClass().getName().equals("org.netbeans.modules.options.OptionsPanel$CategoryButton")) { // NOI18N
                     if(((JLabel)comp).getText() != null) {
                         return comparator.equals(((JLabel)comp).getText(), name);
                     }
@@ -367,7 +367,7 @@ public class OptionsOperator extends NbDialogOperator {
                 return false;
             }
             public String getDescription() {
-                return "OptionsPanel$Button with text "+name; // NOI18N
+                return "OptionsPanel$CategoryButton with text "+name; // NOI18N
             }
         }).clickMouse();
         // wait for second label signing appropriate panel
