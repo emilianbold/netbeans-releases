@@ -28,11 +28,9 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-
     <executor name="code" antfile="build-unit.xml" target="run-unit-test"/>
 
-    <executor name="ide" antfile="build-qa-functional.xml" target="runidetest"/>
-
-    <compiler name="unit-compiler" antfile="build-unit.xml" target="unit-compiler" default="true"/>
+    <compiler name="unit-compiler" antfile="build-unit.xml" target="default-compiler" default="true"/>
+    
     
 </mconfig>
