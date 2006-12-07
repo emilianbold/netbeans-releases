@@ -73,11 +73,12 @@ public class InstallerTest extends TestCase {
             "</form></body></html>";
         
         InputStream is = new ByteArrayInputStream(page.getBytes());
-        Object[] buttons = Installer.parseButtons(is, null);
+        JButton def = new JButton("Default");
+        Object[] buttons = Installer.parseButtons(is, def);
         is.close();
         
         assertNotNull("buttons parsed", buttons);
-        assertNull("Second is null", buttons[1]);
+        assertEquals("Second is default", def, buttons[1]);
         assertEquals("There is one button", 2, buttons.length);
         assertEquals("It is a button", JButton.class, buttons[0].getClass());
         JButton b = (JButton)buttons[0];
@@ -92,16 +93,69 @@ public class InstallerTest extends TestCase {
             "</form></body></html>";
         
         InputStream is = new ByteArrayInputStream(page.getBytes());
-        Object[] buttons = Installer.parseButtons(is, null);
+        JButton def = new JButton("Default");
+        Object[] buttons = Installer.parseButtons(is, def);
         is.close();
         
         assertNotNull("buttons parsed", buttons);
         assertEquals("There is one button", 2, buttons.length);
-        assertNull("Second is null", buttons[1]);
+        assertEquals("Second is default", def, buttons[1]);
         assertEquals("It is a button", JButton.class, buttons[0].getClass());
         JButton b = (JButton)buttons[0];
         assertEquals("It is named", "Send Feedback", b.getText());
         assertEquals("It url attribute is set", "http://xyz.cz", b.getClientProperty("url"));
         assertEquals("Mnemonics", 'S', b.getMnemonic());
+    }
+
+    public void testReadAllButtons() throws Exception {
+        String page = 
+            "<html><body><form action='http://xyz.cz' method='POST'>" +
+            "  <input type='hidden' name='submit' value=\"&amp;Send Feedback\"/>" +
+            "  <input type='hidden' name='never-again' value=\"&amp;No and do not Bother Again\"/>" +
+            "\n" +
+            "  <input type='hidden' name='view-data' value=\"&amp;View Data\"/>" +
+            "\n" +
+            "</form></body></html>";
+        
+        InputStream is = new ByteArrayInputStream(page.getBytes());
+        Object[] buttons = Installer.parseButtons(is, null);
+        is.close();
+        
+        assertNotNull("buttons parsed", buttons);
+        assertEquals("There are 3 button", 3, buttons.length);
+        assertEquals("It is a button", JButton.class, buttons[0].getClass());
+        assertEquals("It is a button2", JButton.class, buttons[1].getClass());
+        assertEquals("It is a button3", JButton.class, buttons[2].getClass());
+        
+        {
+            JButton b = (JButton)buttons[0];
+            assertEquals("It is named", "Send Feedback", b.getText());
+            assertEquals("It url attribute is set", "http://xyz.cz", b.getClientProperty("url"));
+            assertEquals("Mnemonics", 'S', b.getMnemonic());
+            assertEquals("submit", b.getActionCommand());
+            URL[] url = new URL[1];
+            String r = Installer.decodeButtons(b, url);
+            assertEquals("action is ", "submit", r);
+            assertEquals("no url", new URL("http://xyz.cz"), url[0]);
+        }
+        {
+            JButton b = (JButton)buttons[1];
+            assertEquals("It is named", "No and do not Bother Again", b.getText());
+            assertEquals("It url attribute is not set", null, b.getClientProperty("url"));
+            assertEquals("Mnemonics", 'N', b.getMnemonic());
+            assertEquals("never-again", b.getActionCommand());
+        }
+        {
+            JButton b = (JButton)buttons[2];
+            assertEquals("It is named", "View Data", b.getText());
+            assertEquals("It url attribute is not set", null, b.getClientProperty("url"));
+            assertEquals("Mnemonics", 'V', b.getMnemonic());
+            assertEquals("view-data", b.getActionCommand());
+            
+            URL[] url = new URL[1];
+            String r = Installer.decodeButtons(b, url);
+            assertEquals("action is ", "view-data", r);
+            assertEquals("no url", null, url[0]);
+        }
     }
 }

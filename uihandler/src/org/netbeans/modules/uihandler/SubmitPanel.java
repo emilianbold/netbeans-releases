@@ -19,7 +19,12 @@
 
 package org.netbeans.modules.uihandler;
 
-import java.net.URL;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import javax.swing.text.BadLocationException;
+import org.netbeans.lib.uihandler.LogRecords;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
 
@@ -31,7 +36,7 @@ public class SubmitPanel extends javax.swing.JPanel
 implements ExplorerManager.Provider {
     
     /** Creates new form SubmitPanel */
-    public SubmitPanel(URL url) {
+    public SubmitPanel() {
         manager = new ExplorerManager();
         
         initComponents();
@@ -43,8 +48,6 @@ implements ExplorerManager.Provider {
         view.setTreePreferredWidth(300);
         view.setTableColumnPreferredWidth(0, 100);
         view.setTableColumnPreferredWidth(1, 50);
-        
-        browser.setURL(url); // NOI18N
     }
     
     /** This method is called from within the constructor to
@@ -54,45 +57,87 @@ implements ExplorerManager.Provider {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+
+        tabs = new javax.swing.JTabbedPane();
+        raw = new javax.swing.JPanel();
         view = new org.openide.explorer.view.TreeTableView();
         propertySheetView1 = new org.openide.explorer.propertysheet.PropertySheetView();
-        browser = new org.openide.awt.HtmlBrowser(false, false);
+        structured = new javax.swing.JPanel();
+        scroll = new javax.swing.JScrollPane();
+        text = new javax.swing.JTextArea();
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(layout.createSequentialGroup()
-                        .add(view, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 620, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(propertySheetView1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 265, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, browser, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 891, Short.MAX_VALUE))
+        setLayout(new java.awt.BorderLayout());
+
+        org.jdesktop.layout.GroupLayout rawLayout = new org.jdesktop.layout.GroupLayout(raw);
+        raw.setLayout(rawLayout);
+        rawLayout.setHorizontalGroup(
+            rawLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(rawLayout.createSequentialGroup()
+                .add(view, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 497, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(propertySheetView1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 168, Short.MAX_VALUE)
                 .addContainerGap())
         );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(browser, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 190, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                    .add(view, 0, 0, Short.MAX_VALUE)
-                    .add(propertySheetView1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 354, Short.MAX_VALUE))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        rawLayout.setVerticalGroup(
+            rawLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, rawLayout.createSequentialGroup()
+                .add(rawLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, view, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 608, Short.MAX_VALUE)
+                    .add(propertySheetView1, 0, 0, Short.MAX_VALUE))
+                .addContainerGap())
         );
+
+        tabs.addTab(org.openide.util.NbBundle.getMessage(SubmitPanel.class, "MSG_TabRaw"), raw); // NOI18N
+
+        text.setColumns(20);
+        text.setEditable(false);
+        text.setRows(5);
+        scroll.setViewportView(text);
+
+        org.jdesktop.layout.GroupLayout structuredLayout = new org.jdesktop.layout.GroupLayout(structured);
+        structured.setLayout(structuredLayout);
+        structuredLayout.setHorizontalGroup(
+            structuredLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(structuredLayout.createSequentialGroup()
+                .add(scroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 671, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        structuredLayout.setVerticalGroup(
+            structuredLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(structuredLayout.createSequentialGroup()
+                .add(scroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 608, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+
+        tabs.addTab(org.openide.util.NbBundle.getMessage(SubmitPanel.class, "MSG_Tab_Text"), structured); // NOI18N
+
+        add(tabs, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
 
     public ExplorerManager getExplorerManager() {
         return manager;
     }
     
+    public void addRecord(LogRecord r) {
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        try {
+            LogRecords.write(os, r);
+            text.getDocument().insertString(text.getDocument().getLength(), os.toString(), null);
+            text.getCaret().setDot(0);
+        } catch (IOException ex) {
+            Installer.LOG.log(Level.WARNING, null, ex);
+        } catch (BadLocationException ex) {
+            Installer.LOG.log(Level.WARNING, null, ex);
+        }
+    }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private org.openide.awt.HtmlBrowser browser;
     private org.openide.explorer.propertysheet.PropertySheetView propertySheetView1;
+    private javax.swing.JPanel raw;
+    private javax.swing.JScrollPane scroll;
+    private javax.swing.JPanel structured;
+    private javax.swing.JTabbedPane tabs;
+    private javax.swing.JTextArea text;
     private org.openide.explorer.view.TreeTableView view;
     // End of variables declaration//GEN-END:variables
 

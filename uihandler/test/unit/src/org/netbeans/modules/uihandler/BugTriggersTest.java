@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JDialog;
 import junit.framework.TestCase;
 import org.netbeans.junit.MockServices;
 import org.openide.DialogDescriptor;
@@ -79,18 +80,22 @@ public class BugTriggersTest extends TestCase {
         public static NotifyDescriptor d;
         
         public Object notify(NotifyDescriptor descriptor) {
+            fail("Not implemented");
+            return null;
+        }
+
+        public Dialog createDialog(DialogDescriptor descriptor) {
             d = descriptor;
             if (toReturn == -1) {
                 fail("There should be something to return");
             }
             Object r = descriptor.getOptions()[toReturn];
             toReturn = -1;
-            return r;
-        }
-
-        public Dialog createDialog(DialogDescriptor descriptor) {
-            fail("Not implemented");
-            return null;
+            return new JDialog() {
+                @Deprecated
+                public void show() {
+                }
+            };
         }
         
     }

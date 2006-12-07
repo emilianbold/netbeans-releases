@@ -143,7 +143,7 @@ final class UINode extends AbstractNode implements VisualData {
     }
     
     static Node.Property createPropertyDate(final VisualData source) {
-        class NP extends PropertySupport.ReadOnly/*GENERICS<Date>GENERICS*/ {
+        class NP extends PropertySupport.ReadOnly<Date> {
             public NP() {
                 super(
                     "date", Date.class, 
@@ -167,7 +167,7 @@ final class UINode extends AbstractNode implements VisualData {
     }
 
     static Node.Property createPropertyLogger(final VisualData source) {
-        class NP extends PropertySupport.ReadOnly/*GENERICS<String>GENERICS*/ {
+        class NP extends PropertySupport.ReadOnly<String> {
             public NP() {
                 super(
                     "logger", String.class, 
@@ -204,7 +204,7 @@ final class UINode extends AbstractNode implements VisualData {
         return new NP();
     }
     static Node.Property createPropertyMessage(final VisualData source) {
-        class NP extends PropertySupport.ReadOnly/*GENERICS<String>GENERICS*/ {
+        class NP extends PropertySupport.ReadOnly<String> {
             public NP() {
                 super(
                     "message", String.class, 
@@ -226,8 +226,8 @@ final class UINode extends AbstractNode implements VisualData {
         }
         return new NP();
     }
-    private Node.Property/*GENERICS<?>GENERICS*/ createProperty(final int index, final Object object) {
-        class NP extends PropertySupport.ReadOnly/*GENERICS<String>GENERICS*/ {
+    private Node.Property<?> createProperty(final int index, final Object object) {
+        class NP extends PropertySupport.ReadOnly<String> {
             public NP() {
                 super(
                     "param #" + index, String.class, 
@@ -259,7 +259,7 @@ final class UINode extends AbstractNode implements VisualData {
     }
 
     
-    private static final class StackTraceChildren extends Children.Keys/*GENERICS<StackTraceElement>GENERICS*/ {
+    private static final class StackTraceChildren extends Children.Keys<StackTraceElement> {
         private Throwable throwable;
         public StackTraceChildren(Throwable t) {
             throwable = t;
@@ -269,9 +269,7 @@ final class UINode extends AbstractNode implements VisualData {
             setKeys(throwable.getStackTrace());
         }
         
-//        protected Node[] createNodes(StackTraceElement key) {
-        protected Node[] createNodes(Object k) {
-            StackTraceElement key = (StackTraceElement)k;
+        protected Node[] createNodes(StackTraceElement key) {
             AbstractNode an = new AbstractNode(Children.LEAF);
             an.setName(key.getClassName() + "." + key.getMethodName());
             an.setDisplayName(NbBundle.getMessage(UINode.class, "MSG_StackTraceElement", 
@@ -290,7 +288,7 @@ final class UINode extends AbstractNode implements VisualData {
     } // end of StackTraceElement
 
     
-    private static final class ModulesChildren extends Children.Keys/*GENERICS<Object>GENERICS*/ {
+    private static final class ModulesChildren extends Children.Keys<Object> {
         private Object[] modules;
         public ModulesChildren(Object[] m) {
             modules = m;

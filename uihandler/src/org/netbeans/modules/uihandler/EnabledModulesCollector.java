@@ -42,10 +42,7 @@ public class EnabledModulesCollector implements Deactivated {
     public void deactivated(Logger uiLogger) {
         List<ModuleInfo> enabled = new ArrayList<ModuleInfo>();
         List<ModuleInfo> disabled = new ArrayList<ModuleInfo>();
-        Lookup.Template/*GENERICS<ModuleInfo>GENERICS*/ temp = new Lookup.Template/*GENERICS<ModuleInfo>GENERICS*/(ModuleInfo.class);
-        Lookup.Result/*GENERICS<ModuleInfo>GENERICS*/ res = Lookup.getDefault().lookup(temp);
-        for (Object o : res.allInstances()) {
-            ModuleInfo m = (ModuleInfo)o;
+        for (ModuleInfo m : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
             if (m.isEnabled()) {
                 enabled.add(m);
             } else {

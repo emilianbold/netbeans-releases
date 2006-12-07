@@ -18,14 +18,17 @@
  */
 package org.netbeans.modules.uihandler;
 
+import java.awt.Dialog;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -39,6 +42,7 @@ import java.util.Queue;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPOutputStream;
@@ -49,17 +53,18 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.lib.uihandler.LogRecords;
 import org.netbeans.modules.uihandler.api.Activated;
 import org.netbeans.modules.uihandler.api.Deactivated;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.Mnemonics;
+import org.openide.filesystems.FileUtil;
 import org.openide.modules.ModuleInstall;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.SharedClassObject;
+import org.openide.util.NbPreferences;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -71,7 +76,7 @@ public class Installer extends ModuleInstall {
     private static Queue<LogRecord> logs = new LinkedList<LogRecord>();
     private static UIHandler ui = new UIHandler(logs, false);
     private static UIHandler handler = new UIHandler(logs, true);
-    private static final Logger LOG = Logger.getLogger(Installer.class.getName());
+    static final Logger LOG = Logger.getLogger(Installer.class.getName());
         
     
     
@@ -87,10 +92,7 @@ public class Installer extends ModuleInstall {
         }
         
         
-        Lookup.Template/*GENERICS<Activated>GENERICS*/ temp = new Lookup.Template/*GENERICS<Activated>GENERICS*/(Activated.class);
-        Lookup.Result/*GENERICS<Activated>GENERICS*/ res = Lookup.getDefault().lookup(temp);
-        for (Object o : res.allInstances()) {
-            Activated a = (Activated)o;
+        for (Activated a : Lookup.getDefault().lookupAll(Activated.class)) {
             a.activated(log);
         }
         /*
@@ -137,6 +139,14 @@ public class Installer extends ModuleInstall {
         if (DISPLAYING.get() != null) {
             return true;
         }
+        
+        boolean dontAsk = NbPreferences.forModule(Installer.class).getBoolean("ask.never.again." + msg, false); // NOI18N
+        if (dontAsk) {
+            LOG.log(Level.INFO, "UI Gesture Collector's ask.never.again.{0} is true, exiting", msg); // NOI18N
+            return true;
+        }
+        
+        
         boolean v = true;
         try {
             DISPLAYING.set(msg);
@@ -148,85 +158,11 @@ public class Installer extends ModuleInstall {
     }
     
     private static boolean doDisplaySummary(String msg) {
-        Logger log = Logger.getLogger("org.netbeans.ui"); // NOI18N
-        Lookup.Template/*GENERICS<Deactivated>GENERICS*/ temp = new Lookup.Template/*GENERICS<Deactivated>GENERICS*/(Deactivated.class);
-        Lookup.Result/*GENERICS<Deactivated>GENERICS*/ result = Lookup.getDefault().lookup(temp);
-        for (Object o : result.allInstances()) {
-            Deactivated a = (Deactivated)o;
-            a.deactivated(log);
-        }
-        
-        String exitMsg = NbBundle.getMessage(Installer.class, "MSG_EXIT"); // NOI18N
-        URL url = null;
-        Object[] buttons = new Object[] { exitMsg };
-        try {
-            String uri = NbBundle.getMessage(SubmitPanel.class, msg);
-            if (uri != null && uri.length() > 0) {
-                url = new URL(uri); // NOI18N
-                URLConnection conn = url.openConnection();
-                conn.setReadTimeout(2000);
-                InputStream is = conn.getInputStream();
-                Object[] newB = parseButtons(is, exitMsg);
-                if (newB != null) {
-                    buttons = newB;
-                }
-                is.close();
-            } else {
-                return true;
-            }
-        } catch (ParserConfigurationException ex) {
-            LOG.log(Level.WARNING, null, ex);
-        } catch (SAXException ex) {
-            LOG.log(Level.WARNING, url.toExternalForm(), ex);
-        } catch (IOException ex) {
-            LOG.log(Level.WARNING, url.toExternalForm(), ex);
-        }
-        
-        List<LogRecord> recs = getLogs();
-
-        SubmitPanel panel = new SubmitPanel(url);
-        
-        AbstractNode root = new AbstractNode(new Children.Array());
-        root.setName("root"); // NOI18N
-        root.setDisplayName(NbBundle.getMessage(Installer.class, "MSG_RootDisplayName", recs.size(), new Date()));
-        root.setIconBaseWithExtension("org/netbeans/modules/uihandler/logs.gif");
-        for (LogRecord r : recs) {
-            root.getChildren().add(new Node[] { UINode.create(r) });
-        }
-        
-        panel.getExplorerManager().setRootContext(root);
-        
-        NotifyDescriptor dd = new NotifyDescriptor.Message(panel, NotifyDescriptor.INFORMATION_MESSAGE);
-        dd.setOptions(buttons);
-        Object res = DialogDisplayer.getDefault().notify(dd);
-        
-        if (res instanceof JButton) {
-            JButton b = (JButton)res;
-            Object post = b.getClientProperty("url"); // NOI18N
-            if (post instanceof String) {
-                URL postURL;
-                try {
-                    postURL = new URL((String) post);
-                } catch (MalformedURLException ex) {
-                    postURL = null;
-                }
-                URL nextURL = null;
-                try {
-                    nextURL = uploadLogs(postURL, findIdentity(), Collections.<String,String>emptyMap(), recs);
-                } catch (IOException ex) {
-                    LOG.log(Level.WARNING, null, ex);
-                }
-                if (nextURL != null) {
-                    clearLogs();
-                    HtmlBrowser.URLDisplayer.getDefault().showURL(nextURL);
-                    return false;
-                }
-            }
-            return true;
-        }
-        
-        return res == exitMsg;
+        Submit submit = new Submit(msg);
+        submit.doShow();
+        return submit.okToExit;
     }
+    
     
     private static boolean isChild(org.w3c.dom.Node child, org.w3c.dom.Node parent) {
         while (child != null) {
@@ -269,18 +205,45 @@ public class Installer extends ModuleInstall {
                     
                     if ("hidden".equals(type) && "submit".equals(name)) { // NOI18N
                         f.submitValue = value;
+                        JButton b = new JButton();
+                        Mnemonics.setLocalizedText(b, f.submitValue);
+                        b.setActionCommand("submit"); // NOI18N
+                        b.putClientProperty("url", f.url); // NOI18N
+                        b.setDefaultCapable(buttons.isEmpty());
+                        buttons.add(b);
+                        continue;
+                    }
+                    
+                    if ("hidden".equals(type)) { // NOI18N
+                        JButton b = new JButton();
+                        Mnemonics.setLocalizedText(b, value);
+                        b.setActionCommand(name);
+                        b.setDefaultCapable(buttons.isEmpty());
+                        buttons.add(b);
                     }
                 }
             }
-
-            JButton b = new JButton();
-            Mnemonics.setLocalizedText(b, f.submitValue);
-            b.putClientProperty("url", f.url);
-            b.setDefaultCapable(buttons.isEmpty());
-            buttons.add(b);
         }
-        buttons.add(defaultButton);
+        if (defaultButton != null) {
+            buttons.add(defaultButton);
+        }
         return buttons.toArray();
+    }
+    
+    static String decodeButtons(Object res, URL[] url) {
+        if (res instanceof JButton) {
+            JButton b = (JButton)res;
+            Object post = b.getClientProperty("url"); // NOI18N
+            if (post instanceof String) {
+                try {
+                    url[0] = new URL((String) post);
+                } catch (MalformedURLException ex) {
+                    url[0] = null;
+                }
+            }
+            return b.getActionCommand();
+        }
+        return (String)res;
     }
 
     static URL uploadLogs(URL postURL, String id, Map<String,String> attrs, List<LogRecord> recs) throws IOException {
@@ -360,29 +323,10 @@ public class Installer extends ModuleInstall {
     }
     
     private static String findIdentity() {
-        try {
-            ClassLoader l = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
-            if (l == null) {
-                l = Installer.class.getClassLoader();
-            }
-            
-            Class<?> settings0 = Class.forName("org.netbeans.modules.autoupdate.Settings", true, l);
-            Class<? extends SharedClassObject> settings = settings0.asSubclass(SharedClassObject.class);
-            Method m = settings.getMethod("getIdeIdentity"); // NOI18N
-            
-            SharedClassObject autoUpdateSettings = SharedClassObject.findObject(settings);
-            
-            return (String)m.invoke(autoUpdateSettings);
-        } catch (IllegalAccessException ex) {
-            LOG.log(Level.WARNING, null, ex);
-        } catch (InvocationTargetException ex) {
-            LOG.log(Level.WARNING, null, ex);
-        } catch (ClassNotFoundException ex) {
-            LOG.log(Level.WARNING, null, ex);
-        } catch (NoSuchMethodException ex) {
-            LOG.log(Level.WARNING, null, ex);
-        }
-        return null;
+        Preferences p = NbPreferences.root().node("org/netbeans/modules/autoupdate"); // NOI18N
+        String id = p.get("ideIdentity", null);
+        LOG.log(Level.INFO, "findIdentity: {0}", id);
+        return id;
     }
     
     static final class Form extends Object {
@@ -393,4 +337,146 @@ public class Installer extends ModuleInstall {
             url = u;
         }
     }
+    
+    private static final class Submit implements ActionListener {
+        private String msg;
+        boolean okToExit;
+        private DialogDescriptor dd;
+        private Dialog d;
+        private SubmitPanel panel;
+        
+        public Submit(String msg) {
+            this.msg = msg;
+        }
+        
+        public void doShow() {
+            Logger log = Logger.getLogger("org.netbeans.ui"); // NOI18N
+            for (Deactivated a : Lookup.getDefault().lookupAll(Deactivated.class)) {
+                a.deactivated(log);
+            }
+
+            String exitMsg = NbBundle.getMessage(Installer.class, "MSG_EXIT"); // NOI18N
+            URL url = null;
+            Object[] buttons = new Object[] { exitMsg };
+            try {
+                String uri = NbBundle.getMessage(Installer.class, msg);
+                if (uri != null && uri.length() > 0) {
+                    url = new URL(uri); // NOI18N
+                    URLConnection conn = url.openConnection();
+                    conn.setReadTimeout(2000);
+                    File tmp = File.createTempFile("uigesture", ".html");
+                    tmp.deleteOnExit();
+                    FileOutputStream os = new FileOutputStream(tmp);
+                    FileUtil.copy(conn.getInputStream(), os);
+                    os.close();
+                    conn.getInputStream().close();
+                    InputStream is = new FileInputStream(tmp);
+                    Object[] newB = parseButtons(is, exitMsg);
+                    if (newB != null) {
+                        buttons = newB;
+                    }
+                    is.close();
+                    url = tmp.toURI().toURL();
+                } else {
+                    okToExit = true;
+                    return;
+                }
+            } catch (ParserConfigurationException ex) {
+                LOG.log(Level.WARNING, null, ex);
+            } catch (SAXException ex) {
+                LOG.log(Level.WARNING, url.toExternalForm(), ex);
+            } catch (IOException ex) {
+                LOG.log(Level.WARNING, url.toExternalForm(), ex);
+            }
+
+            List<LogRecord> recs = getLogs();
+            
+            
+            
+            HtmlBrowser browser = new HtmlBrowser();
+            browser.setURL(url);
+            browser.setEnableLocation(false);
+            browser.setEnableHome(false);
+            browser.setStatusLineVisible(false);
+            browser.setToolbarVisible(false);
+
+            //        AbstractNode root = new AbstractNode(new Children.Array());
+            //        root.setName("root"); // NOI18N
+            //        root.setDisplayName(NbBundle.getMessage(Installer.class, "MSG_RootDisplayName", recs.size(), new Date()));
+            //        root.setIconBaseWithExtension("org/netbeans/modules/uihandler/logs.gif");
+            //        for (LogRecord r : recs) {
+            //            root.getChildren().add(new Node[] { UINode.create(r) });
+            //        }
+            //
+            //        panel.getExplorerManager().setRootContext(root);
+
+            dd = new DialogDescriptor(browser, NbBundle.getMessage(Installer.class, "MSG_SubmitDialogTitle"));
+            dd.setOptions(buttons);
+            dd.setClosingOptions(new Object[] { exitMsg });
+            dd.setButtonListener(this);
+            dd.setModal(true);
+            d = DialogDisplayer.getDefault().createDialog(dd);
+            d.setVisible(true);
+            
+            Object res = dd.getValue();
+
+            if (res == exitMsg) {
+                okToExit = true;
+            }
+        }
+    
+    
+        public void actionPerformed(ActionEvent e) {
+            URL[] url = new URL[1];
+            String actionURL = decodeButtons(e.getSource(), url);
+
+            if ("submit".equals(e.getActionCommand())) { // NOI18N
+                List<LogRecord> recs = getLogs();
+                URL nextURL = null;
+                try {
+                    nextURL = uploadLogs(url[0], findIdentity(), Collections.<String,String>emptyMap(), recs);
+                } catch (IOException ex) {
+                    LOG.log(Level.WARNING, null, ex);
+                }
+                if (nextURL != null) {
+                    clearLogs();
+                    HtmlBrowser.URLDisplayer.getDefault().showURL(nextURL);
+                    okToExit = false;
+                    // this should close the descriptor
+                    dd.setValue(DialogDescriptor.CLOSED_OPTION);
+                    d.setVisible(false);
+                }
+                return;
+            }
+
+            if ("view-data".equals(e.getActionCommand())) { // NOI18N
+                if (panel == null) {
+                    panel = new SubmitPanel();
+                    AbstractNode root = new AbstractNode(new Children.Array());
+                    root.setName("root"); // NOI18N
+                    List<LogRecord> recs = getLogs();
+                    root.setDisplayName(NbBundle.getMessage(Installer.class, "MSG_RootDisplayName", recs.size(), new Date()));
+                    root.setIconBaseWithExtension("org/netbeans/modules/uihandler/logs.gif");
+                    for (LogRecord r : recs) {
+                        root.getChildren().add(new Node[] { UINode.create(r) });
+                        panel.addRecord(r);
+                    }
+                    panel.getExplorerManager().setRootContext(root);
+                }
+                dd.setMessage(panel);
+                return;
+            }
+            
+            if ("never-again".equals(e.getActionCommand())) { // NOI18N
+                LOG.log(Level.FINE, "Assigning ask.never.again.{0} to true", msg); // NOI18N
+                NbPreferences.forModule(Installer.class).putBoolean("ask.never.again." + msg, true); // NOI18N
+                okToExit = true;
+                // this should close the descriptor
+                dd.setValue(DialogDescriptor.CLOSED_OPTION);
+                d.setVisible(false);
+                return;
+            }
+
+        }
+    } // end Submit
 }

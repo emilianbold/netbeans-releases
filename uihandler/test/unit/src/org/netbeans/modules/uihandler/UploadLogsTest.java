@@ -56,6 +56,8 @@ public class UploadLogsTest extends NbTestCase {
         recs.add(new LogRecord(Level.WARNING, "MSG_MISTAKE"));
         MemoryURL.registerURL("memory://upload", "Ok");
         URL redir = Installer.uploadLogs(new URL("memory://upload"), "myId", Collections.<String,String>emptyMap(), recs);
+        String s = MemoryURL.getOutputForURL("memory://upload");
+        fail(s);
         
         String content = MemoryURL.getOutputForURL("memory://upload");
         
