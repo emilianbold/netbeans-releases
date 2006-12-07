@@ -18,20 +18,30 @@
  */
 package org.netbeans.modules.web.wizards;
 
-//import org.openide.src.*;
-import java.util.List;
-import java.util.ArrayList;
-import org.openide.util.NbBundle;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.Tree;
+import java.io.IOException;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.ModificationResult;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.j2ee.common.source.AbstractTask;
+import org.netbeans.modules.j2ee.common.source.GenerationUtils;
+
 /**
  * Generator for servlet listener class
  *
  * @author  milan.kuchtiak@sun.com
  * Created on March, 2004
  */
-//TODO: RETOUCHE
 public class ListenerGenerator {
     boolean isContext,isContextAttr,isSession,isSessionAttr,isRequest,isRequestAttr;
-//    private ClassElement clazz;
+    
+    private JavaSource clazz;
+    private GenerationUtils gu;
+    
     /** Creates a new instance of ListenerGenerator */
     public ListenerGenerator(boolean isContext, boolean isContextAttr, boolean isSession, boolean isSessionAttr,
                              boolean isRequest, boolean isRequestAttr) {
@@ -43,59 +53,57 @@ public class ListenerGenerator {
         this.isRequestAttr=isRequestAttr;
     }
     
-//    public void generate(ClassElement clazz) throws SourceException {
-//        this.clazz=clazz;
-//        generateImports();
-//        generateInterfaces();
+    public void generate(JavaSource clazz) throws IOException {
+        this.clazz=clazz;
+        
+        AbstractTask task = new AbstractTask<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws Exception {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                
+                
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                        gu = GenerationUtils.newInstance(workingCopy);
+                        workingCopy.rewrite(gu.getClassTree(), generateInterfaces(gu));
+
+                    }
+                }
+                
+            }
+        };
+        ModificationResult result = clazz.runModificationTask(task);
+        result.commit();
+
+        
 //        if (isContext) addContextListenerMethods();
 //        if (isContextAttr) addContextAttrListenerMethods();
 //        if (isSession) addSessionListenerMethods();
 //        if (isSessionAttr) addSessionAttrListenerMethods();
 //        if (isRequest) addRequestListenerMethods();
 //        if (isRequestAttr) addRequestAttrListenerMethods();
-//    }
-//    
-//    private void generateImports() throws SourceException {
-//        SourceElement srcEl = clazz.getSource();
-//        List imports = new ArrayList();
-//        if (isContext) {
-//            imports.add(new Import(Identifier.create("javax.servlet.ServletContextListener"), false)); //NOI18N
-//            imports.add(new Import(Identifier.create("javax.servlet.ServletContextEvent"), false)); //NOI18N
-//        }
-//        if (isContextAttr) {
-//            imports.add(new Import(Identifier.create("javax.servlet.ServletContextAttributeListener"), false)); //NOI18N
-//            imports.add(new Import(Identifier.create("javax.servlet.ServletContextAttributeEvent"), false)); //NOI18N
-//        }
-//        if (isSession) {
-//            imports.add(new Import(Identifier.create("javax.servlet.http.HttpSessionListener"), false)); //NOI18N
-//            imports.add(new Import(Identifier.create("javax.servlet.http.HttpSessionEvent"), false)); //NOI18N
-//        }
-//        if (isSessionAttr) {
-//            imports.add(new Import(Identifier.create("javax.servlet.http.HttpSessionAttributeListener"), false)); //NOI18N
-//            imports.add(new Import(Identifier.create("javax.servlet.http.HttpSessionBindingEvent"), false)); //NOI18N
-//        }
-//        if (isRequest) {
-//            imports.add(new Import(Identifier.create("javax.servlet.ServletRequestListener"), false)); //NOI18N
-//            imports.add(new Import(Identifier.create("javax.servlet.ServletRequestEvent"), false)); //NOI18N
-//        }
-//        if (isRequestAttr) {
-//            imports.add(new Import(Identifier.create("javax.servlet.ServletRequestAttributeListener"), false)); //NOI18N
-//            imports.add(new Import(Identifier.create("javax.servlet.ServletRequestAttributeEvent"), false)); //NOI18N
-//        }
-//        Import[] imp = new Import[imports.size()];
-//        imports.toArray(imp);
-//        srcEl.addImports(imp);
-//    }
-//
-//    private void generateInterfaces() throws SourceException {
-//        if (isContext) clazz.addInterface(Identifier.create("ServletContextListener")); //NOI18N
-//        if (isContextAttr) clazz.addInterface(Identifier.create("ServletContextAttributeListener")); //NOI18N
-//        if (isSession) clazz.addInterface(Identifier.create("HttpSessionListener")); //NOI18N
-//        if (isSessionAttr) clazz.addInterface(Identifier.create("HttpSessionAttributeListener")); //NOI18N
-//        if (isRequest) clazz.addInterface(Identifier.create("ServletRequestListener")); //NOI18N
-//        if (isRequestAttr) clazz.addInterface(Identifier.create("ServletRequestAttributeListener")); //NOI18N   
-//    }
-//    
+    }
+    
+    private ClassTree generateInterfaces(GenerationUtils gu) {
+        ClassTree newClassTree = gu.getClassTree();
+        
+        if (isContext)
+            newClassTree = gu.addImplementsClause(newClassTree, "javax.servlet.ServletContextListener");
+        if (isContextAttr)
+            newClassTree = gu.addImplementsClause(newClassTree, "javax.servlet.ServletContextAttributeListener");
+        if (isSession)
+            newClassTree = gu.addImplementsClause(newClassTree, "javax.servlet.http.HttpSessionListener");
+        if (isSessionAttr)
+            newClassTree = gu.addImplementsClause(newClassTree, "javax.servlet.http.HttpSessionAttributeListener");
+        if (isRequest)
+            newClassTree = gu.addImplementsClause(newClassTree, "javax.servlet.ServletRequestListener");
+        if (isRequestAttr)
+            newClassTree = gu.addImplementsClause(newClassTree, "javax.servlet.ServletRequestAttributeListener");
+        
+        return newClassTree;
+    }
+    
 //    private void addContextListenerMethods() throws SourceException {
 //        StringBuffer docBuf = new StringBuffer();
 //        docBuf.append(NbBundle.getMessage(ListenerGenerator.class,"TXT_DOC_contextListener_m1"));

@@ -27,21 +27,19 @@ import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import java.text.MessageFormat;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.web.core.Util;
 
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.WizardDescriptor;
-import org.openide.cookies.SaveCookie;
 import org.openide.loaders.*;
 import org.openide.util.NbBundle;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.j2ee.dd.api.web.*;
 import org.openide.DialogDisplayer;
-//import org.openide.src.ClassElement;
-//import org.openide.src.SourceException;
 
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.netbeans.api.project.Project;
@@ -163,24 +161,21 @@ public class ListenerIterator implements TemplateWizard.Iterator {
                 }
             }
             if (result!=null) {
-                //TODO: RETOUCHE
-//                ClassElement clazz = ClassElement.forName(className,result.getPrimaryFile());
-//                if (clazz!=null) {
-//                    ListenerGenerator gen = new ListenerGenerator(
-//                        panel.isContextListener(),
-//                        panel.isContextAttrListener(),
-//                        panel.isSessionListener(),
-//                        panel.isSessionAttrListener(),
-//                        panel.isRequestListener(),
-//                        panel.isRequestAttrListener());
-//                    try {
-//                        gen.generate(clazz);
-//                    } catch (SourceException ex){
-//                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,ex);
-//                    }
-//                }
-//                SaveCookie save = (SaveCookie) result.getCookie (SaveCookie.class);
-//                save.save();
+                JavaSource clazz = JavaSource.forFileObject(result.getPrimaryFile());
+                if (clazz!=null) {
+                    ListenerGenerator gen = new ListenerGenerator(
+                        panel.isContextListener(),
+                        panel.isContextAttrListener(),
+                        panel.isSessionListener(),
+                        panel.isSessionAttrListener(),
+                        panel.isRequestListener(),
+                        panel.isRequestAttrListener());
+                    try {
+                        gen.generate(clazz);
+                    } catch (IOException ex){
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,ex);
+                    }
+                }
             }
         } else {
             String mes = MessageFormat.format (
