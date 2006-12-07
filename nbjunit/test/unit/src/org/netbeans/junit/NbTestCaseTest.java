@@ -111,4 +111,17 @@ public class NbTestCaseTest extends NbTestCase {
         }
         fail("The assertion should fail");
     }
+
+    public void testAssertGcFailsForUntracableObject() {
+        Object o = new Object();
+        WeakReference<Object> wr = new WeakReference<Object>(o);
+        
+        try {
+            assertGC("The object is really not referenced", wr);
+        } catch (AssertionFailedError afe) {
+            assertTrue("Found the reference", afe.getMessage().indexOf("Not found") >= 0);
+            return;
+        }
+        fail("The assertion should fail");
+    }
 }
