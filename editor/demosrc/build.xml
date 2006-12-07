@@ -27,11 +27,15 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="editor" depends="init">
-     <ant dir=".." target="jars" />
+     <ant dir="../lib"/>
   </target>
 
   <target name="compile" depends="editor">
-     <copy file="../netbeans/modules/editor-lib.jar" tofile="${target_dir}/editor-lib.jar" />
+     <copy todir="${target_dir}">
+        <fileset dir="../../nbbuild/netbeans">
+            <filename name="ide*/modules/org-netbeans-modules-editor-lib.jar"/>
+        </fileset>
+     </copy>
      <javac srcdir="base" destdir="base" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
        <classpath>
         <pathelement location="${target_dir}/editor-lib.jar"/>
@@ -42,9 +46,8 @@ Microsystems, Inc. All Rights Reserved.
   <target name="jars" depends="compile">
      <jar jarfile="${target_dir}/editor.jar"
            basedir="base"
-	   excludes="base/run.sh"
-	   manifest="manifest.mf"
-           excludes="**/*.java,**/*.form"
+           manifest="manifest.mf"
+           excludes="base/run.sh,**/*.java,**/*.form"
            compress="false">
      <fileset dir="../release/system" />
      </jar>
