@@ -19,15 +19,11 @@
 
 package org.openide.util;
 
-import java.awt.AWTEvent;
 import java.awt.Component;
-import java.awt.Toolkit;
-import java.awt.event.AWTEventListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.HierarchyEvent;
 import java.awt.event.HierarchyListener;
-import javax.swing.RepaintManager;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
@@ -41,7 +37,7 @@ import javax.swing.Timer;
  *
  * @author Dafe Simonek
  */
-final class AsyncInitSupport implements AWTEventListener, HierarchyListener, Runnable, ActionListener {
+final class AsyncInitSupport implements HierarchyListener, Runnable, ActionListener {
     /** lock for access to wasCancelled flag */
     private static final Object CANCELLED_LOCK = new Object();
 
@@ -56,6 +52,8 @@ final class AsyncInitSupport implements AWTEventListener, HierarchyListener, Run
 
     /** Job that performs async init task */
     private AsyncGUIJob initJob;
+    
+    /** Timer for delaying asynchronous init job to enable some painting first */
     Timer timer = null;
 
     /** Creates a new instance of AsyncInitComponent
@@ -66,44 +64,43 @@ final class AsyncInitSupport implements AWTEventListener, HierarchyListener, Run
     public AsyncInitSupport(Component comp4Init, AsyncGUIJob initJob) {
         this.comp4Init = comp4Init;
         this.initJob = initJob;
-
         if (comp4Init.isShowing()) {
             throw new IllegalStateException("Component already shown, can't be inited: " + comp4Init);
         }
 
-        Toolkit.getDefaultToolkit().addAWTEventListener(this, AWTEvent.PAINT_EVENT_MASK);
         comp4Init.addHierarchyListener(this);
-
-        if (!RepaintManager.currentManager(comp4Init).isDoubleBufferingEnabled()) {
-            //We're running with hardware double buffering - cannot rely on an
-            //AWT PaintEvent to start the job running - on mac, it will never come
-            timer = new Timer(20, this);
-            timer.start();
+    }
+    
+    /** Impl of HierarchyListener, starts init job with delay when component shown,
+     * stops listening to asociated component it isn't showing anymore,
+     * calls cancel if desirable.
+     * @param evt hierarchy event
+     */
+    public void hierarchyChanged(HierarchyEvent evt) {
+        if (((evt.getChangeFlags() & HierarchyEvent.SHOWING_CHANGED) != 0)) {
+            boolean isShowing = comp4Init.isShowing();
+            if (timer == null && isShowing) {
+                timer = new Timer(20, this);
+                timer.setRepeats(false);
+                timer.start();
+            } else if (!isShowing) {
+                comp4Init.removeHierarchyListener(this);
+                cancel();
+            }
         }
     }
 
+    /** Impl of ActionListener, called from hierarchyChanged through a Timer,
+     * starts the job */
     public void actionPerformed(ActionEvent ae) {
         if (wasCancelled || (initTask != null)) {
             //If cancelled or already started, our job is done, go away.
             detach();
-
             return;
         }
 
         if ((comp4Init != null) && comp4Init.isDisplayable()) {
             //If the component has a parent onscreen, we're ready to run.
-            start();
-        }
-    }
-
-    /** Invokes execution of init code in non-ED thread.
-     * @param evt ignored
-     */
-    public void eventDispatched(AWTEvent event) {
-        if (
-            event.getSource() instanceof Component &&
-                SwingUtilities.isDescendingFrom(comp4Init, (Component) (event.getSource()))
-        ) {
             start();
         }
     }
@@ -119,19 +116,6 @@ final class AsyncInitSupport implements AWTEventListener, HierarchyListener, Run
     private void detach() {
         if (timer != null) {
             timer.stop();
-        }
-
-        Toolkit.getDefaultToolkit().removeAWTEventListener(this);
-    }
-
-    /** Stops listening to asociated component it isn't showing anymore,
-     * calls cancel if desirable.
-     * @param evt hierarchy event
-     */
-    public void hierarchyChanged(HierarchyEvent evt) {
-        if (((evt.getChangeFlags() & HierarchyEvent.SHOWING_CHANGED) != 0) && !comp4Init.isShowing()) {
-            comp4Init.removeHierarchyListener(this);
-            cancel();
         }
     }
 
@@ -168,8 +152,8 @@ final class AsyncInitSupport implements AWTEventListener, HierarchyListener, Run
             synchronized (CANCELLED_LOCK) {
                 wasCancelled = true;
             }
-
             ((Cancellable) initJob).cancel();
         }
     }
+    
 }
