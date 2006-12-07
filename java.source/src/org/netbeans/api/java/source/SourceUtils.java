@@ -174,13 +174,17 @@ public class SourceUtils {
             throw new NullPointerException();
         
         CompilationUnitTree cut = info.getCompilationUnit();
-        Element el = info.getTrees().getElement(new TreePath(cut));
-        PackageElement pkg = el != null && el.getKind() == ElementKind.PACKAGE ? (PackageElement)el : null;
         Scope scope = info.getTrees().getScope(context);
         String qName = fqn;
         StringBuilder sqName = new StringBuilder();
         String sName = null;
         boolean clashing = false;
+        ElementUtilities eu = info.getElementUtilities();
+        ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
+            public boolean accept(Element e, TypeMirror type) {
+                return e.getKind().isClass() || e.getKind().isInterface();                
+            }
+        };
         while(qName != null && qName.length() > 0) {
             int lastDot = qName.lastIndexOf('.');
             String simple = qName.substring(lastDot < 0 ? 0 : lastDot + 1);
@@ -189,31 +193,30 @@ public class SourceUtils {
             else
                 sqName.insert(0, '.');
             sqName.insert(0, simple);
-            TypeElement te = info.getElements().getTypeElement(qName);
-            if (te != null) {
-                Scope s = scope;
-                while (s != null) {
-                    for (TypeElement e : ElementFilter.typesIn(s.getLocalElements())) {
-                        if (simple.contentEquals(e.getSimpleName())) {
-                            //either a clash or already imported:
-                            if (qName.contentEquals(e.getQualifiedName())) {
-                                return sqName.toString();
-                            } else if (fqn == qName) {
-                                clashing = true;
-                            }
+            if (info.getElements().getTypeElement(qName) != null) {
+                boolean matchFound = false;
+                for(Element e : eu.getLocalMembersAndVars(scope, acceptor)) {
+                    if (simple.contentEquals(e.getSimpleName())) {
+                        //either a clash or already imported:
+                        if (qName.contentEquals(((TypeElement)e).getQualifiedName())) {
+                            return sqName.toString();
+                        } else if (fqn == qName) {
+                            clashing = true;
                         }
+                        matchFound = true;
+                        break;
                     }
-                    s = s.getEnclosingScope();
                 }
-                if (pkg != null) {
-                    for (TypeElement e : ElementFilter.typesIn(pkg.getEnclosedElements())) {
+                if (!matchFound) {
+                    for(Element e : eu.getGlobalTypes(acceptor)) {
                         if (simple.contentEquals(e.getSimpleName())) {
                             //either a clash or already imported:
-                            if (qName.contentEquals(e.getQualifiedName())) {
+                            if (qName.contentEquals(((TypeElement)e).getQualifiedName())) {
                                 return sqName.toString();
                             } else if (fqn == qName) {
                                 clashing = true;
                             }
+                            break;
                         }
                     }
                 }
