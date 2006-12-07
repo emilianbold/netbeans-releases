@@ -435,7 +435,7 @@ public class JavaCompletionProvider implements CompletionProvider {
         }
         
         private void resolveDocumentation(CompilationController controller) throws IOException {            
-            controller.toPhase(Phase.ELEMENTS_RESOLVED);
+            controller.toPhase(Phase.RESOLVED);
             Element el = element != null ? element.resolve(controller) : controller.getTrees().getElement(getCompletionEnvironment(controller, false).getPath());
             if (el != null && (!el.getKind().isClass() && !el.getKind().isInterface() || el.asType().getKind() != TypeKind.ERROR)) {
                 documentation = JavaCompletionDoc.create(controller, el);

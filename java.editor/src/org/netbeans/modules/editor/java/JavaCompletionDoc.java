@@ -208,9 +208,21 @@ public class JavaCompletionDoc implements CompletionDocumentation {
         StringBuilder sb = new StringBuilder();
         ClassDoc cls = peDoc.containingClass();
         if (cls != null) {
-            sb.append("<font size='+0'><b>"); //NOI18N
-            createLink(sb, eu.elementFor(cls), cls.qualifiedName());
-            sb.append("</b></font>"); //NOI18N)
+            Element e = eu.elementFor(cls);
+            if (e != null) {
+                switch(e.getEnclosingElement().getKind()) {
+                    case ANNOTATION_TYPE:
+                    case CLASS:
+                    case ENUM:
+                    case INTERFACE:
+                    case PACKAGE:
+                        if (cls.containingClass() != null || cls.containingPackage() != null) {
+                            sb.append("<font size='+0'><b>"); //NOI18N
+                            createLink(sb, e, cls.qualifiedName());
+                            sb.append("</b></font>"); //NOI18N)
+                        }
+                }
+            }
         } else {
             PackageDoc pkg = peDoc.containingPackage();
             if (pkg != null) {
@@ -231,7 +243,7 @@ public class JavaCompletionDoc implements CompletionDocumentation {
         len = sb.length() - len;
         TypeVariable[] tvars = mdoc.typeParameters();
         if (tvars.length > 0) {
-            if (sb.length() > 0) {
+            if (len > 0) {
                 sb.append(' '); //NOI18N
                 len++;
             }
@@ -247,7 +259,7 @@ public class JavaCompletionDoc implements CompletionDocumentation {
             len += 2;
         }
         if (!mdoc.isConstructor()) {
-            if (sb.length() > 0) {
+            if (len > 0) {
                 sb.append(' '); //NOI18N
                 len++;
             }
@@ -293,8 +305,10 @@ public class JavaCompletionDoc implements CompletionDocumentation {
         StringBuilder sb = new StringBuilder();
         sb.append("<pre>"); //NOI18N
         sb.append(getAnnotations(eu, fdoc));
+        int len = sb.length();
         sb.append(fdoc.modifiers());
-        if (sb.length() > 0)
+        len = sb.length() - len;
+        if (len > 0)
             sb.append(' '); //NOI18N
         appendType(eu, sb, fdoc.type(), false, false);
         sb.append(" <b>").append(fdoc.name()).append("</b>"); //NOI18N
