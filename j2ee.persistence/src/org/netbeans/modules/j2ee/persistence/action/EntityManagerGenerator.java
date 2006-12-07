@@ -64,7 +64,6 @@ public class EntityManagerGenerator {
      */
     private final FileObject targetFo;
     
-    
     /**
      * Creates a new EntityManagerGenerator.
      * @param targetFo the file object of the target java source file.
@@ -85,7 +84,7 @@ public class EntityManagerGenerator {
      */
     public FileObject generate(final GenerationOptions options) throws IOException{
         
-        final boolean[] success = new boolean[1];
+        final boolean[] supportedUseCase = new boolean[1];
         
         AbstractTask task = new AbstractTask<WorkingCopy>() {
             
@@ -100,22 +99,22 @@ public class EntityManagerGenerator {
                         ClassTree clazz = (ClassTree) typeDeclaration;
                         EntityManagerGenerationStrategy strategy = getStrategy(workingCopy, make, clazz, options);
                         if (strategy != null){
+                            supportedUseCase[0] = true;
                             ClassTree modifiedClazz = strategy.generate();
                             workingCopy.rewrite(clazz, modifiedClazz);
-                            success[0] = true;
                         }
                     }
                 }
             }
         };
         
-        if (success[0]) {
-            targetSource.runModificationTask(task).commit();
-        } else {
+        targetSource.runModificationTask(task).commit();
+        
+        if (!supportedUseCase[0]){
             NotifyDescriptor d = new NotifyDescriptor.Message(
                     NbBundle.getMessage(EntityManagerGenerator.class, "ERR_NotSupportedAMJTA"), NotifyDescriptor.INFORMATION_MESSAGE);
             DialogDisplayer.getDefault().notify(d);
-        }
+        } 
         
         return targetFo;
     }
