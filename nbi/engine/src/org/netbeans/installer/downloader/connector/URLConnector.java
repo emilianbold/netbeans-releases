@@ -102,7 +102,7 @@ public class URLConnector {
     final String byPassList = System.getProperty(byPassProp);
     if (byPassList == null) return;
     for (String host : byPassList.split(",")) {
-      proxySelector.addByPassHost(host);
+      proxySelector.addByPassHost(host.trim());
     }
   }
   
