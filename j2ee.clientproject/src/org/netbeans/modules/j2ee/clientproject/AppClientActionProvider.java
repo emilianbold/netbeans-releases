@@ -40,6 +40,7 @@ import org.netbeans.api.debugger.jpda.AttachingDICookie;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
@@ -50,7 +51,6 @@ import org.netbeans.modules.j2ee.clientproject.ui.customizer.MainClassWarning;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
-import org.netbeans.modules.javacore.JMManager;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -61,13 +61,8 @@ import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.MouseUtils;
-import org.openide.cookies.SourceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.src.ClassElement;
-import org.openide.src.SourceElement;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -229,7 +224,8 @@ class AppClientActionProvider implements ActionProvider {
         };
         
         if (this.bkgScanSensitiveActions.contains(command)) {
-            JMManager.getManager().invokeAfterScanFinished(action, NbBundle.getMessage(AppClientActionProvider.class,"ACTION_"+command)); //NOI18N
+            //TODO: RETOUCHE waitScanFinished
+//            JMManager.getManager().invokeAfterScanFinished(action, NbBundle.getMessage(AppClientActionProvider.class,"ACTION_"+command)); //NOI18N
         } else {
             action.run();
         }
@@ -304,8 +300,8 @@ class AppClientActionProvider implements ActionProvider {
             
             // check project's main class
             String mainClass = (String)ep.get("main.class"); // NOI18N
-            int result = isSetMainClass(project.getSourceRoots().getRoots(), mainClass);
-            if (result != 0) {
+            MainClassStatus result = isSetMainClass(project.getSourceRoots().getRoots(), mainClass);
+            if (result != MainClassStatus.SET_AND_VALID) {
                 do {
                     // show warning, if cancel then return
                     if (showMainClassWarning(mainClass, ProjectUtils.getInformation(project).getDisplayName(), ep,result)) {
@@ -313,7 +309,7 @@ class AppClientActionProvider implements ActionProvider {
                     }
                     mainClass = (String)ep.get("main.class"); // NOI18N
                     result=isSetMainClass(project.getSourceRoots().getRoots(), mainClass);
-                } while (result != 0);
+                } while (result != MainClassStatus.SET_AND_VALID);
                 try {
                     if (updateHelper.requestSave()) {
                         updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH,ep);
@@ -553,61 +549,45 @@ class AppClientActionProvider implements ActionProvider {
     }
     
     
+    private static enum MainClassStatus {
+        SET_AND_VALID,
+        SET_BUT_INVALID,
+        UNSET
+    }
+
     /**
      * Tests if the main class is set
      * @param sourcesRoots source roots
      * @param mainClass main class name
-     * @return 0 if the main class is set and is valid
-     *        -1 if the main class is not set
-     *        -2 if the main class is set but is not valid
+     * @return status code
      */
-    private int isSetMainClass(FileObject[] sourcesRoots, String mainClass) {
-        
+    private MainClassStatus isSetMainClass(FileObject[] sourcesRoots, String mainClass) {
+
         // support for unit testing
         if (MainClassChooser.unitTestingSupport_hasMainMethodResult != null) {
-            return MainClassChooser.unitTestingSupport_hasMainMethodResult.booleanValue() ? 0 : -2;
+            return MainClassChooser.unitTestingSupport_hasMainMethodResult ? MainClassStatus.SET_AND_VALID : MainClassStatus.SET_BUT_INVALID;
+        }
+
+        if (mainClass == null || mainClass.length () == 0) {
+            return MainClassStatus.UNSET;
         }
         
-        if (mainClass == null || mainClass.length() == 0) {
-            return -1;
+        ClassPath bootPath = ClassPath.getClassPath (sourcesRoots[0], ClassPath.BOOT);        //Single compilation unit
+        ClassPath compilePath = ClassPath.getClassPath (sourcesRoots[0], ClassPath.COMPILE);
+        ClassPath sourcePath = ClassPath.getClassPath(sourcesRoots[0], ClassPath.SOURCE);
+        if (AppClientProjectUtil.isMainClass (mainClass, bootPath, compilePath, sourcePath)) {
+            return MainClassStatus.SET_AND_VALID;
         }
-        
-        ClassPath classPath = ClassPath.getClassPath(sourcesRoots[0], ClassPath.EXECUTE);  //Single compilation unit
-        if (AppClientProjectUtil.isMainClass(mainClass, classPath)) {
-            return 0;
-        }
-        return -2;
+        return MainClassStatus.SET_BUT_INVALID;
     }
     
     /** Checks if given file object contains the main method.
      *
      * @param classFO file object represents java
-     * @return false if parameter is null or doesn't contain SourceCookie
-     * or SourceCookie doesn't contain the main method
+     * @return false if parameter is null or doesn't contain class with main method
      */
     public static boolean canBeRun(FileObject classFO) {
-        if (classFO == null) {
-            return false;
-        }
-        try {
-            DataObject classDO = DataObject.find(classFO);
-            Object obj = classDO.getCookie(SourceCookie.class);
-            if (!(obj instanceof SourceCookie)) {
-                return false;
-            }
-            SourceCookie cookie = (SourceCookie) obj;
-            // check the main class
-            SourceElement source = cookie.getSource();
-            ClassElement[] classes = source.getClasses();
-            for (int i = 0; i < classes.length; i++) {
-                if (classes[i].hasMainMethod()) {
-                    return true;
-                }
-            }
-        } catch (DataObjectNotFoundException ex) {
-            // can ignore it, classFO could be wrongly set
-        }
-        return false;
+        return !SourceUtils.getMainClasses(classFO).isEmpty();
     }
     
     
@@ -619,7 +599,7 @@ class AppClientActionProvider implements ActionProvider {
      * @param messgeType type of dialog -1 when the main class is not set, -2 when the main class in not valid
      * @return true if user selected main class
      */
-    private boolean showMainClassWarning(String mainClass, String projectName, EditableProperties ep, int messageType) {
+    private boolean showMainClassWarning(String mainClass, String projectName, EditableProperties ep, MainClassStatus messageType) {
         boolean canceled;
         final JButton okButton = new JButton(NbBundle.getMessage(MainClassWarning.class, "LBL_MainClassWarning_ChooseMainClass_OK")); // NOI18N
         okButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MainClassWarning.class, "AD_MainClassWarning_ChooseMainClass_OK"));
@@ -627,12 +607,12 @@ class AppClientActionProvider implements ActionProvider {
         // main class goes wrong => warning
         String message;
         switch (messageType) {
-            case -1:
+            case UNSET:
                 message = MessageFormat.format(NbBundle.getMessage(MainClassWarning.class,"LBL_MainClassNotFound"), new Object[] {
                     projectName
                 });
                 break;
-            case -2:
+            case SET_BUT_INVALID:
                 message = MessageFormat.format(NbBundle.getMessage(MainClassWarning.class,"LBL_MainClassWrong"), new Object[] {
                     mainClass,
                     projectName

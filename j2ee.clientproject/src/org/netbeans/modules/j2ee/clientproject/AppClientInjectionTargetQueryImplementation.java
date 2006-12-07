@@ -19,12 +19,11 @@
 
 package org.netbeans.modules.j2ee.clientproject;
 
-import java.io.IOException;
-import org.netbeans.jmi.javamodel.JavaClass;
+import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.modules.j2ee.api.ejbjar.Car;
 import org.netbeans.modules.j2ee.common.queries.spi.InjectionTargetQueryImplementation;
-import org.netbeans.modules.javacore.api.JavaModel;
-import org.openide.ErrorManager;
 
 /**
  *
@@ -35,26 +34,18 @@ public class AppClientInjectionTargetQueryImplementation implements InjectionTar
     public AppClientInjectionTargetQueryImplementation() {
     }
     
-    public boolean isInjectionTarget(JavaClass jc) {
-        if (jc == null) {
-            throw new NullPointerException("Passed null to EjbInjectionTargetQueryImplementation.isInjectionTarget(JavaClass)"); // NOI18N
-        }
-        Car apiCar = Car.getCar(JavaModel.getFileObject(jc.getResource()));
+    public boolean isInjectionTarget(CompilationController controller, TypeElement typeElement) {
+        Car apiCar = Car.getCar(controller.getFileObject());
         if (apiCar != null && 
                 !apiCar.getJ2eePlatformVersion().equals("1.3") && 
                 !apiCar.getJ2eePlatformVersion().equals("1.4")) {
-            JavaModel.getJavaRepository().beginTrans(false);
-            try {
-                return jc.getResource().getMain().contains(jc);
-            } finally {
-                JavaModel.getJavaRepository().endTrans();
-            }
+            return SourceUtils.isMainClass(typeElement.getQualifiedName().toString(), controller.getClasspathInfo());
         }
         return false;
     }
 
-    public boolean isStaticReferenceRequired(JavaClass jc) {
+    public boolean isStaticReferenceRequired(CompilationController controller, TypeElement typeElement) {
         // all injection references must be static in appclient
-        return isInjectionTarget(jc);
+        return isInjectionTarget(controller, typeElement);
     }
 }

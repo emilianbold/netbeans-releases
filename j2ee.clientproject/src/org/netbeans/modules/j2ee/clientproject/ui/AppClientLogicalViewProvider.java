@@ -880,7 +880,7 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
                 result = null;
                 if (wm!=null && ((J2eeModule.JAVA_EE_5.equals(wm.getJ2eePlatformVersion())) || (wsitSupported))) {
                     JAXWSClientView view = JAXWSClientView.getJAXWSClientView();
-                    result = new Node[] {view.createJAXWSClientView(project)};
+                    result = view == null ? new Node[0] : new Node[] {view.createJAXWSClientView(project)};
                 } else {             
                     FileObject clientRoot = project.getProjectDirectory();
                     WebServicesClientView clientView = WebServicesClientView.getWebServicesClientView(clientRoot);
