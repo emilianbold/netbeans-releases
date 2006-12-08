@@ -30,8 +30,7 @@ public enum InputGesture {
      * @param rec the record
      * @return the gesture that initated the record or null if unknown
      */
-    public static InputGesture 
-        valueOf(LogRecord rec) {
+    public static InputGesture valueOf(LogRecord rec) {
         if ("UI_ACTION_BUTTON_PRESS".equals(rec.getResourceBundleName())) {
             if (rec.getMessage().indexOf("Actions$Menu") >= 0) {
                 return MENU;
