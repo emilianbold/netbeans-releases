@@ -47,7 +47,8 @@ import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.core.jaxws.JaxWsExplorerPanel;
-import org.netbeans.modules.websvc.core.webservices.action.JaxRpcWsdlCookie;
+import org.netbeans.modules.websvc.core.jaxws.JaxWsUtils;
+//import org.netbeans.modules.websvc.core.webservices.action.JaxRpcWsdlCookie;
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -71,17 +72,14 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-//import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.api.client.ClientStubDescriptor;
 
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
-import org.netbeans.modules.websvc.core.Utilities;
 import org.netbeans.modules.websvc.jaxws.api.JaxWsWsdlCookie;
 import org.openide.ErrorManager;
 import org.openide.WizardValidationException;
 import org.openide.filesystems.FileObject;
-import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -886,7 +884,7 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         }
         
         if (jComboBoxJaxVersion.getSelectedItem().equals(WizardProperties.JAX_RPC)) {
-            SourceGroup[] sgs = WebServiceClientCreator.getJavaSourceGroups(project);
+            SourceGroup[] sgs = JaxWsClientCreator.getJavaSourceGroups(project);
             //no source root -> there must be at least one source root to create JAX-RPC client
             if (sgs.length <= 0) {
                 wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class,"MSG_MissingSourceRoot")); //NOI18N
@@ -993,7 +991,7 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
             return false; // unspecified WSDL file
         }
         
-        if(!Utilities.isJavaPackage(packageName)) {
+        if(!JaxWsUtils.isJavaPackage(packageName)) {
             wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class, "ERR_PackageInvalid")); // NOI18N
             return false; // invalid package name
         }
@@ -1026,6 +1024,7 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         } else{
             wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, ""); //NOI18N
         }
+        
 // Retouche        
 //        if (JavaMetamodel.getManager().isScanInProgress()) {
 //            if (!isWaitingForScan) {
@@ -1275,8 +1274,9 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
             JaxWsWsdlCookie wsdlCookie = (JaxWsWsdlCookie)serviceNode.getCookie(JaxWsWsdlCookie.class);
             if (wsdlCookie!=null) return wsdlCookie.getWsdlURL();
             else {
-                JaxRpcWsdlCookie wsdl1Cookie = (JaxRpcWsdlCookie)serviceNode.getCookie(JaxRpcWsdlCookie.class);
-                if (wsdl1Cookie!=null) return wsdl1Cookie.getWsdlURL();
+// jaxrpc split
+//                JaxRpcWsdlCookie wsdl1Cookie = (JaxRpcWsdlCookie)serviceNode.getCookie(JaxRpcWsdlCookie.class);
+//                if (wsdl1Cookie!=null) return wsdl1Cookie.getWsdlURL();
             }
         }
         return null;

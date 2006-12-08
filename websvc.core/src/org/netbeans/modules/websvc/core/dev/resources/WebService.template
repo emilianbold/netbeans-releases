@@ -1,0 +1,21 @@
+/*
+ * __NAME__.java
+ *
+ * Created on __DATE__, __TIME__
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
+
+package Templates.Classes;
+
+import javax.jws.WebService;
+
+/**
+ *
+ * @author __USER__
+ */
+@WebService()
+public class WebService {
+
+}

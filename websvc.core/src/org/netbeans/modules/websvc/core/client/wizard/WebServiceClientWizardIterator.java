@@ -24,12 +24,14 @@ import java.util.*;
 import java.awt.Component;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.websvc.core.ClientCreator;
+import org.netbeans.modules.websvc.core.CreatorProvider;
+import org.netbeans.modules.websvc.core.jaxws.JaxWsUtils;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ui.templates.support.Templates;
-import org.netbeans.modules.websvc.core.Utilities;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
@@ -69,7 +71,7 @@ public class WebServiceClientWizardIterator implements TemplateWizard.Iterator {
         if (prop != null && prop instanceof String[]) {
             beforeSteps = (String[])prop;
         }
-        String[] steps = Utilities.createSteps (beforeSteps, panels);
+        String[] steps = JaxWsUtils.createSteps (beforeSteps, panels);
 
         for (int i = 0; i < panels.length; i++) {
             Component c = panels[i].getComponent();
@@ -97,8 +99,10 @@ public class WebServiceClientWizardIterator implements TemplateWizard.Iterator {
     public Set/*FileObject*/ instantiate(TemplateWizard wiz) throws IOException {
         FileObject template = Templates.getTemplate( wiz );
         DataObject dTemplate = DataObject.find( template );                
-        
-        new WebServiceClientCreator(project,wiz).create();
+        // jax-rpc split
+        //new WebServiceClientCreator(project,wiz).create();
+        ClientCreator creator = CreatorProvider.getClientCreator(project, wiz);
+        if (creator!=null) creator.createClient();
                 
         return Collections.singleton(dTemplate);
     }

@@ -28,10 +28,10 @@ import java.beans.PropertyChangeListener;
 import javax.swing.border.EtchedBorder;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
-import org.netbeans.modules.websvc.api.webservices.WebServicesView;
+//import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
+//import org.netbeans.modules.websvc.api.webservices.WebServicesView;
 import org.netbeans.modules.websvc.core.jaxws.nodes.JaxWsNode;
-import org.netbeans.modules.websvc.core.webservices.action.JaxRpcWsdlCookie;
+//import org.netbeans.modules.websvc.core.webservices.action.JaxRpcWsdlCookie;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSView;
 import org.netbeans.modules.websvc.jaxws.api.JaxWsWsdlCookie;
@@ -141,7 +141,7 @@ public class JaxWsExplorerPanel extends JPanel implements ExplorerManager.Provid
                                     projectNodeList.add(new ProjectNode(children, rootNode));
                                 }
                             }
-                        } else {
+                        }/* else {
                             WebServicesSupport wsSupport = WebServicesSupport.getWebServicesSupport(projects[i].getProjectDirectory());
                             if (wsSupport!=null && wsSupport.getServices().size()>0) {
                                 FileObject ddFolder = wsSupport.getWsDDFolder();
@@ -157,7 +157,7 @@ public class JaxWsExplorerPanel extends JPanel implements ExplorerManager.Provid
                                     }
                                 }
                             }
-                        }
+                        }*/
                     }
                 }
                 Node[] projectNodes = new Node[projectNodeList.size()];
@@ -188,7 +188,7 @@ public class JaxWsExplorerPanel extends JPanel implements ExplorerManager.Provid
 				Node nodes[] = manager.getSelectedNodes();
 				if(nodes != null && nodes.length > 0 ) {
 					Node node = nodes[0];
-					if(node.getCookie(JaxWsWsdlCookie.class)!=null || node.getCookie(JaxRpcWsdlCookie.class)!=null) {
+					if(node.getCookie(JaxWsWsdlCookie.class)!=null/* || node.getCookie(JaxRpcWsdlCookie.class)!=null*/) {
 						// This is a method node.
 						selectedServiceNode = node;
 						descriptor.setValid(true);
