@@ -32,6 +32,7 @@ import javax.tools.FileObject;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.netbeans.modules.java.source.util.Iterators;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -44,14 +45,21 @@ import org.openide.util.Exceptions;
 public class CachingFileManager implements JavaFileManager {
     
     protected final CachingArchiveProvider provider;
+    private final JavaFileFilterImplementation filter;
     protected final File[] files;
     private final boolean cacheFile;
     
-    /** Creates a new instance of CachingFileManager */
+    
     public CachingFileManager( CachingArchiveProvider provider, final ClassPath cp, boolean cacheFile) {
+        this (provider, cp, null, cacheFile);
+    }
+    
+    /** Creates a new instance of CachingFileManager */
+    public CachingFileManager( CachingArchiveProvider provider, final ClassPath cp, final JavaFileFilterImplementation filter, boolean cacheFile) {
         this.provider = provider;
         this.files = getClassPathRoots(cp);
         this.cacheFile = cacheFile;
+        this.filter = filter;
     }
     
     // FileManager implementation ----------------------------------------------
@@ -70,7 +78,7 @@ public class CachingFileManager implements JavaFileManager {
         List<Iterator<JavaFileObject>> idxs = new LinkedList<Iterator<JavaFileObject>>();
         for( Archive archive : provider.getArchives( files, cacheFile ) ) {
             try {
-                Iterable<JavaFileObject> entries = archive.getFiles( folderName );
+                Iterable<JavaFileObject> entries = archive.getFiles( folderName, filter );
                 idxs.add( entries.iterator() );
             } catch (IOException e) {
                 Exceptions.printStackTrace(e);
@@ -85,7 +93,7 @@ public class CachingFileManager implements JavaFileManager {
         for( File file : files ) {
             try {
                 Archive  archive = provider.getArchive (file, cacheFile);
-                Iterable<JavaFileObject> files = archive.getFiles(FileObjects.convertPackage2Folder(pkgName));
+                Iterable<JavaFileObject> files = archive.getFiles(FileObjects.convertPackage2Folder(pkgName), filter);
                 for (JavaFileObject e : files) {
                     if (relativeName.equals(e.getName())) {
                         return e;
@@ -108,7 +116,7 @@ public class CachingFileManager implements JavaFileManager {
         for( File file : files ) {
             try {
                 Archive  archive = provider.getArchive (file, cacheFile);
-                Iterable<JavaFileObject> files = archive.getFiles(namePair[0]);
+                Iterable<JavaFileObject> files = archive.getFiles(namePair[0], filter);
                 for (JavaFileObject e : files) {
                     if (namePair[1].equals(e.getName())) {
                         return e;

@@ -44,6 +44,7 @@ import javax.lang.model.element.NestingKind;
 import javax.tools.JavaFileObject;
 import org.netbeans.modules.java.ClassDataLoader;
 import org.netbeans.modules.java.JavaDataLoader;
+import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileUtil;
@@ -101,11 +102,11 @@ public class FileObjects {
      * @pram root - the classpath root owning the file
      * @return {@link JavaFileObject}, never returns null
      */
-    public static JavaFileObject fileFileObject( final File file, final File root ) {
+    public static JavaFileObject fileFileObject( final File file, final File root, final JavaFileFilterImplementation filter) {
         assert file != null;
         assert root != null;
         String[] pkgNamePair = getFolderAndBaseName(getRelativePath(root,file),File.separatorChar);
-        return new RegularFileObject( file, convertFolder2Package(pkgNamePair[0], File.separatorChar), pkgNamePair[1]);
+        return new RegularFileObject( file, convertFolder2Package(pkgNamePair[0], File.separatorChar), pkgNamePair[1], filter);
     }
     
     /**
@@ -117,7 +118,7 @@ public class FileObjects {
      * @exception {@link IOException} may be thrown
      */
     public static JavaFileObject nbFileObject (final FileObject file) throws IOException {
-        return nbFileObject (file, false);
+        return nbFileObject (file, null, false);
     }
     
     /**
@@ -129,12 +130,12 @@ public class FileObjects {
      * @return {@link JavaFileObject}, never returns null
      * @exception {@link IOException} may be thrown
      */
-    public static JavaFileObject nbFileObject (final FileObject file, boolean renderNow) throws IOException {
+    public static JavaFileObject nbFileObject (final FileObject file, JavaFileFilterImplementation filter, boolean renderNow) throws IOException {
         assert file != null;
         if (!file.isValid() || file.isVirtual()) {
             throw new InvalidFileException (file);
         }
-        return new SourceFileObject (file, renderNow);
+        return new SourceFileObject (file, filter, renderNow);
     }
     
     /**
@@ -482,10 +483,12 @@ public class FileObjects {
     
     private static class RegularFileObject extends FileBase {
         
-        private URI uriCache;   
+        private URI uriCache;
+        private final JavaFileFilterImplementation filter;
 
-	public RegularFileObject(final File f, final String packageName, final String baseName) {
+	public RegularFileObject(final File f, final String packageName, final String baseName, final JavaFileFilterImplementation filter) {
             super (f, packageName, baseName);
+            this.filter = filter;
 	}               
 
         public InputStream openInputStream() throws IOException {
@@ -533,7 +536,7 @@ public class FileObjects {
 	    return f.delete();
 	}
 
-	public CharBuffer getCharContent(boolean ignoreEncodingErrors) throws IOException {
+	public CharSequence getCharContent(boolean ignoreEncodingErrors) throws IOException {
             
             char[] result;
             InputStreamReader in = new InputStreamReader (new FileInputStream(this.f), encodingName);
@@ -546,7 +549,11 @@ public class FileObjects {
                 in.close();
             }
             result[result.length-1]='\n'; //NOI18N
-            return CharBuffer.wrap (result);            
+            CharSequence buffer = CharBuffer.wrap (result);
+            if (this.filter != null) {
+                buffer = this.filter.filterCharSequence(buffer);
+            }
+            return buffer;
 	}
 
 	@Override

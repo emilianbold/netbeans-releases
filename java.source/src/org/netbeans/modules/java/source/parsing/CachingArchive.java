@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import javax.tools.JavaFileObject;
+import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.netbeans.modules.java.source.util.Factory;
 import org.netbeans.modules.java.source.util.Iterators;
 import org.openide.util.Exceptions;
@@ -59,7 +60,7 @@ public class CachingArchive implements Archive {
     
     /** Gets all files in given folder
      */
-    public Iterable<JavaFileObject> getFiles( String folderName ) throws IOException {
+    public Iterable<JavaFileObject> getFiles( String folderName, JavaFileFilterImplementation filter) throws IOException {
         doInit();        
         List<ZipRecord> files = folders2files.get( folderName );        
         if (files == null) {

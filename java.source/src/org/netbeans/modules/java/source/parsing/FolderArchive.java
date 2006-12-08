@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.tools.JavaFileObject;
+import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 
 /**
  *
@@ -40,7 +41,7 @@ public class FolderArchive implements Archive {
         this.root = root;
     }
 
-    public Iterable<JavaFileObject> getFiles(String folderName) throws IOException {
+    public Iterable<JavaFileObject> getFiles(String folderName, JavaFileFilterImplementation filter) throws IOException {
         assert folderName != null;
         final File folder = new File (this.root, folderName);
         if (folder.canRead()) {
@@ -48,7 +49,7 @@ public class FolderArchive implements Archive {
             if (content != null) {
                 List<JavaFileObject> result = new ArrayList<JavaFileObject>(content.length);
                 for (File f : content) {
-                    result.add(FileObjects.fileFileObject(f,this.root));
+                    result.add(FileObjects.fileFileObject(f,this.root,filter));
                 }
                 return Collections.unmodifiableList(result);
             }

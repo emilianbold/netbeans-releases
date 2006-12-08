@@ -16,37 +16,42 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+package org.netbeans.modules.java.source;
 
-package org.netbeans.modules.java.source.usages;
-
-import javax.tools.JavaFileManager;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Tomas Zezula
  */
-public abstract class ClasspathInfoAccessor {
-
-    static {
-        try {
-            Class.forName("org.netbeans.api.java.source.ClasspathInfo",true,ClasspathInfoAccessor.class.getClassLoader());
-        } catch (ClassNotFoundException cnfe) {
-            ErrorManager.getDefault().notify(cnfe);
-        }
+public final class JavaFileFilterQuery {    
+    
+    private static JavaFileFilterImplementation unitTestFilter;
+        
+    private JavaFileFilterQuery() {
     }
-
-    public static ClasspathInfoAccessor INSTANCE;
-       
     
-    public abstract JavaFileManager getFileManager(ClasspathInfo cpInfo);
+    public static JavaFileFilterImplementation getFilter (FileObject fo) {
+        assert fo != null;
+        if (unitTestFilter != null) {
+            return unitTestFilter;
+        }
+        Project p = FileOwnerQuery.getOwner(fo);
+        if (p != null) {
+            JavaFileFilterImplementation impl = p.getLookup().lookup(JavaFileFilterImplementation.class);
+            if (impl != null) {
+                return impl;
+            }
+        }
+        return null;
+    }
     
-    public abstract ClasspathInfo create (FileObject fo, JavaFileFilterImplementation filter, boolean backgroundCompilation);
     
-    public abstract ClasspathInfo create (ClassPath bootPath, ClassPath compilePath, ClassPath sourcePath, JavaFileFilterImplementation filter, boolean backgroundCompilation);
+    void setTestFileFilter(JavaFileFilterImplementation testFilter) {
+        unitTestFilter = testFilter;
+    }
     
 }

@@ -63,6 +63,7 @@ import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.JavaSource.Priority;
+import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 /**
  *
  * @author Tomas Zezula
@@ -1025,7 +1026,7 @@ public class JavaSourceTest extends NbTestCase {
             this.lock = lock;
         }
         
-        public JavaFileObject createJavaFileObject(FileObject fo) throws IOException {
+        public JavaFileObject createJavaFileObject(FileObject fo, JavaFileFilterImplementation filter) throws IOException {
             return new TestJavaFileObject (fo, lock);
         }        
     }
@@ -1033,7 +1034,7 @@ public class JavaSourceTest extends NbTestCase {
     private static class TestJavaFileObject extends SourceFileObject {
         
         public TestJavaFileObject (FileObject fo, Object lock) throws IOException {            
-            super (fo,true);
+            super (fo,null, true);
             //Deadlock
             synchronized (lock) {
                 lock.toString();

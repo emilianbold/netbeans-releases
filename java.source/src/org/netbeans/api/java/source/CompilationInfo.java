@@ -33,6 +33,7 @@ import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.modules.java.source.parsing.SourceFileObject;
+import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -66,11 +67,11 @@ public class CompilationInfo {
         this.errors = null;
     }
     
-    CompilationInfo ( final JavaSource javaSource, final FileObject fo, final JavacTaskImpl javacTask) throws IOException {
+    CompilationInfo ( final JavaSource javaSource, final FileObject fo, final JavaFileFilterImplementation filter, final JavacTaskImpl javacTask) throws IOException {
         assert javaSource != null;        
         this.javaSource = javaSource;
         this.fo = fo;
-        this.jfo = fo != null ? javaSource.jfoProvider.createJavaFileObject(fo) : null;
+        this.jfo = fo != null ? javaSource.jfoProvider.createJavaFileObject(fo, filter) : null;
         this.javacTask = javacTask;        
         this.errors = new ArrayList<Diagnostic>();
     }

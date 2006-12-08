@@ -417,6 +417,22 @@ public class ElementHandleTest extends NbTestCase {
         },true);
     }
     
+    public void testTypesRankNPE () throws Exception {
+        final JavaSource js = JavaSource.create(ClasspathInfo.create(ClassPathProviderImpl.getDefault().findClassPath(data,ClassPath.BOOT), ClassPathProviderImpl.getDefault().findClassPath(data, ClassPath.COMPILE), null));
+        assertNotNull(js);
+        js.runUserActionTask(new CancellableTask<CompilationController>() {
+
+            public void cancel() {
+            }
+
+            public void run(CompilationController parameter) throws Exception {
+                JavacElements elements = (JavacElements) parameter.getElements();
+                TypeElement te = elements.getTypeElementByBinaryName("java.lang.String$1");
+//                List<? extends Element> content = elements.getAllMembers(te);
+            }
+        }, true);
+    }
+    
     private Element[] getStringElements (Element stringElement) {
         List<? extends Element> members = ((TypeElement)stringElement).getEnclosedElements();
         Element[] result = new Element[3];

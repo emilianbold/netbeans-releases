@@ -26,6 +26,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
+import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.nio.CharBuffer;
@@ -39,6 +40,7 @@ import javax.tools.JavaFileObject;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.modules.java.source.parsing.DocumentProvider;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileLock;
@@ -59,10 +61,11 @@ public class SourceFileObject implements JavaFileObject, DocumentProvider {
     private URI uri;        //Cache for URI
     private String text;
     private TokenHierarchy tokens;
+    private final JavaFileFilterImplementation filter;
     
     public static SourceFileObject create (final FileObject file) {        
         try {
-            return new SourceFileObject (file, false);
+            return new SourceFileObject (file, null, false);
         } catch (IOException ioe) {
             ErrorManager.getDefault().notify(ioe);
             return null;
@@ -70,9 +73,10 @@ public class SourceFileObject implements JavaFileObject, DocumentProvider {
     }
     
     /** Creates a new instance of SourceFileObject */
-    public SourceFileObject (final FileObject file, final boolean renderNow) throws IOException {
+    public SourceFileObject (final FileObject file, final JavaFileFilterImplementation filter, final boolean renderNow) throws IOException {
         assert file != null;
         this.file = file;
+        this.filter = filter;
         String ext = this.file.getExt();        
         if (FileObjects.JAVA.equalsIgnoreCase(ext)) { //NOI18N
             this.kind = Kind.SOURCE;
@@ -123,8 +127,37 @@ public class SourceFileObject implements JavaFileObject, DocumentProvider {
         return new OutputStreamWriter (this.openOutputStream(),FileObjects.encodingName);
     }
 
-    public Reader openReader(boolean ignoreEncodingErrors) throws IOException {
-        return new InputStreamReader (this.openInputStream(),FileObjects.encodingName);
+    public Reader openReader(boolean ignoreEncodingErrors) throws IOException {        
+        String _text;
+        synchronized (this) {
+            _text = text;
+        }
+        if (_text != null) {
+            return new StringReader (_text);
+        }
+        else {
+            final Document doc = getDocument(isOpened());
+            if (doc == null) {
+                Reader r = new InputStreamReader (this.file.getInputStream(),FileObjects.encodingName);
+                if (filter != null) {
+                    r = filter.filterReader(r);
+                }
+                return r;
+            }
+            else {
+                final StringBuilder builder = new StringBuilder ();
+                doc.render(new Runnable() {
+                    public void run () {
+                      try {
+                            builder.append(doc.getText(0, doc.getLength()));
+                        } catch (BadLocationException e) {
+                            ErrorManager.getDefault().notify(e);
+                        }  
+                    }
+                });
+                return new StringReader (builder.toString());
+            }
+        }       
     }
 
     public java.io.OutputStream openOutputStream() throws IOException {

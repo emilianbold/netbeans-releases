@@ -83,11 +83,13 @@ import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.api.timers.TimesCollector;
 import org.netbeans.editor.Registry;
+import org.netbeans.modules.java.source.JavaFileFilterQuery;
 import org.netbeans.modules.java.source.builder.ASTService;
 import org.netbeans.modules.java.source.builder.Scanner;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.JavadocEnv;
 import org.netbeans.modules.java.source.parsing.FileObjects;
+import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.util.LowMemoryEvent;
@@ -233,6 +235,9 @@ public final class JavaSource {
             
     private int flags = 0;        
     
+    //Preprocessor support
+    private FilterListener filterListener;
+    
         
     static {
         Executors.newSingleThreadExecutor(factory).submit (new CompilationJob());
@@ -347,6 +352,10 @@ public final class JavaSource {
                     file.addFileChangeListener(FileUtil.weakFileChangeListener(this.fileChangeListener,file));
                     this.assignDocumentListener(file);
                     this.dataObjectListener = new DataObjectListener(file);
+                    JavaFileFilterImplementation filter = JavaFileFilterQuery.getFilter(file);
+                    if (filter != null) {
+                        this.filterListener = new FilterListener (filter);
+                    }                    
                 }
             } catch (DataObjectNotFoundException donf) {
                 if (multipleSources) {
@@ -397,7 +406,7 @@ public final class JavaSource {
                 }                        
             }
             if (currentInfo == null) {
-                currentInfo = createCurrentInfo(this,this.files.isEmpty() ? null : this.files.iterator().next(), null);                
+                currentInfo = createCurrentInfo(this,this.files.isEmpty() ? null : this.files.iterator().next(), filterListener, null);                
                 if (shared) {
                     synchronized (this) {                        
                         if (this.currentInfo == null || (this.flags & INVALID) != 0) {
@@ -464,7 +473,7 @@ public final class JavaSource {
                         else {
                             restarted = true;
                         }
-                        CompilationInfo ci = createCurrentInfo(this,activeFile,jt);
+                        CompilationInfo ci = createCurrentInfo(this,activeFile,filterListener,jt);
                         task.run(new CompilationController(ci));
                         if (!ci.needsRestart) {
                             jt = ci.getJavacTask();
@@ -516,7 +525,7 @@ public final class JavaSource {
                 }
             }
             if (currentInfo == null) {
-                currentInfo = createCurrentInfo(this,this.files.isEmpty() ? null : this.files.iterator().next(), null);
+                currentInfo = createCurrentInfo(this,this.files.isEmpty() ? null : this.files.iterator().next(), filterListener, null);
                 synchronized (this) {
                     if (this.currentInfo == null || (this.flags & INVALID) != 0) {
                         this.currentInfo = currentInfo;
@@ -573,7 +582,7 @@ public final class JavaSource {
                         else {
                             restarted = true;
                         }
-                        CompilationInfo ci = createCurrentInfo(this,activeFile,jt);
+                        CompilationInfo ci = createCurrentInfo(this,activeFile, filterListener, jt);
                         WorkingCopy copy = new WorkingCopy(ci);
                         task.run(copy);
                         if (!ci.needsRestart) {
@@ -629,7 +638,7 @@ public final class JavaSource {
             currentInfo = this.currentInfo;
         }
         if (currentInfo == null) {
-            currentInfo = createCurrentInfo (this, this.files.isEmpty() ? null : this.files.iterator().next(), null);
+            currentInfo = createCurrentInfo (this, this.files.isEmpty() ? null : this.files.iterator().next(), filterListener, null);
         }
         synchronized (this) {
             if (this.currentInfo == null) {
@@ -1109,7 +1118,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                                     try {
                                         //createCurrentInfo has to be out of synchronized block, it aquires an editor lock                                    
                                         if (jsInvalid) {
-                                            ci = createCurrentInfo (js,js.files.isEmpty() ? null : js.files.iterator().next(),null);
+                                            ci = createCurrentInfo (js,js.files.isEmpty() ? null : js.files.iterator().next(), js.filterListener, null);
                                             synchronized (js) {
                                                 if ((js.flags & INVALID) != 0) {
                                                     js.currentInfo = ci;
@@ -1343,9 +1352,23 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         }
         
     }
+    
+    private final class FilterListener implements ChangeListener {        
         
-    private static CompilationInfo createCurrentInfo (final JavaSource js, final FileObject fo, final JavacTaskImpl javac) throws IOException {        
-        CompilationInfo info = new CompilationInfo (js, fo, javac);
+        private final JavaFileFilterImplementation filter;
+        
+        public FilterListener (final JavaFileFilterImplementation filter) {
+            this.filter = filter;
+            this.filter.addChangeListener(WeakListeners.change(this, this.filter));
+        }
+        
+        public void stateChanged(ChangeEvent event) {
+            JavaSource.this.resetState(true, false);
+        }
+    }
+        
+    private static CompilationInfo createCurrentInfo (final JavaSource js, final FileObject fo, final FilterListener filterListener, final JavacTaskImpl javac) throws IOException {        
+        CompilationInfo info = new CompilationInfo (js, fo, filterListener == null ? null : filterListener.filter, javac);
         TimesCollector.getDefault().reportReference(fo, CompilationInfo.class.toString(), "[M] CompilationInfo", info);     //NOI18N
         return info;
     }
@@ -1547,12 +1570,12 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
      * Only for unit tests
      */
     static interface JavaFileObjectProvider {
-        public JavaFileObject createJavaFileObject (FileObject fo) throws IOException;
+        public JavaFileObject createJavaFileObject (FileObject fo, JavaFileFilterImplementation filter) throws IOException;
     }
     
     static final class DefaultJavaFileObjectProvider implements JavaFileObjectProvider {
-        public JavaFileObject createJavaFileObject (FileObject fo) throws IOException {
-            return FileObjects.nbFileObject(fo,true);
+        public JavaFileObject createJavaFileObject (FileObject fo, JavaFileFilterImplementation filter) throws IOException {
+            return FileObjects.nbFileObject(fo, filter, true);
         }
     }
     

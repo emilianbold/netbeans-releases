@@ -30,6 +30,7 @@ import java.util.LinkedList;
 import java.util.List;
 import javax.tools.JavaFileObject;
 import org.netbeans.modules.java.source.TestUtil;
+import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.netbeans.modules.java.source.util.Factory;
 
 /** Class which takes a folder and behaves like an archive should behave.
@@ -59,7 +60,7 @@ class GoldenArchive implements Archive {
 //    }
     
     public String getFilesDiff( String folderName, Archive archive ) throws IOException {
-        return TestUtil.collectionDiff( getFiles( folderName ), archive.getFiles( folderName ) );        
+        return TestUtil.collectionDiff( getFiles( folderName, null), archive.getFiles( folderName, null ) );        
     }
 
     // Implementation of Archive -----------------------------------------------
@@ -77,7 +78,7 @@ class GoldenArchive implements Archive {
     }
 
 
-    public Iterable<JavaFileObject> getFiles( String folderName ) {
+    public Iterable<JavaFileObject> getFiles( String folderName, JavaFileFilterImplementation filter ) {
 
         File folder = new File( rootFolder, folderName );
         
@@ -90,7 +91,7 @@ class GoldenArchive implements Archive {
         
         for( File f : files ) {
             if ( !f.isDirectory() ) {
-                entries.add( FileObjects.fileFileObject (f, rootFolder));
+                entries.add( FileObjects.fileFileObject (f, rootFolder, null));
             }
         }
         
