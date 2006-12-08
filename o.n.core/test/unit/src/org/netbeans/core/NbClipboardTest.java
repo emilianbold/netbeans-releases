@@ -21,6 +21,7 @@ package org.netbeans.core;
 import java.awt.KeyboardFocusManager;
 import java.awt.Window;
 import java.lang.ref.WeakReference;
+import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import org.netbeans.junit.NbTestCase;
 import org.openide.windows.TopComponent;
@@ -79,6 +80,10 @@ public class NbClipboardTest extends NbTestCase {
        
         tc.close();
         w.dispose();
+        
+        // opening new frame shall clear all the AWT references to previous frame
+        JFrame f = new JFrame("Focus stealer");
+        f.setVisible(true);
 
         KeyboardFocusManager.getCurrentKeyboardFocusManager().clearGlobalFocusOwner();
         
