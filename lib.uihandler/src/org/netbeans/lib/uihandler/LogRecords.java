@@ -50,15 +50,19 @@ public final class LogRecords {
     
     
     public static LogRecord read(InputStream is) throws IOException {
-        String s = readXMLBlock(is);
-        if (s == null) {
+        int[] end = new int[1];
+        byte[] data = readXMLBlock(is, end);
+        if (data == null) {
             return null;
         }
+        
+        String s = new String(data, 0, end[0]);
         
         // in case the block is not ours
         if (s.indexOf("record>") == -1) { // NOI18N
             Logger.getLogger(LogRecords.class.getName()).info("Skipping: " + s); // NOI18N
-            s = readXMLBlock(is);
+            data = readXMLBlock(is, end);
+            s = new String(data, 0, end[0]);
         }
         
         s = s.replaceAll("&amp;", "&").replaceAll("&gt;", ">")
@@ -99,7 +103,7 @@ public final class LogRecords {
         return where.substring(begin, end);
     }
     
-    private static String readXMLBlock(InputStream is) throws IOException {
+    private static byte[] readXMLBlock(InputStream is, int[] len) throws IOException {
         byte[] arr = new byte[4096 * 12];
         int index = 0;
         
@@ -119,6 +123,7 @@ public final class LogRecords {
         boolean inTag = true;
         boolean seenSlash = false;
         boolean seenQuest = false;
+        int uigestures = 0;
         for (;;) {
             if (!inTag && depth == 0) {
                 break;
@@ -135,15 +140,29 @@ public final class LogRecords {
             arr[index++] = (byte)ch;
             
             if (inTag) {
+                switch (uigestures) {
+                    case 0: if (ch == 'u') uigestures = 1; else uigestures = 0; break;
+                    case 1: if (ch == 'i') uigestures = 2; else uigestures = 0; break;
+                    case 2: if (ch == 'g') uigestures = 3; else uigestures = 0; break;
+                    case 3: if (ch == 'e') uigestures = 4; else uigestures = 0; break;
+                    case 4: if (ch == 's') uigestures = 5; else uigestures = 0; break;
+                    case 5: if (ch == 't') uigestures = 6; else uigestures = 0; break;
+                    case 6: if (ch == 'u') uigestures = 7; else uigestures = 0; break;
+                    case 7: if (ch == 'r') uigestures = 8; else uigestures = 0; break;
+                    case 8: if (ch == 'e') uigestures = 9; else uigestures = 0; break;
+                    case 9: if (ch == 's') uigestures = 10; else uigestures = 0; break;
+                    case 10: // ok, stay at 10
+                }
+                
                 if (ch == '?') {
                     seenQuest = true;
                 } else if (ch == '/') {
                     seenSlash = true;
                 } else if (ch == '>') {
                     inTag = false;
-                    if (new String(arr, 0, index).indexOf("uigestures") >= 0) {
+                    if (uigestures == 10) {
                         // header found, restart
-                        return readXMLBlock(is);
+                        return readXMLBlock(is, len);
                     }
                     if (seenSlash) {
                         depth--;
@@ -158,9 +177,11 @@ public final class LogRecords {
                     inTag = true;
                     seenSlash = false;
                     seenQuest = false;
+                    uigestures = 0;
                 }
             }
         }
-        return new String(arr, 0, index, "utf-8");
+        len[0] = index;
+        return arr;
     }
 }
