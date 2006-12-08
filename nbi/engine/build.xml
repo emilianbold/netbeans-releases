@@ -103,12 +103,12 @@ $Id$
     </target>
 
     <target name="create-launcher-windows">
-        <create-native-launcher launcherStub="${native.launcher.windows.stub}"
-                                jar="${dist.jar}"
-				output="${dist.dir}/${native.launcher.windows.file}"
-                                jvmArguments="-Xmx256m"
-                                jvmNotFoundMessage="Cant find suitable JVM"
-                                testJVM="${test.jvm.file}"/>
+        <create-native-launcher launcherStub="${basedir}/${native.launcher.windows.stub}"
+                                jar="${basedir}/${dist.jar}"
+                                output="${basedir}/${dist.dir}/${native.launcher.windows.file}"
+                                jvmArguments="${native.launcher.windows.jvmargs}"
+                                jvmNotFoundMessage="${native.launcher.windows.jvmnotfoundmessage}"
+                                testJVM="${basedir}/${test.jvm.file}"/>
     </target>
 
     <target name="init-create-launchers">
