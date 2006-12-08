@@ -428,7 +428,7 @@ public class ElementHandleTest extends NbTestCase {
             public void run(CompilationController parameter) throws Exception {
                 JavacElements elements = (JavacElements) parameter.getElements();
                 TypeElement te = elements.getTypeElementByBinaryName("java.lang.String$1");
-//                List<? extends Element> content = elements.getAllMembers(te);
+                List<? extends Element> content = elements.getAllMembers(te);                
             }
         }, true);
     }
