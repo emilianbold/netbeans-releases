@@ -39,30 +39,11 @@ public final class LogRecords {
     private LogRecords() {
     }
 
-    /*
-<record>
-  <date>2006-09-22T16:53:13</date>
-  <millis>1158936793317</millis>
-  <sequence>1</sequence>
-  <level>FINE</level>
-  <thread>10</thread>
-  <message>msg</message>
-</record>
-        */
-    private static Pattern MSG = Pattern.compile(
-        ".*millis>([0-9]*)</millis>.*" +
-        ".*sequence>([0-9]*)</seq.*" +
-        ".*level>([A-Z]*)</level.*" +
-        ".*thread>(.*)</thread.*" +
-        ".*message>(.*)</message>" +
-        ".*",
-        Pattern.MULTILINE | Pattern.DOTALL
-    );
-    
     private static final Formatter FORMATTER = new XMLFormatter();
     
     public static void write(OutputStream os, LogRecord rec) throws IOException {
-        byte[] arr = FORMATTER.format(rec).getBytes("utf-8");
+        String formated = FORMATTER.format(rec);
+        byte[] arr = formated.getBytes("utf-8");
         os.write(arr);
     }
 
@@ -82,23 +63,38 @@ public final class LogRecords {
         
         s = s.replaceAll("&amp;", "&").replaceAll("&gt;", ">")
             .replaceAll("&lt;", "<");
-      
-        Matcher m = MSG.matcher(s);
-        if (!m.matches()) {
-            throw new IOException("Unrecognized message: " + s);
-        }
+
+        String millis = content(s, "millis");
+        String seq = content(s, "sequence");
+        String lev = content(s, "level");
+        String thread = content(s, "thread");
+        String msg = content(s, "message");
         
-        
-        LogRecord r = new LogRecord(Level.parse(m.group(3)), m.group(5));
-        r.setThreadID(Integer.parseInt(m.group(4)));
-        r.setSequenceNumber(Long.parseLong(m.group(2)));
-        r.setMillis(Long.parseLong(m.group(1)));
+        LogRecord r = new LogRecord(Level.parse(lev), msg);
+        r.setThreadID(Integer.parseInt(thread));
+        r.setSequenceNumber(Long.parseLong(seq));
+        r.setMillis(Long.parseLong(millis));
         
         return r;
     }
     
+    private static String content(String where, String what) throws IOException {
+        int indx = where.indexOf("<" + what + ">");
+        if (indx == -1) {
+            throw new IOException("Not found: <" + what + "> inside of:\n"+ where); // NOI18N
+        }
+        int begin = indx + what.length() + 2;
+        
+        int end = where.indexOf("</" + what + ">", indx);
+        if (indx == -1) {
+            throw new IOException("Not found: </" + what + "> inside of:\n"+ where); // NOI18N
+        }
+        
+        return where.substring(begin, end);
+    }
+    
     private static String readXMLBlock(InputStream is) throws IOException {
-        byte[] arr = new byte[4096];
+        byte[] arr = new byte[4096 * 4];
         int index = 0;
         
         for (;;) {
@@ -126,6 +122,9 @@ public final class LogRecords {
             if (ch == -1) {
                 throw new EOFException();
             }
+            if (index == arr.length) {
+                throw new EOFException("Buffer size " + arr.length + " exceeded"); // NOI18N
+            }
             
             arr[index++] = (byte)ch;
             
@@ -136,10 +135,14 @@ public final class LogRecords {
                     seenSlash = true;
                 } else if (ch == '>') {
                     inTag = false;
+                    if (new String(arr, 0, index).indexOf("uigestures") >= 0) {
+                        // header found, restart
+                        return readXMLBlock(is);
+                    }
                     if (seenSlash) {
                         depth--;
                     } else if (seenQuest) {
-                        depth--;
+              //          depth--;
                     } else {
                         depth++;
                     }

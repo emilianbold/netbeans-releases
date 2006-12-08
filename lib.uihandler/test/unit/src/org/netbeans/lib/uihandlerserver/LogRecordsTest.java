@@ -22,6 +22,8 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 import java.util.Random;
 import java.util.logging.Level;
@@ -35,6 +37,7 @@ import org.netbeans.lib.uihandler.LogRecords;
  * @author Jaroslav Tulach
  */
 public class LogRecordsTest extends NbTestCase {
+    private Logger LOG;
     
     public LogRecordsTest(String testName) {
         super(testName);
@@ -45,6 +48,7 @@ public class LogRecordsTest extends NbTestCase {
     }
 
     protected void setUp() throws Exception {
+        LOG = Logger.getLogger("TEST-" + getName());
     }
 
     protected void tearDown() throws Exception {
@@ -54,8 +58,27 @@ public class LogRecordsTest extends NbTestCase {
         doWriteAndReadTest(System.currentTimeMillis());
     }
     
+    public void testNewFailureOn1165572711706() throws Exception {
+        doWriteAndReadTest(1165572711706L);
+    }
+    
     public void testFailureOn1159804485342() throws Exception {
         doWriteAndReadTest(1159804485342L);
+    }
+    
+    public void testMakeSureItIsReadable() throws Exception {
+        InputStream is = getClass().getResourceAsStream("NB1216449736.xml");
+        int cnt = 0;
+        for (;;) {
+            LOG.log(Level.INFO, "Reading {0}th record", cnt);
+            LogRecord r = LogRecords.read(is);
+            if (r == null) {
+                break;
+            }
+            LOG.log(Level.INFO, "Read {0}th record", cnt);
+            cnt++;
+        }
+        is.close();
     }
 
     private void doWriteAndReadTest(long seed) throws Exception {
@@ -83,8 +106,8 @@ public class LogRecordsTest extends NbTestCase {
         }
         in.close();
     }
-
-    private LogRecord generateLogRecord(Random r) {
+    
+    private LogRecord generateLogRecord(Random r) throws UnsupportedEncodingException {
         LogRecord rec = new LogRecord(randomLevel(r), randomString(r));
         return rec;
     }
@@ -106,7 +129,10 @@ public class LogRecordsTest extends NbTestCase {
                     continue;
                 }
                 if (o1 == null || o2 == null || !o1.equals(o2)) {
-                    fail("Logs differ in result of " + m.getName() + "\nrec1: " + r(r1) + "\nrec2: " + r(r2));
+                    assertEquals(
+                        "Logs differ in result of " + m.getName() + "\nrec1: " + r(r1) + "\nrec2: " + r(r2),
+                        o1, o2
+                    );
                 }
             }
         }
@@ -128,10 +154,12 @@ public class LogRecordsTest extends NbTestCase {
         return Level.OFF;
     }
 
-    private static String randomString(Random r) {
+    private static String randomString(Random r) throws UnsupportedEncodingException {
         int len = r.nextInt(50);
         byte[] arr = new byte[len];
-        r.nextBytes(arr);
-        return new String(arr);
+        for (int i = 0; i < arr.length; i++) {
+            arr[i] = (byte)r.nextInt(128);
+        }
+        return new String(arr, "utf-8");
     }
 }
