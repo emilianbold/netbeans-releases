@@ -743,7 +743,7 @@ to simulate
     -->
     <xsl:template name="am.target">
         <xsl:variable name="references" select="/p:project/p:configuration/projdeps:references"/>
-        <xsl:for-each select="$references/projdeps:reference[not(projdeps:id='j2ee-module-car')]">
+        <xsl:for-each select="$references/projdeps:reference[(projdeps:id='dist-ear') or (projdeps:id='j2ee-module-car')]">
             <xsl:variable name="subproj" select="projdeps:foreign-project"/>
             <xsl:variable name="script" select="projdeps:script"/>
             <ant target="-run-deploy-am" inheritall="false" antfile="${{project.{$subproj}}}/{$script}">
