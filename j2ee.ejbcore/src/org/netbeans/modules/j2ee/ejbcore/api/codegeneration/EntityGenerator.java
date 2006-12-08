@@ -20,30 +20,19 @@
 package org.netbeans.modules.j2ee.ejbcore.api.codegeneration;
 
 import java.io.IOException;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
-import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
-import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.dd.api.ejb.AssemblyDescriptor;
 import org.netbeans.modules.j2ee.dd.api.ejb.CmpField;
-import org.netbeans.modules.j2ee.dd.api.ejb.ContainerTransaction;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.gen.Bean;
 import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.gen.Method;
-import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-
-
 
 /**
  *
  * @author Chris Webster
  * @author Martin Adamek
  */
-public class EntityGenerator extends EntityAndSessionGenerator {
+public class EntityGenerator {
 
     private boolean isCMP = false;
     private String primaryKeyFQN;
@@ -58,104 +47,104 @@ public class EntityGenerator extends EntityAndSessionGenerator {
 
     public void generateEntity(String ejbName, FileObject pkg, boolean hasRemote, boolean hasLocal, Project project,
             boolean isCMP, String primaryKeyClassName) throws IOException {
-        this.isCMP = isCMP;
-        DDProvider provider = DDProvider.getDefault();
-        EjbJar ejbModule = EjbJar.getEjbJar(pkg);
-        org.netbeans.modules.j2ee.dd.api.ejb.EjbJar ejbJar = provider.getMergedDDRoot(ejbModule.getMetadataUnit());
-        ClassPath cp = ClassPath.getClassPath(pkg, ClassPath.SOURCE);
-
-        this.primaryKeyFQN = primaryKeyClassName;
-        this.primaryKeySimpleName = primaryKeyClassName;
-
-        //TODO: RETOUCHE remove XSLT generation and all these simple/fqn names handling
-
-        ejbName = EjbGenerationUtil.uniqueSingleEjbName(ejbName, ejbJar);
-
-        String pkgName = EjbGenerationUtil.getSelectedPackageName(pkg, project);
-        Bean b = genUtil.getDefaultBean();
-        b.setCommentDataEjbName(ejbName + "Bean");
-        b.setClassname(true);
-        b.setClassnameName(EjbGenerationUtil.getBeanClassName(ejbName)); //NOI18N;
-        if (pkgName != null) {
-            b.setClassnamePackage(pkgName);
-        }
-        b.setKey(true);
-        b.setKeyFullname(this.primaryKeySimpleName);
-
-        J2eeModuleProvider pwm = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
-        pwm.getConfigSupport().ensureConfigurationReady();
-
-        EnterpriseBeans beans = ejbJar.getEnterpriseBeans();
-        if (beans == null) {
-            beans = ejbJar.newEnterpriseBeans();
-            ejbJar.setEnterpriseBeans(beans);
-        }
-        Entity e = beans.newEntity();
-        e.setEjbName(b.getCommentDataEjbName());
-        e.setEjbClass(EjbGenerationUtil.getFullClassName(b.getClassnamePackage(), b.getClassnameName()));
-        e.setPrimKeyClass(this.primaryKeyFQN);
-//        e.setPrimKeyClass(this.primaryKeySimpleName);
-        e.setReentrant(false);
-        e.setDisplayName(EjbGenerationUtil.getEjbNameBase(e.getEjbName()) + "EB");
-        final String beanTemplate;
-        if (isCMP) {
-            beanTemplate = EjbGenerationUtil.TEMPLATE_BASE + "CMPBean.xml";
-            populateCMP(b, e);
-        } else {
-            beanTemplate = EjbGenerationUtil.TEMPLATE_BASE + "BMPBean.xml";
-            populateBMP(e);
-        }
-
-        // generate bean class
-        String beanClass = genUtil.generateBeanClass(beanTemplate, b, pkgName, pkg, false);
-        e.setEjbClass(beanClass);
-
-        FileObject bFile = pkg.getFileObject(EjbGenerationUtil.getBaseName(beanClass),"java"); //NOI18N
-
-        String remoteBusinessIntfName = null;
-        if (hasRemote) {
-            String remoteName = generateRemote(pkgName, pkg, EjbGenerationUtil.getRemoteName(pkgName, ejbName),
-                    ejbName);
-            e.setRemote(remoteName);
-            String remoteHomeName = generateHome(pkgName, pkg, EjbGenerationUtil.getHomeName(pkgName, ejbName),
-                    remoteName, ejbName);
-            e.setHome(remoteHomeName);
-            remoteBusinessIntfName = EjbGenerationUtil.getBusinessInterfaceName(pkgName, ejbName);
-            genUtil.generateBusinessInterfaces(pkgName, pkg, remoteBusinessIntfName, ejbName, beanClass, remoteName);
-            genUtil.addPKGetter(e, cp.findResource(remoteBusinessIntfName.replace('.', '/') + ".java"), true);
-        }
-
-        String localBusinessIntfName = null;
-        if (hasLocal) {
-            String localName = generateLocal(pkgName, pkg, EjbGenerationUtil.getLocalName(pkgName, ejbName), ejbName);
-            e.setLocal(localName);
-            String localHomeName = generateLocalHome(pkgName, pkg, EjbGenerationUtil.getLocalHomeName(pkgName, ejbName),
-                    localName, ejbName);
-            e.setLocalHome(localHomeName);
-            localBusinessIntfName = EjbGenerationUtil.getLocalBusinessInterfaceName(pkgName, ejbName);
-            genUtil.generateBusinessInterfaces(pkgName, pkg, localBusinessIntfName, ejbName, beanClass, localName);
-            genUtil.addPKGetter(e, cp.findResource(localBusinessIntfName.replace('.', '/') + ".java"), false);
-        }
-
-        beans.addEntity(e);
-        // add transaction requirements
-        AssemblyDescriptor ad = ejbJar.getSingleAssemblyDescriptor();
-        if (ad == null) {
-            ad = ejbJar.newAssemblyDescriptor();
-            ejbJar.setAssemblyDescriptor(ad);
-        }
-        ContainerTransaction ct = ad.newContainerTransaction();
-        ct.setTransAttribute("Required"); //NOI18N;
-        org.netbeans.modules.j2ee.dd.api.ejb.Method m = ct.newMethod();
-        m.setEjbName(ejbName + "Bean");
-        m.setMethodName("*"); //NOI18N;
-        ct.addMethod(m);
-        ad.addContainerTransaction(ct);
-        ejbJar.write(ejbModule.getDeploymentDescriptor());
-
-        DataObject dobj = DataObject.find(bFile);
-        EditorCookie ec = (EditorCookie) dobj.getCookie(EditorCookie.class);
-        ec.open();
+//        this.isCMP = isCMP;
+//        DDProvider provider = DDProvider.getDefault();
+//        EjbJar ejbModule = EjbJar.getEjbJar(pkg);
+//        org.netbeans.modules.j2ee.dd.api.ejb.EjbJar ejbJar = provider.getMergedDDRoot(ejbModule.getMetadataUnit());
+//        ClassPath cp = ClassPath.getClassPath(pkg, ClassPath.SOURCE);
+//
+//        this.primaryKeyFQN = primaryKeyClassName;
+//        this.primaryKeySimpleName = primaryKeyClassName;
+//
+//        //TODO: RETOUCHE remove XSLT generation and all these simple/fqn names handling
+//
+//        ejbName = EjbGenerationUtil.uniqueSingleEjbName(ejbName, ejbJar);
+//
+//        String pkgName = EjbGenerationUtil.getSelectedPackageName(pkg, project);
+//        Bean b = genUtil.getDefaultBean();
+//        b.setCommentDataEjbName(ejbName + "Bean");
+//        b.setClassname(true);
+//        b.setClassnameName(EjbGenerationUtil.getBeanClassName(ejbName)); //NOI18N;
+//        if (pkgName != null) {
+//            b.setClassnamePackage(pkgName);
+//        }
+//        b.setKey(true);
+//        b.setKeyFullname(this.primaryKeySimpleName);
+//
+//        J2eeModuleProvider pwm = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+//        pwm.getConfigSupport().ensureConfigurationReady();
+//
+//        EnterpriseBeans beans = ejbJar.getEnterpriseBeans();
+//        if (beans == null) {
+//            beans = ejbJar.newEnterpriseBeans();
+//            ejbJar.setEnterpriseBeans(beans);
+//        }
+//        Entity e = beans.newEntity();
+//        e.setEjbName(b.getCommentDataEjbName());
+//        e.setEjbClass(EjbGenerationUtil.getFullClassName(b.getClassnamePackage(), b.getClassnameName()));
+//        e.setPrimKeyClass(this.primaryKeyFQN);
+////        e.setPrimKeyClass(this.primaryKeySimpleName);
+//        e.setReentrant(false);
+//        e.setDisplayName(EjbGenerationUtil.getEjbNameBase(e.getEjbName()) + "EB");
+//        final String beanTemplate;
+//        if (isCMP) {
+//            beanTemplate = EjbGenerationUtil.TEMPLATE_BASE + "CMPBean.xml";
+//            populateCMP(b, e);
+//        } else {
+//            beanTemplate = EjbGenerationUtil.TEMPLATE_BASE + "BMPBean.xml";
+//            populateBMP(e);
+//        }
+//
+//        // generate bean class
+//        String beanClass = genUtil.generateBeanClass(beanTemplate, b, pkgName, pkg, false);
+//        e.setEjbClass(beanClass);
+//
+//        FileObject bFile = pkg.getFileObject(EjbGenerationUtil.getBaseName(beanClass),"java"); //NOI18N
+//
+//        String remoteBusinessIntfName = null;
+//        if (hasRemote) {
+//            String remoteName = generateRemote(pkgName, pkg, EjbGenerationUtil.getRemoteName(pkgName, ejbName),
+//                    ejbName);
+//            e.setRemote(remoteName);
+//            String remoteHomeName = generateHome(pkgName, pkg, EjbGenerationUtil.getHomeName(pkgName, ejbName),
+//                    remoteName, ejbName);
+//            e.setHome(remoteHomeName);
+//            remoteBusinessIntfName = EjbGenerationUtil.getBusinessInterfaceName(pkgName, ejbName);
+//            genUtil.generateBusinessInterfaces(pkgName, pkg, remoteBusinessIntfName, ejbName, beanClass, remoteName);
+//            genUtil.addPKGetter(e, cp.findResource(remoteBusinessIntfName.replace('.', '/') + ".java"), true);
+//        }
+//
+//        String localBusinessIntfName = null;
+//        if (hasLocal) {
+//            String localName = generateLocal(pkgName, pkg, EjbGenerationUtil.getLocalName(pkgName, ejbName), ejbName);
+//            e.setLocal(localName);
+//            String localHomeName = generateLocalHome(pkgName, pkg, EjbGenerationUtil.getLocalHomeName(pkgName, ejbName),
+//                    localName, ejbName);
+//            e.setLocalHome(localHomeName);
+//            localBusinessIntfName = EjbGenerationUtil.getLocalBusinessInterfaceName(pkgName, ejbName);
+//            genUtil.generateBusinessInterfaces(pkgName, pkg, localBusinessIntfName, ejbName, beanClass, localName);
+//            genUtil.addPKGetter(e, cp.findResource(localBusinessIntfName.replace('.', '/') + ".java"), false);
+//        }
+//
+//        beans.addEntity(e);
+//        // add transaction requirements
+//        AssemblyDescriptor ad = ejbJar.getSingleAssemblyDescriptor();
+//        if (ad == null) {
+//            ad = ejbJar.newAssemblyDescriptor();
+//            ejbJar.setAssemblyDescriptor(ad);
+//        }
+//        ContainerTransaction ct = ad.newContainerTransaction();
+//        ct.setTransAttribute("Required"); //NOI18N;
+//        org.netbeans.modules.j2ee.dd.api.ejb.Method m = ct.newMethod();
+//        m.setEjbName(ejbName + "Bean");
+//        m.setMethodName("*"); //NOI18N;
+//        ct.addMethod(m);
+//        ad.addContainerTransaction(ct);
+//        ejbJar.write(ejbModule.getDeploymentDescriptor());
+//
+//        DataObject dobj = DataObject.find(bFile);
+//        EditorCookie ec = (EditorCookie) dobj.getCookie(EditorCookie.class);
+//        ec.open();
 
     }
     

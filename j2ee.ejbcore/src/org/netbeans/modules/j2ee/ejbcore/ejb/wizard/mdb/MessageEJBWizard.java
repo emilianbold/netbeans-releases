@@ -19,18 +19,14 @@
 
 package org.netbeans.modules.j2ee.ejbcore.ejb.wizard.mdb;
 
+import java.io.IOException;
 import org.netbeans.modules.j2ee.ejbcore.api.codegeneration.MessageGenerator;
-import org.openide.*;
-import org.openide.util.*;
-
-import java.io.*;
 import java.util.Collections;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.DelegatingWizardDescriptorPanel;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
@@ -38,7 +34,8 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.ejbcore.Utils;
-import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.TransactionHelper;
+import org.openide.WizardDescriptor;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -46,29 +43,24 @@ import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.TransactionHelper;
  * @author Martin Adamek
  */
 public final class MessageEJBWizard implements WizardDescriptor.InstantiatingIterator{
-    private TransactionHelper transactionHelper = new TransactionHelper();
+
     private WizardDescriptor.Panel[] panels;
     private int index = 0;
     private MessageEJBWizardPanel ejbPanel;
     private WizardDescriptor wiz;
 
-    private static final String [] SESSION_STEPS =
-                                   new String [] {
-                                       NbBundle.getMessage (MessageEJBWizard.class,
-                         "LBL_SpecifyEJBInfo")
-                                   };
+    private static final String [] SESSION_STEPS = new String [] {
+        NbBundle.getMessage(MessageEJBWizard.class, "LBL_SpecifyEJBInfo")
+    };
 
     public String name () {
-    return NbBundle.getMessage (MessageEJBWizard.class,
-                     "LBL_MessageEJBWizardTitle");
+        return NbBundle.getMessage (MessageEJBWizard.class, "LBL_MessageEJBWizardTitle");
     }
 
     public void uninitialize(WizardDescriptor wiz) {
-        transactionHelper.uninitialize();
     }
 
     public void initialize(WizardDescriptor wizardDescriptor) {
-        transactionHelper.initialize(wizardDescriptor);
         wiz = wizardDescriptor;
         Project project = Templates.getProject(wiz);
         SourceGroup[] sourceGroups = Util.getJavaSourceGroups(project);
@@ -95,7 +87,6 @@ public final class MessageEJBWizard implements WizardDescriptor.InstantiatingIte
             ioe.initCause(vnse);
             throw ioe;
         }
-        transactionHelper.write();
         return result == null ? Collections.EMPTY_SET : Collections.singleton(result);
     }
 

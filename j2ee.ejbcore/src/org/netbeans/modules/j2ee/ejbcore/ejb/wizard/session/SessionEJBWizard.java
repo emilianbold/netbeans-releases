@@ -18,23 +18,25 @@
  */
 
 package org.netbeans.modules.j2ee.ejbcore.ejb.wizard.session;
-import org.netbeans.modules.j2ee.ejbcore.api.codegeneration.SessionGenerator;
-import org.openide.*;
-import org.openide.util.*;
 
-import java.io.*;
+import java.io.IOException;
+import org.netbeans.modules.j2ee.ejbcore.api.codegeneration.SessionGenerator;
 import java.util.Collections;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.ejbcore.Utils;
-import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.TransactionHelper;
+import org.openide.WizardDescriptor;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -42,7 +44,7 @@ import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.TransactionHelper;
  * @author Martin Adamek
  */
 public final class SessionEJBWizard implements WizardDescriptor.InstantiatingIterator{
-    private TransactionHelper transactionHelper = new TransactionHelper();
+
     private WizardDescriptor.Panel[] panels;
     private int index = 0;
     private SessionEJBWizardDescriptor ejbPanel;
@@ -58,44 +60,49 @@ public final class SessionEJBWizard implements WizardDescriptor.InstantiatingIte
     }
 
     public void uninitialize(WizardDescriptor wiz) {
-        transactionHelper.uninitialize();
     }
 
     public void initialize(WizardDescriptor wizardDescriptor) {
-        transactionHelper.initialize(wizardDescriptor);
         wiz = wizardDescriptor;
         Project project = Templates.getProject(wiz);
         SourceGroup[] sourceGroups = Util.getJavaSourceGroups(project);
         ejbPanel = new SessionEJBWizardDescriptor();
-        WizardDescriptor.Panel p = JavaTemplates.createPackageChooser(project,sourceGroups, ejbPanel, true);
+        WizardDescriptor.Panel wizardDescriptorPanel = JavaTemplates.createPackageChooser(project,sourceGroups, ejbPanel, true);
 
-    JComponent c = (JComponent) p.getComponent();
-        Util.changeLabelInComponent(c,
-                NbBundle.getMessage(Util.class, "LBL_JavaTargetChooserPanelGUI_ClassName_Label"),
+    JComponent jComponent = (JComponent) wizardDescriptorPanel.getComponent();
+        Util.changeLabelInComponent(jComponent,
+                NbBundle.getMessage(SessionEJBWizard.class, "LBL_JavaTargetChooserPanelGUI_ClassName_Label"),
                 NbBundle.getMessage(SessionEJBWizard.class, "LBL_EJB_Name"));
-        Util.hideLabelAndLabelFor(c,
-                NbBundle.getMessage(Util.class, "LBL_JavaTargetChooserPanelGUI_CreatedFile_Label"));
-        panels = new WizardDescriptor.Panel[] {p};
+        Util.hideLabelAndLabelFor(jComponent,
+                NbBundle.getMessage(SessionEJBWizard.class, "LBL_JavaTargetChooserPanelGUI_CreatedFile_Label"));
+        panels = new WizardDescriptor.Panel[] {wizardDescriptorPanel};
         Utils.mergeSteps(wiz, panels, null);
     }
 
     public Set instantiate () throws IOException {
         FileObject pkg = Templates.getTargetFolder(wiz);
-        String ejbName = Templates.getTargetName(wiz);
-        Project project = Templates.getProject(wiz);
-        boolean isStateful = ejbPanel.isStateful();
-        boolean hasRemote = ejbPanel.hasRemote();
-        boolean hasLocal = ejbPanel.hasLocal();
-        SessionGenerator sg = new SessionGenerator();
-        FileObject fo = sg.generateSessionBean(ejbName, pkg, hasRemote, hasLocal, isStateful, project);
-        transactionHelper.write();
-        return Collections.singleton(fo);
+        EjbJar ejbModule = EjbJar.getEjbJar(pkg);
+        // TODO: UI - add checkbox for Java EE 5 to create also EJB 2.1 style EJBs
+        boolean isSimplified = ejbModule.getJ2eePlatformVersion().equals(J2eeModule.JAVA_EE_5);
+        SessionGenerator sessionGenerator = new SessionGenerator();
+        SessionGenerator.Model model = SessionGenerator.Model.create(
+                Templates.getTargetName(wiz), 
+                pkg, 
+                ejbPanel.hasRemote(), 
+                ejbPanel.hasLocal(), 
+                ejbPanel.isStateful(), 
+                isSimplified, 
+                true, // TODO: UI - add checkbox for creation of business interface
+                true // TODO: UI - add checkbox for option XML (not annotation) usage
+                );
+        FileObject fileObject = sessionGenerator.generateSessionBean(model);
+        return Collections.singleton(fileObject);
     }
 
-    public void addChangeListener(javax.swing.event.ChangeListener l) {
+    public void addChangeListener(ChangeListener listener) {
     }
 
-    public void removeChangeListener(javax.swing.event.ChangeListener l) {
+    public void removeChangeListener(ChangeListener listener) {
     }
 
     public boolean hasPrevious () {

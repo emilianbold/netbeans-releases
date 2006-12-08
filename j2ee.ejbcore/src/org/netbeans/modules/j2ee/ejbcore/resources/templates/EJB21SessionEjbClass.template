@@ -1,0 +1,61 @@
+/*
+ * __NAME__.java
+ *
+ * Created on __DATE__, __TIME__
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
+
+package Templates.J2EE.EJB21;
+
+import javax.ejb.SessionBean;
+import javax.ejb.SessionContext;
+
+/**
+ *
+ * @author __USER__
+ */
+public class __NAME__ implements SessionBean {
+    
+    private SessionContext context;
+    
+    // <editor-fold defaultstate="collapsed" desc="EJB infrastructure methods. Click the + sign on the left to edit the code.">;
+
+    // TODO Add code to acquire and use other enterprise resources (DataSource, JMS, enterprise bean, Web services)
+    // TODO Add business methods or web service operations
+
+    /**
+     * @see javax.ejb.SessionBean#setSessionContext(javax.ejb.SessionContext)
+     */
+    public void setSessionContext(SessionContext aContext) {
+        context = aContext;
+    }
+    
+    /**
+     * @see javax.ejb.SessionBean#ejbActivate()
+     */
+    public void ejbActivate() {
+        
+    }
+    
+    /**
+     * @see javax.ejb.SessionBean#ejbPassivate()
+     */
+    public void ejbPassivate() {
+        
+    }
+    
+    /**
+     * @see javax.ejb.SessionBean#ejbRemove()
+     */
+    public void ejbRemove() {
+        
+    }
+    
+    // </editor-fold>;
+    
+    // Add business logic below. (Right-click in editor and choose
+    // "EJB Methods > Add Business Method" or "Web Service > Add Operation")
+    
+}

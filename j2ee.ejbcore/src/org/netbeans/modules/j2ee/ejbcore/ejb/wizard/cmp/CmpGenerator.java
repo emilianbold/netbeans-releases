@@ -54,7 +54,6 @@ import org.netbeans.modules.j2ee.dd.api.ejb.Relationships;
 import org.netbeans.modules.j2ee.deployment.common.api.OriginalCMPMapping;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbcore.api.codegeneration.EjbGenerationUtil;
-import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.TransactionHelper;
 import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.cmp.CMPMapping;
 import org.netbeans.modules.j2ee.ejbcore.spi.ProjectPropertiesSupport;
 import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.gen.Bean;
@@ -86,7 +85,6 @@ public class CmpGenerator /*implements PersistenceGenerator */{
      
     private HashMap genDataCache = new HashMap(13);
     private Project project;
-    private TransactionHelper transactionHelper = new TransactionHelper();
     private org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule;
     private EjbGenerationUtil genHelper;
     private EjbJar dd;
@@ -661,7 +659,6 @@ public class CmpGenerator /*implements PersistenceGenerator */{
 //    }
 
     public void init(WizardDescriptor wiz) {
-        transactionHelper.initialize(wiz);
         project = Templates.getProject(wiz);
         DDProvider provider = DDProvider.getDefault();
         ejbModule = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJars (project)[0];
@@ -674,12 +671,6 @@ public class CmpGenerator /*implements PersistenceGenerator */{
         }
     }
 
-    public void uninit() {
-        if (transactionHelper != null) {
-            transactionHelper.uninitialize();
-        }
-    }
-    
     public String getFQClassName(String tableName) {
         return null;
     }

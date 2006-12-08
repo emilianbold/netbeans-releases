@@ -19,6 +19,13 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
+    
+    <folder name="OptionsDialog">
+        <folder name="Advanced">
+            <file name="org-netbeans-modules-j2ee-ejbcore-naming-EJBNameOptions.instance"/>
+        </folder>
+    </folder>
+    
     <folder name="Templates">
         <attr name="JSP_Servlet/J2EE" boolvalue="true"/>
         <folder name="J2EE">
@@ -29,8 +36,37 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="RelatedCMP/Message" boolvalue="true"/>
             <attr name="Message/ServiceLocator.java" boolvalue="true"/>
             
+            <!-- Templates accessible from Tools | TemplateManager -->
+            <folder name="EJB21">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ejbcore.resources.Bundle"/>
+                <file name="SessionEjbClass.java" url="templates/EJB21SessionEjbClass.template">
+                    <attr name="template" boolvalue="true"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.session.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbcore/ui/logicalview/ejb/session/SessionNodeIcon.gif"/>
+                </file>
+                <file name="SessionLocal.java" url="templates/EJB21SessionLocal.template">
+                    <attr name="template" boolvalue="true"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.session.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                </file>
+                <file name="SessionLocalHome.java" url="templates/EJB21SessionLocalHome.template">
+                    <attr name="template" boolvalue="true"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.session.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                </file>
+                <file name="SessionRemote.java" url="templates/EJB21SessionRemote.template">
+                    <attr name="template" boolvalue="true"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.session.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                </file>
+                <file name="SessionRemoteHome.java" url="templates/EJB21SessionRemoteHome.template">
+                    <attr name="template" boolvalue="true"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.session.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                </file>
+            </folder>
+            
             <file name="Session">
-                <attr name="template" boolvalue="true"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.session.SessionEJBWizard.create"/>
                 <attr name="templateCategory" stringvalue="ejb-types"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbcore/resources/SessionEJB.html"/>
@@ -39,7 +75,6 @@ Microsystems, Inc. All Rights Reserved.
             </file>
 
             <file name="Message">
-                <attr name="template" boolvalue="true"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.mdb.MessageEJBWizard"/>
                 <attr name="templateCategory" stringvalue="ejb-types-server"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbcore/resources/MessageEJB.html"/>
@@ -48,7 +83,6 @@ Microsystems, Inc. All Rights Reserved.
             </file>
             
             <file name="Entity">
-                <attr name="template" boolvalue="true"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.entity.EntityEJBWizard.create"/>
                 <attr name="templateCategory" stringvalue="ejb-types_2_1"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbcore/resources/EntityEJB.html"/>
@@ -58,7 +92,6 @@ Microsystems, Inc. All Rights Reserved.
             
             <attr name="ServiceLocator.java/CachingServiceLocator.java" boolvalue="true"/>
             <file name="CachingServiceLocator.java" url="CachingServiceLocator.template">
-                <attr name="template" boolvalue="true"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.j2ee.ejbcore.patterns.ServiceLocatorWizard"/>
                 <attr name="templateCategory" stringvalue="j2ee-types"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbcore/resources/CachingServiceLocator.html"/>
@@ -66,7 +99,6 @@ Microsystems, Inc. All Rights Reserved.
             </file>
             
             <file name="RelatedCMP">
-                <attr name="template" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="j2ee-14-types"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.persistence.wizard.fromdb.RelatedCMPWizard.createForCMP"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.cmp.Bundle"/>
@@ -75,7 +107,6 @@ Microsystems, Inc. All Rights Reserved.
             </file>
             
             <file name="ServiceLocator.java" url="ServiceLocator.template">
-                <attr name="template" boolvalue="true"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.j2ee.ejbcore.patterns.ServiceLocatorWizard"/>
                 <attr name="templateCategory" stringvalue="j2ee-types"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbcore/resources/ServiceLocator.html"/>
@@ -86,7 +117,6 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.dd.Bundle"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.dd.EjbJarXmlWizardIterator"/>
                 <attr name="templateCategory" stringvalue="ejb-types,ejb-deployment-descriptor"/>
-                <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbcore/ejb/wizard/dd/ejbJarXml.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/multiview/resources/xmlObject.gif"/>
             </file>
