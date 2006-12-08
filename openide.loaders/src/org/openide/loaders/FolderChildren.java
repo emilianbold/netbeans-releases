@@ -34,7 +34,7 @@ import org.openide.util.RequestProcessor;
 *
 * @author Jaroslav Tulach
 */
-final class FolderChildren extends Children.Keys
+final class FolderChildren extends Children.Keys<FolderChildren.Pair>
 implements PropertyChangeListener, ChangeListener {
     /** the folder */
     private DataFolder folder;
@@ -131,9 +131,9 @@ implements PropertyChangeListener, ChangeListener {
     /** Create a node for one data object.
     * @param key DataObject
     */
-    protected Node[] createNodes (Object key) {
+    protected Node[] createNodes(Pair key) {
         err.fine("createNodes: " + key);
-        FileObject fo = ((Pair)key).primaryFile;
+        FileObject fo = key.primaryFile;
         DataObject obj;
         try {
             obj = DataObject.find (fo);
@@ -143,7 +143,7 @@ implements PropertyChangeListener, ChangeListener {
                 return new Node[0];
             }
         } catch (DataObjectNotFoundException e) {
-            Logger.getLogger(FolderChildren.class.getName()).log(Level.INFO, null, e);
+            Logger.getLogger(FolderChildren.class.getName()).log(Level.FINE, null, e);
             return new Node[0];
         }
     }
@@ -219,7 +219,7 @@ implements PropertyChangeListener, ChangeListener {
         }
         
         // we need to clear the children now
-        setKeys(Collections.EMPTY_LIST);
+        setKeys(Collections.<Pair>emptySet());
         err.fine("removeNotify end");
     }
 
@@ -250,7 +250,7 @@ implements PropertyChangeListener, ChangeListener {
             
             ch = folder.getChildren();
             err.fine("Children computed");
-            Object []keys = new Object[ch.length];
+            Pair[] keys = new Pair[ch.length];
             for (int i = 0; i < keys.length; i++) {
                 keys[i] = new Pair(ch[i].getPrimaryFile());
             }
@@ -258,8 +258,8 @@ implements PropertyChangeListener, ChangeListener {
             
             if ( refresh ) {
                 refresh = false;
-                for (int i = 0; i < keys.length; i++) {
-                    refreshKey( keys[i] );
+                for (Pair key : keys) {
+                    refreshKey(key);
                 }
             }
             
@@ -285,7 +285,7 @@ implements PropertyChangeListener, ChangeListener {
      * because the data object should be finalized when not needed and
      * that is why it should not be used as a key.
      */
-    private static final class Pair extends Object {
+    static final class Pair extends Object {
         public FileObject primaryFile;
         public int seq;
 

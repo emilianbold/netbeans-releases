@@ -19,10 +19,8 @@
 
 package org.openide.loaders;
 
-
 import java.awt.Image;
 import java.awt.datatransfer.*;
-import java.awt.image.BufferedImage;
 import java.beans.*;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
@@ -613,11 +611,9 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
     */
     protected FileObject handleRename (final String name) throws IOException {
         if (! confirmName (name)) {
-            throw new IOException ("bad name: " + name) { // NOI18N
-                    public String getLocalizedMessage () {
-                        return NbBundle.getMessage (DataFolder.class, "EXC_WrongName", name);
-                    }
-                };
+            IOException e = new IOException("bad name: " + name); // NOI18N
+            Exceptions.attachLocalizedMessage(e, NbBundle.getMessage(DataFolder.class, "EXC_WrongName", name));
+            throw e;
         }
         return super.handleRename (name);
     }
@@ -903,7 +899,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
             
             DataObject[] dperm = new DataObject[perm.length];
             for (int i = 0; i < perm.length; i++) {
-                DataObject d = (DataObject) nodes[i].getCookie (DataObject.class);
+                DataObject d = nodes[i].getCookie(DataObject.class);
                 
                 if (d == null) {
                     // try to scan the names table too
@@ -1170,7 +1166,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
             return img;
         }
         
-
+        @SuppressWarnings("unchecked")
         public Node.Cookie getCookie (Class clazz) {
             if (clazz == org.openide.nodes.Index.class || clazz == Index.class) {
                 //#33130 - enable IndexCookie only on SystemFileSystem
@@ -1312,10 +1308,10 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
                     if( null != dob ) {
                         Node delegate = dob.getNodeDelegate();
                         //cannot paste a node to itself
-                        if( !delegate.equals( (FolderNode)this ) ) {
+                        if (!delegate.equals(this)) {
                             result = dob.getNodeDelegate().clipboardCopy();
-                            ExClipboard exClipboard = (ExClipboard)Lookup.getDefault().lookup( ExClipboard.class );
-                            if( null != exClipboard ) {
+                            ExClipboard exClipboard = Lookup.getDefault().lookup(ExClipboard.class);
+                            if (exClipboard != null) {
                                 //let refactoring and others to add their own paste wrappers
                                 result = exClipboard.convert( result );
                             }
@@ -1332,7 +1328,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
             try {
                 if( t.isDataFlavorSupported( DataFlavor.javaFileListFlavor ) ) {
                     //windows & mac
-                    return (List<File>)t.getTransferData( DataFlavor.javaFileListFlavor );
+                    return NbCollections.checkedListByCopy((List) t.getTransferData(DataFlavor.javaFileListFlavor), File.class, true);
                 } else if( t.isDataFlavorSupported( getUriListDataFlavor() ) ) {
                     //linux
                     String uriList = (String)t.getTransferData( getUriListDataFlavor() );
@@ -1575,7 +1571,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
 
                         private void saveIfModified(DataObject obj) throws IOException {
                             if (obj.isModified()) {
-                                SaveCookie sc = (SaveCookie)obj.getCookie(SaveCookie.class);
+                                SaveCookie sc = obj.getCookie(SaveCookie.class);
                                 if (sc != null) {
                                     sc.save();
                                 }
@@ -1653,7 +1649,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
             // lastly try special cookies
             if (node != null) {
                 try {
-                    InstanceCookie cookie = (InstanceCookie)node.getCookie (InstanceCookie.class);
+                    InstanceCookie cookie = node.getCookie(InstanceCookie.class);
                     if (cookie != null && java.io.Serializable.class.isAssignableFrom (cookie.instanceClass ())) {
                         s.add (new DataTransferSupport.SerializePaste (DataFolder.this, cookie));
                         s.add (new DataTransferSupport.InstantiatePaste (DataFolder.this, cookie));
