@@ -30,7 +30,7 @@ $Id$
     ======================================================================== -->
     <target name="-post-clean" depends="native-clean"/>
     <target name="-pre-jar" depends="native-build"/>
-    
+
     <!-- =======================================================================
         NetBeans Installer engine specific targets
     ======================================================================== -->
@@ -78,7 +78,7 @@ $Id$
             </and>
         </condition>
     </target>
-    
+  
     <target name="init-platform" depends="init-windows,init-linux,init-solaris-x86,init-solaris-sparc,init-macosx"/>
     
     <target name="init-windows" if="is.windows">
@@ -101,4 +101,28 @@ $Id$
         <property name="native.dir" value="${native.dir.macosx}"/>
         <property name="native.file" value="${native.file.macosx}"/>
     </target>
+
+    <target name="create-launcher-windows">
+        <create-native-launcher launcherStub="${native.launcher.windows.stub}"
+                                jar="${dist.jar}"
+				output="${dist.dir}/${native.launcher.windows.file}"
+                                jvmArguments="-Xmx256m"
+                                jvmNotFoundMessage="Cant find suitable JVM"
+                                testJVM="${test.jvm.file}"/>
+    </target>
+
+    <target name="init-create-launchers">
+	<delete dir="${ant.build.classes.cls}"/>
+        <mkdir dir="${ant.build.classes.cls}"/>
+        <javac srcdir="${ant.build.classes.src}" destdir="${ant.build.classes.cls}" debug="true" classpath="${javac.classpath.ant}"/>
+   
+	<taskdef name="create-native-launcher" 
+                 classname="org.netbeans.installer.infra.build.ant.launchers.Build" 
+                 classpath="${ant.build.classes.cls}"/>
+    </target>
+    
+    <target name="create-launchers" depends="jar,init-create-launchers">
+        <antcall target="create-launcher-windows"/>
+    </target>
+
 </project>
