@@ -64,24 +64,30 @@ public final class LogRecords {
         s = s.replaceAll("&amp;", "&").replaceAll("&gt;", ">")
             .replaceAll("&lt;", "<");
 
-        String millis = content(s, "millis");
-        String seq = content(s, "sequence");
-        String lev = content(s, "level");
-        String thread = content(s, "thread");
-        String msg = content(s, "message");
+        String millis = content(s, "millis", true);
+        String seq = content(s, "sequence", true);
+        String lev = content(s, "level", true);
+        String thread = content(s, "thread", true);
+        String msg = content(s, "message", true);
+        String key = content(s, "key", false);
         
         LogRecord r = new LogRecord(Level.parse(lev), msg);
         r.setThreadID(Integer.parseInt(thread));
         r.setSequenceNumber(Long.parseLong(seq));
         r.setMillis(Long.parseLong(millis));
+        r.setResourceBundleName(key);
         
         return r;
     }
     
-    private static String content(String where, String what) throws IOException {
+    private static String content(String where, String what, boolean fail) throws IOException {
         int indx = where.indexOf("<" + what + ">");
         if (indx == -1) {
-            throw new IOException("Not found: <" + what + "> inside of:\n"+ where); // NOI18N
+            if (fail) {
+                throw new IOException("Not found: <" + what + "> inside of:\n"+ where); // NOI18N
+            } else {
+                return null;
+            }
         }
         int begin = indx + what.length() + 2;
         
@@ -94,7 +100,7 @@ public final class LogRecords {
     }
     
     private static String readXMLBlock(InputStream is) throws IOException {
-        byte[] arr = new byte[4096 * 4];
+        byte[] arr = new byte[4096 * 12];
         int index = 0;
         
         for (;;) {

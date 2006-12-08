@@ -24,11 +24,16 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.lib.uihandler.InputGesture;
 import org.netbeans.lib.uihandler.LogRecords;
 
 /**
@@ -59,15 +64,56 @@ public class InputGestureTest extends NbTestCase {
 
     public void testReadALogAndTestInputGestures() throws Exception {
         InputStream is = getClass().getResourceAsStream("NB1216449736.0");
-        int cnt = 0;
-        for (;;) {
+        SortedMap<Integer,InputGesture> expectedGestures = new TreeMap<Integer,InputGesture>();
+        expectedGestures.put(35, InputGesture.MENU);
+        expectedGestures.put(59, InputGesture.KEYBOARD);
+        expectedGestures.put(66, InputGesture.MENU);
+        expectedGestures.put(80, InputGesture.MENU);
+        expectedGestures.put(81, InputGesture.MENU);
+        expectedGestures.put(177, InputGesture.KEYBOARD);
+        expectedGestures.put(197, InputGesture.KEYBOARD);
+        expectedGestures.put(205, InputGesture.MENU);
+        for (int cnt = 0;; cnt++) {
             LOG.log(Level.INFO, "Reading {0}th record", cnt);
             LogRecord r = LogRecords.read(is);
             if (r == null) {
                 break;
             }
-            LOG.log(Level.INFO, "Read {0}th record", cnt);
-            cnt++;
+            if (r.getSequenceNumber() > expectedGestures.lastKey()) {
+                break;
+            }
+            LOG.log(Level.INFO, "Read {0}th record, seq {1}", new Object[] { cnt, r.getSequenceNumber() });
+
+            InputGesture g = InputGesture.valueOf(r);
+            InputGesture exp = expectedGestures.get((int)r.getSequenceNumber());
+            assertEquals("For: " + r.getSequenceNumber() + " txt:\n`"+ r.getMessage() +
+                "\nkey: " + r.getResourceBundleName()
+                , exp, g);
+        }
+        is.close();
+    }
+
+    public void testReadAToolbar() throws Exception {
+        InputStream is = getClass().getResourceAsStream("NB_PROF634066243");
+        SortedMap<Integer,InputGesture> expectedGestures = new TreeMap<Integer,InputGesture>();
+        expectedGestures.put(62, InputGesture.TOOLBAR);
+        expectedGestures.put(63, InputGesture.MENU);
+        for (int cnt = 0;; cnt++) {
+            LOG.log(Level.INFO, "Reading {0}th record", cnt);
+            LogRecord r = LogRecords.read(is);
+            if (r == null) {
+                break;
+            }
+            if (r.getSequenceNumber() > expectedGestures.lastKey()) {
+                break;
+            }
+            LOG.log(Level.INFO, "Read {0}th record, seq {1}", new Object[] { cnt, r.getSequenceNumber() });
+
+            InputGesture g = InputGesture.valueOf(r);
+            InputGesture exp = expectedGestures.get((int)r.getSequenceNumber());
+            assertEquals("For: " + r.getSequenceNumber() + " txt:\n`"+ r.getMessage() +
+                "\nkey: " + r.getResourceBundleName()
+                , exp, g);
         }
         is.close();
     }
