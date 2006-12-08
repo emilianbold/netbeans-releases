@@ -60,13 +60,7 @@ public class URLConnector {
   
   public static URLConnector getConnector() {
     if (instance != null) return instance;
-    instance = new URLConnector();
-    instance.settingFile = new File(DownloadManager.instance.getWd(),"settings.xml");
-    if (instance.settingFile.exists()) {
-      instance.load();
-      LogManager.log("configuration was load from file: " + instance.settingFile);
-    } else LogManager.log("file not exist, default configuration was set!");
-    return instance;
+    return instance = new URLConnector(new File(DownloadManager.instance.getWd(),"settings.xml"));
   }
   
   private void addSystemProxies() {
@@ -102,14 +96,20 @@ public class URLConnector {
     final String byPassList = System.getProperty(byPassProp);
     if (byPassList == null) return;
     for (String host : byPassList.split(",")) {
-      proxySelector.addByPassHost(host.trim());
+      host = host.trim();
+      if (!"".equals(host)) proxySelector.addByPassHost(host);
     }
   }
   
-  private URLConnector() {
+  public URLConnector(File settingFile) {
     addSystemProxies();
     addDeploymentProxies();
     configureByPassList();
+    this.settingFile = settingFile;
+    if (settingFile.exists()) {
+      load();
+      LogManager.log("configuration was load from file: " + settingFile);
+    } else LogManager.log("file not exist, default configuration was set!");
   }
   
   private void load() {
