@@ -1053,8 +1053,32 @@ Microsystems, Inc. All Rights Reserved.
                 <copy file="${{wa.copy.client.jar.from}}/{$name}/{$name}Client.jar" todir="${{dist.dir}}"/>                
             </target>
             
+            <target name="pre-run-deploy">
+                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
+                <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+            </target>
+            
+            <target name="post-run-deploy">
+                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
+                <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+            </target>
+            
+            <target name="-pre-nbmodule-run-deploy">
+                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
+                <xsl:comment> This target can be overriden by NetBeans modules. Don't override it directly, use -pre-run-deploy task instead. </xsl:comment>
+            </target>
+            
+            <target name="-post-nbmodule-run-deploy">
+                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
+                <xsl:comment> This target can be overriden by NetBeans modules. Don't override it directly, use -post-run-deploy task instead. </xsl:comment>
+            </target>
+            
+            <target name="-run-deploy-am">
+                <xsl:comment> Task to deploy to the Access Manager runtime. </xsl:comment>
+            </target>
+            
             <target name="run-deploy">
-                <xsl:attribute name="depends">init,compile,dist,-run-deploy-nb,-init-deploy-ant,-deploy-ant</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,dist,pre-run-deploy,-pre-nbmodule-run-deploy,-run-deploy-nb,-init-deploy-ant,-deploy-ant,-run-deploy-am,-post-nbmodule-run-deploy,post-run-deploy</xsl:attribute>
             </target>
             
             <target name="-run-deploy-nb" if="netbeans.home">
