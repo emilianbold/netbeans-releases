@@ -1042,6 +1042,15 @@ public final class ModuleManager {
             return l;
         } catch (TopologicalSortException ex) {
             // Some kind of cycle involving prov-req deps. Should be extremely rare.
+            // Example (from random failures of MMT.testProvReqCycles):
+            // m1 => {m2 | m3}
+            // m2 => {m1 | m4}
+            // m3 => {m1}
+            // m4 => {}
+            // Now consider:
+            // sE(m2) = ?
+            // [m4, m2] is fine.
+            // [m4, m2, m1] would be OK too, but will result in TSE.
             // Do not know what to do here, actually, so give up.
             if (PRINT_TOPOLOGICAL_EXCEPTION_STACK_TRACES) {
                 Util.err.log(Level.WARNING, null, ex);

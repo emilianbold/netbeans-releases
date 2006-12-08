@@ -951,6 +951,7 @@ public class ModuleManagerTest extends SetupHid {
             assertEquals("m2 is OK with m4 here",
                 Collections.EMPTY_SET,
                 m2.getProblems());
+            mgr.delete(m1); // to prevent random failures; see comment in MM.sE
             assertEquals("m2 and m4 can be enabled together",
                 Arrays.asList(m4, m2),
                 mgr.simulateEnable(Collections.singleton(m2)));
