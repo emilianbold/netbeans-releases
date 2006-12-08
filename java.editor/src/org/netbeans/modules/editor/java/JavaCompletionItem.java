@@ -1447,10 +1447,12 @@ public abstract class JavaCompletionItem implements CompletionItem {
             } finally {
                 doc.atomicUnlock();
             }
+            Position position = null;
             if (isAbstract && text.length() > 3) {
                 try {
-                    JavaSource js = JavaSource.forDocument(c.getDocument());
-                    final int off = c.getSelectionEnd() - text.length() + 4;
+                    position = doc.createPosition(offset);
+                    JavaSource js = JavaSource.forDocument(doc);
+                    final int off = offset + 4;
                     js.runModificationTask(new CancellableTask<WorkingCopy>() {
                         public void cancel() {                            
                         }
@@ -1471,7 +1473,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                             }
                         }
                     }).commit();
-                } catch (IOException ex) {
+                } catch (Exception ex) {
                 }
             }
             List<? extends VariableElement> params = elem.getParameters();
@@ -1491,6 +1493,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
                         if (it.hasNext())
                             sb.append(", "); //NOI18N
                     }
+                    if (position != null)
+                        offset = position.getOffset();
                     c.setCaretPosition(offset + 1);
                     ctm.createTemporary(sb.toString()).insert(c);
                     Completion.get().showToolTip();
