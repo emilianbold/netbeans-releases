@@ -116,7 +116,7 @@ public class SourceUtilsTest extends NbTestCase {
         });
     }
 
-    public void testGetDefaultConstructor() throws Exception {
+    public void testGetNoArgConstructor() throws Exception {
         TestUtilities.copyStringToFileObject(testFO,
                 "package foo;" +
                 "public class TestClass {" +
@@ -126,7 +126,7 @@ public class SourceUtilsTest extends NbTestCase {
         runUserActionTask(testFO, new AbstractTask<CompilationController>() {
             public void run(CompilationController controller) throws Exception {
                 SourceUtils srcUtils = SourceUtils.newInstance(controller);
-                ExecutableElement constructor = srcUtils.getDefaultConstructor();
+                ExecutableElement constructor = srcUtils.getNoArgConstructor();
                 assertNotNull(constructor);
                 assertFalse(controller.getElementUtilities().isSyntetic(constructor));
             }
@@ -139,7 +139,7 @@ public class SourceUtilsTest extends NbTestCase {
         runUserActionTask(testFO, new AbstractTask<CompilationController>() {
             public void run(CompilationController controller) throws Exception {
                 SourceUtils srcUtils = SourceUtils.newInstance(controller);
-                assertNull(srcUtils.getDefaultConstructor());
+                assertNull(srcUtils.getNoArgConstructor());
             }
         });
     }

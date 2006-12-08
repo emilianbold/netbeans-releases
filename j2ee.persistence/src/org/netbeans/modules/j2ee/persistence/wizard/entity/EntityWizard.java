@@ -154,6 +154,7 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
             public void run(WorkingCopy workingCopy) throws Exception {
                 GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
                 ClassTree clazz = genUtils.getClassTree();
+                ClassTree modifiedClazz = genUtils.ensureNoArgConstructor(clazz);
                 TreeMaker make = workingCopy.getTreeMaker();
                 
                 String idFieldName = "id"; // NO18N
@@ -182,7 +183,7 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
                     idGetter = genUtils.addAnnotation(idGetter, idAnnotation);
                     idGetter = genUtils.addAnnotation(idGetter, generatedValueAnnotation);
                 }
-                ClassTree modifiedClazz = genUtils.addClassFields(clazz, Collections.singletonList(idField));
+                modifiedClazz = genUtils.addClassFields(clazz, Collections.singletonList(idField));
                 
                 modifiedClazz = make.addClassMember(modifiedClazz, idSetter);
                 modifiedClazz = make.addClassMember(modifiedClazz, idGetter);

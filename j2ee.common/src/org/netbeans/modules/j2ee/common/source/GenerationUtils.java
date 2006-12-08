@@ -103,32 +103,13 @@ public final class GenerationUtils extends SourceUtils {
      *
      * @param  targetFolder the folder the new class should be created in;
      *         cannot be null.
-     * @param  targetName the name of the new interface (a valid Java identifier);
+     * @param  targetName the name of the new class (a valid Java identifier);
      *         cannot be null.
+     * @param  javadoc the new class's Javadoc; can be null.
      * @return the FileObject for the new Java class; never null.
      */
     public static FileObject createClass(FileObject targetFolder, String className, final String javadoc) throws IOException{
-        Parameters.notNull("targetFolder", targetFolder); // NOI18N
-        Parameters.javaIdentifier("className", className); // NOI18N
-
-        FileObject classFO = createDataObjectFromTemplate(CLASS_TEMPLATE, targetFolder, className).getPrimaryFile();
-        JavaSource javaSource = JavaSource.forFileObject(classFO);
-
-        final boolean[] commit = { false };
-        ModificationResult modification = javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
-            public void run(WorkingCopy copy) throws IOException {
-                GenerationUtils genUtils = GenerationUtils.newInstance(copy);
-                commit[0] = genUtils.ensureDefaultConstructor();
-                // if (javadoc != null) {
-                //     genUtils.setJavadoc(copy, mainType, javadoc);
-                // }
-            }
-        });
-        if (commit[0]) {
-            modification.commit();
-        }
-
-        return classFO;
+        return createClass(CLASS_TEMPLATE, targetFolder, className, javadoc);
     }
 
     /**
@@ -136,16 +117,30 @@ public final class GenerationUtils extends SourceUtils {
      *
      * @param  targetFolder the folder the new interface should be created in;
      *         cannot be null.
-     * @param  targetName the name of the new interface (a valid Java identifier);
+     * @param  interfaceName the name of the new interface (a valid Java identifier);
      *         cannot be null.
+     * @param  javadoc the new interface's Javadoc; can be null.
      * @return the FileObject for the new Java interface; never null.
      */
     public static FileObject createInterface(FileObject targetFolder, String interfaceName, final String javadoc) throws IOException{
+        return createClass(INTERFACE_TEMPLATE, targetFolder, interfaceName, javadoc);
+    }
+
+    /**
+     * Creates a new Java class based on the provided template.
+     *
+     * @param  targetFolder the folder the new class should be created in;
+     *         cannot be null.
+     * @param  targetName the name of the new interface (a valid Java identifier);
+     *         cannot be null.
+     * @return the FileObject for the new Java class; never null.
+     */
+    public static FileObject createClass(String template, FileObject targetFolder, String className, final String javadoc) throws IOException {
+        Parameters.notNull("template", template); // NOI18N
         Parameters.notNull("targetFolder", targetFolder); // NOI18N
-        Parameters.javaIdentifier("interfaceName", interfaceName); // NOI18N
+        Parameters.javaIdentifier("className", className); // NOI18N
 
-        FileObject classFO = createDataObjectFromTemplate(INTERFACE_TEMPLATE, targetFolder, interfaceName).getPrimaryFile();
-
+        FileObject classFO = createDataObjectFromTemplate(template, targetFolder, className).getPrimaryFile();
         // JavaSource javaSource = JavaSource.forFileObject(classFO);
         // final boolean[] commit = { false };
         // ModificationResult modification = javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
@@ -320,6 +315,54 @@ public final class GenerationUtils extends SourceUtils {
         } else {
             return make.Assignment(make.Identifier(argumentName), argumentValueTree);
         }
+    }
+
+    /**
+     * Ensures the given class has a public no-arg constructor.
+     *
+     * @param  classTree the class to ensure the constructor for; cannot be null.
+     * @return a modified class if a no-arg constructor was added, the original
+     *         class otherwise; never null.
+     */
+    public ClassTree ensureNoArgConstructor(ClassTree classTree) throws IOException {
+        getWorkingCopy().toPhase(Phase.RESOLVED);
+
+        ExecutableElement constructor = getNoArgConstructor();
+        MethodTree constructorTree = constructor != null ? getWorkingCopy().getTrees().getTree(constructor) : null;
+        MethodTree newConstructorTree = null;
+        TreeMaker make = getTreeMaker();
+        if (constructor != null) {
+            if (!constructor.getModifiers().contains(Modifier.PUBLIC)) {
+                ModifiersTree oldModifiersTree = constructorTree.getModifiers();
+                Set<Modifier> newModifiers = EnumSet.of(Modifier.PUBLIC);
+                for (Modifier modifier : oldModifiersTree.getFlags()) {
+                    if (!Modifier.PROTECTED.equals(modifier) && !Modifier.PRIVATE.equals(modifier)) {
+                        newModifiers.add(modifier);
+                    }
+                }
+                newConstructorTree = make.Constructor(
+                    make.Modifiers(newModifiers),
+                    constructorTree.getTypeParameters(),
+                    constructorTree.getParameters(),
+                    constructorTree.getThrows(),
+                    constructorTree.getBody());
+            }
+        } else {
+            newConstructorTree = make.Constructor(
+                    createModifiers(Modifier.PUBLIC),
+                    Collections.<TypeParameterTree>emptyList(),
+                    Collections.<VariableTree>emptyList(),
+                    Collections.<ExpressionTree>emptyList(),
+                    "{ }"); // NOI18N
+        }
+        ClassTree newClassTree = classTree;
+        if (newConstructorTree != null) {
+            if (constructorTree != null) {
+                newClassTree = make.removeClassMember(newClassTree, constructorTree);
+            }
+            newClassTree = make.addClassMember(newClassTree, newConstructorTree);
+        }
+        return newClassTree;
     }
 
     /**
@@ -634,46 +677,6 @@ public final class GenerationUtils extends SourceUtils {
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Non-public methods">
-
-    /**
-     * Ensures the main type element contains a concrete (that is, not synthetic)
-     * default constructor.
-     *
-     * @return true if the working copy was modified, false otherwise
-     */
-    private boolean ensureDefaultConstructor() throws IOException {
-        ExecutableElement constructor = getDefaultConstructor();
-        boolean modified = false;
-        if (constructor != null) {
-            if (!constructor.getModifiers().contains(Modifier.PUBLIC)) {
-                ModifiersTree oldModifiersTree = getWorkingCopy().getTrees().getTree(constructor).getModifiers();
-                Set<Modifier> newModifiers = EnumSet.of(Modifier.PUBLIC);
-                for (Modifier modifier : oldModifiersTree.getFlags()) {
-                    if (!Modifier.PROTECTED.equals(modifier) && !Modifier.PRIVATE.equals(modifier)) {
-                        newModifiers.add(modifier);
-                    }
-                }
-                TreeMaker make = getTreeMaker();
-                ModifiersTree newModifiersTree = make.Modifiers(newModifiers, oldModifiersTree.getAnnotations());
-                getWorkingCopy().rewrite(oldModifiersTree, newModifiersTree);
-                modified = true;
-            }
-        } else {
-            getWorkingCopy().toPhase(Phase.RESOLVED);
-            TreeMaker make = getTreeMaker();
-            ClassTree oldClassTree = getClassTree();
-            MethodTree method = make.Constructor(
-                    make.Modifiers(EnumSet.of(Modifier.PUBLIC)),
-                    Collections.<TypeParameterTree>emptyList(),
-                    Collections.<VariableTree>emptyList(),
-                    Collections.<ExpressionTree>emptyList(),
-                    "{ }");
-            ClassTree newClassTree = make.addClassMember(oldClassTree, method);
-            getWorkingCopy().rewrite(oldClassTree, newClassTree);
-            modified = true;
-        }
-        return modified;
-    }
 
     /**
      * Returns the working copy this instance works with.

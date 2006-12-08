@@ -191,15 +191,15 @@ public class SourceUtils {
     }
 
     /**
-     * Returns the non-synthetic constructor of the main type element.
+     * Returns the non-synthetic no-arg constructor of the main type element.
      */
-    ExecutableElement getDefaultConstructor() throws IOException {
+    ExecutableElement getNoArgConstructor() throws IOException {
         controller.toPhase(Phase.ELEMENTS_RESOLVED);
 
         ElementUtilities elementUtils = controller.getElementUtilities();
         for (Element element : getTypeElement().getEnclosedElements()) {
             if (element.getKind() == ElementKind.CONSTRUCTOR) {
-                ExecutableElement constructor = (ExecutableElement)element; // XXX is casting allowed after getKind()?
+                ExecutableElement constructor = (ExecutableElement)element;
                 if (constructor.getParameters().size() == 0 && !elementUtils.isSyntetic(constructor)) {
                     return constructor;
                 }

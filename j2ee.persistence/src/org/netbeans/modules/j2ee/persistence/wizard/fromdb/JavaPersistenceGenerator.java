@@ -628,6 +628,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             }
 
             protected void initialize() throws IOException {
+                classTree = genUtils.ensureNoArgConstructor(classTree);
                 if (genSerializableEntities) {
                     classTree = genUtils.addImplementsClause(classTree, "java.io.Serializable"); // NOI18N
                 }
@@ -856,7 +857,8 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 super(helper, copy, entityClass);
             }
 
-            protected void initialize() {
+            protected void initialize() throws IOException {
+                classTree = genUtils.ensureNoArgConstructor(classTree);
                 // primary key class must be serializable and @Embeddable
                 classTree = genUtils.addImplementsClause(classTree, "java.io.Serializable"); //NOI18N
                 classTree = genUtils.addAnnotation(classTree, genUtils.createAnnotation("javax.persistence.Embeddable")); // NOI18N

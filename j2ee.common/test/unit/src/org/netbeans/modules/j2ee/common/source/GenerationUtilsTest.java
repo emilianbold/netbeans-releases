@@ -30,10 +30,10 @@ import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
-import javax.lang.model.util.*;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -110,7 +110,7 @@ public class GenerationUtilsTest extends NbTestCase {
             public void run(CompilationController controller) throws IOException {
                 SourceUtils srcUtils = SourceUtils.newInstance(controller);
                 assertEquals(ElementKind.CLASS, srcUtils.getTypeElement().getKind());
-                assertTrue(srcUtils.getDefaultConstructor() != null);
+                assertTrue(srcUtils.getNoArgConstructor() != null);
                 // TODO assert for Javadoc
             }
         });
@@ -127,52 +127,44 @@ public class GenerationUtilsTest extends NbTestCase {
         });
     }
 
-    public void testCreateClassEnsuresDefaultConstructor() throws Exception {
-        // replacing the Java template for classes with one without a default constructor
-        RepositoryImpl.MultiFileSystemImpl systemFS = (RepositoryImpl.MultiFileSystemImpl)Repository.getDefault().getDefaultFileSystem();
-        FileObject classTemplate = systemFS.getRoot().getFileObject("Templates/Classes/Class.java");
-        TestUtilities.copyStringToFileObject(classTemplate,
-                "package Templates.Classes;" +
-                "public class Class {" +
+    public void testEnsureNoArgConstructor() throws Exception {
+        TestUtilities.copyStringToFileObject(testFO,
+                "package foo;" +
+                "public class TestClass {" +
                 "}");
-        try {
-            // assert a default constructor is added even when the template did not contain one
-            FileObject javaFO = GenerationUtils.createClass(workDir, "TestClass2", "Javadoc");
-            runUserActionTask(javaFO, new AbstractTask<CompilationController>() {
-                public void run(CompilationController controller) throws Exception {
-                    assertTrue(SourceUtils.newInstance(controller).getDefaultConstructor() != null);
-                }
-            });
-        } finally {
-            // cleaning the changes to the system file system
-            systemFS.reset();
-        }
+        runModificationTask(testFO, new AbstractTask<WorkingCopy>() {
+            public void run(WorkingCopy copy) throws Exception {
+                GenerationUtils genUtils = GenerationUtils.newInstance(copy);
+                ClassTree newClassTree = genUtils.ensureNoArgConstructor(genUtils.getClassTree());
+                copy.rewrite(genUtils.getClassTree(), newClassTree);
+            }
+        }).commit();
+        runUserActionTask(testFO, new AbstractTask<CompilationController>() {
+            public void run(CompilationController controller) throws Exception {
+                assertTrue(SourceUtils.newInstance(controller).getNoArgConstructor() != null);
+            }
+        });
     }
 
-    public void testCreateClassEnsuresPublicConstructor() throws Exception {
-        // replacing the Java template for classes with one with a non-public default constructor
-        RepositoryImpl.MultiFileSystemImpl systemFS = (RepositoryImpl.MultiFileSystemImpl)Repository.getDefault().getDefaultFileSystem();
-        FileObject classTemplate = systemFS.getRoot().getFileObject("Templates/Classes/Class.java");
-        TestUtilities.copyStringToFileObject(classTemplate,
-                "package Templates.Classes;" +
-                "public class Class {" +
-                "   private Class() {" +
-                "   }" +
+    public void testEnsureNoArgConstructorMakesConstructorPublic() throws Exception {
+        TestUtilities.copyStringToFileObject(testFO,
+                "package foo;" +
+                "public class TestClass {" +
+                "    private TestClass() {" +
+                "    }" +
                 "}");
-        try {
-            // assert a default constructor is added even when the template did not contain one
-            FileObject javaFO = GenerationUtils.createClass(workDir, "TestClass2", "Javadoc");
-            runUserActionTask(javaFO, new AbstractTask<CompilationController>() {
-                public void run(CompilationController controller) throws Exception {
-                    ExecutableElement constructor = SourceUtils.newInstance(controller).getDefaultConstructor();
-                    assertNotNull(constructor);
-                    assertFalse(constructor.getModifiers().contains(Modifier.PRIVATE));
-                }
-            });
-        } finally {
-            // cleaning the changes to the system file system
-            systemFS.reset();
-        }
+        runModificationTask(testFO, new AbstractTask<WorkingCopy>() {
+            public void run(WorkingCopy copy) throws Exception {
+                GenerationUtils genUtils = GenerationUtils.newInstance(copy);
+                ClassTree newClassTree = genUtils.ensureNoArgConstructor(genUtils.getClassTree());
+                copy.rewrite(genUtils.getClassTree(), newClassTree);
+            }
+        }).commit();
+        runUserActionTask(testFO, new AbstractTask<CompilationController>() {
+            public void run(CompilationController controller) throws Exception {
+                assertTrue(SourceUtils.newInstance(controller).getNoArgConstructor().getModifiers().contains(Modifier.PUBLIC));
+            }
+        });
     }
 
     public void testPrimitiveTypes() throws Exception {
