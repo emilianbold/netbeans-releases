@@ -2036,7 +2036,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                             return Utilities.startsWith(e.getSimpleName().toString(), prefix) &&
                                     (!isStatic || e.getModifiers().contains(STATIC)) &&
                                     tu.isAccessible(scope, e, t) &&
-                                    isOfSmartType(e.asType(), finalSmartTypes, types);
+                                    isOfSmartType(asMemberOf(e, t, types), finalSmartTypes, types);
                     }
                     return false;
                 }
@@ -2111,22 +2111,22 @@ public class JavaCompletionProvider implements CompletionProvider {
                                     (method == null && (e.getEnclosingElement().getKind() == INSTANCE_INIT ||
                                     e.getEnclosingElement().getKind() == STATIC_INIT))) &&
                                     !illegalForwardRefs.contains(e) &&
-                                    isOfSmartType(e.asType(), finalSmartTypes, types);
+                                    isOfSmartType(asMemberOf(e, t, types), finalSmartTypes, types);
                         case FIELD:
                             if (e.getSimpleName().contentEquals(THIS_KEYWORD) || e.getSimpleName().contentEquals(SUPER_KEYWORD))
-                                return !isStatic && isOfSmartType(e.asType(), finalSmartTypes, types) && 
+                                return !isStatic && isOfSmartType(asMemberOf(e, t, types), finalSmartTypes, types) && 
                                         Utilities.startsWith(e.getSimpleName().toString(), prefix);
                         case ENUM_CONSTANT:
                             return Utilities.startsWith(e.getSimpleName().toString(), prefix) &&
                                     !illegalForwardRefs.contains(e) &&
                                     (!isStatic || e.getModifiers().contains(STATIC)) &&
                                     tu.isAccessible(scope, e, t) &&
-                                    isOfSmartType(e.asType(), finalSmartTypes, types);
+                                    isOfSmartType(asMemberOf(e, t, types), finalSmartTypes, types);
                         case METHOD:
                             return Utilities.startsWith(e.getSimpleName().toString(), prefix) &&
                                     (!isStatic || e.getModifiers().contains(STATIC)) &&
                                     tu.isAccessible(scope, e, t) &&
-                                    isOfSmartType(((ExecutableElement)e).getReturnType(), finalSmartTypes, types);
+                                    isOfSmartType(((ExecutableType)asMemberOf(e, t, types)).getReturnType(), finalSmartTypes, types);
                     }
                     return false;
                 }
@@ -2184,10 +2184,10 @@ public class JavaCompletionProvider implements CompletionProvider {
                                     (method == null && (e.getEnclosingElement().getKind() == INSTANCE_INIT ||
                                     e.getEnclosingElement().getKind() == STATIC_INIT))) &&
                                     !illegalForwardRefs.contains(e) &&
-                                    isOfSmartType(e.asType(), finalSmartTypes, types);
+                                    isOfSmartType(asMemberOf(e, t, types), finalSmartTypes, types);
                         case FIELD:
                             return !e.getSimpleName().contentEquals(THIS_KEYWORD) && !e.getSimpleName().contentEquals(SUPER_KEYWORD) &&
-                                    !isStatic && isOfSmartType(e.asType(), finalSmartTypes, types) && Utilities.startsWith(e.getSimpleName().toString(), prefix);
+                                    !isStatic && isOfSmartType(asMemberOf(e, t, types), finalSmartTypes, types) && Utilities.startsWith(e.getSimpleName().toString(), prefix);
                     }
                     return false;
                 }
@@ -2235,7 +2235,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                 return false;
                         case ENUM_CONSTANT:
                             return tu.isAccessible(scope, e, t) &&
-                                    isOfSmartType(e.asType(), finalSmartTypes, types);
+                                    isOfSmartType(asMemberOf(e, t, types), finalSmartTypes, types);
                         case CLASS:
                         case ENUM:
                         case INTERFACE:
@@ -2284,7 +2284,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     switch (e.getKind()) {
                         case FIELD:
                             if (!Utilities.startsWith(e.getSimpleName().toString(), prefix) ||
-                                    !isOfKindAndType(e, kinds, baseType, scope, trees, types) ||
+                                    !isOfKindAndType(asMemberOf(e, t, types), e, kinds, baseType, scope, trees, types) ||
                                     !tu.isAccessible(scope, e, t) || 
                                     (isStatic && !e.getModifiers().contains(STATIC)) ||
                                     (!isStatic && e.getSimpleName().contentEquals(THIS_KEYWORD)) ||
@@ -2294,30 +2294,32 @@ public class JavaCompletionProvider implements CompletionProvider {
                         case EXCEPTION_PARAMETER:
                         case LOCAL_VARIABLE:
                         case PARAMETER:
+                            TypeMirror tm = asMemberOf(e, t, types);
                             if (!Utilities.startsWith(e.getSimpleName().toString(), prefix) ||
-                                    !isOfKindAndType(e, kinds, baseType, scope, trees, types) ||
+                                    !isOfKindAndType(tm, e, kinds, baseType, scope, trees, types) ||
                                     !tu.isAccessible(scope, e, t))
                                 return false;
-                            return isOfSmartType(e.asType(), finalSmartTypes, types);
+                            return isOfSmartType(tm, finalSmartTypes, types);
                         case METHOD:
+                            tm = ((ExecutableType)asMemberOf(e, t, types)).getReturnType();
                             if (!Utilities.startsWith(e.getSimpleName().toString(), prefix) ||
-                                    !isOfKindAndType(e, kinds, baseType, scope, trees, types) ||
+                                    !isOfKindAndType(tm, e, kinds, baseType, scope, trees, types) ||
                                     !tu.isAccessible(scope, e, t))
                                 return false;
-                            return (!isStatic || e.getModifiers().contains(STATIC)) && isOfSmartType(((ExecutableElement)e).getReturnType(), finalSmartTypes, types);
+                            return (!isStatic || e.getModifiers().contains(STATIC)) && isOfSmartType(tm, finalSmartTypes, types);
                         case CLASS:
                         case ENUM:
                         case INTERFACE:
                         case ANNOTATION_TYPE:
                             if (!Utilities.startsWith(e.getSimpleName().toString(), prefix) ||
-                                    !isOfKindAndType(e, kinds, baseType, scope, trees, types) ||
+                                    !isOfKindAndType(e.asType(), e, kinds, baseType, scope, trees, types) ||
                                     !tu.isAccessible(scope, e, t))
                                 return false;
                             return isStatic && (finalSmartTypes == null || finalSmartTypes.isEmpty());
                         case CONSTRUCTOR:
                             ctorSeen[0] = true;
                             if (!Utilities.startsWith(e.getEnclosingElement().getSimpleName().toString(), prefix) ||
-                                    !isOfKindAndType(e, kinds, baseType, scope, trees, types) ||
+                                    !isOfKindAndType(e.getEnclosingElement().asType(), e, kinds, baseType, scope, trees, types) ||
                                     (!tu.isAccessible(scope, e, t) && (!elem.getModifiers().contains(ABSTRACT) || e.getModifiers().contains(PRIVATE))))
                                 return false;
                             return isStatic && (finalSmartTypes == null || finalSmartTypes.isEmpty());
@@ -2385,7 +2387,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             for(Element e : pe.getEnclosedElements()) {
                 if (e.getKind().isClass() || e.getKind().isInterface()) {
                     String name = e.getSimpleName().toString();
-                        if (Utilities.startsWith(name, prefix) && trees.isAccessible(scope, (TypeElement)e) && isOfKindAndType(e, kinds, baseType, scope, trees, types) && isOfSmartType(e.asType(), smartTypes, types)) {
+                        if (Utilities.startsWith(name, prefix) && trees.isAccessible(scope, (TypeElement)e) && isOfKindAndType(e.asType(), e, kinds, baseType, scope, trees, types) && isOfSmartType(e.asType(), smartTypes, types)) {
                             results.add(JavaCompletionItem.createTypeItem((TypeElement)e, (DeclaredType)e.asType(), offset, false, elements.isDeprecated(e)));
                     }
                 }
@@ -2436,7 +2438,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     if (e.getKind().isClass() || e.getKind().isInterface() || e.getKind() == TYPE_PARAMETER) {
                         String name = e.getSimpleName().toString();
                         return name.length() > 0 && !Character.isDigit(name.charAt(0)) && Utilities.startsWith(name, prefix) &&
-                                (!isStatic || e.getModifiers().contains(STATIC)) && isOfKindAndType(e, kinds, baseType, scope, trees, types);
+                                (!isStatic || e.getModifiers().contains(STATIC)) && isOfKindAndType(e.asType(), e, kinds, baseType, scope, trees, types);
                     }
                     return false;
                 }
@@ -2459,7 +2461,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     return toExclude != e && Utilities.startsWith(e.getSimpleName().toString(), prefix) &&
                             e.getEnclosingElement().getKind() == PACKAGE &&
                             trees.isAccessible(scope, (TypeElement)e) &&
-                            isOfKindAndType(e, kinds, baseType, scope, trees, types);
+                            isOfKindAndType(e.asType(), e, kinds, baseType, scope, trees, types);
                 }
             };
             for (TypeElement e : controller.getElementUtilities().getGlobalTypes(acceptor)) {
@@ -2909,7 +2911,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             if (smartTypes == null || smartTypes.isEmpty())
                 return true;
             for (TypeMirror smartType : smartTypes)
-                if (types.isAssignable(type, smartType))
+                if (types.isAssignable(type, types.erasure(smartType)))
                     return true;
             return false;
         }
@@ -2948,28 +2950,17 @@ public class JavaCompletionProvider implements CompletionProvider {
             return ret;
         }
         
-        private boolean isOfKindAndType(Element e, EnumSet<ElementKind> kinds, TypeMirror base, Scope scope, Trees trees, Types types) {
+        private boolean isOfKindAndType(TypeMirror type, Element e, EnumSet<ElementKind> kinds, TypeMirror base, Scope scope, Trees trees, Types types) {
             if (kinds.contains(e.getKind())) {
                 if (base == null)
                     return true;
-                TypeMirror type;
-                switch(e.getKind()) {
-                    case CONSTRUCTOR:
-                        type = e.getEnclosingElement().asType();
-                        break;
-                    case METHOD:
-                        type = ((ExecutableType)e.asType()).getReturnType();
-                        break;
-                    default:
-                        type = e.asType();
-                }
                 if (types.isSubtype(type, base))
                     return true;
             }
             if (e.getKind().isClass() || e.getKind().isInterface()) {
-                DeclaredType type = (DeclaredType)e.asType();
+                DeclaredType dt = (DeclaredType)e.asType();
                 for (Element ee : e.getEnclosedElements())
-                    if (trees.isAccessible(scope, ee, type) && isOfKindAndType(ee, kinds, base, scope, trees, types))
+                    if (trees.isAccessible(scope, ee, dt) && isOfKindAndType(ee.asType(), ee, kinds, base, scope, trees, types))
                         return true;
             }
             return false;
@@ -3306,7 +3297,9 @@ public class JavaCompletionProvider implements CompletionProvider {
         
         private TypeMirror asMemberOf(Element element, TypeMirror type, Types types) {
             TypeMirror ret = element.asType();
-            TypeMirror enclType = types.erasure(element.getEnclosingElement().asType());
+            TypeMirror enclType = element.getEnclosingElement().asType();
+            if (enclType.getKind() == TypeKind.DECLARED)
+                enclType = types.erasure(enclType);
             while(type != null && type.getKind() == TypeKind.DECLARED) {
                 if (types.isSubtype(type, enclType)) {
                     ret = types.asMemberOf((DeclaredType)type, element);
