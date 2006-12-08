@@ -92,9 +92,7 @@ public class UnitTestLibrariesNodeTest extends TestBase {
         //test removedep action
         addTestDependency(p);
         String depName = p.getModuleList().getEntry(DEP_CNB).getLocalizedName();
-        AbstractNode depNode = (AbstractNode)
-                libs.getChildren().findChild(depName);
-        
+        Node depNode = libs.getChildren().findChild(depName);
         assertNotNull("have a node with dependency", depNode);
         Action[] act = depNode.getActions(false);
         assertEquals("have three actions", 3, act.length);
