@@ -27,6 +27,23 @@ Microsystems, Inc. All Rights Reserved.
 </apidefs>
 <changes>
 
+    <change id="Parameters">
+        <api name="util"/>
+        <summary>Added <code>Parameters</code></summary>
+        <version major="7" minor="6"/>
+        <date day="8" month="12" year="2006"/>
+        <author login="abadea"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                Added a <code>Parameters</code> class for checking the
+                values of method parameters.
+            </p>
+        </description>
+        <class package="org.openide.util" name="Parameters"/>
+        <issue number="89768"/>
+    </change>
+
     <change id="NbCollections.iterable">
         <api name="util"/>
         <summary>Added <code>NbCollections.iterable(...)</code> methods</summary>
