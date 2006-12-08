@@ -59,8 +59,7 @@ public class OptionsWindowAction extends AbstractAction {
     /** weak link to options dialog DialogDescriptor. */
     private static WeakReference    optionsDialogDescriptor = 
                                     new WeakReference (null);
-    private static Logger log = Logger.getLogger(OptionsWindowAction.class.getName ());
-    
+    private static Logger log = Logger.getLogger(OptionsWindowAction.class.getName ());    
     
     public OptionsWindowAction () {
         putValue (
@@ -74,7 +73,7 @@ public class OptionsWindowAction extends AbstractAction {
     }
     
     
-    public void showOptionsDialog (String categoryName) {
+    public void showOptionsDialog (String categoryID) {        
         if (dialog != null) {
             // dialog already opened
             dialog.setVisible (true);
@@ -82,13 +81,13 @@ public class OptionsWindowAction extends AbstractAction {
             log.fine("Front Options Dialog"); //NOI18N
             return;
         }
-        
+                
         DialogDescriptor descriptor = (DialogDescriptor) 
             optionsDialogDescriptor.get ();
         
         OptionsPanel optionsPanel = null;
         if (descriptor == null) {
-            optionsPanel = categoryName == null ? new OptionsPanel () : new OptionsPanel(categoryName);
+            optionsPanel = categoryID == null ? new OptionsPanel () : new OptionsPanel(categoryID);
             
             // create new DialogDescriptor for options dialog
             JButton bClassic = (JButton) loc (new JButton (), "CTL_Classic");//NOI18N
@@ -125,10 +124,9 @@ public class OptionsWindowAction extends AbstractAction {
         }
         
         dialog = DialogDisplayer.getDefault ().createDialog (descriptor);
-        optionsPanel.initCurrentCategory(categoryName);
+        optionsPanel.initCurrentCategory(categoryID);
         dialog.setVisible (true);
         dialog.addWindowListener (new MyWindowListener (optionsPanel));
-        descriptor = null;
     }
     
     private static String loc (String key) {
@@ -273,19 +271,22 @@ public class OptionsWindowAction extends AbstractAction {
             this.optionsPanel = optionsPanel;
         }
         
-        public void windowClosing (WindowEvent e) {
+        public void windowClosing (WindowEvent e) {}
+
+        public void windowClosed (WindowEvent e) {            
+            optionsPanel.storeUserSize();
+            if (optionsPanel.needsReinit()) {
+                optionsDialogDescriptor = new WeakReference (null);
+            }
             if (dialog == null) return;
             log.fine("Options Dialog - windowClosed "); //NOI18N
             RequestProcessor.getDefault ().post (new Runnable () {
-                public void run() {
+                public void run() {                    
                     optionsPanel.cancel();
                 }
             });
-            dialog = null;            
-        }
-
-        public void windowClosed (WindowEvent e) {
-            optionsPanel.storeUserSize();
+            dialog = null;                        
+            
         }
         public void windowDeactivated (WindowEvent e) {}
         public void windowOpened (WindowEvent e) {}

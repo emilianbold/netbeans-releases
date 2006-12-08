@@ -102,7 +102,7 @@ public class OptionsPanel extends JPanel {
     }
     
     private String getCategoryID(String categoryID) {
-        return categoryID == null ? model.getCategoryIDs()[0] : categoryID;
+        return categoryID == null ? model.getCurrentCategoryID() : categoryID;
     }
         
     void initCurrentCategory (final String categoryID) {                    
@@ -198,6 +198,10 @@ public class OptionsPanel extends JPanel {
         return model.isChanged();
     }
     
+    boolean needsReinit() {
+        return model.needsReinit();
+    }
+    
     // private methods .........................................................
 
     private void initUI(String categoryName) {
@@ -272,7 +276,8 @@ public class OptionsPanel extends JPanel {
             add (centralPanel, BorderLayout.CENTER);
             setBorder (new EmptyBorder (10, 10, 0, 10));
         }        
-                
+     
+        categoryName = getCategoryID(categoryName);
         if (categoryName != null) {
             CategoryModel.Category c = model.getCategory(getCategoryID(categoryName));
             Icon icon = c.getIcon();

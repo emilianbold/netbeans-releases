@@ -20,7 +20,6 @@
 package org.netbeans.modules.options;
 
 import java.beans.PropertyChangeListener;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -33,25 +32,26 @@ import javax.swing.Icon;
 import javax.swing.JComponent;
 import org.netbeans.spi.options.OptionsCategory;
 import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.FolderLookup;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ProxyLookup;
 
 /**
  * @author Radek Matous
  */
-public final class CategoryModel  {
-    private static WeakReference instance = new WeakReference(null);
+public final class CategoryModel implements LookupListener {
     private final RequestProcessor RP = new RequestProcessor();
     
-    private String currentCategoryID = null;
+    private static String currentCategoryID = null;
     private String highlitedCategoryID = null;    
+    private boolean categoriesValid = true;
     private final Map/**<String, CategoryItem>*/ id2Category = Collections.synchronizedMap(new LinkedHashMap());
     private MasterLookup masterLookup;
     private final RequestProcessor.Task masterLookupTask = RP.create(new Runnable() {
@@ -75,11 +75,13 @@ public final class CategoryModel  {
     },true);
     private final RequestProcessor.Task categoryTask = RP.create(new Runnable() {
         public void run() {
-            List all = loadOptionsCategories();       
+            Map all = loadOptionsCategories();       
             Map temp = new LinkedHashMap();
-            for (Iterator it = all.iterator(); it.hasNext();) {
-                OptionsCategory oc = (OptionsCategory) it.next();
-                Category cat = new Category(oc);
+            for (Iterator it = all.entrySet().iterator(); it.hasNext();) {
+                Map.Entry entry = (Map.Entry) it.next();
+                OptionsCategory oc = (OptionsCategory)entry.getValue();
+                String id = (String)entry.getKey();
+                Category cat = new Category(id, oc);
                 temp.put(cat.getID(), cat);
             }
             id2Category.clear();
@@ -91,14 +93,15 @@ public final class CategoryModel  {
     private CategoryModel() {
         categoryTask.schedule(0);
     }
-    
+        
     static CategoryModel getInstance() {
-        CategoryModel retval = (CategoryModel)instance.get();
-        if (retval == null) {
-            retval = new CategoryModel();
-            instance = new WeakReference(retval);
-        }
-        return retval;
+        return new CategoryModel();
+    }
+    
+    boolean needsReinit() {
+        synchronized(CategoryModel.class) {
+            return !categoriesValid;
+        }                
     }
     
     boolean isInitialized() {
@@ -243,15 +246,26 @@ public final class CategoryModel  {
         return masterLookup;
     }
     
-    private static List loadOptionsCategories() {
+    private Map loadOptionsCategories() {
         FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("OptionsDialog");// NOI18N
         if (fo != null) {
-            Lookup lookup = new FolderLookup(DataFolder.findFolder(fo)).getLookup();
-            return Collections.unmodifiableList(new ArrayList(lookup.lookup(
-                    new Lookup.Template(OptionsCategory.class)
-                    ).allInstances()));
+            Lookup lookup = new FolderLookup(DataFolder.findFolder(fo),null).getLookup();//NOI18N
+            Lookup.Result result = lookup.lookup(new Lookup.Template(OptionsCategory.class));
+            result.addLookupListener(this);
+            Map m = new LinkedHashMap();
+            for (Iterator it = result.allItems().iterator(); it.hasNext();) {
+                Lookup.Item item = (Lookup.Item) it.next();
+                m.put(item.getId(), item.getInstance());                
+            }
+            return Collections.unmodifiableMap(m);
         }
-        return Collections.EMPTY_LIST;
+        return Collections.EMPTY_MAP;
+    }
+
+    public void resultChanged(LookupEvent ev) {
+        synchronized(CategoryModel.class) {
+            categoriesValid = false;
+        }
     }
     
     final class Category  {
@@ -261,9 +275,11 @@ public final class CategoryModel  {
         private HelpCtx helpCtx;
         private JComponent component;
         private Lookup lookup;
+        private final String id;
         
-        private Category(OptionsCategory category) {
+        private Category(final String id, final OptionsCategory category) {
             this.category = category;
+            this.id = id;
         }
         
         boolean isCurrent() {
@@ -286,12 +302,10 @@ public final class CategoryModel  {
             return category.getIcon();
         }
 
-        //whatever ID representing category (category name, just mnemonic, ...)
+        //whatever ID representing category (dataObject name,category name, just mnemonic, ...)
         //for impl. #74855: Add an API for opening the Options dialog
         public  String getID() {
-            String id = getCategoryName();
-            int i = Mnemonics.findMnemonicAmpersand(id);
-            return (i == -1) ? id : (id.substring(0,i) + id.substring(i+1,id.length()));
+            return id;
         }
         
         public String getCategoryName() {
