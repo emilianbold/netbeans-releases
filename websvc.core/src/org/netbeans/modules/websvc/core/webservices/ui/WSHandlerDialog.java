@@ -118,8 +118,7 @@ public class WSHandlerDialog {
             public AddMessageActionListener(SelectHandlerPanel sPanel){
                 this.sPanel = sPanel;
             }
-            public void actionPerformed(ActionEvent evt){
-                System.out.println("actionPerformed "+evt.getSource());
+            public void actionPerformed(ActionEvent evt) {
                 if(evt.getSource() == NotifyDescriptor.OK_OPTION){
                     boolean accepted = true;
                     String errMsg = null;
@@ -182,9 +181,6 @@ public class WSHandlerDialog {
             SourceUtils srcUtils = SourceUtils.newInstance(cc);
             if (srcUtils!=null) {
                 TypeMirror classMirror = srcUtils.getTypeElement().asType();
-                java.util.List<? extends TypeMirror> classes = cc.getTypes().directSupertypes(classMirror);
-                for (TypeMirror t:classes) System.out.println("type = "+t);
-                
                 
                 if(isJaxWS) {
                     // test if class extends "javax.xml.ws.handler.LogicalHandler<C extends javax.xml.ws.handler.LogicalMessageContext>"
