@@ -26,13 +26,10 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
-import javax.lang.model.util.*;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementUtilities;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Utilities;
+import org.openide.util.Parameters;
 
 /**
  *
@@ -244,42 +241,6 @@ public class SourceUtils {
             return false;
         }
         return true;
-    }
-
-    // </editor-fold>
-
-    // <editor-fold defaultstate="collapsed" desc="Inner classes">
-
-    static final class Parameters {
-
-        public static void notNull(CharSequence name, Object value) {
-            if (value == null) {
-                throw new NullPointerException("The " + name + " parameter cannot be null"); // NOI18N
-            }
-        }
-
-        public static void notEmpty(CharSequence name, CharSequence value) {
-            notNull(name, value);
-            if (value.length() == 0) {
-                throw new IllegalArgumentException("The " + name + " parameter cannot be an empty string"); // NOI18N
-            }
-        }
-
-        public static void notWhitespace(CharSequence name, CharSequence value) {
-            notNull(name, value);
-            notEmpty(name, value.toString().trim());
-        }
-
-        public static void javaIdentifier(CharSequence name, CharSequence value) {
-            notNull(name, value);
-            javaIdentifierOrNull(name, value);
-        }
-
-        public static void javaIdentifierOrNull(CharSequence name, CharSequence value) {
-            if (value != null && !Utilities.isJavaIdentifier(value.toString())) {
-                throw new IllegalArgumentException("The " + name + " parameter ('" + value + "') is not a valid Java identifier"); // NOI18N
-            }
-        }
     }
 
     // </editor-fold>
