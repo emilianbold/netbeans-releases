@@ -19,32 +19,16 @@
 
 package org.netbeans.modules.web.project.ui.customizer;
 
-import java.util.Collections;
 import java.util.List;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 import javax.swing.JPanel;
-import javax.swing.JLabel;
 import org.netbeans.modules.websvc.api.client.WsCompileClientEditorSupport;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-
-import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
-import org.openide.filesystems.FileObject;
-
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.modules.web.project.ProjectWebModule;
-import org.netbeans.modules.web.project.WebProjectType;
-
-import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
-import org.netbeans.modules.websvc.api.webservices.WsCompileEditorSupport;
-
 
 /** Host for WsCompile features editor for editing the features enabled for
  *  running WsCompile on a web service or a web service client.
@@ -111,7 +95,7 @@ public class CustomizerWSClientHost extends javax.swing.JPanel implements Proper
         component.removePropertyChangeListener(WsCompileClientEditorSupport.PROP_OPTIONS_CHANGED, this);
     }
    
-    public void initValues() {
+    private void initValues() {
 //        System.out.println("WSClientCustomizer: initValues");
         if(wsCompileEditor == null) {
 			WsCompileClientEditorSupport editorSupport = (WsCompileClientEditorSupport) Lookup.getDefault().lookup(WsCompileClientEditorSupport.class);

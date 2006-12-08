@@ -19,7 +19,6 @@
 package org.netbeans.modules.web.project.ui;
 
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.ArrayList;
@@ -45,7 +44,6 @@ import org.openide.util.lookup.ProxyLookup;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;

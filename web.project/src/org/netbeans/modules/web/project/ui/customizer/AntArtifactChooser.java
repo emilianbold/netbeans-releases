@@ -20,7 +20,6 @@
 package org.netbeans.modules.web.project.ui.customizer;
 
 import java.awt.Component;
-import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;

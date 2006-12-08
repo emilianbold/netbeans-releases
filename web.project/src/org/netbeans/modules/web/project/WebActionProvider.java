@@ -299,7 +299,7 @@ class WebActionProvider implements ActionProvider {
                                     if (urlPatterns!=null && urlPatterns.length>0) {
                                         ServletUriPanel uriPanel = new ServletUriPanel(urlPatterns,null,true);
                                         DialogDescriptor desc = new DialogDescriptor(uriPanel,
-                                            NbBundle.getMessage (SetExecutionUriAction.class, "TTL_setServletExecutionUri"));
+                                            NbBundle.getMessage (WebActionProvider.class, "TTL_setServletExecutionUri"));
                                         Object res = DialogDisplayer.getDefault().notify(desc);
                                         if (res.equals(NotifyDescriptor.YES_OPTION)) {
                                             p.setProperty("client.urlPart", uriPanel.getServletUri()); //NOI18N
@@ -426,7 +426,7 @@ class WebActionProvider implements ActionProvider {
                                     if (urlPatterns!=null && urlPatterns.length>0) {
                                         ServletUriPanel uriPanel = new ServletUriPanel(urlPatterns,null,true);
                                         DialogDescriptor desc = new DialogDescriptor(uriPanel,
-                                            NbBundle.getMessage (SetExecutionUriAction.class, "TTL_setServletExecutionUri"));
+                                            NbBundle.getMessage (WebActionProvider.class, "TTL_setServletExecutionUri"));
                                         Object res = DialogDisplayer.getDefault().notify(desc);
                                         if (res.equals(NotifyDescriptor.YES_OPTION)) {
                                             p.setProperty("client.urlPart", uriPanel.getServletUri()); //NOI18N
@@ -436,7 +436,7 @@ class WebActionProvider implements ActionProvider {
                                         } else return null;
                                     } else {
                                         String mes = java.text.MessageFormat.format (
-                                                NbBundle.getMessage (SetExecutionUriAction.class, "TXT_missingServletMappings"),
+                                                NbBundle.getMessage (WebActionProvider.class, "TXT_missingServletMappings"),
                                                 new Object [] {javaFile.getName()});
                                         NotifyDescriptor desc = new NotifyDescriptor.Message(mes,NotifyDescriptor.Message.ERROR_MESSAGE);
                                         DialogDisplayer.getDefault().notify(desc);

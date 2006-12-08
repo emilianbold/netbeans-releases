@@ -32,7 +32,11 @@ import java.awt.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 
 
@@ -257,8 +261,6 @@ public class LibrariesChooser extends javax.swing.JPanel implements HelpCtx.Prov
         
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             String displayName = null;
-            String toolTip = null;
-            Color color = null;
             if (value instanceof Library) {
                 Library lib = ((Library)value);
                 displayName = lib.getDisplayName();

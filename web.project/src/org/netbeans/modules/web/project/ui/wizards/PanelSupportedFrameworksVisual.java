@@ -87,8 +87,8 @@ public class PanelSupportedFrameworksVisual extends JPanel implements HelpCtx.Pr
         this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PanelSupportedFrameworksVisual.class, "ACS_NWP2_Frameworks_A11YDesc"));  // NOI18N        
 
         // Provide a name in the title bar.
-        setName(NbBundle.getMessage(PanelConfigureProjectVisual.class, "LBL_NWP2_Frameworks")); //NOI18N
-        putClientProperty ("NewProjectWizard_Title", NbBundle.getMessage(PanelConfigureProjectVisual.class, "TXT_NewWebApp")); //NOI18N
+        setName(NbBundle.getMessage(PanelSupportedFrameworksVisual.class, "LBL_NWP2_Frameworks")); //NOI18N
+        putClientProperty ("NewProjectWizard_Title", NbBundle.getMessage(PanelSupportedFrameworksVisual.class, "TXT_NewWebApp")); //NOI18N
     }
 
     private void initTableVisualProperties(JTable table) {

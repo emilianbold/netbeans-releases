@@ -220,7 +220,7 @@ public class ImportWebProjectWizardIterator implements WizardDescriptor.Progress
                 JComponent jc = (JComponent)c;
                 jc.putClientProperty("NewProjectWizard_Title", NbBundle.getMessage(ImportWebProjectWizardIterator.class, "TXT_WebExtSources")); // NOI18N
                 // Step #.
-                jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i)); // NOI18N
+                jc.putClientProperty("WizardPanel_contentSelectedIndex", Integer.valueOf(i)); // NOI18N
                 // Step name (actually the whole list for reference).
                 jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
             }
@@ -282,17 +282,17 @@ public class ImportWebProjectWizardIterator implements WizardDescriptor.Progress
         }
         
         private final Set/*<ChangeListener>*/ listeners = new HashSet(1);
-        public final void addChangeListener(ChangeListener l) {
+        public void addChangeListener(ChangeListener l) {
             synchronized (listeners) {
                 listeners.add(l);
             }
         }
-        public final void removeChangeListener(ChangeListener l) {
+        public void removeChangeListener(ChangeListener l) {
             synchronized (listeners) {
                 listeners.remove(l);
             }
         }
-        protected final void fireChangeEvent() {
+        protected void fireChangeEvent() {
             Iterator it;
             synchronized (listeners) {
                 it = new HashSet(listeners).iterator();

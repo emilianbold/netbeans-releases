@@ -70,17 +70,17 @@ final class PanelSupportedFrameworks implements WizardDescriptor.Panel, WizardDe
     
     private final Set/*<ChangeListener>*/ listeners = new HashSet(1);
     
-    public final void addChangeListener(ChangeListener l) {
+    public void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
         }
     }
-    public final void removeChangeListener(ChangeListener l) {
+    public void removeChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.remove(l);
         }
     }
-    protected final void fireChangeEvent() {
+    protected void fireChangeEvent() {
         Iterator it;
         synchronized (listeners) {
             it = new HashSet(listeners).iterator();

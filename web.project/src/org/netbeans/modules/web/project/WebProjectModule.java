@@ -59,16 +59,16 @@ public class WebProjectModule extends ModuleInstall {
                             StringBuffer sb = new StringBuffer(450);
                             // Ant is needed in classpath if we are forking JspC into another process
                             sb.append(InstalledFileLocator.getDefault().locate("ant/lib/ant.jar", null, false)) //NOI18N
-                            .append(":") // NOI18N
+                            .append(':') // NOI18N
                              //XXX This is fix for issue #74250. This is a hack and should be solved in the glassfish's jasper 
                             // also it must be moved before J2EE_PLATFORM_CLASSPATH, because a server (JBoss) can expose
                             // old jsp api, and the compiler is not then able compile some jsp pages with tag lib declarations
                             .append(InstalledFileLocator.getDefault().locate("modules/ext/servlet2.5-jsp2.1-api.jar", null, false)) //NOI18N
                             .append(":${" + WebProjectProperties.J2EE_PLATFORM_CLASSPATH + "}:") // NOI18N
                             .append(InstalledFileLocator.getDefault().locate("modules/ext/glassfish-jspparser.jar", null, false)) //NOI18N
-                            .append(":") // NOI18N
+                            .append(':') // NOI18N
                             .append(InstalledFileLocator.getDefault().locate("modules/ext/glassfish-logging.jar", null, false)) //NOI18N
-                            .append(":") // NOI18N
+                            .append(':') // NOI18N
                             .append(InstalledFileLocator.getDefault().locate("modules/ext/commons-logging-1.0.4.jar", null, false)); //NOI18N
                             
                             String jspc_cp_old = ep.getProperty(JSPC_CLASSPATH);
@@ -79,7 +79,7 @@ public class WebProjectModule extends ModuleInstall {
                             }
                             File copy_files = InstalledFileLocator.getDefault().locate("ant/extra/copyfiles.jar", null, false); //NOI18N
                             if (copy_files == null) {
-                                String msg = NbBundle.getMessage(ProjectWebModule.class,"MSG_CopyFileMissing"); //NOI18N
+                                String msg = NbBundle.getMessage(WebProjectModule.class,"MSG_CopyFileMissing"); //NOI18N
                                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
                             } else {
                                 String copy_files_old = ep.getProperty(COPYFILES_CLASSPATH);

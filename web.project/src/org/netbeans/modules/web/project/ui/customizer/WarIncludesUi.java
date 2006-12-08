@@ -144,7 +144,7 @@ public class WarIncludesUi {
                 FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
                 chooser.setFileSelectionMode( JFileChooser.FILES_AND_DIRECTORIES );
                 chooser.setMultiSelectionEnabled( true );
-                chooser.setDialogTitle( NbBundle.getMessage( WebClassPathUi.class, "LBL_AddFile_DialogTitle" ) ); // NOI18N
+                chooser.setDialogTitle( NbBundle.getMessage( WarIncludesUi.class, "LBL_AddFile_DialogTitle" ) ); // NOI18N
                 chooser.setAcceptAllFileFilterUsed(true);
                 File curDir = FoldersListSettings.getDefault().getLastUsedClassPathFolder(); 
                 chooser.setCurrentDirectory (curDir);
@@ -168,16 +168,16 @@ public class WarIncludesUi {
                     }
                 }
                 Object[] options = new Object[] {
-                    new JButton (NbBundle.getMessage (WebClassPathUi.class,"LBL_AddLibrary")),
+                    new JButton (NbBundle.getMessage (WarIncludesUi.class,"LBL_AddLibrary")),
                     DialogDescriptor.CANCEL_OPTION
                 };
                 ((JButton)options[0]).setEnabled(false);
-                ((JButton)options[0]).getAccessibleContext().setAccessibleDescription (NbBundle.getMessage (WebClassPathUi.class,"AD_AddLibrary"));
+                ((JButton)options[0]).getAccessibleContext().setAccessibleDescription (NbBundle.getMessage (WarIncludesUi.class,"AD_AddLibrary"));
 
                 WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
                 String j2eeVersion = wm.getJ2eePlatformVersion();
                 LibrariesChooser panel = new LibrariesChooser ((JButton)options[0], j2eeVersion);
-                DialogDescriptor desc = new DialogDescriptor(panel,NbBundle.getMessage( WebClassPathUi.class, "LBL_CustomizeCompile_Classpath_AddLibrary" ),
+                DialogDescriptor desc = new DialogDescriptor(panel,NbBundle.getMessage( WarIncludesUi.class, "LBL_CustomizeCompile_Classpath_AddLibrary" ),
                     true, options, options[0], DialogDescriptor.DEFAULT_ALIGN,null,null);
                 Dialog dlg = DialogDisplayer.getDefault().createDialog(desc);
                 dlg.setVisible(true);
@@ -268,11 +268,11 @@ public class WarIncludesUi {
         // Contains well known paths in the WebProject
         private static final Map WELL_KNOWN_PATHS_NAMES = new HashMap();
         static {
-            WELL_KNOWN_PATHS_NAMES.put( WebProjectProperties.JAVAC_CLASSPATH, NbBundle.getMessage( WebProjectProperties.class, "LBL_JavacClasspath_DisplayName" ) );
-            WELL_KNOWN_PATHS_NAMES.put( WebProjectProperties.JAVAC_TEST_CLASSPATH, NbBundle.getMessage( WebProjectProperties.class,"LBL_JavacTestClasspath_DisplayName") );
-            WELL_KNOWN_PATHS_NAMES.put( WebProjectProperties.RUN_TEST_CLASSPATH, NbBundle.getMessage( WebProjectProperties.class, "LBL_RunTestClasspath_DisplayName" ) );
-            WELL_KNOWN_PATHS_NAMES.put( WebProjectProperties.BUILD_CLASSES_DIR, NbBundle.getMessage( WebProjectProperties.class, "LBL_BuildClassesDir_DisplayName" ) );            
-            WELL_KNOWN_PATHS_NAMES.put( WebProjectProperties.BUILD_TEST_CLASSES_DIR, NbBundle.getMessage (WebProjectProperties.class,"LBL_BuildTestClassesDir_DisplayName") );
+            WELL_KNOWN_PATHS_NAMES.put( WebProjectProperties.JAVAC_CLASSPATH, NbBundle.getMessage( WarIncludesUi.class, "LBL_JavacClasspath_DisplayName" ) );
+            WELL_KNOWN_PATHS_NAMES.put( WebProjectProperties.JAVAC_TEST_CLASSPATH, NbBundle.getMessage( WarIncludesUi.class,"LBL_JavacTestClasspath_DisplayName") );
+            WELL_KNOWN_PATHS_NAMES.put( WebProjectProperties.RUN_TEST_CLASSPATH, NbBundle.getMessage( WarIncludesUi.class, "LBL_RunTestClasspath_DisplayName" ) );
+            WELL_KNOWN_PATHS_NAMES.put( WebProjectProperties.BUILD_CLASSES_DIR, NbBundle.getMessage( WarIncludesUi.class, "LBL_BuildClassesDir_DisplayName" ) );            
+            WELL_KNOWN_PATHS_NAMES.put( WebProjectProperties.BUILD_TEST_CLASSES_DIR, NbBundle.getMessage (WarIncludesUi.class,"LBL_BuildTestClassesDir_DisplayName") );
         };
 
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
@@ -291,7 +291,7 @@ public class WarIncludesUi {
 
                 case ClassPathSupport.Item.TYPE_LIBRARY:
                     if ( item.isBroken() ) {
-                        return NbBundle.getMessage( WebClassPathUi.class, "LBL_MISSING_LIBRARY", getLibraryName( item ) );
+                        return NbBundle.getMessage( WarIncludesUi.class, "LBL_MISSING_LIBRARY", getLibraryName( item ) );
                     }
                     else { 
                         return item.getLibrary().getDisplayName();
@@ -301,14 +301,14 @@ public class WarIncludesUi {
                     return name == null ? item.getReference() : name;
                 case ClassPathSupport.Item.TYPE_ARTIFACT:
                     if ( item.isBroken() ) {
-                        return NbBundle.getMessage( WebClassPathUi.class, "LBL_MISSING_PROJECT", getProjectName( item ) );
+                        return NbBundle.getMessage( WarIncludesUi.class, "LBL_MISSING_PROJECT", getProjectName( item ) );
                     }
                     else {
                         return item.getArtifactURI().toString();
                     }
                 case ClassPathSupport.Item.TYPE_JAR:
                     if ( item.isBroken() ) {
-                        return NbBundle.getMessage( WebClassPathUi.class, "LBL_MISSING_FILE", getFileRefName( item ) );
+                        return NbBundle.getMessage( WarIncludesUi.class, "LBL_MISSING_FILE", getFileRefName( item ) );
                     }
                     else {
                         return item.getFile().getPath();
@@ -385,7 +385,7 @@ public class WarIncludesUi {
         private String getProjectName( ClassPathSupport.Item item ) {
             String ID = item.getReference();
             // something in the form of "${reference.project-name.id}"
-            return ID.substring(12, ID.indexOf(".", 12)); // NOI18N
+            return ID.substring(12, ID.indexOf('.', 12)); // NOI18N
         }
 
         private String getLibraryName( ClassPathSupport.Item item ) {

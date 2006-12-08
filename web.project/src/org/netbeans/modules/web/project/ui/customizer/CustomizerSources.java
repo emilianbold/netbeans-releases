@@ -31,9 +31,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 import org.netbeans.api.queries.CollocationQuery;
-import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.netbeans.spi.project.ui.support.ProjectChooser;
 
 import org.netbeans.modules.web.project.WebProject;
 

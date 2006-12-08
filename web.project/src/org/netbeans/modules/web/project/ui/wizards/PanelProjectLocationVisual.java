@@ -27,7 +27,6 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import org.netbeans.modules.web.project.ui.FoldersListSettings;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
@@ -248,7 +247,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         d.putProperty( /*XXX Define somewhere */ "projdir", new File( folder )); // NOI18N
         d.putProperty( /*XXX Define somewhere */ "name", name ); // NOI18N
         
-        final Integer nameIndex = projectNameTextField.getText().equals(generatedProjectName) ? new Integer(generatedProjectNameIndex) : null;
+        final Integer nameIndex = projectNameTextField.getText().equals(generatedProjectName) ? Integer.valueOf(generatedProjectNameIndex) : null;
         d.putProperty(NewWebProjectWizardIterator.PROP_NAME_INDEX, nameIndex);
     }
     
@@ -268,7 +267,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
                 String formater = NbBundle.getMessage(PanelProjectLocationVisual.class,"LBL_NPW1_DefaultProjectName");
                 while ((projectName=validFreeProjectName(projectLocation, formater, baseCount))==null)
                     baseCount++;                
-                settings.putProperty (NewWebProjectWizardIterator.PROP_NAME_INDEX, new Integer(baseCount));
+                settings.putProperty (NewWebProjectWizardIterator.PROP_NAME_INDEX, Integer.valueOf(baseCount));
         }
         this.projectNameTextField.setText (projectName);                
         this.projectNameTextField.selectAll();
@@ -292,7 +291,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     // Private methods ---------------------------------------------------------
     
     private String validFreeProjectName (final File parentFolder, final String formater, final int index) {
-        String name = MessageFormat.format (formater, new Object[]{new Integer (index)});                
+        String name = MessageFormat.format (formater, new Object[]{Integer.valueOf(index)});                
         File file = new File (parentFolder, name);
         return file.exists() ? null : name;
     }

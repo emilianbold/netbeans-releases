@@ -526,7 +526,7 @@ public class WebProjectProperties {
             return false;
         } else if (contextPath.indexOf("//") >= 0) { //NOI18N
 	    return false;
-        } else if (contextPath.indexOf(" ") >= 0) {  //NOI18N
+        } else if (contextPath.indexOf(' ') >= 0) {  //NOI18N
 	    return false;
         }
 	return true;

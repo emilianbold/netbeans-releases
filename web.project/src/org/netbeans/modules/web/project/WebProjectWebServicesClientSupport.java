@@ -21,9 +21,6 @@ package org.netbeans.modules.web.project;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Map;
-import java.util.Set;
-import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.j2ee.dd.api.common.NameAlreadyUsedException;
 import org.netbeans.modules.j2ee.dd.api.common.PortComponentRef;
 import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
@@ -32,21 +29,15 @@ import org.netbeans.modules.websvc.api.client.ClientStubDescriptor;
 import static org.netbeans.modules.websvc.api.client.WebServicesClientConstants.*;
 import org.netbeans.modules.websvc.api.client.WsCompileClientEditorSupport;
 import org.netbeans.modules.websvc.spi.client.WebServicesClientSupportImpl;
-import org.netbeans.modules.websvc.spi.webservices.WebServicesSupportImpl;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Iterator;
-import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.j2ee.dd.api.webservices.ServiceImplBean;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -54,11 +45,9 @@ import org.openide.ErrorManager;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
@@ -320,7 +309,7 @@ public class WebProjectWebServicesClientSupport implements WebServicesClientSupp
                 ProjectManager.getDefault().saveProject(project);
             } catch(IOException ex) {
                 NotifyDescriptor desc = new NotifyDescriptor.Message(
-                NbBundle.getMessage(WebProjectWebServicesSupport.class,"MSG_ErrorSavingOnWSClientAdd", serviceName, ex.getMessage()), // NOI18N
+                NbBundle.getMessage(WebProjectWebServicesClientSupport.class,"MSG_ErrorSavingOnWSClientAdd", serviceName, ex.getMessage()), // NOI18N
                 NotifyDescriptor.ERROR_MESSAGE);
                 DialogDisplayer.getDefault().notify(desc);
             }
@@ -336,7 +325,7 @@ public class WebProjectWebServicesClientSupport implements WebServicesClientSupp
         if (webInfFo==null) {
             if (isProjectOpened()) {
                 DialogDisplayer.getDefault().notify(
-                new NotifyDescriptor.Message(NbBundle.getMessage(WebProjectWebServicesSupport.class,"MSG_WebInfCorrupted"), // NOI18N
+                new NotifyDescriptor.Message(NbBundle.getMessage(WebProjectWebServicesClientSupport.class,"MSG_WebInfCorrupted"), // NOI18N
                 NotifyDescriptor.ERROR_MESSAGE));
             }
             return null;
@@ -388,7 +377,7 @@ public class WebProjectWebServicesClientSupport implements WebServicesClientSupp
                 PropertyUtils.putGlobalProperties(globalProperties);
             } catch(IOException ex) {
                 NotifyDescriptor desc = new NotifyDescriptor.Message(
-                NbBundle.getMessage(WebProjectWebServicesSupport.class,"MSG_ErrorSavingGlobalProperties", serviceName, ex.getMessage()), // NOI18N
+                NbBundle.getMessage(WebProjectWebServicesClientSupport.class,"MSG_ErrorSavingGlobalProperties", serviceName, ex.getMessage()), // NOI18N
                 NotifyDescriptor.ERROR_MESSAGE);
                 DialogDisplayer.getDefault().notify(desc);
             }
@@ -423,7 +412,7 @@ public class WebProjectWebServicesClientSupport implements WebServicesClientSupp
                 for(Iterator iter = wscJars.iterator(); iter.hasNext(); ) {
                     newClasspathBuf.append(iter.next().toString());
                     if(iter.hasNext()) {
-                        newClasspathBuf.append(":");
+                        newClasspathBuf.append(':');
                     }
                 }
                 projectProperties.put(WSCOMPILE_CLASSPATH, newClasspathBuf.toString());
@@ -520,7 +509,7 @@ public class WebProjectWebServicesClientSupport implements WebServicesClientSupp
                 ProjectManager.getDefault().saveProject(project);
             } catch(IOException ex) {
                 NotifyDescriptor desc = new NotifyDescriptor.Message(
-                NbBundle.getMessage(WebProjectWebServicesSupport.class,"MSG_ErrorSavingOnWSClientRemove", serviceName, ex.getMessage()), // NOI18N
+                NbBundle.getMessage(WebProjectWebServicesClientSupport.class,"MSG_ErrorSavingOnWSClientRemove", serviceName, ex.getMessage()), // NOI18N
                 NotifyDescriptor.ERROR_MESSAGE);
                 DialogDisplayer.getDefault().notify(desc);
             }
@@ -540,7 +529,7 @@ public class WebProjectWebServicesClientSupport implements WebServicesClientSupp
             // Create was specified, but no WEB-INF was found, so how do we create it?
             // Expect an NPE if we return null for this case, but log it anyway.
             ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL,
-            NbBundle.getMessage(WebProjectWebServicesSupport.class,"MSG_WebInfNotFoundForWsdlFolder"));
+            NbBundle.getMessage(WebProjectWebServicesClientSupport.class,"MSG_WebInfNotFoundForWsdlFolder"));
         }
         
         return wsdlFolder;
@@ -759,7 +748,7 @@ public class WebProjectWebServicesClientSupport implements WebServicesClientSupp
                 ProjectManager.getDefault().saveProject(project);
             } catch(IOException ex) {
                 NotifyDescriptor desc = new NotifyDescriptor.Message(
-                NbBundle.getMessage(WebProjectWebServicesSupport.class,"MSG_ErrorSavingOnWSClientAdd", serviceName, ex.getMessage()), // NOI18N
+                NbBundle.getMessage(WebProjectWebServicesClientSupport.class,"MSG_ErrorSavingOnWSClientAdd", serviceName, ex.getMessage()), // NOI18N
                 NotifyDescriptor.ERROR_MESSAGE);
                 DialogDisplayer.getDefault().notify(desc);
             }
@@ -799,12 +788,12 @@ public class WebProjectWebServicesClientSupport implements WebServicesClientSupp
     // Client stub descriptors
     private static final JAXRPCClientStubDescriptor jsr109ClientStub = new JAXRPCClientStubDescriptor(
         ClientStubDescriptor.JSR109_CLIENT_STUB,
-        NbBundle.getMessage(WebProjectWebServicesSupport.class,"LBL_JSR109ClientStub"),
+        NbBundle.getMessage(WebProjectWebServicesClientSupport.class,"LBL_JSR109ClientStub"),
         new String [] { "wsi", "strict" });
     
     private static final JAXRPCClientStubDescriptor jaxrpcClientStub = new JAXRPCClientStubDescriptor(
         ClientStubDescriptor.JAXRPC_CLIENT_STUB,
-        NbBundle.getMessage(WebProjectWebServicesSupport.class,"LBL_JAXRPCStaticClientStub"),
+        NbBundle.getMessage(WebProjectWebServicesClientSupport.class,"LBL_JAXRPCStaticClientStub"),
         new String [] { "wsi", "strict" });
 
     public void addServiceClientReference(String serviceName, String fqServiceName, String relativeWsdlPath, String relativeMappingPath, String[] portSEIInfo) {
@@ -901,7 +890,7 @@ public class WebProjectWebServicesClientSupport implements WebServicesClientSupp
             StringBuffer buf = new StringBuffer(defaultFeatures.length*32);
             for(int i = 0; i < defaultFeatures.length; i++) {
                 if(i > 0) {
-                    buf.append(",");
+                    buf.append(',');
                 }
 
                 buf.append(defaultFeatures[i]);

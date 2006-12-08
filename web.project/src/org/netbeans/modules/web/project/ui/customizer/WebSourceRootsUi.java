@@ -259,9 +259,6 @@ public final class WebSourceRootsUi {
             
             // addArtifact allways enabled
             
-            // edit enabled only if selection is not empty
-            boolean edit = si != null && si.length > 0;            
-
             // remove enabled only if selection is not empty
             boolean remove = si != null && si.length > 0;
             // and when the selection does not contain unremovable item
@@ -277,9 +274,6 @@ public final class WebSourceRootsUi {
             removeButton.setEnabled( remove );
             upButton.setEnabled( up );
             downButton.setEnabled( down );       
-                        
-            //System.out.println("Selection changed " + edit + ", " + remove + ", " +  + ", " + + ", ");
-            
         }
 
         public void editingCanceled(ChangeEvent e) {

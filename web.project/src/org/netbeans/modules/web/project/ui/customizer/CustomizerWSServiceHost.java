@@ -19,29 +19,16 @@
 
 package org.netbeans.modules.web.project.ui.customizer;
 
-import java.util.Collections;
 import java.util.List;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 import javax.swing.JPanel;
-import javax.swing.JLabel;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-
-import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
-import org.openide.filesystems.FileObject;
 
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.modules.web.project.ProjectWebModule;
-import org.netbeans.modules.web.project.WebProjectType;
-
-import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
 import org.netbeans.modules.websvc.api.webservices.WsCompileEditorSupport;
 
 
@@ -106,7 +93,7 @@ public class CustomizerWSServiceHost extends javax.swing.JPanel implements /*Web
         component.removePropertyChangeListener(WsCompileEditorSupport.PROP_FEATURES_CHANGED, this);
     }
    
-    public void initValues() {
+    private void initValues() {
 //        System.out.println("WSClientCustomizer: initValues");
         if(wsCompileEditor == null) {
 			WsCompileEditorSupport editorSupport = (WsCompileEditorSupport) Lookup.getDefault().lookup(WsCompileEditorSupport.class);

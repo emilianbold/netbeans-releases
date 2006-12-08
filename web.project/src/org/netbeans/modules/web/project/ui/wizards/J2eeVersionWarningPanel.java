@@ -67,9 +67,6 @@ public final class J2eeVersionWarningPanel extends javax.swing.JPanel {
     }
     
     public void setWarningType(String warningType) {
-        String warningText = null;
-        String checkBoxText = null;
-        
         this.warningType = warningType;
         
         setJdk14Panel.setVisible(false);

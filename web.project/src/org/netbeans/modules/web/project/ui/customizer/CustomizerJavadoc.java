@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.web.project.ui.customizer;
 
-import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;

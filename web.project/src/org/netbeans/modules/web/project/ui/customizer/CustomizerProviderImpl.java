@@ -67,11 +67,6 @@ public class CustomizerProviderImpl implements CustomizerProvider {
     
     // Option indexes
     private static final int OPTION_OK = 0;
-    private static final int OPTION_CANCEL = OPTION_OK + 1;
-    
-    // Option command names
-    private static final String COMMAND_OK = "OK";          // NOI18N
-    private static final String COMMAND_CANCEL = "CANCEL";  // NOI18N
     
     private static Map /*<Project,Dialog>*/project2Dialog = new HashMap(); 
     
@@ -125,18 +120,15 @@ public class CustomizerProviderImpl implements CustomizerProvider {
     
     // Names of categories
     private static final String BUILD_CATEGORY = "BuildCategory";
-    private static final String RUN_CATEGORY = "RunCategory";
     
     private static final String SOURCES = "Sources";
     private static final String LIBRARIES = "Libraries";
     private static final String FRAMEWORKS = "Frameworks";
     
     private static final String BUILD = "Build";
-    private static final String BUILD_TESTS = "BuildTests";
     private static final String WAR = "War";
     private static final String JAVADOC = "Javadoc";
     private static final String RUN = "Run";    
-    private static final String RUN_TESTS = "RunTests";
     
     private static final String WEBSERVICE_CATEGORY = "WebServiceCategory";
     private static final String WEBSERVICES = "WebServices";

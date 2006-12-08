@@ -647,7 +647,7 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl {
                 for(Iterator iter = wscJars.iterator(); iter.hasNext(); ) {
                     newClasspathBuf.append(iter.next().toString());
                     if(iter.hasNext()) {
-                        newClasspathBuf.append(":");
+                        newClasspathBuf.append(':');
                     }
                 }
                 projectProperties.put(WSCOMPILE_CLASSPATH, newClasspathBuf.toString());
@@ -745,7 +745,7 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl {
             StringBuffer buf = new StringBuffer(defaultFeatures.length*32);
             for(int i = 0; i < defaultFeatures.length; i++) {
                 if(i > 0) {
-                    buf.append(",");
+                    buf.append(',');
                 }
                 
                 buf.append(defaultFeatures[i]);

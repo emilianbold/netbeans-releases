@@ -167,10 +167,10 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
             generatedProjectName = (String) settings.getProperty ("name"); //NOI18N
             if (generatedProjectName == null) {
                     generatedProjectNameIndex = FoldersListSettings.getDefault().getNewProjectCount() + 1;
-                    String formater = NbBundle.getMessage(PanelSourceFolders.class,"LBL_NPW1_DefaultProjectName");
+                    String formater = NbBundle.getMessage(ImportLocationVisual.class,"LBL_NPW1_DefaultProjectName");
                     while ((generatedProjectName = validFreeProjectName(projectLocation, formater, generatedProjectNameIndex)) == null)
                         generatedProjectNameIndex++;                
-                    settings.putProperty (NewWebProjectWizardIterator.PROP_NAME_INDEX, new Integer(generatedProjectNameIndex));
+                    settings.putProperty (NewWebProjectWizardIterator.PROP_NAME_INDEX, Integer.valueOf(generatedProjectNameIndex));
             }
             // no project name needs to be generated
             //projectNameTextField.setText(generatedProjectName);
@@ -199,7 +199,7 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
             contextPath = "/" + contextPath; //NOI18N
         settings.putProperty(WizardProperties.CONTEXT_PATH, contextPath);
         final Integer nameIndex = projectNameTextField.getText().equals(generatedProjectName) ?
-                new Integer(generatedProjectNameIndex) : null;
+                Integer.valueOf(generatedProjectNameIndex) : null;
         settings.putProperty(NewWebProjectWizardIterator.PROP_NAME_INDEX, nameIndex);
         
         settings.putProperty(WizardProperties.SET_AS_MAIN, setAsMainCheckBox.isSelected() ? Boolean.TRUE : Boolean.FALSE );
@@ -927,7 +927,7 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
     }
     
     private void initEnterpriseApplications() {
-        jComboBoxEnterprise.addItem(NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_AddToEnterprise_None"));
+        jComboBoxEnterprise.addItem(NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_AddToEnterprise_None"));
         jComboBoxEnterprise.setSelectedIndex(0);
         
         Project[] allProjects = OpenProjects.getDefault().getOpenProjects();
@@ -965,7 +965,7 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
     }
 
     private String validFreeProjectName (final File parentFolder, final String formater, final int index) {
-        String name = MessageFormat.format (formater, new Object[]{new Integer (index)});                
+        String name = MessageFormat.format (formater, new Object[]{Integer.valueOf(index)});                
         File file = new File (parentFolder, name);
         return file.exists() ? null : name;
     }

@@ -106,11 +106,11 @@ public class WebClassPathUi {
         // Contains well known paths in the WebProject
         private static final Map WELL_KNOWN_PATHS_NAMES = new HashMap();
         static {
-            WELL_KNOWN_PATHS_NAMES.put( WebProjectProperties.JAVAC_CLASSPATH, NbBundle.getMessage( WebProjectProperties.class, "LBL_JavacClasspath_DisplayName" ) );
-            WELL_KNOWN_PATHS_NAMES.put( WebProjectProperties.JAVAC_TEST_CLASSPATH, NbBundle.getMessage( WebProjectProperties.class,"LBL_JavacTestClasspath_DisplayName") );
-            WELL_KNOWN_PATHS_NAMES.put( WebProjectProperties.RUN_TEST_CLASSPATH, NbBundle.getMessage( WebProjectProperties.class, "LBL_RunTestClasspath_DisplayName" ) );
-            WELL_KNOWN_PATHS_NAMES.put( WebProjectProperties.BUILD_CLASSES_DIR, NbBundle.getMessage( WebProjectProperties.class, "LBL_BuildClassesDir_DisplayName" ) );            
-            WELL_KNOWN_PATHS_NAMES.put( WebProjectProperties.BUILD_TEST_CLASSES_DIR, NbBundle.getMessage (WebProjectProperties.class,"LBL_BuildTestClassesDir_DisplayName") );
+            WELL_KNOWN_PATHS_NAMES.put( WebProjectProperties.JAVAC_CLASSPATH, NbBundle.getMessage( WebClassPathUi.class, "LBL_JavacClasspath_DisplayName" ) );
+            WELL_KNOWN_PATHS_NAMES.put( WebProjectProperties.JAVAC_TEST_CLASSPATH, NbBundle.getMessage( WebClassPathUi.class,"LBL_JavacTestClasspath_DisplayName") );
+            WELL_KNOWN_PATHS_NAMES.put( WebProjectProperties.RUN_TEST_CLASSPATH, NbBundle.getMessage( WebClassPathUi.class, "LBL_RunTestClasspath_DisplayName" ) );
+            WELL_KNOWN_PATHS_NAMES.put( WebProjectProperties.BUILD_CLASSES_DIR, NbBundle.getMessage( WebClassPathUi.class, "LBL_BuildClassesDir_DisplayName" ) );            
+            WELL_KNOWN_PATHS_NAMES.put( WebProjectProperties.BUILD_TEST_CLASSES_DIR, NbBundle.getMessage (WebClassPathUi.class,"LBL_BuildTestClassesDir_DisplayName") );
         };
                 
         public ClassPathListCellRenderer( PropertyEvaluator evaluator ) {
@@ -241,7 +241,7 @@ public class WebClassPathUi {
         private String getProjectName( ClassPathSupport.Item item ) {
             String ID = item.getReference();
             // something in the form of "${reference.project-name.id}"
-            return ID.substring(12, ID.indexOf(".", 12)); // NOI18N
+            return ID.substring(12, ID.indexOf('.', 12)); // NOI18N
         }
 
         private String getLibraryName( ClassPathSupport.Item item ) {

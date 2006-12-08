@@ -86,10 +86,6 @@ public class FileChooser extends JFileChooser {
         super.approveSelection();
     }
 
-    public void cancelSelection() {
-        super.cancelSelection();
-    }
-
     private static File correctFile(File f) {
         while(f != null && ".".equals(f.getName())) { //NOI18N
             f = f.getParentFile();

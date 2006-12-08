@@ -25,12 +25,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.project.spi.WebProjectImplementationFactory;
 import org.netbeans.spi.project.support.ant.AntBasedProjectType;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
-import org.openide.util.Lookup.Result;
-import org.openide.util.Lookup.Template;
 
 public final class WebProjectType implements AntBasedProjectType {
 

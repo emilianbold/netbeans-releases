@@ -86,7 +86,6 @@ final class JspSourcePathImplementation implements ClassPathImplementation, Prop
         }
         synchronized (this) {
             if (this.resources == null) {
-                List result = null;
                 if (webDocbaseDirRes != null) {
                     this.resources = Collections.singletonList(webDocbaseDirRes);
                 } else {

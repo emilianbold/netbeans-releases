@@ -72,7 +72,7 @@ public class WebSharabilityQuery implements SharabilityQueryImplementation, Prop
                     if (delegate == null) {
                         delegate = createDelegate ();
                     }
-                    return new Integer(delegate.getSharability (file));
+                    return Integer.valueOf(delegate.getSharability (file));
                 }
             }
         });

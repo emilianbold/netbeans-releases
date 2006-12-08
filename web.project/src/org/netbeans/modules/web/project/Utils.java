@@ -322,7 +322,7 @@ public class Utils {
         for (int i = 0; i < classpathEntries.length; i++) {
             classpath.append(classpathEntries[i].getAbsolutePath());
             if (i + 1 < classpathEntries.length) {
-                classpath.append(":"); // NOI18N
+                classpath.append(':'); // NOI18N
             }
         }
         return classpath.toString();

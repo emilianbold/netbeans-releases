@@ -42,7 +42,6 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
     
     private PanelConfigureProject panel;
     private String sourceStructure;
-    private String j2eeLevel;
     private boolean contextModified = false;
     private final DefaultComboBoxModel serversModel = new DefaultComboBoxModel();
     

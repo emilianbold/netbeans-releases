@@ -82,15 +82,15 @@ final class ShowJavadocAction extends NodeAction {
         return jd.hasJavadoc();
     }
 
-    public final String getName() {
+    public String getName() {
         return NbBundle.getMessage(ShowJavadocAction.class,"CTL_ShowJavadoc");
     }
 
-    public final HelpCtx getHelpCtx() {
+    public HelpCtx getHelpCtx() {
         return new HelpCtx (ShowJavadocAction.class);
     }
 
-    public final boolean asynchronous () {
+    public boolean asynchronous () {
         return false;
     }
 
