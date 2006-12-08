@@ -3,7 +3,7 @@
 
 
 <filesystem>
-    <!-- XML Lexer not stable enought, uncomment when most serious bugs fixed -->
+    <!-- XML Lexer not stable enought, uncomment and readd to manifest when most serious bugs fixed -->
     <!--<folder name="Editors">
         <folder name="text">
             <folder name="xml">
