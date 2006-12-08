@@ -23,7 +23,6 @@ import java.awt.event.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.ResourceBundle;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
@@ -31,7 +30,6 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.javahelp.Help;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.refactoring.api.impl.RefactoringModule;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
@@ -42,6 +40,7 @@ import org.openide.ErrorManager;
 import org.openide.util.*;
 import org.netbeans.modules.refactoring.api.ProgressListener;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
+import org.openide.awt.Mnemonics;
 
 
 /** Main panel for refactoring parameters dialog. This panel is automatically displayed
@@ -142,11 +141,11 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         controlsPanel = new javax.swing.JPanel();
         buttonsPanel = new javax.swing.JPanel();
         back = new javax.swing.JButton();
+        previewButton = new javax.swing.JButton();
+        previewButton.setVisible(false);
         next = new javax.swing.JButton();
         cancel = new javax.swing.JButton();
         help = new javax.swing.JButton();
-        checkBoxPanel = new javax.swing.JPanel();
-        previewAll = new javax.swing.JCheckBox();
         containerPanel = new javax.swing.JPanel();
         pleaseWait = new javax.swing.JLabel();
 
@@ -171,7 +170,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         controlsPanel.setLayout(new java.awt.BorderLayout());
 
         buttonsPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        buttonsPanel.setLayout(new java.awt.GridLayout(1, 0, 5, 0));
+        buttonsPanel.setLayout(new java.awt.GridLayout(1, 0, 4, 0));
 
         back.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/refactoring/spi/impl/Bundle").getString("MNEM_Back").charAt(0));
         org.openide.awt.Mnemonics.setLocalizedText(back, org.openide.util.NbBundle.getBundle("org/netbeans/modules/refactoring/spi/impl/Bundle").getString("CTL_Back")); // NOI18N
@@ -183,10 +182,19 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         buttonsPanel.add(back);
         back.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_Back")); // NOI18N
 
+        previewButton.setMnemonic(org.openide.util.NbBundle.getMessage(ParametersPanel.class, "MNEM_Preview").charAt(0));
+        previewButton.setLabel(org.openide.util.NbBundle.getMessage(ParametersPanel.class, "CTL_PreviewAll")); // NOI18N
+        previewButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                preview(evt);
+            }
+        });
+        buttonsPanel.add(previewButton);
+
         org.openide.awt.Mnemonics.setLocalizedText(next, org.openide.util.NbBundle.getBundle("org/netbeans/modules/refactoring/spi/impl/Bundle").getString("CTL_Finish")); // NOI18N
         next.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                nextActionPerformed(evt);
+                refactor(evt);
             }
         });
         buttonsPanel.add(next);
@@ -212,21 +220,6 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
 
         controlsPanel.add(buttonsPanel, java.awt.BorderLayout.EAST);
 
-        checkBoxPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        checkBoxPanel.setLayout(new java.awt.BorderLayout());
-
-        previewAll.setSelected(((Boolean) RefactoringModule.getOption(getPreviewKeyName(), Boolean.TRUE)).booleanValue());
-        org.openide.awt.Mnemonics.setLocalizedText(previewAll, org.openide.util.NbBundle.getBundle("org/netbeans/modules/refactoring/spi/impl/Bundle").getString("CTL_PreviewAll")); // NOI18N
-        previewAll.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                previewAllItemStateChanged(evt);
-            }
-        });
-        checkBoxPanel.add(previewAll, java.awt.BorderLayout.WEST);
-        previewAll.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_PreviewAll")); // NOI18N
-
-        controlsPanel.add(checkBoxPanel, java.awt.BorderLayout.CENTER);
-
         progressPanel.add(controlsPanel, java.awt.BorderLayout.SOUTH);
 
         add(progressPanel, java.awt.BorderLayout.SOUTH);
@@ -245,22 +238,9 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_FindUsagesDialog")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
-    private void previewAllItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_previewAllItemStateChanged
-        // used for change default value for previewAll check-box. This value
-        // is persisted and then used as default in next IDE run.
-        Boolean b = evt.getStateChange() == ItemEvent.SELECTED ? Boolean.TRUE : Boolean.FALSE;
-        RefactoringModule.setOption(getPreviewKeyName(), b);
-    }//GEN-LAST:event_previewAllItemStateChanged
-
-    /**
-     * Constructs key name for the refactoring for previewAll option.
-     *
-     * @return Key name. It is constructed from "previewAll." string plus
-     *         name of class.
-     */
-    private String getPreviewKeyName() {
-        return "previewAll." + rui.getRefactoring().getClass().getName(); // NOI18N
-    }
+    private void preview(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_preview
+        refactor(true);
+}//GEN-LAST:event_preview
 
     private void helpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_helpActionPerformed
         Help help = (Help) Lookup.getDefault().lookup(Help.class);
@@ -279,9 +259,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
             cancelRequest = true;
         }
     }//GEN-LAST:event_cancelActionPerformed
-    
-    private void nextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nextActionPerformed
-        
+    private void refactor(final boolean previewAll) {
         if (currentState == PRE_CHECK) {
             //next is "Next>"
             placeCustomPanel();
@@ -327,14 +305,14 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
                 //inputState != currentState means, that panels changed and dialog will not be closed
                 if (inputState == currentState) {
                     try {
-                        if (!previewAll.isSelected()) {
+                          if (!previewAll) {
 //[retouche]                            UndoWatcher.watch(result, ParametersPanel.this);
                             result.addProgressListener(ParametersPanel.this);
                             result.doRefactoring(true);
 //[retouche]                            UndoWatcher.stopWatching(ParametersPanel.this);
                         }
                     } finally {
-                        if (!previewAll.isSelected()) {
+                        if (!previewAll) {
                             result = null;
                         }
                         if (inputState == currentState) {
@@ -343,15 +321,18 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
                     }
                 }
             }
-        });
-    }//GEN-LAST:event_nextActionPerformed
+        });        
+    }
+        
+    private void refactor(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refactor
+        refactor(rui.isQuery());    
+}//GEN-LAST:event_refactor
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton back;
     private javax.swing.JPanel buttonsPanel;
     public javax.swing.JButton cancel;
-    private javax.swing.JPanel checkBoxPanel;
     private javax.swing.JPanel containerPanel;
     private javax.swing.JPanel controlsPanel;
     private javax.swing.JButton help;
@@ -359,7 +340,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
     private javax.swing.JLabel label;
     private javax.swing.JButton next;
     private javax.swing.JLabel pleaseWait;
-    private javax.swing.JCheckBox previewAll;
+    private javax.swing.JButton previewButton;
     private javax.swing.JPanel progressPanel;
     // End of variables declaration//GEN-END:variables
     
@@ -513,7 +494,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         dialog.getRootPane().setDefaultButton(next);
         if (currentState == PRE_CHECK ) {
             //calculatePrefferedSize();
-            org.openide.awt.Mnemonics.setLocalizedText(next, org.openide.util.NbBundle.getBundle("org/netbeans/modules/refactoring/spi/ui/Bundle").getString("CTL_Next"));
+            Mnemonics.setLocalizedText(next, NbBundle.getMessage(ParametersPanel.class,"CTL_Next"));
             back.setVisible(false);
         } else {
             back.setVisible(true);
@@ -521,18 +502,18 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
             dialog.getRootPane().setDefaultButton(back);
         }
         cancel.setEnabled(true); 
-        previewAll.setVisible(false);
+        previewButton.setEnabled(!problem.isFatal());
         repaint();
     }
     
     private void placeCustomPanel() {
         if (customPanel == null) return;
-        org.openide.awt.Mnemonics.setLocalizedText(next, NbBundle.getMessage(ParametersPanel.class, "CTL_Finish"));
+        Mnemonics.setLocalizedText(next, NbBundle.getMessage(ParametersPanel.class, rui.isQuery()?"CTL_Find": "CTL_Finish"));
         customPanel.setBorder(new EmptyBorder(new Insets(12, 12, 11, 11)));
         containerPanel.removeAll();
         containerPanel.add(customPanel, BorderLayout.CENTER);
         back.setVisible(false);
-        previewAll.setVisible(!rui.isQuery());
+        previewButton.setVisible(!rui.isQuery());
         currentState = INPUT_PARAMETERS;
         setPanelEnabled(true);
         cancel.setEnabled(true);
@@ -689,7 +670,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         next.setEnabled(enabled);
         //cancel.setEnabled(enabled);
         back.setEnabled(enabled);
-        previewAll.setEnabled(enabled); 
+        previewButton.setEnabled(enabled); 
     }
     
     public HelpCtx getHelpCtx() {
