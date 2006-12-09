@@ -19,7 +19,6 @@
 
 package org.openide.loaders;
 
-
 import java.io.*;
 import java.util.*;
 import java.util.logging.Level;
@@ -61,7 +60,7 @@ implements java.io.Serializable {
      */
     public static synchronized DataLoaderPool getDefault() {
         if (DEFAULT == null) {
-            DEFAULT = (DataLoaderPool)Lookup.getDefault().lookup(DataLoaderPool.class);
+            DEFAULT = Lookup.getDefault().lookup(DataLoaderPool.class);
             if (DEFAULT == null) {
                 DEFAULT = new DefaultPool();
             }
@@ -155,7 +154,7 @@ implements java.io.Serializable {
      * @param s the source the new listener will be attached to
      */
     public static OperationListener createWeakOperationListener (OperationListener l, Object s) {
-        return (OperationListener)org.openide.util.WeakListeners.create (OperationListener.class, l, s);
+        return WeakListeners.create(OperationListener.class, l, s);
     }
     
     /** Add a listener for operations on data objects.
@@ -476,12 +475,8 @@ implements java.io.Serializable {
                     load = DataLoaderPool.class.getClassLoader ();
                 }
                 
-                Class loaderClass = Class.forName (
-                assignedLoaderName,
-                true,
-                load
-                );
-                return DataLoader.getLoader(loaderClass);
+                return DataLoader.getLoader(Class.forName(assignedLoaderName, true, load).
+                        asSubclass(DataLoader.class));
             } catch (Exception ex) {
                 Logger.getLogger(DataLoaderPool.class.getName()).log(Level.WARNING, null, ex);
             }
@@ -546,6 +541,7 @@ implements java.io.Serializable {
         
         public DefaultPool() {
             result = Lookup.getDefault().lookupResult(DataLoader.class);
+            result.addLookupListener(this);
         }
         
         protected Enumeration<? extends DataLoader> loaders() {
