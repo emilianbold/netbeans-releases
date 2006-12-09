@@ -790,10 +790,10 @@ public class JspLexer implements Lexer<JspTokenId> {
                     switch (actChar) {
                         case '\n':
                             if (input.readLength() == 1) { // no char
-                                lexerState = ISI_TAG_I_WS;
+                                lexerState = ISP_TAG;
                                 return token(JspTokenId.EOL);
                             } else { // return error first
-//                                input.backup(1);
+                                input.backup(1);
                                 return token(JspTokenId.ERROR);
                             }
                         case '>':
