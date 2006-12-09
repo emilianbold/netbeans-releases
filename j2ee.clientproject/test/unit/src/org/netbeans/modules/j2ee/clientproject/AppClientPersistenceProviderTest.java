@@ -22,6 +22,9 @@ package org.netbeans.modules.j2ee.clientproject;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.PrintStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
@@ -31,6 +34,7 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScopes;
+import org.netbeans.modules.j2ee.persistence.spi.support.PersistenceScopesHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -50,7 +54,20 @@ public class AppClientPersistenceProviderTest extends NbTestCase {
         super(testName);
     }
 
+    protected Level logLevel() {
+        // enabling logging
+        return Level.INFO;
+        // we are only interested in a single logger, so we set its level in setUp(),
+        // as returning Level.FINEST here would log from all loggers
+    }
+
+    public PrintStream getLog() {
+        return System.err;
+    }
+
     public void setUp() throws Exception {
+        // in an attempt to find the cause of issue 90762
+        Logger.getLogger(PersistenceScopesHelper.class.getName()).setLevel(Level.FINEST);
         // setup the project
         File f = new File(getDataDir().getAbsolutePath(), "projects/ApplicationClient1");
         project = ProjectManager.getDefault().findProject(FileUtil.toFileObject(f));

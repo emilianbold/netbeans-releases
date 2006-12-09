@@ -22,6 +22,7 @@ package org.netbeans.modules.j2ee.persistence.spi.support;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScopes;
 import org.netbeans.modules.j2ee.persistence.spi.PersistenceScopesFactory;
@@ -44,14 +45,14 @@ import org.openide.filesystems.FileUtil;
  */
 public final class PersistenceScopesHelper {
 
-    private final PersistenceScopes persistenceScopes = PersistenceScopesFactory.createPersistenceScopes(new PersistenceScopesImpl());
+    private static final Logger LOG = Logger.getLogger(PersistenceScopesHelper.class.getName());
 
+    private final PersistenceScopes persistenceScopes = PersistenceScopesFactory.createPersistenceScopes(new PersistenceScopesImpl());
     private final PropertyChangeSupport propChangeSupport = new PropertyChangeSupport(this);
     private final FileListener fileListener = new FileListener();
 
     private PersistenceScope persistenceScope;
     private File persistenceXml;
-
     private boolean persistenceExists;
 
     public PersistenceScopesHelper() {
@@ -100,6 +101,7 @@ public final class PersistenceScopesHelper {
         }
 
         if (oldPersistenceExists != newPersistenceExists || (oldPersistenceScope != newPersistenceScope && newPersistenceExists)) {
+            LOG.fine("changePersistenceScope: firing PROP_PERSISTENCE_SCOPES change"); // NOI18N
             propChangeSupport.firePropertyChange(PersistenceScopes.PROP_PERSISTENCE_SCOPES, null, null);
         }
     }
@@ -140,7 +142,10 @@ public final class PersistenceScopesHelper {
             newPersistenceExists = persistenceExists;
         }
 
+        LOG.fine("fileEvent: oldPersistenceExists=" + oldPersistenceExists + ", newPersistenceExists=" + newPersistenceExists); // NOI18N
+
         if (oldPersistenceExists != newPersistenceExists) {
+            LOG.fine("fileEvent: firing PROP_PERSISTENCE_SCOPES change"); // NOI18N
             propChangeSupport.firePropertyChange(PersistenceScopes.PROP_PERSISTENCE_SCOPES, null, null);
         }
     }
@@ -169,20 +174,22 @@ public final class PersistenceScopesHelper {
     private class FileListener implements FileChangeSupportListener {
 
         public void fileCreated(FileChangeSupportEvent event) {
+            LOG.fine("fileCreated: " + event.getPath());
             fileEvent();
         }
 
         public void fileDeleted(FileChangeSupportEvent event) {
+            LOG.fine("fileDeleted: " + event.getPath());
             fileEvent();
         }
 
         public void fileModified(FileChangeSupportEvent event) {
-            // no need to do anything
+            LOG.fine("fileModified: " + event.getPath());
         }
     }
 
     /**
-     * Implementation of <code>PersistenceScopesImplementation</code>. 
+     * Implementation of <code>PersistenceScopesImplementation</code>.
      * The <code>PersistenceScopes</code> instance maintained by the helper
      * delegates to this.
      */
