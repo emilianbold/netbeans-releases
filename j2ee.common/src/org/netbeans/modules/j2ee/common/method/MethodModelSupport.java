@@ -20,7 +20,6 @@
 package org.netbeans.modules.j2ee.common.method;
 
 import javax.lang.model.type.ArrayType;
-import javax.lang.model.type.DeclaredType;
 import org.netbeans.api.java.source.CompilationController;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
@@ -32,7 +31,6 @@ import com.sun.source.util.SourcePositions;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -44,28 +42,40 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.j2ee.common.method.MethodModel.VariableModel;
+import org.openide.util.Parameters;
 
 /**
- *
+ * Support class for {@link MethodModel} providing some factory and conversion methods.
+ * 
  * @author Martin Adamek
  */
 public final class MethodModelSupport {
     
     private MethodModelSupport() {}
     
+    /**
+     * Creates new instance of method model. None of the parameters can be null.
+     * This method must be called from within javac context.
+     * 
+     * @param workingCopy controller from javac context
+     * @param method method for which the model is to be created
+     * @throws NullPointerException if any of the parameters is <code>null</code>.
+     * @return immutable model of method
+     */
     public static MethodModel createMethodModel(WorkingCopy workingCopy, ExecutableElement method) {
-        List<VariableModel> parameters = new ArrayList<VariableModel>();
+        Parameters.notNull("workingCopy", workingCopy);
+        Parameters.notNull("method", method);
+        List<MethodModel.Variable> parameters = new ArrayList<MethodModel.Variable>();
         for (VariableElement variableElement : method.getParameters()) {
             String type = getTypeName(workingCopy, variableElement.asType());
             String name = variableElement.getSimpleName().toString();
-            parameters.add(new VariableModel(type, name));
+            parameters.add(MethodModel.Variable.create(type, name));
         }
         List<String> exceptions = new ArrayList<String>();
         for (TypeMirror typeMirror : method.getThrownTypes()) {
             exceptions.add(getTypeName(workingCopy, typeMirror));
         }
-        return createMethodModel(
+        return MethodModel.create(
                 method.getSimpleName().toString(),
                 getTypeName(workingCopy, method.getReturnType()),
                 //TODO: RETOUCHE get body of method
@@ -76,29 +86,41 @@ public final class MethodModelSupport {
                 );
     }
     
-    public static MethodModel createMethodModel(String name, String returnType, String body,
-            List<MethodModel.VariableModel> parameters, List<String> exceptions, Set<Modifier> modifiers) {
-        return new MethodModel(name, returnType, body, parameters, exceptions, modifiers);
-    }
-    
-    public static MethodModel.VariableModel createVariableModel(WorkingCopy workingCopy, VariableElement variableElement) {
-        return createVariableModel(
+    /**
+     * Creates new instance of model of class variable or method parameter
+     * This method must be called from within javac context.
+     * 
+     * @param workingCopy controller from javac context
+     * @param variableElement variable or method parameter for which the model is to be created
+     * @throws NullPointerException if any of the parameters is <code>null</code>.
+     * @return immutable model of variable or method parameter
+     */
+    public static MethodModel.Variable createVariable(WorkingCopy workingCopy, VariableElement variableElement) {
+        Parameters.notNull("workingCopy", workingCopy);
+        Parameters.notNull("variableElement", variableElement);
+        return MethodModel.Variable.create(
                 getTypeName(workingCopy, variableElement.asType()),
                 variableElement.getSimpleName().toString()
                 );
     }
     
-    public static MethodModel.VariableModel createVariableModel(String type, String name) {
-        return new MethodModel.VariableModel(type, name);
-    }
-    
+    /**
+     * Creates {@link MethodTree} represented by methodModel in given javac context.
+     * 
+     * @param workingCopy controller from javac context
+     * @param methodModel model of method
+     * @throws NullPointerException if any of the parameters is <code>null</code>.
+     * @return tree representing methodModel
+     */
     public static MethodTree createMethodTree(WorkingCopy workingCopy, MethodModel methodModel) {
+        Parameters.notNull("workingCopy", workingCopy);
+        Parameters.notNull("methodModel", methodModel);
         TreeMaker treeMaker = workingCopy.getTreeMaker();
         TreeUtilities treeUtilities = workingCopy.getTreeUtilities();
         List<VariableTree> paramsList = new ArrayList<VariableTree>();
         if (methodModel.getParameters() != null) {
             int index = 0;
-            for (VariableModel parameter : methodModel.getParameters()) {
+            for (MethodModel.Variable parameter : methodModel.getParameters()) {
                 VariableTree variableTree = treeMaker.Variable(
                         treeMaker.Modifiers(Collections.<Modifier>emptySet()),
                         parameter.getName(),
@@ -128,8 +150,21 @@ public final class MethodModelSupport {
                 );
     }
     
-    //TODO: RETOUCHE fix this method, see #90505
-    public static boolean isSameMethod(CompilationInfo compilationInfo, TypeElement clazz, ExecutableElement method, MethodModel methodModel) {
+    /**
+     * Checks if signature of {@link ExecutableElement} is represented by {@link MethodModel} methodModel
+     * in given javac context.
+     * 
+     * @param compilationInfo controller from javac context
+     * @param method method existing in given javac context
+     * @param methodModel model of method
+     * @throws NullPointerException if any of the parameters is <code>null</code>.
+     * @return true if method and methodModel have same signature, false otherwise
+     */
+    public static boolean isSameMethod(CompilationInfo compilationInfo, ExecutableElement method, MethodModel methodModel) {
+        //TODO: RETOUCHE fix this method, see #90505
+        Parameters.notNull("compilationInfo", compilationInfo);
+        Parameters.notNull("method", method);
+        Parameters.notNull("methodModel", methodModel);
         if (!method.getSimpleName().contentEquals(methodModel.getName())) {
             return false;
         }
@@ -140,8 +175,9 @@ public final class MethodModelSupport {
         for (int i = 0; i < methodParams.size(); i++) {
             VariableElement variableElement = methodParams.get(i);
             TypeMirror variableElementType = variableElement.asType();
-            VariableModel variable = methodModel.getParameters().get(i);
-            TypeMirror variableType = compilationInfo.getTreeUtilities().parseType(variable.getType(), clazz);
+            MethodModel.Variable variable = methodModel.getParameters().get(i);
+            TypeElement typeElement = (TypeElement) method.getEnclosingElement();
+            TypeMirror variableType = compilationInfo.getTreeUtilities().parseType(variable.getType(), typeElement);
             if (!compilationInfo.getTypes().isSameType(variableElementType, variableType)) {
                 return false;
             }
