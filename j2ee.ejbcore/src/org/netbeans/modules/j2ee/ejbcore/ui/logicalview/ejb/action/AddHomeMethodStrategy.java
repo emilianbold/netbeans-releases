@@ -19,13 +19,16 @@
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 
+import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
+import org.netbeans.modules.j2ee.common.method.MethodCollectorFactory;
+import org.netbeans.modules.j2ee.common.method.MethodCollectorFactory;
+import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
 import java.io.IOException;
 import java.util.Collections;
 import javax.lang.model.element.Modifier;
 import org.netbeans.modules.j2ee.common.method.MethodCollectorFactory;
 import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
-import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.MethodsNode;
@@ -47,11 +50,11 @@ public class AddHomeMethodStrategy extends AbstractAddMethodStrategy {
     }
     
     protected MethodType getPrototypeMethod(FileObject fileObject, String classHandle) throws IOException {
-        MethodModel method = MethodModelSupport.createMethodModel(
+        MethodModel method = MethodModel.create(
                 "homeMethod",
                 "void",
                 "",
-                Collections.<MethodModel.VariableModel>emptyList(),
+                Collections.<MethodModel.Variable>emptyList(),
                 Collections.<String>emptyList(),
                 Collections.<Modifier>emptySet()
                 );

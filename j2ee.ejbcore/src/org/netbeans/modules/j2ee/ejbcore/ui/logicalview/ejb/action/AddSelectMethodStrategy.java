@@ -19,6 +19,10 @@
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 
+import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
+import org.netbeans.modules.j2ee.common.method.MethodCollectorFactory;
+import org.netbeans.modules.j2ee.common.method.MethodCollectorFactory;
+import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
@@ -29,7 +33,6 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.j2ee.common.method.MethodCollectorFactory;
 import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
-import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EntityMethodController;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType;
@@ -54,11 +57,11 @@ public class AddSelectMethodStrategy extends AbstractAddMethodStrategy {
         Set<Modifier> modifiers = new HashSet();
         modifiers.add(Modifier.PUBLIC);
         modifiers.add(Modifier.ABSTRACT);
-        MethodModel method = MethodModelSupport.createMethodModel(
+        MethodModel method = MethodModel.create(
                 "ejbSelectBy",
                 "int",
                 "",
-                Collections.<MethodModel.VariableModel>emptyList(),
+                Collections.<MethodModel.Variable>emptyList(),
                 Collections.singletonList("javax.ejb.FinderException"),
                 modifiers
                 );

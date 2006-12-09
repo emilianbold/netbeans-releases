@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.j2ee.ejbcore.api.methodcontroller;
 
-import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import java.io.IOException;
 import java.rmi.RemoteException;
@@ -258,7 +257,7 @@ public final class EntityMethodController extends AbstractMethodController {
         parent.write(ddFileObject);
     }
 
-    public void addField(MethodModel.VariableModel field, FileObject ddFile, boolean localGetter, boolean localSetter,
+    public void addField(MethodModel.Variable field, FileObject ddFile, boolean localGetter, boolean localSetter,
         boolean remoteGetter, boolean remoteSetter, String description) throws IOException {
         String beanClass = getBeanClass();
         addSetterMethod(beanClass, field, modifiersPublicAbstract, false, model);
@@ -283,13 +282,13 @@ public final class EntityMethodController extends AbstractMethodController {
         }
     }
 
-    private MethodModel addSetterMethod(String javaClass, MethodModel.VariableModel field, Set<Modifier> modifiers, boolean remote, Entity entity) {
+    private MethodModel addSetterMethod(String javaClass, MethodModel.Variable field, Set<Modifier> modifiers, boolean remote, Entity entity) {
         MethodModel method = createSetterMethod(javaClass, field, modifiers, remote);
         addMethod(javaClass, method, entity);
         return method;
     }
 
-    private MethodModel addGetterMethod(String javaClass, MethodModel.VariableModel variable, Set<Modifier> modifiers, boolean remote, Entity entity) {
+    private MethodModel addGetterMethod(String javaClass, MethodModel.Variable variable, Set<Modifier> modifiers, boolean remote, Entity entity) {
         MethodModel method = createGetterMethod(javaClass, variable, modifiers, remote);
         addMethod(javaClass, method, entity);
         return method;
@@ -327,10 +326,10 @@ public final class EntityMethodController extends AbstractMethodController {
 //        }
     }
 
-    private MethodModel createGetterMethod(String javaClass, MethodModel.VariableModel field, Set<Modifier> modifiers, boolean remote) {
+    private MethodModel createGetterMethod(String javaClass, MethodModel.Variable field, Set<Modifier> modifiers, boolean remote) {
         final String fieldName = field.getName();
         List<String> exceptions = remote ? Collections.<String>singletonList(RemoteException.class.getName()) : Collections.<String>emptyList();
-        MethodModel method = MethodModelSupport.createMethodModel(
+        MethodModel method = MethodModel.create(
                 getMethodName(fieldName, true),
                 "void",
                 "",
@@ -341,10 +340,10 @@ public final class EntityMethodController extends AbstractMethodController {
         return method;
     }
 
-    private MethodModel createSetterMethod(String javaClass, MethodModel.VariableModel field, Set<Modifier> modifiers, boolean remote) {
+    private MethodModel createSetterMethod(String javaClass, MethodModel.Variable field, Set<Modifier> modifiers, boolean remote) {
         final String fieldName = field.getName();
         List<String> exceptions = remote ? Collections.<String>singletonList(RemoteException.class.getName()) : Collections.<String>emptyList();
-        MethodModel method = MethodModelSupport.createMethodModel(
+        MethodModel method = MethodModel.create(
                 getMethodName(fieldName, false),
                 "void",
                 "",
@@ -389,7 +388,7 @@ public final class EntityMethodController extends AbstractMethodController {
         QueryMethod queryMethod = query.newQueryMethod();
         queryMethod.setMethodName(clientView.getName());
         MethodParams mParams = queryMethod.newMethodParams();
-        for (MethodModel.VariableModel parameter : clientView.getParameters()) {
+        for (MethodModel.Variable parameter : clientView.getParameters()) {
             mParams.addMethodParam(parameter.getType());
         }
         queryMethod.setMethodParams(mParams);
@@ -475,11 +474,11 @@ public final class EntityMethodController extends AbstractMethodController {
         if (javaClass == null || fieldName == null) {
             return null;
         }
-        MethodModel method =  MethodModelSupport.createMethodModel(
+        MethodModel method =  MethodModel.create(
                 getMethodName(fieldName, true),
                 "void",
                 "",
-                Collections.<MethodModel.VariableModel>emptyList(),
+                Collections.<MethodModel.Variable>emptyList(),
                 Collections.<String>emptyList(),
                 Collections.<Modifier>emptySet()
                 );
@@ -501,11 +500,11 @@ public final class EntityMethodController extends AbstractMethodController {
         if (type == null) {
             return null;
         }
-        MethodModel method = MethodModelSupport.createMethodModel(
+        MethodModel method = MethodModel.create(
                 getMethodName(fieldName, true), 
                 "void",
                 "",
-                Collections.singletonList(MethodModelSupport.createVariableModel(type, "arg0")),
+                Collections.singletonList(MethodModel.Variable.create(type, "arg0")),
                 Collections.<String>emptyList(),
                 Collections.<Modifier>emptySet()
                 );
@@ -513,7 +512,7 @@ public final class EntityMethodController extends AbstractMethodController {
     }
 
     public MethodModel getSetterMethod(String fieldName, boolean local) {
-        MethodModel.VariableModel field = getField(fieldName, true);
+        MethodModel.Variable field = getField(fieldName, true);
         if (field == null) {
             return null;
         } else {
@@ -532,11 +531,11 @@ public final class EntityMethodController extends AbstractMethodController {
         if (getterMethod == null) {
             return null;
         }
-        MethodModel method = MethodModelSupport.createMethodModel(
+        MethodModel method = MethodModel.create(
                 getMethodName(fieldName, true),
                 "void",
                 "",
-                Collections.singletonList(MethodModelSupport.createVariableModel(getterMethod.getReturnType(), "arg0")),
+                Collections.singletonList(MethodModel.Variable.create(getterMethod.getReturnType(), "arg0")),
                 Collections.<String>emptyList(),
                 Collections.<Modifier>emptySet()
                 );
@@ -557,7 +556,7 @@ public final class EntityMethodController extends AbstractMethodController {
     }
 
     public void updateFieldAccessor(String fieldName, boolean getter, boolean local, boolean shouldExist) {
-        MethodModel.VariableModel field = getField(fieldName, true);
+        MethodModel.Variable field = getField(fieldName, true);
         if (field == null) {
             return;
         }
@@ -588,14 +587,14 @@ public final class EntityMethodController extends AbstractMethodController {
         }
     }
 
-    private MethodModel.VariableModel getField(String fieldName, boolean create) {
+    private MethodModel.Variable getField(String fieldName, boolean create) {
         String beanClass = getBeanClass();
         MethodModel getterMethod = getGetterMethod(beanClass, fieldName);
         if (getterMethod == null) {
             if (!create) {
                 return null;
             }
-            MethodModel.VariableModel field = MethodModelSupport.createVariableModel(String.class.getName(), fieldName);
+            MethodModel.Variable field = MethodModel.Variable.create(String.class.getName(), fieldName);
             createGetterMethod(getBeanClass(), field, modifiersPublicAbstract, false);
             return field;
         } else {
@@ -603,7 +602,7 @@ public final class EntityMethodController extends AbstractMethodController {
             if (type == null) {
                 return null;
             } else {
-                return MethodModelSupport.createVariableModel(type, fieldName);
+                return MethodModel.Variable.create(type, fieldName);
             }
         }
     }

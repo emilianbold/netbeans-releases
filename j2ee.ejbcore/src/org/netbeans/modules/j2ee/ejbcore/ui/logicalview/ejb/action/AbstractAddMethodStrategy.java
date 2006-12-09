@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 
+import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
+import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -27,7 +29,6 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
-import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.MethodsNode;
@@ -118,7 +119,7 @@ public abstract class AbstractAddMethodStrategy {
             MethodModel method = methodType.getMethodElement();
             if (methodCustomizer.publishToLocal()) {
                 String localReturn = localReturnType(ejbMethodController, method.getReturnType(), isOneReturn);
-                method = MethodModelSupport.createMethodModel(
+                method = MethodModel.create(
                     method.getName(), 
                     localReturn,
                     method.getBody(),
@@ -131,7 +132,7 @@ public abstract class AbstractAddMethodStrategy {
             handle.progress(60);
             if (methodCustomizer.publishToRemote()) {
                 String remoteReturn = remoteReturnType(ejbMethodController, method.getReturnType(), isOneReturn);
-                method = MethodModelSupport.createMethodModel(
+                method = MethodModel.create(
                     method.getName(), 
                     remoteReturn,
                     method.getBody(),

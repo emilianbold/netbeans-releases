@@ -20,7 +20,10 @@
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 
 import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
-import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
+import org.netbeans.modules.j2ee.common.method.MethodCollectorFactory;
+import org.netbeans.modules.j2ee.common.method.MethodCollectorFactory;
+import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
+import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import java.io.IOException;
 import java.util.Collections;
@@ -49,11 +52,11 @@ public class AddCreateMethodStrategy extends AbstractAddMethodStrategy {
     }
     
     protected MethodType getPrototypeMethod(FileObject fileObject, String classHandle) throws IOException {
-        MethodModel method = MethodModelSupport.createMethodModel(
+        MethodModel method = MethodModel.create(
                 "create",
                 "void",
                 "",
-                Collections.<MethodModel.VariableModel>emptyList(),
+                Collections.<MethodModel.Variable>emptyList(),
                 Collections.singletonList("javax.ejb.CreateException"),
                 Collections.<Modifier>emptySet()
                 );

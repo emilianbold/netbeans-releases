@@ -27,7 +27,6 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
-import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType.BusinessMethodType;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType.CreateMethodType;
@@ -71,7 +70,7 @@ class EntityGenerateFromIntfVisitor implements MethodType.MethodTypeVisitor, Abs
         implMethod = bmt.getMethodElement();
         String body = TODO + implMethod.getName();
         body += implMethod.getReturnType();
-        implMethod = MethodModelSupport.createMethodModel(
+        implMethod = MethodModel.create(
                 implMethod.getName(), 
                 implMethod.getReturnType(),
                 body,
@@ -87,7 +86,7 @@ class EntityGenerateFromIntfVisitor implements MethodType.MethodTypeVisitor, Abs
         String newName = prependAndUpper(origName,"ejb"); //NOI18N
         String type = entity.getPrimKeyClass();
         String body = TODO + newName + type;
-        implMethod = MethodModelSupport.createMethodModel(
+        implMethod = MethodModel.create(
                 newName, 
                 type,
                 body,
@@ -99,7 +98,7 @@ class EntityGenerateFromIntfVisitor implements MethodType.MethodTypeVisitor, Abs
         origName = secondaryMethod.getName();
         newName = prependAndUpper(origName,"ejbPost"); //NOI18N
         body = TODO + newName;
-        secondaryMethod = MethodModelSupport.createMethodModel(
+        secondaryMethod = MethodModel.create(
                 newName, 
                 "void",
                 body,
@@ -114,7 +113,7 @@ class EntityGenerateFromIntfVisitor implements MethodType.MethodTypeVisitor, Abs
         String origName = implMethod.getName();
         String newName = prependAndUpper(origName,"ejbHome"); //NOI18N
         String body = TODO + implMethod.getName() + implMethod.getReturnType();
-        implMethod = MethodModelSupport.createMethodModel(
+        implMethod = MethodModel.create(
                 newName, 
                 implMethod.getReturnType(),
                 body,
@@ -137,7 +136,7 @@ class EntityGenerateFromIntfVisitor implements MethodType.MethodTypeVisitor, Abs
         } catch (IOException e) {
             ErrorManager.getDefault().notify(e);
         }
-        implMethod = MethodModelSupport.createMethodModel(
+        implMethod = MethodModel.create(
                 newName, 
                 isAssignable ? "void" : entity.getPrimKeyClass(),
                 body,

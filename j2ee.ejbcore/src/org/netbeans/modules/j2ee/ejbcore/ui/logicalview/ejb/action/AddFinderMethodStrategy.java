@@ -19,6 +19,10 @@
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 
+import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
+import org.netbeans.modules.j2ee.common.method.MethodCollectorFactory;
+import org.netbeans.modules.j2ee.common.method.MethodCollectorFactory;
+import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
@@ -28,7 +32,6 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.j2ee.common.method.MethodCollectorFactory;
 import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
-import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.MethodsNode;
@@ -53,11 +56,11 @@ public class AddFinderMethodStrategy extends AbstractAddMethodStrategy {
 
     public static MethodType getFinderPrototypeMethod(FileObject fileObject, String classHandle) throws IOException {
         final MethodType[] result = new MethodType[1];
-        MethodModel method = MethodModelSupport.createMethodModel(
+        MethodModel method = MethodModel.create(
                 "findBy",
                 "void",
                 "",
-                Collections.<MethodModel.VariableModel>emptyList(),
+                Collections.<MethodModel.Variable>emptyList(),
                 Collections.singletonList("javax.ejb.FinderException"),
                 Collections.<Modifier>emptySet()
                 );

@@ -21,7 +21,6 @@ package org.netbeans.modules.j2ee.ejbcore.api.methodcontroller;
 import java.util.Collection;
 import java.util.Set;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
-import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType.BusinessMethodType;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType.CreateMethodType;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType.FinderMethodType;
@@ -70,7 +69,7 @@ class EntityGenerateFromImplVisitor implements MethodType.MethodTypeVisitor, Abs
         } else {
             newName = chopAndUpper(origName,"ejb"); //NOI18N
         }
-        intfMethod = MethodModelSupport.createMethodModel(
+        intfMethod = MethodModel.create(
                 newName, 
                 intfMethod.getReturnType(),
                 intfMethod.getBody(),
@@ -85,7 +84,7 @@ class EntityGenerateFromImplVisitor implements MethodType.MethodTypeVisitor, Abs
         intfMethod = hmt.getMethodElement();
         String origName = intfMethod.getName();
         String newName = chopAndUpper(origName,"ejbHome"); //NOI18N
-        intfMethod = MethodModelSupport.createMethodModel(
+        intfMethod = MethodModel.create(
                 newName, 
                 intfMethod.getReturnType(),
                 intfMethod.getBody(),
@@ -105,7 +104,7 @@ class EntityGenerateFromImplVisitor implements MethodType.MethodTypeVisitor, Abs
         if (!fqn.equals(Collection.class.getName()) || !fqn.equals(Set.class.getName())) {
             changeType = true;
         }
-        intfMethod = MethodModelSupport.createMethodModel(
+        intfMethod = MethodModel.create(
                 newName, 
                 changeType ? component : intfMethod.getReturnType(),
                 intfMethod.getBody(),

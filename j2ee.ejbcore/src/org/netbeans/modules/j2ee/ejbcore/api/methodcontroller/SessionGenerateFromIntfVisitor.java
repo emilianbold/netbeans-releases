@@ -21,7 +21,6 @@ package org.netbeans.modules.j2ee.ejbcore.api.methodcontroller;
 import java.util.Collections;
 import javax.lang.model.element.Modifier;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
-import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType.BusinessMethodType;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType.CreateMethodType;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType.FinderMethodType;
@@ -52,7 +51,7 @@ final class SessionGenerateFromIntfVisitor implements MethodType.MethodTypeVisit
     public void visit(BusinessMethodType bmt) {
         implMethod = bmt.getMethodElement();
         String body = TODO + implMethod.getName() + EntityGenerateFromIntfVisitor.getReturnStatement(implMethod.getReturnType());
-        implMethod = MethodModelSupport.createMethodModel(
+        implMethod = MethodModel.create(
                 implMethod.getName(), 
                 implMethod.getReturnType(),
                 body,
@@ -67,7 +66,7 @@ final class SessionGenerateFromIntfVisitor implements MethodType.MethodTypeVisit
         String origName = implMethod.getName();
         String newName = prependAndUpper(origName, "ejb"); //NOI18N
         String body = TODO + newName;
-        implMethod = MethodModelSupport.createMethodModel(
+        implMethod = MethodModel.create(
                 newName, 
                 "void",
                 body,

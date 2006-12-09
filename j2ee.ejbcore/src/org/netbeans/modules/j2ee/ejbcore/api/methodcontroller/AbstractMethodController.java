@@ -150,7 +150,7 @@ public abstract class AbstractMethodController extends EjbMethodController {
         if (!local && !simplified) {
             method = addExceptionIfNecessary(method, RemoteException.class.getName());
         }
-        method = MethodModelSupport.createMethodModel(
+        method = MethodModel.create(
                 method.getName(), 
                 method.getReturnType(),
                 method.getBody(),
@@ -244,7 +244,7 @@ public abstract class AbstractMethodController extends EjbMethodController {
         } else if (methodType.getKind() == MethodType.Kind.CREATE) {
             String name = chopAndUpper(method.getName(), "ejb"); //NOI18N
             String type = local ? model.getLocal() : model.getRemote();
-            method = MethodModelSupport.createMethodModel(
+            method = MethodModel.create(
                     name,
                     type,
                     method.getBody(),
@@ -274,7 +274,7 @@ public abstract class AbstractMethodController extends EjbMethodController {
         if (!method.getExceptions().contains(exceptionName)) {
             List<String> exceptions = new ArrayList(method.getExceptions());
             exceptions.add(exceptionName);
-            return MethodModelSupport.createMethodModel(
+            return MethodModel.create(
                     method.getName(),
                     method.getReturnType(),
                     method.getBody(),
@@ -503,7 +503,7 @@ public abstract class AbstractMethodController extends EjbMethodController {
                 controller.toPhase(Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = controller.getElements().getTypeElement(clazz);
                 for (ExecutableElement method : ElementFilter.methodsIn(typeElement.getEnclosedElements())) {
-                    if (MethodModelSupport.isSameMethod(controller, typeElement, method, methodModel)) {
+                    if (MethodModelSupport.isSameMethod(controller, method, methodModel)) {
                         result[0] = true;
                         return;
                     }
