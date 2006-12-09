@@ -151,7 +151,7 @@ public class SourceRootsTest extends NbTestCase {
         assertEquals("The first root URLs should be "+this.sources.getURL(),this.sources.getURL(),srcURLs[0]);
         assertEquals("The second root URLs should be "+newRoot.getURL(),newRoot.getURL(),srcURLs[1]);
         events = tl.getEvents();
-        assertTrue ("Only PROP_ROOTS has to be fired", events.size() == 1 && events.contains(SourceRoots.PROP_ROOTS));
+        assertEquals(Collections.singleton(SourceRoots.PROP_ROOTS), events);
         sources.removePropertyChangeListener(tl);
     }
 
