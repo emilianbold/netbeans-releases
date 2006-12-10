@@ -54,6 +54,7 @@ import org.netbeans.api.editor.fold.FoldHierarchyListener;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseTextUI;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.editor.errorstripe.caret.CaretMark;
 import org.netbeans.modules.editor.errorstripe.privatespi.Mark;
 import org.netbeans.spi.editor.errorstripe.UpToDateStatus;
 import org.openide.ErrorManager;
@@ -290,11 +291,17 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
                     
                     g.setColor(color);
                     
-                    if ((startLine <= currentline && currentline <= endLine) || m.getType() == Mark.TYPE_CARET) {
-                        g.fillRect(1, (int) start, THICKNESS - 2, PIXELS_FOR_LINE);
-                    } else {
-                        g.drawRect(1, (int) start, THICKNESS - 3, PIXELS_FOR_LINE - 1);
+                    
+                    //g.fillRect(1, (int) start, THICKNESS - 2, PIXELS_FOR_LINE);                            
+                    //* 3D Version
+                    if ( m.getType() != Mark.TYPE_CARET ) {
+                        g.fillRect(1, (int) start , THICKNESS - 2, PIXELS_FOR_LINE);                            
+                        //g.draw3DRect(1, (int) start, THICKNESS - 3, PIXELS_FOR_LINE - 1, true);
                     }
+                    //*/                       
+                    if ((startLine <= currentline && currentline <= endLine) || m.getType() == Mark.TYPE_CARET ) {
+                        drawCurrentLineMark(g, (int)start);
+                    }                    
                 }
             }
             
@@ -312,6 +319,14 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
         }
     }
 
+    private void drawCurrentLineMark(Graphics g, int start) {
+        g.setColor( CaretMark.getCaretMarkColor());
+        g.drawLine(2, start + PIXELS_FOR_LINE / 2, THICKNESS - 3, start + PIXELS_FOR_LINE / 2 );        
+        g.fillRect( THICKNESS / 2 - PIXELS_FOR_LINE / 2, start, PIXELS_FOR_LINE, PIXELS_FOR_LINE );
+        g.draw3DRect( THICKNESS / 2 - PIXELS_FOR_LINE / 2, start, PIXELS_FOR_LINE - 1, PIXELS_FOR_LINE - 1, true );
+        
+    }
+    
     /*private*/ void fullRepaint() {
         fullRepaint(false);
     }
