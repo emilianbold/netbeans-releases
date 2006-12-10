@@ -98,21 +98,25 @@ public enum JspTokenId implements TokenId {
                 case TEXT:
                     return LanguageEmbedding.create(HTMLTokenId.language(), 0, 0);
                 case EL:
-                    return LanguageEmbedding.create(ELTokenId.language(), 2, 1);
-                    //                case SCRIPTLET:
-                    //                    return new LanguageEmbedding() {
-                    //                        public LanguageDescription language() {
-                    //                            return JavaLanguage.description();
-                    //                        }
-                    //
-                    //                        public int startSkipLength() {
-                    //                            return 0;
-                    //                        }
-                    //
-                    //                        public int endSkipLength() {
-                    //                            return 0;
-                    //                        }
-                    //                    };
+                    //lexer infrastructure workaround - need to adjust skiplenghts in case of short token
+                    int startSkipLength = token.length() > 2 ? 2 : token.length();
+                    int endSkipLength = token.length() > 2 ? 1 : 0;
+                    return LanguageEmbedding.create(ELTokenId.language(), startSkipLength, endSkipLength);
+                    
+//                case SCRIPTLET:
+//                    return new LanguageEmbedding() {
+//                        public LanguageDescription language() {
+//                            return JavaLanguage.description();
+//                        }
+//
+//                        public int startSkipLength() {
+//                            return 0;
+//                        }
+//
+//                        public int endSkipLength() {
+//                            return 0;
+//                        }
+//                    };
                 default:
                     return null;
             }
