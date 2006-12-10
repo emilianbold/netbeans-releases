@@ -208,7 +208,7 @@ public class GoToSupport {
                                     CALLER.beep();
                                 }
                             } else {
-                                CALLER.open(ClasspathInfo.create(fo), el);
+                                CALLER.open(controller.getClasspathInfo(), el);
                             }
                         }
                     }
@@ -263,6 +263,7 @@ public class GoToSupport {
         if (   doubleEncl != null
             && !doubleEncl.getKind().isClass()
             && !doubleEncl.getKind().isInterface()
+            && doubleEncl.getKind() != ElementKind.PACKAGE
             && encl.getKind() == ElementKind.CLASS) {
             TreePath enclTreePath = info.getTrees().getPath(encl);
             Tree enclTree = enclTreePath.getLeaf();
@@ -287,9 +288,12 @@ public class GoToSupport {
             }
             
             return null;//prevent jumps to incorrect positions
+        } else {
+            if (encl != null)
+                return encl;
+            else
+                return el;
         }
-        
-        return el;
     }
     
     private static final class FindVariableDeclarationVisitor extends TreePathScanner<Void, Element> {

@@ -405,6 +405,46 @@ public class GoToSupportTest extends NbTestCase {
         assertTrue(wasCalled[0]);
     }
     
+//    public void testGoToTypeVariable() throws Exception {
+//        final boolean[] wasCalled = new boolean[1];
+//        
+//        performTest("package test; public class Test<TTT> {public void test() {TTT t;}}", 60, new UiUtilsCaller() {
+//            public void open(FileObject fo, int pos) {
+//                assertTrue(source == fo);
+//                assertEquals(32, pos);
+//                wasCalled[0] = true;
+//            }
+//            public void beep() {
+//                fail("Should not be called.");
+//            }
+//            public void open(ClasspathInfo info, Element el) {
+//                fail("Should not be called.");
+//            }
+//        }, false);
+//        
+//        assertTrue(wasCalled[0]);
+//    }
+    
+    public void testGoToSynteticConstructorInDifferentClass() throws Exception {
+        final boolean[] wasCalled = new boolean[1];
+        
+        performTest("package test; public class Test {public void test() {new Auxiliary();}}", 62, new UiUtilsCaller() {
+            public void open(FileObject fo, int pos) {
+                fail("Should not be called.");
+            }
+            public void beep() {
+                fail("Should not be called.");
+            }
+            public void open(ClasspathInfo info, Element el) {
+                assertEquals(ElementKind.CLASS, el.getKind());
+                assertEquals("test.Auxiliary", ((TypeElement) el).getQualifiedName().toString());
+                wasCalled[0] = true;
+            }
+        }, false);
+        
+        assertTrue(wasCalled[0]);
+    }
+    
     private void writeIntoFile(FileObject file, String what) throws Exception {
         FileLock lock = file.lock();
         OutputStream out = file.getOutputStream(lock);
@@ -427,12 +467,17 @@ public class GoToSupportTest extends NbTestCase {
         FileObject sourceDir = root.createFolder("src");
         FileObject buildDir = root.createFolder("build");
         FileObject cacheDir = root.createFolder("cache");
+        FileObject testDir  = sourceDir.createFolder("test");
         
-        source = sourceDir.createFolder("test").createData("Test.java");
+        source = testDir.createData("Test.java");
+        
+        FileObject auxiliarySource = testDir.createData("Auxiliary.java");
         
         writeIntoFile(source, sourceCode);
+        writeIntoFile(auxiliarySource, "package test; public class Auxiliary {}"); //test go to "syntetic" constructor
         
         SourceUtilsTestUtil.prepareTest(sourceDir, buildDir, cacheDir, new FileObject[0]);
+        SourceUtilsTestUtil.compileRecursively(sourceDir);
         
         DataObject od = DataObject.find(source);
         EditorCookie ec = od.getCookie(EditorCookie.class);
