@@ -11,7 +11,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.netbeans.installer.infra.server.ejb.RegistryManager;
+import org.netbeans.installer.infra.server.ejb.Manager;
 import org.netbeans.installer.product.ProductComponent;
 import org.netbeans.installer.product.ProductGroup;
 import org.netbeans.installer.product.ProductTreeNode;
@@ -24,7 +24,7 @@ import org.netbeans.installer.utils.StreamUtils;
  */
 public class CreateBundle extends HttpServlet {
     @EJB
-    private RegistryManager registryManager;
+    private Manager manager;
     
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         response.setContentType("text/html; charset=UTF-8");
@@ -52,7 +52,7 @@ public class CreateBundle extends HttpServlet {
         }
         
         out.println("        <div class=\"registry\">");
-        buildRegistryTable(out, registryManager.getRegistryRoot(registries));
+        buildRegistryTable(out, manager.getRoot(registries));
         out.println("        </div>");
         
         out.println("            <input type=\"submit\" value=\"Create Bundle\"/>");
@@ -71,7 +71,7 @@ public class CreateBundle extends HttpServlet {
         response.setContentType("application/octet-stream");
         response.setHeader("Content-Disposition", "attachment; filename=nbi-bundle.jar");
         
-        final InputStream  input  = new FileInputStream(registryManager.createBundle(registries, components));
+        final InputStream  input  = new FileInputStream(manager.createBundle(registries, components));
         final OutputStream output = response.getOutputStream();
         
         StreamUtils.transferData(input, output);

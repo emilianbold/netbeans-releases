@@ -18,9 +18,8 @@ import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.netbeans.installer.infra.server.ejb.EngineManager;
-import org.netbeans.installer.infra.server.ejb.RegistryManager;
-import org.netbeans.installer.utils.exceptions.XMLException;
+import org.netbeans.installer.infra.server.ejb.Manager;
+import org.netbeans.installer.utils.FileUtils;
 
 /**
  *
@@ -30,25 +29,15 @@ import org.netbeans.installer.utils.exceptions.XMLException;
 public class RunCommand extends HttpServlet {
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    private static final File   UPLOADS = new File("D:\\temp\\nbi-server\\uploads");
-    private static final String UTF     = "UTF-8";
+    private static final String UTF = "UTF-8";
     
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     @EJB
-    private RegistryManager registryManager;
+    private Manager manager;
     
-    @EJB
-    private EngineManager engineManager;
-    
-    /**
-     * Initializes the servlet. Creates the uploads directory if it does not exist.
-     */
-    public void init() {
-        UPLOADS.mkdirs();
-    }
-    
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    protected void doPost(HttpServletRequest request, 
+            HttpServletResponse response) throws IOException {
         String command  = (String) request.getAttribute("command");
         
         String registry = null;
@@ -79,38 +68,38 @@ public class RunCommand extends HttpServlet {
                 fallback = request.getParameter("fallback");
             }
             
-            String prefix = null;
+            String getFilePrefix = null;
             if (registry != null) {
-                prefix = getHostUrl(request) + "/nbi/get-file?registry=" +
+                getFilePrefix = getHostUrl(request) + "/nbi/get-file?registry=" +
                         URLEncoder.encode(registry, "UTF-8") + "&file=";
             }
             
             if (command.equals("add-registry")) {
-                registryManager.addRegistry(registry);
+                manager.addRegistry(registry);
             }
             
             if (command.equals("remove-registry")) {
-                registryManager.removeRegistry(registry);
+                manager.removeRegistry(registry);
             }
             
             if (command.equals("update-engine")) {
-                engineManager.updateEngine(archive);
+                manager.updateEngine(archive);
             }
             
             if (command.equals("update-component")) {
-                registryManager.updateComponent(registry, archive, uid, version, prefix);
+                manager.updateComponent(registry, archive, uid, version, getFilePrefix);
             }
             
             if (command.equals("remove-component")) {
-                registryManager.removeComponent(registry, uid, version);
+                manager.removeComponent(registry, uid, version);
             }
             
             if (command.equals("update-group")) {
-                registryManager.updateGroup(registry, archive, uid, version, prefix);
+                manager.updateGroup(registry, archive, uid, version, getFilePrefix);
             }
             
             if (command.equals("remove-group")) {
-                registryManager.removeGroup(registry, uid);
+                manager.removeGroup(registry, uid);
             }
             
             response.getWriter().write(
@@ -204,7 +193,7 @@ public class RunCommand extends HttpServlet {
                 } else {
                     read(input, buffer);
                     
-                    File file = File.createTempFile("upload", null, UPLOADS);
+                    File file = FileUtils.createTempFile(manager.UPLOADS);
                     
                     parameters.put(name, file);
                     output = new FileOutputStream(file);

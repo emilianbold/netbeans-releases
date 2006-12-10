@@ -86,6 +86,9 @@ public class Installer {
     public static final String CREATE_BUNDLE_PATH_PROPERTY =
             "nbi.create.bundle.path";
     
+    public static final String IGNORE_LOCK_FILE_PROPERTY =
+            "nbi.ignore.lock.file";
+    
     /** Errorcode to be used at normal exit */
     public static final int NORMAL_ERRORCODE = 0;
     
@@ -142,7 +145,9 @@ public class Installer {
         
         cacheEngineLocally();
         
-        createInstallerLockFile(localDirectory);
+        if (System.getProperty(IGNORE_LOCK_FILE_PROPERTY) == null) {
+            createInstallerLockFile(localDirectory);
+        }
         
         LogManager.unindent();
         LogManager.log(MESSAGE, "... finished initializing the installer engine");
@@ -401,6 +406,16 @@ public class Installer {
                 LogManager.unindent();
                 continue;
             }
+            
+            if (arguments[i].equalsIgnoreCase("--ignore-lock")) {
+                LogManager.log(MESSAGE, "parsing command line parameter \"--ignore-lock\"");
+                LogManager.indent();
+                
+                System.setProperty(IGNORE_LOCK_FILE_PROPERTY, "true");
+                
+                LogManager.unindent();
+                continue;
+            }
         }
         
         if (arguments.length == 0) {
@@ -574,9 +589,9 @@ public class Installer {
                 File dest = new File(getLocalDirectory().getPath() + File.separator + name);
                 
                 if(!jarfile.getAbsolutePath().equals(dest.getAbsolutePath()) && jarfile.exists()) {
-                        FileUtils.copyFile(jarfile, dest);
-                    }
-                                
+                    FileUtils.copyFile(jarfile, dest);
+                }
+                
                 cachedEngine = (!dest.exists()) ? null : dest;
                 LogManager.log(MESSAGE, "NBI Engine jar file = [" +
                         cachedEngine + "], exist = " +
@@ -591,24 +606,25 @@ public class Installer {
     }
     
     private void createInstallerLockFile(File directory)  {
-        LogManager.log(ErrorLevel.DEBUG, "    creating lock file in " + directory);
-        File installerLock = new File(directory,
-                ".nbilock");
-        if(installerLock.exists()) {
-            LogManager.log(ErrorLevel.WARNING, "    lock file already exists");
+        LogManager.logIndent("creating lock file in " + directory);
+        
+        File installerLock = new File(directory, ".nbilock");
+        if (installerLock.exists()) {
+            LogManager.log("lock file already exists");
+            
             if(!UiUtils.showYesNoDialog(
                     "It seems that another instance of installer is already running!\n" +
-                    "It can be dangerous running another one in the same time.\n" + 
+                    "It can be dangerous running another one in the same time.\n" +
                     "Are you sure you want to run one more instance?\n\n")) {
-                        criticalExit();
-                    } 
+                cancel();
+            }
         }
+        
         FileOutputStream fos = null;
         try {
             fos = new FileOutputStream(installerLock);
         } catch (IOException ex) {
-            ErrorManager.notify(CRITICAL,
-                    "Can`t create lock for the local registry file!");
+            ErrorManager.notify(CRITICAL, "Can't create lock for the local registry file!");
         } finally {
             try {
                 installerLock.deleteOnExit();

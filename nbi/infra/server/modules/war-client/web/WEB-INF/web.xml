@@ -10,7 +10,7 @@
     </servlet>
     <servlet>
         <servlet-name>get-engine.jar</servlet-name>
-        <servlet-class>org.netbeans.installer.infra.server.client.servlets.GetEngineJar</servlet-class>
+        <servlet-class>org.netbeans.installer.infra.server.client.servlets.GetEngine</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>install</servlet-name>
@@ -23,6 +23,10 @@
     <servlet>
         <servlet-name>create-bundle</servlet-name>
         <servlet-class>org.netbeans.installer.infra.server.client.servlets.CreateBundle</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>feed</servlet-name>
+        <servlet-class>org.netbeans.installer.infra.server.client.servlets.Feed</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>get-registry</servlet-name>
@@ -47,6 +51,10 @@
     <servlet-mapping>
         <servlet-name>create-bundle</servlet-name>
         <url-pattern>/create-bundle</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>feed</servlet-name>
+        <url-pattern>/feed</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>

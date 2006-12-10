@@ -9,7 +9,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.netbeans.installer.infra.server.ejb.RegistryManager;
+import org.netbeans.installer.infra.server.ejb.Manager;
 import org.netbeans.installer.product.ProductComponent;
 import org.netbeans.installer.product.ProductGroup;
 import org.netbeans.installer.product.ProductTreeNode;
@@ -21,12 +21,12 @@ import org.netbeans.installer.product.ProductTreeNode;
  */
 public class ManageRegistries extends HttpServlet {
     @EJB
-    private RegistryManager registryManager;
+    private Manager manager;
     
     protected void processRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         response.setContentType("text/html; charset=UTF-8");
         
-        List<String> registries = registryManager.getRegistries();
+        List<String> registries = manager.getRegistries();
         
         PrintWriter out = response.getWriter();
         
@@ -63,7 +63,7 @@ public class ManageRegistries extends HttpServlet {
             out.println("        </select>");
             
             for (String registry: registries) {
-                ProductTreeNode node = registryManager.getRegistryRoot(registry);
+                ProductTreeNode node = manager.getRoot(registry);
                 out.println("        <div class=\"registry\" id=\"registry-" + registry + "\">");
                 
                 buildRegistryTable(out, registry, node);

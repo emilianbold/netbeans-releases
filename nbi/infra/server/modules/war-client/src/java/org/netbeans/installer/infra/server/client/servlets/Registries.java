@@ -8,7 +8,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.netbeans.installer.infra.server.ejb.RegistryManager;
+import org.netbeans.installer.infra.server.ejb.Manager;
 
 /**
  *
@@ -17,7 +17,7 @@ import org.netbeans.installer.infra.server.ejb.RegistryManager;
  */
 public class Registries extends HttpServlet {
     @EJB
-    private RegistryManager registryManager;
+    private Manager registryManager;
     
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         response.setContentType("text/html; encoding=UTF-8");

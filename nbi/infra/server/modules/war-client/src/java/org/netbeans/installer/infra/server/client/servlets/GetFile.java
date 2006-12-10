@@ -11,7 +11,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.netbeans.installer.infra.server.ejb.RegistryManager;
+import org.netbeans.installer.infra.server.ejb.Manager;
 import org.netbeans.installer.utils.StreamUtils;
 import org.netbeans.installer.utils.StringUtils;
 
@@ -22,13 +22,13 @@ import org.netbeans.installer.utils.StringUtils;
  */
 public class GetFile extends HttpServlet {
     @EJB
-    private RegistryManager registryManager;
+    private Manager registryManager;
     
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         final String registry     = request.getParameter("registry");
         final String path         = request.getParameter("file");
         
-        final File   file         = registryManager.getRegistryFile(registry, path);
+        final File   file         = registryManager.getFile(registry, path);
         
         response.setContentType("application/octet-stream");
         response.setHeader("Content-Disposition", "attachment; filename=" + file.getName());
