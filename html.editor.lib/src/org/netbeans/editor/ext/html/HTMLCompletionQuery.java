@@ -114,8 +114,15 @@ public class HTMLCompletionQuery implements CompletionQuery {
                 }
             }
             
+            if(ts == null) {
+                //no HTML token on the offset
+                return null;
+            }
+            
             int diff = ts.move(offset);
-            if(diff == Integer.MAX_VALUE) return null; //no token found
+            if(diff == Integer.MAX_VALUE) {
+                return null; //no token found
+            }
             
             Token item = ts.token();
             

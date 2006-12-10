@@ -902,6 +902,8 @@ public class JspLexer implements Lexer<JspTokenId> {
         
         switch(lexerState) {
             case INIT:
+            case ISA_LT:
+            case ISA_LT_SLASH:                
                 if (input.readLength() == 0) {
                     return null;
                 } else {
@@ -915,8 +917,6 @@ public class JspLexer implements Lexer<JspTokenId> {
             case ISI_DIR_ERROR_P:
                 lexerState = INIT;
                 return token(JspTokenId.ERROR);
-            case ISA_LT:
-            case ISA_LT_SLASH:
             case ISA_ENDSLASH:
             case ISP_TAG_EQ:
                 lexerState = INIT;
