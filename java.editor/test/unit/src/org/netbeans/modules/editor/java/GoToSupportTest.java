@@ -405,25 +405,25 @@ public class GoToSupportTest extends NbTestCase {
         assertTrue(wasCalled[0]);
     }
     
-//    public void testGoToTypeVariable() throws Exception {
-//        final boolean[] wasCalled = new boolean[1];
-//        
-//        performTest("package test; public class Test<TTT> {public void test() {TTT t;}}", 60, new UiUtilsCaller() {
-//            public void open(FileObject fo, int pos) {
-//                assertTrue(source == fo);
-//                assertEquals(32, pos);
-//                wasCalled[0] = true;
-//            }
-//            public void beep() {
-//                fail("Should not be called.");
-//            }
-//            public void open(ClasspathInfo info, Element el) {
-//                fail("Should not be called.");
-//            }
-//        }, false);
-//        
-//        assertTrue(wasCalled[0]);
-//    }
+    public void testGoToTypeVariable() throws Exception {
+        final boolean[] wasCalled = new boolean[1];
+        
+        performTest("package test; public class Test<TTT> {public void test() {TTT t;}}", 60, new UiUtilsCaller() {
+            public void open(FileObject fo, int pos) {
+                assertTrue(source == fo);
+                assertEquals(32, pos);
+                wasCalled[0] = true;
+            }
+            public void beep() {
+                fail("Should not be called.");
+            }
+            public void open(ClasspathInfo info, Element el) {
+                fail("Should not be called.");
+            }
+        }, false);
+        
+        assertTrue(wasCalled[0]);
+    }
     
     public void testGoToSynteticConstructorInDifferentClass() throws Exception {
         final boolean[] wasCalled = new boolean[1];
