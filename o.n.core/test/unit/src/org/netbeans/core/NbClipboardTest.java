@@ -84,6 +84,12 @@ public class NbClipboardTest extends NbTestCase {
         // opening new frame shall clear all the AWT references to previous frame
         JFrame f = new JFrame("Focus stealer");
         f.setVisible(true);
+        f.pack();
+        f.toFront();
+        f.requestFocus();
+        f.requestFocusInWindow();
+        
+        waitEQ(f);
 
         KeyboardFocusManager.getCurrentKeyboardFocusManager().clearGlobalFocusOwner();
         
@@ -92,5 +98,19 @@ public class NbClipboardTest extends NbTestCase {
         tc = null;
         
         assertGC("Top component can disappear", ref);
+    }
+    
+    private static void waitEQ(final Window w) throws Exception {
+        class R implements Runnable {
+            boolean visible;
+            
+            public void run() {
+                visible = w.isShowing();
+            }
+        }
+        R r = new R();
+        while (!r.visible) {
+            SwingUtilities.invokeAndWait(r);
+        }
     }
 }
