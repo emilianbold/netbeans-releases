@@ -230,7 +230,9 @@ public class WarDeploymentConfiguration extends WLDeploymentConfiguration
             replaceDocument(doc, newWeblogicWebApp);
             if (!modified) {
                 SaveCookie cookie = (SaveCookie)dataObject.getCookie(SaveCookie.class);
-                cookie.save();
+                if (cookie != null) {
+                    cookie.save();
+                }
             }
             webLogicWebApp = newWeblogicWebApp;
         } catch (BadLocationException ble) {
