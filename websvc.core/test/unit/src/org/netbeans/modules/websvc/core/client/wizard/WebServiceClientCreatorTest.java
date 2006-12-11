@@ -25,6 +25,8 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.websvc.core.ClientCreator;
+import org.netbeans.modules.websvc.core.CreatorProvider;
 import org.netbeans.modules.websvc.core.testutils.RepositoryImpl;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
@@ -58,16 +60,19 @@ public class WebServiceClientCreatorTest extends NbTestCase {
         Project p = FileOwnerQuery.getOwner(projectDir);
         assert p != null : "null Project";
         wd = new WizardDescriptor(new Panel[] {new WebServiceClientWizardDescriptor()});
-        WebServiceClientCreator wscc = new WebServiceClientCreator(p, wd);
+          
         wd.putProperty(WizardProperties.JAX_VERSION, WizardProperties.JAX_WS);
         wd.putProperty(WizardProperties.WSDL_FILE_PATH, FileUtil.normalizeFile(new File(getDataDir(), "wsdl/MyWebService.wsdl")).getAbsolutePath());
         wd.putProperty(WizardProperties.WSDL_PACKAGE_NAME, "client.jaxws");
-        try {
-            wscc.create();
-        } catch (IOException ex) {
-            ex.printStackTrace();
+        ClientCreator creator = CreatorProvider.getClientCreator(p, wd);
+        if (creator!=null) {        
+            try {
+                creator.createClient();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+            ((JaxWsClientCreator)creator).task.waitFinished();
         }
-        wscc.task.waitFinished();
         //some checks...
 
     }
