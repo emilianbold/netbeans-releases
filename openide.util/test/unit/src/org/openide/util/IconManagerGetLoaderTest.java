@@ -25,13 +25,6 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import junit.framework.*;
-import org.openide.ErrorManager;
-import java.awt.Component;
-import java.awt.Image;
-import java.awt.MediaTracker;
-import java.awt.Toolkit;
-import java.awt.image.BufferedImage;
-import java.awt.image.ImageObserver;
 import java.lang.ref.*;
 import java.util.*;
 
