@@ -25,7 +25,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URL;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -148,16 +147,16 @@ public final class JavaNode extends DataNode implements ChangeListener {
     }
     
     private Node.Property createNameProperty () {
-        Node.Property p = new PropertySupport.ReadWrite (
+        Node.Property p = new PropertySupport.ReadWrite<String> (
                 DataObject.PROP_NAME,
                 String.class,
                 NbBundle.getMessage (DataObject.class, "PROP_name"),
                 NbBundle.getMessage (DataObject.class, "HINT_name")
                 ) {
-            public Object getValue () {
+            public String getValue () {
                 return JavaNode.this.getName();
             }
-            
+            @Override
             public Object getValue(String key) {
                 if ("suppressCustomEditor".equals (key)) { //NOI18N
                     return Boolean.TRUE;
@@ -165,16 +164,13 @@ public final class JavaNode extends DataNode implements ChangeListener {
                     return super.getValue (key);
                 }
             }
-            public void setValue(Object val) throws IllegalAccessException,
+            public void setValue(String val) throws IllegalAccessException,
                     IllegalArgumentException, InvocationTargetException {
                 if (!canWrite())
                     throw new IllegalAccessException();
-                if (!(val instanceof String))
-                    throw new IllegalArgumentException();
-                
-                JavaNode.this.setName((String)val);
+                JavaNode.this.setName(val);
             }
-            
+            @Override
             public boolean canWrite() {
                 return JavaNode.this.canRename();
             }
@@ -187,9 +183,8 @@ public final class JavaNode extends DataNode implements ChangeListener {
     /**
      * Displays one kind of classpath for this Java source.
      * Tries to use the normal format (directory or JAR names), falling back to URLs if necessary.
-     * Displays corresponding sources instead of binaries where this is possible.
      */
-    private final class ClasspathProperty extends PropertySupport.ReadOnly {
+    private final class ClasspathProperty extends PropertySupport.ReadOnly<String> {
         
         private final String id;
         
@@ -197,40 +192,34 @@ public final class JavaNode extends DataNode implements ChangeListener {
             super(id, /*XXX NbClassPath would be preferable, but needs org.openide.execution*/String.class, displayName, shortDescription);
             this.id = id;
             // XXX the following does not always work... why?
-            setValue("oneline", Boolean.FALSE); // NOI18N
+            setValue("oneline", false); // NOI18N
         }
         
-        public Object getValue() {
+        public String getValue() {
             ClassPath cp = ClassPath.getClassPath(getDataObject().getPrimaryFile(), id);
             if (cp != null) {
                 StringBuffer sb = new StringBuffer();
-                Iterator<ClassPath.Entry> entries = cp.entries().iterator();
-                while (entries.hasNext()) {
-                    ClassPath.Entry entry = (ClassPath.Entry) entries.next();
+                for (ClassPath.Entry entry : cp.entries()) {
                     URL u = entry.getURL();
-                    append(sb, u);
+                    String item = u.toExternalForm(); // fallback
+                    if (u.getProtocol().equals("file")) { // NOI18N
+                        item = new File(URI.create(item)).getAbsolutePath();
+                    } else if (u.getProtocol().equals("jar") && item.endsWith("!/")) { // NOI18N
+                        URL embedded = FileUtil.getArchiveFile(u);
+                        assert embedded != null : u;
+                        if (embedded.getProtocol().equals("file")) { // NOI18N
+                            item = new File(URI.create(embedded.toExternalForm())).getAbsolutePath();
+                        }
+                    }
+                    if (sb.length() > 0) {
+                        sb.append(File.pathSeparatorChar);
+                    }
+                    sb.append(item);
                 }
                 return sb.toString();
             } else {
                 return NbBundle.getMessage(JavaNode.class, "LBL_JavaNode_classpath_unknown");
             }
-        }
-        
-        private void append(StringBuffer sb, URL u) {
-            String item = u.toExternalForm(); // fallback
-            if (u.getProtocol().equals("file")) { // NOI18N
-                item = new File(URI.create(item)).getAbsolutePath();
-            } else if (u.getProtocol().equals("jar") && item.endsWith("!/")) { // NOI18N
-                URL embedded = FileUtil.getArchiveFile(u);
-                assert embedded != null : u;
-                if (embedded.getProtocol().equals("file")) { // NOI18N
-                    item = new File(URI.create(embedded.toExternalForm())).getAbsolutePath();
-                }
-            }
-            if (sb.length() > 0) {
-                sb.append(File.pathSeparatorChar);
-            }
-            sb.append(item);
         }
     }
 
@@ -267,7 +256,7 @@ public final class JavaNode extends DataNode implements ChangeListener {
                         
                         if (t != null) {
                             boolean fire = t.fire;
-                            JavaNode node = (JavaNode) t.node;
+                            JavaNode node = t.node;
                             
                             if (t.computeBuiltStatus) {
                                 boolean newIsCompiled = node.status != null ? node.status.isBuilt() : true;
