@@ -210,8 +210,6 @@ public class CasualDiff {
         }
     }
     
-    int currentIndentLevel = 0;
-    
     private static enum ChangeKind {
         INSERT,
         DELETE,
@@ -283,7 +281,6 @@ public class CasualDiff {
     protected int diffClassDef(JCClassDecl oldT, JCClassDecl newT, int[] bounds) throws IOException, BadLocationException {
         int localPointer =  bounds[0];
         int insertHint = localPointer;
-        currentIndentLevel += 4;
         JCTree opar = oldParent;
         oldParent = oldT;
         JCTree npar = newParent;
@@ -293,7 +290,6 @@ public class CasualDiff {
         tokenSequence.move(oldT.pos);
         tokenSequence.moveNext();
         insertHint = TokenUtilities.moveNext(tokenSequence, tokenSequence.offset());
-        printer.reset(0);
         localPointer = diffModifiers(oldT.mods, newT.mods, oldT, localPointer);
         if (nameChanged(oldT.name, newT.name)) {
             printer.print(origText.substring(localPointer, insertHint));
@@ -380,7 +376,10 @@ public class CasualDiff {
             tokenSequence.moveNext();
             insertHint = tokenSequence.offset();
         }
+        int old = printer.indent();
         VeryPretty mujPrinter = new VeryPretty(context, JavaFormatOptions.getDefault());
+        mujPrinter.reset(old);
+        mujPrinter.indent();
         mujPrinter.enclClassName = newT.getSimpleName();
         int[] pos = diffList(filterHidden(oldT.defs), filterHidden(newT.defs), insertHint, EstimatorFactory.members(), Measure.DEFAULT, mujPrinter);
         if (localPointer < pos[0])
@@ -395,12 +394,11 @@ public class CasualDiff {
         newParent = npar;
         // the reference is no longer needed.
         origClassName = null;
-        currentIndentLevel -= 4;
+        printer.undent(old);
         return bounds[1];
     }
 
     protected int diffMethodDef(JCMethodDecl oldT, JCMethodDecl newT, int[] bounds) throws IOException, BadLocationException {
-        printer.reset(currentIndentLevel);
         int localPointer = bounds[0];
         if (oldT.mods != newT.mods) {
             if (newT.mods.toString().length() > 0) {
@@ -477,7 +475,7 @@ public class CasualDiff {
     }
 
     protected int diffVarDef(JCVariableDecl oldT, JCVariableDecl newT, int[] bounds) throws IOException, BadLocationException {
-        int localPointer = bounds[0];
+       int localPointer = bounds[0];
         if (oldT.mods != newT.mods) {
             if (newT.mods.toString().length() > 0) {
                 localPointer = diffModifiers(oldT.mods, newT.mods, oldT, localPointer);
@@ -507,8 +505,9 @@ public class CasualDiff {
         if (oldT.flags != newT.flags)
             append(Diff.flags(oldT.pos, endPos(oldT), oldT.flags, newT.flags));
         VeryPretty bodyPrinter = new VeryPretty(context, JavaFormatOptions.getDefault());
-        currentIndentLevel += 4;
-        bodyPrinter.reset(currentIndentLevel);
+        int oldIndent = printer.indent();
+        bodyPrinter.reset(oldIndent);
+        bodyPrinter.indent();
         int[] pos = diffList(oldT.stats, newT.stats, oldT.pos + 1, EstimatorFactory.members(), Measure.DEFAULT, bodyPrinter); // hint after open brace
         if (localPointer < pos[0]) {
             printer.print(origText.substring(localPointer, pos[0]));
@@ -518,7 +517,7 @@ public class CasualDiff {
         if (localPointer < endPos(oldT)) {
             printer.print(origText.substring(localPointer, localPointer = endPos(oldT)));
         }
-        currentIndentLevel -= 4;
+        printer.undent(oldIndent);
         return localPointer;
     }
 
@@ -1296,7 +1295,9 @@ public class CasualDiff {
                             if (oldPos == oldNodePos) {
                                 found = true;
                                 VeryPretty oldPrinter = this.printer;
+                                int old = oldPrinter.indent();
                                 this.printer = new VeryPretty(context, JavaFormatOptions.getDefault());
+                                this.printer.reset(old);
                                 int index = oldList.indexOf(oldT);
                                 int[] poss = estimator.getPositions(index);
                                 diffTree(oldT, item.element, poss);
@@ -1304,6 +1305,7 @@ public class CasualDiff {
 //                                if (pointer < poss[1])
 //                                    printer.print(origText.substring(pointer, pointer = poss[1]));
                                 this.printer = oldPrinter;
+                                this.printer.undent(old);
                                 break;
                             }
                         }
@@ -1313,16 +1315,19 @@ public class CasualDiff {
                             posHint = estimator.getPositions(0)[0];
                         }
                         printer.print(head);
+                        int old = printer.indent();
                         VeryPretty inPrint = new VeryPretty(context, JavaFormatOptions.getDefault());
+                        inPrint.reset(old);
                         inPrint.enclClassName = printer.enclClassName;
-                        inPrint.reset(currentIndentLevel);
+//                        inPrint.indent();
                         inPrint.print(item.element);
                         inPrint.newline();
                         printer.print(inPrint.toString());
+                        printer.undent(old);
                         //printer.print(tail);
-                        if (j+1 != result.length) {
-                            printer.toColExactly(currentIndentLevel);
-                        }
+//                        if (j+1 != result.length) {
+//                            printer.toColExactly(currentIndentLevel);
+//                        }
                     }
                     break;
                 }
