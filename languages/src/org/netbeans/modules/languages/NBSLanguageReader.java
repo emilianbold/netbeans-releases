@@ -226,7 +226,7 @@ public class NBSLanguageReader {
             String s = node.getTokenTypeIdentifier ("command0.command1.command2.string");
             if (s != null) {
                 s = s.substring (1, s.length () - 1);
-                value = Evaluator.createStringEvaluator (c (s));
+                value = Evaluator.createExpressionEvaluator (c (s));
             }
         }
         
@@ -239,7 +239,7 @@ public class NBSLanguageReader {
             String s = node.getTokenTypeIdentifier ("command0.command2.string");
             if (s != null) {
                 s = s.substring (1, s.length () - 1);
-                value = Evaluator.createStringEvaluator (c (s));
+                value = Evaluator.createExpressionEvaluator (c (s));
             }
         }
         
@@ -261,7 +261,7 @@ public class NBSLanguageReader {
                 result.put (key, evaluator);
             } else {
                 value = value.substring (1, value.length () - 1);
-                Evaluator evaluator = Evaluator.createStringEvaluator (c (value));
+                Evaluator evaluator = Evaluator.createExpressionEvaluator (c (value));
                 result.put (key, evaluator);
             }
         }
@@ -358,7 +358,7 @@ public class NBSLanguageReader {
             if (identifier == null)
                 throw new ParseException ("Syntax error.");
             if (feature == null)
-                feature = Evaluator.createStringEvaluator ("...");
+                feature = Evaluator.createExpressionEvaluator ("...");
             else
             if (!(feature instanceof Evaluator))
                 throw new ParseException ("Syntax error.");

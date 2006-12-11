@@ -9,9 +9,6 @@
 
 package org.netbeans.modules.languages;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.modules.languages.parser.*;
 
 import javax.swing.text.AttributeSet;
@@ -20,8 +17,6 @@ import javax.swing.text.StyleConstants;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
-import org.openide.ErrorManager;
-import org.openide.util.Lookup;
 
 
 /**

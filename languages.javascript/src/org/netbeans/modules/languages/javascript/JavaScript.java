@@ -151,12 +151,12 @@ public class JavaScript {
             completionItems.addAll (getLibrary ().getItems ("keyword"));
             completionItems.addAll (getLibrary ().getItems ("root"));
         }
+        if (path.size () < 2) return completionItems;
         ArrayList l = new ArrayList ();
         Collection c = DatabaseManager.getIds ((ASTNode) path.get (path.size () - 2), true);
         l.addAll (c);
         c = DatabaseManager.getIds (DatabaseManager.FOLDER);
         l.addAll (c);
-        l.addAll (completionItems);
         return l;
     }
 
@@ -195,6 +195,7 @@ public class JavaScript {
                 }
             }
         }
+        if (path.size () < 2) return completionDescriptions;
         ArrayList l = new ArrayList ();
         Collection c = DatabaseManager.getIds ((ASTNode) path.get (path.size () - 2), true);
         l.addAll (c);
