@@ -6,9 +6,3 @@ OpenIDE-Module-Layer: org/netbeans/modules/javadoc/resources/mf-layer.xml
 OpenIDE-Module-Requires: org.openide.modules.InstalledFileLocator
 OpenIDE-Module-Specification-Version: 1.19
 
-Name: org/netbeans/modules/javadoc/comments/AutoCommentAction.class
-OpenIDE-Module-Class: Action
-
-Name: org/netbeans/modules/javadoc/comments/CorrectJavaDocAction.class
-OpenIDE-Module-Class: Action
-

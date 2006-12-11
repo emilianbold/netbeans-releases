@@ -26,7 +26,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.ServiceType;
 
-import org.netbeans.modules.javadoc.comments.AutoCommenter;
+//import org.netbeans.modules.javadoc.comments.AutoCommenter;
 import org.netbeans.modules.javadoc.search.JavadocSearchType;
 import org.netbeans.modules.javadoc.*;
 import org.openide.util.Lookup;
@@ -68,7 +68,9 @@ public class DocumentationSettings extends SystemOption {
         if( getProperty( PROP_AUTOCOMENT_PACKAGE ) == null )
             setAutocommentPackage(false);        
         if( getProperty( PROP_AUTOCOMENT_ERR_MASK ) == null )
-            setAutocommentErrorMask(AutoCommenter.JDC_OK | AutoCommenter.JDC_ERROR | AutoCommenter.JDC_MISSING);
+            // XXX temporarily commented to remove dependency on the org.netbeans.modules.javadoc.comments package
+//            setAutocommentErrorMask(AutoCommenter.JDC_OK | AutoCommenter.JDC_ERROR | AutoCommenter.JDC_MISSING);
+            setAutocommentErrorMask(7);
         initializing = false;
     }
 

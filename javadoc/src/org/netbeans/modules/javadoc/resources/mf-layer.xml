@@ -44,12 +44,13 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
     
     <folder name="Tools">
+      <!-- XXX disabled until the org.netbeans.modules.javadoc.comments package will be rewritten.
       <file name="Auto Comment Action.instance">
         <attr name="instanceClass" stringvalue="org.netbeans.modules.javadoc.comments.AutoCommentAction"/>
       </file>      
       <file name="Correct Javadoc Action.instance">
         <attr name="instanceClass" stringvalue="org.netbeans.modules.javadoc.comments.CorrectJavaDocAction"/>
-      </file>
+      </file-->
       <file name="javadoc-Search-Doc-Action.instance">
         <attr name="instanceClass" stringvalue="org.netbeans.modules.javadoc.search.SearchDocAction"/>
       </file>
@@ -62,14 +63,15 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="instanceClass" stringvalue="org.netbeans.modules.javadoc.search.SearchDocAction"/>
       </file>
   </folder> 
-   
+  
+  <!-- XXX likely needless since node factories seems to be dead
   <folder name="NodeFactories">
     <folder name="java">
 		  <folder name="explorer">
         <file name="org-netbeans-modules-javadoc-comments-JavaDocPropertySupportFactory.instance"/>
 			</folder> 
     </folder>
-  </folder>
+  </folder-->
    
 
 <!--  Services part -->

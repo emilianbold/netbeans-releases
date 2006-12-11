@@ -19,26 +19,31 @@
 
 package org.netbeans.modules.javadoc.search;
 
-import java.io.*;
+import java.io.Externalizable;
+import java.io.ObjectStreamException;
 import java.net.URL;
-
 import java.util.ArrayList;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.util.ResourceBundle;
-import javax.swing.*;
-
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultListModel;
+import javax.swing.ImageIcon;
+import javax.swing.JSplitPane;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.UiUtils;
 import org.netbeans.api.javahelp.Help;
+import org.netbeans.modules.javadoc.settings.DocumentationSettings;
 import org.openide.awt.HtmlBrowser;
 import org.openide.windows.TopComponent;
 import org.openide.util.RequestProcessor;
 import org.openide.NotifyDescriptor;
-import org.openide.src.Element;
-import org.openide.cookies.OpenCookie;
-import org.openide.util.*;
-
-import org.netbeans.modules.javadoc.settings.DocumentationSettings;
 import org.openide.DialogDisplayer;
+import org.openide.filesystems.FileObject;
+import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /** Main window for documentation index search
  *
@@ -500,18 +505,12 @@ public final class IndexSearch
         DocIndexItem  dii = (DocIndexItem)resultsList.getModel().getElementAt( resultsList.getMinSelectionIndex() );
 
         try {
-            Element e = SrcFinder.findSource( dii.getPackage(), dii.getURL() );
+            Object[] e = SrcFinder.findSource( dii.getPackage(), dii.getURL() );
 
             if ( e != null ) {
-                OpenCookie oc = (OpenCookie)e.getCookie( OpenCookie.class );
-                if ( oc != null ) {
-                    //System.out.println( oc );
-                    oc.open();
-                }
-                else {
-                    NotifyDescriptor.Message nd = new NotifyDescriptor.Message( NbBundle.getMessage(IndexSearch.class, "MSG_SEARCH_SrcNotFound" ) );   //NOI18N
-                    DialogDisplayer.getDefault().notify( nd );
-                }
+                FileObject toOpen = (FileObject) e[0];
+                ElementHandle eh = (ElementHandle) e[1];
+                UiUtils.open(toOpen, eh);
             }
             else {
                 NotifyDescriptor.Message nd = new NotifyDescriptor.Message( NbBundle.getMessage(IndexSearch.class, "MSG_SEARCH_SrcNotFound" ) );   //NOI18N
