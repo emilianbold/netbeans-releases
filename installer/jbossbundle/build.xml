@@ -24,8 +24,6 @@ Microsystems, Inc. All Rights Reserved.
   <property file="nbproject/private/private.properties"/>  
   <property file="build.properties" />
 
-  <property name="storage.builder" location="../../java/storagebuilder/dist/storagebuilder.jar"/>
-  <property name="preparse.files" location="../../java/storagebuilder/preparse-files.txt"/>
   <property name="nb.dir" location="../../nbbuild/netbeans"/>
   <property name="nb.dir.tmp" location="build/netbeans"/>
 
@@ -138,10 +136,6 @@ Microsystems, Inc. All Rights Reserved.
         <arg value="nb.dir=@{input.nb.dir}"/>
         <arg value="-alias"/>
         <arg value="jboss.installer=${jboss.installer}"/>
-        <arg value="-alias"/>
-        <arg value="storage.builder=${storage.builder}"/>
-        <arg value="-alias"/>
-        <arg value="sb.scripts.dir=build/storagebuilder"/>
         <classpath>
           <pathelement path="build/classes" />
           <path refid="ismp.cp"/>
@@ -152,75 +146,55 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="build-linux" depends="init, clean-build, compile, copy-netbeans, run-pack">
   <!--<target name="build-linux" depends="init">-->
-    <copy file="${preparse.files}"
-          tofile="build/storagebuilder/preparse-files.txt"/>
     <build-installer input.ismp.project="jb-linux"/>
     <move file="build/disk1/setuplinux.bin" tofile="dist/${installer.basename}-linux.bin"/>
   </target>
   
   <target name="build-linux-ml" depends="init-ml, clean-build, compile, xsl-linux-ml, copy-netbeans, run-pack">
-    <copy file="${preparse.files}"
-          tofile="build/storagebuilder/preparse-files.txt"/>
     <build-installer input.ismp.project="jb-linux-ml"/>
     <move file="build/disk1/setuplinux.bin" tofile="dist/${installer.basename}-linux-ml.bin"/>
     <delete file="jb-linux-ml.uip"/>
   </target>
 
   <target name="build-solaris-sparc" depends="init, clean-build, compile, copy-netbeans, run-pack">
-    <copy file="${preparse.files}"
-          tofile="build/storagebuilder/preparse-files.txt"/>
     <build-installer input.ismp.project="jb-solaris-sparc"/>
     <move file="build/disk1/setupSolarisSparc.bin" tofile="dist/${installer.basename}-solsparc.bin"/>
   </target>
   
   <target name="build-solaris-sparc-ml" depends="init-ml, clean-build, compile, xsl-solaris-sparc-ml, copy-netbeans, run-pack">
-    <copy file="${preparse.files}"
-          tofile="build/storagebuilder/preparse-files.txt"/>
     <build-installer input.ismp.project="jb-solaris-sparc-ml"/>
     <delete file="jb-solaris-sparc-ml.uip"/>
     <move file="build/disk1/setupSolarisSparc.bin" tofile="dist/${installer.basename}-solsparc-ml.bin"/>
   </target>
 
   <target name="build-solaris-x86" depends="init, clean-build, compile, copy-netbeans, run-pack">
-    <copy file="${preparse.files}"
-          tofile="build/storagebuilder/preparse-files.txt"/>
     <build-installer input.ismp.project="jb-solaris-x86"/>
     <move file="build/disk1/setupSolarisX86.bin" tofile="dist/${installer.basename}-solx86.bin"/>
   </target>
   
   <target name="build-solaris-x86-ml" depends="init-ml, clean-build, compile, xsl-solaris-x86-ml, copy-netbeans, run-pack">
-    <copy file="${preparse.files}"
-          tofile="build/storagebuilder/preparse-files.txt"/>
     <build-installer input.ismp.project="jb-solaris-x86-ml"/>
     <delete file="jb-solaris-x86-ml.uip"/>
     <move file="build/disk1/setupSolarisX86.bin" tofile="dist/${installer.basename}-solx86-ml.bin"/>
   </target>
 
   <target name="build-windows" depends="init, clean-build, compile, copy-netbeans, run-pack">
-    <copy file="${preparse.files}"
-          tofile="build/storagebuilder/preparse-files.txt"/>
     <build-installer input.ismp.project="jb-windows"/>
     <move file="build/disk1/setupwin32.exe" tofile="dist/${installer.basename}-win.exe"/>
   </target>
   
   <target name="build-windows-ml" depends="init-ml, clean-build, compile, xsl-windows-ml, copy-netbeans, run-pack">
-    <copy file="${preparse.files}"
-          tofile="build/storagebuilder/preparse-files.txt"/>
     <build-installer input.ismp.project="jb-windows-ml"/>
     <delete file="jb-windows-ml.uip"/>
     <move file="build/disk1/setupwin32.exe" tofile="dist/${installer.basename}-win-ml.exe"/>
   </target>
 
   <target name="build-macosx" depends="init, clean-build, compile, copy-netbeans, run-pack, create-app">
-    <copy file="${preparse.files}"
-          tofile="build/storagebuilder/preparse-files.txt"/>
     <build-installer input.ismp.project="jb-macosx" input.nb.dir="${build.dir}/${app.dir}"/>
     <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}-macosx.jar"/>
   </target>
   
   <target name="build-macosx-ml" depends="init-ml, clean-build, compile, copy-netbeans, run-pack, create-app, xsl-macosx-ml">
-    <copy file="${preparse.files}"
-          tofile="build/storagebuilder/preparse-files.txt"/>
     <build-installer input.ismp.project="jb-macosx-ml" input.nb.dir="${build.dir}/${app.dir}"/>
     <delete file="jb-macosx-ml.uip"/>
     <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}-macosx-ml.jar"/>

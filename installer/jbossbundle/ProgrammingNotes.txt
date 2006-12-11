@@ -14,13 +14,6 @@ To build from command line run ant as usual with
  -Dnb.dir=../../nbbuild/netbeans
  -Dinstaller.basename=NetBeans-asbundle-20040622
  -Djboss.installer=/mnt/local/jboss.installer/jems-installer-1.2.0.BETA.jar
- -Dstorage.builder=../../java/storagebuilder/dist/storagebuilder.jar
- -Dpreparse.files=../../java/storagebuilder/preparse-files.txt
-
-Property storage.builder contains location of storage builder jar file.
- 
-Property preparse.files contains location of text file with list of classes to
-be parsed by storage builder. Colon ':' is used as list separator.
 
 Build targets to build English (en) installers for supported platforms are
 as follows:
