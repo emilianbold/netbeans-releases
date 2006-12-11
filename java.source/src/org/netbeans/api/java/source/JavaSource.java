@@ -307,7 +307,7 @@ public final class JavaSource {
         JavaSource js = ref != null ? ref.get() : null;
 
         if (js == null) {
-            file2JavaSource.put(fileObject, new WeakReference(js = create(ClasspathInfo.create(fileObject), fileObject)));
+            file2JavaSource.put(fileObject, new WeakReference<JavaSource>(js = create(ClasspathInfo.create(fileObject), fileObject)));
         }
 
         return js;
@@ -325,8 +325,8 @@ public final class JavaSource {
         if (doc == null) {
             throw new IllegalArgumentException ("doc == null");  //NOI18N
         }
-        Reference<JavaSource> ref = (Reference<JavaSource>)doc.getProperty(JavaSource.class);
-        JavaSource js = ref != null ? ref.get() : null;
+        Reference<?> ref = (Reference<?>) doc.getProperty(JavaSource.class);
+        JavaSource js = ref != null ? (JavaSource) ref.get() : null;
         if (js == null) {
             DataObject dObj = (DataObject)doc.getProperty(Document.StreamDescriptionProperty);
             if (dObj != null)
@@ -341,7 +341,7 @@ public final class JavaSource {
      * @param cpInfo classpath info
      */
     private JavaSource (ClasspathInfo cpInfo, Collection<? extends FileObject> files) throws IOException {
-        this.files = Collections.unmodifiableList(new ArrayList (files));   //Create a defensive copy, prevent modification
+        this.files = Collections.unmodifiableList(new ArrayList<FileObject>(files));   //Create a defensive copy, prevent modification
         this.fileChangeListener = new FileChangeListenerImpl ();
         boolean multipleSources = this.files.size() > 1;
         for (Iterator<? extends FileObject> it = this.files.iterator(); it.hasNext();) {
@@ -739,6 +739,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         if (!backgroundCompilation) {
             if (Boolean.getBoolean("org.netbeans.api.java.source.JavaSource.USE_COMPILER_LINT")) { // XXX temp workaround for #76702
                 options.add("-Xlint");
+                options.add("-Xlint:-serial");
             }
             options.add("-Xjcov"); //NOI18N, Make the compiler store end positions
         } else {
@@ -987,7 +988,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
     
     private void assignDocumentListener(FileObject fo) throws IOException {
         DataObject od = DataObject.find(fo);
-        EditorCookie.Observable ec = (EditorCookie.Observable) od.getCookie(EditorCookie.Observable.class);            
+        EditorCookie.Observable ec = od.getCookie(EditorCookie.Observable.class);            
         if (ec != null) {
             this.listener = new DocListener (ec);
         } else {
@@ -1220,7 +1221,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         public DocListener (EditorCookie.Observable ec) {
             assert ec != null;
             this.ec = ec;
-            this.ec.addPropertyChangeListener((PropertyChangeListener)WeakListeners.propertyChange(this, this.ec));
+            this.ec.addPropertyChangeListener(WeakListeners.propertyChange(this, this.ec));
             Document doc = ec.getDocument();            
             if (doc != null) {
                 doc.addDocumentListener(docListener = WeakListeners.create(DocumentListener.class, this, doc));
@@ -1600,7 +1601,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             for (FileObject fo : files) {
                 try {
                 final DataObject dobj = DataObject.find(fo);
-                final EditorCookie ec = (EditorCookie) dobj.getCookie(EditorCookie.class);
+                final EditorCookie ec = dobj.getCookie(EditorCookie.class);
                 if (ec != null) {
                     final StyledDocument doc = ec.getDocument();
                     if (doc instanceof AbstractDocument) {
