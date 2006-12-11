@@ -47,6 +47,11 @@ public class SystemDefaultBrowser extends ExtWebBrowser {
     private static BrowseInvoker MUSTANG_DESKTOP_BROWSE;
     static {
         try {
+          if (Boolean.getBoolean("java.net.useSystemProxies") && Utilities.isUnix()) {
+              // remove this check if JDK's bug 6496491 is fixed or if we can assume ORBit >= 2.14.2 and gnome-vfs >= 2.16.1
+              Logger.getLogger(SystemDefaultBrowser.class.getName()).log(Level.FINE, "Ignoring java.awt.Desktop.browse support to avoid hang from #89540");
+          }
+          else {
             Class desktop = Class.forName("java.awt.Desktop"); // NOI18N
             Method isDesktopSupported = desktop.getMethod("isDesktopSupported", null); // NOI18N
             Boolean b = (Boolean) isDesktopSupported.invoke(null, null);
@@ -74,6 +79,7 @@ public class SystemDefaultBrowser extends ExtWebBrowser {
                     Logger.getLogger(SystemDefaultBrowser.class.getName()).log(Level.FINE, "java.awt.Desktop.browse support");
                 }
             }
+          }
         } catch (ClassNotFoundException e) {
             // JDK 5, ignore
             Logger.getLogger(SystemDefaultBrowser.class.getName()).log(Level.FINE, "java.awt.Desktop class not found, disabling Mustang browse functionality");
@@ -87,7 +93,7 @@ public class SystemDefaultBrowser extends ExtWebBrowser {
      *          false in all other cases.
      */
     public static Boolean isHidden () {
-        return (Utilities.isWindows() || MUSTANG_DESKTOP_BROWSE != null) ? Boolean.FALSE : Boolean.TRUE;
+        return Boolean.valueOf(!Utilities.isWindows() && MUSTANG_DESKTOP_BROWSE == null);
     }
     
     /** Creates new ExtWebBrowser */
