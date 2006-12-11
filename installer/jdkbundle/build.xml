@@ -24,8 +24,6 @@ Microsystems, Inc. All Rights Reserved.
   <property file="nbproject/private/private.properties"/>  
   <property file="build.properties" />
 
-  <property name="storage.builder" location="../../java/storagebuilder/dist/storagebuilder.jar"/>
-  <property name="preparse.files" location="../../java/storagebuilder/preparse-files.txt"/>
   <property name="nb.dir" location="../../nbbuild/netbeans"/>
   <property name="nb.dir.tmp" location="build/netbeans" />
   <property name="nb.dir.test" location="build/netbeans-test" />
@@ -135,10 +133,6 @@ Microsystems, Inc. All Rights Reserved.
         <arg value="jdk.scripts.dir=build/scripts"/>
         <arg value="-alias"/>
         <arg value="bundled.jvm=${bundled.jvm}"/>
-        <arg value="-alias"/>
-        <arg value="storage.builder=${storage.builder}"/>
-        <arg value="-alias"/>
-        <arg value="sb.scripts.dir=build/storagebuilder"/>
         <classpath>
           <pathelement path="build/classes"/>
           <path refid="ismp.cp"/>
@@ -151,11 +145,8 @@ Microsystems, Inc. All Rights Reserved.
           depends="init, compile, delete-netbeans-tmp, copy-netbeans, run-pack">
     <copy file="scripts/j2se-install.template" tofile="build/scripts/_uninst/j2se-install.template"/>
     <copy file="scripts/j2se-uninstall.template" tofile="build/scripts/_uninst/j2se-uninstall.template"/>
-    <copy file="${preparse.files}"
-          tofile="build/storagebuilder/preparse-files.txt"/>
     <build-installer input.ismp.project="jdk-linux"/>
     <delete dir="build/scripts"/>
-    <delete dir="build/storagebuilder"/>
     <move file="build/disk1/setuplinux.bin" tofile="dist/${installer.basename}-linux.bin"/>
   </target>
   
@@ -163,11 +154,8 @@ Microsystems, Inc. All Rights Reserved.
           depends="init-ml, compile, xsl-linux-ml, delete-netbeans-tmp, copy-netbeans, run-pack">
     <copy file="scripts/j2se-install.template" tofile="build/scripts/_uninst/j2se-install.template"/>
     <copy file="scripts/j2se-uninstall.template" tofile="build/scripts/_uninst/j2se-uninstall.template"/>
-    <copy file="${preparse.files}"
-          tofile="build/storagebuilder/preparse-files.txt"/>
     <build-installer input.ismp.project="jdk-linux-ml"/>
     <delete dir="build/scripts"/>
-    <delete dir="build/storagebuilder"/>
     <move file="build/disk1/setuplinux.bin" tofile="dist/${installer.basename}-linux-ml.bin"/>
     <delete file="jdk-linux-ml.uip"/>
   </target>
@@ -176,11 +164,8 @@ Microsystems, Inc. All Rights Reserved.
           depends="init, compile, delete-netbeans-tmp, copy-netbeans, run-pack">
     <copy file="scripts/j2se-install.template" tofile="build/scripts/_uninst/j2se-install.template"/>
     <copy file="scripts/j2se-uninstall.template" tofile="build/scripts/_uninst/j2se-uninstall.template"/>
-    <copy file="${preparse.files}"
-          tofile="build/storagebuilder/preparse-files.txt"/>
     <build-installer input.ismp.project="jdk-solaris-sparc"/>
     <delete dir="build/scripts"/>
-    <delete dir="build/storagebuilder"/>
     <move file="build/disk1/setupSolarisSparc.bin" tofile="dist/${installer.basename}-solsparc.bin"/>
   </target>
   
@@ -188,11 +173,8 @@ Microsystems, Inc. All Rights Reserved.
           depends="init-ml, compile, xsl-solaris-sparc-ml, delete-netbeans-tmp, copy-netbeans, run-pack">
     <copy file="scripts/j2se-install.template" tofile="build/scripts/_uninst/j2se-install.template"/>
     <copy file="scripts/j2se-uninstall.template" tofile="build/scripts/_uninst/j2se-uninstall.template"/>
-    <copy file="${preparse.files}"
-          tofile="build/storagebuilder/preparse-files.txt"/>
     <build-installer input.ismp.project="jdk-solaris-sparc-ml"/>
     <delete dir="build/scripts"/>
-    <delete dir="build/storagebuilder"/>
     <move file="build/disk1/setupSolarisSparc.bin" tofile="dist/${installer.basename}-solsparc-ml.bin"/>
     <delete file="jdk-solaris-sparc-ml.uip"/>
   </target>
@@ -201,11 +183,8 @@ Microsystems, Inc. All Rights Reserved.
           depends="init, compile, delete-netbeans-tmp, copy-netbeans, run-pack">
     <copy file="scripts/j2se-install.template" tofile="build/scripts/_uninst/j2se-install.template"/>
     <copy file="scripts/j2se-uninstall.template" tofile="build/scripts/_uninst/j2se-uninstall.template"/>
-    <copy file="${preparse.files}"
-          tofile="build/storagebuilder/preparse-files.txt"/>
     <build-installer input.ismp.project="jdk-solaris-x86"/>
     <delete dir="build/scripts"/>
-    <delete dir="build/storagebuilder"/>
     <move file="build/disk1/setupSolarisX86.bin" tofile="dist/${installer.basename}-solx86.bin"/>
   </target>
   
@@ -213,11 +192,8 @@ Microsystems, Inc. All Rights Reserved.
           depends="init-ml, compile, xsl-solaris-x86-ml, delete-netbeans-tmp, copy-netbeans, run-pack">
     <copy file="scripts/j2se-install.template" tofile="build/scripts/_uninst/j2se-install.template"/>
     <copy file="scripts/j2se-uninstall.template" tofile="build/scripts/_uninst/j2se-uninstall.template"/>
-    <copy file="${preparse.files}"
-          tofile="build/storagebuilder/preparse-files.txt"/>
     <build-installer input.ismp.project="jdk-solaris-x86-ml"/>
     <delete dir="build/scripts"/>
-    <delete dir="build/storagebuilder"/>
     <move file="build/disk1/setupSolarisX86.bin" tofile="dist/${installer.basename}-solx86-ml.bin"/>
     <delete file="jdk-solaris-x86-ml.uip"/>
   </target>
@@ -226,11 +202,8 @@ Microsystems, Inc. All Rights Reserved.
           depends="init, compile, delete-netbeans-tmp, copy-netbeans, run-pack">
     <copy file="scripts/custom-install-jdk.template" tofile="build/scripts/_uninst/custom-install-jdk.template"/>
     <copy file="scripts/custom-install-jre.template" tofile="build/scripts/_uninst/custom-install-jre.template"/>
-    <copy file="${preparse.files}"
-          tofile="build/storagebuilder/preparse-files.txt"/>
     <build-installer input.ismp.project="jdk-windows"/>
     <delete dir="build/scripts"/>
-    <delete dir="build/storagebuilder"/>
     <move file="build/disk1/setupwin32.exe" tofile="dist/${installer.basename}-win.exe"/>
   </target>
   
@@ -238,11 +211,8 @@ Microsystems, Inc. All Rights Reserved.
           depends="init-ml, compile, xsl-windows-ml, delete-netbeans-tmp, copy-netbeans, run-pack">
     <copy file="scripts/custom-install-jdk.template" tofile="build/scripts/_uninst/custom-install-jdk.template"/>
     <copy file="scripts/custom-install-jre.template" tofile="build/scripts/_uninst/custom-install-jre.template"/>
-    <copy file="${preparse.files}"
-          tofile="build/storagebuilder/preparse-files.txt"/>
     <build-installer input.ismp.project="jdk-windows-ml"/>
     <delete dir="build/scripts"/>
-    <delete dir="build/storagebuilder"/>
     <move file="build/disk1/setupwin32.exe" tofile="dist/${installer.basename}-win-ml.exe"/>
     <delete file="jdk-windows-ml.uip"/>
   </target>

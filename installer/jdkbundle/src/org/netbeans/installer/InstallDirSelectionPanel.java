@@ -570,11 +570,6 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
             Names.CORE_IDE_ID, "installLocation", nbDestination);
             service.setRetainedProductBeanProperty(productURL, null, "installLocation", nbDestination);
             service.setRetainedProductBeanProperty(productURL, null, "absoluteInstallLocation", nbDestination);
-            //Set install location for Storage Builder
-            String sbDestination = nbDestination + File.separator + "_uninst" + File.separator + "storagebuilder"; 
-            logEvent(this, Log.DBG, "Storage Builder Destination: " + sbDestination);
-            service.setRetainedProductBeanProperty(productURL,
-            Names.STORAGE_BUILDER_ID, "installLocation", sbDestination);
             //JDK part
             if (Util.isJDKAlreadyInstalled() && Util.isWindowsOS()) {
                 //On Windows given JDK version can be installed only once so do not
@@ -610,11 +605,6 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
             Names.CORE_IDE_ID, "installLocation", nbDestination);
             service.setRetainedProductBeanProperty(productURL, null, "installLocation", nbDestination);
             service.setRetainedProductBeanProperty(productURL, null, "absoluteInstallLocation", nbDestination);
-            //Set install location for Storage Builder
-            String sbDestination = nbDestination + File.separator + "_uninst" + File.separator + "storagebuilder"; 
-            logEvent(this, Log.DBG, "Storage Builder Destination: " + sbDestination);
-            service.setRetainedProductBeanProperty(productURL,
-            Names.STORAGE_BUILDER_ID, "installLocation", sbDestination);
             //JDK part
             if (Util.isJDKAlreadyInstalled() && Util.isWindowsOS()) {
                 //On Windows given JDK version can be installed only once so do not
