@@ -20,23 +20,34 @@
 package org.netbeans.modules.java;
 
 import java.awt.Image;
+import java.io.File;
+import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
+import java.net.URL;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.queries.FileBuiltQuery;
 import org.netbeans.api.queries.FileBuiltQuery.Status;
 import org.netbeans.spi.java.loaders.RenameHandler;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Children;
+import org.openide.nodes.Node;
+import org.openide.nodes.PropertySupport;
+import org.openide.nodes.Sheet;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
@@ -102,7 +113,126 @@ public final class JavaNode extends DataNode implements ChangeListener {
         if (handlers.size()>1)
             ErrorManager.getDefault().log(ErrorManager.WARNING, "Multiple instances of RenameHandler found in Lookup; only using first one: " + handlers); //NOI18N
         return handlers.iterator().next();
-    }    
+    }
+    
+    /** Create the property sheet.
+     * @return the sheet
+     */
+    @Override
+    protected final Sheet createSheet () {
+        Sheet sheet = super.createSheet();
+        
+        //if there is any rename handler installed
+        //push under our own property
+        if (getRenameHandler() != null)
+            sheet.get(Sheet.PROPERTIES).put(createNameProperty());
+        
+        // Add classpath-related properties.
+        Sheet.Set ps = new Sheet.Set();
+        ps.setName("classpaths"); // NOI18N
+        ps.setDisplayName(NbBundle.getMessage(JavaNode.class, "LBL_JavaNode_sheet_classpaths"));
+        ps.setShortDescription(NbBundle.getMessage(JavaNode.class, "HINT_JavaNode_sheet_classpaths"));
+        ps.put(new Node.Property[] {
+            new ClasspathProperty(ClassPath.COMPILE,
+                    NbBundle.getMessage(JavaNode.class, "PROP_JavaNode_compile_classpath"),
+                    NbBundle.getMessage(JavaNode.class, "HINT_JavaNode_compile_classpath")),
+                    new ClasspathProperty(ClassPath.EXECUTE,
+                    NbBundle.getMessage(JavaNode.class, "PROP_JavaNode_execute_classpath"),
+                    NbBundle.getMessage(JavaNode.class, "HINT_JavaNode_execute_classpath")),
+                    new ClasspathProperty(ClassPath.BOOT,
+                    NbBundle.getMessage(JavaNode.class, "PROP_JavaNode_boot_classpath"),
+                    NbBundle.getMessage(JavaNode.class, "HINT_JavaNode_boot_classpath")),
+        });
+        sheet.put(ps);
+        return sheet;
+    }
+    
+    private Node.Property createNameProperty () {
+        Node.Property p = new PropertySupport.ReadWrite (
+                DataObject.PROP_NAME,
+                String.class,
+                NbBundle.getMessage (DataObject.class, "PROP_name"),
+                NbBundle.getMessage (DataObject.class, "HINT_name")
+                ) {
+            public Object getValue () {
+                return JavaNode.this.getName();
+            }
+            
+            public Object getValue(String key) {
+                if ("suppressCustomEditor".equals (key)) { //NOI18N
+                    return Boolean.TRUE;
+                } else {
+                    return super.getValue (key);
+                }
+            }
+            public void setValue(Object val) throws IllegalAccessException,
+                    IllegalArgumentException, InvocationTargetException {
+                if (!canWrite())
+                    throw new IllegalAccessException();
+                if (!(val instanceof String))
+                    throw new IllegalArgumentException();
+                
+                JavaNode.this.setName((String)val);
+            }
+            
+            public boolean canWrite() {
+                return JavaNode.this.canRename();
+            }
+            
+        };
+        
+        return p;
+    }
+    
+    /**
+     * Displays one kind of classpath for this Java source.
+     * Tries to use the normal format (directory or JAR names), falling back to URLs if necessary.
+     * Displays corresponding sources instead of binaries where this is possible.
+     */
+    private final class ClasspathProperty extends PropertySupport.ReadOnly {
+        
+        private final String id;
+        
+        public ClasspathProperty(String id, String displayName, String shortDescription) {
+            super(id, /*XXX NbClassPath would be preferable, but needs org.openide.execution*/String.class, displayName, shortDescription);
+            this.id = id;
+            // XXX the following does not always work... why?
+            setValue("oneline", Boolean.FALSE); // NOI18N
+        }
+        
+        public Object getValue() {
+            ClassPath cp = ClassPath.getClassPath(getDataObject().getPrimaryFile(), id);
+            if (cp != null) {
+                StringBuffer sb = new StringBuffer();
+                Iterator<ClassPath.Entry> entries = cp.entries().iterator();
+                while (entries.hasNext()) {
+                    ClassPath.Entry entry = (ClassPath.Entry) entries.next();
+                    URL u = entry.getURL();
+                    append(sb, u);
+                }
+                return sb.toString();
+            } else {
+                return NbBundle.getMessage(JavaNode.class, "LBL_JavaNode_classpath_unknown");
+            }
+        }
+        
+        private void append(StringBuffer sb, URL u) {
+            String item = u.toExternalForm(); // fallback
+            if (u.getProtocol().equals("file")) { // NOI18N
+                item = new File(URI.create(item)).getAbsolutePath();
+            } else if (u.getProtocol().equals("jar") && item.endsWith("!/")) { // NOI18N
+                URL embedded = FileUtil.getArchiveFile(u);
+                assert embedded != null : u;
+                if (embedded.getProtocol().equals("file")) { // NOI18N
+                    item = new File(URI.create(embedded.toExternalForm())).getAbsolutePath();
+                }
+            }
+            if (sb.length() > 0) {
+                sb.append(File.pathSeparatorChar);
+            }
+            sb.append(item);
+        }
+    }
 
     public void stateChanged(ChangeEvent e) {
         queue.add(new Task(false, true, this));
