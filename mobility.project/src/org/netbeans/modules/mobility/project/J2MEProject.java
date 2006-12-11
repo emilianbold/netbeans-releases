@@ -243,7 +243,8 @@ public final class J2MEProject implements Project, AntProjectListener {
             new J2MEProjectClassPathExtender(this, helper, refHelper),
             new J2MEProjectOperations(this, helper, refHelper),
 //            new J2MEUnitPlugin(),
-            new UnitTestForSourceQueryImpl(this.helper)
+            new UnitTestForSourceQueryImpl(this.helper),
+            new PreprocessorFileFilterImplementation(configHelper, helper)
         });
     }
     

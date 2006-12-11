@@ -14,7 +14,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <library version="1.0">
     <name>nb_svg_midp_components</name>
-    <type>j2me</type>
+    <type>j2se</type>
     <localizing-bundle>org.netbeans.modules.vmd.components.svg.resources.Bundle</localizing-bundle>
     <volume>
         <type>classpath</type> 
