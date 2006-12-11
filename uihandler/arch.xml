@@ -130,6 +130,14 @@ Microsystems, Inc. All Rights Reserved.
                  the user can then interact directly with the server, thru
                  pages it serves.
              </api>
+             <api name="org.netbeans.modules.uihandler.Submit" group="property"
+                category="private" type="export">
+                    
+                 For testing purposes one can 
+                 specify different URL for upload of files, by setting
+                 <code>org.netbeans.modules.uihandler.Submit</code>
+                 property when invoking NetBeans.
+             </api>
          </p>
      </usecase>
      <usecase id="extending-info" name="Adding own UI gestures">

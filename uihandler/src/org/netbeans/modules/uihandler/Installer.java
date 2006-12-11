@@ -235,6 +235,10 @@ public class Installer extends ModuleInstall {
             JButton b = (JButton)res;
             Object post = b.getClientProperty("url"); // NOI18N
             if (post instanceof String) {
+                String replace = System.getProperty("org.netbeans.modules.uihandler.Submit"); // NOI18N
+                if (replace != null) {
+                    post = replace;
+                }
                 try {
                     url[0] = new URL((String) post);
                 } catch (MalformedURLException ex) {
