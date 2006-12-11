@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.netbeans.installer.infra.server.ejb.Manager;
 import org.netbeans.installer.product.ProductComponent;
+import org.netbeans.installer.utils.StringUtils;
 
 /**
  *
@@ -38,14 +39,14 @@ public class Feed extends HttpServlet {
         
         feedType = request.getParameter("feed-type");
         if (feedType == null) {
-            feedType = "rss";
+            feedType = "rss-2.0";
         }
         
-        response.setContentType("application/octet-stream");
+        response.setContentType("text/xml");
         
         out.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
         
-        if (feedType.equals("rss")) {
+        if (feedType.equals("rss-2.0")) {
             buildRss(components, out);
         }
         
@@ -62,9 +63,11 @@ public class Feed extends HttpServlet {
         
         for (ProductComponent component: components) {
             out.println("            <item>");
+            out.println("                <guid>" + component.getUid() + "_" + component.getVersion() + "</guid>");
             out.println("                <title><![CDATA[" + component.getDisplayName() + "]]></title>");
             out.println("                <link>http://localhost/</link>");
             out.println("                <description><![CDATA[" + component.getDescription() + "]]></description>");
+            out.println("                <pubDate>" + StringUtils.httpFormat(component.getUpdated()) + "</pubDate>");
             out.println("            </item>");
         }
         

@@ -70,6 +70,8 @@ public class ManagerBean implements Manager {
             
             System.setProperty(
                     Installer.LOCAL_DIRECTORY_PATH_PROPERTY, NBI.getAbsolutePath());
+            System.setProperty(
+                    Installer.IGNORE_LOCK_FILE_PROPERTY, "true");
         } catch (IOException e) {
             e.printStackTrace();
         }
