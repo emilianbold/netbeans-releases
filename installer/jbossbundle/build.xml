@@ -313,17 +313,22 @@ Creating NetBeans.app bundle using ${nb.dir} as master
     <mkdir dir="${build.dir}/${app.dir}/Contents"/>
     <mkdir dir="${build.dir}/${app.dir}/Contents/MacOS"/>
     <mkdir dir="${build.dir}/${app.dir}/Contents/Resources"/>
-                                                                                                                                 
+    
     <echo message="Copying netbeans home dir to ${build.dir}/${app.dir}/Contents/Resources/NetBeans"/>
     <exec executable="sh" failonerror="yes">
       <arg value="-c"/>
       <arg value="cp -r ${nb.dir.tmp} '${build.dir}/${app.dir}/Contents/Resources/NetBeans'"/>
     </exec>
-                                                                                                                                 
+    
+    <echo message="Delete launchers for another platforms"/>
+    <delete file="${build.dir}/${app.dir}/Contents/Resources/NetBeans/bin/nb.exe"/>
+    <delete file="${build.dir}/${app.dir}/Contents/Resources/NetBeans/bin/netbeans.cmd"/>
+    <delete file="${build.dir}/${app.dir}/Contents/Resources/NetBeans/bin/netbeans.exe"/>
+    
     <echo message="Copying the icon into the correct place" />
     <copy file="${build.dir}/${app.dir}/Contents/Resources/NetBeans/${nbClusterDir}/netbeans.icns"
           todir="${build.dir}/${app.dir}/Contents/Resources"/>
-                                                                                                                                 
+    
     <echo message="Generating Info.plist" />
     <copy file="../mac/Info.plist" filtering="true" tofile="${build.dir}/${app.dir}/Contents/Info.plist">
       <filterset>
