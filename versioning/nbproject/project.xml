@@ -142,6 +142,7 @@ Microsystems, Inc. All Rights Reserved.
             <friend-packages>
                 <friend>org.netbeans.modules.versioning.system.cvss</friend>
                 <friend>org.netbeans.modules.subversion</friend>
+                <!--friend>org.netbeans.modules.localhistory</friend-->
                 <package>org.netbeans.modules.versioning</package>
                 <package>org.netbeans.modules.versioning.spi</package>
                 <package>org.netbeans.modules.versioning.util</package>

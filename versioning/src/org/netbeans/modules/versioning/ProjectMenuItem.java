@@ -59,21 +59,28 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
                     return new JComponent[0];
                 }
             }
+            List<JComponent> popups = new ArrayList<JComponent>();            
             if (owner != null) {
                 JMenu menu = createVersioningSystemPopup(owner, nodes);
                 if (menu != null) {
-                    return new JComponent[] { menu };
+                    popups.add(menu);
                 }
-            } else {
-                List<JComponent> popups = new ArrayList<JComponent>();
+                VersioningSystem localHistory = VersioningManager.getInstance().getLocalHistory(toFile(nodes[0]));
+                if(localHistory != null) {
+                    JMenu localHistoryMenu = createVersioningSystemPopup(localHistory, nodes);
+                    if(localHistoryMenu != null) {
+                        popups.add(menu);    
+                    }                                    
+                }
+            } else {                
                 Lookup.Result<VersioningSystem> result = Lookup.getDefault().lookup(new Lookup.Template<VersioningSystem>(VersioningSystem.class));
                 Collection<? extends VersioningSystem> vcs = result.allInstances();
                 for (VersioningSystem vs : vcs) {
                     JMenu menu = createVersioningSystemPopup(vs, nodes);
                     if (menu != null) popups.add(menu);
                 }
-                return popups.toArray(new JComponent[popups.size()]);
             }
+            return popups.toArray(new JComponent[popups.size()]);
         }
         return new JComponent[0];
     }

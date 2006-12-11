@@ -93,18 +93,34 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
         FileObject fo = (FileObject) files.iterator().next();
         VersioningSystem vs = VersioningManager.getInstance().getOwner(FileUtil.toFile(fo));
         
-        if (vs == null) return null;
-        VCSAnnotator an = vs.getVCSAnnotator();
-        if (an == null) return null;
-
-        VersioningSystemActions action = SystemAction.get(VersioningSystemActions.class);
-        action.setVersioninSystem(vs);
-        return new Action [] {
-            action                
-        };
+        List<Action> actions = new ArrayList<Action>();
+        
+        VCSAnnotator an = null;
+        if (vs != null) {
+            an = vs.getVCSAnnotator();
+        }
+        if (an != null) {
+            VersioningSystemActions action = SystemAction.get(VersioningSystemActions.class);
+            action.setVersioninSystem(vs);
+            actions.add(action);
+        }
+        
+        VersioningSystem localHistory = VersioningManager.getInstance().getLocalHistory(FileUtil.toFile(fo));
+        if(localHistory != null && localHistory.getVCSAnnotator() != null) {
+            LocalHistoryActions localHistoryAction = SystemAction.get(LocalHistoryActions.class);
+            localHistoryAction.setVersioninSystem(localHistory);          
+            actions.add(localHistoryAction);
+        } 
+        return actions.toArray(new Action [actions.size()]);
     }
     
-    public static class VersioningSystemActions extends SystemAction implements ContextAwareAction {
+    public static class VersioningSystemActions extends AbstractVersioningSystemActions {               
+    }
+
+    public static class LocalHistoryActions extends AbstractVersioningSystemActions {
+    }
+    
+    public abstract static class AbstractVersioningSystemActions extends SystemAction implements ContextAwareAction {
         
         private VersioningSystem system;
 
