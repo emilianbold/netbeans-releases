@@ -152,7 +152,7 @@ public class Package extends Task {
                         name  = packed.getPath().
                                 substring(offset + 1).replace('\\', '/');
                         
-                        entry = new FileEntry(child, name);
+                        entry.setName(name);
                         entry.setPackedJarFile(true);
                     } else {
                         packed.delete();
