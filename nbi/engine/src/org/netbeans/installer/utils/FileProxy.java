@@ -50,7 +50,7 @@ import org.netbeans.installer.utils.progress.Progress;
 //todo: This class already ready to die.
 public class FileProxy {
   
-  private final File tmpDir = new File(Installer.DEFAULT_LOCAL_DIRECTORY_PATH, "tmp");
+  private final File tmpDir = new File(Installer.getInstance().getLocalDirectory(), "tmp");
   private final Map<String, File> cache = new HashMap<String, File>();
   {
     tmpDir.mkdirs();

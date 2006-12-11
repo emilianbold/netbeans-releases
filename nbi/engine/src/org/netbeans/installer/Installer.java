@@ -141,13 +141,16 @@ public class Installer {
         
         parseArguments(arguments);
         
+        setLocalDirectory();
+        
+        // once we have set the local directory we can start logging safely
+        LogManager.start();
+        
         setLookAndFeel();
         
         cacheEngineLocally();
         
-        if (System.getProperty(IGNORE_LOCK_FILE_PROPERTY) == null) {
-            createInstallerLockFile(localDirectory);
-        }
+        createInstallerLockFile();
         
         LogManager.unindent();
         LogManager.log(MESSAGE, "... finished initializing the installer engine");
@@ -161,18 +164,6 @@ public class Installer {
      * @param arguments The command line arguments
      */
     public void start() {
-        if (!localDirectory.exists()) {
-            if (!localDirectory.mkdirs()) {
-                ErrorManager.notify(CRITICAL, "Cannot create local directory: " + localDirectory);
-            }
-        } else if (localDirectory.isFile()) {
-            ErrorManager.notify(CRITICAL, "Local directory exists and is a file: " + localDirectory);
-        } else if (!localDirectory.canRead()) {
-            ErrorManager.notify(CRITICAL, "Cannot read local directory - not enought permissions");
-        } else if (!localDirectory.canWrite()) {
-            ErrorManager.notify(CRITICAL, "Cannot write to local directory - not enought permissions");
-        }
-        
         final Wizard wizard = Wizard.getInstance();
         
         wizard.open();
@@ -238,6 +229,25 @@ public class Installer {
     }
     
     // Private stuff ////////////////////////////////////////////////////////////////
+    private void dumpSystemInfo() {
+        LogManager.log(MESSAGE, "dumping target system information");
+        LogManager.indent();
+        
+        LogManager.log(MESSAGE, "system properties:");
+        LogManager.indent();
+        
+        Properties properties = System.getProperties();
+        for (Object key: properties.keySet()) {
+            LogManager.log(MESSAGE, key.toString() + " => " + properties.get(key).toString());
+        }
+        
+        LogManager.unindent();
+        LogManager.log(MESSAGE, "... end of system properties");
+        
+        LogManager.unindent();
+        LogManager.log(MESSAGE, "... end of target system information");
+    }
+    
     /**
      * Parses the command line arguments passed to the installer. All unknown
      * arguments are ignored.
@@ -422,19 +432,46 @@ public class Installer {
             LogManager.log(MESSAGE, "... no command line arguments were specified");
         }
         
-        validateArguments();
-        
-        LogManager.unindent();
-        LogManager.log(MESSAGE, "... finished parsing command line arguments");
-    }
-    
-    private void validateArguments() {
+        // validate arguments ///////////////////////////////////////////////////////
         if (System.getProperty(Wizard.SILENT_MODE_ACTIVE_PROPERTY) != null) {
             if (System.getProperty(ProductRegistry.SOURCE_STATE_FILE_PATH_PROPERTY) == null) {
                 System.getProperties().remove(Wizard.SILENT_MODE_ACTIVE_PROPERTY);
                 ErrorManager.notify(WARNING, "\"--state\" option is required when using \"--silent\". \"--silent\" will be ignored.");
             }
         }
+        
+        LogManager.unindent();
+        LogManager.log(MESSAGE, "... finished parsing command line arguments");
+    }
+    
+    private void setLocalDirectory() {
+        LogManager.log(MESSAGE, "initializing the local directory");
+        LogManager.indent();
+        
+        if (System.getProperty(LOCAL_DIRECTORY_PATH_PROPERTY) != null) {
+            localDirectory = new File(System.getProperty(
+                    LOCAL_DIRECTORY_PATH_PROPERTY)).getAbsoluteFile();
+        } else {
+            localDirectory = new File(DEFAULT_LOCAL_DIRECTORY_PATH).getAbsoluteFile();
+            
+            LogManager.log(MESSAGE, "... custom local directory was not specified, using the default");
+            LogManager.log(MESSAGE, "... local directory: " + localDirectory);
+        }
+        
+        if (!localDirectory.exists()) {
+            if (!localDirectory.mkdirs()) {
+                ErrorManager.notify(CRITICAL, "Cannot create local directory: " + localDirectory);
+            }
+        } else if (localDirectory.isFile()) {
+            ErrorManager.notify(CRITICAL, "Local directory exists and is a file: " + localDirectory);
+        } else if (!localDirectory.canRead()) {
+            ErrorManager.notify(CRITICAL, "Cannot read local directory - not enought permissions");
+        } else if (!localDirectory.canWrite()) {
+            ErrorManager.notify(CRITICAL, "Cannot write to local directory - not enought permissions");
+        }
+        
+        LogManager.unindent();
+        LogManager.log(MESSAGE, "... finished initializing local directory");
     }
     
     private void setLookAndFeel() {
@@ -464,43 +501,6 @@ public class Installer {
         
         LogManager.unindent();
         LogManager.log(MESSAGE, "... finished setting the look and feel");
-    }
-    
-    private void dumpSystemInfo() {
-        LogManager.log(MESSAGE, "dumping target system information");
-        LogManager.indent();
-        
-        LogManager.log(MESSAGE, "system properties:");
-        LogManager.indent();
-        
-        Properties properties = System.getProperties();
-        for (Object key: properties.keySet()) {
-            LogManager.log(MESSAGE, key.toString() + " => " + properties.get(key).toString());
-        }
-        
-        LogManager.unindent();
-        LogManager.log(MESSAGE, "... end of system properties");
-        
-        LogManager.unindent();
-        LogManager.log(MESSAGE, "... end of target system information");
-    }
-    
-    private void initLocalDirectory() {
-        LogManager.log(MESSAGE, "initializing the local directory");
-        LogManager.indent();
-        
-        if (System.getProperty(LOCAL_DIRECTORY_PATH_PROPERTY) != null) {
-            localDirectory = new File(System.getProperty(
-                    LOCAL_DIRECTORY_PATH_PROPERTY)).getAbsoluteFile();
-        } else {
-            localDirectory = new File(DEFAULT_LOCAL_DIRECTORY_PATH).getAbsoluteFile();
-            
-            LogManager.log(MESSAGE, "... custom local directory was not specified, using the default");
-            LogManager.log(MESSAGE, "... local directory: " + localDirectory);
-        }
-        
-        LogManager.unindent();
-        LogManager.log(MESSAGE, "... finished initializing local directory");
     }
     
     private void cacheEngineLocally() {
@@ -605,38 +605,39 @@ public class Installer {
         LogManager.log(MESSAGE, "... finished caching engine data");
     }
     
-    private void createInstallerLockFile(File directory)  {
-        LogManager.logIndent("creating lock file in " + directory);
+    private void createInstallerLockFile()  {
+        LogManager.logIndent("creating lock file");
         
-        File installerLock = new File(directory, ".nbilock");
-        if (installerLock.exists()) {
-            LogManager.log("lock file already exists");
+        if (System.getProperty(IGNORE_LOCK_FILE_PROPERTY) == null) {
+            File lock = new File(localDirectory, ".nbilock");
             
-            if(!UiUtils.showYesNoDialog(
-                    "It seems that another instance of installer is already running!\n" +
-                    "It can be dangerous running another one in the same time.\n" +
-                    "Are you sure you want to run one more instance?\n\n")) {
-                cancel();
+            if (lock.exists()) {
+                LogManager.log("... lock file already exists");
+                
+                if(!UiUtils.showYesNoDialog(
+                        "It seems that another instance of installer is already " +
+                        "running!\nIt can be dangerous running another one in " +
+                        "the same time.\nAre you sure you want to run one more " +
+                        "instance?\n\n")) {
+                    cancel();
+                }
             }
+            
+            try {
+                new FileOutputStream(lock);
+            } catch (IOException e) {
+                ErrorManager.notify(CRITICAL, 
+                        "Can't create lock for the local registry file!", e);
+            }
+            
+            lock.deleteOnExit();
+            
+            LogManager.log("... created lock file: " + lock);
+        } else {
+            LogManager.log("... running with --ignore-lock, skipping this step");
         }
         
-        FileOutputStream fos = null;
-        try {
-            fos = new FileOutputStream(installerLock);
-        } catch (IOException ex) {
-            ErrorManager.notify(CRITICAL, "Can't create lock for the local registry file!");
-        } finally {
-            try {
-                installerLock.deleteOnExit();
-                if(fos!=null) {
-                    fos.close();
-                }
-            } catch (IOException ex) {
-                LogManager.log(ErrorLevel.DEBUG,ex);
-            }
-        }
-        LogManager.log(ErrorLevel.DEBUG,
-                "    ... lock created " + installerLock);
+        LogManager.logUnindent("finished creating lock file");
     }
     
     /////////////////////////////////////////////////////////////////////////////////
