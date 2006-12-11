@@ -257,14 +257,14 @@ public class CommittingCvs11Test extends JellyTestCase {
         //commit changes
         
         //
+        oto = new OutputTabOperator(sessionCVSroot);
+        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
         in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "commit_invoke_commit_4_modified_show_changes.in");
         cvss = new PseudoCvsServer(in);
         new Thread(cvss).start();
         CVSroot = cvss.getCvsRoot();
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", CVSroot);
         packNode.performPopupAction("CVS|Show Changes");
-        oto = new OutputTabOperator(sessionCVSroot);
-        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
         Thread.sleep(1000);
         oto.waitText("Refreshing");
         oto.waitText("finished");
