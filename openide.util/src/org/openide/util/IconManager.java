@@ -23,6 +23,7 @@ import java.awt.Component;
 import java.awt.Image;
 import java.awt.MediaTracker;
 import java.awt.Toolkit;
+import java.awt.Transparency;
 import java.awt.image.BufferedImage;
 import java.awt.image.ImageObserver;
 import java.lang.ref.SoftReference;
@@ -336,10 +337,12 @@ final class IconManager extends Object {
 
         int w = Math.max(image1.getWidth(null), x + image2.getWidth(null));
         int h = Math.max(image1.getHeight(null), y + image2.getHeight(null));
+        boolean bitmask = (image1 instanceof Transparency) && ((Transparency)image1).getTransparency() != Transparency.TRANSLUCENT
+                && (image2 instanceof Transparency) && ((Transparency)image2).getTransparency() != Transparency.TRANSLUCENT;
 
         java.awt.image.ColorModel model = java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment()
                                                                       .getDefaultScreenDevice().getDefaultConfiguration()
-                                                                      .getColorModel(java.awt.Transparency.BITMASK);
+                                                                      .getColorModel(bitmask? Transparency.BITMASK: Transparency.TRANSLUCENT);
         java.awt.image.BufferedImage buffImage = new java.awt.image.BufferedImage(
                 model, model.createCompatibleWritableRaster(w, h), model.isAlphaPremultiplied(), null
             );
