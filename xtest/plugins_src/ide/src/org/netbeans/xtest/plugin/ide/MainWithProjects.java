@@ -64,6 +64,7 @@ public class MainWithProjects implements Main.MainWithProjectsInterface, Propert
                 return;
             }
             final MainWithProjects instance = this;
+            projectOpened = false;
             // posting the to AWT event thread
             Mutex.EVENT.writeAccess(new Runnable() {
                 public void run() {
