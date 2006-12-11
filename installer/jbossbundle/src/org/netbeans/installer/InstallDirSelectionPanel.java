@@ -477,11 +477,6 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
             
             service.setRetainedProductBeanProperty(productURL, null, "installLocation", nbDestination);
             service.setRetainedProductBeanProperty(productURL, null, "absoluteInstallLocation", nbDestination);
-            //Set install location for Storage Builder
-            String sbDestination = nbDestination + File.separator + "_uninst" + File.separator + "storagebuilder";
-            logEvent(this, Log.DBG, "Storage Builder Destination: " + sbDestination);
-            service.setRetainedProductBeanProperty(productURL,
-            Names.STORAGE_BUILDER_ID, "installLocation", sbDestination);
 	} catch (ServiceException e) {
 	    logEvent(this, Log.ERROR, e);
 	}
@@ -504,11 +499,6 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
             
             service.setRetainedProductBeanProperty(productURL, null, "installLocation", nbDestination);
             service.setRetainedProductBeanProperty(productURL, null, "absoluteInstallLocation", nbDestination);
-            //Set install location for Storage Builder
-            String sbDestination = nbDestination + File.separator + "_uninst" + File.separator + "storagebuilder";
-            logEvent(this, Log.DBG, "Storage Builder Destination: " + sbDestination);
-            service.setRetainedProductBeanProperty(productURL,
-            Names.STORAGE_BUILDER_ID, "installLocation", sbDestination);
 	} catch (ServiceException e) {
 	    logEvent(this, Log.ERROR, e);
 	}

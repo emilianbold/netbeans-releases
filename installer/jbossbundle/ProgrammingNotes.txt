@@ -2,7 +2,7 @@ Prerequisites
    
  - InstallShield Universal 11 or or IS Universal 11 Stand Alone Builder (SAB)
  - Apache Ant 1.6.5
- - JDK 1.5.0_06
+ - JDK 1.5.0_09
  - Linux/Solaris
  - Installer of JBoss for all 5 supported platforms: Windows, Linux,
    Solaris Sparc, Solaris x86, Mac OS X. JBoss uses jar installer ie. platform
