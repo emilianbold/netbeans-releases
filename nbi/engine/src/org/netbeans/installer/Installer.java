@@ -426,6 +426,25 @@ public class Installer {
                 LogManager.unindent();
                 continue;
             }
+            
+            if (arguments[i].equalsIgnoreCase("--userdir")) {
+                LogManager.log(MESSAGE, "parsing command line parameter \"--userdir\"");
+                LogManager.indent();
+                
+                if (i < arguments.length - 1) {
+                    String value = arguments[i + 1];
+                    File   file  = new File(value);
+                    
+                    System.setProperty(LOCAL_DIRECTORY_PATH_PROPERTY, file.getAbsolutePath());
+                    
+                    i = i + 1;
+                } else {
+                    ErrorManager.notify(WARNING, "required parameter missing for command line argument \"--userdir\". Should be \"--userdir <userdir-path>\".");
+                }
+                
+                LogManager.unindent();
+                continue;
+            }
         }
         
         if (arguments.length == 0) {
