@@ -125,7 +125,7 @@ final class NbURLStreamHandlerFactory implements URLStreamHandlerFactory, Lookup
             delegate = prev;
         } catch (Throwable t) {
             LOG.log(Level.SEVERE, 
-                "No way to register URLStreamHandlerFactory, NetBeans are unlikely to work", 
+                "No way to register URLStreamHandlerFactory; NetBeans is unlikely to work", 
                 t
             ); // NOI18N
         }
