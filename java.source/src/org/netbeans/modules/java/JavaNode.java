@@ -240,7 +240,7 @@ public final class JavaNode extends DataNode implements ChangeListener {
     }
     
     private Image enhanceIcon(Image i) {
-        if (!isCompiled.get()) {
+        if (isCompiled != null && !isCompiled.get()) {
             i = Utilities.mergeImages(i, NEEDS_COMPILE, 16, 0);
         }
         
