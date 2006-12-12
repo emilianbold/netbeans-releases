@@ -18,6 +18,7 @@ import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -213,15 +214,9 @@ public class JavaScript {
     }
     
     
-    public static void performDeleteCurrentMethod (ASTNode node) {
-        Lookup lookup = TopComponent.getRegistry().getActivated().getLookup();
-        EditorCookie ec = (EditorCookie) lookup.lookup(EditorCookie.class);
-        NbEditorDocument doc = (NbEditorDocument)ec.getDocument();
-        JEditorPane[] panes = ec.getOpenedPanes();
-        if (panes == null || panes.length == 0) {
-            return;
-        }
-        int position = panes[0].getCaretPosition();
+    public static void performDeleteCurrentMethod (ASTNode node, JTextComponent comp) {
+        NbEditorDocument doc = (NbEditorDocument)comp.getDocument();
+        int position = comp.getCaretPosition();
         PTPath path = node.findPath(position);
         ASTNode methodNode = null;
         for (Iterator iter = path.iterator(); iter.hasNext(); ) {
@@ -242,15 +237,9 @@ public class JavaScript {
         }
     }
      
-    public static boolean enabledDeleteCurrentMethod (ASTNode node) {
-        Lookup lookup = TopComponent.getRegistry().getActivated().getLookup();
-        EditorCookie ec = (EditorCookie) lookup.lookup(EditorCookie.class);
-        NbEditorDocument doc = (NbEditorDocument)ec.getDocument();
-        JEditorPane[] panes = ec.getOpenedPanes();
-        if (panes == null || panes.length == 0) {
-            return false;
-        }
-        int position = panes[0].getCaretPosition();
+    public static boolean enabledDeleteCurrentMethod (ASTNode node, JTextComponent comp) {
+        NbEditorDocument doc = (NbEditorDocument)comp.getDocument();
+        int position = comp.getCaretPosition();
         PTPath path = node.findPath(position);
         for (Iterator iter = path.iterator(); iter.hasNext(); ) {
             Object obj = iter.next();
