@@ -18,28 +18,17 @@
  *
  * $Id$
  */
-package org;
+package org.connector;
 
-import junit.framework.TestSuite;
-import org.connector.ConnectionConfiguratorTest;
-import org.connector.ProxySelectorTest;
-import org.connector.ProxyTest;
-import org.util.DomVisitorTest;
+import org.server.WithServerTestCase;
 
 /**
  *
  * @author Danila_Dugurov
  */
-public class RunAllSuite extends TestSuite {
-    
-    public RunAllSuite() {
-        addTestSuite(ProxyTest.class);
-        addTestSuite(ProxySelectorTest.class);
-        addTestSuite(ConnectionConfiguratorTest.class);
-        addTestSuite(DomVisitorTest.class);
-        //addTestSuite(WindowsRegistryTest.class);
-        //todo: dinamic add test case without manual registration
-    }
-    //this done only becouse without it netbeans faild to run tests
-      public void testFake() {}
+public class ConnectorTest extends WithServerTestCase {
+  
+  public void testSimple() {
+    assertTrue(true);
+  }
 }

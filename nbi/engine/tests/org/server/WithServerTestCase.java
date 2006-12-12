@@ -18,28 +18,33 @@
  *
  * $Id$
  */
-package org;
+package org.server;
 
-import junit.framework.TestSuite;
-import org.connector.ConnectionConfiguratorTest;
-import org.connector.ProxySelectorTest;
-import org.connector.ProxyTest;
-import org.util.DomVisitorTest;
+import org.*;
 
 /**
  *
  * @author Danila_Dugurov
  */
-public class RunAllSuite extends TestSuite {
-    
-    public RunAllSuite() {
-        addTestSuite(ProxyTest.class);
-        addTestSuite(ProxySelectorTest.class);
-        addTestSuite(ConnectionConfiguratorTest.class);
-        addTestSuite(DomVisitorTest.class);
-        //addTestSuite(WindowsRegistryTest.class);
-        //todo: dinamic add test case without manual registration
-    }
-    //this done only becouse without it netbeans faild to run tests
-      public void testFake() {}
+/**
+ *this test case which invoke test server and generate test data offcouse if wasn't generated yet.
+ */
+public class WithServerTestCase extends MyTestCase {
+  
+  private final DefaultServer server = new DefaultServer("testData", 1234);
+  private final TestDataGenerator dataGenerator = new TestDataGenerator("testData");
+  
+  protected void setUp() throws Exception {
+    super.setUp();
+    dataGenerator.generateTestData();
+    server.start();
+  }
+  
+  protected void tearDown() throws Exception {
+    server.stop();
+    //dataGenerator.deleteTestData();
+    //this method is depricated because test data rather big
+    //and it's not good idea to delete and generate it after every test.
+    super.tearDown();
+  }
 }
