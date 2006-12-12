@@ -150,14 +150,14 @@ public class JavaScript {
     
     private static List completionItems;
     
-    public static List completionItems (SyntaxCookie cookie) {
+    public static List completionItems (Cookie cookie) {
         if (completionItems == null) {
             completionItems = new ArrayList ();
             completionItems.addAll (getLibrary ().getItems ("keyword"));
             completionItems.addAll (getLibrary ().getItems ("root"));
         }
-        PTPath path = cookie.getPTPath ();
-        if (path.size () < 2) return completionItems;
+        if (!(cookie instanceof SyntaxCookie)) return completionItems;
+        PTPath path = ((SyntaxCookie) cookie).getPTPath ();
         ArrayList l = new ArrayList ();
         Collection c = DatabaseManager.getIds ((ASTNode) path.get (path.size () - 2), true);
         l.addAll (c);
@@ -168,7 +168,7 @@ public class JavaScript {
 
     private static List completionDescriptions;
 
-    public static List completionDescriptions (SyntaxCookie cookie) {
+    public static List completionDescriptions (Cookie cookie) {
         if (completionDescriptions == null) {
             List tags = completionItems (cookie);
             tags = completionItems;
@@ -201,8 +201,8 @@ public class JavaScript {
                 }
             }
         }
-        PTPath path = cookie.getPTPath ();
-        if (path.size () < 2) return completionDescriptions;
+        if (!(cookie instanceof SyntaxCookie)) return completionDescriptions;
+        PTPath path = ((SyntaxCookie) cookie).getPTPath ();
         ArrayList l = new ArrayList ();
         Collection c = DatabaseManager.getIds ((ASTNode) path.get (path.size () - 2), true);
         l.addAll (c);
