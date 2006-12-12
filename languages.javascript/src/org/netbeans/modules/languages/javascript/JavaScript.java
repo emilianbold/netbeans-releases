@@ -23,6 +23,7 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.editor.NbEditorDocument;
+import org.netbeans.modules.languages.Cookie;
 import org.netbeans.modules.languages.LibrarySupport;
 import org.netbeans.modules.languages.fold.DatabaseManager;
 import org.netbeans.modules.languages.parser.ASTNode;
@@ -76,7 +77,8 @@ public class JavaScript {
         return nnode;
     }
 
-    public static Runnable hyperlink (PTPath path) {
+    public static Runnable hyperlink (Cookie cookie) {
+        PTPath path = cookie.getPTPath ();
         SToken t = (SToken) path.getLeaf ();
         ASTNode n = path.size () > 1 ? 
             (ASTNode) path.get (path.size () - 2) :
@@ -101,7 +103,8 @@ public class JavaScript {
         };
     }
     
-    public static String functionName (PTPath path) {
+    public static String functionName (Cookie cookie) {
+        PTPath path = cookie.getPTPath ();
         ASTNode n = (ASTNode) path.getLeaf ();
         String name = n.getTokenTypeIdentifier ("js-identifier");
         String parameters = "";
@@ -126,7 +129,8 @@ public class JavaScript {
         return "?";
     }
 
-    public static String objectName (PTPath path) {
+    public static String objectName (Cookie cookie) {
+        PTPath path = cookie.getPTPath ();
         ASTNode n = (ASTNode) path.getLeaf ();
         ASTNode p = n.getParent ();
         while (p != null) {
@@ -145,12 +149,13 @@ public class JavaScript {
     
     private static List completionItems;
     
-    public static List completionItems (PTPath path) {
+    public static List completionItems (Cookie cookie) {
         if (completionItems == null) {
             completionItems = new ArrayList ();
             completionItems.addAll (getLibrary ().getItems ("keyword"));
             completionItems.addAll (getLibrary ().getItems ("root"));
         }
+        PTPath path = cookie.getPTPath ();
         if (path.size () < 2) return completionItems;
         ArrayList l = new ArrayList ();
         Collection c = DatabaseManager.getIds ((ASTNode) path.get (path.size () - 2), true);
@@ -162,9 +167,9 @@ public class JavaScript {
 
     private static List completionDescriptions;
 
-    public static List completionDescriptions (PTPath path) {
+    public static List completionDescriptions (Cookie cookie) {
         if (completionDescriptions == null) {
-            List tags = completionItems (path);
+            List tags = completionItems (cookie);
             tags = completionItems;
             completionDescriptions = new ArrayList (tags.size ());
             Iterator it = tags.iterator ();
@@ -195,6 +200,7 @@ public class JavaScript {
                 }
             }
         }
+        PTPath path = cookie.getPTPath ();
         if (path.size () < 2) return completionDescriptions;
         ArrayList l = new ArrayList ();
         Collection c = DatabaseManager.getIds ((ASTNode) path.get (path.size () - 2), true);
