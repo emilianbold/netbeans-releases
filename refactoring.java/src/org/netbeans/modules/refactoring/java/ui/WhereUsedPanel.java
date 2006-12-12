@@ -79,7 +79,7 @@ public class WhereUsedPanel extends CustomRefactoringPanel {
     }
     
     private Collection getOverriddenMethods(ExecutableElement m, CompilationInfo info) {
-        return RetoucheUtils.getOverridenMethods(ElementHandle.create(m).resolve(info), info);
+        return RetoucheUtils.getOverridenMethods(m, info);
     }
     
     public void initialize() {
