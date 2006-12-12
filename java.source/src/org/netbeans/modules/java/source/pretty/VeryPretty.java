@@ -100,7 +100,7 @@ public class VeryPretty extends JCTree.Visitor {
     public void reset(int margin) {
 	out.setLength(0);
 	out.leftMargin = margin;
-        out.col = margin;
+        //out.col = margin;
     }
 
     /** Increase left margin by indentation width.

@@ -1408,6 +1408,7 @@ public class TreeFactory implements TreeMakerInt {
                         (Tree) t.getType(),
                         (ExpressionTree) t.getInitializer()
                         );
+                model.setPos(clone, model.getPos(t));
                 return clone;
             }
         }
