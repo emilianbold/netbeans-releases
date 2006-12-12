@@ -29,6 +29,7 @@ import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.api.SingleCopyRefactoring;
@@ -141,7 +142,10 @@ private class CopyClass extends SimpleRefactoringElementImpl implements Refactor
                 FileObject newOne = refactoring.getContext().lookup(FileObject.class);
                 final Collection<ModificationResult> results = processFiles(
                         Collections.singleton(newOne),
-                        new UpdateReferences(!fo.equals(source.getParent()), oldPackage));
+                        new UpdateReferences(
+                        !fo.equals(source.getParent()) && 
+                        FileOwnerQuery.getOwner(fo).equals(FileOwnerQuery.getOwner(source))
+                        , oldPackage));
                 results.iterator().next().commit();
             } catch (Exception ioe) {
                 ErrorManager.getDefault().notify(ioe);
