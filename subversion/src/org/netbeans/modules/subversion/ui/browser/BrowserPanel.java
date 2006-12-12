@@ -19,7 +19,6 @@
 package org.netbeans.modules.subversion.ui.browser;
 
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -62,8 +61,7 @@ public class BrowserPanel extends JPanel implements ExplorerManager.Provider {
         treeView = new BrowserTreeTableView();
         treeView.setDragSource(true);
         treeView.setDropTarget(true);
-      
-        treeView.setPopupAllowed (false);
+              
         treeView.setDefaultActionAllowed (false);
         treeView.setBorder(BorderFactory.createEtchedBorder());
         treeView.getAccessibleContext().setAccessibleDescription(browserAcsd);
