@@ -6,6 +6,15 @@
             <code-name-base>org.netbeans.modules.languages.css</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.lexer</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>2</release-version>
+                        <specification-version>1.11</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.jdesktop.layout</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>

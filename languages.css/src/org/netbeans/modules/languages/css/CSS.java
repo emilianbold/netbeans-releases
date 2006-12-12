@@ -9,6 +9,9 @@
 
 package org.netbeans.modules.languages.css;
 
+import org.netbeans.api.lexer.Token;
+import org.netbeans.modules.languages.Cookie;
+import org.netbeans.modules.languages.SyntaxCookie;
 import org.netbeans.modules.languages.parser.ASTNode;
 import org.netbeans.modules.languages.parser.PTPath;
 import org.netbeans.modules.languages.parser.SToken;
@@ -25,8 +28,9 @@ import org.openide.windows.TopComponent;
  */
 public class CSS {
 
-    public static String tooltip (PTPath path) {
-        ASTNode n = (ASTNode) path.getLeaf ();
+    public static String tooltip (Cookie cookie) {
+        if (!(cookie instanceof SyntaxCookie)) return null;
+        ASTNode n = (ASTNode) ((SyntaxCookie) cookie).getPTPath ().getLeaf ();
         StringBuilder sb = new StringBuilder ();
         sb.append ("<html>");
         sb.append ("<p style=\"");
@@ -42,8 +46,9 @@ public class CSS {
         return sb.toString ();
     }
 
-    public static String navigatorTooltip (PTPath path) {
-        ASTNode n = (ASTNode) path.getLeaf ();
+    public static String navigatorTooltip (Cookie cookie) {
+        if (!(cookie instanceof SyntaxCookie)) return null;
+        ASTNode n = (ASTNode) ((SyntaxCookie) cookie).getPTPath ().getLeaf ();
         StringBuilder sb = new StringBuilder ();
         sb.append ("<html>");
         sb.append ("<p style=\"");
@@ -59,9 +64,9 @@ public class CSS {
         return sb.toString ();
     }
     
-    public static Runnable hyperlink (PTPath path) {
-        SToken t = (SToken) path.getLeaf ();
-        String s = t.getIdentifier ();
+    public static Runnable hyperlink (Cookie cookie) {
+        Token t = cookie.getTokenSequence ().token ();
+        String s = t.id ().name ();
         s = s.substring (1, s.length () - 1);
         s = s.replace ("%20", " "); // HACK
         Lookup l = TopComponent.getRegistry ().getActivated ().getLookup ();
