@@ -48,7 +48,7 @@ public class ProblemComponent extends javax.swing.JPanel {
     /**
      * Creates new form ProblemComponent 
      */
-    public ProblemComponent(Problem problem, RefactoringUI ui) {
+    public ProblemComponent(Problem problem, RefactoringUI ui, boolean single) {
         initComponents();
         this.ui = ui;
         icon.setIcon(problem.isFatal()?ErrorPanel.getFatalErrorIcon():ErrorPanel.getNonfatalErrorIcon());
@@ -56,7 +56,7 @@ public class ProblemComponent extends javax.swing.JPanel {
         this.problem = problem;
         this.details = problem.getDetails();
         //setLightBackground();
-        if (details != null) {
+        if (!single && details != null) {
             org.openide.awt.Mnemonics.setLocalizedText(showDetails, details.getDetailsHint());
             showDetails.setPreferredSize(new Dimension((int) buttonWidth, (int) showDetails.getMinimumSize().getHeight()));
         } else {
@@ -172,7 +172,7 @@ public class ProblemComponent extends javax.swing.JPanel {
     private javax.swing.JButton showDetails;
     // End of variables declaration//GEN-END:variables
     
-    private class CallbackAction extends AbstractAction {
+    static class CallbackAction extends AbstractAction {
         RefactoringUI ui;
         
         public CallbackAction(RefactoringUI ui) {

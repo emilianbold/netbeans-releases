@@ -32,6 +32,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.api.ProblemDetails;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.spi.ui.*;
 import org.openide.DialogDescriptor;
@@ -40,6 +41,7 @@ import org.openide.ErrorManager;
 import org.openide.util.*;
 import org.netbeans.modules.refactoring.api.ProgressListener;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
+import org.netbeans.modules.refactoring.spi.impl.ProblemComponent.CallbackAction;
 import org.openide.awt.Mnemonics;
 
 
@@ -75,6 +77,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
     private final int PRE_CHECK = 0;
     private final int INPUT_PARAMETERS = 1;
     private final int POST_CHECK = 2;
+    private final int PROBLEM = 3;
     
     private transient int currentState = INPUT_PARAMETERS;
 
@@ -263,6 +266,17 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         if (currentState == PRE_CHECK) {
             //next is "Next>"
             placeCustomPanel();
+            return;
+        }
+        
+        if (currentState == PROBLEM && previewAll) {
+            Cancellable doCloseParent = new Cancellable() {
+                public boolean cancel() {
+                    cancelActionPerformed(null);
+                    return true;
+                }
+            };
+            currentProblemAction.showDetails(new CallbackAction(rui), doCloseParent);
             return;
         }
         
@@ -484,6 +498,13 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         });
     }
     
+    private ProblemDetails getDetails(Problem problem) {
+        if (problem.getNext()==null) {
+            return problem.getDetails();
+        }
+        return null;
+    }
+    private ProblemDetails currentProblemAction;
     private void placeErrorPanel(Problem problem) {
         containerPanel.removeAll();
         errorPanel = new ErrorPanel(problem, rui);
@@ -497,6 +518,14 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
             Mnemonics.setLocalizedText(next, NbBundle.getMessage(ParametersPanel.class,"CTL_Next"));
             back.setVisible(false);
         } else {
+            ProblemDetails details = getDetails(problem);
+            if (details!=null) {
+                currentState=PROBLEM;
+                Mnemonics.setLocalizedText(previewButton, details.getDetailsHint());            
+                previewButton.setVisible(true);
+                previewButton.setEnabled(true);
+                currentProblemAction = details;
+            }
             back.setVisible(true);
             back.setEnabled(true);
             dialog.getRootPane().setDefaultButton(back);
@@ -509,6 +538,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
     private void placeCustomPanel() {
         if (customPanel == null) return;
         Mnemonics.setLocalizedText(next, NbBundle.getMessage(ParametersPanel.class, rui.isQuery()?"CTL_Find": "CTL_Finish"));
+        Mnemonics.setLocalizedText(previewButton, NbBundle.getMessage(ParametersPanel.class, "CTL_PreviewAll"));
         customPanel.setBorder(new EmptyBorder(new Insets(12, 12, 11, 11)));
         containerPanel.removeAll();
         containerPanel.add(customPanel, BorderLayout.CENTER);

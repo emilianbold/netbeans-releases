@@ -166,15 +166,4 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>
   </folder> 
-    <folder name="Services">
-        <folder name="org-netbeans-modules-refactoring">
-            <file name="options">
-                <attr name="previewAll.org.netbeans.modules.refactoring.api.ExtractMethodRefactoring" boolvalue="false"/>
-                <attr name="previewAll.org.netbeans.modules.refactoring.api.SafeDeleteRefactoring" boolvalue="false"/>
-                <attr name="previewAll.org.netbeans.modules.refactoring.api.AnonymousToInnerRefactoring" boolvalue="false"/>
-                <attr name="previewAll.org.netbeans.modules.refactoring.api.SingleCopyRefactoring" boolvalue="false"/>
-            </file>    
-        </folder>
-    </folder>
-     
 </filesystem>

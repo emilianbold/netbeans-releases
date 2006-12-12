@@ -50,6 +50,7 @@ public class ErrorPanel extends javax.swing.JPanel {
         errors.removeAll();
         int i = 0;
         ProblemComponent.initButtonSize(problem);
+        boolean single = problem.getNext()==null;
         while (problem != null) {
             GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.gridx = 0;
@@ -58,7 +59,7 @@ public class ErrorPanel extends javax.swing.JPanel {
             gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
             gridBagConstraints.weightx = 1.0;
             
-            ProblemComponent c = new ProblemComponent(problem, ui);
+            ProblemComponent c = new ProblemComponent(problem, ui, single);
             errors.add(c, gridBagConstraints);
             
             problem = problem.getNext();
