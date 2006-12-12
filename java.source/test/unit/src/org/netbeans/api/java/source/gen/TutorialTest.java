@@ -457,13 +457,6 @@ public class TutorialTest extends GeneratorTest {
             "    }\n" +
             "}\n"
             );
-        String golden =
-            "package hierbas.del.litoral;\n\n" +
-            "import java.io.*;\n\n" +
-            "public class Test {\n" +
-            "    public void taragui() {\n" +
-            "    }\n" +
-            "}\n";
         JavaSource tutorialSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
         
         CancellableTask task = new CancellableTask<WorkingCopy>() {
