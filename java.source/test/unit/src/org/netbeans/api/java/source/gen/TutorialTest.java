@@ -34,6 +34,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.java.source.TreeMaker;
 import static org.netbeans.api.java.source.JavaSource.*;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -64,6 +65,7 @@ public class TutorialTest extends GeneratorTest {
 //        suite.addTest(new TutorialTest("testAddMethod"));
 //        suite.addTest(new TutorialTest("testAddAnnotation"));
 //        suite.addTest(new TutorialTest("testForErno"));
+//        suite.addTest(new TutorialTest("testMethodInvocation"));
         return suite;
     }
     
@@ -443,6 +445,74 @@ public class TutorialTest extends GeneratorTest {
         }
         in.close();
     }
+    
+    // obtain, modify and replace the method body as a text
+    public void testMethodInvocation() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n\n" +
+            "import java.io.*;\n\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n\n" +
+            "import java.io.*;\n\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource tutorialSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                
+                // make the outer invocation, i.e. "clone()"
+                MethodInvocationTree cloneInvocation = make.MethodInvocation(
+                        Collections.<ExpressionTree>emptyList(),
+                        make.Identifier("clone"), 
+                        Collections.<ExpressionTree>emptyList()
+                );
+                
+                // encapsulate 'toString' identifier to outer invocation
+                MemberSelectTree toStringSelIdent = make.MemberSelect(cloneInvocation, "toString");
+                // make 'toString()' invocation
+                MethodInvocationTree toStringInvocation = make.MethodInvocation(
+                        Collections.<ExpressionTree>emptyList(),
+                        toStringSelIdent,
+                        Collections.<ExpressionTree>emptyList()
+                );
+                // make statement from created expression
+                ExpressionStatementTree statement = make.ExpressionStatement(toStringInvocation);
+                
+                // finally, find the correct body and rewrite it.
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                BlockTree copy = make.addBlockStatement(method.getBody(), statement);
+                workingCopy.rewrite(method.getBody(), copy);
+            }
+
+            public void cancel() {
+            }
+        };
+
+        tutorialSource.runModificationTask(task).commit();
+        
+        // print the result to the System.err to see the changes in console.
+        BufferedReader in = new BufferedReader(new FileReader(testFile));
+        PrintStream out = System.out;
+        String str;
+        while ((str = in.readLine()) != null) {
+            out.println(str);
+        }
+        in.close();
+    }
+    
 
     // not important for tutorial reasons.
     // please ignore.
