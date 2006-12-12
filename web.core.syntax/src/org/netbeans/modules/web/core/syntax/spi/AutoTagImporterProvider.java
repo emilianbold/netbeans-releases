@@ -25,8 +25,36 @@ import javax.swing.text.Document;
  *
  * @author Petr Pisl
  */
+
+
+/** Until NetBeans 5.5 the code completion usually offered 
+ * only tags of libraries, which are already imported in 
+ * the page. More user-friendly is when all possible tags 
+ * from libraries, which are on the classpath, are offered 
+ * with the  code completion. Similar to the java code 
+ * completion. Implementation of this class provides 
+ * the functionality that makes auto tag library definition 
+ * in the document. The way, how the tag library definition 
+ * is done, depends on the type of document.
+ * 
+ * The implementation has to be registered in the default 
+ * filesystem (in layer file) in the folder 
+ * Editors/${mime-types}/AutoTagImportProviders
+ */
+
 public interface AutoTagImporterProvider {
     
+    /** The method is called, when user select a tag in 
+     * the code completion window and the tag is inserted into 
+     * the document. The implementation has to decide, 
+     * whether  the tag library is already defined, whether 
+     * the tag library has to be imported and if necessary  
+     * write the tag library declaration into the document.
+     * 
+     * @param doc document on which the declaration should be written.
+     * @param prefix prefix of the library
+     * @param uri uri of the library
+     */ 
     public void importLibrary(Document doc, String prefix, String uri);
     
 }

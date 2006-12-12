@@ -36,7 +36,20 @@ import org.openide.loaders.DataObjectNotFoundException;
 //import org.netbeans.api.registry.Context;
 import org.openide.util.NbBundle;
 
-//PENDING: document how to provide an instance in module layer
+/** The JspContextInfo can be implemented with other modules, 
+ * which want to reuse the JSPKit for coloring their documents. 
+ * One example can be Facelets. Facelets are mix of xhtml, 
+ * jsf and facelets tags. The editor for Facelets can looks 
+ * as the editor for jsp, but the data for code completion 
+ * and the syntax highlighting (user tags) are not obtained 
+ * from jspparser, but are counted externally. You can supply 
+ * your data through your implementation of this class. 
+ * Your implementation has to be registered on default 
+ * file system (in layer file) in the folder 
+ * /J2EE/JSPSyntaxColoring/${file_type_mimetype}.
+ * 
+ * For every mimetype is obtained only one instance. 
+ */
 public abstract class JspContextInfo {
     
     /** Name of the settings context where an instance of this class should be registered */
