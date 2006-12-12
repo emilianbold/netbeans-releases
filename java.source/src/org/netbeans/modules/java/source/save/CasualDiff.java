@@ -2063,7 +2063,7 @@ public class CasualDiff {
     
     protected void printLines(int start, int end, String ind, Line[] lines) {
         for (int lnum = start; lnum <= end; ++lnum) {
-            System.out.println(ind + " " + lines[lnum]);
+            System.out.print(ind + " " + lines[lnum]);
         }
     }
 }
