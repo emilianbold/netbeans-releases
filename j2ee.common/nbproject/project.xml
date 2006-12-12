@@ -288,11 +288,11 @@ Microsystems, Inc. All Rights Reserved.
                 <friend>org.netbeans.modules.websvc.dev</friend>
                 -->
                 <package>org.netbeans.modules.j2ee.common</package>
+                <package>org.netbeans.modules.j2ee.common.method</package>
                 <package>org.netbeans.modules.j2ee.common.queries.api</package>
                 <package>org.netbeans.modules.j2ee.common.queries.spi</package>
                 <package>org.netbeans.modules.j2ee.common.source</package>
                 <package>org.netbeans.modules.j2ee.common.ui</package>
-                <package>org.netbeans.modules.j2ee.common.ui.nodes</package>
             </friend-packages>
         </data>
     </configuration>
