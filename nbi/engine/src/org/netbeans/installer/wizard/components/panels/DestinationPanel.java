@@ -81,16 +81,10 @@ public class DestinationPanel extends ErrorMessagePanel {
         
         String destination = getWizard().getProductComponent().getProperty(INSTALLATION_LOCATION_PROPERTY);
         if (destination == null) {
-            final String defaultDestination = getWizard().getProductComponent().getProperty(DEFAULT_INSTALLATION_LOCATION_PROPERTY);
-            
-            if (defaultDestination != null) {
-                destination = parsePath(defaultDestination).getAbsolutePath();
-            } else {
-                destination = parsePath(DEFAULT_DESTINATION).getAbsolutePath();
-            }
+            destination = DEFAULT_DESTINATION;
         }
         
-        destinationField.setText(destination);
+        destinationField.setText(parsePath(destination).getAbsolutePath());
     }
     
     public void initComponents() {
