@@ -25,6 +25,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.languages.Cookie;
 import org.netbeans.modules.languages.LibrarySupport;
+import org.netbeans.modules.languages.SyntaxCookie;
 import org.netbeans.modules.languages.fold.DatabaseManager;
 import org.netbeans.modules.languages.parser.ASTNode;
 import org.netbeans.modules.languages.parser.PTPath;
@@ -77,7 +78,7 @@ public class JavaScript {
         return nnode;
     }
 
-    public static Runnable hyperlink (Cookie cookie) {
+    public static Runnable hyperlink (SyntaxCookie cookie) {
         PTPath path = cookie.getPTPath ();
         SToken t = (SToken) path.getLeaf ();
         ASTNode n = path.size () > 1 ? 
@@ -103,7 +104,7 @@ public class JavaScript {
         };
     }
     
-    public static String functionName (Cookie cookie) {
+    public static String functionName (SyntaxCookie cookie) {
         PTPath path = cookie.getPTPath ();
         ASTNode n = (ASTNode) path.getLeaf ();
         String name = n.getTokenTypeIdentifier ("js-identifier");
@@ -129,7 +130,7 @@ public class JavaScript {
         return "?";
     }
 
-    public static String objectName (Cookie cookie) {
+    public static String objectName (SyntaxCookie cookie) {
         PTPath path = cookie.getPTPath ();
         ASTNode n = (ASTNode) path.getLeaf ();
         ASTNode p = n.getParent ();
@@ -149,7 +150,7 @@ public class JavaScript {
     
     private static List completionItems;
     
-    public static List completionItems (Cookie cookie) {
+    public static List completionItems (SyntaxCookie cookie) {
         if (completionItems == null) {
             completionItems = new ArrayList ();
             completionItems.addAll (getLibrary ().getItems ("keyword"));
@@ -167,7 +168,7 @@ public class JavaScript {
 
     private static List completionDescriptions;
 
-    public static List completionDescriptions (Cookie cookie) {
+    public static List completionDescriptions (SyntaxCookie cookie) {
         if (completionDescriptions == null) {
             List tags = completionItems (cookie);
             tags = completionItems;
