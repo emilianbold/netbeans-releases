@@ -22,12 +22,15 @@ package org.netbeans.core.startup;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Field;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.net.URLStreamHandlerFactory;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -41,9 +44,11 @@ import org.openide.util.NbBundle;
  * @author Jesse Glick
  */
 final class NbURLStreamHandlerFactory implements URLStreamHandlerFactory, LookupListener {
+    private static Logger LOG = Logger.getLogger(NbURLStreamHandlerFactory.class.getName());
     
     private Lookup.Result<URLStreamHandlerFactory> r = null;
     private URLStreamHandlerFactory[] handlers = null;
+    private URLStreamHandlerFactory delegate;
     
     public NbURLStreamHandlerFactory() {}
     
@@ -63,6 +68,13 @@ final class NbURLStreamHandlerFactory implements URLStreamHandlerFactory, Lookup
            return new NbResourceStreamHandler();
         }
         
+        URLStreamHandlerFactory d = delegate;
+        if (d != null) {
+            URLStreamHandler h = d.createURLStreamHandler(protocol);
+            if (h != null) {
+                return h;
+            }
+        }
         
         URLStreamHandlerFactory[] _handlers;
         synchronized (this) {
@@ -90,6 +102,32 @@ final class NbURLStreamHandlerFactory implements URLStreamHandlerFactory, Lookup
         Collection<? extends URLStreamHandlerFactory> c = r.allInstances();
         synchronized (this) {
             handlers = c.toArray(new URLStreamHandlerFactory[0]);
+        }
+    }
+
+    void registerUsingReflection(Error e) {
+        LOG.log(Level.CONFIG, "Problems registering URLStreamHandlerFactory, trying reflection", e); // NOI18N
+        try {
+            URLStreamHandlerFactory prev = null;
+            for (Field f : URL.class.getDeclaredFields()) {
+                LOG.log(Level.FINEST, "Found field {0}", f);
+                if (f.getType() == URLStreamHandlerFactory.class) {
+                    LOG.log(Level.FINEST, "Clearing field {0}");
+                    f.setAccessible(true);
+                    prev = (URLStreamHandlerFactory)f.get(null);
+                    LOG.log(Level.CONFIG, "Previous value was {0}", prev);
+                    f.set(null, null);
+                    LOG.config("Field is supposed to be empty");
+                    break;
+                }
+            }
+            URL.setURLStreamHandlerFactory(this);
+            delegate = prev;
+        } catch (Throwable t) {
+            LOG.log(Level.SEVERE, 
+                "No way to register URLStreamHandlerFactory, NetBeans are unlikely to work", 
+                t
+            ); // NOI18N
         }
     }
     

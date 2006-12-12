@@ -71,15 +71,12 @@ public class NbURLStreamHandlerFactoryTest extends NbTestCase {
         "/test.dir/something_foo_ja",
     };
     
-    static {
-        URL.setURLStreamHandlerFactory(new NbURLStreamHandlerFactory());
-    }
-    
     public NbURLStreamHandlerFactoryTest(String name) {
         super(name);
     }
     
     protected void setUp() throws Exception {
+        Main.initializeURLFactory();
         super.setUp();
         MockServices.setServices(TestClassLoader.class, TestURLStreamHandlerFactory.class);
     }

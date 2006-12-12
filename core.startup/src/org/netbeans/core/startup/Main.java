@@ -75,13 +75,11 @@ public final class Main extends Object {
   /** Initializes default stream factory */
   public static void initializeURLFactory () {
     if (!nbFactoryInitialized) {
-        java.net.URLStreamHandlerFactory fact = new NbURLStreamHandlerFactory();
+        NbURLStreamHandlerFactory fact = new NbURLStreamHandlerFactory();
         try {
             java.net.URL.setURLStreamHandlerFactory(fact);
         } catch (Error e) {
-            // Can happen if we try to start NB twice in the same VM.
-            // Print the error but try to continue.
-            e.printStackTrace();
+            fact.registerUsingReflection(e);
         }
         nbFactoryInitialized = true;
     }
