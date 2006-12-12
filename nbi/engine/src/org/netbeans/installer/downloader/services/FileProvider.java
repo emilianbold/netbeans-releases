@@ -38,25 +38,23 @@ public class FileProvider {
   
   private final DownloadListener listener = new MyListener();
   
-  private final FileConcurrencyManager concurrencyManager;
-  
   private final PersistentCache cache = new PersistentCache();
   
   private final Map<URL, State> scheduledURL2State = new HashMap<URL, State>();
   
-  protected FileProvider(FileConcurrencyManager manager) {
-    this.concurrencyManager = manager;
-    downloadManager.registerListener(listener);
+  private static final FileProvider fileProvider = new FileProvider();
+  
+  public static FileProvider getProvider() {
+    return fileProvider;
   }
   
-  protected void checkAccess(URL url) {
-    if (concurrencyManager.getOwner(url) != Thread.currentThread())
-      throw new NotResourceOwnerException(url);
+  protected FileProvider() {
+    downloadManager.registerListener(listener);
   }
   
   public synchronized void clearCaches() {
     for (URL url: cache.keys()) {
-      if (concurrencyManager.isFree(url)) cache.delete(url);
+      cache.delete(url);
     }
   }
   
@@ -71,9 +69,6 @@ public class FileProvider {
     scheduledURL2State.put(url, State.NOT_PROCESSED);
     downloadManager.queue().add(url, folder != null ? folder: downloadManager.defaultFolder());
   }
-  
-  //methods below needs thread to capture url in ConcurrencyManager
-  //otherwise NotResourceOwnerException occurs.
   
   public synchronized File get(URL url) throws InterruptedException {
     return get(url, null, true);
@@ -106,13 +101,11 @@ public class FileProvider {
   }
   
   public synchronized File tryGet(URL url) {
-    checkAccess(url);
     if (cache.isIn(url)) return cache.getByURL(url);
     return null;
   }
   
   public synchronized boolean manuallyDelete(URL url) {
-    checkAccess(url);
     return cache.delete(url);
   }
   
@@ -132,15 +125,5 @@ public class FileProvider {
           }
       }
     }
-    
-    public void pumpingAdd(String id) {}
-    
-    public void pumpingDelete(String id) {}
-    
-    public void queueReset() {}
-    
-    public void pumpsInvoke() {}
-    
-    public void pumpsTerminate() {}
   }
 }

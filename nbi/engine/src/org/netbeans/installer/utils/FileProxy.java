@@ -37,7 +37,7 @@ import org.netbeans.installer.downloader.Pumping;
 import org.netbeans.installer.downloader.Pumping.Section;
 import org.netbeans.installer.downloader.PumpingsQueue;
 import org.netbeans.installer.downloader.DownloadListener;
-import org.netbeans.installer.downloader.services.FileConcurrencyManager;
+import org.netbeans.installer.downloader.services.FileProvider;
 import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.utils.helper.Pair;
 import org.netbeans.installer.utils.progress.DownloadProgress;
@@ -165,19 +165,13 @@ public class FileProxy {
   }
   
   protected File getFile(final URL url,final Progress progress, boolean deleteOnExit) throws DownloadException {
-    final FileConcurrencyManager concurrency = FileConcurrencyManager.getManager();
     final DownloadProgress dlProgress = new DownloadProgress(progress);
     DownloadManager.instance.registerListener(dlProgress);
     File file = null;
     try {
-      concurrency.captureByURL(url);
-      file = concurrency.getProvider().get(url);
-      // ofcouse some work with file must be in this section however
-      //here I write this pice of code as an example how to use cuncurrency and provider
+      file = FileProvider.getProvider().get(url);
     } catch (InterruptedException interupt) {
       LogManager.log("interrupted externaly.");
-    } finally {
-      concurrency.releaseFile(url);
     }
     if (file == null) throw new DownloadException("faild to download" + url);
     if (deleteOnExit) file.deleteOnExit();
