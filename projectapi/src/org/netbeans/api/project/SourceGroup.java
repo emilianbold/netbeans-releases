@@ -68,9 +68,14 @@ public interface SourceGroup {
 
     /**
      * Check whether the given file is contained in this group.
+     * <p>
      * A constraint is that the root folder must be contained and
-     * if any file (other than the root folder) is contained then
-     * its parent must be as well.
+     * if any file or folder (other than the root folder) is contained then
+     * its parent must be as well. Therefore, while the return value is precise
+     * for files, and a false return value means what it sounds like for folders,
+     * a true return value for folders may mean that just parts of the folder are
+     * contained in the group.
+     * </p>
      * @param file a file or folder; must be a descendant of the root folder
      * @return true if the group contains that file, false if it is to be excluded
      * @throws IllegalArgumentException if a file is passed which is not inside the root
