@@ -62,22 +62,22 @@ public final class MethodModelSupport {
      * @throws NullPointerException if any of the parameters is <code>null</code>.
      * @return immutable model of method
      */
-    public static MethodModel createMethodModel(WorkingCopy workingCopy, ExecutableElement method) {
-        Parameters.notNull("workingCopy", workingCopy);
-        Parameters.notNull("method", method);
+    public static MethodModel createMethodModel(CompilationController controller, ExecutableElement method) {
+        Parameters.notNull("controller", controller); // NOI18N
+        Parameters.notNull("method", method); // NOI18N
         List<MethodModel.Variable> parameters = new ArrayList<MethodModel.Variable>();
         for (VariableElement variableElement : method.getParameters()) {
-            String type = getTypeName(workingCopy, variableElement.asType());
+            String type = getTypeName(controller, variableElement.asType());
             String name = variableElement.getSimpleName().toString();
             parameters.add(MethodModel.Variable.create(type, name));
         }
         List<String> exceptions = new ArrayList<String>();
         for (TypeMirror typeMirror : method.getThrownTypes()) {
-            exceptions.add(getTypeName(workingCopy, typeMirror));
+            exceptions.add(getTypeName(controller, typeMirror));
         }
         return MethodModel.create(
                 method.getSimpleName().toString(),
-                getTypeName(workingCopy, method.getReturnType()),
+                getTypeName(controller, method.getReturnType()),
                 //TODO: RETOUCHE get body of method
                 "",
                 parameters,
@@ -95,11 +95,11 @@ public final class MethodModelSupport {
      * @throws NullPointerException if any of the parameters is <code>null</code>.
      * @return immutable model of variable or method parameter
      */
-    public static MethodModel.Variable createVariable(WorkingCopy workingCopy, VariableElement variableElement) {
-        Parameters.notNull("workingCopy", workingCopy);
-        Parameters.notNull("variableElement", variableElement);
+    public static MethodModel.Variable createVariable(CompilationController controller, VariableElement variableElement) {
+        Parameters.notNull("controller", controller); //NOI18N
+        Parameters.notNull("variableElement", variableElement); //NOI18N
         return MethodModel.Variable.create(
-                getTypeName(workingCopy, variableElement.asType()),
+                getTypeName(controller, variableElement.asType()),
                 variableElement.getSimpleName().toString()
                 );
     }
@@ -113,8 +113,8 @@ public final class MethodModelSupport {
      * @return tree representing methodModel
      */
     public static MethodTree createMethodTree(WorkingCopy workingCopy, MethodModel methodModel) {
-        Parameters.notNull("workingCopy", workingCopy);
-        Parameters.notNull("methodModel", methodModel);
+        Parameters.notNull("workingCopy", workingCopy); //NOI18N
+        Parameters.notNull("methodModel", methodModel); //NOI18N
         TreeMaker treeMaker = workingCopy.getTreeMaker();
         TreeUtilities treeUtilities = workingCopy.getTreeUtilities();
         List<VariableTree> paramsList = new ArrayList<VariableTree>();
@@ -162,9 +162,9 @@ public final class MethodModelSupport {
      */
     public static boolean isSameMethod(CompilationInfo compilationInfo, ExecutableElement method, MethodModel methodModel) {
         //TODO: RETOUCHE fix this method, see #90505
-        Parameters.notNull("compilationInfo", compilationInfo);
-        Parameters.notNull("method", method);
-        Parameters.notNull("methodModel", methodModel);
+        Parameters.notNull("compilationInfo", compilationInfo); // NOI18N
+        Parameters.notNull("method", method); // NOI18N
+        Parameters.notNull("methodModel", methodModel); // NOI18N
         if (!method.getSimpleName().contentEquals(methodModel.getName())) {
             return false;
         }
@@ -229,15 +229,15 @@ public final class MethodModelSupport {
     static String getTypeName(CompilationController controller, TypeMirror typeMirror) {
         TypeKind typeKind = typeMirror.getKind();
         switch (typeKind) {
-            case BOOLEAN : return "boolean";
-            case BYTE : return "byte";
-            case CHAR : return "char";
-            case DOUBLE : return "double";
-            case FLOAT : return "float";
-            case INT : return "int";
-            case LONG : return "long";
-            case SHORT : return "short";
-            case VOID : return "void";
+            case BOOLEAN : return "boolean"; // NOI18N
+            case BYTE : return "byte"; // NOI18N
+            case CHAR : return "char"; // NOI18N
+            case DOUBLE : return "double"; // NOI18N
+            case FLOAT : return "float"; // NOI18N
+            case INT : return "int"; // NOI18N
+            case LONG : return "long"; // NOI18N
+            case SHORT : return "short"; // NOI18N
+            case VOID : return "void"; // NOI18N
             case DECLARED : 
                 Element element = controller.getTypes().asElement(typeMirror);
                 return ((TypeElement) element).getQualifiedName().toString();

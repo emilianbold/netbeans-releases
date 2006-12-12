@@ -20,7 +20,12 @@
 package org.netbeans.modules.j2ee.common.method;
 
 import java.io.InputStream;
+import java.util.List;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.CancellableTask;
@@ -31,6 +36,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.common.source.FakeJavaDataLoaderPool;
 import org.netbeans.modules.j2ee.common.source.RepositoryImpl;
+import org.netbeans.modules.j2ee.common.source.SourceUtils;
 import org.netbeans.modules.j2ee.common.source.TestUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -53,6 +59,67 @@ public class MethodModelSupportTest extends NbTestCase {
         clearWorkDir();
         FileObject workDir = FileUtil.toFileObject(getWorkDir());
         testFO = workDir.createData("TestClass.java");
+    }
+    
+    public void testCreateMethodModel() throws Exception {
+        TestUtilities.copyStringToFileObject(testFO,
+                "package foo;" +
+                "public class TestClass {" +
+                "    private boolean method1() throws java.io.IOException {" +
+                "        return false;" +
+                "    }" +
+                "    public static void method2(String name, int age, String[] interests) {" +
+                "        return null;" +
+                "    }" +
+                "}");
+        runUserActionTask(testFO, new AbstractTask<CompilationController>() {
+            public void run(CompilationController controller) throws Exception {
+                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                TypeElement typeElement = SourceUtils.newInstance(controller).getTypeElement();
+                for (ExecutableElement method : ElementFilter.methodsIn(typeElement.getEnclosedElements())) {
+                    MethodModel methodModel = MethodModelSupport.createMethodModel(controller, method);
+                    if (method.getSimpleName().contentEquals("method1")) {
+                        assertEquals("boolean", methodModel.getReturnType());
+                        assertEquals("method1", methodModel.getName());
+                        assertTrue(methodModel.getModifiers().size() == 1);
+                        assertTrue(methodModel.getModifiers().contains(Modifier.PRIVATE));
+                        assertTrue(methodModel.getParameters().size() == 0);
+                        assertTrue(methodModel.getExceptions().size() == 1);
+                        assertTrue(methodModel.getExceptions().contains("java.io.IOException"));
+                        //TODO: RETOUCHE test method body, see #90926
+                    } else if (method.getSimpleName().contentEquals("method2")) {
+                        assertEquals("void", methodModel.getReturnType());
+                        assertEquals("method2", methodModel.getName());
+                        assertTrue(methodModel.getModifiers().size() == 2);
+                        assertTrue(methodModel.getModifiers().contains(Modifier.PUBLIC));
+                        assertTrue(methodModel.getModifiers().contains(Modifier.STATIC));
+                        MethodModel.Variable nameVariable = null;
+                        MethodModel.Variable ageVariable = null;
+                        MethodModel.Variable interestsVariable = null;
+                        List<MethodModel.Variable> variables = methodModel.getParameters();
+                        assertTrue(variables.size() == 3);
+                        for (MethodModel.Variable variable : variables) {
+                            if ("name".equals(variable.getName())) {
+                                nameVariable = variable;
+                            } else if ("age".equals(variable.getName())) {
+                                ageVariable = variable;
+                            } else if ("interests".equals(variable.getName())) {
+                                interestsVariable = variable;
+                            }
+                        }
+                        assertNotNull(nameVariable);
+                        assertNotNull(ageVariable);
+                        assertNotNull(interestsVariable);
+                        assertEquals("java.lang.String", nameVariable.getType());
+                        assertEquals("int", ageVariable.getType());
+                        assertEquals("java.lang.String[]", interestsVariable.getType());
+                        assertTrue(methodModel.getExceptions().size() == 0);
+                        //TODO: RETOUCHE test method body, see #90926
+                    }
+                    
+                }
+            }
+        });
     }
     
     public void testGetTypeName() throws Exception {
