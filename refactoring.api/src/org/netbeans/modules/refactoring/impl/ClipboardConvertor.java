@@ -24,10 +24,13 @@ import java.util.Hashtable;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
+import org.netbeans.modules.refactoring.spi.impl.UIUtilities;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeTransfer;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.ExClipboard.Convertor;
+import org.openide.util.datatransfer.ExTransferable;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -51,8 +54,11 @@ public class ClipboardConvertor implements Convertor {
             ic.add(d);
             Lookup l = new AbstractLookup(ic);
             Action move = RefactoringActionsFactory.moveAction().createContextAwareInstance(l);
-            if (move.isEnabled())
-                return NodeTransfer.createPaste(new RefactoringPaste(t, ic, move, d));
+            if (move.isEnabled()) {
+                ExTransferable tr = ExTransferable.create(t);
+                tr.put(NodeTransfer.createPaste(new RefactoringPaste(t, ic, move, d)));
+                return tr;
+            }
         }
         nodes = NodeTransfer.nodes(t, NodeTransfer.CLIPBOARD_COPY);
         if (nodes!=null && nodes.length>0) {
@@ -65,8 +71,11 @@ public class ClipboardConvertor implements Convertor {
             ic.add(d);
             Lookup l = new AbstractLookup(ic);
             Action copy = RefactoringActionsFactory.copyAction().createContextAwareInstance(l);
-            if (copy.isEnabled())
-                return NodeTransfer.createPaste(new RefactoringPaste(t, ic, copy, d));
+            if (copy.isEnabled()) {
+                ExTransferable tr = ExTransferable.create(t);
+                tr.put(NodeTransfer.createPaste(new RefactoringPaste(t, ic, copy, d)));
+                return tr;
+            }
         }
         return t;
     }
@@ -88,16 +97,14 @@ public class ClipboardConvertor implements Convertor {
             RefactoringPasteType refactoringPaste = new RefactoringPasteType(delegate, target);
             if (refactoringPaste.canHandle())
                 return new PasteType[] {refactoringPaste};
-                return target.getPasteTypes(delegate);
+            return new PasteType[0];
         }
         
         private class RefactoringPasteType extends PasteType {
             RefactoringPasteType(Transferable orig, Node target) {
                 d.clear();
                 d.put("target", target); //NOI18N
-                PasteType[] types = target.getPasteTypes(orig);
-                if (types.length>0)
-                    d.put("paste", types[0]); //NOI18N
+                d.put("transferable", orig); //NOI18N
             }
             
             public boolean canHandle() {
@@ -114,6 +121,9 @@ public class ClipboardConvertor implements Convertor {
                     };
                 });
                 return null;
+            }
+            public String getName() {
+                return NbBundle.getMessage(UIUtilities.class,"Actions/Refactoring") + " " + refactor.getValue(Action.NAME);
             }
         }
     }

@@ -22,6 +22,7 @@ package org.netbeans.modules.refactoring.java.ui;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
+import java.awt.datatransfer.Transferable;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -170,10 +171,24 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         if (dob==null) {
             return false;
         }
-        FileObject fo = dob.getPrimaryFile();
-        if (RetoucheUtils.isRefactorable(fo)) { //NOI18N
-            return true;
+        
+        Dictionary dict = lookup.lookup(Dictionary.class);
+        FileObject fob = getTarget(dict);
+        if (fob != null) {
+            if (!fob.isFolder())
+                return false;
+            FileObject fo = dob.getPrimaryFile();
+            if (RetoucheUtils.isRefactorable(fo)) { //NOI18N
+                return true;
+            }
+
+        } else {
+            FileObject fo = dob.getPrimaryFile();
+            if (RetoucheUtils.isRefactorable(fo)) { //NOI18N
+                return true;
+            }
         }
+
         return false;
     }    
 
@@ -262,20 +277,22 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         if (n==null)
             return null;
         DataObject dob = n.getCookie(DataObject.class);
-        if (dob!=null) {
-            FileObject fob = dob.getPrimaryFile();
-            if (!fob.isFolder())
-                return fob.getParent();
-            else
-                return fob;
-        }
+        if (dob!=null)
+            return dob.getPrimaryFile();
         return null;
     }
     
     private PasteType getPaste(Dictionary dict) {
         if (dict==null) 
             return null;
-        return (PasteType) dict.get("paste"); //NOI18N
+        Transferable orig = (Transferable) dict.get("transferable"); //NOI18N
+        if (orig==null)
+            return null;
+        Node n = (Node) dict.get("target");
+        if (n==null)
+            return null;
+        PasteType[] pt = n.getPasteTypes(orig);
+        return pt[1];
     }
     
     private String getName(Dictionary dict) {
@@ -292,7 +309,10 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
     public boolean canMove(Lookup lookup) {
         Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
         Dictionary dict = lookup.lookup(Dictionary.class);
-        if (getTarget(dict) != null) {
+        FileObject fo = getTarget(dict);
+        if (fo != null) {
+            if (!fo.isFolder())
+                return false;
             //it is drag and drop
             Set<DataFolder> folders = new HashSet();
             boolean jdoFound = false;
