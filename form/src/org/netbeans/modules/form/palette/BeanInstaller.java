@@ -292,6 +292,21 @@ public final class BeanInstaller {
         }
     }     
     
+    /**
+     * finds bean's FQN if there is any.
+     * @param file file to search a bean
+     * @return null or the fqn 
+     */
+    public static String findJavaBeanName(FileObject file) {
+        final String[] fqn = new String[1];
+        scanFileObject(null, file, new JavaClassHandler() {
+            public void handle(String className) {
+                fqn[0] = className;
+            }
+        });
+        return fqn[0];
+    }
+    
     private static void processJavaFile(final FileObject javaFO, final JavaClassHandler handler) {
         try {
             JavaSource js = JavaSource.forFileObject(javaFO);

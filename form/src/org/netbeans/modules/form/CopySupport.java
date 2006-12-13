@@ -23,9 +23,6 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.modules.classfile.ClassFile;
 import org.netbeans.modules.form.layoutdesign.LayoutComponent;
 import org.netbeans.modules.form.layoutdesign.LayoutModel;
 import org.netbeans.modules.form.palette.BeanInstaller;
@@ -390,19 +387,7 @@ class CopySupport {
     }
 
     static String getCopiedBeanClassName(final FileObject fo) {
-        String beanName = null;
-        if ("class".equals(fo.getExt())) {
-            try {
-                // XXX rewrite this to use javax.lang.model.element.* as soon as JavaSource introduce .class files support
-                ClassFile clazz = new ClassFile(fo.getInputStream());
-                if (BeanInstaller.isDeclaredAsJavaBean(clazz)) {
-                    beanName = clazz.getName().getInternalName();
-                }
-            } catch (IOException ex) {
-                Logger.getLogger(CopySupport.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
-            }
-        }
-        return beanName;
+        return BeanInstaller.findJavaBeanName(fo);
     }
 
     static ClassSource getCopiedBeanClassSource(Transferable t) {
