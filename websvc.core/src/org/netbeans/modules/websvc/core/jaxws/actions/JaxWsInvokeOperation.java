@@ -11,6 +11,8 @@ package org.netbeans.modules.websvc.core.jaxws.actions;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.core.InvokeOperationCookie;
+import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
 
 /**
  *
@@ -27,7 +29,11 @@ public class JaxWsInvokeOperation implements InvokeOperationCookie {
     /*
      * Adds a WS invocation to the class
      */
-    public void invokeOperation() {
+    public void invokeOperation(int targetSourceType, Node targetNode, Node serviceOperationNode) {
+        JaxWsCodeGenerator.insertMethodCall(getCurrentDataObject(targetNode), targetNode, serviceOperationNode);
     }
     
+    private DataObject getCurrentDataObject(Node n) {
+        return (DataObject) n.getCookie(DataObject.class);
+    }
 }

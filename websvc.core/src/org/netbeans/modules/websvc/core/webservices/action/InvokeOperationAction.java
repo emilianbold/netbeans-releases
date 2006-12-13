@@ -18,7 +18,17 @@
  */
 package org.netbeans.modules.websvc.core.webservices.action;
 
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.websvc.core.InvokeOperationCookie;
+import org.netbeans.modules.websvc.core.WebServiceActionProvider;
+import org.netbeans.modules.websvc.core.webservices.ui.panels.ClientExplorerPanel;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 
 import org.openide.util.HelpCtx;
@@ -42,10 +52,6 @@ public class InvokeOperationAction extends NodeAction {
         return HelpCtx.DEFAULT_HELP;
     }
 
-    protected Class[] cookieClasses() {
-        return new Class[] { /* Retouche: ClassMember.class */};
-    }
-
     protected boolean asynchronous() {
         return false;
     }
@@ -53,20 +59,56 @@ public class InvokeOperationAction extends NodeAction {
     protected boolean enable(Node[] activatedNodes) {
         boolean result = false;
         if (activatedNodes != null && activatedNodes.length == 1 && activatedNodes[0] != null) {
-            EditorCookie cookie = (EditorCookie)activatedNodes[0].getCookie(EditorCookie.class);
-            if (cookie!=null && "text/x-jsp".equals(cookie.getDocument().getProperty("mimeType"))) { //NOI18N
+            if (InvokeOperationCookie.TARGET_SOURCE_UNKNOWN != getTargetSourceType(activatedNodes[0]))
                 return true;
-            } else if (cookie!=null && "text/x-java".equals(cookie.getDocument().getProperty("mimeType"))) {
-                // result = (JMIUtils.getCallableFeatureFromNode(activatedNodes[0]) != null); // Retouche
-                return true;
-            }
         }
         return result;
     }
 
     protected void performAction(Node[] activatedNodes) {
         if(activatedNodes != null && activatedNodes[0] != null) {
+            FileObject currentFO = getCurrentFileObject(activatedNodes[0]);
+            if(currentFO != null) {
+                // !PW I wrote this code before I knew about NodeOperation.  Anyway, this
+                // behaves a bit nicer in that the root node is hidden and the tree opens
+                // up expanded.  Both improve usability for this use case I think.
+                ClientExplorerPanel serviceExplorer = new ClientExplorerPanel(currentFO);
+                DialogDescriptor descriptor = new DialogDescriptor(serviceExplorer, 
+                        NbBundle.getMessage(InvokeOperationAction.class,"TTL_SelectOperation"));
+                serviceExplorer.setDescriptor(descriptor);
+                // !PW FIXME put help context here when known to get a displayed help button on the panel.
+//                descriptor.setHelpCtx(new HelpCtx("HelpCtx_J2eePlatformInstallRootQuery"));
+                if(DialogDisplayer.getDefault().notify(descriptor).equals(NotifyDescriptor.OK_OPTION)) {
+                    // !PW FIXME refactor this as a method implemented in a cookie
+                    // on the method node.
+                    Project project = FileOwnerQuery.getOwner(currentFO);
+                    if (project!=null) {
+                    InvokeOperationCookie invokeCookie = WebServiceActionProvider.getInvokeOperationAction(project);
+                    if (invokeCookie!=null)
+                        invokeCookie.invokeOperation(getTargetSourceType(activatedNodes[0]), activatedNodes[0], serviceExplorer.getSelectedMethod());
+                    }
+                }
+            }
         }
+    }
+    
+    private FileObject getCurrentFileObject(Node n) {
+        FileObject result = null;
+        DataObject dobj = (DataObject) n.getCookie(DataObject.class);
+        if(dobj != null) {
+            result = dobj.getPrimaryFile();
+        }
+        return result;
+    }
+    
+    private int getTargetSourceType(Node node) {
+        EditorCookie cookie = (EditorCookie)node.getCookie(EditorCookie.class);
+        if (cookie!=null && "text/x-jsp".equals(cookie.getDocument().getProperty("mimeType"))) { //NOI18N
+            return InvokeOperationCookie.TARGET_SOURCE_JSP;
+        } else if (cookie!=null && "text/x-java".equals(cookie.getDocument().getProperty("mimeType"))) { //NOI18N
+            return InvokeOperationCookie.TARGET_SOURCE_JAVA;
+        }
+        return InvokeOperationCookie.TARGET_SOURCE_UNKNOWN;
     }
     
 }

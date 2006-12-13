@@ -25,8 +25,12 @@ import org.openide.nodes.Node;
  */
 public interface InvokeOperationCookie extends Node.Cookie {
     
+    public static int TARGET_SOURCE_UNKNOWN = 0;
+    public static int TARGET_SOURCE_JAVA = 1;
+    public static int TARGET_SOURCE_JSP = 2;
+    
     /*
      * Adds a method definition to the the implementation class, possibly to SEI
      */
-    public void invokeOperation();
+    public void invokeOperation(int targetSourceTypeI, Node targetNode, Node serviceOperationNode);
 }
