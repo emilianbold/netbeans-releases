@@ -363,8 +363,7 @@ public class JspLexer implements Lexer<JspTokenId> {
 //                                    return decide_jsp_tag_token();
 //                                }
                             } else { // directive
-                                //state = ISI_DIR_ERROR;
-                                //commented out to minimize errors during the process of writing directives
+                                lexerState = ISI_DIR_ERROR;
                                 break;
                             }
                         case '/': // for tags
@@ -377,8 +376,7 @@ public class JspLexer implements Lexer<JspTokenId> {
 //                                    return decide_jsp_tag_token();
 //                                }
                             } else { // directive
-                                //state = ISI_DIR_ERROR;
-                                //commented out to minimize errors during the process of writing directives
+                                lexerState = ISI_DIR_ERROR;
                                 break;
                             }
                         case '%': // for directives
@@ -404,7 +402,7 @@ public class JspLexer implements Lexer<JspTokenId> {
                         case '<':
                             // assume that this is the start of the next tag
                             //we shouldn't have anything else than then the < char in buffer
-                            assert input.readLength() == 1 : "There is something more than '<' char in the read text!"; //NOI18N
+                            assert input.readLength() == 1 : "There is something more than '<' char in the read text: '" + input.readText() + "'"; //NOI18N
                             input.backup(1);
                             lexerState = INIT;
                         default: //numbers or illegal symbols
