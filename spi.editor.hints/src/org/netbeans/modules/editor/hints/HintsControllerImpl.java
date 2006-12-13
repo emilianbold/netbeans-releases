@@ -98,7 +98,9 @@ public final class HintsControllerImpl {
     private static void setErrorsImpl(FileObject file, String layer, Collection<? extends ErrorDescription> errors) throws IOException {
         AnnotationHolder holder = AnnotationHolder.getInstance(file);
         
-        holder.setErrorDescriptions(layer,errors);
+        if (holder != null) {
+            holder.setErrorDescriptions(layer,errors);
+        }
         
 //        updateInError(file);
 //        
