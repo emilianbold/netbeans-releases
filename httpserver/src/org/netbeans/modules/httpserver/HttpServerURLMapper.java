@@ -29,9 +29,7 @@ import java.net.UnknownHostException;
 import java.util.StringTokenizer;
 import org.openide.ErrorManager;
 import org.openide.filesystems.URLMapper;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
-import org.openide.util.SharedClassObject;
 
 /** Implementation of a URLMapper which creates http URLs for fileobjects in the IDE.
  * Directs the requests for URLs to WrapperServlet.
