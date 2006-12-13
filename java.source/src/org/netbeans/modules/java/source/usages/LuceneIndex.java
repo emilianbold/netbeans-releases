@@ -22,8 +22,7 @@ package org.netbeans.modules.java.source.usages;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -31,6 +30,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -206,7 +206,15 @@ class LuceneIndex extends Index {
             return;
         }
         assert name != null;                
-        final Set<Term> toSearch = new HashSet<Term> ();
+        final Set<Term> toSearch = new TreeSet<Term> (new Comparator<Term>(){
+            public int compare (Term t1, Term t2) {
+                int ret = t1.field().compareTo(t2.field());
+                if (ret == 0) {
+                    ret = t1.text().compareTo(t2.text());
+                }
+                return ret;
+            }
+        });
         final IndexReader in = getReader();
         switch (kind) {
             case SIMPLE_NAME:
@@ -286,14 +294,18 @@ class LuceneIndex extends Index {
         LOGGER.fine(String.format("LuceneIndex.getDeclaredTypes[%s] returned %d elements\n",this.toString(), toSearch.size()));
         final Iterator<Term> it = toSearch.iterator();        
         final ElementKind[] kindHolder = new ElementKind[1];
+        Set<Integer> docNums = new TreeSet<Integer>();
         while (it.hasNext()) {
             tds.seek(it.next());
             while (tds.next()) {
-                final Document doc = in.document(tds.doc());
-                final String binaryName = DocumentUtil.getBinaryName(doc, kindHolder);
-                result.add (convertor.convert(kindHolder[0],binaryName));
+                docNums.add (tds.doc());
             }
         }
+        for (Integer docNum : docNums) {
+            final Document doc = in.document(docNum);
+            final String binaryName = DocumentUtil.getBinaryName(doc, kindHolder);
+            result.add (convertor.convert(kindHolder[0],binaryName));
+        }        
     }
     
     private void regExpSearch (final Pattern pattern, final Term startTerm, final IndexReader in, final Set<Term> toSearch) throws IOException {        
