@@ -140,13 +140,13 @@ public abstract class Line extends Annotatable implements Serializable {
     *   l.equals (lineSet.getCurrent (l.getLineNumber ()))
     * </PRE>
     *
-    * @return current line number (may change as text is edited)
+    * @return current line number (may change as text is edited) (starting at 0)
     */
     public abstract int getLineNumber();
 
     /** Show the line.
     * @param kind one of {@link #SHOW_TRY_SHOW}, {@link #SHOW_SHOW}, or {@link #SHOW_GOTO}
-    * @param column the column of this line which should be selected
+    * @param column the column of this line which should be selected (starting at 0)
     */
     public abstract void show(int kind, int column);
 
@@ -220,7 +220,7 @@ public abstract class Line extends Annotatable implements Serializable {
 
     /** Create object which represent part of the text on the line. This part
      * of the line can be used for attaching of annotations.
-     * @param column starting column of the part of the text
+     * @param column starting column of the part of the text (starting at 0)
      * @param length length of the part of the text
      * @return instance of the Line.Part which represent the part of the text
      * @since 1.20
@@ -249,7 +249,7 @@ public abstract class Line extends Annotatable implements Serializable {
         public static final String PROP_LENGTH = "length"; // NOI18N
 
         /** Start column of annotation
-         * @return column at which this part begining
+         * @return column at which this part begining (starting at 0)
          */
         public abstract int getColumn();
 
@@ -337,7 +337,7 @@ public abstract class Line extends Annotatable implements Serializable {
          * That is, finds the line in the current document which originally had the indicated line number.
          * If there have been modifications of that line, find one as close as possible.
         *
-        * @param line number of the line
+        * @param line number of the line (starting at 0)
         * @return line object
         * @exception IndexOutOfBoundsException if <code>line</code> is an invalid index for the original set of lines
         */
@@ -346,7 +346,7 @@ public abstract class Line extends Annotatable implements Serializable {
         /** Find line object representing the line in current document.
         *
         *
-        * @param line number of the line in current state of the document
+        * @param line number of the line in current state of the document (starting at 0)
         * @return line object
         * @exception IndexOutOfBoundsException if <code>line</code> is an invalid index for the original set of lines
         */
@@ -354,7 +354,7 @@ public abstract class Line extends Annotatable implements Serializable {
 
         /** Finds an original line number for given line in this line set.
          * @param line the line to look for
-         * @return the number that best matches the line number of the line or -1
+         * @return the number (starting at 0) that best matches the line number of the line or -1
          *    if the line does seem to be produced by this line set
          * @since 4.38
          */
