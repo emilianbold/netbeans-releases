@@ -20,9 +20,9 @@ package org.netbeans.modules.editor.hints;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import org.netbeans.spi.editor.hints.ErrorDescription;
+import javax.swing.text.BadLocationException;
 import org.netbeans.spi.editor.hints.LazyFixList;
-import org.openide.text.Annotatable;
+import org.netbeans.spi.editor.hints.Severity;
 import org.openide.text.Annotation;
 import org.openide.util.WeakListeners;
 
@@ -32,22 +32,29 @@ import org.openide.util.WeakListeners;
  */
 public class ParseErrorAnnotation extends Annotation implements PropertyChangeListener {
 
-    private ErrorDescription desc;
-
+    private final Severity severity;
+    private final LazyFixList fixes;
+    private final String description;
+    //XXX: should hold Position to handle changes in the document correctly:
+    private final int lineNumber;
+    private final AnnotationHolder holder;
+    
     /** Creates a new instance of ParseErrorAnnotation */
-    public ParseErrorAnnotation(ErrorDescription desc) {
-        this.desc = desc;
-        LazyFixList fixes = desc.getFixes();
+    public ParseErrorAnnotation(Severity severity, LazyFixList fixes, String description, int lineNumber, AnnotationHolder holder) {
+        this.severity = severity;
+        this.fixes = fixes;
+        this.description = description;
+        this.lineNumber = lineNumber;
+        this.holder = holder;
         
         if (fixes.probablyContainsFixes() && !fixes.isComputed())
             fixes.addPropertyChangeListener(WeakListeners.propertyChange(this, fixes));
     }
 
     public String getAnnotationType() {
-        LazyFixList fixes = desc.getFixes();
         boolean hasFixes = fixes.isComputed() && !fixes.getFixes().isEmpty();
         
-        switch (desc.getSeverity()) {
+        switch (severity) {
             case ERROR:
                 if (hasFixes)
                     return "org-netbeans-spi-editor-hints-parser_annotation_err_fixable";
@@ -75,25 +82,35 @@ public class ParseErrorAnnotation extends Annotation implements PropertyChangeLi
                 else
                     return "org-netbeans-spi-editor-hints-parser_annotation_todo";
             default:
-                throw new IllegalArgumentException(String.valueOf(desc.getSeverity()));
+                throw new IllegalArgumentException(String.valueOf(severity));
         }
     }
 
     public String getShortDescription() {
-        return desc.getDescription();
-    }
-
-    ErrorDescription getDescription() {
-        return desc;
+        return description;
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-        if (desc.getFixes().isComputed()) {
-            Annotatable ann = getAttachedAnnotatable();
-            
-            detach();
-            attach(ann);
+        if (fixes.isComputed()) {
+            try {
+                holder.detachAnnotation(this);
+                holder.attachAnnotation(lineNumber, this);
+            } catch (BadLocationException ex) {
+                throw new IllegalStateException(ex);
+            }
         }
+    }
+    
+    public LazyFixList getFixes() {
+        return fixes;
+    }
+    
+    public String getDescription() {
+        return description;
+    }
+    
+    public int getLineNumber() {
+        return lineNumber;
     }
     
 }

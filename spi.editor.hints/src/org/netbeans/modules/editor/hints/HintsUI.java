@@ -26,6 +26,7 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -77,6 +78,8 @@ public class HintsUI implements MouseListener, KeyListener, ChangeListener, AWTE
         
         return INSTANCE;
     }
+    
+    static Logger UI_GESTURES_LOGGER = Logger.getLogger("org.netbeans.ui.editor.hints");
     
     private JTextComponent comp;
     private LazyFixList hints = new StaticFixList();
@@ -354,16 +357,21 @@ public class HintsUI implements MouseListener, KeyListener, ChangeListener, AWTE
     }
     
     private ParseErrorAnnotation findAnnotation(Document doc, AnnotationDesc desc, int lineNum) {
-        AnnotationHolder annotations = HintsControllerImpl.getLayersForDocument(doc);
+        DataObject od = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
+        
+        if (od == null)
+            return null;
+        
+        AnnotationHolder annotations = AnnotationHolder.getInstance(od.getPrimaryFile());
         
         for (Annotation a : annotations.getAnnotations()) {
-            Annotatable at = a.getAttachedAnnotatable();
-            
-            if (   at instanceof Line
-                && lineNum == ((Line) at).getLineNumber()
-                && org.openide.util.Utilities.compareObjects(desc.getShortDescription(), a.getShortDescription())
-                && a instanceof ParseErrorAnnotation) {
-                return (ParseErrorAnnotation) a;
+            if (a instanceof ParseErrorAnnotation) {
+                ParseErrorAnnotation pa = (ParseErrorAnnotation) a;
+                
+                if (lineNum == pa.getLineNumber()
+                        && org.openide.util.Utilities.compareObjects(desc.getShortDescription(), a.getShortDescription())) {
+                    return pa;
+                }
             }
         }
         
@@ -392,7 +400,7 @@ public class HintsUI implements MouseListener, KeyListener, ChangeListener, AWTE
                 if (annotation == null)
                     return false;
                 
-                showPopup(annotation.getDescription().getFixes(), annotation.getDescription().getDescription(), comp, p);
+                showPopup(annotation.getFixes(), annotation.getDescription(), comp, p);
                 
                 return true;
             } catch (BadLocationException ex) {
@@ -457,6 +465,14 @@ public class HintsUI implements MouseListener, KeyListener, ChangeListener, AWTE
     private ChangeInfo changes;
     
     private void invokeHint (final Fix f) {
+        if (UI_GESTURES_LOGGER.isLoggable(Level.FINE)) {
+            LogRecord rec = new LogRecord(Level.FINE, "GEST_HINT_INVOKED");
+            
+            rec.setResourceBundle(NbBundle.getBundle(HintsUI.class));
+            rec.setParameters(new Object[] {f.getText()});
+            UI_GESTURES_LOGGER.log(rec);
+        }
+        
         removePopups();
         final JTextComponent component = comp;
         final Cursor cur = component.getCursor();

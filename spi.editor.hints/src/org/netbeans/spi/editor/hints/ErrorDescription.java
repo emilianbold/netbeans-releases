@@ -19,9 +19,7 @@
 package org.netbeans.spi.editor.hints;
 
 import java.io.IOException;
-import java.util.List;
 import org.openide.filesystems.FileObject;
-import org.openide.text.Line;
 import org.openide.text.PositionBounds;
 
 /**
