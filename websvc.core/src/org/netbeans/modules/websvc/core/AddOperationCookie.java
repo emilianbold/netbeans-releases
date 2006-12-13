@@ -16,29 +16,18 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+package org.netbeans.modules.websvc.core;
+import org.netbeans.modules.j2ee.common.method.MethodModel;
+import org.openide.nodes.Node;
 
-package org.netbeans.modules.websvc.core.client.wizard;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.core.ClientCreator;
-import org.netbeans.modules.websvc.core.ClientCreatorProvider;
-import org.netbeans.modules.websvc.core.ClientWizardProperties;
-import org.openide.WizardDescriptor;
-
-/**
- *
- * @author Milan Kuchtiak
+/*
+ * Provides a facility for obtaining the addOperation feature
+ * for both JAX-WS and JAX-RPC web service.
  */
-public class JaxWsClientCreatorProvider implements ClientCreatorProvider {
-
-    public JaxWsClientCreatorProvider() {
-    }
+public interface AddOperationCookie extends Node.Cookie {
     
-    public ClientCreator getClientCreator(Project project, WizardDescriptor wiz) {
-        String jaxVersion = (String) wiz.getProperty(ClientWizardProperties.JAX_VERSION);
-        if (jaxVersion.equals(ClientWizardProperties.JAX_WS)) {
-            return new JaxWsClientCreator(project, wiz);
-        }
-        return null;
-    }
-
+    /*
+     * Adds a method definition to the the implementation class, possibly to SEI
+     */
+    public void addOperation(MethodModel m);
 }

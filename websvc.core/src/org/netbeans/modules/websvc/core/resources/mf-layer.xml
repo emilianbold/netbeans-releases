@@ -196,4 +196,35 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
         </folder>
     </folder>
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="x-java">
+                <folder name="Popup">
+                    <!-- Place after EJBActionGroup and/or EnterpriseRefActionGroup -->
+                    <attr name="generate-goto-popup/org-netbeans-modules-websvc-core-webservices-action-WebServiceActionGroup.instance" boolvalue="true"/>
+                    <attr name="org-netbeans-modules-j2ee-ejbcore-ui-logicalview-ejb-action-EJBActionGroup.instance/org-netbeans-modules-websvc-core-webservices-action-WebServiceActionGroup.instance" boolvalue="true"/>
+                    <attr name="org-netbeans-modules-j2ee-ejbcore-ui-logicalview-entres-EnterpriseRefActionGroup.instance/org-netbeans-modules-websvc-core-webservices-action-WebServiceActionGroup.instance" boolvalue="true"/>
+                    <attr name="org-netbeans-modules-websvc-core-webservices-action-WebServiceActionGroup.instance/org-netbeans-modules-refactoring-ui-WhereUsedAction.instance" boolvalue="true"/>
+                    <!-- Place after WebServiceActionGroup -->
+                    <attr name="generate-goto-popup/org-netbeans-modules-websvc-core-webservices-action-WebServiceClientActionGroup.instance" boolvalue="true"/>
+                    <attr name="org-netbeans-modules-websvc-core-webservices-action-WebServiceActionGroup.instance/org-netbeans-modules-websvc-core-webservices-action-WebServiceClientActionGroup.instance" boolvalue="true"/>
+                    <attr name="org-netbeans-modules-websvc-core-webservices-action-WebServiceClientActionGroup.instance/org-netbeans-modules-refactoring-ui-WhereUsedAction.instance" boolvalue="true"/>
+                    <file name="org-netbeans-modules-websvc-core-webservices-action-WebServiceActionGroup.instance"/>
+                    <file name="org-netbeans-modules-websvc-core-webservices-action-WebServiceClientActionGroup.instance"/>
+                </folder>
+            </folder>
+            <folder name="x-jsp">
+                <folder name="Popup">
+                    <!-- WebServiceActionGroup -->
+                    <attr name="org-openide-actions-PasteAction.instance/SeparatorWSClient.instance" boolvalue="true"/>
+                    <file name="SeparatorWSClient.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="SeparatorWSClient.instance/org-netbeans-modules-websvc-jaxrpc-actions-WebServiceClientActionGroup.instance" boolvalue="true"/>
+                    <file name="org-netbeans-modules-websvc-core-webservices-action-WebServiceClientActionGroup.instance"/>
+                    <attr name="org-netbeans-modules-websvc-core-webservices-action-WebServiceClientActionGroup.instance/SeparatorProperties.instance" boolvalue="true"/>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
 </filesystem>

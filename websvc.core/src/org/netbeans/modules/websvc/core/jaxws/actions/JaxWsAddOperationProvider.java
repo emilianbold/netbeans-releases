@@ -17,28 +17,21 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.websvc.core.client.wizard;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.core.ClientCreator;
-import org.netbeans.modules.websvc.core.ClientCreatorProvider;
-import org.netbeans.modules.websvc.core.ClientWizardProperties;
-import org.openide.WizardDescriptor;
+package org.netbeans.modules.websvc.core.jaxws.actions;
 
-/**
- *
- * @author Milan Kuchtiak
- */
-public class JaxWsClientCreatorProvider implements ClientCreatorProvider {
+import org.netbeans.modules.websvc.core.AddOperationActionProvider;
+import org.netbeans.modules.websvc.core.AddOperationCookie;
+import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.*;
 
-    public JaxWsClientCreatorProvider() {
-    }
-    
-    public ClientCreator getClientCreator(Project project, WizardDescriptor wiz) {
-        String jaxVersion = (String) wiz.getProperty(ClientWizardProperties.JAX_VERSION);
-        if (jaxVersion.equals(ClientWizardProperties.JAX_WS)) {
-            return new JaxWsClientCreator(project, wiz);
-        }
+public class JaxWsAddOperationProvider implements AddOperationActionProvider {
+	public AddOperationCookie getAddOperationCookie(FileObject fileObject) {
+        JAXWSSupport support = JAXWSSupport.getJAXWSSupport(fileObject);
+        if (support!=null && support.getServices().size()>0) 
+            return new JaxWsAddOperation(fileObject);
         return null;
     }
+
 
 }

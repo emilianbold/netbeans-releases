@@ -46,6 +46,11 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
+import org.netbeans.modules.websvc.core.ClientWizardProperties;
+import org.netbeans.modules.websvc.core.webservices.ui.panels.ProxySettingsDlg;
+import org.netbeans.modules.websvc.core.webservices.ui.panels.WebProxySetter;
+import org.netbeans.modules.websvc.core.WsdlRetriever;
+import org.netbeans.modules.websvc.core.WsdlRetriever;
 import org.netbeans.modules.websvc.core.jaxws.JaxWsExplorerPanel;
 import org.netbeans.modules.websvc.core.jaxws.JaxWsUtils;
 //import org.netbeans.modules.websvc.core.webservices.action.JaxRpcWsdlCookie;
@@ -130,7 +135,7 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         initComponents();
         jLblClientType.setVisible(false);
         jCbxClientType.setVisible(false);
-        jComboBoxJaxVersion.setModel(new DefaultComboBoxModel(new String[] {WizardProperties.JAX_WS, WizardProperties.JAX_RPC}));
+        jComboBoxJaxVersion.setModel(new DefaultComboBoxModel(new String[] {ClientWizardProperties.JAX_WS, ClientWizardProperties.JAX_RPC}));
         initUserComponents();
     }
     
@@ -561,19 +566,19 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
 //        System.out.println("storing wizard properties");
         
         if(wsdlSource == WSDL_FROM_PROJECT || wsdlSource == WSDL_FROM_URL) {
-            d.putProperty(WizardProperties.WSDL_DOWNLOAD_URL, getDownloadUrl());
-            d.putProperty(WizardProperties.WSDL_DOWNLOAD_FILE, getDownloadWsdl());
-            d.putProperty(WizardProperties.WSDL_DOWNLOAD_SCHEMAS, getDownloadedSchemas());
-            d.putProperty(WizardProperties.WSDL_FILE_PATH, retriever == null ? "" : retriever.getWsdlFileName()); //NOI18N
+            d.putProperty(ClientWizardProperties.WSDL_DOWNLOAD_URL, getDownloadUrl());
+            d.putProperty(ClientWizardProperties.WSDL_DOWNLOAD_FILE, getDownloadWsdl());
+            d.putProperty(ClientWizardProperties.WSDL_DOWNLOAD_SCHEMAS, getDownloadedSchemas());
+            d.putProperty(ClientWizardProperties.WSDL_FILE_PATH, retriever == null ? "" : retriever.getWsdlFileName()); //NOI18N
         } else if(wsdlSource == WSDL_FROM_FILE) {
-            d.putProperty(WizardProperties.WSDL_DOWNLOAD_URL, null);
-            d.putProperty(WizardProperties.WSDL_DOWNLOAD_FILE, null);
-            d.putProperty(WizardProperties.WSDL_DOWNLOAD_SCHEMAS, null);
-            d.putProperty(WizardProperties.WSDL_FILE_PATH, jTxtLocalFilename.getText().trim());
+            d.putProperty(ClientWizardProperties.WSDL_DOWNLOAD_URL, null);
+            d.putProperty(ClientWizardProperties.WSDL_DOWNLOAD_FILE, null);
+            d.putProperty(ClientWizardProperties.WSDL_DOWNLOAD_SCHEMAS, null);
+            d.putProperty(ClientWizardProperties.WSDL_FILE_PATH, jTxtLocalFilename.getText().trim());
         }
-        d.putProperty(WizardProperties.WSDL_PACKAGE_NAME, getPackageName());
-        d.putProperty(WizardProperties.CLIENT_STUB_TYPE, jCbxClientType.getSelectedItem());
-        d.putProperty(WizardProperties.JAX_VERSION, jComboBoxJaxVersion.getSelectedItem());
+        d.putProperty(ClientWizardProperties.WSDL_PACKAGE_NAME, getPackageName());
+        d.putProperty(ClientWizardProperties.CLIENT_STUB_TYPE, jCbxClientType.getSelectedItem());
+        d.putProperty(ClientWizardProperties.JAX_VERSION, jComboBoxJaxVersion.getSelectedItem());
     }
     
     void read(WizardDescriptor d) {
@@ -622,29 +627,29 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
             jLabelJaxVersion.setEnabled(false);
             jComboBoxJaxVersion.setEnabled(false);
             if (Util.isJavaEE5orHigher(project)) //NOI18N
-                jComboBoxJaxVersion.setSelectedItem(WizardProperties.JAX_WS);
+                jComboBoxJaxVersion.setSelectedItem(ClientWizardProperties.JAX_WS);
             else{
                 if((!jsr109OldSupported && !jsr109Supported)
                 || (!jsr109Supported && jsr109OldSupported && jwsdpSupported ) || wsitSupported){
-                    jComboBoxJaxVersion.setSelectedItem(WizardProperties.JAX_WS);
+                    jComboBoxJaxVersion.setSelectedItem(ClientWizardProperties.JAX_WS);
                 } else{
-                    jComboBoxJaxVersion.setSelectedItem(WizardProperties.JAX_RPC);
+                    jComboBoxJaxVersion.setSelectedItem(ClientWizardProperties.JAX_RPC);
                 }
             }
         } else {
             if (Util.isSourceLevel16orHigher(project)) {
                 jLabelJaxVersion.setEnabled(false);
                 jComboBoxJaxVersion.setEnabled(false);
-                jComboBoxJaxVersion.setSelectedItem(WizardProperties.JAX_WS);
+                jComboBoxJaxVersion.setSelectedItem(ClientWizardProperties.JAX_WS);
             } else if (Util.getSourceLevel(project).equals("1.5")) { //NOI18N
                 if (wsimportFO != null) {
                     jLabelJaxVersion.setEnabled(false);
                     jComboBoxJaxVersion.setEnabled(false);
-                    jComboBoxJaxVersion.setSelectedItem(WizardProperties.JAX_WS);
+                    jComboBoxJaxVersion.setSelectedItem(ClientWizardProperties.JAX_WS);
                 } else if (wscompileFO != null) {
                     jLabelJaxVersion.setEnabled(false);
                     jComboBoxJaxVersion.setEnabled(false);
-                    jComboBoxJaxVersion.setSelectedItem(WizardProperties.JAX_RPC);
+                    jComboBoxJaxVersion.setSelectedItem(ClientWizardProperties.JAX_RPC);
                 } else {
                     jLabelJaxVersion.setEnabled(true);
                     jComboBoxJaxVersion.setEnabled(true);
@@ -652,7 +657,7 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
             } else {
                 jLabelJaxVersion.setEnabled(false);
                 jComboBoxJaxVersion.setEnabled(false);
-                jComboBoxJaxVersion.setSelectedItem(WizardProperties.JAX_RPC);
+                jComboBoxJaxVersion.setSelectedItem(ClientWizardProperties.JAX_RPC);
             }
         }
         
@@ -662,15 +667,15 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
             Project p = Templates.getProject(d);
             
             jTxtProject.setText(ProjectUtils.getInformation(p).getDisplayName());
-            jTxtWsdlURL.setText((String) d.getProperty(WizardProperties.WSDL_DOWNLOAD_URL));
+            jTxtWsdlURL.setText((String) d.getProperty(ClientWizardProperties.WSDL_DOWNLOAD_URL));
             jTxtLocalFilename.setText(retriever != null ? retriever.getWsdlFileName() : ""); //NOI18N
-            jTxtWsdlURL.setText((String) d.getProperty(WizardProperties.WSDL_FILE_PATH));
+            jTxtWsdlURL.setText((String) d.getProperty(ClientWizardProperties.WSDL_FILE_PATH));
             
             jCbxPackageName.setModel(getPackageModel(p));
-            jCbxPackageName.setSelectedItem(getPackageItem((String) d.getProperty(WizardProperties.WSDL_PACKAGE_NAME)));
+            jCbxPackageName.setSelectedItem(getPackageItem((String) d.getProperty(ClientWizardProperties.WSDL_PACKAGE_NAME)));
             
             // Normalize selection, in case it's unspecified.
-            Integer source = (Integer) d.getProperty(WizardProperties.WSDL_SOURCE);
+            Integer source = (Integer) d.getProperty(ClientWizardProperties.WSDL_SOURCE);
             if(source == null || source.intValue() < WSDL_FROM_PROJECT || source.intValue() > WSDL_FROM_URL) {
                 source = new Integer(WSDL_FROM_PROJECT);
             }
@@ -690,7 +695,7 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
             WebServicesClientSupport clientSupport =
                     WebServicesClientSupport.getWebServicesClientSupport(p.getProjectDirectory());
             
-            Object selectedStub = d.getProperty(WizardProperties.CLIENT_STUB_TYPE);
+            Object selectedStub = d.getProperty(ClientWizardProperties.CLIENT_STUB_TYPE);
             DefaultComboBoxModel stubModel = new DefaultComboBoxModel();
             if(clientSupport != null) {
                 List clientStubs = clientSupport.getStubDescriptors();
@@ -739,7 +744,7 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         retrieverFailed = false;
         retriever = null;
         if (((projectType != 0 && !Util.isJavaEE5orHigher(project))
-        || (projectType == 0 && jComboBoxJaxVersion.getSelectedItem().equals(WizardProperties.JAX_RPC)))
+        || (projectType == 0 && jComboBoxJaxVersion.getSelectedItem().equals(ClientWizardProperties.JAX_RPC)))
         && (wsdlSource != WSDL_FROM_FILE)) {
             retriever = new WsdlRetriever(this,
                     wsdlSource==WSDL_FROM_PROJECT?jTxtWsdlProject.getText():jTxtWsdlURL.getText().trim());
@@ -755,7 +760,7 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
                 retrieverFailed = true;
                 throw new WizardValidationException(this, "", ""); //NOI18N
             } else
-                wizardDescriptor.putProperty(WizardProperties.WSDL_FILE_PATH, retriever == null ? "" : retriever.getWsdlFileName()); //NOI18N
+                wizardDescriptor.putProperty(ClientWizardProperties.WSDL_FILE_PATH, retriever == null ? "" : retriever.getWsdlFileName()); //NOI18N
         }
     }
     
@@ -883,7 +888,7 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
             return false; // project with web service client support, but no stub types defined.
         }
         
-        if (jComboBoxJaxVersion.getSelectedItem().equals(WizardProperties.JAX_RPC)) {
+        if (jComboBoxJaxVersion.getSelectedItem().equals(ClientWizardProperties.JAX_RPC)) {
             SourceGroup[] sgs = JaxWsClientCreator.getJavaSourceGroups(project);
             //no source root -> there must be at least one source root to create JAX-RPC client
             if (sgs.length <= 0) {
@@ -944,7 +949,7 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
             LineNumberReader lnReader = null;
             try {
                 fr = new FileReader(f);
-                if (jComboBoxJaxVersion.getSelectedItem().equals(WizardProperties.JAX_RPC)) {
+                if (jComboBoxJaxVersion.getSelectedItem().equals(ClientWizardProperties.JAX_RPC)) {
                     lnReader = new LineNumberReader(fr);
                     if (lnReader != null) {
                         String line = null;

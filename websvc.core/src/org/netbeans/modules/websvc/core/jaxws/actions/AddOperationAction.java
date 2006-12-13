@@ -25,6 +25,7 @@ package org.netbeans.modules.websvc.core.jaxws.actions;
 //import org.netbeans.modules.j2ee.common.WSUtils;
 //import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
+import org.netbeans.modules.websvc.core.AddOperationCookie;
 import org.openide.util.actions.CookieAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -46,7 +47,7 @@ public class AddOperationAction extends CookieAction {
     }
     
     protected Class[] cookieClasses() {
-        return new Class[] {JaxWsClassesCookie.class};
+        return new Class[] {AddOperationCookie.class};
     }
     
     protected boolean asynchronous() {
@@ -68,6 +69,7 @@ public class AddOperationAction extends CookieAction {
     }
     
     protected void performAction(Node[] activatedNodes) {
+        
 // Retouche        
 //        JavaMetamodel.getManager().waitScanFinished();
 //

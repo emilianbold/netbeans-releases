@@ -17,28 +17,19 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.websvc.core.client.wizard;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.core.ClientCreator;
-import org.netbeans.modules.websvc.core.ClientCreatorProvider;
-import org.netbeans.modules.websvc.core.ClientWizardProperties;
-import org.openide.WizardDescriptor;
+package org.netbeans.modules.websvc.core;
 
-/**
- *
- * @author Milan Kuchtiak
- */
-public class JaxWsClientCreatorProvider implements ClientCreatorProvider {
+public class ClientWizardProperties {
 
-    public JaxWsClientCreatorProvider() {
-    }
+    public static final String WSDL_SOURCE = "wsdlSource"; // NOI18N
+    public static final String WSDL_FILE_PATH = "wsdlFilePath"; // NOI18N
+    public static final String WSDL_DOWNLOAD_URL = "wsdlDownloadUrl"; // NOI18N
+    public static final String WSDL_DOWNLOAD_FILE = "wsdlDownloadedWsdl"; // NOI18N
+    public static final String WSDL_PACKAGE_NAME = "wsdlPackageName"; // NOI18N
+    public static final String CLIENT_STUB_TYPE = "clientStubType"; // NOI18N
+    public static final String WSDL_DOWNLOAD_SCHEMAS = "wsdlDownloadedSchemas"; // NOI18N
+    public static final String JAX_VERSION = "jaxVersion"; // NOI18N
     
-    public ClientCreator getClientCreator(Project project, WizardDescriptor wiz) {
-        String jaxVersion = (String) wiz.getProperty(ClientWizardProperties.JAX_VERSION);
-        if (jaxVersion.equals(ClientWizardProperties.JAX_WS)) {
-            return new JaxWsClientCreator(project, wiz);
-        }
-        return null;
-    }
-
+    public static final String JAX_WS = "JAX-WS"; // NOI18N
+    public static final String JAX_RPC = "JAX-RPC"; // NOI18N    
 }

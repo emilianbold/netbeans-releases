@@ -40,6 +40,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
+import org.netbeans.modules.websvc.core.ClientWizardProperties;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -88,7 +89,7 @@ public class JaxWsClientCreator implements ClientCreator {
         task = new Task(new Runnable() {
             public void run() {
                 try {
-//                    String jaxVersion = (String) wiz.getProperty(WizardProperties.JAX_VERSION);
+//                    String jaxVersion = (String) wiz.getProperty(ClientWizardProperties.JAX_VERSION);
 //                    if (jaxVersion.equals(WizardProperties.JAX_WS)) {
                         handle.start();
                         generate15Client((isJsr109Supported || isJWSDPSupported) || (isWsitSupported && Util.isJavaEE5orHigher(project)), handle);
@@ -124,13 +125,13 @@ public class JaxWsClientCreator implements ClientCreator {
             DialogDisplayer.getDefault().notify(desc);
         }
         
-        String wsdlUrl = (String)wiz.getProperty(WizardProperties.WSDL_DOWNLOAD_URL);
-        String filePath = (String)wiz.getProperty(WizardProperties.WSDL_FILE_PATH);
+        String wsdlUrl = (String)wiz.getProperty(ClientWizardProperties.WSDL_DOWNLOAD_URL);
+        String filePath = (String)wiz.getProperty(ClientWizardProperties.WSDL_FILE_PATH);
         //if (wsdlUrl==null) wsdlUrl = "file:"+(filePath.startsWith("/")?filePath:"/"+filePath); //NOI18N
         if(wsdlUrl == null){
             wsdlUrl = FileUtil.toFileObject(new File(filePath)).getURL().toExternalForm();
         }
-        String packageName = (String)wiz.getProperty(WizardProperties.WSDL_PACKAGE_NAME);
+        String packageName = (String)wiz.getProperty(ClientWizardProperties.WSDL_PACKAGE_NAME);
         if (packageName!=null && packageName.length()==0) packageName=null;
         jaxWsClientSupport.addServiceClient(getWsdlName(wsdlUrl),wsdlUrl,packageName, isJsr109Platform); 
         

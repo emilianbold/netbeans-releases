@@ -17,28 +17,14 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.websvc.core.client.wizard;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.core.ClientCreator;
-import org.netbeans.modules.websvc.core.ClientCreatorProvider;
-import org.netbeans.modules.websvc.core.ClientWizardProperties;
-import org.openide.WizardDescriptor;
+package org.netbeans.modules.websvc.core;
+
+import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Milan Kuchtiak
+ * @author mkuchtiak
  */
-public class JaxWsClientCreatorProvider implements ClientCreatorProvider {
-
-    public JaxWsClientCreatorProvider() {
-    }
-    
-    public ClientCreator getClientCreator(Project project, WizardDescriptor wiz) {
-        String jaxVersion = (String) wiz.getProperty(ClientWizardProperties.JAX_VERSION);
-        if (jaxVersion.equals(ClientWizardProperties.JAX_WS)) {
-            return new JaxWsClientCreator(project, wiz);
-        }
-        return null;
-    }
-
+public interface AddOperationActionProvider {
+    public AddOperationCookie getAddOperationCookie(FileObject fileObject);
 }
