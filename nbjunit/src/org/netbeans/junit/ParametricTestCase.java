@@ -42,8 +42,8 @@ public abstract class ParametricTestCase extends MultiTestCase{
     
     
     /**
-     * Is called by ParametricTestSuite before calling <code>execute()</code>
-     * Ñan be overridden to perform some initializing.
+     * Is called by ParametricTestSuite before calling <code>execute()</code>.
+     * Can be overridden to perform some initializing.
      *
      * @param initializing parameter of type <code>Object</code>.
      */
