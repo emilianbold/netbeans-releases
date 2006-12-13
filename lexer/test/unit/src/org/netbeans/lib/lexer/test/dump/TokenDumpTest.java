@@ -33,6 +33,12 @@ public class TokenDumpTest extends NbTestCase {
     }
 
     public void testTokenDump() throws Exception {
+        // The testfiles/TokenDumpTestFile.txt in the code below should be located under
+        // $module/test/unit/data directory e.g. $cvs/lexer/test/unit/data/testfiles/TokenDumpTestFile.txt
+        // ("Files" view by Ctrl+2 can be used
+        // to locate/create appropriate dirs/files).
+        // The TokenDumpTestFile.txt.tokens.txt will be created by the test
+        // if it does not exist (see also javadoc of LexerTestUtilities.checkTokenDump()).
         LexerTestUtilities.checkTokenDump(this,
                 "testfiles/TokenDumpTestFile.txt",
                 TextAsSingleTokenTokenId.language());
