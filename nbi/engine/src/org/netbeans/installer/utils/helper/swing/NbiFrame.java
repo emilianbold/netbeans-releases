@@ -113,8 +113,8 @@ public class NbiFrame extends JFrame {
     
     public static final int DEFAULT_WIZARD_FRAME_WIDTH      = 600;
     public static final int DEFAULT_WIZARD_FRAME_HEIGHT     = 500;
-    public static final URL DEFAULT_WIZARD_FRAME_BACKGROUND = NbiFrame.class.getClassLoader().getResource("org/netbeans/installer/wizard/wizard-background.jpg");
-    public static final URL DEFAULT_WIZARD_FRAME_ICON       = NbiFrame.class.getClassLoader().getResource("org/netbeans/installer/wizard/wizard-icon.gif");
+    public static final URL DEFAULT_WIZARD_FRAME_BACKGROUND = NbiFrame.class.getClassLoader().getResource("org/netbeans/installer/wizard/wizard-background.png");
+    public static final URL DEFAULT_WIZARD_FRAME_ICON       = NbiFrame.class.getClassLoader().getResource("org/netbeans/installer/wizard/wizard-icon.png");
     
     public static final String WIZARD_FRAME_WIDTH_PROPERTY      = "nbi.wizard.frame.width";
     public static final String WIZARD_FRAME_HEIGHT_PROPERTY     = "nbi.wizard.frame.height";

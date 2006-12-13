@@ -60,7 +60,11 @@ public final class FileUtils {
     
     public static final String SLASH       = "/";
     public static final String METAINF     = "META-INF";
-
+    
+    private static final String JAR_EXTENSION = ".jar";
+    
+    private static final String SUN_MICR_RSA = "META-INF/SUN_MICR.RSA";
+    private static final String SUN_MICR_SF  = "META-INF/SUN_MICR.SF";
     
     /////////////////////////////////////////////////////////////////////////////////
     // Static
@@ -507,110 +511,6 @@ public final class FileUtils {
         }
     }
     
-    
-    private static boolean canAccessDirectoryReal(File file, boolean isReadNotWrite) {
-        if(isReadNotWrite) {
-            boolean result = (file.listFiles()!=null);
-//            LogManager.indent();
-//            LogManager.log(ErrorLevel.DEBUG, "READ: Real Level Access DIR: " + ((result) ? "TRUE" : "FALSE"));
-//            LogManager.unindent();
-            return result;
-        } else {
-            try {
-                FileUtils.createTempFile(file).delete();
-//                LogManager.indent();
-//                LogManager.log(ErrorLevel.DEBUG, "WRITE: Real Level Access DIR: TRUE");
-//                LogManager.unindent();
-                return true;
-            } catch (IOException e) {
-//                LogManager.indent();
-//                LogManager.log(ErrorLevel.DEBUG, "WRITE: Real Level Access DIR: FALSE");
-//                LogManager.unindent();
-                return false;
-            }
-        }
-    }
-    private static boolean canAccessFileReal(File file, boolean isReadNotWrite) {
-        Closeable stream = null;
-        LogManager.indent();
-        try {
-            stream = (isReadNotWrite) ? new FileInputStream(file) :
-                new FileOutputStream(file) ;            
-            //LogManager.log(ErrorLevel.DEBUG, 
-            //        ((isReadNotWrite) ? "READ:" : "WRITE:") + "Real Level Access File: TRUE");
-            return true;
-        } catch (IOException ex) {
-            //LogManager.log(ErrorLevel.DEBUG, 
-            //        ((isReadNotWrite) ? "READ:" : "WRITE:") + "Real Level Access File: FALSE");
-            return false;
-        } finally {
-            LogManager.unindent();
-            if(stream!=null) {
-                try {
-                    stream.close();
-                } catch (IOException ex) {
-                    LogManager.log(ErrorLevel.MESSAGE, ex);
-                }
-            }
-        }
-    }
-    private static boolean canAccessFile(File checkingFile, boolean isReadNotWrite) {
-        File file = checkingFile;
-        boolean existsingFile = file.exists();
-        //if file doesn`t exist then get it existing parent
-        if(!existsingFile) {
-            File parent = file;
-            do {
-                parent = parent.getParentFile();
-            } while ((parent != null) && !parent.exists());
-            
-            if ((parent == null) || !parent.isDirectory()) {
-                return false;
-            } else {
-                file = parent;
-            }
-        } 
-        
-        //first of all check java implementation    
-        //LogManager.log("");
-        //LogManager.log( ((isReadNotWrite) ? "READ " : "WRITE ") + "Checking file(dir): " + file);
-        if ((isReadNotWrite) ? file.canRead() : file.canWrite()) {
-            boolean result = true;
-            boolean needCheckDirectory = true;
-            
-            try {
-                // Native checking
-                result = SystemUtils.getNativeUtils().checkFileAccess(file, isReadNotWrite);
-                //LogManager.indent();
-                //LogManager.log(ErrorLevel.DEBUG, "OS Level Access File: " + ((result) ? "TRUE" : "FALSE"));
-                if(!isReadNotWrite) {
-                    // we don`t want to check for writing if OS says smth specific
-                    needCheckDirectory = false;
-                }
-            } catch (NativeException ex) {
-                // most probably there is smth wrong with OS
-                //LogManager.log(ErrorLevel.DEBUG, "OS Level Access File: ERROR!!!");
-                LogManager.log(ErrorLevel.MESSAGE, ex);
-            }
-            //LogManager.unindent();
-            if(!result) { // some limitations by OS
-                return false;
-            }
-            
-            if(file.isFile()) {
-                return canAccessFileReal(file,isReadNotWrite);
-            } else if(file.isDirectory() && (needCheckDirectory)) {
-                return canAccessDirectoryReal(file,isReadNotWrite);
-            } else { // file is directory, access==read || (access==write & OSCheck==true)
-                return true;
-            }
-        } else {
-            LogManager.log(ErrorLevel.DEBUG, "Java Level Access: FALSE");
-            return false;
-        }
-    }
-    
-    
     public static boolean canRead(File file) {
         return canAccessFile(file,true);
     }
@@ -620,59 +520,81 @@ public final class FileUtils {
     }
     
     public static void unzip(File file, File directory) throws IOException {
-        ZipFile zip = new ZipFile(file);
+        unzip(file, directory, false);
+    }
+    
+    public static List<File> unzip(File source, File destination, boolean unpack) throws IOException {
+        final List<File> files = new LinkedList<File>();
+        final ZipFile    zip   = new ZipFile(source);
         
-        if (directory.exists() && directory.isFile()) {
-            throw new IOException("Directory is an existing file, cannot unzip.");
-        }
-        
-        if (!directory.exists() && !directory.mkdirs()) {
-            throw new IOException("Cannot create directory");
-        }
-        
-        Enumeration<? extends ZipEntry> entries =
-                (Enumeration<? extends ZipEntry>) zip.entries();
-        while (entries.hasMoreElements()) {
-            ZipEntry entry = entries.nextElement();
-            
-            File entryFile = new File(directory, entry.getName());
-            
-            InputStream  in  = null;
-            OutputStream out = null;
-            if (entry.getName().endsWith(SLASH)) {
-                if (entryFile.exists() && !entryFile.isDirectory()) {
-                    throw new IOException("An entry directory exists and is not a directory");
-                }
-                if (!entryFile.exists() && !entryFile.mkdirs()) {
-                    throw new IOException("Cannot create an entry directory.");
-                }
-            } else {
-                if (entryFile.exists() && !entryFile.isFile()) {
-                    throw new IOException("An entry file exists and is not a file");
-                }
-                if (!entryFile.getParentFile().exists() && !entryFile.getParentFile().mkdirs()) {
-                    throw new IOException("Cannot create an entry parent directory.");
-                }
-                
-                try {
-                    in  = zip.getInputStream(entry);
-                    out = new FileOutputStream(entryFile);
-                    
-                    StreamUtils.transferData(in, out);
-                } finally {
-                    if (in != null) {
-                        in.close();
-                    }
-                    if (out != null) {
-                        out.close();
-                    }
-                }
+        try {
+            if (destination.exists() && destination.isFile()) {
+                throw new IOException("Directory is an existing file, cannot unzip.");
             }
             
-            entryFile.setLastModified(entry.getTime());
+            if (!destination.exists() && !destination.mkdirs()) {
+                throw new IOException("Cannot create directory");
+            }
+            
+            Enumeration<? extends ZipEntry> entries = (Enumeration<? extends ZipEntry>) zip.entries();
+            while (entries.hasMoreElements()) {
+                ZipEntry entry = entries.nextElement();
+                
+                File file = new File(destination, entry.getName());
+                
+                InputStream  in  = null;
+                OutputStream out = null;
+                if (entry.getName().endsWith(SLASH)) {
+                    if (file.exists() && !file.isDirectory()) {
+                        throw new IOException("An entry directory exists and is not a directory");
+                    }
+                    if (!file.exists() && !file.mkdirs()) {
+                        throw new IOException("Cannot create an entry directory.");
+                    }
+                } else {
+                    if (file.exists() && !file.isFile()) {
+                        throw new IOException("An entry file exists and is not a file");
+                    }
+                    if (!file.getParentFile().exists() && !file.getParentFile().mkdirs()) {
+                        throw new IOException("Cannot create an entry parent directory.");
+                    }
+                    
+                    try {
+                        in  = zip.getInputStream(entry);
+                        out = new FileOutputStream(file);
+                        
+                        StreamUtils.transferData(in, out);
+                    } finally {
+                        if (in != null)  in.close();
+                        if (out != null) out.close();
+                    }
+                }
+                
+                if (file.getName().endsWith(".pack.gz")) {
+                    file = unpack(file);
+                }
+                
+                file.setLastModified(entry.getTime());
+                
+                files.add(file);
+            }
+        } finally {
+            if (zip != null) zip.close();
         }
         
-        zip.close();
+        return files;
+    }
+    
+    public static File unpack(File source) throws IOException {
+        String path   = source.getAbsolutePath();
+        File   target = new File(path.substring(0, path.length() - 8));
+        
+        SystemUtils.executeCommand(
+                SystemUtils.getUnpacker().getAbsolutePath(),
+                source.getAbsolutePath(),
+                target.getAbsolutePath());
+        
+        return target;
     }
     
     public static void unjar(File file, File directory) throws IOException {
@@ -741,6 +663,150 @@ public final class FileUtils {
             return jar.getManifest().getMainAttributes().getValue(name);
         } finally {
             jar.close();
+        }
+    }
+    
+    public static boolean isJarFile(File file) {
+        if (file.getName().endsWith(JAR_EXTENSION)) {
+            JarFile jar = null;
+            try {
+                jar = new JarFile(file);
+                return true;
+            } catch (IOException e) {
+                e.printStackTrace();
+                return false;
+            } finally {
+                if (jar != null) {
+                    try {
+                        jar.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        } else {
+            return false;
+        }
+    }
+    
+    public static boolean isSigned(File file) throws IOException {
+        JarFile jar = new JarFile(file);
+        
+        try {
+            if (jar.getEntry(SUN_MICR_RSA) == null) {
+                return false;
+            }
+            if (jar.getEntry(SUN_MICR_SF) == null) {
+                return false;
+            }
+            return true;
+        } finally {
+            jar.close();
+        }
+    }
+    
+    // private //////////////////////////////////////////////////////////////////////
+    private static boolean canAccessDirectoryReal(File file, boolean isReadNotWrite) {
+        if(isReadNotWrite) {
+            boolean result = (file.listFiles()!=null);
+            //            LogManager.indent();
+            //            LogManager.log(ErrorLevel.DEBUG, "READ: Real Level Access DIR: " + ((result) ? "TRUE" : "FALSE"));
+            //            LogManager.unindent();
+            return result;
+        } else {
+            try {
+                FileUtils.createTempFile(file).delete();
+                //                LogManager.indent();
+                //                LogManager.log(ErrorLevel.DEBUG, "WRITE: Real Level Access DIR: TRUE");
+                //                LogManager.unindent();
+                return true;
+            } catch (IOException e) {
+                //                LogManager.indent();
+                //                LogManager.log(ErrorLevel.DEBUG, "WRITE: Real Level Access DIR: FALSE");
+                //                LogManager.unindent();
+                return false;
+            }
+        }
+    }
+    
+    private static boolean canAccessFileReal(File file, boolean isReadNotWrite) {
+        Closeable stream = null;
+        LogManager.indent();
+        try {
+            stream = (isReadNotWrite) ? new FileInputStream(file) :
+                new FileOutputStream(file) ;
+            //LogManager.log(ErrorLevel.DEBUG,
+            //        ((isReadNotWrite) ? "READ:" : "WRITE:") + "Real Level Access File: TRUE");
+            return true;
+        } catch (IOException ex) {
+            //LogManager.log(ErrorLevel.DEBUG,
+            //        ((isReadNotWrite) ? "READ:" : "WRITE:") + "Real Level Access File: FALSE");
+            return false;
+        } finally {
+            LogManager.unindent();
+            if(stream!=null) {
+                try {
+                    stream.close();
+                } catch (IOException ex) {
+                    LogManager.log(ErrorLevel.MESSAGE, ex);
+                }
+            }
+        }
+    }
+    
+    private static boolean canAccessFile(File checkingFile, boolean isReadNotWrite) {
+        File file = checkingFile;
+        boolean existsingFile = file.exists();
+        //if file doesn`t exist then get it existing parent
+        if(!existsingFile) {
+            File parent = file;
+            do {
+                parent = parent.getParentFile();
+            } while ((parent != null) && !parent.exists());
+            
+            if ((parent == null) || !parent.isDirectory()) {
+                return false;
+            } else {
+                file = parent;
+            }
+        }
+        
+        //first of all check java implementation
+        //LogManager.log("");
+        //LogManager.log( ((isReadNotWrite) ? "READ " : "WRITE ") + "Checking file(dir): " + file);
+        if ((isReadNotWrite) ? file.canRead() : file.canWrite()) {
+            boolean result = true;
+            boolean needCheckDirectory = true;
+            
+            try {
+                // Native checking
+                result = SystemUtils.getNativeUtils().checkFileAccess(file, isReadNotWrite);
+                //LogManager.indent();
+                //LogManager.log(ErrorLevel.DEBUG, "OS Level Access File: " + ((result) ? "TRUE" : "FALSE"));
+                if(!isReadNotWrite) {
+                    // we don`t want to check for writing if OS says smth specific
+                    needCheckDirectory = false;
+                }
+            } catch (NativeException ex) {
+                // most probably there is smth wrong with OS
+                //LogManager.log(ErrorLevel.DEBUG, "OS Level Access File: ERROR!!!");
+                LogManager.log(ErrorLevel.MESSAGE, ex);
+            }
+            //LogManager.unindent();
+            if(!result) { // some limitations by OS
+                return false;
+            }
+            
+            if(file.isFile()) {
+                return canAccessFileReal(file,isReadNotWrite);
+            } else if(file.isDirectory() && (needCheckDirectory)) {
+                return canAccessDirectoryReal(file,isReadNotWrite);
+            } else { // file is directory, access==read || (access==write & OSCheck==true)
+                return true;
+            }
+        } else {
+            LogManager.log(ErrorLevel.DEBUG, "Java Level Access: FALSE");
+            return false;
         }
     }
     

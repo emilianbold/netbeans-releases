@@ -28,13 +28,12 @@ import java.io.File;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.installer.product.ProductComponent;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.helper.swing.NbiButton;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
-import static org.netbeans.installer.product.ProductComponent.INSTALLATION_LOCATION_PROPERTY;
-import static org.netbeans.installer.product.ProductComponent.DEFAULT_INSTALLATION_LOCATION_PROPERTY;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
@@ -79,7 +78,7 @@ public class DestinationPanel extends ErrorMessagePanel {
         
         destinationButton.setText(getProperty(DESTINATION_BUTTON_TEXT_PROPERTY));
         
-        String destination = getWizard().getProductComponent().getProperty(INSTALLATION_LOCATION_PROPERTY);
+        String destination = getWizard().getProductComponent().getProperty(ProductComponent.INSTALLATION_LOCATION_PROPERTY);
         if (destination == null) {
             destination = DEFAULT_DESTINATION;
         }
@@ -131,7 +130,7 @@ public class DestinationPanel extends ErrorMessagePanel {
         String path = new File(destinationField.getText().trim()).getAbsolutePath();
         
         if (errorMessage == null) {
-            getWizard().getProductComponent().setProperty(INSTALLATION_LOCATION_PROPERTY, path);
+            getWizard().getProductComponent().setProperty(ProductComponent.INSTALLATION_LOCATION_PROPERTY, path);
             super.evaluateNextButtonClick();
         } else {
             ErrorManager.notify(ErrorLevel.ERROR, errorMessage);

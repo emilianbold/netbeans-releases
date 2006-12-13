@@ -40,7 +40,7 @@
                  storepass="${jarsigner.storepass}"
                  alias="${jarsigner.alias}"
                  maxmemory="${jarsigner.xmx}"/>
-                 
+        
         <if property="move.to.dist" value="true">
             <move file="${cvs.dir}/${dist.dir.name}/${engine.jar.file}" 
                   todir="${dist.dir}"/>
@@ -48,8 +48,14 @@
     </target>
     
     <target name="release" depends="build">
-        <update-engine url="${release.url}"
-                       archive="${work.dir}/${engine.jar.file}"/>
+        <if property="move.to.dist" value="true">
+            <update-engine url="${release.url}"
+                           archive="${dist.dir}/${engine.jar.file}"/>
+        </if>
+        <if property="move.to.dist" value="false">
+            <update-engine url="${release.url}"
+                           archive="${work.dir}/${engine.jar.file}"/>
+        </if>
     </target>
     
     <!-- =======================================================================

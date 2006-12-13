@@ -33,6 +33,7 @@ import java.util.zip.ZipOutputStream;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 import org.netbeans.installer.infra.build.ant.utils.AntUtils;
+import org.netbeans.installer.infra.build.ant.utils.FileEntry;
 
 /**
  *
@@ -172,137 +173,6 @@ public class Package extends Task {
             }
             
             entries.add(entry);
-        }
-    }
-    
-    /////////////////////////////////////////////////////////////////////////////////
-    // Inner Classes
-    private class FileEntry {
-        private long    size  = 0;
-        
-        private String  md5           = null;
-        private String  sha1          = null;
-        private String  crc32         = null;
-        
-        private boolean directory     = false;
-        private boolean empty         = false;
-        private boolean jarFile       = false;
-        private boolean packedJarFile = false;
-        private boolean signedJarFile = false;
-        
-        private long    lastModified  = 0;
-        
-        private String  name          = null;
-        
-        public FileEntry(File file, String name) throws IOException {
-            this.directory     = file.isDirectory();
-            
-            if (!directory) {
-                this.size          = file.length();
-                
-                this.md5           = AntUtils.getMd5(file);
-                this.sha1          = AntUtils.getSha1(file);
-                this.crc32         = AntUtils.getCrc32(file);
-                
-                this.jarFile       = AntUtils.isJarFile(file);
-                if (jarFile) {
-                    this.packedJarFile = false; // we cannot determine this
-                    this.signedJarFile = AntUtils.isSigned(file);
-                }
-                
-                this.lastModified  = file.lastModified();
-                this.name          = name;
-            } else {
-                this.empty         = AntUtils.isEmpty(file);
-            }
-        }
-        
-        public long getSize() {
-            return size;
-        }
-        
-        public void setSize(long size) {
-            this.size = size;
-        }
-        
-        public String getMd5() {
-            return md5;
-        }
-        
-        public void setMd5(String md5) {
-            this.md5 = md5;
-        }
-        
-        public String getSha1() {
-            return sha1;
-        }
-        
-        public void setSha1(String sha1) {
-            this.sha1 = sha1;
-        }
-        
-        public String getCrc32() {
-            return crc32;
-        }
-        
-        public void setCrc32(String crc32) {
-            this.crc32 = crc32;
-        }
-        
-        public boolean isDirectory() {
-            return directory;
-        }
-        
-        public void setDirectory(boolean directory) {
-            this.directory = directory;
-        }
-        
-        public boolean isEmpty() {
-            return empty;
-        }
-        
-        public void setEmpty(boolean empty) {
-            this.empty = empty;
-        }
-        
-        public boolean isJarFile() {
-            return jarFile;
-        }
-        
-        public void setJarFile(boolean jarFile) {
-            this.jarFile = jarFile;
-        }
-        
-        public boolean isPackedJarFile() {
-            return packedJarFile;
-        }
-        
-        public void setPackedJarFile(boolean packedJarFile) {
-            this.packedJarFile = packedJarFile;
-        }
-        
-        public boolean isSignedJarFile() {
-            return signedJarFile;
-        }
-        
-        public void setSignedJarFile(boolean signedJarFile) {
-            this.signedJarFile = signedJarFile;
-        }
-
-        public long getLastModified() {
-            return lastModified;
-        }
-
-        public void setLastModified(long lastModified) {
-            this.lastModified = lastModified;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
         }
     }
 }

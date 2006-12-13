@@ -640,18 +640,18 @@ public class Installer {
                         "instance?\n\n")) {
                     cancel();
                 }
+            } else {
+                try {
+                    lock.createNewFile();
+                } catch (IOException e) {
+                    ErrorManager.notify(CRITICAL,
+                            "Can't create lock for the local registry file!", e);
+                }
+                
+                lock.deleteOnExit();
+                
+                LogManager.log("... created lock file: " + lock);
             }
-            
-            try {
-                new FileOutputStream(lock);
-            } catch (IOException e) {
-                ErrorManager.notify(CRITICAL, 
-                        "Can't create lock for the local registry file!", e);
-            }
-            
-            lock.deleteOnExit();
-            
-            LogManager.log("... created lock file: " + lock);
         } else {
             LogManager.log("... running with --ignore-lock, skipping this step");
         }

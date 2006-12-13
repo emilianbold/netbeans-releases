@@ -228,6 +228,14 @@ public final class SystemUtils {
         return new File(System.getProperty("java.home"));
     }
     
+    public static File getUnpacker() {
+        if (isWindows()) {
+            return new File(getCurrentJavaHome(), "bin/unpack200.exe");
+        } else {
+            return new File(getCurrentJavaHome(), "bin/unpack200");
+        }
+    }
+    
     public static String getLineSeparator() {
         return System.getProperty("line.separator");
     }
