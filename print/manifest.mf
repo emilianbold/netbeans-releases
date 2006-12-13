@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.modules.print/1
+OpenIDE-Module-Specification-Version: 1.1
+OpenIDE-Module-Layer: org/netbeans/modules/print/impl/resources/layer.xml
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/print/impl/resources/Bundle.properties

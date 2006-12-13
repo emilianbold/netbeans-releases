@@ -17,8 +17,12 @@
   Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
   Microsystems, Inc. All Rights Reserved.
 -->
-<project name="print" basedir=".">
-    <description>Builds the module suite print</description>
+<project name="print" default="netbeans" basedir=".">
     <import file="nbproject/build-impl.xml"/>
-    <import file="../nbbuild/entpack/templates/suite-impl.xml"/>
+
+    <target name="check">
+        <ant dir="../_codereview" inheritAll="true">
+            <property name="check.dir" value="${basedir}"/>
+        </ant>
+    </target>
 </project>

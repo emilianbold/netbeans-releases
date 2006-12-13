@@ -1,0 +1,797 @@
+/*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ *
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ *
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+package org.netbeans.modules.print.impl.ui;
+
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.Point;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import javax.swing.AbstractAction;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.JToggleButton;
+import javax.swing.JScrollPane;
+import javax.swing.JViewport;
+import javax.swing.ScrollPaneConstants;
+import javax.swing.SwingUtilities;
+
+import org.openide.DialogDescriptor;
+
+import org.netbeans.modules.print.api.PrintUtil.Dialog;
+import org.netbeans.modules.print.spi.PrintPage;
+import org.netbeans.modules.print.spi.PrintProvider;
+import org.netbeans.modules.print.impl.util.Util;
+
+/**
+ * @author Vladimir Yaroslavskiy
+ * @version 2005.12.14
+ */
+public class Preview extends Dialog implements Percent.Listener {
+
+  /**{@inheritDoc}*/
+  public Preview() {
+    myOption = new Option();
+    myPrinter = new Printer();
+  }
+
+  /**{@inheritDoc}*/
+  public void doAction(PrintProvider.Page provider, boolean withPreview) {
+    assert provider != null : "Print Page Provider can't be null"; // NOI18N
+//out();
+//out("Do action");
+    myPrintPageProvider = provider;
+    createPapers();
+
+    if (withPreview) {
+      show();
+    }
+    else {
+      print();
+    }
+  }
+
+  private JPanel createMainPanel() {
+//out("Create Main panel");
+    JPanel mainPanel = new JPanel(new GridBagLayout());
+    JPanel panel = new JPanel(new GridBagLayout());
+    GridBagConstraints c = new GridBagConstraints();
+
+    // navigate
+    c.anchor = GridBagConstraints.WEST;
+    panel.add(createNavigatePanel(), c);
+
+    // scale
+    c.weightx = 1.0;
+    c.weighty = 0.0;
+    panel.add(createScalePanel(), c);
+
+    // toggle
+    c.anchor = GridBagConstraints.EAST;
+    c.insets = new Insets(TINY_INSET, MEDIUM_INSET, TINY_INSET, MEDIUM_INSET);
+    myToggle = (JToggleButton) createButton(new JToggleButton(),
+      "TLT_Toggle", // NOI18N
+      new AbstractAction(null, Util.getIcon("toggle")) { // NOI18N
+        public void actionPerformed(ActionEvent event) {
+          toggle();
+        }
+      }
+    );
+    panel.add(myToggle, c);
+
+    c.gridx = 0;
+    c.gridy = 0;
+    c.fill = GridBagConstraints.HORIZONTAL;
+    c.anchor = GridBagConstraints.WEST;
+    c.insets = new Insets(MEDIUM_INSET, 0, MEDIUM_INSET, 0);
+    mainPanel.add(panel, c);
+
+    // scroll
+    c.gridy++;
+    c.fill = GridBagConstraints.BOTH;
+    c.weightx = 1.0;
+    c.weighty = 1.0;
+    c.insets = new Insets(0, 0, 0, 0);
+    mainPanel.add(createScrollPanel(), c);
+
+    toggle();
+
+    return mainPanel;
+  }
+
+  /**{@inheritDoc}*/
+  @Override
+  public void updateContent()
+  {
+//out("Update content");
+    createPapers();
+    toggle();
+  }
+
+  private void toggle() {
+    updatePaperNumber();
+    addPapers();
+    updateButtons();
+  }
+
+  private JComponent createNavigatePanel() {
+    JPanel panel = new JPanel(new GridBagLayout());
+    GridBagConstraints c = new GridBagConstraints();
+
+    // first
+    panel = new JPanel(new GridBagLayout());
+    c.insets = new Insets(TINY_INSET, TINY_INSET, TINY_INSET, TINY_INSET);
+    myFirst = (JButton) createButton(new JButton(),
+      "TLT_First", // NOI18N
+      new AbstractAction(null, Util.getIcon("first")) { // NOI18N
+        public void actionPerformed(ActionEvent event) {
+          first();
+        }
+      }
+    );
+    panel.add(myFirst, c);
+
+    // previous
+    myPrevious = (JButton) createButton(new JButton(),
+      "TLT_Previous", // NOI18N
+      new AbstractAction(null, Util.getIcon("previous")) { // NOI18N
+        public void actionPerformed(ActionEvent event) {
+          previous();
+        }
+      }
+    );
+    panel.add(myPrevious, c);
+
+    // text field
+    myGoto = new JTextField();
+    int width = (int)Math.round(myPrevious.getPreferredSize().width/PREVIEW_FACTOR);
+    int height = myPrevious.getPreferredSize().height;
+    myGoto.setPreferredSize(new Dimension(width, height));
+    myGoto.setMinimumSize(new Dimension(width, height));
+
+    myGoto.setHorizontalAlignment(JTextField.CENTER);
+    myGoto.setToolTipText(getMessage("TLT_Goto")); // NOI18N
+    myGoto.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent event) {
+        goTo();
+      }
+    });
+    panel.add(myGoto, c);
+    
+    // next
+    myNext = (JButton) createButton(new JButton(),
+      "TLT_Next", // NOI18N
+      new AbstractAction(null, Util.getIcon("next")) { // NOI18N
+        public void actionPerformed(ActionEvent event) {
+          next();
+        }
+      }
+    );
+    panel.add(myNext, c);
+
+    // last
+    myLast = (JButton) createButton(new JButton(),
+      "TLT_Last", // NOI18N
+      new AbstractAction(null, Util.getIcon("last")) { // NOI18N
+        public void actionPerformed(ActionEvent event) {
+          last();
+        }
+      }
+    );
+    panel.add(myLast, c);
+
+    return panel;
+  }
+
+  private JComponent createScalePanel() {
+//out("Create scale panel");
+    JPanel panel = new JPanel(new GridBagLayout());
+    GridBagConstraints c = new GridBagConstraints();
+
+    // fit to window
+    c.insets = new Insets(TINY_INSET, MEDIUM_INSET, TINY_INSET, TINY_INSET);
+    myFit = (JButton) createButton(new JButton(),
+      "TLT_Fit", // NOI18N
+      new AbstractAction(null, Util.getIcon("fit")) { // NOI18N
+        public void actionPerformed(ActionEvent event) {
+          showCustom(true);
+        }
+      }
+    );
+    panel.add(myFit, c);
+
+    // scale
+    c.insets = new Insets(TINY_INSET, TINY_INSET, TINY_INSET, TINY_INSET);
+    myScale = new Percent(
+      this,
+      myOption.getScale(),
+      PERCENTS,
+      CUSTOMS.length - 1,
+      CUSTOMS,
+      getMessage("TLT_Preview_Scale") // NOI18N
+    );
+    int width = myScale.getPreferredSize().width;
+    int height = myPrevious.getPreferredSize().height;
+    myScale.setPreferredSize(new Dimension(width, height));
+    myScale.setMinimumSize(new Dimension(width, height));
+    panel.add(myScale, c);
+    
+    // decrease
+    myDecrease = (JButton) createButton(new JButton(),
+      "TLT_Zoom_Out", // NOI18N
+      new AbstractAction(null, Util.getIcon("minus")) { // NOI18N
+        public void actionPerformed(ActionEvent event) {
+          myScale.decreaseValue();
+        }
+      }
+    );
+    panel.add(myDecrease, c);
+
+    // increase
+    myIncrease = (JButton) createButton(new JButton(),
+      "TLT_Zoom_In", // NOI18N
+      new AbstractAction(null, Util.getIcon("plus")) { // NOI18N
+        public void actionPerformed(ActionEvent event) {
+          myScale.increaseValue();
+        }
+      }
+    );
+    panel.add(myIncrease, c);
+
+    return panel;
+  }
+
+  private JComponent createScrollPanel() {
+//out("Create scroll panel");
+    GridBagConstraints c = new GridBagConstraints();
+
+    // papers
+    myPaperPanel = new JPanel(new GridBagLayout());
+    myPaperPanel.setBackground(Color.lightGray);
+    JPanel panel = new JPanel(new GridBagLayout());
+
+    c.gridy = 1;
+    c.anchor = GridBagConstraints.NORTHWEST;
+    c.weightx = 1.0;
+    c.weighty = 1.0;
+    c.insets = new Insets(0, 0, 0, 0);
+    panel.setBackground(Color.lightGray);
+    panel.add(myPaperPanel, c);
+    //panel.setBorder(new javax.swing.border.LineBorder(java.awt.Color.yellow));
+    //optionPanel.setBorder(new javax.swing.border.LineBorder(java.awt.Color.green));
+    //myPaperPanel.setBorder(new javax.swing.border.LineBorder(java.awt.Color.green));
+
+    // scroll
+    c.fill = GridBagConstraints.BOTH;
+    myScrollPanel = new MyScrollPane(panel);
+    myScrollPanel.setFocusable(true);
+
+    myScrollPanel.addWheelListener(new MouseWheelListener() {
+      public void mouseWheelMoved(MouseWheelEvent event) {
+        if (SwingUtilities.isRightMouseButton(event) || event.isControlDown()) {
+          myScrollPanel.setWheelScrollingEnabled(false);
+
+          if (event.getWheelRotation() > 0) {
+            myScale.increaseValue();
+          }
+          else {
+            myScale.decreaseValue();
+          }
+        }
+        else {
+          myScrollPanel.setWheelScrollingEnabled(true);
+        }
+      }
+    });
+
+    myScrollPanel.addMouseListener(new MouseAdapter() {
+      public void mouseClicked(MouseEvent event) {
+        if (event.getClickCount() == 2) {
+          if (SwingUtilities.isRightMouseButton(event)) {
+            myScale.customValue(CUSTOMS.length - 1);
+            myCustomIndex = 0;
+          }
+          else {
+            showCustom(true);
+          }
+        }
+      }
+    });
+
+    myScrollPanel.addKeyListener(new KeyAdapter() {
+      public void keyPressed(KeyEvent event) {
+        char ch = event.getKeyChar();
+
+        if (ch == '+') {
+          myScale.increaseValue();
+        }
+        else if (ch == '-') {
+          myScale.decreaseValue();
+        }
+        else if (ch == '/') {
+          myScale.normalValue();
+        }
+        else if (ch == '*') {
+          showCustom(true);
+        }
+      }
+    });
+    
+    return myScrollPanel;
+  }
+
+  private void showCustom(boolean doNext) {
+    if (doNext) {
+      myCustomIndex++;
+
+      if (myCustomIndex == CUSTOMS.length) {
+        myCustomIndex = 0;
+      }
+    }
+    myScale.customValue(myCustomIndex);
+  }
+
+  private void updateButtons() {
+    myGoto.setText (getPaper(myPaperNumber));
+    myFirst.setEnabled (myPaperNumber > 1);
+    myPrevious.setEnabled (myPaperNumber > 1);
+    myNext.setEnabled (myPaperNumber < getPaperCount());
+    myLast.setEnabled (myPaperNumber < getPaperCount());
+    boolean enabled = getPaperCount() > 0;
+    myGoto.setEnabled (enabled);
+    myScale.setEnabled (enabled);
+    myToggle.setEnabled (enabled);
+    myFit.setEnabled (enabled);
+    myIncrease.setEnabled (enabled);
+    myDecrease.setEnabled (enabled);
+    myPrnBtn.setEnabled (enabled);
+    myOptBtn.setEnabled (enabled);
+  }
+
+  private void scrollTo() {
+//out("Scroll to: " + myPaperNumber);
+    Paper paper = myPapers[myPaperNumber - 1];
+    int gap  = getGap();
+    int x = paper.getX() - gap;
+    int y = paper.getY() - gap;
+    int w = paper.getWidth();
+    int h = paper.getHeight();
+    JViewport view = myScrollPanel.getViewport();
+
+    if ( !view.getViewRect().contains(x, y, w, h)) {
+      view.setViewPosition(new Point(x,y));
+      updatePaperPanel();
+    }
+  }
+
+  /**{@inheritDoc}*/
+  public double getCustomValue(int index) {
+    if (getPaperCount() == 0) {
+      return 0.0;
+    }
+    int width = myPapers[0].getPaperWidth() + GAP_SIZE;
+    int height = myPapers[0].getPaperHeight() + GAP_SIZE;
+
+    if (index == 0) {
+      return getWidthScale(width);
+    }
+    if (index == 1) {
+      return getHeightScale(height);
+    }
+    if (index == 2) {
+      return getAllScale(width, height);
+    }
+    return 1.0;
+  }
+
+  private double getWidthScale(int width) {
+    final int JAVA_INSET = 5;
+    
+    double scrollWidth = (double) (myScrollPanel.getWidth() -
+      myScrollPanel.getVerticalScrollBar().getWidth() - JAVA_INSET);
+
+    return scrollWidth / width;
+  }
+
+  private double getHeightScale(int height) {
+    final int JAVA_INSET = 5;
+    
+    double scrollHeight = (double) (myScrollPanel.getHeight() -
+      myScrollPanel.getHorizontalScrollBar().getHeight() - JAVA_INSET);
+
+    return scrollHeight / height;
+  }
+
+  private double getAllScale(int width, int height) {
+    int w = width;
+    int h = height;
+
+    if ( !isSingleMode()) {
+      int maxRow = 0;
+      int maxColumn = 0;
+
+      for (Paper paper : myPapers) {
+        maxRow = Math.max(maxRow, paper.getRow());
+        maxColumn = Math.max(maxColumn, paper.getColumn());
+      }
+      w *= maxColumn + 1;
+      h *= maxRow + 1;
+    }
+    return Math.min(getWidthScale(w), getHeightScale(h));
+  }
+
+  /**{@inheritDoc}*/
+  public void valueChanged(double value, int index) {
+//out();
+//out("Set scale: " + value + " " + index);
+    if (index != -1) {
+      myCustomIndex = index;
+    }
+    if (getPaperCount() == 0) {
+      return;
+    }
+    for (Paper paper : myPapers) {
+      paper.setScale(value);
+    }
+    addPapers();
+  }
+
+  private void addPapers() {
+//out("Add papers");
+    myPaperPanel.removeAll();
+
+    if (getPaperCount() == 0) {
+      updatePaperPanel();
+      return;
+    }
+    int gap = getGap();
+    GridBagConstraints c = new GridBagConstraints();
+    c.insets = new Insets(gap, gap, 0, 0);
+
+    if (isSingleMode()) {
+      myPaperPanel.add(myPapers[myPaperNumber - 1], c);
+    }
+    else {
+      for (Paper paper : myPapers) {
+        c.gridx = paper.getColumn();
+        c.gridy = paper.getRow();
+        myPaperPanel.add(paper, c);
+      }
+    }
+    updatePaperPanel();
+  }
+
+  private void updatePaperPanel() {
+    myPaperPanel.revalidate();
+    myPaperPanel.repaint();
+  }
+
+  private void createPapers() {
+    PrintPage[] pages = myPrintPageProvider.getPages(myOption);
+//out("Create papers: " + pages.length);
+    myPapers = null;
+
+    if (pages == null) {
+      return;
+    }
+    myPapers = new Paper [pages.length];
+    boolean useRow = false;
+    boolean useColumn = false;
+
+    for (int i=0; i < pages.length; i++) {
+      PrintPage page = pages[i];
+
+      if (page.getRow() > 0) {
+        useRow = true;
+      }
+      if (page.getColumn() > 0) {
+        useColumn = true;
+      }
+    }
+    String name = myPrintPageProvider.getName();
+    Date modified = myPrintPageProvider.getLastModifiedDate();
+    double scale = 1.0;
+
+    if (myScale != null) {
+      scale = myScale.getValue();
+    }
+    for (int i=0; i < pages.length; i++) {
+      myPapers[i] = new Paper(
+        pages[i],
+        i+1,
+        pages.length,
+        useRow,
+        useColumn
+      );
+      myPapers[i].setInfo(
+        name,
+        modified,
+        scale,
+        myOption,
+        isText()
+      );
+    }
+  }
+
+  /**{@inheritDoc}*/
+  public void invalidValue(String value) {}
+
+  private int getPaperCount() {
+    if (myPapers == null) {
+      return 0;
+    }
+    return myPapers.length;
+  }
+
+  private void first() {
+    updatePaperNumber();
+    changePaper();
+  }
+
+  private void previous() {
+    if (myPaperNumber == 1) {
+      return;
+    }
+    myPaperNumber--;
+    changePaper();
+  }
+
+  private void next() {
+    if (myPaperNumber == getPaperCount()) {
+      return;
+    }
+    myPaperNumber++;
+    changePaper();
+  }
+
+  private void last() {
+    myPaperNumber = getPaperCount();
+    changePaper();
+  }
+
+  private void goTo() {
+    String value = myGoto.getText();
+    int number = getPaperNumber(value);
+    int count = getPaperCount();
+
+    if (number < 1 || number > count) {
+      myGoto.setText(getPaper(myPaperNumber));
+    }
+    else {
+      myPaperNumber = number;
+      changePaper();
+    }
+    myGoto.selectAll();
+  }
+
+  private void changePaper() {
+    if (isSingleMode()) {
+      addPapers();
+    }
+    else {
+      scrollTo();
+    }
+    updateButtons();
+  }
+
+  private void updatePaperNumber() {
+    myPaperNumber = getPaperCount() == 0 ? 0 : 1;
+  }
+
+  private int getGap() {
+    return (int) Math.round(GAP_SIZE * myScale.getValue());
+  }
+
+  private String getPaper(int value) {
+    return Util.getPageOfCount(
+      String.valueOf(value), String.valueOf(getPaperCount()));
+  }
+      
+  @Override
+  protected DialogDescriptor getDescriptor()
+  {
+    Object[] buttons = getButtons();
+    DialogDescriptor descriptor = new DialogDescriptor(
+      createMainPanel(),
+      getMessage("LBL_Print_Preview"), // NOI18N
+      true,
+      buttons,
+      myPrnBtn,
+      DialogDescriptor.DEFAULT_ALIGN,
+      null,
+      null
+    );
+    descriptor.setClosingOptions(
+      new Object[] { myPrnBtn, DialogDescriptor.CLOSED_OPTION });
+
+    return descriptor;
+  }
+
+  @Override
+  protected void closed()
+  {
+//out("Closed");
+    myPapers = null;
+    myPrintPageProvider = null;
+    myOption.setScale(myScale.getValue());
+  }
+
+  @Override
+  protected void opened()
+  {
+    myScrollPanel.requestFocus();
+  }
+
+  @Override
+  protected void resized()
+  {
+    if (myScale.isCustomValue()) {
+      showCustom(false);
+    }
+  }
+
+  private Object[] getButtons() {
+    myPrnBtn = (JButton) createButton(new JButton(),
+      "TLT_Print", // NOI18N
+      new AbstractAction(getMessage("LBL_Print")) { // NOI18N
+        public void actionPerformed(ActionEvent event) {
+          print();
+        }
+      }
+    );
+    myOptBtn = (JButton) createButton(new JButton(),
+      "TLT_Option", // NOI18N
+      new AbstractAction(getMessage("LBL_Option")) { // NOI18N
+        public void actionPerformed(ActionEvent event) {
+          option();
+        }
+      }
+    );
+    return new Object[] {
+      myPrnBtn,
+      myOptBtn,
+      DialogDescriptor.CLOSED_OPTION,
+    };
+  }
+
+  private boolean isSingleMode() {
+    return myToggle.isSelected();
+  }
+
+  private void print() {
+    myPrinter.print(myPapers, myOption);
+  }
+
+  private void option() {
+    new Attribute(this, myOption, isText()).show();
+  }
+
+  private boolean isText() {
+    return
+      myPrintPageProvider instanceof PrintProvider.Text ||
+      myPrintPageProvider instanceof PrintProvider.Attributed;
+  }
+
+  private int getPaperNumber(String text) {
+    String value = text.trim();
+    StringBuffer buffer = new StringBuffer();
+
+    for (int i=0; i < value.length(); i++) {
+      char c = value.charAt(i);
+
+      if ( !isAplha(c)) {
+        break;
+      }
+      buffer.append(c);
+    }
+    return Util.getInt(buffer.toString());
+  }
+
+  private boolean isAplha(char c) {
+    return "0123456789".indexOf(c) != -1; // NOI18N
+  }
+
+  // ---------------------------------------------
+  private class MyScrollPane extends JScrollPane {
+    MyScrollPane(JPanel panel) {
+      super(
+        panel,
+        ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
+        ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS
+      );
+      getVerticalScrollBar().setUnitIncrement(SCROLL_INCREMENT);
+
+      int screenHeight = Toolkit.getDefaultToolkit().getScreenSize().height;
+      int height = (int) Math.round(screenHeight * PREVIEW_FACTOR);
+      int width = (int) Math.round(height * PREVIEW_FACTOR);
+
+      setPreferredSize(new Dimension(width, height));
+    }
+
+    public void addMouseWheelListener(MouseWheelListener listener) {
+      if (myMouseWheelListeners == null) {
+        myMouseWheelListeners = new ArrayList<MouseWheelListener>();
+      }
+//out("Listener: " + listener.getClass().getName());
+      myMouseWheelListeners.add(listener);
+    }
+
+    public void addWheelListener(MouseWheelListener wheelListener) {
+      super.addMouseWheelListener(wheelListener);
+
+      for (int i=0; i < myMouseWheelListeners.size(); i++) {
+        super.addMouseWheelListener(myMouseWheelListeners.get(i));
+      }
+    }
+
+    private List<MouseWheelListener> myMouseWheelListeners;
+  }
+
+  private Paper[] myPapers;
+  private JPanel myPaperPanel;
+  
+  private JButton myFirst;
+  private JButton myPrevious;
+  private JButton myNext;
+  private JButton myLast;
+
+  private JButton myFit;
+  private JButton myIncrease;
+  private JButton myDecrease;
+
+  private JButton myPrnBtn;
+  private JButton myOptBtn;
+
+  private Option myOption;
+  private Percent myScale;
+  private JTextField myGoto;
+  private int myPaperNumber;
+  private int myCustomIndex;
+  private JToggleButton myToggle;
+  private MyScrollPane myScrollPanel;
+
+  private Printer myPrinter;
+  private PrintProvider.Page myPrintPageProvider;
+
+  private static final int GAP_SIZE = 20;
+  private static final int SCROLL_INCREMENT = 40;
+  private static final double PREVIEW_FACTOR = 0.75;
+  private static final int [] PERCENTS = new int [] { 25, 50, 75, 100, 200, 400 };
+  private final String [] CUSTOMS = new String[] {
+    getMessage("LBL_Fit_to_Width"), // NOI18N
+    getMessage("LBL_Fit_to_Heigth"), // NOI18N
+    getMessage("LBL_Fit_to_All"), // NOI18N
+  };
+}
