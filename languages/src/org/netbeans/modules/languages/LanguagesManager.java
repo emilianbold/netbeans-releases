@@ -19,7 +19,10 @@
 
 package org.netbeans.modules.languages;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.OutputStream;
+import java.util.HashSet;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.netbeans.modules.editor.settings.storage.api.FontColorSettingsFactory;
@@ -42,7 +45,19 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Vector;
+import org.openide.modules.ModuleInfo;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 
 
 /**
@@ -60,13 +75,52 @@ public class LanguagesManager {
         return manager;
     }
     
+    private Lookup.Result result;
+    private LookupListener lookupListener;
+    private PropertyChangeListener moduleInfoListener;
+    private Set moduleInfos;
+
+    
+    private LanguagesManager () {
+        result = Lookup.getDefault ().lookupResult (ModuleInfo.class);
+        lookupListener = new LookupListener () {
+            public void resultChanged (LookupEvent ev) {
+                Set newModules = new HashSet (result.allInstances ());
+                newModules.removeAll (moduleInfos);
+                Iterator it = newModules.iterator ();
+                while (it.hasNext ())
+                    ((ModuleInfo) it.next ()).addPropertyChangeListener (moduleInfoListener);
+                Set oldModules = new HashSet (moduleInfos);
+                oldModules.removeAll (result.allInstances ());
+                it = oldModules.iterator ();
+                while (it.hasNext ())
+                    ((ModuleInfo) it.next ()).removePropertyChangeListener (moduleInfoListener);
+                moduleInfos = new HashSet (result.allInstances ());
+                refreshSupportedMimeTypes ();
+            }
+        };
+        result.addLookupListener (lookupListener);
+        moduleInfoListener = new PropertyChangeListener() {
+            public void propertyChange (PropertyChangeEvent a) {
+                refreshSupportedMimeTypes ();
+            }
+        };
+        moduleInfos = new HashSet (result.allInstances ());
+        Iterator it = moduleInfos.iterator ();
+        while (it.hasNext ()) {
+            ModuleInfo info = (ModuleInfo) it.next ();
+            info.addPropertyChangeListener (moduleInfoListener);
+        }
+    }
+    
     private Set mimeTypes = null;
     
     public Set getSupportedMimeTypes () {
         if (mimeTypes == null)
-            mimeTypes = MimeTypesReader.loadMimeTypes ();
+            mimeTypes = loadMimeTypes ();
         return Collections.unmodifiableSet (mimeTypes);
     }
+    
 //    
 //    private Map mimeTypeToName = new HashMap ();
 //    
@@ -125,14 +179,57 @@ public class LanguagesManager {
     public void removeLanguagesManagerListener (LanguagesManagerListener l) {
         listeners.remove (l);
     }
+
     
-    void languageChanged (String mimeType) {
+    // helper methods .....................................................................................................
+    
+    private void refreshSupportedMimeTypes () {
+        Set mimeTypes = loadMimeTypes ();
+        if (mimeTypes.equals (LanguagesManager.this.mimeTypes))
+            return;
+        Set added = new HashSet (mimeTypes);
+        added.removeAll (LanguagesManager.this.mimeTypes);
+        Set removed = new HashSet (LanguagesManager.this.mimeTypes);
+        removed.removeAll (mimeTypes);
+        Iterator it = removed.iterator ();
+        while (it.hasNext ()) {
+            String mimeType = (String) it.next ();
+            LanguagesManager.this.mimeTypes.remove (mimeType);
+            fireLanguageRemoved (mimeType);
+        }
+        it = added.iterator ();
+        while (it.hasNext ()) {
+            String mimeType = (String) it.next ();
+            LanguagesManager.this.mimeTypes.add (mimeType);
+            fireLanguageAdded (mimeType);
+        }
+    }
+    
+    private void languageChanged (String mimeType) {
         mimeTypeToLanguage.remove (mimeType);
         Vector v = (Vector) listeners.clone ();
         Iterator it = v.iterator ();
         while (it.hasNext ()) {
             LanguagesManagerListener l = (LanguagesManagerListener) it.next ();
             l.languageChanged (mimeType);
+        }
+    }
+    
+    private void fireLanguageAdded (String mimeType) {
+        Vector v = (Vector) listeners.clone ();
+        Iterator it = v.iterator ();
+        while (it.hasNext ()) {
+            LanguagesManagerListener l = (LanguagesManagerListener) it.next ();
+            l.languageAdded (mimeType);
+        }
+    }
+    
+    private void fireLanguageRemoved (String mimeType) {
+        Vector v = (Vector) listeners.clone ();
+        Iterator it = v.iterator ();
+        while (it.hasNext ()) {
+            LanguagesManagerListener l = (LanguagesManagerListener) it.next ();
+            l.languageRemoved (mimeType);
         }
     }
 
@@ -332,10 +429,33 @@ public class LanguagesManager {
         return buf.toString();
     }
     
+    static Set loadMimeTypes () {
+        Set result = new HashSet ();
+        FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
+        FileObject root = fs.findResource ("Editors");
+        Enumeration e1 = root.getChildren (false);
+        while (e1.hasMoreElements ()) {
+            FileObject f1 = (FileObject) e1.nextElement ();
+            if (f1.isData ()) continue;
+            Enumeration e2 = f1.getChildren (false);
+            while (e2.hasMoreElements ()) {
+                FileObject f2 = (FileObject) e2.nextElement ();
+                if (f2.isData ()) continue;
+                FileObject fo = f2.getFileObject ("language.nbs");
+                if (fo == null) continue;
+                result.add (f1.getName () + '/' + f2.getName ());
+            }
+        }
+        return result;
+    }
+
+    
     // innerclasses ............................................................
     
     public static interface LanguagesManagerListener {
         
+        public void languageAdded (String mimeType);
+        public void languageRemoved (String mimeType);
         public void languageChanged (String mimeType);
     }
     

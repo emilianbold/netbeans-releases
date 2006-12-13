@@ -20,6 +20,7 @@
 package org.netbeans.modules.languages.dataobject;
 
 import org.netbeans.modules.languages.LanguagesManager;
+import org.netbeans.modules.languages.LanguagesManager.LanguagesManagerListener;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
@@ -50,6 +51,19 @@ public class LanguagesDataLoader extends UniFileLoader {
             if (mimeType.equals ("text/xml")) continue;
             getExtensions().addMimeType (mimeType);
         }
+        LanguagesManager.getDefault ().addLanguagesManagerListener (new LanguagesManagerListener () {
+
+            public void languageAdded (String mimeType) {
+                getExtensions().addMimeType (mimeType);
+            }
+
+            public void languageRemoved (String mimeType) {
+                getExtensions().removeMimeType (mimeType);
+            }
+
+            public void languageChanged (String mimeType) {
+            }
+        });
     }
 
     protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
