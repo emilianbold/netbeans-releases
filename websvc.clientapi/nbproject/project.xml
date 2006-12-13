@@ -123,6 +123,7 @@ Microsystems, Inc. All Rights Reserved.
                 <friend>org.netbeans.modules.web.project</friend>
                 <friend>org.netbeans.modules.mobility.end2end</friend>
                 <friend>org.netbeans.modules.websvc.core</friend>
+                <friend>org.netbeans.modules.websvc.jaxrpc</friend>
                 <!-- commented out temporarly (issue 90051)
                 <friend>org.netbeans.modules.websvc.customization</friend>
                 <friend>org.netbeans.modules.websvc.wsitconf</friend>
