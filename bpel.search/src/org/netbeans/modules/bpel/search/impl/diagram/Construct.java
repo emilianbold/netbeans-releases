@@ -18,92 +18,98 @@
  */
 package org.netbeans.modules.bpel.search.impl.diagram;
 
-import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
 import org.openide.util.NbBundle;
+
+import org.netbeans.modules.bpel.model.api.BpelEntity;
 
 import org.netbeans.modules.bpel.design.DesignView;
 import org.netbeans.modules.bpel.design.model.DiagramModel;
 import org.netbeans.modules.bpel.design.model.elements.VisualElement;
-import org.netbeans.modules.bpel.design.model.patterns.CompositePattern;
 import org.netbeans.modules.bpel.design.model.patterns.Pattern;
 
 import org.netbeans.modules.bpel.search.api.SearchOption;
-import org.netbeans.modules.bpel.search.spi.SearchEngine;
 
 /**
  * @author Vladimir Yaroslavskiy
- * @version 2006.11.13
+ * @version 2006.12.05
  */
-public class Engine extends SearchEngine.Adapter {
+public final class Construct extends Engine {
 
   /**{@inheritDoc}*/
   public void search(SearchOption option) {
     DesignView view = (DesignView) option.getSource();
-    DiagramModel model = view.getModel();
+    myModel = view.getModel();
     Util.getDecorator(view).clearHighlighting();
 //out();
     fireSearchStarted(option);
-    search(getRoot(model, option.useSelection()), ""); // NOI18N
+    search(getRoot(myModel, option.useSelection()).getOMReference(), ""); // NOI18N
     fireSearchFinished(option);
   }
 
-  protected Pattern getRoot(DiagramModel model, boolean useSelection) {
-    if (useSelection) {
-      return model.getView().getSelectionModel().getSelectedPattern();
-    }
-    return model.getRootPattern();
-  }
-
-  private void search(Pattern pattern, String indent) {
-    if (pattern == null) {
-      return;
-    }
-    search(pattern.getElements(), indent);
-
-    if (pattern instanceof CompositePattern) {
-      CompositePattern composite = (CompositePattern) pattern;
-      search(composite.getBorder(), indent);
-      Collection<Pattern> patterns = composite.getNestedPatterns();
-
-      for (Pattern patern : patterns) {
-        search(patern, indent + "  "); // NOI18N
-      }
-    }
-  }
-
-  private void search(Collection<VisualElement> elements, String indent) {
-    for (VisualElement element : elements) {
-      search(element, indent);
-    }
-  }
-
-  private void search(VisualElement element, String indent) {
+  private void search(BpelEntity element, String indent) {
     if (element == null) {
       return;
     }
-    String text = element.getText();
-//out(indent + " see: " + text);
-
-    if (accepts(text)) {
-//out(indent + "      add.");
-      fireSearchFound(new Element(element));
+    process(element, indent);
+    List<BpelEntity> children = element.getChildren();
+  
+    for (BpelEntity entity : children) {
+      search(entity, indent + "    "); // NOI18N
     }
   }
 
-  /**{@inheritDoc}*/
-  public boolean accepts(Object source) {
-    return source instanceof DesignView;
+  private void process(BpelEntity element, String indent) {
+    Pattern pattern = myModel.getPattern(element);
+
+    if (pattern == null) {
+      return;
+    }
+    Iterator<VisualElement> iterator = pattern.getElements().iterator();
+
+    if ( !iterator.hasNext()) {
+      return;
+    }
+    if (acceptsAttribute(element) || acceptsComponent(element)) {
+//out(indent + "      add.");
+      fireSearchFound(new Element(iterator.next()));
+    }
+  }
+
+  private boolean acceptsAttribute(BpelEntity element) {
+    NamedNodeMap attributes = element.getPeer().getAttributes();
+
+    for (int i=0; i < attributes.getLength(); i++) {
+      Node attribute = attributes.item(i);
+     
+      if (accepts(attribute.getNodeName())) {
+        return true;
+      }
+      if (accepts(attribute.getNodeValue())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private boolean acceptsComponent(BpelEntity element) {
+    return accepts(element.getPeer().getTagName());
   }
 
   /**{@inheritDoc}*/
   public String getDisplayName() {
-    return NbBundle.getMessage(Engine.class, "CTL_Engine_Display_Name"); // NOI18N
+    return NbBundle.getMessage(Engine.class, "CTL_Construct_Display_Name"); // NOI18N
   }
 
   /**{@inheritDoc}*/
   public String getShortDescription() {
     return NbBundle.getMessage(
-      Engine.class, "CTL_Engine_Short_Description"); // NOI18N
+      Engine.class, "CTL_Construct_Short_Description"); // NOI18N
   }
+
+  private DiagramModel myModel;
 }

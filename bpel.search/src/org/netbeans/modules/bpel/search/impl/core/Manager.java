@@ -18,24 +18,18 @@
  */
 package org.netbeans.modules.bpel.search.impl.core;
 
-import java.awt.Event;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
+import java.awt.Component;
+import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JComponent;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.InputMap;
-import javax.swing.KeyStroke;
-
-import org.openide.actions.FindAction;
-
+import org.netbeans.modules.print.api.PrintUtil;
 import org.netbeans.modules.bpel.search.api.SearchManager;
 import org.netbeans.modules.bpel.search.api.SearchMatch;
 import org.netbeans.modules.bpel.search.api.SearchPattern;
 import org.netbeans.modules.bpel.search.spi.SearchEngine;
 import org.netbeans.modules.bpel.search.impl.ui.Find;
+import org.netbeans.modules.bpel.search.impl.ui.Search;
 import org.netbeans.modules.bpel.search.impl.util.Util;
 
 /**
@@ -47,54 +41,53 @@ public final class Manager implements SearchManager {
   /**{@inheritDoc}*/
   public Manager() {
     myEngines = Util.getInstances(SearchEngine.class);
+    mySearch = new Search();
   }
 
   /**{@inheritDoc}*/
-  public JComponent getUI(Object source, JComponent parent) {
-    SearchEngine engine = getEngine(source);
-//Log.out("Set engine: " + engine);
-    assert engine != null : "Can't find engine for " + source; // NOI18N
-    Find find = new Find(engine, source);
-    find.setVisible(false);
-    bindAction(parent, find);
-    return find;
+  public Component getUI(Object source, JComponent parent, boolean advanced) {
+    List<SearchEngine> engines = getEngines(source);
+//out("Set engines: " + engines);
+    
+    if (engines.isEmpty()) {
+      return null;
+    }
+    if (advanced) {
+      return mySearch.getComponent(engines, source);
+    }
+    else {
+      return new Find(engines, source, parent);
+    }
   }
 
   /**{@inheritDoc}*/
   public SearchPattern getPattern(
     String text,
-    SearchMatch searchMatch,
-    boolean isCaseSensitive)
+    SearchMatch match,
+    boolean caseSensitive)
   {
-    return new Pattern(text, searchMatch, isCaseSensitive);
+    return new Pattern(text, match, caseSensitive);
   }
 
-  private void bindAction(JComponent parent, final JComponent component) {
-    FindAction findAction = (FindAction) FindAction.get(FindAction.class);
-    Object mapKey = findAction.getActionMapKey();
-    parent.getActionMap().put(mapKey, new AbstractAction () {
-      public void actionPerformed(ActionEvent event) {
-        component.setVisible(true);
-      }
-    });
-    InputMap keys =
-      parent.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-    KeyStroke key = (KeyStroke) findAction.getValue(Action.ACCELERATOR_KEY);
+  private List<SearchEngine> getEngines(Object source) {
+    List<SearchEngine> engines = new ArrayList<SearchEngine>();
 
-    if (key == null) {
-      key = KeyStroke.getKeyStroke(KeyEvent.VK_F, Event.CTRL_MASK);
-    }
-    keys.put(key, mapKey);
-  }
-
-  private SearchEngine getEngine(Object source) {
     for (SearchEngine engine : myEngines) {
       if (engine.accepts(source)) {
-        return engine;
+        engines.add(engine);
       }
     }
-    return null;
+    return engines;
   }
 
+  private void out() {
+    PrintUtil.out();
+  }
+
+  private void out(Object object) {
+    PrintUtil.out(object);
+  }
+
+  private Search mySearch;
   private List<SearchEngine> myEngines;
 }

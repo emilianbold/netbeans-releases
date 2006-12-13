@@ -16,17 +16,14 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.netbeans.modules.bpel.search.impl.diagram;
+package org.netbeans.modules.bpel.search.impl.model;
 
-import java.util.Collection;
-
+import java.util.List;
 import org.openide.util.NbBundle;
 
-import org.netbeans.modules.bpel.design.DesignView;
-import org.netbeans.modules.bpel.design.model.DiagramModel;
-import org.netbeans.modules.bpel.design.model.elements.VisualElement;
-import org.netbeans.modules.bpel.design.model.patterns.CompositePattern;
-import org.netbeans.modules.bpel.design.model.patterns.Pattern;
+import org.netbeans.modules.bpel.model.api.BpelEntity;
+import org.netbeans.modules.bpel.model.api.BpelModel;
+import org.netbeans.modules.bpel.model.api.NamedElement;
 
 import org.netbeans.modules.bpel.search.api.SearchOption;
 import org.netbeans.modules.bpel.search.spi.SearchEngine;
@@ -35,54 +32,35 @@ import org.netbeans.modules.bpel.search.spi.SearchEngine;
  * @author Vladimir Yaroslavskiy
  * @version 2006.11.13
  */
-public class Engine extends SearchEngine.Adapter {
+public final class Engine extends SearchEngine.Adapter {
 
   /**{@inheritDoc}*/
   public void search(SearchOption option) {
-    DesignView view = (DesignView) option.getSource();
-    DiagramModel model = view.getModel();
-    Util.getDecorator(view).clearHighlighting();
+    BpelModel model = (BpelModel) option.getSource();
 //out();
     fireSearchStarted(option);
-    search(getRoot(model, option.useSelection()), ""); // NOI18N
+    search(model.getProcess(), ""); // NOI18N
     fireSearchFinished(option);
   }
 
-  protected Pattern getRoot(DiagramModel model, boolean useSelection) {
-    if (useSelection) {
-      return model.getView().getSelectionModel().getSelectedPattern();
-    }
-    return model.getRootPattern();
-  }
-
-  private void search(Pattern pattern, String indent) {
-    if (pattern == null) {
-      return;
-    }
-    search(pattern.getElements(), indent);
-
-    if (pattern instanceof CompositePattern) {
-      CompositePattern composite = (CompositePattern) pattern;
-      search(composite.getBorder(), indent);
-      Collection<Pattern> patterns = composite.getNestedPatterns();
-
-      for (Pattern patern : patterns) {
-        search(patern, indent + "  "); // NOI18N
-      }
-    }
-  }
-
-  private void search(Collection<VisualElement> elements, String indent) {
-    for (VisualElement element : elements) {
-      search(element, indent);
-    }
-  }
-
-  private void search(VisualElement element, String indent) {
+  private void search(BpelEntity element, String indent) {
     if (element == null) {
       return;
     }
-    String text = element.getText();
+    process(element, indent);
+    List<BpelEntity> children = element.getChildren();
+  
+    for (BpelEntity entity : children) {
+      search(entity, indent + "    "); // NOI18N
+    }
+  }
+
+  private void process(BpelEntity element, String indent) {
+    if ( !(element instanceof NamedElement)) {
+      return;
+    }
+    NamedElement named = (NamedElement) element;
+    String text = named.getName();
 //out(indent + " see: " + text);
 
     if (accepts(text)) {
@@ -93,7 +71,7 @@ public class Engine extends SearchEngine.Adapter {
 
   /**{@inheritDoc}*/
   public boolean accepts(Object source) {
-    return source instanceof DesignView;
+    return source instanceof BpelModel;
   }
 
   /**{@inheritDoc}*/

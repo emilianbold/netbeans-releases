@@ -21,7 +21,11 @@ package org.netbeans.modules.bpel.search.impl.util;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
+import javax.swing.ImageIcon;
+
 import org.openide.util.Lookup;
+import org.netbeans.modules.print.api.PrintUtil;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -43,5 +47,14 @@ public final class Util {
       list.add((T) object);
     }
     return list;
+  }
+
+  /**
+   * Returns icon for given name.
+   * @param name given name
+   * @return icon for given name
+   */
+  public static ImageIcon getIcon(String name) {
+    return PrintUtil.getIcon(Util.class, name);
   }
 }

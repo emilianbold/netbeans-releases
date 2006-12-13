@@ -18,11 +18,12 @@
  */
 package org.netbeans.modules.bpel.search.impl.diagram;
 
+import org.netbeans.modules.bpel.model.api.BpelEntity;
+import org.netbeans.modules.bpel.design.DesignView;
 import org.netbeans.modules.bpel.design.model.elements.VisualElement;
 import org.netbeans.modules.bpel.design.model.patterns.Pattern;
 
 import org.netbeans.modules.bpel.search.api.SearchElement;
-import org.netbeans.modules.bpel.search.api.SearchLog;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -33,22 +34,44 @@ final class Element extends SearchElement.Adapter {
   Element(VisualElement element) {
     super(element.getText(), element.getText(), null, null);
     myElement = element;
+    highlight(true);
   }
 
-  public void selectOnDiagram() {
-//out("select: " + this);
+  @Override
+  public void gotoSource()
+  {
+//out("goto source: " + this); // todo a
+  }
+
+  @Override
+  public void select()
+  {
+//out("select: " + getText());
     Pattern pattern = myElement.getPattern();
-    pattern.getModel().getView().getSelectionModel().setSelected(pattern);
+    DesignView view = pattern.getModel().getView();
+
+    // select
+    view.getSelectionModel().setSelectedPattern(pattern);
+
+    // glow
+    getDecorator().select(getEntity());
+
+    // scroll
+    myElement.scrollTo();
   }
 
-  public void gotoSource() {}
-
-  private void out() {
-    SearchLog.out();
+  @Override
+  public void highlight(boolean highlighted)
+  {
+    getDecorator().highlight(getEntity(), highlighted);
   }
 
-  private void out(Object object) {
-    SearchLog.out(object);
+  private BpelEntity getEntity() {
+    return myElement.getPattern().getOMReference();
+  }
+
+  private Decorator getDecorator() {
+    return Util.getDecorator(myElement.getPattern().getModel().getView());
   }
 
   private VisualElement myElement;
