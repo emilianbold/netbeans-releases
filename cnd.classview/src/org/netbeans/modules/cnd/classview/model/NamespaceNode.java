@@ -56,12 +56,13 @@ public class NamespaceNode extends NPNode {
     }
     
     protected boolean isSubNamspace(CsmNamespace ns) {
-        return ns.getParent() == this.ns;
+        return ns!= null && ns.getParent() == this.ns;
     }
     
     public void dismiss() {
-        ns = null;
+        setDismissed();
         super.dismiss();
+        ns = null;
     }
     
     private CsmNamespace ns;

@@ -41,7 +41,8 @@ public class GdbActionHandler implements CustomProjectActionHandler {
                     DebuggerManager.getDebuggerManager().startDebugging(
                             DebuggerInfo.create(GdbDebugger.SESSION_PROVIDER_ID, new Object[] {ev}));
                 } else if (ev.getID() == ProjectActionEvent.DEBUG_STEPINTO) {
-                    // XXX - Need to handle this (valid) case
+                    DebuggerManager.getDebuggerManager().startDebugging(
+                            DebuggerInfo.create(GdbDebugger.SESSION_PROVIDER_ID, new Object[] {ev}));
                 }
             }
         };

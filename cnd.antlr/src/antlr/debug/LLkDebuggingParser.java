@@ -1,15 +1,9 @@
 package antlr.debug;
 
-import antlr.ParserSharedInputState;
-import antlr.TokenStreamException;
-import antlr.LLkParser;
-import antlr.TokenBuffer;
-import antlr.TokenStream;
-import antlr.MismatchedTokenException;
-import antlr.RecognitionException;
 import antlr.collections.impl.BitSet;
 import java.io.IOException;
 import antlr.TokenStreamException;
+import antlr.*;
 
 import antlr.debug.ParserEventSupport;
 
@@ -212,13 +206,13 @@ public class LLkDebuggingParser extends LLkParser implements DebuggingParser {
 		// default parser debug setup is ParseView
 		try {
 			try {
-				Class.forName("javax.swing.JButton");
+				Utils.loadClass("javax.swing.JButton");
 			}
 			catch (ClassNotFoundException e) {
 				System.err.println("Swing is required to use ParseView, but is not present in your CLASSPATH");
 				System.exit(1);
 			}
-			Class c = Class.forName("antlr.parseview.ParseView");
+			Class c = Utils.loadClass("antlr.parseview.ParseView");
 			Constructor constructor = c.getConstructor(new Class[] {LLkDebuggingParser.class, TokenStream.class, TokenBuffer.class});
 			constructor.newInstance(new Object[] {this, lexer, tokenBuf});
 		}

@@ -43,7 +43,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Windows2">
 	<folder name="Modes">
-	    <folder name="explorer">
+	    <folder name="navigator">
 		<attr name="classview.wstcref/Javadoc.wstcref" boolvalue="true"/>
 		<attr name="classview.wstcref/runtime.wstcref" boolvalue="true"/>
 		<file name="classview.wstcref" url="classview.wstcref"/>

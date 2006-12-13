@@ -83,7 +83,7 @@ public class ProjectNode extends NPNode {
         setDisplayName(project.getName());
         addLoadingNode();
         Runnable filler;
-        if( project.isStable() ) {
+        if( project.isStable(null) ) {
             filler = new Runnable() {
                 public void run() {
 		    first = false;
@@ -100,6 +100,10 @@ public class ProjectNode extends NPNode {
                 public void run() {
                     project.waitParse();
 		    if( project.isValid() ) {
+                        if( first ) {
+                            first = false;
+                            fill();
+                        }
 			removeLoadingNode();
 			if( Diagnostic.DUMP_MODEL ) {
 			    dump(System.err);
@@ -113,14 +117,20 @@ public class ProjectNode extends NPNode {
     }
     
     protected CsmNamespace getNamespace() {
-        return getProject().getGlobalNamespace();
+        CsmProject prj = getProject();
+        if (prj != null){
+            return prj.getGlobalNamespace();
+        }
+        return null;
     }
     
     protected boolean isSubNamspace(CsmNamespace ns) {
-        CsmNamespace parent = ns.getParent();
-        if( parent.isGlobal() ) {
-            if( parent == project.getGlobalNamespace() ) {
-                return true;
+        if (ns != null) {
+            CsmNamespace parent = ns.getParent();
+            if( parent.isGlobal() ) {
+                if( parent == getNamespace() ) {
+                    return true;
+                }
             }
         }
         return false;
@@ -145,14 +155,23 @@ public class ProjectNode extends NPNode {
     
     private void addLoadingNode() {
         loadingNodes = new Node[] { CVUtil.createLoadingNode() };
-	getChildren().add( loadingNodes  );
+        final Children children = getChildren();
+        children.MUTEX.writeAccess(new Runnable(){
+            public void run() {
+                children.add( loadingNodes  );
+            }
+        });
     }
 
     private void removeLoadingNode() {
         if( loadingNodes != null ) {
-            Children.Array children = (Children.Array) getChildren();
-            children.remove(loadingNodes);
-            loadingNodes = null;
+            final Children children = getChildren();
+            children.MUTEX.writeAccess(new Runnable(){
+                public void run() {
+                    children.remove(loadingNodes);
+                    loadingNodes = null;
+                }
+            });
         }
     }
     
@@ -171,11 +190,15 @@ public class ProjectNode extends NPNode {
 //    }    
     
     public boolean update(CsmChangeEvent e) {
-	if( project != null ) {
-	    if( e.getChangedProjects().contains(getProject()) ) {
+	if( !isDismissed() ) {
+            CsmProject prj = getProject();
+	    if( prj != null && e.getChangedProjects().contains(prj) ) {
 		if( first ) {
 		    first = false;
-		    NodeUtil.fillNodeWithNamespaceContent(this, getNamespace(), true);
+                    CsmNamespace ns = getNamespace();
+                    if (ns != null){
+                        NodeUtil.fillNodeWithNamespaceContent(this, ns, true);
+                    }
 		    return true;
 		}
 		return super.update(e);
@@ -214,14 +237,15 @@ public class ProjectNode extends NPNode {
     }
     
     public void dismiss() {
-        project = null;
+        setDismissed();
         super.dismiss();
+        project = null;
     }
     
     //private ProjectInformation pi;
     private CsmProject project;
     private Node[] loadingNodes = null;
-    private boolean first = true;
+    volatile private boolean first = true;
 
 
 }

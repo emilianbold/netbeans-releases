@@ -29,6 +29,7 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.BreakpointAnnotationListener;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.EditorContextBridge;
+import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.LineBreakpoint;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -67,7 +68,7 @@ public class ToggleBreakpointActionProvider extends ActionsProviderSupport imple
         }
         
         // 2) find and remove existing line breakpoint
-        LineBreakpoint lb = getBreakpointAnnotationListener().findBreakpoint(url, ln);
+        GdbBreakpoint lb = getBreakpointAnnotationListener().findBreakpoint(url, ln);
         if (lb != null) {
             d.removeBreakpoint(lb);
             return;

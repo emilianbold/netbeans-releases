@@ -150,7 +150,7 @@ abstract public class CsmCompletion extends Completion {
     private static int debugMode;
 
     /** Map holding the simple class instances */
-    private static HashMap classCache = new HashMap(5003);
+//    private static HashMap classCache = new HashMap(5003);
 
     /** Map holding the cached types */
     private static HashMap typeCache = new HashMap(5003);
@@ -241,25 +241,26 @@ abstract public class CsmCompletion extends Completion {
         return str2PrimitiveClass.values().iterator();
     }
 
-    public static CsmClassifier getSimpleClass(String fullClassName, int packageNameLen) {
-        CsmClassifier cls = (CsmClassifier)classCache.get(fullClassName);
-        if (cls == null // not in cache yet
-//                || packageNameLen != cls.getPackageName().length() // different class
-           ) {
-            cls = new SimpleClass(fullClassName, packageNameLen, true);
-            classCache.put(fullClassName, cls);
-        }
-        return cls;
-    }
+//    public static CsmClassifier getSimpleClass(String fullClassName, int packageNameLen) {
+//        CsmClassifier cls = (CsmClassifier)classCache.get(fullClassName);
+//        if (cls == null // not in cache yet
+////                || packageNameLen != cls.getPackageName().length() // different class
+//           ) {
+//            cls = new SimpleClass(fullClassName, packageNameLen, true);
+//            classCache.put(fullClassName, cls);
+//        }
+//        return cls;
+//    }
 
     public static CsmClassifier getSimpleClass(CsmClassifier clazz) {
         String fullClassName = clazz.getQualifiedName();
-        CsmClassifier cls = (CsmClassifier)classCache.get(fullClassName);
-        if (cls == null // not in cache yet
+        CsmClassifier cls = null;//(CsmClassifier)classCache.get(fullClassName);
+        if (clazz != null 
+//        if (cls == null// not in cache yet
 //                || packageNameLen != cls.getPackageName().length() // different class
            ) {
             cls = new SimpleClass(clazz);
-            classCache.put(fullClassName, cls);
+//            classCache.put(fullClassName, cls);
         }
         return cls;        
 //        return getSimpleClass(cls.getQualifiedName(), 0/*cls.getPackageName().length()*/);

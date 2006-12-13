@@ -82,7 +82,6 @@ class GdbProfileXMLCodec extends XMLDecoder implements XMLEncoder {
     private static void encode(XMLEncoderStream xes, GdbProfile profile) {
 	xes.elementOpen(GdbProfile.GDB_PROFILE_ID, getVersion());
 	xes.element(GDB_COMMAND_ELEMENT, profile.getGdbCommand());
-	System.err.println("encode[gdb_command]: " + profile.getGdbCommand());
 	xes.elementClose(GdbProfile.GDB_PROFILE_ID);
     }
 }

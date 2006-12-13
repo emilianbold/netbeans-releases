@@ -19,30 +19,72 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
-
+    
     <folder name="Editors">
         <folder name="text">
             <folder name="x-c++">
+                <folder name="ToolTips">
+                    <file name="org-netbeans-modules-cnd-debugger-gdb-ToolTipAnnotation.instance"/>
+                </folder>
                 <folder name="GlyphGutterActions">
                     <file name="org-netbeans-modules-cnd-debugger-gdb-actions-ToggleBreakpointAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-cnd-debugger-gdb-actions-ToggleBreakpointAction.instance"/>
                     </file>
                 </folder>
+                <folder name="Popup">
+                    <file name="SeparatorBeforeCut.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="SeparatorBeforeCut.instance/org-openide-actions-CutAction.instance" boolvalue="true"/>
+                    
+                    <file name="SeparatorAfterFormat.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator" /> 
+                    </file>
+                    <attr name="format/SeparatorAfterFormat.instance" boolvalue="true" /> 
+                    <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance" /> 
+                    </file>
+                    <attr name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow/SeparatorBeforeCut.instance" boolvalue="true" /> 
+                    <file name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance" /> 
+                    <attr name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow" boolvalue="true" /> 
+                    <attr name="SeparatorAfterFormat.instance/org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance" boolvalue="true" /> 
+                </folder>
             </folder>
             
             <folder name="x-c">
+                <folder name="ToolTips">
+                    <file name="org-netbeans-modules-cnd-debugger-gdb-ToolTipAnnotation.instance"/>
+                </folder>
                 <folder name="GlyphGutterActions">
                     <file name="org-netbeans-modules-cnd-debugger-gdb-actions-ToggleBreakpointAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-cnd-debugger-gdb-actions-ToggleBreakpointAction.instance"/>
                     </file>
+                </folder>
+                <folder name="Popup">
+                    <file name="SeparatorBeforeCut.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>                    
+                    <attr name="SeparatorBeforeCut.instance/org-openide-actions-CutAction.instance" boolvalue="true"/>
+                    
+                    <file name="SeparatorAfterFormat.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator" /> 
+                    </file>
+                    <attr name="format/SeparatorAfterFormat.instance" boolvalue="true" /> 
+                    <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance" /> 
+                    </file>
+                    <attr name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow/SeparatorBeforeCut.instance" boolvalue="true" /> 
+                    <file name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance" /> 
+                    <attr name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow" boolvalue="true" /> 
+                    <attr name="SeparatorAfterFormat.instance/org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance" boolvalue="true" /> 
                 </folder>
             </folder>
         </folder>
     </folder>
     
-
+    
     <!-- Main menu -->
-     <folder name="Menu">
+    <folder name="Menu">
         <folder name="RunProject">
             <!-- Attach Debugger action
             <attr name="SeparatorRun.instance/org-netbeans-modules-debugger-ui-actions-ConnectAction.shadow" boolvalue="true" />
@@ -59,7 +101,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="Separator11.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
             </file>
-
+            
             <attr name="Separator11.instance/org-netbeans-modules-debugger-ui-actions-PauseAction.shadow" boolvalue="true" />
             <file name="org-netbeans-modules-debugger-ui-actions-PauseAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-PauseAction.instance"/>
@@ -72,7 +114,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="Separator2.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
             </file>
-
+            
             <attr name="Separator2.instance/org-netbeans-modules-debugger-ui-actions-StepOverAction.shadow" boolvalue="true" />
             <file name="org-netbeans-modules-debugger-ui-actions-StepOverAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepOverAction.instance"/>
@@ -109,7 +151,7 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="Stack">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.debugger.resources.Bundle" />
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/debugger/resources/actions/Folder.gif" />
-
+                
                 <file name="org-netbeans-modules-debugger-ui-actions-MakeCalleeCurrentAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-MakeCalleeCurrentAction.instance"/>
                 </file>
@@ -121,18 +163,18 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="Separator5.instance">
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                 </file>
-
+                
                 <attr name="Separator5.instance/org-netbeans-modules-debugger-ui-actions-PopTopmostCallAction.shadow" boolvalue="true" />
                 <file name="org-netbeans-modules-debugger-ui-actions-PopTopmostCallAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-PopTopmostCallAction.instance"/>
                 </file>
             </folder>
             <attr name="Stack/Separator6.instance" boolvalue="true" />
-
+            
             <file name="Separator6.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
             </file>
-
+            
             <attr name="Separator6.instance/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow" boolvalue="true" />
             <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
@@ -147,7 +189,7 @@ Microsystems, Inc. All Rights Reserved.
             </file>
         </folder>
     </folder>
-
+    
     <folder name="Shortcuts">
         <file name="DS-F8.shadow">
             <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-AddBreakpointAction.instance"/>
@@ -188,7 +230,7 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-RunIntoMethodAction.instance"/>
         </file>
     </folder>
-
+    
     <folder name="Toolbars">
         <!-- Attach Debugger action
         <folder name="Build">            
@@ -241,15 +283,15 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Actions">
         <folder name="Debug">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-
+            
             <file name="org-netbeans-modules-cnd-debugger-gdb-actions-ToggleBreakpointAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction"/>
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction.createToggleBreakpointAction"/>
                 <attr name="instanceOf" stringvalue="javax.swing.Action"/>
             </file>
-
+            
             <file name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance"/>
-	    <!--
+            <!--
             <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction"/>
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction.createToggleBreakpointAction"/>
@@ -291,7 +333,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction.createStepOverAction"/>
                 <attr name="instanceOf" stringvalue="javax.swing.Action"/>
             </file>
-
+            
             <!-- Attach Debugger action
             <file name="org-netbeans-modules-debugger-ui-actions-ConnectAction.instance" />
             -->
@@ -311,7 +353,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction.createMakeCallerCurrentAction"/>
                 <attr name="instanceOf" stringvalue="javax.swing.Action"/>
             </file>
-
+            
             <file name="org-netbeans-modules-debugger-ui-actions-FixAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction"/>
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction.createFixAction"/>

@@ -62,17 +62,27 @@ public class ObjectNode extends BaseNode {
     }
     
     public CsmOffsetableDeclaration getObject() {
-        CsmOffsetableDeclaration object = (CsmOffsetableDeclaration) project.findDeclaration(uniqueName);
-        if( object == null ) {
-            if( Diagnostic.DEBUG && declaration.getName().length() > 0 ) {
-                System.err.println("Can't find object by unique name " + uniqueName);
+        CsmOffsetableDeclaration object = null;
+        if (!isDismissed()) {
+            CsmProject prj = getDeclarationProject();
+            if (prj != null) {
+                object = (CsmOffsetableDeclaration) prj.findDeclaration(uniqueName);
+                if( object == null ) {
+                    if( Diagnostic.DEBUG && declaration.getName().length() > 0 ) {
+                        System.err.println("Can't find object by unique name " + uniqueName);
+                    }
+                    return declaration;
+                }
             }
-            return declaration;
         }
         return object;
     }
+   
+    private CsmProject getDeclarationProject(){
+        return project;
+    }
     
-    protected void setObject(CsmOffsetableDeclaration declaration) {
+    private void setObject(CsmOffsetableDeclaration declaration) {
         uniqueName = declaration.getUniqueName();
         project = declaration.getContainingFile().getProject();
         this.declaration = declaration;
@@ -114,30 +124,38 @@ public class ObjectNode extends BaseNode {
     
     public boolean update(CsmChangeEvent e) {
 	//super.update(e);
-	CsmOffsetableDeclaration decl = getObject();
-	if( e.getChangedDeclarations().contains(decl) ) {
-	    //getChildren().remove(getChildren().getNodes());
-            String uniqueName = decl.getUniqueName();
-	    CsmDeclaration newDecl = decl.getContainingFile().getProject().findDeclaration(uniqueName);
-	    if( newDecl instanceof CsmOffsetableDeclaration ) {
-		if( newDecl.getKind() == decl.getKind() ) {
-		    setObject((CsmOffsetableDeclaration) newDecl);
-		    objectChanged();
-                    return true;
-		}
-	    }
-	}
-        else if( e.getRemovedDeclarations().contains(decl) ) {
-            getParentNode().getChildren().remove(new Node[] { this });
-            return true;
+        if (!isDismissed()) {
+            CsmOffsetableDeclaration decl = getObject();
+            if( e.getChangedDeclarations().contains(decl) ) {
+                //getChildren().remove(getChildren().getNodes());
+                String uniqueName = decl.getUniqueName();
+                CsmDeclaration newDecl = decl.getContainingFile().getProject().findDeclaration(uniqueName);
+                if( newDecl instanceof CsmOffsetableDeclaration ) {
+                    if( newDecl.getKind() == decl.getKind() ) {
+                        setObject((CsmOffsetableDeclaration) newDecl);
+                        objectChanged();
+                        return true;
+                    }
+                }
+            }
+            else if( e.getRemovedDeclarations().contains(decl) ) {
+                final Children children = getParentNode().getChildren();
+                children.MUTEX.writeAccess(new Runnable(){
+                    public void run() {
+                        children.remove(new Node[] { ObjectNode.this });
+                    }
+                });
+                return true;
+            }
         }
         return false;
     }
-
+    
     public void dismiss() {
+        setDismissed();
         //declaration = null;
-        project = null;
         super.dismiss();
+        project = null;
     }
     
 //    public int compareTo(Object o) {

@@ -18,7 +18,10 @@
  */
 
 package org.netbeans.modules.cnd.completion.cplusplus;
+import javax.swing.text.JTextComponent;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
+import org.netbeans.modules.cnd.api.model.CsmMacro;
+import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmFinder;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery;
@@ -89,7 +92,7 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
         BaseDocument bDoc = getBaseDocument();
 	if (bDoc != null) {
 	    DataObject dobj = NbEditorUtilities.getDataObject(bDoc);
-	    CsmFile file = CsmUtilities.getCsmFile(dobj);
+	    CsmFile file = CsmUtilities.getCsmFile(dobj, true);
 	    if (file != null) {
 		finder = new CsmFinderImpl(file, CCKit.class);
 	    }
@@ -97,18 +100,18 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
         return finder;
     }
     
-    protected CompletionResolver getCompletionResolver() {
-	return getCompletionResolver(getBaseDocument());
+    protected CompletionResolver getCompletionResolver(boolean openingSource) {
+	return getCompletionResolver(getBaseDocument(), openingSource);
     }
 
-    protected static CompletionResolver getCompletionResolver(BaseDocument bDoc) {
+    protected static CompletionResolver getCompletionResolver(BaseDocument bDoc, boolean openingSource) {
 	CompletionResolver resolver = null; 
 	if (bDoc != null) {
 	    DataObject dobj = NbEditorUtilities.getDataObject(bDoc);
-	    CsmFile file = CsmUtilities.getCsmFile(dobj);
+	    CsmFile file = CsmUtilities.getCsmFile(dobj, true);
 	    if (file != null) {
                 Class kit = bDoc.getKitClass();
-		resolver = new CompletionResolverImpl(file, isCaseSensitive(kit), isNaturalSort(kit));
+		resolver = new CompletionResolverImpl(file, openingSource || isCaseSensitive(kit), isNaturalSort(kit));
 	    }
         }
         return resolver;
@@ -116,6 +119,20 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
     
     protected void initFactory(){
         setCsmItemFactory(new NbCsmItemFactory());
+    }
+
+    protected boolean isProjectBeeingParsed(boolean openingSource) {
+        if (!openingSource) {
+            BaseDocument bDoc = getBaseDocument();
+            if (bDoc != null) {
+                DataObject dobj = NbEditorUtilities.getDataObject(bDoc);
+                CsmFile file = CsmUtilities.getCsmFile(dobj, true);
+                if (file != null && file.getProject() != null) {
+                    return !file.getProject().isStable(file);
+                }
+            }
+        }
+        return false;
     }
 
     public static class NbCsmItemFactory implements CsmCompletionQuery.CsmItemFactory{
@@ -166,8 +183,13 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
         public CsmResultItem.FileLocalVariableResultItem createFileLocalVariableResultItem(CsmVariable var) {
             return new NbCsmResultItem.NbFileLocalVariableResultItem(var);  
         }          
-        
-    }
-    
 
+        public CsmResultItem.MacroResultItem createMacroResultItem(CsmMacro mac) {
+            return new NbCsmResultItem.NbMacroResultItem(mac);  
+        }
+
+        public CsmResultItem.TypedefResultItem createTypedefResultItem(CsmTypedef def, int classDisplayOffset, boolean displayFQN) {
+            return new NbCsmResultItem.NbTypedefResultItem(def, classDisplayOffset, displayFQN);  
+        }
+    }
 }

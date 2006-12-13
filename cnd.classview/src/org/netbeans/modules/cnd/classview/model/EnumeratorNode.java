@@ -76,6 +76,7 @@ public class EnumeratorNode extends BaseNode {
 //    }    
     
     public void dismiss() {
+        setDismissed();
         //enumerator = null;
         super.dismiss();
     }

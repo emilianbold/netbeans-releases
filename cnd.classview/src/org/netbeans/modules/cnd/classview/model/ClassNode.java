@@ -80,21 +80,23 @@ public class ClassNode extends ObjectNode {
     }
     
     public boolean update(CsmChangeEvent e) {
-        if( super.update(e) ) {
-            return true;
-        }
-        else {
-            for( Iterator iter = e.getNewDeclarations().iterator(); iter.hasNext(); ) {
-                CsmDeclaration decl = (CsmDeclaration) iter.next();
-                if( decl instanceof CsmMember ) {
-                    if( getClazz().equals(((CsmMember) decl).getContainingClass()) ) {
-                        objectChanged();
-                        return true;
+        if (!isDismissed()) {
+            if( super.update(e) ) {
+                return true;
+            }
+            else {
+                for( Iterator iter = e.getNewDeclarations().iterator(); iter.hasNext(); ) {
+                    CsmDeclaration decl = (CsmDeclaration) iter.next();
+                    if( decl instanceof CsmMember ) {
+                        if( getClazz().equals(((CsmMember) decl).getContainingClass()) ) {
+                            objectChanged();
+                            return true;
+                        }
                     }
                 }
             }
-            return false;
         }
+        return false;
     }
     
 }

@@ -21,6 +21,8 @@
 package org.netbeans.modules.cnd.completion.cplusplus.ext;
 
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
+import org.netbeans.modules.cnd.api.model.CsmMacro;
+import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
@@ -199,6 +201,41 @@ public abstract class CsmResultItem
         }
     }
     
+    public static class MacroResultItem extends CsmResultItem {
+        private String macName;
+        private List params;
+        public MacroResultItem(CsmMacro mac) {
+            super(mac);
+            this.macName = mac.getName();
+            this.params = mac.getParameters();
+        }
+
+        private String getName(){
+            return macName;
+        }
+        
+        private List getParams(){
+            return params;
+        }
+
+        public String getItemText() {
+            return getName();
+        }
+        
+        protected CsmPaintComponent.MacroPaintComponent createPaintComponent(){
+            return new CsmPaintComponent.MacroPaintComponent();
+        }
+
+        public Component getPaintComponent(boolean isSelected) {
+            CsmPaintComponent.MacroPaintComponent comp = createPaintComponent();
+            CsmMacro mac = (CsmMacro)getAssociatedObject();
+            comp.setName(getName());
+            comp.setParams(getParams());
+            comp.setSelected(isSelected);
+            return comp;
+        }
+    }
+    
     public abstract static class VariableResultItem extends CsmResultItem {
         
         private String typeName;
@@ -370,8 +407,9 @@ public abstract class CsmResultItem
                     params.add(new ParamStr("", "" , prm.getName(), KEYWORD_COLOR));
                 } else {
                     // XXX may be need full name as the first param
-                    String strFullName = type.getClassifier().getName();
-                    params.add(new ParamStr(strFullName, type.getText() , prm.getName(), getTypeColor(type.getClassifier())));
+                    // FIXUP: too expensive to call getClassifier here!
+                    String strFullName = type.getText();// type.getClassifier().getName();
+                    params.add(new ParamStr(strFullName, type.getText() , prm.getName(), TYPE_COLOR /*getTypeColor(type.getClassifier())*/));
                 }
             }
             // TODO
@@ -819,6 +857,63 @@ public abstract class CsmResultItem
         }
         
     }
+    
+    
+    public static class TypedefResultItem extends CsmResultItem{
+        
+        private CsmTypedef def;
+        private int defDisplayOffset;
+        private boolean isDeprecated;
+        private boolean displayFQN;
+        
+        private static CsmPaintComponent.TypedefPaintComponent defComponent = null;
+        
+        public TypedefResultItem(CsmTypedef def, boolean displayFQN){
+            this(def, 0, displayFQN);
+        }
+        
+        public TypedefResultItem(CsmTypedef def, int defDisplayOffset, boolean displayFQN){
+            super(def);
+            this.def = def;
+            this.defDisplayOffset = defDisplayOffset;
+            this.displayFQN = displayFQN;
+        }
+        
+        
+        protected String getName(){
+            return def.getName();
+        }
+        
+        protected String getReplaceText(){
+            String text = getItemText();
+            if (defDisplayOffset > 0
+                    && defDisplayOffset < text.length()
+                    ) { // Only the last name for inner classes
+                text = text.substring(defDisplayOffset);
+            }
+            return text;
+        }
+        
+        public String getItemText() {
+            return displayFQN ? def.getQualifiedName() : def.getName();
+        }
+        
+        
+        protected CsmPaintComponent.TypedefPaintComponent createTypedefPaintComponent(){
+            return new CsmPaintComponent.TypedefPaintComponent();
+        }
+        
+        public Component getPaintComponent(boolean isSelected) {
+            if (defComponent == null){
+                defComponent = createTypedefPaintComponent();
+            }
+            defComponent.setSelected(isSelected);
+            defComponent.setFormatTypedefName(getName());
+            return defComponent;
+        }
+        
+    }
+
     
     
 //    static class ParamStr {

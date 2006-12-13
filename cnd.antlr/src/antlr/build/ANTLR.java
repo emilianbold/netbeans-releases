@@ -16,6 +16,7 @@ public class ANTLR {
         "antlr/collections",
         "antlr/collections/impl",
         "antlr/debug",
+        "antlr/ASdebug",
         "antlr/debug/misc",
         "antlr/preprocessor"
     };

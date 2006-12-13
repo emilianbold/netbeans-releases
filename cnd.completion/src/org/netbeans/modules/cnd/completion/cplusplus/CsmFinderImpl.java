@@ -19,10 +19,7 @@
 
 package org.netbeans.modules.cnd.completion.cplusplus;
 import org.netbeans.modules.cnd.completion.csm.CsmProjectContentResolver;
-import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
-import org.netbeans.modules.cnd.api.model.CsmVisibility;
-import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -45,7 +42,7 @@ import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
-import org.netbeans.modules.cnd.api.model.util.CsmInheritanceUtilities;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 
 /**
  *
@@ -214,6 +211,47 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
         } finally {
 //            repository.endTrans (false);
         }                
+        return ret;
+    }
+
+    /** Find elements (classes, variables, enumerators) by name and possibly in some namespace
+    * @param nmsp namespace where the elements should be searched for. It can be null
+    * @param begining of the name of the element. The namespace name must be omitted.
+    * @param exactMatch whether the given name is the exact requested name
+    *   of the element or not.
+    * @return list of the matching elements
+    */
+    public List findNamespaceElements(CsmNamespace nmsp, String name, boolean exactMatch) {
+        List ret = new ArrayList();
+
+        CsmProjectContentResolver contResolver = new CsmProjectContentResolver(getCaseSensitive(), getNaturalSort());
+
+        if (csmFile != null && csmFile.getProject() != null) {
+            CsmProject prj = csmFile.getProject();
+            CsmNamespace ns = nmsp == null ? prj.getGlobalNamespace() : nmsp;
+            List classes = contResolver.getNamespaceClassesEnums(ns, name, exactMatch);
+            if (classes != null) {
+                ret.addAll(classes);
+            }
+            classes = contResolver.getNamespaceEnumerators(ns, name, exactMatch);
+            if (classes != null) {
+                ret.addAll(classes);
+            }
+            classes = contResolver.getNamespaceVariables(ns, name, exactMatch);
+            if (classes != null) {
+                ret.addAll(classes);
+            }
+            classes = contResolver.getNamespaceFunctions(ns, name, exactMatch);
+            if (classes != null) {
+                ret.addAll(classes);
+            }
+            if (prj.getGlobalNamespace() != ns) {
+                classes =  contResolver.getLibClassesEnums(name, exactMatch, false);
+                if (classes != null) {
+                    ret.addAll(classes);
+                }
+            }
+        }
         return ret;
     }
 
@@ -634,7 +672,7 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
     }
 
     /** Find fields by name in a given class.
-    * @param contextClass class which defines context
+    * @param contextDeclaration declaration which defines context (class or function)
     * @param c class which is searched for the fields.
     * @param name start of the name of the field
     * @param exactMatch whether the given name of the field is exact
@@ -644,19 +682,19 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
     *   added or not. This should be false when searching for 'this.'
     * @return list of the matching fields
     */    
-    public List findFields(CsmClass contextClass, CsmClass c, String name, boolean exactMatch, boolean staticOnly, boolean inspectOuterClasses) {
+    public List findFields(CsmOffsetableDeclaration contextDeclaration, CsmClass c, String name, boolean exactMatch, boolean staticOnly, boolean inspectOuterClasses, boolean inspectParentClasses) {
         TreeSet ts = naturalSort ? new TreeSet(CsmSortUtilities.NATURAL_MEMBER_NAME_COMPARATOR) : new TreeSet();
         
         // get class variables visible in this method
         CsmClass clazz = c;
         CsmProjectContentResolver contResolver = new CsmProjectContentResolver(getCaseSensitive(), getNaturalSort());
-        CsmVisibility vis = CsmInheritanceUtilities.getContextVisibility(contextClass, clazz);
-        List classFields = contResolver.getFields(clazz, vis, name, staticOnly, exactMatch);
+//        CsmVisibility vis = CsmInheritanceUtilities.getContextVisibility(contextClass, clazz);        
+        List classFields = contResolver.getFields(clazz, contextDeclaration, name, staticOnly, exactMatch, inspectParentClasses);
         return classFields;        
     }
 
     /** Find methods by name in a given class.
-    * @param contextClass class which defines context
+    * @param contextDeclaration declaration which defines context (class or function)
     * @param c class which is searched for the methods.
     * @param name start of the name of the method
     * @param exactMatch whether the given name of the method is exact
@@ -666,11 +704,11 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
     *   added or not. This should be false when searching for 'this.'
     * @return list of the matching methods
     */
-    public List findMethods(CsmClass contextClass, CsmClass c, String name, boolean exactMatch, boolean staticOnly, boolean inspectOuterClasses) {
+    public List findMethods(CsmOffsetableDeclaration contextDeclaration, CsmClass c, String name, boolean exactMatch, boolean staticOnly, boolean inspectOuterClasses, boolean inspectParentClasses) {
         CsmClass clazz = c;
         CsmProjectContentResolver contResolver = new CsmProjectContentResolver(getCaseSensitive(), getNaturalSort());
-        CsmVisibility vis = CsmInheritanceUtilities.getContextVisibility(contextClass, clazz);
-        List classFields = contResolver.getMethods(clazz, vis, name, staticOnly, exactMatch);
+//        CsmVisibility vis = CsmInheritanceUtilities.getContextVisibility(contextClass, clazz);
+        List classFields = contResolver.getMethods(clazz, contextDeclaration, name, staticOnly, exactMatch, inspectParentClasses);
         return classFields;          
     }
 }

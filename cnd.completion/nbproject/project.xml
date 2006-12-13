@@ -126,6 +126,9 @@
                 </dependency>
             </module-dependencies>
             <public-packages>
+                <package>org.netbeans.modules.cnd.completion.cplusplus</package>
+                <package>org.netbeans.modules.cnd.completion.cplusplus.ext</package>
+                <package>org.netbeans.modules.cnd.completion.csm</package>
                 <package>org.netbeans.modules.cnd.completion.spi.dynhelp</package>
             </public-packages>
         </data>

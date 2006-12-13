@@ -57,7 +57,7 @@ public class ProfileNodeProvider {
 		    ConfigurationDescriptor configurationDescriptor,
 		    Configuration configuration) {
 	    GdbProfile profile = (GdbProfile) configuration.getAuxObject(GdbProfile.GDB_PROFILE_ID);
-	    return profile.getSheet();
+	    return profile == null ? null : profile.getSheet();
 	}
     }
 

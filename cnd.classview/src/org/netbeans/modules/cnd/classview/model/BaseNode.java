@@ -32,6 +32,8 @@ import org.netbeans.modules.cnd.modelutil.*;
  */
 public abstract class BaseNode extends AbstractCsmNode implements Comparable {
 
+    private boolean dismissed = false;
+
     public BaseNode() {
         super(Children.LEAF);
     }
@@ -41,12 +43,14 @@ public abstract class BaseNode extends AbstractCsmNode implements Comparable {
     }
 
     public boolean update(CsmChangeEvent e) {
-	for( Enumeration children = getChildren().nodes(); children.hasMoreElements(); ) {
-	    Node child = (Node) children.nextElement();
-	    if( child instanceof BaseNode ) {
-		((BaseNode) child).update(e);
-	    }
-	}
+        if (!isDismissed()) {
+            for( Enumeration children = getChildren().nodes(); children.hasMoreElements(); ) {
+                Node child = (Node) children.nextElement();
+                if( child instanceof BaseNode ) {
+                    ((BaseNode) child).update(e);
+                }
+            }
+        }
         return false;
     }
     
@@ -76,8 +80,17 @@ public abstract class BaseNode extends AbstractCsmNode implements Comparable {
             }
         }
     }
+    
+    protected boolean isDismissed(){
+        return dismissed;
+    }
+
+    protected boolean setDismissed(){
+        return dismissed = true;
+    }
 
     public void dismiss() {
+        setDismissed();
         for( Enumeration children = getChildren().nodes(); children.hasMoreElements(); ) {
             Node child = (Node) children.nextElement();
             if( child instanceof BaseNode ) {

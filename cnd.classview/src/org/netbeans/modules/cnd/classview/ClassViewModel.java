@@ -106,49 +106,61 @@ import org.netbeans.modules.cnd.classview.model.*;
         }
         
         Collection/*<CsmProject>*/ modelProjects = CsmModelAccessor.getModel().projects();
-        Collection/*<CsmProject>*/ modelLibraries = gatherLibs(modelProjects);
         
-        Collection/*<CsmProject>*/ modelAll = new HashSet();
+        final Collection/*<CsmProject>*/ modelAll = new HashSet();
         modelAll.addAll(modelProjects);
-        modelAll.addAll(modelLibraries);
+        if( showLibs ) {
+            Collection/*<CsmProject>*/ modelLibraries = gatherLibs(modelProjects);
+            modelAll.addAll(modelLibraries);
+        }
         
         // remove projects that aren't open (i.e. were closed)
-        Children.Array children = (Children.Array) root.getChildren();
-        List toRemove = new LinkedList();
-        Set remaining = new HashSet();
-        for( Enumeration en = children.nodes() ; en.hasMoreElements(); ) {
-            Object o = en.nextElement();
-            if( o instanceof ProjectNode ) {
-                CsmProject p = ((ProjectNode) o).getProject();
-                if( modelAll.contains(p) ) {
-                    remaining.add(p);
+        final Children children = root.getChildren();
+        children.MUTEX.writeAccess(new Runnable(){
+            public void run() {
+                List toRemove = new LinkedList();
+                Set remaining = new HashSet();
+                for( Enumeration en = children.nodes() ; en.hasMoreElements(); ) {
+                    Object o = en.nextElement();
+                    if( o instanceof ProjectNode ) {
+                        CsmProject p = ((ProjectNode) o).getProject();
+                        if( modelAll.contains(p) ) {
+                            remaining.add(p);
+                        }
+                        else {
+                            toRemove.add(o);
+                        }
+                    }
                 }
-                else {
-                    toRemove.add(o);
+                if( ! toRemove.isEmpty() ) {
+                    Node[] nodes = (Node[]) toRemove.toArray(new Node[toRemove.size()]);
+                    for (int i = 0; i < nodes.length; i++) {
+                        if( nodes[i] instanceof  BaseNode ) {
+                            ((BaseNode) nodes[i]).dismiss();
+                        }
+                        // release Class View project nodes when projects are closed
+                        try {
+                            nodes[i].destroy();
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
+                        }
+                    }
+                    children.remove(nodes);
+                }
+
+                List toAdd = new LinkedList();
+                for( Iterator iter = modelAll.iterator(); iter.hasNext(); ) {
+                    CsmProject p = (CsmProject) iter.next();
+                    if( ! remaining.contains(p) ) {
+                        toAdd.add(new ProjectNode(p));
+                    }
+                }
+
+                if( ! toAdd.isEmpty() ) {
+                    children.add( (Node[]) toAdd.toArray(new Node[toAdd.size()]) );
                 }
             }
-        }
-        if( ! toRemove.isEmpty() ) {
-            Node[] nodes = (Node[]) toRemove.toArray(new Node[toRemove.size()]);
-            for (int i = 0; i < nodes.length; i++) {
-                if( nodes[i] instanceof  BaseNode ) {
-                    ((BaseNode) nodes[i]).dismiss();
-                }
-            }
-            children.remove(nodes);
-        }
-        
-        List toAdd = new LinkedList();
-        for( Iterator iter = modelAll.iterator(); iter.hasNext(); ) {
-            CsmProject p = (CsmProject) iter.next();
-            if( ! remaining.contains(p) ) {
-                toAdd.add(new ProjectNode(p));
-            }
-        }
-        
-        if( ! toAdd.isEmpty() ) {
-            children.add( (Node[]) toAdd.toArray(new Node[toAdd.size()]) );
-        }
+        });
     }
     
     public void scheduleUpdate(CsmChangeEvent e) {
@@ -173,9 +185,9 @@ import org.netbeans.modules.cnd.classview.model.*;
             }
         }
 	else {
-	    for( Enumeration children = node.getChildren().nodes(); children.hasMoreElements(); ) {
-		update((Node) children.nextElement(), e);
-	    }
+       	    for( Enumeration children = node.getChildren().nodes(); children.hasMoreElements(); ) {
+               	update((Node) children.nextElement(), e);
+            }
 	}
     }
     

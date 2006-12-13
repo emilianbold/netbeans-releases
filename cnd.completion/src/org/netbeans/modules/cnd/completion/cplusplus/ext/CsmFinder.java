@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 
 /**
 * Java completion finder
@@ -56,6 +57,15 @@ public interface CsmFinder {
     */
     public List findClasses(CsmNamespace nmsp, String name, boolean exactMatch);
 
+    /** Find elements (classes, variables, enumerators) by name and possibly in some namespace
+    * @param nmsp namespace where the elements should be searched for. It can be null
+    * @param begining of the name of the element. The namespace name must be omitted.
+    * @param exactMatch whether the given name is the exact requested name
+    *   of the element or not.
+    * @return list of the matching elements
+    */
+    public List findNamespaceElements(CsmNamespace nmsp, String name, boolean exactMatch);
+
 //    /** Find fields by name in a given class.
 //    * @param c class which is searched for the fields.
 //    * @param name start of the name of the field
@@ -83,7 +93,7 @@ public interface CsmFinder {
 //                            boolean staticOnly, boolean inspectOuterClasses);
 
     /** Find fields by name in a given class.
-    * @param contextClass class which defines context
+    * @param contextDeclaration declaration which defines context (class or function)
     * @param c class which is searched for the fields.
     * @param name start of the name of the field
     * @param exactMatch whether the given name of the field is exact
@@ -93,11 +103,11 @@ public interface CsmFinder {
     *   added or not. This should be false when searching for 'this.'
     * @return list of the matching fields
     */
-    public List findFields(CsmClass contextClass, CsmClass c, String name, boolean exactMatch,
-                           boolean staticOnly, boolean inspectOuterClasses);
+    public List findFields(CsmOffsetableDeclaration contextDeclaration, CsmClass c, String name, boolean exactMatch,
+                           boolean staticOnly, boolean inspectOuterClasses, boolean inspectParentClasses);
 
     /** Find methods by name in a given class.
-    * @param contextClass class which defines context
+    * @param contextDeclaration declaration which defines context (class or function)
     * @param c class which is searched for the methods.
     * @param name start of the name of the method
     * @param exactMatch whether the given name of the method is exact
@@ -107,6 +117,6 @@ public interface CsmFinder {
     *   added or not. This should be false when searching for 'this.'
     * @return list of the matching methods
     */
-    public List findMethods(CsmClass contextClass, CsmClass c, String name, boolean exactMatch,
-                            boolean staticOnly, boolean inspectOuterClasses);    
+    public List findMethods(CsmOffsetableDeclaration contextDeclaration, CsmClass c, String name, boolean exactMatch,
+                            boolean staticOnly, boolean inspectOuterClasses, boolean inspectParentClasses);    
 }

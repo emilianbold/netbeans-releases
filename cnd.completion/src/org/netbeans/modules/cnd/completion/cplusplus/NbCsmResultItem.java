@@ -20,6 +20,8 @@
 package org.netbeans.modules.cnd.completion.cplusplus;
 
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
+import org.netbeans.modules.cnd.api.model.CsmMacro;
+import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.modelutil.CsmPaintComponent;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionExpression;
@@ -80,6 +82,18 @@ public abstract class NbCsmResultItem extends CsmResultItem{
 
         protected CsmPaintComponent.FieldPaintComponent createPaintComponent(){
             return new NbCsmPaintComponent.NbFileLocalVariablePaintComponent();
+        }
+        
+    }   
+
+    public static class NbMacroResultItem extends MacroResultItem { 
+        
+        public NbMacroResultItem(CsmMacro mac) {
+            super(mac);
+        }        
+
+        protected CsmPaintComponent.MacroPaintComponent createPaintComponent(){
+            return new NbCsmPaintComponent.NbMacroPaintComponent();
         }
         
     }   
@@ -194,4 +208,20 @@ public abstract class NbCsmResultItem extends CsmResultItem{
             return new NbCsmPaintComponent.NbUnionPaintComponent();
         }
     }
+
+
+    public static class NbTypedefResultItem extends TypedefResultItem {
+        public NbTypedefResultItem(CsmTypedef def, boolean displayFQN) {
+            this(def, 0, displayFQN);
+        }
+        
+        public NbTypedefResultItem(CsmTypedef def, int classDisplayOffset, boolean displayFQN) {
+            super(def, classDisplayOffset, displayFQN);
+        }
+        
+        protected CsmPaintComponent.TypedefPaintComponent createTypedefPaintComponent() {
+            return new NbCsmPaintComponent.NbTypedefPaintComponent();
+        }
+    }
+
 }

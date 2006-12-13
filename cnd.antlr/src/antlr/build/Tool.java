@@ -1,5 +1,7 @@
 package antlr.build;
 
+import antlr.Utils;
+
 import java.io.*;
 import java.lang.reflect.*;
 
@@ -74,14 +76,13 @@ public class Tool {
         Method m = null;
         Object appObj = null;
         try {
-            c = Class.forName(app);
-            appObj = c.newInstance();
+            appObj = Utils.createInstanceOf(app);
         }
         catch (Exception e) {
             // try again with antlr.build.app
             try {
                 if ( !app.startsWith("antlr.build.") ) {
-                    c = Class.forName("antlr.build."+app);
+                    c = Utils.loadClass("antlr.build."+app);
                 }
                 error("no such application "+app, e);
             }

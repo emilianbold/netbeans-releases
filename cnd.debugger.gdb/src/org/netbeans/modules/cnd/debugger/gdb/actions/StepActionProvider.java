@@ -25,17 +25,13 @@
 package org.netbeans.modules.cnd.debugger.gdb.actions;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 import org.openide.util.RequestProcessor;
 
 import org.netbeans.api.debugger.ActionsManager;
-import org.netbeans.spi.debugger.ActionsProvider;
-import org.netbeans.spi.debugger.ActionsProviderListener;
 import org.netbeans.spi.debugger.ContextProvider;
 
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
@@ -47,10 +43,7 @@ import org.netbeans.modules.cnd.debugger.gdb.GdbDebuggerImpl;
  * Step Out, and RunToCursor (the last two are not implemented yet). 
  * 
  */
-public class StepActionProvider extends ActionsProvider /*implements Executor*/ {
-    
-    private ContextProvider lookupProvider;
-    private GdbDebuggerImpl debuggerImpl;
+public class StepActionProvider extends GdbDebuggerActionProvider {
     
     /** 
      * Creates a new instance of StepActionProvider
@@ -58,10 +51,7 @@ public class StepActionProvider extends ActionsProvider /*implements Executor*/ 
      * @param lookupProvider a context provider
      */
     public StepActionProvider(ContextProvider lookupProvider) {
-        debuggerImpl = (GdbDebuggerImpl) lookupProvider.lookupFirst
-                (null, GdbDebugger.class);
-        //super (debuggerImpl);
-        this.lookupProvider = lookupProvider;
+        super(lookupProvider);
     }
     
     // ActionProviderSupport ...................................................
@@ -71,7 +61,7 @@ public class StepActionProvider extends ActionsProvider /*implements Executor*/ 
      *
      * @return set of actions supported by this ActionsProvider
      */
-    public Set getActions () {
+    public Set getActions() {
         return new HashSet (Arrays.asList (new Object[] {
             ActionsManager.ACTION_STEP_INTO,
             ActionsManager.ACTION_STEP_OUT,
@@ -95,27 +85,22 @@ public class StepActionProvider extends ActionsProvider /*implements Executor*/ 
      * @param action an action which has been called
      */    
     public void runAction(final Object action) {
-        if (debuggerImpl != null) {
-            synchronized (debuggerImpl.LOCK) {
-                //System.err.println("GDB StepActionProvider: runAction("+action+")"); // DEBUG
+        if (getDebuggerImpl() != null) {
+            synchronized (getDebuggerImpl().LOCK) {
                 if (action == ActionsManager.ACTION_STEP_INTO) {
-                    //System.err.println("GDB StepActionProvider: runAction: action == ActionsManager.ACTION_STEP_INTO"); // DEBUG
-                    debuggerImpl.stepInto();
+                    getDebuggerImpl().stepInto();
                     return;
                 }
                 if (action == ActionsManager.ACTION_STEP_OUT) {
-                    //System.err.println("GDB StepActionProvider: runAction: action == ActionsManager.ACTION_STEP_OUT"); // DEBUG
-                    debuggerImpl.stepOut();
+                    getDebuggerImpl().stepOut();
                     return;
                 }
                 if (action == ActionsManager.ACTION_STEP_OVER) {
-                    //System.err.println("GDB StepActionProvider: runAction: action == ActionsManager.ACTION_STEP_OVER"); // DEBUG
-                    debuggerImpl.stepOver();
+                    getDebuggerImpl().stepOver();
                     return;
                 }
                 if (action == ActionsManager.ACTION_CONTINUE) {
-                    //System.err.println("GDB StepActionProvider: runAction: action == ActionsManager.ACTION_CONTINUE"); // DEBUG
-                    debuggerImpl.resume();
+                    getDebuggerImpl().resume();
                     return;
                 }
             }
@@ -132,8 +117,7 @@ public class StepActionProvider extends ActionsProvider /*implements Executor*/ 
      *        done.
      * @since 1.5
      */
-    public void postAction(final Object action,
-                            final Runnable actionPerformedNotifier) {
+    public void postAction(final Object action, final Runnable actionPerformedNotifier) {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 try {
@@ -143,49 +127,11 @@ public class StepActionProvider extends ActionsProvider /*implements Executor*/ 
                 }
             }
         });
-    }
-    
-    /**
-     * Should return a state of given action.
-     *
-     * @param action action
-     */
-    public boolean isEnabled(Object action) {
-        if (debuggerImpl != null) {
-            synchronized (debuggerImpl.LOCK) {
-                return true;
-            }
-        }
-        return false;
-    }
-    
-    /**
-     * Adds property change listener.
-     *
-     * @param l new listener.
-     */
-    public void addActionsProviderListener(ActionsProviderListener l) {
-        
-    }
-    
-    /**
-     * Removes property change listener.
-     *
-     * @param l removed listener.
-     */
-    public void removeActionsProviderListener(ActionsProviderListener l) {
-        
-    }
-        
-    /* Not implemented yet. 
-    protected void checkEnabled (int debuggerState) {
+    }    
+    protected void checkEnabled(String debuggerState) {
         Iterator i = getActions().iterator();
-        while (i.hasNext())
-            setEnabled (
-                i.next(),
-                (debuggerImpl.getState() == debuggerImpl.STATE_STOPPED) 
-                && (debuggerImpl.getCurrentThread() != null)
-            );
+        while (i.hasNext()) {
+            setEnabled(i.next(), debuggerState == getDebuggerImpl().STATE_STOPPED);
+        }
     }
-    */
 }

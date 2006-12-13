@@ -21,7 +21,6 @@ package org.netbeans.modules.cnd.completion.cplusplus.ext;
 
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
-import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
@@ -46,6 +45,8 @@ import org.netbeans.editor.TokenContextPath;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.editor.ext.ExtSyntaxSupport.DeclarationTokenProcessor;
 import org.netbeans.editor.ext.ExtSyntaxSupport.VariableMapTokenProcessor;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.completion.csm.CompletionUtilities;
 import org.netbeans.modules.cnd.editor.cplusplus.CCTokenContext;
 
@@ -107,6 +108,8 @@ abstract public class CsmSyntaxSupport extends ExtSyntaxSupport {
     
     protected void documentModified(DocumentEvent evt) {
         super.documentModified(evt);
+        classFieldMaps.clear();
+        fileVariableMaps.clear();        
         if (javaImport != null) {
             javaImport.documentModifiedAtPosition(evt.getOffset(), getDocument());
         }
@@ -204,7 +207,8 @@ abstract public class CsmSyntaxSupport extends ExtSyntaxSupport {
             if (isUnknownInclude(className)) return null;    
             List clsList = getFinder().findClasses(null, className, true);
             if (clsList != null && clsList.size() > 0) {
-                if (clsList.size() > 0) { // more matching classes
+                if (clsList.size() > 0 &&
+                    (clsList.get(0) instanceof CsmClass)) { // more matching classes
                     ret = (CsmClass)clsList.get(0); // get the first one
                 }
             }
@@ -255,6 +259,11 @@ abstract public class CsmSyntaxSupport extends ExtSyntaxSupport {
         return CompletionUtilities.findClassOnPosition(getDocument(), pos);
     }
 
+    /** Get the class or function definition that belongs to the given position */
+    public CsmOffsetableDeclaration getDefinition(int pos) {
+        return CompletionUtilities.findFunDefinitionOrClassOnPosition(getDocument(), pos);
+    }
+    
     public boolean isStaticBlock(int pos) {
         return false;
     }
@@ -479,7 +488,7 @@ abstract public class CsmSyntaxSupport extends ExtSyntaxSupport {
         int cnt = methodList.size();
         for (int i = 0; i < cnt; i++) {
             // Use constructor conversion to allow to use it too for the constructors
-            CsmMethod m = (CsmMethod)methodList.get(i);
+            CsmFunction m = (CsmFunction)methodList.get(i);
             CsmParameter[] methodParms = (CsmParameter[]) m.getParameters().toArray(new CsmParameter[0]);
             if (methodParms.length == parmTypeCnt
             || (acceptMoreParameters && methodParms.length >= parmTypeCnt)
@@ -949,17 +958,17 @@ abstract public class CsmSyntaxSupport extends ExtSyntaxSupport {
     *   to return the appropriate instances.
     */
     public Object findType(String varName, int varPos) {
-        Object type = null;
+        CsmType type = null;
         Map varMap = getLocalVariableMap(varPos); // first try local vars
         if (varMap != null) {
-            type = varMap.get(varName);
+            type = (CsmType) varMap.get(varName);
         }
 
         // then try class fields
         if (type == null) {
             varMap = getClassFieldMap(varPos); // try class fields
             if (varMap != null) {
-                type = varMap.get(varName);
+                type = (CsmType) varMap.get(varName);
             }
         }       
 
@@ -967,7 +976,7 @@ abstract public class CsmSyntaxSupport extends ExtSyntaxSupport {
         if (type == null) {
             varMap = getFileVariableMap(varPos); // try file local vars
             if (varMap != null) {
-                type = varMap.get(varName);
+                type = (CsmType) varMap.get(varName);
             }
         }
         
@@ -975,7 +984,7 @@ abstract public class CsmSyntaxSupport extends ExtSyntaxSupport {
         if (type == null) {
             varMap = getGlobalVariableMap(varPos); // try global vars
             if (varMap != null) {
-                type = varMap.get(varName);
+                type = (CsmType) varMap.get(varName);
             }
         }
 
@@ -1038,8 +1047,11 @@ abstract public class CsmSyntaxSupport extends ExtSyntaxSupport {
         }
         Map res = new StringMap();
         for (Iterator it = vars.iterator(); it.hasNext();) {
-            CsmVariable elem = (CsmVariable) it.next();
-            res.put(elem.getName(), elem.getType());
+            Object elem = it.next();
+            if (elem instanceof CsmVariable) {
+                CsmVariable var = (CsmVariable) elem;
+                res.put(var.getName(), var.getType());
+            }
         }
         return res;
     }

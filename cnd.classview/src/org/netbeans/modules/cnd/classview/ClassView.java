@@ -39,7 +39,7 @@ import org.netbeans.modules.cnd.classview.resources.I18n;
  * View as such
  * @author Vladimir Kvasihn
  */
-public class ClassView extends JComponent implements ExplorerManager.Provider, CsmModelListener {
+public class ClassView extends JComponent implements ExplorerManager.Provider, CsmModelListener, CsmModelStateListener {
 
     /** composited view */
     protected BeanTreeView view;
@@ -84,6 +84,9 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, C
     public void shutdown() {
         if( Diagnostic.DEBUG ) Diagnostic.trace(">>> ClassView is shutting down");
         addRemoveListeners(false);
+        if( model != null ) {
+            model.dispose();
+        }
     }
     
     private void addRemoveListeners(boolean add) {
@@ -111,6 +114,12 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, C
         if( Diagnostic.DEBUG ) Diagnostic.trace("\n@@@ PROJECT CLOSEED " + project);
 	model.updateProjects();
 	setupRootContext(model.getRoot());
+        // release Class View project nodes when projects are closed
+        if (CsmModelAccessor.getModel().projects().size()==0){
+            model.dispose();
+            model = new ClassViewModel();
+            setupRootContext(createEmptyRoot());
+        }
     }
     
     public void modelChanged(CsmChangeEvent e) {
@@ -120,8 +129,22 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, C
 	model.scheduleUpdate(e);
     }
     
+    public void modelStateChanged(CsmModelState newState, CsmModelState oldState) {
+        if( newState == CsmModelState.OFF ) {
+            shutdown();
+        }
+        else if( newState == CsmModelState.ON ) {
+            startup();
+        }
+    }
+    
     
     private void startFillingModel() {
+	
+	if( CsmModelAccessor.getModel().projects().isEmpty() ) {
+	    return;
+	}
+		
         synchronized(this) {
             if( Diagnostic.DEBUG ) Diagnostic.trace("startFillingModel; fillingModel=" + fillingModel + " this.hash=" + this.hashCode());
             if( fillingModel ) {
@@ -132,14 +155,13 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, C
             if( Diagnostic.DEBUG ) Diagnostic.trace("  fillingModel set to true");
         }
         
-        // We are in event queue now.
-        // It's ok to call Filler.run() here since it creates only top-level nodes
-        // (which correspond to open projects).
-        // These nodes should appear immediately.
-        // This is this nodes' responsibility to use threads for time-expensive activity
         setupRootContext(CVUtil.createLoadingRoot());
+        // We are in event queue now.
+	// So though Filler.run seems not to be rather light 
+	// we better launch it in a thread!
         ModelFiller filler = new ModelFiller();
-        filler.run();
+        //filler.run();
+	CsmModelAccessor.getModel().enqueue(filler, "Class View initial filler");
         
 //        SwingUtilities.invokeLater(new Runnable() {
 //            public void run() {
@@ -182,13 +204,12 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, C
             model = new ClassViewModel();
 
             long t = System.currentTimeMillis();
-            
             final Node root = model.getRoot();
-            
+                    
             t = System.currentTimeMillis() - t;
             if( Diagnostic.DEBUG ) Diagnostic.trace("#### Model filling took " + t + " ms");
             
-            synchronized(this) {
+            synchronized(ClassView.this) {
                 fillingModel = false;
                 if( Diagnostic.DEBUG ) Diagnostic.trace("fillingModel set to false");
             }

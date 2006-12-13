@@ -87,7 +87,6 @@ public class KillActionProvider extends ActionsProvider {
         if (debuggerImpl != null) {
             synchronized (debuggerImpl.LOCK) {
                 if (action == ActionsManager.ACTION_KILL) {
-                    //System.err.println("GDB KillActionProvider: runAction: action == ActionsManager.ACTION_KILL"); // DEBUG
                     debuggerImpl.finish();
                     return;
                 }

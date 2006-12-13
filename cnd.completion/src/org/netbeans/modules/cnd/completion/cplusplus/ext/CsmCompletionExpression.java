@@ -110,7 +110,7 @@ public class CsmCompletionExpression {
     public static final int ANNOTATION = 20;
     public static final int ANNOTATION_OPEN = 21;
 
-    /** 'import' keyword */
+    /** '#include' keyword */
     public static final int CPPINCLUDE = 22;
 
     /** 'case' keyword */
@@ -483,7 +483,7 @@ public class CsmCompletionExpression {
         case ANNOTATION_OPEN:
             return "ANNOTATION_OPEN"; // NOI18N
         case CPPINCLUDE:
-            return "IMPORT"; // NOI18N
+            return "INCLUDE"; // NOI18N
         case CASE:
             return "CASE"; // NOI18N
         default:

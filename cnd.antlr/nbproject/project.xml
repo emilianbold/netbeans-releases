@@ -8,6 +8,7 @@
             <module-dependencies/>
             <public-packages>
                 <package>antlr</package>
+                <package>antlr.ASdebug</package>
                 <package>antlr.collections</package>
                 <package>antlr.collections.impl</package>
                 <package>antlr.debug</package>

@@ -47,7 +47,7 @@ public class MakeCallerCurrentActionProvider extends ActionsProviderSupport impl
         debugger.addPropertyChangeListener(GdbDebugger.PROP_CURRENT_CALL_STACK_FRAME, this);
     }
     
-    public Set getActions () {
+    public Set getActions() {
         return Collections.singleton(ActionsManager.ACTION_MAKE_CALLER_CURRENT);
     }
 
@@ -58,7 +58,7 @@ public class MakeCallerCurrentActionProvider extends ActionsProviderSupport impl
 	}
     }
     
-    protected void checkEnabled (int debuggerState) {
+    protected void checkEnabled(String debuggerState) {
         if (debuggerState == debugger.STATE_STOPPED) {
 	    int i = getCurrentCallStackFrameIndex(debugger);
 	    setEnabled(ActionsManager.ACTION_MAKE_CALLER_CURRENT, i < (debugger.getStackDepth() - 1));

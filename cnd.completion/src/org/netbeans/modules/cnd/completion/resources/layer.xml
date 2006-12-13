@@ -38,18 +38,42 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="text">
             <folder name="x-c++">
                 <folder name="HyperlinkProviders">
-                    <file name="CCHyperlinkProvider.instance">
+                    <file name="CsmHyperlinkProvider.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.completion.cplusplus.hyperlink.CsmHyperlinkProvider"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider"/>
                     </file>
+                    <file name="CsmIncludeHyperlinkProvider.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.completion.cplusplus.hyperlink.CsmIncludeHyperlinkProvider"/>
+                        <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider"/>
+                    </file>
+                </folder>
+                <folder name="Popup">
+                    <folder name="goto">
+                        <file name="org-netbeans-modules-cnd-completion-cplusplus-CCGoToDeclarationAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Edit/org.netbeans.modules.cnd.completion-cplusplus-CCGoToDeclarationAction.instance"/>
+                        </file>
+                        <attr name="org-netbeans-modules-cnd-completion-cplusplus-CCGoToDeclarationAction.shadow/goto" boolvalue="true"/>
+                    </folder>
                 </folder>
             </folder>
             <folder name="x-c">
                 <folder name="HyperlinkProviders">
-                    <file name="CCHyperlinkProvider.instance">
+                    <file name="CsmHyperlinkProvider.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.completion.cplusplus.hyperlink.CsmHyperlinkProvider"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider"/>
                     </file>
+                    <file name="CsmIncludeHyperlinkProvider.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.completion.cplusplus.hyperlink.CsmIncludeHyperlinkProvider"/>
+                        <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider"/>
+                    </file>                    
+                </folder>
+                <folder name="Popup">
+                    <folder name="goto">
+                        <file name="org-netbeans-modules-cnd-completion-cplusplus-CCGoToDeclarationAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Edit/org.netbeans.modules.cnd.completion-cplusplus-CCGoToDeclarationAction.instance"/>
+                        </file>
+                        <attr name="org-netbeans-modules-cnd-completion-cplusplus-CCGoToDeclarationAction.shadow/goto" boolvalue="true"/>
+                    </folder>
                 </folder>
             </folder>            
         </folder>
