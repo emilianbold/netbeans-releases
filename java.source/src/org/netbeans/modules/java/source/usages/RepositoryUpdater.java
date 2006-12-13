@@ -1153,11 +1153,14 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         private File root;
 
         public LazyFileList (final File root) {
-            assert root != null && root.isDirectory();
+            assert root != null;
             this.root = root;
         }
 
         public Iterator<File> iterator() {
+            if (!root.exists()) {
+                return Collections.<File>emptySet().iterator();
+            }
             return new It (this.root);
         }
 
