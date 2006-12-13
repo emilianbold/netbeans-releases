@@ -37,7 +37,7 @@
 --%>
 
 <%-- completion for body HTML endtag --%>
-<%--CC
+<%--
 <body></b|
 ...
 <body></body>
