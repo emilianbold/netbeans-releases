@@ -113,17 +113,18 @@ public class JSFRenamePlugin implements RefactoringPlugin {
                     treePathHandle = (TreePathHandle)element;
             
             if (treePathHandle != null && treePathHandle.getKind() == Kind.CLASS){
-                CompilationInfo info = refactoring.getContext().lookup(CompilationInfo.class);
-                Element el = treePathHandle.resolveElement(info);
-                TypeElement type = (TypeElement) el;
-                String oldFQN = type.getQualifiedName().toString();
-                String newFQN = renameClass(oldFQN, refactoring.getNewName());
                 WebModule wm = WebModule.getWebModule(treePathHandle.getFileObject());
-                List <Occurrences.OccurrenceItem> items = Occurrences.getAllOccurrences(wm, oldFQN, newFQN);
-                for (Occurrences.OccurrenceItem item : items) {
-                    refactoringElements.add(refactoring, new JSFConfigRenameClassElement(item));
+                if (wm != null){
+                    CompilationInfo info = refactoring.getContext().lookup(CompilationInfo.class);
+                    Element el = treePathHandle.resolveElement(info);
+                    TypeElement type = (TypeElement) el;
+                    String oldFQN = type.getQualifiedName().toString();
+                    String newFQN = renameClass(oldFQN, refactoring.getNewName());
+                    List <Occurrences.OccurrenceItem> items = Occurrences.getAllOccurrences(wm, oldFQN, newFQN);
+                    for (Occurrences.OccurrenceItem item : items) {
+                        refactoringElements.add(refactoring, new JSFConfigRenameClassElement(item));
+                    }
                 }
-
             }
 
             semafor.set(null);
