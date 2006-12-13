@@ -147,11 +147,26 @@ public abstract class EditorContext {
     public abstract int getCurrentLineNumber();
 
     /**
+     * Returns number of line most recently selected in editor or <code>-1</code>.
+     *
+     * @return number of line most recently selected in editor or <code>-1</code>
+     */
+    public abstract int getMostRecentLineNumber();
+
+    /**
      * Returns URL of source currently selected in editor or empty string.
      *
      * @return URL of source currently selected in editor or empty string
      */
     public abstract String getCurrentURL();
+    
+    /**
+     *  Return the most recent URL or empty string. The difference between this and getCurrentURL()
+     *  is that this one will return a URL when the editor has lost focus.
+     *
+     *  @return url in string form
+     */
+    public abstract String getMostRecentURL();
 
     /**
      * Returns name of function currently selected in editor or empty string.
@@ -185,6 +200,13 @@ public abstract class EditorContext {
      * @return The MIME type of the current file
      */
     public abstract String getCurrentMIMEType();
+    
+    /**
+     * Get the MIME type of the most recently selected file.
+     *
+     * @return The MIME type of the most recent selected file
+     */
+    public abstract String getMostRecentMIMEType();
     
     /**
      * Adds a property change listener.

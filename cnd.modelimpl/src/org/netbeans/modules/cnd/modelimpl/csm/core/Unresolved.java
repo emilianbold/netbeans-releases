@@ -40,7 +40,7 @@ public class Unresolved {
 
     public class UnresolvedClass extends ClassEnumBase implements CsmClass {
         public UnresolvedClass(String name) {
-            super(CsmClass.Kind.CLASS, name, unresolvedNamespace, unresolvedFile, 0, 0, null);
+            super(CsmClass.Kind.CLASS, name, unresolvedNamespace, unresolvedFile, null, null);
             register();
         }
         public boolean isTemplate() {

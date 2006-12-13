@@ -1,7 +1,7 @@
 package antlr;
 
 /* ANTLR Translator Generator
- * Project led by Terence Parr at http://www.jGuru.com
+ * Project led by Terence Parr at http://www.cs.usfca.edu
  * Software rights: http://www.antlr.org/license.html
  *
  * $Id$
@@ -11,9 +11,7 @@ import java.util.Hashtable;
 
 import antlr.collections.impl.BitSet;
 
-import java.io.IOException;
-
-public abstract class CharScanner implements TokenStream {
+public abstract class CharScanner extends MatchExceptionState implements TokenStream {
     static final char NO_CHAR = 0;
     public static final char EOF_CHAR = (char)-1;
     protected ANTLRStringBuffer text; // text of current token
@@ -100,15 +98,19 @@ public abstract class CharScanner implements TokenStream {
 
     /** Consume chars until one matches the given char */
     public void consumeUntil(int c) throws CharStreamException {
-        while (LA(1) != EOF_CHAR && LA(1) != c) {
+        char LA1 = LA(1);
+        while (LA1 != EOF_CHAR && LA1 != c) {
             consume();
+            LA1 = LA(1);
         }
     }
 
     /** Consume chars until one matches the given set */
     public void consumeUntil(BitSet set) throws CharStreamException {
-        while (LA(1) != EOF_CHAR && !set.member(LA(1))) {
+        char LA1 = LA(1);
+        while (LA1 != EOF_CHAR && !set.member(LA1)) {
             consume();
+            LA1 = LA(1);
         }
     }
 
@@ -169,10 +171,16 @@ public abstract class CharScanner implements TokenStream {
             return toLower(inputState.input.LA(i));
         }
     }
+    
+    // Created to avoid reflection usage
+    // Can be overridden later
+    protected Token createToken(int type) throws InstantiationException, IllegalAccessException {
+        return (Token)tokenObjectClass.newInstance();
+    }
 
     protected Token makeToken(int t) {
         try {
-            Token tok = (Token)tokenObjectClass.newInstance();
+            Token tok = createToken(t);
             tok.setType(t);
             tok.setColumn(inputState.tokenStartColumn);
             tok.setLine(inputState.tokenStartLine);
@@ -185,13 +193,13 @@ public abstract class CharScanner implements TokenStream {
         catch (IllegalAccessException iae) {
             panic("Token class is not accessible" + tokenObjectClass);
         }
-        return Token.badToken;
+        return TokenImpl.badToken;
     }
 
     public int mark() {
         return inputState.input.mark();
     }
-
+    
     public void match(char c) throws MismatchedCharException, CharStreamException {
         if (LA(1) != c) {
             throw new MismatchedCharException(LA(1), c, false, this);
@@ -256,7 +264,7 @@ public abstract class CharScanner implements TokenStream {
      */
     public void panic() {
         System.err.println("CharScanner: panic");
-        System.exit(1);
+        Utils.error("");
     }
 
     /** This method is executed by ANTLR internally when it detected an illegal
@@ -271,7 +279,7 @@ public abstract class CharScanner implements TokenStream {
      */
     public void panic(String s) {
         System.err.println("CharScanner; panic: " + s);
-        System.exit(1);
+        Utils.error(s);
     }
 
     /** Parser error-reporting function can be overridden in subclass */
@@ -334,7 +342,7 @@ public abstract class CharScanner implements TokenStream {
 
     public void setTokenObjectClass(String cl) {
         try {
-            tokenObjectClass = Class.forName(cl);
+            tokenObjectClass = Utils.loadClass(cl);
         }
         catch (ClassNotFoundException ce) {
             panic("ClassNotFoundException: " + cl);

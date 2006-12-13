@@ -1,7 +1,7 @@
 package antlr;
 
 /* ANTLR Translator Generator
- * Project led by Terence Parr at http://www.jGuru.com
+ * Project led by Terence Parr at http://www.cs.usfca.edu
  * Software rights: http://www.antlr.org/license.html
  *
  * $Id$
@@ -33,6 +33,8 @@ class ParserGrammar extends Grammar {
         // if debugging, choose the debugging version of the parser
         if (debuggingOutput)
             return "debug.LLkDebuggingParser";
+        if (!MatchExceptionState.throwRecExceptions)
+            return "LLkParserNoEx";
         return "LLkParser";
     }
 

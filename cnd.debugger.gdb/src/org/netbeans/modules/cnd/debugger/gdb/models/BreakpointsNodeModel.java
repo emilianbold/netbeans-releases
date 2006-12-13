@@ -84,16 +84,23 @@ public class BreakpointsNodeModel implements NodeModel {
         } else if (o instanceof FunctionBreakpoint) {
             FunctionBreakpoint b = (FunctionBreakpoint) o;
             String className = "";
-            String[] fs = null; // XXX - Unimplemented
-            if (fs.length > 0) {
-                className = fs[0];
-            }
+            //NM Commented out code below, because it leads to NPE
+            // String[] fs = null; // XXX - Unimplemented
+            // if (fs.length > 0) {
+            //     className = fs[0];
+            // }
             if (b.getFunctionName().equals("")) {
                 return bold(b, NbBundle.getMessage(BreakpointsNodeModel.class,
                         "CTL_All_Functions_Breakpoint", getShort(className)));
             } else {
-                return bold(b, NbBundle.getMessage(BreakpointsNodeModel.class,
-                        "CTL_Function_Breakpoint", getShort(className), b.getFunctionName()));
+		String clazz = getShort(className);
+		if (clazz != null && clazz.length() > 0) {
+		    return bold(b, NbBundle.getMessage(BreakpointsNodeModel.class,
+			"CTL_Function_Breakpoint_With_Class", getShort(className), b.getFunctionName()));
+		} else {
+		    return bold(b, NbBundle.getMessage(BreakpointsNodeModel.class,
+			"CTL_Function_Breakpoint", b.getFunctionName()));
+		}
             }
         } else {
             throw new UnknownTypeException (o);
@@ -108,15 +115,16 @@ public class BreakpointsNodeModel implements NodeModel {
         } else if (o instanceof FunctionBreakpoint) {
             FunctionBreakpoint b = (FunctionBreakpoint) o;
             String className = "";
-            String[] fs = null; // XXX - Unimplemented
-            if (fs.length > 0) {
-                className = fs [0];
-            }
+            //NM Commented out code below, because it leads to NPE
+            // String[] fs = null; // XXX - Unimplemented
+            // if (fs.length > 0) {
+            //     className = fs [0];
+            // }
             if (b.getFunctionName().equals("")) { // NOI18N
                 return NbBundle.getMessage(BreakpointsNodeModel.class,
                         "CTL_All_Functions_Breakpoint", className); // NOI18N
             } else {
-                return NbBundle.getMessage(BreakpointsNodeModel.class, "CTL_Method_Breakpoint", // NOI18N
+                return NbBundle.getMessage(BreakpointsNodeModel.class, "CTL_Function_Breakpoint", // NOI18N
                         className, b.getFunctionName());
             }
         } else {

@@ -35,6 +35,8 @@ import org.netbeans.editor.ext.CompletionQuery;
 import org.netbeans.editor.ext.ExtUtilities;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.editor.NbEditorUtilities;
@@ -47,7 +49,7 @@ public class CompletionUtilities {
 
 
     public static List/*<CsmDeclaration*/ findFunctionLocalVariables(BaseDocument doc, int offset) {
-        CsmFile file = CsmUtilities.getCsmFile(doc);
+        CsmFile file = CsmUtilities.getCsmFile(doc, true);
         CsmContext context = CsmOffsetResolver.findContext(file, offset);
         return CsmContextUtilities.findFunctionLocalVariables(context);
     }
@@ -62,7 +64,7 @@ public class CompletionUtilities {
     }
     
     public static List/*<CsmDeclaration*/ findFileVariables(BaseDocument doc, int offset) {
-        CsmFile file = CsmUtilities.getCsmFile(doc);
+        CsmFile file = CsmUtilities.getCsmFile(doc, true);
         CsmContext context = CsmOffsetResolver.findContext(file, offset);
         return CsmContextUtilities.findFileLocalVariables(context);
     }
@@ -75,13 +77,25 @@ public class CompletionUtilities {
         return CsmContextUtilities.findGlobalVariables(prj);
     }
 
+    // TODO: think if we need it?
     public static CsmClass findClassOnPosition(BaseDocument doc, int offset) {
-        CsmFile file = CsmUtilities.getCsmFile(doc);
+        CsmFile file = CsmUtilities.getCsmFile(doc, true);
         CsmContext context = CsmOffsetResolver.findContext(file, offset);
-        CsmClass clazz = CsmContextUtilities.getClass(context);
+        CsmClass clazz = CsmContextUtilities.getClass(context, true);
         return clazz;
     }
 
+    public static CsmOffsetableDeclaration findFunDefinitionOrClassOnPosition(BaseDocument doc, int offset) {
+        CsmFile file = CsmUtilities.getCsmFile(doc, true);
+        CsmContext context = CsmOffsetResolver.findContext(file, offset);
+        CsmOffsetableDeclaration out = null;
+        out = CsmContextUtilities.getFunctionDefinition(context);
+        if (out == null || !CsmContextUtilities.isInFunctionBody(context, offset)) {
+            out = CsmContextUtilities.getClass(context, false);
+        }
+        return out;
+    }
+    
     public static CsmObject findItemAtCaretPos(JTextComponent target, int dotPos){
         Completion completion = ExtUtilities.getCompletion(target);
         if (completion != null) {

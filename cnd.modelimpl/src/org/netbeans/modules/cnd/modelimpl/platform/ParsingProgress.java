@@ -65,17 +65,21 @@ final class ParsingProgress {
      * it will be visualized by a progress bar in indeterminate mode.
      */
     public void start() {
-        started = true;
-        handle.setInitialDelay(INITIAL_DELAY);
-        handle.start();
+        synchronized (handle) {
+            started = true;
+            handle.setInitialDelay(INITIAL_DELAY);
+            handle.start();
+        }
     }
     
     /**
      * finish the task, remove the task's component from the progress bar UI.
      */        
     public void finish() {
-        if( started ) {
-            handle.finish();
+        synchronized (handle) {
+            if( started ) {
+                handle.finish();
+            }
         }
     }
 
@@ -83,19 +87,21 @@ final class ParsingProgress {
      * inform about starting handling next file item
      */
     public void nextCsmFile(CsmFile file) {
-        if( ! started ) {
-            return;
-        }
-	if( curWorkedUnits >= maxWorkUnits ) {
-	    return;
-	}
-        try {
-            handle.progress(file.getName(), curWorkedUnits++);
-            //assert(curWorkedUnits <= maxWorkUnits);
-        } catch (NullPointerException ex) {
-            // very strange... but do not interrupt process
-            //assert(false);
-            ex.printStackTrace(System.err);
+        synchronized (handle) {
+            if( ! started ) {
+                return;
+            }
+            if( curWorkedUnits >= maxWorkUnits ) {
+                return;
+            }
+            try {
+                handle.progress(file.getName(), curWorkedUnits++);
+                //assert(curWorkedUnits <= maxWorkUnits);
+            } catch (NullPointerException ex) {
+                // very strange... but do not interrupt process
+                //assert(false);
+                ex.printStackTrace(System.err);
+            }
         }
     }
 
@@ -105,10 +111,12 @@ final class ParsingProgress {
      * in indeterminate mode and later switch to the progress with known steps
      */
     public void switchToDeterminate(int maxWorkUnits) {
-        if( ! started ) {
-            return;
+        synchronized (handle) {
+            if( ! started ) {
+                return;
+            }
+            this.maxWorkUnits = maxWorkUnits;
+            handle.switchToDeterminate(maxWorkUnits);
         }
-        this.maxWorkUnits = maxWorkUnits;
-        handle.switchToDeterminate(maxWorkUnits);
     }
 }   

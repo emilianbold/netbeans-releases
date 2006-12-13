@@ -32,127 +32,52 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.*;
  * @author Vladimir Kvashin
  */
 public class OffsetableBase implements CsmOffsetable, CsmObject {
-
-    private static abstract class PositionBase  implements CsmOffsetable.Position {
-        public String toString() {
-            return "" + getLine() + ':' + getColumn() + '/' + getOffset();
-        }
-    }
+    private final CsmFile file;
+    //private final AST ast;
     
-    private static class StartPositionImpl extends PositionBase {
-        
-        private CsmAST ast;
-        
-        public StartPositionImpl(CsmAST ast) {
-            this.ast = ast;
-        }
-
-        public int getOffset() {
-            return ast.getOffset();
-        }
-        
-        public int getLine() {
-            return ast.getLine();
-        }
-
-        public int getColumn() {
-            return ast.getColumn();
-        }
-    }
-    
-    private static class EndPositionImpl extends PositionBase {
-
-        private CsmAST ast;
-        
-        public EndPositionImpl(CsmAST ast) {
-            this.ast = ast;
-        }
-
-        public int getOffset() {
-            String text = ast.getText();
-            return ast.getOffset() + (text == null ? 0 : text.length());
-        }
-        
-        public int getLine() {
-            return ast.getLine();
-        }
-
-        public int getColumn() {
-            String text = ast.getText();
-            return ast.getColumn() + (text == null ? 0 : text.length());
-        }
-    }
-    
-    private static class DummyPositionImpl extends PositionBase {
-        
-        private int offset;
-        
-        public DummyPositionImpl(int offset) {
-            this.offset = offset;
-        }
-
-        public int getOffset() {
-            return offset;
-        }
-        
-        public int getLine() {
-            return 0;
-        }
-
-        public int getColumn() {
-            return 0;
-        }
-    }
-    
-    private CsmFile file;
-    private int start;
-    private int end;
-    private AST ast;
+    private final Position startPosition;
+    private final Position endPosition;
 
     public OffsetableBase(AST ast, CsmFile file) {
         this.file = file;
-        this.ast = ast;
+        //this.ast = ast;
+        CsmAST startAST = getStartAst(ast);
+        startPosition = (startAST == null) ? 
+            new LineColOffsPositionImpl(0,0,0) :
+            new LineColOffsPositionImpl(startAST.getLine(), startAST.getColumn(), startAST.getOffset());
+        CsmAST endAST = getEndAst(ast);
+        endPosition = (endAST == null) ? 
+            new LineColOffsPositionImpl(0,0,0) : 
+            new LineColOffsPositionImpl(endAST.getEndLine(), endAST.getEndColumn(), endAST.getEndOffset());
     }
     
-    public OffsetableBase(CsmFile file, int start, int end) {
-        this.file = file;
-        this.start = start;
-        this.end = end;
+    public OffsetableBase(CsmFile file) {
+        this(null, file);
     }
     
-    public AST getAst() {
+    /*protected AST getAst() {
         return ast;
+    }*/
+    
+    public int getStartOffset() {
+        return getStartPosition().getOffset();
     }
     
-    protected void setAst(AST ast) {
-        this.ast = ast;
-    }
-
-    public int getStartOffset() {
-        CsmAST ast = getStartAst();
-        return (ast == null) ? start : ast.getOffset();
-    }
-
     public int getEndOffset() {
-        CsmAST ast = getEndAst();
-        if( ast == null ) return 0;
-        String text = ast.getText();
-        return (ast == null) ? end : ast.getOffset() + (text == null ? 0 : text.length());
+        return getEndPosition().getOffset();
     }
 
     public Position getStartPosition() {
-        CsmAST ast = getStartAst();
-        return (ast == null) ? (Position) new DummyPositionImpl(start) : (Position) new StartPositionImpl(ast);
+        return startPosition;
     }
     
     public Position getEndPosition() {
-        CsmAST ast = getEndAst();
-        return (ast == null) ? (Position) new DummyPositionImpl(end) : (Position) new EndPositionImpl(ast);
+        return endPosition;
     }
     
-    public CsmAST getStartAst() {
-        if( ast != null ) {
-            CsmAST csmAst = getFirstCsmAST(ast);
+    private CsmAST getStartAst(AST node) {
+        if( node != null ) {
+            CsmAST csmAst = getFirstCsmAST(node);
             if( csmAst != null ) {
                 return csmAst;
             }
@@ -160,21 +85,9 @@ public class OffsetableBase implements CsmOffsetable, CsmObject {
         return null;
     }
 
-    public CsmAST getEndAst() {
-        if( ast != null ) {
-            /**
-            AST node = ast.getFirstChild();
-            if( node == null ) {
-                return (CsmAST) ast;
-            }
-            while( node.getNextSibling() != null ) {
-                node = node.getNextSibling();
-            }
-            if( node instanceof CsmAST ) {
-                return ((CsmAST) node);
-            }
-             **/
-            AST lastChild = AstUtil.getLastChildRecursively(ast);
+    protected CsmAST getEndAst(AST node) {
+        if( node != null ) {
+            AST lastChild = AstUtil.getLastChildRecursively(node);
             if( lastChild instanceof CsmAST ) {
                 return ((CsmAST) lastChild);
             }
@@ -182,7 +95,7 @@ public class OffsetableBase implements CsmOffsetable, CsmObject {
         return null;
     }
     
-    protected CsmAST getFirstCsmAST(AST node) {
+    private static CsmAST getFirstCsmAST(AST node) {
         if( node != null ) {
             if( node instanceof CsmAST ) {
                 return (CsmAST) node;
@@ -201,5 +114,4 @@ public class OffsetableBase implements CsmOffsetable, CsmObject {
     public String getText() {
         return getContainingFile().getText(getStartOffset(), getEndOffset());
     }
-    
 }

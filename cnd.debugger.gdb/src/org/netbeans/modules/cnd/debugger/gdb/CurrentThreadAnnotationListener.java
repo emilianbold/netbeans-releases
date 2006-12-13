@@ -116,14 +116,14 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
             return;
         }
         
-//        // 1) no current thread => remove annotations
-//        if ( (currentThread == null) || (currentDebugger.getState () != GdbDebugger.STATE_STOPPED)) {
-//            synchronized (currentPCLock) {
-//                currentPCSet = false; // The annotation is goint to be removed
-//            }
-//            removeAnnotations ();
-//            return;
-//        }
+        // 1) no current thread => remove annotations
+        if (currentDebugger.getState() != GdbDebugger.STATE_STOPPED) {
+            synchronized (currentPCLock) {
+                currentPCSet = false; // The annotation is goint to be removed
+            }
+            removeAnnotations();
+            return;
+        }
         
         // 2) get call stack & Line
         ArrayList stack = currentDebugger.getCallStack();
@@ -210,45 +210,48 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
                             stack = stackToAnnotate;
                             stackToAnnotate = null;
                         }
+                        
+                        // Remove old annotations
+                        if (currentPC != null) {
+                            EditorContextBridge.removeAnnotation(currentPC);
+                        }
+                        currentPC = null;
+                        Iterator iter = stackAnnotations.values().iterator();
+                        while (iter.hasNext()) {
+                            EditorContextBridge.removeAnnotation(iter.next());
+                        }
+                        stackAnnotations.clear();
+                        
+                        // Add new annotations
                         HashMap newAnnotations = new HashMap();
                         String annotationType = EditorContext.CURRENT_LINE_ANNOTATION_TYPE;
                         int i, k = stack.size();
                         for (i = 0; i < k; i++) {
                             // 1) check Line
                             String language = null;
-                            int lineNumber = ((CallStackFrame) stack.get(i)).getLineNumber();
+                            CallStackFrame csf = (CallStackFrame) stack.get(i);
+                            int lineNumber = csf.getLineNumber();
                             String line = Integer.toString(lineNumber);
 
                             // 2) line already annotated?
                             if (newAnnotations.containsKey(line))
                                 continue;
 
-                            // 3) line has been annotated?
-                            Object da = stackAnnotations.remove(line);
-                            if (da == null) {
-                                // line has not been annotated -> create annotation
-                                da = EditorContextBridge.annotate((CallStackFrame) stack.get(i),
-                                        annotationType);
-                            }
+                            // 3) annotate line
+                            Object da = EditorContextBridge.annotate(csf, annotationType);
 
                             // 4) add new line to hashMap
                             if (da != null) {
                                 newAnnotations.put(line, da);
                             }
-			    annotationType = EditorContext.CALL_STACK_FRAME_ANNOTATION_TYPE;
-                        }
-
-                        // delete old annotations
-                        Iterator iter = stackAnnotations.values().iterator();
-                        while (iter.hasNext()) {
-                            EditorContextBridge.removeAnnotation(iter.next());
+                            annotationType = EditorContext.CALL_STACK_FRAME_ANNOTATION_TYPE;
                         }
                         stackAnnotations = newAnnotations;
                     }
                 });
             }
         }
-        taskAnnotate.schedule(500);
+        taskAnnotate.schedule(50);
     }
 }
 

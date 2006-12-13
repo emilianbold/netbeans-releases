@@ -1,17 +1,17 @@
 package antlr;
 
 /* ANTLR Translator Generator
- * Project led by Terence Parr at http://www.jGuru.com
+ * Project led by Terence Parr at http://www.cs.usfca.edu
  * Software rights: http://www.antlr.org/license.html
  *
  * $Id$
  */
 
+import java.lang.reflect.Constructor;
+import java.util.Hashtable;
+
 import antlr.collections.AST;
 import antlr.collections.impl.ASTArray;
-
-import java.util.Hashtable;
-import java.lang.reflect.Constructor;
 
 /** AST Support code shared by TreeParser and Parser.
  *  We use delegation to share code (and have only one
@@ -89,7 +89,7 @@ public class ASTFactory {
 		}
 		Class c = null;
 		try {
-			c = Class.forName(className);
+			c = Utils.loadClass(className);
 			tokenTypeToASTClassMap.put(new Integer(tokenType), c);
 		}
 		catch (Exception e) {
@@ -116,7 +116,7 @@ public class ASTFactory {
 		}
 
 		// default to the common type
-		return CommonAST.class;
+		return null;//CommonAST.class;
 	}
 
     /** Add a child to the current AST */
@@ -146,6 +146,10 @@ public class ASTFactory {
      */
     public AST create() {
 		return create(Token.INVALID_TYPE);
+    }
+    
+    public AST createDefault() {
+        return new CommonAST();
     }
 
     public AST create(int type) {
@@ -177,6 +181,24 @@ public class ASTFactory {
 		}
         return t;
     }
+     
+    // The same as previous but using class not classname (faster)
+    /*public AST create(int type, String txt, Class c) {
+        AST t = create(c);
+            if ( t!=null ) {
+                    t.initialize(type, txt);
+            }
+        return t;
+    }*/
+    
+    // The same as previous but using created instance (even faster)
+    public AST create(int type, String txt, AST t) {
+        if ( t!=null ) {
+                t.initialize(type, txt);
+        }
+        return t;
+    }
+
 
     /** Create a new empty AST node; if the user did not specify
      *  an AST node type, then create a default one: CommonAST.
@@ -217,7 +239,7 @@ public class ASTFactory {
 	public AST create(String className) {
 		Class c = null;
 		try {
-			c = Class.forName(className);
+			c = Utils.loadClass(className);
 		}
 		catch (Exception e) {
 			throw new IllegalArgumentException("Invalid class, "+className);
@@ -232,7 +254,7 @@ public class ASTFactory {
 		Class c = null;
 		AST t = null;
 		try {
-			c = Class.forName(className);
+			c = Utils.loadClass(className);
 			Class[] tokenArgType = new Class[] { antlr.Token.class };
 			try {
 				Constructor ctor = c.getConstructor(tokenArgType);
@@ -257,6 +279,9 @@ public class ASTFactory {
 	 * @since 2.7.2
 	 */
 	protected AST create(Class c) {
+                if (c == null) {
+                    return createDefault();
+                }
 		AST t = null;
 		try {
 			t = (AST)c.newInstance(); // make a new one
@@ -375,7 +400,7 @@ public class ASTFactory {
     public void setASTNodeClass(String t) {
         theASTNodeType = t;
         try {
-            theASTNodeTypeClass = Class.forName(t); // get class def
+            theASTNodeTypeClass = Utils.loadClass(t); // get class def
         }
         catch (Exception e) {
             // either class not found,

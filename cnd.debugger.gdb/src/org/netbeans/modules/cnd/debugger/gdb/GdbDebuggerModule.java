@@ -30,6 +30,7 @@ import org.netbeans.modules.cnd.makeproject.api.DefaultProjectActionHandler;
 
 import org.netbeans.modules.cnd.debugger.gdb.profiles.GdbProfileProvider;
 import org.netbeans.modules.cnd.debugger.gdb.profiles.ui.ProfileNodeProvider;
+import org.netbeans.api.debugger.DebuggerManager;
 
 /**
  *  Module installer for cnd gdb debugger. 
@@ -55,5 +56,11 @@ public class GdbDebuggerModule extends ModuleInstall {
         // Profiles
         CustomizerRootNodeProvider.getInstance().removeCustomizerNode(debugCustomizerNode);
         DefaultProjectActionHandler.getInstance().setCustomDebugActionHandlerProvider(null);
+    }
+    
+    public void close() {
+        // Kill all debug sessions
+        DebuggerManager.getDebuggerManager().finishAllSessions();
+        super.close();
     }
 }

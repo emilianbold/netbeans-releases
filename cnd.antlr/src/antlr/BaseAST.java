@@ -1,7 +1,7 @@
 package antlr;
 
 /* ANTLR Translator Generator
- * Project led by Terence Parr at http://www.jGuru.com
+ * Project led by Terence Parr at http://www.cs.usfca.edu
  * Software rights: http://www.antlr.org/license.html
  *
  * $Id$
@@ -14,6 +14,8 @@ import antlr.collections.impl.Vector;
 
 import java.io.Serializable;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Writer;
 
 /**
@@ -40,14 +42,23 @@ import java.io.Writer;
  * This class contains the basic support for an AST.
  * Most people will create ASTs that are subclasses of
  * BaseAST or of CommonAST.
+ * 
+ * IMPORTANT:
+ * Although this class is declared to be serialized,
+ * it's unsafe to use out.writeObject(ast) and ast = (AST)in.readObject()
+ * use instead:
+ * antlr.Utils.writeAST(out, ast) and ast = antlr.Utils.readAST(in)
+ * 
  */
 public abstract class BaseAST implements AST, Serializable {
-    protected BaseAST down;
-    protected BaseAST right;
-
+    transient protected BaseAST down;
+    transient protected BaseAST right;
+    
+    private static final long serialVersionUID = 2083245886625816467L;
+    
     private static boolean verboseStringConversion = false;
     private static String[] tokenNames = null;
-
+    
     /**Add a node to the end of the child list for this node */
     public void addChild(AST node) {
         if (node == null) return;
@@ -57,77 +68,73 @@ public abstract class BaseAST implements AST, Serializable {
                 t = t.right;
             }
             t.right = (BaseAST)node;
-        }
-        else {
+        } else {
             this.down = (BaseAST)node;
         }
     }
-
-	/** How many children does this node have? */
+    
+    /** How many children does this node have? */
     public int getNumberOfChildren() {
         BaseAST t = this.down;
-		int n = 0;
+        int n = 0;
         if (t != null) {
-			n = 1;
-			while (t.right != null) {
+            n = 1;
+            while (t.right != null) {
                 t = t.right;
-				n++;
+                n++;
             }
-			return n;
+            return n;
         }
-		return n;
+        return n;
     }
-
-    private void doWorkForFindAll(Vector v, AST target, boolean partialMatch) {
-        AST sibling;
-
+    
+    private static void doWorkForFindAll(AST nodeToSearch,
+            Vector v,
+            AST target,
+            boolean partialMatch) {
         // Start walking sibling lists, looking for matches.
-        siblingWalk:
-        for (sibling = this;
-             sibling != null;
-             sibling = sibling.getNextSibling()) {
-            if ((partialMatch && sibling.equalsTreePartial(target)) ||
-                (!partialMatch && sibling.equalsTree(target))) {
+        for (AST sibling = nodeToSearch; sibling != null; sibling = sibling
+                .getNextSibling()) {
+            if ((partialMatch && sibling.equalsTreePartial(target))
+            || (!partialMatch && sibling.equalsTree(target))) {
                 v.appendElement(sibling);
             }
             // regardless of match or not, check any children for matches
             if (sibling.getFirstChild() != null) {
-                ((BaseAST)sibling.getFirstChild()).doWorkForFindAll(v, target, partialMatch);
+                doWorkForFindAll(sibling.getFirstChild(), v, target, partialMatch);
             }
         }
     }
-
+    
     /** Is node t equal to this in terms of token type and text? */
     public boolean equals(AST t) {
         if (t == null) return false;
-		if ( (this.getText()==null && t.getText()!=null) ||
-			 (this.getText()!=null && t.getText()==null) )
-		{
-	        return false;
-		}
-		if ( this.getText()==null && t.getText()==null ) {
-			return this.getType() == t.getType();
-		}
+        if ( (this.getText()==null && t.getText()!=null) ||
+                (this.getText()!=null && t.getText()==null) ) {
+            return false;
+        }
+        if ( this.getText()==null && t.getText()==null ) {
+            return this.getType() == t.getType();
+        }
         return this.getText().equals(t.getText()) &&
-            this.getType() == t.getType();
+                this.getType() == t.getType();
     }
-
+    
     /** Is t an exact structural and equals() match of this tree.  The
      *  'this' reference is considered the start of a sibling list.
      */
     public boolean equalsList(AST t) {
         AST sibling;
-
+        
         // the empty tree is not a match of any non-null tree.
         if (t == null) {
             return false;
         }
-
+        
         // Otherwise, start walking sibling lists.  First mismatch, return false.
         for (sibling = this;
-			 sibling != null && t != null;
-			 sibling = sibling.getNextSibling(), t = t.getNextSibling())
-		{
+        sibling != null && t != null;
+        sibling = sibling.getNextSibling(), t = t.getNextSibling()) {
             // as a quick optimization, check roots first.
             if (!sibling.equals(t)) {
                 return false;
@@ -149,22 +156,22 @@ public abstract class BaseAST implements AST, Serializable {
         // one sibling list has more than the other
         return false;
     }
-
+    
     /** Is 'sub' a subtree of this list?
      *  The siblings of the root are NOT ignored.
      */
     public boolean equalsListPartial(AST sub) {
         AST sibling;
-
+        
         // the empty tree is always a subset of any tree.
         if (sub == null) {
             return true;
         }
-
+        
         // Otherwise, start walking sibling lists.  First mismatch, return false.
         for (sibling = this;
-             sibling != null && sub != null;
-             sibling = sibling.getNextSibling(), sub = sub.getNextSibling()) {
+        sibling != null && sub != null;
+        sibling = sibling.getNextSibling(), sub = sub.getNextSibling()) {
             // as a quick optimization, check roots first.
             if (!sibling.equals(sub)) return false;
             // if roots match, do partial list match test on children.
@@ -179,7 +186,7 @@ public abstract class BaseAST implements AST, Serializable {
         // either both are null or sibling has more, but subtree doesn't
         return true;
     }
-
+    
     /** Is tree rooted at 'this' equal to 't'?  The siblings
      *  of 'this' are ignored.
      */
@@ -196,7 +203,7 @@ public abstract class BaseAST implements AST, Serializable {
         }
         return true;
     }
-
+    
     /** Is 't' a subtree of the tree rooted at 'this'?  The siblings
      *  of 'this' are ignored.
      */
@@ -205,7 +212,7 @@ public abstract class BaseAST implements AST, Serializable {
         if (sub == null) {
             return true;
         }
-
+        
         // check roots first.
         if (!this.equals(sub)) return false;
         // if roots match, do full list partial match test on children.
@@ -214,7 +221,7 @@ public abstract class BaseAST implements AST, Serializable {
         }
         return true;
     }
-
+    
     /** Walk the tree looking for all exact subtree matches.  Return
      *  an ASTEnumerator that lets the caller walk the list
      *  of subtree roots found herein.
@@ -222,17 +229,17 @@ public abstract class BaseAST implements AST, Serializable {
     public ASTEnumeration findAll(AST target) {
         Vector roots = new Vector(10);
         AST sibling;
-
+        
         // the empty tree cannot result in an enumeration
         if (target == null) {
             return null;
         }
-
-        doWorkForFindAll(roots, target, false);  // find all matches recursively
-
+        
+        doWorkForFindAll(this, roots, target, false);  // find all matches recursively
+        
         return new ASTEnumerator(roots);
     }
-
+    
     /** Walk the tree looking for all subtrees.  Return
      *  an ASTEnumerator that lets the caller walk the list
      *  of subtree roots found herein.
@@ -240,88 +247,89 @@ public abstract class BaseAST implements AST, Serializable {
     public ASTEnumeration findAllPartial(AST sub) {
         Vector roots = new Vector(10);
         AST sibling;
-
+        
         // the empty tree cannot result in an enumeration
         if (sub == null) {
             return null;
         }
-
-        doWorkForFindAll(roots, sub, true);  // find all matches recursively
-
+        
+        doWorkForFindAll(this, roots, sub, true);  // find all matches recursively
+        
         return new ASTEnumerator(roots);
     }
-
+    
     /** Get the first child of this node; null if not children */
     public AST getFirstChild() {
         return down;
     }
-
+    
     /** Get the next sibling in line after this one */
     public AST getNextSibling() {
         return right;
     }
-
+    
     /** Get the token text for this node */
     public String getText() {
         return "";
     }
-
+    
     /** Get the token type for this node */
     public int getType() {
         return 0;
     }
-
+    
     public int getLine() {
         return 0;
     }
-
+    
     public int getColumn() {
         return 0;
     }
-
+    
     public abstract void initialize(int t, String txt);
-
+    
     public abstract void initialize(AST t);
-
+    
     public abstract void initialize(Token t);
-
+    
     /** Remove all children */
     public void removeChildren() {
         down = null;
     }
-
+    
     public void setFirstChild(AST c) {
         down = (BaseAST)c;
     }
-
+    
     public void setNextSibling(AST n) {
         right = (BaseAST)n;
     }
-
+    
     /** Set the token text for this node */
     public void setText(String text) {
     }
-
+    
     /** Set the token type for this node */
     public void setType(int ttype) {
     }
-
+    
     public static void setVerboseStringConversion(boolean verbose, String[] names) {
         verboseStringConversion = verbose;
         tokenNames = names;
     }
-
+    
     /** Return an array of strings that maps token ID to it's text. @since 2.7.3 */
     public static String[] getTokenNames() {
         return tokenNames;
     }
-
+    
     public String toString() {
         StringBuffer b = new StringBuffer();
         // if verbose and type name not same as text (keyword probably)
         if (verboseStringConversion &&
-            !getText().equalsIgnoreCase(tokenNames[getType()]) &&
-            !getText().equalsIgnoreCase(StringUtils.stripFrontBack(tokenNames[getType()], "\"", "\""))) {
+                getText() != null &&
+                !getText().equalsIgnoreCase(tokenNames[getType()]) &&
+                !getText().equalsIgnoreCase(StringUtils.stripFrontBack(tokenNames[getType()], "\"", "\""))) {
             b.append('[');
             b.append(getText());
             b.append(",<");
@@ -331,7 +339,7 @@ public abstract class BaseAST implements AST, Serializable {
         }
         return getText();
     }
-
+    
     /** Print out a child-sibling tree in LISP notation */
     public String toStringList() {
         AST t = this;
@@ -347,7 +355,7 @@ public abstract class BaseAST implements AST, Serializable {
         }
         return ts;
     }
-
+    
     public String toStringTree() {
         AST t = this;
         String ts = "";
@@ -359,7 +367,7 @@ public abstract class BaseAST implements AST, Serializable {
         if (t.getFirstChild() != null) ts += " )";
         return ts;
     }
-
+    
     public static String decode(String text) {
         char c, c1, c2, c3, c4, c5;
         StringBuffer n = new StringBuffer();
@@ -371,38 +379,32 @@ public abstract class BaseAST implements AST, Serializable {
                 c3 = text.charAt(i + 3);
                 c4 = text.charAt(i + 4);
                 c5 = text.charAt(i + 5);
-
+                
                 if (c1 == 'a' && c2 == 'm' && c3 == 'p' && c4 == ';') {
                     n.append("&");
                     i += 5;
-                }
-                else if (c1 == 'l' && c2 == 't' && c3 == ';') {
+                } else if (c1 == 'l' && c2 == 't' && c3 == ';') {
                     n.append("<");
                     i += 4;
-                }
-                else if (c1 == 'g' && c2 == 't' && c3 == ';') {
+                } else if (c1 == 'g' && c2 == 't' && c3 == ';') {
                     n.append(">");
                     i += 4;
-                }
-                else if (c1 == 'q' && c2 == 'u' && c3 == 'o' &&
-                    c4 == 't' && c5 == ';') {
+                } else if (c1 == 'q' && c2 == 'u' && c3 == 'o' &&
+                        c4 == 't' && c5 == ';') {
                     n.append("\"");
                     i += 6;
-                }
-                else if (c1 == 'a' && c2 == 'p' && c3 == 'o' &&
-                    c4 == 's' && c5 == ';') {
+                } else if (c1 == 'a' && c2 == 'p' && c3 == 'o' &&
+                        c4 == 's' && c5 == ';') {
                     n.append("'");
                     i += 6;
-                }
-                else
+                } else
                     n.append("&");
-            }
-            else
+            } else
                 n.append(c);
         }
         return new String(n);
     }
-
+    
     public static String encode(String text) {
         char c;
         StringBuffer n = new StringBuffer();
@@ -410,84 +412,98 @@ public abstract class BaseAST implements AST, Serializable {
             c = text.charAt(i);
             switch (c) {
                 case '&':
-                    {
-                        n.append("&amp;");
-                        break;
-                    }
+                {
+                    n.append("&amp;");
+                    break;
+                }
                 case '<':
-                    {
-                        n.append("&lt;");
-                        break;
-                    }
+                {
+                    n.append("&lt;");
+                    break;
+                }
                 case '>':
-                    {
-                        n.append("&gt;");
-                        break;
-                    }
+                {
+                    n.append("&gt;");
+                    break;
+                }
                 case '"':
-                    {
-                        n.append("&quot;");
-                        break;
-                    }
+                {
+                    n.append("&quot;");
+                    break;
+                }
                 case '\'':
-                    {
-                        n.append("&apos;");
-                        break;
-                    }
+                {
+                    n.append("&apos;");
+                    break;
+                }
                 default :
-                    {
-                        n.append(c);
-                        break;
-                    }
+                {
+                    n.append(c);
+                    break;
+                }
             }
         }
         return new String(n);
     }
-
+    
     public void xmlSerializeNode(Writer out)
-        throws IOException {
+    throws IOException {
         StringBuffer buf = new StringBuffer(100);
         buf.append("<");
         buf.append(getClass().getName() + " ");
         buf.append("text=\"" + encode(getText()) + "\" type=\"" +
-                   getType() + "\"/>");
+                getType() + "\"/>");
         out.write(buf.toString());
     }
-
+    
     public void xmlSerializeRootOpen(Writer out)
-        throws IOException {
+    throws IOException {
         StringBuffer buf = new StringBuffer(100);
         buf.append("<");
         buf.append(getClass().getName() + " ");
         buf.append("text=\"" + encode(getText()) + "\" type=\"" +
-                   getType() + "\">\n");
+                getType() + "\">\n");
         out.write(buf.toString());
     }
-
+    
     public void xmlSerializeRootClose(Writer out)
-        throws IOException {
+    throws IOException {
         out.write("</" + getClass().getName() + ">\n");
     }
-
+    
     public void xmlSerialize(Writer out) throws IOException {
         // print out this node and all siblings
         for (AST node = this;
-             node != null;
-             node = node.getNextSibling()) {
+        node != null;
+        node = node.getNextSibling()) {
             if (node.getFirstChild() == null) {
                 // print guts (class name, attributes)
                 ((BaseAST)node).xmlSerializeNode(out);
-            }
-            else {
+            } else {
                 ((BaseAST)node).xmlSerializeRootOpen(out);
-
+                
                 // print children
                 ((BaseAST)node.getFirstChild()).xmlSerialize(out);
-
+                
                 // print end tag
                 ((BaseAST)node).xmlSerializeRootClose(out);
             }
         }
     }
-
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // !!!IMPORTANT!!! Use antlr.Utils.writeAST() and antlr.Utils.readAST()
+    // do not use out.write(ast)
+    //
+    // we have StackOverflow when serialize AST due to it's tree structure:
+    // to many recurse calls to writeObject on writing "next" field
+    // let's try to reduce depth of recursion by depth of tree
+    
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        out.defaultWriteObject();
+    }
+    
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+    }
 }

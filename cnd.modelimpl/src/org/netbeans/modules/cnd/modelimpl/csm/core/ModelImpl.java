@@ -20,58 +20,98 @@
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import org.netbeans.modules.cnd.api.model.*;
-import org.netbeans.modules.cnd.modelimpl.cache.LibProjectImpl;
+import org.netbeans.modules.cnd.api.model.util.WeakList;
+import org.netbeans.modules.cnd.modelimpl.Installer;
 import org.netbeans.modules.cnd.modelimpl.csm.Diagnostic;
-import org.netbeans.modules.cnd.modelimpl.platform.*;
 
 import java.util.*;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.NativeProject;
-
+import org.netbeans.modules.cnd.modelimpl.memory.LowMemoryEvent;
+import org.netbeans.modules.cnd.modelimpl.memory.LowMemoryListener;
+import org.netbeans.modules.cnd.modelimpl.memory.LowMemoryNotifier;
+import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
+import java.lang.ref.WeakReference;
+        
 /**
  * CsmModel implementation
  * @author Vladimir Kvashin
  */
-public class ModelImpl implements CsmModel {
-
+public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startupable, CsmModelAccessor.CsmModelEx {
+    
     public ModelImpl() {
-        this(isStandalone());
-    }
-    
-    private static boolean isStandalone() {
-        return ! ModelImpl.class.getClassLoader().getClass().getName().startsWith("org.netbeans.");
-    }
-    
-    public ModelImpl(boolean standalone) {
-        if( ! standalone ) {
+        if( ! isStandalone() ) {
             ModelSupport.instance().init(this);
         }
     }
 
-    public CsmProject getProject(Object id) {
-        ProjectBase prj;
-        synchronized( lock ) {
-            prj = (ProjectBase) platf2csm.get(id);
-            if( prj == null && id instanceof Project) {
-                // for compatibility 
-                if (Diagnostic.DEBUG) {
-                    System.err.println("getProject called with Project... expected NativeProject");
-                    new Throwable().printStackTrace(System.err);
-                }
-                id = ((Project)id).getLookup().lookup(NativeProject.class);
-                prj = id != null ? (ProjectBase) platf2csm.get(id) : null;
+    private static boolean isStandalone() {
+        return ! ModelImpl.class.getClassLoader().getClass().getName().startsWith("org.netbeans.");
+    }
+    
+    private void initThreasholds() {
+	String value, propertyName;
+	propertyName = "cnd.model.memory.warning.threashold";
+	value = System.getProperty(propertyName);
+	if( value != null ) {
+	    try {
+		warningThreshold = Double.parseDouble(value);
+	    }
+	    catch(NumberFormatException e) {
+		Utils.LOG.severe("Incorrect format for property " + propertyName + ": " + value);
+	    }
+	}
+//	propertyName = "cnd.model.memory.fatal.threashold";
+//	value = System.getProperty(propertyName);
+//	if( value != null ) {
+//	    try {
+//		fatalThreshold = Double.parseDouble(value);
+//	    }
+//	    catch(NumberFormatException e) {
+//		Utils.LOG.severe("Incorrect format for property " + propertyName + ": " + value);
+//	    }
+//	}
+    }
+    
+    public CsmProject findProject(Object id) {
+        ProjectBase prj = null;
+        if (id != null) {
+            synchronized( lock ) {
+                prj = (ProjectBase) platf2csm.get(id);
             }
-            if (prj == null) {
-                String name;
-                if( id instanceof NativeProject ) {
-                    name = ((NativeProject) id).getProjectDisplayName();
+        }
+        return prj;
+    }
+    
+    public CsmProject getProject(Object id) {
+        ProjectBase prj = null;
+        if (id != null) {
+            synchronized( lock ) {
+                prj = (ProjectBase) platf2csm.get(id);
+                if( prj == null && id instanceof Project) {
+                    // for compatibility 
+                    if (Diagnostic.DEBUG) {
+                        System.err.println("getProject called with Project... expected NativeProject");
+                        new Throwable().printStackTrace(System.err);
+                    }
+                    id = ((Project)id).getLookup().lookup(NativeProject.class);
+                    prj = id != null ? (ProjectBase) platf2csm.get(id) : null;
                 }
-                else {
-                    new IllegalStateException("CsmProject does not exist: " + id).printStackTrace(System.err);
-                    name = "<unnamed>";
+                if (prj == null) {
+                    if( disabledProjects.contains(id) ) {
+                        return null;
+                    }
+                    String name;
+                    if( id instanceof NativeProject ) {
+                        name = ((NativeProject) id).getProjectDisplayName();
+                    }
+                    else {
+                        new IllegalStateException("CsmProject does not exist: " + id).printStackTrace(System.err);
+                        name = "<unnamed>";
+                    }
+                    prj = new ProjectImpl(this, id,  name);
+                    platf2csm.put(id,  prj);
                 }
-                prj = new ProjectImpl(this, id,  name);
-                platf2csm.put(id,  prj);
             }
         }
         return prj;
@@ -121,21 +161,41 @@ public class ModelImpl implements CsmModel {
             }
         }
         if( prj != null ) {
+            prj.setDisposed();
             fireProjectClosed(prj);
             prj.dispose();
         }
     }
     
+    public void removeProject(ProjectBase prj) {
+        Object platformProject = prj.getPlatformProject();
+        synchronized( lock ) {
+            platf2csm.remove(platformProject);
+        }
+	prj.setDisposed();
+	fireProjectClosed(prj);
+	prj.dispose();
+    }
+    
+    
     public Collection/*<CsmProject>*/ projects() {
         return platf2csm.values();
     }
     
-    public synchronized void addModelListener(CsmModelListener listener) {
+    public void addModelListener(CsmModelListener listener) {
         modelListeners.add(listener);
     }
     
-    public synchronized void removeModelListener(CsmModelListener listener) {
+    public void removeModelListener(CsmModelListener listener) {
         modelListeners.remove(listener);
+    }
+
+    public void addModelStateListener(CsmModelStateListener listener) {
+        modelStateListeners.add(listener);
+    }
+
+    public void removeModelStateListener(CsmModelStateListener listener) {
+        modelStateListeners.remove(listener);
     }
     
     public void addProgressListener(CsmProgressListener listener) {
@@ -146,25 +206,41 @@ public class ModelImpl implements CsmModel {
         ParserQueue.instance().removeProgressListener(listener);
     }
 
-    private void fireProjectOpened(CsmProject csmProject) {
-        CsmModelListener[] listeners = getModelListeners();
-        for (int i = 0; i < listeners.length; i++) {
-            listeners[i].projectOpened(csmProject);
+    public Iterator<CsmModelStateListener> getModelStateListeners() {
+	return modelStateListeners.iterator();
+    }
+    
+    public Iterator<CsmProgressListener> getProgressListeners() {
+	return ParserQueue.instance().getProgressListeners();
+    }
+    
+    public Iterator<CsmModelListener> getModelListeners() {
+	return modelListeners.iterator();
+    }
+    
+    private void fireProjectOpened(final ProjectBase csmProject) {
+        for ( CsmModelListener listener : modelListeners ) {
+            listener.projectOpened(csmProject);
         }
+	csmProject.onAddedToModel();
     }
     
     private void fireProjectClosed(CsmProject csmProject) {
-        CsmModelListener[] listeners = getModelListeners();
-        for (int i = 0; i < listeners.length; i++) {
-            listeners[i].projectClosed(csmProject);
+        for ( CsmModelListener listener : modelListeners ) {
+            listener.projectClosed(csmProject);
         }
     }
     
     /**  */
     void fireModelChanged(CsmChangeEvent e) {
-        CsmModelListener[] listeners = getModelListeners();
-        for (int i = 0; i < listeners.length; i++) {
-            listeners[i].modelChanged(e);
+        for ( CsmModelListener listener : modelListeners ) {
+            listener.modelChanged(e);
+        }
+    }
+    
+    void fireModelStateChanged(CsmModelState newState, CsmModelState oldState) {
+        for ( CsmModelStateListener listener : modelStateListeners ) {
+            listener.modelStateChanged(newState, oldState);
         }
     }
     
@@ -189,9 +265,240 @@ public class ModelImpl implements CsmModel {
     public void enqueue(Runnable task) {
         CodeModelRequestProcessor.instance().post(task);
     }
+
+    public CsmFile findFile(String absPath){
+        Collection/*<CsmProject>*/ projects = projects();
+        for (Iterator it = projects.iterator(); it.hasNext();) {
+             CsmProject curPrj = (CsmProject) it.next();
+             if (curPrj instanceof ProjectBase){
+                 ProjectBase ownerPrj = ((ProjectBase)curPrj).resolveFileProject(absPath);
+                 if (ownerPrj != null){
+                     CsmFile csmFile = ownerPrj.findFile(absPath);
+                     if (csmFile != null){
+                        return csmFile;
+                     }
+                 }
+             }
+        }
+        return null;
+    }
     
-    private synchronized CsmModelListener[] getModelListeners() {
-        return (CsmModelListener[]) modelListeners.toArray(new CsmModelListener[modelListeners.size()]);
+    public CsmModelState getState() {
+        return state;
+    }
+    
+    public void startup() {
+        
+        if( TraceFlags.TRACE_MODEL_STATE ) System.err.println("ModelImpl.startup");
+        
+        setState(CsmModelState.ON);
+        
+	if( TraceFlags.CHECK_MEMORY && warningThreshold > 0 ) {
+	    LowMemoryNotifier.instance().addListener(this);
+	    LowMemoryNotifier.instance().setThresholdPercentage(warningThreshold);
+	}
+        
+        ParserThreadManager.instance().startup(isStandalone());
+	
+	if( ! isStandalone() ) {
+	    for( NativeProject nativeProject : ModelSupport.instance().getNativeProjects() ) {
+		addProject(nativeProject, nativeProject.getProjectDisplayName());
+	    }
+	}
+    }
+    
+    public void shutdown() {
+
+    if( TraceFlags.TRACE_MODEL_STATE ) System.err.println("ModelImpl.shutdown");
+        
+        ParserThreadManager.instance().shutdown();
+
+	if( TraceFlags.CHECK_MEMORY ) {
+	    LowMemoryNotifier.instance().removeListener(this);
+	}
+        
+        Collection/*<CsmProject>*/ projectsColl = new HashSet(projects());
+        for (Iterator projIter = projects().iterator(); projIter.hasNext();) {
+            ProjectBase project = (ProjectBase) projIter.next();
+            for (Iterator libIter = project.getLibraries().iterator(); libIter.hasNext();) {
+                projectsColl.add(libIter.next());
+                
+            }
+        }
+	synchronized( lock ) {
+	    platf2csm.clear();
+	    libraries.clear();
+	}
+
+        for (Iterator it = projectsColl.iterator(); it.hasNext();) {
+            ProjectBase project = (ProjectBase) it.next();
+            project.dispose();
+            fireProjectClosed(project);
+        }
+        setState(CsmModelState.OFF);
+    }
+    
+    public void unload() {
+        shutdown();
+        setState(CsmModelState.UNLOADED);
+    }
+
+    public void memoryLow(final LowMemoryEvent event) {
+	
+	double percentage = ((double) event.getUsedMemory() / (double) event.getMaxMemory());
+        
+        final boolean warning = percentage >= warningThreshold && projects().size() > 0;
+
+//	final boolean fatal = percentage >= fatalThreshold && projects().size() > 0;
+//	
+//	if( fatal ) {
+//	    LowMemoryNotifier.instance().removeListener(this);
+//	}
+//	else {
+//	    LowMemoryNotifier.instance().setThresholdPercentage(fatalThreshold);
+//	}
+
+	Runnable runner = new Runnable() {
+	    public void run() {
+		Thread.currentThread().setName("Code model low memory handler");
+//		if( fatal ) {
+//		    ParserThreadManager.instance().shutdown();
+//		    ModelSupport.instance().onMemoryLow(event, true);
+//		}
+//		else {
+		    ModelSupport.instance().onMemoryLow(event, false);
+//		}
+	    }	    
+	};
+	// I have to use Thread directly here (instead of Request processor)
+	// for the following reasons:
+	// 1) I have to return control very fast
+	// 2) if I use RequestProcessor, I can't be sure the thread will be launched -
+	// what if we already reached the limit for this RequestProcessor?
+	new Thread(runner).start();
+	
+    }
+    
+    private void setState(CsmModelState newState) {
+        if( TraceFlags.TRACE_MODEL_STATE ) System.err.println("  ModelImpl.setState " + state + " -> " + newState);
+        if( newState != state ) {
+            CsmModelState oldState = state;
+            state = newState;
+            fireModelStateChanged(newState, oldState);
+        }
+    }
+    
+    public void suspend() {
+        if( TraceFlags.TRACE_MODEL_STATE ) System.err.println("ModelImpl.suspend");
+        setState(CsmModelState.SUSPENDED);
+        ParserQueue.instance().suspend();
+    }
+    
+    public void resume() {
+        if( TraceFlags.TRACE_MODEL_STATE ) System.err.println("ModelImpl.resume");
+        setState(CsmModelState.ON);
+        ParserQueue.instance().resume();
+    }
+
+    public void disableProject(NativeProject nativeProject) {
+        if( TraceFlags.TRACE_MODEL_STATE ) System.err.println("ModelImpl.disableProject " + nativeProject.getProjectDisplayName());
+        synchronized( lock ) {
+            disabledProjects.add(nativeProject);
+        }
+        ProjectBase csmProject = (ProjectBase) findProject(nativeProject);
+        if( csmProject != null ) {
+            disableProject2(csmProject);
+        }
+    }
+
+    public void disableProject(ProjectBase csmProject) {
+        if( TraceFlags.TRACE_MODEL_STATE ) System.err.println("ModelImpl.disableProject " + csmProject);
+	if( csmProject != null ) {
+            synchronized( lock ) {
+                disabledProjects.add(csmProject.getPlatformProject());
+            }
+            disableProject2(csmProject);
+        }
+    }
+
+    private void disableProject2(final ProjectBase csmProject) {
+        csmProject.setDisposed();
+        this.enqueue(new Runnable() {
+            public void run() {
+                disableProject3(csmProject);
+            }
+        }, "Disabling code model for project " + csmProject.getName());
+    }
+    
+    private void disableProject3(ProjectBase csmProject) {
+        if( TraceFlags.TRACE_MODEL_STATE ) System.err.println("ModelImpl.disableProject3");
+        suspend();
+        try {
+            while( ParserQueue.instance().isParsing(csmProject) ) {
+                try {
+                    if( TraceFlags.TRACE_MODEL_STATE ) System.err.println("ModelImpl.disableProject3: waiting for current parse...");
+                    Thread.currentThread().sleep(100);
+                } catch( InterruptedException e ) {}
+            }
+            
+            boolean clearLibs;
+            synchronized( lock ) {
+                removeProject(csmProject);
+                clearLibs = platf2csm.isEmpty();
+            }
+            
+            if( clearLibs ) {
+                if( TraceFlags.TRACE_MODEL_STATE ) System.err.println("ModelImpl.disableProject3: cleaning libs");
+                Set/*ProjectBase*/ libs = new HashSet(libraries.values());
+                for (Iterator it = libs.iterator(); it.hasNext();) {
+                    ProjectBase lib = (ProjectBase) it.next();
+                    ParserQueue.instance().removeAll(lib);
+                    fireProjectClosed(lib);
+                    lib.dispose();
+                    //CacheManager.getInstance().projectClosed(lib);
+                }
+                libraries.clear();
+            }
+        }
+        finally {
+            resume();
+        }
+    }
+    
+    
+//    /**
+//     * Checks whether there are only library projects.
+//     * If yes, returns the set of remaining library projects.
+//     * Otherwise returns null
+//     */
+//    private Set<LibProjectImpl> getLastLibs() {
+//	Collection/*<CsmProjects>*/ projects = projects();
+//	Set<LibProjectImpl> lastLibs = new HashSet<LibProjectImpl>(projects.size());
+//	for (Iterator it = projects.iterator(); it.hasNext();) {
+//	    Object e = it.next();
+//	    if( e instanceof LibProjectImpl ) {
+//		lastLibs.add((LibProjectImpl) e);
+//	    }
+//	    else {
+//		return null;
+//	    }
+//	}
+//	return lastLibs;
+//    }
+    
+    /** Enables/disables code model for the particular ptoject */
+    public void enableProject(NativeProject nativeProject) {
+        if( TraceFlags.TRACE_MODEL_STATE ) System.err.println("ModelImpl.enableProject " + nativeProject.getProjectDisplayName());
+        synchronized( lock ) {
+            disabledProjects.remove(nativeProject);
+        }
+	ProjectBase csmProject = (ProjectBase) getProject(nativeProject);
+	fireProjectOpened(csmProject);
+    }
+    
+    public boolean isProjectEnabled(NativeProject nativeProject) {
+        ProjectBase project = (ProjectBase) findProject(nativeProject);
+        return (project != null) && (!project.isDisposed());
     }
     
     private Object lock = new Object();
@@ -201,6 +508,13 @@ public class ModelImpl implements CsmModel {
     
     private Map libraries = new HashMap();
     
-    private Collection/*<CsmModelListener>*/ modelListeners = new  LinkedList/*<CsmModelListener>*/();
-        
+    private WeakList<CsmModelListener> modelListeners = new WeakList<CsmModelListener>();
+    private WeakList<CsmModelStateListener> modelStateListeners = new WeakList<CsmModelStateListener>();
+    
+    private CsmModelState state;
+
+    private double warningThreshold = 0.98;
+    //private double fatalThreshold = 0.99;
+    
+    private Set disabledProjects = new HashSet();
 }

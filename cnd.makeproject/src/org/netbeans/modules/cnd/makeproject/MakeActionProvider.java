@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerRoot
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
+import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.LifecycleManager;
@@ -87,6 +88,12 @@ public class MakeActionProvider implements ActionProvider {
         COMMAND_DEBUG_LOAD_ONLY,
         COMMAND_DEBUG_SINGLE,
         COMMAND_BATCH_BUILD,
+        COMMAND_DELETE,
+        COMMAND_COPY,
+        COMMAND_MOVE,
+        COMMAND_RENAME,
+
+        
     };
     
     // Project
@@ -151,6 +158,26 @@ public class MakeActionProvider implements ActionProvider {
         MakeConfigurationDescriptor pd = getProjectDescriptor();
         MakeConfiguration conf = (MakeConfiguration)pd.getConfs().getActive();
         
+        if (COMMAND_DELETE.equals(command)) {
+            DefaultProjectOperations.performDefaultDeleteOperation(project);
+            return ;
+        }
+
+        if (COMMAND_COPY.equals(command)) {
+            DefaultProjectOperations.performDefaultCopyOperation(project);
+            return ;
+        }
+
+        if (COMMAND_MOVE.equals(command)) {
+            DefaultProjectOperations.performDefaultMoveOperation(project);
+            return ;
+        }
+
+        if (COMMAND_RENAME.equals(command)) {
+            DefaultProjectOperations.performDefaultRenameOperation(project, null);
+            return ;
+        }
+        
         // Add actions to do
         Vector actionEvents = new Vector();
         if (command.equals(COMMAND_BATCH_BUILD)) {
@@ -169,6 +196,7 @@ public class MakeActionProvider implements ActionProvider {
         }
         
         // Execute actions
+        if (actionEvents.size() > 0)
         ProjectActionSupport.fireActionPerformed((ProjectActionEvent[])actionEvents.toArray(new ProjectActionEvent[actionEvents.size()]));
     }
     
@@ -259,23 +287,21 @@ public class MakeActionProvider implements ActionProvider {
                 // Save all files and projects
                 if (MakeOptions.getInstance().getSave())
                     LifecycleManager.getDefault().saveAll();
-                if (!ProjectSupport.saveAllProjects(getString("NeedToSaveAllText")))
+                if (!ProjectSupport.saveAllProjects(getString("NeedToSaveAllText"))) // NOI18N
                     return;
             } else if (targetName.equals("run") || targetName.equals("debug") || targetName.equals("debug-stepinto") || targetName.equals("debug-load-only")) { // NOI18N
                 if (conf.isMakefileConfiguration()) {
-                    String path = conf.getMakefileConfiguration().getOutput().getValue();
-                    // Check if something is specified
-                    if (path.length() == 0) {
-                        String errormsg = getString("NO_OUTPUT");
-                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
-                        return;
-                    }
-                    
+                    String path;
                     if (targetName.equals("run")) { // NOI18N
                         // naturalize if relative
                         path = conf.getMakefileConfiguration().getOutput().getValue();
-                        if (!IpeUtils.isPathAbsolute(path))
+                        if (path.length() > 0 && !IpeUtils.isPathAbsolute(path)) {
+                            // make path relative to run working directory
+                            path = conf.getMakefileConfiguration().getAbsOutput();
                             path = FilePathAdaptor.naturalize(path);
+                            path = IpeUtils.toRelativePath(conf.getProfile().getRunDirectory(), path);
+                            path = FilePathAdaptor.naturalize(path);
+                        }
                     } else {
                         // Always absolute
                         path = conf.getMakefileConfiguration().getAbsOutput();
@@ -305,8 +331,13 @@ public class MakeActionProvider implements ActionProvider {
                             String location = FilePathAdaptor.naturalize((String)iter.next());
                             path = location + ";" + path; // NOI18N
                         }
-                        path = path + System.getProperty("Env-PATH"); // NOI18N
-                        runProfile.getEnvironment().putenv("PATH", path); // NOI18N
+                        if (System.getProperty("Env-PATH") != null) { // IZ 77324
+                            path = path + ";" + System.getProperty("Env-PATH"); // NOI18N
+                        }
+                        if (!path.equals("")) { // NOI18N
+                            runProfile.getEnvironment().putenv("PATH", path); // NOI18N
+                        // } else { // no need to set empty path
+                        }
                     }
                     
                     MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
@@ -314,8 +345,13 @@ public class MakeActionProvider implements ActionProvider {
                     if (targetName.equals("run")) { // NOI18N
                         // naturalize if relative
                         path = makeArtifact.getOutput();
-                        if (!IpeUtils.isPathAbsolute(path))
+                        if (!IpeUtils.isPathAbsolute(path)) {
+                            // make path relative to run working directory
+                            path = makeArtifact.getWorkingDirectory() + "/" + path; // NOI18N
                             path = FilePathAdaptor.naturalize(path);
+                            path = IpeUtils.toRelativePath(conf.getProfile().getRunDirectory(), path);
+                            path = FilePathAdaptor.naturalize(path);
+                        }
                     } else {
                         // Always absolute
                         path = IpeUtils.toAbsolutePath(conf.getBaseDir(), makeArtifact.getOutput());
@@ -476,6 +512,8 @@ public class MakeActionProvider implements ActionProvider {
             ConfigurationDescriptor pd = getProjectDescriptor();
             MakeConfiguration conf = (MakeConfiguration)pd.getConfs().getActive();
             RunProfile profile = (RunProfile) conf.getAuxObject(RunProfile.PROFILE_ID);
+            if (profile == null) // See IZ 89349
+                return null;
             if (profile.getBuildFirst())
                 targetNames = (String[])commands.get(command);
             else
@@ -500,6 +538,8 @@ public class MakeActionProvider implements ActionProvider {
     
     public boolean isActionEnabled( String command, Lookup context ) {
         if (getProjectDescriptor() == null)
+            return false;
+        if (!(getProjectDescriptor().getConfs().getActive() instanceof MakeConfiguration))
             return false;
         MakeConfiguration conf = (MakeConfiguration)getProjectDescriptor().getConfs().getActive();
         if (command.equals(COMMAND_CLEAN)) {
@@ -535,6 +575,11 @@ public class MakeActionProvider implements ActionProvider {
                         return false;
             }
             return enabled;
+        } else if (command.equals(COMMAND_DELETE) ||
+                command.equals(COMMAND_COPY) ||
+                command.equals(COMMAND_MOVE) ||
+                command.equals(COMMAND_RENAME)) {
+            return true;
         } else {
             return false;
         }

@@ -1,7 +1,7 @@
 package antlr;
 
 /* ANTLR Translator Generator
- * Project led by Terence Parr at http://www.jGuru.com
+ * Project led by Terence Parr at http://www.cs.usfca.edu
  * Software rights: http://www.antlr.org/license.html
  *
  * $Id$
@@ -9,10 +9,11 @@ package antlr;
 
 import java.util.Hashtable;
 
-import antlr.collections.impl.LList;
+import antlr.ASdebug.ASDebugStream;
+import antlr.ASdebug.IASDebugStream;
+import antlr.ASdebug.TokenOffsetInfo;
 import antlr.collections.Stack;
-
-import java.io.IOException;
+import antlr.collections.impl.LList;
 
 /** A token stream MUX (multiplexor) knows about n token streams
  *  and can multiplex them onto the same channel for use by token
@@ -21,7 +22,7 @@ import java.io.IOException;
  *	Or, you can have multiple instances of the same lexer handle
  *  multiple input streams; this works great for includes.
  */
-public class TokenStreamSelector implements TokenStream {
+public class TokenStreamSelector implements TokenStream, IASDebugStream {
     /** The set of inputs to the MUX */
     protected Hashtable inputStreamNames;
 
@@ -103,5 +104,15 @@ public class TokenStreamSelector implements TokenStream {
 
     public void select(String sname) throws IllegalArgumentException {
         input = getStream(sname);
+    }
+
+    public String getEntireText()
+    {
+        return ASDebugStream.getEntireText(this.input);
+    }
+
+    public TokenOffsetInfo getOffsetInfo(Token token)
+    {
+        return ASDebugStream.getOffsetInfo(this.input, token);
     }
 }

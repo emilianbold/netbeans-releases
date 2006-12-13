@@ -51,7 +51,8 @@ public class BreakpointsReader implements Properties.Reader {
             lb.setCondition(properties.getString(LineBreakpoint.PROP_CONDITION, "")); // NOI18N
             b = lb;
         }
-        if (typeID.equals (FunctionBreakpoint.class.getName())) {
+        if (typeID.equals (FunctionBreakpoint.class.getName()) ||
+                        typeID.equals(FunctionBreakpoint.class.getName() + "$FunctionBreakpointComparable")) { // NOI18N
             FunctionBreakpoint fb = FunctionBreakpoint.create(""); // NOI18N
             fb.setFunctionName(properties.getString(FunctionBreakpoint.PROP_FUNCTION_NAME, "")); // NOI18N
             fb.setCondition(properties.getString (FunctionBreakpoint.PROP_CONDITION, "")); // NOI18N

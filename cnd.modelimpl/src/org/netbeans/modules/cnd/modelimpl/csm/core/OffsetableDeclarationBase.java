@@ -40,8 +40,8 @@ public abstract class OffsetableDeclarationBase extends OffsetableBase implement
         super(ast, file);
     }
     
-    public OffsetableDeclarationBase(CsmFile file, int start, int end) {
-        super(file, start, end);
+    public OffsetableDeclarationBase(CsmFile file) {
+        super(file);
     }
     
     public String getUniqueName() {

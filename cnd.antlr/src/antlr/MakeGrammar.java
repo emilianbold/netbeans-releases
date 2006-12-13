@@ -1,7 +1,7 @@
 package antlr;
 
 /* ANTLR Translator Generator
- * Project led by Terence Parr at http://www.jGuru.com
+ * Project led by Terence Parr at http://www.cs.usfca.edu
  * Software rights: http://www.antlr.org/license.html
  *
  * $Id$
@@ -220,7 +220,7 @@ public class MakeGrammar extends DefineGrammarSymbols {
                                String docComment)
         throws SemanticException {
         //		if ( Character.isUpperCase(r.getText().charAt(0)) ) {
-        if (r.type == ANTLRTokenTypes.TOKEN_REF) {
+        if (r.getType() == ANTLRTokenTypes.TOKEN_REF) {
             if (!(grammar instanceof LexerGrammar)) {
                 tool.error("Lexical rule " + r.getText() +
                            " defined outside of lexer",
@@ -240,7 +240,7 @@ public class MakeGrammar extends DefineGrammarSymbols {
         super.defineRuleName(r, access, ruleAutoGen, docComment);
         String id = r.getText();
         //		if ( Character.isUpperCase(id.charAt(0)) ) { // lexer rule?
-        if (r.type == ANTLRTokenTypes.TOKEN_REF) { // lexer rule?
+        if (r.getType() == ANTLRTokenTypes.TOKEN_REF) { // lexer rule?
             id = CodeGenerator.encodeLexerRuleName(id);
         }
         RuleSymbol rs = (RuleSymbol)grammar.getSymbol(id);
@@ -396,7 +396,7 @@ public class MakeGrammar extends DefineGrammarSymbols {
         }
     }
 
-    public void noAutoGenSubRule() {
+    public void noASTSubRule() {
         context().block.setAutoGen(false);
     }
 
@@ -585,7 +585,7 @@ public class MakeGrammar extends DefineGrammarSymbols {
         // Disallow parser rule references in the lexer
         if (grammar instanceof LexerGrammar) {
             //			if (!Character.isUpperCase(r.getText().charAt(0))) {
-            if (r.type != ANTLRTokenTypes.TOKEN_REF) {
+            if (r.getType() != ANTLRTokenTypes.TOKEN_REF) {
                 tool.error("Parser rule " + r.getText() + " referenced in lexer");
                 return;
             }
@@ -606,7 +606,7 @@ public class MakeGrammar extends DefineGrammarSymbols {
 
         String id = r.getText();
         //		if ( Character.isUpperCase(id.charAt(0)) ) { // lexer rule?
-        if (r.type == ANTLRTokenTypes.TOKEN_REF) { // lexer rule?
+        if (r.getType() == ANTLRTokenTypes.TOKEN_REF) { // lexer rule?
             id = CodeGenerator.encodeLexerRuleName(id);
         }
         // update symbol table so it knows what nodes reference the rule.
@@ -746,6 +746,7 @@ public class MakeGrammar extends DefineGrammarSymbols {
         b.line = src.line;
         b.greedy = src.greedy;
         b.greedySet = src.greedySet;
+        b.combineChars = src.combineChars;
     }
 
     public void setRuleOption(Token key, Token value) {

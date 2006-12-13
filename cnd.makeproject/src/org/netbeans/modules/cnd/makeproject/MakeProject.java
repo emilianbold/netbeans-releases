@@ -41,7 +41,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.ui.MakeCustomizerProvider;
-import org.netbeans.modules.cnd.makeproject.ui.MakePhysicalViewProvider;
+import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
@@ -52,7 +52,9 @@ import org.netbeans.spi.project.support.ant.ProjectXmlSavedHook;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
+import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
+import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -119,6 +121,10 @@ final class MakeProject implements Project, AntProjectListener {
     ReferenceHelper getReferenceHelper () {
         return this.refHelper;
     }
+    
+    public AntProjectHelper getAntProjectHelper() {
+        return helper;
+    }
 
     public Lookup getLookup() {
         return lookup;
@@ -132,7 +138,7 @@ final class MakeProject implements Project, AntProjectListener {
             helper.createCacheDirectoryProvider(),
             spp,
             new MakeActionProvider( this, helper ),
-            new MakePhysicalViewProvider(this, helper, evaluator(), spp, refHelper),
+            new MakeLogicalViewProvider(this, helper, evaluator(), spp, refHelper),
             new MakeCustomizerProvider(this, helper, evaluator(), refHelper, projectDescriptorProvider),
             new MakeArtifactProviderImpl(),
 	    //new CustomActionsHookImpl(),
@@ -144,6 +150,8 @@ final class MakeProject implements Project, AntProjectListener {
 	    projectDescriptorProvider,
             MobilityBridge.createBridge(this),
             new NativeProjectProvider(this, projectDescriptorProvider),
+	    new RecommendedTemplatesImpl(),
+            new MakeProjectOperations(this),
         });
     }
 
@@ -167,6 +175,53 @@ final class MakeProject implements Project, AntProjectListener {
             return helper;
         }
     }
+
+    private static final class RecommendedTemplatesImpl
+		    implements RecommendedTemplates, PrivilegedTemplates {
+
+        private static final String[] RECOMMENDED_TYPES = new String[] { 
+	    "c-types",         // NOI18N
+            "cpp-types",       // NOI18N
+            "shell-types",     // NOI18N
+            "makefile-types",  // NOI18N
+            "c-types",         // NOI18N
+            "simple-files",    // NOI18N
+	};
+        
+        private static final String[] RECOMMENDED_TYPES_FORTRAN = new String[] { 
+	    "c-types",         // NOI18N
+            "cpp-types",       // NOI18N
+            "shell-types",     // NOI18N
+            "makefile-types",  // NOI18N
+            "c-types",         // NOI18N
+            "simple-files",    // NOI18N
+            "fortran-types",   // NOI18N
+	};
+
+        private static final String[] PRIVILEGED_NAMES = new String[] { 
+            "Templates/cFiles/main.c",                                      // NOI18N
+            "Templates/cFiles/file.c",                                      // NOI18N
+            "Templates/cFiles/file.h",                                      // NOI18N
+            "Templates/cppFiles/main.cc",                                   // NOI18N
+            "Templates/cppFiles/file.cc",                                   // NOI18N
+            "Templates/cppFiles/file.h",                                    // NOI18N
+            "Templates/MakeTemplates/ComplexMakefile",			    // NOI18N
+            "Templates/MakeTemplates/SimpleMakefile/ExecutableMakefile",    // NOI18N
+            "Templates/MakeTemplates/SimpleMakefile/SharedLibMakefile",     // NOI18N
+            "Templates/MakeTemplates/SimpleMakefile/StaticLibMakefile",     // NOI18N
+	};
+
+	public String[] getRecommendedTypes() {
+            if (MakeOptions.getInstance().getFortran())
+                return RECOMMENDED_TYPES_FORTRAN;
+            else
+                return RECOMMENDED_TYPES;
+	}
+        
+        public String[] getPrivilegedTemplates() {
+            return PRIVILEGED_NAMES;
+        }
+    }
     
     /** Return configured project name. */
     public String getName() {
@@ -186,7 +241,6 @@ final class MakeProject implements Project, AntProjectListener {
         });
     }
     
-    /** Store configured project name. * /
     public void setName(final String name) {
         ProjectManager.mutex().writeAccess(new Mutex.Action() {
             public Object run() {
@@ -202,7 +256,7 @@ final class MakeProject implements Project, AntProjectListener {
                     }
                 } else {
                     nameEl = data.getOwnerDocument().createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name");
-                    data.insertBefore(nameEl, / * OK if null * /data.getChildNodes().item(0));
+                    data.insertBefore(nameEl, /* OK if null */data.getChildNodes().item(0));
                 }
                 nameEl.appendChild(data.getOwnerDocument().createTextNode(name));
                 helper.putPrimaryConfigurationData(data, true);
@@ -210,7 +264,6 @@ final class MakeProject implements Project, AntProjectListener {
             }
         });
     }
-     */
     
     // Private innerclasses ----------------------------------------------------
 
@@ -291,11 +344,13 @@ final class MakeProject implements Project, AntProjectListener {
         }
         
         public String getName() {
-            return PropertyUtils.getUsablePropertyName(MakeProject.this.getName());
+            String name = PropertyUtils.getUsablePropertyName(MakeProject.this.getName());
+            return name;
         }
         
         public String getDisplayName() {
-            return MakeProject.this.getName();
+            String name = MakeProject.this.getName();
+            return name;
         }
         
         public Icon getIcon() {

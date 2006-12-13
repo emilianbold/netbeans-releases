@@ -50,12 +50,10 @@ public class ShowHideClassViewAction extends CallableSystemAction {
     }
 
     public void actionPerformed(ActionEvent ev) {
-		System.err.println("ShowHideClassViewAction.actionPerformed");
 		performAction();
     }
 
     public void performAction() {
-		System.err.println("ShowHideClassViewAction.performAction");
 		TopComponent tc = ClassViewTopComponent.findDefault();
 		tc.open();
 		tc.requestActive();

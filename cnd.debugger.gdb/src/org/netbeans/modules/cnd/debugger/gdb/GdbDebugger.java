@@ -44,11 +44,11 @@ import org.netbeans.modules.cnd.debugger.gdb.event.GdbBreakpointEvent;
 public abstract class GdbDebugger {
 
     /** Name of property for state of debugger. */
-    public static final String          PROP_STATE = "state";
+    public static final String          PROP_STATE = "state"; // NOI18N
     /** Name of property for current thread. */
-    public static final String          PROP_CURRENT_THREAD = "currentThread";
+    public static final String          PROP_CURRENT_THREAD = "currentThread"; // NOI18N
     /** Name of property for current stack frame. */
-    public static final String          PROP_CURRENT_CALL_STACK_FRAME = "currentCallStackFrame";
+    public static final String          PROP_CURRENT_CALL_STACK_FRAME = "currentCallStackFrame"; // NOI18N
     /** Property name constant. */
     public static final String          PROP_SUSPEND = "suspend"; // NOI18N
 
@@ -57,24 +57,25 @@ public abstract class GdbDebugger {
     /** Suspend property value constant. */
     //public static final int             SUSPEND_EVENT_THREAD = EventRequest.SUSPEND_EVENT_THREAD;
    
-    /** Debugger state constant. */
-    public static final int             STATE_NONE = 0;
+    public static final String             STATE_NONE = "state_none"; // NOI18N
+    public static final String             STATE_STARTING = "state_starting"; // NOI18N
+    public static final String             STATE_LOADING = "state_loading"; // NOI18N
+    public static final String             STATE_RUNNING = "state_running"; // NOI18N
+    public static final String             STATE_STOPPED = "state_stopped"; // NOI18N
+    public static final String             STATE_EXITED  = "state_exited"; // NOI18N
     
-    /** Debugger state constant. */
-    public static final int             STATE_STARTING = 1;
-    /** Debugger state constant. */
-    public static final int             STATE_RUNNING = 2;
-    /** Debugger state constant. */
-    public static final int             STATE_STOPPED = 3;
+    /* Some breakpoint flags used only on Windows XP (with Cygwin) */
+    public static final int                GDB_TMP_BREAKPOINT = 1;
+    public static final int                GDB_INVISIBLE_BREAKPOINT = 2;
     
     /** ID of GDB Debugger Engine for C */
-    public static final String          ENGINE_ID = "netbeans-cnd-GdbSession/C";
+    public static final String          ENGINE_ID = "netbeans-cnd-GdbSession/C"; // NOI18N
 
     /** ID of GDB Debugger Session */
-    public static final String          SESSION_ID = "netbeans-cnd-GdbSession";
+    public static final String          SESSION_ID = "netbeans-cnd-GdbSession"; // NOI18N
 
     /** ID of GDB Debugger SessionProvider */
-    public static final String          SESSION_PROVIDER_ID = "netbeans-cnd-GdbSessionProvider";
+    public static final String          SESSION_PROVIDER_ID = "netbeans-cnd-GdbSessionProvider"; // NOI18N
     
 
     
@@ -128,7 +129,7 @@ public abstract class GdbDebugger {
      * @see #STATE_STOPPED
      * @see #STATE_DISCONNECTED
      */
-    public abstract int getState();
+    public abstract String getState();
     
     /**
      * Gets value of suspend property.
@@ -143,6 +144,12 @@ public abstract class GdbDebugger {
      * @param s a new value of suspend property
      */
     public abstract void setSuspend(int s);
+    
+    
+    /**
+     *  Get the directory we run in.
+     */
+    public abstract String getRunDirectory();
     
     /**
      * Returns current thread or null.
@@ -177,6 +184,30 @@ public abstract class GdbDebugger {
      */
     public abstract Variable evaluate(String expression) throws InvalidExpressionException;
 
+    /**
+     * Returns variable type as String.
+     *
+     * @param expression A variable name or an expression
+     * @return variable type
+     */
+    public abstract String getVariableType(String expression);
+
+    /**
+     * Returns variable value as String.
+     *
+     * @param expression A variable name or an expression
+     * @return variable value
+     */
+    public abstract String getVariableValue(String expression);
+
+    /**
+     * Returns variable's number of children as String.
+     *
+     * @param expression A variable name or an expression
+     * @return number of children
+     */
+    public abstract String getVariableNumChild(String expression);
+    
     /**
      * Waits till the Virtual Machine is started and returns 
      * {@link DebuggerStartException} if some problem occurres.

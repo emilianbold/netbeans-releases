@@ -25,6 +25,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.gdb.breakpoints.FunctionBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.LineBreakpoint;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -63,21 +64,23 @@ public class EditorContextBridge {
         
         if (fullname != null) {
             File file = new File(fullname);
-            FileObject fo = FileUtil.toFileObject(file);
-            String url;
-            try {
-                url = fo.getURL().toExternalForm();
-            } catch (FileStateInvalidException ex) {
-                if (Utilities.isWindows()) {
-                    url = "file:/" + fo.getPath().replace(" ", "%20"); // NOI18N
-                } else {
-                    url = "file:/" + fo.getPath(); // NOI18N
-                }
-            }
-            return getContext().showSource(url, csf.getLineNumber(), null);
-        } else {
-            return false;
+	    if (file.exists()) {
+		FileObject fo = FileUtil.toFileObject(file);
+		String url;
+		try {
+		    URL tmpurl = fo.getURL();
+		    url = fo.getURL().toExternalForm();
+		} catch (FileStateInvalidException ex) {
+		    if (Utilities.isWindows()) {
+			url = "file:/" + fo.getPath().replace(" ", "%20"); // NOI18N
+		    } else {
+			url = "file:/" + fo.getPath(); // NOI18N
+		    }
+		}
+		return getContext().showSource(url, csf.getLineNumber(), null);
+	    }
         }
+	return false;
     }
     
     /**
@@ -120,23 +123,30 @@ public class EditorContextBridge {
     public static Object annotate(CallStackFrame csf, String annotationType) {
         String fullname = csf.getFullname();
         if (fullname != null) {
-            File file = new File(csf.getFullname());
-            FileObject fo = FileUtil.toFileObject(file);
-            String url;
-            try {
-                url = fo.getURL().toExternalForm();
-            } catch (FileStateInvalidException ex) {
-                /* Best guesses */
-                if (Utilities.isWindows()) {
-                    url = "file:/" + fo.getPath().replace(" ", "%20"); // NOI18N
-                } else {
-                    url = "file:" + fo.getPath(); // NOI18N
-                }
-            }
-            return getContext().annotate(url, csf.getLineNumber(), annotationType, null);
-        } else {
-            return null;
-        }
+            File file = new File(fullname);
+	    if (file.exists()) {
+		FileObject fo = FileUtil.toFileObject(file);
+		String url;
+		try {
+		    url = fo.getURL().toExternalForm();
+		} catch (FileStateInvalidException ex) {
+		    /* Best guesses */
+		    if (Utilities.isWindows()) {
+			url = "file:/" + fo.getPath().replace(" ", "%20"); // NOI18N
+		    } else {
+			url = "file:" + fo.getPath(); // NOI18N
+		    }
+		}
+//		System.err.println("ECB.annotate[Set]:     " + fullname + " [" + csf.getLineNumber() + ", " + annotationType + "]");
+		return getContext().annotate(url, csf.getLineNumber(), annotationType, null);
+	    }
+//	    else {
+//		System.err.println("ECB.annotate[Ignored]: " + fullname + " [" + csf.getLineNumber() + ", " + annotationType + "]");
+//	    }
+//        } else {
+//	    System.err.println("fullname:");
+	}
+	return null;
     }
     
     /**
@@ -163,6 +173,15 @@ public class EditorContextBridge {
     public static int getCurrentLineNumber() {
         return getContext().getCurrentLineNumber();
     }
+    
+    /**
+     * Returns number of line currently selected in editor or <code>null</code>.
+     *
+     * @return number of line currently selected in editor or <code>0</code>
+     */
+    public static int getMostRecentLineNumber() {
+        return getContext().getMostRecentLineNumber();
+    }
 
     /**
      * Returns URL of source currently selected in editor or <code>null</code>.
@@ -171,6 +190,16 @@ public class EditorContextBridge {
      */
     public static String getCurrentURL() {
         return getContext().getCurrentURL();
+    }
+    
+    /**
+     *  Return the most recent URL or empty string. The difference between this and getCurrentURL()
+     *  is that this one will return a URL when the editor has lost focus.
+     *
+     *  @return url in string form
+     */
+    public static String getMostRecentURL() {
+	return getContext().getMostRecentURL();
     }
 
     /**
@@ -213,6 +242,15 @@ public class EditorContextBridge {
     public String getCurrentMIMEType() {
         return getContext().getCurrentMIMEType();
     }
+    
+    /**
+     * Get the MIME type of the most recently selected file.
+     *
+     * @return The MIME type of the most recent selected file
+     */
+    public static String getMostRecentMIMEType() {
+	return getContext().getMostRecentMIMEType();
+    }
         
     /**
      * Adds a property change listener.
@@ -232,10 +270,20 @@ public class EditorContextBridge {
 
     public static String getFileName(LineBreakpoint b) { 
         try {
-            return new File(new URL(b.getURL()).getFile()).getName();
+            return basename(new File(new URL(b.getURL()).getFile()).getName());
         } catch (MalformedURLException e) {
             return null;
         }
+    }
+    
+    private static String basename(String name) {
+	int idx = name.lastIndexOf('/');
+	
+	if (idx > 0) {
+	    return name.substring(idx);
+	} else {
+	    return name;
+	}
     }
 
     
@@ -251,6 +299,23 @@ public class EditorContextBridge {
     }
 
     public static Object annotate(LineBreakpoint b) {
+        String url = b.getURL();
+        int lineNumber = b.getLineNumber();
+        if (lineNumber < 1) {
+            return null;
+        }
+        String condition = b.getCondition();
+        boolean isConditional = (condition != null) && !condition.trim().equals(""); // NOI18N
+        String annotationType = b.isEnabled() ?
+            (isConditional ? EditorContext.CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE :
+                             EditorContext.BREAKPOINT_ANNOTATION_TYPE) :
+            (isConditional ? EditorContext.DISABLED_CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE :
+                             EditorContext.DISABLED_BREAKPOINT_ANNOTATION_TYPE);
+
+        return annotate(url, lineNumber, annotationType, null);
+    }
+
+    public static Object annotate(FunctionBreakpoint b) {
         String url = b.getURL();
         int lineNumber = b.getLineNumber();
         if (lineNumber < 1) {
@@ -311,11 +376,27 @@ public class EditorContextBridge {
             }
             return s;
         }
+
+        public String getMostRecentURL() {
+            String s = cp1.getMostRecentURL();
+            if (s.trim().length() < 1) {
+                return cp2.getMostRecentURL();
+            }
+            return s;
+        }
         
         public int getCurrentLineNumber() {
             int i = cp1.getCurrentLineNumber();
             if (i < 1) {
                 return cp2.getCurrentLineNumber();
+            }
+            return i;
+        }
+        
+        public int getMostRecentLineNumber() {
+            int i = cp1.getMostRecentLineNumber();
+            if (i < 1) {
+                return cp2.getMostRecentLineNumber();
             }
             return i;
         }
@@ -376,8 +457,15 @@ public class EditorContextBridge {
             if (s == null) {
                 return cp2.getCurrentMIMEType();
             }
-            return s;
-            
+            return s;            
+        }
+        
+        public String getMostRecentMIMEType() {
+            String s = cp1.getMostRecentMIMEType();
+            if (s == null) {
+                return cp2.getMostRecentMIMEType();
+            }
+            return s;            
         }
         
         public void addPropertyChangeListener(PropertyChangeListener l) {

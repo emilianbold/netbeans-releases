@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -408,15 +408,10 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
                         customizerPanel.remove( currentCustomizer );
                     }
                     ConfigurationNode configurationNode = (ConfigurationNode)node;
-                    Sheet[] sheets;
-                    sheets = new Sheet[selectedConfigurations.length];
-                    for (int i = 0; i < selectedConfigurations.length; i++)
-                        sheets[i] = configurationNode.getSheet(project, projectDescriptor, selectedConfigurations[i]);
-                    
                     PropertySheetView currentPropertySheetView = new PropertySheetView();
-                    DummyNode[] dummyNodes = new DummyNode[sheets.length];
-                    for (int i = 0; i < sheets.length; i++) {
-                        dummyNodes[i] = new DummyNode(sheets[i]);
+                    DummyNode[] dummyNodes = new DummyNode[selectedConfigurations.length];
+                    for (int i = 0; i < selectedConfigurations.length; i++) {
+                        dummyNodes[i] = new DummyNode(configurationNode.getSheet(project, projectDescriptor, selectedConfigurations[i]), selectedConfigurations[i].getName());
                     }
                     currentPropertySheetView.setNodes(dummyNodes);
                     JPanel panel = new JPanel();
@@ -457,8 +452,8 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
                     }
                     break;
                 }
-                selectedConfigurations = confSelectorPanel.getSelectedConfs();
-                if (selectedConfigurations.length > 1) {
+                if (confSelectorPanel.getSelectedConfs().length > 1) {
+                    selectedConfigurations = confSelectorPanel.getSelectedConfs();
                     lastComboboxIndex = configurationComboBox.getSelectedIndex();
                     break;
                 } else {
@@ -483,18 +478,22 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         boolean includeMakefileDescription = true;
         boolean includeNewDescription = true;
         int compilerSet = -1;
+        boolean isCompileConfiguration = ((MakeConfiguration)selectedConfigurations[0]).isCompileConfiguration();
         boolean includeLinkerDescription = true;
         boolean includeArchiveDescription = true;
         
         for (int i = 0; i < selectedConfigurations.length; i++) {
             MakeConfiguration makeConfiguration = (MakeConfiguration)selectedConfigurations[i];
-            if (makeConfiguration.isCompileConfiguration()) {
-                if (compilerSet >= 0 && makeConfiguration.getCompilerSet().getValue() != compilerSet)
-                    includeNewDescription = false;
-                compilerSet = makeConfiguration.getCompilerSet().getValue();
-            }
-            if (makeConfiguration.isMakefileConfiguration()) {
+            
+            if (compilerSet >= 0 && makeConfiguration.getCompilerSet().getValue() != compilerSet)
                 includeNewDescription = false;
+            compilerSet = makeConfiguration.getCompilerSet().getValue();
+            
+            if ((isCompileConfiguration && !makeConfiguration.isCompileConfiguration()) || (!isCompileConfiguration && makeConfiguration.isCompileConfiguration()))
+                includeNewDescription = false;
+            
+            if (makeConfiguration.isMakefileConfiguration()) {
+                //includeNewDescription = false;
                 includeLinkerDescription = false;
                 includeArchiveDescription = false;
             }
@@ -515,7 +514,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         if (includeMakefileDescription)
             descriptions.add(createMakefileDescription(project));
         if (includeNewDescription)
-            descriptions.add(createNewDescription(project, compilerSet, -1, null));
+            descriptions.add(createNewDescription(project, compilerSet, -1, null, isCompileConfiguration));
         if (includeLinkerDescription)
             descriptions.add(createLinkerDescription());
         if (includeArchiveDescription)
@@ -532,6 +531,8 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         
         int tool = -1;
         int compilerSet = -1;
+        boolean isCompileConfiguration = ((MakeConfiguration)selectedConfigurations[0]).isCompileConfiguration();
+        
         for (int i = 0; i < selectedConfigurations.length; i++) {
             MakeConfiguration makeConfiguration = (MakeConfiguration)selectedConfigurations[i];
             int compilerSet2 = makeConfiguration.getCompilerSet().getValue();
@@ -545,6 +546,11 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
                 tool = -1;
                 break;
             }
+            
+            if ((isCompileConfiguration && !makeConfiguration.isCompileConfiguration()) || (!isCompileConfiguration && makeConfiguration.isCompileConfiguration())) {
+                tool = -1;
+                break;
+            }
         }
         
         int count = 1;
@@ -555,11 +561,11 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         descriptions[index++] = createGeneralItemDescription(project, item);
         if (tool >= 0) {
             if (tool == Tool.CCompiler)
-                descriptions[index++] = createNewDescription(project, compilerSet, tool, item);
+                descriptions[index++] = createNewDescription(project, compilerSet, tool, item, isCompileConfiguration);
             else if (tool == Tool.CCCompiler)
-                descriptions[index++] = createNewDescription(project, compilerSet, tool, item);
+                descriptions[index++] = createNewDescription(project, compilerSet, tool, item, isCompileConfiguration);
             else if (tool == Tool.FortranCompiler)
-                descriptions[index++] = createNewDescription(project, compilerSet, tool, item);
+                descriptions[index++] = createNewDescription(project, compilerSet, tool, item, isCompileConfiguration);
             else if (tool == Tool.CustomTool)
                 descriptions[index++] = createCustomBuildItemDescription(project, item);
             else
@@ -670,18 +676,23 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
     
     
     // C/C++/Fortran Node
-    private CustomizerNode createNewDescription(Project project, int compilerSet, int tool, Item item) {
+    private CustomizerNode createNewDescription(Project project, int compilerSet, int tool, Item item, boolean isCompilerConfiguration) {
         ResourceBundle bundle = NbBundle.getBundle( MakeCustomizer.class );
         
         Vector descriptions = new Vector();
         if (tool < 0 || tool == Tool.CCompiler)
-            descriptions.add(createCCompilerDescription(project, compilerSet, item));
+            descriptions.add(createCCompilerDescription(project, compilerSet, item, isCompilerConfiguration));
         if (tool < 0 || tool == Tool.CCCompiler)
-            descriptions.add(createCCCompilerDescription(project, compilerSet, item));
+            descriptions.add(createCCCompilerDescription(project, compilerSet, item, isCompilerConfiguration));
         if ((tool < 0 && MakeOptions.getInstance().getFortran()) || tool == Tool.FortranCompiler)
-            descriptions.add(createFortranCompilerDescription(project, compilerSet, item));
+            descriptions.add(createFortranCompilerDescription(project, compilerSet, item, isCompilerConfiguration));
         
-        String nodeLabel = MakeOptions.getInstance().getFortran() ? getString("LBL_CCPPFORTRAN_NODE") : getString("LBL_CCPP_NODE");
+        String nodeLabel;
+        if (isCompilerConfiguration) {
+            nodeLabel = MakeOptions.getInstance().getFortran() ? getString("LBL_CCPPFORTRAN_NODE") : getString("LBL_CCPP_NODE");
+        } else {
+            nodeLabel = "Parser Configuration";
+        }
         
         CustomizerNode rootDescription = new CustomizerNode(
                 "C/C++", // NOI18N
@@ -757,7 +768,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
     
     
     // C Compiler Node
-    private CustomizerNode createCCompilerDescription(Project project, int compilerSet, Item item) {
+    private CustomizerNode createCCompilerDescription(Project project, int compilerSet, Item item, boolean isCompilerConfiguration) {
         String compilerName = CompilerSets.getCompilerSet(compilerSet).getTool(BasicCompiler.CCompiler).getName();
         String compilerDisplayName = CompilerSets.getCompilerSet(compilerSet).getTool(BasicCompiler.CCompiler).getDisplayName();
         ResourceBundle bundle = NbBundle.getBundle(MakeCustomizer.class);
@@ -766,11 +777,18 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
                 bundle.getString("LBL_Config_General"), // NOI18N
                 null,
                 item);
-        CustomizerNode clCustomizerNode = new CCompilerCommandLineNode("CCommandLine", getString("LBL_COMMAND_LINE"), null, item); // NOI18N
+        CustomizerNode[] customizerNodes;
+        if (isCompilerConfiguration) {
+            CustomizerNode clCustomizerNode = new CCompilerCommandLineNode("CCommandLine", getString("LBL_COMMAND_LINE"), null, item); // NOI18N
+            customizerNodes = new CustomizerNode[] {cCompilerCustomizerNode, clCustomizerNode};
+        } else {
+            customizerNodes = new CustomizerNode[] {cCompilerCustomizerNode};
+        }
+        
         return  new CustomizerNode(
                 compilerName, // NOI18N
                 compilerDisplayName, // FIXUP
-                new CustomizerNode[] {cCompilerCustomizerNode, clCustomizerNode});
+                customizerNodes);
     }
     
     class CCompilerCustomizerNode extends CustomizerNode {
@@ -810,7 +828,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
     
     
     // CC Compiler Node
-    private CustomizerNode createCCCompilerDescription(Project project, int compilerSet, Item item) {
+    private CustomizerNode createCCCompilerDescription(Project project, int compilerSet, Item item, boolean isCompilerConfiguration) {
         String compilerName = CompilerSets.getCompilerSet(compilerSet).getTool(BasicCompiler.CCCompiler).getName();
         String compilerDisplayName = CompilerSets.getCompilerSet(compilerSet).getTool(BasicCompiler.CCCompiler).getDisplayName();
         ResourceBundle bundle = NbBundle.getBundle(MakeCustomizer.class);
@@ -819,11 +837,18 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
                 bundle.getString("LBL_Config_General"), // NOI18N
                 null,
                 item);
-        CustomizerNode clCustomizerNode = new CCCompilerCommandLineNode("CCCommandLine", getString("LBL_COMMAND_LINE"), null, item); // NOI18N
+        CustomizerNode[] customizerNodes;
+        if (isCompilerConfiguration) {
+            CustomizerNode clCustomizerNode = new CCCompilerCommandLineNode("CCCommandLine", getString("LBL_COMMAND_LINE"), null, item); // NOI18N
+            customizerNodes = new CustomizerNode[] {ccCompilerCustomizerNode, clCustomizerNode};
+        } else {
+            customizerNodes = new CustomizerNode[] {ccCompilerCustomizerNode};
+        }
+        
         return  new CustomizerNode(
                 compilerName, // NOI18N
                 compilerDisplayName, // FIXUP
-                new CustomizerNode[] {ccCompilerCustomizerNode, clCustomizerNode});
+                customizerNodes);
     }
     
     class CCCompilerCustomizerNode extends CustomizerNode {
@@ -864,7 +889,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
     
     
     // Fortran Compiler Node
-    private CustomizerNode createFortranCompilerDescription(Project project, int compilerSet, Item item) {
+    private CustomizerNode createFortranCompilerDescription(Project project, int compilerSet, Item item, boolean isCompilerConfiguration) {
         String compilerName = CompilerSets.getCompilerSet(compilerSet).getTool(BasicCompiler.FortranCompiler).getName();
         String compilerDisplayName = CompilerSets.getCompilerSet(compilerSet).getTool(BasicCompiler.FortranCompiler).getDisplayName();
         CustomizerNode fortranCompilerCustomizerNode = new FortranCompilerCustomizerNode(
@@ -872,11 +897,18 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
                 getString("LBL_Config_General"), // NOI18N
                 null,
                 item);
-        CustomizerNode clCustomizerNode = new FortranCompilerCommandLineNode("FortranCommandLine", getString("LBL_COMMAND_LINE"), null, item); // NOI18N
+        CustomizerNode[] customizerNodes;
+        if (isCompilerConfiguration) {
+            CustomizerNode clCustomizerNode = new FortranCompilerCommandLineNode("FortranCommandLine", getString("LBL_COMMAND_LINE"), null, item); // NOI18N
+            customizerNodes = new CustomizerNode[] {fortranCompilerCustomizerNode, clCustomizerNode};
+        } else {
+            customizerNodes = new CustomizerNode[] {fortranCompilerCustomizerNode};
+        }
+        
         return  new CustomizerNode(
                 compilerName, // NOI18N
                 compilerDisplayName, // FIXUP
-                new CustomizerNode[] {fortranCompilerCustomizerNode, clCustomizerNode});
+                customizerNodes);
     }
     
     class FortranCompilerCustomizerNode extends CustomizerNode {
@@ -937,10 +969,11 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
     }
     
     private class DummyNode extends AbstractNode {
-        public DummyNode(Sheet sheet) {
+        public DummyNode(Sheet sheet, String name) {
             super(Children.LEAF);
             if (sheet != null)
                 setSheet(sheet);
+            setName(name);
         }
     }
     

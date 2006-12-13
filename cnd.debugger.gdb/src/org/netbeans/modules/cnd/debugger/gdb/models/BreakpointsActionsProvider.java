@@ -23,7 +23,6 @@ import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.Action;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 
 import org.openide.DialogDescriptor;
@@ -43,6 +42,8 @@ import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.LineBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.FunctionBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.EditorContextBridge;
+import org.netbeans.modules.cnd.debugger.gdb.breakpoints.FunctionBreakpointPanel;
+import org.netbeans.modules.cnd.debugger.gdb.breakpoints.LineBreakpointPanel;
 
 
 /**
@@ -117,12 +118,13 @@ public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
     public static void customize(Breakpoint b) {
         JComponent c = null;
         if (b instanceof LineBreakpoint) {
-            //c = new LineBreakpointPanel((LineBreakpoint) b);
+            c = new LineBreakpointPanel((LineBreakpoint) b);
         } else if (b instanceof FunctionBreakpoint) {
-            //c = new FunctionBreakpointPanel((FunctionBreakpoint) b);
-        }
+            c = new FunctionBreakpointPanel((FunctionBreakpoint) b);
+        } else {
+	    return; // should never happen (ie, its a developer error)
+	}
 
-        // XXX - Unimplemented and should throw NPE!
         c.getAccessibleContext().setAccessibleDescription(
                 NbBundle.getMessage(BreakpointsActionsProvider.class, "ACSD_Breakpoint_Customizer_Dialog")); // NOI18N
         HelpCtx helpCtx = HelpCtx.findHelp(c);

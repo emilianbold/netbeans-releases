@@ -70,11 +70,7 @@ public class DebuggerOutput extends LazyActionsManagerListener implements Proper
         }
         
         // open new tab
-        String title = (String) contextProvider.lookupFirst(null, String.class);
-        if (title == null) {
-            title = NbBundle.getBundle(IOManager.class).getString("CTL_DebuggerConsole_Title");
-        } 
-                
+        String title = NbBundle.getBundle(IOManager.class).getString("CTL_DebuggerConsole_Title"); // NOI18N                
         ioManager = new IOManager(title);
         managers.add(ioManager);
         
@@ -93,7 +89,7 @@ public class DebuggerOutput extends LazyActionsManagerListener implements Proper
 
     public void propertyChange(PropertyChangeEvent evt) {
         //GdbThread t;
-        int debuggerState;
+        String debuggerState;
         IOManager ioManager;
         synchronized (this) {
             if (debugger == null) {
@@ -107,6 +103,8 @@ public class DebuggerOutput extends LazyActionsManagerListener implements Proper
             print("CTL_Launching", new String[] { }, null); // NOI18N
         } else if (debuggerState == GdbDebugger.STATE_RUNNING) {
             print("CTL_Debugger_running", new String[] { }, null); // NOI18N
+        } else if (debuggerState == GdbDebugger.STATE_EXITED) {
+            print("CTL_Debugger_finished", new String[] { }, null); // NOI18N
         } else if (debuggerState == GdbDebugger.STATE_NONE) {
             Throwable e = null;
             try {
@@ -132,6 +130,7 @@ public class DebuggerOutput extends LazyActionsManagerListener implements Proper
             ioManager.closeStream();
         } else if (debuggerState == GdbDebugger.STATE_STOPPED) {
             String language = DebuggerManager.getDebuggerManager().getCurrentSession().getCurrentLanguage();
+            print("CTL_Debugger_stopped", new String[] { }, null); // NOI18N
 //            String threadName = t.getName ();
 //            String methodName = t.getMethodName ();
 //            String className = t.getClassName ();

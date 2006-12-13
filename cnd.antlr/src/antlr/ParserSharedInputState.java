@@ -1,7 +1,7 @@
 package antlr;
 
 /* ANTLR Translator Generator
- * Project led by Terence Parr at http://www.jGuru.com
+ * Project led by Terence Parr at http://www.cs.usfca.edu
  * Software rights: http://www.antlr.org/license.html
  *
  * $Id$
@@ -14,7 +14,7 @@ package antlr;
  */
 public class ParserSharedInputState {
     /** Where to get token objects */
-    protected TokenBuffer input;
+    public TokenBuffer input;
 
     /** Are we guessing (guessing>0)? */
     public int guessing = 0;
@@ -27,4 +27,12 @@ public class ParserSharedInputState {
          filename = null;
          input.reset();
      }
+    
+    public String getFilename() {
+		return filename;
+	}
+
+	public TokenBuffer getInput() {
+		return input;
+	}
 }

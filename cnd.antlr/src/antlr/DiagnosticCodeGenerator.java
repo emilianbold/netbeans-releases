@@ -1,7 +1,7 @@
 package antlr;
 
 /* ANTLR Translator Generator
- * Project led by Terence Parr at http://www.jGuru.com
+ * Project led by Terence Parr at http://www.cs.usfca.edu
  * Software rights: http://www.antlr.org/license.html
  *
  * $Id$
@@ -75,7 +75,7 @@ public class DiagnosticCodeGenerator extends CodeGenerator {
     /** Generate code for the given grammar element.
      * @param blk The {...} action to generate
      */
-    public void gen(ActionElement action) {
+    public void gen(ActionElement action, Context context) {
         if (action.isSemPred) {
             // handled elsewhere
         }
@@ -88,7 +88,7 @@ public class DiagnosticCodeGenerator extends CodeGenerator {
     /** Generate code for the given grammar element.
      * @param blk The "x|y|z|..." block to generate
      */
-    public void gen(AlternativeBlock blk) {
+    public void gen(AlternativeBlock blk, Context context) {
         println("Start of alternative block.");
         tabs++;
         genBlockPreamble(blk);
@@ -106,14 +106,14 @@ public class DiagnosticCodeGenerator extends CodeGenerator {
      * elements are synthesized by the grammar parser to represent
      * the end of a block.
      */
-    public void gen(BlockEndElement end) {
+    public void gen(BlockEndElement end, Context context) {
         // no-op
     }
 
     /** Generate code for the given grammar element.
      * @param blk The character literal reference to generate
      */
-    public void gen(CharLiteralElement atom) {
+    public void gen(CharLiteralElement atom, Context context) {
         print("Match character ");
         if (atom.not) {
             _print("NOT ");
@@ -128,7 +128,7 @@ public class DiagnosticCodeGenerator extends CodeGenerator {
     /** Generate code for the given grammar element.
      * @param blk The character-range reference to generate
      */
-    public void gen(CharRangeElement r) {
+    public void gen(CharRangeElement r, Context context) {
         print("Match character range: " + r.beginText + ".." + r.endText);
         if (r.label != null) {
             _print(", label = " + r.label);
@@ -225,7 +225,7 @@ public class DiagnosticCodeGenerator extends CodeGenerator {
     /** Generate code for the given grammar element.
      * @param blk The (...)+ block to generate
      */
-    public void gen(OneOrMoreBlock blk) {
+    public void gen(OneOrMoreBlock blk, Context context) {
         println("Start ONE-OR-MORE (...)+ block:");
         tabs++;
         genBlockPreamble(blk);
@@ -304,7 +304,7 @@ public class DiagnosticCodeGenerator extends CodeGenerator {
     /** Generate code for the given grammar element.
      * @param blk The rule-reference to generate
      */
-    public void gen(RuleRefElement rr) {
+    public void gen(RuleRefElement rr, Context context) {
         RuleSymbol rs = (RuleSymbol)grammar.getSymbol(rr.targetRule);
 
         // Generate the actual rule description
@@ -348,7 +348,7 @@ public class DiagnosticCodeGenerator extends CodeGenerator {
     /** Generate code for the given grammar element.
      * @param blk The string-literal reference to generate
      */
-    public void gen(StringLiteralElement atom) {
+    public void gen(StringLiteralElement atom, Context context) {
         print("Match string literal ");
         _print(atom.atomText);
         if (atom.label != null) {
@@ -360,7 +360,7 @@ public class DiagnosticCodeGenerator extends CodeGenerator {
     /** Generate code for the given grammar element.
      * @param blk The token-range reference to generate
      */
-    public void gen(TokenRangeElement r) {
+    public void gen(TokenRangeElement r, Context context) {
         print("Match token range: " + r.beginText + ".." + r.endText);
         if (r.label != null) {
             _print(", label = " + r.label);
@@ -371,7 +371,7 @@ public class DiagnosticCodeGenerator extends CodeGenerator {
     /** Generate code for the given grammar element.
      * @param blk The token-reference to generate
      */
-    public void gen(TokenRefElement atom) {
+    public void gen(TokenRefElement atom, Context context) {
         print("Match token ");
         if (atom.not) {
             _print("NOT ");
@@ -383,7 +383,7 @@ public class DiagnosticCodeGenerator extends CodeGenerator {
         _println("");
     }
 
-    public void gen(TreeElement t) {
+    public void gen(TreeElement t, Context context) {
         print("Tree reference: " + t);
     }
 
@@ -451,7 +451,7 @@ public class DiagnosticCodeGenerator extends CodeGenerator {
     }
 
     /** Generate a wildcard element */
-    public void gen(WildcardElement wc) {
+    public void gen(WildcardElement wc, Context context) {
         print("Match wildcard");
         if (wc.getLabel() != null) {
             _print(", label = " + wc.getLabel());
@@ -462,7 +462,7 @@ public class DiagnosticCodeGenerator extends CodeGenerator {
     /** Generate code for the given grammar element.
      * @param blk The (...)* block to generate
      */
-    public void gen(ZeroOrMoreBlock blk) {
+    public void gen(ZeroOrMoreBlock blk, Context context) {
         println("Start ZERO-OR-MORE (...)+ block:");
         tabs++;
         genBlockPreamble(blk);
@@ -481,7 +481,7 @@ public class DiagnosticCodeGenerator extends CodeGenerator {
             !(elem instanceof BlockEndElement);
             elem = elem.next
             ) {
-            elem.generate();
+            elem.generate(null);
         }
         if (alt.getTreeSpecifier() != null) {
             println("AST will be built as: " + alt.getTreeSpecifier().getText());
@@ -796,7 +796,7 @@ public class DiagnosticCodeGenerator extends CodeGenerator {
      */
     protected void genSynPred(SynPredBlock blk) {
         syntacticPredLevel++;
-        gen((AlternativeBlock)blk);
+        gen((AlternativeBlock)blk, null);
         syntacticPredLevel--;
     }
 

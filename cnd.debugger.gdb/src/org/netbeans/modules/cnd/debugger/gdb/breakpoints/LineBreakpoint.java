@@ -21,6 +21,7 @@ package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import org.netbeans.modules.cnd.debugger.gdb.GdbDebuggerImpl;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Utilities;
@@ -39,12 +40,9 @@ import org.openide.util.Utilities;
  */
 public class LineBreakpoint extends GdbBreakpoint {
 
-    /** Property name constant */
-    public static final String          PROP_LINE_NUMBER = new String("lineNumber"); // NOI18N
-    /** Property name constant */
-    public static final String          PROP_URL = new String("url"); // NOI18N
-    /** Property name constant. */
-    public static final String          PROP_CONDITION = new String("condition"); // NOI18N
+    public static final String          PROP_LINE_NUMBER = "lineNumber"; // NOI18N
+    public static final String          PROP_URL = "url"; // NOI18N
+    public static final String          PROP_CONDITION = "condition"; // NOI18N
     
     private String                      url = "";
     private String                      path = "";
@@ -61,6 +59,7 @@ public class LineBreakpoint extends GdbBreakpoint {
      */
     public static LineBreakpoint create(String url, int lineNumber) {
         LineBreakpoint b = new LineBreakpointComparable();
+	b.setID();
         b.setURL(url);
         b.setLineNumber(lineNumber);
         return b;

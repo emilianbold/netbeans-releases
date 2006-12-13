@@ -82,6 +82,9 @@ antlr_java1_FILES = \
   @abs_top_srcdir@/antlr/ASTNULLType.java \
   @abs_top_srcdir@/antlr/ASTPair.java \
   @abs_top_srcdir@/antlr/ASTVisitor.java \
+  @abs_top_srcdir@/antlr/ASdebug/ASDebugStream.java \
+  @abs_top_srcdir@/antlr/ASdebug/IASDebugStream.java \
+  @abs_top_srcdir@/antlr/ASdebug/TokenOffsetInfo.java \
   @abs_top_srcdir@/antlr/ActionElement.java \
   @abs_top_srcdir@/antlr/ActionTransInfo.java \
   @abs_top_srcdir@/antlr/Alternative.java \
@@ -113,6 +116,7 @@ antlr_java1_FILES = \
   @abs_top_srcdir@/antlr/CppCharFormatter.java \
   @abs_top_srcdir@/antlr/CppCodeGenerator.java \
   @abs_top_srcdir@/antlr/DefaultFileLineFormatter.java \
+  @abs_top_srcdir@/antlr/DefaultJavaCodeGeneratorPrintWriterManager.java \
   @abs_top_srcdir@/antlr/DefaultToolErrorHandler.java \
   @abs_top_srcdir@/antlr/DefineGrammarSymbols.java \
   @abs_top_srcdir@/antlr/DiagnosticCodeGenerator.java \
@@ -133,6 +137,7 @@ antlr_java1_FILES = \
   @abs_top_srcdir@/antlr/JavaBlockFinishingInfo.java \
   @abs_top_srcdir@/antlr/JavaCharFormatter.java \
   @abs_top_srcdir@/antlr/JavaCodeGenerator.java \
+  @abs_top_srcdir@/antlr/JavaCodeGeneratorPrintWriterManager.java \
   @abs_top_srcdir@/antlr/LLkAnalyzer.java \
   @abs_top_srcdir@/antlr/LLkGrammarAnalyzer.java \
   @abs_top_srcdir@/antlr/LLkParser.java \
@@ -153,6 +158,7 @@ antlr_java1_FILES = \
   @abs_top_srcdir@/antlr/ParserGrammar.java \
   @abs_top_srcdir@/antlr/ParserSharedInputState.java \
   @abs_top_srcdir@/antlr/PreservingFileWriter.java \
+  @abs_top_srcdir@/antlr/PrintWriterWithSMAP.java \
   @abs_top_srcdir@/antlr/PythonBlockFinishingInfo.java \
   @abs_top_srcdir@/antlr/PythonCharFormatter.java \
   @abs_top_srcdir@/antlr/PythonCodeGenerator.java \
@@ -192,6 +198,7 @@ antlr_java1_FILES = \
   @abs_top_srcdir@/antlr/TreeParserSharedInputState.java \
   @abs_top_srcdir@/antlr/TreeSpecifierNode.java \
   @abs_top_srcdir@/antlr/TreeWalkerGrammar.java \
+  @abs_top_srcdir@/antlr/Utils.java \
   @abs_top_srcdir@/antlr/WildcardElement.java \
   @abs_top_srcdir@/antlr/ZeroOrMoreBlock.java \
   @abs_top_srcdir@/antlr/build/ANTLR.java \
@@ -271,15 +278,15 @@ antlr_swing_FILES = \
 
 
 ## damned ugly hack ..
-ifeq (gcj,@javac@)
-	antlr_java_FILES = $(antlr_java1_FILES)
-else
+#ifeq (gcj,@javac@)
+#	antlr_java_FILES = $(antlr_java1_FILES)
+#else
 	antlr_java_FILES = $(antlr_java1_FILES) $(antlr_swing_FILES)
-endif
+#endif
 
 ## rule how to compile java files 
 @ANTLR_JAR@ :: $(antlr_java_FILES)
-	@ -rm -f $@
+	@ -@RMF@ $@
 	@ @JAVA_COMPILE_CMD@ $?
 	@ @JAR_CMD@ $@ antlr
 	@ test -f $@ || { exit 1; }
@@ -307,10 +314,10 @@ $(antlr_tokdef_FILES) : @abs_top_srcdir@/antlr/tokdef.g
 	@ANTLR_COMPILE_CMD@ $<
 
 clean ::
-	rm -rf *.class antlr @ANTLR_JAR@
+	@RMF@ *.class antlr @ANTLR_JAR@
 
 distclean :: clean
-	rm -rf $(antlr_gen_FILES)
+	@RMF@ $(antlr_gen_FILES)
 
 ## install antlr.jar in libdirectory if exists
 install ::	@ANTLR_JAR@ 
@@ -320,6 +327,9 @@ install ::	@ANTLR_JAR@
 	 $(INSTALL) -m 444 @ANTLR_JAR@ "$(datadir)/$(versioneddir)" ; \
 	 $(INSTALL) -m 444 @ANTLR_JAR@ "$(libdir)" ; \
 	}
+
+distclean :: clean
+	@RMF@ Makefile Version.java
 
 ## get configured dependencies
 @stddeps@

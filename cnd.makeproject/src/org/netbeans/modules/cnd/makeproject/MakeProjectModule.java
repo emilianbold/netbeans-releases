@@ -29,6 +29,10 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.loaders.ExeLoader;
 import org.netbeans.modules.cnd.makeproject.api.actions.RunDialogAction;
+import org.netbeans.modules.cnd.makeproject.api.compilers.CCCCompiler;
+import org.netbeans.modules.cnd.makeproject.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.makeproject.api.compilers.CompilerSets;
+import org.netbeans.modules.cnd.makeproject.api.compilers.Tool;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
@@ -38,6 +42,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerRoot
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.runprofiles.RunProfileNodeProvider;
 import org.netbeans.modules.cnd.makeproject.runprofiles.RunProfileProvider;
+import org.netbeans.modules.cnd.makeproject.ui.options.PredefinedPanel;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.FileSensitiveActions;
 import org.openide.ErrorManager;
@@ -85,6 +90,17 @@ public class MakeProjectModule extends ModuleInstall {
 	    ExeLoader.removeAction(runWrapper);
     }
     
+    public void close() {
+        for (int i = 0; i < CompilerSets.getCompilerSets().length; i++) {
+            CompilerSet compilerCollection = CompilerSets.getCompilerSets()[i];
+            Tool[] tools = compilerCollection.getTools();
+            for (int j = 0; j < tools.length; j++) {
+                if (tools[j] instanceof CCCCompiler) { // FIXUP: should implement/use 'capability' of tool
+                    ((CCCCompiler)(tools[j])).saveSystemIncludesAndDefines();
+                }
+            }
+        }
+    }
             
     public static class ActionWrapper extends CallableSystemAction implements ContextAwareAction, PropertyChangeListener {
         

@@ -1,7 +1,7 @@
 package antlr;
 
 /* ANTLR Translator Generator
- * Project led by Terence Parr at http://www.jGuru.com
+ * Project led by Terence Parr at http://www.cs.usfca.edu
  * Software rights: http://www.antlr.org/license.html
  *
  * $Id$
@@ -19,8 +19,8 @@ class ActionElement extends AlternativeElement {
         column = t.getColumn();
     }
 
-    public void generate() {
-        grammar.generator.gen(this);
+    public void generate(Context context) {
+        grammar.generator.gen(this, context);
     }
 
     public Lookahead look(int k) {

@@ -19,35 +19,45 @@
 
 package org.netbeans.modules.cnd.debugger.gdb;
 
-import java.util.Map;
-
 import org.openide.util.NbBundle;
 import org.netbeans.spi.debugger.SessionProvider;
 import org.netbeans.spi.debugger.ContextProvider;
-
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 
 public class GdbSessionProvider extends SessionProvider {
 
     private ContextProvider contextProvider;
+    private String sessionName = NbBundle.getMessage(GdbSessionProvider.class, "CTL_GDB_SESSION");
+    private String locationName = NbBundle.getMessage(GdbSessionProvider.class, "CTL_GDB_SESSION");
+    private String [] supportedLanguages = new String [] { "C++", "C", "Fortran" };
+    private ProjectActionEvent projectActionEvent;
 
     public GdbSessionProvider(ContextProvider contextProvider) {
         this.contextProvider = contextProvider;
+        projectActionEvent = (ProjectActionEvent) contextProvider.lookupFirst(null, ProjectActionEvent.class);
     };
 
     public String getSessionName () {
-        Map arguments = (Map) contextProvider.lookupFirst(null, Map.class);
-        if (arguments != null) {
-            String processName = (String) arguments.get("name"); // NOI18N
-            if (processName != null) {
-                //return LaunchingSessionProvider.findUnique(processName);
-	    }
+        String sn = null;
+        if (projectActionEvent != null)
+            sn = projectActionEvent.getExecutable();
+        if (sn == null) return sessionName;
+        if (sn.length() > 8) {
+            // Name is too long - get base name
+            if (sn.lastIndexOf('/') >= 0) {
+                sn = sn.substring(sn.lastIndexOf('/') + 1);
+            }
         }
-
-        return NbBundle.getMessage(GdbSessionProvider.class, "CTL_GDB_SESSION");
+        if (sn.length() > 0) {
+            // Set session name
+            sessionName = sn; 
+        }
+        return sessionName;
     }
     
     public String getLocationName() {
-        return NbBundle.getMessage(GdbSessionProvider.class, "CTL_GDB_SESSION");
+        locationName = "localhost"; // NOI18N
+        return locationName;
     }
     
     public String getTypeID() {
@@ -55,7 +65,7 @@ public class GdbSessionProvider extends SessionProvider {
     }
     
     public Object[] getServices() {
-        return new Object [0];
+        return supportedLanguages; 
     }
 
 }

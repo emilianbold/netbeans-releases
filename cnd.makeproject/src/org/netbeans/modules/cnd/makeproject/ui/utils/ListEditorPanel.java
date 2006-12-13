@@ -589,12 +589,13 @@ public class ListEditorPanel extends javax.swing.JPanel {
 	if (newObject == null)
 	    return;
 	// Update gui
-	int addAtIndex = listData.size();
+	int addAtIndex = listData.size(); //getSelectedIndex();
 	listData.add(addAtIndex, newObject);
 	setData(listData);
         setSelectedIndex(addAtIndex);
 	addButton.requestFocus();
         checkSelection();
+        targetList.ensureIndexIsVisible(addAtIndex);
 	addButton.requestFocus();
     }
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed

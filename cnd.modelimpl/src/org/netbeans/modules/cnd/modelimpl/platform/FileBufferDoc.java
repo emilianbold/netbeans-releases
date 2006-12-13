@@ -32,6 +32,9 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.EventListenerList;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.modules.cnd.modelimpl.apt.support.APTDriver;
+import org.netbeans.modules.cnd.modelimpl.cache.CacheManager;
+import org.netbeans.modules.cnd.modelimpl.csm.core.TraceFlags;
 
 /**
  * FileBuffer implementation
@@ -118,6 +121,12 @@ public class FileBufferDoc implements FileBuffer {
                 ((ChangeListener) list[i]).stateChanged(ev);
             }
         }
+        // TODO: think over when do invalidate? before informing listeners or after
+        if (TraceFlags.USE_AST_CACHE) {
+            CacheManager.getInstance().invalidate(getFile().getAbsolutePath());
+        } else {
+            APTDriver.getInstance().invalidateAPT(this);
+        }
     }
 
     public void addChangeListener(ChangeListener listener) {
@@ -131,7 +140,8 @@ public class FileBufferDoc implements FileBuffer {
                     fireDocumentChanged();
                 }
                 public void changedUpdate(DocumentEvent e) {
-                    fireDocumentChanged();
+                    // Add/remove annotation shouldn't result in reparse.
+                    //fireDocumentChanged();
                 }
             };
             doc.addDocumentListener(docListener);
@@ -194,5 +204,9 @@ public class FileBufferDoc implements FileBuffer {
     
     public int getLength() {
         return doc.getLength();
+    }
+
+    public boolean isFileBased() {
+        return false;
     }
 }

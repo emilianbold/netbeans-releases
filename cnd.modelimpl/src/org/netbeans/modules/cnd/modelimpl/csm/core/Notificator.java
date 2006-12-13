@@ -69,13 +69,13 @@ public class Notificator {
     
     private ChangeEventImpl getEvent() {
 	if( currEvent == null ) {
-	    synchronized( this ) {
-		if( currEvent == null ) {
+	    //synchronized( this ) {
+		//if( currEvent == null ) {
                     // TODO: think over, whether this does not contain a well-known double-check problem
                     ChangeEventImpl ev = new ChangeEventImpl(this);
 		    currEvent = ev;
-		}
-	    }
+		//}
+	    //}
 	} 
 	return currEvent;
     }
@@ -89,32 +89,45 @@ public class Notificator {
     }
     
     public void registerNewFile(CsmFile file) {
-	getEvent().getNewFiles().add(file);
+	synchronized( this ) {
+            getEvent().addNewFile(file);
+        }
     }
 
     public void registerRemovedFile(CsmFile file) {
-	getEvent().getRemovedFiles().add(file);
+	synchronized( this ) {
+            getEvent().addRemovedFile(file);
+        }
     }
     
     public void registerChangedFile(CsmFile file) {
-	getEvent().getChangedFiles().add(file);
+	synchronized( this ) {
+            getEvent().addChangedFile(file);
+        }
     }
 
     public void registerNewDeclaration(CsmOffsetableDeclaration decl) {
-	getEvent().getNewDeclarations().add(decl);
-
+	synchronized( this ) {
+            getEvent().addNewDeclaration(decl);
+        }
     }
 
     public void registerRemovedDeclaration(CsmOffsetableDeclaration decl) {
-	getEvent().getRemovedDeclarations().add(decl);
+	synchronized( this ) {
+            getEvent().addRemovedDeclaration(decl);
+        }
     }
     
     public void registerChangedDeclaration(CsmOffsetableDeclaration decl) {
-	getEvent().getChangedDeclarations().add(decl);
+	synchronized( this ) {
+            getEvent().addChangedDeclaration(decl);
+        }
     }
 
     public void registerNewNamespace(CsmNamespace ns) {
-	getEvent().getNewNamespaces().add(ns);
+	synchronized( this ) {
+            getEvent().getNewNamespaces().add(ns);
+        }
     }
 
     /**

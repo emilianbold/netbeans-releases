@@ -131,23 +131,52 @@ public class CallStackNodeModel implements NodeModel {
 	    ((ModelListener) v.get(i)).modelChanged(null);
 	}
     }
-    
-    public static String getCSFName(Session s, CallStackFrame csf, boolean l) {
-        int ln = csf.getLineNumber();
-        String fileName = l ? csf.getFullname() : csf.getFileName();
-        if (ln < 0) {
-	    if (fileName != null) {
-		return fileName;
-	    } else if (csf.getFunctionName() != null && !csf.getFunctionName().equals("??")) { // NOI18N
-		return csf.getFunctionName();
-	    } else if (csf.getAddr() != null) {
-		return NbBundle.getMessage(CallStackNodeModel.class,
+
+    /** 
+     * Gets Call Stack Frame name.
+     * Logic scheme: 
+     * By default return function name and filename:line.
+     * If function name is not available, return address and filename:line.
+     * If function name and address are not available, return filename.
+     *
+     * @param s Session
+     * @param csf Call Stack Frame
+     * @param l A boolean flag to define filename format (l=true means fullname)
+     * @return Call Stack Frame name.
+     */
+    public static String getCSFName(Session s, CallStackFrame csf, boolean useFullName) {
+        final String DOUBLE_QUESTION = "??"; // NOI18N
+        
+        String csfName = "";
+        String functionName = csf.getFunctionName();
+        if (functionName != null && !functionName.equals(DOUBLE_QUESTION)) {
+            // By default use function name
+            csfName = functionName;
+        }
+        else if (csf.getAddr() != null) {  
+            //If function name is not available, use address
+            csfName = NbBundle.getMessage(CallStackNodeModel.class,
 			"CTL_CallstackModel_Msg_Format", csf.getAddr()); // NOI18N
-	    } else {
-		return "??"; // NOI18N
-	    }
+	}        
+        // add filename:line, if no functionName available use full path name.
+        int ln = csf.getLineNumber();
+        if (csfName.length() == 0)
+        {
+            String fileName = useFullName ? csf.getFullname() : csf.getFileName();
+            if (ln<0) {
+                if (fileName == null)
+                    csfName = DOUBLE_QUESTION;
+                else
+                    csfName = fileName;
+            }
+        }
+        else
+        {
+            String fileName = csf.getFileName();
+            if (fileName != null && ln>=0)
+                csfName += "; " + fileName + ":" + ln;
 	}
-        return fileName + ":" + ln; // NOI18N
+        return csfName; // NOI18N
     }
             
     

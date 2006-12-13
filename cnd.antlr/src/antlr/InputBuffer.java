@@ -1,7 +1,7 @@
 package antlr;
 
 /* ANTLR Translator Generator
- * Project led by Terence Parr at http://www.jGuru.com
+ * Project led by Terence Parr at http://www.cs.usfca.edu
  * Software rights: http://www.antlr.org/license.html
  *
  * $Id$
@@ -34,15 +34,15 @@ public abstract class InputBuffer {
     // Additional offset used when markers are active
     protected int markerOffset = 0;
 
-    // Number of calls to consume() since last LA() or LT() call
-    protected int numToConsume = 0;
-
-    // Circular queue
-    protected CharQueue queue;
+    // current position in the buffer
+    protected int p = -1;
+    
+    // buffer data
+    protected char[] data = null;
+    public static final int INITIAL_BUFFER_SIZE = 2048;
 
     /** Create an input buffer */
     public InputBuffer() {
-        queue = new CharQueue(1);
     }
 
     /** This method updates the state of the input buffer so that
@@ -57,13 +57,15 @@ public abstract class InputBuffer {
 
     /** Mark another character for deferred consumption */
     public void consume() {
-        numToConsume++;
+        p++;
     }
 
     /** Ensure that the input buffer is sufficiently full */
-    public abstract void fill(int amount) throws CharStreamException;
+    //public abstract void fill(int amount) throws CharStreamException;
+    public abstract void fill() throws CharStreamException;
 
-    public String getLAChars() {
+    // Not used
+    /*public String getLAChars() {
         StringBuffer la = new StringBuffer();
         for (int i = markerOffset; i < queue.nbrEntries; i++)
             la.append(queue.elementAt(i));
@@ -75,6 +77,14 @@ public abstract class InputBuffer {
         for (int i = 0; i < markerOffset; i++)
             marked.append(queue.elementAt(i));
         return marked.toString();
+    }*/
+    
+    // if sizeIncrease == 0 then double size
+    protected void resizeData(int sizeIncrease) {
+        int newLen = (sizeIncrease == 0) ? data.length*2 : data.length + sizeIncrease;
+        char[] newdata = new char[newLen]; // resize
+        System.arraycopy(data, 0, newdata, 0, data.length);
+        data = newdata;
     }
 
     public boolean isMarked() {
@@ -83,25 +93,32 @@ public abstract class InputBuffer {
 
     /** Get a lookahead character */
     public char LA(int i) throws CharStreamException {
-        fill(i);
-        return queue.elementAt(markerOffset + i - 1);
+        // fill buffer at the first LA call
+        if (p == -1) {
+            fill();
+        }
+        
+        // actually this should never happen
+        if ( (p+i-1) >= data.length ) {
+            return CharScanner.EOF_CHAR;
+        }
+        
+        return data[p + i - 1];
     }
 
     /**Return an integer marker that can be used to rewind the buffer to
      * its current state.
      */
     public int mark() {
-        syncConsume();
         nMarkers++;
-        return markerOffset;
+        return p;
     }
 
     /**Rewind the character buffer to a marker.
      * @param mark Marker returned previously from mark()
      */
     public void rewind(int mark) {
-        syncConsume();
-        markerOffset = mark;
+        p = mark;
         nMarkers--;
     }
 
@@ -110,22 +127,7 @@ public abstract class InputBuffer {
     public void reset() {
         nMarkers = 0;
         markerOffset = 0;
-        numToConsume = 0;
-        queue.reset();
-    }
-
-    /** Sync up deferred consumption */
-    protected void syncConsume() {
-        while (numToConsume > 0) {
-            if (nMarkers > 0) {
-                // guess mode -- leave leading characters and bump offset.
-                markerOffset++;
-            }
-            else {
-                // normal mode -- remove first character
-                queue.removeFirst();
-            }
-            numToConsume--;
-        }
+        p=-1;
+        data = null;
     }
 }

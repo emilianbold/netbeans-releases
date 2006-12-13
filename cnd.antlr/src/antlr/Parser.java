@@ -1,60 +1,25 @@
 package antlr;
 
 /* ANTLR Translator Generator
- * Project led by Terence Parr at http://www.jGuru.com
+ * Project led by Terence Parr at http://www.cs.usfca.edu
  * Software rights: http://www.antlr.org/license.html
  *
  * $Id$
  */
 
-import antlr.collections.impl.BitSet;
 import antlr.collections.AST;
-import antlr.collections.impl.ASTArray;
+import antlr.collections.impl.BitSet;
+import antlr.debug.*;
 
-/**A generic ANTLR parser (LL(k) for k>=1) containing a bunch of
- * utility routines useful at any lookahead depth.  We distinguish between
- * the LL(1) and LL(k) parsers because of efficiency.  This may not be
- * necessary in the near future.
- *
- * Each parser object contains the state of the parse including a lookahead
- * cache (the form of which is determined by the subclass), whether or
- * not the parser is in guess mode, where tokens come from, etc...
- *
- * <p>
- * During <b>guess</b> mode, the current lookahead token(s) and token type(s)
- * cache must be saved because the token stream may not have been informed
- * to save the token (via <tt>mark</tt>) before the <tt>try</tt> block.
- * Guessing is started by:
- * <ol>
- * <li>saving the lookahead cache.
- * <li>marking the current position in the TokenBuffer.
- * <li>increasing the guessing level.
- * </ol>
- *
- * After guessing, the parser state is restored by:
- * <ol>
- * <li>restoring the lookahead cache.
- * <li>rewinding the TokenBuffer.
- * <li>decreasing the guessing level.
- * </ol>
- *
- * @see antlr.Token
- * @see antlr.TokenBuffer
- * @see antlr.LLkParser
- */
-
-import java.io.IOException;
+import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Map;
 
-import antlr.debug.MessageListener;
-import antlr.debug.ParserListener;
-import antlr.debug.ParserMatchListener;
-import antlr.debug.ParserTokenListener;
-import antlr.debug.SemanticPredicateListener;
-import antlr.debug.SyntacticPredicateListener;
-import antlr.debug.TraceListener;
+public abstract class Parser extends MatchExceptionState {
+	public static final int MEMO_RULE_FAILED = -2;
+	public static final int MEMO_RULE_UNKNOWN = -1;
+	public static final int INITIAL_FOLLOW_STACK_SIZE = 100;
 
-public abstract class Parser {
     protected ParserSharedInputState inputState;
 
     /** Nesting level of registered handlers */
@@ -83,7 +48,18 @@ public abstract class Parser {
     /** Used to keep track of indentdepth for traceIn/Out */
     protected int traceDepth = 0;
 
-    public Parser() {
+	/** An array[size num rules] of Map<Integer,Integer> that tracks
+	 *  the stop token index for each rule.  ruleMemo[ruleIndex] is
+	 *  the memoization table for ruleIndex.  For key ruleStartIndex, you
+	 *  get back the stop token for associated rule or MEMO_RULE_FAILED.
+	 */
+	protected Map[] ruleMemo;
+
+	/** Set to true upon any error; reset upon first valid token match */
+        // functionality moved to matchError from the MatchExceptionState
+	//protected boolean failed = false;
+
+	public Parser() {
         this(new ParserSharedInputState());
     }
 
@@ -139,15 +115,19 @@ public abstract class Parser {
 
     /** Consume tokens until one matches the given token */
     public void consumeUntil(int tokenType) throws TokenStreamException {
-        while (LA(1) != Token.EOF_TYPE && LA(1) != tokenType) {
+        int LA1 = LA(1);
+        while (LA1 != Token.EOF_TYPE && LA1 != tokenType) {
             consume();
+            LA1 = LA(1);
         }
     }
 
     /** Consume tokens until one matches the given token set */
     public void consumeUntil(BitSet set) throws TokenStreamException {
-        while (LA(1) != Token.EOF_TYPE && !set.member(LA(1))) {
+        int LA1 = LA(1);
+        while (LA1 != Token.EOF_TYPE && !set.member(LA1)) {
             consume();
+            LA1 = LA(1);
         }
     }
 
@@ -207,33 +187,48 @@ public abstract class Parser {
      * error handler or by the syntactic predicate.
      */
     public void match(int t) throws MismatchedTokenException, TokenStreamException {
-        if (LA(1) != t)
-            throw new MismatchedTokenException(tokenNames, LT(1), t, false, getFilename());
-        else
-        // mark token as consumed -- fetch next token deferred until LA/LT
+        assert(matchError == false);
+        if (LA(1) != t) {
+			matchError = true;
+			throw new MismatchedTokenException(tokenNames, LT(1), t, false, getFilename());
+		}
+		else {
+        	// mark token as consumed -- fetch next token deferred until LA/LT
+			matchError = false;
             consume();
-    }
+		}
+	}
 
     /**Make sure current lookahead symbol matches the given set
      * Throw an exception upon mismatch, which is catch by either the
      * error handler or by the syntactic predicate.
      */
     public void match(BitSet b) throws MismatchedTokenException, TokenStreamException {
-        if (!b.member(LA(1)))
+        assert(matchError == false);
+        if (!b.member(LA(1))) {
+			matchError = true;
             throw new MismatchedTokenException(tokenNames, LT(1), b, false, getFilename());
-        else
-        // mark token as consumed -- fetch next token deferred until LA/LT
+		}
+		else {
+        	// mark token as consumed -- fetch next token deferred until LA/LT
+			matchError = false;
             consume();
-    }
+		}
+	}
 
     public void matchNot(int t) throws MismatchedTokenException, TokenStreamException {
-        if (LA(1) == t)
-        // Throws inverted-sense exception
+        assert(matchError == false);
+        if (LA(1) == t) {
+        	// Throws inverted-sense exception
+			matchError = true;
             throw new MismatchedTokenException(tokenNames, LT(1), t, true, getFilename());
-        else
-        // mark token as consumed -- fetch next token deferred until LA/LT
+		}
+		else {
+        	// mark token as consumed -- fetch next token deferred until LA/LT
+			matchError = false;
             consume();
-    }
+		}
+	}
 
     /** @deprecated as of 2.7.2. This method calls System.exit() and writes
      *  directly to stderr, which is usually not appropriate when
@@ -363,13 +358,79 @@ public abstract class Parser {
         traceDepth += 1;
         traceIndent();
         System.out.println("> " + rname + "; LA(1)==" + LT(1).getText() +
-                           ((inputState.guessing > 0)?" [guessing]":""));
+                           ((inputState.guessing > 0)?" [guessing="+inputState.guessing+"]":""));
     }
 
     public void traceOut(String rname) throws TokenStreamException {
         traceIndent();
         System.out.println("< " + rname + "; LA(1)==" + LT(1).getText() +
-                           ((inputState.guessing > 0)?" [guessing]":""));
+                           ((inputState.guessing > 0)?" [guessing="+inputState.guessing+"]":""));
         traceDepth -= 1;
     }
+
+	/** Given a rule number and a start token index number, return
+	 *  MEMO_RULE_UNKNOWN if the rule has not parsed input starting from
+	 *  start index.  If this rule has parsed input starting from the
+	 *  start index before, then return where the rule stopped parsing.
+	 *  It returns the index of the last token matched by the rule.
+	 *
+	 *  For now we use a hashtable and just the slow Object-based one.
+	 *  Later, we can make a special one for ints and also one that
+	 *  tosses out data after we commit past input position i.
+	 */
+	public int getRuleMemoization(int ruleIndex, int ruleStartIndex) {
+		if ( ruleMemo[ruleIndex]==null ) {
+			ruleMemo[ruleIndex] = new HashMap();
+		}
+		Integer stopIndexI =
+			(Integer)ruleMemo[ruleIndex].get(new Integer(ruleStartIndex));
+		if ( stopIndexI==null ) {
+			return MEMO_RULE_UNKNOWN;
+		}
+		return stopIndexI.intValue();
+	}
+
+	/** Has this rule already parsed input at the current index in the
+	 *  input stream?  Return the stop token index or MEMO_RULE_UNKNOWN.
+	 *  If we attempted but failed to parse properly before, return
+	 *  MEMO_RULE_FAILED.
+	 *
+	 *  This method has a side-effect: if we have seen this input for
+	 *  this rule and successfully parsed before, then seek ahead to
+	 *  1 past the stop token matched for this rule last time.
+	 */
+	public boolean alreadyParsedRule(int ruleIndex) {
+		//System.out.println("alreadyParsedRule("+ruleIndex+","+inputState.input.index()+")");
+		int stopIndex = getRuleMemoization(ruleIndex, inputState.input.index());
+		if ( stopIndex==MEMO_RULE_UNKNOWN ) {
+                        //System.out.println("rule unknown");
+			return false;
+		}
+		if ( stopIndex==MEMO_RULE_FAILED ) {
+			//System.out.println("rule "+ruleIndex+" will never succeed");
+			matchError=true;
+		}
+		else {
+			
+			/*System.out.println("seen rule "+ruleIndex+" before; skipping ahead to "+
+				inputState.input.get(stopIndex+1)+"@"+(stopIndex+1)+" failed="+matchError);
+			*/
+                        matchError=false;
+			inputState.input.seek(stopIndex+1); // jump to one past stop token
+		}
+		return true;
+	}
+
+	/** Record whether or not this rule parsed the input at this position
+	 *  successfully.  Use a standard java hashtable for now.
+	 */
+	public void memoize(int ruleIndex, int ruleStartIndex) {
+		int stopTokenIndex = matchError ? MEMO_RULE_FAILED : inputState.input.index()-1;
+		//System.out.println("memoize("+ruleIndex+", "+ruleStartIndex+"); failed="+matchError+" stop="+stopTokenIndex);
+		if ( ruleMemo[ruleIndex]!=null ) {
+			ruleMemo[ruleIndex].put(
+				new Integer(ruleStartIndex), new Integer(stopTokenIndex)
+			);
+		}
+	}
 }

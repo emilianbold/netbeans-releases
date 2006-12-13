@@ -26,12 +26,12 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
  * @author Vladimir Voskresensky
  */
 public class LineColOffsPositionImpl implements CsmOffsetable.Position {
-    int line;
-    int col;
-    int offset;
+    private final int line;
+    private final int col;
+    private final int offset;
 
     public LineColOffsPositionImpl() {
-
+        this(0,0,0);
     }
 
     public LineColOffsPositionImpl(CsmOffsetable.Position pos) {
@@ -39,6 +39,10 @@ public class LineColOffsPositionImpl implements CsmOffsetable.Position {
             this.line = pos.getLine();
             this.col = pos.getColumn();
             this.offset = pos.getOffset();            
+        } else {
+            this.line = 0;
+            this.col = 0;
+            this.offset = 0;
         }
     }
     
@@ -59,7 +63,7 @@ public class LineColOffsPositionImpl implements CsmOffsetable.Position {
     public int getColumn() {
         return col;
     }
-
+    
     public String toString() {
         return "" + getLine() + ':' + getColumn() + '/' + getOffset();
     }

@@ -1,7 +1,7 @@
 package antlr;
 
 /* ANTLR Translator Generator
- * Project led by Terence Parr at http://www.jGuru.com
+ * Project led by Terence Parr at http://www.cs.usfca.edu
  * Software rights: http://www.antlr.org/license.html
  *
  * $Id$
@@ -21,13 +21,13 @@ package antlr;
  */
 // SAS: added this class to handle Binary input w/ FileInputStream
 
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 public class ByteBuffer extends InputBuffer {
 
     // char source
-    transient InputStream input;
+    public transient InputStream input;
 
 
     /** Create a character buffer */
@@ -36,17 +36,21 @@ public class ByteBuffer extends InputBuffer {
         input = input_;
     }
 
-    /** Ensure that the character buffer is sufficiently full */
-    public void fill(int amount) throws CharStreamException {
+    public void fill() throws CharStreamException {
         try {
-            syncConsume();
-            // Fill the buffer sufficiently to hold needed characters
-            while (queue.nbrEntries < amount + markerOffset) {
-                // Append the next character
-                queue.append((char)input.read());
-            }
-        }
-        catch (IOException io) {
+                data = new char[INITIAL_BUFFER_SIZE];
+                int pos = 0;
+                char curChar;
+                do {
+                    if (pos == data.length) {
+                        resizeData(0);
+                    }
+                    curChar = (char) input.read();
+                    data[pos] = curChar;
+                    pos++;
+                } while (curChar != CharScanner.EOF_CHAR);
+                p = 0;
+	} catch (IOException io) {
             throw new CharStreamIOException(io);
         }
     }

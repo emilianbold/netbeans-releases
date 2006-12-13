@@ -1,7 +1,7 @@
 package antlr;
 
 /* ANTLR Translator Generator
- * Project led by Terence Parr at http://www.jGuru.com
+ * Project led by Terence Parr at http://www.cs.usfca.edu
  * Software rights: http://www.antlr.org/license.html
  *
  * $Id$
@@ -293,29 +293,29 @@ public abstract class CodeGenerator {
     /** Generate code for the given grammar element.
      * @param action The {...} action to generate
      */
-    public abstract void gen(ActionElement action);
+    public abstract void gen(ActionElement action, Context context);
 
     /** Generate code for the given grammar element.
      * @param blk The "x|y|z|..." block to generate
      */
-    public abstract void gen(AlternativeBlock blk);
+    public abstract void gen(AlternativeBlock blk, Context context);
 
     /** Generate code for the given grammar element.
      * @param end The block-end element to generate.  Block-end
      * elements are synthesized by the grammar parser to represent
      * the end of a block.
      */
-    public abstract void gen(BlockEndElement end);
+    public abstract void gen(BlockEndElement end, Context context);
 
     /** Generate code for the given grammar element.
      * @param atom The character literal reference to generate
      */
-    public abstract void gen(CharLiteralElement atom);
+    public abstract void gen(CharLiteralElement atom, Context context);
 
     /** Generate code for the given grammar element.
      * @param r The character-range reference to generate
      */
-    public abstract void gen(CharRangeElement r);
+    public abstract void gen(CharRangeElement r, Context context);
 
     /** Generate the code for a parser */
     public abstract void gen(LexerGrammar g) throws IOException;
@@ -323,7 +323,7 @@ public abstract class CodeGenerator {
     /** Generate code for the given grammar element.
      * @param blk The (...)+ block to generate
      */
-    public abstract void gen(OneOrMoreBlock blk);
+    public abstract void gen(OneOrMoreBlock blk, Context context);
 
     /** Generate the code for a parser */
     public abstract void gen(ParserGrammar g) throws IOException;
@@ -331,27 +331,27 @@ public abstract class CodeGenerator {
     /** Generate code for the given grammar element.
      * @param rr The rule-reference to generate
      */
-    public abstract void gen(RuleRefElement rr);
+    public abstract void gen(RuleRefElement rr, Context context);
 
     /** Generate code for the given grammar element.
      * @param atom The string-literal reference to generate
      */
-    public abstract void gen(StringLiteralElement atom);
+    public abstract void gen(StringLiteralElement atom, Context context);
 
     /** Generate code for the given grammar element.
      * @param r The token-range reference to generate
      */
-    public abstract void gen(TokenRangeElement r);
+    public abstract void gen(TokenRangeElement r, Context context);
 
     /** Generate code for the given grammar element.
      * @param atom The token-reference to generate
      */
-    public abstract void gen(TokenRefElement atom);
+    public abstract void gen(TokenRefElement atom, Context context);
 
     /** Generate code for the given grammar element.
      * @param blk The tree to generate code for.
      */
-    public abstract void gen(TreeElement t);
+    public abstract void gen(TreeElement t, Context context);
 
     /** Generate the code for a parser */
     public abstract void gen(TreeWalkerGrammar g) throws IOException;
@@ -359,12 +359,12 @@ public abstract class CodeGenerator {
     /** Generate code for the given grammar element.
      * @param wc The wildcard element to generate
      */
-    public abstract void gen(WildcardElement wc);
+    public abstract void gen(WildcardElement wc, Context context);
 
     /** Generate code for the given grammar element.
      * @param blk The (...)* block to generate
      */
-    public abstract void gen(ZeroOrMoreBlock blk);
+    public abstract void gen(ZeroOrMoreBlock blk, Context context);
 
     /** Generate the token types as a text file for persistence across shared lexer/parser */
     protected void genTokenInterchange(TokenManager tm) throws IOException {

@@ -1,7 +1,7 @@
 package antlr;
 
 /* ANTLR Translator Generator
- * Project led by Terence Parr at http://www.jGuru.com
+ * Project led by Terence Parr at http://www.cs.usfca.edu
  * Software rights: http://www.antlr.org/license.html
  *
  * $Id$
@@ -41,6 +41,8 @@ public class RuleBlock extends AlternativeBlock {
 
     // grammar-settable options
     protected boolean defaultErrorHandler = true;
+    protected boolean constText = false;
+    protected boolean checkSkip = !Tool.agressive;
     protected String ignoreRule = null;
 
     /** Construct a named rule. */
@@ -82,12 +84,20 @@ public class RuleBlock extends AlternativeBlock {
         return (ExceptionSpec)exceptionSpecs.get(label == null ? "" : label);
     }
 
-    public void generate() {
-        grammar.generator.gen(this);
+    public void generate(Context context) {
+        grammar.generator.gen(this, context);
     }
 
     public boolean getDefaultErrorHandler() {
         return defaultErrorHandler;
+    }
+    
+    public boolean isCheckSkip() {
+        return checkSkip;
+    }
+    
+    public boolean isConstText() {
+        return constText;
     }
 
     public RuleEndElement getEndElement() {
@@ -129,7 +139,28 @@ public class RuleBlock extends AlternativeBlock {
     }
 
     public void setOption(Token key, Token value) {
-        if (key.getText().equals("defaultErrorHandler")) {
+        // Const option to generate const text tokens
+        if (key.getText().equals("constText")) {
+            if (value.getText().equals("true")) {
+                constText = true;
+            }
+            else if (value.getText().equals("false")) {
+                constText = false;
+            }
+            else {
+                grammar.antlrTool.error("Value for constText must be true or false", grammar.getFilename(), key.getLine(), key.getColumn());
+            }
+        } else if (key.getText().equals("checkSkip")) {
+            if (value.getText().equals("true")) {
+                checkSkip = true;
+            }
+            else if (value.getText().equals("false")) {
+                checkSkip = false;
+            }
+            else {
+                grammar.antlrTool.error("Value for checkSkip must be true or false", grammar.getFilename(), key.getLine(), key.getColumn());
+            }
+        } else if (key.getText().equals("defaultErrorHandler")) {
             if (value.getText().equals("true")) {
                 defaultErrorHandler = true;
             }

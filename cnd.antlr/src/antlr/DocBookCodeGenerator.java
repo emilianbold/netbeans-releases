@@ -1,7 +1,7 @@
 package antlr;
 
 /* ANTLR Translator Generator
- * Project led by Terence Parr at http://www.jGuru.com
+ * Project led by Terence Parr at http://www.cs.usfca.edu
  * Software rights: http://www.antlr.org/license.html
  *
  * $Id$
@@ -115,14 +115,14 @@ public class DocBookCodeGenerator extends CodeGenerator {
     /** Generate code for the given grammar element.
      * @param blk The {...} action to generate
      */
-    public void gen(ActionElement action) {
+    public void gen(ActionElement action, Context context) {
         // no-op
     }
 
     /** Generate code for the given grammar element.
      * @param blk The "x|y|z|..." block to generate
      */
-    public void gen(AlternativeBlock blk) {
+    public void gen(AlternativeBlock blk, Context context) {
         genGenericBlock(blk, "");
     }
 
@@ -131,14 +131,14 @@ public class DocBookCodeGenerator extends CodeGenerator {
      * elements are synthesized by the grammar parser to represent
      * the end of a block.
      */
-    public void gen(BlockEndElement end) {
+    public void gen(BlockEndElement end, Context context) {
         // no-op
     }
 
     /** Generate code for the given grammar element.
      * @param blk The character literal reference to generate
      */
-    public void gen(CharLiteralElement atom) {
+    public void gen(CharLiteralElement atom, Context context) {
         if (atom.not) {
             _print("~");
         }
@@ -148,7 +148,7 @@ public class DocBookCodeGenerator extends CodeGenerator {
     /** Generate code for the given grammar element.
      * @param blk The character-range reference to generate
      */
-    public void gen(CharRangeElement r) {
+    public void gen(CharRangeElement r, Context context) {
         print(r.beginText + ".." + r.endText + " ");
     }
 
@@ -230,7 +230,7 @@ public class DocBookCodeGenerator extends CodeGenerator {
     /** Generate code for the given grammar element.
      * @param blk The (...)+ block to generate
      */
-    public void gen(OneOrMoreBlock blk) {
+    public void gen(OneOrMoreBlock blk, Context context) {
         genGenericBlock(blk, "+");
     }
 
@@ -280,7 +280,7 @@ public class DocBookCodeGenerator extends CodeGenerator {
     /** Generate code for the given grammar element.
      * @param blk The rule-reference to generate
      */
-    public void gen(RuleRefElement rr) {
+    public void gen(RuleRefElement rr, Context context) {
         RuleSymbol rs = (RuleSymbol)grammar.getSymbol(rr.targetRule);
 
         // Generate the actual rule description
@@ -297,7 +297,7 @@ public class DocBookCodeGenerator extends CodeGenerator {
     /** Generate code for the given grammar element.
      * @param blk The string-literal reference to generate
      */
-    public void gen(StringLiteralElement atom) {
+    public void gen(StringLiteralElement atom, Context context) {
         if (atom.not) {
             _print("~");
         }
@@ -308,14 +308,14 @@ public class DocBookCodeGenerator extends CodeGenerator {
     /** Generate code for the given grammar element.
      * @param blk The token-range reference to generate
      */
-    public void gen(TokenRangeElement r) {
+    public void gen(TokenRangeElement r, Context context) {
         print(r.beginText + ".." + r.endText + " ");
     }
 
     /** Generate code for the given grammar element.
      * @param blk The token-reference to generate
      */
-    public void gen(TokenRefElement atom) {
+    public void gen(TokenRefElement atom, Context context) {
         if (atom.not) {
             _print("~");
         }
@@ -323,7 +323,7 @@ public class DocBookCodeGenerator extends CodeGenerator {
         _print(" ");
     }
 
-    public void gen(TreeElement t) {
+    public void gen(TreeElement t, Context context) {
         print(t + " ");
     }
 
@@ -397,7 +397,7 @@ public class DocBookCodeGenerator extends CodeGenerator {
     }
 
     /** Generate a wildcard element */
-    public void gen(WildcardElement wc) {
+    public void gen(WildcardElement wc, Context context) {
         /*
 		if ( wc.getLabel()!=null ) {
 			_print(wc.getLabel()+"=");
@@ -409,7 +409,7 @@ public class DocBookCodeGenerator extends CodeGenerator {
     /** Generate code for the given grammar element.
      * @param blk The (...)* block to generate
      */
-    public void gen(ZeroOrMoreBlock blk) {
+    public void gen(ZeroOrMoreBlock blk, Context context) {
         genGenericBlock(blk, "*");
     }
 
@@ -421,7 +421,7 @@ public class DocBookCodeGenerator extends CodeGenerator {
         for (AlternativeElement elem = alt.head;
              !(elem instanceof BlockEndElement);
              elem = elem.next) {
-            elem.generate();
+            elem.generate(null);
             firstElementInAlt = false;
             prevAltElem = elem;
         }

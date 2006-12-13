@@ -20,20 +20,14 @@
 package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
 import javax.swing.JComponent;
-
-import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.spi.debugger.ui.BreakpointType;
-
-import org.netbeans.modules.cnd.debugger.gdb.EditorContextBridge;
-
 import org.openide.util.NbBundle;
 
-
 /**
-* Implementation of breakpoint on method.
-*
-* @author   Jan Jancura
-*/
+ * Implementation of a line breakpoint.
+ *
+ * @author   Gordon Prieur (copied from Jan Jancura's JPDA implementation)
+ */
 public class LineBreakpointType extends BreakpointType {
 
     public String getCategoryDisplayName() {
@@ -46,11 +40,21 @@ public class LineBreakpointType extends BreakpointType {
     }
     
     public String getTypeDisplayName() {
-        return NbBundle.getMessage(LineBreakpointType.class, "CTL_Gdb_event_type_name"); // NOI18N
+        return NbBundle.getMessage(LineBreakpointType.class, "CTL_Gdb_Line_Breakpoint"); // NOI18N
     }
     
-    public boolean isDefault () {
-        return true; //EditorContextBridge.getDefaultType () == EditorContextBridge.LINE;
+    /**
+     *  Tell debuggercore if this should be the default breakpoint.
+     *
+     *  Currently we always return false because we want to defer to FunctionBreakpointType.
+     *  Eventually, this class and FunctionBreakpointType should both become smart enough
+     *  that FBT is the default if the cursor is inside a function and LBT if its outside
+     *  of a function (in both cases, its false if the current file in the editor isn't a
+     *  C, C++, or Fortran file)
+     */
+    public boolean isDefault() {	
+	return false;	// do false for now because FunctionBreakpointType currently
+			// overrides this anyway.
     }
 }
 

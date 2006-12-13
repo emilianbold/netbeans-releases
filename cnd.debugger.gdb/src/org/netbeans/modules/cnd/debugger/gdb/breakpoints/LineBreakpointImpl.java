@@ -56,10 +56,22 @@ public class LineBreakpointImpl extends BreakpointImpl {
     }
     
     protected void setRequests() {
-        lineNumber = breakpoint.getLineNumber();
-        String path = getDebugger().getProjectRelativePath(breakpoint.getPath());
-        getDebugger().getGdbProxy().break_insert(path + ":" + lineNumber); // NOI18N
-        breakpoint.setPending();
+        //Performance measurements: 93-114 mls (2006/08/29)
+        //getDebugger().getGdbProxy().globalStartTimeSetBreakpoint = System.currentTimeMillis(); // DEBUG
+	if (breakpoint.getState() == GdbBreakpoint.UNVALIDATED) {
+	    lineNumber = breakpoint.getLineNumber();
+	    String path = getDebugger().getProjectRelativePath(breakpoint.getPath());
+	    getDebugger().getGdbProxy().break_insert(breakpoint.getID(), path + ':' + lineNumber);
+	    breakpoint.setPending();
+	} else {
+	    if (breakpoint.getState() == GdbBreakpoint.DELETION_PENDING) {
+		getDebugger().getGdbProxy().break_delete(breakpoint.getBreakpointNumber());
+	    } else if (breakpoint.isEnabled()) {
+		getDebugger().getGdbProxy().break_enable(breakpoint.getBreakpointNumber());
+	    } else {
+		getDebugger().getGdbProxy().break_disable(breakpoint.getBreakpointNumber());
+	    }
+	}
     }
 
 

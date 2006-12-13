@@ -47,14 +47,12 @@ public class BreakpointsEngineListener extends LazyActionsManagerListener
 		implements PropertyChangeListener, DebuggerManagerListener {
     
     private GdbDebuggerImpl	    debugger;
-    private boolean                 started = false;
     private Session                 session;
     private BreakpointsReader       breakpointsReader;
 
 
     public BreakpointsEngineListener(ContextProvider lookupProvider) {
         debugger = (GdbDebuggerImpl) lookupProvider.lookupFirst(null, GdbDebugger.class);
-        //engineContext = (SourcePath) lookupProvider.lookupFirst(null, SourcePath.class);
         session = (Session) lookupProvider.lookupFirst(null, Session.class);
         debugger.addPropertyChangeListener(GdbDebugger.PROP_STATE, this);
         breakpointsReader = PersistenceManager.findBreakpointsReader();
@@ -65,6 +63,7 @@ public class BreakpointsEngineListener extends LazyActionsManagerListener
         DebuggerManager.getDebuggerManager().removeDebuggerListener(
 		    DebuggerManager.PROP_BREAKPOINTS, this);
         removeBreakpointImpls();
+	unvalidateBreakpoints();
     }
     
     public String[] getProperties() {
@@ -72,15 +71,9 @@ public class BreakpointsEngineListener extends LazyActionsManagerListener
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-        if (debugger.getState() == GdbDebugger.STATE_RUNNING) {
-            if (started) {
-		return;
-	    }
-
-            started = true;
-            createBreakpointImpls();
-            DebuggerManager.getDebuggerManager().addDebuggerListener(
-			DebuggerManager.PROP_BREAKPOINTS, this);
+        if (evt.getOldValue() == GdbDebugger.STATE_STARTING && evt.getNewValue() == GdbDebugger.STATE_LOADING) {
+	    createBreakpointImpls();
+	    DebuggerManager.getDebuggerManager().addDebuggerListener(DebuggerManager.PROP_BREAKPOINTS, this);
         }
     }
     
@@ -120,16 +113,39 @@ public class BreakpointsEngineListener extends LazyActionsManagerListener
     private void createBreakpointImpls() {
         Breakpoint[] bs = DebuggerManager.getDebuggerManager().getBreakpoints();
         int i, k = bs.length;
-        for (i = 0; i < k; i++) {
-            createBreakpointImpl(bs [i]);
+	
+	if (k > 0) {
+	    for (i = 0; i < k; i++) {
+		if (bs[i] instanceof GdbBreakpoint) {
+		    createBreakpointImpl(bs[i]);
+		}
+	    }
+	} else {
+	    debugger.setRunning(); // set state to running because no breakoints to set
 	}
     }
     
     private void removeBreakpointImpls() {
         Breakpoint[] bs = DebuggerManager.getDebuggerManager().getBreakpoints();
         int i, k = bs.length;
-        for (i = 0; i < k; i++)
-            removeBreakpointImpl(bs [i]);
+        for (i = 0; i < k; i++) {
+	    if (bs[i] instanceof GdbBreakpoint) {
+		removeBreakpointImpl(bs [i]);
+	    }
+	}
+    }
+    
+    /**
+     *  Set breakpoint state to UNVALIDATED
+     */
+    private void unvalidateBreakpoints() {
+        Breakpoint[] bs = DebuggerManager.getDebuggerManager().getBreakpoints();
+        int i, k = bs.length;
+        for (i = 0; i < k; i++) {
+	    if (bs[i] instanceof GdbBreakpoint) {
+		((GdbBreakpoint) bs[i]).setState(GdbBreakpoint.UNVALIDATED);
+	    }
+	}
     }
     
     public void fixBreakpointImpls() {
@@ -146,9 +162,9 @@ public class BreakpointsEngineListener extends LazyActionsManagerListener
         if (b instanceof LineBreakpoint) {
             breakpointToImpl.put(b, new LineBreakpointImpl((LineBreakpoint) b,
 			breakpointsReader, debugger, session));
-//        } else if (b instanceof FunctionBreakpoint) {
-//            breakpointToImpl.put(b, new FunctionBreakpointImpl(
-//			(FunctionBreakpoint) b, debugger, session));
+        } else if (b instanceof FunctionBreakpoint) {
+            breakpointToImpl.put(b, new FunctionBreakpointImpl(
+			(FunctionBreakpoint) b, breakpointsReader, debugger, session));
         }
     }
 

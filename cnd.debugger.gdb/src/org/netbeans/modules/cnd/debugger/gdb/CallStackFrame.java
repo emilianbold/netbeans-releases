@@ -46,6 +46,20 @@ public interface CallStackFrame {
     public void set(String func, String file, String fullname, String lnum, String addr);
     
     /**
+     *  Set frame number.
+     *
+     *  @param frameNumber Frame number in Call Stack ("0" means top)
+     */
+    public void setFrameNumber(String frameNumber);
+    
+    /**
+     *  Returns frame number in Call Stack.
+     *
+     *  @return Frame nunmber in Call Stack ("0" means top)
+     */
+    public String getFrameNumber();
+    
+    /**
      * Returns line number associated with this stack frame.
      *
      * @return line number associated with this this stack frame

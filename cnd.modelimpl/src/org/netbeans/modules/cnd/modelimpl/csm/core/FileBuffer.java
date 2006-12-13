@@ -33,19 +33,20 @@ import javax.swing.event.ChangeListener;
  */
 public interface FileBuffer {
 
-    File getFile();
+    public File getFile();
 
     //boolean isSaved();
 
     public InputStream getInputStream() throws IOException;
 
-    void addChangeListener(ChangeListener listener);
-    void removeChangeListener(ChangeListener listener);
+    public void addChangeListener(ChangeListener listener);
+    public void removeChangeListener(ChangeListener listener);
     
-    String getText(int start, int end) throws IOException;
+    public String getText(int start, int end) throws IOException;
     
-    String getText() throws IOException;
+    public String getText() throws IOException;
     
-    int getLength();
+    public int getLength();
     
+    public boolean isFileBased();
 }

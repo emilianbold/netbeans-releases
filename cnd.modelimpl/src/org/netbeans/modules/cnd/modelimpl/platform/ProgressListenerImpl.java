@@ -33,9 +33,9 @@ public class ProgressListenerImpl implements CsmProgressListener {
     
     private Map/*<CsmProject, ParsingProgress>*/ handles = new HashMap();
     
-    private synchronized ParsingProgress getHandle(CsmProject project) {
+    private synchronized ParsingProgress getHandle(CsmProject project, boolean createIfNeed) {
         ParsingProgress handle = (ParsingProgress) handles.get(project); 
-        if( handle == null ) {
+        if( handle == null && createIfNeed ) {
             handle = new ParsingProgress(project);
             handles.put(project, handle);
         }
@@ -44,29 +44,45 @@ public class ProgressListenerImpl implements CsmProgressListener {
     
     public void projectParsingStarted(CsmProject project) {
         if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ProgressListenerImpl.projectParsingStarted " + project.getName());
-        getHandle(project).start();
+        getHandle(project, true).start();
     }
 
     public void projectFilesCounted(CsmProject project, int filesCount) {
         if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ProgressListenerImpl.projectFilesCounted " + project.getName() + ' ' + filesCount);
-        getHandle(project).switchToDeterminate(filesCount);
+        getHandle(project, true).switchToDeterminate(filesCount);
     }
 
     public void projectParsingFinished(CsmProject project) {
         if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ProgressListenerImpl.projectParsingFinished " + project.getName());
-        getHandle(project).finish();
+	done(project);
+    }
+
+    public void projectParsingCancelled(CsmProject project) {
+        if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ProgressListenerImpl.projectParsingCancelled " + project.getName());
+	done(project);
+    }
+    
+    private void done(CsmProject project) {
+        getHandle(project, true).finish();
         synchronized( this ) {
             handles.remove(project);
         }
     }
-
+    
     public void fileParsingStarted(CsmFile file) {
-        if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("  ProgressListenerImpl.fileParsingStarted " + file.getName());
-        getHandle(file.getProject()).nextCsmFile(file);
+        if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("  ProgressListenerImpl.fileParsingStarted " + file.getAbsolutePath());
+        ParsingProgress handle = getHandle(file.getProject(), false);
+        if( handle != null ) {
+            handle.nextCsmFile(file);
+        }
     }
 
     public void fileParsingFinished(CsmFile file) {
-        if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("  ProgressListenerImpl.fileParsingFinished " + file.getName());
+        if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("  ProgressListenerImpl.fileParsingFinished " + file.getAbsolutePath());
+    }
+    
+    public void parserIdle() {
+	if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("  ProgressListenerImpl.parserIdle");
     }
     
 }

@@ -37,8 +37,12 @@ public class CallStackTableModel implements TableModel, Constants {
     
     public Object getValueAt(Object row, String columnID) throws UnknownTypeException {
         if (row instanceof CallStackFrame) {
-            if (columnID.equals(CALL_STACK_FRAME_LOCATION_COLUMN_ID))
-		return ((CallStackFrame) row).getFullname();
+            if (columnID.equals(CALL_STACK_FRAME_LOCATION_COLUMN_ID)) {
+                String loc = ((CallStackFrame) row).getFullname();
+                loc += ":"; // NOI18N
+                loc += ((CallStackFrame) row).getLineNumber();
+		return (loc);
+            }
         }
         throw new UnknownTypeException(row);
     }

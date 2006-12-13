@@ -169,6 +169,7 @@ public class GoToDeclarationAction extends AbstractAction {
         Point viewPos = parent instanceof JViewport ? ((JViewport)parent).getViewPosition() : null;
         int start = jumpLineStart ? lineToPosition(pane, element.getStartPosition().getLine()) : element.getStartOffset();
         if( start > 0 && pane.getCaretPosition() == caretPos &&
+            pane.getDocument() != null && start < pane.getDocument().getLength() &&
             (viewPos == null || viewPos.equals(((JViewport)parent).getViewPosition()))) {
             pane.setCaretPosition(start);
         }

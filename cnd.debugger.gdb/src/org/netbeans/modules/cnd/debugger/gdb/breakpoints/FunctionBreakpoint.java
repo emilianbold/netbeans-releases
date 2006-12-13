@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -19,29 +19,40 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
+import org.openide.util.Utilities;
+
 /**
  * Notifies about function breakpoint events.
  *
  * @author Jan Jancura and Gordon Prieur
  */
 public class FunctionBreakpoint extends GdbBreakpoint {
-
-    /** Property name constant. */
-    public static final String          PROP_FUNCTION_NAME = new String ("functionName"); // NOI18N
+    
     /** Property name constant */
-    public static final String          PROP_CONDITION = new String ("condition"); // NOI18N
+    public static final String          PROP_LINE_NUMBER = "lineNumber"; // NOI18N
+    /** Property name constant */
+    public static final String          PROP_URL = "url"; // NOI18N
     /** Property name constant. */
-    public static final String          PROP_BREAKPOINT_TYPE = new String ("breakpointType"); // NOI18N
+    public static final String          PROP_FUNCTION_NAME = "functionName"; // NOI18N
+    /** Property name constant */
+    public static final String          PROP_CONDITION = "condition"; // NOI18N
+    /** Property name constant. */
+    public static final String          PROP_BREAKPOINT_TYPE = "breakpointType"; // NOI18N
     /** Property name constant. */
     public static final int             TYPE_FUNCTION_ENTRY = 1;
     /** Property name constant. */
     public static final int             TYPE_FUNCTION_EXIT = 2;
     
-    private String                      function = "";
+    private String                      function = "";  // NOI18N
     private String                      condition = ""; // NOI18N
+    private String                      url = "";       // NOI18N
+    private String                      path = "";      // NOI18N
+    private int                         lineNumber;
     private int                         type;
-
-
     
     private FunctionBreakpoint() {
     }
@@ -55,21 +66,22 @@ public class FunctionBreakpoint extends GdbBreakpoint {
      */
     public static FunctionBreakpoint create(String function) {
         FunctionBreakpoint b = new FunctionBreakpointComparable();
+	b.setID();
         b.setFunctionName(function);
         return b;
     }
-
+    
     /**
-     * Gets name of class to stop on.
+     * Gets name of function to stop on.
      *
-     * @return name of class to stop on
+     * @return name of function to stop on
      */
     public String getFunctionName() {
         return function;
     }
     
     /**
-     * Sets name of class to stop on.
+     * Sets name of function to stop on.
      *
      * @param function the function to stop on
      */
@@ -77,16 +89,117 @@ public class FunctionBreakpoint extends GdbBreakpoint {
         String old;
         synchronized (this) {
             if (function == null) {
-		function = "";
-	    }
-            if ((function == this.function) ||
-		     ((function != null) && (this.function != null) && function.equals(this.function))) {
-		return;
-	    }
+                function = ""; // NOI18N
+            }
+            // Let's try to help user to set "correct" function name
+            int i = function.indexOf(' ');
+            if (i > 0) {
+                // Remove spaces
+                function = function.replaceAll(" ", ""); // NOI18N
+            }
+            i = function.indexOf("(void)"); // NOI18N
+            if (i > 0) {
+                // Replace "(void)" with "()"
+                //function = function.replaceAll("(void)", "()"); // NOI18N
+                function = function.substring(0, i+1) + function.substring(i+5);
+            }
+            if (function.equals(this.function)) {
+                return;
+            }
             old = function;
             this.function = function;
         }
         firePropertyChange(PROP_FUNCTION_NAME, old, function);
+    }
+    
+    /**
+     * Gets file name in URL format.
+     *
+     * @return file name in URL format or empty string
+     */
+    public String getURL() {
+        return url;
+    }
+    
+    /**
+     * Sets file name in URL format.
+     *
+     * @param file name
+     */
+    public void setURL(String url) {
+        String old;
+        synchronized (this) {
+            if ((url == this.url) ||
+                    ((url != null) && (this.url != null) && url.equals(this.url))) {
+                return;
+            }
+            // The code below is a temporary protection
+            // against "invalid" URL values.
+            url = url.replace(" ", "%20"); // NOI18N
+            if (!url.startsWith("file:/")) { // NOI18N
+                if (url.startsWith("/")) { // NOI18N
+                    url = "file:" + url; // NOI18N
+                } else {
+                    url = "file:/" + url; // NOI18N
+                }
+            }
+            
+            // Also set the path variable, based on the URL.
+            try {
+                assert(!(url == null && Boolean.getBoolean("gdb.assertions.enabled"))); // NOI18N
+                FileObject fo = URLMapper.findFileObject(new URL(url));
+                if (fo != null) {
+                    if (Utilities.isWindows()) {
+                        path = fo.getPath();
+                    } else {
+                        path = "/" + fo.getPath();
+                    }
+                }
+            } catch (MalformedURLException mue) {
+                assert !Boolean.getBoolean("gdb.assertions.enabled");
+                return;
+            } catch (Exception ex) {
+                assert !Boolean.getBoolean("gdb.assertions.enabled");
+            }
+            old = this.url;
+            this.url = url;
+        }
+        firePropertyChange(PROP_URL, old, url);
+    }
+    
+    /**
+     *  Return a path based on this breakpoints URL. The path is not necessarily the
+     *  same as the URL with the "File:/" removed. This is because Windows often substitues
+     *  "%20" for spaces. It also puts a "/" before the drive specifier.
+     */
+    public String getPath() {
+        return path;
+    }
+    
+    /**
+     * Gets number of line to stop on.
+     *
+     * @return line number to stop on
+     */
+    public int getLineNumber() {
+        return lineNumber;
+    }
+    
+    /**
+     * Sets number of line to stop on.
+     *
+     * @param ln a line number to stop on
+     */
+    public void setLineNumber(int ln) {
+        int old;
+        synchronized (this) {
+            if (ln == lineNumber) {
+                return;
+            }
+            old = lineNumber;
+            lineNumber = ln;
+        }
+        firePropertyChange(PROP_LINE_NUMBER, new Integer(old), new Integer(ln));
     }
     
     /**
@@ -126,13 +239,13 @@ public class FunctionBreakpoint extends GdbBreakpoint {
         String old;
         synchronized (this) {
             if (c == null) {
-		c = "";
-	    }
+                c = "";
+            }
             c = c.trim();
             if ((c == condition) ||
-                 ((c != null) && (condition != null) && condition.equals(c))) {
-		return;
-	    }
+                    ((c != null) && (condition != null) && condition.equals(c))) {
+                return;
+            }
             old = condition;
             condition = c;
         }

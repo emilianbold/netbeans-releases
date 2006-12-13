@@ -21,11 +21,19 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import antlr.ASTVisitor;
 import antlr.collections.AST;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.modelimpl.antlr2.generated.CPPTokenTypes;
+import org.netbeans.modules.cnd.modelimpl.cache.impl.CacheUtil;
 
 /**
  * Miscellaneous AST-related static utility functions
@@ -33,6 +41,19 @@ import org.netbeans.modules.cnd.modelimpl.antlr2.generated.CPPTokenTypes;
  */
 public class AstUtil {
 
+    public static boolean isEmpty(AST ast, boolean hasFakeChild) {
+	if( isEmpty(ast) ) {
+	    return true;
+	}
+	else {
+	    return hasFakeChild ? isEmpty(ast.getFirstChild()) : false;
+	}
+    }
+
+    private static boolean isEmpty(AST ast) {
+	return (ast == null || ast.getType() == CPPTokenTypes.EOF);
+    }
+    
     public static String[] getRawNameInChildren(AST ast) {
         return getRawName(findIdToken(ast));
     }
@@ -105,6 +126,8 @@ public class AstUtil {
                                 sb.append(next.getText());
                             }
                             return sb.toString();
+                        } else if (first.getType() == CPPTokenTypes.ID){
+                            return first.getText();
                         }
                     }
                 }                
@@ -112,11 +135,47 @@ public class AstUtil {
         }
         return "";
     }
-    
-    public static boolean hasChildOfType(OffsetableBase ob, int type) {
-        return hasChildOfType(ob.getAst(), type);
+  
+    public static AST findMethodName(AST ast){
+        AST type = ast.getFirstChild(); // type
+        AST qn = null;
+        int i = 0;
+        while(type != null){
+            switch(type.getType()){
+                case CPPTokenTypes.LESSTHAN:
+                    i++;
+                    type = type.getNextSibling();
+                    continue;
+                case CPPTokenTypes.GREATERTHAN:
+                    i--;
+                    type = type.getNextSibling();
+                    continue;
+                case CPPTokenTypes.CSM_TYPE_BUILTIN:
+                case CPPTokenTypes.CSM_TYPE_COMPOUND:
+                    type = type.getNextSibling();
+                    if (i == 0){
+                        qn = type;
+                    }
+                    continue;
+                case CPPTokenTypes.CSM_QUALIFIED_ID:
+                    if (i == 0){
+                        qn = type;
+                    }
+                    type = type.getNextSibling();
+                    continue;
+                case CPPTokenTypes.CSM_COMPOUND_STATEMENT:
+                case CPPTokenTypes.CSM_COMPOUND_STATEMENT_LAZY:
+                case CPPTokenTypes.COLON:
+                    break;
+                default:
+                    type = type.getNextSibling();
+                    continue;
+            }
+            break;
+        }
+        return qn;
     }
-    
+
     public static boolean hasChildOfType(AST ast, int type) {
         for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
             if( token.getType() == type ) {
@@ -198,6 +257,45 @@ public class AstUtil {
         ps.print(ast.getColumn());
         ps.print(']');
         //ps.print('\n');
+    }
+    
+    private static int fileIndex = 0;
+    public static AST testASTSerialization(FileBuffer buffer, AST ast) {
+        AST astRead = null;
+        File file = buffer.getFile();
+        // testing caching ast
+        String prefix = "cnd_modelimpl_"+(fileIndex++);
+        String suffix = file.getName();
+        try {
+            File out = File.createTempFile(prefix, suffix);                
+            if (false) System.out.println("...saving AST of file " + file.getAbsolutePath() + " into tmp file " + out);
+            long astTime = System.currentTimeMillis();
+            // write
+            ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(out), TraceFlags.BUF_SIZE));
+            try {
+                CacheUtil.writeAST(oos, ast);
+            } finally {
+                oos.close();
+            }
+            long writeTime = System.currentTimeMillis() - astTime;
+            if (false) System.out.println("saved AST of file " + file.getAbsolutePath() + " withing " + writeTime + "ms");
+            astTime = System.currentTimeMillis();
+            // read
+            ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(new FileInputStream(out), TraceFlags.BUF_SIZE));
+            try {
+                astRead = CacheUtil.readAST(ois);
+            } catch (ClassNotFoundException ex) {
+                ex.printStackTrace();
+            } finally {
+                ois.close();                
+            }
+            long readTime = System.currentTimeMillis() - astTime;
+            if (false) System.out.println("read AST of file " + file.getAbsolutePath() + " withing " + readTime + "ms");
+            out.delete();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        return astRead;
     }
 }
  

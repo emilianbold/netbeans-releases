@@ -1,18 +1,16 @@
 package antlr;
 
 /* ANTLR Translator Generator
- * Project led by Terence Parr at http://www.jGuru.com
+ * Project led by Terence Parr at http://www.cs.usfca.edu
  * Software rights: http://www.antlr.org/license.html
  *
  * $Id$
  */
 
-import java.util.NoSuchElementException;
-
 import antlr.collections.AST;
 import antlr.collections.impl.BitSet;
 
-public class TreeParser {
+public class TreeParser extends MatchExceptionState {
     /** The AST Null object; the parsing cursor is set to this when
      *  it is found to be null.  This way, we can test the
      *  token type of a node without having to have tests for null
@@ -63,7 +61,7 @@ public class TreeParser {
     public String[] getTokenNames() {
         return tokenNames;
     }
-
+    
     protected void match(AST t, int ttype) throws MismatchedTokenException {
         //System.out.println("match("+ttype+"); cursor is "+t);
         if (t == null || t == ASTNULL || t.getType() != ttype) {
@@ -96,7 +94,7 @@ public class TreeParser {
      */
     public static void panic() {
         System.err.println("TreeWalker: panic");
-        System.exit(1);
+        Utils.error("");
     }
 
     /** Parser error-reporting function can be overridden in subclass */

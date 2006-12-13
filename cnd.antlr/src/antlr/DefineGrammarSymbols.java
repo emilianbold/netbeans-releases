@@ -1,7 +1,7 @@
 package antlr;
 
 /* ANTLR Translator Generator
- * Project led by Terence Parr at http://www.jGuru.com
+ * Project led by Terence Parr at http://www.cs.usfca.edu
  * Software rights: http://www.antlr.org/license.html
  *
  * $Id$
@@ -124,7 +124,7 @@ public class DefineGrammarSymbols implements ANTLRGrammarParseBehavior {
         String id = r.getText();
 
         //		if ( Character.isUpperCase(id.charAt(0)) ) {
-        if (r.type == ANTLRTokenTypes.TOKEN_REF) {
+        if (r.getType() == ANTLRTokenTypes.TOKEN_REF) {
             // lexer rule
             id = CodeGenerator.encodeLexerRuleName(id);
             // make sure we define it as token identifier also
@@ -472,6 +472,14 @@ public class DefineGrammarSymbols implements ANTLRGrammarParseBehavior {
         return t.getText();
     }
 
+    public int getHeaderActionLine(String name) {
+    	Token t = (Token)headerActions.get(name);
+    	if (t == null) {
+    		return 0;
+    	}
+    	return t.getLine();
+    }
+
     public void refInitAction(Token action) {
     }
 
@@ -492,7 +500,7 @@ public class DefineGrammarSymbols implements ANTLRGrammarParseBehavior {
                         int autoGenType) {
         String id = r.getText();
         //		if ( Character.isUpperCase(id.charAt(0)) ) { // lexer rule?
-        if (r.type == ANTLRTokenTypes.TOKEN_REF) {
+        if (r.getType() == ANTLRTokenTypes.TOKEN_REF) {
             // lexer rule?
             id = CodeGenerator.encodeLexerRuleName(id);
         }
@@ -678,6 +686,15 @@ public class DefineGrammarSymbols implements ANTLRGrammarParseBehavior {
                 tool.error("importVocab must be an identifier", grammar.getFilename(), value.getLine(), value.getColumn());
             }
         }
+		else if ( key.getText().equals("k") ) {
+			if( grammar instanceof TreeWalkerGrammar
+				&& ! value.getText().equals("1") ) {
+					tool.error("Treewalkers only support k=1", grammar.getFilename(), value.getLine(), value.getColumn());
+			}
+			else {
+	            grammar.setOption(key.getText(), value);
+			}
+		}
         else {
             // Forward all unrecognized options to the grammar
             grammar.setOption(key.getText(), value);

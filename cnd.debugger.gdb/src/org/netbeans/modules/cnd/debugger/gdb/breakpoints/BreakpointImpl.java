@@ -65,6 +65,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
      * Called from XXXBreakpointImpl constructor only.
      */
     final void set() {
+	breakpoint.setDebugger(debugger);
         breakpoint.addPropertyChangeListener(this);
         update();
     }
@@ -82,10 +83,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
      * Called from set () and propertyChanged.
      */
     final void update() {
-        if (getDebugger().getState() == GdbDebugger.STATE_NONE) {
-            return;
-        }
-        if (breakpoint.isEnabled()) {
+        if (getDebugger().getState() != GdbDebugger.STATE_NONE) {
             setRequests();
         }
     }
@@ -93,15 +91,15 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
     public void propertyChange(PropertyChangeEvent evt) {
         if (Breakpoint.PROP_DISPOSED.equals(evt.getPropertyName())) {
             remove();
-        } else {
-            update();
-        }
+	}
+	update();
     }
 
     //protected abstract void setRequests();
     
     protected final void remove() {
         breakpoint.removePropertyChangeListener(this);
+	breakpoint.setState(GdbBreakpoint.DELETION_PENDING);
     }
 
     protected GdbBreakpoint getBreakpoint() {

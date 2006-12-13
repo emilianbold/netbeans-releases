@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -24,12 +24,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 
 import org.netbeans.api.debugger.Breakpoint;
+import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 
 import org.netbeans.modules.cnd.debugger.gdb.event.GdbBreakpointEvent;
 import org.netbeans.modules.cnd.debugger.gdb.event.GdbBreakpointListener;
+import org.netbeans.modules.cnd.debugger.gdb.GdbDebuggerImpl;
 
 /*
  * Note: This class may need to become abstracto with a GdbBreakpoint and
@@ -50,6 +51,8 @@ public abstract class GdbBreakpoint extends Breakpoint {
     public static final String          PROP_PRINT_TEXT = "printText"; // NOI18N
     public static final String          PROP_BREAKPOINT_STATE = "breakpointState"; // NOI18N
     
+    public static final int            MIN_GDB_ID = 500;
+    
     /* valid breakpoint states */
     /** breakpoint is unvalidated by gdb (which may not be running) */
     public static final int             UNVALIDATED = 0;
@@ -59,21 +62,43 @@ public abstract class GdbBreakpoint extends Breakpoint {
     
     /** Gdb has validated this breakpoint and is currently running */
     public static final int             VALIDATED = 2;
-
+    
+    /** Breakpoint is being deleted */
+    public static final int             DELETION_PENDING = 3;
+    
+    public  Object                      annotation = null;
     private boolean                     enabled = true;
     private boolean                     hidden = false;
     private int                         suspend = 0; // Not fully implemented yet!
+    private int				breakpointNumber;
     private String                      printText;
     private HashSet                     breakpointListeners = new HashSet();
     private int                         state = UNVALIDATED;
-    private static Set                  pending = Collections.synchronizedSet(new HashSet());
-    private static Map                  validated = Collections.synchronizedMap(new HashMap());
+    private static Map                  pending = Collections.synchronizedMap(new HashMap());
+    private static Map                  bplist = Collections.synchronizedMap(new HashMap());
+    private GdbDebuggerImpl		debugger;
+    private Object			LOCK = new Object();
+    private int				id;
+    private static int			nextid = MIN_GDB_ID;
+    
+    /**
+     *  Provide a unique ID for each requested breakpoint
+     */
+    protected void setID() {
+	synchronized (LOCK) {
+	    id = ++nextid;
+	}
+    }
+    
+    public int getID() {
+	return id;
+    }
     
     /**
      *  Get the breakpoint associated with the gdb breakpoint number.
      */
     public static GdbBreakpoint get(String breakpointNumber) {
-        return (GdbBreakpoint) validated.get(breakpointNumber);
+        return (GdbBreakpoint) bplist.get(breakpointNumber);
     }
     
     /**
@@ -81,27 +106,11 @@ public abstract class GdbBreakpoint extends Breakpoint {
      *  have no way of knowing what type of a breakpoint we're looking for. So enough information
      *  is passed to get any type.
      *
-     *  @param file The file name of the breakpoint
-     *  @param line The line number of the breakpoint
-     *  @param func The funciton name of the breakpoint
+     *  @param id The unique ID of the breakpoint
+     *  @return The GdbBreakpoint represented by this ID
      */
-    public static GdbBreakpoint getPending(String file, int lnum, String func) {
-        GdbBreakpoint breakpoint = null;
-        Iterator iter = pending.iterator();
-        
-        while (iter.hasNext()) {
-            Object o = iter.next();
-            if (o instanceof LineBreakpoint) {
-                LineBreakpoint lbp = (LineBreakpoint) o;
-                String path = lbp.getPath();
-                if (path.equals(file) && lbp.getLineNumber() == lnum) { // NOI18N
-                    breakpoint = lbp;
-                    break;
-                }
-            }
-        }
-        
-        return breakpoint;
+    public static GdbBreakpoint getPending(int id) {
+	return (GdbBreakpoint) pending.get(Integer.valueOf(id));
     }
     
     /**
@@ -114,22 +123,39 @@ public abstract class GdbBreakpoint extends Breakpoint {
     /** Set the state of this breakpoint */
     public void setState(int state) {
         if (state != this.state &&
-                (state == UNVALIDATED || state == VALIDATION_PENDING || state == VALIDATED)) {
+                (state == UNVALIDATED || state == VALIDATION_PENDING ||
+		 state == VALIDATED || state == DELETION_PENDING)) {
             this.state = state;
+	    if (state == UNVALIDATED) {
+		breakpointNumber = -1;
+	    }
         }
     }
     
     public void setPending() {
         setState(VALIDATION_PENDING);
-        pending.add(this);
+        pending.put(Integer.valueOf(id), this);
     }
     
-    public void setValidated(String breakpointNumber) {
-        setState(VALIDATED);
-        pending.remove(this);
-        validated.put(breakpointNumber, this);
+    public void setValidationResult(int id, String breakpointNumber) {
+	assert(id == getID());
+	
+	if (breakpointNumber != null) {
+	    this.breakpointNumber = Integer.parseInt(breakpointNumber);
+	    setState(VALIDATED);
+	    if (!isEnabled()) {
+		debugger.break_disable(this.breakpointNumber);
+	    }
+	} else {
+	    setState(UNVALIDATED);
+	}
+        bplist.put(breakpointNumber, this);
+        pending.remove(Integer.valueOf(id));
+	if (pending.size() == 0 && debugger.getState() == GdbDebugger.STATE_LOADING) {
+	    debugger.setRunning();
+	}
     }
-   
+    
     /**
      * Gets value of suspend property.
      *
@@ -138,7 +164,7 @@ public abstract class GdbBreakpoint extends Breakpoint {
     public int getSuspend() {
         return suspend;
     }
-
+    
     /**
      * Sets value of suspend property.
      *
@@ -146,8 +172,8 @@ public abstract class GdbBreakpoint extends Breakpoint {
      */
     public void setSuspend(int s) {
         if (s == suspend) {
-	    return;
-	}
+            return;
+        }
         int old = suspend;
         suspend = s;
         firePropertyChange(PROP_SUSPEND, new Integer(old), new Integer(s));
@@ -161,7 +187,7 @@ public abstract class GdbBreakpoint extends Breakpoint {
     public boolean isHidden() {
         return hidden;
     }
-
+    
     /**
      * Sets value of hidden property.
      *
@@ -169,11 +195,15 @@ public abstract class GdbBreakpoint extends Breakpoint {
      */
     public void setHidden(boolean h) {
         if (h == hidden) {
-	    return;
-	}
+            return;
+        }
         boolean old = hidden;
         hidden = h;
         firePropertyChange(PROP_HIDDEN, Boolean.valueOf(old), Boolean.valueOf(h));
+    }
+    
+    public int getBreakpointNumber() {
+	return breakpointNumber;
     }
     
     /**
@@ -184,7 +214,7 @@ public abstract class GdbBreakpoint extends Breakpoint {
     public String getPrintText() {
         return printText;
     }
-
+    
     /**
      * Sets value of print text property.
      *
@@ -192,13 +222,13 @@ public abstract class GdbBreakpoint extends Breakpoint {
      */
     public void setPrintText(String printText) {
         if (this.printText == printText) {
-	    return;
-	}
+            return;
+        }
         String old = this.printText;
         this.printText = printText;
         firePropertyChange(PROP_PRINT_TEXT, old, printText);
     }
-
+    
     /**
      * Test whether the breakpoint is enabled.
      *
@@ -213,8 +243,8 @@ public abstract class GdbBreakpoint extends Breakpoint {
      */
     public void disable() {
         if (!enabled) {
-	    return;
-	}
+            return;
+        }
         enabled = false;
         firePropertyChange(PROP_ENABLED, Boolean.TRUE, Boolean.FALSE);
     }
@@ -224,41 +254,49 @@ public abstract class GdbBreakpoint extends Breakpoint {
      */
     public void enable() {
         if (enabled) {
-	    return;
-	}
+            return;
+        }
         enabled = true;
         firePropertyChange(PROP_ENABLED, Boolean.FALSE, Boolean.TRUE);
     }
     
     /**
-     * 
+     *
      * Adds a GdbBreakpointListener.
-     * 
+     *
      * @param listener the listener to add
      */
     public synchronized void addGdbBreakpointListener(GdbBreakpointListener listener) {
         breakpointListeners.add(listener);
     }
-
+    
     /**
-     * 
+     *
      * Removes a GdbBreakpointListener.
-     * 
+     *
      * @param listener the listener to remove
      */
     public synchronized void removeGdbBreakpointListener(GdbBreakpointListener listener){
         breakpointListeners.remove(listener);
     }
-
+    
     /**
      * Fire GdbBreakpointEvent.
-     * 
+     *
      * @param event a event to be fired
      */
     public void fireGdbBreakpointChange(GdbBreakpointEvent event) {
         Iterator i = ((HashSet) breakpointListeners.clone()).iterator();
         while (i.hasNext()) {
             ((GdbBreakpointListener) i.next()).breakpointReached(event);
-	}
+        }
+    }
+    
+    protected void setDebugger(GdbDebuggerImpl debugger) {
+	this.debugger = debugger;
+    }
+    
+    public GdbDebuggerImpl getDebugger() {
+	return(debugger);
     }
 }

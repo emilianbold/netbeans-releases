@@ -92,7 +92,7 @@ public class DirectoryChooserPanel extends javax.swing.JPanel implements HelpCtx
     }
 
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(DirectoryChooserPanel.class);
+        return new HelpCtx("RuntimeSearchDirectories"); // NOI18N
     }
 
     /**

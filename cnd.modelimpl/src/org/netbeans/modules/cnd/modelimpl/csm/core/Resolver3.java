@@ -24,6 +24,7 @@ import org.netbeans.modules.cnd.api.model.*;
 import java.util.*;
 import org.netbeans.modules.cnd.api.model.deep.CsmDeclarationStatement;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.util.CsmTracer;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
 
 /**
@@ -72,6 +73,9 @@ public class Resolver3 implements Resolver {
     }
     
     private Set visitedFiles = new HashSet();
+    {
+	visitedFiles.add(this.file);
+    }
 
     //private CsmNamespace currentNamespace;
     
@@ -347,6 +351,7 @@ public class Resolver3 implements Resolver {
             if( result == null ) {
                 currTypedef = null;
                 visitedFiles.clear();
+		visitedFiles.add(this);
                 gatherMaps(file);
                 if( currTypedef != null ) {
                     CsmType type = currTypedef.getType();
@@ -396,7 +401,23 @@ public class Resolver3 implements Resolver {
                 if( currTypedef != null ) {
                     CsmType type = currTypedef.getType();
                     if( type != null ) {
-                        result = type.getClassifier();
+			boolean overflow = Thread.currentThread().getStackTrace().length > 200;
+			if( overflow ) {
+			    CsmOffsetable.Position pos = type.getStartPosition();
+			    System.err.println("\n\n'nINFINITE LOOP. FILE: " + type.getContainingFile().getAbsolutePath() + " POS " + new CsmTracer().getOffsetString(type));
+			    int ln = 1;
+			    String text = file.getText(0, offset);
+			    for( int i = 0; i < text.length(); i++ ) {
+				if( text.charAt(i) == '\n') {
+				    ln++;
+				}
+			    }
+			    System.err.println("while resolving " + sb + " in " + file.getAbsolutePath() + " at " + ln);
+			    Thread.currentThread().dumpStack();
+			}
+			if( ! overflow ) {
+			    result = type.getClassifier();
+			}
                     }
                 }
                 if( result == null ) {

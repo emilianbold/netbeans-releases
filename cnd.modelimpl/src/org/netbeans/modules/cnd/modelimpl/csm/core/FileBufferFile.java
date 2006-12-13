@@ -21,7 +21,7 @@
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.io.*;
-import java.lang.ref.WeakReference;
+import java.lang.ref.SoftReference;
 import javax.swing.event.ChangeListener;
 
 /**
@@ -31,7 +31,7 @@ import javax.swing.event.ChangeListener;
 public class FileBufferFile implements FileBuffer {
 
     private File file;
-    private WeakReference bytes;
+    private SoftReference bytes;
 
     public FileBufferFile(File file) {
         this.file = file;
@@ -62,7 +62,7 @@ public class FileBufferFile implements FileBuffer {
         }
     }
     
-    public byte[] getBytes() throws IOException {
+    public synchronized byte[] getBytes() throws IOException {
         byte[] b;
         if( bytes != null  ) {
             Object o = bytes.get();
@@ -72,7 +72,7 @@ public class FileBufferFile implements FileBuffer {
         }
         // either bytes == null or bytes.get() == null
         b = doGetBytes();
-        bytes = new WeakReference(b);
+        bytes = new SoftReference(b);
         return b;
     }
 
@@ -107,4 +107,8 @@ public class FileBufferFile implements FileBuffer {
     public int getLength() {
         return (int) file.length();
     }    
+
+    public boolean isFileBased() {
+        return true;
+    }
 }

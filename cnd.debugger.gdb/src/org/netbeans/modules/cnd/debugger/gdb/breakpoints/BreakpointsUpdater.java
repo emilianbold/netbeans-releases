@@ -42,7 +42,7 @@ public class BreakpointsUpdater extends LazyActionsManagerListener {
         EditorContextBridge.createTimeStamp(debugger);
         BreakpointAnnotationListener bal = (BreakpointAnnotationListener) 
             DebuggerManager.getDebuggerManager().lookupFirst(null, BreakpointAnnotationListener.class);
-        bal.updateLineBreakpoints();
+        bal.updateBreakpoints();
     }
     
     protected void destroy () {

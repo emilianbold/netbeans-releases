@@ -23,6 +23,7 @@ import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
+import org.netbeans.modules.cnd.modelimpl.cache.CacheManager;
 import org.netbeans.modules.cnd.modelimpl.csm.Diagnostic;
 
 import java.beans.PropertyChangeEvent;
@@ -39,6 +40,8 @@ import org.netbeans.api.project.ui.OpenProjects;
 
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
+import org.netbeans.modules.cnd.modelimpl.memory.LowMemoryEvent;
+import org.netbeans.modules.cnd.modelimpl.spi.LowMemoryAlerter;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 
@@ -97,7 +100,6 @@ public class ModelSupport implements PropertyChangeListener {
             model.addProgressListener((CsmProgressListener) it.next());
         }
         
-        ParserThreadManager.instance().init(false);
         //CodeModelRequestProcessor.instance().post(ProjectListenerThread.instance(), "Project Listener");
         this.model = model;
         
@@ -114,25 +116,26 @@ public class ModelSupport implements PropertyChangeListener {
         if( evt.getPropertyName().equals(OpenProjects.PROPERTY_OPEN_PROJECTS) ) {
             
             Project[] projects = OpenProjects.getDefault().getOpenProjects();
-            
-            Set nowOpened = new HashSet();
-            for( int i = 0; i < projects.length; i++ ) {
-                nowOpened.add(projects[i]);
-                if( ! openedProjects.contains(projects[i]) ) {
-                    addProject(projects[i]);
+            synchronized (openedProjects){
+                Set nowOpened = new HashSet();
+                for( int i = 0; i < projects.length; i++ ) {
+                    nowOpened.add(projects[i]);
+                    if( ! openedProjects.contains(projects[i]) ) {
+                        addProject(projects[i]);
+                    }
                 }
-            }
-            
-            Set toClose = new HashSet();
-            for( Iterator iter = openedProjects.iterator(); iter.hasNext(); ) {
-                Object o = iter.next();
-                if( ! nowOpened.contains(o) ) {
-                    toClose.add(o);
+
+                Set toClose = new HashSet();
+                for( Iterator iter = openedProjects.iterator(); iter.hasNext(); ) {
+                    Object o = iter.next();
+                    if( ! nowOpened.contains(o) ) {
+                        toClose.add(o);
+                    }
                 }
-            }
-            
-            for( Iterator iter = toClose.iterator(); iter.hasNext(); ) {
-                removeProject((Project) iter.next());
+
+                for( Iterator iter = toClose.iterator(); iter.hasNext(); ) {
+                    removeProject((Project) iter.next());
+                }
             }
         }
     }
@@ -142,16 +145,17 @@ public class ModelSupport implements PropertyChangeListener {
             onProjectItemAdded(file);
         }
         public void filePropertiesChanged(NativeFileItem file) {
-            // TODO: handle file changed properties
+            onProjectItemChanged(file);
         }
+        
         public void fileRemoved(NativeFileItem file) {
             onProjectItemRemoved(file);
         }
     };
     
-    public void onProjectItemAdded(final NativeFileItem item) {
+    protected void onProjectItemAdded(final NativeFileItem item) {
         try {
-            final ProjectBase project = getProject(item);
+            final ProjectBase project = getProject(item, true);
             if( project != null ) {
                 project.onFileAdded(item);
             }
@@ -160,9 +164,9 @@ public class ModelSupport implements PropertyChangeListener {
         }
     }
     
-    public void onProjectItemRemoved(final NativeFileItem item) {
+    protected void onProjectItemRemoved(final NativeFileItem item) {
         try {
-            final ProjectBase project = getProject(item);
+            final ProjectBase project = getProject(item, false);
             if( project != null ) {
                 project.onFileRemoved(item);
             }
@@ -173,6 +177,11 @@ public class ModelSupport implements PropertyChangeListener {
         }
     }
     
+    protected void onProjectItemChanged(final NativeFileItem item) {
+        // invalidate cache for this file
+        CacheManager.getInstance().invalidate(item.getFile().getAbsolutePath());
+    }
+
 //    // FIXUP: used only in old project api
 //    private ProjectBase getProject(File file) {
 //	FileObject fo = FileUtil.toFileObject(file);
@@ -184,7 +193,7 @@ public class ModelSupport implements PropertyChangeListener {
 //	return null;
 //    }
     
-    private ProjectBase getProject(NativeFileItem nativeFile) {
+    private ProjectBase getProject(NativeFileItem nativeFile, boolean createIfNeeded) {
         assert nativeFile != null : "must not be null";
         assert nativeFile.getFile() != null : "must be associated with valid file";
         assert nativeFile.getNativeProject() != null : "must have container project";
@@ -197,7 +206,10 @@ public class ModelSupport implements PropertyChangeListener {
                 Project platformProject = FileOwnerQuery.getOwner(fo);
                 nativeProject = (NativeProject) platformProject.getLookup().lookup(NativeProject.class);
             }
-            csmProject = nativeProject != null ? (ProjectBase) model.getProject(nativeProject) : null;
+            if (nativeProject != null) {
+                csmProject = createIfNeeded ? (ProjectBase) model.getProject(nativeProject) :
+                                              (ProjectBase) model.findProject(nativeProject);
+            }
         } catch(NullPointerException ex) {
             ex.printStackTrace();
         }
@@ -216,7 +228,7 @@ public class ModelSupport implements PropertyChangeListener {
         }
     }
     
-    private void visitNativeFileItems(List/*<NativeFileItem>*/ items, FileVisitor visitor) throws FileVisitor.StopException {
+    private void visitNativeFileItems(List/*<NativeFileItem>*/ items, FileVisitor visitor, boolean isSourceFile) throws FileVisitor.StopException {
         for (Iterator it = items.iterator(); it.hasNext();) {
             NativeFileItem elem = (NativeFileItem) it.next();
             File file = elem.getFile();
@@ -224,11 +236,11 @@ public class ModelSupport implements PropertyChangeListener {
             if( Diagnostic.DEBUG ) {
                 trace(elem);
             }
-            visitor.visit(elem);
+            visitor.visit(elem, isSourceFile);
         }
     }
     
-    public void registerProjectListeners(ProjectBase csmProjectImpl, Object platformProject) {
+    public synchronized void registerProjectListeners(ProjectBase csmProjectImpl, Object platformProject) {
 	NativeProject nativeProject = platformProject instanceof NativeProject ? (NativeProject)platformProject : null;
 	if( nativeProject != null ) {
 	    // The following code removed. It's a project responsibility to call this method only once.
@@ -237,6 +249,34 @@ public class ModelSupport implements PropertyChangeListener {
 	    //	nativeProject.removeProjectItemsListener(projectItemListener);
 	    nativeProject.addProjectItemsListener(projectItemListener);
 	}
+    }
+    
+    private void dumpNativeProject(NativeProject nativeProject) {
+        List/*<NativeFileItem>*/ headers = nativeProject.getAllHeaderFiles();
+        System.err.println("\n\n\nDumping project " + nativeProject.getProjectDisplayName());
+        System.err.println("\nSystem include paths");
+        for (Iterator it = nativeProject.getSystemIncludePaths().iterator(); it.hasNext();) System.err.println("    " + it.next());
+        System.err.println("\nUser include paths");
+        for (Iterator it = nativeProject.getUserIncludePaths().iterator(); it.hasNext();)   System.err.println("    " + it.next());
+        System.err.println("\nSystem macros");
+        for (Iterator it = nativeProject.getSystemMacroDefinitions().iterator(); it.hasNext();) System.err.println("    " + it.next());
+        System.err.println("\nUser macros");
+        for (Iterator it = nativeProject.getUserMacroDefinitions().iterator(); it.hasNext();)   System.err.println("    " + it.next());
+        List/*<NativeFileItem>*/ files;
+        files = nativeProject.getAllSourceFiles();
+        System.err.println("\nSources: (" + files.size() + " files )");
+        for (Iterator it = files.iterator(); it.hasNext();) {
+            NativeFileItem elem = (NativeFileItem) it.next();
+            System.err.println(elem.getFile().getAbsolutePath());
+        }
+        files = nativeProject.getAllHeaderFiles();
+        System.err.println("\nHeaders: (" + files.size() + " files )");
+        for (Iterator it = files.iterator(); it.hasNext();) {
+            NativeFileItem elem = (NativeFileItem) it.next();
+            System.err.println(elem.getFile().getAbsolutePath());
+        }
+        
+        System.err.println("End of project dump\n\n\n");
     }
     
     public void visitProjectFiles(ProjectBase csmProjectImpl, Object platformProject, FileVisitor visitor) {
@@ -255,8 +295,11 @@ public class ModelSupport implements PropertyChangeListener {
                 if( TraceFlags.TIMING ) {
                     System.err.println("FILES COUNT:\nSource files:\t" + sources.size() + "\nHeader files:\t" + headers.size() + "\nTotal files:\t" + (sources.size() + headers.size()));
                 }
-                visitNativeFileItems(sources, visitor);
-                visitNativeFileItems(headers, visitor);
+                if(TraceFlags.DUMP_PROJECT_ON_OPEN ) {
+                    dumpNativeProject(nativeProject);
+                }
+                visitNativeFileItems(sources, visitor, true);
+                visitNativeFileItems(headers, visitor, false);
                
                 // in fact if visitor used for parsing => visitor will parse all included files
                 // recursively starting from current source file
@@ -317,6 +360,18 @@ public class ModelSupport implements PropertyChangeListener {
         openedProjects.remove(project);
     }
     
+    public Collection<NativeProject> getNativeProjects() {
+        Collection<NativeProject> nativeProjects = new HashSet<NativeProject>();
+        Project[] nbProjects = OpenProjects.getDefault().getOpenProjects();
+        for (int i = 0; i < nbProjects.length; i++) {
+            NativeProject nativeProject = (NativeProject) nbProjects[i].getLookup().lookup(NativeProject.class);
+            if (nativeProject != null) {
+                nativeProjects.add(nativeProject);
+            }
+        }
+	return nativeProjects;
+    }
+    
     /** gets a key, which uniquely identifies the project */
     public String getProjectKey(CsmProject project) {
         Object o = project.getPlatformProject();
@@ -353,17 +408,24 @@ public class ModelSupport implements PropertyChangeListener {
         }
         return new FileBufferFile(file);
     }
+
+    public void onMemoryLow(LowMemoryEvent event, boolean fatal) {
+	LowMemoryAlerter alerter = (LowMemoryAlerter) Lookup.getDefault().lookup(LowMemoryAlerter.class);
+	if( alerter != null ) {
+	    alerter.alert(event, fatal);
+	}
+    }
+
+    private static class BufAndProj {
+        public BufAndProj(FileBuffer buffer, ProjectBase project) {
+            this.buffer = buffer;
+            this.project = project;
+        }
+        public FileBuffer buffer;
+        public ProjectBase project;
+    }    
     
     private class FileChangeListener implements ChangeListener {
-        
-        private class BufAndProj {
-            public BufAndProj(FileBuffer buffer, ProjectBase project) {
-                this.buffer = buffer;
-                this.project = project;
-            }
-            public FileBuffer buffer;
-            public ProjectBase project;
-        }
         
         private Map/*<DataObject, BufAndProj>*/ buffers = new HashMap/*<DataObject, BufAndProj>*/();
         
@@ -469,5 +531,4 @@ public class ModelSupport implements PropertyChangeListener {
             return false;
         }
     }
-    
 }

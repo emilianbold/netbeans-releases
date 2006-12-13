@@ -1,7 +1,10 @@
 package antlr;
 
+import java.util.List;
+import java.util.ArrayList;
+
 /* ANTLR Translator Generator
- * Project led by Terence Parr at http://www.jGuru.com
+ * Project led by Terence Parr at http://www.cs.usfca.edu
  * Software rights: http://www.antlr.org/license.html
  *
  * $Id$
@@ -18,11 +21,8 @@ package antlr;
  * <p>
  *
  * @see antlr.Token
- * @see antlr.Tokenizer
  * @see antlr.TokenQueue
  */
-
-import java.io.IOException;
 
 public class TokenBuffer {
 
@@ -32,41 +32,65 @@ public class TokenBuffer {
     // Number of active markers
     int nMarkers = 0;
 
-    // Additional offset used when markers are active
-    int markerOffset = 0;
+	/** The index into the tokens list of the current token (next token
+     *  to consume).  p==-1 indicates that the tokens list is empty
+     */
+    protected int p = -1;
 
-    // Number of calls to consume() since last LA() or LT() call
-    int numToConsume = 0;
+    /** Record every single token pulled from the source so we can reproduce
+     *  chunks of it later.
+     */
+    protected List tokens;
 
-    // Circular queue
-    TokenQueue queue;
+    // type buffer data (created to improve performance of LA)
+    protected int size = 0;
+    protected int[] data = null;
+    public static final int INITIAL_BUFFER_SIZE = 2048;
 
     /** Create a token buffer */
     public TokenBuffer(TokenStream input_) {
         input = input_;
-        queue = new TokenQueue(1);
-    }
+		tokens = new ArrayList(INITIAL_BUFFER_SIZE);
+		fill(); // fill buffer
+		p = 0; // point at beginning of buffer
+	}
 
     /** Reset the input buffer to empty state */
     public final void reset() {
         nMarkers = 0;
-        markerOffset = 0;
-        numToConsume = 0;
-        queue.reset();
+        p = 0;
+        size = 0;
+        tokens.clear();
+        data = null;
+    }
+    
+    // double data size
+    private void resizeData() {
+        int[] newdata = new int[data.length*2]; // resize
+        System.arraycopy(data, 0, newdata, 0, data.length);
+        data = newdata;
     }
 
     /** Mark another token for deferred consumption */
     public final void consume() {
-        numToConsume++;
+		p++;
     }
 
-    /** Ensure that the token buffer is sufficiently full */
-    private final void fill(int amount) throws TokenStreamException {
-        syncConsume();
-        // Fill the buffer sufficiently to hold needed tokens
-        while (queue.nbrEntries < amount + markerOffset) {
-            // Append the next token
-            queue.append(input.nextToken());
+    private void fill() {
+        data = new int[INITIAL_BUFFER_SIZE];
+        try {
+            int pos = 0;
+            Token t = input.nextToken();
+            while ( (t != null) && (t.getType() != Token.EOF_TYPE) ) {
+                tokens.add(t);
+                if (pos == data.length) resizeData();
+                data[pos++] = t.getType();
+                t = input.nextToken();
+            }
+            size = pos;
+        }
+        catch (TokenStreamException tse) {
+                System.err.println("tmp error: can't load tokens: "+tse);
         }
     }
 
@@ -77,50 +101,54 @@ public class TokenBuffer {
 
     /** Get a lookahead token value */
     public final int LA(int i) throws TokenStreamException {
-        fill(i);
-        return queue.elementAt(markerOffset + i - 1).getType();
+        int dataPos = p + i - 1;
+        if ( dataPos >= size ) {
+                return TokenImpl.EOF_TYPE;
+        }
+        return data[dataPos];
     }
 
     /** Get a lookahead token */
     public final Token LT(int i) throws TokenStreamException {
-        fill(i);
-        return queue.elementAt(markerOffset + i - 1);
+        if ( (p+i-1) >= tokens.size() ) {
+                return TokenImpl.EOF_TOKEN;
+        }
+        return (Token)tokens.get(p + i - 1);
     }
 
-    /**Return an integer marker that can be used to rewind the buffer to
+	/** Get token at absolute position (indexed from 0) */
+	public final Token get(int i) {
+		return (Token)tokens.get(i);
+	}
+
+	/**Return an integer marker that can be used to rewind the buffer to
      * its current state.
      */
     public final int mark() {
-        syncConsume();
-//System.out.println("Marking at " + markerOffset);
+		//System.out.println("Marking at " + p);
 //try { for (int i = 1; i <= 2; i++) { System.out.println("LA("+i+")=="+LT(i).getText()); } } catch (ScannerException e) {}
         nMarkers++;
-        return markerOffset;
+        return p;
     }
 
-    /**Rewind the token buffer to a marker.
-     * @param mark Marker returned previously from mark()
+	/** What token index are we at?  Assume mark() done at start.
+	 */
+	public final int index() {
+		return p;
+	}
+
+	public final void seek(int position) {
+		p = position;
+	}
+
+	/**Rewind the token buffer to a marker.
+     * @param marker Marker returned previously from mark()
      */
-    public final void rewind(int mark) {
-        syncConsume();
-        markerOffset = mark;
+    public final void rewind(int marker) {
+		seek(marker);
         nMarkers--;
-//System.out.println("Rewinding to " + mark);
+		//System.out.println("Rewinding to " + marker);
 //try { for (int i = 1; i <= 2; i++) { System.out.println("LA("+i+")=="+LT(i).getText()); } } catch (ScannerException e) {}
     }
 
-    /** Sync up deferred consumption */
-    private final void syncConsume() {
-        while (numToConsume > 0) {
-            if (nMarkers > 0) {
-                // guess mode -- leave leading tokens and bump offset.
-                markerOffset++;
-            }
-            else {
-                // normal mode -- remove first token
-                queue.removeFirst();
-            }
-            numToConsume--;
-        }
-    }
 }

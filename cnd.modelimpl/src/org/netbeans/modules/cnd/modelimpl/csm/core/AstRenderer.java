@@ -63,14 +63,21 @@ public class AstRenderer {
                     render(token, (NamespaceImpl) ns.getNamespace(), ns);
                     break;
                 case CPPTokenTypes.CSM_CLASS_DECLARATION:
-                case CPPTokenTypes.CSM_TEMPLATE_CLASS_DECLARATION:
+                case CPPTokenTypes.CSM_TEMPLATE_CLASS_DECLARATION: 
+                {
                     ClassImpl cls = new ClassImpl(token, currentNamespace, file);
                     container.addDeclaration(cls);
                     addTypedefs(renderTypedef(token, cls, currentNamespace), currentNamespace, container);
+                    renderVariableInClassifier(token, cls, currentNamespace, container);
                     break;
+                }
                 case CPPTokenTypes.CSM_ENUM_DECLARATION:
-                    container.addDeclaration(new EnumImpl(token, currentNamespace, file));
+                {
+                    CsmEnum csmEnum = new EnumImpl(token, currentNamespace, file);
+                    container.addDeclaration(csmEnum);
+                    renderVariableInClassifier(token, csmEnum, currentNamespace, container);
                     break;
+                }
                 case CPPTokenTypes.CSM_FUNCTION_DECLARATION:
                     FunctionImpl fi = new FunctionImpl(token, file, currentNamespace);
                     //fi.setScope(currentNamespace);
@@ -94,6 +101,31 @@ public class AstRenderer {
                         currentNamespace.addDeclaration(fddi);
                     }
                     break;
+                case CPPTokenTypes.CSM_TEMPLATE_EXPLICIT_SPECIALIZATION:
+                    if( isClassSpecialization(token) ) {
+                        ClassImpl spec = new ClassImpl(token, currentNamespace, file);
+                        container.addDeclaration(spec);
+                        addTypedefs(renderTypedef(token, spec, currentNamespace), currentNamespace, container);
+                    }
+                    else {
+                        if( isMemberDefinition(token) ) {
+                            container.addDeclaration(new FunctionDefinitionImpl(token, file, null));
+                        } else {
+                            FunctionDDImpl fddit = new FunctionDDImpl(token, file, currentNamespace);
+                            container.addDeclaration(fddit);
+                            currentNamespace.addDeclaration(fddit);
+                        }
+                    }
+                    break; 
+                case CPPTokenTypes.CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION:
+                    if( isMemberDefinition(token) ) {
+                        container.addDeclaration(new FunctionDefinitionImpl(token, file, null));
+                    } else {
+                        FunctionDDImpl fddit = new FunctionDDImpl(token, file, currentNamespace);
+                        container.addDeclaration(fddit);
+                        currentNamespace.addDeclaration(fddit);
+                    }
+                    break;
                 case CPPTokenTypes.CSM_NAMESPACE_ALIAS:
                     container.addDeclaration(new NamespaceAliasImpl(token, file));
                     break;
@@ -104,7 +136,11 @@ public class AstRenderer {
                     container.addDeclaration(new UsingDeclarationImpl(token, file));
                     break;
                 case CPPTokenTypes.CSM_TEMPL_FWD_CL_OR_STAT_MEM:
-                    renderForwardClassDeclaration(token, currentNamespace, container, file);
+                    if (renderForwardClassDeclaration(token, currentNamespace, container, file)){
+                        break;
+                    } else {
+                        renderForwardMemberDeclaration(token, currentNamespace, container, file);
+                    }
                     break;
                 case CPPTokenTypes.CSM_GENERIC_DECLARATION:
                     if( renderNSP(token, currentNamespace, container, file) ) {
@@ -150,6 +186,57 @@ public class AstRenderer {
             }
         }
         return false;
+    }
+
+    protected void renderVariableInClassifier(AST ast, CsmClassifier classifier,
+            MutableDeclarationsContainer container1, MutableDeclarationsContainer container2){
+        AST token = ast.getFirstChild();
+        for (; token != null; token = token.getNextSibling()){
+            if (token.getType() == CPPTokenTypes.RCURLY){
+                break;
+            }
+        }
+        if (token != null){
+            AST ptrOperator = null;
+            for (; token != null; token = token.getNextSibling()){
+                switch( token.getType() ) {
+                    case CPPTokenTypes.CSM_PTR_OPERATOR:
+                        if( ptrOperator == null ) {
+                            ptrOperator = token;
+                        }
+                        break;
+                    case CPPTokenTypes.CSM_VARIABLE_DECLARATION:
+                    case CPPTokenTypes.CSM_ARRAY_DECLARATION:
+                    {
+                        int arrayDepth = 0;
+                        String name = null;
+                        for( AST varNode = token.getFirstChild(); varNode != null; varNode = varNode.getNextSibling() ) {
+                            switch( varNode.getType() ) {
+                                case CPPTokenTypes.LSQUARE:
+                                    arrayDepth++;
+                                    break;
+                                case CPPTokenTypes.CSM_QUALIFIED_ID:
+                                case CPPTokenTypes.ID:
+                                    name = varNode.getText();
+                                    break;
+                            }
+                        }
+                        if (name != null) {
+                            CsmType type = TypeImpl.createType(classifier, ptrOperator, arrayDepth, token, file);
+                            VariableImpl var = createVariable(token, file, type, name, false);
+                            if( container2 != null ) {
+                                container2.addDeclaration(var);
+                            }
+                            // TODO! don't add to namespace if....
+                            if( container1 != null ) {
+                                container1.addDeclaration(var);
+                            }
+                            ptrOperator = null;
+                        }
+                    }
+                }
+            }
+        }
     }
     
 
@@ -305,10 +392,6 @@ public class AstRenderer {
         return (CsmTypedef[]) results.toArray(new CsmTypedef[results.size()]);
     }
     
-    protected CsmTypedef createTypedef(AST ast, FileImpl file, CsmObject container) {
-        return new TypedefImpl(ast, file, container);
-    }
-
     protected CsmTypedef createTypedef(AST ast, FileImpl file, CsmObject container, CsmType type, String name) {
         return new TypedefImpl(ast, file, container, type, name);
     }
@@ -337,7 +420,53 @@ public class AstRenderer {
                 ClassForwardDeclarationImpl cfdi = new ClassForwardDeclarationImpl(ast, file);
                 if( container != null ) {
                     container.addDeclaration(cfdi);
-                    return true;
+                }
+                return true;
+        }
+                
+        return false;
+    }
+
+    public static boolean renderForwardMemberDeclaration(
+            AST ast, 
+            NamespaceImpl currentNamespace, MutableDeclarationsContainer container, 
+            FileImpl file) {
+        
+        AST child = ast.getFirstChild();
+        while(child != null){
+            switch(child.getType()){
+                case CPPTokenTypes.LITERAL_template:
+                case CPPTokenTypes.LITERAL_inline:
+                    child = child.getNextSibling();
+                    continue;
+            }
+            break;
+        }
+        if( child == null ) {
+            return false;
+        }
+        if (child.getType() == CPPTokenTypes.LITERAL_template) {
+            child = child.getNextSibling();
+            if( child == null ) {
+                return false;
+            }
+        }
+        
+        switch( child.getType() ) {
+            case CPPTokenTypes.CSM_TYPE_COMPOUND:
+            case CPPTokenTypes.CSM_TYPE_BUILTIN:
+                child = child.getNextSibling();
+                if (child != null){
+                    if (child.getType() == CPPTokenTypes.CSM_VARIABLE_DECLARATION){
+                        //static variable definition
+                    } else {
+                        //method forward declaratin
+                        FunctionImpl ftdecl = new FunctionImpl(ast, file, currentNamespace);
+                        if( container != null ) {
+                            container.addDeclaration(ftdecl);
+                        }
+                        return true;
+                    }
                 }
                 break;
         }
@@ -345,13 +474,25 @@ public class AstRenderer {
         return false;
     }
     
+    
     public static String getQualifiedName(AST qid) {
         if( qid != null && qid.getType() == CPPTokenTypes.CSM_QUALIFIED_ID ) {
             if ( qid.getFirstChild() != null ) {
                 StringBuffer sb = new StringBuffer();
                 for( AST namePart = qid.getFirstChild(); namePart != null; namePart = namePart.getNextSibling() ) {
-                    assert( namePart.getType() == CPPTokenTypes.ID || namePart.getType() == CPPTokenTypes.SCOPE);
-                    sb.append(namePart.getText());
+                    // TODO: update this assert it should accept names like: allocator<char, typename A>
+//                    if( ! ( namePart.getType() == CPPTokenTypes.ID || namePart.getType() == CPPTokenTypes.SCOPE ||
+//                            namePart.getType() == CPPTokenTypes.LESSTHAN || namePart.getType() == CPPTokenTypes.GREATERTHAN ||
+//                            namePart.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN || namePart.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND ||
+//                            namePart.getType() == CPPTokenTypes.COMMA) ) {
+//			new Exception("Unexpected token type " + namePart).printStackTrace(System.err);
+//		    }
+                    if (namePart.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN) {
+                        AST builtInType = namePart.getFirstChild();
+                        sb.append(builtInType != null ? builtInType.getText() : "");
+                    } else {
+                        sb.append(namePart.getText());
+                    }
                 }
                 return sb.toString();
             }
@@ -360,15 +501,34 @@ public class AstRenderer {
     }
 
     public static String[] getNameTokens(AST qid) {
-        if( qid != null && qid.getType() == CPPTokenTypes.CSM_QUALIFIED_ID ) {
+        if( qid != null && (qid.getType() == CPPTokenTypes.CSM_QUALIFIED_ID || qid.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND)) {
+            int templateDepth = 0;
             if ( qid.getNextSibling() != null ) {
                 List/*<String>*/ l = new ArrayList/*<String>*/();
                 for( AST namePart = qid.getFirstChild(); namePart != null; namePart = namePart.getNextSibling() ) {
-                    if( namePart.getType() == CPPTokenTypes.ID ) {
+                    if( templateDepth == 0 && namePart.getType() == CPPTokenTypes.ID ) {
                         l.add(namePart.getText());
                     }
+                    else if( namePart.getType() == CPPTokenTypes.LESSTHAN ) {
+                        // the beginning of template parameters
+                        templateDepth++;
+                    }
+                    else if( namePart.getType() == CPPTokenTypes.GREATERTHAN ) {
+                        // the beginning of template parameters
+                        templateDepth--;
+                    }
                     else {
-                        assert namePart.getType() == CPPTokenTypes.SCOPE;
+                        //assert namePart.getType() == CPPTokenTypes.SCOPE;
+                        if( templateDepth == 0 && namePart.getType() != CPPTokenTypes.SCOPE ) {
+                            StringBuffer tokenText = new StringBuffer();
+                            tokenText.append('[').append(namePart.getText());
+                            if (namePart.getNumberOfChildren() == 0) {
+                                tokenText.append(", line=").append(namePart.getLine());
+                                tokenText.append(", column=").append(namePart.getColumn());
+                            }
+                            tokenText.append(']');
+                            System.err.println("Incorect token: expected '::', found " + tokenText.toString());
+                        }
                     }
                 }
                 return (String[]) l.toArray(new String[l.size()]);
@@ -498,24 +658,41 @@ public class AstRenderer {
      * @param container1 container to add created variable into (may be null)
      * @param container2 container to add created variable into (may be null)
      */
-    public boolean renderVariable(AST ast, MutableDeclarationsContainer container1, MutableDeclarationsContainer container2) {
+    public boolean renderVariable(AST ast, MutableDeclarationsContainer namespaceContainer, MutableDeclarationsContainer container2) {
         boolean _static = AstUtil.hasChildOfType(ast, CPPTokenTypes.LITERAL_static);
         AST typeAST = ast.getFirstChild();
         AST tokType = getFirstChildSkipQualifiers(ast);
         if( tokType == null ) {
             return false;
         }
+        boolean isThisReference = false;
+        if (tokType != null &&
+            tokType.getType() == CPPTokenTypes.LITERAL_struct ||
+            tokType.getType() == CPPTokenTypes.LITERAL_union ||
+            tokType.getType() == CPPTokenTypes.LITERAL_enum ||
+            tokType.getType() == CPPTokenTypes.LITERAL_class){
+            // This is struct/class word for reference on containing struct/class
+            tokType = tokType.getNextSibling();
+            typeAST = tokType;
+            if( tokType == null ) {
+                return false;
+            }
+            isThisReference = true;
+        }
         if( tokType != null && isConstQualifier(tokType.getType())) {
             assert (false): "must be skipped above";
             tokType = tokType.getNextSibling();
         }
         
-        if( tokType.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN || tokType.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND ) {
+        if( tokType.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN ||
+            tokType.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND ||
+            tokType.getType() == CPPTokenTypes.CSM_QUALIFIED_ID && isThisReference) {
             
             AST nextToken = tokType.getNextSibling();
             while( nextToken != null && 
                     (nextToken.getType() == CPPTokenTypes.CSM_PTR_OPERATOR ||
-                     isCVQualifier(nextToken.getType()))) {
+                     isCVQualifier(nextToken.getType()) ||
+                     nextToken.getType() == CPPTokenTypes.LPAREN)) {
                 nextToken = nextToken.getNextSibling(); 
             }
             
@@ -523,8 +700,10 @@ public class AstRenderer {
 //                (nextToken.getType() == CPPTokenTypes.CSM_VARIABLE_DECLARATION || 
 //                nextToken.getType() == CPPTokenTypes.CSM_ARRAY_DECLARATION) ) {
             if( nextToken == null || 
+                nextToken.getType() == CPPTokenTypes.LSQUARE ||
                 nextToken.getType() == CPPTokenTypes.CSM_VARIABLE_DECLARATION || 
-                nextToken.getType() == CPPTokenTypes.CSM_ARRAY_DECLARATION ) {
+                nextToken.getType() == CPPTokenTypes.CSM_ARRAY_DECLARATION ||
+		nextToken.getType() == CPPTokenTypes.ASSIGNEQUAL ) {
                 
                 /*
                 CsmClassifier classifier = null;
@@ -579,14 +758,14 @@ public class AstRenderer {
                                     }
                                 }
                             }
-                            processVariable(token, ptrOperator, (theOnly ? ast : token), typeAST/*tokType*/, container1, container2, file, _static);
+                            processVariable(token, ptrOperator, (theOnly ? ast : token), typeAST/*tokType*/, namespaceContainer, container2, file, _static);
                             ptrOperator = null;
                             break;
                     }
                 }
                 if( ! hasVariables ) {
                     // unnamed parameter
-                    processVariable(ast, ptrOperator, ast, typeAST/*tokType*/, container1, container2, file, _static);
+                    processVariable(ast, ptrOperator, ast, typeAST/*tokType*/, namespaceContainer, container2, file, _static);
                 }
                 return true;
             }
@@ -599,25 +778,40 @@ public class AstRenderer {
                                 FileImpl file, boolean _static) {
         int arrayDepth = 0;
         String name = "";
+        AST qn = null;
         for( AST token = varAst.getFirstChild(); token != null; token = token.getNextSibling() ) {
             switch( token.getType() ) {
                 case CPPTokenTypes.LSQUARE:
                     arrayDepth++;
                     break;
                 case CPPTokenTypes.CSM_QUALIFIED_ID:
+                    qn = token;
+                    // no break;
                 case CPPTokenTypes.ID:
                     name = token.getText();
                     break;
             }
         }
         CsmType type = TypeImpl.createType(classifier, file, ptrOperator, arrayDepth);
-        VariableImpl var = createVariable(offsetAst, file, type, name, _static);
-        if( container2 != null ) {
-            container2.addDeclaration(var);
-        }
-        // TODO! don't add to namespace if....
-        if( container1 != null ) {
-            container1.addDeclaration(var);
+        if (qn != null && isScopedId(qn)){
+            // This is definition of global namespace variable or definition of static class variable
+            // TODO What about global variable definitions:
+            // extern int i; - declaration
+            // int i; - definition
+            VarableDefinitionImpl var = new VarableDefinitionImpl(offsetAst, file, type, name);
+            var.setStatic(_static);
+            if( container2 != null ) {
+                container2.addDeclaration(var);
+            }
+        } else {
+            VariableImpl var = createVariable(offsetAst, file, type, name, _static);
+            if( container2 != null ) {
+                container2.addDeclaration(var);
+            }
+            // TODO! don't add to namespace if....
+            if( container1 != null ) {
+                container1.addDeclaration(var);
+            }
         }
     }
     
@@ -705,26 +899,46 @@ public class AstRenderer {
         return false;
     }
 
-    private boolean isMemberDefinition(AST ast) {
+    private boolean isClassSpecialization(AST ast){
         AST type = ast.getFirstChild(); // type
-        if( type != null && (type.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN || type.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND) ) {
-            AST id = type.getNextSibling();
-	    // skip ptr operators
-	    while(id != null && id.getType() == CPPTokenTypes.CSM_PTR_OPERATOR ) {
-		id = id.getNextSibling();
-	    };
-            if( id != null ) {
-                if( id.getType() == CPPTokenTypes.ID ) {
-                    AST scope = id.getNextSibling();
-                    if( scope != null && scope.getType() == CPPTokenTypes.SCOPE ) {
+        if (type != null){
+            AST child = type;
+            while((child=child.getNextSibling())!=null){
+                if (child.getType() == CPPTokenTypes.GREATERTHAN){
+                    child = child=child.getNextSibling();
+                    if (child != null && (child.getType() == CPPTokenTypes.LITERAL_class ||
+                            child.getType() == CPPTokenTypes.LITERAL_struct)){
                         return true;
                     }
+                    return false;
                 }
-                else if( id.getType() == CPPTokenTypes.CSM_QUALIFIED_ID ) {
-                    if( id.getNumberOfChildren() > 1 ) {
-                        return true;
-                    }
+            }
+        }
+        return true;
+    }
+     
+    private boolean isMemberDefinition(AST ast) {
+        AST id = AstUtil.findMethodName(ast);
+        if (id != null){
+            return isScopedId(id);
+        }
+        return false;
+    }
+
+    private boolean isScopedId(AST id){
+        if( id.getType() == CPPTokenTypes.ID ) {
+            AST scope = id.getNextSibling();
+            if( scope != null && scope.getType() == CPPTokenTypes.SCOPE ) {
+                return true;
+            }
+        } else if( id.getType() == CPPTokenTypes.CSM_QUALIFIED_ID ) {
+            int i = 0;
+            AST q = id.getFirstChild();
+            while(q!=null){
+                if (q.getType() == CPPTokenTypes.SCOPE){
+                    return true;
                 }
+                q = q.getNextSibling();
             }
         }
         return false;
@@ -732,7 +946,8 @@ public class AstRenderer {
     
     public static CsmCompoundStatement findCompoundStatement(AST ast, CsmFile file) {
         for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
-            if( token.getType() == CPPTokenTypes.CSM_COMPOUND_STATEMENT ) {
+            if( token.getType() == CPPTokenTypes.CSM_COMPOUND_STATEMENT ||
+                    token.getType() == CPPTokenTypes.CSM_COMPOUND_STATEMENT_LAZY) {
                 return new CompoundStatementImpl(token, file);
             }
         }
@@ -749,6 +964,8 @@ public class AstRenderer {
                 return new UniversalStatement(ast, file, CsmStatement.Kind.DEFAULT);
             case CPPTokenTypes.CSM_EXPRESSION_STATEMENT:
                 return new ExpressionStatementImpl(ast, file);
+            case CPPTokenTypes.CSM_CLASS_DECLARATION:
+            case CPPTokenTypes.CSM_ENUM_DECLARATION:
             case CPPTokenTypes.CSM_DECLARATION_STATEMENT:
                 return new DeclarationStatementImpl(ast, file);
             case CPPTokenTypes.CSM_COMPOUND_STATEMENT:
@@ -781,6 +998,14 @@ public class AstRenderer {
                 return new UniversalStatement(ast, file, CsmStatement.Kind.THROW);
             case CPPTokenTypes.CSM_ASM_BLOCK:
                 // just ignore
+                break;
+//            case CPPTokenTypes.SEMICOLON:
+//            case CPPTokenTypes.LCURLY:
+//            case CPPTokenTypes.RCURLY:
+//                break;
+//            default:
+//                System.out.println("unexpected statement kind="+ast.getType());
+//                break;
         }
         return null;
     }

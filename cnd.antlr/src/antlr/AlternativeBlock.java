@@ -1,7 +1,7 @@
 package antlr;
 
 /* ANTLR Translator Generator
- * Project led by Terence Parr at http://www.jGuru.com
+ * Project led by Terence Parr at http://www.cs.usfca.edu
  * Software rights: http://www.antlr.org/license.html
  *
  * $Id$
@@ -34,6 +34,12 @@ class AlternativeBlock extends AlternativeElement {
 
     protected boolean warnWhenFollowAmbig = true; // warn when an empty path or exit path
 
+    public boolean isCombineChars() {
+        return combineChars;
+    }
+
+    protected boolean combineChars = false; 
+
     protected boolean generateAmbigWarnings = true;  // the general warning "shut-up" mechanism
     // conflicts with alt of subrule.
     // Turning this off will suppress stuff
@@ -61,10 +67,10 @@ class AlternativeBlock extends AlternativeElement {
         alternatives.appendElement(alt);
     }
 
-    public void generate() {
-        grammar.generator.gen(this);
+    public void generate(Context context) {
+        grammar.generator.gen(this, context);
     }
-
+    
     public Alternative getAlternativeAt(int i) {
         return (Alternative)alternatives.elementAt(i);
     }
@@ -142,6 +148,19 @@ class AlternativeBlock extends AlternativeElement {
     }
 
     public void setOption(Token key, Token value) {
+        if (key.getText().equals("combineChars")) {
+            if (value.getText().equals("true")) {
+                if (Tool.agressive) {
+                    combineChars = true;
+                }
+            }
+            else if (value.getText().equals("false")) {
+                combineChars = false;
+            }
+            else {
+                grammar.antlrTool.error("Value for combineChars must be true or false", grammar.getFilename(), key.getLine(), key.getColumn());
+            }
+        } else 
         if (key.getText().equals("warnWhenFollowAmbig")) {
             if (value.getText().equals("true")) {
                 warnWhenFollowAmbig = true;

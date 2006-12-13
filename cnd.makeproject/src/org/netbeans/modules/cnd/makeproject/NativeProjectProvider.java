@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -24,9 +24,10 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
+import java.util.Iterator;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
@@ -41,6 +42,12 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.OptionsConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.VectorConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.CCCompilerConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
+import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
+import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
+import org.netbeans.modules.cnd.makeproject.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.makeproject.api.compilers.CompilerSets;
 import org.openide.filesystems.FileUtil;
 
 final public class NativeProjectProvider implements NativeProject, PropertyChangeListener {
@@ -73,26 +80,26 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     public String getProjectRoot() {
         return FileUtil.toFile(project.getProjectDirectory()).getPath();
     }
-
+    
     public String getProjectDisplayName() {
         return ProjectUtils.getInformation(project).getDisplayName();
     }
-
+    
     public List getAllSourceFiles() {
-        Vector list = new Vector();
+        ArrayList list = new ArrayList();
         if (getMakeConfigurationDescriptor() == null)
             return null;
         Item[] items = getMakeConfigurationDescriptor().getProjectItems();
         for (int i = 0; i < items.length; i++) {
             ItemConfiguration itemConfiguration = (ItemConfiguration)getMakeConfiguration().getAuxObject(ItemConfiguration.getId(items[i].getPath()));
-            if (itemConfiguration.isCompilerToolConfiguration() && !itemConfiguration.getExcluded().getValue())
+            if (itemConfiguration != null && itemConfiguration.isCompilerToolConfiguration() && !itemConfiguration.getExcluded().getValue())
                 list.add(items[i]);
         }
         return list;
     }
     
     public List getAllHeaderFiles() {
-        Vector list = new Vector();
+        ArrayList list = new ArrayList();
         Item[] items = getMakeConfigurationDescriptor().getProjectItems();
         for (int i = 0; i < items.length; i++) {
             String suffix = null;
@@ -101,7 +108,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
                 suffix = items[i].getPath().substring(si+1);
             else
                 continue;
-            if (amongSuffixes(suffix, HDataLoader.getHdrExtensions()))
+            if (amongSuffixes(suffix, HDataLoader.getInstance().suffixes()))
                 list.add(items[i]);
         }
         return list;
@@ -128,6 +135,11 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     }
     
     public void fireFileAdded(NativeFileItem nativeFileIetm) {
+        if (listeners.size() == 0)
+            return;
+        int tool = ((Item)nativeFileIetm).getDefaultTool();
+        if (tool != Tool.CCompiler && tool != Tool.CCCompiler)
+            return; // IZ 87407
         for (int i = 0; i < listeners.size(); i++) {
             NativeProjectItemsListener listener = (NativeProjectItemsListener)listeners.get(i);
             listener.fileAdded(nativeFileIetm);
@@ -135,6 +147,11 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     }
     
     public void fireFileRemoved(NativeFileItem nativeFileIetm) {
+        if (listeners.size() == 0)
+            return;
+        ItemConfiguration itemConfiguration = (ItemConfiguration)getMakeConfiguration().getAuxObject(ItemConfiguration.getId(((Item)nativeFileIetm).getPath()));
+        if (!itemConfiguration.isCompilerToolConfiguration() || itemConfiguration.getExcluded().getValue())
+            return; // IZ 87407
         for (int i = 0; i < listeners.size(); i++) {
             NativeProjectItemsListener listener = (NativeProjectItemsListener)listeners.get(i);
             listener.fileRemoved(nativeFileIetm);
@@ -155,7 +172,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     public void checkConfigurationChanged(Configuration oldConf, Configuration newConf) {
         MakeConfiguration oldMConf = (MakeConfiguration)oldConf;
         MakeConfiguration newMConf = (MakeConfiguration)newConf;
-                 
+        
         if (listeners.size() == 0)
             return;
         
@@ -250,7 +267,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     }
     
     public void checkForChangedItems(boolean allCFiles, boolean allCCFiles) {
-        Vector list = new Vector();
+        ArrayList list = new ArrayList();
         
         // Handle project and file level changes
         Item[] items = getMakeConfigurationDescriptor().getProjectItems();
@@ -285,9 +302,87 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         for (int i = 0; i < list.size(); i++)
             fireFilePropertiesChanged((NativeFileItem)list.get(i));
     }
-
+    
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(Configurations.PROP_ACTIVE_CONFIGURATION))
             checkConfigurationChanged((Configuration)evt.getOldValue(), (Configuration)evt.getNewValue());
+    }
+    
+    /**
+     * Returns a list <String> of compiler defined include paths used when parsing 'orpan' source files.
+     * @return a list <String> of compiler defined include paths.
+     * A path is always an absolute path.
+     * Include paths are not prefixed with the compiler include path option (usually -I).
+     */
+    /*
+     * Return C++ settings
+     **/
+    public List/*<String>*/ getSystemIncludePaths() {
+        ArrayList vec = new ArrayList();
+        MakeConfiguration makeConfiguration = getMakeConfiguration();
+        Platform platform = Platforms.getPlatform(makeConfiguration.getPlatform().getValue());
+        CompilerSet compilerSet = CompilerSets.getCompilerSet(makeConfiguration.getCompilerSet().getValue());
+        BasicCompiler compiler = (BasicCompiler)compilerSet.getTool(Tool.CCCompiler);
+        vec.addAll(compiler.getSystemIncludeDirectories(platform));
+        return vec;
+    }
+    
+    /**
+     * Returns a list <String> of user defined include paths used when parsing 'orpan' source files.
+     * @return a list <String> of user defined include paths.
+     * A path is always an absolute path.
+     * Include paths are not prefixed with the compiler include path option (usually -I).
+     */
+    /*
+     * Return C++ settings
+     **/
+    public List/*<String>*/ getUserIncludePaths() {
+        ArrayList vec = new ArrayList();
+        MakeConfiguration makeConfiguration = getMakeConfiguration();
+        //Platform platform = Platforms.getPlatform(makeConfiguration.getPlatform().getValue());
+        CCCompilerConfiguration cccCompilerConfiguration = makeConfiguration.getCCCompilerConfiguration();
+        ArrayList vec2 = new ArrayList();
+        vec2.addAll(cccCompilerConfiguration.getIncludeDirectories().getValue());
+        // Convert all paths to absolute paths
+        Iterator iter = vec2.iterator();
+        while (iter.hasNext()) {
+            vec.add(IpeUtils.toAbsolutePath(makeConfiguration.getBaseDir(), (String)iter.next()));
+        }
+        return vec;
+    }
+    
+    /**
+     * Returns a list <String> of compiler defined macro definitions used when parsing 'orpan' source files.
+     * @return a list <String> of compiler defined macro definitions.
+     * Macro definitions are not prefixed with the compiler option (usually -D).
+     */
+    /*
+     * Return C++ settings
+     **/
+    public List/*<String>*/ getSystemMacroDefinitions() {
+        ArrayList vec = new ArrayList();
+        MakeConfiguration makeConfiguration = getMakeConfiguration();
+        Platform platform = Platforms.getPlatform(makeConfiguration.getPlatform().getValue());
+        CompilerSet compilerSet = CompilerSets.getCompilerSet(makeConfiguration.getCompilerSet().getValue());
+        BasicCompiler compiler = (BasicCompiler)compilerSet.getTool(Tool.CCCompiler);
+        vec.addAll(compiler.getSystemPreprocessorSymbols(platform));
+        return vec;
+    }
+    
+    /**
+     * Returns a list <String> of user defined macro definitions used when parsing 'orpan' source files.
+     * @return a list <String> of user defined macro definitions.
+     * Macro definitions are not prefixed with the compiler option (usually -D).
+     */
+    /*
+     * Return C++ settings
+     **/
+    public List/*<String>*/ getUserMacroDefinitions() {
+        ArrayList vec = new ArrayList();
+        MakeConfiguration makeConfiguration = getMakeConfiguration();
+        //Platform platform = Platforms.getPlatform(makeConfiguration.getPlatform().getValue());
+        CCCompilerConfiguration cccCompilerConfiguration = makeConfiguration.getCCCompilerConfiguration();
+        vec.addAll(cccCompilerConfiguration.getPreprocessorConfiguration().getValuesAsVector());
+        return vec;
     }
 }

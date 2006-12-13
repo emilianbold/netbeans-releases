@@ -20,6 +20,8 @@
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.util.*;
+import org.netbeans.modules.cnd.api.model.CsmModel;
+import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -69,10 +71,20 @@ public class ParserThreadManager  {
         return (processor == null);
     }
             
-    public void init(boolean standalone) {
+    // package-local
+    void startup(boolean standalone) {
         
-        int threadCount = Integer.getInteger("cnd.modelimpl.parser.threads",
-                Math.max(Runtime.getRuntime().availableProcessors()-1, 1)).intValue();
+	ParserQueue.instance().startup();
+	
+//        int threadCount = Integer.getInteger("cnd.modelimpl.parser.threads",
+//                Math.max(Runtime.getRuntime().availableProcessors()-1, 1)).intValue();
+
+        // TODO: now we disable multithreading and by default use only one parsing thread.
+        // user must pass explicitly the property to test/use multithreading
+        int threadCount = Integer.getInteger("cnd.modelimpl.parser.threads", 1).intValue();
+        if (threadCount < 1) {
+            threadCount = 1;
+        }
         
         if( ! standalone ) {
             processor = new RequestProcessor(threadNameBase, threadCount);
@@ -88,10 +100,11 @@ public class ParserThreadManager  {
         }
     }
 
-    /**
-     * For stand-alone usage only
-     */
-    public void shutdown() {
+    
+    // package-local
+    void shutdown() {
+	if( TraceFlags.TRACE_MODEL_STATE ) System.err.println("=== ParserThreadManager.shutdown");
+	ParserQueue.instance().shutdown();
         for (Iterator it = new ArrayList(threads).iterator(); it.hasNext();) {
             Thread thread = (Thread) it.next();
             thread.interrupt();

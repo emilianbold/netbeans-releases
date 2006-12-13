@@ -143,7 +143,7 @@ public class ChangeEventImpl extends CsmChangeEvent {
     public void addNewDeclaration(CsmOffsetableDeclaration declaration) {
         getNewDeclarations().add(declaration);
         CsmFile file = declaration.getContainingFile();
-        if( ! newFiles.contains(file) ) {
+        if( ! getNewFiles().contains(file) ) {
             addChangedFile(file);
         }
     }
@@ -151,7 +151,7 @@ public class ChangeEventImpl extends CsmChangeEvent {
     public void addRemovedDeclaration(CsmOffsetableDeclaration declaration) {
         getRemovedDeclarations().add(declaration);
         CsmFile file = declaration.getContainingFile();
-        if( ! removedFiles.contains(file) ) {
+        if( ! getRemovedFiles().contains(file) ) {
             addChangedFile(file);
         }
     }

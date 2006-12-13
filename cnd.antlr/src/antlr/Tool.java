@@ -1,18 +1,26 @@
 package antlr;
 
 /* ANTLR Translator Generator
- * Project led by Terence Parr at http://www.jGuru.com
+ * Project led by Terence Parr at http://www.cs.usfca.edu
  * Software rights: http://www.antlr.org/license.html
  *
  * $Id$
  */
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.io.Reader;
+import java.io.Writer;
 
 import antlr.collections.impl.BitSet;
 import antlr.collections.impl.Vector;
-import antlr.PreservingFileWriter;
-import antlr.Version;
 
 public class Tool {
     public static String version = "";
@@ -33,7 +41,7 @@ public class Tool {
     boolean genHTML = false;
 
     /** Current output directory for generated files */
-    protected static String outputDir = ".";
+    protected String outputDir = ".";
 
     // Grammar input
     protected String grammarFile;
@@ -41,8 +49,8 @@ public class Tool {
     // SAS: changed for proper text io
     //  transient DataInputStream in = null;
 
-    protected static String literalsPrefix = "LITERAL_";
-    protected static boolean upperCaseMangledLiterals = false;
+    protected String literalsPrefix = "LITERAL_";
+    protected boolean upperCaseMangledLiterals = false;
 
     /** C++ file level options */
     protected NameSpace nameSpace = null;
@@ -51,7 +59,21 @@ public class Tool {
     protected boolean genHashLines = true;
     protected boolean noConstructors = false;
 
-    private BitSet cmdLineArgValid = new BitSet();
+	public static boolean memoization = false;
+        
+        // Create local variables with LA(1)..LA(k) in rules to avoid miltiple LA call
+        public static boolean localLACache = true;
+        
+        // Skip match if lookahead expression already checked an item
+        public static boolean avoidLAMatch = true;
+        
+        // Clone rules to avoid flag checking
+        public static boolean cloneGuessing = true;
+        
+        // Here lies all of the optimizations which works with CND grammar, but may not in common case
+        public static boolean agressive = true; 
+
+	private BitSet cmdLineArgValid = new BitSet();
 
     /** Construct a new Tool. */
     public Tool() {
@@ -246,8 +268,7 @@ public class Tool {
             //      (necessary for VAJ interface)
             String codeGenClassName = "antlr." + getLanguage(behavior) + "CodeGenerator";
             try {
-                Class codeGenClass = Class.forName(codeGenClassName);
-                codeGen = (CodeGenerator)codeGenClass.newInstance();
+				codeGen = (CodeGenerator)Utils.createInstanceOf(codeGenClassName);
                 codeGen.setBehavior(behavior);
                 codeGen.setAnalyzer(analyzer);
                 codeGen.setTool(this);
@@ -295,42 +316,6 @@ public class Tool {
                            getFormatString(file, line, column) + s);
     }
 
-    /** When we are 1.1 compatible...
-public static Object factory2 (String p, Object[] initargs) {
-     Class c;
-     Object o = null;
-     try {
-     int argslen = initargs.length;
-     Class cl[] = new Class[argslen];
-     for (int i=0;i&lt;argslen;i++) {
-     cl[i] = Class.forName(initargs[i].getClass().getName());
-     }
-     c = Class.forName (p);
-     Constructor con = c.getConstructor (cl);
-     o = con.newInstance (initargs);
-     } catch (Exception e) {
-     System.err.println ("Can't make a " + p);
-     }
-     return o;
-     }
-     */
-    public Object factory(String p) {
-        Class c;
-        Object o = null;
-        try {
-            c = Class.forName(p);// get class def
-            o = c.newInstance(); // make a new one
-        }
-        catch (Exception e) {
-            // either class not found,
-            // class is interface/abstract, or
-            // class or initializer is not accessible.
-            warning("Can't create an object of type " + p);
-            return null;
-        }
-        return o;
-    }
-
     public String fileMinusPath(String f) {
         String separator = System.getProperty("file.separator");
         int endOfPath = f.lastIndexOf(separator);
@@ -371,45 +356,53 @@ public static Object factory2 (String p, Object[] initargs) {
         System.err.println("  -trace             have all rules call traceIn/traceOut.");
         System.err.println("  -traceLexer        have lexer rules call traceIn/traceOut.");
         System.err.println("  -traceParser       have parser rules call traceIn/traceOut.");
-        System.err.println("  -traceTreeParser   have tree parser rules call traceIn/traceOut.");
+		System.err.println("  -traceTreeParser   have tree parser rules call traceIn/traceOut.");
+		System.err.println("  -memoize           turn on rule memoization");
         System.err.println("  -h|-help|--help    this message");
     }
 
     public static void main(String[] args) {
         System.err.println("ANTLR Parser Generator   Version " +
-                           Version.project_version + "   1989-2005 jGuru.com");
+                           Version.project_version + "   1989-2005");
         version = Version.project_version;
 
         try {
+			boolean showHelp = false;
+			
             if (args.length == 0) {
-                help();
-                System.exit(1);
+		        showHelp = true;
             }
-            for (int i = 0; i < args.length; ++i) {
-                if (args[i].equals("-h")
-                    || args[i].equals("-help")
-                    || args[i].equals("--help")
-                ) {
-                    help();
-                    System.exit(1);
-                }
+            else {
+	            for (int i = 0; i < args.length; ++i) {
+	                if (args[i].equals("-h")
+	                    || args[i].equals("-help")
+	                    || args[i].equals("--help")
+	                ) {
+	                    showHelp = true;
+						break;
+	                }
+	            }
             }
 
-            Tool theTool = new Tool();
-            theTool.doEverything(args);
-            theTool = null;
+			if (showHelp) {
+                help();
+			}
+			else {
+	            Tool theTool = new Tool();
+	            theTool.doEverything(args);
+	            theTool = null;
+			}
         }
         catch (Exception e) {
             System.err.println(System.getProperty("line.separator") +
                                System.getProperty("line.separator"));
             System.err.println("#$%%*&@# internal error: " + e.toString());
             System.err.println("[complain to nearest government official");
-            System.err.println(" or send hate-mail to parrt@jguru.com;");
+            System.err.println(" or send hate-mail to parrt@antlr.org;");
             System.err.println(" please send stack trace with report.]" +
                                System.getProperty("line.separator"));
             e.printStackTrace();
         }
-        System.exit(0);
     }
 
 	/** This method is used by all code generators to create new output
@@ -464,7 +457,7 @@ public static Object factory2 (String p, Object[] initargs) {
      */
     public void fatalError(String message) {
         System.err.println(message);
-        System.exit(1);
+        Utils.error(message);
     }
 
     /** Issue an unknown fatal error. <em>If this method is overriden,
@@ -536,11 +529,15 @@ public static Object factory2 (String p, Object[] initargs) {
      */
     protected void processArguments(String[] args) {
         for (int i = 0; i < args.length; i++) {
-            if (args[i].equals("-diagnostic")) {
-                genDiagnostics = true;
-                genHTML = false;
-                setArgOK(i);
-            }
+			if (args[i].equals("-diagnostic")) {
+				genDiagnostics = true;
+				genHTML = false;
+				setArgOK(i);
+			}
+			if (args[i].equals("-memoize")) {
+				memoization = true;
+				setArgOK(i);
+			}
             else if (args[i].equals("-o")) {
                 setArgOK(i);
                 if (i + 1 >= args.length) {
@@ -572,7 +569,7 @@ public static Object factory2 (String p, Object[] initargs) {
         }
     }
 
-    public void setArgOK(int i) {
+	public void setArgOK(int i) {
         cmdLineArgValid.add(i);
     }
 

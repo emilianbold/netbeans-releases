@@ -232,13 +232,39 @@ public class EditorContextImpl extends EditorContext {
         int ln = NbDocument.findLineNumber(d, caret.getDot());
         return ln + 1;
     }
+
+    /**
+     * Returns number of line most recently selected in editor or <code>-1</code>.
+     *
+     * @return number of line most recently selected in editor or <code>-1</code>
+     */
+    public int getMostRecentLineNumber() {
+        EditorCookie e = getMostRecentEditorCookie();
+        if (e == null) {
+            return -1;
+        }
+        JEditorPane ep = getMostRecentEditor();
+        if (ep == null) {
+            return -1;
+        }
+        StyledDocument d = e.getDocument();
+        if (d == null) {
+            return -1;
+        }
+        Caret caret = ep.getCaret();
+        if (caret == null) {
+            return -1;
+        }
+        int ln = NbDocument.findLineNumber(d, caret.getDot());
+        return ln + 1;
+    }
     
     /**
      * Returns URL of source currently selected in editor or empty string.
      *
      * @return URL of source currently selected in editor or empty string
      */
-    public String getCurrentURL () {
+    public String getCurrentURL() {
         synchronized (currentLock) {
             if (currentURL == null) {
                 DataObject[] nodes = (DataObject[]) resDataObject.allInstances().toArray(new DataObject[0]);
@@ -262,6 +288,33 @@ public class EditorContextImpl extends EditorContext {
 
             return currentURL;
         }
+    }
+    
+    /**
+     *  Return the most recent URL or empty string. The difference between this and getCurrentURL()
+     *  is that this one will return a URL when the editor has lost focus.
+     *
+     *  @return url in string form
+     */
+    public String getMostRecentURL() {
+	String url = getCurrentURL();
+	
+	if (url.length() == 0) {
+	    Node[] nodes = TopComponent.getRegistry().getActivatedNodes();
+	    if (nodes != null) {
+		for (int i = 0; i < nodes.length; i++) {
+		    DataObject dobj = (DataObject) nodes[i].getCookie(DataObject.class);
+		    if (dobj != null) {
+			try {
+			    url = dobj.getPrimaryFile().getURL().toExternalForm();
+			    break;
+			} catch (FileStateInvalidException ex) {
+			}
+		    }
+		}
+	    }
+	}
+	return url;
     }
 
     /**
@@ -413,6 +466,36 @@ public class EditorContextImpl extends EditorContext {
     }
     
     /**
+     * Get the MIME type of the most recently selected file.
+     *
+     * @return The MIME type of the most recent selected file
+     */
+    public String getMostRecentMIMEType() {
+	String mime = getCurrentMIMEType();
+        
+	if (mime.length() == 0) {
+	    Node[] nodes = TopComponent.getRegistry().getActivatedNodes();
+	    if (nodes != null) {
+		for (int i = 0; i < nodes.length; i++) {
+		    DataObject dobj = (DataObject) nodes[i].getCookie(DataObject.class);
+		    if (dobj != null) {
+			if (dobj instanceof DataShadow) {
+			    dobj = ((DataShadow) dobj).getOriginal();
+			}
+			try {
+			    FileObject fo = URLMapper.findFileObject(dobj.getPrimaryFile().getURL());
+			    mime = fo.getMIMEType();
+			    break;
+			} catch (FileStateInvalidException ex) {
+			}
+		    }
+		}
+	    }
+	}
+	return mime;
+    }
+    
+    /**
      * Adds a property change listener.
      *
      * @param l the listener to add
@@ -463,6 +546,19 @@ public class EditorContextImpl extends EditorContext {
         return op [0];
     }
     
+    private JEditorPane getMostRecentEditor() {
+        EditorCookie e = getMostRecentEditorCookie();
+        if (e == null){
+            return null;
+        }
+        JEditorPane[] op = e.getOpenedPanes();
+        // We listen on open panes if e implements EditorCookie.Observable
+        if ((op == null) || (op.length < 1)) {
+            return null;
+        }
+        return op [0];
+    }
+    
     private EditorCookie getCurrentEditorCookie() {
         synchronized (currentLock) {
             if (currentEditorCookie == null) {
@@ -480,6 +576,30 @@ public class EditorContextImpl extends EditorContext {
             }
             return currentEditorCookie;
         }
+    }
+    
+    private EditorCookie getMostRecentEditorCookie() {
+	EditorCookie ec = getCurrentEditorCookie();
+	
+	if (ec == null) {
+	    Node[] nodes = TopComponent.getRegistry().getActivatedNodes();
+	    if (nodes != null) {
+		for (int i = 0; i < nodes.length; i++) {
+		    ec = (EditorCookie) nodes[i].getCookie(EditorCookie.class);
+		    if (ec != null) {
+			System.err.println("Got it!");
+		    }
+		}
+	    }
+//	    // Listen on open panes if currentEditorCookie implements EditorCookie.Observable
+//	    if (currentEditorCookie instanceof EditorCookie.Observable) {
+//		if (editorObservableListener == null) {
+//		    editorObservableListener = new EditorLookupListener(EditorCookie.Observable.class);
+//		}
+//		((EditorCookie.Observable) currentEditorCookie).addPropertyChangeListener(editorObservableListener);
+//	    }
+	}
+	return ec;
     }
 
     private Line.Set getLineSet(String url, Object timeStamp) {

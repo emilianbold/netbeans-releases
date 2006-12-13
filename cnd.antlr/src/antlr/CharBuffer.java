@@ -1,7 +1,7 @@
 package antlr;
 
 /* ANTLR Translator Generator
- * Project led by Terence Parr at http://www.jGuru.com
+ * Project led by Terence Parr at http://www.cs.usfca.edu
  * Software rights: http://www.antlr.org/license.html
  *
  * $Id$
@@ -20,15 +20,15 @@ package antlr;
  * @see antlr.CharQueue
  */
 
-import java.io.Reader; // SAS: changed to properly read text files
 import java.io.IOException;
+import java.io.Reader;
 
 // SAS: Move most functionality into InputBuffer -- just the file-specific
 //      stuff is in here
 
 public class CharBuffer extends InputBuffer {
     // char source
-    transient Reader input;
+    public transient Reader input;
 
     /** Create a character buffer */
     public CharBuffer(Reader input_) { // SAS: for proper text i/o
@@ -36,17 +36,27 @@ public class CharBuffer extends InputBuffer {
         input = input_;
     }
 
-    /** Ensure that the character buffer is sufficiently full */
-    public void fill(int amount) throws CharStreamException {
+    public void fill() throws CharStreamException {
+        int readChunkSize = INITIAL_BUFFER_SIZE;
         try {
-            syncConsume();
-            // Fill the buffer sufficiently to hold needed characters
-            while (queue.nbrEntries < amount + markerOffset) {
-                // Append the next character
-                queue.append((char)input.read());
-            }
-        }
-        catch (IOException io) {
+                // alloc initial buffer size.
+                data = new char[INITIAL_BUFFER_SIZE];
+                int numRead=0;
+                int pos = 0;
+                do {
+                        if ( pos+readChunkSize > data.length ) { // overflow?
+                            resizeData(0);
+                        }
+                        numRead = input.read(data, pos, readChunkSize);
+                        pos += numRead;
+                } while (numRead==readChunkSize);
+                
+                if ( pos == data.length ) { //unable to append EOF
+                    resizeData(1);
+                }
+                data[pos] = CharScanner.EOF_CHAR; // Append EOF
+                p = 0; 
+	} catch (IOException io) {
             throw new CharStreamIOException(io);
         }
     }

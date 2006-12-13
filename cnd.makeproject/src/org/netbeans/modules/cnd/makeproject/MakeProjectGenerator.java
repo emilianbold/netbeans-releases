@@ -24,7 +24,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.Vector;
+import java.util.Iterator;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -61,10 +61,13 @@ public class MakeProjectGenerator {
     }
 
     public static String getValidProjectName(String projectFolder, String name) {
-        int baseCount = 1;
+        int baseCount = 0;
 	String projectName = null;
         while (true) {
-	    projectName = name + baseCount;
+            if (baseCount == 0)
+                projectName = name;
+            else
+                projectName = name + baseCount;
 	    File projectNameFile = new File(projectFolder + File.separator + projectName);
 	    if (!projectNameFile.exists())
 		break;
@@ -104,13 +107,15 @@ public class MakeProjectGenerator {
 	}
 
         FileObject dirFO = createProjectDir (projectNameFile);
-        AntProjectHelper h = createProject(dirFO, projectName, makefileName, confs, null);
+        AntProjectHelper h = createProject(dirFO, projectName, makefileName, confs, null, null);
         MakeProject p = (MakeProject)ProjectManager.getDefault().findProject(dirFO);
         ProjectManager.getDefault().saveProject(p);
 
-	if (open)
+	if (open) {
 	    OpenProjects.getDefault().open(new Project[] {p}, false);
-
+            OpenProjects.getDefault().setMainProject(p);
+        }
+        
         return p;
     }
     
@@ -121,9 +126,9 @@ public class MakeProjectGenerator {
      * @return the helper object permitting it to be further customized
      * @throws IOException in case something went wrong
      */
-    public static AntProjectHelper createProject(File dir, String name, String makefileName, Configuration[] confs, Vector sourceFolders) throws IOException {
+    public static AntProjectHelper createProject(File dir, String name, String makefileName, Configuration[] confs, Iterator sourceFolders, Iterator importantItems) throws IOException {
         FileObject dirFO = createProjectDir (dir);
-        AntProjectHelper h = createProject(dirFO, name, makefileName, confs, sourceFolders); //NOI18N
+        AntProjectHelper h = createProject(dirFO, name, makefileName, confs, sourceFolders, importantItems); //NOI18N
         MakeProject p = (MakeProject)ProjectManager.getDefault().findProject(dirFO);
         ProjectManager.getDefault().saveProject(p);
         //FileObject srcFolder = dirFO.createFolder("src"); // NOI18N
@@ -173,7 +178,7 @@ public class MakeProjectGenerator {
     }
     */
 
-    private static AntProjectHelper createProject(FileObject dirFO, String name, String makefileName, Configuration[] confs, Vector sourceFolders) throws IOException {
+    private static AntProjectHelper createProject(FileObject dirFO, String name, String makefileName, Configuration[] confs, Iterator sourceFolders, Iterator importantItems) throws IOException {
         AntProjectHelper h = ProjectGenerator.createProject(dirFO, MakeProjectType.TYPE);
         Element data = h.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
@@ -199,7 +204,7 @@ public class MakeProjectGenerator {
 	MakeConfigurationDescriptor projectDescriptor = new MakeConfigurationDescriptor(FileUtil.toFile(dirFO).getPath());
         projectDescriptor.setProjectMakefileName(makefileName);
 	projectDescriptor.init(confs);
-	projectDescriptor.initLogicalFolders(sourceFolders, sourceFolders == null); // FIXUP: need a better check whether logical folder should be ccreated or not.
+	projectDescriptor.initLogicalFolders(sourceFolders, sourceFolders == null, importantItems); // FIXUP: need a better check whether logical folder should be ccreated or not.
 	projectDescriptor.save();
 	// create Makefile
 	copyURLFile("nbresloc:/org/netbeans/modules/cnd/makeproject/resources/MasterMakefile",  // NOI18N
