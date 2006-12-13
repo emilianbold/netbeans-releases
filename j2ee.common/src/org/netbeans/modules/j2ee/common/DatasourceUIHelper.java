@@ -220,9 +220,9 @@ public final class DatasourceUIHelper {
                     return oldValue;
                 } else {
                     // Must take the value from the editor and get the value and cast it to the new type.
-                    Class cls = oldValue.getClass();
+                    Class<?> cls = oldValue.getClass();
                     try {
-                        Method method = cls.getMethod("valueOf", new Class[] { String.class }); // NOI18N
+                        Method method = cls.getMethod("valueOf", String.class); // NOI18N
                         newValue = method.invoke(oldValue, new Object[] { editor.getText() });
                     } catch (Exception ex) {
                         // Fail silently and return the newValue (a String object)
