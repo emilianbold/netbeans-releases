@@ -309,6 +309,10 @@ public class TreeFactory implements TreeMakerInt {
     
     public LiteralTree Literal(Object value) {
         try {
+            // workaround for making NULL_LITERAL kind.
+            if (value == null) {
+                return make.Literal(TypeTags.BOT, value);
+            }
             return make.Literal(value);
         } catch (AssertionError e) {
             throw new IllegalArgumentException(e.getMessage());
