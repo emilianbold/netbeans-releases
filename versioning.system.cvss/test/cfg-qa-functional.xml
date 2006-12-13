@@ -28,11 +28,11 @@ Microsystems, Inc. All Rights Reserved.
 		<include name="org/netbeans/test/cvsmodule/TagTest.class"/>
 		<include name="org/netbeans/test/cvsmodule/CheckOutWizardTest.class"/>
 		<include name="org/netbeans/test/cvsmodule/ImportWizardTest.class"/>
-		<include name="org/netbeans/test/cvsmodule/StandardWorkFlow.class"/>
 		<include name="org/netbeans/test/cvsmodule/CommittingCvs11Test.class"/>
                 <include name="org/netbeans/test/cvsmodule/CommittingCvs12Test.class"/>
 		<include name="org/netbeans/test/cvsmodule/DeleteTest.class"/>
-                <include name="org/netbeans/test/cvsmodule/UpdateTest.class"/>
+                <!--<include name="org/netbeans/test/cvsmodule/UpdateTest.class"/>-->
+                <include name="org/netbeans/test/cvsmodule/UpdateErrorTest.class"/>
             </patternset>
         </testset>
     </testbag>	

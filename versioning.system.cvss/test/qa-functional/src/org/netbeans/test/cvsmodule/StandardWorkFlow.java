@@ -373,8 +373,9 @@ public class StandardWorkFlow extends JellyTestCase {
     
     public void testCommit() throws Exception {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);   
-        PseudoCvsServer cvss, cvss2, cvss3;
-        InputStream in, in2, in3;
+        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 18000);
+        PseudoCvsServer cvss, cvss2, cvss3, cvss4;
+        InputStream in, in2, in3, in4;
         CommitOperator co;
         String CVSroot, color;
         JTableOperator table;
@@ -433,7 +434,12 @@ public class StandardWorkFlow extends JellyTestCase {
         in3 = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "commit_invoke_commit.in");
         cvss3 = new PseudoCvsServer(in3);
         new Thread(cvss3).start();
-        allCVSRoots = allCVSRoots + cvss3.getCvsRoot();
+        allCVSRoots = allCVSRoots + cvss3.getCvsRoot() + ",";
+        
+        in4 = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "checkout_final.in");
+        cvss4 = new PseudoCvsServer(in4);
+        new Thread(cvss4).start();
+        allCVSRoots = allCVSRoots + cvss4.getCvsRoot();
         
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", allCVSRoots);
         co.commit();
@@ -442,6 +448,7 @@ public class StandardWorkFlow extends JellyTestCase {
         cvss.stop();
         cvss2.stop();
         cvss3.stop();
+        cvss4.stop();
         
         nodeIDE = (org.openide.nodes.Node) nodeClass.getOpenideNode();
         //color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
@@ -559,6 +566,7 @@ public class StandardWorkFlow extends JellyTestCase {
     
     public void testExportDiffPatch() throws Exception {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);   
+        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 18000);
         PseudoCvsServer cvss, cvss2, cvss3;
         InputStream in, in2, in3;
         //OutputOperator oo;
@@ -571,7 +579,12 @@ public class StandardWorkFlow extends JellyTestCase {
         
         Node nodeClass = new Node(new SourcePackagesNode(projectName), pathToMain);
         //nodeClass.select();
-        nodeClass.performMenuActionNoBlock("CVS|Export");
+        
+        comOperator = new Operator.DefaultStringComparator(true, true);
+        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+        Operator.setDefaultStringComparator(comOperator);
+        nodeClass.performMenuActionNoBlock("Versioning|CVS|Export");
+        Operator.setDefaultStringComparator(oldOperator);
         NbDialogOperator dialog = new NbDialogOperator("Export");
         JTextFieldOperator tf = new JTextFieldOperator(dialog, 0);
         String patchFile = "/tmp/patch" + System.currentTimeMillis() + ".patch"; 

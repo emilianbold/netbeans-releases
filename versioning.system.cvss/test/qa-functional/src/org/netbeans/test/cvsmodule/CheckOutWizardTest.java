@@ -957,6 +957,7 @@ public class CheckOutWizardTest extends JellyTestCase {
     public void testCheckWizardFinish() throws Exception {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
+        TestKit.closeProject(projectName);
         String sessionCVSroot;
         OutputOperator oo = OutputOperator.invoke();
         comOperator = new Operator.DefaultStringComparator(true, true);
@@ -1032,7 +1033,7 @@ public class CheckOutWizardTest extends JellyTestCase {
         JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
         open.push();
         ProjectSupport.waitScanFinished();
-        TestKit.removeAllData(projectName);
+        TestKit.closeProject(projectName);
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");
     }
 }

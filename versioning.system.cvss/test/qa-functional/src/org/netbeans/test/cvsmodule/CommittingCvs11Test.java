@@ -80,6 +80,12 @@ public class CommittingCvs11Test extends JellyTestCase {
         // TODO code application logic here
         TestRunner.run(suite());
     }
+    
+    protected void setUp() throws Exception {        
+        os_name = System.getProperty("os.name");
+        //System.out.println(os_name);
+        System.out.println("### " + getName() + " ###");
+    }
 
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
@@ -93,6 +99,7 @@ public class CommittingCvs11Test extends JellyTestCase {
         PROTOCOL_FOLDER = "protocol";
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 18000);
+        TestKit.closeProject(projectName);
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Operator.setDefaultStringComparator(comOperator);
@@ -171,8 +178,8 @@ public class CommittingCvs11Test extends JellyTestCase {
 
     public void testCommitModified() throws Exception {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);   
-        PseudoCvsServer cvss, cvss2, cvss3;
-        InputStream in, in2, in3;
+        PseudoCvsServer cvss, cvss2, cvss3, cvss4;
+        InputStream in, in2, in3, in4;
         CommitOperator co;
         String CVSroot, color;
         JTableOperator table;
@@ -218,7 +225,12 @@ public class CommittingCvs11Test extends JellyTestCase {
         in3 = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "commit_invoke_commit_4.in");
         cvss3 = new PseudoCvsServer(in3);
         new Thread(cvss3).start();
-        allCVSRoots = allCVSRoots + cvss3.getCvsRoot();
+        allCVSRoots = allCVSRoots + cvss3.getCvsRoot()+ ",";
+        
+        in4 = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "checkout_final.in");
+        cvss4 = new PseudoCvsServer(in4);
+        new Thread(cvss4).start();
+        allCVSRoots = allCVSRoots + cvss4.getCvsRoot();
         
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", allCVSRoots);
         co.commit();
@@ -228,7 +240,7 @@ public class CommittingCvs11Test extends JellyTestCase {
         cvss.stop();
         cvss2.stop();
         cvss3.stop();
-        
+        cvss4.stop();
         //modify files
         Node node = new Node(new SourcePackagesNode(projectName), "xx|NewClass.java");
         node.performPopupAction("Open");
@@ -314,7 +326,7 @@ public class CommittingCvs11Test extends JellyTestCase {
     }
 
     public void removeAllData() throws Exception {
-        TestKit.removeAllData(projectName);
+        TestKit.closeProject(projectName);
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");
     }
 }

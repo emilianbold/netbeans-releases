@@ -104,6 +104,7 @@ public class BranchTest extends JellyTestCase {
     public void testCheckOutProject() throws Exception {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
+        TestKit.closeProject(projectName);
         String CVSroot;
         OutputOperator oo = OutputOperator.invoke();
         comOperator = new Operator.DefaultStringComparator(true, true);
@@ -180,7 +181,7 @@ public class BranchTest extends JellyTestCase {
     }
     
     public void removeAllData() throws Exception {
-        TestKit.removeAllData(projectName);
+        TestKit.closeProject(projectName);
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");
     }
     

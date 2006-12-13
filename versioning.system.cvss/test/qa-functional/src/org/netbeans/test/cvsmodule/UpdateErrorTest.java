@@ -62,6 +62,12 @@ public class UpdateErrorTest extends JellyTestCase {
         // TODO code application logic here
         TestRunner.run(suite());
     }
+    
+    protected void setUp() throws Exception {        
+        os_name = System.getProperty("os.name");
+        //System.out.println(os_name);
+        System.out.println("### " + getName() + " ###");
+    }
 
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
@@ -75,6 +81,7 @@ public class UpdateErrorTest extends JellyTestCase {
         PROTOCOL_FOLDER = "protocol";
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 18000);
+        TestKit.closeProject(projectName);
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Operator.setDefaultStringComparator(comOperator);
@@ -225,7 +232,7 @@ public class UpdateErrorTest extends JellyTestCase {
     }
     
     public void removeAllData() throws Exception {
-        TestKit.removeAllData(projectName);
+        TestKit.closeProject(projectName);
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");
     }
     

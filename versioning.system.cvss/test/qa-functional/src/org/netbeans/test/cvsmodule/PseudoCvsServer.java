@@ -106,7 +106,7 @@ public final class PseudoCvsServer implements Runnable {
      */
     public synchronized String getCvsRoot() {
         try {
-            while (running == false) {
+            while (!isRunnuing()) {
                 this.wait();
             }
         } catch (InterruptedException e) {
@@ -175,11 +175,7 @@ public final class PseudoCvsServer implements Runnable {
     public void run() {
 
         try {
-            
-            synchronized (this) {
-                running = true;
-                notifyAll();
-            }    
+            setRunning(true);
             
             while (true) {
                 try {
@@ -193,8 +189,6 @@ public final class PseudoCvsServer implements Runnable {
                     return;
                 }
             }
-            
-            
             
             try {
                 socketOut = clientSocket.getOutputStream();
@@ -327,6 +321,17 @@ public final class PseudoCvsServer implements Runnable {
             } catch (InterruptedException e) {
                 throwable = e;
             }
+        }
+    }
+    
+    public synchronized boolean isRunnuing() {
+        return running;
+    }
+    
+    public synchronized void setRunning(boolean value) {
+        running = value; 
+        if (value) {
+            notifyAll();
         }
     }
 }

@@ -369,4 +369,19 @@ public class TestKit {
         InputStream in = new FileInputStream(file);    
         return in;
     }
+    
+    public static void closeProject(String projectName) {
+        try {
+            Node rootNode = new ProjectsTabOperator().getProjectRootNode(projectName);
+            rootNode.performPopupActionNoBlock("Close Project");
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException ex) {
+                ex.printStackTrace();
+            }
+        }
+        catch (Exception e) {
+            
+        }    
+    }
 }
