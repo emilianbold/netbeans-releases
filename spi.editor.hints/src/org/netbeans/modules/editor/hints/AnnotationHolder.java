@@ -113,12 +113,13 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener 
             try {
                 DataObject od = DataObject.find(file);
                 EditorCookie.Observable editorCookie = od.getCookie(EditorCookie.Observable.class);
-                Document doc = editorCookie.getDocument();
                 
-                if (doc != null) {
-                    if (editorCookie == null) {
-                        Logger.getLogger("global").log(Level.WARNING, "No EditorCookie.Observable for file: " + FileUtil.getFileDisplayName(file));
-                    } else {
+                if (editorCookie == null) {
+                    Logger.getLogger("global").log(Level.WARNING, "No EditorCookie.Observable for file: " + FileUtil.getFileDisplayName(file));
+                } else {
+                    Document doc = editorCookie.getDocument();
+                    
+                    if (doc != null) {
                         file2Holder.put(file, result = new AnnotationHolder(file, od, doc, editorCookie));
                     }
                 }
