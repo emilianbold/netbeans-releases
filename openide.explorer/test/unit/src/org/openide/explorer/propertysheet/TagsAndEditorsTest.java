@@ -147,6 +147,9 @@ public class TagsAndEditorsTest extends ExtTestCase {
     }
     
     public void testPropertySheetRepaintsCellOnPropertyChange() throws Exception {
+        if (!canSafelyRunFocusTests()) {
+            return;
+        }
         Node n = new TNode(new SingleTagEditor());
         setCurrentNode(n, ps);
         Rectangle test = ps.table.getCellRect(1, 1, true);
