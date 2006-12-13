@@ -267,8 +267,7 @@ class LuceneIndex extends Index {
                 }
                 {   
                     final Pattern pattern = Pattern.compile(name,Pattern.CASE_INSENSITIVE);
-                    char startChar = Character.toLowerCase(name.charAt(0));
-                    regExpSearch(pattern, DocumentUtil.caseInsensitiveNameTerm(Character.toString(startChar)), in, toSearch);
+                    regExpSearch(pattern, DocumentUtil.caseInsensitiveNameTerm(name.toLowerCase()), in, toSearch);      //XXX: Locale
                     break;
                 }
             case REGEXP:
@@ -276,9 +275,8 @@ class LuceneIndex extends Index {
                     throw new IllegalArgumentException ();
                 }                
                 {   
-                    final Pattern pattern = Pattern.compile(name);
-                    char startChar = name.charAt(0);                    
-                    regExpSearch(pattern, DocumentUtil.simpleNameTerm(Character.toString(startChar)), in, toSearch);
+                    final Pattern pattern = Pattern.compile(name);                    
+                    regExpSearch(pattern, DocumentUtil.simpleNameTerm(name), in, toSearch);
                     break;
                 }
             default:
@@ -299,13 +297,23 @@ class LuceneIndex extends Index {
     }
     
     private void regExpSearch (final Pattern pattern, final Term startTerm, final IndexReader in, final Set<Term> toSearch) throws IOException {        
-        char startChar = startTerm.text().charAt(0);
+        final String startText = startTerm.text();
+        final StringBuilder startBuilder = new StringBuilder ();
+        startBuilder.append(startText.charAt(0));
+        for (int i=1; i<startText.length(); i++) {
+            char c = startText.charAt(i);
+            if (!Character.isJavaIdentifierPart(c)) {
+                break;
+            }
+            startBuilder.append(c);
+        }
+        final String startPrefix = startBuilder.toString();
         final String camelField = startTerm.field();
         final TermEnum en = in.terms(startTerm);
         try {
             do {
                 Term term = en.term();                
-                if (term != null && camelField == term.field() && term.text().charAt(0) == startChar) {
+                if (term != null && camelField == term.field() && term.text().startsWith(startPrefix)) {
                     final Matcher m = pattern.matcher(term.text());
                     if (m.matches()) {
                         toSearch.add (term);
