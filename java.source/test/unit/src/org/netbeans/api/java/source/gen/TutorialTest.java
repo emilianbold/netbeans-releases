@@ -36,6 +36,7 @@ import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.TreeUtilities;
 import static org.netbeans.api.java.source.JavaSource.*;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.junit.NbTestSuite;
@@ -66,6 +67,7 @@ public class TutorialTest extends GeneratorTest {
 //        suite.addTest(new TutorialTest("testAddAnnotation"));
 //        suite.addTest(new TutorialTest("testForErno"));
 //        suite.addTest(new TutorialTest("testMethodInvocation"));
+//        suite.addTest(new TutorialTest("testNullLiteral"));
         return suite;
     }
     
@@ -489,7 +491,51 @@ public class TutorialTest extends GeneratorTest {
                 BlockTree copy = make.addBlockStatement(method.getBody(), statement);
                 workingCopy.rewrite(method.getBody(), copy);
             }
+            
+            public void cancel() {
+            }
+        };
 
+        tutorialSource.runModificationTask(task).commit();
+        
+        // print the result to the System.err to see the changes in console.
+        BufferedReader in = new BufferedReader(new FileReader(testFile));
+        PrintStream out = System.out;
+        String str;
+        while ((str = in.readLine()) != null) {
+            out.println(str);
+        }
+        in.close();
+    }
+
+    // obtain, modify and replace the method body as a text
+    public void testNullLiteral() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n\n" +
+            "import java.io.*;\n\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "    }\n" +
+            "}\n"
+            );
+        JavaSource tutorialSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+//        final String statementText = "new Runnable() { };";
+//        final String statementText = "System.err.println(\"Not interested in.\");";
+        final String statementText = "System.err.println(null);";
+        
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                
+                SourcePositions[] positions = new SourcePositions[1];
+                final TreeUtilities treeUtils = workingCopy.getTreeUtilities();
+                StatementTree body = treeUtils.parseStatement(statementText, positions);
+                System.err.println(TreeMakerDemo.reverse(body));
+            }
+            
             public void cancel() {
             }
         };
@@ -506,7 +552,6 @@ public class TutorialTest extends GeneratorTest {
         in.close();
     }
     
-
     // not important for tutorial reasons.
     // please ignore.
     String getSourcePckg() {
