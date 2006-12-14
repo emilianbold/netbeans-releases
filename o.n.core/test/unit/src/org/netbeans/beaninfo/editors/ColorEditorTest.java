@@ -1,0 +1,62 @@
+/*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ *
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ *
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+package org.netbeans.beaninfo.editors;
+
+import java.awt.Color;
+import javax.xml.parsers.DocumentBuilderFactory;
+import junit.framework.TestCase;
+import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+
+/**
+ *
+ * @author Radim
+ */
+public class ColorEditorTest extends TestCase {
+
+    public ColorEditorTest (String testName) {
+        super (testName);
+    }
+
+    public void testStoreToXml() throws Exception {
+        ColorEditor.SuperColor sc = new ColorEditor.SuperColor(
+                "TextField.inactiveBackground", 
+                ColorEditor.SWING_PALETTE, 
+                Color.BLUE);
+        System.out.println("original "+sc);
+        XMLPropertyEditor propEd = new ColorEditor();
+        propEd.setValue(sc);
+        Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+        Node element = propEd.storeToXML(doc);
+
+        NamedNodeMap nodeMap = element.getAttributes();
+        for (int i = 0; i < nodeMap.getLength(); i++) {
+            System.out.println("attr "+i+", "+nodeMap.item(i));
+        }
+        
+        propEd.readFromXML(element);
+        Color restoredColor = (Color)propEd.getValue();
+        System.out.println("restoredColor "+restoredColor);
+        assertEquals("Restored value has to be the same", sc, restoredColor);
+//        assertTrue("It is SuperColor", restoredColor instanceof ColorEditor.SuperColor);
+    }
+}
